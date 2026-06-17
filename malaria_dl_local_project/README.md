@@ -9,6 +9,7 @@ Incluye:
 - Ensemble simple
 - Test Time Augmentation
 - Evaluación con accuracy, precision, recall, F1, AUC y matriz de confusión
+- Explicabilidad visual post hoc con LIME y SHAP
 
 ## 1. Crear entorno virtual
 
@@ -80,6 +81,75 @@ python -m src.tta --checkpoint outputs/vgg16/best_model.keras --img-size 200 --n
 python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
 ```
 
+## Explicabilidad del modelo: LIME y SHAP
+
+El proyecto permite explicar predicciones individuales de modelos Keras entrenados usando LIME y SHAP:
+
+```bash
+python -m src.explain --checkpoint outputs/custom_cnn/best_model.keras --method lime --num-samples 20
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method shap --num-samples 20
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method both --num-samples 20
+```
+
+También se pueden controlar el tamaño de imagen, batch, umbral y carpeta de salida:
+
+```bash
+python -m src.explain \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --method both \
+  --img-size 200 \
+  --batch-size 64 \
+  --num-samples 20 \
+  --threshold 0.5 \
+  --output-dir outputs/explainability
+```
+
+LIME identifica superpíxeles relevantes para una predicción local del modelo. SHAP estima la contribución de regiones o píxeles a la predicción. Estas técnicas ayudan a revisar verdaderos positivos, verdaderos negativos, falsos positivos, falsos negativos y casos de baja confianza cercanos al umbral de clasificación.
+
+Las salidas se guardan en:
+
+```text
+outputs/explainability/
+  lime/
+    true_positive/
+    true_negative/
+    false_positive/
+    false_negative/
+    low_confidence/
+  shap/
+    true_positive/
+    true_negative/
+    false_positive/
+    false_negative/
+    low_confidence/
+  explanation_summary.csv
+```
+
+Cada imagen explicada se guarda como PNG con clase real, clase predicha y score en el nombre del archivo. El CSV `explanation_summary.csv` registra `case_id`, tipo de caso, clase real, clase predicha, score, umbral, método y ruta de imagen.
+
+## Explicabilidad post hoc
+
+La explicabilidad se incorpora para aportar trazabilidad visual al proceso de evaluación y facilitar el análisis de coherencia del modelo en un contexto de apoyo diagnóstico. No reemplaza métricas cuantitativas como AUC, recall o F1, pero permite inspeccionar si las regiones que influyen en una predicción son razonables desde el punto de vista visual.
+
+LIME aporta una explicación local basada en superpíxeles: perturba regiones de una imagen y estima qué zonas sostienen la decisión del modelo para ese caso. SHAP estima contribuciones de entrada a la predicción usando un conjunto pequeño de imágenes de entrenamiento como background.
+
+El script selecciona casos explicables de forma balanceada entre:
+
+- Verdaderos positivos
+- Verdaderos negativos
+- Falsos positivos
+- Falsos negativos
+- Casos de baja confianza cercanos al umbral 0.50
+
+KPI de explicabilidad:
+
+| KPI                           | Meta                                                                    |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| Casos explicados              | mínimo 20                                                               |
+| Cobertura de errores críticos | revisar falsos positivos y falsos negativos disponibles                 |
+| Trazabilidad                  | 100% de casos explicados con imagen, score, clase real y clase predicha |
+| Comparación LIME/SHAP         | al menos 10 casos si se ejecuta `--method both`                         |
+
 ## 3. Exportar imágenes a carpetas
 
 ```bash
@@ -111,8 +181,10 @@ malaria_dl_local_project/
     svm_features.py
     ensemble.py
     export_dataset.py
+    explain.py
     tta.py
   outputs/
+    explainability/
 ```
 
 ## 5. Notas metodológicas
