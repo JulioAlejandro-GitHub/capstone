@@ -81,6 +81,11 @@ def parse_args():
         default=200,
         help="Máximo de imágenes candidatas retenidas por tipo de caso.",
     )
+    parser.add_argument(
+        "--track-db",
+        action="store_true",
+        help="Registrar esta ejecución y sus resultados en PostgreSQL.",
+    )
     return parser.parse_args()
 
 
@@ -883,116 +888,157 @@ def main():
     checkpoint = Path(args.checkpoint)
     output_dir = Path(args.output_dir)
     selected_methods = methods_to_run(args.method)
+    run_context = None
 
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+    if args.track_db:
+        from src.tracking_integration import (
+            args_to_parameters,
+            model_name_from_checkpoint,
+            start_tracking_run,
+        )
 
-    import tensorflow as tf
+        run_context = start_tracking_run(
+            args=args,
+            run_type="explainability",
+            script_name="src.explain",
+            model_name=model_name_from_checkpoint(checkpoint),
+            run_name=f"explain:{checkpoint.stem}:{args.method}",
+            parameters=args_to_parameters(
+                args,
+                extra={
+                    "checkpoint": str(checkpoint),
+                    "selected_methods": selected_methods,
+                    "output_dir": str(output_dir),
+                },
+            ),
+        )
 
-    from src.data import load_malaria_splits
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Cargando modelo: {checkpoint}")
-    model = tf.keras.models.load_model(checkpoint)
+        import tensorflow as tf
 
-    print("Cargando splits de malaria desde TensorFlow Datasets...")
-    ds_train, _, ds_test, ds_info = load_malaria_splits(
-        img_size=args.img_size,
-        batch_size=args.batch_size,
-        augment=False,
-    )
+        from src.data import load_malaria_splits
 
-    class_names = list(ds_info.features["label"].names)
-    positive_idx, negative_idx, positive_label = resolve_positive_label(
-        class_names,
-        args.positive_label,
-    )
+        print(f"Cargando modelo: {checkpoint}")
+        model = tf.keras.models.load_model(checkpoint)
 
-    print(f"Orden de clases detectado desde TFDS: {class_names}")
-    print(
-        f"Clase positiva para score sigmoid: {positive_label} "
-        f"(índice {positive_idx}); umbral={args.threshold}"
-    )
+        print("Cargando splits de malaria desde TensorFlow Datasets...")
+        ds_train, _, ds_test, ds_info = load_malaria_splits(
+            img_size=args.img_size,
+            batch_size=args.batch_size,
+            augment=False,
+        )
 
-    for method in selected_methods:
-        for case_type in CASE_TYPES:
-            (output_dir / method / case_type).mkdir(parents=True, exist_ok=True)
+        class_names = list(ds_info.features["label"].names)
+        positive_idx, negative_idx, positive_label = resolve_positive_label(
+            class_names,
+            args.positive_label,
+        )
 
-    print("Calculando predicciones y reteniendo candidatos para explicabilidad...")
-    y_true, y_pred, y_score, candidate_images = collect_prediction_candidates(
-        model=model,
-        dataset=ds_test,
-        num_samples=args.num_samples,
-        threshold=args.threshold,
-        positive_idx=positive_idx,
-        negative_idx=negative_idx,
-        max_candidates=args.max_candidates,
-    )
-
-    cases = select_explanation_cases(
-        y_true=y_true,
-        y_pred=y_pred,
-        y_score=y_score,
-        images=candidate_images,
-        class_names=class_names,
-        num_samples=args.num_samples,
-        threshold=args.threshold,
-        positive_idx=positive_idx,
-        negative_idx=negative_idx,
-        positive_label=positive_label,
-    )
-    print(f"Casos seleccionados: {len(cases)}")
-
-    background_images = None
-    if "shap" in selected_methods:
-        print("Preparando background de entrenamiento para SHAP...")
-        background_images = collect_background_images(ds_train, max_images=20)
-        print(f"Imagenes de background SHAP: {len(background_images)}")
-
-    summary_rows = []
-    for case_number, case in enumerate(cases, start=1):
+        print(f"Orden de clases detectado desde TFDS: {class_names}")
         print(
-            f"Explicando caso {case_number}/{len(cases)} "
-            f"({case['case_type']}, real={case['true_label']}, "
-            f"pred={case['predicted_label']}, "
-            f"score_{case['positive_label']}={case['score_positive_label']:.4f})"
+            f"Clase positiva para score sigmoid: {positive_label} "
+            f"(índice {positive_idx}); umbral={args.threshold}"
         )
 
         for method in selected_methods:
-            if method == "lime":
-                summary_rows.append(
-                    run_lime(
-                        model=model,
-                        class_names=class_names,
-                        positive_idx=positive_idx,
-                        output_dir=output_dir,
-                        case=case,
-                    )
-                )
-            elif method == "shap":
-                summary_rows.append(
-                    run_shap(
-                        model=model,
-                        background_images=background_images,
-                        class_names=class_names,
-                        output_dir=output_dir,
-                        case=case,
-                    )
-                )
-            elif method == "gradcam":
-                summary_rows.append(
-                    run_gradcam(
-                        model=model,
-                        output_dir=output_dir,
-                        case=case,
-                    )
-                )
-            else:
-                raise ValueError(f"Método no soportado: {method}")
+            for case_type in CASE_TYPES:
+                (output_dir / method / case_type).mkdir(parents=True, exist_ok=True)
 
-    write_summary(summary_rows, output_dir)
-    print("Explicabilidad finalizada.")
+        print("Calculando predicciones y reteniendo candidatos para explicabilidad...")
+        y_true, y_pred, y_score, candidate_images = collect_prediction_candidates(
+            model=model,
+            dataset=ds_test,
+            num_samples=args.num_samples,
+            threshold=args.threshold,
+            positive_idx=positive_idx,
+            negative_idx=negative_idx,
+            max_candidates=args.max_candidates,
+        )
+
+        cases = select_explanation_cases(
+            y_true=y_true,
+            y_pred=y_pred,
+            y_score=y_score,
+            images=candidate_images,
+            class_names=class_names,
+            num_samples=args.num_samples,
+            threshold=args.threshold,
+            positive_idx=positive_idx,
+            negative_idx=negative_idx,
+            positive_label=positive_label,
+        )
+        print(f"Casos seleccionados: {len(cases)}")
+
+        background_images = None
+        if "shap" in selected_methods:
+            print("Preparando background de entrenamiento para SHAP...")
+            background_images = collect_background_images(ds_train, max_images=20)
+            print(f"Imagenes de background SHAP: {len(background_images)}")
+
+        summary_rows = []
+        for case_number, case in enumerate(cases, start=1):
+            print(
+                f"Explicando caso {case_number}/{len(cases)} "
+                f"({case['case_type']}, real={case['true_label']}, "
+                f"pred={case['predicted_label']}, "
+                f"score_{case['positive_label']}={case['score_positive_label']:.4f})"
+            )
+
+            for method in selected_methods:
+                if method == "lime":
+                    summary_rows.append(
+                        run_lime(
+                            model=model,
+                            class_names=class_names,
+                            positive_idx=positive_idx,
+                            output_dir=output_dir,
+                            case=case,
+                        )
+                    )
+                elif method == "shap":
+                    summary_rows.append(
+                        run_shap(
+                            model=model,
+                            background_images=background_images,
+                            class_names=class_names,
+                            output_dir=output_dir,
+                            case=case,
+                        )
+                    )
+                elif method == "gradcam":
+                    summary_rows.append(
+                        run_gradcam(
+                            model=model,
+                            output_dir=output_dir,
+                            case=case,
+                        )
+                    )
+                else:
+                    raise ValueError(f"Método no soportado: {method}")
+
+        write_summary(summary_rows, output_dir)
+
+        if args.track_db and run_context:
+            from src.tracking_integration import (
+                finish_tracking_run,
+                log_explainability_outputs,
+            )
+
+            log_explainability_outputs(run_context, cases, summary_rows, output_dir)
+            finish_tracking_run(run_context, metadata={"status_detail": "explainability completed"})
+
+        print("Explicabilidad finalizada.")
+    except Exception as exc:
+        if args.track_db and run_context:
+            from src.tracking_integration import fail_tracking_run
+
+            fail_tracking_run(run_context, exc, script_name="src.explain")
+        raise
 
 
 if __name__ == "__main__":

@@ -61,6 +61,58 @@ python scripts/test_db.py
 
 La prueba crea o recupera experimento, dataset y modelo de smoke test; luego registra una ejecución, métricas, matriz de confusión, reportes, predicción, artefacto, explicabilidad, paquetes del entorno y consulta `vw_run_dashboard`.
 
+## Tracking automático de ejecuciones reales
+
+Los scripts principales aceptan `--track-db`. La bandera está desactivada por defecto, por lo que ejecutar los comandos sin `--track-db` mantiene el comportamiento anterior.
+
+Entrenamiento con tracking:
+
+```bash
+python -m src.train --model custom_cnn --epochs 30 --img-size 200 --batch-size 64 --track-db
+```
+
+Evaluación con tracking:
+
+```bash
+python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64 --track-db
+```
+
+Explicabilidad con tracking:
+
+```bash
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method gradcam --num-samples 20 --track-db
+```
+
+También se agregó tracking opcional a:
+
+```bash
+python -m src.svm_features --checkpoint outputs/vgg16/best_model.keras --track-db
+python -m src.ensemble --models outputs/custom_cnn/best_model.keras outputs/vgg16/best_model.keras --track-db
+python -m src.tta --checkpoint outputs/vgg16/best_model.keras --track-db
+```
+
+Si PostgreSQL no está disponible, el tracking emite un warning y el script continúa con su lógica normal. Si ocurre un error real del entrenamiento, evaluación o explicabilidad, el error se registra en la tabla `errors` cuando exista un `run_id`, y luego el script vuelve a fallar como antes.
+
+Consultas para validar ejecuciones reales:
+
+```sql
+SELECT *
+FROM vw_run_dashboard
+ORDER BY started_at DESC
+LIMIT 10;
+```
+
+```sql
+SELECT model_name, total_runs, completed_runs, failed_runs
+FROM vw_model_run_summary
+ORDER BY total_runs DESC;
+```
+
+```sql
+SELECT *
+FROM vw_explainability_summary;
+```
+
 ## Conectarse usando psql
 
 ```bash

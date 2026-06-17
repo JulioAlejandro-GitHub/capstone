@@ -18,97 +18,163 @@ def parse_args():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--learning-rate", type=float, default=None)
     parser.add_argument("--no-augment", action="store_true")
+    parser.add_argument(
+        "--track-db",
+        action="store_true",
+        help="Registrar esta ejecución y sus resultados en PostgreSQL.",
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    tf.keras.utils.set_random_seed(args.seed)
-
+    run_context = None
     output_dir = OUTPUT_DIR / args.model
-    output_dir.mkdir(parents=True, exist_ok=True)
 
-    ds_train, ds_val, ds_test, ds_info = load_malaria_splits(
-        img_size=args.img_size,
-        batch_size=args.batch_size,
-        seed=args.seed,
-        augment=not args.no_augment,
-    )
-
-    class_names = ds_info.features["label"].names
-    print("Clases:", class_names)
-
-    input_shape = (args.img_size, args.img_size, 3)
-
-    if args.model == "custom_cnn":
-        lr = args.learning_rate if args.learning_rate is not None else 1.0
-        model = build_custom_cnn(input_shape=input_shape, learning_rate=lr)
-        base_model = None
-    else:
-        lr = args.learning_rate if args.learning_rate is not None else 0.01
-        model, base_model = build_vgg16_transfer(input_shape=input_shape, learning_rate=lr)
-
-    model.summary()
-
-    callbacks = [
-        tf.keras.callbacks.ModelCheckpoint(
-            filepath=str(output_dir / "best_model.keras"),
-            monitor="val_accuracy",
-            save_best_only=True,
-            mode="max",
-            verbose=1,
-        ),
-        tf.keras.callbacks.EarlyStopping(
-            monitor="val_loss",
-            patience=10,
-            restore_best_weights=True,
-            verbose=1,
-        ),
-        tf.keras.callbacks.CSVLogger(str(output_dir / "training_log.csv")),
-        tf.keras.callbacks.ReduceLROnPlateau(
-            monitor="val_loss",
-            factor=0.5,
-            patience=4,
-            min_lr=1e-6,
-            verbose=1,
-        ),
-    ]
-
-    model.fit(
-        ds_train,
-        validation_data=ds_val,
-        epochs=args.epochs,
-        callbacks=callbacks,
-    )
-
-    if args.model == "vgg16" and args.fine_tune_epochs > 0:
-        print("Iniciando fine-tuning parcial de VGG16...")
-        unfreeze_last_layers(base_model, n_layers=4)
-        model = compile_binary_model(
-            model,
-            learning_rate=0.001,
-            optimizer_name="adadelta",
+    if args.track_db:
+        from src.tracking_integration import (
+            args_to_parameters,
+            model_name_from_train_arg,
+            start_tracking_run,
         )
 
-        model.fit(
+        run_context = start_tracking_run(
+            args=args,
+            run_type="training",
+            script_name="src.train",
+            model_name=model_name_from_train_arg(args.model),
+            run_name=f"train:{args.model}",
+            parameters=args_to_parameters(
+                args,
+                extra={
+                    "augment": not args.no_augment,
+                    "checkpoint_dir": str(output_dir),
+                    "output_dir": str(output_dir),
+                },
+            ),
+            random_seed=args.seed,
+        )
+
+    try:
+        tf.keras.utils.set_random_seed(args.seed)
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        ds_train, ds_val, ds_test, ds_info = load_malaria_splits(
+            img_size=args.img_size,
+            batch_size=args.batch_size,
+            seed=args.seed,
+            augment=not args.no_augment,
+        )
+
+        class_names = ds_info.features["label"].names
+        print("Clases:", class_names)
+
+        input_shape = (args.img_size, args.img_size, 3)
+
+        if args.model == "custom_cnn":
+            lr = args.learning_rate if args.learning_rate is not None else 1.0
+            model = build_custom_cnn(input_shape=input_shape, learning_rate=lr)
+            base_model = None
+        else:
+            lr = args.learning_rate if args.learning_rate is not None else 0.01
+            model, base_model = build_vgg16_transfer(input_shape=input_shape, learning_rate=lr)
+
+        model.summary()
+
+        callbacks = [
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=str(output_dir / "best_model.keras"),
+                monitor="val_accuracy",
+                save_best_only=True,
+                mode="max",
+                verbose=1,
+            ),
+            tf.keras.callbacks.EarlyStopping(
+                monitor="val_loss",
+                patience=10,
+                restore_best_weights=True,
+                verbose=1,
+            ),
+            tf.keras.callbacks.CSVLogger(str(output_dir / "training_log.csv")),
+            tf.keras.callbacks.ReduceLROnPlateau(
+                monitor="val_loss",
+                factor=0.5,
+                patience=4,
+                min_lr=1e-6,
+                verbose=1,
+            ),
+        ]
+
+        history = model.fit(
             ds_train,
             validation_data=ds_val,
-            epochs=args.fine_tune_epochs,
+            epochs=args.epochs,
             callbacks=callbacks,
         )
 
-    print("Evaluación en test:")
-    evaluate_keras_model(
-        model=model,
-        dataset=ds_test,
-        class_names=class_names,
-        output_dir=output_dir,
-        prefix="test",
-    )
+        fine_tune_history = None
+        if args.model == "vgg16" and args.fine_tune_epochs > 0:
+            print("Iniciando fine-tuning parcial de VGG16...")
+            unfreeze_last_layers(base_model, n_layers=4)
+            model = compile_binary_model(
+                model,
+                learning_rate=0.001,
+                optimizer_name="adadelta",
+            )
 
-    model.save(output_dir / "final_model.keras")
-    print(f"Modelo final guardado en: {output_dir / 'final_model.keras'}")
-    print(f"Mejor modelo guardado en: {output_dir / 'best_model.keras'}")
+            fine_tune_history = model.fit(
+                ds_train,
+                validation_data=ds_val,
+                epochs=args.fine_tune_epochs,
+                callbacks=callbacks,
+            )
+
+        print("Evaluación en test:")
+        metrics = evaluate_keras_model(
+            model=model,
+            dataset=ds_test,
+            class_names=class_names,
+            output_dir=output_dir,
+            prefix="test",
+        )
+
+        model.save(output_dir / "final_model.keras")
+        print(f"Modelo final guardado en: {output_dir / 'final_model.keras'}")
+        print(f"Mejor modelo guardado en: {output_dir / 'best_model.keras'}")
+
+        if args.track_db and run_context:
+            from src.tracking_integration import (
+                finish_tracking_run,
+                log_metrics_and_reports,
+                log_model_version,
+                log_output_artifacts,
+                log_training_history,
+            )
+
+            log_training_history(run_context, history, phase="training")
+            if fine_tune_history is not None:
+                log_training_history(
+                    run_context,
+                    fine_tune_history,
+                    phase="fine_tuning",
+                    epoch_offset=len(history.epoch),
+                )
+            log_metrics_and_reports(run_context, metrics, class_names, split_name="test")
+            log_output_artifacts(run_context, output_dir)
+            log_model_version(
+                run_context,
+                version_name=f"{args.model}_tracked",
+                best_model_path=str(output_dir / "best_model.keras"),
+                final_model_path=str(output_dir / "final_model.keras"),
+            )
+            finish_tracking_run(run_context, metadata={"status_detail": "training completed"})
+    except Exception as exc:
+        if args.track_db and run_context:
+            from src.tracking_integration import fail_tracking_run
+
+            fail_tracking_run(run_context, exc, script_name="src.train")
+        raise
 
 
 if __name__ == "__main__":

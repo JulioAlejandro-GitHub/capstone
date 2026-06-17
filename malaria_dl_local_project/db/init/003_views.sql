@@ -3,9 +3,9 @@ SELECT
     m.id AS model_id,
     m.name AS model_name,
     m.model_type,
-    COUNT(r.id) AS total_runs,
-    COUNT(r.id) FILTER (WHERE r.status = 'completed') AS completed_runs,
-    COUNT(r.id) FILTER (WHERE r.status = 'failed') AS failed_runs,
+    COUNT(DISTINCT r.id) AS total_runs,
+    COUNT(DISTINCT r.id) FILTER (WHERE r.status = 'completed') AS completed_runs,
+    COUNT(DISTINCT r.id) FILTER (WHERE r.status = 'failed') AS failed_runs,
     MAX(r.started_at) AS last_run_at,
     MAX(rm.metric_value) FILTER (
         WHERE rm.metric_name IN ('accuracy', 'test_accuracy', 'val_accuracy')

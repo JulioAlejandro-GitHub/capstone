@@ -1,7 +1,9 @@
 import getpass
+import mimetypes
 import json
 import os
 import platform as platform_module
+import shlex
 import socket
 import subprocess
 import sys
@@ -79,6 +81,37 @@ def collect_runtime_environment():
         "gpu_available": tf_env["gpu_available"],
         "gpu_devices": tf_env["gpu_devices"],
     }
+
+
+def collect_environment_info():
+    return collect_runtime_environment()
+
+
+def get_command_line():
+    return " ".join(shlex.quote(part) for part in sys.argv)
+
+
+def safe_track(function, *args, **kwargs):
+    try:
+        return function(*args, **kwargs)
+    except Exception as exc:
+        _warn(f"{getattr(function, '__name__', 'tracking')} falló: {exc}")
+        return None
+
+
+def compute_case_type(true_label, predicted_label, positive_label="parasitized"):
+    if true_label is None or predicted_label is None:
+        return "unknown"
+
+    if true_label == positive_label and predicted_label == positive_label:
+        return "true_positive"
+    if true_label != positive_label and predicted_label != positive_label:
+        return "true_negative"
+    if true_label != positive_label and predicted_label == positive_label:
+        return "false_positive"
+    if true_label == positive_label and predicted_label != positive_label:
+        return "false_negative"
+    return "unknown"
 
 
 def _query_one(sql, params=None):
@@ -615,6 +648,94 @@ def log_artifact(
             "mime_type": mime_type,
             "file_size_bytes": file_size_bytes,
             "checksum": checksum,
+            "metadata": _json(metadata),
+        },
+    )
+
+
+def log_artifacts_from_directory(run_id, directory, artifact_type=None):
+    if not run_id:
+        _warn("log_artifacts_from_directory omitido porque run_id es None.")
+        return []
+
+    directory = Path(directory)
+    if not directory.exists():
+        _warn(f"No existe la carpeta de artefactos: {directory}")
+        return []
+
+    artifact_ids = []
+    for path in sorted(item for item in directory.rglob("*") if item.is_file()):
+        inferred_type = artifact_type or infer_artifact_type(path)
+        artifact_ids.append(
+            log_artifact(
+                run_id=run_id,
+                artifact_type=inferred_type,
+                name=path.name,
+                path=str(path),
+                mime_type=mimetypes.guess_type(path)[0],
+            )
+        )
+    return artifact_ids
+
+
+def infer_artifact_type(path):
+    path = Path(path)
+    name = path.name.lower()
+    suffix = path.suffix.lower()
+
+    if name == "best_model.keras":
+        return "model_checkpoint"
+    if name == "final_model.keras":
+        return "final_model"
+    if suffix == ".keras":
+        return "model_checkpoint"
+    if suffix == ".joblib":
+        return "final_model"
+    if name.endswith("_metrics.json"):
+        return "metrics_json"
+    if "confusion_matrix" in name:
+        return "classification_report_csv" if suffix == ".csv" else "confusion_matrix_png"
+    if "predictions" in name and suffix == ".csv":
+        return "classification_report_csv"
+    if suffix == ".png":
+        return "other"
+    if suffix in {".csv", ".json"}:
+        return "other"
+    return "other"
+
+
+def log_model_version(
+    model_id,
+    version_name=None,
+    checkpoint_path=None,
+    final_model_path=None,
+    best_model_path=None,
+    training_run_id=None,
+    metadata=None,
+):
+    if not model_id:
+        _warn("log_model_version omitido porque model_id es None.")
+        return None
+
+    return _execute_returning_id(
+        """
+        INSERT INTO model_versions (
+            model_id, version_name, checkpoint_path, final_model_path,
+            best_model_path, training_run_id, metadata
+        )
+        VALUES (
+            :model_id, :version_name, :checkpoint_path, :final_model_path,
+            :best_model_path, :training_run_id, CAST(:metadata AS jsonb)
+        )
+        RETURNING id
+        """,
+        {
+            "model_id": model_id,
+            "version_name": version_name,
+            "checkpoint_path": checkpoint_path,
+            "final_model_path": final_model_path,
+            "best_model_path": best_model_path,
+            "training_run_id": training_run_id,
             "metadata": _json(metadata),
         },
     )

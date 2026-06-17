@@ -44,6 +44,14 @@ def evaluate_binary_predictions(
         target_names=class_names,
         digits=4,
     )
+    report_dict = classification_report(
+        y_true,
+        y_pred,
+        target_names=class_names,
+        digits=4,
+        output_dict=True,
+        zero_division=0,
+    )
 
     cm = confusion_matrix(y_true, y_pred)
     auc = roc_auc_score(y_true, y_score)
@@ -56,6 +64,7 @@ def evaluate_binary_predictions(
         "auc": float(auc),
         "confusion_matrix": cm.tolist(),
         "classification_report": report_text,
+        "classification_report_dict": report_dict,
     }
 
     print(report_text)
