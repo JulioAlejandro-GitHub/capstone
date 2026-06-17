@@ -9,7 +9,7 @@ Incluye:
 - Ensemble simple
 - Test Time Augmentation
 - Evaluación con accuracy, precision, recall, F1, AUC y matriz de confusión
-- Explicabilidad visual post hoc con LIME y SHAP
+- Explicabilidad visual post hoc con LIME, SHAP y Grad-CAM
 
 ## 1. Crear entorno virtual
 
@@ -81,14 +81,15 @@ python -m src.tta --checkpoint outputs/vgg16/best_model.keras --img-size 200 --n
 python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
 ```
 
-## Explicabilidad del modelo: LIME y SHAP
+## Explicabilidad del modelo: LIME, SHAP y Grad-CAM
 
-El proyecto permite explicar predicciones individuales de modelos Keras entrenados usando LIME y SHAP:
+El proyecto permite explicar predicciones individuales de modelos Keras entrenados usando LIME, SHAP y Grad-CAM:
 
 ```bash
 python -m src.explain --checkpoint outputs/custom_cnn/best_model.keras --method lime --num-samples 20
 python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method shap --num-samples 20
 python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method both --num-samples 20
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method all --num-samples 20
 ```
 
 También se pueden controlar el tamaño de imagen, batch, umbral y carpeta de salida:
@@ -101,10 +102,14 @@ python -m src.explain \
   --batch-size 64 \
   --num-samples 20 \
   --threshold 0.5 \
+  --positive-label uninfected \
+  --max-candidates 200 \
   --output-dir outputs/explainability
 ```
 
-LIME identifica superpíxeles relevantes para una predicción local del modelo. SHAP estima la contribución de regiones o píxeles a la predicción. Estas técnicas ayudan a revisar verdaderos positivos, verdaderos negativos, falsos positivos, falsos negativos y casos de baja confianza cercanos al umbral de clasificación.
+LIME identifica superpíxeles relevantes para una predicción local del modelo. SHAP estima la contribución de regiones o píxeles a la predicción. Grad-CAM genera mapas de calor usando los gradientes de la clase predicha sobre la última capa convolucional. Estas técnicas ayudan a revisar verdaderos positivos, verdaderos negativos, falsos positivos, falsos negativos y casos de baja confianza cercanos al umbral de clasificación.
+
+En los modelos sigmoid de este proyecto, por defecto el score se interpreta como la probabilidad de la clase índice 1 detectada por TensorFlow Datasets. Para fijar explícitamente la clase positiva se puede usar `--positive-label`, por ejemplo `--positive-label uninfected` o `--positive-label parasitized`.
 
 Las salidas se guardan en:
 
@@ -122,16 +127,54 @@ outputs/explainability/
     false_positive/
     false_negative/
     low_confidence/
+  gradcam/
+    true_positive/
+    true_negative/
+    false_positive/
+    false_negative/
+    low_confidence/
   explanation_summary.csv
 ```
 
-Cada imagen explicada se guarda como PNG con clase real, clase predicha y score en el nombre del archivo. El CSV `explanation_summary.csv` registra `case_id`, tipo de caso, clase real, clase predicha, score, umbral, método y ruta de imagen.
+Cada imagen explicada se guarda como PNG con clase real, clase predicha y score en el nombre del archivo. El CSV `explanation_summary.csv` registra `case_id`, tipo de caso, clase real, clase predicha, score de la clase positiva, clase positiva, umbral, método, éxito, error, ruta de imagen y, para Grad-CAM, la capa convolucional usada.
+
+## Explicabilidad con Grad-CAM
+
+Grad-CAM permite visualizar las regiones de una imagen que más influyeron en la decisión de una red convolucional. En el proyecto se utiliza para revisar si el modelo está enfocando su atención en zonas microscópicas clínicamente plausibles.
+
+Comandos de ejemplo:
+
+```bash
+python -m src.explain --checkpoint outputs/custom_cnn/best_model.keras --method gradcam --num-samples 20
+
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method gradcam --num-samples 20
+
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method all --num-samples 20
+```
+
+La salida de Grad-CAM se guarda en:
+
+```bash
+outputs/explainability/gradcam/
+```
 
 ## Explicabilidad post hoc
 
 La explicabilidad se incorpora para aportar trazabilidad visual al proceso de evaluación y facilitar el análisis de coherencia del modelo en un contexto de apoyo diagnóstico. No reemplaza métricas cuantitativas como AUC, recall o F1, pero permite inspeccionar si las regiones que influyen en una predicción son razonables desde el punto de vista visual.
 
 LIME aporta una explicación local basada en superpíxeles: perturba regiones de una imagen y estima qué zonas sostienen la decisión del modelo para ese caso. SHAP estima contribuciones de entrada a la predicción usando un conjunto pequeño de imágenes de entrenamiento como background.
+
+## Grad-CAM — Gradient-weighted Class Activation Mapping
+
+Grad-CAM es una técnica de explicabilidad visual para redes convolucionales. Calcula la importancia de los mapas de activación de la última capa convolucional usando los gradientes de la clase predicha. El resultado es un mapa de calor que permite observar qué zonas de la imagen influyeron más en la decisión del modelo.
+
+En este proyecto se utiliza para:
+
+- Explicar verdaderos positivos
+- Explicar falsos negativos
+- Revisar falsos positivos
+- Analizar casos de baja confianza
+- Evaluar si el modelo usa regiones visuales coherentes con patrones microscópicos relevantes
 
 El script selecciona casos explicables de forma balanceada entre:
 
@@ -149,6 +192,7 @@ KPI de explicabilidad:
 | Cobertura de errores críticos | revisar falsos positivos y falsos negativos disponibles                 |
 | Trazabilidad                  | 100% de casos explicados con imagen, score, clase real y clase predicha |
 | Comparación LIME/SHAP         | al menos 10 casos si se ejecuta `--method both`                         |
+| Comparación completa          | LIME, SHAP y Grad-CAM si se ejecuta `--method all`                      |
 
 ## 3. Exportar imágenes a carpetas
 

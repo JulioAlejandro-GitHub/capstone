@@ -16,6 +16,21 @@ CASE_TYPES = [
     "low_confidence",
 ]
 
+SUMMARY_COLUMNS = [
+    "case_id",
+    "case_type",
+    "true_label",
+    "predicted_label",
+    "score_positive_label",
+    "positive_label",
+    "threshold",
+    "method",
+    "success",
+    "error",
+    "image_path",
+    "last_conv_layer",
+]
+
 
 def get_pyplot():
     import matplotlib
@@ -26,47 +41,119 @@ def get_pyplot():
     return plt
 
 
+def get_model_output_tensor(model):
+    try:
+        return model.output
+    except AttributeError:
+        outputs = getattr(model, "outputs", None)
+        if outputs:
+            return outputs[0] if len(outputs) == 1 else outputs
+        raise
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Genera explicaciones visuales post hoc con LIME y SHAP."
+        description="Genera explicaciones visuales post hoc con LIME, SHAP y Grad-CAM."
     )
     parser.add_argument("--checkpoint", required=True, help="Ruta al modelo .keras entrenado")
-    parser.add_argument("--method", choices=["lime", "shap", "both"], required=True)
+    parser.add_argument(
+        "--method",
+        choices=["lime", "shap", "gradcam", "both", "all"],
+        required=True,
+        help="'both' ejecuta LIME + SHAP; 'all' ejecuta LIME + SHAP + Grad-CAM.",
+    )
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--num-samples", type=int, default=20)
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--output-dir", default="outputs/explainability")
+    parser.add_argument(
+        "--positive-label",
+        default=None,
+        help=(
+            "Clase interpretada como positiva para la salida sigmoid. "
+            "Por defecto usa la clase índice 1 del dataset."
+        ),
+    )
+    parser.add_argument(
+        "--max-candidates",
+        type=int,
+        default=200,
+        help="Máximo de imágenes candidatas retenidas por tipo de caso.",
+    )
     return parser.parse_args()
 
 
-def predict_positive_scores(model, images):
-    predictions = model.predict(images, verbose=0)
-    predictions = np.asarray(predictions)
+def methods_to_run(method):
+    if method == "both":
+        return ["lime", "shap"]
+    if method == "all":
+        return ["lime", "shap", "gradcam"]
+    return [method]
 
+
+def resolve_positive_label(class_names, positive_label):
+    if len(class_names) != 2:
+        raise ValueError(f"Se esperaban 2 clases, pero se encontraron: {class_names}")
+
+    if positive_label is None:
+        positive_idx = 1
+        positive_label = class_names[positive_idx]
+    else:
+        if positive_label not in class_names:
+            raise ValueError(
+                f"--positive-label debe ser una de estas clases: {class_names}. "
+                f"Valor recibido: {positive_label}"
+            )
+        positive_idx = class_names.index(positive_label)
+
+    negative_idx = 1 - positive_idx
+    return positive_idx, negative_idx, positive_label
+
+
+def raw_model_predictions(model, images):
+    predictions = model.predict(images, verbose=0)
+    return np.asarray(predictions, dtype=np.float32)
+
+
+def scores_from_predictions(predictions, positive_idx):
+    predictions = np.asarray(predictions, dtype=np.float32)
     if predictions.ndim == 2 and predictions.shape[1] == 2:
-        scores = predictions[:, 1]
+        scores = predictions[:, positive_idx]
     else:
         scores = predictions.reshape(-1)
+    return np.clip(scores.astype(np.float32), 0.0, 1.0)
 
-    return scores.astype(np.float32)
+
+def predict_positive_scores(model, images, positive_idx):
+    return scores_from_predictions(raw_model_predictions(model, images), positive_idx)
 
 
-def binary_predict_proba(model, images):
+def binary_predict_proba(model, images, positive_idx):
     images = np.asarray(images, dtype=np.float32)
     images = np.clip(images, 0.0, 1.0)
-    p_positive = predict_positive_scores(model, images)
-    p_positive = np.clip(p_positive, 0.0, 1.0)
-    p_negative = 1.0 - p_positive
-    return np.column_stack([p_negative, p_positive])
+    predictions = raw_model_predictions(model, images)
+
+    if predictions.ndim == 2 and predictions.shape[1] == 2:
+        return np.clip(predictions, 0.0, 1.0)
+
+    p_positive = scores_from_predictions(predictions, positive_idx)
+    probabilities = np.zeros((len(p_positive), 2), dtype=np.float32)
+    probabilities[:, positive_idx] = p_positive
+    probabilities[:, 1 - positive_idx] = 1.0 - p_positive
+    return probabilities
 
 
-def get_case_type(true_label, predicted_label):
-    if true_label == 1 and predicted_label == 1:
+def predicted_labels_from_scores(y_score, positive_idx, negative_idx, threshold):
+    return np.where(y_score >= threshold, positive_idx, negative_idx).astype(int)
+
+
+def get_case_type(true_label, predicted_label, positive_idx, negative_idx):
+    if true_label == positive_idx and predicted_label == positive_idx:
         return "true_positive"
-    if true_label == 0 and predicted_label == 0:
+    if true_label == negative_idx and predicted_label == negative_idx:
         return "true_negative"
-    if true_label == 0 and predicted_label == 1:
+    if true_label == negative_idx and predicted_label == positive_idx:
         return "false_positive"
     return "false_negative"
 
@@ -87,20 +174,39 @@ def push_candidate(heap, relevance, index, image, limit):
         heapq.heapreplace(heap, item)
 
 
-def collect_prediction_candidates(model, dataset, num_samples, threshold):
+def collect_prediction_candidates(
+    model,
+    dataset,
+    num_samples,
+    threshold,
+    positive_idx,
+    negative_idx,
+    max_candidates,
+):
     y_true = []
     y_pred = []
     y_score = []
 
-    pool_limit = max(20, min(max(num_samples, 20), 200))
+    pool_limit = max(1, int(max_candidates))
+    if pool_limit < num_samples:
+        print(
+            f"Advertencia: --max-candidates ({pool_limit}) es menor que "
+            f"--num-samples ({num_samples}); podrían seleccionarse menos casos."
+        )
+
     candidate_heaps = {case_type: [] for case_type in CASE_TYPES}
 
     sample_index = 0
     for batch_index, (images, labels) in enumerate(dataset, start=1):
-        scores = predict_positive_scores(model, images)
+        scores = predict_positive_scores(model, images, positive_idx)
         labels_np = labels.numpy().astype(int)
         images_np = images.numpy()
-        predictions = (scores >= threshold).astype(int)
+        predictions = predicted_labels_from_scores(
+            scores,
+            positive_idx=positive_idx,
+            negative_idx=negative_idx,
+            threshold=threshold,
+        )
 
         for image, true_label, predicted_label, score in zip(
             images_np, labels_np, predictions, scores
@@ -108,7 +214,12 @@ def collect_prediction_candidates(model, dataset, num_samples, threshold):
             true_label = int(true_label)
             predicted_label = int(predicted_label)
             score = float(score)
-            case_type = get_case_type(true_label, predicted_label)
+            case_type = get_case_type(
+                true_label,
+                predicted_label,
+                positive_idx=positive_idx,
+                negative_idx=negative_idx,
+            )
 
             y_true.append(true_label)
             y_pred.append(predicted_label)
@@ -154,18 +265,26 @@ def get_image_by_index(images, index):
     return None
 
 
-def sorted_indices_for_case(case_type, y_true, y_pred, y_score, threshold):
+def sorted_indices_for_case(
+    case_type,
+    y_true,
+    y_pred,
+    y_score,
+    threshold,
+    positive_idx,
+    negative_idx,
+):
     if case_type == "true_positive":
-        indices = np.where((y_true == 1) & (y_pred == 1))[0]
+        indices = np.where((y_true == positive_idx) & (y_pred == positive_idx))[0]
         order = np.argsort(-y_score[indices])
     elif case_type == "true_negative":
-        indices = np.where((y_true == 0) & (y_pred == 0))[0]
+        indices = np.where((y_true == negative_idx) & (y_pred == negative_idx))[0]
         order = np.argsort(y_score[indices])
     elif case_type == "false_positive":
-        indices = np.where((y_true == 0) & (y_pred == 1))[0]
+        indices = np.where((y_true == negative_idx) & (y_pred == positive_idx))[0]
         order = np.argsort(-y_score[indices])
     elif case_type == "false_negative":
-        indices = np.where((y_true == 1) & (y_pred == 0))[0]
+        indices = np.where((y_true == positive_idx) & (y_pred == negative_idx))[0]
         order = np.argsort(y_score[indices])
     elif case_type == "low_confidence":
         indices = np.arange(len(y_score))
@@ -176,23 +295,25 @@ def sorted_indices_for_case(case_type, y_true, y_pred, y_score, threshold):
     return indices[order]
 
 
-def select_explanation_cases(
+def select_cases(
+    images,
     y_true,
     y_pred,
     y_score,
-    images,
-    class_names,
+    positive_idx,
+    negative_idx,
     num_samples,
     threshold,
+    class_names=None,
+    positive_label=None,
 ):
-    """
-    Selecciona casos balanceados entre aciertos, errores y baja confianza.
-
-    Para no cargar todo el dataset en memoria, `images` puede ser un diccionario
-    con solo las imagenes candidatas retenidas durante la prediccion.
-    """
     if num_samples <= 0:
         raise ValueError("--num-samples debe ser mayor que cero")
+
+    if class_names is None:
+        class_names = [str(idx) for idx in range(2)]
+    if positive_label is None:
+        positive_label = class_names[positive_idx]
 
     selected = []
     selected_indices = set()
@@ -206,17 +327,20 @@ def select_explanation_cases(
         if image is None:
             return False
 
-        true_label = int(y_true[index])
-        predicted_label = int(y_pred[index])
+        true_label_idx = int(y_true[index])
+        predicted_label_idx = int(y_pred[index])
         score = float(y_score[index])
 
         selected.append(
             {
                 "case_id": int(index),
                 "case_type": case_type,
-                "true_label": class_names[true_label],
-                "predicted_label": class_names[predicted_label],
-                "score": score,
+                "true_label": class_names[true_label_idx],
+                "predicted_label": class_names[predicted_label_idx],
+                "true_label_idx": true_label_idx,
+                "predicted_label_idx": predicted_label_idx,
+                "score_positive_label": score,
+                "positive_label": positive_label,
                 "threshold": float(threshold),
                 "image": np.clip(np.asarray(image, dtype=np.float32), 0.0, 1.0),
             }
@@ -226,7 +350,15 @@ def select_explanation_cases(
 
     for case_type in CASE_TYPES:
         added_for_type = 0
-        for index in sorted_indices_for_case(case_type, y_true, y_pred, y_score, threshold):
+        for index in sorted_indices_for_case(
+            case_type,
+            y_true,
+            y_pred,
+            y_score,
+            threshold,
+            positive_idx,
+            negative_idx,
+        ):
             if add_case(index, case_type):
                 added_for_type += 1
             if added_for_type >= target_per_type or len(selected) >= num_samples:
@@ -238,12 +370,43 @@ def select_explanation_cases(
             key=lambda idx: abs(float(y_score[int(idx)]) - threshold),
         )
         for index in remaining_indices:
-            case_type = get_case_type(int(y_true[index]), int(y_pred[index]))
+            case_type = get_case_type(
+                int(y_true[index]),
+                int(y_pred[index]),
+                positive_idx=positive_idx,
+                negative_idx=negative_idx,
+            )
             add_case(index, case_type)
             if len(selected) >= num_samples:
                 break
 
     return selected
+
+
+def select_explanation_cases(
+    y_true,
+    y_pred,
+    y_score,
+    images,
+    class_names,
+    num_samples,
+    threshold,
+    positive_idx=1,
+    negative_idx=0,
+    positive_label=None,
+):
+    return select_cases(
+        images=images,
+        y_true=y_true,
+        y_pred=y_pred,
+        y_score=y_score,
+        positive_idx=positive_idx,
+        negative_idx=negative_idx,
+        num_samples=num_samples,
+        threshold=threshold,
+        class_names=class_names,
+        positive_label=positive_label,
+    )
 
 
 def collect_background_images(dataset, max_images=20):
@@ -268,7 +431,7 @@ def build_output_path(output_dir, method, case):
         f"{case['case_id']:04d}_"
         f"real-{sanitize_label(case['true_label'])}_"
         f"pred-{sanitize_label(case['predicted_label'])}_"
-        f"score-{case['score']:.4f}.png"
+        f"score-{case['score_positive_label']:.4f}.png"
     )
     return method_dir / filename
 
@@ -298,6 +461,7 @@ def explain_with_lime(
     true_label=None,
     predicted_label=None,
     score=None,
+    positive_idx=1,
 ):
     try:
         from lime import lime_image
@@ -311,7 +475,7 @@ def explain_with_lime(
     image = np.clip(np.asarray(image, dtype=np.float32), 0.0, 1.0)
 
     def predict_fn(images):
-        return binary_predict_proba(model, images)
+        return binary_predict_proba(model, images, positive_idx=positive_idx)
 
     probabilities = predict_fn(np.expand_dims(image, axis=0))[0]
     label_to_explain = predicted_class_index(class_names, predicted_label, probabilities)
@@ -407,7 +571,10 @@ def explain_with_shap(
             explainer = shap.GradientExplainer(model, background_images)
         except Exception as first_error:
             print(f"SHAP GradientExplainer con modelo Keras fallo: {first_error}")
-            explainer = shap.GradientExplainer((model.input, model.output), background_images)
+            explainer = shap.GradientExplainer(
+                (model.inputs, get_model_output_tensor(model)),
+                background_images,
+            )
 
         shap_values = explainer.shap_values(np.expand_dims(image, axis=0))
         shap_array = extract_shap_array(shap_values)
@@ -442,45 +609,280 @@ def explain_with_shap(
         return False, str(exc)
 
 
-def make_summary_row(case, method, image_path):
+def layer_has_rank4_output(layer):
+    try:
+        output = layer.output
+    except (AttributeError, ValueError):
+        return False
+
+    if isinstance(output, (list, tuple)):
+        if not output:
+            return False
+        output = output[0]
+
+    shape = getattr(output, "shape", None)
+    if shape is None:
+        return False
+
+    try:
+        return len(shape) == 4
+    except TypeError:
+        return False
+
+
+def iter_conv_layer_candidates(model, tf, include_rank4_fallback=False):
+    for layer in reversed(model.layers):
+        if isinstance(layer, tf.keras.Model):
+            yield from iter_conv_layer_candidates(layer, tf, include_rank4_fallback)
+
+        if isinstance(layer, tf.keras.layers.Conv2D):
+            yield layer
+        elif include_rank4_fallback and layer_has_rank4_output(layer):
+            yield layer
+
+
+def build_gradcam_model(model, target_layer, tf):
+    if isinstance(model, tf.keras.Sequential) and target_layer in model.layers:
+        try:
+            x = model.inputs[0] if len(model.inputs) == 1 else model.inputs
+            target_output = None
+
+            for layer in model.layers:
+                x = layer(x)
+                if layer is target_layer:
+                    target_output = x
+
+            if target_output is not None:
+                return tf.keras.models.Model(
+                    inputs=model.inputs,
+                    outputs=[target_output, x],
+                )
+        except Exception:
+            pass
+
+    try:
+        return tf.keras.models.Model(
+            inputs=model.inputs,
+            outputs=[target_layer.output, get_model_output_tensor(model)],
+        )
+    except Exception as standard_error:
+        raise standard_error
+
+
+def layer_is_connected_to_model(model, layer, tf):
+    try:
+        build_gradcam_model(model, layer, tf)
+        return True
+    except Exception:
+        return False
+
+
+def find_last_conv_layer(model):
+    import tensorflow as tf
+
+    for include_rank4_fallback in (False, True):
+        for layer in iter_conv_layer_candidates(
+            model,
+            tf,
+            include_rank4_fallback=include_rank4_fallback,
+        ):
+            if layer_is_connected_to_model(model, layer, tf):
+                return layer
+
+    raise ValueError("No se encontró una capa convolucional compatible para Grad-CAM.")
+
+
+def explain_with_gradcam(
+    model,
+    image,
+    pred_idx,
+    output_path,
+    title,
+    last_conv_layer_name=None,
+):
+    import tensorflow as tf
+
+    plt = get_pyplot()
+    image = np.clip(np.asarray(image, dtype=np.float32), 0.0, 1.0)
+
+    if last_conv_layer_name is None:
+        last_conv_layer = find_last_conv_layer(model)
+    else:
+        last_conv_layer = model.get_layer(last_conv_layer_name)
+
+    print("Última capa convolucional usada para Grad-CAM:", last_conv_layer.name)
+
+    grad_model = build_gradcam_model(model, last_conv_layer, tf)
+
+    image_batch = tf.convert_to_tensor(np.expand_dims(image, axis=0), dtype=tf.float32)
+    with tf.GradientTape() as tape:
+        conv_outputs, model_output = grad_model(image_batch, training=False)
+        if len(model_output.shape) >= 2 and model_output.shape[-1] == 1:
+            class_channel = model_output[:, 0]
+        elif len(model_output.shape) == 1:
+            class_channel = model_output
+        else:
+            class_channel = model_output[:, pred_idx]
+
+    grads = tape.gradient(class_channel, conv_outputs)
+    if grads is None:
+        raise ValueError(
+            f"No se pudieron calcular gradientes para la capa {last_conv_layer.name}."
+        )
+
+    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+    conv_outputs = conv_outputs[0]
+    heatmap = tf.reduce_sum(conv_outputs * pooled_grads, axis=-1)
+    heatmap = tf.maximum(heatmap, 0)
+
+    max_value = tf.reduce_max(heatmap)
+    heatmap = tf.cond(
+        max_value > 0,
+        lambda: heatmap / max_value,
+        lambda: tf.zeros_like(heatmap),
+    )
+    heatmap = tf.image.resize(
+        heatmap[..., tf.newaxis],
+        image.shape[:2],
+        method="bilinear",
+    )
+    heatmap = heatmap.numpy().squeeze()
+
+    heatmap_rgb = plt.get_cmap("jet")(heatmap)[..., :3].astype(np.float32)
+    overlay = np.clip((0.6 * image) + (0.4 * heatmap_rgb), 0.0, 1.0)
+
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4))
+    axes[0].imshow(image)
+    axes[0].set_title("Imagen original")
+    axes[0].axis("off")
+
+    im = axes[1].imshow(heatmap, cmap="jet", vmin=0, vmax=1)
+    axes[1].set_title("Heatmap Grad-CAM")
+    axes[1].axis("off")
+    fig.colorbar(im, ax=axes[1], fraction=0.046, pad=0.04)
+
+    axes[2].imshow(overlay)
+    axes[2].set_title("Overlay Grad-CAM")
+    axes[2].axis("off")
+
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=160, bbox_inches="tight")
+    plt.close(fig)
+
+    return True, None, last_conv_layer.name
+
+
+def make_summary_row(
+    case,
+    method,
+    image_path,
+    success,
+    error=None,
+    last_conv_layer=None,
+):
     return {
         "case_id": case["case_id"],
         "case_type": case["case_type"],
         "true_label": case["true_label"],
         "predicted_label": case["predicted_label"],
-        "score": case["score"],
+        "score_positive_label": case["score_positive_label"],
+        "positive_label": case["positive_label"],
         "threshold": case["threshold"],
         "method": method,
-        "image_path": str(image_path),
+        "success": bool(success),
+        "error": "" if error is None else str(error),
+        "image_path": str(image_path) if success else "",
+        "last_conv_layer": "" if last_conv_layer is None else str(last_conv_layer),
     }
 
 
 def write_summary(rows, output_dir):
-    columns = [
-        "case_id",
-        "case_type",
-        "true_label",
-        "predicted_label",
-        "score",
-        "threshold",
-        "method",
-        "image_path",
-    ]
     summary_path = Path(output_dir) / "explanation_summary.csv"
-    pd.DataFrame(rows, columns=columns).to_csv(summary_path, index=False)
+    pd.DataFrame(rows, columns=SUMMARY_COLUMNS).to_csv(summary_path, index=False)
     print(f"Resumen guardado en: {summary_path}")
 
 
-def methods_to_run(method):
-    if method == "both":
-        return ["lime", "shap"]
-    return [method]
+def run_lime(model, class_names, positive_idx, output_dir, case):
+    output_path = build_output_path(output_dir, "lime", case)
+    try:
+        explain_with_lime(
+            model=model,
+            image=case["image"],
+            class_names=class_names,
+            output_path=output_path,
+            true_label=case["true_label"],
+            predicted_label=case["predicted_label"],
+            score=case["score_positive_label"],
+            positive_idx=positive_idx,
+        )
+        return make_summary_row(case, "lime", output_path, success=True)
+    except Exception as exc:
+        print(f"LIME no pudo ejecutarse para {output_path.name}: {exc}")
+        return make_summary_row(case, "lime", output_path, success=False, error=exc)
+
+
+def run_shap(model, background_images, class_names, output_dir, case):
+    output_path = build_output_path(output_dir, "shap", case)
+    success, error = explain_with_shap(
+        model=model,
+        background_images=background_images,
+        image=case["image"],
+        class_names=class_names,
+        output_path=output_path,
+        true_label=case["true_label"],
+        predicted_label=case["predicted_label"],
+        score=case["score_positive_label"],
+    )
+    return make_summary_row(
+        case,
+        "shap",
+        output_path,
+        success=success,
+        error=error,
+    )
+
+
+def run_gradcam(model, output_dir, case):
+    output_path = build_output_path(output_dir, "gradcam", case)
+    title = build_title(
+        "Grad-CAM",
+        case["true_label"],
+        case["predicted_label"],
+        case["score_positive_label"],
+    )
+    try:
+        success, error, last_conv_layer = explain_with_gradcam(
+            model=model,
+            image=case["image"],
+            pred_idx=case["predicted_label_idx"],
+            output_path=output_path,
+            title=title,
+        )
+        return make_summary_row(
+            case,
+            "gradcam",
+            output_path,
+            success=success,
+            error=error,
+            last_conv_layer=last_conv_layer,
+        )
+    except Exception as exc:
+        print(f"Grad-CAM no pudo ejecutarse para {output_path.name}: {exc}")
+        return make_summary_row(
+            case,
+            "gradcam",
+            output_path,
+            success=False,
+            error=exc,
+        )
 
 
 def main():
     args = parse_args()
     checkpoint = Path(args.checkpoint)
     output_dir = Path(args.output_dir)
+    selected_methods = methods_to_run(args.method)
 
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
@@ -502,14 +904,18 @@ def main():
     )
 
     class_names = list(ds_info.features["label"].names)
-    if len(class_names) != 2:
-        raise ValueError(f"Se esperaban 2 clases, pero se encontraron: {class_names}")
-    if class_names != ["parasitized", "uninfected"]:
-        print(f"Orden de clases detectado desde TFDS: {class_names}")
-    else:
-        print("Orden de clases: ['parasitized', 'uninfected']")
+    positive_idx, negative_idx, positive_label = resolve_positive_label(
+        class_names,
+        args.positive_label,
+    )
 
-    for method in methods_to_run(args.method):
+    print(f"Orden de clases detectado desde TFDS: {class_names}")
+    print(
+        f"Clase positiva para score sigmoid: {positive_label} "
+        f"(índice {positive_idx}); umbral={args.threshold}"
+    )
+
+    for method in selected_methods:
         for case_type in CASE_TYPES:
             (output_dir / method / case_type).mkdir(parents=True, exist_ok=True)
 
@@ -519,6 +925,9 @@ def main():
         dataset=ds_test,
         num_samples=args.num_samples,
         threshold=args.threshold,
+        positive_idx=positive_idx,
+        negative_idx=negative_idx,
+        max_candidates=args.max_candidates,
     )
 
     cases = select_explanation_cases(
@@ -529,11 +938,14 @@ def main():
         class_names=class_names,
         num_samples=args.num_samples,
         threshold=args.threshold,
+        positive_idx=positive_idx,
+        negative_idx=negative_idx,
+        positive_label=positive_label,
     )
     print(f"Casos seleccionados: {len(cases)}")
 
     background_images = None
-    if "shap" in methods_to_run(args.method):
+    if "shap" in selected_methods:
         print("Preparando background de entrenamiento para SHAP...")
         background_images = collect_background_images(ds_train, max_images=20)
         print(f"Imagenes de background SHAP: {len(background_images)}")
@@ -543,36 +955,41 @@ def main():
         print(
             f"Explicando caso {case_number}/{len(cases)} "
             f"({case['case_type']}, real={case['true_label']}, "
-            f"pred={case['predicted_label']}, score={case['score']:.4f})"
+            f"pred={case['predicted_label']}, "
+            f"score_{case['positive_label']}={case['score_positive_label']:.4f})"
         )
 
-        if args.method in {"lime", "both"}:
-            output_path = build_output_path(output_dir, "lime", case)
-            explain_with_lime(
-                model=model,
-                image=case["image"],
-                class_names=class_names,
-                output_path=output_path,
-                true_label=case["true_label"],
-                predicted_label=case["predicted_label"],
-                score=case["score"],
-            )
-            summary_rows.append(make_summary_row(case, "lime", output_path))
-
-        if args.method in {"shap", "both"}:
-            output_path = build_output_path(output_dir, "shap", case)
-            success, _ = explain_with_shap(
-                model=model,
-                background_images=background_images,
-                image=case["image"],
-                class_names=class_names,
-                output_path=output_path,
-                true_label=case["true_label"],
-                predicted_label=case["predicted_label"],
-                score=case["score"],
-            )
-            if success:
-                summary_rows.append(make_summary_row(case, "shap", output_path))
+        for method in selected_methods:
+            if method == "lime":
+                summary_rows.append(
+                    run_lime(
+                        model=model,
+                        class_names=class_names,
+                        positive_idx=positive_idx,
+                        output_dir=output_dir,
+                        case=case,
+                    )
+                )
+            elif method == "shap":
+                summary_rows.append(
+                    run_shap(
+                        model=model,
+                        background_images=background_images,
+                        class_names=class_names,
+                        output_dir=output_dir,
+                        case=case,
+                    )
+                )
+            elif method == "gradcam":
+                summary_rows.append(
+                    run_gradcam(
+                        model=model,
+                        output_dir=output_dir,
+                        case=case,
+                    )
+                )
+            else:
+                raise ValueError(f"Método no soportado: {method}")
 
     write_summary(summary_rows, output_dir)
     print("Explicabilidad finalizada.")
