@@ -1,0 +1,29 @@
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+
+# Proyecto malaria
+malaria_dl_local_project/.venv/
+malaria_dl_local_project/outputs/
+malaria_dl_local_project/tensorflow_datasets/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Backend API
+backend_api/.venv/
+
+# Env files
+.env
+.env.*
+!.env.example
+!**/.env.example
