@@ -1,0 +1,318 @@
+:root {
+  color: #172033;
+  background: #f6f7fb;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+aside {
+  background: #121a2f;
+  color: #fff;
+  padding: 28px 20px;
+}
+
+.brand {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 32px;
+}
+
+.brand span {
+  color: #9fb0d6;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.brand strong {
+  font-size: 22px;
+}
+
+nav {
+  display: grid;
+  gap: 10px;
+}
+
+nav button {
+  border: 0;
+  border-radius: 12px;
+  color: #d9e2ff;
+  background: transparent;
+  cursor: pointer;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+nav button.active,
+nav button:hover {
+  color: #fff;
+  background: #26365f;
+}
+
+main {
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e3e7f0;
+  background: #fff;
+  padding: 18px 28px;
+}
+
+.topbar p {
+  margin: 0 0 6px;
+  color: #62708f;
+  font-size: 12px;
+}
+
+.topbar select {
+  border: 1px solid #cfd7e8;
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px 10px;
+}
+
+.api-note {
+  color: #62708f;
+  font-size: 13px;
+}
+
+.page {
+  display: grid;
+  gap: 22px;
+  padding: 28px;
+}
+
+.page-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.page-title p {
+  margin: 8px 0 0;
+  color: #62708f;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 16px;
+}
+
+.metric-card,
+.panel,
+.artifact-card {
+  border: 1px solid #e3e7f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(18, 26, 47, 0.04);
+}
+
+.metric-card {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+}
+
+.metric-card span,
+.metric-card small {
+  color: #62708f;
+}
+
+.metric-card strong {
+  font-size: 26px;
+}
+
+.panel {
+  overflow: hidden;
+  padding: 20px;
+}
+
+.panel h2 {
+  margin: 0 0 16px;
+}
+
+.grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid #eef1f7;
+  padding: 11px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: #62708f;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+pre,
+code {
+  border-radius: 10px;
+  background: #f2f5fb;
+  color: #27324a;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+pre {
+  overflow: auto;
+  padding: 14px;
+}
+
+code {
+  display: block;
+  overflow-wrap: anywhere;
+  padding: 8px;
+}
+
+.status,
+.domain-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status {
+  background: #edf1f8;
+  color: #465574;
+}
+
+.status-completed {
+  background: #e7f8ef;
+  color: #17653b;
+}
+
+.status-failed {
+  background: #fdecec;
+  color: #9a2323;
+}
+
+.status-started {
+  background: #fff6df;
+  color: #8a5a00;
+}
+
+.domain-badge {
+  background: #eaf0ff;
+  color: #284a9c;
+}
+
+.link-button {
+  border: 0;
+  background: transparent;
+  color: #1d5fd1;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.empty-state,
+.error {
+  margin: 28px;
+  border: 1px solid #e3e7f0;
+  border-radius: 18px;
+  background: #fff;
+  padding: 24px;
+}
+
+.error,
+.error-text {
+  color: #a12121;
+}
+
+.domain-list {
+  display: grid;
+  gap: 12px;
+}
+
+.domain-list div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.domain-list small {
+  color: #62708f;
+}
+
+.artifact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.artifact-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.artifact-card img {
+  width: 100%;
+  max-height: 260px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #f6f7fb;
+}
+
+@media (max-width: 900px) {
+  .app-shell,
+  .grid-two {
+    grid-template-columns: 1fr;
+  }
+
+  aside {
+    position: static;
+  }
+}
+
