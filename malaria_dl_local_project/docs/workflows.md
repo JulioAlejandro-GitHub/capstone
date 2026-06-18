@@ -74,6 +74,39 @@ outputs/ensemble/
 outputs/explainability/
 ```
 
+Métricas clínicas:
+
+Los reportes experimentales calculan las métricas principales usando `parasitized`
+como clase positiva clínica. En los CSV se mantienen columnas históricas por
+compatibilidad, pero quedan diferenciadas:
+
+- `raw_model_score`: salida cruda del modelo sigmoid, asociada a la clase índice 1 de TFDS.
+- `probability_uninfected`: probabilidad de `uninfected`.
+- `probability_parasitized`: probabilidad clínica positiva.
+- `y_score`: alias compatible de `raw_model_score`.
+- `y_pred`: clase predicha con `probability_parasitized >= threshold`.
+
+Los JSON de métricas incluyen:
+
+- `sensitivity_parasitized`
+- `recall_parasitized`
+- `specificity`
+- `false_negative_rate`
+- `false_positive_rate`
+- `balanced_accuracy`
+- `auc_parasitized`
+
+El umbral clínico se puede ajustar en evaluación, ensemble, TTA y SVM:
+
+```bash
+python -m src.evaluate \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --threshold 0.5 \
+  --track-db
+```
+
 ## 3. Inferencia Clínica Experimental
 
 Responsabilidad: procesar una imagen externa individual y devolver una respuesta estructurada, trazable y explicable.

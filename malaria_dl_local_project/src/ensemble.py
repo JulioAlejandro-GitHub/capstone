@@ -6,7 +6,7 @@ import tensorflow as tf
 
 from src.config import OUTPUT_DIR
 from src.data import load_malaria_splits
-from src.metrics import evaluate_binary_predictions
+from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
 
 
 def parse_args():
@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument("--weights", nargs="+", type=float, default=None, help="Pesos del ensemble")
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -47,7 +48,7 @@ def main():
                 extra={
                     "models": [str(path) for path in model_paths],
                     "output_dir": str(output_dir),
-                    "threshold": 0.5,
+                    "threshold": args.threshold,
                 },
             ),
         )
@@ -87,7 +88,11 @@ def main():
 
         y_true = np.asarray(y_true).astype(int)
         y_score = np.asarray(y_score)
-        y_pred = (y_score >= 0.5).astype(int)
+        y_pred = clinical_predictions_from_raw_scores(
+            y_score,
+            class_names=class_names,
+            threshold=args.threshold,
+        )
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -98,6 +103,7 @@ def main():
             class_names=class_names,
             output_dir=output_dir,
             prefix="ensemble_test",
+            threshold=args.threshold,
         )
 
         if args.track_db and run_context:

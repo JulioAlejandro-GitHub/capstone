@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from src.data import build_augmentation, load_raw_test_split, preprocess_single
-from src.metrics import evaluate_binary_predictions
+from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
 
 
 def parse_args():
@@ -13,6 +13,7 @@ def parse_args():
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--n-aug", type=int, default=8)
+    parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -61,7 +62,7 @@ def main():
                 extra={
                     "checkpoint": str(checkpoint),
                     "output_dir": str(output_dir),
-                    "threshold": 0.5,
+                    "threshold": args.threshold,
                 },
             ),
         )
@@ -81,9 +82,13 @@ def main():
 
         y_true = np.asarray(y_true)
         y_score = np.asarray(y_score)
-        y_pred = (y_score >= 0.5).astype(int)
 
         class_names = ["parasitized", "uninfected"]
+        y_pred = clinical_predictions_from_raw_scores(
+            y_score,
+            class_names=class_names,
+            threshold=args.threshold,
+        )
 
         metrics = evaluate_binary_predictions(
             y_true=y_true,
@@ -92,6 +97,7 @@ def main():
             class_names=class_names,
             output_dir=output_dir,
             prefix="tta_test",
+            threshold=args.threshold,
         )
 
         if args.track_db and run_context:

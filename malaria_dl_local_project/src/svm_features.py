@@ -8,7 +8,7 @@ from sklearn.svm import SVC
 
 from src.config import OUTPUT_DIR
 from src.data import load_malaria_splits
-from src.metrics import evaluate_binary_predictions
+from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
 
 
 def parse_args():
@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--gamma", type=float, default=0.1)
+    parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -72,7 +73,11 @@ def main():
             run_name="svm_features:cnn_features_svm",
             parameters=args_to_parameters(
                 args,
-                extra={"checkpoint": str(checkpoint), "output_dir": str(output_dir)},
+                extra={
+                    "checkpoint": str(checkpoint),
+                    "output_dir": str(output_dir),
+                    "threshold": args.threshold,
+                },
             ),
         )
 
@@ -97,8 +102,13 @@ def main():
         svm = SVC(kernel="rbf", gamma=args.gamma, probability=True)
         svm.fit(X_train, y_train)
 
-        y_pred = svm.predict(X_test)
-        y_score = svm.predict_proba(X_test)[:, 1]
+        class_one_probability_index = list(svm.classes_).index(1)
+        y_score = svm.predict_proba(X_test)[:, class_one_probability_index]
+        y_pred = clinical_predictions_from_raw_scores(
+            y_score,
+            class_names=class_names,
+            threshold=args.threshold,
+        )
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -109,6 +119,7 @@ def main():
             class_names=class_names,
             output_dir=output_dir,
             prefix="svm_test",
+            threshold=args.threshold,
         )
 
         joblib.dump(svm, output_dir / "svm_rbf.joblib")

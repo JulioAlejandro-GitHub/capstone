@@ -273,6 +273,8 @@ def log_predictions(context, y_true, y_pred, y_score, class_names, threshold=0.5
             metadata={
                 "dataset_index": index,
                 "source": "tensorflow_datasets",
+                "raw_model_score": float(score),
+                "raw_model_score_label": class_names[1] if len(class_names) > 1 else None,
                 "probability_parasitized": probabilities.get("parasitized"),
                 "probability_uninfected": probabilities.get("uninfected"),
                 "positive_label": positive_label,

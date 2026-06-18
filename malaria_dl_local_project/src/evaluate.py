@@ -12,6 +12,7 @@ def parse_args():
     parser.add_argument("--checkpoint", required=True, help="Ruta a .keras")
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -59,7 +60,12 @@ def main():
         model = tf.keras.models.load_model(checkpoint)
         output_dir = checkpoint.parent / "evaluation"
 
-        y_true, y_pred, y_score = collect_predictions(model, ds_test)
+        y_true, y_pred, y_score = collect_predictions(
+            model,
+            ds_test,
+            class_names=class_names,
+            threshold=args.threshold,
+        )
         metrics = evaluate_binary_predictions(
             y_true=y_true,
             y_pred=y_pred,
@@ -67,6 +73,7 @@ def main():
             class_names=class_names,
             output_dir=output_dir,
             prefix=checkpoint.stem,
+            threshold=args.threshold,
         )
 
         if args.track_db and run_context:
@@ -84,7 +91,7 @@ def main():
                 y_pred=y_pred,
                 y_score=y_score,
                 class_names=class_names,
-                threshold=0.5,
+                threshold=args.threshold,
             )
             log_output_artifacts(run_context, output_dir)
             finish_tracking_run(run_context, metadata={"status_detail": "evaluation completed"})
