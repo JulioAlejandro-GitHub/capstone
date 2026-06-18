@@ -125,9 +125,19 @@ python -m src.tta --checkpoint outputs/vgg16/best_model.keras --img-size 200 --n
 python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
 ```
 
-### Evaluación de una imagen nueva individual
+### Inferencia estructurada de imagen externa
 
-Para evaluar una imagen externa sin recorrer el dataset completo:
+La clase clínica positiva por defecto es `parasitized`. Los checkpoints actuales
+fueron entrenados con el orden de TensorFlow Datasets (`0 = parasitized`,
+`1 = uninfected`), por lo que `src.predict_image` reporta explícitamente:
+
+- `probability_parasitized`
+- `probability_uninfected`
+- `confidence_level`
+- `decision`
+- `human_readable_response`
+
+Inferencia simple:
 
 ```bash
 python -m src.predict_image \
@@ -138,7 +148,7 @@ python -m src.predict_image \
   --threshold 0.5
 ```
 
-Con tracking en PostgreSQL:
+Inferencia con Grad-CAM:
 
 ```bash
 python -m src.predict_image \
@@ -147,6 +157,21 @@ python -m src.predict_image \
   --img-size 200 \
   --positive-label parasitized \
   --threshold 0.5 \
+  --explain gradcam \
+  --output-json outputs/predictions/prediction_result.json
+```
+
+Inferencia con TTA y tracking en PostgreSQL:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --img-size 200 \
+  --positive-label parasitized \
+  --threshold 0.5 \
+  --tta \
+  --n-aug 8 \
   --track-db
 ```
 
@@ -163,6 +188,21 @@ data/prediction_uploads/20260618_153012_a8f23c_imagen.png
 ```
 
 Estas imagenes quedan ignoradas por Git y se pueden consultar desde el backend/frontend como “Predicciones subidas”.
+
+Las explicaciones de imágenes externas se guardan en:
+
+```text
+outputs/explainability/external_predictions/
+  gradcam/
+  lime/
+  shap/
+```
+
+Además, cada inferencia queda acumulada en:
+
+```text
+outputs/predictions/external_predictions.csv
+```
 
 Si conoces la clase real, puedes registrarla para calcular si fue TP, TN, FP o FN:
 

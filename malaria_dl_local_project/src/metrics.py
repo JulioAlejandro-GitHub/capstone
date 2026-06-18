@@ -13,6 +13,8 @@ from sklearn.metrics import (
     f1_score,
 )
 
+from src.decision import NEGATIVE_LABEL, POSITIVE_LABEL, probability_by_class_from_scalar_score
+
 
 def collect_predictions(model, dataset):
     y_true = []
@@ -88,6 +90,17 @@ def evaluate_binary_predictions(
                 "y_score": y_score,
             }
         )
+        if POSITIVE_LABEL in class_names and NEGATIVE_LABEL in class_names:
+            probabilities = [
+                probability_by_class_from_scalar_score(score, class_names)
+                for score in y_score
+            ]
+            pred_df["probability_parasitized"] = [
+                item[POSITIVE_LABEL] for item in probabilities
+            ]
+            pred_df["probability_uninfected"] = [
+                item[NEGATIVE_LABEL] for item in probabilities
+            ]
         pred_df.to_csv(output_dir / f"{prefix}_predictions.csv", index=False)
 
     return metrics

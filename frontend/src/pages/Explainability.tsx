@@ -90,6 +90,20 @@ function explanationImagePath(item: ExplainabilityCase) {
   return item.explanation_output_path ?? item.artifact_path;
 }
 
+function tableImagePreview(path: string | null | undefined, alt: string, emptyText: string) {
+  if (!path) {
+    return <span className="muted-text">{emptyText}</span>;
+  }
+
+  const imageUrl = api.artifactUrl(path);
+  return (
+    <a className="table-image-cell" href={imageUrl} target="_blank" rel="noreferrer">
+      <img src={imageUrl} alt={alt} />
+      <span>Abrir imagen</span>
+    </a>
+  );
+}
+
 export function Explainability({ datasource }: ExplainabilityProps) {
   const [activeTab, setActiveTab] = useState<ExplainabilityTab>('all');
   const [filters, setFilters] = useState<Filters>({});
@@ -277,8 +291,24 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                 { header: 'Predicha', render: (row) => row.predicted_label ?? '-' },
                 { header: 'Score', render: (row) => formatMetric(row.score_positive_label) },
                 { header: 'Threshold', render: (row) => formatMetric(row.threshold) },
-                { header: 'Imagen', render: (row) => row.image_path ?? '-' },
-                { header: 'Explicacion', render: (row) => row.explanation_output_path ?? '-' },
+                {
+                  header: 'Imagen',
+                  render: (row) =>
+                    tableImagePreview(
+                      realImagePath(row),
+                      `Imagen real ${row.true_label ?? ''}`,
+                      'Sin imagen',
+                    ),
+                },
+                {
+                  header: 'Explicacion',
+                  render: (row) =>
+                    tableImagePreview(
+                      explanationImagePath(row),
+                      `${row.method} ${row.case_type ?? ''}`,
+                      'Sin explicacion',
+                    ),
+                },
                 { header: 'Capa', render: (row) => row.last_conv_layer ?? '-' },
                 { header: 'Fecha', render: (row) => formatDate(row.started_at) },
               ]}

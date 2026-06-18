@@ -310,6 +310,24 @@ FROM vw_uploaded_predictions
 ORDER BY created_at DESC;
 ```
 
+Para revisar la respuesta estructurada de inferencia externa:
+
+```sql
+SELECT
+    image_id,
+    predicted_label,
+    probability_parasitized,
+    probability_uninfected,
+    confidence_level,
+    decision,
+    tta,
+    n_aug,
+    explainability_method,
+    explainability_path
+FROM vw_uploaded_predictions
+ORDER BY created_at DESC;
+```
+
 ### Últimas ejecuciones
 
 ```sql

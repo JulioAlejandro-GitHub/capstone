@@ -57,7 +57,26 @@ SELECT
         p.metadata->>'stored_filename',
         a.metadata->>'stored_filename',
         a.name
-    ) AS stored_filename
+    ) AS stored_filename,
+    COALESCE(
+        NULLIF(p.metadata->>'probability_parasitized', '')::NUMERIC,
+        p.score_positive_label
+    ) AS probability_parasitized,
+    NULLIF(p.metadata->>'probability_uninfected', '')::NUMERIC AS probability_uninfected,
+    p.metadata->>'confidence_level' AS confidence_level,
+    p.metadata->>'decision' AS decision,
+    COALESCE(
+        NULLIF(p.metadata->>'tta', '')::BOOLEAN,
+        NULLIF(r.parameters->>'tta', '')::BOOLEAN,
+        FALSE
+    ) AS tta,
+    NULLIF(
+        COALESCE(p.metadata->>'n_aug', r.parameters->>'n_aug'),
+        ''
+    )::INTEGER AS n_aug,
+    er.method AS explainability_method,
+    er.output_path AS explainability_path,
+    er.success AS explainability_success
 FROM predictions p
 LEFT JOIN runs r ON r.id = p.run_id
 LEFT JOIN models m ON m.id = r.model_id
@@ -77,6 +96,14 @@ LEFT JOIN LATERAL (
         art.created_at DESC
     LIMIT 1
 ) a ON TRUE
+LEFT JOIN LATERAL (
+    SELECT exp.*
+    FROM explainability_results exp
+    WHERE exp.run_id = p.run_id
+      AND (exp.prediction_id = p.id OR exp.image_path = p.image_path)
+    ORDER BY exp.created_at DESC
+    LIMIT 1
+) er ON TRUE
 WHERE
     p.metadata->>'source' = 'uploaded_for_prediction'
     OR a.metadata->>'source' = 'uploaded_for_prediction'

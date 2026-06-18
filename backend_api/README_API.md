@@ -61,6 +61,6 @@ GET /artifacts/file?path=outputs/explainability/...
 
 Los endpoints de casos aceptan filtros opcionales como `model_name`, `dataset_name`, `method`, `case_type`, `run_id`, `true_label`, `predicted_label`, `success`, `limit` y `offset`.
 
-`GET /predictions/uploads` lista imagenes externas evaluadas con `src.predict_image --track-db`. Acepta filtros `model_name`, `predicted_label`, `limit` y `offset`.
+`GET /predictions/uploads` lista imagenes externas evaluadas con `src.predict_image --track-db`. Acepta filtros `model_name`, `predicted_label`, `limit` y `offset`. La respuesta incluye `probability_parasitized`, `probability_uninfected`, `confidence_level`, `decision`, `tta`, `n_aug` y datos de explicabilidad si existen.
 
 El endpoint de artefactos solo sirve archivos dentro de `malaria_dl_local_project/outputs` y `data`.

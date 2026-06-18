@@ -356,6 +356,33 @@ code {
   overflow-wrap: anywhere;
 }
 
+.table-image-cell {
+  display: grid;
+  gap: 6px;
+  width: 118px;
+  color: #1d5fd1;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.table-image-cell img {
+  width: 118px;
+  height: 90px;
+  border: 1px solid #e3e7f0;
+  border-radius: 10px;
+  background: #f6f7fb;
+  object-fit: contain;
+}
+
+.table-image-cell:hover {
+  text-decoration: underline;
+}
+
+.muted-text {
+  color: #8a95ad;
+  font-size: 13px;
+}
+
 .tabs {
   display: flex;
   flex-wrap: wrap;

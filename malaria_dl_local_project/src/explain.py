@@ -69,10 +69,9 @@ def parse_args():
     parser.add_argument("--output-dir", default="outputs/explainability")
     parser.add_argument(
         "--positive-label",
-        default=None,
+        default="parasitized",
         help=(
-            "Clase interpretada como positiva para la salida sigmoid. "
-            "Por defecto usa la clase índice 1 del dataset."
+            "Clase clínica interpretada como positiva. Por defecto: parasitized."
         ),
     )
     parser.add_argument(
@@ -127,6 +126,8 @@ def scores_from_predictions(predictions, positive_idx):
         scores = predictions[:, positive_idx]
     else:
         scores = predictions.reshape(-1)
+        if int(positive_idx) == 0:
+            scores = 1.0 - scores
     return np.clip(scores.astype(np.float32), 0.0, 1.0)
 
 
@@ -704,6 +705,7 @@ def explain_with_gradcam(
     output_path,
     title,
     last_conv_layer_name=None,
+    invert_scalar_output=False,
 ):
     import tensorflow as tf
 
@@ -723,9 +725,9 @@ def explain_with_gradcam(
     with tf.GradientTape() as tape:
         conv_outputs, model_output = grad_model(image_batch, training=False)
         if len(model_output.shape) >= 2 and model_output.shape[-1] == 1:
-            class_channel = model_output[:, 0]
+            class_channel = 1.0 - model_output[:, 0] if invert_scalar_output else model_output[:, 0]
         elif len(model_output.shape) == 1:
-            class_channel = model_output
+            class_channel = 1.0 - model_output if invert_scalar_output else model_output
         else:
             class_channel = model_output[:, pred_idx]
 
@@ -863,6 +865,7 @@ def run_gradcam(model, output_dir, case):
             pred_idx=case["predicted_label_idx"],
             output_path=output_path,
             title=title,
+            invert_scalar_output=case["predicted_label_idx"] == 0,
         )
         return make_summary_row(
             case,

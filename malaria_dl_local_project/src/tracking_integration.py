@@ -2,6 +2,8 @@ from pathlib import Path
 
 import numpy as np
 
+from src.decision import POSITIVE_LABEL, probability_by_class_from_scalar_score
+
 
 EXPERIMENT_NAME = "Capstone Malaria Classification"
 EXPERIMENT_METADATA = {
@@ -245,11 +247,13 @@ def log_predictions(context, y_true, y_pred, y_score, class_names, threshold=0.5
     tracker = context["tracker"]
     run_id = context["run_id"]
     dataset_id = context.get("dataset_id")
-    positive_label = class_names[1] if len(class_names) > 1 else None
+    positive_label = POSITIVE_LABEL if POSITIVE_LABEL in class_names else class_names[1]
 
     for index, (true_idx, pred_idx, score) in enumerate(zip(y_true, y_pred, y_score)):
         true_label = class_names[int(true_idx)]
         predicted_label = class_names[int(pred_idx)]
+        probabilities = probability_by_class_from_scalar_score(score, class_names)
+        score_positive_label = probabilities.get(positive_label, float(score))
         tracker.safe_track(
             tracker.log_prediction,
             run_id,
@@ -258,7 +262,7 @@ def log_predictions(context, y_true, y_pred, y_score, class_names, threshold=0.5
             true_label=true_label,
             predicted_label=predicted_label,
             score=float(score),
-            score_positive_label=float(score),
+            score_positive_label=float(score_positive_label),
             threshold=threshold,
             is_correct=bool(int(true_idx) == int(pred_idx)),
             case_type=tracker.compute_case_type(
@@ -266,7 +270,13 @@ def log_predictions(context, y_true, y_pred, y_score, class_names, threshold=0.5
                 predicted_label,
                 positive_label=positive_label,
             ),
-            metadata={"dataset_index": index, "source": "tensorflow_datasets"},
+            metadata={
+                "dataset_index": index,
+                "source": "tensorflow_datasets",
+                "probability_parasitized": probabilities.get("parasitized"),
+                "probability_uninfected": probabilities.get("uninfected"),
+                "positive_label": positive_label,
+            },
         )
 
 

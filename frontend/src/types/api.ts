@@ -179,8 +179,17 @@ export interface UploadedPrediction extends JsonRecord {
   stored_filename: string | null;
   true_label: string | null;
   predicted_label: string | null;
+  probability_parasitized: number | null;
+  probability_uninfected: number | null;
   score_positive_label: number | null;
   threshold: number | null;
+  confidence_level: string | null;
+  decision: string | null;
+  tta: boolean | null;
+  n_aug: number | null;
+  explainability_method: string | null;
+  explainability_path: string | null;
+  explainability_success: boolean | null;
   is_correct: boolean | null;
   case_type: string | null;
   created_at: string | null;

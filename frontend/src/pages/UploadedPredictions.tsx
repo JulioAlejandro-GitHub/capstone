@@ -18,6 +18,10 @@ function uploadedImagePath(row: UploadedPrediction) {
   return row.artifact_path ?? row.image_path;
 }
 
+function probabilityParasitized(row: UploadedPrediction) {
+  return row.probability_parasitized ?? row.score_positive_label;
+}
+
 
 export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredictionsProps) {
   const [predictions, setPredictions] = useState<PagedResponse<UploadedPrediction> | null>(null);
@@ -95,8 +99,10 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
             },
             { header: 'Modelo', render: (row) => row.model_name ?? '-' },
             { header: 'Prediccion', render: (row) => row.predicted_label ?? '-' },
-            { header: 'Score positivo', render: (row) => formatMetric(row.score_positive_label) },
+            { header: 'Prob. parasitized', render: (row) => formatMetric(probabilityParasitized(row)) },
+            { header: 'Prob. uninfected', render: (row) => formatMetric(row.probability_uninfected) },
             { header: 'Threshold', render: (row) => formatMetric(row.threshold) },
+            { header: 'Confianza', render: (row) => row.confidence_level ?? '-' },
             { header: 'Clase real', render: (row) => row.true_label ?? '-' },
             { header: 'Caso', render: (row) => row.case_type ?? '-' },
             { header: 'Estado', render: (row) => <StatusBadge status={row.run_status ?? 'unknown'} /> },

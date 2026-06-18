@@ -1,6 +1,9 @@
 La arquitectura de malaria_dl_local_project está organizada como un pipeline local de ML para clasificación binaria de imágenes de malaria.
+
 Vista General
+
 El proyecto tiene un paquete principal src/ con módulos separados por responsabilidad:
+
 malaria_dl_local_project/
   src/
     config.py
@@ -17,8 +20,10 @@ malaria_dl_local_project/
   outputs/
   requirements.txt
   README.md
-Flujo Principal
-El flujo base es:
+
+
+Flujo Principal:
+
 TensorFlow Datasets malaria
         ↓
 src.data
@@ -34,8 +39,10 @@ evaluación con src.metrics / src.evaluate
 artefactos en outputs/
         ↓
 explicabilidad con src.explain
+
 Datos
 [src/data.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/data.py:1) carga el dataset malaria desde TensorFlow Datasets.
+
 Divide el único split train en:
 80% entrenamiento
 10% validación
@@ -46,10 +53,13 @@ normalización a [0, 1]
 batching
 prefetch
 data augmentation opcional para entrenamiento
+
 Las clases son:
 ["parasitized", "uninfected"]
+
 Modelos
 [src/models.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/models.py:1) define dos arquitecturas Keras:
+
 custom_cnn
 CNN secuencial propia:
 Conv2D + Conv2D + MaxPooling
@@ -62,6 +72,7 @@ Dropout 0.5
 Dense 256
 Dropout 0.5
 Dense 1 sigmoid
+
 vgg16
 Transfer learning con VGG16 preentrenada:
 VGG16 include_top=False
@@ -83,6 +94,7 @@ ModelCheckpoint: guarda best_model.keras según val_accuracy
 EarlyStopping: monitorea val_loss, con patience=10
 CSVLogger: guarda training_log.csv
 ReduceLROnPlateau: reduce learning rate si val_loss no mejora
+
 Los modelos quedan en:
 outputs/custom_cnn/
 outputs/vgg16/
@@ -97,11 +109,16 @@ classification report
 matriz de confusión
 CSV de predicciones
 [src/evaluate.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/evaluate.py:1) carga un .keras ya entrenado y evalúa en test.
+
 Módulos Adicionales
 [src/svm_features.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/svm_features.py:1) usa un modelo CNN, idealmente VGG16, como extractor de características y entrena un SVM RBF.
+
 [src/ensemble.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/ensemble.py:1) combina predicciones de varios modelos Keras mediante promedio ponderado.
+
 [src/tta.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/tta.py:1) aplica Test Time Augmentation: predice la imagen original y varias versiones aumentadas, luego promedia los scores.
+
 [src/export_dataset.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/export_dataset.py:1) exporta imágenes del dataset a carpetas por clase.
+
 Explicabilidad
 [src/explain.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/explain.py:1) agrega interpretabilidad post hoc:
 LIME
@@ -115,6 +132,7 @@ falsos negativos
 baja confianza
 Y guarda visualizaciones en:
 outputs/explainability/
+
 Resumen
 El proyecto está bien separado por capas:
 data.py          carga y preprocesa datos
@@ -127,6 +145,7 @@ ensemble.py      combinación de modelos
 tta.py           robustez por aumentos en inferencia
 explain.py       explicabilidad visual
 config.py        rutas globales
+
 La arquitectura general es modular: cada script puede ejecutarse desde consola con python -m src.<modulo>, y todos comparten las mismas funciones de carga de datos, modelos y métricas.
 
 
@@ -160,6 +179,7 @@ all: LIME + SHAP + Grad-CAM.
 --output-dir: carpeta donde se guardan imágenes y CSV. Default: outputs/explainability.
 --positive-label: clase positiva usada para interpretar el score sigmoid. En tu proyecto normalmente es uninfected, porque TFDS entrega ["parasitized", "uninfected"].
 --max-candidates: máximo de imágenes candidatas retenidas por tipo de caso. Default: 200.
+
 Custom CNN con explicabilidad
 python -m src.explain \
   --checkpoint outputs/custom_cnn/best_model.keras \
@@ -177,6 +197,7 @@ python -m src.explain \
   --batch-size 64 \
   --num-samples 20 \
   --positive-label uninfected
+
 VGG16 con explicabilidad
 python -m src.explain \
   --checkpoint outputs/vgg16/best_model.keras \
@@ -186,12 +207,14 @@ python -m src.explain \
   --num-samples 20 \
   --threshold 0.5 \
   --positive-label uninfected
+
 Con LIME + SHAP + Grad-CAM:
 python -m src.explain \
   --checkpoint outputs/vgg16/best_model.keras \
   --method all \
   --num-samples 20 \
   --positive-label uninfected
+
 Salida Generada
 Los resultados quedan en:
 outputs/explainability/
@@ -199,6 +222,7 @@ outputs/explainability/
   shap/
   gradcam/
   explanation_summary.csv
+
 El CSV contiene:
 case_id
 case_type
@@ -212,18 +236,29 @@ success
 error
 image_path
 last_conv_layer
+
 Sobre Ensemble y SVM
 El script src.explain funciona con modelos Keras .keras.
+
 Por eso sí aplica directamente a:
 outputs/custom_cnn/best_model.keras
 outputs/vgg16/best_model.keras
+
 Pero no aplica directamente a:
 outputs/cnn_features_svm/svm_rbf.joblib
 porque ese SVM no es un modelo Keras convolucional. Tampoco explica directamente el ensemble, porque ensemble.py combina predicciones de varios modelos en tiempo de ejecución y no guarda un modelo Keras único. Para explicabilidad, debes explicar cada modelo base por separado: custom_cnn y vgg16.
 
-Imagen Nueva
+Inferencia estructurada de imagen externa:
 
-Para evaluar una imagen nueva individual ahora existe:
+La clase clínica positiva por defecto es parasitized. Como los modelos actuales fueron entrenados con el orden de TensorFlow Datasets, la salida sigmoid se interpreta de forma explícita como:
+
+probability_parasitized
+probability_uninfected
+confidence_level
+decision
+human_readable_response
+
+Inferencia simple:
 
 python -m src.predict_image \
   --checkpoint outputs/vgg16/best_model.keras \
@@ -232,12 +267,23 @@ python -m src.predict_image \
   --positive-label parasitized \
   --threshold 0.5
 
-Con tracking en PostgreSQL:
+Inferencia con Grad-CAM y JSON:
 
 python -m src.predict_image \
   --checkpoint outputs/vgg16/best_model.keras \
   --image-path ruta/a/imagen.png \
   --positive-label parasitized \
+  --explain gradcam \
+  --output-json outputs/predictions/prediction_result.json
+
+Inferencia con TTA y tracking en PostgreSQL:
+
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --positive-label parasitized \
+  --tta \
+  --n-aug 8 \
   --track-db
 
 Con --track-db, la imagen se copia y renombra en:
@@ -249,6 +295,16 @@ La ruta registrada en PostgreSQL queda relativa al repo, por ejemplo:
 data/prediction_uploads/20260618_153012_a8f23c_imagen.png
 
 Estas imagenes quedan fuera de Git y aparecen en el frontend en el reporte "Predicciones subidas".
+
+Las explicaciones de imágenes externas se guardan en:
+
+outputs/explainability/external_predictions/gradcam/
+outputs/explainability/external_predictions/lime/
+outputs/explainability/external_predictions/shap/
+
+Además, cada inferencia queda acumulada en:
+
+outputs/predictions/external_predictions.csv
 
 Si conoces la clase real, agrega:
 --true-label uninfected
@@ -293,6 +349,7 @@ Evaluar VGG16:
 python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
 Con tracking:
 python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64 --track-db
+
 3. Explicabilidad
 Grad-CAM recomendado para reporte caso a caso:
 python -m src.explain \
@@ -309,6 +366,7 @@ LIME + SHAP:
 python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method both --num-samples 20 --positive-label parasitized --track-db
 LIME + SHAP + Grad-CAM:
 python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method all --num-samples 50 --positive-label parasitized --track-db
+
 4. SVM con features CNN
 Usando VGG16 como extractor:
 python -m src.svm_features \
@@ -317,6 +375,7 @@ python -m src.svm_features \
   --batch-size 64 \
   --gamma 0.1 \
   --track-db
+
 5. Ensemble
 Custom CNN + VGG16 con pesos iguales:
 python -m src.ensemble \
@@ -331,6 +390,7 @@ python -m src.ensemble \
   --img-size 200 \
   --batch-size 64 \
   --track-db
+
 6. Test Time Augmentation
 Sobre VGG16:
 python -m src.tta \
