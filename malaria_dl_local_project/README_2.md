@@ -1,5 +1,11 @@
 La arquitectura de malaria_dl_local_project está organizada como un pipeline local de ML para clasificación binaria de imágenes de malaria.
 
+La guía operativa completa está en:
+
+malaria_dl_local_project/docs/workflows.md
+
+Ahí quedan separados los flujos de entrenamiento, evaluación experimental e inferencia clínica experimental sobre imagen externa.
+
 Vista General
 
 El proyecto tiene un paquete principal src/ con módulos separados por responsabilidad:

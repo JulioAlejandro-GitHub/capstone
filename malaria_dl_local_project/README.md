@@ -11,6 +11,14 @@ Incluye:
 - Evaluación con accuracy, precision, recall, F1, AUC y matriz de confusión
 - Explicabilidad visual post hoc con LIME, SHAP y Grad-CAM
 
+Guía de flujos:
+
+```text
+docs/workflows.md
+```
+
+Ese documento separa entrenamiento, evaluación experimental e inferencia clínica experimental con imagen externa.
+
 ## 1. Crear entorno virtual
 
 ### macOS / Linux
@@ -173,6 +181,30 @@ python -m src.predict_image \
   --tta \
   --n-aug 8 \
   --track-db
+```
+
+Inferencia con ensemble:
+
+```bash
+python -m src.predict_image \
+  --ensemble \
+  --models outputs/custom_cnn/best_model.keras outputs/vgg16/best_model.keras \
+  --weights 0.4 0.6 \
+  --image-path ruta/a/imagen.png \
+  --img-size 200 \
+  --positive-label parasitized \
+  --threshold 0.5
+```
+
+Inferencia con calibración por temperatura:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --positive-label parasitized \
+  --calibration-method temperature_scaling \
+  --calibration-temperature 1.5
 ```
 
 Cuando se usa `--track-db`, la imagen se copia y renombra en:

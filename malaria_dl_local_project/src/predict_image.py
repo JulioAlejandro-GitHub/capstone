@@ -6,14 +6,22 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
-from PIL import Image
 
 from src.config import CLASS_NAMES, OUTPUT_DIR, PROJECT_ROOT
 from src.decision import (
+    DISCLAIMER,
     NEGATIVE_LABEL,
     POSITIVE_LABEL,
     build_prediction_response,
-    probabilities_by_class_from_prediction,
+)
+from src.image_quality import check_image_quality
+from src.inference_pipeline import (
+    apply_probability_calibration,
+    build_structured_clinical_response,
+    predict_ensemble_probability,
+    predict_model_probability,
+    predict_model_probability_with_tta,
+    preprocess_external_image,
 )
 
 
@@ -23,7 +31,7 @@ EXTERNAL_EXPLAINABILITY_DIR = OUTPUT_DIR / "explainability" / "external_predicti
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Evalua una imagen individual con un modelo Keras.")
-    parser.add_argument("--checkpoint", required=True, help="Ruta al modelo .keras entrenado.")
+    parser.add_argument("--checkpoint", default=None, help="Ruta al modelo .keras entrenado.")
     parser.add_argument("--image-path", required=True, help="Ruta a la imagen a evaluar.")
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--threshold", type=float, default=0.5)
@@ -41,7 +49,7 @@ def parse_args():
     parser.add_argument("--output-json", default=None, help="Ruta opcional para guardar el resultado JSON.")
     parser.add_argument(
         "--explain",
-        choices=["gradcam", "lime", "shap", "all"],
+        choices=["none", "gradcam", "lime", "shap", "all"],
         default=None,
         help="Generar explicabilidad visual para la imagen externa.",
     )
@@ -51,6 +59,26 @@ def parse_args():
         help="Usar Test Time Augmentation para la imagen externa.",
     )
     parser.add_argument("--n-aug", type=int, default=8, help="Cantidad de aumentos para --tta.")
+    parser.add_argument("--ensemble", action="store_true", help="Usar ensemble para la imagen externa.")
+    parser.add_argument("--models", nargs="+", default=None, help="Modelos .keras para --ensemble.")
+    parser.add_argument("--weights", nargs="+", type=float, default=None, help="Pesos del ensemble.")
+    parser.add_argument(
+        "--explain-model",
+        default=None,
+        help="Modelo .keras a usar para explicabilidad cuando --ensemble está activo.",
+    )
+    parser.add_argument(
+        "--calibration-method",
+        choices=["none", "temperature_scaling"],
+        default="none",
+        help="Método de calibración de probabilidad.",
+    )
+    parser.add_argument(
+        "--calibration-temperature",
+        type=float,
+        default=None,
+        help="Temperatura opcional para temperature_scaling.",
+    )
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -60,11 +88,8 @@ def parse_args():
 
 
 def load_image(image_path, img_size):
-    image = Image.open(image_path).convert("RGB")
-    image = np.asarray(image, dtype=np.float32)
-    image = tf.image.resize(image, (img_size, img_size))
-    image = image.numpy().astype(np.float32) / 255.0
-    return np.expand_dims(image, axis=0)
+    image_batch, _ = preprocess_external_image(image_path, img_size)
+    return image_batch
 
 
 def model_name_from_checkpoint_path(checkpoint):
@@ -78,58 +103,22 @@ def model_name_from_checkpoint_path(checkpoint):
 
 
 def probability_rows_from_predictions(predictions):
-    predictions = np.asarray(predictions, dtype=np.float32)
-    if predictions.ndim == 2 and predictions.shape[1] == len(CLASS_NAMES):
-        return [
-            probabilities_by_class_from_prediction(row.reshape(1, -1), CLASS_NAMES)
-            for row in predictions
-        ]
+    from src.inference_pipeline import probability_rows_from_predictions as pipeline_probability_rows
 
-    return [
-        probabilities_by_class_from_prediction(np.asarray([score], dtype=np.float32), CLASS_NAMES)
-        for score in predictions.reshape(-1)
-    ]
+    return pipeline_probability_rows(predictions)
 
 
 def predict_without_tta(model, image_batch):
-    prediction = model.predict(image_batch, verbose=0)
-    probabilities_by_class = probabilities_by_class_from_prediction(prediction, CLASS_NAMES)
-    return {
-        "raw_model_output": np.asarray(prediction).tolist(),
-        "probability_parasitized": probabilities_by_class[POSITIVE_LABEL],
-        "probability_uninfected": probabilities_by_class[NEGATIVE_LABEL],
-        "tta_predictions": None,
-    }
+    return predict_model_probability(model, image_batch)
 
 
 def predict_with_tta(model, image_batch, n_aug):
-    from src.data import build_augmentation
-
-    augmentation = build_augmentation()
-    image = image_batch[0]
-    augmented_images = [image]
-
-    for _ in range(int(n_aug)):
-        augmented = augmentation(image, training=True)
-        augmented_images.append(np.asarray(augmented, dtype=np.float32))
-
-    tta_batch = np.asarray(augmented_images, dtype=np.float32)
-    predictions = model.predict(tta_batch, verbose=0)
-    probability_rows = probability_rows_from_predictions(predictions)
-    probability_parasitized = float(
-        np.mean([row[POSITIVE_LABEL] for row in probability_rows])
-    )
-    probability_uninfected = float(1.0 - probability_parasitized)
-
-    return {
-        "raw_model_output": np.asarray(predictions).tolist(),
-        "probability_parasitized": probability_parasitized,
-        "probability_uninfected": probability_uninfected,
-        "tta_predictions": probability_rows,
-    }
+    return predict_model_probability_with_tta(model, image_batch, n_aug)
 
 
 def methods_to_run(method):
+    if method == "none":
+        return []
     if method == "all":
         return ["gradcam", "lime", "shap"]
     return [method] if method else []
@@ -154,12 +143,15 @@ def relative_to_project(path):
 
 
 def run_external_explanations(args, model, image_batch, response):
-    if not args.explain:
+    if not args.explain or args.explain == "none":
         return {
+            "requested": False,
+            "methods": [],
             "method": None,
             "success": False,
             "image_path": None,
             "last_conv_layer": None,
+            "outputs": [],
             "error": None,
         }
 
@@ -238,22 +230,29 @@ def run_external_explanations(args, model, image_batch, response):
 
     successful = [item for item in items if item["success"]]
     if len(items) == 1:
-        return items[0]
+        return {
+            **items[0],
+            "requested": True,
+            "methods": methods,
+            "outputs": items,
+        }
 
     primary = successful[0] if successful else items[0]
     return {
+        "requested": True,
+        "methods": methods,
         "method": args.explain,
         "success": bool(successful),
         "image_path": primary.get("image_path") if successful else None,
         "last_conv_layer": primary.get("last_conv_layer"),
         "error": None if successful else "; ".join(item.get("error") or "" for item in items),
+        "outputs": items,
         "items": items,
     }
 
 
 def build_result(args, image_path, stored_image, checkpoint, prediction_result):
     stored_image_path = stored_image.relative_path if stored_image is not None else None
-    response_image_path = stored_image_path or str(image_path)
     model_name = model_name_from_checkpoint_path(checkpoint)
     probability_parasitized = prediction_result["probability_parasitized"]
     probability_uninfected = prediction_result["probability_uninfected"]
@@ -283,9 +282,18 @@ def build_result(args, image_path, stored_image, checkpoint, prediction_result):
             NEGATIVE_LABEL: probability_uninfected,
         },
         "raw_model_output": prediction_result["raw_model_output"],
+        "raw_model_score": prediction_result.get("raw_model_score"),
+        "uncalibrated_probability_parasitized": prediction_result.get(
+            "uncalibrated_probability_parasitized",
+            probability_parasitized,
+        ),
+        "calibration": prediction_result.get("calibration", {"method": "none", "applied": False}),
         "tta": bool(args.tta),
         "n_aug": int(args.n_aug) if args.tta else 0,
         "tta_predictions": prediction_result["tta_predictions"],
+        "ensemble_applied": bool(args.ensemble),
+        "ensemble_model_results": prediction_result.get("ensemble_model_results"),
+        "ensemble_weights": prediction_result.get("ensemble_weights"),
     }
 
     if stored_image is not None:
@@ -311,20 +319,43 @@ def build_result(args, image_path, stored_image, checkpoint, prediction_result):
         extra=extra,
     )
     response["predicted_label"] = predicted_label
+    response["decision_code"] = response["decision"]
     return response
 
 
+def format_optional_probability(value):
+    if value is None:
+        return "no disponible"
+    return f"{float(value):.6f}"
+
+
+def get_decision_dict(result):
+    decision = result.get("decision")
+    return decision if isinstance(decision, dict) else {}
+
+
 def print_result(result):
+    model_info = result.get("model") or {}
+    image_info = result.get("image") or {}
+    quality = image_info.get("quality") or {}
+    probabilities = result.get("probabilities") or {}
     print(f"Imagen evaluada: {result['image_path']}")
     if result.get("stored_image_path"):
         print(f"Imagen almacenada: {result['stored_image_path']}")
-    print(f"Modelo: {result['model_checkpoint']}")
-    print(f"Probabilidad parasitized: {result['probability_parasitized']:.6f}")
-    print(f"Probabilidad uninfected: {result['probability_uninfected']:.6f}")
-    print(f"Umbral: {result['threshold']:.2f}")
-    print(f"Predicción: {result['predicted_label']}")
-    print(f"Confianza: {result['confidence_level']}")
-    print(f"Respuesta: {result['human_readable_response']}")
+    print("Flujo: inferencia clínica experimental")
+    print("Control de calidad:", "aprobado" if quality.get("passed", True) else "observado")
+    if quality.get("warnings"):
+        print("Advertencias de calidad:", "; ".join(quality["warnings"]))
+    print(f"Modelo: {result.get('model_checkpoint') or 'no cargado'}")
+    print("TTA:", "sí" if model_info.get("tta_applied") else "no")
+    print("Ensemble:", "sí" if model_info.get("ensemble_applied") else "no")
+    print(f"Probabilidad parasitized: {format_optional_probability(result.get('probability_parasitized'))}")
+    print(f"Probabilidad uninfected: {format_optional_probability(result.get('probability_uninfected'))}")
+    print(f"Calibración: {(probabilities.get('calibration') or {}).get('method', 'none')}")
+    print(f"Umbral clínico experimental: {result['threshold']:.2f}")
+    print(f"Predicción: {result.get('predicted_label') or 'no disponible'}")
+    print(f"Confianza: {result.get('confidence_level') or 'no disponible'}")
+    print(f"Respuesta: {result.get('human_readable_response') or 'no disponible'}")
     explanation = result.get("explainability") or {}
     explanation_path = explanation.get("image_path")
     print(f"Explicabilidad: {explanation_path or 'no solicitada'}")
@@ -333,6 +364,7 @@ def print_result(result):
         print("Tracking DB: registrado" if tracking.get("registered") else "Tracking DB: no registrado")
     else:
         print("Tracking DB: no solicitado")
+    print(f"Advertencia: {result.get('disclaimer', DISCLAIMER)}")
 
 
 def save_json(result, output_json):
@@ -357,12 +389,44 @@ def flatten_explainability_for_csv(explainability):
     return explainability.get("method"), explainability.get("image_path")
 
 
+def ensure_external_predictions_csv_columns(fieldnames):
+    if not EXTERNAL_PREDICTIONS_CSV.exists():
+        return fieldnames
+
+    with EXTERNAL_PREDICTIONS_CSV.open("r", newline="", encoding="utf-8") as file_handle:
+        reader = csv.DictReader(file_handle)
+        existing_fieldnames = reader.fieldnames or []
+        rows = list(reader)
+
+    merged_fieldnames = list(existing_fieldnames)
+    for fieldname in fieldnames:
+        if fieldname not in merged_fieldnames:
+            merged_fieldnames.append(fieldname)
+
+    if merged_fieldnames == existing_fieldnames:
+        return merged_fieldnames
+
+    with EXTERNAL_PREDICTIONS_CSV.open("w", newline="", encoding="utf-8") as file_handle:
+        writer = csv.DictWriter(file_handle, fieldnames=merged_fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+    return merged_fieldnames
+
+
 def append_external_prediction_csv(result):
     EXTERNAL_PREDICTIONS_CSV.parent.mkdir(parents=True, exist_ok=True)
     explainability_method, explainability_path = flatten_explainability_for_csv(
         result.get("explainability")
     )
     tracking = result.get("tracking") or {}
+    image_info = result.get("image") or {}
+    quality = image_info.get("quality") or {}
+    model_info = result.get("model") or {}
+    probabilities = result.get("probabilities") or {}
+    decision = get_decision_dict(result)
+    explainability = result.get("explainability") or {}
     row = {
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "image_path": result["image_path"],
@@ -373,16 +437,41 @@ def append_external_prediction_csv(result):
         "probability_uninfected": result["probability_uninfected"],
         "threshold": result["threshold"],
         "confidence_level": result["confidence_level"],
-        "decision": result["decision"],
+        "decision": result.get("decision_code"),
         "explainability_method": explainability_method,
         "explainability_path": explainability_path,
         "track_db": tracking.get("track_db", False),
         "prediction_id": tracking.get("prediction_id"),
+        "workflow": result.get("workflow"),
+        "image_original_path": image_info.get("original_path", result["image_path"]),
+        "image_stored_path": image_info.get("stored_path", result.get("stored_image_path")),
+        "quality_passed": quality.get("passed"),
+        "quality_warnings": json.dumps(quality.get("warnings", []), ensure_ascii=False),
+        "img_size": (result.get("preprocessing") or {}).get("img_size"),
+        "model_mode": model_info.get("mode"),
+        "model_name": model_info.get("model_name", result.get("model_name")),
+        "tta_applied": model_info.get("tta_applied", result.get("tta")),
+        "n_aug": model_info.get("n_aug", result.get("n_aug")),
+        "ensemble_applied": model_info.get("ensemble_applied"),
+        "ensemble_models": json.dumps(model_info.get("ensemble_models", []), ensure_ascii=False),
+        "ensemble_weights": json.dumps(model_info.get("ensemble_weights", []), ensure_ascii=False),
+        "raw_model_score": probabilities.get("raw_model_score"),
+        "calibration_method": (probabilities.get("calibration") or {}).get("method"),
+        "decision_code": decision.get("decision_code", result.get("decision_code")),
+        "human_readable_response": decision.get(
+            "human_readable_response",
+            result.get("human_readable_response"),
+        ),
+        "explainability_requested": explainability.get("requested", bool(explainability_method)),
+        "explainability_methods": json.dumps(explainability.get("methods", []), ensure_ascii=False),
+        "explainability_paths": explainability_path,
+        "run_id": tracking.get("run_id"),
     }
 
+    fieldnames = ensure_external_predictions_csv_columns(list(row.keys()))
     write_header = not EXTERNAL_PREDICTIONS_CSV.exists()
     with EXTERNAL_PREDICTIONS_CSV.open("a", newline="", encoding="utf-8") as file_handle:
-        writer = csv.DictWriter(file_handle, fieldnames=list(row.keys()))
+        writer = csv.DictWriter(file_handle, fieldnames=fieldnames)
         if write_header:
             writer.writeheader()
         writer.writerow(row)
@@ -419,11 +508,14 @@ def track_prediction(args, result, checkpoint):
             start_tracking_run,
         )
 
+        tracked_model_name = (
+            "ensemble" if result.get("ensemble_applied") else model_name_from_checkpoint(checkpoint)
+        )
         context = start_tracking_run(
             args=args,
             run_type="inference",
             script_name="src.predict_image",
-            model_name=model_name_from_checkpoint(checkpoint),
+            model_name=tracked_model_name,
             run_name=f"uploaded_prediction:{result['image_id']}",
             parameters=args_to_parameters(
                 args,
@@ -438,7 +530,15 @@ def track_prediction(args, result, checkpoint):
                     "probability_parasitized": result["probability_parasitized"],
                     "probability_uninfected": result["probability_uninfected"],
                     "confidence_level": result["confidence_level"],
-                    "decision": result["decision"],
+                    "decision": result.get("decision_code"),
+                    "human_readable_response": result.get("human_readable_response"),
+                    "workflow": result.get("workflow"),
+                    "quality": (result.get("image") or {}).get("quality"),
+                    "raw_model_score": result.get("raw_model_score"),
+                    "calibration": result.get("calibration"),
+                    "ensemble_applied": result.get("ensemble_applied"),
+                    "ensemble_models": (result.get("model") or {}).get("ensemble_models"),
+                    "ensemble_weights": result.get("ensemble_weights"),
                     "explainability_method": args.explain,
                     "explainability": result.get("explainability"),
                     "tta": bool(args.tta),
@@ -484,7 +584,15 @@ def track_prediction(args, result, checkpoint):
                 "probability_parasitized": result["probability_parasitized"],
                 "probability_uninfected": result["probability_uninfected"],
                 "confidence_level": result["confidence_level"],
-                "decision": result["decision"],
+                "decision": result.get("decision_code"),
+                "human_readable_response": result.get("human_readable_response"),
+                "workflow": result.get("workflow"),
+                "quality": (result.get("image") or {}).get("quality"),
+                "raw_model_score": result.get("raw_model_score"),
+                "calibration": result.get("calibration"),
+                "ensemble_applied": result.get("ensemble_applied"),
+                "ensemble_models": (result.get("model") or {}).get("ensemble_models"),
+                "ensemble_weights": result.get("ensemble_weights"),
                 "scores_by_class": result["scores_by_class"],
                 "raw_model_output": result["raw_model_output"],
                 "tta": bool(args.tta),
@@ -550,7 +658,8 @@ def track_prediction(args, result, checkpoint):
             metadata={
                 "status_detail": "single image inference completed",
                 "confidence_level": result["confidence_level"],
-                "decision": result["decision"],
+                "decision": result.get("decision_code"),
+                "workflow": result.get("workflow"),
                 "probability_parasitized": result["probability_parasitized"],
                 "probability_uninfected": result["probability_uninfected"],
             },
@@ -567,9 +676,124 @@ def track_prediction(args, result, checkpoint):
         return tracking_result
 
 
+def resolve_model_paths(args):
+    checkpoint = Path(args.checkpoint).expanduser() if args.checkpoint else None
+    if checkpoint is not None and not checkpoint.exists():
+        raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
+
+    if args.ensemble:
+        model_paths = [Path(path).expanduser() for path in (args.models or [])]
+        if not model_paths and checkpoint is not None:
+            model_paths = [checkpoint]
+        if not model_paths:
+            raise ValueError("--ensemble requiere --models o --checkpoint.")
+        for path in model_paths:
+            if not path.exists():
+                raise FileNotFoundError(f"No existe el modelo del ensemble: {path}")
+        primary_checkpoint = checkpoint or model_paths[0]
+    else:
+        if checkpoint is None:
+            raise ValueError("--checkpoint es requerido si no usas --ensemble.")
+        model_paths = [checkpoint]
+        primary_checkpoint = checkpoint
+
+    explain_model_path = Path(args.explain_model).expanduser() if args.explain_model else primary_checkpoint
+    if args.explain and args.explain != "none" and not explain_model_path.exists():
+        raise FileNotFoundError(f"No existe el modelo para explicabilidad: {explain_model_path}")
+
+    return primary_checkpoint, model_paths, explain_model_path
+
+
+def load_explain_model(explain_model_path, loaded_models):
+    for path, model in loaded_models:
+        if Path(path).resolve() == Path(explain_model_path).resolve():
+            return model
+    return tf.keras.models.load_model(explain_model_path)
+
+
+def model_info_from_args(args, primary_checkpoint, model_paths, weights):
+    return {
+        "mode": "ensemble" if args.ensemble else "single_model",
+        "checkpoint": str(primary_checkpoint),
+        "model_name": "ensemble" if args.ensemble else model_name_from_checkpoint_path(primary_checkpoint),
+        "tta_applied": bool(args.tta),
+        "n_aug": int(args.n_aug) if args.tta else 0,
+        "ensemble_applied": bool(args.ensemble),
+        "ensemble_models": [str(path) for path in model_paths] if args.ensemble else [],
+        "ensemble_weights": None if weights is None else [float(value) for value in weights],
+    }
+
+
+def quality_failure_response(args, image_path, quality_result):
+    checkpoint = args.checkpoint or ""
+    result = {
+        "workflow": "clinical_inference_experimental",
+        "image_path": str(image_path),
+        "stored_image_path": None,
+        "model_checkpoint": str(checkpoint),
+        "model_name": None,
+        "predicted_label": None,
+        "probability_parasitized": None,
+        "probability_uninfected": None,
+        "threshold": float(args.threshold),
+        "confidence_level": None,
+        "decision_code": "image_quality_failed",
+        "human_readable_response": "No fue posible evaluar la imagen por falla de calidad o lectura.",
+        "recommendation": "Resultado experimental. Requiere revisión de la imagen de entrada.",
+        "disclaimer": DISCLAIMER,
+        "image": {
+            "original_path": str(image_path),
+            "stored_path": None,
+            "quality": quality_result,
+        },
+        "preprocessing": {
+            "img_size": int(args.img_size),
+            "normalization": "[0, 1]",
+            "input_shape": None,
+        },
+        "model": {
+            "mode": "ensemble" if args.ensemble else "single_model",
+            "checkpoint": str(checkpoint),
+            "model_name": None,
+            "tta_applied": bool(args.tta),
+            "n_aug": int(args.n_aug) if args.tta else 0,
+            "ensemble_applied": bool(args.ensemble),
+            "ensemble_models": args.models or [],
+            "ensemble_weights": args.weights or [],
+        },
+        "probabilities": {
+            "probability_parasitized": None,
+            "probability_uninfected": None,
+            "raw_model_score": None,
+            "calibration": {"method": args.calibration_method, "applied": False},
+        },
+        "decision": {
+            "threshold": float(args.threshold),
+            "predicted_label": None,
+            "confidence_level": None,
+            "decision_code": "image_quality_failed",
+            "human_readable_response": "No fue posible evaluar la imagen por falla de calidad o lectura.",
+        },
+        "explainability": {
+            "requested": bool(args.explain and args.explain != "none"),
+            "methods": methods_to_run(args.explain),
+            "success": False,
+            "outputs": [],
+            "error": "Imagen no evaluada por falla de calidad.",
+        },
+        "tracking": {
+            "track_db": bool(args.track_db),
+            "registered": False,
+            "run_id": None,
+            "prediction_id": None,
+            "error": "Imagen no evaluada por falla de calidad.",
+        },
+    }
+    return result
+
+
 def main():
     args = parse_args()
-    checkpoint = Path(args.checkpoint).expanduser()
     image_path = Path(args.image_path).expanduser()
     stored_image = None
 
@@ -577,12 +801,22 @@ def main():
         raise ValueError(
             f"Este flujo estructurado usa {POSITIVE_LABEL!r} como clase positiva clínica."
         )
-    if not checkpoint.exists():
-        raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
-    if not image_path.exists():
-        raise FileNotFoundError(f"No existe la imagen: {image_path}")
 
-    model = tf.keras.models.load_model(checkpoint)
+    quality_result = check_image_quality(image_path)
+    if quality_result.get("fatal"):
+        result = quality_failure_response(args, image_path, quality_result)
+        print_result(result)
+        if args.output_json:
+            save_json(result, args.output_json)
+        return
+
+    primary_checkpoint, model_paths, explain_model_path = resolve_model_paths(args)
+    loaded_models = [(path, tf.keras.models.load_model(path)) for path in model_paths]
+    explain_model = (
+        load_explain_model(explain_model_path, loaded_models)
+        if args.explain and args.explain != "none"
+        else None
+    )
 
     prediction_image_path = image_path
     if args.track_db:
@@ -591,15 +825,65 @@ def main():
         stored_image = store_prediction_image(image_path, image_id=args.image_id)
         prediction_image_path = stored_image.stored_path
 
-    image_batch = load_image(prediction_image_path, args.img_size)
-    prediction_result = (
-        predict_with_tta(model, image_batch, args.n_aug)
-        if args.tta
-        else predict_without_tta(model, image_batch)
+    image_batch, _ = preprocess_external_image(prediction_image_path, args.img_size)
+
+    if args.ensemble:
+        weights = args.weights
+        prediction_result = predict_ensemble_probability(
+            [model for _, model in loaded_models],
+            image_batch,
+            weights=weights,
+            tta=args.tta,
+            n_aug=args.n_aug,
+        )
+        normalized_weights = prediction_result.get("ensemble_weights")
+    else:
+        model = loaded_models[0][1]
+        prediction_result = (
+            predict_with_tta(model, image_batch, args.n_aug)
+            if args.tta
+            else predict_without_tta(model, image_batch)
+        )
+        normalized_weights = None
+
+    calibration_params = {}
+    if args.calibration_temperature is not None:
+        calibration_params["temperature"] = args.calibration_temperature
+    prediction_result = apply_probability_calibration(
+        prediction_result,
+        method=args.calibration_method,
+        calibration_params=calibration_params,
     )
-    result = build_result(args, image_path, stored_image, checkpoint, prediction_result)
-    result["explainability"] = run_external_explanations(args, model, image_batch, result)
-    result["tracking"] = track_prediction(args, result, checkpoint)
+
+    result = build_result(args, image_path, stored_image, primary_checkpoint, prediction_result)
+    result["model_checkpoint"] = str(primary_checkpoint)
+    result["model_name"] = "ensemble" if args.ensemble else model_name_from_checkpoint_path(primary_checkpoint)
+    result["explainability"] = run_external_explanations(args, explain_model, image_batch, result)
+    model_info = model_info_from_args(args, primary_checkpoint, model_paths, normalized_weights)
+    probabilities = {
+        "probability_parasitized": result["probability_parasitized"],
+        "probability_uninfected": result["probability_uninfected"],
+        "raw_model_score": result.get("raw_model_score"),
+        "calibration": result.get("calibration"),
+    }
+    result.update(
+        build_structured_clinical_response(
+            flat_result=result,
+            quality_result=quality_result,
+            img_size=args.img_size,
+            input_shape=image_batch.shape,
+            model_info=model_info,
+            probabilities=probabilities,
+            threshold=args.threshold,
+            explainability=result["explainability"],
+            tracking={"track_db": bool(args.track_db), "registered": False, "run_id": None, "prediction_id": None},
+        )
+    )
+    result["decision_code"] = result["decision"]["decision_code"]
+    result["confidence_level"] = result["decision"]["confidence_level"]
+    result["human_readable_response"] = result["decision"]["human_readable_response"]
+    result["tracking"] = track_prediction(args, result, primary_checkpoint)
+    result["tracking"]["track_db"] = bool(args.track_db)
 
     print_result(result)
 

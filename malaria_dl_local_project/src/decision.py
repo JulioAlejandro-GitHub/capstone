@@ -13,6 +13,7 @@ RECOMMENDATION = (
     "Resultado experimental. Requiere revisión por profesional competente si se usa "
     "en contexto real."
 )
+DISCLAIMER = "Resultado experimental de apoyo. No corresponde a diagnóstico clínico definitivo."
 
 
 def validate_binary_labels(class_names=None):
@@ -83,6 +84,10 @@ def label_from_probability_parasitized(probability_parasitized, threshold=0.5):
     return POSITIVE_LABEL if float(probability_parasitized) >= float(threshold) else NEGATIVE_LABEL
 
 
+def classify_by_threshold(probability_parasitized: float, threshold: float = 0.5) -> str:
+    return label_from_probability_parasitized(probability_parasitized, threshold)
+
+
 def confidence_level_from_probability(probability_parasitized):
     probability_parasitized = float(probability_parasitized)
     if probability_parasitized >= 0.80 or probability_parasitized <= 0.20:
@@ -90,6 +95,10 @@ def confidence_level_from_probability(probability_parasitized):
     if probability_parasitized >= 0.60 or probability_parasitized <= 0.40:
         return "media"
     return "baja"
+
+
+def get_confidence_level(probability_parasitized: float) -> str:
+    return confidence_level_from_probability(probability_parasitized)
 
 
 def decision_from_probability(probability_parasitized, threshold=0.5):
@@ -100,6 +109,33 @@ def decision_from_probability(probability_parasitized, threshold=0.5):
     if predicted_label == POSITIVE_LABEL:
         return "compatible_con_celula_parasitada"
     return "compatible_con_celula_no_parasitada"
+
+
+def build_decision_text(
+    predicted_label,
+    probability_parasitized,
+    confidence_level,
+    threshold=0.5,
+):
+    decision_code = decision_from_probability(probability_parasitized, threshold)
+    if predicted_label == POSITIVE_LABEL and decision_code != "caso_incierto_requiere_revision":
+        short_text = "Compatible con célula parasitada."
+    elif predicted_label == NEGATIVE_LABEL and decision_code != "caso_incierto_requiere_revision":
+        short_text = "Compatible con célula no parasitada."
+    else:
+        short_text = "Caso incierto, requiere revisión humana."
+
+    return {
+        "decision_code": decision_code,
+        "confidence_level": confidence_level,
+        "short_text": short_text,
+        "human_readable_response": human_response_from_decision(
+            decision_code,
+            probability_parasitized,
+        ),
+        "recommendation": RECOMMENDATION,
+        "disclaimer": DISCLAIMER,
+    }
 
 
 def human_response_from_decision(decision, probability_parasitized):
@@ -118,6 +154,62 @@ def human_response_from_decision(decision, probability_parasitized):
         "La imagen es compatible con una célula no parasitada, con probabilidad "
         f"estimada de malaria de {percentage}%."
     )
+
+
+def build_clinical_inference_response(
+    image,
+    preprocessing,
+    model,
+    probabilities,
+    threshold,
+    explainability=None,
+    tracking=None,
+):
+    probability_parasitized = float(probabilities["probability_parasitized"])
+    probability_uninfected = float(probabilities["probability_uninfected"])
+    predicted_label = classify_by_threshold(probability_parasitized, threshold)
+    confidence_level = get_confidence_level(probability_parasitized)
+    decision_text = build_decision_text(
+        predicted_label,
+        probability_parasitized,
+        confidence_level,
+        threshold,
+    )
+
+    return {
+        "workflow": "clinical_inference_experimental",
+        "image": image,
+        "preprocessing": preprocessing,
+        "model": model,
+        "probabilities": {
+            **probabilities,
+            "probability_parasitized": probability_parasitized,
+            "probability_uninfected": probability_uninfected,
+        },
+        "decision": {
+            "threshold": float(threshold),
+            "predicted_label": predicted_label,
+            "confidence_level": confidence_level,
+            **decision_text,
+        },
+        "explainability": explainability
+        or {
+            "requested": False,
+            "methods": [],
+            "success": False,
+            "outputs": [],
+            "error": None,
+        },
+        "tracking": tracking
+        or {
+            "track_db": False,
+            "registered": False,
+            "run_id": None,
+            "prediction_id": None,
+            "error": None,
+        },
+        "disclaimer": DISCLAIMER,
+    }
 
 
 def build_prediction_response(
@@ -153,6 +245,7 @@ def build_prediction_response(
             probability_parasitized,
         ),
         "recommendation": RECOMMENDATION,
+        "disclaimer": DISCLAIMER,
         "explainability": explainability_result
         or {
             "method": None,

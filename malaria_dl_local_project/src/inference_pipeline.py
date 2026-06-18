@@ -1,0 +1,174 @@
+from pathlib import Path
+
+import numpy as np
+import tensorflow as tf
+from PIL import Image
+
+from src.calibration import calibrate_probability
+from src.config import CLASS_NAMES
+from src.decision import (
+    NEGATIVE_LABEL,
+    POSITIVE_LABEL,
+    build_clinical_inference_response,
+    probabilities_by_class_from_prediction,
+)
+
+
+def preprocess_external_image(image_path, img_size):
+    image = Image.open(image_path).convert("RGB")
+    image = np.asarray(image, dtype=np.float32)
+    image = tf.image.resize(image, (img_size, img_size))
+    image = image.numpy().astype(np.float32) / 255.0
+    image_batch = np.expand_dims(image, axis=0)
+    return image_batch, image
+
+
+def probability_rows_from_predictions(predictions):
+    predictions = np.asarray(predictions, dtype=np.float32)
+    if predictions.ndim == 2 and predictions.shape[1] == len(CLASS_NAMES):
+        return [
+            probabilities_by_class_from_prediction(row.reshape(1, -1), CLASS_NAMES)
+            for row in predictions
+        ]
+
+    return [
+        probabilities_by_class_from_prediction(np.asarray([score], dtype=np.float32), CLASS_NAMES)
+        for score in predictions.reshape(-1)
+    ]
+
+
+def predict_model_probability(model, image_batch):
+    prediction = model.predict(image_batch, verbose=0)
+    probabilities = probabilities_by_class_from_prediction(prediction, CLASS_NAMES)
+    return {
+        "raw_model_output": np.asarray(prediction).tolist(),
+        "raw_model_score": float(np.asarray(prediction).reshape(-1)[0]),
+        "probability_parasitized": probabilities[POSITIVE_LABEL],
+        "probability_uninfected": probabilities[NEGATIVE_LABEL],
+        "tta_predictions": None,
+    }
+
+
+def predict_model_probability_with_tta(model, image_batch, n_aug):
+    from src.data import build_augmentation
+
+    augmentation = build_augmentation()
+    image = image_batch[0]
+    augmented_images = [image]
+
+    for _ in range(int(n_aug)):
+        augmented = augmentation(image, training=True)
+        augmented_images.append(np.asarray(augmented, dtype=np.float32))
+
+    tta_batch = np.asarray(augmented_images, dtype=np.float32)
+    predictions = model.predict(tta_batch, verbose=0)
+    probability_rows = probability_rows_from_predictions(predictions)
+    probability_parasitized = float(
+        np.mean([row[POSITIVE_LABEL] for row in probability_rows])
+    )
+    probability_uninfected = float(1.0 - probability_parasitized)
+
+    return {
+        "raw_model_output": np.asarray(predictions).tolist(),
+        "raw_model_score": float(np.mean(np.asarray(predictions).reshape(-1))),
+        "probability_parasitized": probability_parasitized,
+        "probability_uninfected": probability_uninfected,
+        "tta_predictions": probability_rows,
+    }
+
+
+def normalize_ensemble_weights(num_models, weights=None):
+    if weights is None:
+        return np.ones(num_models, dtype=float) / float(num_models)
+
+    weights = np.asarray(weights, dtype=float)
+    if len(weights) != num_models:
+        raise ValueError("La cantidad de pesos debe coincidir con la cantidad de modelos.")
+    total = float(np.sum(weights))
+    if total <= 0:
+        raise ValueError("La suma de pesos del ensemble debe ser mayor que cero.")
+    return weights / total
+
+
+def predict_ensemble_probability(models, image_batch, weights=None, tta=False, n_aug=8):
+    weights = normalize_ensemble_weights(len(models), weights)
+    model_results = []
+
+    for model in models:
+        if tta:
+            model_results.append(predict_model_probability_with_tta(model, image_batch, n_aug))
+        else:
+            model_results.append(predict_model_probability(model, image_batch))
+
+    probability_parasitized = float(
+        np.average(
+            [item["probability_parasitized"] for item in model_results],
+            weights=weights,
+        )
+    )
+    probability_uninfected = float(1.0 - probability_parasitized)
+
+    return {
+        "raw_model_output": [item["raw_model_output"] for item in model_results],
+        "raw_model_score": float(
+            np.average([item["raw_model_score"] for item in model_results], weights=weights)
+        ),
+        "probability_parasitized": probability_parasitized,
+        "probability_uninfected": probability_uninfected,
+        "ensemble_model_results": model_results,
+        "ensemble_weights": weights.tolist(),
+        "tta_predictions": None,
+    }
+
+
+def apply_probability_calibration(prediction_result, method="none", calibration_params=None):
+    calibration = calibrate_probability(
+        prediction_result["probability_parasitized"],
+        method=method,
+        calibration_params=calibration_params,
+    )
+    calibrated_probability = calibration["calibrated_probability"]
+    return {
+        **prediction_result,
+        "uncalibrated_probability_parasitized": prediction_result["probability_parasitized"],
+        "probability_parasitized": calibrated_probability,
+        "probability_uninfected": float(1.0 - calibrated_probability),
+        "calibration": calibration,
+    }
+
+
+def model_name_from_path(path):
+    path = Path(path)
+    return path.parent.name or path.stem
+
+
+def build_structured_clinical_response(
+    flat_result,
+    quality_result,
+    img_size,
+    input_shape,
+    model_info,
+    probabilities,
+    threshold,
+    explainability=None,
+    tracking=None,
+):
+    image_info = {
+        "original_path": flat_result["image_path"],
+        "stored_path": flat_result.get("stored_image_path"),
+        "quality": quality_result,
+    }
+    preprocessing = {
+        "img_size": int(img_size),
+        "normalization": "[0, 1]",
+        "input_shape": list(input_shape),
+    }
+    return build_clinical_inference_response(
+        image=image_info,
+        preprocessing=preprocessing,
+        model=model_info,
+        probabilities=probabilities,
+        threshold=threshold,
+        explainability=explainability,
+        tracking=tracking,
+    )
