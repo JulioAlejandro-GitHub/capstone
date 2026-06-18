@@ -89,6 +89,33 @@ PY
 
 La carpeta `capstone/data/tensorflow_datasets/` está ignorada por Git. No se deben versionar imágenes, shards ni archivos TFRecord del dataset.
 
+## Preprocesamiento por arquitectura
+
+El pipeline usa `src/preprocessing.py` como punto único de preprocesamiento y los scripts aceptan `--preprocessing`.
+
+- `auto`: valor por defecto. Mantiene compatibilidad y resuelve a `rescale_0_1`.
+- `rescale_0_1`: resize + `float32` + normalización `[0, 1]`. Úsalo para `custom_cnn` y checkpoints ya entrenados.
+- `vgg16_imagenet`: resize + `tf.keras.applications.vgg16.preprocess_input`. Úsalo solo con VGG16 reentrenado con ese mismo modo.
+
+No mezcles modos entre entrenamiento e inferencia. Un checkpoint VGG16 histórico en `outputs/vgg16/` debe evaluarse con `rescale_0_1`. Para probar VGG16 con preprocesamiento ImageNet, reentrena en una carpeta separada:
+
+```bash
+python -m src.train \
+  --model vgg16 \
+  --epochs 30 \
+  --fine-tune-epochs 10 \
+  --img-size 200 \
+  --batch-size 64 \
+  --preprocessing vgg16_imagenet \
+  --output-dir outputs/vgg16_imagenet
+```
+
+Luego usa `--preprocessing vgg16_imagenet` en `src.evaluate`, `src.explain`, `src.tta`, `src.svm_features` y `src.predict_image` para ese checkpoint.
+
+Nota: `src.ensemble` aplica un único modo de preprocesamiento a todos los modelos. No mezcles en el mismo ensemble checkpoints entrenados con modos distintos.
+
+Los JSON de métricas y CSV de predicciones incluyen `preprocessing_mode` cuando el script genera esos artefactos.
+
 ## 3. Entrenar modelos
 
 ### Custom CNN
@@ -274,14 +301,15 @@ python -m src.explain \
   --batch-size 64 \
   --num-samples 20 \
   --threshold 0.5 \
-  --positive-label uninfected \
+  --positive-label parasitized \
+  --preprocessing auto \
   --max-candidates 200 \
   --output-dir outputs/explainability
 ```
 
 LIME identifica superpíxeles relevantes para una predicción local del modelo. SHAP estima la contribución de regiones o píxeles a la predicción. Grad-CAM genera mapas de calor usando los gradientes de la clase predicha sobre la última capa convolucional. Estas técnicas ayudan a revisar verdaderos positivos, verdaderos negativos, falsos positivos, falsos negativos y casos de baja confianza cercanos al umbral de clasificación.
 
-En los modelos sigmoid de este proyecto, por defecto el score se interpreta como la probabilidad de la clase índice 1 detectada por TensorFlow Datasets. Para fijar explícitamente la clase positiva se puede usar `--positive-label`, por ejemplo `--positive-label uninfected` o `--positive-label parasitized`.
+En los reportes clínicos experimentales, la clase positiva debe ser `parasitized`. El pipeline diferencia la salida cruda del sigmoid (`raw_model_score`) de `probability_parasitized` para evitar ambigüedad con el orden de clases de TensorFlow Datasets.
 
 Las salidas se guardan en:
 

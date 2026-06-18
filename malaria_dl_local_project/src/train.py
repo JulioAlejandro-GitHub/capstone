@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 
 import tensorflow as tf
 
@@ -6,6 +7,7 @@ from src.config import OUTPUT_DIR
 from src.data import load_malaria_splits
 from src.metrics import evaluate_keras_model
 from src.models import build_custom_cnn, build_vgg16_transfer, unfreeze_last_layers, compile_binary_model
+from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
 def parse_args():
@@ -19,6 +21,23 @@ def parse_args():
     parser.add_argument("--learning-rate", type=float, default=None)
     parser.add_argument("--no-augment", action="store_true")
     parser.add_argument(
+        "--output-dir",
+        default=None,
+        help=(
+            "Directorio de salida opcional. Si no se informa, usa "
+            "outputs/<model> como antes."
+        ),
+    )
+    parser.add_argument(
+        "--preprocessing",
+        choices=PREPROCESSING_CHOICES,
+        default="auto",
+        help=(
+            "Modo de preprocesamiento. 'auto' mantiene compatibilidad con "
+            "checkpoints existentes; usa vgg16_imagenet solo al reentrenar VGG16."
+        ),
+    )
+    parser.add_argument(
         "--track-db",
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
@@ -29,7 +48,12 @@ def parse_args():
 def main():
     args = parse_args()
     run_context = None
-    output_dir = OUTPUT_DIR / args.model
+    output_dir = (
+        Path(args.output_dir).expanduser()
+        if args.output_dir
+        else OUTPUT_DIR / args.model
+    )
+    preprocessing_mode = resolve_preprocessing_mode(args.model, args.preprocessing)
 
     if args.track_db:
         from src.tracking_integration import (
@@ -50,6 +74,7 @@ def main():
                     "augment": not args.no_augment,
                     "checkpoint_dir": str(output_dir),
                     "output_dir": str(output_dir),
+                    "preprocessing_mode": preprocessing_mode,
                 },
             ),
             random_seed=args.seed,
@@ -65,10 +90,12 @@ def main():
             batch_size=args.batch_size,
             seed=args.seed,
             augment=not args.no_augment,
+            preprocessing_mode=preprocessing_mode,
         )
 
         class_names = ds_info.features["label"].names
         print("Clases:", class_names)
+        print("Preprocesamiento:", preprocessing_mode)
 
         input_shape = (args.img_size, args.img_size, 3)
 
@@ -137,6 +164,8 @@ def main():
             class_names=class_names,
             output_dir=output_dir,
             prefix="test",
+            threshold=0.5,
+            metadata={"preprocessing_mode": preprocessing_mode},
         )
 
         model.save(output_dir / "final_model.keras")

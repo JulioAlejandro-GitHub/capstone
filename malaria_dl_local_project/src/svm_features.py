@@ -9,6 +9,7 @@ from sklearn.svm import SVC
 from src.config import OUTPUT_DIR
 from src.data import load_malaria_splits
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
+from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
 def parse_args():
@@ -18,6 +19,12 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--gamma", type=float, default=0.1)
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--preprocessing",
+        choices=PREPROCESSING_CHOICES,
+        default="auto",
+        help="Modo de preprocesamiento usado por el checkpoint extractor.",
+    )
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -60,6 +67,7 @@ def main():
     run_context = None
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
+    preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
 
     output_dir = OUTPUT_DIR / "cnn_features_svm"
     if args.track_db:
@@ -77,6 +85,7 @@ def main():
                     "checkpoint": str(checkpoint),
                     "output_dir": str(output_dir),
                     "threshold": args.threshold,
+                    "preprocessing_mode": preprocessing_mode,
                 },
             ),
         )
@@ -86,6 +95,7 @@ def main():
             img_size=args.img_size,
             batch_size=args.batch_size,
             augment=False,
+            preprocessing_mode=preprocessing_mode,
         )
         class_names = ds_info.features["label"].names
 
@@ -120,6 +130,7 @@ def main():
             output_dir=output_dir,
             prefix="svm_test",
             threshold=args.threshold,
+            metadata={"preprocessing_mode": preprocessing_mode},
         )
 
         joblib.dump(svm, output_dir / "svm_rbf.joblib")

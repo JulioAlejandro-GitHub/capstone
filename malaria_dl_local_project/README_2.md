@@ -55,13 +55,16 @@ Divide el único split train en:
 10% test
 También aplica:
 resize a img_size, por defecto 200x200
-normalización a [0, 1]
+preprocesamiento centralizado por arquitectura
 batching
 prefetch
 data augmentation opcional para entrenamiento
 
 Las clases son:
 ["parasitized", "uninfected"]
+
+Preprocesamiento:
+`src/preprocessing.py` define los modos disponibles. Por defecto `--preprocessing auto` mantiene compatibilidad con checkpoints existentes y usa `rescale_0_1`, es decir resize + normalización `[0, 1]`. Para VGG16 se puede usar `vgg16_imagenet`, pero solo con modelos reentrenados con ese mismo modo.
 
 Modelos
 [src/models.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/models.py:1) define dos arquitecturas Keras:
@@ -142,6 +145,7 @@ outputs/explainability/
 Resumen
 El proyecto está bien separado por capas:
 data.py          carga y preprocesa datos
+preprocessing.py preprocesamiento por arquitectura
 models.py        define arquitecturas
 train.py         entrena modelos
 metrics.py       calcula métricas
@@ -168,7 +172,8 @@ python -m src.explain \
   --num-samples 20 \
   --threshold 0.5 \
   --output-dir outputs/explainability \
-  --positive-label uninfected \
+  --positive-label parasitized \
+  --preprocessing auto \
   --max-candidates 200
 Significado:
 --checkpoint: ruta del modelo Keras entrenado, por ejemplo outputs/vgg16/best_model.keras.
@@ -183,7 +188,8 @@ all: LIME + SHAP + Grad-CAM.
 --num-samples: cantidad total de casos a explicar. Default: 20.
 --threshold: umbral de clasificación binaria. Default: 0.5.
 --output-dir: carpeta donde se guardan imágenes y CSV. Default: outputs/explainability.
---positive-label: clase positiva usada para interpretar el score sigmoid. En tu proyecto normalmente es uninfected, porque TFDS entrega ["parasitized", "uninfected"].
+--positive-label: clase clínica positiva usada para interpretar el score. En este proyecto debe ser parasitized.
+--preprocessing: modo usado por el checkpoint. Valores: auto, rescale_0_1, vgg16_imagenet. Default: auto.
 --max-candidates: máximo de imágenes candidatas retenidas por tipo de caso. Default: 200.
 
 Custom CNN con explicabilidad
@@ -194,7 +200,7 @@ python -m src.explain \
   --batch-size 64 \
   --num-samples 20 \
   --threshold 0.5 \
-  --positive-label uninfected
+  --positive-label parasitized
 Para todas las técnicas:
 python -m src.explain \
   --checkpoint outputs/custom_cnn/best_model.keras \
@@ -202,7 +208,7 @@ python -m src.explain \
   --img-size 200 \
   --batch-size 64 \
   --num-samples 20 \
-  --positive-label uninfected
+  --positive-label parasitized
 
 VGG16 con explicabilidad
 python -m src.explain \
@@ -212,14 +218,14 @@ python -m src.explain \
   --batch-size 64 \
   --num-samples 20 \
   --threshold 0.5 \
-  --positive-label uninfected
+  --positive-label parasitized
 
 Con LIME + SHAP + Grad-CAM:
 python -m src.explain \
   --checkpoint outputs/vgg16/best_model.keras \
   --method all \
   --num-samples 20 \
-  --positive-label uninfected
+  --positive-label parasitized
 
 Salida Generada
 Los resultados quedan en:

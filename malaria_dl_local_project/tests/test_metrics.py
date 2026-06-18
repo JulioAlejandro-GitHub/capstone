@@ -39,6 +39,7 @@ class ClinicalMetricsTests(unittest.TestCase):
                 output_dir=temp_dir,
                 prefix="clinical",
                 threshold=0.5,
+                metadata={"preprocessing_mode": "rescale_0_1"},
             )
 
             csv_path = Path(temp_dir) / "clinical_predictions.csv"
@@ -52,11 +53,13 @@ class ClinicalMetricsTests(unittest.TestCase):
         self.assertAlmostEqual(metrics["false_positive_rate"], 0.5)
         self.assertAlmostEqual(metrics["balanced_accuracy"], 0.5)
         self.assertAlmostEqual(metrics["auc_parasitized"], 0.75)
+        self.assertEqual(metrics["preprocessing_mode"], "rescale_0_1")
 
         self.assertAlmostEqual(float(rows[0]["raw_model_score"]), 0.1, places=6)
         self.assertAlmostEqual(float(rows[0]["probability_parasitized"]), 0.9, places=6)
         self.assertAlmostEqual(float(rows[0]["probability_uninfected"]), 0.1, places=6)
         self.assertEqual(rows[0]["predicted_label"], "parasitized")
+        self.assertEqual(rows[0]["preprocessing_mode"], "rescale_0_1")
         self.assertIn("raw_model_predicted_label", rows[0])
 
 

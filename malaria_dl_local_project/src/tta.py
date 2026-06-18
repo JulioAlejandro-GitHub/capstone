@@ -6,6 +6,13 @@ import tensorflow as tf
 
 from src.data import build_augmentation, load_raw_test_split, preprocess_single
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
+from src.preprocessing import (
+    PREPROCESSING_CHOICES,
+    PREPROCESSING_VGG16_IMAGENET,
+    apply_model_preprocessing,
+    resize_image_tensor,
+    resolve_preprocessing_mode,
+)
 
 
 def parse_args():
@@ -15,6 +22,12 @@ def parse_args():
     parser.add_argument("--n-aug", type=int, default=8)
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument(
+        "--preprocessing",
+        choices=PREPROCESSING_CHOICES,
+        default="auto",
+        help="Modo de preprocesamiento usado por el checkpoint.",
+    )
+    parser.add_argument(
         "--track-db",
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
@@ -22,12 +35,23 @@ def parse_args():
     return parser.parse_args()
 
 
-def predict_with_tta(model, image, augmentation, n_aug: int = 8):
+def predict_with_tta(model, image, augmentation, n_aug: int = 8, preprocessing_mode="rescale_0_1"):
+    preprocessing_mode = resolve_preprocessing_mode(requested=preprocessing_mode)
+
+    if preprocessing_mode == PREPROCESSING_VGG16_IMAGENET:
+        augmented_images = [np.asarray(image, dtype=np.float32)]
+        for _ in range(n_aug):
+            aug_img = augmentation(image, training=True)
+            augmented_images.append(np.asarray(aug_img, dtype=np.float32))
+        batch = apply_model_preprocessing(
+            np.asarray(augmented_images, dtype=np.float32),
+            preprocessing_mode,
+        ).numpy()
+        return float(np.mean(model.predict(batch, verbose=0).reshape(-1)))
+
     preds = []
     image_batch = tf.expand_dims(image, axis=0)
-
     preds.append(model.predict(image_batch, verbose=0)[0][0])
-
     for _ in range(n_aug):
         aug_img = augmentation(image, training=True)
         aug_img = tf.expand_dims(aug_img, axis=0)
@@ -42,6 +66,7 @@ def main():
     run_context = None
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
+    preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
 
     output_dir = checkpoint.parent / "tta_evaluation"
     if args.track_db:
@@ -63,6 +88,7 @@ def main():
                     "checkpoint": str(checkpoint),
                     "output_dir": str(output_dir),
                     "threshold": args.threshold,
+                    "preprocessing_mode": preprocessing_mode,
                 },
             ),
         )
@@ -75,8 +101,23 @@ def main():
         y_true = []
         y_score = []
 
-        for image, label in raw_test.map(lambda x, y: preprocess_single(x, y, args.img_size)):
-            score = predict_with_tta(model, image, augmentation, n_aug=args.n_aug)
+        for image, label in raw_test:
+            if preprocessing_mode == PREPROCESSING_VGG16_IMAGENET:
+                model_image = resize_image_tensor(image, args.img_size)
+            else:
+                model_image, label = preprocess_single(
+                    image,
+                    label,
+                    args.img_size,
+                    preprocessing_mode=preprocessing_mode,
+                )
+            score = predict_with_tta(
+                model,
+                model_image,
+                augmentation,
+                n_aug=args.n_aug,
+                preprocessing_mode=preprocessing_mode,
+            )
             y_score.append(score)
             y_true.append(int(label.numpy()))
 
@@ -98,6 +139,7 @@ def main():
             output_dir=output_dir,
             prefix="tta_test",
             threshold=args.threshold,
+            metadata={"preprocessing_mode": preprocessing_mode},
         )
 
         if args.track_db and run_context:

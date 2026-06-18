@@ -7,6 +7,7 @@ import tensorflow as tf
 from src.config import OUTPUT_DIR
 from src.data import load_malaria_splits
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
+from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
 def parse_args():
@@ -16,6 +17,12 @@ def parse_args():
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--preprocessing",
+        choices=PREPROCESSING_CHOICES,
+        default="auto",
+        help="Modo de preprocesamiento aplicado a todos los modelos del ensemble.",
+    )
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -32,6 +39,7 @@ def main():
     for path in model_paths:
         if not path.exists():
             raise FileNotFoundError(f"No existe el modelo: {path}")
+    preprocessing_mode = resolve_preprocessing_mode("ensemble", args.preprocessing)
 
     output_dir = OUTPUT_DIR / "ensemble"
     if args.track_db:
@@ -49,6 +57,7 @@ def main():
                     "models": [str(path) for path in model_paths],
                     "output_dir": str(output_dir),
                     "threshold": args.threshold,
+                    "preprocessing_mode": preprocessing_mode,
                 },
             ),
         )
@@ -68,6 +77,7 @@ def main():
             img_size=args.img_size,
             batch_size=args.batch_size,
             augment=False,
+            preprocessing_mode=preprocessing_mode,
         )
         class_names = ds_info.features["label"].names
 
@@ -104,6 +114,7 @@ def main():
             output_dir=output_dir,
             prefix="ensemble_test",
             threshold=args.threshold,
+            metadata={"preprocessing_mode": preprocessing_mode},
         )
 
         if args.track_db and run_context:

@@ -107,6 +107,75 @@ python -m src.evaluate \
   --track-db
 ```
 
+## Preprocesamiento Por Arquitectura
+
+El preprocesamiento está centralizado en `src/preprocessing.py` y se pasa de forma explícita con `--preprocessing` en entrenamiento, evaluación, explicabilidad, TTA, ensemble, SVM e inferencia individual.
+
+Modos disponibles:
+
+- `auto`: modo por defecto. Resuelve a `rescale_0_1` para mantener compatibilidad con checkpoints ya entrenados.
+- `rescale_0_1`: resize + `float32` + normalización `[0, 1]`. Es el modo esperado para `custom_cnn` y para los checkpoints históricos del proyecto.
+- `vgg16_imagenet`: resize + `float32` + `tf.keras.applications.vgg16.preprocess_input`. Debe usarse solo con modelos VGG16 entrenados con ese mismo modo.
+
+Impacto operativo:
+
+- No se debe evaluar un checkpoint entrenado con `[0,1]` usando `vgg16_imagenet`, porque cambia la distribución de entrada.
+- No se debe evaluar un checkpoint entrenado con `vgg16_imagenet` usando `[0,1]`.
+- Para probar VGG16 con preprocesamiento ImageNet, reentrena y guarda el modelo en una carpeta separada para no sobrescribir `outputs/vgg16/`.
+- `src.ensemble` aplica un único modo a todos los modelos. No mezcles en el mismo ensemble checkpoints entrenados con modos distintos.
+- Los JSON de métricas y CSV de predicciones incluyen `preprocessing_mode` cuando se generan desde estos scripts.
+
+Ejemplo conservador para checkpoints existentes:
+
+```bash
+python -m src.evaluate \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --preprocessing rescale_0_1
+```
+
+Ejemplo para nuevo VGG16 reentrenado con preprocesamiento ImageNet:
+
+```bash
+python -m src.train \
+  --model vgg16 \
+  --epochs 30 \
+  --fine-tune-epochs 10 \
+  --img-size 200 \
+  --batch-size 64 \
+  --preprocessing vgg16_imagenet \
+  --output-dir outputs/vgg16_imagenet \
+  --track-db
+```
+
+Luego usa el mismo modo en todos los pasos posteriores:
+
+```bash
+python -m src.evaluate \
+  --checkpoint outputs/vgg16_imagenet/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --preprocessing vgg16_imagenet \
+  --track-db
+
+python -m src.explain \
+  --checkpoint outputs/vgg16_imagenet/best_model.keras \
+  --method all \
+  --num-samples 50 \
+  --positive-label parasitized \
+  --preprocessing vgg16_imagenet \
+  --track-db
+
+python -m src.predict_image \
+  --checkpoint outputs/vgg16_imagenet/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --img-size 200 \
+  --positive-label parasitized \
+  --threshold 0.5 \
+  --preprocessing vgg16_imagenet
+```
+
 ## 3. Inferencia Clínica Experimental
 
 Responsabilidad: procesar una imagen externa individual y devolver una respuesta estructurada, trazable y explicable.
@@ -133,7 +202,7 @@ Imagen nueva
    ↓
 control de calidad de imagen
    ↓
-preprocesamiento estándar
+preprocesamiento por arquitectura
    ↓
 modelo base
    ↓

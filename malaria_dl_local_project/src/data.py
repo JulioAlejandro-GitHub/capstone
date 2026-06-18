@@ -4,6 +4,15 @@ from pathlib import Path
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
+from src.preprocessing import (
+    PREPROCESSING_RESCALE_0_1,
+    PREPROCESSING_VGG16_IMAGENET,
+    apply_model_preprocessing,
+    preprocess_image_tensor,
+    resize_image_tensor,
+    resolve_preprocessing_mode,
+)
+
 
 def get_tfds_data_dir() -> Path:
     """
@@ -26,6 +35,7 @@ def load_malaria_splits(
     batch_size: int = 64,
     seed: int = 42,
     augment: bool = False,
+    preprocessing_mode: str = PREPROCESSING_RESCALE_0_1,
 ):
     """
     Carga NIH/NLM Malaria Cell Images desde TensorFlow Datasets.
@@ -42,21 +52,35 @@ def load_malaria_splits(
         data_dir=str(get_tfds_data_dir()),
     )
 
+    preprocessing_mode = resolve_preprocessing_mode(requested=preprocessing_mode)
     augmentation = build_augmentation()
 
     def preprocess(image, label):
-        image = tf.image.resize(image, (img_size, img_size))
-        image = tf.cast(image, tf.float32) / 255.0
+        image = preprocess_image_tensor(image, img_size, preprocessing_mode)
         label = tf.cast(label, tf.float32)
+        return image, label
+
+    def resize_only(image, label):
+        image = resize_image_tensor(image, img_size)
+        label = tf.cast(label, tf.float32)
+        return image, label
+
+    def apply_preprocessing(image, label):
+        image = apply_model_preprocessing(image, preprocessing_mode)
         return image, label
 
     def augment_fn(image, label):
         image = augmentation(image, training=True)
         return image, label
 
-    ds_train = ds_train.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE)
-    if augment:
+    if augment and preprocessing_mode == PREPROCESSING_VGG16_IMAGENET:
+        ds_train = ds_train.map(resize_only, num_parallel_calls=tf.data.AUTOTUNE)
         ds_train = ds_train.map(augment_fn, num_parallel_calls=tf.data.AUTOTUNE)
+        ds_train = ds_train.map(apply_preprocessing, num_parallel_calls=tf.data.AUTOTUNE)
+    else:
+        ds_train = ds_train.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE)
+        if augment:
+            ds_train = ds_train.map(augment_fn, num_parallel_calls=tf.data.AUTOTUNE)
 
     ds_train = (
         ds_train
@@ -113,8 +137,13 @@ def load_raw_test_split():
     )
 
 
-def preprocess_single(image, label, img_size: int = 200):
-    image = tf.image.resize(image, (img_size, img_size))
-    image = tf.cast(image, tf.float32) / 255.0
+def preprocess_single(
+    image,
+    label,
+    img_size: int = 200,
+    preprocessing_mode: str = PREPROCESSING_RESCALE_0_1,
+):
+    preprocessing_mode = resolve_preprocessing_mode(requested=preprocessing_mode)
+    image = preprocess_image_tensor(image, img_size, preprocessing_mode)
     label = tf.cast(label, tf.float32)
     return image, label

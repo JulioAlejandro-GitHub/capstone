@@ -166,6 +166,7 @@ def evaluate_binary_predictions(
     prefix="test",
     threshold=0.5,
     positive_label=POSITIVE_LABEL,
+    metadata=None,
 ):
     if positive_label != POSITIVE_LABEL:
         raise ValueError(
@@ -173,6 +174,7 @@ def evaluate_binary_predictions(
         )
 
     class_names = list(class_names)
+    metadata = dict(metadata or {})
     y_true = np.asarray(y_true).astype(int)
     raw_input_y_pred = np.asarray(y_pred).astype(int)
     raw_model_score, probability_parasitized, probability_uninfected = (
@@ -229,6 +231,8 @@ def evaluate_binary_predictions(
         "clinical_negative_label": NEGATIVE_LABEL,
         "raw_model_score_label": class_names[1] if len(class_names) > 1 else None,
         "threshold": float(threshold),
+        "preprocessing_mode": metadata.get("preprocessing_mode"),
+        "metadata": metadata,
         "confusion_matrix": cm.tolist(),
         "raw_model_confusion_matrix": confusion_matrix(
             y_true,
@@ -275,6 +279,8 @@ def evaluate_binary_predictions(
                 "negative_label": NEGATIVE_LABEL,
             }
         )
+        if metadata.get("preprocessing_mode") is not None:
+            pred_df["preprocessing_mode"] = metadata["preprocessing_mode"]
         pred_df["true_label"] = [class_names[int(index)] for index in y_true]
         pred_df["predicted_label"] = [class_names[int(index)] for index in y_pred]
         pred_df["raw_model_predicted_label"] = [
@@ -292,6 +298,7 @@ def evaluate_keras_model(
     output_dir=None,
     prefix="test",
     threshold=0.5,
+    metadata=None,
 ):
     y_true, y_pred, y_score = collect_predictions(
         model,
@@ -307,4 +314,5 @@ def evaluate_keras_model(
         output_dir=output_dir,
         prefix=prefix,
         threshold=threshold,
+        metadata=metadata,
     )

@@ -12,14 +12,31 @@ from src.decision import (
     build_clinical_inference_response,
     probabilities_by_class_from_prediction,
 )
+from src.preprocessing import (
+    PREPROCESSING_RESCALE_0_1,
+    PREPROCESSING_VGG16_IMAGENET,
+    apply_model_preprocessing,
+    preprocessing_description,
+    preprocess_numpy_image,
+    resize_image_tensor,
+    resolve_preprocessing_mode,
+)
 
 
-def preprocess_external_image(image_path, img_size):
+def preprocess_external_image(
+    image_path,
+    img_size,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
+    return_raw=False,
+):
+    preprocessing_mode = resolve_preprocessing_mode(requested=preprocessing_mode)
     image = Image.open(image_path).convert("RGB")
-    image = np.asarray(image, dtype=np.float32)
-    image = tf.image.resize(image, (img_size, img_size))
-    image = image.numpy().astype(np.float32) / 255.0
-    image_batch = np.expand_dims(image, axis=0)
+    raw_image = resize_image_tensor(np.asarray(image, dtype=np.float32), img_size)
+    raw_image = raw_image.numpy().astype(np.float32)
+    image = preprocess_numpy_image(raw_image, img_size, preprocessing_mode)
+    image_batch = np.expand_dims(image, axis=0).astype(np.float32)
+    if return_raw:
+        return image_batch, image, raw_image
     return image_batch, image
 
 
@@ -49,18 +66,35 @@ def predict_model_probability(model, image_batch):
     }
 
 
-def predict_model_probability_with_tta(model, image_batch, n_aug):
+def predict_model_probability_with_tta(
+    model,
+    image_batch,
+    n_aug,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
+    raw_image=None,
+):
     from src.data import build_augmentation
 
+    preprocessing_mode = resolve_preprocessing_mode(requested=preprocessing_mode)
     augmentation = build_augmentation()
     image = image_batch[0]
-    augmented_images = [image]
 
-    for _ in range(int(n_aug)):
-        augmented = augmentation(image, training=True)
-        augmented_images.append(np.asarray(augmented, dtype=np.float32))
+    if preprocessing_mode == PREPROCESSING_VGG16_IMAGENET and raw_image is not None:
+        augmented_raw_images = [np.asarray(raw_image, dtype=np.float32)]
+        for _ in range(int(n_aug)):
+            augmented = augmentation(raw_image, training=True)
+            augmented_raw_images.append(np.asarray(augmented, dtype=np.float32))
+        tta_batch = apply_model_preprocessing(
+            np.asarray(augmented_raw_images, dtype=np.float32),
+            preprocessing_mode,
+        ).numpy()
+    else:
+        augmented_images = [image]
+        for _ in range(int(n_aug)):
+            augmented = augmentation(image, training=True)
+            augmented_images.append(np.asarray(augmented, dtype=np.float32))
+        tta_batch = np.asarray(augmented_images, dtype=np.float32)
 
-    tta_batch = np.asarray(augmented_images, dtype=np.float32)
     predictions = model.predict(tta_batch, verbose=0)
     probability_rows = probability_rows_from_predictions(predictions)
     probability_parasitized = float(
@@ -90,13 +124,29 @@ def normalize_ensemble_weights(num_models, weights=None):
     return weights / total
 
 
-def predict_ensemble_probability(models, image_batch, weights=None, tta=False, n_aug=8):
+def predict_ensemble_probability(
+    models,
+    image_batch,
+    weights=None,
+    tta=False,
+    n_aug=8,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
+    raw_image=None,
+):
     weights = normalize_ensemble_weights(len(models), weights)
     model_results = []
 
     for model in models:
         if tta:
-            model_results.append(predict_model_probability_with_tta(model, image_batch, n_aug))
+            model_results.append(
+                predict_model_probability_with_tta(
+                    model,
+                    image_batch,
+                    n_aug,
+                    preprocessing_mode=preprocessing_mode,
+                    raw_image=raw_image,
+                )
+            )
         else:
             model_results.append(predict_model_probability(model, image_batch))
 
@@ -150,6 +200,7 @@ def build_structured_clinical_response(
     model_info,
     probabilities,
     threshold,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
     explainability=None,
     tracking=None,
 ):
@@ -160,7 +211,9 @@ def build_structured_clinical_response(
     }
     preprocessing = {
         "img_size": int(img_size),
-        "normalization": "[0, 1]",
+        "mode": resolve_preprocessing_mode(requested=preprocessing_mode),
+        "description": preprocessing_description(preprocessing_mode),
+        "normalization": preprocessing_description(preprocessing_mode),
         "input_shape": list(input_shape),
     }
     return build_clinical_inference_response(

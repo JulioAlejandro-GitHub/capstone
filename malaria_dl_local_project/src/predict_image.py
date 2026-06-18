@@ -23,6 +23,7 @@ from src.inference_pipeline import (
     predict_model_probability_with_tta,
     preprocess_external_image,
 )
+from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
 EXTERNAL_PREDICTIONS_CSV = OUTPUT_DIR / "predictions" / "external_predictions.csv"
@@ -35,6 +36,15 @@ def parse_args():
     parser.add_argument("--image-path", required=True, help="Ruta a la imagen a evaluar.")
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--preprocessing",
+        choices=PREPROCESSING_CHOICES,
+        default="auto",
+        help=(
+            "Modo de preprocesamiento del checkpoint. 'auto' mantiene compatibilidad "
+            "con modelos existentes."
+        ),
+    )
     parser.add_argument(
         "--positive-label",
         default=POSITIVE_LABEL,
@@ -87,8 +97,8 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_image(image_path, img_size):
-    image_batch, _ = preprocess_external_image(image_path, img_size)
+def load_image(image_path, img_size, preprocessing_mode="rescale_0_1"):
+    image_batch, _ = preprocess_external_image(image_path, img_size, preprocessing_mode)
     return image_batch
 
 
@@ -112,8 +122,14 @@ def predict_without_tta(model, image_batch):
     return predict_model_probability(model, image_batch)
 
 
-def predict_with_tta(model, image_batch, n_aug):
-    return predict_model_probability_with_tta(model, image_batch, n_aug)
+def predict_with_tta(model, image_batch, n_aug, preprocessing_mode="rescale_0_1", raw_image=None):
+    return predict_model_probability_with_tta(
+        model,
+        image_batch,
+        n_aug,
+        preprocessing_mode=preprocessing_mode,
+        raw_image=raw_image,
+    )
 
 
 def methods_to_run(method):
@@ -142,7 +158,7 @@ def relative_to_project(path):
         return str(path)
 
 
-def run_external_explanations(args, model, image_batch, response):
+def run_external_explanations(args, model, image_batch, response, preprocessing_mode):
     if not args.explain or args.explain == "none":
         return {
             "requested": False,
@@ -186,6 +202,7 @@ def run_external_explanations(args, model, image_batch, response):
                         score=response["probability_parasitized"],
                     ),
                     invert_scalar_output=response["predicted_label"] == POSITIVE_LABEL,
+                    preprocessing_mode=preprocessing_mode,
                 )
                 item.update(
                     {
@@ -206,6 +223,7 @@ def run_external_explanations(args, model, image_batch, response):
                     predicted_label=response["predicted_label"],
                     score=response["probability_parasitized"],
                     positive_idx=CLASS_NAMES.index(POSITIVE_LABEL),
+                    preprocessing_mode=preprocessing_mode,
                 )
                 item["success"] = True
             elif method == "shap":
@@ -221,6 +239,7 @@ def run_external_explanations(args, model, image_batch, response):
                     true_label=response.get("true_label"),
                     predicted_label=response["predicted_label"],
                     score=response["probability_parasitized"],
+                    preprocessing_mode=preprocessing_mode,
                 )
                 item.update({"success": bool(success), "error": error})
         except Exception as exc:
@@ -288,6 +307,7 @@ def build_result(args, image_path, stored_image, checkpoint, prediction_result):
             probability_parasitized,
         ),
         "calibration": prediction_result.get("calibration", {"method": "none", "applied": False}),
+        "preprocessing_mode": prediction_result.get("preprocessing_mode"),
         "tta": bool(args.tta),
         "n_aug": int(args.n_aug) if args.tta else 0,
         "tta_predictions": prediction_result["tta_predictions"],
@@ -711,11 +731,12 @@ def load_explain_model(explain_model_path, loaded_models):
     return tf.keras.models.load_model(explain_model_path)
 
 
-def model_info_from_args(args, primary_checkpoint, model_paths, weights):
+def model_info_from_args(args, primary_checkpoint, model_paths, weights, preprocessing_mode):
     return {
         "mode": "ensemble" if args.ensemble else "single_model",
         "checkpoint": str(primary_checkpoint),
         "model_name": "ensemble" if args.ensemble else model_name_from_checkpoint_path(primary_checkpoint),
+        "preprocessing_mode": preprocessing_mode,
         "tta_applied": bool(args.tta),
         "n_aug": int(args.n_aug) if args.tta else 0,
         "ensemble_applied": bool(args.ensemble),
@@ -748,7 +769,8 @@ def quality_failure_response(args, image_path, quality_result):
         },
         "preprocessing": {
             "img_size": int(args.img_size),
-            "normalization": "[0, 1]",
+            "mode": args.preprocessing,
+            "normalization": args.preprocessing,
             "input_shape": None,
         },
         "model": {
@@ -811,6 +833,10 @@ def main():
         return
 
     primary_checkpoint, model_paths, explain_model_path = resolve_model_paths(args)
+    preprocessing_mode = resolve_preprocessing_mode(
+        "ensemble" if args.ensemble else primary_checkpoint.parent.name,
+        args.preprocessing,
+    )
     loaded_models = [(path, tf.keras.models.load_model(path)) for path in model_paths]
     explain_model = (
         load_explain_model(explain_model_path, loaded_models)
@@ -825,7 +851,12 @@ def main():
         stored_image = store_prediction_image(image_path, image_id=args.image_id)
         prediction_image_path = stored_image.stored_path
 
-    image_batch, _ = preprocess_external_image(prediction_image_path, args.img_size)
+    image_batch, _, raw_image = preprocess_external_image(
+        prediction_image_path,
+        args.img_size,
+        preprocessing_mode=preprocessing_mode,
+        return_raw=True,
+    )
 
     if args.ensemble:
         weights = args.weights
@@ -835,16 +866,25 @@ def main():
             weights=weights,
             tta=args.tta,
             n_aug=args.n_aug,
+            preprocessing_mode=preprocessing_mode,
+            raw_image=raw_image,
         )
         normalized_weights = prediction_result.get("ensemble_weights")
     else:
         model = loaded_models[0][1]
         prediction_result = (
-            predict_with_tta(model, image_batch, args.n_aug)
+            predict_with_tta(
+                model,
+                image_batch,
+                args.n_aug,
+                preprocessing_mode=preprocessing_mode,
+                raw_image=raw_image,
+            )
             if args.tta
             else predict_without_tta(model, image_batch)
         )
         normalized_weights = None
+    prediction_result["preprocessing_mode"] = preprocessing_mode
 
     calibration_params = {}
     if args.calibration_temperature is not None:
@@ -858,8 +898,20 @@ def main():
     result = build_result(args, image_path, stored_image, primary_checkpoint, prediction_result)
     result["model_checkpoint"] = str(primary_checkpoint)
     result["model_name"] = "ensemble" if args.ensemble else model_name_from_checkpoint_path(primary_checkpoint)
-    result["explainability"] = run_external_explanations(args, explain_model, image_batch, result)
-    model_info = model_info_from_args(args, primary_checkpoint, model_paths, normalized_weights)
+    result["explainability"] = run_external_explanations(
+        args,
+        explain_model,
+        image_batch,
+        result,
+        preprocessing_mode,
+    )
+    model_info = model_info_from_args(
+        args,
+        primary_checkpoint,
+        model_paths,
+        normalized_weights,
+        preprocessing_mode,
+    )
     probabilities = {
         "probability_parasitized": result["probability_parasitized"],
         "probability_uninfected": result["probability_uninfected"],
@@ -875,6 +927,7 @@ def main():
             model_info=model_info,
             probabilities=probabilities,
             threshold=args.threshold,
+            preprocessing_mode=preprocessing_mode,
             explainability=result["explainability"],
             tracking={"track_db": bool(args.track_db), "registered": False, "run_id": None, "prediction_id": None},
         )

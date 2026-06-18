@@ -7,6 +7,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from src.preprocessing import (
+    PREPROCESSING_CHOICES,
+    PREPROCESSING_RESCALE_0_1,
+    PREPROCESSING_VGG16_IMAGENET,
+    apply_model_preprocessing,
+    resolve_preprocessing_mode,
+)
+
 
 CASE_TYPES = [
     "true_positive",
@@ -67,6 +75,15 @@ def parse_args():
     parser.add_argument("--num-samples", type=int, default=20)
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--output-dir", default="outputs/explainability")
+    parser.add_argument(
+        "--preprocessing",
+        choices=PREPROCESSING_CHOICES,
+        default="auto",
+        help=(
+            "Modo de preprocesamiento usado por el checkpoint. 'auto' mantiene "
+            "compatibilidad con checkpoints existentes."
+        ),
+    )
     parser.add_argument(
         "--positive-label",
         default="parasitized",
@@ -135,10 +152,41 @@ def predict_positive_scores(model, images, positive_idx):
     return scores_from_predictions(raw_model_predictions(model, images), positive_idx)
 
 
-def binary_predict_proba(model, images, positive_idx):
+def model_image_to_display(image, preprocessing_mode=PREPROCESSING_RESCALE_0_1):
+    mode = resolve_preprocessing_mode(requested=preprocessing_mode)
+    image = np.asarray(image, dtype=np.float32)
+
+    if mode == PREPROCESSING_VGG16_IMAGENET:
+        bgr_image = image.copy()
+        bgr_image[..., 0] += 103.939
+        bgr_image[..., 1] += 116.779
+        bgr_image[..., 2] += 123.68
+        rgb_image = bgr_image[..., ::-1]
+        return np.clip(rgb_image / 255.0, 0.0, 1.0).astype(np.float32)
+
+    return np.clip(image, 0.0, 1.0).astype(np.float32)
+
+
+def display_images_to_model_inputs(images, preprocessing_mode=PREPROCESSING_RESCALE_0_1):
+    mode = resolve_preprocessing_mode(requested=preprocessing_mode)
     images = np.asarray(images, dtype=np.float32)
     images = np.clip(images, 0.0, 1.0)
-    predictions = raw_model_predictions(model, images)
+
+    if mode == PREPROCESSING_VGG16_IMAGENET:
+        return apply_model_preprocessing(images * 255.0, mode).numpy().astype(np.float32)
+
+    return images.astype(np.float32)
+
+
+def binary_predict_proba(
+    model,
+    images,
+    positive_idx,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
+):
+    images = np.asarray(images, dtype=np.float32)
+    model_images = display_images_to_model_inputs(images, preprocessing_mode)
+    predictions = raw_model_predictions(model, model_images)
 
     if predictions.ndim == 2 and predictions.shape[1] == 2:
         return np.clip(predictions, 0.0, 1.0)
@@ -312,6 +360,7 @@ def select_cases(
     threshold,
     class_names=None,
     positive_label=None,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
 ):
     if num_samples <= 0:
         raise ValueError("--num-samples debe ser mayor que cero")
@@ -337,6 +386,9 @@ def select_cases(
         predicted_label_idx = int(y_pred[index])
         score = float(y_score[index])
 
+        model_image = np.asarray(image, dtype=np.float32).copy()
+        display_image = model_image_to_display(model_image, preprocessing_mode)
+
         selected.append(
             {
                 "case_id": int(index),
@@ -348,7 +400,11 @@ def select_cases(
                 "score_positive_label": score,
                 "positive_label": positive_label,
                 "threshold": float(threshold),
-                "image": np.clip(np.asarray(image, dtype=np.float32), 0.0, 1.0),
+                "image": model_image,
+                "display_image": display_image,
+                "preprocessing_mode": resolve_preprocessing_mode(
+                    requested=preprocessing_mode
+                ),
             }
         )
         selected_indices.add(int(index))
@@ -400,6 +456,7 @@ def select_explanation_cases(
     positive_idx=1,
     negative_idx=0,
     positive_label=None,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
 ):
     return select_cases(
         images=images,
@@ -412,6 +469,7 @@ def select_explanation_cases(
         threshold=threshold,
         class_names=class_names,
         positive_label=positive_label,
+        preprocessing_mode=preprocessing_mode,
     )
 
 
@@ -468,6 +526,7 @@ def explain_with_lime(
     predicted_label=None,
     score=None,
     positive_idx=1,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
 ):
     try:
         from lime import lime_image
@@ -478,17 +537,22 @@ def explain_with_lime(
         ) from exc
 
     plt = get_pyplot()
-    image = np.clip(np.asarray(image, dtype=np.float32), 0.0, 1.0)
+    display_image = model_image_to_display(image, preprocessing_mode)
 
     def predict_fn(images):
-        return binary_predict_proba(model, images, positive_idx=positive_idx)
+        return binary_predict_proba(
+            model,
+            images,
+            positive_idx=positive_idx,
+            preprocessing_mode=preprocessing_mode,
+        )
 
-    probabilities = predict_fn(np.expand_dims(image, axis=0))[0]
+    probabilities = predict_fn(np.expand_dims(display_image, axis=0))[0]
     label_to_explain = predicted_class_index(class_names, predicted_label, probabilities)
 
     explainer = lime_image.LimeImageExplainer(random_state=42)
     explanation = explainer.explain_instance(
-        image.astype(np.double),
+        display_image.astype(np.double),
         predict_fn,
         labels=(label_to_explain,),
         hide_color=0,
@@ -511,7 +575,7 @@ def explain_with_lime(
     boundary_image = mark_boundaries(highlighted_image, mask)
 
     fig, axes = plt.subplots(1, 3, figsize=(12, 4))
-    axes[0].imshow(image)
+    axes[0].imshow(display_image)
     axes[0].set_title("Imagen original")
     axes[0].axis("off")
 
@@ -519,7 +583,7 @@ def explain_with_lime(
     axes[1].set_title("Superpixeles LIME")
     axes[1].axis("off")
 
-    axes[2].imshow(image)
+    axes[2].imshow(display_image)
     axes[2].imshow(mask, cmap="jet", alpha=0.35)
     axes[2].set_title("Overlay LIME")
     axes[2].axis("off")
@@ -562,13 +626,15 @@ def explain_with_shap(
     true_label=None,
     predicted_label=None,
     score=None,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
 ):
     try:
         import shap
 
         plt = get_pyplot()
         background_images = np.asarray(background_images, dtype=np.float32)
-        image = np.clip(np.asarray(image, dtype=np.float32), 0.0, 1.0)
+        model_image = np.asarray(image, dtype=np.float32)
+        display_image = model_image_to_display(model_image, preprocessing_mode)
 
         if background_images.ndim != 4 or len(background_images) == 0:
             raise ValueError("SHAP requiere al menos una imagen de background.")
@@ -582,7 +648,7 @@ def explain_with_shap(
                 background_images,
             )
 
-        shap_values = explainer.shap_values(np.expand_dims(image, axis=0))
+        shap_values = explainer.shap_values(np.expand_dims(model_image, axis=0))
         shap_array = extract_shap_array(shap_values)
 
         signed_map = np.mean(shap_array, axis=-1)
@@ -591,7 +657,7 @@ def explain_with_shap(
             signed_map = signed_map / max_abs
 
         fig, axes = plt.subplots(1, 3, figsize=(12, 4))
-        axes[0].imshow(image)
+        axes[0].imshow(display_image)
         axes[0].set_title("Imagen original")
         axes[0].axis("off")
 
@@ -600,7 +666,7 @@ def explain_with_shap(
         axes[1].axis("off")
         fig.colorbar(im, ax=axes[1], fraction=0.046, pad=0.04)
 
-        axes[2].imshow(image)
+        axes[2].imshow(display_image)
         axes[2].imshow(signed_map, cmap="coolwarm", alpha=0.45, vmin=-1, vmax=1)
         axes[2].set_title("Overlay SHAP")
         axes[2].axis("off")
@@ -706,11 +772,13 @@ def explain_with_gradcam(
     title,
     last_conv_layer_name=None,
     invert_scalar_output=False,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
 ):
     import tensorflow as tf
 
     plt = get_pyplot()
-    image = np.clip(np.asarray(image, dtype=np.float32), 0.0, 1.0)
+    model_image = np.asarray(image, dtype=np.float32)
+    display_image = model_image_to_display(model_image, preprocessing_mode)
 
     if last_conv_layer_name is None:
         last_conv_layer = find_last_conv_layer(model)
@@ -721,7 +789,7 @@ def explain_with_gradcam(
 
     grad_model = build_gradcam_model(model, last_conv_layer, tf)
 
-    image_batch = tf.convert_to_tensor(np.expand_dims(image, axis=0), dtype=tf.float32)
+    image_batch = tf.convert_to_tensor(np.expand_dims(model_image, axis=0), dtype=tf.float32)
     with tf.GradientTape() as tape:
         conv_outputs, model_output = grad_model(image_batch, training=False)
         if len(model_output.shape) >= 2 and model_output.shape[-1] == 1:
@@ -750,16 +818,16 @@ def explain_with_gradcam(
     )
     heatmap = tf.image.resize(
         heatmap[..., tf.newaxis],
-        image.shape[:2],
+        model_image.shape[:2],
         method="bilinear",
     )
     heatmap = heatmap.numpy().squeeze()
 
     heatmap_rgb = plt.get_cmap("jet")(heatmap)[..., :3].astype(np.float32)
-    overlay = np.clip((0.6 * image) + (0.4 * heatmap_rgb), 0.0, 1.0)
+    overlay = np.clip((0.6 * display_image) + (0.4 * heatmap_rgb), 0.0, 1.0)
 
     fig, axes = plt.subplots(1, 3, figsize=(12, 4))
-    axes[0].imshow(image)
+    axes[0].imshow(display_image)
     axes[0].set_title("Imagen original")
     axes[0].axis("off")
 
@@ -822,6 +890,7 @@ def run_lime(model, class_names, positive_idx, output_dir, case):
             predicted_label=case["predicted_label"],
             score=case["score_positive_label"],
             positive_idx=positive_idx,
+            preprocessing_mode=case.get("preprocessing_mode", PREPROCESSING_RESCALE_0_1),
         )
         return make_summary_row(case, "lime", output_path, success=True)
     except Exception as exc:
@@ -840,6 +909,7 @@ def run_shap(model, background_images, class_names, output_dir, case):
         true_label=case["true_label"],
         predicted_label=case["predicted_label"],
         score=case["score_positive_label"],
+        preprocessing_mode=case.get("preprocessing_mode", PREPROCESSING_RESCALE_0_1),
     )
     return make_summary_row(
         case,
@@ -866,6 +936,7 @@ def run_gradcam(model, output_dir, case):
             output_path=output_path,
             title=title,
             invert_scalar_output=case["predicted_label_idx"] == 0,
+            preprocessing_mode=case.get("preprocessing_mode", PREPROCESSING_RESCALE_0_1),
         )
         return make_summary_row(
             case,
@@ -896,6 +967,8 @@ def main():
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
 
+    preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
+
     if args.track_db:
         from src.tracking_integration import (
             args_to_parameters,
@@ -915,6 +988,7 @@ def main():
                     "checkpoint": str(checkpoint),
                     "selected_methods": selected_methods,
                     "output_dir": str(output_dir),
+                    "preprocessing_mode": preprocessing_mode,
                 },
             ),
         )
@@ -934,6 +1008,7 @@ def main():
             img_size=args.img_size,
             batch_size=args.batch_size,
             augment=False,
+            preprocessing_mode=preprocessing_mode,
         )
 
         class_names = list(ds_info.features["label"].names)
@@ -943,6 +1018,7 @@ def main():
         )
 
         print(f"Orden de clases detectado desde TFDS: {class_names}")
+        print(f"Preprocesamiento: {preprocessing_mode}")
         print(
             f"Clase positiva para score sigmoid: {positive_label} "
             f"(índice {positive_idx}); umbral={args.threshold}"
@@ -974,6 +1050,7 @@ def main():
             positive_idx=positive_idx,
             negative_idx=negative_idx,
             positive_label=positive_label,
+            preprocessing_mode=preprocessing_mode,
         )
         print(f"Casos seleccionados: {len(cases)}")
 

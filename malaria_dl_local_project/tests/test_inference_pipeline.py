@@ -31,6 +31,22 @@ class InferencePipelineTests(unittest.TestCase):
         self.assertGreaterEqual(float(np.min(batch)), 0.0)
         self.assertLessEqual(float(np.max(batch)), 1.0)
 
+    def test_preprocess_external_image_supports_vgg16_imagenet_mode(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            image_path = Path(temp_dir) / "sample.png"
+            Image.new("RGB", (96, 64), color=(100, 150, 200)).save(image_path)
+
+            batch, image = preprocess_external_image(
+                image_path,
+                img_size=32,
+                preprocessing_mode="vgg16_imagenet",
+            )
+
+        self.assertEqual(batch.shape, (1, 32, 32, 3))
+        self.assertEqual(image.shape, (32, 32, 3))
+        self.assertLess(float(np.min(batch)), 0.0)
+        self.assertGreater(float(np.max(batch)), 1.0)
+
     def test_normalize_ensemble_weights_defaults_to_equal_weights(self):
         weights = normalize_ensemble_weights(2)
 
