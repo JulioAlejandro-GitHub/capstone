@@ -109,3 +109,59 @@ export interface ExplainabilityRow extends JsonRecord {
   run_name: string | null;
   model_name: string | null;
 }
+
+export interface PagedResponse<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ExplainabilityCase extends JsonRecord {
+  explainability_id: string;
+  prediction_id: string | null;
+  run_id: string;
+  experiment_id: string | null;
+  model_id: string | null;
+  model_name: string | null;
+  model_type: string | null;
+  dataset_id: string | null;
+  dataset_name: string | null;
+  run_name: string | null;
+  run_type: string | null;
+  run_status: string | null;
+  script_name: string | null;
+  command: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  duration_seconds: number | null;
+  method: string;
+  case_type: string | null;
+  true_label: string | null;
+  predicted_label: string | null;
+  positive_label: string | null;
+  score: number | null;
+  score_positive_label: number | null;
+  threshold: number | null;
+  is_correct: boolean | null;
+  image_id: string | null;
+  image_path: string | null;
+  explanation_output_path: string | null;
+  artifact_path: string | null;
+  artifact_type: string | null;
+  last_conv_layer: string | null;
+  success: boolean | null;
+  error_message: string | null;
+}
+
+export interface ExplainabilityCaseSummary extends JsonRecord {
+  model_name: string | null;
+  dataset_name: string | null;
+  method: string | null;
+  case_type: string | null;
+  total_cases: number;
+  avg_score: number | null;
+  min_score: number | null;
+  max_score: number | null;
+  latest_run_at: string | null;
+}

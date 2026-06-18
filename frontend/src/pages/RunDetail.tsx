@@ -12,6 +12,23 @@ interface RunDetailProps {
   runId: string | null;
 }
 
+const IMAGE_EXTENSIONS = /\.(png|jpe?g|gif|webp|bmp|svg)$/i;
+
+function isImageArtifact(artifact: ArtifactRow) {
+  const mimeType = artifact.mime_type?.toLowerCase() ?? '';
+  const artifactType = artifact.artifact_type?.toLowerCase() ?? '';
+  const path = artifact.path?.toLowerCase() ?? '';
+  const name = artifact.name?.toLowerCase() ?? '';
+
+  return (
+    mimeType.startsWith('image/')
+    || IMAGE_EXTENSIONS.test(path)
+    || IMAGE_EXTENSIONS.test(name)
+    || artifactType.includes('image')
+    || artifactType === 'confusion_matrix_png'
+  );
+}
+
 export function RunDetail({ datasource, runId }: RunDetailProps) {
   const [detail, setDetail] = useState<RunDetailResponse | null>(null);
   const [confusion, setConfusion] = useState<JsonRecord[]>([]);
@@ -89,19 +106,30 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
       <section className="panel">
         <h2>Artefactos</h2>
         <div className="artifact-grid">
-          {detail.artifacts.map((artifact: ArtifactRow) => (
-            <article key={artifact.id} className="artifact-card">
-              <strong>{artifact.name ?? artifact.artifact_type}</strong>
-              <small>{artifact.artifact_type}</small>
-              <code>{artifact.path}</code>
-              {artifact.mime_type?.startsWith('image/') ? (
-                <img src={api.artifactUrl(artifact.path)} alt={artifact.name ?? artifact.artifact_type} />
-              ) : null}
-            </article>
-          ))}
+          {detail.artifacts.map((artifact: ArtifactRow) => {
+            const artifactUrl = api.artifactUrl(artifact.path);
+            const shouldShowImage = isImageArtifact(artifact);
+
+            return (
+              <article key={artifact.id} className="artifact-card">
+                <strong>{artifact.name ?? artifact.artifact_type}</strong>
+                <small>{artifact.artifact_type}</small>
+                {shouldShowImage ? (
+                  <a href={artifactUrl} target="_blank" rel="noreferrer">
+                    <img src={artifactUrl} alt={artifact.name ?? artifact.artifact_type} />
+                  </a>
+                ) : null}
+                <code>{artifact.path}</code>
+                <div className="artifact-actions">
+                  <a href={artifactUrl} target="_blank" rel="noreferrer">
+                    {shouldShowImage ? 'Abrir imagen' : 'Abrir artefacto'}
+                  </a>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     </section>
   );
 }
-

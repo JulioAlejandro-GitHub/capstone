@@ -47,10 +47,17 @@ GET /metrics/{run_id}
 GET /confusion-matrix/{run_id}
 GET /classification-report/{run_id}
 GET /explainability
+GET /explainability/cases
+GET /explainability/cases/false-positives
+GET /explainability/cases/false-negatives
+GET /explainability/cases/low-confidence
+GET /explainability/cases/summary
+GET /explainability/gallery
 GET /errors
 GET /logs
 GET /artifacts/file?path=outputs/explainability/...
 ```
 
-El endpoint de artefactos solo sirve archivos dentro de `malaria_dl_local_project/outputs`.
+Los endpoints de casos aceptan filtros opcionales como `model_name`, `dataset_name`, `method`, `case_type`, `run_id`, `true_label`, `predicted_label`, `success`, `limit` y `offset`.
 
+El endpoint de artefactos solo sirve archivos dentro de `malaria_dl_local_project/outputs` y `data`.

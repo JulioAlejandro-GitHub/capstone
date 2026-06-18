@@ -49,7 +49,11 @@ db/init/001_schema.sql
 db/init/002_indexes.sql
 db/init/003_views.sql
 db/init/004_seed.sql
+db/init/007_case_level_explainability_views.sql
+db/init/008_case_level_explainability_indexes.sql
 ```
+
+También ejecuta automáticamente otros archivos numerados `NNN_*.sql` si existen, por ejemplo `005_frontend_views.sql` o `006_frontend_indexes.sql`.
 
 La inicialización es idempotente: usa `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, `CREATE OR REPLACE VIEW` e inserciones semilla con `WHERE NOT EXISTS`.
 
@@ -156,8 +160,111 @@ psql -h localhost -p 5432 -U postgres -d malaria_experiments
 - `vw_model_run_summary`: resumen por modelo, cantidad de ejecuciones, completadas, fallidas y mejores métricas.
 - `vw_run_dashboard`: vista plana por ejecución con modelo, dataset, duración y métricas principales.
 - `vw_explainability_summary`: conteos de explicaciones por método, éxito, error y tipo de caso.
+- `vw_case_level_explainability`: detalle por imagen explicada, uniendo explicación, predicción, run, modelo, dataset y artefacto.
+- `vw_false_positive_cases`: falsos positivos caso a caso.
+- `vw_false_negative_cases`: falsos negativos caso a caso.
+- `vw_low_confidence_cases`: predicciones cercanas al umbral de decisión.
+- `vw_case_type_summary`: resumen por modelo, dataset, método y tipo de caso.
+- `vw_explainability_gallery`: galería de imágenes explicadas con rutas de artefactos.
 
 Estas vistas quedan preparadas para alimentar un dashboard web futuro sin acoplar todavía el frontend.
+
+## Consultas caso a caso de explicabilidad
+
+### Ver falsos positivos caso a caso
+
+```sql
+SELECT
+    run_id,
+    model_name,
+    dataset_name,
+    method,
+    true_label,
+    predicted_label,
+    positive_label,
+    score_positive_label,
+    threshold,
+    image_path,
+    explanation_output_path,
+    last_conv_layer,
+    started_at
+FROM vw_false_positive_cases
+ORDER BY started_at DESC, score_positive_label DESC;
+```
+
+### Ver falsos negativos caso a caso
+
+```sql
+SELECT
+    run_id,
+    model_name,
+    dataset_name,
+    method,
+    true_label,
+    predicted_label,
+    positive_label,
+    score_positive_label,
+    threshold,
+    image_path,
+    explanation_output_path,
+    last_conv_layer,
+    started_at
+FROM vw_false_negative_cases
+ORDER BY started_at DESC, score_positive_label ASC;
+```
+
+### Ver casos de baja confianza
+
+```sql
+SELECT
+    run_id,
+    model_name,
+    dataset_name,
+    method,
+    true_label,
+    predicted_label,
+    score_positive_label,
+    threshold,
+    confidence_distance,
+    image_path,
+    explanation_output_path
+FROM vw_low_confidence_cases
+ORDER BY confidence_distance ASC;
+```
+
+### Resumen por tipo de caso
+
+```sql
+SELECT
+    model_name,
+    dataset_name,
+    method,
+    case_type,
+    total_cases,
+    ROUND(avg_score::numeric, 4) AS avg_score
+FROM vw_case_type_summary
+ORDER BY model_name, method, case_type;
+```
+
+### Galería de explicabilidad
+
+```sql
+SELECT
+    gallery_id,
+    run_id,
+    model_name,
+    dataset_name,
+    method,
+    case_type,
+    true_label,
+    predicted_label,
+    score_positive_label,
+    image_path,
+    explanation_output_path
+FROM vw_explainability_gallery
+ORDER BY started_at DESC
+LIMIT 100;
+```
 
 ## Consultas SQL útiles
 

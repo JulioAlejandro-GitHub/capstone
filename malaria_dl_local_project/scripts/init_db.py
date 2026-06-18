@@ -11,12 +11,14 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.db import get_connection, test_connection
 
 
-SQL_FILES = [
-    PROJECT_ROOT / "db" / "init" / "001_schema.sql",
-    PROJECT_ROOT / "db" / "init" / "002_indexes.sql",
-    PROJECT_ROOT / "db" / "init" / "003_views.sql",
-    PROJECT_ROOT / "db" / "init" / "004_seed.sql",
+SQL_DIR = PROJECT_ROOT / "db" / "init"
+REQUIRED_SQL_FILES = [
+    SQL_DIR / "001_schema.sql",
+    SQL_DIR / "002_indexes.sql",
+    SQL_DIR / "003_views.sql",
+    SQL_DIR / "004_seed.sql",
 ]
+SQL_FILES = sorted(SQL_DIR.glob("[0-9][0-9][0-9]_*.sql"))
 
 
 def split_sql_statements(sql):
@@ -59,7 +61,7 @@ def execute_sql_file(connection, sql_path):
 
 
 def main():
-    for sql_path in SQL_FILES:
+    for sql_path in REQUIRED_SQL_FILES:
         if not sql_path.exists():
             raise FileNotFoundError(f"No existe el archivo SQL requerido: {sql_path}")
 

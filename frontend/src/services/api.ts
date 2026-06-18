@@ -2,9 +2,12 @@ import type {
   ArtifactRow,
   DashboardSummary,
   Datasource,
+  ExplainabilityCase,
+  ExplainabilityCaseSummary,
   ExplainabilityRow,
   JsonRecord,
   ModelSummary,
+  PagedResponse,
   RunDashboard,
   RunDetailResponse,
 } from '../types/api';
@@ -12,7 +15,9 @@ import type {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 export const DEFAULT_DATASOURCE = import.meta.env.VITE_DEFAULT_DATASOURCE ?? 'malaria';
 
-async function request<T>(path: string, params: Record<string, string | number | undefined> = {}) {
+type QueryValue = string | number | boolean | undefined;
+
+async function request<T>(path: string, params: Record<string, QueryValue> = {}) {
   const url = new URL(path, API_BASE_URL);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined) {
@@ -82,6 +87,48 @@ export const api = {
     );
   },
 
+  getExplainabilityCases(datasource: string, params: Record<string, QueryValue> = {}) {
+    return request<PagedResponse<ExplainabilityCase>>('/explainability/cases', {
+      datasource,
+      ...params,
+    });
+  },
+
+  getFalsePositiveCases(datasource: string, params: Record<string, QueryValue> = {}) {
+    return request<PagedResponse<ExplainabilityCase>>('/explainability/cases/false-positives', {
+      datasource,
+      ...params,
+    });
+  },
+
+  getFalseNegativeCases(datasource: string, params: Record<string, QueryValue> = {}) {
+    return request<PagedResponse<ExplainabilityCase>>('/explainability/cases/false-negatives', {
+      datasource,
+      ...params,
+    });
+  },
+
+  getLowConfidenceCases(datasource: string, params: Record<string, QueryValue> = {}) {
+    return request<PagedResponse<ExplainabilityCase>>('/explainability/cases/low-confidence', {
+      datasource,
+      ...params,
+    });
+  },
+
+  getExplainabilityCaseSummary(datasource: string, params: Record<string, QueryValue> = {}) {
+    return request<PagedResponse<ExplainabilityCaseSummary>>('/explainability/cases/summary', {
+      datasource,
+      ...params,
+    });
+  },
+
+  getExplainabilityGallery(datasource: string, params: Record<string, QueryValue> = {}) {
+    return request<PagedResponse<ExplainabilityCase>>('/explainability/gallery', {
+      datasource,
+      ...params,
+    });
+  },
+
   getErrors(datasource: string) {
     return request<{ items: JsonRecord[] }>('/errors', withDatasource(datasource));
   },
@@ -92,4 +139,3 @@ export const api = {
 };
 
 export type ApiArtifact = ArtifactRow;
-
