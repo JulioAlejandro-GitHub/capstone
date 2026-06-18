@@ -8,6 +8,7 @@ import { Explainability } from './pages/Explainability';
 import { ModelComparison } from './pages/ModelComparison';
 import { RunDetail } from './pages/RunDetail';
 import { Runs } from './pages/Runs';
+import { UploadedPredictions } from './pages/UploadedPredictions';
 import { DEFAULT_DATASOURCE, api } from './services/api';
 import type { Datasource } from './types/api';
 
@@ -50,6 +51,9 @@ function App() {
       {page === 'models' ? <ModelComparison datasource={datasource} /> : null}
       {page === 'run-detail' ? <RunDetail datasource={datasource} runId={selectedRunId} /> : null}
       {page === 'explainability' ? <Explainability datasource={datasource} /> : null}
+      {page === 'uploaded-predictions' ? (
+        <UploadedPredictions datasource={datasource} onRunSelect={selectRun} />
+      ) : null}
       {page === 'datasets' ? <DatasetsModels datasource={datasource} /> : null}
       {page === 'errors' ? <ErrorsLogs datasource={datasource} /> : null}
     </Layout>
@@ -57,4 +61,3 @@ function App() {
 }
 
 export default App;
-

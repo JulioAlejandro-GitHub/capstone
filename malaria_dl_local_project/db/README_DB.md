@@ -302,6 +302,14 @@ FROM explainability_results
 GROUP BY method;
 ```
 
+### Imagenes subidas para prediccion
+
+```sql
+SELECT image_id, image_path, predicted_label, score_positive_label, created_at
+FROM vw_uploaded_predictions
+ORDER BY created_at DESC;
+```
+
 ### Últimas ejecuciones
 
 ```sql

@@ -165,3 +165,23 @@ export interface ExplainabilityCaseSummary extends JsonRecord {
   max_score: number | null;
   latest_run_at: string | null;
 }
+
+export interface UploadedPrediction extends JsonRecord {
+  prediction_id: string;
+  run_id: string;
+  model_name: string | null;
+  run_name: string | null;
+  run_status: string | null;
+  image_id: string | null;
+  image_path: string | null;
+  artifact_path: string | null;
+  original_filename: string | null;
+  stored_filename: string | null;
+  true_label: string | null;
+  predicted_label: string | null;
+  score_positive_label: number | null;
+  threshold: number | null;
+  is_correct: boolean | null;
+  case_type: string | null;
+  created_at: string | null;
+}

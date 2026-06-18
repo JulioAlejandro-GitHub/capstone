@@ -10,6 +10,7 @@ import type {
   PagedResponse,
   RunDashboard,
   RunDetailResponse,
+  UploadedPrediction,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
@@ -124,6 +125,13 @@ export const api = {
 
   getExplainabilityGallery(datasource: string, params: Record<string, QueryValue> = {}) {
     return request<PagedResponse<ExplainabilityCase>>('/explainability/gallery', {
+      datasource,
+      ...params,
+    });
+  },
+
+  getUploadedPredictions(datasource: string, params: Record<string, QueryValue> = {}) {
+    return request<PagedResponse<UploadedPrediction>>('/predictions/uploads', {
       datasource,
       ...params,
     });

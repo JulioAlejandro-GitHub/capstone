@@ -150,6 +150,20 @@ python -m src.predict_image \
   --track-db
 ```
 
+Cuando se usa `--track-db`, la imagen se copia y renombra en:
+
+```text
+../data/prediction_uploads/
+```
+
+La ruta registrada en `predictions.image_path` y `artifacts.path` queda con formato relativo al repo, por ejemplo:
+
+```text
+data/prediction_uploads/20260618_153012_a8f23c_imagen.png
+```
+
+Estas imagenes quedan ignoradas por Git y se pueden consultar desde el backend/frontend como “Predicciones subidas”.
+
 Si conoces la clase real, puedes registrarla para calcular si fue TP, TN, FP o FN:
 
 ```bash

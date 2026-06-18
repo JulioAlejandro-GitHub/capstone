@@ -220,8 +220,11 @@ outputs/vgg16/best_model.keras
 Pero no aplica directamente a:
 outputs/cnn_features_svm/svm_rbf.joblib
 porque ese SVM no es un modelo Keras convolucional. Tampoco explica directamente el ensemble, porque ensemble.py combina predicciones de varios modelos en tiempo de ejecución y no guarda un modelo Keras único. Para explicabilidad, debes explicar cada modelo base por separado: custom_cnn y vgg16.
+
 Imagen Nueva
+
 Para evaluar una imagen nueva individual ahora existe:
+
 python -m src.predict_image \
   --checkpoint outputs/vgg16/best_model.keras \
   --image-path ruta/a/imagen.png \
@@ -230,36 +233,59 @@ python -m src.predict_image \
   --threshold 0.5
 
 Con tracking en PostgreSQL:
+
 python -m src.predict_image \
   --checkpoint outputs/vgg16/best_model.keras \
   --image-path ruta/a/imagen.png \
   --positive-label parasitized \
   --track-db
 
+Con --track-db, la imagen se copia y renombra en:
+
+../data/prediction_uploads/
+
+La ruta registrada en PostgreSQL queda relativa al repo, por ejemplo:
+
+data/prediction_uploads/20260618_153012_a8f23c_imagen.png
+
+Estas imagenes quedan fuera de Git y aparecen en el frontend en el reporte "Predicciones subidas".
+
 Si conoces la clase real, agrega:
 --true-label uninfected
 
-5:07 PM
 
 
 
 
-Sí. Desde la raíz del proyecto Python:
+
+Desde la raíz del proyecto Python:
+
 cd capstone/malaria_dl_local_project
+
 source .venv/bin/activate
+
 Primero, si el dataset no está descargado:
+
 python scripts/download_malaria_dataset.py
+
 1. Entrenamiento
+
 Custom CNN:
+
 python -m src.train --model custom_cnn --epochs 30 --img-size 200 --batch-size 64
+
 Custom CNN con tracking en BD:
 python -m src.train --model custom_cnn --epochs 30 --img-size 200 --batch-size 64 --track-db
+
 VGG16 transfer learning:
 python -m src.train --model vgg16 --epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64
+
 VGG16 con tracking:
 python -m src.train --model vgg16 --epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64 --track-db
+
 Ejecución rápida de prueba:
 python -m src.train --model custom_cnn --epochs 1 --img-size 200 --batch-size 64
+
 2. Evaluación
 Evaluar Custom CNN:
 python -m src.evaluate --checkpoint outputs/custom_cnn/best_model.keras --img-size 200 --batch-size 64
@@ -318,7 +344,10 @@ python -m src.tta \
   --img-size 200 \
   --n-aug 8 \
   --track-db
+
+
 Flujo recomendado completo para Capstone
+
 python -m src.train --model custom_cnn --epochs 30 --img-size 200 --batch-size 64 --track-db
 
 python -m src.train --model vgg16 --epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64 --track-db
@@ -332,4 +361,6 @@ python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method all -
 python -m src.ensemble --models outputs/custom_cnn/best_model.keras outputs/vgg16/best_model.keras --weights 0.4 0.6 --track-db
 
 python -m src.tta --checkpoint outputs/vgg16/best_model.keras --n-aug 8 --track-db
+
+
 Regla práctica: usa --track-db en toda ejecución que quieras ver luego en el backend/frontend. Para explicabilidad caso a caso, usa siempre --positive-label parasitized.

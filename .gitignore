@@ -14,6 +14,10 @@ __pycache__/
 malaria_dl_local_project/.venv/
 malaria_dl_local_project/outputs/
 malaria_dl_local_project/tensorflow_datasets/
+
+data/prediction_uploads/*
+!data/prediction_uploads/.gitkeep
+
 data/tensorflow_datasets
 data/tensorflow_datasets/
 tensorflow_datasets

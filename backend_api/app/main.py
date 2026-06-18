@@ -1,7 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import artifacts, catalog, dashboard, explainability, health, metrics, observability, runs
+from app.routes import (
+    artifacts,
+    catalog,
+    dashboard,
+    explainability,
+    health,
+    metrics,
+    observability,
+    predictions,
+    runs,
+)
 
 
 app = FastAPI(
@@ -27,6 +37,6 @@ app.include_router(runs.router)
 app.include_router(catalog.router)
 app.include_router(metrics.router)
 app.include_router(explainability.router)
+app.include_router(predictions.router)
 app.include_router(observability.router)
 app.include_router(artifacts.router)
-

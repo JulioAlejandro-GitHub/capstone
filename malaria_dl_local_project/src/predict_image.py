@@ -1,6 +1,5 @@
 import argparse
 import json
-import mimetypes
 from pathlib import Path
 
 import numpy as np
@@ -116,6 +115,8 @@ def build_result(args, image_path, checkpoint, prediction, probabilities):
 def print_result(result):
     print("Resultado de inferencia individual")
     print(f"  imagen: {result['image_path']}")
+    if result.get("original_image_path"):
+        print(f"  imagen original: {result['original_image_path']}")
     print(f"  checkpoint: {result['checkpoint']}")
     print(f"  clase positiva: {result['positive_label']}")
     print(f"  prediccion: {result['predicted_label']}")
@@ -136,7 +137,7 @@ def save_json(result, output_json):
     print(f"Resultado JSON guardado en: {output_path}")
 
 
-def track_prediction(args, result, checkpoint, image_path):
+def track_prediction(args, result, checkpoint):
     from src.tracking_integration import (
         args_to_parameters,
         fail_tracking_run,
@@ -150,13 +151,16 @@ def track_prediction(args, result, checkpoint, image_path):
         run_type="inference",
         script_name="src.predict_image",
         model_name=model_name_from_checkpoint(checkpoint),
-        run_name=f"predict_image:{image_path.stem}",
+        run_name=f"uploaded_prediction:{result['image_id']}",
         parameters=args_to_parameters(
             args,
             extra={
                 "checkpoint": str(checkpoint),
-                "image_path": str(image_path),
+                "image_path": result["image_path"],
+                "original_image_path": result.get("original_image_path"),
+                "stored_filename": result.get("stored_filename"),
                 "class_names": CLASS_NAMES,
+                "prediction_source": "uploaded_for_prediction",
             },
         ),
     )
@@ -178,7 +182,7 @@ def track_prediction(args, result, checkpoint, image_path):
                 run_id,
                 dataset_id=context.get("dataset_id"),
                 image_id=result["image_id"],
-                image_path=str(image_path),
+                image_path=result["image_path"],
                 true_label=result["true_label"],
                 predicted_label=result["predicted_label"],
                 score=result["score_positive_label"],
@@ -187,7 +191,11 @@ def track_prediction(args, result, checkpoint, image_path):
                 is_correct=result["is_correct"],
                 case_type=case_type,
                 metadata={
-                    "source": "external_image",
+                    "source": "uploaded_for_prediction",
+                    "original_image_path": result.get("original_image_path"),
+                    "original_filename": result.get("original_filename"),
+                    "stored_filename": result.get("stored_filename"),
+                    "checksum_sha256": result.get("checksum_sha256"),
                     "scores_by_class": result["scores_by_class"],
                     "raw_model_output": result["raw_model_output"],
                 },
@@ -195,10 +203,19 @@ def track_prediction(args, result, checkpoint, image_path):
             tracker.safe_track(
                 tracker.log_artifact,
                 run_id,
-                artifact_type="input_image",
-                name=image_path.name,
-                path=str(image_path),
-                mime_type=mimetypes.guess_type(image_path)[0],
+                artifact_type="uploaded_input_image",
+                name=result.get("stored_filename"),
+                path=result["image_path"],
+                mime_type=result.get("mime_type"),
+                file_size_bytes=result.get("file_size_bytes"),
+                checksum=result.get("checksum_sha256"),
+                metadata={
+                    "source": "uploaded_for_prediction",
+                    "original_image_path": result.get("original_image_path"),
+                    "original_filename": result.get("original_filename"),
+                    "stored_filename": result.get("stored_filename"),
+                    "image_id": result["image_id"],
+                },
             )
             finish_tracking_run(context, metadata={"status_detail": "single image inference completed"})
     except Exception as exc:
@@ -208,8 +225,9 @@ def track_prediction(args, result, checkpoint, image_path):
 
 def main():
     args = parse_args()
-    checkpoint = Path(args.checkpoint)
-    image_path = Path(args.image_path)
+    checkpoint = Path(args.checkpoint).expanduser()
+    image_path = Path(args.image_path).expanduser()
+    stored_image = None
 
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
@@ -217,10 +235,35 @@ def main():
         raise FileNotFoundError(f"No existe la imagen: {image_path}")
 
     model = tf.keras.models.load_model(checkpoint)
-    image_batch = load_image(image_path, args.img_size)
+
+    prediction_image_path = image_path
+    result_image_path = image_path
+    if args.track_db:
+        from src.prediction_uploads import store_prediction_image
+
+        stored_image = store_prediction_image(image_path, image_id=args.image_id)
+        prediction_image_path = stored_image.stored_path
+        result_image_path = Path(stored_image.relative_path)
+
+    image_batch = load_image(prediction_image_path, args.img_size)
     prediction = model.predict(image_batch, verbose=0)
     probabilities = probabilities_from_prediction(prediction, CLASS_NAMES)
-    result = build_result(args, image_path, checkpoint, prediction, probabilities)
+    result = build_result(args, result_image_path, checkpoint, prediction, probabilities)
+
+    if stored_image is not None:
+        result.update(
+            {
+                "image_id": stored_image.image_id,
+                "image_path": stored_image.relative_path,
+                "original_image_path": str(stored_image.source_path),
+                "stored_image_path": stored_image.relative_path,
+                "original_filename": stored_image.original_filename,
+                "stored_filename": stored_image.stored_filename,
+                "checksum_sha256": stored_image.checksum_sha256,
+                "mime_type": stored_image.mime_type,
+                "file_size_bytes": stored_image.file_size_bytes,
+            }
+        )
 
     print_result(result)
 
@@ -228,7 +271,7 @@ def main():
         save_json(result, args.output_json)
 
     if args.track_db:
-        track_prediction(args, result, checkpoint, image_path)
+        track_prediction(args, result, checkpoint)
 
 
 if __name__ == "__main__":
