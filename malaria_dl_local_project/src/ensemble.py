@@ -63,7 +63,7 @@ def main():
         )
 
     try:
-        models = [tf.keras.models.load_model(path) for path in model_paths]
+        models = [tf.keras.models.load_model(path, compile=False) for path in model_paths]
 
         if args.weights is None:
             weights = np.ones(len(models), dtype=float) / len(models)

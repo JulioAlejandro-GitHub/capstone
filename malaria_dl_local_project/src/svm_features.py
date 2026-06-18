@@ -99,7 +99,7 @@ def main():
         )
         class_names = ds_info.features["label"].names
 
-        model = tf.keras.models.load_model(checkpoint)
+        model = tf.keras.models.load_model(checkpoint, compile=False)
         extractor = build_feature_extractor(model)
 
         print("Extrayendo features de entrenamiento...")

@@ -728,7 +728,7 @@ def load_explain_model(explain_model_path, loaded_models):
     for path, model in loaded_models:
         if Path(path).resolve() == Path(explain_model_path).resolve():
             return model
-    return tf.keras.models.load_model(explain_model_path)
+    return tf.keras.models.load_model(explain_model_path, compile=False)
 
 
 def model_info_from_args(args, primary_checkpoint, model_paths, weights, preprocessing_mode):
@@ -837,7 +837,10 @@ def main():
         "ensemble" if args.ensemble else primary_checkpoint.parent.name,
         args.preprocessing,
     )
-    loaded_models = [(path, tf.keras.models.load_model(path)) for path in model_paths]
+    loaded_models = [
+        (path, tf.keras.models.load_model(path, compile=False))
+        for path in model_paths
+    ]
     explain_model = (
         load_explain_model(explain_model_path, loaded_models)
         if args.explain and args.explain != "none"

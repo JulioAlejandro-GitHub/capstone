@@ -130,6 +130,30 @@ python -m src.train --model custom_cnn --epochs 30 --img-size 200 --batch-size 6
 python -m src.train --model vgg16 --epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64
 ```
 
+### Selección del mejor checkpoint
+
+Por defecto `best_model.keras` se selecciona con criterio clínico experimental:
+
+```text
+--checkpoint-metric val_recall_parasitized
+```
+
+`val_recall_parasitized` mide sensibilidad/recall de `parasitized`, usando esa clase como positiva clínica. También puedes usar `val_auc`, `val_recall`, `val_accuracy` o `val_loss`.
+
+Ejemplo explícito:
+
+```bash
+python -m src.train \
+  --model vgg16 \
+  --epochs 30 \
+  --fine-tune-epochs 10 \
+  --img-size 200 \
+  --batch-size 64 \
+  --checkpoint-metric val_recall_parasitized
+```
+
+El criterio queda registrado en `outputs/<model>/checkpoint_selection.json`. Los logs quedan separados en `training_base_log.csv` y `fine_tuning_log.csv`; `training_log.csv` se mantiene como alias del entrenamiento base.
+
 ### SVM usando features del VGG16 entrenado
 
 Primero entrena VGG16. Luego:

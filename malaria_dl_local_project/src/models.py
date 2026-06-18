@@ -3,6 +3,65 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.applications import VGG16
 
 
+@tf.keras.utils.register_keras_serializable(package="malaria")
+class ParasitizedRecall(tf.keras.metrics.Metric):
+    """
+    Sensibilidad clínica para la clase parasitized.
+
+    TFDS codifica:
+      0 = parasitized
+      1 = uninfected
+
+    La salida sigmoid del proyecto representa P(label=1) = P(uninfected).
+    Por eso una predicción parasitized corresponde a y_pred < threshold.
+    """
+
+    def __init__(self, threshold: float = 0.5, name: str = "recall_parasitized", **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.threshold = float(threshold)
+        self.true_positives = self.add_weight(name="true_positives", initializer="zeros")
+        self.false_negatives = self.add_weight(name="false_negatives", initializer="zeros")
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        y_true = tf.cast(tf.reshape(y_true, [-1]), tf.float32)
+        y_pred = tf.cast(tf.reshape(y_pred, [-1]), tf.float32)
+
+        true_parasitized = tf.equal(y_true, 0.0)
+        pred_parasitized = tf.less(y_pred, self.threshold)
+
+        true_positive_mask = tf.cast(
+            tf.logical_and(true_parasitized, pred_parasitized),
+            tf.float32,
+        )
+        false_negative_mask = tf.cast(
+            tf.logical_and(true_parasitized, tf.logical_not(pred_parasitized)),
+            tf.float32,
+        )
+
+        if sample_weight is not None:
+            sample_weight = tf.cast(tf.reshape(sample_weight, [-1]), tf.float32)
+            true_positive_mask *= sample_weight
+            false_negative_mask *= sample_weight
+
+        self.true_positives.assign_add(tf.reduce_sum(true_positive_mask))
+        self.false_negatives.assign_add(tf.reduce_sum(false_negative_mask))
+
+    def result(self):
+        return tf.math.divide_no_nan(
+            self.true_positives,
+            self.true_positives + self.false_negatives,
+        )
+
+    def reset_state(self):
+        self.true_positives.assign(0.0)
+        self.false_negatives.assign(0.0)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"threshold": self.threshold})
+        return config
+
+
 def compile_binary_model(model, learning_rate: float = 1.0, optimizer_name: str = "adadelta"):
     """
     Compila un modelo binario con métricas útiles para salud/diagnóstico.
@@ -21,6 +80,7 @@ def compile_binary_model(model, learning_rate: float = 1.0, optimizer_name: str 
             "accuracy",
             tf.keras.metrics.Precision(name="precision"),
             tf.keras.metrics.Recall(name="recall"),
+            ParasitizedRecall(name="recall_parasitized"),
             tf.keras.metrics.AUC(name="auc"),
         ],
     )

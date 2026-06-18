@@ -92,17 +92,26 @@ Dense 1 sigmoid
 Ambos modelos usan:
 loss="binary_crossentropy"
 optimizer=Adadelta
-metrics=["accuracy", Precision, Recall, AUC]
+metrics=["accuracy", Precision, Recall, Recall parasitized, AUC]
 Entrenamiento
 [src/train.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/train.py:1) es el orquestador principal.
 Permite entrenar:
 python -m src.train --model custom_cnn
 python -m src.train --model vgg16
 Durante entrenamiento usa callbacks:
-ModelCheckpoint: guarda best_model.keras según val_accuracy
-EarlyStopping: monitorea val_loss, con patience=10
-CSVLogger: guarda training_log.csv
+ModelCheckpoint: guarda best_model.keras según --checkpoint-metric. Default: val_recall_parasitized.
+EarlyStopping: monitorea la misma métrica del checkpoint salvo que se indique --early-stopping-monitor. Patience default: 10.
+CSVLogger: guarda training_base_log.csv y, si existe fine-tuning, fine_tuning_log.csv. training_log.csv queda como alias histórico del entrenamiento base.
 ReduceLROnPlateau: reduce learning rate si val_loss no mejora
+
+Opciones de checkpoint:
+val_recall_parasitized: sensibilidad clínica para parasitized. Es el default recomendado.
+val_auc: AUC de validación.
+val_recall: recall Keras estándar sobre la clase índice 1, uninfected.
+val_accuracy: accuracy de validación.
+val_loss: pérdida de validación.
+
+El criterio usado queda registrado en checkpoint_selection.json.
 
 Los modelos quedan en:
 outputs/custom_cnn/

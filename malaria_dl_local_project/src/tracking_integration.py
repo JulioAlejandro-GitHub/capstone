@@ -290,6 +290,19 @@ def log_training_history(context, history, phase="training", epoch_offset=0):
     epochs = getattr(history, "epoch", list(range(len(next(iter(history_dict.values()), [])))))
 
     for index, epoch in enumerate(epochs):
+        epoch_metadata = {
+            "phase": phase,
+            "recall_parasitized": get_history_value(
+                history_dict,
+                "recall_parasitized",
+                index,
+            ),
+            "val_recall_parasitized": get_history_value(
+                history_dict,
+                "val_recall_parasitized",
+                index,
+            ),
+        }
         values = {
             "loss": get_history_value(history_dict, "loss", index),
             "accuracy": get_history_value(history_dict, "accuracy", index),
@@ -308,7 +321,7 @@ def log_training_history(context, history, phase="training", epoch_offset=0):
             tracker.log_training_history,
             context["run_id"],
             epoch=int(epoch) + epoch_offset,
-            metadata={"phase": phase},
+            metadata=epoch_metadata,
             **values,
         )
 
@@ -335,10 +348,19 @@ def log_output_artifacts(context, output_dir, artifact_type=None):
     )
 
 
-def log_model_version(context, version_name, best_model_path=None, final_model_path=None):
+def log_model_version(
+    context,
+    version_name,
+    best_model_path=None,
+    final_model_path=None,
+    metadata=None,
+):
     if not context or not context.get("run_id") or not context.get("model_id"):
         return
     tracker = context["tracker"]
+    model_metadata = {"source": "src.train"}
+    if metadata:
+        model_metadata.update(metadata)
     tracker.safe_track(
         tracker.log_model_version,
         context["model_id"],
@@ -347,7 +369,7 @@ def log_model_version(context, version_name, best_model_path=None, final_model_p
         best_model_path=best_model_path,
         final_model_path=final_model_path,
         training_run_id=context["run_id"],
-        metadata={"source": "src.train"},
+        metadata=model_metadata,
     )
 
 

@@ -1001,7 +1001,7 @@ def main():
         from src.data import load_malaria_splits
 
         print(f"Cargando modelo: {checkpoint}")
-        model = tf.keras.models.load_model(checkpoint)
+        model = tf.keras.models.load_model(checkpoint, compile=False)
 
         print("Cargando splits de malaria desde TensorFlow Datasets...")
         ds_train, _, ds_test, ds_info = load_malaria_splits(

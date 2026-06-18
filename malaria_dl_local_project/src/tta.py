@@ -94,7 +94,7 @@ def main():
         )
 
     try:
-        model = tf.keras.models.load_model(checkpoint)
+        model = tf.keras.models.load_model(checkpoint, compile=False)
         raw_test = load_raw_test_split()
         augmentation = build_augmentation()
 

@@ -69,7 +69,7 @@ def main():
 
         class_names = ds_info.features["label"].names
 
-        model = tf.keras.models.load_model(checkpoint)
+        model = tf.keras.models.load_model(checkpoint, compile=False)
         output_dir = checkpoint.parent / "evaluation"
 
         y_true, y_pred, y_score = collect_predictions(

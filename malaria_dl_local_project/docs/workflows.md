@@ -32,10 +32,59 @@ outputs/vgg16/
 best_model.keras
 final_model.keras
 training_log.csv
+training_base_log.csv
+fine_tuning_log.csv
+checkpoint_selection.json
 test_metrics.json
 test_predictions.csv
 test_confusion_matrix.csv
 ```
+
+### Selección Del Mejor Checkpoint
+
+`best_model.keras` se guarda con `ModelCheckpoint` usando una métrica configurable. El valor por defecto es clínico:
+
+```text
+--checkpoint-metric val_recall_parasitized
+```
+
+Esto representa sensibilidad/recall de la clase `parasitized`, tratada como clase positiva clínica. También se puede seleccionar:
+
+- `val_auc`
+- `val_recall`
+- `val_accuracy`
+- `val_loss`
+- `val_recall_parasitized`
+
+Importante: `val_recall` es la métrica Keras estándar sobre la clase índice 1 (`uninfected`) en este proyecto. Para criterio clínico sobre malaria usa `val_recall_parasitized`.
+
+Ejemplo:
+
+```bash
+python -m src.train \
+  --model vgg16 \
+  --epochs 30 \
+  --fine-tune-epochs 10 \
+  --img-size 200 \
+  --batch-size 64 \
+  --checkpoint-metric val_recall_parasitized \
+  --track-db
+```
+
+El modo de comparación se resuelve automáticamente: `min` para `val_loss`, `max` para el resto. El criterio usado se guarda en:
+
+```text
+outputs/<model>/checkpoint_selection.json
+```
+
+Además, el entrenamiento base y el fine-tuning tienen logs separados:
+
+```text
+training_base_log.csv
+fine_tuning_log.csv
+```
+
+`training_log.csv` se mantiene como alias histórico del entrenamiento base.
 
 ## 2. Evaluación Experimental
 
