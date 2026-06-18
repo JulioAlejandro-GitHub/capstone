@@ -37,7 +37,51 @@ Si PowerShell bloquea la activación:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-## 2. Entrenar modelos
+## 2. Dataset local con TensorFlow Datasets
+
+El dataset **NIH / NLM Malaria Cell Images** se gestiona con TensorFlow Datasets, pero la descarga debe quedar dentro de la raíz del repositorio `capstone/`:
+
+```text
+capstone/data/tensorflow_datasets/
+```
+
+Desde `capstone/malaria_dl_local_project`, esa ruta corresponde a:
+
+```text
+../data/tensorflow_datasets/
+```
+
+El código usa la función `get_tfds_data_dir()` en `src/data.py`:
+
+- Si existe `TFDS_DATA_DIR`, usa esa ruta.
+- Si no existe `TFDS_DATA_DIR`, usa por defecto `capstone/data/tensorflow_datasets`.
+
+Descargar o validar el dataset:
+
+```bash
+cd capstone/malaria_dl_local_project
+source .venv/bin/activate
+python scripts/download_malaria_dataset.py
+```
+
+Validar que existe localmente:
+
+```bash
+ls ../data/tensorflow_datasets/malaria
+```
+
+También puedes validar desde Python:
+
+```bash
+python - <<'PY'
+from src.data import get_tfds_data_dir
+print(get_tfds_data_dir())
+PY
+```
+
+La carpeta `capstone/data/tensorflow_datasets/` está ignorada por Git. No se deben versionar imágenes, shards ni archivos TFRecord del dataset.
+
+## 3. Entrenar modelos
 
 ### Custom CNN
 
@@ -79,6 +123,12 @@ python -m src.tta --checkpoint outputs/vgg16/best_model.keras --img-size 200 --n
 
 ```bash
 python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
+```
+
+Ejemplo rápido usando la ruta local TFDS por defecto:
+
+```bash
+python -m src.train --model custom_cnn --epochs 1 --img-size 200 --batch-size 64
 ```
 
 ## Explicabilidad del modelo: LIME, SHAP y Grad-CAM
@@ -194,7 +244,7 @@ KPI de explicabilidad:
 | Comparación LIME/SHAP         | al menos 10 casos si se ejecuta `--method both`                         |
 | Comparación completa          | LIME, SHAP y Grad-CAM si se ejecuta `--method all`                      |
 
-## 3. Exportar imágenes a carpetas
+## 4. Exportar imágenes a carpetas
 
 ```bash
 python -m src.export_dataset --output-dir data/malaria_images
@@ -208,30 +258,35 @@ data/malaria_images/
   uninfected/
 ```
 
-## 4. Estructura del proyecto
+## 5. Estructura del proyecto
 
 ```text
-malaria_dl_local_project/
-  requirements.txt
-  README.md
-  src/
-    __init__.py
-    config.py
-    data.py
-    models.py
-    metrics.py
-    train.py
-    evaluate.py
-    svm_features.py
-    ensemble.py
-    export_dataset.py
-    explain.py
-    tta.py
-  outputs/
-    explainability/
+capstone/
+  data/
+    tensorflow_datasets/     # ignorado por Git
+  malaria_dl_local_project/
+    requirements.txt
+    README.md
+    scripts/
+      download_malaria_dataset.py
+    src/
+      __init__.py
+      config.py
+      data.py
+      models.py
+      metrics.py
+      train.py
+      evaluate.py
+      svm_features.py
+      ensemble.py
+      export_dataset.py
+      explain.py
+      tta.py
+    outputs/                 # ignorado por Git
+      explainability/
 ```
 
-## 5. Notas metodológicas
+## 6. Notas metodológicas
 
 TensorFlow Datasets entrega el dataset `malaria` como un único split llamado `train`.
 Este proyecto lo divide en:
@@ -242,7 +297,7 @@ Este proyecto lo divide en:
 
 Para un Capstone más riguroso, idealmente se debe revisar la fuente NIH/NLM original y separar por paciente si se dispone del mapeo `Patient-ID`, evitando fuga de información entre entrenamiento y prueba.
 
-## 6. Dataset
+## 7. Dataset
 
 TensorFlow Datasets:
 

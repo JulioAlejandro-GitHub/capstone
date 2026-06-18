@@ -1,5 +1,24 @@
+import os
+from pathlib import Path
+
 import tensorflow as tf
 import tensorflow_datasets as tfds
+
+
+def get_tfds_data_dir() -> Path:
+    """
+    Devuelve la ruta local para TensorFlow Datasets.
+
+    Prioridad:
+    1. Variable de entorno TFDS_DATA_DIR.
+    2. capstone/data/tensorflow_datasets.
+    """
+    env_value = os.getenv("TFDS_DATA_DIR")
+    if env_value:
+        return Path(env_value).expanduser().resolve()
+
+    capstone_root = Path(__file__).resolve().parents[2]
+    return capstone_root / "data" / "tensorflow_datasets"
 
 
 def load_malaria_splits(
@@ -20,6 +39,7 @@ def load_malaria_splits(
         as_supervised=True,
         with_info=True,
         shuffle_files=True,
+        data_dir=str(get_tfds_data_dir()),
     )
 
     augmentation = build_augmentation()
@@ -89,6 +109,7 @@ def load_raw_test_split():
         split="train[90%:]",
         as_supervised=True,
         shuffle_files=False,
+        data_dir=str(get_tfds_data_dir()),
     )
 
 

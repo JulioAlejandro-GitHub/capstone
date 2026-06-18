@@ -14,6 +14,13 @@ __pycache__/
 malaria_dl_local_project/.venv/
 malaria_dl_local_project/outputs/
 malaria_dl_local_project/tensorflow_datasets/
+data/tensorflow_datasets
+data/tensorflow_datasets/
+tensorflow_datasets
+tensorflow_datasets/
+*.tfrecord
+*.tfrecord*
+outputs/
 
 # Frontend
 frontend/node_modules/

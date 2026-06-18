@@ -4,6 +4,8 @@ from pathlib import Path
 from PIL import Image
 import tensorflow_datasets as tfds
 
+from src.data import get_tfds_data_dir
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Exporta TFDS malaria a carpetas por clase.")
@@ -21,6 +23,7 @@ def main():
         split="train",
         as_supervised=True,
         with_info=True,
+        data_dir=str(get_tfds_data_dir()),
     )
 
     class_names = ds_info.features["label"].names

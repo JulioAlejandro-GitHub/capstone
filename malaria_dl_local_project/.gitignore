@@ -28,7 +28,11 @@ dist/
 
 # Datasets and generated training artifacts
 data/
+tensorflow_datasets
+tensorflow_datasets/
 outputs/
+*.tfrecord
+*.tfrecord*
 checkpoints/
 logs/
 runs/
