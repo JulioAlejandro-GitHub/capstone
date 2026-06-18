@@ -125,6 +125,42 @@ python -m src.tta --checkpoint outputs/vgg16/best_model.keras --img-size 200 --n
 python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
 ```
 
+### Evaluación de una imagen nueva individual
+
+Para evaluar una imagen externa sin recorrer el dataset completo:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --img-size 200 \
+  --positive-label parasitized \
+  --threshold 0.5
+```
+
+Con tracking en PostgreSQL:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --img-size 200 \
+  --positive-label parasitized \
+  --threshold 0.5 \
+  --track-db
+```
+
+Si conoces la clase real, puedes registrarla para calcular si fue TP, TN, FP o FN:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --true-label uninfected \
+  --positive-label parasitized \
+  --track-db
+```
+
 Ejemplo rápido usando la ruta local TFDS por defecto:
 
 ```bash
@@ -276,7 +312,8 @@ capstone/
       models.py
       metrics.py
       train.py
-      evaluate.py
+    evaluate.py
+      predict_image.py
       svm_features.py
       ensemble.py
       export_dataset.py
