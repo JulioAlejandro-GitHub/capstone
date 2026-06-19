@@ -6,6 +6,222 @@ Este proyecto separa tres flujos operativos:
 2. Evaluación experimental
 3. Inferencia clínica experimental sobre imagen externa
 
+## 0. Documentación Metodológica y Limitaciones
+
+Esta sección resume las decisiones metodológicas que deben explicarse en una defensa académica o revisión técnica. El objetivo del proyecto es construir un pipeline experimental reproducible para clasificación de células sanguíneas en imágenes microscópicas, no entregar un diagnóstico médico definitivo.
+
+### Dataset
+
+El proyecto usa el dataset `malaria` de TensorFlow Datasets, correspondiente al conjunto NIH / NLM Malaria Cell Images.
+
+Ruta local esperada:
+
+```text
+capstone/data/tensorflow_datasets/
+```
+
+Desde `capstone/malaria_dl_local_project`, el código lo resuelve con `src.data.get_tfds_data_dir()`:
+
+- Si existe `TFDS_DATA_DIR`, usa esa ruta.
+- Si no existe, usa `capstone/data/tensorflow_datasets`.
+
+La descarga local se realiza con:
+
+```bash
+python scripts/download_malaria_dataset.py
+```
+
+El dataset no se versiona en Git. No se suben imágenes, shards de TFDS ni TFRecords al repositorio.
+
+### Split Actual
+
+TensorFlow Datasets entrega `malaria` como un único split llamado `train`. Este proyecto lo divide de forma determinística por slicing de TFDS:
+
+```python
+split=["train[:80%]", "train[80%:90%]", "train[90%:]"]
+```
+
+Interpretación operativa:
+
+- `train[:80%]`: entrenamiento.
+- `train[80%:90%]`: validación.
+- `train[90%:]`: test.
+
+La validación se usa para callbacks, selección de checkpoint y calibración. El test se reserva para evaluación experimental final.
+
+### Limitación: No Hay Patient-Level Split
+
+El split actual es por porcentaje del dataset expuesto por TFDS. No garantiza separación por paciente.
+
+Limitación principal:
+
+- Si imágenes de un mismo paciente quedaran distribuidas entre entrenamiento, validación y test, podría existir fuga de información a nivel paciente.
+- Esa fuga puede inflar métricas como accuracy, AUC o recall porque el modelo podría beneficiarse de patrones visuales asociados al mismo origen de muestra.
+
+Implicancia para Capstone:
+
+- Los resultados deben presentarse como evaluación experimental sobre el split disponible en TFDS.
+- No deben presentarse como estimación clínica definitiva de desempeño en pacientes independientes.
+- Una versión más rigurosa debería reconstruir el dataset desde la fuente NIH/NLM original, conservar `Patient-ID` si está disponible y crear splits por paciente o por lámina.
+
+### Clase Positiva Clínica
+
+La clase positiva clínica del proyecto es:
+
+```text
+parasitized
+```
+
+El orden interno de clases es:
+
+```python
+CLASS_NAMES = ["parasitized", "uninfected"]
+```
+
+Por consistencia clínica, los reportes distinguen:
+
+- `raw_model_score`: salida cruda del modelo.
+- `probability_uninfected`: probabilidad asociada a `uninfected`.
+- `probability_parasitized`: probabilidad clínica positiva.
+
+Las métricas clínicas se calculan usando `probability_parasitized`, no asumiendo ciegamente que la salida sigmoid representa la clase positiva clínica.
+
+Métricas clínicas principales:
+
+- Sensibilidad / recall de `parasitized`.
+- Especificidad.
+- False negative rate.
+- False positive rate.
+- Balanced accuracy.
+- AUC de `parasitized`.
+
+Esta decisión es importante porque, en malaria, un falso negativo tiene mayor criticidad experimental que un falso positivo: representa una célula parasitada que el modelo no detecta.
+
+### Umbral de Decisión
+
+El umbral por defecto es:
+
+```text
+threshold = 0.5
+```
+
+La regla usada en evaluación e inferencia es:
+
+```text
+probability_parasitized >= threshold -> parasitized
+probability_parasitized < threshold  -> uninfected
+```
+
+El umbral es configurable con `--threshold`. Cambiarlo modifica la sensibilidad y especificidad:
+
+- Un umbral menor tiende a aumentar sensibilidad y reducir falsos negativos, pero puede aumentar falsos positivos.
+- Un umbral mayor tiende a aumentar especificidad y reducir falsos positivos, pero puede aumentar falsos negativos.
+
+El umbral actual debe interpretarse como criterio experimental inicial. Para uso clínico real se requeriría selección de umbral basada en validación clínica, análisis de costos de error y revisión experta.
+
+### Calibración
+
+La calibración se implementa con temperature scaling usando el validation set. El flujo recomendado es:
+
+```bash
+python -m src.calibrate \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --preprocessing rescale_0_1 \
+  --output-file outputs/vgg16/calibration.json
+```
+
+Luego la inferencia usa:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --calibration-file outputs/vgg16/calibration.json
+```
+
+El archivo `calibration.json` registra:
+
+- Método de calibración.
+- Temperatura.
+- Split usado (`validation`).
+- Métricas antes y después de calibrar.
+- Clase positiva (`parasitized`).
+- Nombre del score (`probability_parasitized`).
+
+Limitaciones de calibración:
+
+- La calibración mejora la interpretabilidad probabilística, pero no corrige errores sistemáticos del modelo.
+- Debe generarse con el mismo checkpoint, `img_size` y modo de preprocesamiento usados en inferencia.
+- Si cambia el dataset, el split, el preprocesamiento o el modelo, la calibración debe recalcularse.
+
+### Explicabilidad
+
+El proyecto soporta explicabilidad post hoc con:
+
+- Grad-CAM.
+- LIME.
+- SHAP.
+
+Uso típico:
+
+```bash
+python -m src.explain \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --method all \
+  --num-samples 50 \
+  --positive-label parasitized
+```
+
+En inferencia individual:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --explain gradcam
+```
+
+Limitaciones de explicabilidad:
+
+- Los mapas de calor muestran regiones que influyeron en el modelo, no prueba causal ni validación diagnóstica.
+- Un mapa visualmente plausible no garantiza que la predicción sea correcta.
+- Un mapa visualmente pobre puede indicar problemas de modelo, preprocesamiento, imagen o método de explicación.
+- LIME y SHAP pueden ser sensibles a parámetros de muestreo y segmentación.
+- Grad-CAM depende de la arquitectura y de la capa convolucional usada.
+
+La revisión caso a caso debe considerar simultáneamente imagen real, predicción, score, calidad de imagen, explicación visual y contexto experimental del run.
+
+### Advertencia de Uso
+
+Este sistema debe describirse como:
+
+```text
+Herramienta experimental de apoyo para clasificación de imágenes microscópicas.
+```
+
+No debe describirse como:
+
+```text
+Sistema de diagnóstico clínico definitivo.
+```
+
+La respuesta estructurada de inferencia incluye el disclaimer:
+
+```text
+Resultado experimental de apoyo. No corresponde a diagnóstico clínico definitivo.
+```
+
+Para un uso clínico real se requeriría, como mínimo:
+
+- Validación externa con datos independientes.
+- Split por paciente o muestra.
+- Revisión de expertos.
+- Protocolo de control de calidad de imagen.
+- Evaluación prospectiva.
+- Gestión regulatoria y trazabilidad operacional.
+
 ## 1. Entrenamiento
 
 Responsabilidad: entrenar modelos con el dataset `malaria` de TensorFlow Datasets.
