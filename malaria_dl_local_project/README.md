@@ -207,6 +207,20 @@ python -m src.predict_image \
   --threshold 0.5
 ```
 
+El CLI es un wrapper sobre la función reusable:
+
+```python
+from src.predict_image import run_clinical_inference
+
+result = run_clinical_inference(
+    checkpoint="outputs/vgg16/best_model.keras",
+    image_path="ruta/a/imagen.png",
+    img_size=200,
+)
+```
+
+La futura API web debe reutilizar esa función para evitar duplicar lógica de preprocesamiento, calibración, explicabilidad y tracking.
+
 Inferencia con Grad-CAM:
 
 ```bash

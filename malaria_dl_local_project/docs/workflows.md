@@ -233,6 +233,22 @@ Archivo principal:
 
 - `src/predict_image.py`
 
+Punto reusable para CLI y futura API:
+
+```python
+from src.predict_image import run_clinical_inference
+
+result = run_clinical_inference(
+    checkpoint="outputs/vgg16/best_model.keras",
+    image_path="ruta/a/imagen.png",
+    img_size=200,
+    calibration_file="outputs/vgg16/calibration.json",
+    track_db=True,
+)
+```
+
+`run_clinical_inference(...)` ejecuta control de calidad, preprocesamiento, predicción, calibración, explicabilidad opcional y tracking opcional. No imprime, no guarda JSON y no escribe CSV; esas responsabilidades quedan en el wrapper CLI o en el backend.
+
 Archivos de apoyo:
 
 - `src/decision.py`

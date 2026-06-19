@@ -831,16 +831,16 @@ def quality_failure_response(args, image_path, quality_result):
             "ensemble_models": args.models or [],
             "ensemble_weights": args.weights or [],
         },
-            "probabilities": {
-                "probability_parasitized": None,
-                "probability_uninfected": None,
-                "raw_model_score": None,
-                "calibration": {
-                    "method": args.calibration_method,
-                    "applied": False,
-                    "calibration_file": args.calibration_file,
-                },
+        "probabilities": {
+            "probability_parasitized": None,
+            "probability_uninfected": None,
+            "raw_model_score": None,
+            "calibration": {
+                "method": args.calibration_method,
+                "applied": False,
+                "calibration_file": args.calibration_file,
             },
+        },
         "decision": {
             "threshold": float(args.threshold),
             "predicted_label": None,
@@ -866,8 +866,100 @@ def quality_failure_response(args, image_path, quality_result):
     return result
 
 
-def main():
-    args = parse_args()
+def build_inference_args(
+    checkpoint=None,
+    image_path=None,
+    img_size=200,
+    threshold=0.5,
+    preprocessing="auto",
+    positive_label=POSITIVE_LABEL,
+    true_label=None,
+    image_id=None,
+    output_json=None,
+    explain=None,
+    tta=False,
+    n_aug=8,
+    ensemble=False,
+    models=None,
+    weights=None,
+    explain_model=None,
+    calibration_method="none",
+    calibration_temperature=None,
+    calibration_file=None,
+    track_db=False,
+):
+    return argparse.Namespace(
+        checkpoint=checkpoint,
+        image_path=image_path,
+        img_size=img_size,
+        threshold=threshold,
+        preprocessing=preprocessing,
+        positive_label=positive_label,
+        true_label=true_label,
+        image_id=image_id,
+        output_json=output_json,
+        explain=explain,
+        tta=tta,
+        n_aug=n_aug,
+        ensemble=ensemble,
+        models=models,
+        weights=weights,
+        explain_model=explain_model,
+        calibration_method=calibration_method,
+        calibration_temperature=calibration_temperature,
+        calibration_file=calibration_file,
+        track_db=track_db,
+    )
+
+
+def run_clinical_inference(
+    checkpoint=None,
+    image_path=None,
+    img_size=200,
+    threshold=0.5,
+    preprocessing="auto",
+    positive_label=POSITIVE_LABEL,
+    true_label=None,
+    image_id=None,
+    explain=None,
+    tta=False,
+    n_aug=8,
+    ensemble=False,
+    models=None,
+    weights=None,
+    explain_model=None,
+    calibration_method="none",
+    calibration_temperature=None,
+    calibration_file=None,
+    track_db=False,
+):
+    """
+    Ejecuta el flujo completo de inferencia clínica experimental.
+
+    Esta función es el punto reusable para CLI y futura API web. No imprime, no
+    guarda JSON y no escribe CSV; esas responsabilidades quedan en wrappers.
+    """
+    args = build_inference_args(
+        checkpoint=checkpoint,
+        image_path=image_path,
+        img_size=img_size,
+        threshold=threshold,
+        preprocessing=preprocessing,
+        positive_label=positive_label,
+        true_label=true_label,
+        image_id=image_id,
+        explain=explain,
+        tta=tta,
+        n_aug=n_aug,
+        ensemble=ensemble,
+        models=models,
+        weights=weights,
+        explain_model=explain_model,
+        calibration_method=calibration_method,
+        calibration_temperature=calibration_temperature,
+        calibration_file=calibration_file,
+        track_db=track_db,
+    )
     image_path = Path(args.image_path).expanduser()
     stored_image = None
 
@@ -878,11 +970,7 @@ def main():
 
     quality_result = check_image_quality(image_path)
     if quality_result.get("fatal"):
-        result = quality_failure_response(args, image_path, quality_result)
-        print_result(result)
-        if args.output_json:
-            save_json(result, args.output_json)
-        return
+        return quality_failure_response(args, image_path, quality_result)
 
     primary_checkpoint, model_paths, explain_model_path = resolve_model_paths(args)
     preprocessing_mode = resolve_preprocessing_mode(
@@ -982,7 +1070,12 @@ def main():
             threshold=args.threshold,
             preprocessing_mode=preprocessing_mode,
             explainability=result["explainability"],
-            tracking={"track_db": bool(args.track_db), "registered": False, "run_id": None, "prediction_id": None},
+            tracking={
+                "track_db": bool(args.track_db),
+                "registered": False,
+                "run_id": None,
+                "prediction_id": None,
+            },
         )
     )
     result["decision_code"] = result["decision"]["decision_code"]
@@ -991,13 +1084,45 @@ def main():
     result["tracking"] = track_prediction(args, result, primary_checkpoint)
     result["tracking"]["track_db"] = bool(args.track_db)
 
+    return result
+
+
+def run_clinical_inference_from_args(args):
+    return run_clinical_inference(
+        checkpoint=args.checkpoint,
+        image_path=args.image_path,
+        img_size=args.img_size,
+        threshold=args.threshold,
+        preprocessing=args.preprocessing,
+        positive_label=args.positive_label,
+        true_label=args.true_label,
+        image_id=args.image_id,
+        explain=args.explain,
+        tta=args.tta,
+        n_aug=args.n_aug,
+        ensemble=args.ensemble,
+        models=args.models,
+        weights=args.weights,
+        explain_model=args.explain_model,
+        calibration_method=args.calibration_method,
+        calibration_temperature=args.calibration_temperature,
+        calibration_file=args.calibration_file,
+        track_db=args.track_db,
+    )
+
+
+def main():
+    args = parse_args()
+    result = run_clinical_inference_from_args(args)
+
     print_result(result)
 
     if args.output_json:
         save_json(result, args.output_json)
 
-    append_external_prediction_csv(result)
-    print(f"Predicción acumulada en: {EXTERNAL_PREDICTIONS_CSV}")
+    if result.get("predicted_label") is not None:
+        append_external_prediction_csv(result)
+        print(f"Predicción acumulada en: {EXTERNAL_PREDICTIONS_CSV}")
 
 
 if __name__ == "__main__":

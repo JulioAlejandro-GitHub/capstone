@@ -3,6 +3,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -13,6 +14,39 @@ from src import predict_image
 
 
 class PredictImageOutputsTests(unittest.TestCase):
+    def test_run_clinical_inference_returns_quality_failure_before_loading_model(self):
+        result = predict_image.run_clinical_inference(
+            checkpoint="missing_model.keras",
+            image_path="/tmp/no-existe-esta-imagen.png",
+        )
+
+        self.assertEqual(result["decision_code"], "image_quality_failed")
+        self.assertIsNone(result["predicted_label"])
+        self.assertTrue(result["image"]["quality"]["fatal"])
+
+    def test_run_clinical_inference_from_args_delegates_to_service_function(self):
+        args = predict_image.build_inference_args(
+            checkpoint="outputs/vgg16/best_model.keras",
+            image_path="input.png",
+            img_size=128,
+            calibration_file="outputs/vgg16/calibration.json",
+        )
+
+        with mock.patch.object(
+            predict_image,
+            "run_clinical_inference",
+            return_value={"predicted_label": None},
+        ) as run_mock:
+            result = predict_image.run_clinical_inference_from_args(args)
+
+        self.assertEqual(result, {"predicted_label": None})
+        run_mock.assert_called_once()
+        self.assertEqual(run_mock.call_args.kwargs["img_size"], 128)
+        self.assertEqual(
+            run_mock.call_args.kwargs["calibration_file"],
+            "outputs/vgg16/calibration.json",
+        )
+
     def test_external_predictions_csv_extends_columns_without_deleting_rows(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             csv_path = Path(temp_dir) / "external_predictions.csv"

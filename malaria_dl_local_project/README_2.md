@@ -288,6 +288,18 @@ python -m src.predict_image \
   --positive-label parasitized \
   --threshold 0.5
 
+Para reutilizar el mismo flujo desde backend:
+
+from src.predict_image import run_clinical_inference
+
+result = run_clinical_inference(
+    checkpoint="outputs/vgg16/best_model.keras",
+    image_path="ruta/a/imagen.png",
+    img_size=200,
+)
+
+El CLI solo imprime, guarda JSON y escribe CSV. La función reusable devuelve el resultado estructurado y ejecuta tracking si track_db=True.
+
 Inferencia con Grad-CAM y JSON:
 
 python -m src.predict_image \
