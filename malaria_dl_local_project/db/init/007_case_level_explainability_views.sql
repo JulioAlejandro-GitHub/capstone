@@ -97,6 +97,7 @@ SELECT
     p.image_id,
     COALESCE(NULLIF(er.image_path, ''), NULLIF(p.image_path, '')) AS image_path,
     NULLIF(er.output_path, '') AS explanation_output_path,
+    a.id AS artifact_id,
     a.path AS artifact_path,
     a.artifact_type,
     er.last_conv_layer,
@@ -114,6 +115,7 @@ LEFT JOIN models m ON m.id = r.model_id
 LEFT JOIN datasets d ON d.id = COALESCE(p.dataset_id, r.dataset_id)
 LEFT JOIN LATERAL (
     SELECT
+        artifacts.id,
         artifacts.path,
         artifacts.artifact_type
     FROM artifacts
@@ -150,6 +152,7 @@ SELECT
     image_id,
     image_path,
     explanation_output_path,
+    artifact_id,
     artifact_path,
     artifact_type,
     last_conv_layer,
@@ -183,6 +186,7 @@ SELECT
     image_id,
     image_path,
     explanation_output_path,
+    artifact_id,
     artifact_path,
     artifact_type,
     last_conv_layer,
@@ -217,6 +221,7 @@ SELECT
     image_id,
     image_path,
     explanation_output_path,
+    artifact_id,
     artifact_path,
     artifact_type,
     last_conv_layer,
@@ -261,6 +266,7 @@ SELECT
     image_id,
     image_path,
     explanation_output_path,
+    artifact_id,
     artifact_path,
     artifact_type,
     last_conv_layer,

@@ -12,7 +12,7 @@ interface RunDetailProps {
   runId: string | null;
 }
 
-const IMAGE_EXTENSIONS = /\.(png|jpe?g|gif|webp|bmp|svg)$/i;
+const IMAGE_EXTENSIONS = /\.(png|jpe?g|gif|webp|bmp)$/i;
 
 function isImageArtifact(artifact: ArtifactRow) {
   const mimeType = artifact.mime_type?.toLowerCase() ?? '';
@@ -107,7 +107,10 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
         <h2>Artefactos</h2>
         <div className="artifact-grid">
           {detail.artifacts.map((artifact: ArtifactRow) => {
-            const artifactUrl = api.artifactUrl(artifact.path);
+            const artifactUrl = api.artifactUrl(artifact.path, {
+              artifactId: artifact.id,
+              datasource,
+            });
             const shouldShowImage = isImageArtifact(artifact);
 
             return (

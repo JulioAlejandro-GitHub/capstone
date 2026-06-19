@@ -147,6 +147,7 @@ export interface ExplainabilityCase extends JsonRecord {
   image_id: string | null;
   image_path: string | null;
   explanation_output_path: string | null;
+  artifact_id: string | null;
   artifact_path: string | null;
   artifact_type: string | null;
   last_conv_layer: string | null;

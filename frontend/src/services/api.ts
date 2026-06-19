@@ -17,6 +17,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000
 export const DEFAULT_DATASOURCE = import.meta.env.VITE_DEFAULT_DATASOURCE ?? 'malaria';
 
 type QueryValue = string | number | boolean | undefined;
+type ArtifactUrlOptions = {
+  artifactId?: string | null;
+  datasource?: string;
+};
 
 async function request<T>(path: string, params: Record<string, QueryValue> = {}) {
   const url = new URL(path, API_BASE_URL);
@@ -39,9 +43,16 @@ function withDatasource(datasource: string) {
 }
 
 export const api = {
-  artifactUrl(path: string) {
+  artifactUrl(path: string | null | undefined, options: ArtifactUrlOptions = {}) {
     const url = new URL('/artifacts/file', API_BASE_URL);
-    url.searchParams.set('path', path);
+    if (options.datasource) {
+      url.searchParams.set('datasource', options.datasource);
+    }
+    if (options.artifactId) {
+      url.searchParams.set('artifact_id', options.artifactId);
+    } else if (path) {
+      url.searchParams.set('path', path);
+    }
     return url.toString();
   },
 

@@ -90,12 +90,18 @@ function explanationImagePath(item: ExplainabilityCase) {
   return item.explanation_output_path ?? item.artifact_path;
 }
 
-function tableImagePreview(path: string | null | undefined, alt: string, emptyText: string) {
+function tableImagePreview(
+  path: string | null | undefined,
+  alt: string,
+  emptyText: string,
+  datasource: string,
+  artifactId?: string | null,
+) {
   if (!path) {
     return <span className="muted-text">{emptyText}</span>;
   }
 
-  const imageUrl = api.artifactUrl(path);
+  const imageUrl = api.artifactUrl(path, { artifactId, datasource });
   return (
     <a className="table-image-cell" href={imageUrl} target="_blank" rel="noreferrer">
       <img src={imageUrl} alt={alt} />
@@ -298,6 +304,7 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                       realImagePath(row),
                       `Imagen real ${row.true_label ?? ''}`,
                       'Sin imagen',
+                      datasource,
                     ),
                 },
                 {
@@ -307,6 +314,8 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                       explanationImagePath(row),
                       `${row.method} ${row.case_type ?? ''}`,
                       'Sin explicacion',
+                      datasource,
+                      row.artifact_id,
                     ),
                 },
                 { header: 'Capa', render: (row) => row.last_conv_layer ?? '-' },
@@ -332,8 +341,11 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                       <div className="case-image-block">
                         <span>Imagen real</span>
                         {realPath ? (
-                          <a href={api.artifactUrl(realPath)} target="_blank" rel="noreferrer">
-                            <img src={api.artifactUrl(realPath)} alt={`Imagen real ${item.true_label ?? ''}`} />
+                          <a href={api.artifactUrl(realPath, { datasource })} target="_blank" rel="noreferrer">
+                            <img
+                              src={api.artifactUrl(realPath, { datasource })}
+                              alt={`Imagen real ${item.true_label ?? ''}`}
+                            />
                           </a>
                         ) : (
                           <div className="image-placeholder">Imagen real no registrada para este caso.</div>
@@ -342,8 +354,15 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                       <div className="case-image-block">
                         <span>Explicacion visual</span>
                         {explanationPath ? (
-                          <a href={api.artifactUrl(explanationPath)} target="_blank" rel="noreferrer">
-                            <img src={api.artifactUrl(explanationPath)} alt={`${item.method} ${item.case_type}`} />
+                          <a
+                            href={api.artifactUrl(explanationPath, { artifactId: item.artifact_id, datasource })}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <img
+                              src={api.artifactUrl(explanationPath, { artifactId: item.artifact_id, datasource })}
+                              alt={`${item.method} ${item.case_type}`}
+                            />
                           </a>
                         ) : (
                           <div className="image-placeholder">Explicacion no disponible.</div>

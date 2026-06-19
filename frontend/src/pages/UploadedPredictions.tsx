@@ -234,7 +234,10 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
                 if (!path) return '-';
                 return (
                   <div className="uploaded-image-cell">
-                    <img src={api.artifactUrl(path)} alt={row.original_filename ?? row.image_id ?? 'Imagen'} />
+                    <img
+                      src={api.artifactUrl(path, { artifactId: row.artifact_id, datasource })}
+                      alt={row.original_filename ?? row.image_id ?? 'Imagen'}
+                    />
                     <small>{row.original_filename ?? row.stored_filename ?? row.image_id}</small>
                   </div>
                 );
@@ -244,7 +247,7 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
               header: 'Explicación',
               render: (row) => {
                 if (!row.explainability_path) return 'No generada';
-                const explanationUrl = api.artifactUrl(row.explainability_path);
+                const explanationUrl = api.artifactUrl(row.explainability_path, { datasource });
                 return (
                   <a className="uploaded-image-cell" href={explanationUrl} target="_blank" rel="noreferrer">
                     <img src={explanationUrl} alt={row.explainability_method ?? 'Explicacion visual'} />
