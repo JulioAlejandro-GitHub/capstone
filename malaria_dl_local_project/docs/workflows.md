@@ -239,6 +239,7 @@ Archivos de apoyo:
 - `src/image_quality.py`
 - `src/inference_pipeline.py`
 - `src/calibration.py`
+- `src/calibrate.py`
 - `src/prediction_uploads.py`
 - `src/run_tracker.py`
 - `src/tracking_integration.py`
@@ -350,26 +351,32 @@ python -m src.predict_image \
 
 ### Inferencia con Calibración
 
-Sin parámetros calibrados, el método por defecto es `none`.
+La calibración real se estima con el validation set y se guarda por checkpoint.
+El archivo debe generarse con el mismo `--img-size` y `--preprocessing` usados por el modelo:
+
+```bash
+python -m src.calibrate \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --preprocessing rescale_0_1 \
+  --output-file outputs/vgg16/calibration.json \
+  --track-db
+```
+
+Luego la inferencia usa ese archivo:
 
 ```bash
 python -m src.predict_image \
   --checkpoint outputs/vgg16/best_model.keras \
   --image-path ruta/a/imagen.png \
   --positive-label parasitized \
-  --calibration-method none
+  --calibration-file outputs/vgg16/calibration.json
 ```
 
-Temperature scaling requiere informar una temperatura:
+Sin archivo, el método por defecto es `none`. `--calibration-temperature` se mantiene para pruebas manuales, pero el flujo recomendado es `--calibration-file`.
 
-```bash
-python -m src.predict_image \
-  --checkpoint outputs/vgg16/best_model.keras \
-  --image-path ruta/a/imagen.png \
-  --positive-label parasitized \
-  --calibration-method temperature_scaling \
-  --calibration-temperature 1.5
-```
+El resultado JSON, `external_predictions.csv` y tracking en PostgreSQL registran si la probabilidad fue calibrada, la temperatura usada, el archivo y la probabilidad no calibrada.
 
 ### Inferencia con Tracking en PostgreSQL
 

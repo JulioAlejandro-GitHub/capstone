@@ -52,7 +52,13 @@ class PredictImageOutputsTests(unittest.TestCase):
                         },
                         "probabilities": {
                             "raw_model_score": 0.1,
-                            "calibration": {"method": "none", "applied": False},
+                            "calibration": {
+                                "method": "temperature_scaling",
+                                "applied": True,
+                                "calibration_file": "outputs/vgg16/calibration.json",
+                                "params": {"temperature": 1.5},
+                                "source": "calibration_file",
+                            },
                         },
                         "decision": {
                             "decision_code": "compatible_con_celula_parasitada",
@@ -72,6 +78,9 @@ class PredictImageOutputsTests(unittest.TestCase):
         self.assertEqual(rows[0]["timestamp"], "old")
         self.assertIn("workflow", rows[1])
         self.assertEqual(rows[1]["workflow"], "clinical_inference_experimental")
+        self.assertEqual(rows[1]["calibration_applied"], "True")
+        self.assertEqual(rows[1]["calibration_file"], "outputs/vgg16/calibration.json")
+        self.assertEqual(rows[1]["calibration_temperature"], "1.5")
 
 
 if __name__ == "__main__":

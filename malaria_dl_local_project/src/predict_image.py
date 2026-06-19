@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 
+from src.calibration import calibration_params_from_file, load_calibration_file
 from src.config import CLASS_NAMES, OUTPUT_DIR, PROJECT_ROOT
 from src.decision import (
     DISCLAIMER,
@@ -90,6 +91,11 @@ def parse_args():
         help="Temperatura opcional para temperature_scaling.",
     )
     parser.add_argument(
+        "--calibration-file",
+        default=None,
+        help="Archivo calibration.json generado con python -m src.calibrate.",
+    )
+    parser.add_argument(
         "--track-db",
         action="store_true",
         help="Registrar esta inferencia individual en PostgreSQL.",
@@ -100,6 +106,17 @@ def parse_args():
 def load_image(image_path, img_size, preprocessing_mode="rescale_0_1"):
     image_batch, _ = preprocess_external_image(image_path, img_size, preprocessing_mode)
     return image_batch
+
+
+def calibration_settings_from_args(args):
+    if args.calibration_file:
+        calibration_payload = load_calibration_file(args.calibration_file)
+        return calibration_payload["method"], calibration_params_from_file(calibration_payload)
+
+    calibration_params = {}
+    if args.calibration_temperature is not None:
+        calibration_params["temperature"] = args.calibration_temperature
+    return args.calibration_method, calibration_params
 
 
 def model_name_from_checkpoint_path(checkpoint):
@@ -371,7 +388,9 @@ def print_result(result):
     print("Ensemble:", "sí" if model_info.get("ensemble_applied") else "no")
     print(f"Probabilidad parasitized: {format_optional_probability(result.get('probability_parasitized'))}")
     print(f"Probabilidad uninfected: {format_optional_probability(result.get('probability_uninfected'))}")
-    print(f"Calibración: {(probabilities.get('calibration') or {}).get('method', 'none')}")
+    calibration = probabilities.get("calibration") or {}
+    calibration_status = "aplicada" if calibration.get("applied") else "no aplicada"
+    print(f"Calibración: {calibration.get('method', 'none')} ({calibration_status})")
     print(f"Umbral clínico experimental: {result['threshold']:.2f}")
     print(f"Predicción: {result.get('predicted_label') or 'no disponible'}")
     print(f"Confianza: {result.get('confidence_level') or 'no disponible'}")
@@ -445,6 +464,7 @@ def append_external_prediction_csv(result):
     quality = image_info.get("quality") or {}
     model_info = result.get("model") or {}
     probabilities = result.get("probabilities") or {}
+    calibration = probabilities.get("calibration") or result.get("calibration") or {}
     decision = get_decision_dict(result)
     explainability = result.get("explainability") or {}
     row = {
@@ -476,7 +496,15 @@ def append_external_prediction_csv(result):
         "ensemble_models": json.dumps(model_info.get("ensemble_models", []), ensure_ascii=False),
         "ensemble_weights": json.dumps(model_info.get("ensemble_weights", []), ensure_ascii=False),
         "raw_model_score": probabilities.get("raw_model_score"),
-        "calibration_method": (probabilities.get("calibration") or {}).get("method"),
+        "uncalibrated_probability_parasitized": result.get(
+            "uncalibrated_probability_parasitized"
+        ),
+        "calibration_method": calibration.get("method"),
+        "calibration_applied": calibration.get("applied"),
+        "calibration_temperature": (calibration.get("params") or {}).get("temperature"),
+        "calibration_file": calibration.get("calibration_file")
+        or (calibration.get("params") or {}).get("calibration_file"),
+        "calibration_source": calibration.get("source"),
         "decision_code": decision.get("decision_code", result.get("decision_code")),
         "human_readable_response": decision.get(
             "human_readable_response",
@@ -556,6 +584,7 @@ def track_prediction(args, result, checkpoint):
                     "quality": (result.get("image") or {}).get("quality"),
                     "raw_model_score": result.get("raw_model_score"),
                     "calibration": result.get("calibration"),
+                    "calibration_file": (result.get("calibration") or {}).get("calibration_file"),
                     "ensemble_applied": result.get("ensemble_applied"),
                     "ensemble_models": (result.get("model") or {}).get("ensemble_models"),
                     "ensemble_weights": result.get("ensemble_weights"),
@@ -610,6 +639,7 @@ def track_prediction(args, result, checkpoint):
                 "quality": (result.get("image") or {}).get("quality"),
                 "raw_model_score": result.get("raw_model_score"),
                 "calibration": result.get("calibration"),
+                "calibration_file": (result.get("calibration") or {}).get("calibration_file"),
                 "ensemble_applied": result.get("ensemble_applied"),
                 "ensemble_models": (result.get("model") or {}).get("ensemble_models"),
                 "ensemble_weights": result.get("ensemble_weights"),
@@ -637,6 +667,24 @@ def track_prediction(args, result, checkpoint):
                     "original_filename": result.get("original_filename"),
                     "stored_filename": result.get("stored_filename"),
                     "image_id": result["image_id"],
+                },
+            )
+
+        calibration_file = (
+            (result.get("calibration") or {}).get("calibration_file")
+            or ((result.get("calibration") or {}).get("params") or {}).get("calibration_file")
+        )
+        if calibration_file:
+            tracker.safe_track(
+                tracker.log_artifact,
+                run_id,
+                artifact_type="calibration_file",
+                name=Path(calibration_file).name,
+                path=str(calibration_file),
+                mime_type="application/json",
+                metadata={
+                    "source": "src.predict_image",
+                    "calibration": result.get("calibration"),
                 },
             )
 
@@ -783,12 +831,16 @@ def quality_failure_response(args, image_path, quality_result):
             "ensemble_models": args.models or [],
             "ensemble_weights": args.weights or [],
         },
-        "probabilities": {
-            "probability_parasitized": None,
-            "probability_uninfected": None,
-            "raw_model_score": None,
-            "calibration": {"method": args.calibration_method, "applied": False},
-        },
+            "probabilities": {
+                "probability_parasitized": None,
+                "probability_uninfected": None,
+                "raw_model_score": None,
+                "calibration": {
+                    "method": args.calibration_method,
+                    "applied": False,
+                    "calibration_file": args.calibration_file,
+                },
+            },
         "decision": {
             "threshold": float(args.threshold),
             "predicted_label": None,
@@ -889,12 +941,10 @@ def main():
         normalized_weights = None
     prediction_result["preprocessing_mode"] = preprocessing_mode
 
-    calibration_params = {}
-    if args.calibration_temperature is not None:
-        calibration_params["temperature"] = args.calibration_temperature
+    calibration_method, calibration_params = calibration_settings_from_args(args)
     prediction_result = apply_probability_calibration(
         prediction_result,
-        method=args.calibration_method,
+        method=calibration_method,
         calibration_params=calibration_params,
     )
 

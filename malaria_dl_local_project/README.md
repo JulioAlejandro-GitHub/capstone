@@ -247,16 +247,28 @@ python -m src.predict_image \
   --threshold 0.5
 ```
 
-Inferencia con calibración por temperatura:
+Calibrar probabilidades con validation set:
+
+```bash
+python -m src.calibrate \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --preprocessing rescale_0_1 \
+  --output-file outputs/vgg16/calibration.json
+```
+
+Inferencia usando el archivo de calibración:
 
 ```bash
 python -m src.predict_image \
   --checkpoint outputs/vgg16/best_model.keras \
   --image-path ruta/a/imagen.png \
   --positive-label parasitized \
-  --calibration-method temperature_scaling \
-  --calibration-temperature 1.5
+  --calibration-file outputs/vgg16/calibration.json
 ```
+
+`external_predictions.csv`, el JSON de salida y el tracking DB registran `calibration_applied`, temperatura, archivo de calibración y `uncalibrated_probability_parasitized`.
 
 Cuando se usa `--track-db`, la imagen se copia y renombra en:
 

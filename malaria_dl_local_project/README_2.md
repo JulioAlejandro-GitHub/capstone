@@ -307,6 +307,25 @@ python -m src.predict_image \
   --n-aug 8 \
   --track-db
 
+Calibración real de probabilidades:
+
+python -m src.calibrate \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --preprocessing rescale_0_1 \
+  --output-file outputs/vgg16/calibration.json
+
+Luego usar:
+
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --positive-label parasitized \
+  --calibration-file outputs/vgg16/calibration.json
+
+El archivo calibration.json se estima sobre validation set. Debe generarse con el mismo preprocesamiento del checkpoint. La inferencia registra si la probabilidad fue calibrada, el archivo usado, la temperatura y la probabilidad no calibrada.
+
 Con --track-db, la imagen se copia y renombra en:
 
 ../data/prediction_uploads/
