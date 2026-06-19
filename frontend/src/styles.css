@@ -180,6 +180,20 @@ main {
   font-size: 13px;
 }
 
+.clinical-disclaimer {
+  border-color: #ffe2a6;
+  background: #fffaf0;
+}
+
+.clinical-disclaimer strong {
+  color: #7a4f00;
+}
+
+.clinical-disclaimer p {
+  margin: 8px 0 0;
+  color: #5d6475;
+}
+
 .grid-two {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -340,6 +354,16 @@ code {
   display: grid;
   gap: 6px;
   max-width: 180px;
+}
+
+a.uploaded-image-cell {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.uploaded-image-cell:hover small {
+  color: #1d5fd1;
+  text-decoration: underline;
 }
 
 .uploaded-image-cell img {

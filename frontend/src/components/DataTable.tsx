@@ -9,9 +9,10 @@ interface DataTableProps<T> {
   rows: T[];
   columns: Column<T>[];
   emptyText?: string;
+  getRowKey?: (row: T, index: number) => string | number;
 }
 
-export function DataTable<T>({ rows, columns, emptyText = 'Sin datos' }: DataTableProps<T>) {
+export function DataTable<T>({ rows, columns, emptyText = 'Sin datos', getRowKey }: DataTableProps<T>) {
   if (rows.length === 0) {
     return <div className="empty-state">{emptyText}</div>;
   }
@@ -28,7 +29,7 @@ export function DataTable<T>({ rows, columns, emptyText = 'Sin datos' }: DataTab
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr key={index}>
+            <tr key={getRowKey ? getRowKey(row, index) : index}>
               {columns.map((column) => (
                 <td key={column.header}>{column.render(row)}</td>
               ))}
@@ -39,4 +40,3 @@ export function DataTable<T>({ rows, columns, emptyText = 'Sin datos' }: DataTab
     </div>
   );
 }
-

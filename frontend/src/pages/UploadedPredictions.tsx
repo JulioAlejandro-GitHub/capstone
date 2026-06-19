@@ -37,7 +37,9 @@ function qualityLabel(row: UploadedPrediction) {
 function formatWarnings(value: JsonValue | null | undefined) {
   if (!value) return '-';
   if (Array.isArray(value)) {
-    return value.length > 0 ? value.map(String).join('; ') : '-';
+    return value.length > 0
+      ? value.map((item) => (typeof item === 'string' ? item : JSON.stringify(item))).join('; ')
+      : '-';
   }
   if (typeof value === 'string') return value || '-';
   return JSON.stringify(value);
@@ -50,6 +52,12 @@ function calibrationLabel(row: UploadedPrediction) {
 
 function decisionLabel(row: UploadedPrediction) {
   return row.decision_code ?? row.decision ?? '-';
+}
+
+function ttaEnsembleLabel(row: UploadedPrediction) {
+  const tta = booleanLabel(row.tta_applied ?? row.tta);
+  const nAug = row.n_aug ? ` (${row.n_aug} aug)` : '';
+  return `TTA: ${tta}${nAug} / Ensemble: ${booleanLabel(row.ensemble_applied)}`;
 }
 
 
@@ -107,10 +115,18 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
     <section className="page">
       <div className="page-title">
         <div>
-          <h1>Predicciones subidas</h1>
+          <h1>Inferencia clínica experimental</h1>
           <p>Imagenes externas evaluadas con src.predict_image y registradas con --track-db.</p>
         </div>
       </div>
+
+      <section className="panel clinical-disclaimer">
+        <strong>Uso experimental</strong>
+        <p>
+          Este reporte es una herramienta de apoyo para revision caso a caso. No reemplaza diagnostico
+          clinico, validacion de laboratorio ni revision por especialistas.
+        </p>
+      </section>
 
       <section className="panel">
         <div className="filters-grid">
@@ -208,10 +224,11 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
         </div>
         <DataTable<UploadedPrediction>
           rows={predictions.items}
+          getRowKey={(row) => row.prediction_id}
           emptyText="No hay imagenes subidas para prediccion registradas en BD."
           columns={[
             {
-              header: 'Imagen',
+              header: 'Imagen subida',
               render: (row) => {
                 const path = uploadedImagePath(row);
                 if (!path) return '-';
@@ -220,6 +237,19 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
                     <img src={api.artifactUrl(path)} alt={row.original_filename ?? row.image_id ?? 'Imagen'} />
                     <small>{row.original_filename ?? row.stored_filename ?? row.image_id}</small>
                   </div>
+                );
+              },
+            },
+            {
+              header: 'Explicación',
+              render: (row) => {
+                if (!row.explainability_path) return 'No generada';
+                const explanationUrl = api.artifactUrl(row.explainability_path);
+                return (
+                  <a className="uploaded-image-cell" href={explanationUrl} target="_blank" rel="noreferrer">
+                    <img src={explanationUrl} alt={row.explainability_method ?? 'Explicacion visual'} />
+                    <small>{row.explainability_method ?? 'explicacion visual'}</small>
+                  </a>
                 );
               },
             },
@@ -232,8 +262,7 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
             { header: 'Calidad', render: (row) => qualityLabel(row) },
             { header: 'Alertas calidad', render: (row) => formatWarnings(row.quality_warnings) },
             { header: 'Calibración', render: (row) => calibrationLabel(row) },
-            { header: 'TTA', render: (row) => booleanLabel(row.tta_applied ?? row.tta) },
-            { header: 'Ensemble', render: (row) => booleanLabel(row.ensemble_applied) },
+            { header: 'TTA / Ensemble', render: (row) => ttaEnsembleLabel(row) },
             { header: 'Clase real', render: (row) => row.true_label ?? '-' },
             { header: 'Caso', render: (row) => row.case_type ?? '-' },
             { header: 'Decisión', render: (row) => decisionLabel(row) },
