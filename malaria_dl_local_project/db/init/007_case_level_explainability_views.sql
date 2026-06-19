@@ -97,7 +97,6 @@ SELECT
     p.image_id,
     COALESCE(NULLIF(er.image_path, ''), NULLIF(p.image_path, '')) AS image_path,
     NULLIF(er.output_path, '') AS explanation_output_path,
-    a.id AS artifact_id,
     a.path AS artifact_path,
     a.artifact_type,
     er.last_conv_layer,
@@ -107,7 +106,8 @@ SELECT
     p.metadata AS prediction_metadata,
     er.metadata AS explainability_metadata,
     r.parameters AS run_parameters,
-    r.metadata AS run_metadata
+    r.metadata AS run_metadata,
+    a.id AS artifact_id
 FROM explainability_results er
 LEFT JOIN predictions p ON p.id = er.prediction_id
 LEFT JOIN runs r ON r.id = er.run_id
@@ -152,14 +152,14 @@ SELECT
     image_id,
     image_path,
     explanation_output_path,
-    artifact_id,
     artifact_path,
     artifact_type,
     last_conv_layer,
     success,
     error_message,
     started_at,
-    command
+    command,
+    artifact_id
 FROM vw_case_level_explainability
 WHERE case_type = 'false_positive'
    OR (
@@ -186,14 +186,14 @@ SELECT
     image_id,
     image_path,
     explanation_output_path,
-    artifact_id,
     artifact_path,
     artifact_type,
     last_conv_layer,
     success,
     error_message,
     started_at,
-    command
+    command,
+    artifact_id
 FROM vw_case_level_explainability
 WHERE case_type = 'false_negative'
    OR (
@@ -221,13 +221,13 @@ SELECT
     image_id,
     image_path,
     explanation_output_path,
-    artifact_id,
     artifact_path,
     artifact_type,
     last_conv_layer,
     success,
     error_message,
-    started_at
+    started_at,
+    artifact_id
 FROM vw_case_level_explainability
 WHERE case_type = 'low_confidence'
    OR (
@@ -266,12 +266,12 @@ SELECT
     image_id,
     image_path,
     explanation_output_path,
-    artifact_id,
     artifact_path,
     artifact_type,
     last_conv_layer,
     success,
     error_message,
-    started_at
+    started_at,
+    artifact_id
 FROM vw_case_level_explainability
 WHERE explanation_output_path IS NOT NULL;
