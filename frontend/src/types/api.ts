@@ -185,6 +185,14 @@ export interface UploadedPrediction extends JsonRecord {
   threshold: number | null;
   confidence_level: string | null;
   decision: string | null;
+  decision_code: string | null;
+  human_readable_response: string | null;
+  quality_passed: boolean | null;
+  quality_warnings: JsonValue | null;
+  calibration_method: string | null;
+  calibration_applied: boolean | null;
+  ensemble_applied: boolean | null;
+  tta_applied: boolean | null;
   tta: boolean | null;
   n_aug: number | null;
   explainability_method: string | null;
