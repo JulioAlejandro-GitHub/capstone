@@ -477,7 +477,27 @@ data/malaria_images/
   uninfected/
 ```
 
-## 5. Estructura del proyecto
+## 5. Reset experimental seguro
+
+Antes de reentrenar desde cero puedes purgar datos experimentales y limpiar `outputs/` con scripts seguros en `dry-run` por defecto.
+
+```bash
+python scripts/purge_db_data.py
+python scripts/clean_training_outputs.py
+```
+
+Ejecución real con backup:
+
+```bash
+python scripts/reset_experimental_state.py \
+  --execute \
+  --confirm RESET_EXPERIMENTS \
+  --backup-before
+```
+
+Guía completa: [docs/reset_experimental_state.md](docs/reset_experimental_state.md).
+
+## 6. Estructura del proyecto
 
 ```text
 capstone/
@@ -506,7 +526,7 @@ capstone/
       explainability/
 ```
 
-## 6. Notas metodológicas
+## 7. Notas metodológicas
 
 TensorFlow Datasets entrega el dataset `malaria` como un único split llamado `train`.
 Este proyecto lo divide en:
@@ -517,7 +537,7 @@ Este proyecto lo divide en:
 
 Para un Capstone más riguroso, idealmente se debe revisar la fuente NIH/NLM original y separar por paciente si se dispone del mapeo `Patient-ID`, evitando fuga de información entre entrenamiento y prueba.
 
-## 7. Dataset
+## 8. Dataset
 
 TensorFlow Datasets:
 

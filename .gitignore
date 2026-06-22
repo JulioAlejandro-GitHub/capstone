@@ -25,6 +25,7 @@ tensorflow_datasets/
 *.tfrecord
 *.tfrecord*
 outputs/
+backups/
 
 # Frontend
 frontend/node_modules/
