@@ -132,13 +132,14 @@ python -m src.train --model vgg16 --epochs 30 --fine-tune-epochs 10 --img-size 2
 
 ### Selección del mejor checkpoint
 
-Por defecto `best_model.keras` se selecciona con criterio clínico experimental:
+Por defecto `best_model.keras` se selecciona con una métrica balanceada:
 
 ```text
---checkpoint-metric val_recall_parasitized
+--checkpoint-monitor val_auc
+--early-stopping-monitor val_auc
 ```
 
-`val_recall_parasitized` mide sensibilidad/recall de `parasitized`, usando esa clase como positiva clínica. También puedes usar `val_auc`, `val_recall`, `val_accuracy` o `val_loss`.
+`val_auc` evita seleccionar checkpoints solo por sensibilidad. También puedes usar `val_balanced_accuracy`, `val_recall_parasitized`, `val_recall`, `val_accuracy` o `val_loss`.
 
 Ejemplo explícito:
 
@@ -149,10 +150,16 @@ python -m src.train \
   --fine-tune-epochs 10 \
   --img-size 200 \
   --batch-size 64 \
-  --checkpoint-metric val_recall_parasitized
+  --optimizer adam \
+  --learning-rate 1e-4 \
+  --checkpoint-monitor val_auc \
+  --early-stopping-monitor val_auc \
+  --monitor-mode max
 ```
 
-El criterio queda registrado en `outputs/<model>/checkpoint_selection.json`. Los logs quedan separados en `training_base_log.csv` y `fine_tuning_log.csv`; `training_log.csv` se mantiene como alias del entrenamiento base.
+No se recomienda seleccionar checkpoints usando solo `val_recall_parasitized`, porque un modelo puede aprender la solución trivial de predecir todo como `parasitized`: sensibilidad 1.0, especificidad 0.0 y balanced accuracy 0.5. Esa métrica queda disponible solo como opción explícita.
+
+El criterio queda registrado en `outputs/<model>/checkpoint_selection.json` y la metadata clínica del modelo en `outputs/<model>/model_metadata.json`. Los logs quedan separados en `training_base_log.csv` y `fine_tuning_log.csv`; `training_log.csv` se mantiene como alias del entrenamiento base.
 
 ### SVM usando features del VGG16 entrenado
 
@@ -197,6 +204,13 @@ raw_model_score = probability_parasitized
 label_mapping_version = clinical_v1_parasitized_positive
 ```
 
+La decisión clínica experimental aplica el umbral sobre `probability_parasitized`:
+
+```text
+probability_parasitized >= threshold -> parasitized
+probability_parasitized < threshold  -> uninfected
+```
+
 TensorFlow Datasets entrega originalmente `0 = parasitized` y `1 = uninfected`, pero `src.data` remapea las etiquetas antes de entrenar, evaluar y explicar. Si necesitas usar un checkpoint antiguo entrenado con la convención TFDS previa, declara explícitamente:
 
 ```bash
@@ -214,6 +228,18 @@ Este flag está disponible en `src.predict_image`, `src.evaluate`, `src.explain`
 - `confidence_level`
 - `decision`
 - `human_readable_response`
+
+### Cómo detectar colapso de predicción
+
+Los reportes de evaluación incluyen distribución de predicciones y `prediction_collapse`. Ejemplo problemático:
+
+```text
+Confusion matrix:
+[[0 1385]
+ [0 1371]]
+```
+
+Interpretación: el modelo predijo todas las imágenes como `parasitized`. En ese caso la sensibilidad puede ser 1.0, pero la especificidad es 0.0 y la balanced accuracy es 0.5. Ese checkpoint no debe usarse como modelo clínico experimental sin reentrenamiento o revisión.
 
 Inferencia simple:
 

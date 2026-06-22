@@ -79,15 +79,13 @@ Modelos
 
 custom_cnn
 CNN secuencial propia:
-Conv2D + Conv2D + MaxPooling
-Conv2D + Conv2D + MaxPooling
-Conv2D + Conv2D + MaxPooling
-Conv2D + Conv2D + MaxPooling
-Flatten
-Dense 256
-Dropout 0.5
-Dense 256
-Dropout 0.5
+Conv2D + BatchNormalization + ReLU + MaxPooling
+Conv2D + BatchNormalization + ReLU + MaxPooling
+Conv2D + BatchNormalization + ReLU + MaxPooling
+Conv2D + BatchNormalization + ReLU
+GlobalAveragePooling2D
+Dense 128
+Dropout 0.4
 Dense 1 sigmoid
 
 vgg16
@@ -99,27 +97,30 @@ Dropout 0.5
 Dense 1 sigmoid
 Ambos modelos usan:
 loss="binary_crossentropy"
-optimizer=Adadelta
-metrics=["accuracy", Precision, Recall, Recall parasitized, AUC]
+optimizer=Adam por defecto, configurable con --optimizer adam|adamw|sgd|adadelta
+metrics=["accuracy", Precision, Recall, Recall parasitized, Specificity, Balanced accuracy, AUC]
 Entrenamiento
 [src/train.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/train.py:1) es el orquestador principal.
 Permite entrenar:
 python -m src.train --model custom_cnn
 python -m src.train --model vgg16
 Durante entrenamiento usa callbacks:
-ModelCheckpoint: guarda best_model.keras según --checkpoint-metric. Default: val_recall_parasitized.
-EarlyStopping: monitorea la misma métrica del checkpoint salvo que se indique --early-stopping-monitor. Patience default: 10.
+ModelCheckpoint: guarda best_model.keras según --checkpoint-monitor. Default: val_auc.
+EarlyStopping: monitorea --early-stopping-monitor. Default: val_auc. Patience default: 10.
 CSVLogger: guarda training_base_log.csv y, si existe fine-tuning, fine_tuning_log.csv. training_log.csv queda como alias histórico del entrenamiento base.
 ReduceLROnPlateau: reduce learning rate si val_loss no mejora
 
 Opciones de checkpoint:
-val_recall_parasitized: sensibilidad clínica para parasitized. Es el default recomendado.
 val_auc: AUC de validación.
+val_balanced_accuracy: promedio entre sensibilidad parasitized y especificidad.
+val_recall_parasitized: sensibilidad clínica para parasitized. No se recomienda usarla como único criterio.
 val_recall: recall Keras estándar sobre la clase índice 1, parasitized.
 val_accuracy: accuracy de validación.
 val_loss: pérdida de validación.
 
-El criterio usado queda registrado en checkpoint_selection.json.
+No se recomienda seleccionar checkpoints usando solo val_recall_parasitized: un modelo colapsado puede predecir todo como parasitized, obtener recall_parasitized = 1.0 y aun así tener especificidad = 0.0 y balanced_accuracy = 0.5.
+
+El criterio usado queda registrado en checkpoint_selection.json. La convención clínica y el significado del score quedan guardados en model_metadata.json.
 
 Los modelos quedan en:
 outputs/custom_cnn/
@@ -258,6 +259,7 @@ case_type
 true_label
 predicted_label
 score_positive_label
+probability_parasitized
 positive_label
 threshold
 method
@@ -288,6 +290,18 @@ label_mapping_version
 confidence_level
 decision
 human_readable_response
+
+La decisión clínica experimental usa:
+
+probability_parasitized >= threshold -> parasitized
+probability_parasitized < threshold  -> uninfected
+
+Los JSON de evaluación incluyen specificity, balanced_accuracy, prediction_distribution y prediction_collapse. Si aparece una matriz como:
+
+[[0 1385]
+ [0 1371]]
+
+el modelo predijo todas las imágenes como parasitized. Ese checkpoint no debe usarse como modelo clínico experimental sin reentrenamiento o revisión.
 
 Si se usa un checkpoint antiguo entrenado con la convención TFDS previa, debe indicarse explícitamente:
 

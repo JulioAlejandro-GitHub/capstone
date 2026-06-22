@@ -15,6 +15,7 @@ from src.data import build_augmentation, load_raw_test_split, preprocess_single,
 from src.decision import POSITIVE_LABEL
 from src.inference_pipeline import probability_rows_from_predictions
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
+from src.model_metadata import verify_checkpoint_metadata
 from src.preprocessing import (
     PREPROCESSING_CHOICES,
     PREPROCESSING_VGG16_IMAGENET,
@@ -112,6 +113,11 @@ def main():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
     preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
     mapping_metadata = label_mapping_metadata(args.label_mapping)
+    verify_checkpoint_metadata(
+        checkpoint,
+        expected_label_mapping=args.label_mapping,
+        expected_raw_score_meaning=mapping_metadata["raw_model_score_meaning"],
+    )
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: TTA usando checkpoint legacy_tfds_parasitized_zero.")
 

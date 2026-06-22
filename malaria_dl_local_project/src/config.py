@@ -27,6 +27,8 @@ RAW_MODEL_SCORE_MEANING = "probability_parasitized"
 
 LABEL_MAPPING_METADATA = {
     "version": LABEL_MAPPING_VERSION,
+    "0": NEGATIVE_LABEL,
+    "1": POSITIVE_LABEL,
     "negative_class_index": NEGATIVE_CLASS_INDEX,
     "negative_class_name": NEGATIVE_LABEL,
     "positive_class_index": POSITIVE_CLASS_INDEX,
@@ -36,6 +38,8 @@ LABEL_MAPPING_METADATA = {
 
 LEGACY_TFDS_LABEL_MAPPING_METADATA = {
     "version": LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    "0": POSITIVE_LABEL,
+    "1": NEGATIVE_LABEL,
     "negative_class_index": 1,
     "negative_class_name": NEGATIVE_LABEL,
     "positive_class_index": 0,

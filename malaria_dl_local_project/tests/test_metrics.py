@@ -10,6 +10,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.metrics import (
+    clinical_confusion_counts,
     clinical_predictions_from_raw_scores,
     evaluate_binary_predictions,
 )
@@ -34,6 +35,21 @@ class ClinicalMetricsTests(unittest.TestCase):
         )
 
         self.assertEqual(predictions.tolist(), [1, 0])
+
+    def test_confusion_matrix_interpretation(self):
+        y_true = [0, 0, 1, 1]
+        y_pred = [0, 1, 0, 1]
+
+        counts = clinical_confusion_counts(
+            y_true,
+            y_pred,
+            class_names=["uninfected", "parasitized"],
+        )
+
+        self.assertEqual(counts["true_negative"], 1)
+        self.assertEqual(counts["false_positive"], 1)
+        self.assertEqual(counts["false_negative"], 1)
+        self.assertEqual(counts["true_positive"], 1)
 
     def test_metrics_are_computed_against_parasitized_positive_label(self):
         y_true = [0, 0, 1, 1]
@@ -62,10 +78,15 @@ class ClinicalMetricsTests(unittest.TestCase):
         self.assertEqual(metrics["raw_model_score_meaning"], "probability_parasitized")
         self.assertAlmostEqual(metrics["sensitivity_parasitized"], 0.5)
         self.assertAlmostEqual(metrics["specificity"], 0.5)
+        self.assertAlmostEqual(metrics["precision_parasitized"], 0.5)
+        self.assertAlmostEqual(metrics["f1_parasitized"], 0.5)
         self.assertAlmostEqual(metrics["false_negative_rate"], 0.5)
         self.assertAlmostEqual(metrics["false_positive_rate"], 0.5)
         self.assertAlmostEqual(metrics["balanced_accuracy"], 0.5)
         self.assertAlmostEqual(metrics["auc_parasitized"], 0.75)
+        self.assertFalse(metrics["prediction_collapse"]["collapsed"])
+        self.assertEqual(metrics["n_pred_uninfected"], 2)
+        self.assertEqual(metrics["n_pred_parasitized"], 2)
         self.assertEqual(metrics["preprocessing_mode"], "rescale_0_1")
 
         self.assertAlmostEqual(float(rows[0]["raw_model_score"]), 0.1, places=6)

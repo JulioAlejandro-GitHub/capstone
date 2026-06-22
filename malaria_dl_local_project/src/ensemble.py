@@ -16,6 +16,7 @@ from src.data import load_malaria_splits
 from src.decision import POSITIVE_LABEL
 from src.inference_pipeline import probability_rows_from_predictions
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
+from src.model_metadata import verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
@@ -56,6 +57,12 @@ def main():
             raise FileNotFoundError(f"No existe el modelo: {path}")
     preprocessing_mode = resolve_preprocessing_mode("ensemble", args.preprocessing)
     mapping_metadata = label_mapping_metadata(args.label_mapping)
+    for path in model_paths:
+        verify_checkpoint_metadata(
+            path,
+            expected_label_mapping=args.label_mapping,
+            expected_raw_score_meaning=mapping_metadata["raw_model_score_meaning"],
+        )
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: ensemble usando convención legacy_tfds_parasitized_zero.")
 

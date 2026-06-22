@@ -8,10 +8,12 @@ from src.config import (
     LABEL_MAPPING_CHOICES,
     LABEL_MAPPING_VERSION,
     LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    POSITIVE_LABEL,
     label_mapping_metadata,
 )
 from src.data import load_malaria_splits
 from src.metrics import collect_predictions, evaluate_binary_predictions
+from src.model_metadata import verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
@@ -21,6 +23,11 @@ def parse_args():
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--positive-label",
+        default=POSITIVE_LABEL,
+        help="Clase clínica positiva. Este proyecto usa parasitized.",
+    )
     parser.add_argument(
         "--label-mapping",
         choices=LABEL_MAPPING_CHOICES,
@@ -50,6 +57,15 @@ def main():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
     preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
     mapping_metadata = label_mapping_metadata(args.label_mapping)
+    if args.positive_label != POSITIVE_LABEL:
+        raise ValueError(
+            f"Este pipeline clínico usa {POSITIVE_LABEL!r} como clase positiva."
+        )
+    verify_checkpoint_metadata(
+        checkpoint,
+        expected_label_mapping=args.label_mapping,
+        expected_raw_score_meaning=mapping_metadata["raw_model_score_meaning"],
+    )
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: evaluando checkpoint legacy_tfds_parasitized_zero.")
 
@@ -75,6 +91,7 @@ def main():
                     "label_mapping_version": args.label_mapping,
                     "label_mapping": mapping_metadata,
                     "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                    "positive_label": args.positive_label,
                 },
             ),
         )
@@ -107,6 +124,7 @@ def main():
             output_dir=output_dir,
             prefix=checkpoint.stem,
             threshold=args.threshold,
+            positive_label=args.positive_label,
             metadata={
                 "preprocessing_mode": preprocessing_mode,
                 "label_mapping_version": args.label_mapping,

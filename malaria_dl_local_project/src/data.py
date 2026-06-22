@@ -3,6 +3,11 @@ from pathlib import Path
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_VERSION,
+    RAW_MODEL_SCORE_MEANING,
+)
 from src.preprocessing import (
     PREPROCESSING_RESCALE_0_1,
     PREPROCESSING_VGG16_IMAGENET,
@@ -11,6 +16,12 @@ from src.preprocessing import (
     resize_image_tensor,
     resolve_preprocessing_mode,
 )
+
+
+def print_label_mapping_verification():
+    print(f"Clases clínicas: {CLASS_NAMES}")
+    print(f"Convención de etiquetas: {LABEL_MAPPING_VERSION}")
+    print(f"raw_model_score: {RAW_MODEL_SCORE_MEANING}")
 
 
 def remap_tfds_malaria_label(label):
@@ -58,6 +69,8 @@ def load_malaria_splits(
     Retorna:
         ds_train, ds_val, ds_test, ds_info
     """
+    print_label_mapping_verification()
+
     (ds_train, ds_val, ds_test), ds_info = tfds.load(
         "malaria",
         split=["train[:80%]", "train[80%:90%]", "train[90%:]"],

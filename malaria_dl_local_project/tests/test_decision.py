@@ -64,8 +64,10 @@ class DecisionTests(unittest.TestCase):
         self.assertEqual(response["confidence_level"], "alta")
 
     def test_classify_by_threshold_uses_parasitized_as_positive(self):
+        self.assertEqual(classify_by_threshold(0.90, threshold=0.5), "parasitized")
         self.assertEqual(classify_by_threshold(0.50, threshold=0.5), "parasitized")
         self.assertEqual(classify_by_threshold(0.49, threshold=0.5), "uninfected")
+        self.assertEqual(classify_by_threshold(0.10, threshold=0.5), "uninfected")
 
     def test_confidence_level_is_symmetric_around_uncertain_zone(self):
         self.assertEqual(get_confidence_level(0.85), "alta")

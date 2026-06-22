@@ -40,6 +40,7 @@ SUMMARY_COLUMNS = [
     "case_type",
     "true_label",
     "predicted_label",
+    "probability_parasitized",
     "score_positive_label",
     "positive_label",
     "threshold",
@@ -143,6 +144,10 @@ def resolve_positive_label(class_names, positive_label):
         raise ValueError(
             f"--positive-label debe ser una de estas clases: {class_names}. "
             f"Valor recibido: {positive_label}"
+        )
+    if positive_label != POSITIVE_LABEL:
+        raise ValueError(
+            f"Este pipeline clínico usa {POSITIVE_LABEL!r} como clase positiva."
         )
     positive_idx = class_names.index(positive_label)
 
@@ -439,6 +444,7 @@ def select_cases(
                 "true_label_idx": true_label_idx,
                 "predicted_label_idx": predicted_label_idx,
                 "score_positive_label": score,
+                "probability_parasitized": score,
                 "positive_label": positive_label,
                 "threshold": float(threshold),
                 "image": model_image,
@@ -905,6 +911,7 @@ def make_summary_row(
         "case_type": case["case_type"],
         "true_label": case["true_label"],
         "predicted_label": case["predicted_label"],
+        "probability_parasitized": case["probability_parasitized"],
         "score_positive_label": case["score_positive_label"],
         "positive_label": case["positive_label"],
         "threshold": case["threshold"],
@@ -1134,7 +1141,7 @@ def main():
                 f"Explicando caso {case_number}/{len(cases)} "
                 f"({case['case_type']}, real={case['true_label']}, "
                 f"pred={case['predicted_label']}, "
-                f"score_{case['positive_label']}={case['score_positive_label']:.4f})"
+                f"probability_parasitized={case['probability_parasitized']:.4f})"
             )
 
             for method in selected_methods:

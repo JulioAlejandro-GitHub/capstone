@@ -1,8 +1,9 @@
 import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.applications import VGG16
+from tensorflow.keras import regularizers
 
-from src.config import POSITIVE_CLASS_INDEX
+from src.config import NEGATIVE_CLASS_INDEX, POSITIVE_CLASS_INDEX
 
 
 @tf.keras.utils.register_keras_serializable(package="malaria")
@@ -63,16 +64,110 @@ class ParasitizedRecall(tf.keras.metrics.Metric):
         return config
 
 
-def compile_binary_model(model, learning_rate: float = 1.0, optimizer_name: str = "adadelta"):
+@tf.keras.utils.register_keras_serializable(package="malaria")
+class Specificity(tf.keras.metrics.Metric):
+    """
+    Especificidad clínica: TN / (TN + FP) para la clase uninfected.
+    """
+
+    def __init__(self, threshold: float = 0.5, name: str = "specificity", **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.threshold = float(threshold)
+        self.true_negatives = self.add_weight(name="true_negatives", initializer="zeros")
+        self.false_positives = self.add_weight(name="false_positives", initializer="zeros")
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        y_true = tf.cast(tf.reshape(y_true, [-1]), tf.float32)
+        y_pred = tf.cast(tf.reshape(y_pred, [-1]), tf.float32)
+
+        true_uninfected = tf.equal(y_true, float(NEGATIVE_CLASS_INDEX))
+        pred_parasitized = tf.greater_equal(y_pred, self.threshold)
+        pred_uninfected = tf.logical_not(pred_parasitized)
+
+        true_negative_mask = tf.cast(
+            tf.logical_and(true_uninfected, pred_uninfected),
+            tf.float32,
+        )
+        false_positive_mask = tf.cast(
+            tf.logical_and(true_uninfected, pred_parasitized),
+            tf.float32,
+        )
+
+        if sample_weight is not None:
+            sample_weight = tf.cast(tf.reshape(sample_weight, [-1]), tf.float32)
+            true_negative_mask *= sample_weight
+            false_positive_mask *= sample_weight
+
+        self.true_negatives.assign_add(tf.reduce_sum(true_negative_mask))
+        self.false_positives.assign_add(tf.reduce_sum(false_positive_mask))
+
+    def result(self):
+        return tf.math.divide_no_nan(
+            self.true_negatives,
+            self.true_negatives + self.false_positives,
+        )
+
+    def reset_state(self):
+        self.true_negatives.assign(0.0)
+        self.false_positives.assign(0.0)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"threshold": self.threshold})
+        return config
+
+
+@tf.keras.utils.register_keras_serializable(package="malaria")
+class BalancedAccuracy(tf.keras.metrics.Metric):
+    """
+    Balanced accuracy clínica:
+      (recall_parasitized + specificity) / 2
+    """
+
+    def __init__(self, threshold: float = 0.5, name: str = "balanced_accuracy", **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.threshold = float(threshold)
+        self.recall_parasitized = ParasitizedRecall(threshold=threshold)
+        self.specificity = Specificity(threshold=threshold)
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        self.recall_parasitized.update_state(y_true, y_pred, sample_weight=sample_weight)
+        self.specificity.update_state(y_true, y_pred, sample_weight=sample_weight)
+
+    def result(self):
+        return (self.recall_parasitized.result() + self.specificity.result()) / 2.0
+
+    def reset_state(self):
+        self.recall_parasitized.reset_state()
+        self.specificity.reset_state()
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"threshold": self.threshold})
+        return config
+
+
+def build_optimizer(optimizer_name: str = "adam", learning_rate: float = 1e-4):
+    optimizer_name = str(optimizer_name).lower()
+    if optimizer_name == "adam":
+        return tf.keras.optimizers.Adam(learning_rate=learning_rate)
+    if optimizer_name == "adamw":
+        adamw = getattr(tf.keras.optimizers, "AdamW", None)
+        if adamw is None:
+            raise ValueError("AdamW no está disponible en esta versión de TensorFlow/Keras.")
+        return adamw(learning_rate=learning_rate)
+    if optimizer_name == "sgd":
+        return tf.keras.optimizers.SGD(learning_rate=learning_rate, momentum=0.9)
+    if optimizer_name == "adadelta":
+        return tf.keras.optimizers.Adadelta(learning_rate=learning_rate)
+    raise ValueError(f"Optimizador no soportado: {optimizer_name}")
+
+
+def compile_binary_model(model, learning_rate: float = 1e-4, optimizer_name: str = "adam"):
     """
     Compila un modelo binario con métricas útiles para salud/diagnóstico.
     """
-    if optimizer_name.lower() == "adadelta":
-        optimizer = tf.keras.optimizers.Adadelta(learning_rate=learning_rate)
-    elif optimizer_name.lower() == "adam":
-        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    else:
-        raise ValueError(f"Optimizador no soportado: {optimizer_name}")
+    optimizer = build_optimizer(optimizer_name=optimizer_name, learning_rate=learning_rate)
 
     model.compile(
         optimizer=optimizer,
@@ -82,45 +177,59 @@ def compile_binary_model(model, learning_rate: float = 1.0, optimizer_name: str 
             tf.keras.metrics.Precision(name="precision"),
             tf.keras.metrics.Recall(name="recall"),
             ParasitizedRecall(name="recall_parasitized"),
+            Specificity(name="specificity"),
+            BalancedAccuracy(name="balanced_accuracy"),
             tf.keras.metrics.AUC(name="auc"),
         ],
     )
     return model
 
 
-def build_custom_cnn(input_shape=(200, 200, 3), learning_rate: float = 1.0):
+def conv_bn_relu(filters, l2_weight):
+    return [
+        layers.Conv2D(
+            filters,
+            (3, 3),
+            padding="same",
+            use_bias=False,
+            kernel_regularizer=regularizers.l2(l2_weight) if l2_weight else None,
+        ),
+        layers.BatchNormalization(),
+        layers.Activation("relu"),
+    ]
+
+
+def build_custom_cnn(
+    input_shape=(200, 200, 3),
+    learning_rate: float = 1e-4,
+    optimizer_name: str = "adam",
+    l2_weight: float = 1e-4,
+):
     """
     CNN propia inspirada en el paper:
-    bloques convolucionales + max pooling + densas + dropout.
+    bloques convolucionales + batch normalization + global average pooling.
     Salida binaria sigmoid:
         0 = uninfected
         1 = parasitized
+    La salida cerca de 1 representa probability_parasitized.
     """
     model = models.Sequential(
         [
             layers.Input(shape=input_shape),
-
-            layers.Conv2D(32, (3, 3), padding="same", activation="relu"),
-            layers.Conv2D(32, (3, 3), padding="same", activation="relu"),
+            *conv_bn_relu(32, l2_weight),
             layers.MaxPooling2D((2, 2)),
-
-            layers.Conv2D(64, (3, 3), padding="same", activation="relu"),
-            layers.Conv2D(64, (3, 3), padding="same", activation="relu"),
+            *conv_bn_relu(64, l2_weight),
             layers.MaxPooling2D((2, 2)),
-
-            layers.Conv2D(128, (3, 3), padding="same", activation="relu"),
-            layers.Conv2D(128, (3, 3), padding="same", activation="relu"),
+            *conv_bn_relu(128, l2_weight),
             layers.MaxPooling2D((2, 2)),
-
-            layers.Conv2D(256, (3, 3), padding="same", activation="relu"),
-            layers.Conv2D(256, (3, 3), padding="same", activation="relu"),
-            layers.MaxPooling2D((2, 2)),
-
-            layers.Flatten(),
-            layers.Dense(256, activation="relu"),
-            layers.Dropout(0.5),
-            layers.Dense(256, activation="relu"),
-            layers.Dropout(0.5),
+            *conv_bn_relu(256, l2_weight),
+            layers.GlobalAveragePooling2D(),
+            layers.Dense(
+                128,
+                activation="relu",
+                kernel_regularizer=regularizers.l2(l2_weight) if l2_weight else None,
+            ),
+            layers.Dropout(0.4),
             layers.Dense(1, activation="sigmoid"),
         ],
         name="custom_cnn",
@@ -129,13 +238,14 @@ def build_custom_cnn(input_shape=(200, 200, 3), learning_rate: float = 1.0):
     return compile_binary_model(
         model,
         learning_rate=learning_rate,
-        optimizer_name="adadelta",
+        optimizer_name=optimizer_name,
     )
 
 
 def build_vgg16_transfer(
     input_shape=(200, 200, 3),
-    learning_rate: float = 0.01,
+    learning_rate: float = 1e-4,
+    optimizer_name: str = "adam",
     trainable_backbone: bool = False,
 ):
     """
@@ -167,7 +277,7 @@ def build_vgg16_transfer(
     model = compile_binary_model(
         model,
         learning_rate=learning_rate,
-        optimizer_name="adadelta",
+        optimizer_name=optimizer_name,
     )
 
     return model, base_model

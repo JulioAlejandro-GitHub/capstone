@@ -255,6 +255,7 @@ training_log.csv
 training_base_log.csv
 fine_tuning_log.csv
 checkpoint_selection.json
+model_metadata.json
 test_metrics.json
 test_predictions.csv
 test_confusion_matrix.csv
@@ -262,21 +263,23 @@ test_confusion_matrix.csv
 
 ### Selección Del Mejor Checkpoint
 
-`best_model.keras` se guarda con `ModelCheckpoint` usando una métrica configurable. El valor por defecto es clínico:
+`best_model.keras` se guarda con `ModelCheckpoint` usando una métrica configurable. El valor por defecto recomendado es balanceado:
 
 ```text
---checkpoint-metric val_recall_parasitized
+--checkpoint-monitor val_auc
+--early-stopping-monitor val_auc
 ```
 
-Esto representa sensibilidad/recall de la clase `parasitized`, tratada como clase positiva clínica. También se puede seleccionar:
+También se puede seleccionar:
 
 - `val_auc`
+- `val_balanced_accuracy`
 - `val_recall`
 - `val_accuracy`
 - `val_loss`
 - `val_recall_parasitized`
 
-Importante: `val_recall` es la métrica Keras estándar sobre la clase índice 1 (`uninfected`) en este proyecto. Para criterio clínico sobre malaria usa `val_recall_parasitized`.
+Importante: no se recomienda usar solo `val_recall_parasitized` para seleccionar checkpoints. Un modelo puede predecir todo como `parasitized`, obtener sensibilidad 1.0, especificidad 0.0 y balanced accuracy 0.5. Bajo la convención oficial, la clase índice 1 es `parasitized`.
 
 Ejemplo:
 
@@ -287,7 +290,11 @@ python -m src.train \
   --fine-tune-epochs 10 \
   --img-size 200 \
   --batch-size 64 \
-  --checkpoint-metric val_recall_parasitized \
+  --optimizer adam \
+  --learning-rate 1e-4 \
+  --checkpoint-monitor val_auc \
+  --early-stopping-monitor val_auc \
+  --monitor-mode max \
   --track-db
 ```
 
@@ -295,6 +302,7 @@ El modo de comparación se resuelve automáticamente: `min` para `val_loss`, `ma
 
 ```text
 outputs/<model>/checkpoint_selection.json
+outputs/<model>/model_metadata.json
 ```
 
 Además, el entrenamiento base y el fine-tuning tienen logs separados:
@@ -366,6 +374,17 @@ Los JSON de métricas incluyen:
 - `false_positive_rate`
 - `balanced_accuracy`
 - `auc_parasitized`
+- `prediction_distribution`
+- `prediction_collapse`
+
+Si la matriz de confusión es:
+
+```text
+[[0 1385]
+ [0 1371]]
+```
+
+el modelo predijo todas las imágenes como `parasitized`. Ese checkpoint no debe usarse como modelo clínico experimental sin reentrenamiento o revisión.
 
 El umbral clínico se puede ajustar en evaluación, ensemble, TTA y SVM:
 

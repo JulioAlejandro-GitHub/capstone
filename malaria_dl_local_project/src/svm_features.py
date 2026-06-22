@@ -15,6 +15,7 @@ from src.config import (
 )
 from src.data import load_malaria_splits
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
+from src.model_metadata import verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
@@ -74,6 +75,7 @@ def main():
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
     preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
+    verify_checkpoint_metadata(checkpoint)
 
     output_dir = OUTPUT_DIR / "cnn_features_svm"
     if args.track_db:

@@ -35,6 +35,7 @@ from src.inference_pipeline import (
     predict_model_probability_with_tta,
     preprocess_external_image,
 )
+from src.model_metadata import verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
@@ -849,6 +850,19 @@ def resolve_model_paths(args):
     explain_model_path = Path(args.explain_model).expanduser() if args.explain_model else primary_checkpoint
     if args.explain and args.explain != "none" and not explain_model_path.exists():
         raise FileNotFoundError(f"No existe el modelo para explicabilidad: {explain_model_path}")
+
+    mapping_metadata = label_mapping_metadata(args.label_mapping)
+    checked_paths = set()
+    for path in [*model_paths, explain_model_path]:
+        resolved = Path(path).resolve()
+        if resolved in checked_paths:
+            continue
+        checked_paths.add(resolved)
+        verify_checkpoint_metadata(
+            path,
+            expected_label_mapping=args.label_mapping,
+            expected_raw_score_meaning=mapping_metadata["raw_model_score_meaning"],
+        )
 
     return primary_checkpoint, model_paths, explain_model_path
 

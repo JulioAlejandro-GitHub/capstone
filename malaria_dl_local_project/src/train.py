@@ -13,6 +13,7 @@ from src.config import (
 )
 from src.data import load_malaria_splits
 from src.metrics import evaluate_keras_model
+from src.model_metadata import build_model_metadata, write_model_metadata
 from src.models import (
     build_custom_cnn,
     build_vgg16_transfer,
@@ -23,8 +24,11 @@ from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
 CHECKPOINT_METRIC_CHOICES = [
-    "val_recall_parasitized",
     "val_auc",
+    "val_balanced_accuracy",
+    "val_recall_parasitized",
+    "val_specificity",
+    "val_precision",
     "val_recall",
     "val_accuracy",
     "val_loss",
@@ -40,18 +44,30 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--learning-rate", type=float, default=None)
+    parser.add_argument("--fine-tune-learning-rate", type=float, default=None)
+    parser.add_argument(
+        "--optimizer",
+        choices=["adam", "adamw", "sgd", "adadelta"],
+        default="adam",
+        help="Optimizador para entrenamiento. Default recomendado: adam.",
+    )
     parser.add_argument("--no-augment", action="store_true")
     parser.add_argument(
+        "--checkpoint-monitor",
         "--checkpoint-metric",
+        dest="checkpoint_monitor",
         choices=CHECKPOINT_METRIC_CHOICES,
-        default="val_recall_parasitized",
+        default="val_auc",
         help=(
             "Métrica monitoreada para guardar best_model.keras. "
-            "Default: val_recall_parasitized."
+            "Default recomendado: val_auc. val_recall_parasitized queda "
+            "disponible solo como opción explícita."
         ),
     )
     parser.add_argument(
+        "--monitor-mode",
         "--checkpoint-mode",
+        dest="monitor_mode",
         choices=["auto", "max", "min"],
         default="auto",
         help="Modo de comparación del checkpoint. 'auto' usa min para loss y max para el resto.",
@@ -59,10 +75,9 @@ def parse_args():
     parser.add_argument(
         "--early-stopping-monitor",
         choices=CHECKPOINT_METRIC_CHOICES,
-        default=None,
+        default="val_auc",
         help=(
-            "Métrica para EarlyStopping. Si no se informa, usa la misma que "
-            "--checkpoint-metric."
+            "Métrica para EarlyStopping. Default recomendado: val_auc."
         ),
     )
     parser.add_argument(
@@ -150,7 +165,7 @@ def json_safe_float(value):
 
 def write_checkpoint_selection_report(
     output_dir,
-    checkpoint_metric,
+    checkpoint_monitor,
     checkpoint_mode,
     early_stopping_monitor,
     early_stopping_mode,
@@ -159,7 +174,8 @@ def write_checkpoint_selection_report(
 ):
     report = {
         "best_model_path": str(output_dir / "best_model.keras"),
-        "checkpoint_metric": checkpoint_metric,
+        "checkpoint_metric": checkpoint_monitor,
+        "checkpoint_monitor": checkpoint_monitor,
         "checkpoint_mode": checkpoint_mode,
         "best_checkpoint_value": json_safe_float(getattr(checkpoint_callback, "best", None)),
         "early_stopping_monitor": early_stopping_monitor,
@@ -189,9 +205,9 @@ def main():
         else OUTPUT_DIR / args.model
     )
     preprocessing_mode = resolve_preprocessing_mode(args.model, args.preprocessing)
-    checkpoint_metric = args.checkpoint_metric
-    checkpoint_mode = resolve_monitor_mode(checkpoint_metric, args.checkpoint_mode)
-    early_stopping_monitor = args.early_stopping_monitor or checkpoint_metric
+    checkpoint_monitor = args.checkpoint_monitor
+    checkpoint_mode = resolve_monitor_mode(checkpoint_monitor, args.monitor_mode)
+    early_stopping_monitor = args.early_stopping_monitor or checkpoint_monitor
     early_stopping_mode = resolve_monitor_mode(
         early_stopping_monitor,
         args.early_stopping_mode,
@@ -221,11 +237,13 @@ def main():
                     "label_mapping_version": LABEL_MAPPING_VERSION,
                     "label_mapping": LABEL_MAPPING_METADATA,
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
-                    "checkpoint_metric": checkpoint_metric,
+                    "checkpoint_monitor": checkpoint_monitor,
+                    "checkpoint_metric": checkpoint_monitor,
                     "checkpoint_mode": checkpoint_mode,
                     "early_stopping_monitor": early_stopping_monitor,
                     "early_stopping_mode": early_stopping_mode,
                     "early_stopping_patience": args.early_stopping_patience,
+                    "optimizer": args.optimizer,
                 },
             ),
             random_seed=args.seed,
@@ -251,7 +269,7 @@ def main():
         print("Preprocesamiento:", preprocessing_mode)
         print(
             "Checkpoint metric:",
-            checkpoint_metric,
+            checkpoint_monitor,
             f"(mode={checkpoint_mode})",
         )
         print(
@@ -263,18 +281,26 @@ def main():
         input_shape = (args.img_size, args.img_size, 3)
 
         if args.model == "custom_cnn":
-            lr = args.learning_rate if args.learning_rate is not None else 1.0
-            model = build_custom_cnn(input_shape=input_shape, learning_rate=lr)
+            lr = args.learning_rate if args.learning_rate is not None else 1e-4
+            model = build_custom_cnn(
+                input_shape=input_shape,
+                learning_rate=lr,
+                optimizer_name=args.optimizer,
+            )
             base_model = None
         else:
-            lr = args.learning_rate if args.learning_rate is not None else 0.01
-            model, base_model = build_vgg16_transfer(input_shape=input_shape, learning_rate=lr)
+            lr = args.learning_rate if args.learning_rate is not None else 1e-4
+            model, base_model = build_vgg16_transfer(
+                input_shape=input_shape,
+                learning_rate=lr,
+                optimizer_name=args.optimizer,
+            )
 
         model.summary()
 
         checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath=str(output_dir / "best_model.keras"),
-            monitor=checkpoint_metric,
+            monitor=checkpoint_monitor,
             save_best_only=True,
             mode=checkpoint_mode,
             verbose=1,
@@ -298,10 +324,15 @@ def main():
         if args.model == "vgg16" and args.fine_tune_epochs > 0:
             print("Iniciando fine-tuning parcial de VGG16...")
             unfreeze_last_layers(base_model, n_layers=4)
+            fine_tune_lr = (
+                args.fine_tune_learning_rate
+                if args.fine_tune_learning_rate is not None
+                else 1e-5
+            )
             model = compile_binary_model(
                 model,
-                learning_rate=0.001,
-                optimizer_name="adadelta",
+                learning_rate=fine_tune_lr,
+                optimizer_name=args.optimizer,
             )
 
             fine_tune_history = model.fit(
@@ -337,16 +368,45 @@ def main():
         model.save(output_dir / "final_model.keras")
         checkpoint_selection = write_checkpoint_selection_report(
             output_dir=output_dir,
-            checkpoint_metric=checkpoint_metric,
+            checkpoint_monitor=checkpoint_monitor,
             checkpoint_mode=checkpoint_mode,
             early_stopping_monitor=early_stopping_monitor,
             early_stopping_mode=early_stopping_mode,
             checkpoint_callback=checkpoint_callback,
             fine_tuning_enabled=fine_tune_history is not None,
         )
+        model_metadata = build_model_metadata(
+            model_name=args.model,
+            threshold_default=0.5,
+            preprocessing=preprocessing_mode,
+            checkpoint_monitor=checkpoint_monitor,
+            early_stopping_monitor=early_stopping_monitor,
+            optimizer=args.optimizer,
+            learning_rate=lr,
+            extra={
+                "checkpoint_mode": checkpoint_mode,
+                "early_stopping_mode": early_stopping_mode,
+                "early_stopping_patience": args.early_stopping_patience,
+                "fine_tuning_enabled": fine_tune_history is not None,
+                "fine_tune_learning_rate": (
+                    None
+                    if fine_tune_history is None
+                    else (
+                        args.fine_tune_learning_rate
+                        if args.fine_tune_learning_rate is not None
+                        else 1e-5
+                    )
+                ),
+                "img_size": args.img_size,
+                "batch_size": args.batch_size,
+                "augment": not args.no_augment,
+            },
+        )
+        metadata_path = write_model_metadata(output_dir, model_metadata)
         print(f"Modelo final guardado en: {output_dir / 'final_model.keras'}")
         print(f"Mejor modelo guardado en: {output_dir / 'best_model.keras'}")
         print(f"Criterio de selección guardado en: {output_dir / 'checkpoint_selection.json'}")
+        print(f"Metadata de modelo guardada en: {metadata_path}")
 
         if args.track_db and run_context:
             from src.tracking_integration import (
@@ -378,6 +438,7 @@ def main():
                     "label_mapping": LABEL_MAPPING_METADATA,
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
                     "checkpoint_selection": checkpoint_selection,
+                    "model_metadata": model_metadata,
                 },
             )
             finish_tracking_run(
@@ -388,6 +449,16 @@ def main():
                     "label_mapping": LABEL_MAPPING_METADATA,
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
                     "checkpoint_selection": checkpoint_selection,
+                    "model_metadata": model_metadata,
+                    "specificity": metrics.get("specificity"),
+                    "balanced_accuracy": metrics.get("balanced_accuracy"),
+                    "prediction_collapse_detected": metrics.get(
+                        "prediction_collapse_detected"
+                    ),
+                    "n_pred_uninfected": metrics.get("n_pred_uninfected"),
+                    "n_pred_parasitized": metrics.get("n_pred_parasitized"),
+                    "percent_pred_uninfected": metrics.get("percent_pred_uninfected"),
+                    "percent_pred_parasitized": metrics.get("percent_pred_parasitized"),
                 },
             )
     except Exception as exc:

@@ -17,7 +17,15 @@ except Exception as exc:  # pragma: no cover - exercised only when local env lac
 else:
     IMPORT_ERROR = None
 
-from src.config import CLASS_NAMES, LABEL_MAPPING_VERSION
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_VERSION,
+    NEGATIVE_CLASS_INDEX,
+    NEGATIVE_LABEL,
+    POSITIVE_CLASS_INDEX,
+    POSITIVE_LABEL,
+    RAW_MODEL_SCORE_MEANING,
+)
 from src.decision import probabilities_by_class_from_prediction
 
 
@@ -25,6 +33,23 @@ class LabelMappingTests(unittest.TestCase):
     def test_official_class_order_is_uninfected_then_parasitized(self):
         self.assertEqual(CLASS_NAMES, ["uninfected", "parasitized"])
         self.assertEqual(LABEL_MAPPING_VERSION, "clinical_v1_parasitized_positive")
+
+    def test_positive_class_is_parasitized(self):
+        self.assertEqual(POSITIVE_LABEL, "parasitized")
+        self.assertEqual(POSITIVE_CLASS_INDEX, 1)
+
+    def test_negative_class_is_uninfected(self):
+        self.assertEqual(NEGATIVE_LABEL, "uninfected")
+        self.assertEqual(NEGATIVE_CLASS_INDEX, 0)
+
+    def test_raw_score_means_probability_parasitized(self):
+        raw_model_score = 0.8
+        probability_parasitized = raw_model_score
+        probability_uninfected = 1.0 - raw_model_score
+
+        self.assertEqual(RAW_MODEL_SCORE_MEANING, "probability_parasitized")
+        self.assertAlmostEqual(probability_parasitized, 0.8)
+        self.assertAlmostEqual(probability_uninfected, 0.2)
 
     @unittest.skipIf(tf is None, f"TensorFlow no disponible: {IMPORT_ERROR}")
     def test_tfds_label_is_remapped_to_clinical_label(self):
