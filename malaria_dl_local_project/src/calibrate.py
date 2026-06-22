@@ -7,10 +7,16 @@ import numpy as np
 import tensorflow as tf
 
 from src.calibration import CALIBRATION_SCHEMA_VERSION, fit_temperature_scaling
-from src.config import CLASS_NAMES
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_CHOICES,
+    LABEL_MAPPING_VERSION,
+    LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    POSITIVE_LABEL,
+    label_mapping_metadata,
+)
 from src.data import load_malaria_splits
-from src.decision import POSITIVE_LABEL
-from src.metrics import clinical_probabilities_from_raw_scores
+from src.inference_pipeline import probability_rows_from_predictions
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
@@ -21,6 +27,12 @@ def parse_args():
     parser.add_argument("--checkpoint", required=True, help="Ruta a best_model.keras o final_model.keras.")
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument(
+        "--label-mapping",
+        choices=LABEL_MAPPING_CHOICES,
+        default=LABEL_MAPPING_VERSION,
+        help="Convención del checkpoint. Usa legacy_tfds solo para modelos antiguos.",
+    )
     parser.add_argument(
         "--preprocessing",
         choices=PREPROCESSING_CHOICES,
@@ -44,21 +56,30 @@ def parse_args():
     return parser.parse_args()
 
 
-def collect_validation_probabilities(model, dataset, class_names):
+def collect_validation_probabilities(
+    model,
+    dataset,
+    class_names,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
     y_true = []
     raw_scores = []
 
     for images, labels in dataset:
-        predictions = model.predict(images, verbose=0).reshape(-1)
-        raw_scores.extend(predictions)
+        predictions = model.predict(images, verbose=0)
+        probability_rows = probability_rows_from_predictions(
+            predictions,
+            label_mapping_version=label_mapping_version,
+        )
+        batch_probability_parasitized = [
+            row[POSITIVE_LABEL] for row in probability_rows
+        ]
+        raw_scores.extend(batch_probability_parasitized)
         y_true.extend(labels.numpy())
 
     y_true = np.asarray(y_true).astype(int)
     raw_scores = np.asarray(raw_scores, dtype=np.float32)
-    _, probability_parasitized, _ = clinical_probabilities_from_raw_scores(
-        raw_scores,
-        class_names,
-    )
+    probability_parasitized = raw_scores
     positive_index = list(class_names).index(POSITIVE_LABEL)
     y_true_positive = (y_true == positive_index).astype(np.float32)
     return y_true_positive, probability_parasitized, raw_scores
@@ -77,6 +98,7 @@ def build_calibration_payload(
         for key, value in fit_result["metrics"].items()
         if value is not None
     }
+    mapping_metadata = label_mapping_metadata(args.label_mapping)
     return {
         "schema_version": CALIBRATION_SCHEMA_VERSION,
         "method": "temperature_scaling",
@@ -84,6 +106,9 @@ def build_calibration_payload(
         "params": {"temperature": float(fit_result["temperature"])},
         "positive_label": POSITIVE_LABEL,
         "score_name": "probability_parasitized",
+        "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+        "label_mapping_version": args.label_mapping,
+        "label_mapping": mapping_metadata,
         "checkpoint": str(checkpoint),
         "class_names": list(class_names),
         "split": "validation",
@@ -142,6 +167,9 @@ def track_calibration_run(args, checkpoint, output_file, payload):
                     "calibration_method": payload["method"],
                     "temperature": payload["temperature"],
                     "preprocessing_mode": payload["preprocessing_mode"],
+                    "label_mapping_version": payload["label_mapping_version"],
+                    "label_mapping": payload["label_mapping"],
+                    "raw_model_score_meaning": payload["raw_model_score_meaning"],
                 },
             ),
         )
@@ -177,6 +205,9 @@ def track_calibration_run(args, checkpoint, output_file, payload):
                 "method": payload["method"],
                 "temperature": payload["temperature"],
                 "checkpoint": str(checkpoint),
+                "label_mapping_version": payload["label_mapping_version"],
+                "label_mapping": payload["label_mapping"],
+                "raw_model_score_meaning": payload["raw_model_score_meaning"],
             },
         )
         finish_tracking_run(
@@ -206,14 +237,16 @@ def main():
         else checkpoint.parent / "calibration.json"
     )
     preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
+    if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
+        print("Advertencia: calibrando checkpoint legacy_tfds_parasitized_zero.")
 
-    _, ds_val, _, ds_info = load_malaria_splits(
+    _, ds_val, _, _ = load_malaria_splits(
         img_size=args.img_size,
         batch_size=args.batch_size,
         augment=False,
         preprocessing_mode=preprocessing_mode,
     )
-    class_names = list(ds_info.features["label"].names)
+    class_names = CLASS_NAMES
     if POSITIVE_LABEL not in class_names:
         raise ValueError(f"No existe la clase positiva {POSITIVE_LABEL!r}: {class_names}")
 
@@ -224,6 +257,7 @@ def main():
         model,
         ds_val,
         class_names,
+        label_mapping_version=args.label_mapping,
     )
 
     print("Estimando temperatura...")

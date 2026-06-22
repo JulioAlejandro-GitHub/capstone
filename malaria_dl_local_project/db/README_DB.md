@@ -318,15 +318,29 @@ SELECT
     predicted_label,
     probability_parasitized,
     probability_uninfected,
+    raw_model_score,
+    raw_model_score_meaning,
+    label_mapping_version,
     confidence_level,
-    decision,
-    tta,
+    decision_code,
+    tta_applied,
     n_aug,
     explainability_method,
     explainability_path
-FROM vw_uploaded_predictions
+FROM vw_clinical_inference_predictions
 ORDER BY created_at DESC;
 ```
+
+Convención vigente para nuevos registros:
+
+```text
+label_mapping_version = clinical_v1_parasitized_positive
+0 = uninfected
+1 = parasitized
+raw_model_score = probability_parasitized
+```
+
+Los checkpoints antiguos pueden registrarse con `legacy_tfds_parasitized_zero` si se ejecutan explícitamente con `--label-mapping legacy_tfds_parasitized_zero`.
 
 ### Últimas ejecuciones
 

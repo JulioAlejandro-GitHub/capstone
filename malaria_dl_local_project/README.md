@@ -186,12 +186,31 @@ python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 20
 
 ### Inferencia estructurada de imagen externa
 
-La clase clínica positiva por defecto es `parasitized`. Los checkpoints actuales
-fueron entrenados con el orden de TensorFlow Datasets (`0 = parasitized`,
-`1 = uninfected`), por lo que `src.predict_image` reporta explícitamente:
+La clase clínica positiva por defecto es `parasitized`.
+
+La convención oficial del proyecto es:
+
+```text
+0 = uninfected
+1 = parasitized
+raw_model_score = probability_parasitized
+label_mapping_version = clinical_v1_parasitized_positive
+```
+
+TensorFlow Datasets entrega originalmente `0 = parasitized` y `1 = uninfected`, pero `src.data` remapea las etiquetas antes de entrenar, evaluar y explicar. Si necesitas usar un checkpoint antiguo entrenado con la convención TFDS previa, declara explícitamente:
+
+```bash
+--label-mapping legacy_tfds_parasitized_zero
+```
+
+Este flag está disponible en `src.predict_image`, `src.evaluate`, `src.explain`, `src.calibrate`, `src.tta` y `src.ensemble`.
+
+`src.predict_image` reporta explícitamente:
 
 - `probability_parasitized`
 - `probability_uninfected`
+- `raw_model_score_meaning`
+- `label_mapping_version`
 - `confidence_level`
 - `decision`
 - `human_readable_response`
@@ -359,7 +378,7 @@ python -m src.explain \
 
 LIME identifica superpíxeles relevantes para una predicción local del modelo. SHAP estima la contribución de regiones o píxeles a la predicción. Grad-CAM genera mapas de calor usando los gradientes de la clase predicha sobre la última capa convolucional. Estas técnicas ayudan a revisar verdaderos positivos, verdaderos negativos, falsos positivos, falsos negativos y casos de baja confianza cercanos al umbral de clasificación.
 
-En los reportes clínicos experimentales, la clase positiva debe ser `parasitized`. El pipeline diferencia la salida cruda del sigmoid (`raw_model_score`) de `probability_parasitized` para evitar ambigüedad con el orden de clases de TensorFlow Datasets.
+En los reportes clínicos experimentales, la clase positiva debe ser `parasitized`. Bajo la convención oficial, `raw_model_score` equivale a `probability_parasitized`; los campos `raw_model_score_meaning` y `label_mapping_version` quedan guardados para evitar ambigüedad con checkpoints antiguos.
 
 Las salidas se guardan en:
 
@@ -386,7 +405,7 @@ outputs/explainability/
   explanation_summary.csv
 ```
 
-Cada imagen explicada se guarda como PNG con clase real, clase predicha y score en el nombre del archivo. El CSV `explanation_summary.csv` registra `case_id`, tipo de caso, clase real, clase predicha, score de la clase positiva, clase positiva, umbral, método, éxito, error, ruta de imagen y, para Grad-CAM, la capa convolucional usada.
+Cada imagen explicada se guarda como PNG con clase real, clase predicha y `prob-parasitized` en el nombre del archivo. El CSV `explanation_summary.csv` registra `case_id`, tipo de caso, clase real, clase predicha, probabilidad de la clase positiva, clase positiva, umbral, método, éxito, error, ruta de imagen, convención de etiquetas y, para Grad-CAM, la capa convolucional usada.
 
 ## Explicabilidad con Grad-CAM
 

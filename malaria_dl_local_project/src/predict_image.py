@@ -8,7 +8,18 @@ import numpy as np
 import tensorflow as tf
 
 from src.calibration import calibration_params_from_file, load_calibration_file
-from src.config import CLASS_NAMES, OUTPUT_DIR, PROJECT_ROOT
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_CHOICES,
+    LABEL_MAPPING_VERSION,
+    LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    NEGATIVE_CLASS_INDEX,
+    OUTPUT_DIR,
+    POSITIVE_CLASS_INDEX,
+    PROJECT_ROOT,
+    RAW_MODEL_SCORE_MEANING,
+    label_mapping_metadata,
+)
 from src.decision import (
     DISCLAIMER,
     NEGATIVE_LABEL,
@@ -37,6 +48,16 @@ def parse_args():
     parser.add_argument("--image-path", required=True, help="Ruta a la imagen a evaluar.")
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--label-mapping",
+        choices=LABEL_MAPPING_CHOICES,
+        default=LABEL_MAPPING_VERSION,
+        help=(
+            "Convención de etiquetas del checkpoint. Default clinical_v1: "
+            "0=uninfected, 1=parasitized, sigmoid=probability_parasitized. "
+            "Usar legacy_tfds solo para checkpoints antiguos."
+        ),
+    )
     parser.add_argument(
         "--preprocessing",
         choices=PREPROCESSING_CHOICES,
@@ -135,17 +156,29 @@ def probability_rows_from_predictions(predictions):
     return pipeline_probability_rows(predictions)
 
 
-def predict_without_tta(model, image_batch):
-    return predict_model_probability(model, image_batch)
+def predict_without_tta(model, image_batch, label_mapping_version=LABEL_MAPPING_VERSION):
+    return predict_model_probability(
+        model,
+        image_batch,
+        label_mapping_version=label_mapping_version,
+    )
 
 
-def predict_with_tta(model, image_batch, n_aug, preprocessing_mode="rescale_0_1", raw_image=None):
+def predict_with_tta(
+    model,
+    image_batch,
+    n_aug,
+    preprocessing_mode="rescale_0_1",
+    raw_image=None,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
     return predict_model_probability_with_tta(
         model,
         image_batch,
         n_aug,
         preprocessing_mode=preprocessing_mode,
         raw_image=raw_image,
+        label_mapping_version=label_mapping_version,
     )
 
 
@@ -218,7 +251,7 @@ def run_external_explanations(args, model, image_batch, response, preprocessing_
                         predicted_label=response["predicted_label"],
                         score=response["probability_parasitized"],
                     ),
-                    invert_scalar_output=response["predicted_label"] == POSITIVE_LABEL,
+                    invert_scalar_output=response["predicted_label"] == NEGATIVE_LABEL,
                     preprocessing_mode=preprocessing_mode,
                 )
                 item.update(
@@ -319,6 +352,16 @@ def build_result(args, image_path, stored_image, checkpoint, prediction_result):
         },
         "raw_model_output": prediction_result["raw_model_output"],
         "raw_model_score": prediction_result.get("raw_model_score"),
+        "raw_model_score_meaning": prediction_result.get(
+            "raw_model_score_meaning",
+            RAW_MODEL_SCORE_MEANING,
+        ),
+        "label_mapping_version": args.label_mapping,
+        "label_mapping": label_mapping_metadata(args.label_mapping),
+        "positive_class_name": POSITIVE_LABEL,
+        "positive_class_index": POSITIVE_CLASS_INDEX,
+        "negative_class_name": NEGATIVE_LABEL,
+        "negative_class_index": NEGATIVE_CLASS_INDEX,
         "uncalibrated_probability_parasitized": prediction_result.get(
             "uncalibrated_probability_parasitized",
             probability_parasitized,
@@ -386,6 +429,16 @@ def print_result(result):
     print(f"Modelo: {result.get('model_checkpoint') or 'no cargado'}")
     print("TTA:", "sí" if model_info.get("tta_applied") else "no")
     print("Ensemble:", "sí" if model_info.get("ensemble_applied") else "no")
+    label_mapping = result.get("label_mapping") or model_info.get("label_mapping") or {}
+    print(
+        "Convención de etiquetas:",
+        label_mapping.get("version", result.get("label_mapping_version", LABEL_MAPPING_VERSION)),
+    )
+    if result.get("label_mapping_version") == LEGACY_TFDS_LABEL_MAPPING_VERSION:
+        print(
+            "Advertencia: usando convención legacy TFDS "
+            "(0=parasitized, 1=uninfected, sigmoid=probability_uninfected)."
+        )
     print(f"Probabilidad parasitized: {format_optional_probability(result.get('probability_parasitized'))}")
     print(f"Probabilidad uninfected: {format_optional_probability(result.get('probability_uninfected'))}")
     calibration = probabilities.get("calibration") or {}
@@ -496,6 +549,15 @@ def append_external_prediction_csv(result):
         "ensemble_models": json.dumps(model_info.get("ensemble_models", []), ensure_ascii=False),
         "ensemble_weights": json.dumps(model_info.get("ensemble_weights", []), ensure_ascii=False),
         "raw_model_score": probabilities.get("raw_model_score"),
+        "raw_model_score_meaning": probabilities.get(
+            "raw_model_score_meaning",
+            result.get("raw_model_score_meaning"),
+        ),
+        "label_mapping_version": result.get("label_mapping_version"),
+        "positive_class_name": result.get("positive_class_name"),
+        "positive_class_index": result.get("positive_class_index"),
+        "negative_class_name": result.get("negative_class_name"),
+        "negative_class_index": result.get("negative_class_index"),
         "uncalibrated_probability_parasitized": result.get(
             "uncalibrated_probability_parasitized"
         ),
@@ -574,6 +636,13 @@ def track_prediction(args, result, checkpoint):
                     "original_image_path": result.get("original_image_path"),
                     "stored_filename": result.get("stored_filename"),
                     "class_names": CLASS_NAMES,
+                    "label_mapping_version": result.get("label_mapping_version"),
+                    "label_mapping": result.get("label_mapping"),
+                    "raw_model_score_meaning": result.get("raw_model_score_meaning"),
+                    "positive_class_name": POSITIVE_LABEL,
+                    "positive_class_index": POSITIVE_CLASS_INDEX,
+                    "negative_class_name": NEGATIVE_LABEL,
+                    "negative_class_index": NEGATIVE_CLASS_INDEX,
                     "prediction_source": "uploaded_for_prediction",
                     "probability_parasitized": result["probability_parasitized"],
                     "probability_uninfected": result["probability_uninfected"],
@@ -638,6 +707,13 @@ def track_prediction(args, result, checkpoint):
                 "workflow": result.get("workflow"),
                 "quality": (result.get("image") or {}).get("quality"),
                 "raw_model_score": result.get("raw_model_score"),
+                "raw_model_score_meaning": result.get("raw_model_score_meaning"),
+                "label_mapping_version": result.get("label_mapping_version"),
+                "label_mapping": result.get("label_mapping"),
+                "positive_class_name": POSITIVE_LABEL,
+                "positive_class_index": POSITIVE_CLASS_INDEX,
+                "negative_class_name": NEGATIVE_LABEL,
+                "negative_class_index": NEGATIVE_CLASS_INDEX,
                 "calibration": result.get("calibration"),
                 "calibration_file": (result.get("calibration") or {}).get("calibration_file"),
                 "ensemble_applied": result.get("ensemble_applied"),
@@ -667,6 +743,8 @@ def track_prediction(args, result, checkpoint):
                     "original_filename": result.get("original_filename"),
                     "stored_filename": result.get("stored_filename"),
                     "image_id": result["image_id"],
+                    "label_mapping_version": result.get("label_mapping_version"),
+                    "label_mapping": result.get("label_mapping"),
                 },
             )
 
@@ -730,6 +808,9 @@ def track_prediction(args, result, checkpoint):
                 "workflow": result.get("workflow"),
                 "probability_parasitized": result["probability_parasitized"],
                 "probability_uninfected": result["probability_uninfected"],
+                "raw_model_score_meaning": result.get("raw_model_score_meaning"),
+                "label_mapping_version": result.get("label_mapping_version"),
+                "label_mapping": result.get("label_mapping"),
             },
         )
         tracking_result["registered"] = prediction_id is not None
@@ -790,6 +871,13 @@ def model_info_from_args(args, primary_checkpoint, model_paths, weights, preproc
         "ensemble_applied": bool(args.ensemble),
         "ensemble_models": [str(path) for path in model_paths] if args.ensemble else [],
         "ensemble_weights": None if weights is None else [float(value) for value in weights],
+        "label_mapping_version": args.label_mapping,
+        "label_mapping": label_mapping_metadata(args.label_mapping),
+        "raw_model_score_meaning": (
+            RAW_MODEL_SCORE_MEANING
+            if args.label_mapping == LABEL_MAPPING_VERSION
+            else "probability_uninfected"
+        ),
     }
 
 
@@ -810,6 +898,17 @@ def quality_failure_response(args, image_path, quality_result):
         "human_readable_response": "No fue posible evaluar la imagen por falla de calidad o lectura.",
         "recommendation": "Resultado experimental. Requiere revisión de la imagen de entrada.",
         "disclaimer": DISCLAIMER,
+        "raw_model_score_meaning": (
+            RAW_MODEL_SCORE_MEANING
+            if args.label_mapping == LABEL_MAPPING_VERSION
+            else "probability_uninfected"
+        ),
+        "label_mapping_version": args.label_mapping,
+        "label_mapping": label_mapping_metadata(args.label_mapping),
+        "positive_class_name": POSITIVE_LABEL,
+        "positive_class_index": POSITIVE_CLASS_INDEX,
+        "negative_class_name": NEGATIVE_LABEL,
+        "negative_class_index": NEGATIVE_CLASS_INDEX,
         "image": {
             "original_path": str(image_path),
             "stored_path": None,
@@ -840,6 +939,12 @@ def quality_failure_response(args, image_path, quality_result):
                 "applied": False,
                 "calibration_file": args.calibration_file,
             },
+            "raw_model_score_meaning": (
+                RAW_MODEL_SCORE_MEANING
+                if args.label_mapping == LABEL_MAPPING_VERSION
+                else "probability_uninfected"
+            ),
+            "label_mapping_version": args.label_mapping,
         },
         "decision": {
             "threshold": float(args.threshold),
@@ -871,6 +976,7 @@ def build_inference_args(
     image_path=None,
     img_size=200,
     threshold=0.5,
+    label_mapping=LABEL_MAPPING_VERSION,
     preprocessing="auto",
     positive_label=POSITIVE_LABEL,
     true_label=None,
@@ -893,6 +999,7 @@ def build_inference_args(
         image_path=image_path,
         img_size=img_size,
         threshold=threshold,
+        label_mapping=label_mapping,
         preprocessing=preprocessing,
         positive_label=positive_label,
         true_label=true_label,
@@ -917,6 +1024,7 @@ def run_clinical_inference(
     image_path=None,
     img_size=200,
     threshold=0.5,
+    label_mapping=LABEL_MAPPING_VERSION,
     preprocessing="auto",
     positive_label=POSITIVE_LABEL,
     true_label=None,
@@ -944,6 +1052,7 @@ def run_clinical_inference(
         image_path=image_path,
         img_size=img_size,
         threshold=threshold,
+        label_mapping=label_mapping,
         preprocessing=preprocessing,
         positive_label=positive_label,
         true_label=true_label,
@@ -967,6 +1076,8 @@ def run_clinical_inference(
         raise ValueError(
             f"Este flujo estructurado usa {POSITIVE_LABEL!r} como clase positiva clínica."
         )
+    if args.label_mapping not in LABEL_MAPPING_CHOICES:
+        raise ValueError(f"label_mapping no soportado: {args.label_mapping}")
 
     quality_result = check_image_quality(image_path)
     if quality_result.get("fatal"):
@@ -1011,6 +1122,7 @@ def run_clinical_inference(
             n_aug=args.n_aug,
             preprocessing_mode=preprocessing_mode,
             raw_image=raw_image,
+            label_mapping_version=args.label_mapping,
         )
         normalized_weights = prediction_result.get("ensemble_weights")
     else:
@@ -1022,9 +1134,14 @@ def run_clinical_inference(
                 args.n_aug,
                 preprocessing_mode=preprocessing_mode,
                 raw_image=raw_image,
+                label_mapping_version=args.label_mapping,
             )
             if args.tta
-            else predict_without_tta(model, image_batch)
+            else predict_without_tta(
+                model,
+                image_batch,
+                label_mapping_version=args.label_mapping,
+            )
         )
         normalized_weights = None
     prediction_result["preprocessing_mode"] = preprocessing_mode
@@ -1057,6 +1174,8 @@ def run_clinical_inference(
         "probability_parasitized": result["probability_parasitized"],
         "probability_uninfected": result["probability_uninfected"],
         "raw_model_score": result.get("raw_model_score"),
+        "raw_model_score_meaning": result.get("raw_model_score_meaning"),
+        "label_mapping_version": result.get("label_mapping_version"),
         "calibration": result.get("calibration"),
     }
     result.update(
@@ -1093,6 +1212,7 @@ def run_clinical_inference_from_args(args):
         image_path=args.image_path,
         img_size=args.img_size,
         threshold=args.threshold,
+        label_mapping=args.label_mapping,
         preprocessing=args.preprocessing,
         positive_label=args.positive_label,
         true_label=args.true_label,

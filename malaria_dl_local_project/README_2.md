@@ -61,7 +61,15 @@ prefetch
 data augmentation opcional para entrenamiento
 
 Las clases son:
-["parasitized", "uninfected"]
+["uninfected", "parasitized"]
+
+Convención oficial:
+0 = uninfected
+1 = parasitized
+raw_model_score = probability_parasitized
+label_mapping_version = clinical_v1_parasitized_positive
+
+TensorFlow Datasets entrega originalmente 0 = parasitized y 1 = uninfected. El proyecto remapea esas etiquetas en src.data antes de entrenamiento, evaluación y explicabilidad.
 
 Preprocesamiento:
 `src/preprocessing.py` define los modos disponibles. Por defecto `--preprocessing auto` mantiene compatibilidad con checkpoints existentes y usa `rescale_0_1`, es decir resize + normalización `[0, 1]`. Para VGG16 se puede usar `vgg16_imagenet`, pero solo con modelos reentrenados con ese mismo modo.
@@ -107,7 +115,7 @@ ReduceLROnPlateau: reduce learning rate si val_loss no mejora
 Opciones de checkpoint:
 val_recall_parasitized: sensibilidad clínica para parasitized. Es el default recomendado.
 val_auc: AUC de validación.
-val_recall: recall Keras estándar sobre la clase índice 1, uninfected.
+val_recall: recall Keras estándar sobre la clase índice 1, parasitized.
 val_accuracy: accuracy de validación.
 val_loss: pérdida de validación.
 
@@ -271,13 +279,21 @@ porque ese SVM no es un modelo Keras convolucional. Tampoco explica directamente
 
 Inferencia estructurada de imagen externa:
 
-La clase clínica positiva por defecto es parasitized. Como los modelos actuales fueron entrenados con el orden de TensorFlow Datasets, la salida sigmoid se interpreta de forma explícita como:
+La clase clínica positiva por defecto es parasitized. En la convención oficial del proyecto, la salida sigmoid se interpreta directamente como:
 
 probability_parasitized
 probability_uninfected
+raw_model_score_meaning
+label_mapping_version
 confidence_level
 decision
 human_readable_response
+
+Si se usa un checkpoint antiguo entrenado con la convención TFDS previa, debe indicarse explícitamente:
+
+--label-mapping legacy_tfds_parasitized_zero
+
+El flag aplica a predict_image, evaluate, explain, calibrate, tta y ensemble.
 
 Inferencia simple:
 

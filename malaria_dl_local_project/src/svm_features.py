@@ -6,7 +6,13 @@ import numpy as np
 import tensorflow as tf
 from sklearn.svm import SVC
 
-from src.config import OUTPUT_DIR
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_METADATA,
+    LABEL_MAPPING_VERSION,
+    OUTPUT_DIR,
+    RAW_MODEL_SCORE_MEANING,
+)
 from src.data import load_malaria_splits
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
@@ -86,18 +92,22 @@ def main():
                     "output_dir": str(output_dir),
                     "threshold": args.threshold,
                     "preprocessing_mode": preprocessing_mode,
+                    "class_names": CLASS_NAMES,
+                    "label_mapping_version": LABEL_MAPPING_VERSION,
+                    "label_mapping": LABEL_MAPPING_METADATA,
+                    "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
                 },
             ),
         )
 
     try:
-        ds_train, _, ds_test, ds_info = load_malaria_splits(
+        ds_train, _, ds_test, _ = load_malaria_splits(
             img_size=args.img_size,
             batch_size=args.batch_size,
             augment=False,
             preprocessing_mode=preprocessing_mode,
         )
-        class_names = ds_info.features["label"].names
+        class_names = CLASS_NAMES
 
         model = tf.keras.models.load_model(checkpoint, compile=False)
         extractor = build_feature_extractor(model)
@@ -112,8 +122,8 @@ def main():
         svm = SVC(kernel="rbf", gamma=args.gamma, probability=True)
         svm.fit(X_train, y_train)
 
-        class_one_probability_index = list(svm.classes_).index(1)
-        y_score = svm.predict_proba(X_test)[:, class_one_probability_index]
+        parasitized_probability_index = list(svm.classes_).index(1)
+        y_score = svm.predict_proba(X_test)[:, parasitized_probability_index]
         y_pred = clinical_predictions_from_raw_scores(
             y_score,
             class_names=class_names,
@@ -130,7 +140,12 @@ def main():
             output_dir=output_dir,
             prefix="svm_test",
             threshold=args.threshold,
-            metadata={"preprocessing_mode": preprocessing_mode},
+            metadata={
+                "preprocessing_mode": preprocessing_mode,
+                "label_mapping_version": LABEL_MAPPING_VERSION,
+                "label_mapping": LABEL_MAPPING_METADATA,
+                "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+            },
         )
 
         joblib.dump(svm, output_dir / "svm_rbf.joblib")
@@ -145,7 +160,15 @@ def main():
 
             log_metrics_and_reports(run_context, metrics, class_names, split_name="test")
             log_output_artifacts(run_context, output_dir)
-            finish_tracking_run(run_context, metadata={"status_detail": "svm_features completed"})
+            finish_tracking_run(
+                run_context,
+                metadata={
+                    "status_detail": "svm_features completed",
+                    "label_mapping_version": LABEL_MAPPING_VERSION,
+                    "label_mapping": LABEL_MAPPING_METADATA,
+                    "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                },
+            )
     except Exception as exc:
         if args.track_db and run_context:
             from src.tracking_integration import fail_tracking_run

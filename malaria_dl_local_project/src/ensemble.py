@@ -4,8 +4,17 @@ from pathlib import Path
 import numpy as np
 import tensorflow as tf
 
-from src.config import OUTPUT_DIR
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_CHOICES,
+    LABEL_MAPPING_VERSION,
+    LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    OUTPUT_DIR,
+    label_mapping_metadata,
+)
 from src.data import load_malaria_splits
+from src.decision import POSITIVE_LABEL
+from src.inference_pipeline import probability_rows_from_predictions
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
@@ -17,6 +26,12 @@ def parse_args():
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--label-mapping",
+        choices=LABEL_MAPPING_CHOICES,
+        default=LABEL_MAPPING_VERSION,
+        help="Convención del checkpoint. Usa legacy_tfds solo para modelos antiguos.",
+    )
     parser.add_argument(
         "--preprocessing",
         choices=PREPROCESSING_CHOICES,
@@ -40,6 +55,9 @@ def main():
         if not path.exists():
             raise FileNotFoundError(f"No existe el modelo: {path}")
     preprocessing_mode = resolve_preprocessing_mode("ensemble", args.preprocessing)
+    mapping_metadata = label_mapping_metadata(args.label_mapping)
+    if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
+        print("Advertencia: ensemble usando convención legacy_tfds_parasitized_zero.")
 
     output_dir = OUTPUT_DIR / "ensemble"
     if args.track_db:
@@ -58,6 +76,12 @@ def main():
                     "output_dir": str(output_dir),
                     "threshold": args.threshold,
                     "preprocessing_mode": preprocessing_mode,
+                    "class_names": CLASS_NAMES,
+                    "base_model_label_mapping_version": args.label_mapping,
+                    "base_model_label_mapping": mapping_metadata,
+                    "label_mapping_version": LABEL_MAPPING_VERSION,
+                    "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
+                    "raw_model_score_meaning": "probability_parasitized",
                 },
             ),
         )
@@ -73,13 +97,13 @@ def main():
                 raise ValueError("La cantidad de pesos debe coincidir con la cantidad de modelos.")
             weights = weights / weights.sum()
 
-        _, _, ds_test, ds_info = load_malaria_splits(
+        _, _, ds_test, _ = load_malaria_splits(
             img_size=args.img_size,
             batch_size=args.batch_size,
             augment=False,
             preprocessing_mode=preprocessing_mode,
         )
-        class_names = ds_info.features["label"].names
+        class_names = CLASS_NAMES
 
         y_true = []
         y_score = []
@@ -87,8 +111,14 @@ def main():
         for images, labels in ds_test:
             batch_scores = []
             for model in models:
-                probs = model.predict(images, verbose=0).ravel()
-                batch_scores.append(probs)
+                predictions = model.predict(images, verbose=0)
+                probability_rows = probability_rows_from_predictions(
+                    predictions,
+                    label_mapping_version=args.label_mapping,
+                )
+                batch_scores.append(
+                    [row[POSITIVE_LABEL] for row in probability_rows]
+                )
 
             batch_scores = np.vstack(batch_scores)
             weighted_scores = np.average(batch_scores, axis=0, weights=weights)
@@ -102,6 +132,7 @@ def main():
             y_score,
             class_names=class_names,
             threshold=args.threshold,
+            label_mapping_version=LABEL_MAPPING_VERSION,
         )
 
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -114,7 +145,12 @@ def main():
             output_dir=output_dir,
             prefix="ensemble_test",
             threshold=args.threshold,
-            metadata={"preprocessing_mode": preprocessing_mode},
+            metadata={
+                "preprocessing_mode": preprocessing_mode,
+                "label_mapping_version": LABEL_MAPPING_VERSION,
+                "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
+                "raw_model_score_meaning": "probability_parasitized",
+            },
         )
 
         if args.track_db and run_context:
@@ -126,7 +162,16 @@ def main():
 
             log_metrics_and_reports(run_context, metrics, class_names, split_name="test")
             log_output_artifacts(run_context, output_dir)
-            finish_tracking_run(run_context, metadata={"status_detail": "ensemble completed"})
+            finish_tracking_run(
+                run_context,
+                metadata={
+                    "status_detail": "ensemble completed",
+                    "label_mapping_version": LABEL_MAPPING_VERSION,
+                    "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
+                    "base_model_label_mapping_version": args.label_mapping,
+                    "raw_model_score_meaning": "probability_parasitized",
+                },
+            )
     except Exception as exc:
         if args.track_db and run_context:
             from src.tracking_integration import fail_tracking_run

@@ -2,7 +2,17 @@ from pathlib import Path
 
 import numpy as np
 
-from src.decision import POSITIVE_LABEL, probability_by_class_from_scalar_score
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_METADATA,
+    LABEL_MAPPING_VERSION,
+    NEGATIVE_LABEL,
+    POSITIVE_CLASS_INDEX,
+    POSITIVE_LABEL,
+    RAW_MODEL_SCORE_MEANING,
+    label_mapping_metadata,
+)
+from src.decision import probability_by_class_from_scalar_score
 
 
 EXPERIMENT_NAME = "Capstone Malaria Classification"
@@ -11,10 +21,14 @@ EXPERIMENT_METADATA = {
     "domain": "medical computer vision",
     "task": "malaria cell classification",
     "tracking_version": "1.0",
+    "label_mapping_version": LABEL_MAPPING_VERSION,
+    "label_mapping": LABEL_MAPPING_METADATA,
+    "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
 }
 
 DATASET_NAME = "NIH/NLM Malaria Cell Images"
-DATASET_CLASS_NAMES = ["parasitized", "uninfected"]
+DATASET_VERSION = "tfds-malaria-clinical-v1"
+DATASET_CLASS_NAMES = CLASS_NAMES
 DATASET_CLASS_DISTRIBUTION = {"parasitized": 13779, "uninfected": 13779}
 
 
@@ -110,14 +124,21 @@ def start_tracking_run(
         tracker.get_or_create_dataset,
         name=DATASET_NAME,
         source="TensorFlow Datasets / NIH NLM",
-        version="tfds-malaria",
+        version=DATASET_VERSION,
         description="NIH/NLM Malaria Cell Images para clasificación binaria.",
         total_images=27558,
         num_classes=2,
         class_names=DATASET_CLASS_NAMES,
         class_distribution=DATASET_CLASS_DISTRIBUTION,
         url="https://www.tensorflow.org/datasets/catalog/malaria",
-        metadata={"task_type": "binary_classification"},
+        metadata={
+            "task_type": "binary_classification",
+            "label_mapping_version": LABEL_MAPPING_VERSION,
+            "label_mapping": LABEL_MAPPING_METADATA,
+            "tfds_original_class_names": ["parasitized", "uninfected"],
+            "class_names": CLASS_NAMES,
+            "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+        },
     )
 
     defaults = model_defaults(model_name)
@@ -126,7 +147,12 @@ def start_tracking_run(
         name=model_name,
         input_shape=f"({getattr(args, 'img_size', 200)}, {getattr(args, 'img_size', 200)}, 3)",
         output_shape="(1)",
-        metadata={"tracking_source": script_name},
+        metadata={
+            "tracking_source": script_name,
+            "label_mapping_version": LABEL_MAPPING_VERSION,
+            "label_mapping": LABEL_MAPPING_METADATA,
+            "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+        },
         **defaults,
     )
 
@@ -139,9 +165,21 @@ def start_tracking_run(
         run_type=run_type,
         command=tracker.get_command_line(),
         script_name=script_name,
-        parameters=parameters if parameters is not None else args_to_parameters(args),
+        parameters=(
+            {
+                **(parameters if parameters is not None else args_to_parameters(args)),
+                "label_mapping_version": LABEL_MAPPING_VERSION,
+                "label_mapping": LABEL_MAPPING_METADATA,
+                "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+            }
+        ),
         random_seed=random_seed,
-        metadata={"tracking_version": "1.0"},
+        metadata={
+            "tracking_version": "1.0",
+            "label_mapping_version": LABEL_MAPPING_VERSION,
+            "label_mapping": LABEL_MAPPING_METADATA,
+            "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+        },
     )
 
     if not run_id:
@@ -241,18 +279,36 @@ def log_metrics_and_reports(context, metrics, class_names, split_name="test"):
         )
 
 
-def log_predictions(context, y_true, y_pred, y_score, class_names, threshold=0.5):
+def log_predictions(
+    context,
+    y_true,
+    y_pred,
+    y_score,
+    class_names,
+    threshold=0.5,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
     if not context or not context.get("run_id"):
         return
     tracker = context["tracker"]
     run_id = context["run_id"]
     dataset_id = context.get("dataset_id")
-    positive_label = POSITIVE_LABEL if POSITIVE_LABEL in class_names else class_names[1]
+    positive_label = POSITIVE_LABEL if POSITIVE_LABEL in class_names else class_names[POSITIVE_CLASS_INDEX]
+    mapping_metadata = label_mapping_metadata(label_mapping_version)
+    raw_model_score_label = (
+        POSITIVE_LABEL
+        if mapping_metadata["raw_model_score_meaning"] == RAW_MODEL_SCORE_MEANING
+        else NEGATIVE_LABEL
+    )
 
     for index, (true_idx, pred_idx, score) in enumerate(zip(y_true, y_pred, y_score)):
         true_label = class_names[int(true_idx)]
         predicted_label = class_names[int(pred_idx)]
-        probabilities = probability_by_class_from_scalar_score(score, class_names)
+        probabilities = probability_by_class_from_scalar_score(
+            score,
+            class_names,
+            label_mapping_version=label_mapping_version,
+        )
         score_positive_label = probabilities.get(positive_label, float(score))
         tracker.safe_track(
             tracker.log_prediction,
@@ -274,10 +330,14 @@ def log_predictions(context, y_true, y_pred, y_score, class_names, threshold=0.5
                 "dataset_index": index,
                 "source": "tensorflow_datasets",
                 "raw_model_score": float(score),
-                "raw_model_score_label": class_names[1] if len(class_names) > 1 else None,
-                "probability_parasitized": probabilities.get("parasitized"),
-                "probability_uninfected": probabilities.get("uninfected"),
+                "raw_model_score_label": raw_model_score_label,
+                "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                "probability_parasitized": probabilities.get(POSITIVE_LABEL),
+                "probability_uninfected": probabilities.get(NEGATIVE_LABEL),
                 "positive_label": positive_label,
+                "positive_class_index": class_names.index(POSITIVE_LABEL),
+                "label_mapping_version": label_mapping_version,
+                "label_mapping": mapping_metadata,
             },
         )
 
@@ -393,7 +453,14 @@ def log_explainability_outputs(context, cases, summary_rows, output_dir):
             threshold=float(case["threshold"]),
             is_correct=case["true_label"] == case["predicted_label"],
             case_type=case["case_type"],
-            metadata={"dataset_index": case["case_id"], "source": "tensorflow_datasets"},
+            metadata={
+                "dataset_index": case["case_id"],
+                "source": "tensorflow_datasets",
+                "label_mapping_version": LABEL_MAPPING_VERSION,
+                "label_mapping": LABEL_MAPPING_METADATA,
+                "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                "probability_parasitized": case["score_positive_label"],
+            },
         )
 
     for row in summary_rows:
@@ -411,7 +478,11 @@ def log_explainability_outputs(context, cases, summary_rows, output_dir):
             score=row.get("score_positive_label"),
             case_type=row.get("case_type"),
             last_conv_layer=row.get("last_conv_layer") or None,
-            explanation_parameters={"output_dir": str(output_dir)},
+            explanation_parameters={
+                "output_dir": str(output_dir),
+                "label_mapping_version": LABEL_MAPPING_VERSION,
+                "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+            },
             success=bool(row.get("success")),
             error_message=row.get("error") or None,
         )

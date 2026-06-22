@@ -534,7 +534,7 @@ a.uploaded-image-cell:hover small {
   gap: 6px;
 }
 
-.case-image-block > span {
+.case-image-block>span {
   color: #62708f;
   font-size: 12px;
   font-weight: 700;
@@ -570,6 +570,7 @@ a.uploaded-image-cell:hover small {
 }
 
 @media (max-width: 900px) {
+
   .app-shell,
   .grid-two,
   .case-images {
@@ -579,4 +580,35 @@ a.uploaded-image-cell:hover small {
   aside {
     position: static;
   }
+}
+
+.mi-lista {
+  list-style: none;
+  padding: 0;
+}
+
+.item-lista {
+  background: #f8f9fa;
+  margin-bottom: 5px;
+  padding: 1px 1px;
+  border-radius: 6px;
+  border-left: 5px solid #007bff;
+  transition: all 0.2s ease;
+}
+
+.item-lista:hover {
+  background: #e9ecef;
+  cursor: poin;
+  border-left: 5px solid #007bff;
+  /* transform: translateX(5px); */
+}
+
+.item-lista-titulo {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.item-lista-valor {
+  font-weight: normal;
+  font-size: 12px;
 }

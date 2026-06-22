@@ -69,6 +69,12 @@ class PredictImageOutputsTests(unittest.TestCase):
                         "decision_code": "compatible_con_celula_parasitada",
                         "human_readable_response": "Compatible con célula parasitada.",
                         "workflow": "clinical_inference_experimental",
+                        "raw_model_score_meaning": "probability_parasitized",
+                        "label_mapping_version": "clinical_v1_parasitized_positive",
+                        "positive_class_name": "parasitized",
+                        "positive_class_index": 1,
+                        "negative_class_name": "uninfected",
+                        "negative_class_index": 0,
                         "image": {
                             "original_path": "input.png",
                             "stored_path": None,
@@ -85,7 +91,8 @@ class PredictImageOutputsTests(unittest.TestCase):
                             "ensemble_weights": [],
                         },
                         "probabilities": {
-                            "raw_model_score": 0.1,
+                            "raw_model_score": 0.9,
+                            "raw_model_score_meaning": "probability_parasitized",
                             "calibration": {
                                 "method": "temperature_scaling",
                                 "applied": True,
@@ -115,6 +122,10 @@ class PredictImageOutputsTests(unittest.TestCase):
         self.assertEqual(rows[1]["calibration_applied"], "True")
         self.assertEqual(rows[1]["calibration_file"], "outputs/vgg16/calibration.json")
         self.assertEqual(rows[1]["calibration_temperature"], "1.5")
+        self.assertEqual(rows[1]["raw_model_score_meaning"], "probability_parasitized")
+        self.assertEqual(rows[1]["label_mapping_version"], "clinical_v1_parasitized_positive")
+        self.assertEqual(rows[1]["positive_class_index"], "1")
+        self.assertEqual(rows[1]["negative_class_index"], "0")
 
 
 if __name__ == "__main__":

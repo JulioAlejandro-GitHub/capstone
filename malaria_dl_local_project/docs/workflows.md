@@ -75,16 +75,19 @@ parasitized
 El orden interno de clases es:
 
 ```python
-CLASS_NAMES = ["parasitized", "uninfected"]
+CLASS_NAMES = ["uninfected", "parasitized"]
 ```
 
 Por consistencia clínica, los reportes distinguen:
 
-- `raw_model_score`: salida cruda del modelo.
+- `raw_model_score`: salida cruda del modelo bajo la convención oficial; equivale a `probability_parasitized`.
 - `probability_uninfected`: probabilidad asociada a `uninfected`.
 - `probability_parasitized`: probabilidad clínica positiva.
+- `label_mapping_version`: `clinical_v1_parasitized_positive`.
 
-Las métricas clínicas se calculan usando `probability_parasitized`, no asumiendo ciegamente que la salida sigmoid representa la clase positiva clínica.
+El dataset TFDS original entrega `0=parasitized` y `1=uninfected`, pero el pipeline remapea las etiquetas a `0=uninfected` y `1=parasitized` antes de entrenamiento, evaluación, calibración y explicabilidad.
+
+Los checkpoints generados antes de esta convención deben tratarse como legacy y ejecutarse explícitamente con `--label-mapping legacy_tfds_parasitized_zero` en inferencia, evaluación, calibración, TTA, ensemble o explicabilidad. No se debe mezclar un checkpoint legacy con reportes clínicos nuevos sin declarar esa convención.
 
 Métricas clínicas principales:
 
@@ -149,6 +152,7 @@ El archivo `calibration.json` registra:
 - Métricas antes y después de calibrar.
 - Clase positiva (`parasitized`).
 - Nombre del score (`probability_parasitized`).
+- Convención de etiquetas (`clinical_v1_parasitized_positive`).
 
 Limitaciones de calibración:
 
@@ -345,11 +349,13 @@ Los reportes experimentales calculan las métricas principales usando `parasitiz
 como clase positiva clínica. En los CSV se mantienen columnas históricas por
 compatibilidad, pero quedan diferenciadas:
 
-- `raw_model_score`: salida cruda del modelo sigmoid, asociada a la clase índice 1 de TFDS.
+- `raw_model_score`: salida cruda del modelo sigmoid, equivalente a `probability_parasitized` bajo `clinical_v1_parasitized_positive`.
 - `probability_uninfected`: probabilidad de `uninfected`.
 - `probability_parasitized`: probabilidad clínica positiva.
 - `y_score`: alias compatible de `raw_model_score`.
 - `y_pred`: clase predicha con `probability_parasitized >= threshold`.
+- `raw_model_score_meaning`: `probability_parasitized`.
+- `label_mapping_version`: `clinical_v1_parasitized_positive`.
 
 Los JSON de métricas incluyen:
 
@@ -512,6 +518,8 @@ La clase clínica positiva es `parasitized`. La salida incluye explícitamente:
 - `confidence_level`
 - `decision`
 - `human_readable_response`
+- `raw_model_score_meaning`
+- `label_mapping_version`
 
 No se usa lenguaje de diagnóstico definitivo. La respuesta incluye el disclaimer:
 

@@ -76,7 +76,7 @@ class InferencePipelineTests(unittest.TestCase):
             probabilities={
                 "probability_parasitized": 0.81,
                 "probability_uninfected": 0.19,
-                "raw_model_score": 0.19,
+                "raw_model_score": 0.81,
                 "calibration": {"method": "none", "applied": False},
             },
             threshold=0.5,

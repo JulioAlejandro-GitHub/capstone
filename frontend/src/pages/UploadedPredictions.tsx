@@ -257,11 +257,43 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
               },
             },
             { header: 'Modelo', render: (row) => row.model_name ?? '-' },
-            { header: 'Prediccion', render: (row) => row.predicted_label ?? '-' },
-            { header: 'Prob. parasitized', render: (row) => formatMetric(probabilityParasitized(row)) },
-            { header: 'Prob. uninfected', render: (row) => formatMetric(row.probability_uninfected) },
-            { header: 'Threshold', render: (row) => formatMetric(row.threshold) },
-            { header: 'Confianza', render: (row) => row.confidence_level ?? '-' },
+            {
+              header: 'Prediccion', render: (row) => {
+                // 1. Validar si existen los datos de la predicción
+                // if (!row.predicted_label) return '-';
+
+                // 2. Retornar la lista HTML estructurada con clases CSS o estilos en línea
+                return (
+                  <ul className="mi-lista">
+                    <li className="item-lista">
+                      <span className="item-lista-titulo">Prediccion:</span>
+                      <span className="item-lista-valor">{row.predicted_label ? row.predicted_label : '-'}</span>
+                    </li>
+                    <li className="item-lista">
+                      <span className="item-lista-titulo">% parasitized:</span>
+                      <span className="item-lista-valor">{row.probability_parasitized ? formatMetric(row.probability_parasitized) : '-'}</span>
+                    </li>
+                    <li className="item-lista">
+                      <span className="item-lista-titulo">% uninfected:</span>
+                      <span className="item-lista-valor">{row.probability_uninfected ? formatMetric(row.probability_uninfected) : '-'}</span>
+                    </li>
+                    <li className="item-lista">
+                      <span className="item-lista-titulo">Threshold:</span>
+                      <span className="item-lista-valor">{row.threshold ? formatMetric(row.threshold) : '-'}</span>
+                    </li>
+                    <li className="item-lista">
+                      <span className="item-lista-titulo">Confianza:</span>
+                      <span className="item-lista-valor">{row.confidence_level ? row.confidence_level : '-'}</span>
+                    </li>
+                  </ul>
+                );
+              }
+            },
+            // { header: 'Prediccion', render: (row) => row.predicted_label ?? '-' },
+            // { header: 'Prob. parasitized', render: (row) => formatMetric(probabilityParasitized(row)) },
+            // { header: 'Prob. uninfected', render: (row) => formatMetric(row.probability_uninfected) },
+            // { header: 'Threshold', render: (row) => formatMetric(row.threshold) },
+            // { header: 'Confianza', render: (row) => row.confidence_level ?? '-' },
             { header: 'Calidad', render: (row) => qualityLabel(row) },
             { header: 'Alertas calidad', render: (row) => formatWarnings(row.quality_warnings) },
             { header: 'Calibración', render: (row) => calibrationLabel(row) },
@@ -270,16 +302,40 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
             { header: 'Caso', render: (row) => row.case_type ?? '-' },
             { header: 'Decisión', render: (row) => decisionLabel(row) },
             { header: 'Respuesta', render: (row) => row.human_readable_response ?? '-' },
-            { header: 'Estado', render: (row) => <StatusBadge status={row.run_status ?? 'unknown'} /> },
-            { header: 'Fecha', render: (row) => formatDate(row.created_at) },
+
             {
-              header: 'Run',
-              render: (row) => (
-                <button className="link-button" onClick={() => onRunSelect(row.run_id)} type="button">
-                  Ver run
-                </button>
-              ),
+              header: 'Estado', render: (row) => {
+                // 1. Validar si existen los datos de la predicción
+                // if (!row.predicted_label) return '-';
+
+                // 2. Retornar la lista HTML estructurada con clases CSS o estilos en línea
+                return (
+                  <ul className="mi-lista">
+                    <li>
+                      <StatusBadge status={row.run_status ?? 'unknown'} />
+                    </li>
+                    <li>
+                      {formatDate(row.created_at)}
+                    </li>
+                    <li>
+                      <button className="link-button" onClick={() => onRunSelect(row.run_id)} type="button">
+                        Ver run
+                      </button>
+                    </li>
+                  </ul>
+                );
+              }
             },
+            // { header: 'Estado', render: (row) => <StatusBadge status={row.run_status ?? 'unknown'} /> },
+            // { header: 'Fecha', render: (row) => formatDate(row.created_at) },
+            // {
+            //   header: 'Run',
+            //   render: (row) => (
+            //     <button className="link-button" onClick={() => onRunSelect(row.run_id)} type="button">
+            //       Ver run
+            //     </button>
+            //   ),
+            // },
           ]}
         />
       </section>

@@ -26,8 +26,8 @@ class DecisionTests(unittest.TestCase):
             1.0,
             places=6,
         )
-        self.assertAlmostEqual(probabilities["parasitized"], 0.75, places=6)
-        self.assertAlmostEqual(probabilities["uninfected"], 0.25, places=6)
+        self.assertAlmostEqual(probabilities["parasitized"], 0.25, places=6)
+        self.assertAlmostEqual(probabilities["uninfected"], 0.75, places=6)
 
     def test_positive_label_default_is_parasitized(self):
         self.assertEqual(POSITIVE_LABEL, "parasitized")
@@ -99,7 +99,7 @@ class DecisionTests(unittest.TestCase):
             probabilities={
                 "probability_parasitized": 0.72,
                 "probability_uninfected": 0.28,
-                "raw_model_score": 0.28,
+                "raw_model_score": 0.72,
                 "calibration": {"method": "none", "applied": False},
             },
             threshold=0.5,
@@ -118,7 +118,7 @@ class DecisionTests(unittest.TestCase):
             probabilities={
                 "probability_parasitized": 0.65,
                 "probability_uninfected": 0.35,
-                "raw_model_score": 0.35,
+                "raw_model_score": 0.65,
                 "calibration": {"method": "none", "applied": False},
             },
             threshold=0.7,

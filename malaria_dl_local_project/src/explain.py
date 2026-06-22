@@ -7,6 +7,17 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_CHOICES,
+    LABEL_MAPPING_METADATA,
+    LABEL_MAPPING_VERSION,
+    LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    NEGATIVE_LABEL,
+    POSITIVE_LABEL,
+    RAW_MODEL_SCORE_MEANING,
+    label_mapping_metadata,
+)
 from src.preprocessing import (
     PREPROCESSING_CHOICES,
     PREPROCESSING_RESCALE_0_1,
@@ -37,6 +48,8 @@ SUMMARY_COLUMNS = [
     "error",
     "image_path",
     "last_conv_layer",
+    "raw_model_score_meaning",
+    "label_mapping_version",
 ]
 
 
@@ -74,6 +87,12 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--num-samples", type=int, default=20)
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--label-mapping",
+        choices=LABEL_MAPPING_CHOICES,
+        default=LABEL_MAPPING_VERSION,
+        help="Convención del checkpoint. Usa legacy_tfds solo para modelos antiguos.",
+    )
     parser.add_argument("--output-dir", default="outputs/explainability")
     parser.add_argument(
         "--preprocessing",
@@ -86,7 +105,7 @@ def parse_args():
     )
     parser.add_argument(
         "--positive-label",
-        default="parasitized",
+        default=POSITIVE_LABEL,
         help=(
             "Clase clínica interpretada como positiva. Por defecto: parasitized."
         ),
@@ -118,15 +137,14 @@ def resolve_positive_label(class_names, positive_label):
         raise ValueError(f"Se esperaban 2 clases, pero se encontraron: {class_names}")
 
     if positive_label is None:
-        positive_idx = 1
-        positive_label = class_names[positive_idx]
-    else:
-        if positive_label not in class_names:
-            raise ValueError(
-                f"--positive-label debe ser una de estas clases: {class_names}. "
-                f"Valor recibido: {positive_label}"
-            )
-        positive_idx = class_names.index(positive_label)
+        positive_label = POSITIVE_LABEL
+
+    if positive_label not in class_names:
+        raise ValueError(
+            f"--positive-label debe ser una de estas clases: {class_names}. "
+            f"Valor recibido: {positive_label}"
+        )
+    positive_idx = class_names.index(positive_label)
 
     negative_idx = 1 - positive_idx
     return positive_idx, negative_idx, positive_label
@@ -137,19 +155,35 @@ def raw_model_predictions(model, images):
     return np.asarray(predictions, dtype=np.float32)
 
 
-def scores_from_predictions(predictions, positive_idx):
+def scores_from_predictions(
+    predictions,
+    positive_idx,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
     predictions = np.asarray(predictions, dtype=np.float32)
     if predictions.ndim == 2 and predictions.shape[1] == 2:
         scores = predictions[:, positive_idx]
     else:
         scores = predictions.reshape(-1)
-        if int(positive_idx) == 0:
+        if label_mapping_version == LEGACY_TFDS_LABEL_MAPPING_VERSION:
+            if int(positive_idx) == 1:
+                scores = 1.0 - scores
+        elif int(positive_idx) == 0:
             scores = 1.0 - scores
     return np.clip(scores.astype(np.float32), 0.0, 1.0)
 
 
-def predict_positive_scores(model, images, positive_idx):
-    return scores_from_predictions(raw_model_predictions(model, images), positive_idx)
+def predict_positive_scores(
+    model,
+    images,
+    positive_idx,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
+    return scores_from_predictions(
+        raw_model_predictions(model, images),
+        positive_idx,
+        label_mapping_version=label_mapping_version,
+    )
 
 
 def model_image_to_display(image, preprocessing_mode=PREPROCESSING_RESCALE_0_1):
@@ -236,6 +270,7 @@ def collect_prediction_candidates(
     positive_idx,
     negative_idx,
     max_candidates,
+    label_mapping_version=LABEL_MAPPING_VERSION,
 ):
     y_true = []
     y_pred = []
@@ -252,7 +287,12 @@ def collect_prediction_candidates(
 
     sample_index = 0
     for batch_index, (images, labels) in enumerate(dataset, start=1):
-        scores = predict_positive_scores(model, images, positive_idx)
+        scores = predict_positive_scores(
+            model,
+            images,
+            positive_idx,
+            label_mapping_version=label_mapping_version,
+        )
         labels_np = labels.numpy().astype(int)
         images_np = images.numpy()
         predictions = predicted_labels_from_scores(
@@ -361,6 +401,7 @@ def select_cases(
     class_names=None,
     positive_label=None,
     preprocessing_mode=PREPROCESSING_RESCALE_0_1,
+    label_mapping_version=LABEL_MAPPING_VERSION,
 ):
     if num_samples <= 0:
         raise ValueError("--num-samples debe ser mayor que cero")
@@ -405,6 +446,7 @@ def select_cases(
                 "preprocessing_mode": resolve_preprocessing_mode(
                     requested=preprocessing_mode
                 ),
+                "label_mapping_version": label_mapping_version,
             }
         )
         selected_indices.add(int(index))
@@ -457,6 +499,7 @@ def select_explanation_cases(
     negative_idx=0,
     positive_label=None,
     preprocessing_mode=PREPROCESSING_RESCALE_0_1,
+    label_mapping_version=LABEL_MAPPING_VERSION,
 ):
     return select_cases(
         images=images,
@@ -470,6 +513,7 @@ def select_explanation_cases(
         class_names=class_names,
         positive_label=positive_label,
         preprocessing_mode=preprocessing_mode,
+        label_mapping_version=label_mapping_version,
     )
 
 
@@ -495,7 +539,7 @@ def build_output_path(output_dir, method, case):
         f"{case['case_id']:04d}_"
         f"real-{sanitize_label(case['true_label'])}_"
         f"pred-{sanitize_label(case['predicted_label'])}_"
-        f"score-{case['score_positive_label']:.4f}.png"
+        f"prob-parasitized-{case['score_positive_label']:.4f}.png"
     )
     return method_dir / filename
 
@@ -507,7 +551,7 @@ def build_title(method, true_label=None, predicted_label=None, score=None):
     if predicted_label is not None:
         parts.append(f"pred: {predicted_label}")
     if score is not None:
-        parts.append(f"score: {score:.4f}")
+        parts.append(f"prob parasitized: {score:.4f}")
     return " | ".join(parts)
 
 
@@ -869,6 +913,10 @@ def make_summary_row(
         "error": "" if error is None else str(error),
         "image_path": str(image_path) if success else "",
         "last_conv_layer": "" if last_conv_layer is None else str(last_conv_layer),
+        "raw_model_score_meaning": label_mapping_metadata(
+            case.get("label_mapping_version", LABEL_MAPPING_VERSION)
+        )["raw_model_score_meaning"],
+        "label_mapping_version": case.get("label_mapping_version", LABEL_MAPPING_VERSION),
     }
 
 
@@ -920,7 +968,13 @@ def run_shap(model, background_images, class_names, output_dir, case):
     )
 
 
-def run_gradcam(model, output_dir, case):
+def should_invert_scalar_for_gradcam(predicted_label, label_mapping_version):
+    if label_mapping_version == LEGACY_TFDS_LABEL_MAPPING_VERSION:
+        return predicted_label == POSITIVE_LABEL
+    return predicted_label == NEGATIVE_LABEL
+
+
+def run_gradcam(model, output_dir, case, label_mapping_version=LABEL_MAPPING_VERSION):
     output_path = build_output_path(output_dir, "gradcam", case)
     title = build_title(
         "Grad-CAM",
@@ -935,7 +989,10 @@ def run_gradcam(model, output_dir, case):
             pred_idx=case["predicted_label_idx"],
             output_path=output_path,
             title=title,
-            invert_scalar_output=case["predicted_label_idx"] == 0,
+            invert_scalar_output=should_invert_scalar_for_gradcam(
+                case["predicted_label"],
+                label_mapping_version,
+            ),
             preprocessing_mode=case.get("preprocessing_mode", PREPROCESSING_RESCALE_0_1),
         )
         return make_summary_row(
@@ -968,6 +1025,9 @@ def main():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
 
     preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
+    mapping_metadata = label_mapping_metadata(args.label_mapping)
+    if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
+        print("Advertencia: explicabilidad usando checkpoint legacy_tfds_parasitized_zero.")
 
     if args.track_db:
         from src.tracking_integration import (
@@ -989,6 +1049,10 @@ def main():
                     "selected_methods": selected_methods,
                     "output_dir": str(output_dir),
                     "preprocessing_mode": preprocessing_mode,
+                    "class_names": CLASS_NAMES,
+                    "label_mapping_version": args.label_mapping,
+                    "label_mapping": mapping_metadata,
+                    "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
                 },
             ),
         )
@@ -1004,24 +1068,26 @@ def main():
         model = tf.keras.models.load_model(checkpoint, compile=False)
 
         print("Cargando splits de malaria desde TensorFlow Datasets...")
-        ds_train, _, ds_test, ds_info = load_malaria_splits(
+        ds_train, _, ds_test, _ = load_malaria_splits(
             img_size=args.img_size,
             batch_size=args.batch_size,
             augment=False,
             preprocessing_mode=preprocessing_mode,
         )
 
-        class_names = list(ds_info.features["label"].names)
+        class_names = CLASS_NAMES
         positive_idx, negative_idx, positive_label = resolve_positive_label(
             class_names,
             args.positive_label,
         )
 
-        print(f"Orden de clases detectado desde TFDS: {class_names}")
+        print(f"Orden de clases clínicas: {class_names}")
+        print(f"Convención de etiquetas: {LABEL_MAPPING_VERSION}")
         print(f"Preprocesamiento: {preprocessing_mode}")
         print(
-            f"Clase positiva para score sigmoid: {positive_label} "
-            f"(índice {positive_idx}); umbral={args.threshold}"
+            f"Clase positiva clínica: {positive_label} "
+            f"({RAW_MODEL_SCORE_MEANING}, índice {positive_idx}); "
+            f"umbral={args.threshold}"
         )
 
         for method in selected_methods:
@@ -1037,6 +1103,7 @@ def main():
             positive_idx=positive_idx,
             negative_idx=negative_idx,
             max_candidates=args.max_candidates,
+            label_mapping_version=args.label_mapping,
         )
 
         cases = select_explanation_cases(
@@ -1051,6 +1118,7 @@ def main():
             negative_idx=negative_idx,
             positive_label=positive_label,
             preprocessing_mode=preprocessing_mode,
+            label_mapping_version=args.label_mapping,
         )
         print(f"Casos seleccionados: {len(cases)}")
 
@@ -1096,6 +1164,7 @@ def main():
                             model=model,
                             output_dir=output_dir,
                             case=case,
+                            label_mapping_version=args.label_mapping,
                         )
                     )
                 else:

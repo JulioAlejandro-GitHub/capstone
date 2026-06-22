@@ -4,11 +4,15 @@ from pathlib import Path
 
 import numpy as np
 
-from src.config import CLASS_NAMES
-
-
-POSITIVE_LABEL = "parasitized"
-NEGATIVE_LABEL = "uninfected"
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_VERSION,
+    LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    NEGATIVE_LABEL,
+    POSITIVE_LABEL,
+    RAW_MODEL_SCORE_MEANING,
+    label_mapping_metadata,
+)
 RECOMMENDATION = (
     "Resultado experimental. Requiere revisión por profesional competente si se usa "
     "en contexto real."
@@ -26,30 +30,45 @@ def validate_binary_labels(class_names=None):
     return class_names
 
 
-def probability_by_class_from_scalar_score(score, class_names=None):
+def probability_by_class_from_scalar_score(
+    score,
+    class_names=None,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
     """
     Convierte la salida sigmoid del proyecto a probabilidades por clase.
 
-    Los modelos actuales fueron entrenados con TFDS, donde:
-      0 = parasitized
-      1 = uninfected
+    clinical_v1_parasitized_positive:
+      raw_model_score = probability_parasitized
 
-    Por eso la salida sigmoid representa P(label=1) = P(uninfected), no la
-    probabilidad clínica positiva.
+    legacy_tfds_parasitized_zero:
+      raw_model_score = probability_uninfected
     """
     class_names = validate_binary_labels(class_names)
-    score_class_1 = float(np.clip(score, 0.0, 1.0))
-    probabilities = {
-        class_names[0]: float(1.0 - score_class_1),
-        class_names[1]: score_class_1,
-    }
+    raw_model_score = float(np.clip(score, 0.0, 1.0))
+    if label_mapping_version == LABEL_MAPPING_VERSION:
+        probabilities = {
+            POSITIVE_LABEL: raw_model_score,
+            NEGATIVE_LABEL: float(1.0 - raw_model_score),
+        }
+    elif label_mapping_version == LEGACY_TFDS_LABEL_MAPPING_VERSION:
+        probabilities = {
+            POSITIVE_LABEL: float(1.0 - raw_model_score),
+            NEGATIVE_LABEL: raw_model_score,
+        }
+    else:
+        raise ValueError(f"label_mapping_version no soportado: {label_mapping_version}")
     return {
         POSITIVE_LABEL: float(probabilities[POSITIVE_LABEL]),
         NEGATIVE_LABEL: float(probabilities[NEGATIVE_LABEL]),
     }
 
 
-def probabilities_by_class_from_prediction(prediction, class_names=None):
+def probabilities_by_class_from_prediction(
+    prediction,
+    class_names=None,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
     class_names = validate_binary_labels(class_names)
     prediction = np.asarray(prediction, dtype=np.float32)
 
@@ -64,16 +83,28 @@ def probabilities_by_class_from_prediction(prediction, class_names=None):
         }
 
     if prediction.size == 1:
-        return probability_by_class_from_scalar_score(prediction.reshape(-1)[0], class_names)
+        return probability_by_class_from_scalar_score(
+            prediction.reshape(-1)[0],
+            class_names,
+            label_mapping_version=label_mapping_version,
+        )
 
     raise ValueError(
         f"Salida de modelo no soportada para {len(class_names)} clases: shape={prediction.shape}"
     )
 
 
-def probabilities_array_from_prediction(prediction, class_names=None):
+def probabilities_array_from_prediction(
+    prediction,
+    class_names=None,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
     class_names = validate_binary_labels(class_names)
-    probabilities_by_class = probabilities_by_class_from_prediction(prediction, class_names)
+    probabilities_by_class = probabilities_by_class_from_prediction(
+        prediction,
+        class_names,
+        label_mapping_version=label_mapping_version,
+    )
     return np.asarray(
         [probabilities_by_class[class_name] for class_name in class_names],
         dtype=np.float32,
@@ -185,7 +216,14 @@ def build_clinical_inference_response(
             **probabilities,
             "probability_parasitized": probability_parasitized,
             "probability_uninfected": probability_uninfected,
+            "raw_model_score_meaning": probabilities.get(
+                "raw_model_score_meaning",
+                RAW_MODEL_SCORE_MEANING,
+            ),
         },
+        "label_mapping": label_mapping_metadata(
+            probabilities.get("label_mapping_version", LABEL_MAPPING_VERSION)
+        ),
         "decision": {
             "threshold": float(threshold),
             "predicted_label": predicted_label,
@@ -237,6 +275,8 @@ def build_prediction_response(
         "predicted_label": predicted_label,
         "probability_parasitized": probability_parasitized,
         "probability_uninfected": probability_uninfected,
+        "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+        "label_mapping": label_mapping_metadata(),
         "threshold": float(threshold),
         "confidence_level": confidence_level,
         "decision": decision,

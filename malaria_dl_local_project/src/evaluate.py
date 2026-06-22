@@ -3,6 +3,13 @@ from pathlib import Path
 
 import tensorflow as tf
 
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_CHOICES,
+    LABEL_MAPPING_VERSION,
+    LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    label_mapping_metadata,
+)
 from src.data import load_malaria_splits
 from src.metrics import collect_predictions, evaluate_binary_predictions
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
@@ -14,6 +21,12 @@ def parse_args():
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--label-mapping",
+        choices=LABEL_MAPPING_CHOICES,
+        default=LABEL_MAPPING_VERSION,
+        help="Convención del checkpoint. Usa legacy_tfds solo para modelos antiguos.",
+    )
     parser.add_argument(
         "--preprocessing",
         choices=PREPROCESSING_CHOICES,
@@ -36,6 +49,9 @@ def main():
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
     preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
+    mapping_metadata = label_mapping_metadata(args.label_mapping)
+    if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
+        print("Advertencia: evaluando checkpoint legacy_tfds_parasitized_zero.")
 
     if args.track_db:
         from src.tracking_integration import (
@@ -55,19 +71,23 @@ def main():
                 extra={
                     "checkpoint": str(checkpoint),
                     "preprocessing_mode": preprocessing_mode,
+                    "class_names": CLASS_NAMES,
+                    "label_mapping_version": args.label_mapping,
+                    "label_mapping": mapping_metadata,
+                    "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
                 },
             ),
         )
 
     try:
-        _, _, ds_test, ds_info = load_malaria_splits(
+        _, _, ds_test, _ = load_malaria_splits(
             img_size=args.img_size,
             batch_size=args.batch_size,
             augment=False,
             preprocessing_mode=preprocessing_mode,
         )
 
-        class_names = ds_info.features["label"].names
+        class_names = CLASS_NAMES
 
         model = tf.keras.models.load_model(checkpoint, compile=False)
         output_dir = checkpoint.parent / "evaluation"
@@ -77,6 +97,7 @@ def main():
             ds_test,
             class_names=class_names,
             threshold=args.threshold,
+            label_mapping_version=args.label_mapping,
         )
         metrics = evaluate_binary_predictions(
             y_true=y_true,
@@ -86,7 +107,12 @@ def main():
             output_dir=output_dir,
             prefix=checkpoint.stem,
             threshold=args.threshold,
-            metadata={"preprocessing_mode": preprocessing_mode},
+            metadata={
+                "preprocessing_mode": preprocessing_mode,
+                "label_mapping_version": args.label_mapping,
+                "label_mapping": mapping_metadata,
+                "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+            },
         )
 
         if args.track_db and run_context:
@@ -105,9 +131,18 @@ def main():
                 y_score=y_score,
                 class_names=class_names,
                 threshold=args.threshold,
+                label_mapping_version=args.label_mapping,
             )
             log_output_artifacts(run_context, output_dir)
-            finish_tracking_run(run_context, metadata={"status_detail": "evaluation completed"})
+            finish_tracking_run(
+                run_context,
+                metadata={
+                    "status_detail": "evaluation completed",
+                    "label_mapping_version": args.label_mapping,
+                    "label_mapping": mapping_metadata,
+                    "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                },
+            )
     except Exception as exc:
         if args.track_db and run_context:
             from src.tracking_integration import fail_tracking_run

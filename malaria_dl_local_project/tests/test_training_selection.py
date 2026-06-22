@@ -14,7 +14,7 @@ from src.train import resolve_monitor_mode
 
 
 class TrainingSelectionTests(unittest.TestCase):
-    def test_parasitized_recall_treats_label_zero_as_clinical_positive(self):
+    def test_parasitized_recall_treats_label_one_as_clinical_positive(self):
         metric = ParasitizedRecall(threshold=0.5)
 
         y_true = np.asarray([0, 0, 1, 1], dtype=np.float32)

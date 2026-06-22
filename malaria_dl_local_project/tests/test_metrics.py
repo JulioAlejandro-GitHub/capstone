@@ -19,11 +19,21 @@ class ClinicalMetricsTests(unittest.TestCase):
     def test_clinical_predictions_use_parasitized_probability(self):
         predictions = clinical_predictions_from_raw_scores(
             [0.20, 0.70],
-            class_names=["parasitized", "uninfected"],
+            class_names=["uninfected", "parasitized"],
             threshold=0.5,
         )
 
         self.assertEqual(predictions.tolist(), [0, 1])
+
+    def test_legacy_mapping_inverts_scalar_scores_explicitly(self):
+        predictions = clinical_predictions_from_raw_scores(
+            [0.20, 0.70],
+            class_names=["uninfected", "parasitized"],
+            threshold=0.5,
+            label_mapping_version="legacy_tfds_parasitized_zero",
+        )
+
+        self.assertEqual(predictions.tolist(), [1, 0])
 
     def test_metrics_are_computed_against_parasitized_positive_label(self):
         y_true = [0, 0, 1, 1]
@@ -35,7 +45,7 @@ class ClinicalMetricsTests(unittest.TestCase):
                 y_true=y_true,
                 y_pred=input_y_pred,
                 y_score=raw_model_score,
-                class_names=["parasitized", "uninfected"],
+                class_names=["uninfected", "parasitized"],
                 output_dir=temp_dir,
                 prefix="clinical",
                 threshold=0.5,
@@ -47,6 +57,9 @@ class ClinicalMetricsTests(unittest.TestCase):
                 rows = list(csv.DictReader(file_handle))
 
         self.assertEqual(metrics["clinical_positive_label"], "parasitized")
+        self.assertEqual(metrics["positive_class_index"], 1)
+        self.assertEqual(metrics["negative_class_index"], 0)
+        self.assertEqual(metrics["raw_model_score_meaning"], "probability_parasitized")
         self.assertAlmostEqual(metrics["sensitivity_parasitized"], 0.5)
         self.assertAlmostEqual(metrics["specificity"], 0.5)
         self.assertAlmostEqual(metrics["false_negative_rate"], 0.5)
@@ -56,10 +69,12 @@ class ClinicalMetricsTests(unittest.TestCase):
         self.assertEqual(metrics["preprocessing_mode"], "rescale_0_1")
 
         self.assertAlmostEqual(float(rows[0]["raw_model_score"]), 0.1, places=6)
-        self.assertAlmostEqual(float(rows[0]["probability_parasitized"]), 0.9, places=6)
-        self.assertAlmostEqual(float(rows[0]["probability_uninfected"]), 0.1, places=6)
-        self.assertEqual(rows[0]["predicted_label"], "parasitized")
+        self.assertAlmostEqual(float(rows[0]["probability_parasitized"]), 0.1, places=6)
+        self.assertAlmostEqual(float(rows[0]["probability_uninfected"]), 0.9, places=6)
+        self.assertEqual(rows[0]["predicted_label"], "uninfected")
         self.assertEqual(rows[0]["preprocessing_mode"], "rescale_0_1")
+        self.assertEqual(rows[0]["raw_model_score_meaning"], "probability_parasitized")
+        self.assertEqual(rows[0]["label_mapping_version"], "clinical_v1_parasitized_positive")
         self.assertIn("raw_model_predicted_label", rows[0])
 
 

@@ -5,7 +5,7 @@ import tensorflow as tf
 from PIL import Image
 
 from src.calibration import calibrate_probability
-from src.config import CLASS_NAMES
+from src.config import CLASS_NAMES, LABEL_MAPPING_VERSION, RAW_MODEL_SCORE_MEANING, label_mapping_metadata
 from src.decision import (
     NEGATIVE_LABEL,
     POSITIVE_LABEL,
@@ -40,28 +40,53 @@ def preprocess_external_image(
     return image_batch, image
 
 
-def probability_rows_from_predictions(predictions):
+def probability_rows_from_predictions(predictions, label_mapping_version=LABEL_MAPPING_VERSION):
     predictions = np.asarray(predictions, dtype=np.float32)
     if predictions.ndim == 2 and predictions.shape[1] == len(CLASS_NAMES):
         return [
-            probabilities_by_class_from_prediction(row.reshape(1, -1), CLASS_NAMES)
+            probabilities_by_class_from_prediction(
+                row.reshape(1, -1),
+                CLASS_NAMES,
+                label_mapping_version=label_mapping_version,
+            )
             for row in predictions
         ]
 
     return [
-        probabilities_by_class_from_prediction(np.asarray([score], dtype=np.float32), CLASS_NAMES)
+        probabilities_by_class_from_prediction(
+            np.asarray([score], dtype=np.float32),
+            CLASS_NAMES,
+            label_mapping_version=label_mapping_version,
+        )
         for score in predictions.reshape(-1)
     ]
 
 
-def predict_model_probability(model, image_batch):
+def predict_model_probability(model, image_batch, label_mapping_version=LABEL_MAPPING_VERSION):
     prediction = model.predict(image_batch, verbose=0)
-    probabilities = probabilities_by_class_from_prediction(prediction, CLASS_NAMES)
+    probabilities = probabilities_by_class_from_prediction(
+        prediction,
+        CLASS_NAMES,
+        label_mapping_version=label_mapping_version,
+    )
+    prediction_array = np.asarray(prediction, dtype=np.float32)
+    raw_model_score = (
+        float(probabilities[POSITIVE_LABEL])
+        if prediction_array.ndim == 2 and prediction_array.shape[1] == len(CLASS_NAMES)
+        else float(prediction_array.reshape(-1)[0])
+    )
     return {
-        "raw_model_output": np.asarray(prediction).tolist(),
-        "raw_model_score": float(np.asarray(prediction).reshape(-1)[0]),
+        "raw_model_output": prediction_array.tolist(),
+        "raw_model_score": raw_model_score,
+        "raw_model_score_meaning": (
+            RAW_MODEL_SCORE_MEANING
+            if label_mapping_version == LABEL_MAPPING_VERSION
+            else "probability_uninfected"
+        ),
         "probability_parasitized": probabilities[POSITIVE_LABEL],
         "probability_uninfected": probabilities[NEGATIVE_LABEL],
+        "label_mapping_version": label_mapping_version,
+        "label_mapping": label_mapping_metadata(label_mapping_version),
         "tta_predictions": None,
     }
 
@@ -72,6 +97,7 @@ def predict_model_probability_with_tta(
     n_aug,
     preprocessing_mode=PREPROCESSING_RESCALE_0_1,
     raw_image=None,
+    label_mapping_version=LABEL_MAPPING_VERSION,
 ):
     from src.data import build_augmentation
 
@@ -96,17 +122,39 @@ def predict_model_probability_with_tta(
         tta_batch = np.asarray(augmented_images, dtype=np.float32)
 
     predictions = model.predict(tta_batch, verbose=0)
-    probability_rows = probability_rows_from_predictions(predictions)
+    prediction_array = np.asarray(predictions, dtype=np.float32)
+    probability_rows = probability_rows_from_predictions(
+        predictions,
+        label_mapping_version=label_mapping_version,
+    )
     probability_parasitized = float(
         np.mean([row[POSITIVE_LABEL] for row in probability_rows])
     )
     probability_uninfected = float(1.0 - probability_parasitized)
+    raw_model_score = (
+        probability_parasitized
+        if (
+            label_mapping_version == LABEL_MAPPING_VERSION
+            or (
+                prediction_array.ndim == 2
+                and prediction_array.shape[1] == len(CLASS_NAMES)
+            )
+        )
+        else float(np.mean(prediction_array.reshape(-1)))
+    )
 
     return {
-        "raw_model_output": np.asarray(predictions).tolist(),
-        "raw_model_score": float(np.mean(np.asarray(predictions).reshape(-1))),
+        "raw_model_output": prediction_array.tolist(),
+        "raw_model_score": raw_model_score,
+        "raw_model_score_meaning": (
+            RAW_MODEL_SCORE_MEANING
+            if label_mapping_version == LABEL_MAPPING_VERSION
+            else "probability_uninfected"
+        ),
         "probability_parasitized": probability_parasitized,
         "probability_uninfected": probability_uninfected,
+        "label_mapping_version": label_mapping_version,
+        "label_mapping": label_mapping_metadata(label_mapping_version),
         "tta_predictions": probability_rows,
     }
 
@@ -132,6 +180,7 @@ def predict_ensemble_probability(
     n_aug=8,
     preprocessing_mode=PREPROCESSING_RESCALE_0_1,
     raw_image=None,
+    label_mapping_version=LABEL_MAPPING_VERSION,
 ):
     weights = normalize_ensemble_weights(len(models), weights)
     model_results = []
@@ -145,10 +194,17 @@ def predict_ensemble_probability(
                     n_aug,
                     preprocessing_mode=preprocessing_mode,
                     raw_image=raw_image,
+                    label_mapping_version=label_mapping_version,
                 )
             )
         else:
-            model_results.append(predict_model_probability(model, image_batch))
+            model_results.append(
+                predict_model_probability(
+                    model,
+                    image_batch,
+                    label_mapping_version=label_mapping_version,
+                )
+            )
 
     probability_parasitized = float(
         np.average(
@@ -163,8 +219,15 @@ def predict_ensemble_probability(
         "raw_model_score": float(
             np.average([item["raw_model_score"] for item in model_results], weights=weights)
         ),
+        "raw_model_score_meaning": (
+            RAW_MODEL_SCORE_MEANING
+            if label_mapping_version == LABEL_MAPPING_VERSION
+            else "probability_uninfected"
+        ),
         "probability_parasitized": probability_parasitized,
         "probability_uninfected": probability_uninfected,
+        "label_mapping_version": label_mapping_version,
+        "label_mapping": label_mapping_metadata(label_mapping_version),
         "ensemble_model_results": model_results,
         "ensemble_weights": weights.tolist(),
         "tta_predictions": None,

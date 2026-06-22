@@ -2,18 +2,19 @@ import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.applications import VGG16
 
+from src.config import POSITIVE_CLASS_INDEX
+
 
 @tf.keras.utils.register_keras_serializable(package="malaria")
 class ParasitizedRecall(tf.keras.metrics.Metric):
     """
     Sensibilidad clínica para la clase parasitized.
 
-    TFDS codifica:
-      0 = parasitized
-      1 = uninfected
+    Convención oficial:
+      0 = uninfected
+      1 = parasitized
 
-    La salida sigmoid del proyecto representa P(label=1) = P(uninfected).
-    Por eso una predicción parasitized corresponde a y_pred < threshold.
+    La salida sigmoid representa probability_parasitized.
     """
 
     def __init__(self, threshold: float = 0.5, name: str = "recall_parasitized", **kwargs):
@@ -26,8 +27,8 @@ class ParasitizedRecall(tf.keras.metrics.Metric):
         y_true = tf.cast(tf.reshape(y_true, [-1]), tf.float32)
         y_pred = tf.cast(tf.reshape(y_pred, [-1]), tf.float32)
 
-        true_parasitized = tf.equal(y_true, 0.0)
-        pred_parasitized = tf.less(y_pred, self.threshold)
+        true_parasitized = tf.equal(y_true, float(POSITIVE_CLASS_INDEX))
+        pred_parasitized = tf.greater_equal(y_pred, self.threshold)
 
         true_positive_mask = tf.cast(
             tf.logical_and(true_parasitized, pred_parasitized),
@@ -92,8 +93,8 @@ def build_custom_cnn(input_shape=(200, 200, 3), learning_rate: float = 1.0):
     CNN propia inspirada en el paper:
     bloques convolucionales + max pooling + densas + dropout.
     Salida binaria sigmoid:
-        0 = parasitized
-        1 = uninfected
+        0 = uninfected
+        1 = parasitized
     """
     model = models.Sequential(
         [

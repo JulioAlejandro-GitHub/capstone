@@ -4,7 +4,13 @@ from pathlib import Path
 
 import tensorflow as tf
 
-from src.config import OUTPUT_DIR
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_METADATA,
+    LABEL_MAPPING_VERSION,
+    RAW_MODEL_SCORE_MEANING,
+    OUTPUT_DIR,
+)
 from src.data import load_malaria_splits
 from src.metrics import evaluate_keras_model
 from src.models import (
@@ -164,6 +170,9 @@ def write_checkpoint_selection_report(
         "fine_tuning_log": str(output_dir / "fine_tuning_log.csv")
         if fine_tuning_enabled
         else None,
+        "label_mapping_version": LABEL_MAPPING_VERSION,
+        "label_mapping": LABEL_MAPPING_METADATA,
+        "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
     }
     report_path = output_dir / "checkpoint_selection.json"
     with report_path.open("w", encoding="utf-8") as file_handle:
@@ -208,6 +217,10 @@ def main():
                     "checkpoint_dir": str(output_dir),
                     "output_dir": str(output_dir),
                     "preprocessing_mode": preprocessing_mode,
+                    "class_names": CLASS_NAMES,
+                    "label_mapping_version": LABEL_MAPPING_VERSION,
+                    "label_mapping": LABEL_MAPPING_METADATA,
+                    "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
                     "checkpoint_metric": checkpoint_metric,
                     "checkpoint_mode": checkpoint_mode,
                     "early_stopping_monitor": early_stopping_monitor,
@@ -223,7 +236,7 @@ def main():
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        ds_train, ds_val, ds_test, ds_info = load_malaria_splits(
+        ds_train, ds_val, ds_test, _ = load_malaria_splits(
             img_size=args.img_size,
             batch_size=args.batch_size,
             seed=args.seed,
@@ -231,8 +244,10 @@ def main():
             preprocessing_mode=preprocessing_mode,
         )
 
-        class_names = ds_info.features["label"].names
-        print("Clases:", class_names)
+        class_names = CLASS_NAMES
+        print("Clases clínicas:", class_names)
+        print("Convención de etiquetas:", LABEL_MAPPING_VERSION)
+        print("raw_model_score:", RAW_MODEL_SCORE_MEANING)
         print("Preprocesamiento:", preprocessing_mode)
         print(
             "Checkpoint metric:",
@@ -311,7 +326,12 @@ def main():
             output_dir=output_dir,
             prefix="test",
             threshold=0.5,
-            metadata={"preprocessing_mode": preprocessing_mode},
+            metadata={
+                "preprocessing_mode": preprocessing_mode,
+                "label_mapping_version": LABEL_MAPPING_VERSION,
+                "label_mapping": LABEL_MAPPING_METADATA,
+                "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+            },
         )
 
         model.save(output_dir / "final_model.keras")
@@ -354,6 +374,9 @@ def main():
                 final_model_path=str(output_dir / "final_model.keras"),
                 metadata={
                     "source": "src.train",
+                    "label_mapping_version": LABEL_MAPPING_VERSION,
+                    "label_mapping": LABEL_MAPPING_METADATA,
+                    "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
                     "checkpoint_selection": checkpoint_selection,
                 },
             )
@@ -361,6 +384,9 @@ def main():
                 run_context,
                 metadata={
                     "status_detail": "training completed",
+                    "label_mapping_version": LABEL_MAPPING_VERSION,
+                    "label_mapping": LABEL_MAPPING_METADATA,
+                    "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
                     "checkpoint_selection": checkpoint_selection,
                 },
             )

@@ -3,7 +3,6 @@ from pathlib import Path
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
-
 from src.preprocessing import (
     PREPROCESSING_RESCALE_0_1,
     PREPROCESSING_VGG16_IMAGENET,
@@ -12,6 +11,22 @@ from src.preprocessing import (
     resize_image_tensor,
     resolve_preprocessing_mode,
 )
+
+
+def remap_tfds_malaria_label(label):
+    """
+    TFDS original:
+      0 = parasitized
+      1 = uninfected
+
+    Proyecto clínico:
+      0 = uninfected
+      1 = parasitized
+
+    El remapeo es 1 - label.
+    """
+    label = tf.cast(label, tf.float32)
+    return 1.0 - label
 
 
 def get_tfds_data_dir() -> Path:
@@ -57,12 +72,12 @@ def load_malaria_splits(
 
     def preprocess(image, label):
         image = preprocess_image_tensor(image, img_size, preprocessing_mode)
-        label = tf.cast(label, tf.float32)
+        label = remap_tfds_malaria_label(label)
         return image, label
 
     def resize_only(image, label):
         image = resize_image_tensor(image, img_size)
-        label = tf.cast(label, tf.float32)
+        label = remap_tfds_malaria_label(label)
         return image, label
 
     def apply_preprocessing(image, label):
@@ -145,5 +160,5 @@ def preprocess_single(
 ):
     preprocessing_mode = resolve_preprocessing_mode(requested=preprocessing_mode)
     image = preprocess_image_tensor(image, img_size, preprocessing_mode)
-    label = tf.cast(label, tf.float32)
+    label = remap_tfds_malaria_label(label)
     return image, label

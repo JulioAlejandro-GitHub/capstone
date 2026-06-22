@@ -211,6 +211,13 @@ export interface UploadedPrediction extends JsonRecord {
   quality_warnings: JsonValue | null;
   quality_metrics: JsonValue | null;
   raw_model_score: number | null;
+  raw_model_score_meaning: string | null;
+  label_mapping_version: string | null;
+  label_mapping: JsonValue | null;
+  positive_class_name: string | null;
+  positive_class_index: number | null;
+  negative_class_name: string | null;
+  negative_class_index: number | null;
   calibration_method: string | null;
   calibration_applied: boolean | null;
   tta_applied: boolean | null;

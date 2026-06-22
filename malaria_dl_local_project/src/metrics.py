@@ -13,8 +13,15 @@ from sklearn.metrics import (
     f1_score,
 )
 
-from src.config import CLASS_NAMES
-from src.decision import NEGATIVE_LABEL, POSITIVE_LABEL, probability_by_class_from_scalar_score
+from src.config import (
+    CLASS_NAMES,
+    LABEL_MAPPING_VERSION,
+    LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    NEGATIVE_LABEL,
+    POSITIVE_LABEL,
+    label_mapping_metadata,
+)
+from src.decision import probability_by_class_from_scalar_score
 
 
 def _safe_divide(numerator, denominator):
@@ -37,11 +44,19 @@ def _label_index(class_names, label):
     return int(class_names.index(label))
 
 
-def clinical_probabilities_from_raw_scores(y_score, class_names=None):
+def clinical_probabilities_from_raw_scores(
+    y_score,
+    class_names=None,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
     class_names = list(class_names or CLASS_NAMES)
     raw_model_score = np.asarray(y_score, dtype=np.float32).reshape(-1)
     probabilities = [
-        probability_by_class_from_scalar_score(score, class_names)
+        probability_by_class_from_scalar_score(
+            score,
+            class_names,
+            label_mapping_version=label_mapping_version,
+        )
         for score in raw_model_score
     ]
     probability_parasitized = np.asarray(
@@ -71,10 +86,16 @@ def clinical_predictions_from_probabilities(
     ).astype(int)
 
 
-def clinical_predictions_from_raw_scores(y_score, class_names=None, threshold=0.5):
+def clinical_predictions_from_raw_scores(
+    y_score,
+    class_names=None,
+    threshold=0.5,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
     _, probability_parasitized, _ = clinical_probabilities_from_raw_scores(
         y_score,
         class_names,
+        label_mapping_version=label_mapping_version,
     )
     return clinical_predictions_from_probabilities(
         probability_parasitized,
@@ -137,13 +158,29 @@ def clinical_metric_summary(y_true, y_pred, probability_parasitized, class_names
     }
 
 
-def collect_predictions(model, dataset, class_names=None, threshold=0.5):
+def collect_predictions(
+    model,
+    dataset,
+    class_names=None,
+    threshold=0.5,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+):
+    from src.inference_pipeline import probability_rows_from_predictions
+
     y_true = []
     y_score = []
 
     for images, labels in dataset:
-        probs = model.predict(images, verbose=0).ravel()
-        y_score.extend(probs)
+        predictions = model.predict(images, verbose=0)
+        prediction_array = np.asarray(predictions, dtype=np.float32)
+        if prediction_array.ndim == 2 and prediction_array.shape[1] == len(CLASS_NAMES):
+            probability_rows = probability_rows_from_predictions(
+                predictions,
+                label_mapping_version=label_mapping_version,
+            )
+            y_score.extend([row[POSITIVE_LABEL] for row in probability_rows])
+        else:
+            y_score.extend(prediction_array.reshape(-1))
         y_true.extend(labels.numpy())
 
     y_true = np.asarray(y_true).astype(int)
@@ -152,6 +189,7 @@ def collect_predictions(model, dataset, class_names=None, threshold=0.5):
         y_score,
         class_names or CLASS_NAMES,
         threshold,
+        label_mapping_version=label_mapping_version,
     )
 
     return y_true, y_pred, y_score
@@ -166,6 +204,7 @@ def evaluate_binary_predictions(
     prefix="test",
     threshold=0.5,
     positive_label=POSITIVE_LABEL,
+    label_mapping_version=LABEL_MAPPING_VERSION,
     metadata=None,
 ):
     if positive_label != POSITIVE_LABEL:
@@ -178,14 +217,31 @@ def evaluate_binary_predictions(
     y_true = np.asarray(y_true).astype(int)
     raw_input_y_pred = np.asarray(y_pred).astype(int)
     raw_model_score, probability_parasitized, probability_uninfected = (
-        clinical_probabilities_from_raw_scores(y_score, class_names)
+        clinical_probabilities_from_raw_scores(
+            y_score,
+            class_names,
+            label_mapping_version=label_mapping_version,
+        )
     )
     y_pred = clinical_predictions_from_probabilities(
         probability_parasitized,
         class_names,
         threshold,
     )
-    raw_model_y_pred = (raw_model_score >= float(threshold)).astype(int)
+    positive_idx = _label_index(class_names, POSITIVE_LABEL)
+    negative_idx = _label_index(class_names, NEGATIVE_LABEL)
+    if label_mapping_version == LEGACY_TFDS_LABEL_MAPPING_VERSION:
+        raw_model_y_pred = np.where(
+            raw_model_score >= float(threshold),
+            negative_idx,
+            positive_idx,
+        ).astype(int)
+    else:
+        raw_model_y_pred = np.where(
+            raw_model_score >= float(threshold),
+            positive_idx,
+            negative_idx,
+        ).astype(int)
 
     report_text = classification_report(
         y_true,
@@ -212,11 +268,12 @@ def evaluate_binary_predictions(
         probability_parasitized,
         class_names,
     )
-    negative_idx = _label_index(class_names, NEGATIVE_LABEL)
     auc = clinical_summary["auc_parasitized"]
-    raw_model_auc_uninfected = _safe_roc_auc(
-        (y_true == negative_idx).astype(int),
-        raw_model_score,
+    mapping_metadata = label_mapping_metadata(label_mapping_version)
+    raw_model_score_meaning = mapping_metadata["raw_model_score_meaning"]
+    raw_model_auc_parasitized = _safe_roc_auc(
+        (y_true == positive_idx).astype(int),
+        probability_parasitized,
     )
 
     metrics = {
@@ -226,10 +283,15 @@ def evaluate_binary_predictions(
         "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
         "auc": auc,
         "auc_parasitized": auc,
-        "raw_model_auc_uninfected": raw_model_auc_uninfected,
+        "raw_model_auc_parasitized": raw_model_auc_parasitized,
         "clinical_positive_label": POSITIVE_LABEL,
         "clinical_negative_label": NEGATIVE_LABEL,
-        "raw_model_score_label": class_names[1] if len(class_names) > 1 else None,
+        "positive_class_index": positive_idx,
+        "negative_class_index": negative_idx,
+        "raw_model_score_label": POSITIVE_LABEL,
+        "raw_model_score_meaning": raw_model_score_meaning,
+        "label_mapping_version": label_mapping_version,
+        "label_mapping": mapping_metadata,
         "threshold": float(threshold),
         "preprocessing_mode": metadata.get("preprocessing_mode"),
         "metadata": metadata,
@@ -271,12 +333,18 @@ def evaluate_binary_predictions(
                 "y_pred": y_pred,
                 "y_score": raw_model_score,
                 "raw_model_score": raw_model_score,
+                "raw_model_score_meaning": raw_model_score_meaning,
                 "raw_model_pred_class_index": raw_model_y_pred,
                 "input_y_pred": raw_input_y_pred,
                 "probability_parasitized": probability_parasitized,
                 "probability_uninfected": probability_uninfected,
                 "positive_label": POSITIVE_LABEL,
                 "negative_label": NEGATIVE_LABEL,
+                "positive_class_name": POSITIVE_LABEL,
+                "positive_class_index": positive_idx,
+                "negative_class_name": NEGATIVE_LABEL,
+                "negative_class_index": negative_idx,
+                "label_mapping_version": label_mapping_version,
             }
         )
         if metadata.get("preprocessing_mode") is not None:
@@ -298,6 +366,7 @@ def evaluate_keras_model(
     output_dir=None,
     prefix="test",
     threshold=0.5,
+    label_mapping_version=LABEL_MAPPING_VERSION,
     metadata=None,
 ):
     y_true, y_pred, y_score = collect_predictions(
@@ -305,6 +374,7 @@ def evaluate_keras_model(
         dataset,
         class_names=class_names,
         threshold=threshold,
+        label_mapping_version=label_mapping_version,
     )
     return evaluate_binary_predictions(
         y_true=y_true,
@@ -314,5 +384,6 @@ def evaluate_keras_model(
         output_dir=output_dir,
         prefix=prefix,
         threshold=threshold,
+        label_mapping_version=label_mapping_version,
         metadata=metadata,
     )

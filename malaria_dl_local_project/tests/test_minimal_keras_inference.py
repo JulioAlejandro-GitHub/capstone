@@ -49,7 +49,7 @@ class MinimalKerasInferenceTests(unittest.TestCase):
                         1,
                         activation="sigmoid",
                         kernel_initializer="zeros",
-                        bias_initializer=tf.keras.initializers.Constant(math.log(0.2 / 0.8)),
+                        bias_initializer=tf.keras.initializers.Constant(math.log(0.8 / 0.2)),
                     ),
                 ]
             )
@@ -66,7 +66,7 @@ class MinimalKerasInferenceTests(unittest.TestCase):
 
         self.assertEqual(result["workflow"], "clinical_inference_experimental")
         self.assertEqual(result["predicted_label"], "parasitized")
-        self.assertAlmostEqual(result["raw_model_score"], 0.2, places=4)
+        self.assertAlmostEqual(result["raw_model_score"], 0.8, places=4)
         self.assertAlmostEqual(result["probability_parasitized"], 0.8, places=4)
         self.assertAlmostEqual(result["probability_uninfected"], 0.2, places=4)
         self.assertFalse(result["tracking"]["track_db"])
