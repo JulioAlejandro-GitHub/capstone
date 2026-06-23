@@ -89,6 +89,44 @@ PY
 
 La carpeta `capstone/data/tensorflow_datasets/` está ignorada por Git. No se deben versionar imágenes, shards ni archivos TFRecord del dataset.
 
+### Split físico oficial 80/10/10
+
+El flujo oficial crea copias físicas estratificadas del dataset en:
+
+```text
+data/malaria_physical_split/
+```
+
+Esto no modifica el TFDS original. Todos los entrenamientos y evaluaciones usan por defecto este split físico con `0 = uninfected`, `1 = parasitized`.
+
+Crear split:
+
+```bash
+python scripts/create_physical_dataset_split.py \
+  --seed 42 \
+  --train-ratio 0.8 \
+  --val-ratio 0.1 \
+  --test-ratio 0.1
+```
+
+Ver conteos sin escribir archivos:
+
+```bash
+python scripts/create_physical_dataset_split.py --dry-run
+```
+
+Regenerar:
+
+```bash
+python scripts/create_physical_dataset_split.py --overwrite --seed 42
+```
+
+Más detalle:
+
+```text
+docs/physical_dataset_split.md
+```
+
 ## Preprocesamiento por arquitectura
 
 El pipeline usa `src/preprocessing.py` como punto único de preprocesamiento y los scripts aceptan `--preprocessing`.
@@ -123,6 +161,8 @@ Los JSON de métricas y CSV de predicciones incluyen `preprocessing_mode` cuando
 ```bash
 python -m src.train --model custom_cnn --epochs 30 --img-size 200 --batch-size 64
 ```
+
+Si `data/malaria_physical_split/` no existe, `src.train` falla con un mensaje indicando crear el split físico. El fallback dinámico de TFDS está disponible solo de forma explícita con `--data-source tfds`.
 
 ### VGG16 con Transfer Learning
 
@@ -555,11 +595,13 @@ capstone/
 ## 7. Notas metodológicas
 
 TensorFlow Datasets entrega el dataset `malaria` como un único split llamado `train`.
-Este proyecto lo divide en:
+El flujo oficial del proyecto primero crea un split físico persistente con:
 
-- 80% entrenamiento
-- 10% validación
-- 10% test
+```bash
+python scripts/create_physical_dataset_split.py --seed 42
+```
+
+Ese split queda en `data/malaria_physical_split/` con 80% entrenamiento, 10% validación y 10% test, estratificado por clase. El TFDS original no se modifica.
 
 Para un Capstone más riguroso, idealmente se debe revisar la fuente NIH/NLM original y separar por paciente si se dispone del mapeo `Patient-ID`, evitando fuga de información entre entrenamiento y prueba.
 

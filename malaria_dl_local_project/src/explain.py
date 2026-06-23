@@ -18,6 +18,7 @@ from src.config import (
     RAW_MODEL_SCORE_MEANING,
     label_mapping_metadata,
 )
+from src.data import add_data_source_args, dataset_tracking_metadata
 from src.preprocessing import (
     PREPROCESSING_CHOICES,
     PREPROCESSING_RESCALE_0_1,
@@ -117,6 +118,7 @@ def parse_args():
         default=200,
         help="Máximo de imágenes candidatas retenidas por tipo de caso.",
     )
+    add_data_source_args(parser)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -1035,6 +1037,7 @@ def main():
     mapping_metadata = label_mapping_metadata(args.label_mapping)
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: explicabilidad usando checkpoint legacy_tfds_parasitized_zero.")
+    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
 
     if args.track_db:
         from src.tracking_integration import (
@@ -1060,6 +1063,7 @@ def main():
                     "label_mapping_version": args.label_mapping,
                     "label_mapping": mapping_metadata,
                     "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                    **dataset_info,
                 },
             ),
         )
@@ -1074,12 +1078,14 @@ def main():
         print(f"Cargando modelo: {checkpoint}")
         model = tf.keras.models.load_model(checkpoint, compile=False)
 
-        print("Cargando splits de malaria desde TensorFlow Datasets...")
+        print("Cargando splits de malaria...")
         ds_train, _, ds_test, _ = load_malaria_splits(
             img_size=args.img_size,
             batch_size=args.batch_size,
             augment=False,
             preprocessing_mode=preprocessing_mode,
+            data_source=args.data_source,
+            dataset_dir=args.dataset_dir,
         )
 
         class_names = CLASS_NAMES
@@ -1186,7 +1192,13 @@ def main():
             )
 
             log_explainability_outputs(run_context, cases, summary_rows, output_dir)
-            finish_tracking_run(run_context, metadata={"status_detail": "explainability completed"})
+            finish_tracking_run(
+                run_context,
+                metadata={
+                    "status_detail": "explainability completed",
+                    **dataset_info,
+                },
+            )
 
         print("Explicabilidad finalizada.")
     except Exception as exc:

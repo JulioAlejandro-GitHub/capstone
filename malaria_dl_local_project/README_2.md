@@ -32,9 +32,13 @@ Flujo Principal:
 
 TensorFlow Datasets malaria
         ↓
+scripts/create_physical_dataset_split.py
+        ↓
+data/malaria_physical_split/
+        ↓
 src.data
         ↓
-preprocesamiento + split train/val/test
+preprocesamiento + carga train/val/test físico
         ↓
 src.models
         ↓
@@ -47,12 +51,15 @@ artefactos en outputs/
 explicabilidad con src.explain
 
 Datos
-[src/data.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/data.py:1) carga el dataset malaria desde TensorFlow Datasets.
+[src/data.py (line 1)](/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/src/data.py:1) carga por defecto el split físico creado desde TensorFlow Datasets.
 
-Divide el único split train en:
-80% entrenamiento
-10% validación
-10% test
+El split físico oficial está en:
+data/malaria_physical_split/
+
+Contiene:
+80% entrenamiento en train/
+10% validación en val/
+10% test en test/
 También aplica:
 resize a img_size, por defecto 200x200
 preprocesamiento centralizado por arquitectura
@@ -70,6 +77,12 @@ raw_model_score = probability_parasitized
 label_mapping_version = clinical_v1_parasitized_positive
 
 TensorFlow Datasets entrega originalmente 0 = parasitized y 1 = uninfected. El proyecto remapea esas etiquetas en src.data antes de entrenamiento, evaluación y explicabilidad.
+
+Crear split físico:
+
+python scripts/create_physical_dataset_split.py --seed 42 --train-ratio 0.8 --val-ratio 0.1 --test-ratio 0.1
+
+El dataset TFDS original no se modifica. El fallback dinámico de TFDS queda disponible solo con --data-source tfds.
 
 Preprocesamiento:
 `src/preprocessing.py` define los modos disponibles. Por defecto `--preprocessing auto` mantiene compatibilidad con checkpoints existentes y usa `rescale_0_1`, es decir resize + normalización `[0, 1]`. Para VGG16 se puede usar `vgg16_imagenet`, pero solo con modelos reentrenados con ese mismo modo.

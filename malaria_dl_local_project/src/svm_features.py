@@ -13,7 +13,7 @@ from src.config import (
     OUTPUT_DIR,
     RAW_MODEL_SCORE_MEANING,
 )
-from src.data import load_malaria_splits
+from src.data import add_data_source_args, dataset_tracking_metadata, load_malaria_splits
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
 from src.model_metadata import verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
@@ -32,6 +32,7 @@ def parse_args():
         default="auto",
         help="Modo de preprocesamiento usado por el checkpoint extractor.",
     )
+    add_data_source_args(parser)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -76,6 +77,7 @@ def main():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
     preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
     verify_checkpoint_metadata(checkpoint)
+    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
 
     output_dir = OUTPUT_DIR / "cnn_features_svm"
     if args.track_db:
@@ -98,6 +100,7 @@ def main():
                     "label_mapping_version": LABEL_MAPPING_VERSION,
                     "label_mapping": LABEL_MAPPING_METADATA,
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                    **dataset_info,
                 },
             ),
         )
@@ -108,6 +111,8 @@ def main():
             batch_size=args.batch_size,
             augment=False,
             preprocessing_mode=preprocessing_mode,
+            data_source=args.data_source,
+            dataset_dir=args.dataset_dir,
         )
         class_names = CLASS_NAMES
 
@@ -147,6 +152,7 @@ def main():
                 "label_mapping_version": LABEL_MAPPING_VERSION,
                 "label_mapping": LABEL_MAPPING_METADATA,
                 "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                **dataset_info,
             },
         )
 
@@ -169,6 +175,7 @@ def main():
                     "label_mapping_version": LABEL_MAPPING_VERSION,
                     "label_mapping": LABEL_MAPPING_METADATA,
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                    **dataset_info,
                 },
             )
     except Exception as exc:

@@ -11,7 +11,12 @@ from src.config import (
     LEGACY_TFDS_LABEL_MAPPING_VERSION,
     label_mapping_metadata,
 )
-from src.data import build_augmentation, load_raw_test_split, preprocess_single, remap_tfds_malaria_label
+from src.data import (
+    add_data_source_args,
+    build_augmentation,
+    dataset_tracking_metadata,
+    load_raw_test_split,
+)
 from src.decision import POSITIVE_LABEL
 from src.inference_pipeline import probability_rows_from_predictions
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
@@ -20,7 +25,6 @@ from src.preprocessing import (
     PREPROCESSING_CHOICES,
     PREPROCESSING_VGG16_IMAGENET,
     apply_model_preprocessing,
-    resize_image_tensor,
     resolve_preprocessing_mode,
 )
 
@@ -50,6 +54,7 @@ def parse_args():
         default="auto",
         help="Modo de preprocesamiento usado por el checkpoint.",
     )
+    add_data_source_args(parser)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -120,6 +125,7 @@ def main():
     )
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: TTA usando checkpoint legacy_tfds_parasitized_zero.")
+    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
 
     output_dir = checkpoint.parent / "tta_evaluation"
     if args.track_db:
@@ -148,13 +154,18 @@ def main():
                     "label_mapping_version": LABEL_MAPPING_VERSION,
                     "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                     "raw_model_score_meaning": "probability_parasitized",
+                    **dataset_info,
                 },
             ),
         )
 
     try:
         model = tf.keras.models.load_model(checkpoint, compile=False)
-        raw_test = load_raw_test_split()
+        raw_test = load_raw_test_split(
+            data_source=args.data_source,
+            dataset_dir=args.dataset_dir,
+            img_size=args.img_size,
+        )
         augmentation = build_augmentation()
 
         y_true = []
@@ -162,15 +173,9 @@ def main():
 
         for image, label in raw_test:
             if preprocessing_mode == PREPROCESSING_VGG16_IMAGENET:
-                model_image = resize_image_tensor(image, args.img_size)
-                label = remap_tfds_malaria_label(label)
+                model_image = image
             else:
-                model_image, label = preprocess_single(
-                    image,
-                    label,
-                    args.img_size,
-                    preprocessing_mode=preprocessing_mode,
-                )
+                model_image = apply_model_preprocessing(image, preprocessing_mode)
             score = predict_with_tta(
                 model,
                 model_image,
@@ -180,7 +185,7 @@ def main():
                 label_mapping_version=args.label_mapping,
             )
             y_score.append(score)
-            y_true.append(int(label.numpy()))
+            y_true.append(int(float(label.numpy())))
 
         y_true = np.asarray(y_true)
         y_score = np.asarray(y_score)
@@ -207,6 +212,7 @@ def main():
                 "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                 "base_model_label_mapping_version": args.label_mapping,
                 "raw_model_score_meaning": "probability_parasitized",
+                **dataset_info,
             },
         )
 
@@ -227,6 +233,7 @@ def main():
                     "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                     "base_model_label_mapping_version": args.label_mapping,
                     "raw_model_score_meaning": "probability_parasitized",
+                    **dataset_info,
                 },
             )
     except Exception as exc:

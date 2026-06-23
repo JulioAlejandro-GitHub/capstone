@@ -11,7 +11,7 @@ from src.config import (
     RAW_MODEL_SCORE_MEANING,
     OUTPUT_DIR,
 )
-from src.data import load_malaria_splits
+from src.data import add_data_source_args, dataset_tracking_metadata, load_malaria_splits
 from src.metrics import evaluate_keras_model
 from src.model_metadata import build_model_metadata, write_model_metadata
 from src.models import (
@@ -109,6 +109,7 @@ def parse_args():
             "checkpoints existentes; usa vgg16_imagenet solo al reentrenar VGG16."
         ),
     )
+    add_data_source_args(parser)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -212,6 +213,7 @@ def main():
         early_stopping_monitor,
         args.early_stopping_mode,
     )
+    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
 
     if args.track_db:
         from src.tracking_integration import (
@@ -244,10 +246,14 @@ def main():
                     "early_stopping_mode": early_stopping_mode,
                     "early_stopping_patience": args.early_stopping_patience,
                     "optimizer": args.optimizer,
+                    **dataset_info,
                 },
             ),
             random_seed=args.seed,
         )
+    # if args.model == "vgg16"
+    # if args.model == "custom_cnn":
+    # validar datos de ejecucion antes de comenzar... en este caaso el nombre del modelo
 
     try:
         tf.keras.utils.set_random_seed(args.seed)
@@ -260,6 +266,8 @@ def main():
             seed=args.seed,
             augment=not args.no_augment,
             preprocessing_mode=preprocessing_mode,
+            data_source=args.data_source,
+            dataset_dir=args.dataset_dir,
         )
 
         class_names = CLASS_NAMES
@@ -362,6 +370,7 @@ def main():
                 "label_mapping_version": LABEL_MAPPING_VERSION,
                 "label_mapping": LABEL_MAPPING_METADATA,
                 "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                **dataset_info,
             },
         )
 
@@ -400,6 +409,7 @@ def main():
                 "img_size": args.img_size,
                 "batch_size": args.batch_size,
                 "augment": not args.no_augment,
+                **dataset_info,
             },
         )
         metadata_path = write_model_metadata(output_dir, model_metadata)
@@ -439,6 +449,7 @@ def main():
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
                     "checkpoint_selection": checkpoint_selection,
                     "model_metadata": model_metadata,
+                    **dataset_info,
                 },
             )
             finish_tracking_run(
@@ -450,6 +461,7 @@ def main():
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
                     "checkpoint_selection": checkpoint_selection,
                     "model_metadata": model_metadata,
+                    **dataset_info,
                     "specificity": metrics.get("specificity"),
                     "balanced_accuracy": metrics.get("balanced_accuracy"),
                     "prediction_collapse_detected": metrics.get(

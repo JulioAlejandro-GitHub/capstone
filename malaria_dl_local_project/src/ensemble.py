@@ -12,7 +12,7 @@ from src.config import (
     OUTPUT_DIR,
     label_mapping_metadata,
 )
-from src.data import load_malaria_splits
+from src.data import add_data_source_args, dataset_tracking_metadata, load_malaria_splits
 from src.decision import POSITIVE_LABEL
 from src.inference_pipeline import probability_rows_from_predictions
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
@@ -39,6 +39,7 @@ def parse_args():
         default="auto",
         help="Modo de preprocesamiento aplicado a todos los modelos del ensemble.",
     )
+    add_data_source_args(parser)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -65,6 +66,7 @@ def main():
         )
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: ensemble usando convención legacy_tfds_parasitized_zero.")
+    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
 
     output_dir = OUTPUT_DIR / "ensemble"
     if args.track_db:
@@ -89,6 +91,7 @@ def main():
                     "label_mapping_version": LABEL_MAPPING_VERSION,
                     "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                     "raw_model_score_meaning": "probability_parasitized",
+                    **dataset_info,
                 },
             ),
         )
@@ -109,6 +112,8 @@ def main():
             batch_size=args.batch_size,
             augment=False,
             preprocessing_mode=preprocessing_mode,
+            data_source=args.data_source,
+            dataset_dir=args.dataset_dir,
         )
         class_names = CLASS_NAMES
 
@@ -157,6 +162,7 @@ def main():
                 "label_mapping_version": LABEL_MAPPING_VERSION,
                 "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                 "raw_model_score_meaning": "probability_parasitized",
+                **dataset_info,
             },
         )
 
@@ -177,6 +183,7 @@ def main():
                     "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                     "base_model_label_mapping_version": args.label_mapping,
                     "raw_model_score_meaning": "probability_parasitized",
+                    **dataset_info,
                 },
             )
     except Exception as exc:

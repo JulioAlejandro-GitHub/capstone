@@ -111,10 +111,10 @@ Visualización o reporte (Backend API/Frontend)
 ## 4. Pipeline de datos
 
 **Carga de imágenes y organización de clases:**
-El sistema depende completamente del paquete público de TensorFlow Datasets (TFDS) para "malaria", el cual provee las clases 0: `parasitized` y 1: `uninfected`.
+El sistema usa TensorFlow Datasets (TFDS) como fuente primaria para "malaria", el cual puede proveer las clases 0: `parasitized` y 1: `uninfected`. El proyecto exporta un split físico con la convención clínica oficial 0: `uninfected` y 1: `parasitized`.
 
 **División train/validation/test:**
-Se realiza tomando fracciones del único dataset original: `train[:80%]`, `train[80%:90%]`, `train[90%:]`.
+El flujo oficial crea `data/malaria_physical_split/` mediante `scripts/create_physical_dataset_split.py`, con división estratificada 80/10/10 y semilla fija. El slicing dinámico de TFDS queda solo como fallback explícito con `--data-source tfds`.
 
 **Riesgo de Data Leakage y duplicados:**
 **Alto**. El dataset de origen contiene células individuales recortadas. Es probable que haya múltiples recortes provenientes del mismo paciente o la misma frotis. Al dividir las imágenes aleatoriamente o secuencialmente (80/10/10) sin un `Patient-ID`, hay un gran riesgo de mezclar células idénticas entre entrenamiento y evaluación.

@@ -15,7 +15,7 @@ from src.config import (
     POSITIVE_LABEL,
     label_mapping_metadata,
 )
-from src.data import load_malaria_splits
+from src.data import add_data_source_args, dataset_tracking_metadata, load_malaria_splits
 from src.inference_pipeline import probability_rows_from_predictions
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
@@ -48,6 +48,7 @@ def parse_args():
     parser.add_argument("--temperature-max", type=float, default=10.0)
     parser.add_argument("--grid-size", type=int, default=200)
     parser.add_argument("--refinement-rounds", type=int, default=3)
+    add_data_source_args(parser)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -92,6 +93,7 @@ def build_calibration_payload(
     class_names,
     y_true_positive,
     fit_result,
+    dataset_info=None,
 ):
     metrics = {
         key: float(value)
@@ -118,6 +120,7 @@ def build_calibration_payload(
         "img_size": int(args.img_size),
         "batch_size": int(args.batch_size),
         "preprocessing_mode": preprocessing_mode,
+        "dataset": dataset_info or {},
         "temperature_search": {
             "temperature_min": float(args.temperature_min),
             "temperature_max": float(args.temperature_max),
@@ -170,6 +173,7 @@ def track_calibration_run(args, checkpoint, output_file, payload):
                     "label_mapping_version": payload["label_mapping_version"],
                     "label_mapping": payload["label_mapping"],
                     "raw_model_score_meaning": payload["raw_model_score_meaning"],
+                    **payload.get("dataset", {}),
                 },
             ),
         )
@@ -208,6 +212,7 @@ def track_calibration_run(args, checkpoint, output_file, payload):
                 "label_mapping_version": payload["label_mapping_version"],
                 "label_mapping": payload["label_mapping"],
                 "raw_model_score_meaning": payload["raw_model_score_meaning"],
+                **payload.get("dataset", {}),
             },
         )
         finish_tracking_run(
@@ -215,6 +220,7 @@ def track_calibration_run(args, checkpoint, output_file, payload):
             metadata={
                 "status_detail": "calibration completed",
                 "calibration": payload,
+                **payload.get("dataset", {}),
             },
         )
     except Exception as exc:
@@ -239,12 +245,15 @@ def main():
     preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: calibrando checkpoint legacy_tfds_parasitized_zero.")
+    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
 
     _, ds_val, _, _ = load_malaria_splits(
         img_size=args.img_size,
         batch_size=args.batch_size,
         augment=False,
         preprocessing_mode=preprocessing_mode,
+        data_source=args.data_source,
+        dataset_dir=args.dataset_dir,
     )
     class_names = CLASS_NAMES
     if POSITIVE_LABEL not in class_names:
@@ -276,6 +285,7 @@ def main():
         class_names=class_names,
         y_true_positive=y_true_positive,
         fit_result=fit_result,
+        dataset_info=dataset_info,
     )
     output_path = save_calibration(payload, output_file)
     track_calibration_run(args, checkpoint, output_path, payload)

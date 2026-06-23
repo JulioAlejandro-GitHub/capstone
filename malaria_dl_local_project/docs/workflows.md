@@ -33,21 +33,48 @@ python scripts/download_malaria_dataset.py
 
 El dataset no se versiona en Git. No se suben imágenes, shards de TFDS ni TFRecords al repositorio.
 
-### Split Actual
+### Split Físico Oficial
 
-TensorFlow Datasets entrega `malaria` como un único split llamado `train`. Este proyecto lo divide de forma determinística por slicing de TFDS:
+TensorFlow Datasets entrega `malaria` como un único split llamado `train`. El flujo oficial del proyecto exporta una copia física, reproducible y estratificada:
 
-```python
-split=["train[:80%]", "train[80%:90%]", "train[90%:]"]
+```bash
+python scripts/create_physical_dataset_split.py \
+  --seed 42 \
+  --train-ratio 0.8 \
+  --val-ratio 0.1 \
+  --test-ratio 0.1
 ```
 
-Interpretación operativa:
+Estructura:
 
-- `train[:80%]`: entrenamiento.
-- `train[80%:90%]`: validación.
-- `train[90%:]`: test.
+```text
+data/malaria_physical_split/
+  metadata.json
+  split_summary.csv
+  files_manifest.csv
+  train/{uninfected,parasitized}/
+  val/{uninfected,parasitized}/
+  test/{uninfected,parasitized}/
+```
 
-La validación se usa para callbacks, selección de checkpoint y calibración. El test se reserva para evaluación experimental final.
+El dataset TFDS original no se modifica. `metadata.json` documenta seed, ratios, conteos y la convención `0 = uninfected`, `1 = parasitized`.
+
+Los scripts usan por defecto:
+
+```text
+--data-source physical
+--dataset-dir data/malaria_physical_split
+```
+
+La validación física se usa para callbacks, selección de checkpoint y calibración. El test físico se reserva para evaluación experimental final, explicabilidad, TTA, ensemble y SVM.
+
+El slicing dinámico de TFDS queda disponible solo como fallback explícito:
+
+```bash
+python -m src.train --model custom_cnn --data-source tfds
+```
+
+Ese modo es legacy/experimental y no debe mezclarse silenciosamente con el flujo físico oficial.
 
 ### Limitación: No Hay Patient-Level Split
 

@@ -27,7 +27,8 @@ dist/
 .ipynb_checkpoints/
 
 # Datasets and generated training artifacts
-data/
+data/*
+!data/.gitkeep
 tensorflow_datasets
 tensorflow_datasets/
 outputs/

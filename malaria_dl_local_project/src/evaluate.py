@@ -11,7 +11,7 @@ from src.config import (
     POSITIVE_LABEL,
     label_mapping_metadata,
 )
-from src.data import load_malaria_splits
+from src.data import add_data_source_args, dataset_tracking_metadata, load_malaria_splits
 from src.metrics import collect_predictions, evaluate_binary_predictions
 from src.model_metadata import verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
@@ -40,6 +40,7 @@ def parse_args():
         default="auto",
         help="Modo de preprocesamiento usado por el checkpoint.",
     )
+    add_data_source_args(parser)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -68,6 +69,7 @@ def main():
     )
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: evaluando checkpoint legacy_tfds_parasitized_zero.")
+    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
 
     if args.track_db:
         from src.tracking_integration import (
@@ -92,6 +94,7 @@ def main():
                     "label_mapping": mapping_metadata,
                     "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
                     "positive_label": args.positive_label,
+                    **dataset_info,
                 },
             ),
         )
@@ -102,6 +105,8 @@ def main():
             batch_size=args.batch_size,
             augment=False,
             preprocessing_mode=preprocessing_mode,
+            data_source=args.data_source,
+            dataset_dir=args.dataset_dir,
         )
 
         class_names = CLASS_NAMES
@@ -130,6 +135,7 @@ def main():
                 "label_mapping_version": args.label_mapping,
                 "label_mapping": mapping_metadata,
                 "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                **dataset_info,
             },
         )
 
@@ -159,6 +165,7 @@ def main():
                     "label_mapping_version": args.label_mapping,
                     "label_mapping": mapping_metadata,
                     "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                    **dataset_info,
                 },
             )
     except Exception as exc:

@@ -3,6 +3,10 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 DATA_DIR = PROJECT_ROOT / "data"
+PHYSICAL_DATASET_DIR = DATA_DIR / "malaria_physical_split"
+TRAIN_DIR = PHYSICAL_DATASET_DIR / "train"
+VAL_DIR = PHYSICAL_DATASET_DIR / "val"
+TEST_DIR = PHYSICAL_DATASET_DIR / "test"
 
 # Convención oficial del proyecto:
 # 0 = uninfected
