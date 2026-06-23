@@ -563,7 +563,22 @@ python scripts/reset_experimental_state.py \
 
 Guía completa: [docs/reset_experimental_state.md](docs/reset_experimental_state.md).
 
-## 6. Estructura del proyecto
+## 6. Trazabilidad de dataset en PostgreSQL
+
+Para auditar qué imágenes físicas participaron en cada ejecución con `--track-db`,
+registra el split físico en PostgreSQL:
+
+```bash
+python scripts/register_physical_split_in_db.py \
+  --dataset-dir data/malaria_physical_split \
+  --dataset-name malaria_physical_split \
+  --dataset-source tensorflow_datasets/malaria \
+  --execute
+```
+
+Guía completa y consultas SQL: [docs/database_dataset_tracking.md](docs/database_dataset_tracking.md).
+
+## 7. Estructura del proyecto
 
 ```text
 capstone/
@@ -592,7 +607,7 @@ capstone/
       explainability/
 ```
 
-## 7. Notas metodológicas
+## 8. Notas metodológicas
 
 TensorFlow Datasets entrega el dataset `malaria` como un único split llamado `train`.
 El flujo oficial del proyecto primero crea un split físico persistente con:
@@ -605,7 +620,7 @@ Ese split queda en `data/malaria_physical_split/` con 80% entrenamiento, 10% val
 
 Para un Capstone más riguroso, idealmente se debe revisar la fuente NIH/NLM original y separar por paciente si se dispone del mapeo `Patient-ID`, evitando fuga de información entre entrenamiento y prueba.
 
-## 8. Dataset
+## 9. Dataset
 
 TensorFlow Datasets:
 

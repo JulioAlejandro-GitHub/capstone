@@ -1187,11 +1187,101 @@ def main():
 
         if args.track_db and run_context:
             from src.tracking_integration import (
+                args_to_parameters,
                 finish_tracking_run,
                 log_explainability_outputs,
+                output_artifacts_from_directory,
+                record_run_dataset_images,
+                record_run_io,
             )
 
             log_explainability_outputs(run_context, cases, summary_rows, output_dir)
+            metadata_by_sample_index = {}
+            for case in cases:
+                metadata_by_sample_index[case["case_id"]] = {
+                    "case_type": case["case_type"],
+                    "probability_parasitized": case["probability_parasitized"],
+                    "score_positive_label": case["score_positive_label"],
+                    "predicted_label": case["predicted_label"],
+                    "true_label": case["true_label"],
+                    "threshold": case["threshold"],
+                    "explainability_methods": [],
+                    "explainability_outputs": [],
+                }
+            for row in summary_rows:
+                case_metadata = metadata_by_sample_index.setdefault(
+                    row["case_id"],
+                    {"explainability_methods": [], "explainability_outputs": []},
+                )
+                case_metadata["case_type"] = row.get("case_type")
+                case_metadata["predicted_label"] = row.get("predicted_label")
+                case_metadata["true_label"] = row.get("true_label")
+                case_metadata["probability_parasitized"] = row.get(
+                    "probability_parasitized"
+                )
+                case_metadata["explainability_methods"].append(row.get("method"))
+                case_metadata["explainability_outputs"].append(
+                    {
+                        "method": row.get("method"),
+                        "success": row.get("success"),
+                        "path": row.get("image_path") or None,
+                        "last_conv_layer": row.get("last_conv_layer") or None,
+                        "error": row.get("error") or None,
+                    }
+                )
+            record_run_dataset_images(
+                run_context,
+                dataset_info=dataset_info,
+                usage_context="explainability",
+                splits=["test"],
+                metadata_by_sample_index=metadata_by_sample_index,
+                batch_size=args.batch_size,
+            )
+            case_type_counts = {}
+            for case in cases:
+                case_type_counts[case["case_type"]] = (
+                    case_type_counts.get(case["case_type"], 0) + 1
+                )
+            record_run_io(
+                run_context,
+                script_name="src.explain",
+                input_parameters=args_to_parameters(
+                    args,
+                    extra={
+                        "checkpoint": str(checkpoint),
+                        "selected_methods": selected_methods,
+                        "dataset_split": "test",
+                        "output_dir": str(output_dir),
+                        "preprocessing_mode": preprocessing_mode,
+                        "class_names": CLASS_NAMES,
+                        "label_mapping_version": args.label_mapping,
+                        "label_mapping": mapping_metadata,
+                        "raw_model_score_meaning": mapping_metadata[
+                            "raw_model_score_meaning"
+                        ],
+                        **dataset_info,
+                    },
+                ),
+                output_results={
+                    "summary_csv": str(output_dir / "explanation_summary.csv"),
+                    "selected_methods": selected_methods,
+                    "num_test_candidates": int(len(y_true)),
+                    "num_selected_cases": int(len(cases)),
+                    "num_explanations": int(len(summary_rows)),
+                    "case_type_counts": case_type_counts,
+                    "successful_explanations": int(
+                        sum(1 for row in summary_rows if row.get("success"))
+                    ),
+                    "failed_explanations": int(
+                        sum(1 for row in summary_rows if not row.get("success"))
+                    ),
+                },
+                output_artifacts=output_artifacts_from_directory(output_dir),
+                dataset_metadata=dataset_info,
+                label_mapping_version=args.label_mapping,
+                raw_model_score_meaning=mapping_metadata["raw_model_score_meaning"],
+                metadata={"status_detail": "explainability completed"},
+            )
             finish_tracking_run(
                 run_context,
                 metadata={

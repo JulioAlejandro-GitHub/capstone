@@ -14,6 +14,7 @@ from pathlib import Path
 
 from sqlalchemy import text
 
+from src.config import LABEL_MAPPING_VERSION, RAW_MODEL_SCORE_MEANING
 from src.db import get_connection
 
 
@@ -676,6 +677,120 @@ def log_artifacts_from_directory(run_id, directory, artifact_type=None):
             )
         )
     return artifact_ids
+
+
+def log_run_io_record(
+    run_id,
+    script_name,
+    command=None,
+    input_parameters=None,
+    output_results=None,
+    output_artifacts=None,
+    dataset_metadata=None,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+    raw_model_score_meaning=RAW_MODEL_SCORE_MEANING,
+    metadata=None,
+):
+    if not run_id:
+        _warn("log_run_io_record omitido porque run_id es None.")
+        return None
+
+    return _execute_returning_id(
+        """
+        INSERT INTO run_io_records (
+            run_id, script_name, command, input_parameters, output_results,
+            output_artifacts, dataset_metadata, label_mapping_version,
+            raw_model_score_meaning, metadata
+        )
+        VALUES (
+            :run_id, :script_name, :command, CAST(:input_parameters AS jsonb),
+            CAST(:output_results AS jsonb), CAST(:output_artifacts AS jsonb),
+            CAST(:dataset_metadata AS jsonb), :label_mapping_version,
+            :raw_model_score_meaning, CAST(:metadata AS jsonb)
+        )
+        RETURNING run_io_id
+        """,
+        {
+            "run_id": run_id,
+            "script_name": script_name,
+            "command": command,
+            "input_parameters": _json(input_parameters),
+            "output_results": _json(output_results),
+            "output_artifacts": _json(output_artifacts, default=[]),
+            "dataset_metadata": _json(dataset_metadata),
+            "label_mapping_version": label_mapping_version,
+            "raw_model_score_meaning": raw_model_score_meaning,
+            "metadata": _json(metadata),
+        },
+    )
+
+
+def log_run_dataset_images(run_id, image_rows):
+    if not run_id:
+        _warn("log_run_dataset_images omitido porque run_id es None.")
+        return {"total": 0, "inserted_or_updated": 0}
+    if not image_rows:
+        return {"total": 0, "inserted_or_updated": 0}
+
+    sql = text(
+        """
+        INSERT INTO run_dataset_images (
+            run_id, image_id, split_name, usage_context, class_index,
+            class_name, relative_path, filename, batch_index, sample_index,
+            used_for_training, used_for_validation, used_for_test, metadata
+        )
+        VALUES (
+            :run_id, :image_id, :split_name, :usage_context, :class_index,
+            :class_name, :relative_path, :filename, :batch_index, :sample_index,
+            :used_for_training, :used_for_validation, :used_for_test,
+            CAST(:metadata AS jsonb)
+        )
+        ON CONFLICT (run_id, image_id, usage_context)
+        DO UPDATE SET
+            split_name = EXCLUDED.split_name,
+            class_index = EXCLUDED.class_index,
+            class_name = EXCLUDED.class_name,
+            relative_path = EXCLUDED.relative_path,
+            filename = EXCLUDED.filename,
+            batch_index = EXCLUDED.batch_index,
+            sample_index = EXCLUDED.sample_index,
+            used_for_training = EXCLUDED.used_for_training,
+            used_for_validation = EXCLUDED.used_for_validation,
+            used_for_test = EXCLUDED.used_for_test,
+            metadata = run_dataset_images.metadata || EXCLUDED.metadata
+        RETURNING run_dataset_image_id
+        """
+    )
+    try:
+        inserted_or_updated = 0
+        with get_connection() as connection:
+            for row in image_rows:
+                params = {
+                    "run_id": run_id,
+                    "image_id": row["image_id"],
+                    "split_name": row["split_name"],
+                    "usage_context": row["usage_context"],
+                    "class_index": row["class_index"],
+                    "class_name": row["class_name"],
+                    "relative_path": row["relative_path"],
+                    "filename": row["filename"],
+                    "batch_index": row.get("batch_index"),
+                    "sample_index": row.get("sample_index"),
+                    "used_for_training": bool(row.get("used_for_training", False)),
+                    "used_for_validation": bool(row.get("used_for_validation", False)),
+                    "used_for_test": bool(row.get("used_for_test", False)),
+                    "metadata": _json(row.get("metadata")),
+                }
+                result = connection.execute(sql, params).first()
+                if result:
+                    inserted_or_updated += 1
+        return {
+            "total": len(image_rows),
+            "inserted_or_updated": inserted_or_updated,
+        }
+    except Exception as exc:
+        _warn(str(exc))
+        return {"total": len(image_rows), "inserted_or_updated": 0}
 
 
 def infer_artifact_type(path):

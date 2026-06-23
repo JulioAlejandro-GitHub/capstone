@@ -218,13 +218,60 @@ def main():
 
         if args.track_db and run_context:
             from src.tracking_integration import (
+                args_to_parameters,
                 finish_tracking_run,
                 log_metrics_and_reports,
                 log_output_artifacts,
+                output_artifacts_from_directory,
+                record_run_dataset_images,
+                record_run_io,
             )
 
             log_metrics_and_reports(run_context, metrics, class_names, split_name="test")
             log_output_artifacts(run_context, output_dir)
+            record_run_dataset_images(
+                run_context,
+                dataset_info=dataset_info,
+                usage_context="tta",
+                splits=["test"],
+                batch_size=None,
+            )
+            record_run_io(
+                run_context,
+                script_name="src.tta",
+                input_parameters=args_to_parameters(
+                    args,
+                    extra={
+                        "checkpoint": str(checkpoint),
+                        "n_aug": args.n_aug,
+                        "dataset_split": "test",
+                        "output_dir": str(output_dir),
+                        "preprocessing_mode": preprocessing_mode,
+                        "base_model_label_mapping_version": args.label_mapping,
+                        "base_model_label_mapping": mapping_metadata,
+                        "label_mapping_version": LABEL_MAPPING_VERSION,
+                        "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
+                        "raw_model_score_meaning": "probability_parasitized",
+                        **dataset_info,
+                    },
+                ),
+                output_results={
+                    "metrics_json": str(output_dir / "tta_test_metrics.json"),
+                    "predictions_csv": str(output_dir / "tta_test_predictions.csv"),
+                    "confusion_matrix_csv": str(
+                        output_dir / "tta_test_confusion_matrix.csv"
+                    ),
+                    "metrics": metrics,
+                    "accuracy": metrics.get("accuracy"),
+                    "auc_parasitized": metrics.get("auc"),
+                    "recall_parasitized": metrics.get("recall_parasitized"),
+                    "specificity": metrics.get("specificity"),
+                    "balanced_accuracy": metrics.get("balanced_accuracy"),
+                },
+                output_artifacts=output_artifacts_from_directory(output_dir),
+                dataset_metadata=dataset_info,
+                metadata={"status_detail": "tta completed"},
+            )
             finish_tracking_run(
                 run_context,
                 metadata={

@@ -141,10 +141,14 @@ def main():
 
         if args.track_db and run_context:
             from src.tracking_integration import (
+                args_to_parameters,
                 finish_tracking_run,
                 log_metrics_and_reports,
                 log_output_artifacts,
                 log_predictions,
+                output_artifacts_from_directory,
+                record_run_dataset_images,
+                record_run_io,
             )
 
             log_metrics_and_reports(run_context, metrics, class_names, split_name="test")
@@ -158,6 +162,53 @@ def main():
                 label_mapping_version=args.label_mapping,
             )
             log_output_artifacts(run_context, output_dir)
+            record_run_dataset_images(
+                run_context,
+                dataset_info=dataset_info,
+                usage_context="evaluation",
+                splits=["test"],
+                batch_size=args.batch_size,
+            )
+            record_run_io(
+                run_context,
+                script_name="src.evaluate",
+                input_parameters=args_to_parameters(
+                    args,
+                    extra={
+                        "checkpoint": str(checkpoint),
+                        "dataset_split": "test",
+                        "output_dir": str(output_dir),
+                        "preprocessing_mode": preprocessing_mode,
+                        "class_names": CLASS_NAMES,
+                        "label_mapping_version": args.label_mapping,
+                        "label_mapping": mapping_metadata,
+                        "raw_model_score_meaning": mapping_metadata[
+                            "raw_model_score_meaning"
+                        ],
+                        **dataset_info,
+                    },
+                ),
+                output_results={
+                    "metrics_json": str(output_dir / f"{checkpoint.stem}_metrics.json"),
+                    "predictions_csv": str(
+                        output_dir / f"{checkpoint.stem}_predictions.csv"
+                    ),
+                    "confusion_matrix_csv": str(
+                        output_dir / f"{checkpoint.stem}_confusion_matrix.csv"
+                    ),
+                    "metrics": metrics,
+                    "accuracy": metrics.get("accuracy"),
+                    "auc_parasitized": metrics.get("auc"),
+                    "recall_parasitized": metrics.get("recall_parasitized"),
+                    "specificity": metrics.get("specificity"),
+                    "balanced_accuracy": metrics.get("balanced_accuracy"),
+                },
+                output_artifacts=output_artifacts_from_directory(output_dir),
+                dataset_metadata=dataset_info,
+                label_mapping_version=args.label_mapping,
+                raw_model_score_meaning=mapping_metadata["raw_model_score_meaning"],
+                metadata={"status_detail": "evaluation completed"},
+            )
             finish_tracking_run(
                 run_context,
                 metadata={

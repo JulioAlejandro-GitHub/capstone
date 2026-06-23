@@ -1,3 +1,6 @@
+import os
+import platform
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -30,14 +33,69 @@ DATASET_NAME = "NIH/NLM Malaria Cell Images"
 DATASET_VERSION = "tfds-malaria-clinical-v1"
 DATASET_CLASS_NAMES = CLASS_NAMES
 DATASET_CLASS_DISTRIBUTION = {"parasitized": 13779, "uninfected": 13779}
+_REGISTERED_PHYSICAL_SPLITS = set()
 
 
 def args_to_parameters(args, extra=None):
     parameters = vars(args).copy()
-    parameters.pop("track_db", None)
     if extra:
         parameters.update(extra)
     return parameters
+
+
+def json_safe(value):
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, (np.integer,)):
+        return int(value)
+    if isinstance(value, (np.floating,)):
+        return float(value)
+    if isinstance(value, (np.bool_,)):
+        return bool(value)
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, dict):
+        return {str(key): json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [json_safe(item) for item in value]
+    return value
+
+
+def artifact_record(path, artifact_type=None, metadata=None):
+    path = Path(path)
+    try:
+        from src.run_tracker import infer_artifact_type
+
+        inferred_type = artifact_type or infer_artifact_type(path)
+    except Exception:
+        inferred_type = artifact_type or "other"
+    return {
+        "artifact_type": inferred_type,
+        "path": str(path),
+        "exists": path.exists(),
+        "file_size_bytes": path.stat().st_size if path.exists() else None,
+        "metadata": metadata or {},
+    }
+
+
+def output_artifacts_from_directory(output_dir, artifact_type=None):
+    if output_dir is None:
+        return []
+    output_dir = Path(output_dir)
+    if not output_dir.exists():
+        return [artifact_record(output_dir, artifact_type=artifact_type)]
+    return [
+        artifact_record(path, artifact_type=artifact_type)
+        for path in sorted(item for item in output_dir.rglob("*") if item.is_file())
+    ]
+
+
+def runtime_io_metadata():
+    return {
+        "python_version": sys.version,
+        "platform": platform.platform(),
+        "working_directory": os.getcwd(),
+    }
 
 
 def model_name_from_train_arg(model_name):
@@ -405,6 +463,170 @@ def log_output_artifacts(context, output_dir, artifact_type=None):
         context["run_id"],
         output_dir,
         artifact_type=artifact_type,
+    )
+
+
+def record_run_io(
+    context,
+    script_name,
+    input_parameters,
+    output_results,
+    output_artifacts=None,
+    dataset_metadata=None,
+    command=None,
+    label_mapping_version=LABEL_MAPPING_VERSION,
+    raw_model_score_meaning=RAW_MODEL_SCORE_MEANING,
+    metadata=None,
+):
+    if not context or not context.get("run_id"):
+        return None
+    tracker = context["tracker"]
+    io_metadata = {
+        "source": "src.tracking_integration.record_run_io",
+        **runtime_io_metadata(),
+    }
+    if metadata:
+        io_metadata.update(metadata)
+
+    return tracker.safe_track(
+        tracker.log_run_io_record,
+        context["run_id"],
+        script_name=script_name,
+        command=command or tracker.get_command_line(),
+        input_parameters=json_safe(input_parameters),
+        output_results=json_safe(output_results),
+        output_artifacts=json_safe(output_artifacts or []),
+        dataset_metadata=json_safe(dataset_metadata or {}),
+        label_mapping_version=label_mapping_version,
+        raw_model_score_meaning=raw_model_score_meaning,
+        metadata=json_safe(io_metadata),
+    )
+
+
+def _normalize_split(split_name):
+    return "val" if split_name == "validation" else split_name
+
+
+def _usage_flags(split_name, usage_context):
+    normalized_split = _normalize_split(split_name)
+    return {
+        "used_for_training": usage_context == "train" or normalized_split == "train",
+        "used_for_validation": usage_context == "validation" or normalized_split == "val",
+        "used_for_test": normalized_split == "test",
+    }
+
+
+def build_run_dataset_image_rows(
+    registered_images,
+    usage_context,
+    metadata_by_sample_index=None,
+    metadata_by_relative_path=None,
+    batch_size=None,
+):
+    metadata_by_sample_index = metadata_by_sample_index or {}
+    metadata_by_relative_path = metadata_by_relative_path or {}
+    rows = []
+    split_sample_index = {}
+
+    for image in registered_images:
+        split_name = _normalize_split(image["split_name"])
+        sample_index = split_sample_index.get(split_name, 0)
+        split_sample_index[split_name] = sample_index + 1
+        relative_path = image["relative_path"]
+        image_metadata = {
+            "source": "physical_split",
+            "dataset_dir": image.get("dataset_dir"),
+            "label_mapping_version": image.get("label_mapping_version")
+            or LABEL_MAPPING_VERSION,
+            "label_mapping": LABEL_MAPPING_METADATA,
+            "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+        }
+        image_metadata.update(metadata_by_sample_index.get(sample_index, {}))
+        image_metadata.update(metadata_by_relative_path.get(relative_path, {}))
+
+        rows.append(
+            {
+                "image_id": str(image["image_id"]),
+                "split_name": split_name,
+                "usage_context": usage_context,
+                "class_index": int(image["class_index"]),
+                "class_name": image["class_name"],
+                "relative_path": relative_path,
+                "filename": image["filename"],
+                "sample_index": sample_index,
+                "batch_index": None if not batch_size else sample_index // int(batch_size),
+                "metadata": json_safe(image_metadata),
+                **_usage_flags(split_name, usage_context),
+            }
+        )
+    return rows
+
+
+def record_run_dataset_images(
+    context,
+    dataset_info,
+    usage_context,
+    splits,
+    metadata_by_sample_index=None,
+    metadata_by_relative_path=None,
+    batch_size=None,
+    dataset_name="malaria_physical_split",
+    dataset_source="tensorflow_datasets/malaria",
+    compute_checksum=False,
+):
+    if not context or not context.get("run_id"):
+        return None
+    if not dataset_info or dataset_info.get("data_source") != "physical":
+        return None
+
+    dataset_dir = dataset_info.get("dataset_dir")
+    if not dataset_dir:
+        return None
+
+    normalized_splits = [_normalize_split(split) for split in splits]
+    tracker = context["tracker"]
+    from src.dataset_registry import (
+        load_registered_split_images,
+        register_physical_split_images,
+    )
+
+    registration_key = (
+        str(dataset_dir),
+        dataset_name,
+        dataset_source,
+        bool(compute_checksum),
+    )
+    if registration_key not in _REGISTERED_PHYSICAL_SPLITS:
+        registration = tracker.safe_track(
+            register_physical_split_images,
+            dataset_dir=dataset_dir,
+            dataset_name=dataset_name,
+            dataset_source=dataset_source,
+            compute_checksum=compute_checksum,
+        )
+        if not registration:
+            return None
+        _REGISTERED_PHYSICAL_SPLITS.add(registration_key)
+
+    registered_images = tracker.safe_track(
+        load_registered_split_images,
+        dataset_dir=dataset_dir,
+        splits=normalized_splits,
+    )
+    if not registered_images:
+        return {"total": 0, "inserted_or_updated": 0}
+
+    rows = build_run_dataset_image_rows(
+        registered_images,
+        usage_context=usage_context,
+        metadata_by_sample_index=metadata_by_sample_index,
+        metadata_by_relative_path=metadata_by_relative_path,
+        batch_size=batch_size,
+    )
+    return tracker.safe_track(
+        tracker.log_run_dataset_images,
+        context["run_id"],
+        rows,
     )
 
 

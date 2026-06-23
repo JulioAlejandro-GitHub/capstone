@@ -519,3 +519,15 @@ python -m src.tta --checkpoint outputs/vgg16/best_model.keras --n-aug 8 --track-
 
 
 Regla práctica: usa --track-db en toda ejecución que quieras ver luego en el backend/frontend. Para explicabilidad caso a caso, usa siempre --positive-label parasitized.
+
+Trazabilidad imagen por imagen en PostgreSQL
+
+Registrar split físico:
+python scripts/register_physical_split_in_db.py \
+  --dataset-dir data/malaria_physical_split \
+  --dataset-name malaria_physical_split \
+  --dataset-source tensorflow_datasets/malaria \
+  --execute
+
+Guía y consultas:
+docs/database_dataset_tracking.md

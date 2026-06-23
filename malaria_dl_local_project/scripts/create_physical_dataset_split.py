@@ -48,6 +48,26 @@ def parse_args():
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--image-format", choices=["png", "jpg", "jpeg"], default="png")
+    parser.add_argument(
+        "--register-db",
+        action="store_true",
+        help="Registra el split físico generado en PostgreSQL.",
+    )
+    parser.add_argument(
+        "--register-db-compute-checksum",
+        action="store_true",
+        help="Calcula SHA-256 por imagen al registrar en PostgreSQL.",
+    )
+    parser.add_argument(
+        "--dataset-name",
+        default="malaria_physical_split",
+        help="Nombre del dataset al usar --register-db.",
+    )
+    parser.add_argument(
+        "--dataset-source",
+        default="tensorflow_datasets/malaria",
+        help="Fuente del dataset al usar --register-db.",
+    )
     parser.add_argument("--verbose", action="store_true")
     return parser.parse_args()
 
@@ -373,6 +393,21 @@ def main():
     print(f"Metadata: {output_dir / 'metadata.json'}")
     print(f"Resumen: {output_dir / 'split_summary.csv'}")
     print(f"Manifest: {output_dir / 'files_manifest.csv'}")
+
+    if args.register_db:
+        from src.dataset_registry import register_physical_split_images
+
+        result = register_physical_split_images(
+            dataset_dir=output_dir,
+            dataset_name=args.dataset_name,
+            dataset_source=args.dataset_source,
+            compute_checksum=args.register_db_compute_checksum,
+        )
+        print("Registro PostgreSQL completado:")
+        print(f"  dataset_id: {result.get('dataset_id')}")
+        print(f"  total: {result['total']}")
+        print(f"  insertadas: {result['inserted']}")
+        print(f"  actualizadas: {result['updated']}")
 
 
 if __name__ == "__main__":

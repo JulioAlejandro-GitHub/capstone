@@ -420,11 +420,15 @@ def main():
 
         if args.track_db and run_context:
             from src.tracking_integration import (
+                args_to_parameters,
                 finish_tracking_run,
                 log_metrics_and_reports,
                 log_model_version,
                 log_output_artifacts,
                 log_training_history,
+                output_artifacts_from_directory,
+                record_run_dataset_images,
+                record_run_io,
             )
 
             log_training_history(run_context, history, phase="training_base")
@@ -437,6 +441,27 @@ def main():
                 )
             log_metrics_and_reports(run_context, metrics, class_names, split_name="test")
             log_output_artifacts(run_context, output_dir)
+            record_run_dataset_images(
+                run_context,
+                dataset_info=dataset_info,
+                usage_context="train",
+                splits=["train"],
+                batch_size=args.batch_size,
+            )
+            record_run_dataset_images(
+                run_context,
+                dataset_info=dataset_info,
+                usage_context="validation",
+                splits=["val"],
+                batch_size=args.batch_size,
+            )
+            record_run_dataset_images(
+                run_context,
+                dataset_info=dataset_info,
+                usage_context="evaluation",
+                splits=["test"],
+                batch_size=args.batch_size,
+            )
             log_model_version(
                 run_context,
                 version_name=f"{args.model}_tracked",
@@ -451,6 +476,45 @@ def main():
                     "model_metadata": model_metadata,
                     **dataset_info,
                 },
+            )
+            record_run_io(
+                run_context,
+                script_name="src.train",
+                input_parameters=args_to_parameters(
+                    args,
+                    extra={
+                        "augment": not args.no_augment,
+                        "output_dir": str(output_dir),
+                        "preprocessing_mode": preprocessing_mode,
+                        "checkpoint_monitor": checkpoint_monitor,
+                        "checkpoint_mode": checkpoint_mode,
+                        "early_stopping_monitor": early_stopping_monitor,
+                        "early_stopping_mode": early_stopping_mode,
+                        "early_stopping_patience": args.early_stopping_patience,
+                        "optimizer": args.optimizer,
+                        **dataset_info,
+                    },
+                ),
+                output_results={
+                    "final_epoch": len(history.epoch)
+                    + (0 if fine_tune_history is None else len(fine_tune_history.epoch)),
+                    "best_checkpoint": str(output_dir / "best_model.keras"),
+                    "final_model": str(output_dir / "final_model.keras"),
+                    "training_log": str(output_dir / "training_log.csv"),
+                    "test_metrics": str(output_dir / "test_metrics.json"),
+                    "test_predictions": str(output_dir / "test_predictions.csv"),
+                    "test_confusion_matrix": str(output_dir / "test_confusion_matrix.csv"),
+                    "checkpoint_selection": checkpoint_selection,
+                    "metrics": metrics,
+                    "accuracy": metrics.get("accuracy"),
+                    "auc_parasitized": metrics.get("auc"),
+                    "recall_parasitized": metrics.get("recall_parasitized"),
+                    "specificity": metrics.get("specificity"),
+                    "balanced_accuracy": metrics.get("balanced_accuracy"),
+                },
+                output_artifacts=output_artifacts_from_directory(output_dir),
+                dataset_metadata=dataset_info,
+                metadata={"status_detail": "training completed"},
             )
             finish_tracking_run(
                 run_context,

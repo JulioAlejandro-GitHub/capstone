@@ -612,10 +612,12 @@ def track_prediction(args, result, checkpoint):
 
     try:
         from src.tracking_integration import (
+            artifact_record,
             args_to_parameters,
             fail_tracking_run,
             finish_tracking_run,
             model_name_from_checkpoint,
+            record_run_io,
             start_tracking_run,
         )
 
@@ -799,6 +801,79 @@ def track_prediction(args, result, checkpoint):
                     mime_type="image/png",
                     metadata={"source": "external_prediction_explainability"},
                 )
+
+        output_artifacts = []
+        for path in (
+            result.get("stored_image_path"),
+            calibration_file,
+            getattr(args, "output_json", None),
+            EXTERNAL_PREDICTIONS_CSV,
+        ):
+            if path:
+                output_artifacts.append(artifact_record(path))
+        for item in explainability_items(result.get("explainability")):
+            if item.get("image_path"):
+                output_artifacts.append(
+                    artifact_record(
+                        item["image_path"],
+                        artifact_type=f"{item.get('method')}_image",
+                    )
+                )
+
+        record_run_io(
+            context,
+            script_name="src.predict_image",
+            input_parameters=args_to_parameters(
+                args,
+                extra={
+                    "checkpoint": str(checkpoint),
+                    "image_path": result["image_path"],
+                    "stored_image_path": result.get("stored_image_path"),
+                    "original_image_path": result.get("original_image_path"),
+                    "prediction_source": "uploaded_for_prediction",
+                    "tta": bool(args.tta),
+                    "n_aug": int(args.n_aug) if args.tta else 0,
+                    "ensemble_applied": result.get("ensemble_applied"),
+                    "ensemble_models": (result.get("model") or {}).get(
+                        "ensemble_models"
+                    ),
+                    "ensemble_weights": result.get("ensemble_weights"),
+                    "explainability_method": args.explain,
+                    "calibration_file": calibration_file,
+                    "label_mapping_version": result.get("label_mapping_version"),
+                    "label_mapping": result.get("label_mapping"),
+                    "raw_model_score_meaning": result.get("raw_model_score_meaning"),
+                },
+            ),
+            output_results={
+                "prediction_id": prediction_id,
+                "image_id": result["image_id"],
+                "predicted_label": result["predicted_label"],
+                "true_label": result.get("true_label"),
+                "is_correct": result.get("is_correct"),
+                "probability_parasitized": result["probability_parasitized"],
+                "probability_uninfected": result["probability_uninfected"],
+                "raw_model_score": result.get("raw_model_score"),
+                "threshold": result["threshold"],
+                "confidence_level": result["confidence_level"],
+                "decision_code": result.get("decision_code"),
+                "human_readable_response": result.get("human_readable_response"),
+                "calibration": result.get("calibration"),
+                "explainability": result.get("explainability"),
+            },
+            output_artifacts=output_artifacts,
+            dataset_metadata={
+                "source": "external_uploaded_image",
+                "stored_image_path": result.get("stored_image_path"),
+                "checksum_sha256": result.get("checksum_sha256"),
+                "label_mapping_version": result.get("label_mapping_version"),
+                "label_mapping": result.get("label_mapping"),
+                "raw_model_score_meaning": result.get("raw_model_score_meaning"),
+            },
+            label_mapping_version=result.get("label_mapping_version"),
+            raw_model_score_meaning=result.get("raw_model_score_meaning"),
+            metadata={"status_detail": "single image inference completed"},
+        )
 
         finish_tracking_run(
             context,

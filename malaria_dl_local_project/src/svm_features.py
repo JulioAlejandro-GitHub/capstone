@@ -161,13 +161,68 @@ def main():
 
         if args.track_db and run_context:
             from src.tracking_integration import (
+                args_to_parameters,
                 finish_tracking_run,
                 log_metrics_and_reports,
                 log_output_artifacts,
+                output_artifacts_from_directory,
+                record_run_dataset_images,
+                record_run_io,
             )
 
             log_metrics_and_reports(run_context, metrics, class_names, split_name="test")
             log_output_artifacts(run_context, output_dir)
+            record_run_dataset_images(
+                run_context,
+                dataset_info=dataset_info,
+                usage_context="svm_features",
+                splits=["train"],
+                batch_size=args.batch_size,
+                metadata_by_relative_path={},
+            )
+            record_run_dataset_images(
+                run_context,
+                dataset_info=dataset_info,
+                usage_context="svm_features",
+                splits=["test"],
+                batch_size=args.batch_size,
+            )
+            record_run_io(
+                run_context,
+                script_name="src.svm_features",
+                input_parameters=args_to_parameters(
+                    args,
+                    extra={
+                        "checkpoint": str(checkpoint),
+                        "feature_extractor_checkpoint": str(checkpoint),
+                        "kernel": "rbf",
+                        "gamma": args.gamma,
+                        "dataset_splits": ["train", "test"],
+                        "output_dir": str(output_dir),
+                        "preprocessing_mode": preprocessing_mode,
+                        "class_names": CLASS_NAMES,
+                        "label_mapping_version": LABEL_MAPPING_VERSION,
+                        "label_mapping": LABEL_MAPPING_METADATA,
+                        "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                        **dataset_info,
+                    },
+                ),
+                output_results={
+                    "svm_model": str(output_dir / "svm_rbf.joblib"),
+                    "metrics_json": str(output_dir / "svm_test_metrics.json"),
+                    "predictions_csv": str(output_dir / "svm_test_predictions.csv"),
+                    "confusion_matrix_csv": str(output_dir / "svm_test_confusion_matrix.csv"),
+                    "metrics": metrics,
+                    "accuracy": metrics.get("accuracy"),
+                    "auc_parasitized": metrics.get("auc"),
+                    "recall_parasitized": metrics.get("recall_parasitized"),
+                    "specificity": metrics.get("specificity"),
+                    "balanced_accuracy": metrics.get("balanced_accuracy"),
+                },
+                output_artifacts=output_artifacts_from_directory(output_dir),
+                dataset_metadata=dataset_info,
+                metadata={"status_detail": "svm_features completed"},
+            )
             finish_tracking_run(
                 run_context,
                 metadata={
