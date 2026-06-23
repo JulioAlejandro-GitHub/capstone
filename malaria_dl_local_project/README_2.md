@@ -531,3 +531,6 @@ python scripts/register_physical_split_in_db.py \
 
 Guía y consultas:
 docs/database_dataset_tracking.md
+
+Menú Dataset del frontend:
+docs/dataset_browser.md

@@ -1,6 +1,8 @@
 import type {
   ArtifactRow,
   DashboardSummary,
+  DatasetBrowserSummary,
+  DatasetImagePage,
   Datasource,
   ExplainabilityCase,
   ExplainabilityCaseSummary,
@@ -56,6 +58,12 @@ export const api = {
     return url.toString();
   },
 
+  datasetImageUrl(imageId: string, datasource: string) {
+    const url = new URL(`/api/dataset/images/${imageId}/file`, API_BASE_URL);
+    url.searchParams.set('datasource', datasource);
+    return url.toString();
+  },
+
   getDatasources() {
     return request<{ items: Datasource[] }>('/datasources');
   },
@@ -78,6 +86,17 @@ export const api = {
 
   getDatasets(datasource: string) {
     return request<{ items: JsonRecord[] }>('/datasets', withDatasource(datasource));
+  },
+
+  getDatasetSummary(datasource: string) {
+    return request<DatasetBrowserSummary>('/api/dataset/summary', withDatasource(datasource));
+  },
+
+  getDatasetImages(datasource: string, params: Record<string, QueryValue> = {}) {
+    return request<DatasetImagePage>('/api/dataset/images', {
+      datasource,
+      ...params,
+    });
   },
 
   getMetrics(datasource: string, runId: string) {

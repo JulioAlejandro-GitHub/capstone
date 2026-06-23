@@ -117,6 +117,78 @@ export interface PagedResponse<T> {
   offset: number;
 }
 
+export interface DatasetSplitRow extends JsonRecord {
+  split_name: string;
+  display_name: string;
+  uninfected: number;
+  parasitized: number;
+  total: number;
+}
+
+export interface DatasetBrowserSummary {
+  dataset: {
+    name: string;
+    source: string;
+    source_url: string;
+    nih_nlm_url?: string | null;
+    description: string;
+    dataset_dir: string;
+    original_dataset_modified: boolean;
+  };
+  label_mapping: {
+    '0': string;
+    '1': string;
+    negative_class: string;
+    negative_class_index: number;
+    positive_class: string;
+    positive_class_index: number;
+    version: string;
+    raw_model_score_meaning: string;
+  };
+  split_process: {
+    type: string;
+    train_ratio: number;
+    val_ratio: number;
+    test_ratio: number;
+    seed: number;
+    description: string;
+  };
+  counts: {
+    train: { uninfected: number; parasitized: number; total: number };
+    val: { uninfected: number; parasitized: number; total: number };
+    test: { uninfected: number; parasitized: number; total: number };
+    total: number;
+  };
+  split_table: DatasetSplitRow[];
+  summary_rows: JsonRecord[];
+}
+
+export interface DatasetImageItem extends JsonRecord {
+  image_id: string;
+  filename: string;
+  split_name: string;
+  display_split_name: string;
+  class_name: string;
+  class_index: number;
+  relative_path: string;
+  image_url: string;
+  image_width: number | null;
+  image_height: number | null;
+  file_size_bytes: number | null;
+}
+
+export interface DatasetImagePage {
+  page: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+  filters: {
+    split: string | null;
+    class_name: string | null;
+  };
+  items: DatasetImageItem[];
+}
+
 export interface ExplainabilityCase extends JsonRecord {
   explainability_id: string;
   prediction_id: string | null;

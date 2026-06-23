@@ -53,6 +53,8 @@ class FakeConnection:
         if "INSERT INTO datasets" in sql:
             self.dataset_id = "dataset-uuid"
             return FakeResult((self.dataset_id,))
+        if "UPDATE datasets" in sql:
+            return FakeResult()
         if "INSERT INTO dataset_split_images" in sql:
             key = (params["dataset_dir"], params["relative_path"])
             inserted = key not in self.image_ids

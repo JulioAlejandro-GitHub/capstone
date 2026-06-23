@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Layout, type PageKey } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
+import { DatasetBrowser } from './pages/DatasetBrowser';
 import { DatasetsModels } from './pages/DatasetsModels';
 import { ErrorsLogs } from './pages/ErrorsLogs';
 import { Explainability } from './pages/Explainability';
@@ -54,6 +55,7 @@ function App() {
       {page === 'uploaded-predictions' ? (
         <UploadedPredictions datasource={datasource} onRunSelect={selectRun} />
       ) : null}
+      {page === 'dataset-browser' ? <DatasetBrowser datasource={datasource} /> : null}
       {page === 'datasets' ? <DatasetsModels datasource={datasource} /> : null}
       {page === 'errors' ? <ErrorsLogs datasource={datasource} /> : null}
     </Layout>

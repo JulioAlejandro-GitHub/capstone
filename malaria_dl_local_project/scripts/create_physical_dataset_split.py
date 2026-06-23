@@ -27,6 +27,10 @@ from src.config import (  # noqa: E402
     POSITIVE_LABEL,
     TFDS_ORIGINAL_CLASS_NAMES,
 )
+from src.dataset_registry import (  # noqa: E402
+    DEFAULT_DATASET_DESCRIPTION,
+    DEFAULT_SOURCE_URL,
+)
 from src.data import get_tfds_data_dir  # noqa: E402
 
 
@@ -67,6 +71,16 @@ def parse_args():
         "--dataset-source",
         default="tensorflow_datasets/malaria",
         help="Fuente del dataset al usar --register-db.",
+    )
+    parser.add_argument(
+        "--source-url",
+        default=DEFAULT_SOURCE_URL,
+        help="URL de fuente original al usar --register-db.",
+    )
+    parser.add_argument(
+        "--description",
+        default=DEFAULT_DATASET_DESCRIPTION,
+        help="Descripción del dataset al usar --register-db.",
     )
     parser.add_argument("--verbose", action="store_true")
     return parser.parse_args()
@@ -401,6 +415,8 @@ def main():
             dataset_dir=output_dir,
             dataset_name=args.dataset_name,
             dataset_source=args.dataset_source,
+            source_url=args.source_url,
+            description=args.description,
             compute_checksum=args.register_db_compute_checksum,
         )
         print("Registro PostgreSQL completado:")

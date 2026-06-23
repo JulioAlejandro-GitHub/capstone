@@ -24,6 +24,11 @@ SPLIT_NAMES = ("train", "val", "test")
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".gif"}
 DEFAULT_DATASET_NAME = "malaria_physical_split"
 DEFAULT_DATASET_SOURCE = "tensorflow_datasets/malaria"
+DEFAULT_SOURCE_URL = "https://www.tensorflow.org/datasets/catalog/malaria"
+DEFAULT_DATASET_DESCRIPTION = (
+    "Dataset de imágenes microscópicas de células sanguíneas clasificadas como "
+    "uninfected o parasitized."
+)
 DATASET_VERSION = f"physical-split-{LABEL_MAPPING_VERSION}"
 
 
@@ -136,6 +141,11 @@ def _record_from_manifest_row(row, dataset_dir: Path, metadata: dict, compute_ch
         else None,
         "metadata": {
             "source": "files_manifest.csv",
+            "split_type": metadata.get("split_type", "physical_stratified_split"),
+            "train_ratio": metadata.get("train_ratio"),
+            "val_ratio": metadata.get("val_ratio"),
+            "test_ratio": metadata.get("test_ratio"),
+            "seed": metadata.get("seed"),
             "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
             "label_mapping": LABEL_MAPPING_METADATA,
         },
@@ -167,6 +177,11 @@ def _record_from_file(path: Path, dataset_dir: Path, metadata: dict, compute_che
         "checksum_sha256": compute_file_checksum(path) if compute_checksum else None,
         "metadata": {
             "source": "filesystem_scan",
+            "split_type": metadata.get("split_type", "physical_stratified_split"),
+            "train_ratio": metadata.get("train_ratio"),
+            "val_ratio": metadata.get("val_ratio"),
+            "test_ratio": metadata.get("test_ratio"),
+            "seed": metadata.get("seed"),
             "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
             "label_mapping": LABEL_MAPPING_METADATA,
         },
@@ -250,7 +265,42 @@ def _json(value, default=None):
     return json.dumps(value, ensure_ascii=False)
 
 
-def _ensure_dataset(connection, dataset_name, dataset_source, dataset_dir, records):
+def _split_metadata(dataset_dir, records, source_url, description):
+    metadata = _read_json(Path(dataset_dir) / "metadata.json")
+    summary = summarize_records(records)
+    return {
+        "source": "src.dataset_registry",
+        "source_url": source_url,
+        "description": description,
+        "split_type": metadata.get("split_type", "physical_stratified_split"),
+        "train_ratio": metadata.get("train_ratio", 0.8),
+        "val_ratio": metadata.get("val_ratio", 0.1),
+        "test_ratio": metadata.get("test_ratio", 0.1),
+        "seed": metadata.get("seed", 42),
+        "split_counts": summary,
+        "label_mapping_version": LABEL_MAPPING_VERSION,
+        "label_mapping": LABEL_MAPPING_METADATA,
+        "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+        "physical_split_structure": {
+            "metadata": "metadata.json",
+            "summary": "split_summary.csv",
+            "manifest": "files_manifest.csv",
+            "splits": list(SPLIT_NAMES),
+            "classes": CLASS_NAMES,
+        },
+    }
+
+
+def _ensure_dataset(
+    connection,
+    dataset_name,
+    dataset_source,
+    dataset_dir,
+    records,
+    source_url=DEFAULT_SOURCE_URL,
+    description=DEFAULT_DATASET_DESCRIPTION,
+):
+    registry_metadata = _split_metadata(dataset_dir, records, source_url, description)
     row = connection.execute(
         text(
             """
@@ -264,20 +314,58 @@ def _ensure_dataset(connection, dataset_name, dataset_source, dataset_dir, recor
         {"name": dataset_name, "source": dataset_source},
     ).first()
     if row:
+        connection.execute(
+            text(
+                """
+                UPDATE datasets
+                SET
+                    description = COALESCE(NULLIF(:description, ''), description),
+                    total_images = :total_images,
+                    num_classes = :num_classes,
+                    class_names = :class_names,
+                    class_distribution = CAST(:class_distribution AS jsonb),
+                    url = COALESCE(NULLIF(:source_url, ''), url),
+                    local_path = :local_path,
+                    metadata = metadata || CAST(:metadata AS jsonb)
+                WHERE id = :dataset_id
+                """
+            ),
+            {
+                "dataset_id": str(row[0]),
+                "description": description,
+                "total_images": registry_metadata["split_counts"]["total"],
+                "num_classes": len(CLASS_NAMES),
+                "class_names": CLASS_NAMES,
+                "class_distribution": _json(
+                    {
+                        NEGATIVE_LABEL: sum(
+                            registry_metadata["split_counts"][split][NEGATIVE_LABEL]
+                            for split in SPLIT_NAMES
+                        ),
+                        POSITIVE_LABEL: sum(
+                            registry_metadata["split_counts"][split][POSITIVE_LABEL]
+                            for split in SPLIT_NAMES
+                        ),
+                    }
+                ),
+                "source_url": source_url,
+                "local_path": str(dataset_dir),
+                "metadata": _json(registry_metadata),
+            },
+        )
         return str(row[0])
 
-    summary = summarize_records(records)
     inserted = connection.execute(
         text(
             """
             INSERT INTO datasets (
                 name, source, version, description, total_images, num_classes,
-                class_names, class_distribution, local_path, metadata
+                class_names, class_distribution, url, local_path, metadata
             )
             VALUES (
                 :name, :source, :version, :description, :total_images, :num_classes,
-                :class_names, CAST(:class_distribution AS jsonb), :local_path,
-                CAST(:metadata AS jsonb)
+                :class_names, CAST(:class_distribution AS jsonb), :source_url,
+                :local_path, CAST(:metadata AS jsonb)
             )
             RETURNING id
             """
@@ -286,30 +374,25 @@ def _ensure_dataset(connection, dataset_name, dataset_source, dataset_dir, recor
             "name": dataset_name,
             "source": dataset_source,
             "version": DATASET_VERSION,
-            "description": "Split físico local NIH/NLM malaria para trazabilidad imagen por imagen.",
-            "total_images": summary["total"],
+            "description": description,
+            "total_images": registry_metadata["split_counts"]["total"],
             "num_classes": len(CLASS_NAMES),
             "class_names": CLASS_NAMES,
             "class_distribution": _json(
                 {
                     NEGATIVE_LABEL: sum(
-                        summary[split][NEGATIVE_LABEL] for split in SPLIT_NAMES
+                        registry_metadata["split_counts"][split][NEGATIVE_LABEL]
+                        for split in SPLIT_NAMES
                     ),
                     POSITIVE_LABEL: sum(
-                        summary[split][POSITIVE_LABEL] for split in SPLIT_NAMES
+                        registry_metadata["split_counts"][split][POSITIVE_LABEL]
+                        for split in SPLIT_NAMES
                     ),
                 }
             ),
+            "source_url": source_url,
             "local_path": str(dataset_dir),
-            "metadata": _json(
-                {
-                    "source": "src.dataset_registry",
-                    "split_counts": summary,
-                    "label_mapping_version": LABEL_MAPPING_VERSION,
-                    "label_mapping": LABEL_MAPPING_METADATA,
-                    "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
-                }
-            ),
+            "metadata": _json(registry_metadata),
         },
     ).first()
     return str(inserted[0]) if inserted else None
@@ -395,6 +478,8 @@ def _register_with_connection(
     dataset_name,
     dataset_source,
     compute_checksum=False,
+    source_url=DEFAULT_SOURCE_URL,
+    description=DEFAULT_DATASET_DESCRIPTION,
 ):
     dataset_dir = resolve_dataset_dir(dataset_dir).resolve()
     records = scan_physical_split(dataset_dir, compute_checksum=compute_checksum)
@@ -404,6 +489,8 @@ def _register_with_connection(
         dataset_source=dataset_source,
         dataset_dir=dataset_dir,
         records=records,
+        source_url=source_url,
+        description=description,
     )
 
     inserted = 0
@@ -429,6 +516,8 @@ def _register_with_connection(
         "dataset_id": dataset_id,
         "dataset_name": dataset_name,
         "dataset_source": dataset_source,
+        "source_url": source_url,
+        "description": description,
         "dataset_dir": str(dataset_dir),
         "total": len(records),
         "inserted": inserted,
@@ -444,6 +533,8 @@ def register_physical_split_images(
     dataset_source: str = DEFAULT_DATASET_SOURCE,
     connection_or_session=None,
     compute_checksum=False,
+    source_url: str = DEFAULT_SOURCE_URL,
+    description: str = DEFAULT_DATASET_DESCRIPTION,
 ) -> dict:
     if connection_or_session is not None:
         return _register_with_connection(
@@ -452,6 +543,8 @@ def register_physical_split_images(
             dataset_name=dataset_name,
             dataset_source=dataset_source,
             compute_checksum=compute_checksum,
+            source_url=source_url,
+            description=description,
         )
 
     with get_connection() as connection:
@@ -461,6 +554,8 @@ def register_physical_split_images(
             dataset_name=dataset_name,
             dataset_source=dataset_source,
             compute_checksum=compute_checksum,
+            source_url=source_url,
+            description=description,
         )
 
 

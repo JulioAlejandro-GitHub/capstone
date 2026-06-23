@@ -8,8 +8,10 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.dataset_registry import (  # noqa: E402
+    DEFAULT_DATASET_DESCRIPTION,
     DEFAULT_DATASET_NAME,
     DEFAULT_DATASET_SOURCE,
+    DEFAULT_SOURCE_URL,
     register_physical_split_images,
     scan_physical_split,
     summarize_records,
@@ -34,6 +36,16 @@ def parse_args():
         "--dataset-source",
         default=DEFAULT_DATASET_SOURCE,
         help=f"Fuente del dataset en BD. Default: {DEFAULT_DATASET_SOURCE}.",
+    )
+    parser.add_argument(
+        "--source-url",
+        default=DEFAULT_SOURCE_URL,
+        help=f"URL de fuente original. Default: {DEFAULT_SOURCE_URL}.",
+    )
+    parser.add_argument(
+        "--description",
+        default=DEFAULT_DATASET_DESCRIPTION,
+        help="Descripción del dataset registrada en PostgreSQL.",
     )
     parser.add_argument(
         "--compute-checksum",
@@ -81,6 +93,7 @@ def main():
     if args.verbose:
         print(f"Dataset name: {args.dataset_name}")
         print(f"Dataset source: {args.dataset_source}")
+        print(f"Source URL: {args.source_url}")
         print(f"Checksums: {'sí' if args.compute_checksum else 'no'}")
 
     if not execute:
@@ -91,6 +104,8 @@ def main():
         dataset_dir=Path(args.dataset_dir),
         dataset_name=args.dataset_name,
         dataset_source=args.dataset_source,
+        source_url=args.source_url,
+        description=args.description,
         compute_checksum=args.compute_checksum,
     )
     print("Registro completado:")

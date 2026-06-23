@@ -578,6 +578,10 @@ python scripts/register_physical_split_in_db.py \
 
 Guía completa y consultas SQL: [docs/database_dataset_tracking.md](docs/database_dataset_tracking.md).
 
+El frontend incluye el menú **Dataset** para explicar el origen, el split físico
+y explorar imágenes por split/clase desde PostgreSQL. Guía:
+[docs/dataset_browser.md](docs/dataset_browser.md).
+
 ## 7. Estructura del proyecto
 
 ```text

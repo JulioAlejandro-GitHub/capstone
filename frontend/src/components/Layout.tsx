@@ -9,6 +9,7 @@ export type PageKey =
   | 'run-detail'
   | 'explainability'
   | 'uploaded-predictions'
+  | 'dataset-browser'
   | 'datasets'
   | 'errors';
 
@@ -27,6 +28,7 @@ const navItems: Array<{ page: PageKey; label: string }> = [
   { page: 'models', label: 'Comparacion modelos' },
   { page: 'explainability', label: 'Explicabilidad' },
   { page: 'uploaded-predictions', label: 'Predicciones subidas' },
+  { page: 'dataset-browser', label: 'Dataset' },
   { page: 'datasets', label: 'Datasets y modelos' },
   { page: 'errors', label: 'Errores y logs' },
 ];

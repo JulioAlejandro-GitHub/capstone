@@ -5,6 +5,7 @@ from app.routes import (
     artifacts,
     catalog,
     dashboard,
+    dataset,
     explainability,
     health,
     metrics,
@@ -35,6 +36,7 @@ app.include_router(health.router)
 app.include_router(dashboard.router)
 app.include_router(runs.router)
 app.include_router(catalog.router)
+app.include_router(dataset.router)
 app.include_router(metrics.router)
 app.include_router(explainability.router)
 app.include_router(predictions.router)
