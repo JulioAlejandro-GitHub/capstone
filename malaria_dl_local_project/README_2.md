@@ -144,6 +144,15 @@ python -m src.explain \
   --track-db
 ```
 
+```bash
+python -m src.explain \
+  --checkpoint outputs/custom_cnn/best_model.keras \
+  --method all \
+  --num-samples 50 \
+  --positive-label parasitized \
+  --track-db
+```
+
 12. Levantar visualización
 Backend:
 ```bash
