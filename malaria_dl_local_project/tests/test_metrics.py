@@ -4,6 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from sklearn.metrics import average_precision_score, fbeta_score
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -12,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.metrics import (
     clinical_confusion_counts,
     clinical_predictions_from_raw_scores,
+    compute_clinical_metrics,
     evaluate_binary_predictions,
 )
 
@@ -80,10 +83,13 @@ class ClinicalMetricsTests(unittest.TestCase):
         self.assertAlmostEqual(metrics["specificity"], 0.5)
         self.assertAlmostEqual(metrics["precision_parasitized"], 0.5)
         self.assertAlmostEqual(metrics["f1_parasitized"], 0.5)
+        self.assertAlmostEqual(metrics["f2_parasitized"], 0.5)
         self.assertAlmostEqual(metrics["false_negative_rate"], 0.5)
         self.assertAlmostEqual(metrics["false_positive_rate"], 0.5)
         self.assertAlmostEqual(metrics["balanced_accuracy"], 0.5)
+        self.assertAlmostEqual(metrics["roc_auc_parasitized"], 0.75)
         self.assertAlmostEqual(metrics["auc_parasitized"], 0.75)
+        self.assertAlmostEqual(metrics["pr_auc_parasitized"], 5.0 / 6.0)
         self.assertFalse(metrics["prediction_collapse"]["collapsed"])
         self.assertEqual(metrics["n_pred_uninfected"], 2)
         self.assertEqual(metrics["n_pred_parasitized"], 2)
@@ -97,6 +103,30 @@ class ClinicalMetricsTests(unittest.TestCase):
         self.assertEqual(rows[0]["raw_model_score_meaning"], "probability_parasitized")
         self.assertEqual(rows[0]["label_mapping_version"], "clinical_v1_parasitized_positive")
         self.assertIn("raw_model_predicted_label", rows[0])
+
+    def test_compute_clinical_metrics_reports_f2_and_pr_auc(self):
+        y_true = [0, 0, 1, 1]
+        y_scores = [0.10, 0.80, 0.20, 0.90]
+        y_pred = [0, 1, 0, 1]
+
+        metrics = compute_clinical_metrics(y_true, y_scores, threshold=0.5)
+
+        self.assertEqual(metrics["raw_model_score_meaning"], "probability_parasitized")
+        self.assertEqual(metrics["confusion_matrix"], [[1, 1], [1, 1]])
+        self.assertAlmostEqual(
+            metrics["f2_parasitized"],
+            fbeta_score(
+                y_true,
+                y_pred,
+                beta=2.0,
+                pos_label=1,
+                zero_division=0,
+            ),
+        )
+        self.assertAlmostEqual(
+            metrics["pr_auc_parasitized"],
+            average_precision_score(y_true, y_scores),
+        )
 
 
 if __name__ == "__main__":

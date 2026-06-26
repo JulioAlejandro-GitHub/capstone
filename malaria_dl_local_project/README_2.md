@@ -67,6 +67,27 @@ python -m src.train \
   --track-db
 ```
 
+El entrenamiento usa por defecto la política clínica de checkpoint:
+
+```text
+--checkpoint-policy auc_with_min_recall
+--min-recall 0.98
+--reject-prediction-collapse true
+```
+
+Esto selecciona `best_model.keras` por mayor AUC entre epochs con sensibilidad mínima para `parasitized`. Si no se cumple `min_recall`, se guarda fallback con warning en `outputs/<model>/checkpoint_policy_summary.json`. Para F2:
+
+```bash
+python -m src.train \
+  --model custom_cnn \
+  --epochs 30 \
+  --img-size 200 \
+  --batch-size 64 \
+  --checkpoint-policy f2 \
+  --beta 2.0 \
+  --track-db
+```
+
 6. Evaluar ambos modelos
 ```bash
 python -m src.evaluate \
@@ -83,6 +104,8 @@ python -m src.evaluate \
   --batch-size 64 \
   --track-db
 ```
+
+Las evaluaciones, TTA, ensemble y SVM guardan métricas clínicas comunes en JSON y PostgreSQL: `recall_parasitized`/sensibilidad, `specificity`, `f2_parasitized`, `roc_auc_parasitized`, `pr_auc_parasitized`, `balanced_accuracy`, matriz de confusión clínica y diagnóstico `prediction_collapse`. La convención es siempre `0 = uninfected`, `1 = parasitized` y `raw_model_score = probability_parasitized`.
 
 7. Calibrar modelos
 

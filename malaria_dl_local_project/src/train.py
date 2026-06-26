@@ -4,6 +4,15 @@ from pathlib import Path
 
 import tensorflow as tf
 
+from src.checkpoint_policy import (
+    CHECKPOINT_POLICY_CHOICES,
+    CheckpointPolicyConfig,
+    ClinicalCheckpointCallback,
+    ClinicalValidationMetricsCallback,
+    checkpoint_policy_config_dict,
+    get_monitor_for_policy,
+    write_checkpoint_policy_summary,
+)
 from src.config import (
     CLASS_NAMES,
     LABEL_MAPPING_METADATA,
@@ -25,8 +34,13 @@ from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 CHECKPOINT_METRIC_CHOICES = [
     "val_auc",
+    "val_roc_auc_parasitized",
+    "val_pr_auc",
+    "val_pr_auc_parasitized",
+    "val_f2_parasitized",
     "val_balanced_accuracy",
     "val_recall_parasitized",
+    "val_sensitivity_parasitized",
     "val_specificity",
     "val_precision",
     "val_recall",
@@ -35,7 +49,7 @@ CHECKPOINT_METRIC_CHOICES = [
 ]
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Entrenamiento local para NIH/NLM Malaria Dataset.")
     parser.add_argument("--model", choices=["custom_cnn", "vgg16"], required=True)
     parser.add_argument("--epochs", type=int, default=30)
@@ -57,12 +71,49 @@ def parse_args():
         "--checkpoint-metric",
         dest="checkpoint_monitor",
         choices=CHECKPOINT_METRIC_CHOICES,
-        default="val_auc",
+        default=None,
         help=(
-            "Métrica monitoreada para guardar best_model.keras. "
-            "Default recomendado: val_auc. val_recall_parasitized queda "
-            "disponible solo como opción explícita."
+            "Métrica legacy monitoreada para reportes/compatibilidad. "
+            "La selección de best_model.keras usa --checkpoint-policy."
         ),
+    )
+    parser.add_argument(
+        "--checkpoint-policy",
+        choices=CHECKPOINT_POLICY_CHOICES,
+        default="auc_with_min_recall",
+        help=(
+            "Política clínica para seleccionar best_model.keras. "
+            "Default recomendado: auc_with_min_recall."
+        ),
+    )
+    parser.add_argument(
+        "--min-recall",
+        type=float,
+        default=0.98,
+        help="Sensibilidad mínima requerida para auc_with_min_recall.",
+    )
+    parser.add_argument(
+        "--beta",
+        type=float,
+        default=2.0,
+        help="Beta del F-score usado por la política f2.",
+    )
+    parser.add_argument(
+        "--reject-prediction-collapse",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Excluir epochs con colapso de predicción al seleccionar checkpoint.",
+    )
+    parser.add_argument(
+        "--allow-collapsed-checkpoint",
+        action="store_true",
+        help="Permite seleccionar checkpoints colapsados si se solicita explícitamente.",
+    )
+    parser.add_argument(
+        "--min-class-fraction",
+        type=float,
+        default=0.05,
+        help="Fracción mínima por clase predicha para no marcar colapso.",
     )
     parser.add_argument(
         "--monitor-mode",
@@ -115,7 +166,10 @@ def parse_args():
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
     )
-    return parser.parse_args()
+    args = parser.parse_args(argv)
+    if args.allow_collapsed_checkpoint:
+        args.reject_prediction_collapse = False
+    return args
 
 
 def resolve_monitor_mode(monitor, requested_mode="auto"):
@@ -127,6 +181,7 @@ def resolve_monitor_mode(monitor, requested_mode="auto"):
 def build_phase_callbacks(
     output_dir,
     checkpoint_callback,
+    clinical_validation_callback,
     phase,
     early_stopping_monitor,
     early_stopping_mode,
@@ -138,6 +193,7 @@ def build_phase_callbacks(
         csv_loggers.append(tf.keras.callbacks.CSVLogger(str(output_dir / "training_log.csv")))
 
     return [
+        clinical_validation_callback,
         checkpoint_callback,
         tf.keras.callbacks.EarlyStopping(
             monitor=early_stopping_monitor,
@@ -166,6 +222,7 @@ def json_safe_float(value):
 
 def write_checkpoint_selection_report(
     output_dir,
+    checkpoint_policy_config,
     checkpoint_monitor,
     checkpoint_mode,
     early_stopping_monitor,
@@ -173,12 +230,21 @@ def write_checkpoint_selection_report(
     checkpoint_callback,
     fine_tuning_enabled,
 ):
+    policy_selection = checkpoint_callback.best_selection or {}
+    policy_summary = checkpoint_callback.selection_summary() or {}
+    write_checkpoint_policy_summary(output_dir, policy_summary)
     report = {
         "best_model_path": str(output_dir / "best_model.keras"),
+        "checkpoint_policy": checkpoint_policy_config.policy,
+        "checkpoint_policy_config": checkpoint_policy_config_dict(checkpoint_policy_config),
+        "checkpoint_selection": policy_selection,
+        "checkpoint_policy_summary": policy_summary,
         "checkpoint_metric": checkpoint_monitor,
         "checkpoint_monitor": checkpoint_monitor,
         "checkpoint_mode": checkpoint_mode,
-        "best_checkpoint_value": json_safe_float(getattr(checkpoint_callback, "best", None)),
+        "best_checkpoint_value": json_safe_float(
+            policy_selection.get("selected_metric_value")
+        ),
         "early_stopping_monitor": early_stopping_monitor,
         "early_stopping_mode": early_stopping_mode,
         "reduce_lr_monitor": "val_loss",
@@ -206,8 +272,20 @@ def main():
         else OUTPUT_DIR / args.model
     )
     preprocessing_mode = resolve_preprocessing_mode(args.model, args.preprocessing)
-    checkpoint_monitor = args.checkpoint_monitor
-    checkpoint_mode = resolve_monitor_mode(checkpoint_monitor, args.monitor_mode)
+    checkpoint_policy_config = CheckpointPolicyConfig(
+        policy=args.checkpoint_policy,
+        min_recall=args.min_recall,
+        beta=args.beta,
+        threshold=0.5,
+        reject_prediction_collapse=args.reject_prediction_collapse,
+        min_class_fraction=args.min_class_fraction,
+    )
+    policy_monitor, policy_mode = get_monitor_for_policy(checkpoint_policy_config)
+    checkpoint_monitor = args.checkpoint_monitor or policy_monitor
+    checkpoint_mode = resolve_monitor_mode(
+        checkpoint_monitor,
+        args.monitor_mode if args.checkpoint_monitor else policy_mode,
+    )
     early_stopping_monitor = args.early_stopping_monitor or checkpoint_monitor
     early_stopping_mode = resolve_monitor_mode(
         early_stopping_monitor,
@@ -239,6 +317,15 @@ def main():
                     "label_mapping_version": LABEL_MAPPING_VERSION,
                     "label_mapping": LABEL_MAPPING_METADATA,
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                    "checkpoint_policy": checkpoint_policy_config.policy,
+                    "checkpoint_policy_config": checkpoint_policy_config_dict(
+                        checkpoint_policy_config
+                    ),
+                    "min_recall_required": checkpoint_policy_config.min_recall,
+                    "reject_prediction_collapse": (
+                        checkpoint_policy_config.reject_prediction_collapse
+                    ),
+                    "min_class_fraction": checkpoint_policy_config.min_class_fraction,
                     "checkpoint_monitor": checkpoint_monitor,
                     "checkpoint_metric": checkpoint_monitor,
                     "checkpoint_mode": checkpoint_mode,
@@ -275,6 +362,14 @@ def main():
         print("Convención de etiquetas:", LABEL_MAPPING_VERSION)
         print("raw_model_score:", RAW_MODEL_SCORE_MEANING)
         print("Preprocesamiento:", preprocessing_mode)
+        print("Checkpoint policy:", checkpoint_policy_config.policy)
+        print("Minimum validation recall required:", checkpoint_policy_config.min_recall)
+        print("Beta for F-score:", checkpoint_policy_config.beta)
+        print(
+            "Reject prediction collapse:",
+            str(checkpoint_policy_config.reject_prediction_collapse).lower(),
+        )
+        print("Min class fraction:", checkpoint_policy_config.min_class_fraction)
         print(
             "Checkpoint metric:",
             checkpoint_monitor,
@@ -306,14 +401,20 @@ def main():
 
         model.summary()
 
-        checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-            filepath=str(output_dir / "best_model.keras"),
-            monitor=checkpoint_monitor,
-            save_best_only=True,
-            mode=checkpoint_mode,
+        clinical_validation_callback = ClinicalValidationMetricsCallback(
+            validation_data=ds_val,
+            threshold=checkpoint_policy_config.threshold,
+            min_class_fraction=checkpoint_policy_config.min_class_fraction,
+            class_names=class_names,
+            verbose=0,
+        )
+        checkpoint_callback = ClinicalCheckpointCallback(
+            output_dir=output_dir,
+            config=checkpoint_policy_config,
             verbose=1,
         )
 
+        checkpoint_callback.set_phase("training_base", epoch_offset=0)
         history = model.fit(
             ds_train,
             validation_data=ds_val,
@@ -321,6 +422,7 @@ def main():
             callbacks=build_phase_callbacks(
                 output_dir=output_dir,
                 checkpoint_callback=checkpoint_callback,
+                clinical_validation_callback=clinical_validation_callback,
                 phase="training_base",
                 early_stopping_monitor=early_stopping_monitor,
                 early_stopping_mode=early_stopping_mode,
@@ -343,6 +445,10 @@ def main():
                 optimizer_name=args.optimizer,
             )
 
+            checkpoint_callback.set_phase(
+                "fine_tuning",
+                epoch_offset=len(history.epoch),
+            )
             fine_tune_history = model.fit(
                 ds_train,
                 validation_data=ds_val,
@@ -350,6 +456,7 @@ def main():
                 callbacks=build_phase_callbacks(
                     output_dir=output_dir,
                     checkpoint_callback=checkpoint_callback,
+                    clinical_validation_callback=clinical_validation_callback,
                     phase="fine_tuning",
                     early_stopping_monitor=early_stopping_monitor,
                     early_stopping_mode=early_stopping_mode,
@@ -357,9 +464,23 @@ def main():
                 ),
             )
 
+        final_model_path = output_dir / "final_model.keras"
+        best_model_path = output_dir / "best_model.keras"
+        model.save(final_model_path)
+        if best_model_path.exists():
+            print(f"Cargando mejor checkpoint para evaluación: {best_model_path}")
+            evaluation_model = tf.keras.models.load_model(best_model_path)
+        else:
+            print(
+                "WARNING: no existe best_model.keras; se guardará el modelo final "
+                "como fallback."
+            )
+            model.save(best_model_path)
+            evaluation_model = model
+
         print("Evaluación en test:")
         metrics = evaluate_keras_model(
-            model=model,
+            model=evaluation_model,
             dataset=ds_test,
             class_names=class_names,
             output_dir=output_dir,
@@ -374,9 +495,9 @@ def main():
             },
         )
 
-        model.save(output_dir / "final_model.keras")
         checkpoint_selection = write_checkpoint_selection_report(
             output_dir=output_dir,
+            checkpoint_policy_config=checkpoint_policy_config,
             checkpoint_monitor=checkpoint_monitor,
             checkpoint_mode=checkpoint_mode,
             early_stopping_monitor=early_stopping_monitor,
@@ -394,6 +515,16 @@ def main():
             learning_rate=lr,
             extra={
                 "checkpoint_mode": checkpoint_mode,
+                "checkpoint_policy": checkpoint_policy_config.policy,
+                "checkpoint_policy_config": checkpoint_policy_config_dict(
+                    checkpoint_policy_config
+                ),
+                "checkpoint_selection": checkpoint_selection.get(
+                    "checkpoint_selection"
+                ),
+                "checkpoint_policy_summary": checkpoint_selection.get(
+                    "checkpoint_policy_summary"
+                ),
                 "early_stopping_mode": early_stopping_mode,
                 "early_stopping_patience": args.early_stopping_patience,
                 "fine_tuning_enabled": fine_tune_history is not None,
@@ -413,14 +544,47 @@ def main():
             },
         )
         metadata_path = write_model_metadata(output_dir, model_metadata)
+        policy_summary = checkpoint_selection.get("checkpoint_policy_summary") or {}
+        print("Best checkpoint selection:")
+        print(f"- policy: {policy_summary.get('policy')}")
+        print(f"- selected_epoch: {policy_summary.get('selected_epoch')}")
+        print(f"- policy_satisfied: {policy_summary.get('policy_satisfied')}")
+        print(
+            "- val_recall_parasitized: "
+            f"{policy_summary.get('selected_metrics', {}).get('val_recall_parasitized')}"
+        )
+        print(
+            "- val_auc: "
+            f"{policy_summary.get('selected_metrics', {}).get('val_auc')}"
+        )
+        print(
+            "- val_f2_parasitized: "
+            f"{policy_summary.get('selected_metrics', {}).get('val_f2_parasitized')}"
+        )
+        print(
+            "- val_specificity: "
+            f"{policy_summary.get('selected_metrics', {}).get('val_specificity')}"
+        )
+        print(
+            "- collapsed: "
+            f"{policy_summary.get('prediction_collapse_detected')}"
+        )
+        print(f"- checkpoint_path: {policy_summary.get('checkpoint_path')}")
+        if policy_summary.get("warning"):
+            print(f"- warning: {policy_summary.get('warning')}")
         print(f"Modelo final guardado en: {output_dir / 'final_model.keras'}")
         print(f"Mejor modelo guardado en: {output_dir / 'best_model.keras'}")
         print(f"Criterio de selección guardado en: {output_dir / 'checkpoint_selection.json'}")
+        print(
+            "Resumen de política guardado en: "
+            f"{output_dir / 'checkpoint_policy_summary.json'}"
+        )
         print(f"Metadata de modelo guardada en: {metadata_path}")
 
         if args.track_db and run_context:
             from src.tracking_integration import (
                 args_to_parameters,
+                clinical_metrics_for_tracking,
                 finish_tracking_run,
                 log_metrics_and_reports,
                 log_model_version,
@@ -472,7 +636,12 @@ def main():
                     "label_mapping_version": LABEL_MAPPING_VERSION,
                     "label_mapping": LABEL_MAPPING_METADATA,
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                    "checkpoint_policy": checkpoint_policy_config.policy,
+                    "checkpoint_policy_config": checkpoint_policy_config_dict(
+                        checkpoint_policy_config
+                    ),
                     "checkpoint_selection": checkpoint_selection,
+                    "checkpoint_policy_summary": policy_summary,
                     "model_metadata": model_metadata,
                     **dataset_info,
                 },
@@ -486,6 +655,24 @@ def main():
                         "augment": not args.no_augment,
                         "output_dir": str(output_dir),
                         "preprocessing_mode": preprocessing_mode,
+                        "checkpoint_policy": checkpoint_policy_config.policy,
+                        "checkpoint_policy_config": checkpoint_policy_config_dict(
+                            checkpoint_policy_config
+                        ),
+                        "selected_epoch": policy_summary.get("selected_epoch"),
+                        "policy_satisfied": policy_summary.get("policy_satisfied"),
+                        "selected_metric": policy_summary.get("selected_metric"),
+                        "selected_metric_value": policy_summary.get(
+                            "selected_metric_value"
+                        ),
+                        "min_recall_required": checkpoint_policy_config.min_recall,
+                        "prediction_collapse_detected": policy_summary.get(
+                            "prediction_collapse_detected"
+                        ),
+                        "all_epochs_collapsed": policy_summary.get(
+                            "all_epochs_collapsed"
+                        ),
+                        "checkpoint_warning": policy_summary.get("warning"),
                         "checkpoint_monitor": checkpoint_monitor,
                         "checkpoint_mode": checkpoint_mode,
                         "early_stopping_monitor": early_stopping_monitor,
@@ -504,13 +691,45 @@ def main():
                     "test_metrics": str(output_dir / "test_metrics.json"),
                     "test_predictions": str(output_dir / "test_predictions.csv"),
                     "test_confusion_matrix": str(output_dir / "test_confusion_matrix.csv"),
+                    "checkpoint_policy": checkpoint_policy_config.policy,
+                    "checkpoint_policy_config": checkpoint_policy_config_dict(
+                        checkpoint_policy_config
+                    ),
                     "checkpoint_selection": checkpoint_selection,
+                    "checkpoint_policy_summary": policy_summary,
+                    "checkpoint_policy_summary_path": str(
+                        output_dir / "checkpoint_policy_summary.json"
+                    ),
+                    "selected_epoch": policy_summary.get("selected_epoch"),
+                    "policy_satisfied": policy_summary.get("policy_satisfied"),
+                    "selected_metric": policy_summary.get("selected_metric"),
+                    "selected_metric_value": policy_summary.get("selected_metric_value"),
+                    "min_recall_required": checkpoint_policy_config.min_recall,
+                    "val_recall_parasitized_selected": (
+                        policy_summary.get("selected_metrics", {}).get(
+                            "val_recall_parasitized"
+                        )
+                    ),
+                    "val_f2_parasitized_selected": (
+                        policy_summary.get("selected_metrics", {}).get(
+                            "val_f2_parasitized"
+                        )
+                    ),
+                    "val_specificity_selected": (
+                        policy_summary.get("selected_metrics", {}).get(
+                            "val_specificity"
+                        )
+                    ),
+                    "val_auc_selected": (
+                        policy_summary.get("selected_metrics", {}).get("val_auc")
+                    ),
+                    "prediction_collapse_detected": policy_summary.get(
+                        "prediction_collapse_detected"
+                    ),
+                    "all_epochs_collapsed": policy_summary.get("all_epochs_collapsed"),
+                    "checkpoint_warning": policy_summary.get("warning"),
                     "metrics": metrics,
-                    "accuracy": metrics.get("accuracy"),
-                    "auc_parasitized": metrics.get("auc"),
-                    "recall_parasitized": metrics.get("recall_parasitized"),
-                    "specificity": metrics.get("specificity"),
-                    "balanced_accuracy": metrics.get("balanced_accuracy"),
+                    **clinical_metrics_for_tracking(metrics),
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
@@ -523,18 +742,43 @@ def main():
                     "label_mapping_version": LABEL_MAPPING_VERSION,
                     "label_mapping": LABEL_MAPPING_METADATA,
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                    "checkpoint_policy": checkpoint_policy_config.policy,
+                    "checkpoint_policy_config": checkpoint_policy_config_dict(
+                        checkpoint_policy_config
+                    ),
                     "checkpoint_selection": checkpoint_selection,
-                    "model_metadata": model_metadata,
-                    **dataset_info,
-                    "specificity": metrics.get("specificity"),
-                    "balanced_accuracy": metrics.get("balanced_accuracy"),
-                    "prediction_collapse_detected": metrics.get(
+                    "checkpoint_policy_summary": policy_summary,
+                    "selected_epoch": policy_summary.get("selected_epoch"),
+                    "policy_satisfied": policy_summary.get("policy_satisfied"),
+                    "selected_metric": policy_summary.get("selected_metric"),
+                    "selected_metric_value": policy_summary.get("selected_metric_value"),
+                    "min_recall_required": checkpoint_policy_config.min_recall,
+                    "val_recall_parasitized_selected": (
+                        policy_summary.get("selected_metrics", {}).get(
+                            "val_recall_parasitized"
+                        )
+                    ),
+                    "val_f2_parasitized_selected": (
+                        policy_summary.get("selected_metrics", {}).get(
+                            "val_f2_parasitized"
+                        )
+                    ),
+                    "val_specificity_selected": (
+                        policy_summary.get("selected_metrics", {}).get(
+                            "val_specificity"
+                        )
+                    ),
+                    "val_auc_selected": (
+                        policy_summary.get("selected_metrics", {}).get("val_auc")
+                    ),
+                    "prediction_collapse_detected": policy_summary.get(
                         "prediction_collapse_detected"
                     ),
-                    "n_pred_uninfected": metrics.get("n_pred_uninfected"),
-                    "n_pred_parasitized": metrics.get("n_pred_parasitized"),
-                    "percent_pred_uninfected": metrics.get("percent_pred_uninfected"),
-                    "percent_pred_parasitized": metrics.get("percent_pred_parasitized"),
+                    "all_epochs_collapsed": policy_summary.get("all_epochs_collapsed"),
+                    "checkpoint_warning": policy_summary.get("warning"),
+                    "model_metadata": model_metadata,
+                    **dataset_info,
+                    **clinical_metrics_for_tracking(metrics),
                 },
             )
     except Exception as exc:

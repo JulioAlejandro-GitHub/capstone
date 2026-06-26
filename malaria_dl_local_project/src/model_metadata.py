@@ -13,6 +13,18 @@ from src.config import (
 
 
 MODEL_METADATA_FILENAME = "model_metadata.json"
+CLINICAL_METRICS_AVAILABLE = [
+    "accuracy",
+    "precision_parasitized",
+    "recall_parasitized",
+    "sensitivity_parasitized",
+    "specificity",
+    "f1_parasitized",
+    "f2_parasitized",
+    "roc_auc_parasitized",
+    "pr_auc_parasitized",
+    "balanced_accuracy",
+]
 
 
 def build_model_metadata(
@@ -34,6 +46,7 @@ def build_model_metadata(
         "positive_class_index": POSITIVE_CLASS_INDEX,
         "positive_class_name": POSITIVE_LABEL,
         "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+        "clinical_metrics_available": CLINICAL_METRICS_AVAILABLE,
         "threshold_default": float(threshold_default),
         "preprocessing": preprocessing,
         "checkpoint_monitor": checkpoint_monitor,

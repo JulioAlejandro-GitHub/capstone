@@ -61,6 +61,36 @@ def json_safe(value):
     return value
 
 
+CLINICAL_TRACKING_METRIC_KEYS = [
+    "accuracy",
+    "precision_parasitized",
+    "recall_parasitized",
+    "sensitivity_parasitized",
+    "specificity",
+    "f1_parasitized",
+    "f2_parasitized",
+    "roc_auc_parasitized",
+    "auc_parasitized",
+    "pr_auc_parasitized",
+    "balanced_accuracy",
+    "prediction_collapse_detected",
+    "n_pred_uninfected",
+    "n_pred_parasitized",
+    "percent_pred_uninfected",
+    "percent_pred_parasitized",
+]
+
+
+def clinical_metrics_for_tracking(metrics):
+    if not metrics:
+        return {}
+    return {
+        key: json_safe(metrics.get(key))
+        for key in CLINICAL_TRACKING_METRIC_KEYS
+        if key in metrics
+    }
+
+
 def artifact_record(path, artifact_type=None, metadata=None):
     path = Path(path)
     try:
@@ -418,6 +448,61 @@ def log_training_history(context, history, phase="training", epoch_offset=0):
             "val_recall_parasitized": get_history_value(
                 history_dict,
                 "val_recall_parasitized",
+                index,
+            ),
+            "specificity": get_history_value(history_dict, "specificity", index),
+            "val_specificity": get_history_value(history_dict, "val_specificity", index),
+            "balanced_accuracy": get_history_value(
+                history_dict,
+                "balanced_accuracy",
+                index,
+            ),
+            "val_balanced_accuracy": get_history_value(
+                history_dict,
+                "val_balanced_accuracy",
+                index,
+            ),
+            "f2_parasitized": get_history_value(history_dict, "f2_parasitized", index),
+            "val_f2_parasitized": get_history_value(
+                history_dict,
+                "val_f2_parasitized",
+                index,
+            ),
+            "pr_auc": get_history_value(history_dict, "pr_auc", index),
+            "val_pr_auc": get_history_value(history_dict, "val_pr_auc", index),
+            "val_pr_auc_parasitized": get_history_value(
+                history_dict,
+                "val_pr_auc_parasitized",
+                index,
+            ),
+            "val_roc_auc_parasitized": get_history_value(
+                history_dict,
+                "val_roc_auc_parasitized",
+                index,
+            ),
+            "val_prediction_collapse_detected": get_history_value(
+                history_dict,
+                "val_prediction_collapse_detected",
+                index,
+            ),
+            "val_n_pred_uninfected": get_history_value(
+                history_dict,
+                "val_n_pred_uninfected",
+                index,
+            ),
+            "val_n_pred_parasitized": get_history_value(
+                history_dict,
+                "val_n_pred_parasitized",
+                index,
+            ),
+            "val_percent_pred_uninfected": get_history_value(
+                history_dict,
+                "val_percent_pred_uninfected",
+                index,
+            ),
+            "val_percent_pred_parasitized": get_history_value(
+                history_dict,
+                "val_percent_pred_parasitized",
                 index,
             ),
         }

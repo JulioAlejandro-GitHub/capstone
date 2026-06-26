@@ -7,17 +7,21 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     roc_auc_score,
+    average_precision_score,
     accuracy_score,
     precision_score,
     recall_score,
     f1_score,
+    fbeta_score,
 )
 
 from src.config import (
     CLASS_NAMES,
     LABEL_MAPPING_VERSION,
     LEGACY_TFDS_LABEL_MAPPING_VERSION,
+    NEGATIVE_CLASS_INDEX,
     NEGATIVE_LABEL,
+    POSITIVE_CLASS_INDEX,
     POSITIVE_LABEL,
     RAW_MODEL_SCORE_MEANING,
     label_mapping_metadata,
@@ -33,8 +37,23 @@ def _safe_divide(numerator, denominator):
 
 
 def _safe_roc_auc(y_true_binary, y_score):
+    y_true_binary = np.asarray(y_true_binary).astype(int).reshape(-1)
+    y_score = np.asarray(y_score, dtype=np.float32).reshape(-1)
+    if len(np.unique(y_true_binary)) < 2:
+        return None
     try:
         return float(roc_auc_score(y_true_binary, y_score))
+    except ValueError:
+        return None
+
+
+def _safe_pr_auc(y_true_binary, y_score):
+    y_true_binary = np.asarray(y_true_binary).astype(int).reshape(-1)
+    y_score = np.asarray(y_score, dtype=np.float32).reshape(-1)
+    if len(np.unique(y_true_binary)) < 2:
+        return None
+    try:
+        return float(average_precision_score(y_true_binary, y_score))
     except ValueError:
         return None
 
@@ -124,38 +143,28 @@ def clinical_confusion_counts(y_true, y_pred, class_names=None):
     }
 
 
-def clinical_metric_summary(y_true, y_pred, probability_parasitized, class_names=None):
-    class_names = list(class_names or CLASS_NAMES)
-    positive_idx = _label_index(class_names, POSITIVE_LABEL)
-    y_true_positive = (np.asarray(y_true).astype(int) == positive_idx).astype(int)
-    counts = clinical_confusion_counts(y_true, y_pred, class_names)
+def compute_prediction_distribution(y_pred, class_names=None) -> dict:
+    """
+    Resume la distribución de predicciones con la convención clínica oficial.
 
-    sensitivity = _safe_divide(
-        counts["true_positive"],
-        counts["true_positive"] + counts["false_negative"],
-    )
-    specificity = _safe_divide(
-        counts["true_negative"],
-        counts["true_negative"] + counts["false_positive"],
-    )
-    false_negative_rate = _safe_divide(
-        counts["false_negative"],
-        counts["true_positive"] + counts["false_negative"],
-    )
-    false_positive_rate = _safe_divide(
-        counts["false_positive"],
-        counts["true_negative"] + counts["false_positive"],
-    )
+    Convención:
+      0 = uninfected
+      1 = parasitized
+    """
+    class_names = list(class_names or CLASS_NAMES)
+    negative_idx = _label_index(class_names, NEGATIVE_LABEL)
+    positive_idx = _label_index(class_names, POSITIVE_LABEL)
+    y_pred = np.asarray(y_pred).astype(int).reshape(-1)
+    total = int(len(y_pred))
+
+    n_pred_uninfected = int(np.sum(y_pred == negative_idx))
+    n_pred_parasitized = int(np.sum(y_pred == positive_idx))
 
     return {
-        **counts,
-        "sensitivity_parasitized": sensitivity,
-        "recall_parasitized": sensitivity,
-        "specificity": specificity,
-        "false_negative_rate": false_negative_rate,
-        "false_positive_rate": false_positive_rate,
-        "balanced_accuracy": float((sensitivity + specificity) / 2.0),
-        "auc_parasitized": _safe_roc_auc(y_true_positive, probability_parasitized),
+        "n_pred_uninfected": n_pred_uninfected,
+        "n_pred_parasitized": n_pred_parasitized,
+        "percent_pred_uninfected": float(_safe_divide(n_pred_uninfected, total)),
+        "percent_pred_parasitized": float(_safe_divide(n_pred_parasitized, total)),
     }
 
 
@@ -172,11 +181,11 @@ def detect_prediction_collapse(y_pred, class_names=None, min_class_fraction=0.05
     positive_idx = _label_index(class_names, POSITIVE_LABEL)
     y_pred = np.asarray(y_pred).astype(int).reshape(-1)
     total = int(len(y_pred))
-
-    n_pred_uninfected = int(np.sum(y_pred == negative_idx))
-    n_pred_parasitized = int(np.sum(y_pred == positive_idx))
-    percent_pred_uninfected = _safe_divide(n_pred_uninfected, total)
-    percent_pred_parasitized = _safe_divide(n_pred_parasitized, total)
+    distribution = compute_prediction_distribution(y_pred, class_names)
+    n_pred_uninfected = distribution["n_pred_uninfected"]
+    n_pred_parasitized = distribution["n_pred_parasitized"]
+    percent_pred_uninfected = distribution["percent_pred_uninfected"]
+    percent_pred_parasitized = distribution["percent_pred_parasitized"]
 
     predicted_classes = [
         class_names[index]
@@ -186,24 +195,32 @@ def detect_prediction_collapse(y_pred, class_names=None, min_class_fraction=0.05
         )
         if count > 0
     ]
-    fractions = [percent_pred_uninfected, percent_pred_parasitized]
-    collapsed = total > 0 and (
-        len(predicted_classes) == 1
-        or any(fraction < float(min_class_fraction) for fraction in fractions)
-    )
+
+    collapsed = False
+    collapse_type = None
     warning = None
+
     if total == 0:
         warning = "No hay predicciones para evaluar colapso."
-    elif len(predicted_classes) == 1:
-        warning = "El modelo predijo solo una clase."
-    elif collapsed:
-        warning = (
-            "Distribución de predicciones fuertemente desbalanceada. "
-            "Posible colapso de entrenamiento."
-        )
+    elif n_pred_uninfected == 0:
+        collapsed = True
+        collapse_type = "all_parasitized"
+    elif n_pred_parasitized == 0:
+        collapsed = True
+        collapse_type = "all_uninfected"
+    elif percent_pred_uninfected < float(min_class_fraction):
+        collapsed = True
+        collapse_type = "low_fraction_uninfected"
+    elif percent_pred_parasitized < float(min_class_fraction):
+        collapsed = True
+        collapse_type = "low_fraction_parasitized"
+
+    if collapsed:
+        warning = "El modelo predijo solo una clase o casi una sola clase."
 
     return {
         "collapsed": bool(collapsed),
+        "collapse_type": collapse_type,
         "predicted_classes": predicted_classes,
         "n_pred_uninfected": n_pred_uninfected,
         "n_pred_parasitized": n_pred_parasitized,
@@ -211,6 +228,198 @@ def detect_prediction_collapse(y_pred, class_names=None, min_class_fraction=0.05
         "percent_pred_parasitized": float(percent_pred_parasitized),
         "min_class_fraction": float(min_class_fraction),
         "warning": warning,
+    }
+
+
+def compute_clinical_metrics(y_true, y_scores, threshold: float = 0.5) -> dict:
+    """
+    Calcula métricas clínicas para clasificación binaria de malaria.
+
+    Convención:
+    0 = uninfected
+    1 = parasitized
+
+    y_scores debe representar probability_parasitized.
+    """
+    y_true = np.asarray(y_true).astype(int).reshape(-1)
+    probability_parasitized = np.asarray(y_scores, dtype=np.float32).reshape(-1)
+    if len(y_true) != len(probability_parasitized):
+        raise ValueError(
+            "y_true y y_scores deben tener el mismo largo. "
+            f"Recibido: {len(y_true)} y {len(probability_parasitized)}."
+        )
+
+    class_names = list(CLASS_NAMES)
+    negative_idx = NEGATIVE_CLASS_INDEX
+    positive_idx = POSITIVE_CLASS_INDEX
+    y_pred = clinical_predictions_from_probabilities(
+        probability_parasitized,
+        class_names=class_names,
+        threshold=threshold,
+    )
+
+    cm = confusion_matrix(y_true, y_pred, labels=[negative_idx, positive_idx])
+    tn, fp, fn, tp = [int(value) for value in cm.ravel()]
+    y_true_positive = (y_true == positive_idx).astype(int)
+
+    sensitivity = _safe_divide(tp, tp + fn)
+    specificity = _safe_divide(tn, tn + fp)
+    prediction_distribution = compute_prediction_distribution(y_pred, class_names)
+    collapse_summary = detect_prediction_collapse(y_pred, class_names)
+    report_text = classification_report(
+        y_true,
+        y_pred,
+        labels=[negative_idx, positive_idx],
+        target_names=class_names,
+        digits=4,
+        zero_division=0,
+    )
+    report_dict = classification_report(
+        y_true,
+        y_pred,
+        labels=[negative_idx, positive_idx],
+        target_names=class_names,
+        digits=4,
+        output_dict=True,
+        zero_division=0,
+    )
+    roc_auc = _safe_roc_auc(y_true_positive, probability_parasitized)
+    pr_auc = _safe_pr_auc(y_true_positive, probability_parasitized)
+
+    metrics = {
+        "label_mapping_version": LABEL_MAPPING_VERSION,
+        "negative_class_name": NEGATIVE_LABEL,
+        "negative_class_index": negative_idx,
+        "positive_class_name": POSITIVE_LABEL,
+        "positive_class_index": positive_idx,
+        "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+        "threshold": float(threshold),
+        "accuracy": float(accuracy_score(y_true, y_pred)),
+        "precision_parasitized": float(
+            precision_score(
+                y_true,
+                y_pred,
+                pos_label=positive_idx,
+                zero_division=0,
+            )
+        ),
+        "recall_parasitized": float(sensitivity),
+        "sensitivity_parasitized": float(sensitivity),
+        "specificity": float(specificity),
+        "f1_parasitized": float(
+            f1_score(
+                y_true,
+                y_pred,
+                pos_label=positive_idx,
+                zero_division=0,
+            )
+        ),
+        "f2_parasitized": float(
+            fbeta_score(
+                y_true,
+                y_pred,
+                beta=2.0,
+                pos_label=positive_idx,
+                zero_division=0,
+            )
+        ),
+        "roc_auc_parasitized": roc_auc,
+        "pr_auc_parasitized": pr_auc,
+        "balanced_accuracy": float((sensitivity + specificity) / 2.0),
+        "confusion_matrix": cm.tolist(),
+        "confusion_matrix_labels": class_names,
+        "tn": tn,
+        "fp": fp,
+        "fn": fn,
+        "tp": tp,
+        "true_negative": tn,
+        "false_positive": fp,
+        "false_negative": fn,
+        "true_positive": tp,
+        "classification_report": report_text,
+        "classification_report_dict": report_dict,
+        "prediction_distribution": prediction_distribution,
+        "prediction_collapse": collapse_summary,
+        "prediction_collapse_detected": bool(collapse_summary["collapsed"]),
+        "n_pred_uninfected": prediction_distribution["n_pred_uninfected"],
+        "n_pred_parasitized": prediction_distribution["n_pred_parasitized"],
+        "percent_pred_uninfected": prediction_distribution["percent_pred_uninfected"],
+        "percent_pred_parasitized": prediction_distribution["percent_pred_parasitized"],
+        "false_negative_rate": float(_safe_divide(fn, tp + fn)),
+        "false_positive_rate": float(_safe_divide(fp, tn + fp)),
+    }
+    metrics["auc"] = metrics["roc_auc_parasitized"]
+    metrics["auc_parasitized"] = metrics["roc_auc_parasitized"]
+    metrics["average_precision_parasitized"] = metrics["pr_auc_parasitized"]
+    metrics["clinical_positive_label"] = POSITIVE_LABEL
+    metrics["clinical_negative_label"] = NEGATIVE_LABEL
+    metrics["positive_class"] = POSITIVE_LABEL
+    metrics["negative_class"] = NEGATIVE_LABEL
+    return metrics
+
+
+def clinical_metric_summary(y_true, y_pred, probability_parasitized, class_names=None):
+    class_names = list(class_names or CLASS_NAMES)
+    positive_idx = _label_index(class_names, POSITIVE_LABEL)
+    y_true = np.asarray(y_true).astype(int).reshape(-1)
+    y_pred = np.asarray(y_pred).astype(int).reshape(-1)
+    probability_parasitized = np.asarray(probability_parasitized, dtype=np.float32).reshape(-1)
+    y_true_positive = (y_true == positive_idx).astype(int)
+    counts = clinical_confusion_counts(y_true, y_pred, class_names)
+
+    sensitivity = _safe_divide(
+        counts["true_positive"],
+        counts["true_positive"] + counts["false_negative"],
+    )
+    specificity = _safe_divide(
+        counts["true_negative"],
+        counts["true_negative"] + counts["false_positive"],
+    )
+    clinical_metrics = {
+        **counts,
+        "sensitivity_parasitized": sensitivity,
+        "recall_parasitized": sensitivity,
+        "specificity": specificity,
+        "false_negative_rate": _safe_divide(
+            counts["false_negative"],
+            counts["true_positive"] + counts["false_negative"],
+        ),
+        "false_positive_rate": _safe_divide(
+            counts["false_positive"],
+            counts["true_negative"] + counts["false_positive"],
+        ),
+        "balanced_accuracy": float((sensitivity + specificity) / 2.0),
+        "auc_parasitized": _safe_roc_auc(y_true_positive, probability_parasitized),
+        "roc_auc_parasitized": _safe_roc_auc(y_true_positive, probability_parasitized),
+        "pr_auc_parasitized": _safe_pr_auc(y_true_positive, probability_parasitized),
+        "f2_parasitized": float(
+            fbeta_score(
+                y_true,
+                y_pred,
+                beta=2.0,
+                pos_label=positive_idx,
+                zero_division=0,
+            )
+        ),
+    }
+    return {
+        key: clinical_metrics[key]
+        for key in (
+            "true_positive",
+            "false_negative",
+            "false_positive",
+            "true_negative",
+            "sensitivity_parasitized",
+            "recall_parasitized",
+            "specificity",
+            "false_negative_rate",
+            "false_positive_rate",
+            "balanced_accuracy",
+            "auc_parasitized",
+            "roc_auc_parasitized",
+            "pr_auc_parasitized",
+            "f2_parasitized",
+        )
     }
 
 
@@ -299,33 +508,17 @@ def evaluate_binary_predictions(
             negative_idx,
         ).astype(int)
 
-    report_text = classification_report(
+    clinical_metrics = compute_clinical_metrics(
         y_true,
-        y_pred,
-        labels=list(range(len(class_names))),
-        target_names=class_names,
-        digits=4,
-        zero_division=0,
-    )
-    report_dict = classification_report(
-        y_true,
-        y_pred,
-        labels=list(range(len(class_names))),
-        target_names=class_names,
-        digits=4,
-        output_dict=True,
-        zero_division=0,
-    )
-
-    cm = confusion_matrix(y_true, y_pred, labels=list(range(len(class_names))))
-    clinical_summary = clinical_metric_summary(
-        y_true,
-        y_pred,
         probability_parasitized,
-        class_names,
+        threshold=threshold,
     )
+    report_text = clinical_metrics["classification_report"]
+    report_dict = clinical_metrics["classification_report_dict"]
+    cm = np.asarray(clinical_metrics["confusion_matrix"], dtype=int)
     collapse_summary = detect_prediction_collapse(y_pred, class_names)
-    auc = clinical_summary["auc_parasitized"]
+    roc_auc = clinical_metrics["roc_auc_parasitized"]
+    pr_auc = clinical_metrics["pr_auc_parasitized"]
     mapping_metadata = label_mapping_metadata(label_mapping_version)
     raw_model_score_meaning = mapping_metadata["raw_model_score_meaning"]
     raw_model_score_label = (
@@ -337,70 +530,52 @@ def evaluate_binary_predictions(
         (y_true == positive_idx).astype(int),
         probability_parasitized,
     )
-    y_pred_positive = (y_pred == positive_idx).astype(int)
-    y_true_positive = (y_true == positive_idx).astype(int)
 
     metrics = {
-        "accuracy": float(accuracy_score(y_true, y_pred)),
+        **clinical_metrics,
         "precision_macro": float(precision_score(y_true, y_pred, average="macro", zero_division=0)),
         "recall_macro": float(recall_score(y_true, y_pred, average="macro", zero_division=0)),
         "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
-        "precision_parasitized": float(
-            precision_score(y_true_positive, y_pred_positive, zero_division=0)
-        ),
-        "f1_parasitized": float(
-            f1_score(y_true_positive, y_pred_positive, zero_division=0)
-        ),
-        "auc": auc,
-        "auc_parasitized": auc,
         "raw_model_auc_parasitized": raw_model_auc_parasitized,
-        "clinical_positive_label": POSITIVE_LABEL,
-        "clinical_negative_label": NEGATIVE_LABEL,
-        "positive_class": POSITIVE_LABEL,
-        "negative_class": NEGATIVE_LABEL,
-        "positive_class_index": positive_idx,
-        "negative_class_index": negative_idx,
         "raw_model_score_label": raw_model_score_label,
         "raw_model_score_meaning": raw_model_score_meaning,
         "label_mapping_version": label_mapping_version,
         "label_mapping": mapping_metadata,
-        "threshold": float(threshold),
         "preprocessing_mode": metadata.get("preprocessing_mode"),
         "metadata": metadata,
-        "confusion_matrix": cm.tolist(),
         "raw_model_confusion_matrix": confusion_matrix(
             y_true,
             raw_model_y_pred,
             labels=list(range(len(class_names))),
         ).tolist(),
-        "classification_report": report_text,
-        "classification_report_dict": report_dict,
-        "prediction_distribution": {
-            "n_pred_uninfected": collapse_summary["n_pred_uninfected"],
-            "n_pred_parasitized": collapse_summary["n_pred_parasitized"],
-            "percent_pred_uninfected": collapse_summary["percent_pred_uninfected"],
-            "percent_pred_parasitized": collapse_summary["percent_pred_parasitized"],
-        },
-        "prediction_collapse": collapse_summary,
-        "prediction_collapse_detected": bool(collapse_summary["collapsed"]),
-        "n_pred_uninfected": collapse_summary["n_pred_uninfected"],
-        "n_pred_parasitized": collapse_summary["n_pred_parasitized"],
-        "percent_pred_uninfected": collapse_summary["percent_pred_uninfected"],
-        "percent_pred_parasitized": collapse_summary["percent_pred_parasitized"],
-        **clinical_summary,
     }
 
     print(f"Clase positiva clínica: {POSITIVE_LABEL}")
+    print(f"raw_model_score: {raw_model_score_meaning}")
+    if raw_model_score_meaning != RAW_MODEL_SCORE_MEANING:
+        print(f"score clínico usado en métricas: {RAW_MODEL_SCORE_MEANING}")
     print(report_text)
     print("Confusion matrix clínica:")
     print(cm)
-    print(f"AUC parasitized: {auc:.4f}" if auc is not None else "AUC parasitized: no disponible")
+    print("Métricas clínicas:")
+    print(f"- accuracy: {metrics['accuracy']:.4f}")
+    print(f"- precision_parasitized: {metrics['precision_parasitized']:.4f}")
     print(
-        "Sensibilidad parasitized: "
-        f"{metrics['sensitivity_parasitized']:.4f} | "
-        f"Especificidad: {metrics['specificity']:.4f} | "
-        f"Balanced accuracy: {metrics['balanced_accuracy']:.4f}"
+        "- recall_parasitized / sensibilidad: "
+        f"{metrics['recall_parasitized']:.4f}"
     )
+    print(f"- specificity: {metrics['specificity']:.4f}")
+    print(f"- f1_parasitized: {metrics['f1_parasitized']:.4f}")
+    print(f"- f2_parasitized: {metrics['f2_parasitized']:.4f}")
+    print(
+        "- ROC-AUC parasitized: "
+        f"{roc_auc:.4f}" if roc_auc is not None else "- ROC-AUC parasitized: no disponible"
+    )
+    print(
+        "- PR-AUC parasitized: "
+        f"{pr_auc:.4f}" if pr_auc is not None else "- PR-AUC parasitized: no disponible"
+    )
+    print(f"- balanced_accuracy: {metrics['balanced_accuracy']:.4f}")
     print("Distribución de predicciones:")
     print(f"pred_uninfected: {metrics['n_pred_uninfected']}")
     print(f"pred_parasitized: {metrics['n_pred_parasitized']}")

@@ -179,7 +179,8 @@ def compile_binary_model(model, learning_rate: float = 1e-4, optimizer_name: str
             ParasitizedRecall(name="recall_parasitized"),
             Specificity(name="specificity"),
             BalancedAccuracy(name="balanced_accuracy"),
-            tf.keras.metrics.AUC(name="auc"),
+            tf.keras.metrics.AUC(curve="ROC", name="auc"),
+            tf.keras.metrics.AUC(curve="PR", name="pr_auc"),
         ],
     )
     return model

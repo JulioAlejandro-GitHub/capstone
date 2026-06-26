@@ -172,14 +172,16 @@ python -m src.train --model vgg16 --epochs 30 --fine-tune-epochs 10 --img-size 2
 
 ### Selección del mejor checkpoint
 
-Por defecto `best_model.keras` se selecciona con una métrica balanceada:
+Por defecto `best_model.keras` se selecciona con política clínica:
 
 ```text
---checkpoint-monitor val_auc
+--checkpoint-policy auc_with_min_recall
+--min-recall 0.98
+--reject-prediction-collapse true
 --early-stopping-monitor val_auc
 ```
 
-`val_auc` evita seleccionar checkpoints solo por sensibilidad. También puedes usar `val_balanced_accuracy`, `val_recall_parasitized`, `val_recall`, `val_accuracy` o `val_loss`.
+`auc_with_min_recall` selecciona el mayor `val_auc` entre los epochs que cumplen `val_recall_parasitized >= min_recall`. Si ningún epoch cumple la sensibilidad mínima, selecciona fallback por mejor recall y marca `policy_satisfied=false` con warning.
 
 Ejemplo explícito:
 
@@ -192,14 +194,33 @@ python -m src.train \
   --batch-size 64 \
   --optimizer adam \
   --learning-rate 1e-4 \
-  --checkpoint-monitor val_auc \
+  --checkpoint-policy auc_with_min_recall \
+  --min-recall 0.98 \
   --early-stopping-monitor val_auc \
   --monitor-mode max
 ```
 
-No se recomienda seleccionar checkpoints usando solo `val_recall_parasitized`, porque un modelo puede aprender la solución trivial de predecir todo como `parasitized`: sensibilidad 1.0, especificidad 0.0 y balanced accuracy 0.5. Esa métrica queda disponible solo como opción explícita.
+También se puede seleccionar por `f2`, `balanced_accuracy` o `val_auc`:
 
-El criterio queda registrado en `outputs/<model>/checkpoint_selection.json` y la metadata clínica del modelo en `outputs/<model>/model_metadata.json`. Los logs quedan separados en `training_base_log.csv` y `fine_tuning_log.csv`; `training_log.csv` se mantiene como alias del entrenamiento base.
+```bash
+python -m src.train \
+  --model custom_cnn \
+  --epochs 30 \
+  --img-size 200 \
+  --batch-size 64 \
+  --checkpoint-policy f2 \
+  --beta 2.0
+```
+
+No se usa `val_recall_parasitized` puro como default, porque un modelo puede aprender la solución trivial de predecir todo como `parasitized`: sensibilidad 1.0, especificidad 0.0 y balanced accuracy 0.5.
+
+El criterio queda registrado en `outputs/<model>/checkpoint_policy_summary.json` y `outputs/<model>/checkpoint_selection.json`. La metadata clínica del modelo queda en `outputs/<model>/model_metadata.json`. Los logs quedan separados en `training_base_log.csv` y `fine_tuning_log.csv`; `training_log.csv` se mantiene como alias del entrenamiento base e incluye métricas clínicas de validation.
+
+Más detalle:
+
+```text
+docs/checkpoint_policy.md
+```
 
 ### SVM usando features del VGG16 entrenado
 
@@ -268,6 +289,30 @@ Este flag está disponible en `src.predict_image`, `src.evaluate`, `src.explain`
 - `confidence_level`
 - `decision`
 - `human_readable_response`
+
+### Métricas clínicas estándar
+
+Los flujos `src.train`, `src.evaluate`, `src.tta`, `src.ensemble` y `src.svm_features` reutilizan `compute_clinical_metrics`. Las métricas se calculan con `parasitized` como clase positiva (`pos_label=1`) y el score usado por ROC-AUC/PR-AUC es siempre `probability_parasitized`.
+
+Métricas reportadas:
+
+- `accuracy`
+- `precision_parasitized`
+- `recall_parasitized` / `sensitivity_parasitized`
+- `specificity`
+- `f1_parasitized`
+- `f2_parasitized`
+- `roc_auc_parasitized`
+- `pr_auc_parasitized`
+- `balanced_accuracy`
+- `confusion_matrix`
+- `classification_report`
+- `prediction_distribution`
+- `prediction_collapse`
+
+En este proyecto, la clase positiva clínica es `parasitized`. Por ello, las métricas clínicas priorizan la detección de células parasitadas. El F2-score pondera más el recall que la precisión, lo que resulta adecuado cuando los falsos negativos son más graves que los falsos positivos. Sin embargo, el sistema también reporta especificidad y distribución de predicciones para detectar modelos degenerados que predicen una sola clase.
+
+Detalle: [docs/clinical_metrics.md](docs/clinical_metrics.md).
 
 ### Cómo detectar colapso de predicción
 

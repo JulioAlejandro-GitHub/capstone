@@ -142,6 +142,7 @@ def main():
         if args.track_db and run_context:
             from src.tracking_integration import (
                 args_to_parameters,
+                clinical_metrics_for_tracking,
                 finish_tracking_run,
                 log_metrics_and_reports,
                 log_output_artifacts,
@@ -197,11 +198,7 @@ def main():
                         output_dir / f"{checkpoint.stem}_confusion_matrix.csv"
                     ),
                     "metrics": metrics,
-                    "accuracy": metrics.get("accuracy"),
-                    "auc_parasitized": metrics.get("auc"),
-                    "recall_parasitized": metrics.get("recall_parasitized"),
-                    "specificity": metrics.get("specificity"),
-                    "balanced_accuracy": metrics.get("balanced_accuracy"),
+                    **clinical_metrics_for_tracking(metrics),
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
@@ -217,6 +214,7 @@ def main():
                     "label_mapping": mapping_metadata,
                     "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
                     **dataset_info,
+                    **clinical_metrics_for_tracking(metrics),
                 },
             )
     except Exception as exc:

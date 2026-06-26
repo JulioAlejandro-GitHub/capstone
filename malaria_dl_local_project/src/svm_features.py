@@ -162,6 +162,7 @@ def main():
         if args.track_db and run_context:
             from src.tracking_integration import (
                 args_to_parameters,
+                clinical_metrics_for_tracking,
                 finish_tracking_run,
                 log_metrics_and_reports,
                 log_output_artifacts,
@@ -213,11 +214,7 @@ def main():
                     "predictions_csv": str(output_dir / "svm_test_predictions.csv"),
                     "confusion_matrix_csv": str(output_dir / "svm_test_confusion_matrix.csv"),
                     "metrics": metrics,
-                    "accuracy": metrics.get("accuracy"),
-                    "auc_parasitized": metrics.get("auc"),
-                    "recall_parasitized": metrics.get("recall_parasitized"),
-                    "specificity": metrics.get("specificity"),
-                    "balanced_accuracy": metrics.get("balanced_accuracy"),
+                    **clinical_metrics_for_tracking(metrics),
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
@@ -231,6 +228,7 @@ def main():
                     "label_mapping": LABEL_MAPPING_METADATA,
                     "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
                     **dataset_info,
+                    **clinical_metrics_for_tracking(metrics),
                 },
             )
     except Exception as exc:

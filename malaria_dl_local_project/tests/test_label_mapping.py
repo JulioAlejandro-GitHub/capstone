@@ -30,6 +30,11 @@ from src.decision import probabilities_by_class_from_prediction
 
 
 class LabelMappingTests(unittest.TestCase):
+    def test_label_mapping_is_clinical(self):
+        self.assertEqual(CLASS_NAMES, ["uninfected", "parasitized"])
+        self.assertEqual(POSITIVE_CLASS_INDEX, 1)
+        self.assertEqual(POSITIVE_LABEL, "parasitized")
+
     def test_official_class_order_is_uninfected_then_parasitized(self):
         self.assertEqual(CLASS_NAMES, ["uninfected", "parasitized"])
         self.assertEqual(LABEL_MAPPING_VERSION, "clinical_v1_parasitized_positive")
