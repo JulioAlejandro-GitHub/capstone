@@ -533,8 +533,9 @@ def evaluate_binary_predictions(
 
     metrics = {
         **clinical_metrics,
+        "evaluation_split": metadata.get("evaluation_split"),
         "threshold_used": float(threshold),
-        "threshold_source": metadata.get("threshold_source", "fixed"),
+        "threshold_source": metadata.get("threshold_source", "fixed_cli"),
         "threshold_mode": metadata.get("threshold_mode", "fixed"),
         "target_recall": metadata.get("target_recall"),
         "target_recall_satisfied_on_validation": metadata.get(
@@ -556,6 +557,22 @@ def evaluate_binary_predictions(
             raw_model_y_pred,
             labels=list(range(len(class_names))),
         ).tolist(),
+    }
+    metrics["metrics"] = {
+        key: metrics.get(key)
+        for key in (
+            "accuracy",
+            "precision_parasitized",
+            "recall_parasitized",
+            "sensitivity_parasitized",
+            "specificity",
+            "f1_parasitized",
+            "f2_parasitized",
+            "roc_auc_parasitized",
+            "pr_auc_parasitized",
+            "balanced_accuracy",
+            "prediction_collapse_detected",
+        )
     }
 
     print(f"Clase positiva clínica: {POSITIVE_LABEL}")
@@ -623,7 +640,7 @@ def evaluate_binary_predictions(
                 "negative_class_index": negative_idx,
                 "label_mapping_version": label_mapping_version,
                 "threshold": float(threshold),
-                "threshold_source": metadata.get("threshold_source", "fixed"),
+                "threshold_source": metadata.get("threshold_source", "fixed_cli"),
             }
         )
         if metadata.get("preprocessing_mode") is not None:

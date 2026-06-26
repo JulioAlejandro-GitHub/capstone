@@ -93,8 +93,19 @@ El formato guardado es:
 
 Durante entrenamiento, la política de checkpoint usa este diagnóstico para excluir epochs colapsados cuando `--reject-prediction-collapse` está activo.
 
+Los flujos `evaluate`, `predict_image`, `tta`, `ensemble`, `svm_features` y `explain` reportan el threshold realmente usado con:
+
+```text
+threshold_used
+threshold_source
+threshold_mode
+```
+
+`threshold_source = fixed_cli` indica un umbral numérico de CLI. `threshold_source = validation_calibration` indica un threshold clínico leído desde `model_metadata.json`.
+
 Más detalle:
 
 ```text
 docs/checkpoint_policy.md
+docs/training_evaluation_inference_workflow.md
 ```

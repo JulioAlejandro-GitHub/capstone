@@ -25,6 +25,7 @@ from src.metrics import collect_predictions, evaluate_keras_model
 from src.model_metadata import (
     build_model_metadata,
     clinical_threshold_metadata_from_calibration,
+    disabled_clinical_threshold_metadata,
     write_model_metadata,
 )
 from src.models import (
@@ -403,6 +404,11 @@ def main():
             "Reject prediction collapse:",
             str(checkpoint_policy_config.reject_prediction_collapse).lower(),
         )
+        print(
+            "Clinical threshold calibration:",
+            "enabled" if args.calibrate_threshold else "disabled",
+        )
+        print("Target recall:", args.target_recall)
         print("Min class fraction:", checkpoint_policy_config.min_class_fraction)
         print(
             "Checkpoint metric:",
@@ -514,13 +520,13 @@ def main():
 
         threshold_calibration = None
         threshold_calibration_path = None
-        clinical_threshold_metadata = None
+        clinical_threshold_metadata = disabled_clinical_threshold_metadata()
         test_threshold = 0.5
         threshold_info = {
             "threshold_requested": 0.5,
             "threshold_mode": "fixed",
             "threshold_used": 0.5,
-            "threshold_source": "fixed",
+            "threshold_source": "fixed_cli",
             "clinical_threshold": None,
             "target_recall": None,
             "target_recall_satisfied_on_validation": None,
@@ -601,6 +607,7 @@ def main():
             threshold=test_threshold,
             metadata={
                 "preprocessing_mode": preprocessing_mode,
+                "evaluation_split": "test",
                 "label_mapping_version": LABEL_MAPPING_VERSION,
                 "label_mapping": LABEL_MAPPING_METADATA,
                 "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,

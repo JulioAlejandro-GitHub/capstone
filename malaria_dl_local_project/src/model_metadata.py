@@ -25,6 +25,9 @@ CLINICAL_METRICS_AVAILABLE = [
     "pr_auc_parasitized",
     "balanced_accuracy",
 ]
+CLINICAL_THRESHOLD_NOT_CALIBRATED_WARNING = (
+    "Clinical threshold has not been calibrated."
+)
 
 
 def build_model_metadata(
@@ -47,6 +50,7 @@ def build_model_metadata(
         "positive_class_name": POSITIVE_LABEL,
         "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
         "clinical_metrics_available": CLINICAL_METRICS_AVAILABLE,
+        "clinical_threshold": disabled_clinical_threshold_metadata(),
         "threshold_default": float(threshold_default),
         "preprocessing": preprocessing,
         "checkpoint_monitor": checkpoint_monitor,
@@ -64,10 +68,21 @@ def metadata_path_for_checkpoint(checkpoint):
     return checkpoint.parent / MODEL_METADATA_FILENAME
 
 
-def write_model_metadata(output_dir, metadata):
+def disabled_clinical_threshold_metadata(warning=CLINICAL_THRESHOLD_NOT_CALIBRATED_WARNING):
+    return {
+        "enabled": False,
+        "warning": warning,
+    }
+
+
+def write_model_metadata(output_dir, metadata, merge_existing=True):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     metadata_path = output_dir / MODEL_METADATA_FILENAME
+    if merge_existing and metadata_path.exists():
+        existing_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        existing_metadata.update(metadata)
+        metadata = existing_metadata
     metadata_path.write_text(
         json.dumps(metadata, indent=2, ensure_ascii=False),
         encoding="utf-8",
@@ -147,10 +162,7 @@ def update_model_metadata_with_clinical_threshold(checkpoint, calibration_result
         }
     )
     metadata_path = metadata_path_for_checkpoint(checkpoint)
-    metadata_path.write_text(
-        json.dumps(metadata, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
+    write_model_metadata(metadata_path.parent, metadata, merge_existing=True)
     return metadata_path, metadata
 
 
@@ -224,13 +236,17 @@ def resolve_threshold_for_checkpoint(threshold, checkpoint_path: Path) -> dict:
         "threshold_requested": threshold,
         "threshold_mode": "fixed",
         "threshold_used": threshold_value,
-        "threshold_source": "fixed",
+        "threshold_source": "fixed_cli",
         "clinical_threshold": None,
         "target_recall": None,
         "target_recall_satisfied_on_validation": None,
         "expected_specificity": None,
         "warning": None,
     }
+
+
+def resolve_threshold(checkpoint_path: Path, threshold) -> dict:
+    return resolve_threshold_for_checkpoint(threshold, checkpoint_path)
 
 
 def verify_checkpoint_metadata(

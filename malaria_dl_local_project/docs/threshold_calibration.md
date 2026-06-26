@@ -173,10 +173,12 @@ python -m src.tta \
 
 python -m src.ensemble \
   --models outputs/custom_cnn/best_model.keras outputs/vgg16/best_model.keras \
-  --threshold clinical
+  --threshold 0.5
 ```
 
 TTA promedia `probability_parasitized` antes de aplicar threshold. Ensemble combina `probability_parasitized` antes de aplicar threshold.
+
+Para ensemble, `--threshold clinical` requiere metadata clínica calibrada para el ensemble mediante `--threshold-metadata-checkpoint`. No se reutiliza automáticamente el threshold de un modelo base porque la distribución de scores combinados puede cambiar.
 
 Si no existe threshold clínico en metadata, `--threshold clinical` falla con un error claro y se debe calibrar primero o usar un threshold numérico.
 

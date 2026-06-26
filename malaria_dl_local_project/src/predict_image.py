@@ -337,7 +337,7 @@ def build_result(args, image_path, stored_image, checkpoint, prediction_result):
         )
     threshold_info = getattr(args, "threshold_info", None) or {
         "threshold_mode": "fixed",
-        "threshold_source": "fixed",
+        "threshold_source": "fixed_cli",
         "threshold_used": fallback_threshold,
         "clinical_threshold": None,
     }
@@ -385,7 +385,7 @@ def build_result(args, image_path, stored_image, checkpoint, prediction_result):
         ),
         "calibration": prediction_result.get("calibration", {"method": "none", "applied": False}),
         "threshold_used": threshold_value,
-        "threshold_source": threshold_info.get("threshold_source", "fixed"),
+        "threshold_source": threshold_info.get("threshold_source", "fixed_cli"),
         "threshold_mode": threshold_info.get("threshold_mode", "fixed"),
         "target_recall": threshold_info.get("target_recall"),
         "target_recall_satisfied_on_validation": threshold_info.get(
@@ -478,7 +478,7 @@ def print_result(result):
     calibration_status = "aplicada" if calibration.get("applied") else "no aplicada"
     print(f"Calibración: {calibration.get('method', 'none')} ({calibration_status})")
     threshold_value = result.get("threshold")
-    threshold_source = result.get("threshold_source", "fixed")
+    threshold_source = result.get("threshold_source", "fixed_cli")
     if threshold_value is None:
         print("Umbral clínico experimental: no resuelto")
     else:

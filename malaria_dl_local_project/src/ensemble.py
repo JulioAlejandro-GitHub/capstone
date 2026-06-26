@@ -20,6 +20,12 @@ from src.model_metadata import resolve_threshold_for_checkpoint, verify_checkpoi
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
+ENSEMBLE_CLINICAL_THRESHOLD_ERROR = (
+    "No clinical threshold found for ensemble. "
+    "Calibrate ensemble threshold first or use numeric threshold."
+)
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Ensemble ponderado de modelos Keras.")
     parser.add_argument("--models", nargs="+", required=True, help="Rutas a modelos .keras")
@@ -29,7 +35,18 @@ def parse_args(argv=None):
     parser.add_argument(
         "--threshold",
         default="0.5",
-        help="Umbral numérico o 'clinical' para usar model_metadata.json del primer modelo.",
+        help=(
+            "Umbral numérico o 'clinical'. Para 'clinical' se requiere "
+            "--threshold-metadata-checkpoint con metadata calibrada del ensemble."
+        ),
+    )
+    parser.add_argument(
+        "--threshold-metadata-checkpoint",
+        default=None,
+        help=(
+            "Ruta a un artefacto dentro del directorio que contiene model_metadata.json "
+            "del ensemble calibrado."
+        ),
     )
     parser.add_argument(
         "--label-mapping",
@@ -52,6 +69,21 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
+def resolve_ensemble_threshold(threshold, model_paths, threshold_metadata_checkpoint=None):
+    if isinstance(threshold, str) and threshold.strip().lower() == "clinical":
+        if not threshold_metadata_checkpoint:
+            raise ValueError(ENSEMBLE_CLINICAL_THRESHOLD_ERROR)
+        try:
+            return resolve_threshold_for_checkpoint(
+                threshold,
+                Path(threshold_metadata_checkpoint),
+            )
+        except ValueError as exc:
+            raise ValueError(ENSEMBLE_CLINICAL_THRESHOLD_ERROR) from exc
+
+    return resolve_threshold_for_checkpoint(threshold, model_paths[0])
+
+
 def main():
     args = parse_args()
     run_context = None
@@ -71,7 +103,11 @@ def main():
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: ensemble usando convención legacy_tfds_parasitized_zero.")
     dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
-    threshold_info = resolve_threshold_for_checkpoint(args.threshold, model_paths[0])
+    threshold_info = resolve_ensemble_threshold(
+        args.threshold,
+        model_paths,
+        threshold_metadata_checkpoint=args.threshold_metadata_checkpoint,
+    )
     threshold_value = threshold_info["threshold_used"]
 
     output_dir = OUTPUT_DIR / "ensemble"
@@ -166,6 +202,7 @@ def main():
             threshold=threshold_value,
             metadata={
                 "preprocessing_mode": preprocessing_mode,
+                "evaluation_split": "test",
                 "label_mapping_version": LABEL_MAPPING_VERSION,
                 "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                 "raw_model_score_meaning": "probability_parasitized",

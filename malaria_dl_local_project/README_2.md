@@ -176,6 +176,8 @@ python -m src.ensemble \
   --track-db
 ```
 
+Para `--threshold clinical`, ensemble requiere metadata calibrada del ensemble mediante `--threshold-metadata-checkpoint`; no reutiliza automáticamente el threshold de un modelo base.
+
 10. Ejecutar TTA
 
 ```bash
@@ -194,6 +196,7 @@ python -m src.explain \
   --method all \
   --num-samples 50 \
   --positive-label parasitized \
+  --threshold clinical \
   --track-db
 ```
 
@@ -203,8 +206,11 @@ python -m src.explain \
   --method all \
   --num-samples 50 \
   --positive-label parasitized \
+  --threshold clinical \
   --track-db
 ```
+
+Workflow completo: `docs/training_evaluation_inference_workflow.md`.
 
 12. Levantar visualización
 Backend:

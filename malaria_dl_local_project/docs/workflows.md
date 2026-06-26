@@ -170,7 +170,7 @@ outputs/<model>/threshold_calibration.json
 outputs/<model>/model_metadata.json
 ```
 
-Luego evaluación, inferencia, TTA y ensemble pueden usar:
+Luego evaluación, inferencia individual y TTA pueden usar el threshold clínico del checkpoint:
 
 ```bash
 python -m src.predict_image \
@@ -178,6 +178,8 @@ python -m src.predict_image \
   --image-path ruta/a/imagen.png \
   --threshold clinical
 ```
+
+Para ensemble, `--threshold clinical` requiere metadata calibrada del ensemble mediante `--threshold-metadata-checkpoint`; si no existe, usa un threshold numérico.
 
 El archivo `threshold_calibration.json` registra:
 

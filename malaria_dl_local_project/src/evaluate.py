@@ -139,6 +139,7 @@ def main():
             positive_label=args.positive_label,
             metadata={
                 "preprocessing_mode": preprocessing_mode,
+                "evaluation_split": "test",
                 "label_mapping_version": args.label_mapping,
                 "label_mapping": mapping_metadata,
                 "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],

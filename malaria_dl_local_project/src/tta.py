@@ -215,6 +215,7 @@ def main():
             threshold=threshold_value,
             metadata={
                 "preprocessing_mode": preprocessing_mode,
+                "evaluation_split": "test",
                 "label_mapping_version": LABEL_MAPPING_VERSION,
                 "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                 "base_model_label_mapping_version": args.label_mapping,

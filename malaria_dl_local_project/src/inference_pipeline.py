@@ -255,6 +255,10 @@ def resolve_inference_threshold(threshold, checkpoint_path):
     return resolve_threshold_for_checkpoint(threshold, checkpoint_path)
 
 
+def resolve_threshold(checkpoint_path, threshold):
+    return resolve_threshold_for_checkpoint(threshold, checkpoint_path)
+
+
 def model_name_from_path(path):
     path = Path(path)
     return path.parent.name or path.stem

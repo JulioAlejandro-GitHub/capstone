@@ -692,6 +692,9 @@ capstone/
 
 ## 8. Notas metodológicas
 
+Guía integrada de entrenamiento, evaluación, inferencia, threshold clínico y tracking:
+[docs/training_evaluation_inference_workflow.md](docs/training_evaluation_inference_workflow.md).
+
 TensorFlow Datasets entrega el dataset `malaria` como un único split llamado `train`.
 El flujo oficial del proyecto primero crea un split físico persistente con:
 

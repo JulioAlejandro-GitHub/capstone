@@ -19,6 +19,7 @@ from src.config import (
     label_mapping_metadata,
 )
 from src.data import add_data_source_args, dataset_tracking_metadata
+from src.model_metadata import resolve_threshold_for_checkpoint
 from src.preprocessing import (
     PREPROCESSING_CHOICES,
     PREPROCESSING_RESCALE_0_1,
@@ -45,6 +46,8 @@ SUMMARY_COLUMNS = [
     "score_positive_label",
     "positive_label",
     "threshold",
+    "threshold_used",
+    "threshold_source",
     "method",
     "success",
     "error",
@@ -74,7 +77,7 @@ def get_model_output_tensor(model):
         raise
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description="Genera explicaciones visuales post hoc con LIME, SHAP y Grad-CAM."
     )
@@ -88,7 +91,11 @@ def parse_args():
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--num-samples", type=int, default=20)
-    parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--threshold",
+        default="0.5",
+        help="Umbral numérico o 'clinical' para usar model_metadata.json.",
+    )
     parser.add_argument(
         "--label-mapping",
         choices=LABEL_MAPPING_CHOICES,
@@ -124,7 +131,7 @@ def parse_args():
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def methods_to_run(method):
@@ -449,6 +456,9 @@ def select_cases(
                 "probability_parasitized": score,
                 "positive_label": positive_label,
                 "threshold": float(threshold),
+                "threshold_used": float(threshold),
+                "threshold_source": "fixed_cli",
+                "threshold_mode": "fixed",
                 "image": model_image,
                 "display_image": display_image,
                 "preprocessing_mode": resolve_preprocessing_mode(
@@ -917,6 +927,8 @@ def make_summary_row(
         "score_positive_label": case["score_positive_label"],
         "positive_label": case["positive_label"],
         "threshold": case["threshold"],
+        "threshold_used": case.get("threshold_used", case["threshold"]),
+        "threshold_source": case.get("threshold_source", "fixed_cli"),
         "method": method,
         "success": bool(success),
         "error": "" if error is None else str(error),
@@ -1038,6 +1050,8 @@ def main():
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: explicabilidad usando checkpoint legacy_tfds_parasitized_zero.")
     dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
+    threshold_info = resolve_threshold_for_checkpoint(args.threshold, checkpoint)
+    threshold_value = threshold_info["threshold_used"]
 
     if args.track_db:
         from src.tracking_integration import (
@@ -1063,6 +1077,7 @@ def main():
                     "label_mapping_version": args.label_mapping,
                     "label_mapping": mapping_metadata,
                     "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                    **threshold_info,
                     **dataset_info,
                 },
             ),
@@ -1100,7 +1115,7 @@ def main():
         print(
             f"Clase positiva clínica: {positive_label} "
             f"({RAW_MODEL_SCORE_MEANING}, índice {positive_idx}); "
-            f"umbral={args.threshold}"
+            f"umbral={threshold_value}"
         )
 
         for method in selected_methods:
@@ -1112,7 +1127,7 @@ def main():
             model=model,
             dataset=ds_test,
             num_samples=args.num_samples,
-            threshold=args.threshold,
+            threshold=threshold_value,
             positive_idx=positive_idx,
             negative_idx=negative_idx,
             max_candidates=args.max_candidates,
@@ -1126,13 +1141,18 @@ def main():
             images=candidate_images,
             class_names=class_names,
             num_samples=args.num_samples,
-            threshold=args.threshold,
+            threshold=threshold_value,
             positive_idx=positive_idx,
             negative_idx=negative_idx,
             positive_label=positive_label,
             preprocessing_mode=preprocessing_mode,
             label_mapping_version=args.label_mapping,
         )
+        for case in cases:
+            case["threshold"] = float(threshold_value)
+            case["threshold_used"] = float(threshold_value)
+            case["threshold_source"] = threshold_info.get("threshold_source")
+            case["threshold_mode"] = threshold_info.get("threshold_mode")
         print(f"Casos seleccionados: {len(cases)}")
 
         background_images = None
@@ -1205,6 +1225,9 @@ def main():
                     "predicted_label": case["predicted_label"],
                     "true_label": case["true_label"],
                     "threshold": case["threshold"],
+                    "threshold_used": case.get("threshold_used"),
+                    "threshold_source": case.get("threshold_source"),
+                    "threshold_mode": case.get("threshold_mode"),
                     "explainability_methods": [],
                     "explainability_outputs": [],
                 }
@@ -1259,6 +1282,7 @@ def main():
                         "raw_model_score_meaning": mapping_metadata[
                             "raw_model_score_meaning"
                         ],
+                        **threshold_info,
                         **dataset_info,
                     },
                 ),
@@ -1275,6 +1299,7 @@ def main():
                     "failed_explanations": int(
                         sum(1 for row in summary_rows if not row.get("success"))
                     ),
+                    **threshold_info,
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
@@ -1286,6 +1311,7 @@ def main():
                 run_context,
                 metadata={
                     "status_detail": "explainability completed",
+                    **threshold_info,
                     **dataset_info,
                 },
             )

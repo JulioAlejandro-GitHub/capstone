@@ -139,3 +139,41 @@ outputs/<model>/training_log.csv
 ```
 
 `checkpoint_policy_summary.json` contiene la política, configuración, epoch seleccionado, métricas seleccionadas, estado de `policy_satisfied`, diagnóstico de colapso y warning si existe.
+
+## Integración Con Threshold Clínico
+
+El entrenamiento puede calibrar el threshold clínico inmediatamente después de seleccionar `best_model.keras`:
+
+```bash
+python -m src.train \
+  --model custom_cnn \
+  --epochs 30 \
+  --img-size 200 \
+  --batch-size 64 \
+  --checkpoint-policy auc_with_min_recall \
+  --min-recall 0.98 \
+  --calibrate-threshold \
+  --target-recall 0.98 \
+  --track-db
+```
+
+La selección de checkpoint usa validation con threshold operativo `0.5` para comparar epochs. Luego, si se solicita calibración, el mejor checkpoint predice validation y se selecciona un threshold para `target_recall`. Test solo se evalúa después de fijar ese threshold.
+
+El resultado queda en `model_metadata.json`:
+
+```json
+{
+  "checkpoint_policy": "auc_with_min_recall",
+  "checkpoint_policy_config": {
+    "min_recall": 0.98,
+    "beta": 2.0,
+    "reject_prediction_collapse": true,
+    "min_class_fraction": 0.05
+  },
+  "clinical_threshold": {
+    "enabled": true,
+    "threshold_source": "validation_calibration",
+    "target_recall": 0.98
+  }
+}
+```
