@@ -19,6 +19,7 @@ try:
     from app.routes.artifacts import artifact_file
     from app.routes.health import health
     from app.routes.predictions import uploaded_predictions
+    from app.routes.runs import get_run_image_predictions, list_clinical_run_summary
 except Exception as exc:  # pragma: no cover - exercised only when backend deps are missing.
     HTTPException = None
     IMPORT_ERROR = exc
@@ -82,6 +83,49 @@ class BackendEndpointTests(unittest.TestCase):
         self.assertIn("vw_clinical_inference_predictions", fetch_one.call_args.args[1])
         self.assertIn("vw_clinical_inference_predictions", fetch_all.call_args.args[1])
         self.assertTrue(fetch_all.call_args.args[2]["quality_passed"])
+
+    def test_clinical_run_summary_endpoint_reads_new_view(self):
+        row = {
+            "run_id": "11111111-1111-1111-1111-111111111111",
+            "model_name": "custom_cnn",
+            "run_type": "evaluation",
+            "threshold_used": 0.42,
+            "recall_parasitized": 0.97,
+        }
+
+        with mock.patch("app.routes.runs.fetch_all", return_value=[row]) as fetch_all:
+            payload = list_clinical_run_summary(
+                datasource="malaria",
+                run_type="evaluation",
+                model_name="custom_cnn",
+                limit=10,
+            )
+
+        self.assertEqual(payload["items"][0]["threshold_used"], 0.42)
+        self.assertIn("vw_clinical_run_summary", fetch_all.call_args.args[1])
+        self.assertEqual(fetch_all.call_args.args[2]["run_type"], "evaluation")
+        self.assertEqual(fetch_all.call_args.args[2]["model_name"], "custom_cnn")
+
+    def test_run_image_predictions_endpoint_reads_new_view(self):
+        row = {
+            "run_id": "11111111-1111-1111-1111-111111111111",
+            "filename": "0001.png",
+            "predicted_label_name": "parasitized",
+            "probability_parasitized": 0.91,
+        }
+
+        with mock.patch("app.routes.runs.fetch_all", return_value=[row]) as fetch_all:
+            payload = get_run_image_predictions(
+                run_id=row["run_id"],
+                datasource="malaria",
+                limit=10,
+                offset=5,
+            )
+
+        self.assertEqual(payload["items"][0]["predicted_label_name"], "parasitized")
+        self.assertIn("vw_run_image_predictions_summary", fetch_all.call_args.args[1])
+        self.assertEqual(fetch_all.call_args.args[2]["limit"], 10)
+        self.assertEqual(fetch_all.call_args.args[2]["offset"], 5)
 
     def test_artifact_endpoint_serves_allowed_png_path_fallback(self):
         outputs_dir = PROJECT_ROOT / "outputs"

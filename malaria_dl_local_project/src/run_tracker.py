@@ -24,7 +24,65 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 def _json(value, default=None):
     if value is None:
         value = {} if default is None else default
-    return json.dumps(value, ensure_ascii=False)
+    return json.dumps(_json_safe(value), ensure_ascii=False)
+
+
+def _json_safe(value):
+    if isinstance(value, Path):
+        return str(value)
+    if hasattr(value, "item") and callable(value.item):
+        try:
+            return value.item()
+        except Exception:
+            pass
+    if hasattr(value, "tolist") and callable(value.tolist):
+        try:
+            return value.tolist()
+        except Exception:
+            pass
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [_json_safe(item) for item in value]
+    return value
+
+
+def _numeric(value):
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _integer(value):
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _boolean(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "t", "1", "yes", "y"}:
+            return True
+        if normalized in {"false", "f", "0", "no", "n"}:
+            return False
+        return None
+    return bool(value)
+
+
+def _first_not_none(*values):
+    for value in values:
+        if value is not None:
+            return value
+    return None
 
 
 def _warn(message):
@@ -682,11 +740,15 @@ def log_artifacts_from_directory(run_id, directory, artifact_type=None):
 def log_run_io_record(
     run_id,
     script_name,
+    run_type=None,
+    model_name=None,
     command=None,
     input_parameters=None,
     output_results=None,
     output_artifacts=None,
     dataset_metadata=None,
+    model_metadata=None,
+    clinical_metadata=None,
     label_mapping_version=LABEL_MAPPING_VERSION,
     raw_model_score_meaning=RAW_MODEL_SCORE_MEANING,
     metadata=None,
@@ -698,14 +760,16 @@ def log_run_io_record(
     return _execute_returning_id(
         """
         INSERT INTO run_io_records (
-            run_id, script_name, command, input_parameters, output_results,
-            output_artifacts, dataset_metadata, label_mapping_version,
-            raw_model_score_meaning, metadata
+            run_id, script_name, run_type, model_name, command, input_parameters,
+            output_results, output_artifacts, dataset_metadata, model_metadata,
+            clinical_metadata, label_mapping_version, raw_model_score_meaning, metadata
         )
         VALUES (
-            :run_id, :script_name, :command, CAST(:input_parameters AS jsonb),
+            :run_id, :script_name, :run_type, :model_name, :command,
+            CAST(:input_parameters AS jsonb),
             CAST(:output_results AS jsonb), CAST(:output_artifacts AS jsonb),
-            CAST(:dataset_metadata AS jsonb), :label_mapping_version,
+            CAST(:dataset_metadata AS jsonb), CAST(:model_metadata AS jsonb),
+            CAST(:clinical_metadata AS jsonb), :label_mapping_version,
             :raw_model_score_meaning, CAST(:metadata AS jsonb)
         )
         RETURNING run_io_id
@@ -713,16 +777,387 @@ def log_run_io_record(
         {
             "run_id": run_id,
             "script_name": script_name,
+            "run_type": run_type,
+            "model_name": model_name,
             "command": command,
             "input_parameters": _json(input_parameters),
             "output_results": _json(output_results),
             "output_artifacts": _json(output_artifacts, default=[]),
             "dataset_metadata": _json(dataset_metadata),
+            "model_metadata": _json(model_metadata),
+            "clinical_metadata": _json(clinical_metadata),
             "label_mapping_version": label_mapping_version,
             "raw_model_score_meaning": raw_model_score_meaning,
             "metadata": _json(metadata),
         },
     )
+
+
+def log_clinical_metrics(
+    run_id,
+    metrics,
+    split_name,
+    model_id=None,
+    model_name=None,
+    threshold_used=None,
+    threshold_source=None,
+    metadata=None,
+):
+    if not run_id:
+        _warn("log_clinical_metrics omitido porque run_id es None.")
+        return None
+    metrics = metrics or {}
+    cm = metrics.get("confusion_matrix") or []
+    tn = fp = fn = tp = None
+    if len(cm) == 2 and len(cm[0]) == 2 and len(cm[1]) == 2:
+        tn, fp = int(cm[0][0]), int(cm[0][1])
+        fn, tp = int(cm[1][0]), int(cm[1][1])
+    prediction_distribution = {
+        "n_pred_uninfected": metrics.get("n_pred_uninfected"),
+        "n_pred_parasitized": metrics.get("n_pred_parasitized"),
+        "percent_pred_uninfected": metrics.get("percent_pred_uninfected"),
+        "percent_pred_parasitized": metrics.get("percent_pred_parasitized"),
+    }
+    metric_metadata = {
+        "source": "src.run_tracker.log_clinical_metrics",
+        "raw_metrics": metrics,
+    }
+    if metadata:
+        metric_metadata.update(metadata)
+
+    return _execute_returning_id(
+        """
+        INSERT INTO run_clinical_metrics (
+            run_id, model_id, model_name, split_name, threshold_used,
+            threshold_source, accuracy, precision_parasitized,
+            recall_parasitized, sensitivity_parasitized, specificity,
+            f1_parasitized, f2_parasitized, roc_auc_parasitized,
+            pr_auc_parasitized, balanced_accuracy, tn, fp, fn, tp,
+            confusion_matrix, classification_report, prediction_distribution,
+            prediction_collapse, label_mapping_version, raw_model_score_meaning,
+            metadata
+        )
+        VALUES (
+            :run_id, :model_id, :model_name, :split_name, :threshold_used,
+            :threshold_source, :accuracy, :precision_parasitized,
+            :recall_parasitized, :sensitivity_parasitized, :specificity,
+            :f1_parasitized, :f2_parasitized, :roc_auc_parasitized,
+            :pr_auc_parasitized, :balanced_accuracy, :tn, :fp, :fn, :tp,
+            CAST(:confusion_matrix AS jsonb), CAST(:classification_report AS jsonb),
+            CAST(:prediction_distribution AS jsonb), CAST(:prediction_collapse AS jsonb),
+            :label_mapping_version, :raw_model_score_meaning, CAST(:metadata AS jsonb)
+        )
+        RETURNING run_clinical_metric_id
+        """,
+        {
+            "run_id": run_id,
+            "model_id": model_id,
+            "model_name": model_name,
+            "split_name": split_name,
+            "threshold_used": _numeric(
+                threshold_used if threshold_used is not None else metrics.get("threshold_used")
+            ),
+            "threshold_source": threshold_source or metrics.get("threshold_source"),
+            "accuracy": _numeric(metrics.get("accuracy")),
+            "precision_parasitized": _numeric(metrics.get("precision_parasitized")),
+            "recall_parasitized": _numeric(metrics.get("recall_parasitized")),
+            "sensitivity_parasitized": _numeric(metrics.get("sensitivity_parasitized")),
+            "specificity": _numeric(metrics.get("specificity")),
+            "f1_parasitized": _numeric(metrics.get("f1_parasitized")),
+            "f2_parasitized": _numeric(metrics.get("f2_parasitized")),
+            "roc_auc_parasitized": _numeric(metrics.get("roc_auc_parasitized")),
+            "pr_auc_parasitized": _numeric(metrics.get("pr_auc_parasitized")),
+            "balanced_accuracy": _numeric(metrics.get("balanced_accuracy")),
+            "tn": tn,
+            "fp": fp,
+            "fn": fn,
+            "tp": tp,
+            "confusion_matrix": _json(cm, default=[]),
+            "classification_report": _json(
+                metrics.get("classification_report_dict"),
+                default={},
+            ),
+            "prediction_distribution": _json(prediction_distribution),
+            "prediction_collapse": _json(metrics.get("prediction_collapse")),
+            "label_mapping_version": metrics.get(
+                "label_mapping_version",
+                LABEL_MAPPING_VERSION,
+            ),
+            "raw_model_score_meaning": metrics.get(
+                "raw_model_score_meaning",
+                RAW_MODEL_SCORE_MEANING,
+            ),
+            "metadata": _json(metric_metadata),
+        },
+    )
+
+
+def log_checkpoint_policy(run_id, checkpoint_policy_summary, model_name=None):
+    if not run_id:
+        _warn("log_checkpoint_policy omitido porque run_id es None.")
+        return None
+    summary = checkpoint_policy_summary or {}
+    selected_metrics = summary.get("selected_metrics") or {}
+    config = summary.get("checkpoint_policy_config") or summary.get("config") or {}
+    checkpoint_policy = (
+        summary.get("checkpoint_policy")
+        or summary.get("policy")
+        or config.get("policy")
+        or "unknown"
+    )
+    return _execute_returning_id(
+        """
+        INSERT INTO run_checkpoint_policy (
+            run_id, model_name, checkpoint_policy, checkpoint_policy_config,
+            selected_epoch, policy_satisfied, selected_metric,
+            selected_metric_value, min_recall_required,
+            val_recall_parasitized_selected, val_f2_parasitized_selected,
+            val_specificity_selected, val_auc_selected, val_pr_auc_selected,
+            val_balanced_accuracy_selected, prediction_collapse_detected,
+            all_epochs_collapsed, checkpoint_warning, checkpoint_path,
+            checkpoint_policy_summary_path, model_metadata_path, metadata
+        )
+        VALUES (
+            :run_id, :model_name, :checkpoint_policy,
+            CAST(:checkpoint_policy_config AS jsonb), :selected_epoch,
+            :policy_satisfied, :selected_metric, :selected_metric_value,
+            :min_recall_required, :val_recall_parasitized_selected,
+            :val_f2_parasitized_selected, :val_specificity_selected,
+            :val_auc_selected, :val_pr_auc_selected,
+            :val_balanced_accuracy_selected, :prediction_collapse_detected,
+            :all_epochs_collapsed, :checkpoint_warning, :checkpoint_path,
+            :checkpoint_policy_summary_path, :model_metadata_path,
+            CAST(:metadata AS jsonb)
+        )
+        RETURNING run_checkpoint_policy_id
+        """,
+        {
+            "run_id": run_id,
+            "model_name": model_name,
+            "checkpoint_policy": checkpoint_policy,
+            "checkpoint_policy_config": _json(config),
+            "selected_epoch": _integer(summary.get("selected_epoch")),
+            "policy_satisfied": _boolean(summary.get("policy_satisfied")),
+            "selected_metric": summary.get("selected_metric"),
+            "selected_metric_value": _numeric(summary.get("selected_metric_value")),
+            "min_recall_required": _numeric(
+                _first_not_none(
+                    summary.get("min_recall_required"),
+                    config.get("min_recall"),
+                )
+            ),
+            "val_recall_parasitized_selected": _numeric(
+                _first_not_none(
+                    summary.get("val_recall_parasitized"),
+                    selected_metrics.get("val_recall_parasitized"),
+                    selected_metrics.get("val_sensitivity_parasitized"),
+                )
+            ),
+            "val_f2_parasitized_selected": _numeric(
+                _first_not_none(
+                    summary.get("val_f2_parasitized"),
+                    selected_metrics.get("val_f2_parasitized"),
+                )
+            ),
+            "val_specificity_selected": _numeric(
+                _first_not_none(
+                    summary.get("val_specificity"),
+                    selected_metrics.get("val_specificity"),
+                )
+            ),
+            "val_auc_selected": _numeric(
+                _first_not_none(summary.get("val_auc"), selected_metrics.get("val_auc"))
+            ),
+            "val_pr_auc_selected": _numeric(
+                _first_not_none(
+                    summary.get("val_pr_auc_parasitized"),
+                    selected_metrics.get("val_pr_auc_parasitized"),
+                    selected_metrics.get("val_pr_auc"),
+                )
+            ),
+            "val_balanced_accuracy_selected": _numeric(
+                _first_not_none(
+                    summary.get("val_balanced_accuracy"),
+                    selected_metrics.get("val_balanced_accuracy"),
+                )
+            ),
+            "prediction_collapse_detected": _boolean(
+                summary.get("prediction_collapse_detected")
+            ),
+            "all_epochs_collapsed": _boolean(summary.get("all_epochs_collapsed")),
+            "checkpoint_warning": summary.get("warning")
+            or summary.get("checkpoint_warning"),
+            "checkpoint_path": summary.get("checkpoint_path"),
+            "checkpoint_policy_summary_path": summary.get(
+                "checkpoint_policy_summary_path"
+            ),
+            "model_metadata_path": summary.get("model_metadata_path"),
+            "metadata": _json(summary),
+        },
+    )
+
+
+def log_threshold_calibration(run_id, calibration_result, model_name=None):
+    if not run_id:
+        _warn("log_threshold_calibration omitido porque run_id es None.")
+        return None
+    calibration = calibration_result or {}
+    if calibration.get("threshold_selected") is None:
+        _warn("log_threshold_calibration omitido porque threshold_selected es None.")
+        return None
+    selected_metrics = calibration.get("selected_metrics") or calibration.get(
+        "validation_metrics_at_threshold"
+    ) or {}
+    default_metrics = calibration.get("default_threshold_metrics") or {}
+    return _execute_returning_id(
+        """
+        INSERT INTO run_threshold_calibration (
+            run_id, model_name, threshold_policy, threshold_source,
+            threshold_selected, default_threshold, target_recall,
+            target_recall_satisfied, min_specificity,
+            validation_recall_at_threshold, validation_specificity_at_threshold,
+            validation_precision_at_threshold, validation_f1_at_threshold,
+            validation_f2_at_threshold, validation_balanced_accuracy_at_threshold,
+            validation_pr_auc, validation_roc_auc, default_threshold_metrics,
+            selected_threshold_metrics, candidate_count, threshold_warning,
+            calibration_split, threshold_calibration_path, model_metadata_path,
+            metadata
+        )
+        VALUES (
+            :run_id, :model_name, :threshold_policy, :threshold_source,
+            :threshold_selected, :default_threshold, :target_recall,
+            :target_recall_satisfied, :min_specificity,
+            :validation_recall_at_threshold, :validation_specificity_at_threshold,
+            :validation_precision_at_threshold, :validation_f1_at_threshold,
+            :validation_f2_at_threshold, :validation_balanced_accuracy_at_threshold,
+            :validation_pr_auc, :validation_roc_auc,
+            CAST(:default_threshold_metrics AS jsonb),
+            CAST(:selected_threshold_metrics AS jsonb), :candidate_count,
+            :threshold_warning, :calibration_split, :threshold_calibration_path,
+            :model_metadata_path, CAST(:metadata AS jsonb)
+        )
+        RETURNING run_threshold_calibration_id
+        """,
+        {
+            "run_id": run_id,
+            "model_name": model_name,
+            "threshold_policy": calibration.get("threshold_policy", "target_recall"),
+            "threshold_source": calibration.get(
+                "threshold_source",
+                "validation_calibration",
+            ),
+            "threshold_selected": _numeric(calibration.get("threshold_selected")),
+            "default_threshold": _numeric(calibration.get("default_threshold", 0.5)),
+            "target_recall": _numeric(calibration.get("target_recall")),
+            "target_recall_satisfied": _boolean(
+                calibration.get("target_recall_satisfied")
+            ),
+            "min_specificity": _numeric(calibration.get("min_specificity")),
+            "validation_recall_at_threshold": _numeric(
+                _first_not_none(
+                    selected_metrics.get("recall_parasitized"),
+                    selected_metrics.get("sensitivity_parasitized"),
+                )
+            ),
+            "validation_specificity_at_threshold": _numeric(
+                selected_metrics.get("specificity")
+            ),
+            "validation_precision_at_threshold": _numeric(
+                selected_metrics.get("precision_parasitized")
+            ),
+            "validation_f1_at_threshold": _numeric(
+                selected_metrics.get("f1_parasitized")
+            ),
+            "validation_f2_at_threshold": _numeric(
+                selected_metrics.get("f2_parasitized")
+            ),
+            "validation_balanced_accuracy_at_threshold": _numeric(
+                selected_metrics.get("balanced_accuracy")
+            ),
+            "validation_pr_auc": _numeric(selected_metrics.get("pr_auc_parasitized")),
+            "validation_roc_auc": _numeric(selected_metrics.get("roc_auc_parasitized")),
+            "default_threshold_metrics": _json(default_metrics),
+            "selected_threshold_metrics": _json(selected_metrics),
+            "candidate_count": _integer(calibration.get("candidate_count")),
+            "threshold_warning": calibration.get("warning"),
+            "calibration_split": calibration.get("calibration_split", "val"),
+            "threshold_calibration_path": calibration.get("threshold_calibration_path"),
+            "model_metadata_path": calibration.get("model_metadata_path"),
+            "metadata": _json(calibration),
+        },
+    )
+
+
+def log_image_predictions(run_id, predictions):
+    if not run_id:
+        _warn("log_image_predictions omitido porque run_id es None.")
+        return {"total": 0, "inserted": 0}
+    if not predictions:
+        return {"total": 0, "inserted": 0}
+
+    sql = text(
+        """
+        INSERT INTO run_image_predictions (
+            run_id, image_id, split_name, usage_context, filename, relative_path,
+            true_label, true_label_name, predicted_label, predicted_label_name,
+            probability_parasitized, probability_uninfected, raw_model_score,
+            raw_model_score_meaning, threshold_used, threshold_source,
+            is_correct, case_type, metadata
+        )
+        VALUES (
+            :run_id, :image_id, :split_name, :usage_context, :filename,
+            :relative_path, :true_label, :true_label_name, :predicted_label,
+            :predicted_label_name, :probability_parasitized,
+            :probability_uninfected, :raw_model_score, :raw_model_score_meaning,
+            :threshold_used, :threshold_source, :is_correct, :case_type,
+            CAST(:metadata AS jsonb)
+        )
+        RETURNING run_image_prediction_id
+        """
+    )
+    inserted = 0
+    try:
+        with get_connection() as connection:
+            for prediction in predictions:
+                params = {
+                    "run_id": run_id,
+                    "image_id": prediction.get("image_id"),
+                    "split_name": prediction.get("split_name"),
+                    "usage_context": prediction.get("usage_context"),
+                    "filename": prediction.get("filename"),
+                    "relative_path": prediction.get("relative_path"),
+                    "true_label": _integer(prediction.get("true_label")),
+                    "true_label_name": prediction.get("true_label_name"),
+                    "predicted_label": _integer(prediction.get("predicted_label")),
+                    "predicted_label_name": prediction.get("predicted_label_name"),
+                    "probability_parasitized": _numeric(
+                        prediction.get("probability_parasitized")
+                    ),
+                    "probability_uninfected": _numeric(
+                        prediction.get("probability_uninfected")
+                    ),
+                    "raw_model_score": _numeric(prediction.get("raw_model_score")),
+                    "raw_model_score_meaning": prediction.get(
+                        "raw_model_score_meaning",
+                        RAW_MODEL_SCORE_MEANING,
+                    ),
+                    "threshold_used": _numeric(
+                        _first_not_none(
+                            prediction.get("threshold_used"),
+                            prediction.get("threshold"),
+                        )
+                    ),
+                    "threshold_source": prediction.get("threshold_source"),
+                    "is_correct": _boolean(prediction.get("is_correct")),
+                    "case_type": prediction.get("case_type"),
+                    "metadata": _json(prediction.get("metadata")),
+                }
+                if connection.execute(sql, params).first():
+                    inserted += 1
+        return {"total": len(predictions), "inserted": inserted}
+    except Exception as exc:
+        _warn(str(exc))
+        return {"total": len(predictions), "inserted": 0}
 
 
 def log_run_dataset_images(run_id, image_rows):

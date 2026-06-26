@@ -1303,6 +1303,27 @@ def main():
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
+                model_metadata={
+                    "checkpoint": str(checkpoint),
+                    "preprocessing_mode": preprocessing_mode,
+                    "model_name": run_context.get("model_name"),
+                    "label_mapping_version": args.label_mapping,
+                    "raw_model_score_meaning": mapping_metadata[
+                        "raw_model_score_meaning"
+                    ],
+                },
+                clinical_metadata={
+                    "explainability_methods": selected_methods,
+                    "case_type_counts": case_type_counts,
+                    "threshold_used": threshold_info.get("threshold_used"),
+                    "threshold_source": threshold_info.get("threshold_source"),
+                    "threshold_mode": threshold_info.get("threshold_mode"),
+                    "target_recall": threshold_info.get("target_recall"),
+                    "clinical_threshold": threshold_info.get("clinical_threshold"),
+                    "raw_model_score_meaning": mapping_metadata[
+                        "raw_model_score_meaning"
+                    ],
+                },
                 label_mapping_version=args.label_mapping,
                 raw_model_score_meaning=mapping_metadata["raw_model_score_meaning"],
                 metadata={"status_detail": "explainability completed"},

@@ -11,7 +11,12 @@ source .venv/bin/activate
 1. Verificar PostgreSQL y migraciones
 ```bash
 python scripts/init_db.py
+python scripts/test_db.py
 ```
+
+`init_db.py` aplica migraciones idempotentes, incluida `017_clinical_run_tracking.sql`.
+`test_db.py` valida inserciones sintéticas en IO, métricas clínicas, checkpoint,
+threshold, artefactos y predicciones por imagen.
 
 2. Purga limpia de datos experimentales
 Esto limpia outputs experimentales y datos de tracking según el script de reset.
@@ -106,6 +111,9 @@ python -m src.evaluate \
 ```
 
 Las evaluaciones, TTA, ensemble y SVM guardan métricas clínicas comunes en JSON y PostgreSQL: `recall_parasitized`/sensibilidad, `specificity`, `f2_parasitized`, `roc_auc_parasitized`, `pr_auc_parasitized`, `balanced_accuracy`, matriz de confusión clínica y diagnóstico `prediction_collapse`. La convención es siempre `0 = uninfected`, `1 = parasitized` y `raw_model_score = probability_parasitized`.
+
+Detalle del schema PostgreSQL, vistas y endpoints:
+`docs/postgresql_tracking.md`.
 
 7. Calibrar threshold clínico de modelos
 

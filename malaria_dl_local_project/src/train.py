@@ -720,8 +720,10 @@ def main():
                 log_output_artifacts,
                 log_training_history,
                 output_artifacts_from_directory,
+                record_checkpoint_policy,
                 record_run_dataset_images,
                 record_run_io,
+                record_threshold_calibration,
                 threshold_calibration_for_tracking,
             )
 
@@ -779,6 +781,36 @@ def main():
                     **dataset_info,
                 },
             )
+            checkpoint_policy_payload = {
+                **(policy_summary or {}),
+                "checkpoint_policy": checkpoint_policy_config.policy,
+                "checkpoint_policy_config": checkpoint_policy_config_dict(
+                    checkpoint_policy_config
+                ),
+                "checkpoint_policy_summary_path": str(
+                    output_dir / "checkpoint_policy_summary.json"
+                ),
+                "model_metadata_path": str(metadata_path),
+            }
+            record_checkpoint_policy(
+                run_context,
+                checkpoint_policy_payload,
+                model_name=run_context.get("model_name"),
+            )
+            if threshold_calibration:
+                record_threshold_calibration(
+                    run_context,
+                    {
+                        **threshold_calibration,
+                        "threshold_calibration_path": (
+                            None
+                            if threshold_calibration_path is None
+                            else str(threshold_calibration_path)
+                        ),
+                        "model_metadata_path": str(metadata_path),
+                    },
+                    model_name=run_context.get("model_name"),
+                )
             record_run_io(
                 run_context,
                 script_name="src.train",
@@ -885,6 +917,20 @@ def main():
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
+                model_metadata=model_metadata,
+                clinical_metadata={
+                    "checkpoint_policy": checkpoint_policy_config.policy,
+                    "checkpoint_policy_config": checkpoint_policy_config_dict(
+                        checkpoint_policy_config
+                    ),
+                    "checkpoint_selection": checkpoint_selection,
+                    "checkpoint_policy_summary": policy_summary,
+                    "threshold_calibration": threshold_calibration,
+                    "clinical_threshold": clinical_threshold_metadata,
+                    **threshold_calibration_for_tracking(threshold_calibration),
+                    **threshold_info,
+                    **clinical_metrics_for_tracking(metrics),
+                },
                 metadata={"status_detail": "training completed"},
             )
             finish_tracking_run(

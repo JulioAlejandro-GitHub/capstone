@@ -21,6 +21,17 @@ REQUIRED_SQL_FILES = [
 SQL_FILES = sorted(SQL_DIR.glob("[0-9][0-9][0-9]_*.sql"))
 
 
+class SqlFileExecutionError(RuntimeError):
+    pass
+
+
+def statement_preview(statement, max_length=500):
+    compact = " ".join(statement.split())
+    if len(compact) <= max_length:
+        return compact
+    return f"{compact[:max_length]}..."
+
+
 def split_sql_statements(sql):
     statements = []
     current = []
@@ -54,8 +65,15 @@ def execute_sql_file(connection, sql_path):
     sql = sql_path.read_text(encoding="utf-8")
     statements = split_sql_statements(sql)
 
-    for statement in statements:
-        connection.execute(text(statement))
+    for index, statement in enumerate(statements, start=1):
+        try:
+            connection.execute(text(statement))
+        except Exception as exc:
+            relative_path = sql_path.relative_to(PROJECT_ROOT)
+            raise SqlFileExecutionError(
+                f"Error en {relative_path}, sentencia {index}/{len(statements)}: "
+                f"{statement_preview(statement)}"
+            ) from exc
 
     print(f"OK: {sql_path.name} ({len(statements)} sentencias)")
 
@@ -67,24 +85,36 @@ def main():
 
     try:
         info = test_connection()
-        print("Conexión OK:")
-        print(f"  database: {info['database_name']}")
-        print(f"  user: {info['user_name']}")
-        print(f"  version: {info['postgres_version'].splitlines()[0]}")
-
-        with get_connection() as connection:
-            for sql_path in SQL_FILES:
-                execute_sql_file(connection, sql_path)
-
-        print("Inicialización de base de datos completada.")
     except Exception as exc:
-        print("Error inicializando PostgreSQL local.")
+        print("Error conectando a PostgreSQL local.")
         print(str(exc))
         print(
             "Si la base no existe, créala con: "
             "createdb -h localhost -p 5432 -U postgres malaria_experiments"
         )
         raise SystemExit(1) from exc
+
+    print("Conexión OK:")
+    print(f"  database: {info['database_name']}")
+    print(f"  user: {info['user_name']}")
+    print(f"  version: {info['postgres_version'].splitlines()[0]}")
+
+    try:
+        with get_connection() as connection:
+            for sql_path in SQL_FILES:
+                execute_sql_file(connection, sql_path)
+    except SqlFileExecutionError as exc:
+        print("Error ejecutando migraciones SQL.")
+        print(str(exc))
+        if exc.__cause__ is not None:
+            print(f"Causa original: {exc.__cause__}")
+        raise SystemExit(1) from exc
+    except Exception as exc:
+        print("Error inicializando PostgreSQL local.")
+        print(str(exc))
+        raise SystemExit(1) from exc
+
+    print("Inicialización de base de datos completada.")
 
 
 if __name__ == "__main__":

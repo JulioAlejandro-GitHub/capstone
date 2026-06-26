@@ -746,4 +746,4 @@ source .venv/bin/activate
 python scripts/init_db.py
 ```
 
-El script ejecuta los archivos `db/init/*.sql`, incluido `010_clinical_inference_tracking.sql`, de forma incremental mediante `CREATE IF NOT EXISTS` y `CREATE OR REPLACE VIEW`.
+El script ejecuta los archivos `db/init/*.sql`, incluidos `010_clinical_inference_tracking.sql` y `017_clinical_run_tracking.sql`, de forma incremental mediante `CREATE IF NOT EXISTS`, `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` y `DROP VIEW IF EXISTS ... CASCADE; CREATE VIEW` cuando cambia la estructura de una vista.

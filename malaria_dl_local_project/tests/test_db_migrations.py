@@ -36,6 +36,51 @@ class DbMigrationTests(unittest.TestCase):
         self.assertIn("FROM dataset_split_images", sql)
         self.assertIn("label_mapping_version", sql)
 
+    def test_clinical_inference_view_uses_drop_create_for_postgres(self):
+        for migration_name in (
+            "010_clinical_inference_tracking.sql",
+            "011_label_mapping_clinical_v1.sql",
+        ):
+            migration = PROJECT_ROOT / "db" / "init" / migration_name
+
+            sql = migration.read_text(encoding="utf-8")
+
+            self.assertIn(
+                "DROP VIEW IF EXISTS vw_clinical_inference_predictions CASCADE",
+                sql,
+            )
+            self.assertIn("CREATE VIEW vw_clinical_inference_predictions", sql)
+            self.assertNotIn(
+                "CREATE OR REPLACE VIEW vw_clinical_inference_predictions",
+                sql,
+            )
+
+    def test_clinical_run_tracking_migration_exists_with_expected_objects(self):
+        migration = PROJECT_ROOT / "db" / "init" / "017_clinical_run_tracking.sql"
+
+        sql = migration.read_text(encoding="utf-8")
+
+        self.assertIn("ALTER TABLE run_io_records", sql)
+        self.assertIn("ADD COLUMN IF NOT EXISTS run_type", sql)
+        self.assertIn("ADD COLUMN IF NOT EXISTS model_metadata", sql)
+        self.assertIn("ADD COLUMN IF NOT EXISTS clinical_metadata", sql)
+        self.assertIn("CREATE TABLE IF NOT EXISTS run_clinical_metrics", sql)
+        self.assertIn("CREATE TABLE IF NOT EXISTS run_checkpoint_policy", sql)
+        self.assertIn("CREATE TABLE IF NOT EXISTS run_threshold_calibration", sql)
+        self.assertIn("CREATE TABLE IF NOT EXISTS run_image_predictions", sql)
+        self.assertIn("run_id UUID NOT NULL REFERENCES runs(id)", sql)
+        self.assertIn("image_id UUID NULL REFERENCES dataset_split_images(image_id)", sql)
+        self.assertIn("probability_parasitized", sql)
+        self.assertIn("raw_model_score_meaning TEXT NOT NULL DEFAULT 'probability_parasitized'", sql)
+        self.assertIn("DROP VIEW IF EXISTS vw_clinical_run_summary CASCADE", sql)
+        self.assertIn("CREATE VIEW vw_clinical_run_summary", sql)
+        self.assertIn("CREATE VIEW vw_checkpoint_policy_summary", sql)
+        self.assertIn("CREATE VIEW vw_threshold_calibration_summary", sql)
+        self.assertIn("CREATE VIEW vw_run_artifacts_summary", sql)
+        self.assertIn("CREATE VIEW vw_run_image_predictions_summary", sql)
+        self.assertNotIn("DROP TABLE", sql)
+        self.assertNotIn("TRUNCATE", sql)
+
 
 if __name__ == "__main__":
     unittest.main()

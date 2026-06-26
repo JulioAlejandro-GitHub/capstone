@@ -278,6 +278,13 @@ def main():
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
+                model_metadata=(threshold_info.get("clinical_threshold") or {}),
+                clinical_metadata={
+                    "tta_applied": True,
+                    "n_aug": args.n_aug,
+                    **threshold_info,
+                    **clinical_metrics_for_tracking(metrics),
+                },
                 metadata={"status_detail": "tta completed"},
             )
             finish_tracking_run(

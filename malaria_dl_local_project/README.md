@@ -661,6 +661,12 @@ El frontend incluye el menú **Dataset** para explicar el origen, el split físi
 y explorar imágenes por split/clase desde PostgreSQL. Guía:
 [docs/dataset_browser.md](docs/dataset_browser.md).
 
+El tracking clínico de runs con `--track-db` registra IO, métricas clínicas,
+política de checkpoint, calibración de threshold, artefactos y predicciones por
+imagen en tablas incrementales de PostgreSQL. La convención registrada es siempre
+`0 = uninfected`, `1 = parasitized` y `raw_model_score = probability_parasitized`.
+Guía: [docs/postgresql_tracking.md](docs/postgresql_tracking.md).
+
 ## 7. Estructura del proyecto
 
 ```text

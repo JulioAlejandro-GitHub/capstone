@@ -264,6 +264,14 @@ def main():
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
+                model_metadata=(threshold_info.get("clinical_threshold") or {}),
+                clinical_metadata={
+                    "ensemble_applied": True,
+                    "ensemble_models": [str(path) for path in model_paths],
+                    "ensemble_weights": weights.tolist(),
+                    **threshold_info,
+                    **clinical_metrics_for_tracking(metrics),
+                },
                 metadata={"status_detail": "ensemble completed"},
             )
             finish_tracking_run(

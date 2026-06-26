@@ -335,6 +335,7 @@ def start_tracking_run(
         "dataset_id": dataset_id,
         "model_id": model_id,
         "model_name": model_name,
+        "run_type": run_type,
         "tracker": tracker,
     }
 
@@ -422,6 +423,15 @@ def log_metrics_and_reports(context, metrics, class_names, split_name="test"):
             support=values.get("support"),
         )
 
+    record_clinical_metrics(
+        context,
+        metrics=metrics,
+        split_name=split_name,
+        model_name=context.get("model_name"),
+        threshold_used=metrics.get("threshold_used"),
+        threshold_source=metrics.get("threshold_source"),
+    )
+
 
 def log_predictions(
     context,
@@ -430,6 +440,7 @@ def log_predictions(
     y_score,
     class_names,
     threshold=0.5,
+    threshold_source=None,
     label_mapping_version=LABEL_MAPPING_VERSION,
 ):
     if not context or not context.get("run_id"):
@@ -444,6 +455,7 @@ def log_predictions(
         if mapping_metadata["raw_model_score_meaning"] == RAW_MODEL_SCORE_MEANING
         else NEGATIVE_LABEL
     )
+    image_prediction_rows = []
 
     for index, (true_idx, pred_idx, score) in enumerate(zip(y_true, y_pred, y_score)):
         true_label = class_names[int(true_idx)]
@@ -484,6 +496,40 @@ def log_predictions(
                 "label_mapping": mapping_metadata,
             },
         )
+        image_prediction_rows.append(
+            {
+                "image_id": None,
+                "split_name": "test",
+                "usage_context": "evaluation",
+                "filename": None,
+                "relative_path": None,
+                "true_label": int(true_idx),
+                "true_label_name": true_label,
+                "predicted_label": int(pred_idx),
+                "predicted_label_name": predicted_label,
+                "probability_parasitized": probabilities.get(POSITIVE_LABEL),
+                "probability_uninfected": probabilities.get(NEGATIVE_LABEL),
+                "raw_model_score": float(score),
+                "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                "threshold_used": threshold,
+                "threshold_source": threshold_source,
+                "is_correct": bool(int(true_idx) == int(pred_idx)),
+                "case_type": tracker.compute_case_type(
+                    true_label,
+                    predicted_label,
+                    positive_label=positive_label,
+                ),
+                "metadata": {
+                    "dataset_index": index,
+                    "source": "tensorflow_datasets",
+                    "raw_model_score_label": raw_model_score_label,
+                    "label_mapping_version": label_mapping_version,
+                    "label_mapping": mapping_metadata,
+                },
+            }
+        )
+
+    record_image_predictions(context, image_prediction_rows)
 
 
 def log_training_history(context, history, phase="training", epoch_offset=0):
@@ -614,7 +660,11 @@ def record_run_io(
     output_results,
     output_artifacts=None,
     dataset_metadata=None,
+    model_metadata=None,
+    clinical_metadata=None,
     command=None,
+    run_type=None,
+    model_name=None,
     label_mapping_version=LABEL_MAPPING_VERSION,
     raw_model_score_meaning=RAW_MODEL_SCORE_MEANING,
     metadata=None,
@@ -633,14 +683,115 @@ def record_run_io(
         tracker.log_run_io_record,
         context["run_id"],
         script_name=script_name,
+        run_type=run_type or context.get("run_type"),
+        model_name=model_name or context.get("model_name"),
         command=command or tracker.get_command_line(),
         input_parameters=json_safe(input_parameters),
         output_results=json_safe(output_results),
         output_artifacts=json_safe(output_artifacts or []),
         dataset_metadata=json_safe(dataset_metadata or {}),
+        model_metadata=json_safe(model_metadata or {}),
+        clinical_metadata=json_safe(clinical_metadata or {}),
         label_mapping_version=label_mapping_version,
         raw_model_score_meaning=raw_model_score_meaning,
         metadata=json_safe(io_metadata),
+    )
+
+
+def record_clinical_metrics(
+    context,
+    metrics,
+    split_name,
+    model_name=None,
+    threshold_used=None,
+    threshold_source=None,
+    metadata=None,
+):
+    if not context or not context.get("run_id") or not metrics:
+        return None
+    tracker = context["tracker"]
+    if not hasattr(tracker, "log_clinical_metrics"):
+        return None
+    return tracker.safe_track(
+        tracker.log_clinical_metrics,
+        context["run_id"],
+        json_safe(metrics),
+        split_name=_normalize_split(split_name),
+        model_id=context.get("model_id"),
+        model_name=model_name or context.get("model_name"),
+        threshold_used=threshold_used,
+        threshold_source=threshold_source,
+        metadata=json_safe(metadata or {}),
+    )
+
+
+def record_checkpoint_policy(context, checkpoint_policy_summary, model_name=None):
+    if not context or not context.get("run_id") or not checkpoint_policy_summary:
+        return None
+    tracker = context["tracker"]
+    if not hasattr(tracker, "log_checkpoint_policy"):
+        return None
+    return tracker.safe_track(
+        tracker.log_checkpoint_policy,
+        context["run_id"],
+        json_safe(checkpoint_policy_summary),
+        model_name=model_name or context.get("model_name"),
+    )
+
+
+def record_threshold_calibration(context, calibration_result, model_name=None):
+    if not context or not context.get("run_id") or not calibration_result:
+        return None
+    tracker = context["tracker"]
+    if not hasattr(tracker, "log_threshold_calibration"):
+        return None
+    return tracker.safe_track(
+        tracker.log_threshold_calibration,
+        context["run_id"],
+        json_safe(calibration_result),
+        model_name=model_name or context.get("model_name"),
+    )
+
+
+def record_output_artifacts(context, artifacts):
+    if not context or not context.get("run_id") or not artifacts:
+        return []
+    tracker = context["tracker"]
+    artifact_ids = []
+    for item in artifacts:
+        artifact = json_safe(item)
+        path = artifact.get("path") or artifact.get("artifact_path")
+        if not path:
+            continue
+        artifact_ids.append(
+            tracker.safe_track(
+                tracker.log_artifact,
+                context["run_id"],
+                artifact_type=artifact.get("artifact_type") or "other",
+                name=artifact.get("name") or Path(path).name,
+                path=str(path),
+                mime_type=artifact.get("mime_type"),
+                file_size_bytes=artifact.get("file_size_bytes"),
+                checksum=artifact.get("checksum"),
+                metadata={
+                    "exists": artifact.get("exists"),
+                    **(artifact.get("metadata") or {}),
+                },
+            )
+        )
+    return artifact_ids
+
+
+def record_image_predictions(context, predictions):
+    if not context or not context.get("run_id") or not predictions:
+        return None
+    tracker = context["tracker"]
+    if not hasattr(tracker, "log_image_predictions"):
+        return None
+    return tracker.safe_track(
+        tracker.log_image_predictions,
+        context["run_id"],
+        json_safe(predictions),
     )
 
 

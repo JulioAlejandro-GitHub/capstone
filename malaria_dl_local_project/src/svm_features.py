@@ -276,6 +276,18 @@ def main():
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
+                model_metadata={
+                    "svm_model": str(svm_model_path),
+                    "svm_classes": [int(item) for item in svm.classes_],
+                    "feature_extractor_checkpoint": str(checkpoint),
+                    **(threshold_info.get("clinical_threshold") or {}),
+                },
+                clinical_metadata={
+                    "svm_kernel": "rbf",
+                    "svm_gamma": args.gamma,
+                    **threshold_info,
+                    **clinical_metrics_for_tracking(metrics),
+                },
                 metadata={"status_detail": "svm_features completed"},
             )
             finish_tracking_run(

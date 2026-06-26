@@ -659,6 +659,7 @@ def track_prediction(args, result, checkpoint):
             fail_tracking_run,
             finish_tracking_run,
             model_name_from_checkpoint,
+            record_image_predictions,
             record_run_io,
             start_tracking_run,
         )
@@ -775,6 +776,53 @@ def track_prediction(args, result, checkpoint):
             },
         )
         tracking_result["prediction_id"] = prediction_id
+        predicted_label_index = (
+            POSITIVE_CLASS_INDEX
+            if result["predicted_label"] == POSITIVE_LABEL
+            else NEGATIVE_CLASS_INDEX
+            if result["predicted_label"] == NEGATIVE_LABEL
+            else None
+        )
+        true_label_index = (
+            POSITIVE_CLASS_INDEX
+            if result.get("true_label") == POSITIVE_LABEL
+            else NEGATIVE_CLASS_INDEX
+            if result.get("true_label") == NEGATIVE_LABEL
+            else None
+        )
+        record_image_predictions(
+            context,
+            [
+                {
+                    "image_id": None,
+                    "split_name": "external",
+                    "usage_context": "inference",
+                    "filename": result.get("stored_filename")
+                    or result.get("original_filename"),
+                    "relative_path": result.get("stored_image_path")
+                    or result.get("image_path"),
+                    "true_label": true_label_index,
+                    "true_label_name": result.get("true_label"),
+                    "predicted_label": predicted_label_index,
+                    "predicted_label_name": result.get("predicted_label"),
+                    "probability_parasitized": result.get("probability_parasitized"),
+                    "probability_uninfected": result.get("probability_uninfected"),
+                    "raw_model_score": result.get("raw_model_score"),
+                    "raw_model_score_meaning": result.get("raw_model_score_meaning"),
+                    "threshold_used": result.get("threshold"),
+                    "threshold_source": result.get("threshold_source"),
+                    "is_correct": result.get("is_correct"),
+                    "case_type": case_type,
+                    "metadata": {
+                        "source": "uploaded_for_prediction",
+                        "external_image_id": result.get("image_id"),
+                        "decision": result.get("decision_code"),
+                        "confidence_level": result.get("confidence_level"),
+                        "workflow": result.get("workflow"),
+                    },
+                }
+            ],
+        )
 
         if result.get("stored_image_path"):
             tracker.safe_track(
@@ -919,6 +967,19 @@ def track_prediction(args, result, checkpoint):
                 "label_mapping_version": result.get("label_mapping_version"),
                 "label_mapping": result.get("label_mapping"),
                 "raw_model_score_meaning": result.get("raw_model_score_meaning"),
+            },
+            model_metadata=(result.get("clinical_threshold") or {}),
+            clinical_metadata={
+                "prediction_id": prediction_id,
+                "threshold_used": result.get("threshold"),
+                "threshold_source": result.get("threshold_source"),
+                "threshold_mode": result.get("threshold_mode"),
+                "target_recall": result.get("target_recall"),
+                "clinical_threshold": result.get("clinical_threshold"),
+                "probability_parasitized": result.get("probability_parasitized"),
+                "probability_uninfected": result.get("probability_uninfected"),
+                "decision": result.get("decision_code"),
+                "case_type": case_type,
             },
             label_mapping_version=result.get("label_mapping_version"),
             raw_model_score_meaning=result.get("raw_model_score_meaning"),

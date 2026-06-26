@@ -4,7 +4,9 @@ CREATE INDEX IF NOT EXISTS idx_predictions_metadata_workflow
 CREATE INDEX IF NOT EXISTS idx_runs_inference_script
     ON runs (run_type, script_name);
 
-CREATE OR REPLACE VIEW vw_clinical_inference_predictions AS
+DROP VIEW IF EXISTS vw_clinical_inference_predictions CASCADE;
+
+CREATE VIEW vw_clinical_inference_predictions AS
 SELECT
     up.prediction_id,
     up.run_id,

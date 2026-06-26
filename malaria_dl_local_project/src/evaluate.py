@@ -169,6 +169,7 @@ def main():
                 y_score=y_score,
                 class_names=class_names,
                 threshold=threshold_value,
+                threshold_source=threshold_info.get("threshold_source"),
                 label_mapping_version=args.label_mapping,
             )
             log_output_artifacts(run_context, output_dir)
@@ -213,6 +214,11 @@ def main():
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
                 dataset_metadata=dataset_info,
+                model_metadata=(threshold_info.get("clinical_threshold") or {}),
+                clinical_metadata={
+                    **threshold_info,
+                    **clinical_metrics_for_tracking(metrics),
+                },
                 label_mapping_version=args.label_mapping,
                 raw_model_score_meaning=mapping_metadata["raw_model_score_meaning"],
                 metadata={"status_detail": "evaluation completed"},

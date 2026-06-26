@@ -136,7 +136,11 @@ python -m src.explain \
 
 ## 6. Tracking PostgreSQL
 
-Con `--track-db`, los flujos registran en JSONB:
+Con `--track-db`, los flujos registran IO, metricas clinicas, politica de
+checkpoint, calibracion de threshold, artefactos y predicciones por imagen. La
+migracion principal es `db/init/017_clinical_run_tracking.sql`.
+
+Campos clinicos relevantes:
 
 ```text
 checkpoint_policy
@@ -156,4 +160,14 @@ balanced_accuracy
 prediction_collapse_detected
 ```
 
-No se requiere migración para estas claves mientras se usen los campos JSONB existentes.
+Vistas principales:
+
+```text
+vw_clinical_run_summary
+vw_checkpoint_policy_summary
+vw_threshold_calibration_summary
+vw_run_artifacts_summary
+vw_run_image_predictions_summary
+```
+
+Detalle: `docs/postgresql_tracking.md`.

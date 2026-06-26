@@ -15,14 +15,26 @@ from src.run_tracker import (
     get_or_create_dataset,
     get_or_create_model,
     log_artifact,
+    log_checkpoint_policy,
     log_classification_report,
+    log_clinical_metrics,
     log_confusion_matrix,
     log_environment_packages,
     log_explainability_result,
+    log_image_predictions,
     log_metric,
     log_prediction,
+    log_run_io_record,
+    log_threshold_calibration,
     start_run,
 )
+
+
+def fetch_required_mapping(connection, sql, params, description):
+    row = connection.execute(text(sql), params).mappings().first()
+    if row is None:
+        raise RuntimeError(f"No se encontró fila requerida: {description}")
+    return row
 
 
 def main():
@@ -159,22 +171,215 @@ def main():
         ],
     )
 
+    clinical_metrics = {
+        "accuracy": 1.0,
+        "precision_parasitized": 1.0,
+        "recall_parasitized": 1.0,
+        "sensitivity_parasitized": 1.0,
+        "specificity": 1.0,
+        "f1_parasitized": 1.0,
+        "f2_parasitized": 1.0,
+        "roc_auc_parasitized": 1.0,
+        "pr_auc_parasitized": 1.0,
+        "balanced_accuracy": 1.0,
+        "confusion_matrix": [[1, 0], [0, 1]],
+        "classification_report_dict": {
+            "uninfected": {"precision": 1.0, "recall": 1.0, "f1-score": 1.0},
+            "parasitized": {"precision": 1.0, "recall": 1.0, "f1-score": 1.0},
+        },
+        "prediction_collapse": {"collapsed": False},
+        "n_pred_uninfected": 1,
+        "n_pred_parasitized": 1,
+        "percent_pred_uninfected": 50.0,
+        "percent_pred_parasitized": 50.0,
+        "threshold_used": 0.42,
+        "threshold_source": "validation_calibration",
+        "label_mapping_version": "clinical_v1_parasitized_positive",
+        "raw_model_score_meaning": "probability_parasitized",
+    }
+    log_clinical_metrics(
+        run_id,
+        clinical_metrics,
+        split_name="test",
+        model_id=model_id,
+        model_name="db_smoke_test_model",
+        threshold_used=0.42,
+        threshold_source="validation_calibration",
+    )
+
+    log_checkpoint_policy(
+        run_id,
+        {
+            "checkpoint_policy": "max_recall_with_specificity_floor",
+            "checkpoint_policy_config": {"min_recall": 0.95},
+            "selected_epoch": 1,
+            "policy_satisfied": True,
+            "selected_metric": "val_f2_parasitized",
+            "selected_metric_value": 0.99,
+            "val_recall_parasitized": 1.0,
+            "val_f2_parasitized": 1.0,
+            "val_specificity": 1.0,
+            "val_auc": 1.0,
+            "val_pr_auc_parasitized": 1.0,
+            "val_balanced_accuracy": 1.0,
+            "prediction_collapse_detected": False,
+            "all_epochs_collapsed": False,
+            "checkpoint_path": "outputs/smoke/best_model.keras",
+            "checkpoint_policy_summary_path": "outputs/smoke/checkpoint_policy_summary.json",
+            "model_metadata_path": "outputs/smoke/model_metadata.json",
+        },
+        model_name="db_smoke_test_model",
+    )
+
+    log_threshold_calibration(
+        run_id,
+        {
+            "threshold_policy": "target_recall",
+            "threshold_source": "validation_calibration",
+            "threshold_selected": 0.42,
+            "default_threshold": 0.5,
+            "target_recall": 0.95,
+            "target_recall_satisfied": True,
+            "min_specificity": 0.5,
+            "selected_metrics": {
+                "recall_parasitized": 1.0,
+                "specificity": 1.0,
+                "precision_parasitized": 1.0,
+                "f1_parasitized": 1.0,
+                "f2_parasitized": 1.0,
+                "balanced_accuracy": 1.0,
+                "pr_auc_parasitized": 1.0,
+                "roc_auc_parasitized": 1.0,
+            },
+            "default_threshold_metrics": {"recall_parasitized": 1.0},
+            "candidate_count": 101,
+            "calibration_split": "val",
+            "threshold_calibration_path": "outputs/smoke/threshold_calibration.json",
+            "model_metadata_path": "outputs/smoke/model_metadata.json",
+        },
+        model_name="db_smoke_test_model",
+    )
+
+    log_image_predictions(
+        run_id,
+        [
+            {
+                "image_id": None,
+                "split_name": "test",
+                "usage_context": "evaluation",
+                "filename": "0001.png",
+                "relative_path": "data/smoke/0001.png",
+                "true_label": 1,
+                "true_label_name": "parasitized",
+                "predicted_label": 1,
+                "predicted_label_name": "parasitized",
+                "probability_parasitized": 0.93,
+                "probability_uninfected": 0.07,
+                "raw_model_score": 0.93,
+                "threshold_used": 0.42,
+                "threshold_source": "validation_calibration",
+                "is_correct": True,
+                "case_type": "true_positive",
+                "metadata": {"source": "scripts/test_db.py"},
+            }
+        ],
+    )
+
+    log_run_io_record(
+        run_id,
+        script_name="scripts/test_db.py",
+        run_type="evaluation",
+        model_name="db_smoke_test_model",
+        command="python scripts/test_db.py",
+        input_parameters={"threshold": 0.42, "num_samples": 2},
+        output_results={"accuracy": 1.0, "recall_parasitized": 1.0},
+        output_artifacts=[{"path": "outputs/smoke/metrics.json", "exists": False}],
+        dataset_metadata={"source": "synthetic_smoke_test"},
+        model_metadata={"architecture": "dummy"},
+        clinical_metadata={
+            "positive_label": "parasitized",
+            "probability_meaning": "probability_parasitized",
+            "threshold_source": "validation_calibration",
+        },
+        metadata={"source": "scripts/test_db.py"},
+    )
+
     finish_run(run_id, metadata={"completed_by": "scripts/test_db.py"})
 
-    print("Fila desde vw_run_dashboard:")
+    print("Filas desde vistas de tracking:")
     with get_connection() as connection:
-        row = connection.execute(
-            text(
-                """
-                SELECT *
-                FROM vw_run_dashboard
-                WHERE run_id = :run_id
-                """
-            ),
+        dashboard_row = fetch_required_mapping(
+            connection,
+            """
+            SELECT *
+            FROM vw_run_dashboard
+            WHERE run_id = :run_id
+            """,
             {"run_id": run_id},
-        ).mappings().one()
+            "vw_run_dashboard",
+        )
+        clinical_row = fetch_required_mapping(
+            connection,
+            """
+            SELECT *
+            FROM vw_clinical_run_summary
+            WHERE run_id = :run_id
+            """,
+            {"run_id": run_id},
+            "vw_clinical_run_summary",
+        )
+        checkpoint_row = fetch_required_mapping(
+            connection,
+            """
+            SELECT *
+            FROM vw_checkpoint_policy_summary
+            WHERE run_id = :run_id
+            """,
+            {"run_id": run_id},
+            "vw_checkpoint_policy_summary",
+        )
+        threshold_row = fetch_required_mapping(
+            connection,
+            """
+            SELECT *
+            FROM vw_threshold_calibration_summary
+            WHERE run_id = :run_id
+            """,
+            {"run_id": run_id},
+            "vw_threshold_calibration_summary",
+        )
+        artifacts_row = fetch_required_mapping(
+            connection,
+            """
+            SELECT *
+            FROM vw_run_artifacts_summary
+            WHERE run_id = :run_id
+            """,
+            {"run_id": run_id},
+            "vw_run_artifacts_summary",
+        )
+        image_prediction_row = fetch_required_mapping(
+            connection,
+            """
+            SELECT *
+            FROM vw_run_image_predictions_summary
+            WHERE run_id = :run_id
+            """,
+            {"run_id": run_id},
+            "vw_run_image_predictions_summary",
+        )
 
-    print(dict(row))
+    print(dict(dashboard_row))
+    print(
+        {
+            "clinical_model": clinical_row["model_name"],
+            "threshold_used": clinical_row["threshold_used"],
+            "checkpoint_policy": checkpoint_row["checkpoint_policy"],
+            "threshold_selected": threshold_row["threshold_selected"],
+            "artifact_type": artifacts_row["artifact_type"],
+            "prediction_case_type": image_prediction_row["case_type"],
+        }
+    )
     print("Prueba de base de datos completada.")
 
 

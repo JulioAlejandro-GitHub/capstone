@@ -132,6 +132,36 @@ def build_calibration_payload(
         for key, value in fit_result["metrics"].items()
         if value is not None
     }
+    mapping_metadata = label_mapping_metadata(args.label_mapping)
+    return {
+        "schema_version": CALIBRATION_SCHEMA_VERSION,
+        "method": "temperature_scaling",
+        "temperature": float(fit_result["temperature"]),
+        "params": {"temperature": float(fit_result["temperature"])},
+        "positive_label": POSITIVE_LABEL,
+        "score_name": "probability_parasitized",
+        "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+        "label_mapping_version": args.label_mapping,
+        "label_mapping": mapping_metadata,
+        "checkpoint": str(checkpoint),
+        "class_names": list(class_names),
+        "split": "validation",
+        "num_samples": int(len(y_true_positive)),
+        "positive_samples": int(np.sum(y_true_positive)),
+        "negative_samples": int(len(y_true_positive) - np.sum(y_true_positive)),
+        "img_size": int(args.img_size),
+        "batch_size": int(args.batch_size),
+        "preprocessing_mode": preprocessing_mode,
+        "dataset": dataset_info or {},
+        "temperature_search": {
+            "temperature_min": float(args.temperature_min),
+            "temperature_max": float(args.temperature_max),
+            "grid_size": int(args.grid_size),
+            "refinement_rounds": int(args.refinement_rounds),
+        },
+        "metrics": metrics,
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+    }
 
 
 def build_threshold_calibration_payload(
@@ -166,36 +196,6 @@ def build_threshold_calibration_payload(
         "preprocessing_mode": preprocessing_mode,
         "dataset": dataset_info or {},
     }
-    mapping_metadata = label_mapping_metadata(args.label_mapping)
-    return {
-        "schema_version": CALIBRATION_SCHEMA_VERSION,
-        "method": "temperature_scaling",
-        "temperature": float(fit_result["temperature"]),
-        "params": {"temperature": float(fit_result["temperature"])},
-        "positive_label": POSITIVE_LABEL,
-        "score_name": "probability_parasitized",
-        "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
-        "label_mapping_version": args.label_mapping,
-        "label_mapping": mapping_metadata,
-        "checkpoint": str(checkpoint),
-        "class_names": list(class_names),
-        "split": "validation",
-        "num_samples": int(len(y_true_positive)),
-        "positive_samples": int(np.sum(y_true_positive)),
-        "negative_samples": int(len(y_true_positive) - np.sum(y_true_positive)),
-        "img_size": int(args.img_size),
-        "batch_size": int(args.batch_size),
-        "preprocessing_mode": preprocessing_mode,
-        "dataset": dataset_info or {},
-        "temperature_search": {
-            "temperature_min": float(args.temperature_min),
-            "temperature_max": float(args.temperature_max),
-            "grid_size": int(args.grid_size),
-            "refinement_rounds": int(args.refinement_rounds),
-        },
-        "metrics": metrics,
-        "created_at": datetime.now().isoformat(timespec="seconds"),
-    }
 
 
 def save_calibration(payload, output_file):
@@ -213,21 +213,25 @@ def track_calibration_run(args, checkpoint, output_file, payload):
         return
 
     from src.tracking_integration import (
+        artifact_record,
         args_to_parameters,
         fail_tracking_run,
         finish_tracking_run,
         model_name_from_checkpoint,
+        record_run_io,
+        record_threshold_calibration,
         start_tracking_run,
     )
 
     context = None
     try:
         method = payload.get("method", payload.get("threshold_policy", "calibration"))
+        tracked_model_name = model_name_from_checkpoint(checkpoint)
         context = start_tracking_run(
             args=args,
             run_type="calibration",
             script_name="src.calibrate",
-            model_name=model_name_from_checkpoint(checkpoint),
+            model_name=tracked_model_name,
             run_name=f"calibrate:{checkpoint.stem}",
             parameters=args_to_parameters(
                 args,
@@ -256,6 +260,76 @@ def track_calibration_run(args, checkpoint, output_file, payload):
         run_id = context.get("run_id")
         if not run_id:
             return
+
+        model_metadata_path = payload.get("model_metadata_path")
+        if not model_metadata_path:
+            candidate_metadata_path = checkpoint.parent / "model_metadata.json"
+            if candidate_metadata_path.exists():
+                model_metadata_path = str(candidate_metadata_path)
+
+        if payload.get("threshold_selected") is not None:
+            record_threshold_calibration(
+                context,
+                {
+                    **payload,
+                    "threshold_calibration_path": str(output_file),
+                    "model_metadata_path": model_metadata_path,
+                },
+                model_name=tracked_model_name,
+            )
+
+        record_run_io(
+            context,
+            script_name="src.calibrate",
+            input_parameters=args_to_parameters(
+                args,
+                extra={
+                    "checkpoint": str(checkpoint),
+                    "output_file": str(output_file),
+                    "calibration_method": method,
+                },
+            ),
+            output_results={
+                "method": method,
+                "threshold_selected": payload.get("threshold_selected"),
+                "default_threshold": payload.get("default_threshold"),
+                "target_recall": payload.get("target_recall"),
+                "target_recall_satisfied": payload.get("target_recall_satisfied"),
+                "selected_metrics": payload.get("selected_metrics"),
+                "temperature": payload.get("temperature"),
+                "metrics": payload.get("metrics"),
+            },
+            output_artifacts=[
+                artifact_record(
+                    output_file,
+                    artifact_type=(
+                        "threshold_calibration"
+                        if payload.get("threshold_selected") is not None
+                        else "calibration_file"
+                    ),
+                )
+            ],
+            dataset_metadata=payload.get("dataset", {}),
+            model_metadata={
+                "checkpoint": str(checkpoint),
+                "model_metadata_path": model_metadata_path,
+                "preprocessing_mode": payload.get("preprocessing_mode"),
+            },
+            clinical_metadata={
+                "method": method,
+                "threshold_policy": payload.get("threshold_policy"),
+                "threshold_source": payload.get("threshold_source"),
+                "threshold_selected": payload.get("threshold_selected"),
+                "default_threshold": payload.get("default_threshold"),
+                "target_recall": payload.get("target_recall"),
+                "target_recall_satisfied": payload.get("target_recall_satisfied"),
+                "selected_metrics": payload.get("selected_metrics"),
+                "raw_model_score_meaning": payload.get("raw_model_score_meaning"),
+            },
+            label_mapping_version=payload.get("label_mapping_version"),
+            raw_model_score_meaning=payload.get("raw_model_score_meaning"),
+            metadata={"status_detail": "calibration completed"},
+        )
 
         metric_payload = payload.get("metrics") or payload.get("selected_metrics") or {}
         metric_prefix = (

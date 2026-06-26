@@ -82,7 +82,8 @@ python -m src.svm_features --checkpoint outputs/vgg16/best_model.keras --img-siz
 ```
 
 `src.predict_image` mantiene el tracking de imagen externa en `predictions` y
-`artifacts`, y además registra su IO en `run_io_records`.
+`artifacts`, registra su IO en `run_io_records` y agrega una fila normalizada en
+`run_image_predictions` con `probability_parasitized`, threshold y `case_type`.
 
 ## Consultas
 

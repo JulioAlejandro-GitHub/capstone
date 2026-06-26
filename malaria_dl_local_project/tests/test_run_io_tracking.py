@@ -41,7 +41,12 @@ class RunIoTrackingTests(unittest.TestCase):
 
     def test_record_run_io_serializes_input_and_output(self):
         tracker = FakeTracker()
-        context = {"run_id": "run-uuid", "tracker": tracker}
+        context = {
+            "run_id": "run-uuid",
+            "run_type": "evaluation",
+            "model_name": "custom_cnn",
+            "tracker": tracker,
+        }
 
         run_io_id = record_run_io(
             context,
@@ -50,6 +55,8 @@ class RunIoTrackingTests(unittest.TestCase):
             output_results={"confusion_matrix": np.asarray([[1, 0], [0, 1]])},
             output_artifacts=[{"path": Path("outputs/metrics.json")}],
             dataset_metadata={"data_source": "physical"},
+            model_metadata={"architecture": "custom sequential CNN"},
+            clinical_metadata={"threshold_used": np.float32(0.42)},
         )
 
         self.assertEqual(run_io_id, "run-io-id")
@@ -63,6 +70,13 @@ class RunIoTrackingTests(unittest.TestCase):
             tracker.kwargs["output_results"]["confusion_matrix"],
             [[1, 0], [0, 1]],
         )
+        self.assertEqual(tracker.kwargs["run_type"], "evaluation")
+        self.assertEqual(tracker.kwargs["model_name"], "custom_cnn")
+        self.assertEqual(
+            tracker.kwargs["model_metadata"]["architecture"],
+            "custom sequential CNN",
+        )
+        self.assertAlmostEqual(tracker.kwargs["clinical_metadata"]["threshold_used"], 0.42)
         self.assertEqual(tracker.kwargs["label_mapping_version"], LABEL_MAPPING_VERSION)
         self.assertEqual(
             tracker.kwargs["raw_model_score_meaning"],
