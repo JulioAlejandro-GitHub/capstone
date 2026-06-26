@@ -667,6 +667,11 @@ imagen en tablas incrementales de PostgreSQL. La convención registrada es siemp
 `0 = uninfected`, `1 = parasitized` y `raw_model_score = probability_parasitized`.
 Guía: [docs/postgresql_tracking.md](docs/postgresql_tracking.md).
 
+El frontend incluye una vista **Evaluacion clinica** y un Run Detail clinico para
+auditar F2, PR-AUC, sensibilidad, especificidad, checkpoint policy, threshold,
+matriz de confusion, predicciones por imagen, artefactos y explicabilidad.
+Guía: [docs/frontend_clinical_dashboard.md](docs/frontend_clinical_dashboard.md).
+
 ## 7. Estructura del proyecto
 
 ```text

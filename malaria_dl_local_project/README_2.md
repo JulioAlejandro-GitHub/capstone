@@ -115,6 +115,22 @@ Las evaluaciones, TTA, ensemble y SVM guardan métricas clínicas comunes en JSO
 Detalle del schema PostgreSQL, vistas y endpoints:
 `docs/postgresql_tracking.md`.
 
+Para revisar resultados en la interfaz:
+
+```bash
+cd ../backend_api
+uvicorn app.main:app --reload
+
+cd ../frontend
+npm install
+npm run dev
+```
+
+La vista `Evaluacion clinica` y `Run Detail` muestran F2, PR-AUC,
+sensibilidad/recall parasitized, especificidad, threshold clinical,
+checkpoint policy, artefactos, predicciones por imagen y explicabilidad.
+Detalle: `docs/frontend_clinical_dashboard.md`.
+
 7. Calibrar threshold clínico de modelos
 
 ```bash

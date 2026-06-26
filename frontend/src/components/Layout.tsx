@@ -5,6 +5,7 @@ import type { Datasource } from '../types/api';
 export type PageKey =
   | 'dashboard'
   | 'runs'
+  | 'clinical-evaluation'
   | 'models'
   | 'run-detail'
   | 'explainability'
@@ -25,6 +26,7 @@ interface LayoutProps {
 const navItems: Array<{ page: PageKey; label: string }> = [
   { page: 'dashboard', label: 'Dashboard' },
   { page: 'runs', label: 'Ejecuciones' },
+  { page: 'clinical-evaluation', label: 'Evaluacion clinica' },
   { page: 'models', label: 'Comparacion modelos' },
   { page: 'explainability', label: 'Explicabilidad' },
   { page: 'uploaded-predictions', label: 'Predicciones subidas' },

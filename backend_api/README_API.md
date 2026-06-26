@@ -31,6 +31,15 @@ ENABLE_ANEMIA_DATASOURCE=true
 uvicorn app.main:app --reload --port 8000
 ```
 
+## Tests
+
+El entorno actual no instala `pytest` en `backend_api/.venv`. Los tests backend
+incluidos se pueden ejecutar con:
+
+```bash
+python -m unittest discover -s tests
+```
+
 ## Endpoints
 
 Todos aceptan `?datasource=malaria` de forma opcional.
@@ -39,9 +48,18 @@ Todos aceptan `?datasource=malaria` de forma opcional.
 GET /health
 GET /datasources
 GET /dashboard/summary
+GET /dashboard/clinical
 GET /runs
 GET /runs/{run_id}
+GET /runs/clinical/summary
+GET /runs/{run_id}/clinical-summary
+GET /runs/{run_id}/checkpoint-policy
+GET /runs/{run_id}/threshold-calibration
+GET /runs/{run_id}/artifacts
+GET /runs/{run_id}/image-predictions
+GET /runs/{run_id}/explainability
 GET /models
+GET /models/comparison
 GET /datasets
 GET /api/dataset
 GET /api/dataset/summary
@@ -72,3 +90,8 @@ Los endpoints de casos aceptan filtros opcionales como `model_name`, `dataset_na
 `GET /api/dataset/images` acepta `split`, `class_name`, `page` y `page_size`. El endpoint de archivo de dataset solo resuelve imágenes por `image_id` y valida que estén dentro de `data/malaria_physical_split`.
 
 El endpoint de artefactos solo sirve archivos dentro de `malaria_dl_local_project/outputs` y `data`.
+
+Los endpoints clinicos usan la convencion `0 = uninfected`, `1 = parasitized` y
+`raw_model_score = probability_parasitized`. `GET /runs/{run_id}/clinical-summary`
+devuelve metricas clinicas, matriz de confusion, checkpoint policy, threshold
+calibrado, conteo de artefactos y conteo de predicciones por imagen.

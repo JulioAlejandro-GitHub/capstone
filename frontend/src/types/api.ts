@@ -95,6 +95,156 @@ export interface RunDetailResponse {
   errors: JsonRecord[];
 }
 
+export interface LabelMapping {
+  '0': string;
+  '1': string;
+  negative_class?: string;
+  negative_class_index?: number;
+  positive_class: string;
+  positive_class_index: number;
+  raw_model_score_meaning: string;
+  decision_rule?: string;
+}
+
+export interface ClinicalMetrics {
+  accuracy?: number | null;
+  precision_parasitized?: number | null;
+  recall_parasitized?: number | null;
+  sensitivity_parasitized?: number | null;
+  specificity?: number | null;
+  f1_parasitized?: number | null;
+  f2_parasitized?: number | null;
+  roc_auc_parasitized?: number | null;
+  pr_auc_parasitized?: number | null;
+  balanced_accuracy?: number | null;
+  prediction_collapse_detected?: boolean | null;
+}
+
+export interface ConfusionMatrix {
+  labels: [string, string] | string[];
+  matrix: number[][];
+  tn?: number | null;
+  fp?: number | null;
+  fn?: number | null;
+  tp?: number | null;
+}
+
+export interface CheckpointPolicySummary {
+  policy?: string | null;
+  checkpoint_policy?: string | null;
+  min_recall_required?: number | null;
+  selected_epoch?: number | null;
+  policy_satisfied?: boolean | null;
+  selected_metric?: string | null;
+  selected_metric_value?: number | null;
+  warning?: string | null;
+  checkpoint_warning?: string | null;
+  checkpoint_path?: string | null;
+  created_at?: string | null;
+}
+
+export interface ThresholdCalibrationSummary {
+  enabled?: boolean | null;
+  threshold_policy?: string | null;
+  threshold_source?: string | null;
+  threshold_selected?: number | null;
+  threshold_used?: number | null;
+  default_threshold?: number | null;
+  target_recall?: number | null;
+  target_recall_satisfied?: boolean | null;
+  validation_recall_at_threshold?: number | null;
+  validation_specificity_at_threshold?: number | null;
+  validation_f2_at_threshold?: number | null;
+  threshold_warning?: string | null;
+  warning?: string | null;
+  calibration_split?: string | null;
+  created_at?: string | null;
+}
+
+export interface RunArtifact {
+  id?: string;
+  artifact_type: string | null;
+  artifact_path?: string | null;
+  path?: string | null;
+  exists?: boolean | null;
+  created_at?: string | null;
+  name?: string | null;
+  mime_type?: string | null;
+  file_size_bytes?: number | null;
+}
+
+export interface RunImagePrediction {
+  run_image_prediction_id?: string;
+  run_id: string;
+  image_id?: string | null;
+  split_name?: string | null;
+  usage_context?: string | null;
+  filename?: string | null;
+  relative_path?: string | null;
+  true_label?: number | null;
+  true_label_name?: string | null;
+  predicted_label?: number | null;
+  predicted_label_name?: string | null;
+  probability_parasitized?: number | null;
+  probability_uninfected?: number | null;
+  raw_model_score?: number | null;
+  raw_model_score_meaning?: string | null;
+  threshold_used?: number | null;
+  threshold_source?: string | null;
+  is_correct?: boolean | null;
+  case_type?: string | null;
+  created_at?: string | null;
+}
+
+export interface ClinicalRunSummary {
+  run_id: string;
+  run_name?: string | null;
+  model_name?: string | null;
+  script_name?: string | null;
+  run_type?: string | null;
+  status?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
+  checkpoint_policy?: string | null;
+  threshold_source?: string | null;
+  threshold_used?: number | null;
+  target_recall?: number | null;
+  accuracy?: number | null;
+  recall_parasitized?: number | null;
+  specificity?: number | null;
+  f2_parasitized?: number | null;
+  pr_auc_parasitized?: number | null;
+  roc_auc_parasitized?: number | null;
+  balanced_accuracy?: number | null;
+  prediction_collapse_detected?: boolean | null;
+  checkpoint_warning?: string | null;
+  threshold_warning?: string | null;
+}
+
+export interface RunClinicalSummary {
+  run_id: string;
+  model_name: string | null;
+  script_name: string | null;
+  run_type: string | null;
+  status: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  label_mapping: LabelMapping;
+  clinical_metrics: ClinicalMetrics;
+  confusion_matrix: ConfusionMatrix;
+  checkpoint_policy: CheckpointPolicySummary;
+  clinical_threshold: ThresholdCalibrationSummary;
+  artifacts_count: number;
+  image_predictions_count: number;
+}
+
+export interface ClinicalDashboard {
+  latest_run: ClinicalRunSummary | null;
+  items: ClinicalRunSummary[];
+  warnings: Array<{ run_id: string | null; type: string; message: string | null }>;
+  label_mapping: LabelMapping;
+}
+
 export interface ExplainabilityRow extends JsonRecord {
   id: string;
   run_id: string;
@@ -214,7 +364,10 @@ export interface ExplainabilityCase extends JsonRecord {
   positive_label: string | null;
   score: number | null;
   score_positive_label: number | null;
+  probability_parasitized: number | null;
   threshold: number | null;
+  threshold_used: number | null;
+  threshold_source: string | null;
   is_correct: boolean | null;
   image_id: string | null;
   image_path: string | null;

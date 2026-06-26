@@ -1,4 +1,11 @@
-CREATE OR REPLACE VIEW vw_case_level_explainability AS
+DROP VIEW IF EXISTS vw_explainability_gallery CASCADE;
+DROP VIEW IF EXISTS vw_case_type_summary CASCADE;
+DROP VIEW IF EXISTS vw_low_confidence_cases CASCADE;
+DROP VIEW IF EXISTS vw_false_negative_cases CASCADE;
+DROP VIEW IF EXISTS vw_false_positive_cases CASCADE;
+DROP VIEW IF EXISTS vw_case_level_explainability CASCADE;
+
+CREATE VIEW vw_case_level_explainability AS
 SELECT
     er.id AS explainability_id,
     er.run_id,
@@ -78,6 +85,7 @@ SELECT
     ) AS positive_label,
     COALESCE(p.score, er.score) AS score,
     COALESCE(p.score_positive_label, er.score) AS score_positive_label,
+    COALESCE(p.score_positive_label, er.score) AS probability_parasitized,
     COALESCE(
         p.threshold,
         CASE
@@ -90,6 +98,25 @@ SELECT
         END,
         0.5
     ) AS threshold,
+    COALESCE(
+        p.threshold,
+        CASE
+            WHEN (er.explanation_parameters ->> 'threshold') ~ '^-?[0-9]+([.][0-9]+)?$'
+                THEN (er.explanation_parameters ->> 'threshold')::NUMERIC
+        END,
+        CASE
+            WHEN (r.parameters ->> 'threshold') ~ '^-?[0-9]+([.][0-9]+)?$'
+                THEN (r.parameters ->> 'threshold')::NUMERIC
+        END,
+        0.5
+    ) AS threshold_used,
+    COALESCE(
+        p.metadata ->> 'threshold_source',
+        er.explanation_parameters ->> 'threshold_source',
+        r.parameters ->> 'threshold_source',
+        r.metadata ->> 'threshold_source',
+        'fixed_cli'
+    ) AS threshold_source,
     COALESCE(
         p.is_correct,
         COALESCE(er.true_label, p.true_label) = COALESCE(er.predicted_label, p.predicted_label)
@@ -135,7 +162,7 @@ LEFT JOIN LATERAL (
     LIMIT 1
 ) a ON TRUE;
 
-CREATE OR REPLACE VIEW vw_false_positive_cases AS
+CREATE VIEW vw_false_positive_cases AS
 SELECT
     explainability_id,
     prediction_id,
@@ -148,7 +175,10 @@ SELECT
     predicted_label,
     positive_label,
     score_positive_label,
+    probability_parasitized,
     threshold,
+    threshold_used,
+    threshold_source,
     image_id,
     image_path,
     explanation_output_path,
@@ -169,7 +199,7 @@ WHERE case_type = 'false_positive'
        AND predicted_label = positive_label
    );
 
-CREATE OR REPLACE VIEW vw_false_negative_cases AS
+CREATE VIEW vw_false_negative_cases AS
 SELECT
     explainability_id,
     prediction_id,
@@ -182,7 +212,10 @@ SELECT
     predicted_label,
     positive_label,
     score_positive_label,
+    probability_parasitized,
     threshold,
+    threshold_used,
+    threshold_source,
     image_id,
     image_path,
     explanation_output_path,
@@ -203,7 +236,7 @@ WHERE case_type = 'false_negative'
        AND predicted_label <> positive_label
    );
 
-CREATE OR REPLACE VIEW vw_low_confidence_cases AS
+CREATE VIEW vw_low_confidence_cases AS
 SELECT
     explainability_id,
     prediction_id,
@@ -216,7 +249,10 @@ SELECT
     predicted_label,
     positive_label,
     score_positive_label,
+    probability_parasitized,
     threshold,
+    threshold_used,
+    threshold_source,
     ABS(score_positive_label - threshold) AS confidence_distance,
     image_id,
     image_path,
@@ -236,7 +272,7 @@ WHERE case_type = 'low_confidence'
        AND ABS(score_positive_label - threshold) <= 0.10
    );
 
-CREATE OR REPLACE VIEW vw_case_type_summary AS
+CREATE VIEW vw_case_type_summary AS
 SELECT
     model_name,
     dataset_name,
@@ -250,7 +286,7 @@ SELECT
 FROM vw_case_level_explainability
 GROUP BY model_name, dataset_name, method, case_type;
 
-CREATE OR REPLACE VIEW vw_explainability_gallery AS
+CREATE VIEW vw_explainability_gallery AS
 SELECT
     explainability_id AS gallery_id,
     run_id,

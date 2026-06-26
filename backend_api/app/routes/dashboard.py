@@ -77,3 +77,59 @@ def dashboard_summary(datasource: str | None = Query(default="malaria")):
         ],
     }
 
+
+@router.get("/clinical")
+def clinical_dashboard(
+    datasource: str | None = Query(default="malaria"),
+    limit: int = Query(default=10, ge=1, le=100),
+):
+    rows = fetch_all(
+        datasource,
+        """
+        SELECT *
+        FROM vw_clinical_run_summary
+        ORDER BY started_at DESC NULLS LAST
+        LIMIT :limit
+        """,
+        {"limit": limit},
+    )
+    latest_run = rows[0] if rows else None
+    warnings = []
+    for row in rows_to_list(rows):
+        if row.get("prediction_collapse_detected") is True:
+            warnings.append(
+                {
+                    "run_id": row.get("run_id"),
+                    "type": "prediction_collapse",
+                    "message": "Prediction collapse detectado.",
+                }
+            )
+        if row.get("checkpoint_warning"):
+            warnings.append(
+                {
+                    "run_id": row.get("run_id"),
+                    "type": "checkpoint_policy",
+                    "message": row.get("checkpoint_warning"),
+                }
+            )
+        if row.get("threshold_warning"):
+            warnings.append(
+                {
+                    "run_id": row.get("run_id"),
+                    "type": "threshold_calibration",
+                    "message": row.get("threshold_warning"),
+                }
+            )
+
+    return {
+        "latest_run": row_to_dict(latest_run),
+        "items": rows_to_list(rows),
+        "warnings": warnings,
+        "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": "parasitized",
+            "positive_class_index": 1,
+            "raw_model_score_meaning": "probability_parasitized",
+        },
+    }

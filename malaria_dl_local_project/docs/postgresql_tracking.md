@@ -147,12 +147,16 @@ Endpoints de lectura agregados:
 
 ```text
 GET /runs/clinical/summary
+GET /runs/{run_id}/clinical-summary
 GET /runs/{run_id}/clinical-metrics
 GET /runs/{run_id}/checkpoint-policy
 GET /runs/{run_id}/threshold-calibration
-GET /runs/{run_id}/artifacts-summary
+GET /runs/{run_id}/artifacts
 GET /runs/{run_id}/image-predictions
+GET /runs/{run_id}/explainability
 GET /runs/{run_id}/io-records
+GET /dashboard/clinical
+GET /models/comparison
 ```
 
 Estos endpoints leen las vistas/tablas de tracking y aceptan `datasource=malaria` por defecto.

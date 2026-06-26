@@ -114,7 +114,10 @@ class BackendEndpointTests(unittest.TestCase):
             "probability_parasitized": 0.91,
         }
 
-        with mock.patch("app.routes.runs.fetch_all", return_value=[row]) as fetch_all:
+        with (
+            mock.patch("app.routes.runs.fetch_one", return_value={"total": 1}),
+            mock.patch("app.routes.runs.fetch_all", return_value=[row]) as fetch_all,
+        ):
             payload = get_run_image_predictions(
                 run_id=row["run_id"],
                 datasource="malaria",
@@ -123,7 +126,7 @@ class BackendEndpointTests(unittest.TestCase):
             )
 
         self.assertEqual(payload["items"][0]["predicted_label_name"], "parasitized")
-        self.assertIn("vw_run_image_predictions_summary", fetch_all.call_args.args[1])
+        self.assertIn("run_image_predictions", fetch_all.call_args.args[1])
         self.assertEqual(fetch_all.call_args.args[2]["limit"], 10)
         self.assertEqual(fetch_all.call_args.args[2]["offset"], 5)
 

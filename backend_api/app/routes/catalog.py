@@ -30,6 +30,25 @@ def models(datasource: str | None = Query(default="malaria")):
     return {"items": rows_to_list(rows)}
 
 
+@router.get("/models/comparison")
+@router.get("/api/models/comparison")
+def model_comparison(
+    datasource: str | None = Query(default="malaria"),
+    limit: int = Query(default=100, ge=1, le=500),
+):
+    rows = fetch_all(
+        datasource,
+        """
+        SELECT *
+        FROM vw_clinical_run_summary
+        ORDER BY started_at DESC NULLS LAST
+        LIMIT :limit
+        """,
+        {"limit": limit},
+    )
+    return {"items": rows_to_list(rows)}
+
+
 @router.get("/datasets")
 def datasets(datasource: str | None = Query(default="malaria")):
     rows = fetch_all(
@@ -41,4 +60,3 @@ def datasets(datasource: str | None = Query(default="malaria")):
         """,
     )
     return {"items": rows_to_list(rows)}
-

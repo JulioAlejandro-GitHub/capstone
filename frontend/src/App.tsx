@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { Layout, type PageKey } from './components/Layout';
+import { ClinicalEvaluation } from './pages/ClinicalEvaluation';
 import { Dashboard } from './pages/Dashboard';
 import { DatasetBrowser } from './pages/DatasetBrowser';
 import { DatasetsModels } from './pages/DatasetsModels';
@@ -49,6 +50,9 @@ function App() {
     >
       {page === 'dashboard' ? <Dashboard datasource={datasource} onRunSelect={selectRun} /> : null}
       {page === 'runs' ? <Runs datasource={datasource} onRunSelect={selectRun} /> : null}
+      {page === 'clinical-evaluation' ? (
+        <ClinicalEvaluation datasource={datasource} onRunSelect={selectRun} />
+      ) : null}
       {page === 'models' ? <ModelComparison datasource={datasource} /> : null}
       {page === 'run-detail' ? <RunDetail datasource={datasource} runId={selectedRunId} /> : null}
       {page === 'explainability' ? <Explainability datasource={datasource} /> : null}

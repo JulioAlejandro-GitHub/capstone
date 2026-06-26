@@ -1,5 +1,8 @@
 import type {
   ArtifactRow,
+  CheckpointPolicySummary,
+  ClinicalDashboard,
+  ClinicalRunSummary,
   DashboardSummary,
   DatasetBrowserSummary,
   DatasetImagePage,
@@ -11,7 +14,11 @@ import type {
   ModelSummary,
   PagedResponse,
   RunDashboard,
+  RunArtifact,
+  RunClinicalSummary,
   RunDetailResponse,
+  RunImagePrediction,
+  ThresholdCalibrationSummary,
   UploadedPrediction,
 } from '../types/api';
 
@@ -72,6 +79,10 @@ export const api = {
     return request<DashboardSummary>('/dashboard/summary', withDatasource(datasource));
   },
 
+  getClinicalDashboard(datasource: string) {
+    return request<ClinicalDashboard>('/dashboard/clinical', withDatasource(datasource));
+  },
+
   getRuns(datasource: string) {
     return request<{ items: RunDashboard[] }>('/runs', withDatasource(datasource));
   },
@@ -80,8 +91,48 @@ export const api = {
     return request<RunDetailResponse>(`/runs/${runId}`, withDatasource(datasource));
   },
 
+  getRunClinicalSummary(datasource: string, runId: string) {
+    return request<RunClinicalSummary>(`/runs/${runId}/clinical-summary`, withDatasource(datasource));
+  },
+
+  getRunCheckpointPolicy(datasource: string, runId: string) {
+    return request<{ items: CheckpointPolicySummary[] }>(
+      `/runs/${runId}/checkpoint-policy`,
+      withDatasource(datasource),
+    );
+  },
+
+  getRunThresholdCalibration(datasource: string, runId: string) {
+    return request<{ items: ThresholdCalibrationSummary[] }>(
+      `/runs/${runId}/threshold-calibration`,
+      withDatasource(datasource),
+    );
+  },
+
+  getRunArtifactsSummary(datasource: string, runId: string) {
+    return request<{ items: RunArtifact[] }>(`/runs/${runId}/artifacts`, withDatasource(datasource));
+  },
+
+  getRunImagePredictions(datasource: string, runId: string, params: Record<string, QueryValue> = {}) {
+    return request<PagedResponse<RunImagePrediction>>(`/runs/${runId}/image-predictions`, {
+      datasource,
+      ...params,
+    });
+  },
+
+  getRunExplainability(datasource: string, runId: string, params: Record<string, QueryValue> = {}) {
+    return request<PagedResponse<ExplainabilityCase>>(`/runs/${runId}/explainability`, {
+      datasource,
+      ...params,
+    });
+  },
+
   getModels(datasource: string) {
     return request<{ items: ModelSummary[] }>('/models', withDatasource(datasource));
+  },
+
+  getClinicalModelComparison(datasource: string) {
+    return request<{ items: ClinicalRunSummary[] }>('/models/comparison', withDatasource(datasource));
   },
 
   getDatasets(datasource: string) {

@@ -194,6 +194,116 @@ main {
   color: #5d6475;
 }
 
+.warning-panel {
+  border-color: #f3b7b7;
+  background: #fff8f8;
+}
+
+.warning-panel ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  color: #8a2a2a;
+}
+
+.warning-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.warning-item {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #f3b7b7;
+  border-radius: 8px;
+  background: #fff8f8;
+  color: #8a2a2a;
+  cursor: pointer;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.facts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.facts-grid span {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #eef1f7;
+  border-radius: 8px;
+  background: #f8faff;
+  color: #62708f;
+  padding: 10px 12px;
+}
+
+.facts-grid strong {
+  color: #27324a;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-clinical-facts {
+  margin-top: 14px;
+}
+
+.inline-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #62708f;
+  font-size: 13px;
+}
+
+.inline-control select {
+  border: 1px solid #cfd7e8;
+  border-radius: 8px;
+  background: #fff;
+  padding: 7px 9px;
+}
+
+.confusion-matrix-wrap {
+  display: grid;
+  gap: 12px;
+}
+
+.confusion-matrix th,
+.confusion-matrix td {
+  text-align: center;
+}
+
+.confusion-matrix tbody th {
+  color: #27324a;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.confusion-matrix td {
+  min-width: 140px;
+  border: 1px solid #e3e7f0;
+  background: #f8faff;
+}
+
+.confusion-matrix td strong {
+  display: block;
+  font-size: 24px;
+}
+
+.confusion-matrix td span {
+  color: #62708f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.confusion-matrix .critical-cell {
+  border-color: #e6b15d;
+  background: #fffaf0;
+}
+
 .grid-two {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

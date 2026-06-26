@@ -36,6 +36,18 @@ class DbMigrationTests(unittest.TestCase):
         self.assertIn("FROM dataset_split_images", sql)
         self.assertIn("label_mapping_version", sql)
 
+    def test_case_level_explainability_view_uses_drop_create(self):
+        migration = PROJECT_ROOT / "db" / "init" / "007_case_level_explainability_views.sql"
+
+        sql = migration.read_text(encoding="utf-8")
+
+        self.assertIn("DROP VIEW IF EXISTS vw_case_level_explainability CASCADE", sql)
+        self.assertIn("CREATE VIEW vw_case_level_explainability", sql)
+        self.assertIn("probability_parasitized", sql)
+        self.assertIn("threshold_used", sql)
+        self.assertIn("threshold_source", sql)
+        self.assertNotIn("CREATE OR REPLACE VIEW vw_case_level_explainability", sql)
+
     def test_clinical_inference_view_uses_drop_create_for_postgres(self):
         for migration_name in (
             "010_clinical_inference_tracking.sql",

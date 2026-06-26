@@ -64,14 +64,14 @@ function generateCaseInterpretation(item: ExplainabilityCase) {
   const trueLabel = item.true_label ?? 'clase desconocida';
   const predictedLabel = item.predicted_label ?? 'clase desconocida';
   const positiveLabel = item.positive_label ?? 'parasitized';
-  const score = formatMetric(item.score_positive_label);
+  const score = formatMetric(item.probability_parasitized ?? item.score_positive_label);
   const method = item.method?.toUpperCase() ?? 'explicabilidad';
 
   if (item.case_type === 'false_positive') {
     return `La imagen estaba etiquetada como ${trueLabel}, pero el modelo la clasifico como ${positiveLabel} con score ${score}. El mapa ${method} muestra la region que mas influyo en esta decision. Este caso debe revisarse como posible confusion visual o artefacto.`;
   }
   if (item.case_type === 'false_negative') {
-    return `La imagen estaba etiquetada como ${positiveLabel}, pero el modelo la clasifico como ${predictedLabel}. Este caso es critico porque representa una infeccion no detectada por el modelo.`;
+    return `La imagen estaba etiquetada como ${positiveLabel}, pero el modelo la clasifico como ${predictedLabel}. Este caso requiere revision prioritaria porque representa una celula parasitada no detectada por el modelo.`;
   }
   if (item.case_type === 'true_positive') {
     return `La imagen estaba etiquetada como ${positiveLabel} y el modelo tambien la clasifico como ${positiveLabel}. La explicacion visual permite revisar si la decision se apoya en una region microscopica plausible.`;
@@ -160,7 +160,7 @@ export function Explainability({ datasource }: ExplainabilityProps) {
       <div className="page-title">
         <div>
           <h1>Explicabilidad caso a caso</h1>
-          <p>Revision individual de imagen, prediccion, score, tipo de error y artefacto visual.</p>
+              <p>Revision individual de imagen, probabilidad estimada, threshold, tipo de error y artefacto visual experimental.</p>
         </div>
       </div>
 
@@ -295,8 +295,9 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                 },
                 { header: 'Real', render: (row) => row.true_label ?? '-' },
                 { header: 'Predicha', render: (row) => row.predicted_label ?? '-' },
-                { header: 'Score', render: (row) => formatMetric(row.score_positive_label) },
-                { header: 'Threshold', render: (row) => formatMetric(row.threshold) },
+                { header: 'Probability parasitized', render: (row) => formatMetric(row.probability_parasitized ?? row.score_positive_label) },
+                { header: 'Threshold used', render: (row) => formatMetric(row.threshold_used ?? row.threshold) },
+                { header: 'Threshold source', render: (row) => row.threshold_source ?? '-' },
                 {
                   header: 'Imagen',
                   render: (row) =>
@@ -372,8 +373,9 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                     <div className="case-facts">
                       <span>Real: <strong>{item.true_label ?? '-'}</strong></span>
                       <span>Predicha: <strong>{item.predicted_label ?? '-'}</strong></span>
-                      <span>Score: <strong>{formatMetric(item.score_positive_label)}</strong></span>
-                      <span>Threshold: <strong>{formatMetric(item.threshold)}</strong></span>
+                      <span>Probability parasitized: <strong>{formatMetric(item.probability_parasitized ?? item.score_positive_label)}</strong></span>
+                      <span>Threshold used: <strong>{formatMetric(item.threshold_used ?? item.threshold)}</strong></span>
+                      <span>Threshold source: <strong>{item.threshold_source ?? '-'}</strong></span>
                     </div>
                     <p>{generateCaseInterpretation(item)}</p>
                     <code>{item.explanation_output_path ?? item.image_path ?? '-'}</code>
