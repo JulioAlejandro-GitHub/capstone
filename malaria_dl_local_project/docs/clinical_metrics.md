@@ -17,6 +17,8 @@ probability_parasitized >= threshold -> parasitized
 probability_parasitized < threshold  -> uninfected
 ```
 
+El threshold operativo puede calibrarse con validation set para alcanzar sensibilidad mínima de `parasitized`; ver `docs/threshold_calibration.md`. No se calibra con test.
+
 ## Falsos negativos
 
 En imágenes microscópicas de malaria, el error clínicamente más sensible es:

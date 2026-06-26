@@ -149,43 +149,60 @@ El umbral es configurable con `--threshold`. Cambiarlo modifica la sensibilidad 
 
 El umbral actual debe interpretarse como criterio experimental inicial. Para uso clínico real se requeriría selección de umbral basada en validación clínica, análisis de costos de error y revisión experta.
 
-### Calibración
+### Calibración de threshold clínico
 
-La calibración se implementa con temperature scaling usando el validation set. El flujo recomendado es:
+El flujo recomendado selecciona un threshold operativo con validation set para alcanzar sensibilidad mínima de `parasitized`:
 
 ```bash
 python -m src.calibrate \
-  --checkpoint outputs/vgg16/best_model.keras \
+  --checkpoint outputs/custom_cnn/best_model.keras \
   --img-size 200 \
   --batch-size 64 \
-  --preprocessing rescale_0_1 \
-  --output-file outputs/vgg16/calibration.json
+  --target-recall 0.98 \
+  --dataset-split val \
+  --update-model-metadata
 ```
 
-Luego la inferencia usa:
+El test set está bloqueado para calibración y se usa solo después, para evaluación final. El resultado queda en:
+
+```text
+outputs/<model>/threshold_calibration.json
+outputs/<model>/model_metadata.json
+```
+
+Luego evaluación, inferencia, TTA y ensemble pueden usar:
 
 ```bash
 python -m src.predict_image \
-  --checkpoint outputs/vgg16/best_model.keras \
+  --checkpoint outputs/custom_cnn/best_model.keras \
   --image-path ruta/a/imagen.png \
-  --calibration-file outputs/vgg16/calibration.json
+  --threshold clinical
 ```
 
-El archivo `calibration.json` registra:
+El archivo `threshold_calibration.json` registra:
 
-- Método de calibración.
-- Temperatura.
+- Threshold seleccionado.
+- Métricas clínicas en validation para el threshold seleccionado.
+- Comparación contra threshold `0.5`.
 - Split usado (`validation`).
-- Métricas antes y después de calibrar.
 - Clase positiva (`parasitized`).
 - Nombre del score (`probability_parasitized`).
 - Convención de etiquetas (`clinical_v1_parasitized_positive`).
 
 Limitaciones de calibración:
 
-- La calibración mejora la interpretabilidad probabilística, pero no corrige errores sistemáticos del modelo.
-- Debe generarse con el mismo checkpoint, `img_size` y modo de preprocesamiento usados en inferencia.
+- La calibración usa validation, no test. Test queda reservado para evaluación final.
+- Un threshold menor puede reducir falsos negativos, pero aumentar falsos positivos.
 - Si cambia el dataset, el split, el preprocesamiento o el modelo, la calibración debe recalcularse.
+
+La calibración probabilística por temperature scaling sigue disponible como modo explícito:
+
+```bash
+python -m src.calibrate \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --calibration-kind temperature_scaling \
+  --output-file outputs/vgg16/calibration.json
+```
 
 ### Explicabilidad
 
@@ -635,34 +652,34 @@ python -m src.predict_image \
   --explain gradcam
 ```
 
-### Inferencia con Calibración
+### Inferencia con Threshold Clínico
 
-La calibración real se estima con el validation set y se guarda por checkpoint.
-El archivo debe generarse con el mismo `--img-size` y `--preprocessing` usados por el modelo:
+El threshold clínico se estima con validation set y se guarda por checkpoint. El archivo debe generarse con el mismo `--img-size` y `--preprocessing` usados por el modelo:
 
 ```bash
 python -m src.calibrate \
-  --checkpoint outputs/vgg16/best_model.keras \
+  --checkpoint outputs/custom_cnn/best_model.keras \
   --img-size 200 \
   --batch-size 64 \
-  --preprocessing rescale_0_1 \
-  --output-file outputs/vgg16/calibration.json \
+  --target-recall 0.98 \
+  --dataset-split val \
+  --update-model-metadata \
   --track-db
 ```
 
-Luego la inferencia usa ese archivo:
+Luego la inferencia usa la metadata:
 
 ```bash
 python -m src.predict_image \
-  --checkpoint outputs/vgg16/best_model.keras \
+  --checkpoint outputs/custom_cnn/best_model.keras \
   --image-path ruta/a/imagen.png \
   --positive-label parasitized \
-  --calibration-file outputs/vgg16/calibration.json
+  --threshold clinical
 ```
 
-Sin archivo, el método por defecto es `none`. `--calibration-temperature` se mantiene para pruebas manuales, pero el flujo recomendado es `--calibration-file`.
+Sin metadata clínica, `--threshold clinical` falla y se debe ejecutar calibración o usar un threshold numérico.
 
-El resultado JSON, `external_predictions.csv` y tracking en PostgreSQL registran si la probabilidad fue calibrada, la temperatura usada, el archivo y la probabilidad no calibrada.
+La calibración probabilística por temperature scaling se mantiene como flujo opcional con `--calibration-kind temperature_scaling` y `--calibration-file`.
 
 ### Inferencia con Tracking en PostgreSQL
 

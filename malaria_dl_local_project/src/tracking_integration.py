@@ -78,6 +78,30 @@ CLINICAL_TRACKING_METRIC_KEYS = [
     "n_pred_parasitized",
     "percent_pred_uninfected",
     "percent_pred_parasitized",
+    "threshold_used",
+    "threshold_source",
+    "threshold_mode",
+    "target_recall",
+    "target_recall_satisfied_on_validation",
+]
+
+
+THRESHOLD_TRACKING_KEYS = [
+    "threshold_policy",
+    "threshold_source",
+    "threshold_selected",
+    "threshold_used",
+    "default_threshold",
+    "target_recall",
+    "target_recall_satisfied",
+    "target_recall_satisfied_on_validation",
+    "validation_recall_at_threshold",
+    "validation_specificity_at_threshold",
+    "validation_precision_at_threshold",
+    "validation_f2_at_threshold",
+    "validation_pr_auc",
+    "validation_roc_auc",
+    "threshold_warning",
 ]
 
 
@@ -88,6 +112,38 @@ def clinical_metrics_for_tracking(metrics):
         key: json_safe(metrics.get(key))
         for key in CLINICAL_TRACKING_METRIC_KEYS
         if key in metrics
+    }
+
+
+def threshold_calibration_for_tracking(calibration_result):
+    if not calibration_result:
+        return {}
+    selected_metrics = calibration_result.get("selected_metrics") or {}
+    payload = {
+        "threshold_policy": calibration_result.get("threshold_policy"),
+        "threshold_source": calibration_result.get("threshold_source"),
+        "threshold_selected": calibration_result.get("threshold_selected"),
+        "threshold_used": calibration_result.get("threshold_selected"),
+        "default_threshold": calibration_result.get("default_threshold"),
+        "target_recall": calibration_result.get("target_recall"),
+        "target_recall_satisfied": calibration_result.get("target_recall_satisfied"),
+        "target_recall_satisfied_on_validation": calibration_result.get(
+            "target_recall_satisfied_on_validation"
+        ),
+        "validation_recall_at_threshold": selected_metrics.get("recall_parasitized"),
+        "validation_specificity_at_threshold": selected_metrics.get("specificity"),
+        "validation_precision_at_threshold": selected_metrics.get(
+            "precision_parasitized"
+        ),
+        "validation_f2_at_threshold": selected_metrics.get("f2_parasitized"),
+        "validation_pr_auc": selected_metrics.get("pr_auc_parasitized"),
+        "validation_roc_auc": selected_metrics.get("roc_auc_parasitized"),
+        "threshold_warning": calibration_result.get("warning"),
+    }
+    return {
+        key: json_safe(payload.get(key))
+        for key in THRESHOLD_TRACKING_KEYS
+        if key in payload
     }
 
 

@@ -35,7 +35,7 @@ from src.inference_pipeline import (
     predict_model_probability_with_tta,
     preprocess_external_image,
 )
-from src.model_metadata import verify_checkpoint_metadata
+from src.model_metadata import resolve_threshold_for_checkpoint, verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
@@ -48,7 +48,11 @@ def parse_args():
     parser.add_argument("--checkpoint", default=None, help="Ruta al modelo .keras entrenado.")
     parser.add_argument("--image-path", required=True, help="Ruta a la imagen a evaluar.")
     parser.add_argument("--img-size", type=int, default=200)
-    parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--threshold",
+        default="0.5",
+        help="Umbral numérico o 'clinical' para usar model_metadata.json.",
+    )
     parser.add_argument(
         "--label-mapping",
         choices=LABEL_MAPPING_CHOICES,
@@ -326,9 +330,21 @@ def build_result(args, image_path, stored_image, checkpoint, prediction_result):
     model_name = model_name_from_checkpoint_path(checkpoint)
     probability_parasitized = prediction_result["probability_parasitized"]
     probability_uninfected = prediction_result["probability_uninfected"]
+    fallback_threshold = threshold_value_or_none(args.threshold)
+    if fallback_threshold is None:
+        raise ValueError(
+            "threshold clinical debe resolverse desde model_metadata.json antes de inferir."
+        )
+    threshold_info = getattr(args, "threshold_info", None) or {
+        "threshold_mode": "fixed",
+        "threshold_source": "fixed",
+        "threshold_used": fallback_threshold,
+        "clinical_threshold": None,
+    }
+    threshold_value = float(threshold_info["threshold_used"])
     predicted_label = (
         POSITIVE_LABEL
-        if probability_parasitized >= float(args.threshold)
+        if probability_parasitized >= threshold_value
         else NEGATIVE_LABEL
     )
 
@@ -368,6 +384,15 @@ def build_result(args, image_path, stored_image, checkpoint, prediction_result):
             probability_parasitized,
         ),
         "calibration": prediction_result.get("calibration", {"method": "none", "applied": False}),
+        "threshold_used": threshold_value,
+        "threshold_source": threshold_info.get("threshold_source", "fixed"),
+        "threshold_mode": threshold_info.get("threshold_mode", "fixed"),
+        "target_recall": threshold_info.get("target_recall"),
+        "target_recall_satisfied_on_validation": threshold_info.get(
+            "target_recall_satisfied_on_validation"
+        ),
+        "expected_specificity": threshold_info.get("expected_specificity"),
+        "clinical_threshold": threshold_info.get("clinical_threshold"),
         "preprocessing_mode": prediction_result.get("preprocessing_mode"),
         "tta": bool(args.tta),
         "n_aug": int(args.n_aug) if args.tta else 0,
@@ -396,7 +421,7 @@ def build_result(args, image_path, stored_image, checkpoint, prediction_result):
         model_checkpoint=str(checkpoint),
         model_name=model_name,
         probability_parasitized=probability_parasitized,
-        threshold=args.threshold,
+        threshold=threshold_value,
         extra=extra,
     )
     response["predicted_label"] = predicted_label
@@ -408,6 +433,13 @@ def format_optional_probability(value):
     if value is None:
         return "no disponible"
     return f"{float(value):.6f}"
+
+
+def threshold_value_or_none(threshold):
+    try:
+        return float(threshold)
+    except (TypeError, ValueError):
+        return None
 
 
 def get_decision_dict(result):
@@ -445,7 +477,13 @@ def print_result(result):
     calibration = probabilities.get("calibration") or {}
     calibration_status = "aplicada" if calibration.get("applied") else "no aplicada"
     print(f"Calibración: {calibration.get('method', 'none')} ({calibration_status})")
-    print(f"Umbral clínico experimental: {result['threshold']:.2f}")
+    threshold_value = result.get("threshold")
+    threshold_source = result.get("threshold_source", "fixed")
+    if threshold_value is None:
+        print("Umbral clínico experimental: no resuelto")
+    else:
+        print(f"Umbral clínico experimental: {float(threshold_value):.2f}")
+    print(f"Fuente de umbral: {threshold_source}")
     print(f"Predicción: {result.get('predicted_label') or 'no disponible'}")
     print(f"Confianza: {result.get('confidence_level') or 'no disponible'}")
     print(f"Respuesta: {result.get('human_readable_response') or 'no disponible'}")
@@ -530,6 +568,10 @@ def append_external_prediction_csv(result):
         "probability_parasitized": result["probability_parasitized"],
         "probability_uninfected": result["probability_uninfected"],
         "threshold": result["threshold"],
+        "threshold_source": result.get("threshold_source"),
+        "threshold_mode": result.get("threshold_mode"),
+        "target_recall": result.get("target_recall"),
+        "expected_specificity": result.get("expected_specificity"),
         "confidence_level": result["confidence_level"],
         "decision": result.get("decision_code"),
         "explainability_method": explainability_method,
@@ -657,6 +699,10 @@ def track_prediction(args, result, checkpoint):
                     "raw_model_score": result.get("raw_model_score"),
                     "calibration": result.get("calibration"),
                     "calibration_file": (result.get("calibration") or {}).get("calibration_file"),
+                    "threshold_source": result.get("threshold_source"),
+                    "threshold_mode": result.get("threshold_mode"),
+                    "target_recall": result.get("target_recall"),
+                    "clinical_threshold": result.get("clinical_threshold"),
                     "ensemble_applied": result.get("ensemble_applied"),
                     "ensemble_models": (result.get("model") or {}).get("ensemble_models"),
                     "ensemble_weights": result.get("ensemble_weights"),
@@ -855,6 +901,10 @@ def track_prediction(args, result, checkpoint):
                 "probability_uninfected": result["probability_uninfected"],
                 "raw_model_score": result.get("raw_model_score"),
                 "threshold": result["threshold"],
+                "threshold_source": result.get("threshold_source"),
+                "threshold_mode": result.get("threshold_mode"),
+                "target_recall": result.get("target_recall"),
+                "clinical_threshold": result.get("clinical_threshold"),
                 "confidence_level": result["confidence_level"],
                 "decision_code": result.get("decision_code"),
                 "human_readable_response": result.get("human_readable_response"),
@@ -885,6 +935,10 @@ def track_prediction(args, result, checkpoint):
                 "probability_parasitized": result["probability_parasitized"],
                 "probability_uninfected": result["probability_uninfected"],
                 "raw_model_score_meaning": result.get("raw_model_score_meaning"),
+                "threshold_source": result.get("threshold_source"),
+                "threshold_mode": result.get("threshold_mode"),
+                "target_recall": result.get("target_recall"),
+                "clinical_threshold": result.get("clinical_threshold"),
                 "label_mapping_version": result.get("label_mapping_version"),
                 "label_mapping": result.get("label_mapping"),
             },
@@ -981,7 +1035,9 @@ def quality_failure_response(args, image_path, quality_result):
         "predicted_label": None,
         "probability_parasitized": None,
         "probability_uninfected": None,
-        "threshold": float(args.threshold),
+        "threshold": threshold_value_or_none(args.threshold),
+        "threshold_source": "unresolved",
+        "threshold_mode": "clinical" if str(args.threshold).lower() == "clinical" else "fixed",
         "confidence_level": None,
         "decision_code": "image_quality_failed",
         "human_readable_response": "No fue posible evaluar la imagen por falla de calidad o lectura.",
@@ -1036,7 +1092,7 @@ def quality_failure_response(args, image_path, quality_result):
             "label_mapping_version": args.label_mapping,
         },
         "decision": {
-            "threshold": float(args.threshold),
+            "threshold": threshold_value_or_none(args.threshold),
             "predicted_label": None,
             "confidence_level": None,
             "decision_code": "image_quality_failed",
@@ -1173,6 +1229,9 @@ def run_clinical_inference(
         return quality_failure_response(args, image_path, quality_result)
 
     primary_checkpoint, model_paths, explain_model_path = resolve_model_paths(args)
+    threshold_info = resolve_threshold_for_checkpoint(args.threshold, primary_checkpoint)
+    args.threshold_info = threshold_info
+    args.threshold = threshold_info["threshold_used"]
     preprocessing_mode = resolve_preprocessing_mode(
         "ensemble" if args.ensemble else primary_checkpoint.parent.name,
         args.preprocessing,
@@ -1266,6 +1325,12 @@ def run_clinical_inference(
         "raw_model_score_meaning": result.get("raw_model_score_meaning"),
         "label_mapping_version": result.get("label_mapping_version"),
         "calibration": result.get("calibration"),
+        "threshold_used": result.get("threshold_used"),
+        "threshold_source": result.get("threshold_source"),
+        "threshold_mode": result.get("threshold_mode"),
+        "target_recall": result.get("target_recall"),
+        "expected_specificity": result.get("expected_specificity"),
+        "clinical_threshold": result.get("clinical_threshold"),
     }
     result.update(
         build_structured_clinical_response(

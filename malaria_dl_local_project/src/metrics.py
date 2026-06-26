@@ -533,6 +533,14 @@ def evaluate_binary_predictions(
 
     metrics = {
         **clinical_metrics,
+        "threshold_used": float(threshold),
+        "threshold_source": metadata.get("threshold_source", "fixed"),
+        "threshold_mode": metadata.get("threshold_mode", "fixed"),
+        "target_recall": metadata.get("target_recall"),
+        "target_recall_satisfied_on_validation": metadata.get(
+            "target_recall_satisfied_on_validation"
+        ),
+        "clinical_threshold": metadata.get("clinical_threshold"),
         "precision_macro": float(precision_score(y_true, y_pred, average="macro", zero_division=0)),
         "recall_macro": float(recall_score(y_true, y_pred, average="macro", zero_division=0)),
         "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
@@ -614,6 +622,8 @@ def evaluate_binary_predictions(
                 "negative_class_name": NEGATIVE_LABEL,
                 "negative_class_index": negative_idx,
                 "label_mapping_version": label_mapping_version,
+                "threshold": float(threshold),
+                "threshold_source": metadata.get("threshold_source", "fixed"),
             }
         )
         if metadata.get("preprocessing_mode") is not None:

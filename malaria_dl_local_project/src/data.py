@@ -224,6 +224,7 @@ def dataset_tracking_metadata(data_source=DATA_SOURCE_PHYSICAL, dataset_dir=None
 def add_data_source_args(parser):
     parser.add_argument(
         "--data-source",
+        "--dataset-source",
         choices=DATA_SOURCE_CHOICES,
         default=DATA_SOURCE_PHYSICAL,
         help=(

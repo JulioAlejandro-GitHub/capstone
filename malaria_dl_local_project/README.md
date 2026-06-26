@@ -391,28 +391,62 @@ python -m src.predict_image \
   --threshold 0.5
 ```
 
-Calibrar probabilidades con validation set:
+Calibrar threshold clínico con validation set:
+
+```bash
+python -m src.calibrate \
+  --checkpoint outputs/custom_cnn/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --target-recall 0.98 \
+  --dataset-split val \
+  --update-model-metadata \
+  --track-db
+```
+
+Esto guarda `outputs/<model>/threshold_calibration.json` y, con `--update-model-metadata`, agrega `clinical_threshold` a `outputs/<model>/model_metadata.json`. El threshold se selecciona sobre validation para favorecer sensibilidad de `parasitized`; test no se usa para calibrar.
+
+Entrenamiento con calibración integrada:
+
+```bash
+python -m src.train \
+  --model custom_cnn \
+  --epochs 30 \
+  --img-size 200 \
+  --batch-size 64 \
+  --checkpoint-policy auc_with_min_recall \
+  --min-recall 0.98 \
+  --calibrate-threshold \
+  --target-recall 0.98 \
+  --track-db
+```
+
+Evaluación e inferencia usando threshold clínico:
+
+```bash
+python -m src.evaluate \
+  --checkpoint outputs/custom_cnn/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --threshold clinical
+
+python -m src.predict_image \
+  --checkpoint outputs/custom_cnn/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --positive-label parasitized \
+  --threshold clinical
+```
+
+La calibración probabilística por temperature scaling sigue disponible explícitamente:
 
 ```bash
 python -m src.calibrate \
   --checkpoint outputs/vgg16/best_model.keras \
-  --img-size 200 \
-  --batch-size 64 \
-  --preprocessing rescale_0_1 \
+  --calibration-kind temperature_scaling \
   --output-file outputs/vgg16/calibration.json
 ```
 
-Inferencia usando el archivo de calibración:
-
-```bash
-python -m src.predict_image \
-  --checkpoint outputs/vgg16/best_model.keras \
-  --image-path ruta/a/imagen.png \
-  --positive-label parasitized \
-  --calibration-file outputs/vgg16/calibration.json
-```
-
-`external_predictions.csv`, el JSON de salida y el tracking DB registran `calibration_applied`, temperatura, archivo de calibración y `uncalibrated_probability_parasitized`.
+Más detalle: `docs/threshold_calibration.md`.
 
 Cuando se usa `--track-db`, la imagen se copia y renombra en:
 

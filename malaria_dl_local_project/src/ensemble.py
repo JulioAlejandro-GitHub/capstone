@@ -16,17 +16,21 @@ from src.data import add_data_source_args, dataset_tracking_metadata, load_malar
 from src.decision import POSITIVE_LABEL
 from src.inference_pipeline import probability_rows_from_predictions
 from src.metrics import clinical_predictions_from_raw_scores, evaluate_binary_predictions
-from src.model_metadata import verify_checkpoint_metadata
+from src.model_metadata import resolve_threshold_for_checkpoint, verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Ensemble ponderado de modelos Keras.")
     parser.add_argument("--models", nargs="+", required=True, help="Rutas a modelos .keras")
     parser.add_argument("--weights", nargs="+", type=float, default=None, help="Pesos del ensemble")
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--threshold",
+        default="0.5",
+        help="Umbral numérico o 'clinical' para usar model_metadata.json del primer modelo.",
+    )
     parser.add_argument(
         "--label-mapping",
         choices=LABEL_MAPPING_CHOICES,
@@ -45,7 +49,7 @@ def parse_args():
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main():
@@ -67,6 +71,8 @@ def main():
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: ensemble usando convención legacy_tfds_parasitized_zero.")
     dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
+    threshold_info = resolve_threshold_for_checkpoint(args.threshold, model_paths[0])
+    threshold_value = threshold_info["threshold_used"]
 
     output_dir = OUTPUT_DIR / "ensemble"
     if args.track_db:
@@ -83,7 +89,7 @@ def main():
                 extra={
                     "models": [str(path) for path in model_paths],
                     "output_dir": str(output_dir),
-                    "threshold": args.threshold,
+                    "threshold": threshold_value,
                     "preprocessing_mode": preprocessing_mode,
                     "class_names": CLASS_NAMES,
                     "base_model_label_mapping_version": args.label_mapping,
@@ -91,6 +97,7 @@ def main():
                     "label_mapping_version": LABEL_MAPPING_VERSION,
                     "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                     "raw_model_score_meaning": "probability_parasitized",
+                    **threshold_info,
                     **dataset_info,
                 },
             ),
@@ -143,7 +150,7 @@ def main():
         y_pred = clinical_predictions_from_raw_scores(
             y_score,
             class_names=class_names,
-            threshold=args.threshold,
+            threshold=threshold_value,
             label_mapping_version=LABEL_MAPPING_VERSION,
         )
 
@@ -156,12 +163,13 @@ def main():
             class_names=class_names,
             output_dir=output_dir,
             prefix="ensemble_test",
-            threshold=args.threshold,
+            threshold=threshold_value,
             metadata={
                 "preprocessing_mode": preprocessing_mode,
                 "label_mapping_version": LABEL_MAPPING_VERSION,
                 "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                 "raw_model_score_meaning": "probability_parasitized",
+                **threshold_info,
                 **dataset_info,
             },
         )
@@ -203,6 +211,7 @@ def main():
                         "label_mapping_version": LABEL_MAPPING_VERSION,
                         "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                         "raw_model_score_meaning": "probability_parasitized",
+                        **threshold_info,
                         **dataset_info,
                     },
                 ),
@@ -213,6 +222,7 @@ def main():
                         output_dir / "ensemble_test_confusion_matrix.csv"
                     ),
                     "metrics": metrics,
+                    **threshold_info,
                     **clinical_metrics_for_tracking(metrics),
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
@@ -227,6 +237,7 @@ def main():
                     "label_mapping": label_mapping_metadata(LABEL_MAPPING_VERSION),
                     "base_model_label_mapping_version": args.label_mapping,
                     "raw_model_score_meaning": "probability_parasitized",
+                    **threshold_info,
                     **dataset_info,
                     **clinical_metrics_for_tracking(metrics),
                 },

@@ -13,16 +13,20 @@ from src.config import (
 )
 from src.data import add_data_source_args, dataset_tracking_metadata, load_malaria_splits
 from src.metrics import collect_predictions, evaluate_binary_predictions
-from src.model_metadata import verify_checkpoint_metadata
+from src.model_metadata import resolve_threshold_for_checkpoint, verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Evalúa un modelo Keras guardado.")
     parser.add_argument("--checkpoint", required=True, help="Ruta a .keras")
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument(
+        "--threshold",
+        default="0.5",
+        help="Umbral numérico o 'clinical' para usar model_metadata.json.",
+    )
     parser.add_argument(
         "--positive-label",
         default=POSITIVE_LABEL,
@@ -46,7 +50,7 @@ def parse_args():
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main():
@@ -70,6 +74,8 @@ def main():
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: evaluando checkpoint legacy_tfds_parasitized_zero.")
     dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
+    threshold_info = resolve_threshold_for_checkpoint(args.threshold, checkpoint)
+    threshold_value = threshold_info["threshold_used"]
 
     if args.track_db:
         from src.tracking_integration import (
@@ -94,6 +100,7 @@ def main():
                     "label_mapping": mapping_metadata,
                     "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
                     "positive_label": args.positive_label,
+                    **threshold_info,
                     **dataset_info,
                 },
             ),
@@ -118,7 +125,7 @@ def main():
             model,
             ds_test,
             class_names=class_names,
-            threshold=args.threshold,
+            threshold=threshold_value,
             label_mapping_version=args.label_mapping,
         )
         metrics = evaluate_binary_predictions(
@@ -128,13 +135,14 @@ def main():
             class_names=class_names,
             output_dir=output_dir,
             prefix=checkpoint.stem,
-            threshold=args.threshold,
+            threshold=threshold_value,
             positive_label=args.positive_label,
             metadata={
                 "preprocessing_mode": preprocessing_mode,
                 "label_mapping_version": args.label_mapping,
                 "label_mapping": mapping_metadata,
                 "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                **threshold_info,
                 **dataset_info,
             },
         )
@@ -159,7 +167,7 @@ def main():
                 y_pred=y_pred,
                 y_score=y_score,
                 class_names=class_names,
-                threshold=args.threshold,
+                threshold=threshold_value,
                 label_mapping_version=args.label_mapping,
             )
             log_output_artifacts(run_context, output_dir)
@@ -186,6 +194,7 @@ def main():
                         "raw_model_score_meaning": mapping_metadata[
                             "raw_model_score_meaning"
                         ],
+                        **threshold_info,
                         **dataset_info,
                     },
                 ),
@@ -198,6 +207,7 @@ def main():
                         output_dir / f"{checkpoint.stem}_confusion_matrix.csv"
                     ),
                     "metrics": metrics,
+                    **threshold_info,
                     **clinical_metrics_for_tracking(metrics),
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
@@ -213,6 +223,7 @@ def main():
                     "label_mapping_version": args.label_mapping,
                     "label_mapping": mapping_metadata,
                     "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
+                    **threshold_info,
                     **dataset_info,
                     **clinical_metrics_for_tracking(metrics),
                 },

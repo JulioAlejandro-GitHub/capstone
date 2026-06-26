@@ -107,13 +107,16 @@ python -m src.evaluate \
 
 Las evaluaciones, TTA, ensemble y SVM guardan métricas clínicas comunes en JSON y PostgreSQL: `recall_parasitized`/sensibilidad, `specificity`, `f2_parasitized`, `roc_auc_parasitized`, `pr_auc_parasitized`, `balanced_accuracy`, matriz de confusión clínica y diagnóstico `prediction_collapse`. La convención es siempre `0 = uninfected`, `1 = parasitized` y `raw_model_score = probability_parasitized`.
 
-7. Calibrar modelos
+7. Calibrar threshold clínico de modelos
 
 ```bash
 python -m src.calibrate \
   --checkpoint outputs/custom_cnn/best_model.keras \
   --img-size 200 \
   --batch-size 64 \
+  --target-recall 0.98 \
+  --dataset-split val \
+  --update-model-metadata \
   --track-db
 ```
 
@@ -122,6 +125,33 @@ python -m src.calibrate \
   --checkpoint outputs/vgg16/best_model.keras \
   --img-size 200 \
   --batch-size 64 \
+  --target-recall 0.98 \
+  --dataset-split val \
+  --update-model-metadata \
+  --track-db
+```
+
+La calibración usa solo validation, nunca test, y guarda `threshold_calibration.json` más `clinical_threshold` en `model_metadata.json`. Luego se puede usar:
+
+```bash
+python -m src.evaluate \
+  --checkpoint outputs/custom_cnn/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --threshold clinical \
+  --track-db
+```
+
+También se puede calibrar al final del entrenamiento con:
+
+```bash
+python -m src.train \
+  --model custom_cnn \
+  --epochs 30 \
+  --img-size 200 \
+  --batch-size 64 \
+  --calibrate-threshold \
+  --target-recall 0.98 \
   --track-db
 ```
 

@@ -82,6 +82,157 @@ def load_model_metadata_for_checkpoint(checkpoint):
     return json.loads(metadata_path.read_text(encoding="utf-8"))
 
 
+def clinical_threshold_metadata_from_calibration(calibration_result):
+    selected_metrics = calibration_result.get("selected_metrics") or {}
+    default_metrics = calibration_result.get("default_threshold_metrics") or {}
+    return {
+        "enabled": True,
+        "threshold_policy": calibration_result.get("threshold_policy", "target_recall"),
+        "threshold_source": calibration_result.get(
+            "threshold_source",
+            "validation_calibration",
+        ),
+        "threshold_selected": float(calibration_result["threshold_selected"]),
+        "threshold_used": float(calibration_result["threshold_selected"]),
+        "default_threshold": float(calibration_result.get("default_threshold", 0.5)),
+        "target_recall": float(calibration_result.get("target_recall", 0.98)),
+        "target_recall_satisfied": bool(
+            calibration_result.get("target_recall_satisfied", False)
+        ),
+        "target_recall_satisfied_on_validation": bool(
+            calibration_result.get(
+                "target_recall_satisfied_on_validation",
+                calibration_result.get("target_recall_satisfied", False),
+            )
+        ),
+        "min_specificity": calibration_result.get("min_specificity"),
+        "min_specificity_satisfied": calibration_result.get("min_specificity_satisfied"),
+        "validation_metrics_at_threshold": selected_metrics,
+        "default_threshold_metrics": default_metrics,
+        "candidate_count": calibration_result.get("candidate_count"),
+        "warning": calibration_result.get("warning"),
+        "calibration_split": calibration_result.get("calibration_split", "val"),
+        "positive_label": POSITIVE_LABEL,
+        "negative_label": NEGATIVE_LABEL,
+        "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+    }
+
+
+def update_model_metadata_with_clinical_threshold(checkpoint, calibration_result):
+    metadata = load_model_metadata_for_checkpoint(checkpoint) or {}
+    metadata.update(
+        {
+            "label_mapping_version": metadata.get(
+                "label_mapping_version",
+                LABEL_MAPPING_VERSION,
+            ),
+            "class_names": metadata.get("class_names", CLASS_NAMES),
+            "negative_class_index": metadata.get(
+                "negative_class_index",
+                NEGATIVE_CLASS_INDEX,
+            ),
+            "negative_class_name": metadata.get("negative_class_name", NEGATIVE_LABEL),
+            "positive_class_index": metadata.get(
+                "positive_class_index",
+                POSITIVE_CLASS_INDEX,
+            ),
+            "positive_class_name": metadata.get("positive_class_name", POSITIVE_LABEL),
+            "raw_model_score_meaning": metadata.get(
+                "raw_model_score_meaning",
+                RAW_MODEL_SCORE_MEANING,
+            ),
+            "clinical_threshold": clinical_threshold_metadata_from_calibration(
+                calibration_result
+            ),
+        }
+    )
+    metadata_path = metadata_path_for_checkpoint(checkpoint)
+    metadata_path.write_text(
+        json.dumps(metadata, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return metadata_path, metadata
+
+
+def load_clinical_threshold_for_checkpoint(checkpoint_path: Path) -> dict:
+    metadata = load_model_metadata_for_checkpoint(checkpoint_path)
+    if not metadata:
+        raise ValueError(
+            "No clinical threshold found in model metadata. "
+            "Run calibration first or use --threshold 0.5."
+        )
+
+    clinical_threshold = metadata.get("clinical_threshold") or {}
+    if not clinical_threshold.get("enabled"):
+        raise ValueError(
+            "No clinical threshold found in model metadata. "
+            "Run calibration first or use --threshold 0.5."
+        )
+    threshold_selected = clinical_threshold.get("threshold_selected")
+    if threshold_selected is None:
+        raise ValueError(
+            "No clinical threshold found in model metadata. "
+            "Run calibration first or use --threshold 0.5."
+        )
+
+    return {
+        **clinical_threshold,
+        "threshold_used": float(threshold_selected),
+        "threshold_selected": float(threshold_selected),
+        "threshold_source": clinical_threshold.get(
+            "threshold_source",
+            "validation_calibration",
+        ),
+        "model_metadata_path": str(metadata_path_for_checkpoint(checkpoint_path)),
+    }
+
+
+def resolve_threshold_for_checkpoint(threshold, checkpoint_path: Path) -> dict:
+    if isinstance(threshold, str) and threshold.strip().lower() == "clinical":
+        clinical_threshold = load_clinical_threshold_for_checkpoint(checkpoint_path)
+        return {
+            "threshold_requested": "clinical",
+            "threshold_mode": "clinical",
+            "threshold_used": float(clinical_threshold["threshold_used"]),
+            "threshold_source": clinical_threshold.get(
+                "threshold_source",
+                "validation_calibration",
+            ),
+            "clinical_threshold": clinical_threshold,
+            "target_recall": clinical_threshold.get("target_recall"),
+            "target_recall_satisfied_on_validation": clinical_threshold.get(
+                "target_recall_satisfied_on_validation",
+                clinical_threshold.get("target_recall_satisfied"),
+            ),
+            "expected_specificity": (
+                (clinical_threshold.get("validation_metrics_at_threshold") or {}).get(
+                    "specificity"
+                )
+            ),
+            "warning": clinical_threshold.get("warning"),
+        }
+
+    try:
+        threshold_value = float(threshold)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "threshold debe ser un número entre 0 y 1 o el valor 'clinical'."
+        ) from exc
+    if not 0.0 <= threshold_value <= 1.0:
+        raise ValueError("threshold debe estar entre 0 y 1.")
+    return {
+        "threshold_requested": threshold,
+        "threshold_mode": "fixed",
+        "threshold_used": threshold_value,
+        "threshold_source": "fixed",
+        "clinical_threshold": None,
+        "target_recall": None,
+        "target_recall_satisfied_on_validation": None,
+        "expected_specificity": None,
+        "warning": None,
+    }
+
+
 def verify_checkpoint_metadata(
     checkpoint,
     expected_label_mapping=LABEL_MAPPING_VERSION,

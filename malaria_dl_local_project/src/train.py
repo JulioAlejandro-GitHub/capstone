@@ -21,8 +21,12 @@ from src.config import (
     OUTPUT_DIR,
 )
 from src.data import add_data_source_args, dataset_tracking_metadata, load_malaria_splits
-from src.metrics import evaluate_keras_model
-from src.model_metadata import build_model_metadata, write_model_metadata
+from src.metrics import collect_predictions, evaluate_keras_model
+from src.model_metadata import (
+    build_model_metadata,
+    clinical_threshold_metadata_from_calibration,
+    write_model_metadata,
+)
 from src.models import (
     build_custom_cnn,
     build_vgg16_transfer,
@@ -30,6 +34,11 @@ from src.models import (
     unfreeze_last_layers,
 )
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
+from src.threshold_calibration import (
+    default_threshold_calibration_path,
+    find_threshold_for_target_recall,
+    write_threshold_calibration,
+)
 
 
 CHECKPOINT_METRIC_CHOICES = [
@@ -114,6 +123,28 @@ def parse_args(argv=None):
         type=float,
         default=0.05,
         help="Fracción mínima por clase predicha para no marcar colapso.",
+    )
+    parser.add_argument(
+        "--calibrate-threshold",
+        action="store_true",
+        help="Calibrar threshold clínico con validation al terminar entrenamiento.",
+    )
+    parser.add_argument(
+        "--target-recall",
+        type=float,
+        default=0.98,
+        help="Sensibilidad objetivo para calibración de threshold clínico.",
+    )
+    parser.add_argument(
+        "--min-specificity",
+        type=float,
+        default=None,
+        help="Especificidad mínima opcional durante calibración de threshold.",
+    )
+    parser.add_argument(
+        "--threshold-output-json",
+        default=None,
+        help="Ruta opcional para threshold_calibration.json.",
     )
     parser.add_argument(
         "--monitor-mode",
@@ -326,6 +357,9 @@ def main():
                         checkpoint_policy_config.reject_prediction_collapse
                     ),
                     "min_class_fraction": checkpoint_policy_config.min_class_fraction,
+                    "calibrate_threshold": bool(args.calibrate_threshold),
+                    "target_recall": args.target_recall,
+                    "min_specificity": args.min_specificity,
                     "checkpoint_monitor": checkpoint_monitor,
                     "checkpoint_metric": checkpoint_monitor,
                     "checkpoint_mode": checkpoint_mode,
@@ -478,6 +512,85 @@ def main():
             model.save(best_model_path)
             evaluation_model = model
 
+        threshold_calibration = None
+        threshold_calibration_path = None
+        clinical_threshold_metadata = None
+        test_threshold = 0.5
+        threshold_info = {
+            "threshold_requested": 0.5,
+            "threshold_mode": "fixed",
+            "threshold_used": 0.5,
+            "threshold_source": "fixed",
+            "clinical_threshold": None,
+            "target_recall": None,
+            "target_recall_satisfied_on_validation": None,
+            "expected_specificity": None,
+            "warning": None,
+        }
+        if args.calibrate_threshold:
+            print("Calibrando threshold clínico con validation set...")
+            y_val_true, _, y_val_score = collect_predictions(
+                evaluation_model,
+                ds_val,
+                class_names=class_names,
+                threshold=0.5,
+                label_mapping_version=LABEL_MAPPING_VERSION,
+            )
+            threshold_calibration = find_threshold_for_target_recall(
+                y_true=y_val_true,
+                y_scores=y_val_score,
+                target_recall=args.target_recall,
+                min_specificity=args.min_specificity,
+                beta=args.beta,
+            )
+            threshold_calibration.update(
+                {
+                    "checkpoint": str(best_model_path),
+                    "model_name": args.model,
+                    "img_size": args.img_size,
+                    "batch_size": args.batch_size,
+                    "preprocessing_mode": preprocessing_mode,
+                    "dataset": dataset_info,
+                }
+            )
+            threshold_calibration_path = Path(
+                args.threshold_output_json
+            ).expanduser() if args.threshold_output_json else default_threshold_calibration_path(
+                output_dir
+            )
+            write_threshold_calibration(
+                threshold_calibration_path,
+                threshold_calibration,
+            )
+            clinical_threshold_metadata = clinical_threshold_metadata_from_calibration(
+                threshold_calibration
+            )
+            test_threshold = float(threshold_calibration["threshold_selected"])
+            threshold_info = {
+                "threshold_requested": "clinical",
+                "threshold_mode": "clinical",
+                "threshold_used": test_threshold,
+                "threshold_source": "validation_calibration",
+                "clinical_threshold": clinical_threshold_metadata,
+                "target_recall": threshold_calibration.get("target_recall"),
+                "target_recall_satisfied_on_validation": threshold_calibration.get(
+                    "target_recall_satisfied_on_validation"
+                ),
+                "expected_specificity": (
+                    threshold_calibration.get("selected_metrics", {}).get(
+                        "specificity"
+                    )
+                ),
+                "warning": threshold_calibration.get("warning"),
+            }
+            print(f"Threshold clínico seleccionado: {test_threshold:.6f}")
+            print(
+                "Target recall satisfecho en validation:",
+                threshold_calibration.get("target_recall_satisfied"),
+            )
+            if threshold_calibration.get("warning"):
+                print(f"WARNING: {threshold_calibration['warning']}")
+
         print("Evaluación en test:")
         metrics = evaluate_keras_model(
             model=evaluation_model,
@@ -485,12 +598,13 @@ def main():
             class_names=class_names,
             output_dir=output_dir,
             prefix="test",
-            threshold=0.5,
+            threshold=test_threshold,
             metadata={
                 "preprocessing_mode": preprocessing_mode,
                 "label_mapping_version": LABEL_MAPPING_VERSION,
                 "label_mapping": LABEL_MAPPING_METADATA,
                 "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+                **threshold_info,
                 **dataset_info,
             },
         )
@@ -528,6 +642,12 @@ def main():
                 "early_stopping_mode": early_stopping_mode,
                 "early_stopping_patience": args.early_stopping_patience,
                 "fine_tuning_enabled": fine_tune_history is not None,
+                "calibrate_threshold": bool(args.calibrate_threshold),
+                "threshold_calibration": threshold_calibration,
+                "threshold_calibration_path": (
+                    None if threshold_calibration_path is None else str(threshold_calibration_path)
+                ),
+                "clinical_threshold": clinical_threshold_metadata,
                 "fine_tune_learning_rate": (
                     None
                     if fine_tune_history is None
@@ -574,6 +694,8 @@ def main():
             print(f"- warning: {policy_summary.get('warning')}")
         print(f"Modelo final guardado en: {output_dir / 'final_model.keras'}")
         print(f"Mejor modelo guardado en: {output_dir / 'best_model.keras'}")
+        if threshold_calibration_path is not None:
+            print(f"Calibración de threshold guardada en: {threshold_calibration_path}")
         print(f"Criterio de selección guardado en: {output_dir / 'checkpoint_selection.json'}")
         print(
             "Resumen de política guardado en: "
@@ -593,6 +715,7 @@ def main():
                 output_artifacts_from_directory,
                 record_run_dataset_images,
                 record_run_io,
+                threshold_calibration_for_tracking,
             )
 
             log_training_history(run_context, history, phase="training_base")
@@ -642,6 +765,9 @@ def main():
                     ),
                     "checkpoint_selection": checkpoint_selection,
                     "checkpoint_policy_summary": policy_summary,
+                    "threshold_calibration": threshold_calibration,
+                    "clinical_threshold": clinical_threshold_metadata,
+                    **threshold_calibration_for_tracking(threshold_calibration),
                     "model_metadata": model_metadata,
                     **dataset_info,
                 },
@@ -673,6 +799,15 @@ def main():
                             "all_epochs_collapsed"
                         ),
                         "checkpoint_warning": policy_summary.get("warning"),
+                        "calibrate_threshold": bool(args.calibrate_threshold),
+                        "threshold_calibration": threshold_calibration,
+                        "clinical_threshold": clinical_threshold_metadata,
+                        "threshold_calibration_path": (
+                            None
+                            if threshold_calibration_path is None
+                            else str(threshold_calibration_path)
+                        ),
+                        **threshold_calibration_for_tracking(threshold_calibration),
                         "checkpoint_monitor": checkpoint_monitor,
                         "checkpoint_mode": checkpoint_mode,
                         "early_stopping_monitor": early_stopping_monitor,
@@ -691,6 +826,15 @@ def main():
                     "test_metrics": str(output_dir / "test_metrics.json"),
                     "test_predictions": str(output_dir / "test_predictions.csv"),
                     "test_confusion_matrix": str(output_dir / "test_confusion_matrix.csv"),
+                    "threshold_used": test_threshold,
+                    "threshold_calibration": threshold_calibration,
+                    "clinical_threshold": clinical_threshold_metadata,
+                    "threshold_calibration_path": (
+                        None
+                        if threshold_calibration_path is None
+                        else str(threshold_calibration_path)
+                    ),
+                    **threshold_calibration_for_tracking(threshold_calibration),
                     "checkpoint_policy": checkpoint_policy_config.policy,
                     "checkpoint_policy_config": checkpoint_policy_config_dict(
                         checkpoint_policy_config
@@ -729,6 +873,7 @@ def main():
                     "all_epochs_collapsed": policy_summary.get("all_epochs_collapsed"),
                     "checkpoint_warning": policy_summary.get("warning"),
                     "metrics": metrics,
+                    **threshold_info,
                     **clinical_metrics_for_tracking(metrics),
                 },
                 output_artifacts=output_artifacts_from_directory(output_dir),
@@ -776,7 +921,16 @@ def main():
                     ),
                     "all_epochs_collapsed": policy_summary.get("all_epochs_collapsed"),
                     "checkpoint_warning": policy_summary.get("warning"),
+                    "threshold_calibration": threshold_calibration,
+                    "clinical_threshold": clinical_threshold_metadata,
+                    "threshold_calibration_path": (
+                        None
+                        if threshold_calibration_path is None
+                        else str(threshold_calibration_path)
+                    ),
+                    **threshold_calibration_for_tracking(threshold_calibration),
                     "model_metadata": model_metadata,
+                    **threshold_info,
                     **dataset_info,
                     **clinical_metrics_for_tracking(metrics),
                 },

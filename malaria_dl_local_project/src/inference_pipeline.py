@@ -12,6 +12,7 @@ from src.decision import (
     build_clinical_inference_response,
     probabilities_by_class_from_prediction,
 )
+from src.model_metadata import resolve_threshold_for_checkpoint
 from src.preprocessing import (
     PREPROCESSING_RESCALE_0_1,
     PREPROCESSING_VGG16_IMAGENET,
@@ -248,6 +249,10 @@ def apply_probability_calibration(prediction_result, method="none", calibration_
         "probability_uninfected": float(1.0 - calibrated_probability),
         "calibration": calibration,
     }
+
+
+def resolve_inference_threshold(threshold, checkpoint_path):
+    return resolve_threshold_for_checkpoint(threshold, checkpoint_path)
 
 
 def model_name_from_path(path):
