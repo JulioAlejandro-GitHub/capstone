@@ -197,7 +197,8 @@ python -m src.train \
   --checkpoint-policy auc_with_min_recall \
   --min-recall 0.98 \
   --early-stopping-monitor val_auc \
-  --monitor-mode max
+  --monitor-mode max\
+  --track-db
 ```
 
 También se puede seleccionar por `f2`, `balanced_accuracy` o `val_auc`:
