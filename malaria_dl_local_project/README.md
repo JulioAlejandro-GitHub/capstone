@@ -238,7 +238,8 @@ python -m src.ensemble \
   --models outputs/custom_cnn/best_model.keras outputs/vgg16/best_model.keras \
   --weights 0.4 0.6 \
   --img-size 200 \
-  --batch-size 64
+  --batch-size 64 \
+  --track-db
 ```
 
 ### Test Time Augmentation
@@ -500,10 +501,10 @@ python -m src.train --model custom_cnn --epochs 1 --img-size 200 --batch-size 64
 El proyecto permite explicar predicciones individuales de modelos Keras entrenados usando LIME, SHAP y Grad-CAM:
 
 ```bash
-python -m src.explain --checkpoint outputs/custom_cnn/best_model.keras --method lime --num-samples 20
+python -m src.explain --checkpoint outputs/custom_cnn/best_model.keras --method all --num-samples 20 --track-db
 python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method shap --num-samples 20
 python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method both --num-samples 20
-python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method all --num-samples 20
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method all --num-samples 20 --track-db
 ```
 
 También se pueden controlar el tamaño de imagen, batch, umbral y carpeta de salida:

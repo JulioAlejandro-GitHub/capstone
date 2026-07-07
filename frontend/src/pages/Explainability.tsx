@@ -160,7 +160,7 @@ export function Explainability({ datasource }: ExplainabilityProps) {
       <div className="page-title">
         <div>
           <h1>Explicabilidad caso a caso</h1>
-              <p>Revision individual de imagen, probabilidad estimada, threshold, tipo de error y artefacto visual experimental.</p>
+          <p>Revision individual de imagen, probabilidad estimada, threshold, tipo de error y artefacto visual experimental.</p>
         </div>
       </div>
 
@@ -298,16 +298,17 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                 { header: 'Probability parasitized', render: (row) => formatMetric(row.probability_parasitized ?? row.score_positive_label) },
                 { header: 'Threshold used', render: (row) => formatMetric(row.threshold_used ?? row.threshold) },
                 { header: 'Threshold source', render: (row) => row.threshold_source ?? '-' },
-                {
-                  header: 'Imagen',
-                  render: (row) =>
-                    tableImagePreview(
-                      realImagePath(row),
-                      `Imagen real ${row.true_label ?? ''}`,
-                      'Sin imagen',
-                      datasource,
-                    ),
-                },
+                // {
+                //   header: 'Imagen',
+                //   render: (row) =>
+                //     tableImagePreview(
+                //       realImagePath(row),
+                //       `Imagen real ${row.true_label ?? ''}`,
+                //       'Sin imagen',
+                //       datasource,
+                //     ),
+                // },
+
                 {
                   header: 'Explicacion',
                   render: (row) =>
@@ -338,8 +339,8 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                       <span className={`case-badge ${item.case_type ?? 'unknown'}`}>{caseTypeLabel(item.case_type)}</span>
                     </div>
                     <small>{item.model_name ?? '-'} / {item.dataset_name ?? '-'}</small>
-                    <div className="case-images">
-                      <div className="case-image-block">
+                    <div className="">
+                      {/* <div className="case-image-block">
                         <span>Imagen real</span>
                         {realPath ? (
                           <a href={api.artifactUrl(realPath, { datasource })} target="_blank" rel="noreferrer">
@@ -351,7 +352,7 @@ export function Explainability({ datasource }: ExplainabilityProps) {
                         ) : (
                           <div className="image-placeholder">Imagen real no registrada para este caso.</div>
                         )}
-                      </div>
+                      </div> */}
                       <div className="case-image-block">
                         <span>Explicacion visual</span>
                         {explanationPath ? (
