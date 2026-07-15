@@ -1,5 +1,6 @@
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -37,6 +38,42 @@ class FakeTracker:
 
 
 class ArtifactTrackingTests(unittest.TestCase):
+    def test_log_artifact_calculates_sha256_for_immutable_audit(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "curve.png"
+            path.write_bytes(b"plot-content")
+            with patch(
+                "src.run_tracker._execute_returning_id",
+                return_value="artifact-id",
+            ) as execute:
+                result = run_tracker.log_artifact(
+                    "run-uuid",
+                    artifact_type="training_curve",
+                    path=str(path),
+                )
+
+        self.assertEqual(result, "artifact-id")
+        _, params = execute.call_args.args
+        self.assertEqual(
+            params["checksum"],
+            "26038f4a193865a1f39d85b260409c56b6909ab2ec7886720bed3409e21e3706",
+        )
+        self.assertEqual(params["file_size_bytes"], 12)
+
+    def test_infers_model_execution_artifact_types(self):
+        self.assertEqual(
+            run_tracker.infer_artifact_type("combined_training_history.csv"),
+            "training_history_csv",
+        )
+        self.assertEqual(
+            run_tracker.infer_artifact_type("combined_training_curves.png"),
+            "training_curve",
+        )
+        self.assertEqual(
+            run_tracker.infer_artifact_type("model_execution_summary.json"),
+            "model_execution_summary",
+        )
+
     def test_artifact_record_includes_existence_and_size(self):
         path = PROJECT_ROOT / "README_2.md"
 

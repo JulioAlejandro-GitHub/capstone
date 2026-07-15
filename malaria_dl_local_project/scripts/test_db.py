@@ -8,7 +8,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.db import get_connection, test_connection
+from src.db import get_connection, test_connection as check_db_connection
 from src.run_tracker import (
     create_experiment,
     finish_run,
@@ -26,6 +26,7 @@ from src.run_tracker import (
     log_prediction,
     log_run_io_record,
     log_threshold_calibration,
+    log_training_history,
     start_run,
 )
 
@@ -39,7 +40,7 @@ def fetch_required_mapping(connection, sql, params, description):
 
 def main():
     print("Probando conexión a PostgreSQL local...")
-    info = test_connection()
+    info = check_db_connection()
     print(f"Conexión OK: {info['database_name']} ({info['user_name']})")
 
     experiment_id = create_experiment(
@@ -80,14 +81,43 @@ def main():
         model_id=model_id,
         dataset_id=dataset_id,
         run_name="db_smoke_test_run",
-        run_type="evaluation",
+        run_type="training",
         command="python scripts/test_db.py",
         script_name="scripts/test_db.py",
-        parameters={"threshold": 0.5, "num_samples": 2},
+        parameters={"threshold": 0.5, "num_samples": 2, "epochs": 2},
+        execution_type="train_combined",
+        execution_parameters={
+            "epochs": 1,
+            "fine_tune_epochs": 1,
+            "batch_size": 2,
+        },
+        fine_tuning_start_epoch=0,
+        total_epochs=2,
         random_seed=42,
         metadata={"source": "scripts/test_db.py"},
     )
     print(f"run_id={run_id}")
+
+    log_training_history(
+        run_id,
+        epoch=0,
+        phase="train_base",
+        train_loss=0.40,
+        train_accuracy=0.85,
+        val_loss=0.35,
+        val_accuracy=0.88,
+        learning_rate=1e-3,
+    )
+    log_training_history(
+        run_id,
+        epoch=1,
+        phase="fine_tuning",
+        train_loss=0.25,
+        train_accuracy=0.93,
+        val_loss=0.30,
+        val_accuracy=0.91,
+        learning_rate=1e-5,
+    )
 
     log_metric(run_id, "accuracy", 0.95, split_name="test")
     log_metric(run_id, "precision", 0.94, split_name="test")
@@ -368,6 +398,71 @@ def main():
             {"run_id": run_id},
             "vw_run_image_predictions_summary",
         )
+        visual_audit_row = fetch_required_mapping(
+            connection,
+            """
+            SELECT *
+            FROM vw_visual_explainability_audit
+            WHERE run_id = :run_id
+              AND prediction_id = :prediction_id
+            """,
+            {"run_id": run_id, "prediction_id": prediction_id},
+            "vw_visual_explainability_audit",
+        )
+        execution_row = fetch_required_mapping(
+            connection,
+            """
+            SELECT
+                execution_type,
+                execution_parameters,
+                fine_tuning_start_epoch,
+                total_epochs,
+                completed_epochs
+            FROM runs
+            WHERE id = :run_id
+            """,
+            {"run_id": run_id},
+            "runs execution tracking",
+        )
+        history_rows = connection.execute(
+            text(
+                """
+                SELECT
+                    epoch,
+                    phase,
+                    train_loss,
+                    train_accuracy,
+                    val_loss,
+                    val_accuracy,
+                    learning_rate
+                FROM training_history
+                WHERE run_id = :run_id
+                ORDER BY epoch
+                """
+            ),
+            {"run_id": run_id},
+        ).mappings().all()
+
+    if len(history_rows) != 2:
+        raise RuntimeError(
+            "training_history no persistió las dos fases esperadas para el smoke test."
+        )
+    expected_execution = {
+        "execution_type": "train_combined",
+        "fine_tuning_start_epoch": 0,
+        "total_epochs": 2,
+        "completed_epochs": 2,
+    }
+    for field, expected in expected_execution.items():
+        if execution_row[field] != expected:
+            raise RuntimeError(
+                f"Tracking de ejecución inválido para {field}: "
+                f"esperado={expected!r}, recibido={execution_row[field]!r}."
+            )
+    if [row["phase"] for row in history_rows] != ["train_base", "fine_tuning"]:
+        raise RuntimeError(
+            "training_history no conservó las fases train_base/fine_tuning."
+        )
 
     print(dict(dashboard_row))
     print(
@@ -378,6 +473,19 @@ def main():
             "threshold_selected": threshold_row["threshold_selected"],
             "artifact_type": artifacts_row["artifact_type"],
             "prediction_case_type": image_prediction_row["case_type"],
+            "visual_audit_source": visual_audit_row["source_image_path"],
+            "visual_audit_explanation": visual_audit_row[
+                "explanation_output_path"
+            ],
+            "visual_audit_probability_uninfected": visual_audit_row[
+                "probability_uninfected"
+            ],
+            "execution_type": execution_row["execution_type"],
+            "execution_parameters": execution_row["execution_parameters"],
+            "fine_tuning_start_epoch": execution_row["fine_tuning_start_epoch"],
+            "total_epochs": execution_row["total_epochs"],
+            "completed_epochs": execution_row["completed_epochs"],
+            "training_phases": [row["phase"] for row in history_rows],
         }
     )
     print("Prueba de base de datos completada.")

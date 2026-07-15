@@ -135,6 +135,12 @@ El pipeline usa `src/preprocessing.py` como punto único de preprocesamiento y l
 - `rescale_0_1`: resize + `float32` + normalización `[0, 1]`. Úsalo para `custom_cnn` y checkpoints ya entrenados.
 - `vgg16_imagenet`: resize + `tf.keras.applications.vgg16.preprocess_input`. Úsalo solo con VGG16 reentrenado con ese mismo modo.
 
+DenseNet121 usa `auto`/`rescale_0_1` en el pipeline y conserva dentro del
+modelo una capa serializable con la normalización ImageNet por canal
+(media/desviación estándar) equivalente a
+`tf.keras.applications.densenet.preprocess_input`. La combinación
+`densenet121 + vgg16_imagenet` se rechaza explícitamente.
+
 No mezcles modos entre entrenamiento e inferencia. Un checkpoint VGG16 histórico en `outputs/vgg16/` debe evaluarse con `rescale_0_1`. Para probar VGG16 con preprocesamiento ImageNet, reentrena en una carpeta separada:
 
 ```bash
@@ -169,6 +175,40 @@ Si `data/malaria_physical_split/` no existe, `src.train` falla con un mensaje in
 ```bash
 python -m src.train --model vgg16 --epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64
 ```
+
+### DenseNet121 con entrenamiento combinado
+
+```bash
+python -m src.train \
+  --model densenet121 \
+  --epochs 5 \
+  --fine-tune-epochs 6 \
+  --img-size 200 \
+  --batch-size 64 \
+  --learning-rate 0.001 \
+  --fine-tune-learning-rate 0.00001 \
+  --preprocessing auto \
+  --checkpoint-policy auc_with_min_recall \
+  --min-recall 0.98 \
+  --target-recall 0.98 \
+  --positive-label parasitized \
+  --track-db
+```
+
+Los backbones usan pesos ImageNet por defecto. Para una prueba offline o una
+inicialización aleatoria agrega `--pretrained-weights none`.
+
+Con fine-tuning se registra `execution_type=train_combined`; sin él,
+`execution_type=train_base`. Cada ejecución genera:
+
+- `combined_training_history.csv` con épocas continuas y fases.
+- `combined_accuracy.png`, `combined_loss.png` y `combined_training_curves.png`.
+- `model_execution_summary.json` y `model_execution_summary.md`.
+- Un snapshot auditable en `outputs/<model>/runs/<execution_id>/`.
+
+Los archivos directos de `outputs/<model>/` se mantienen como salida/latest
+compatible. PostgreSQL registra el snapshot por ejecución, incluyendo SHA-256,
+para que un entrenamiento posterior no cambie los artefactos de runs previos.
 
 ### Selección del mejor checkpoint
 

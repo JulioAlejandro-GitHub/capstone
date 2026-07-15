@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import layers, models
-from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications import DenseNet121, VGG16
 from tensorflow.keras import regularizers
 
 from src.config import NEGATIVE_CLASS_INDEX, POSITIVE_CLASS_INDEX
@@ -248,6 +248,7 @@ def build_vgg16_transfer(
     learning_rate: float = 1e-4,
     optimizer_name: str = "adam",
     trainable_backbone: bool = False,
+    weights: str | None = "imagenet",
 ):
     """
     Transfer Learning con VGG16 preentrenada en ImageNet.
@@ -256,7 +257,7 @@ def build_vgg16_transfer(
     """
     base_model = VGG16(
         include_top=False,
-        weights="imagenet",
+        weights=weights,
         input_shape=input_shape,
     )
 
@@ -281,6 +282,57 @@ def build_vgg16_transfer(
         optimizer_name=optimizer_name,
     )
 
+    return model, base_model
+
+
+def build_densenet121_transfer(
+    input_shape=(200, 200, 3),
+    learning_rate: float = 1e-4,
+    optimizer_name: str = "adam",
+    trainable_backbone: bool = False,
+    weights: str | None = "imagenet",
+    dropout_rate: float = 0.5,
+):
+    """Build a binary DenseNet121 transfer-learning model.
+
+    The project data pipeline supplies RGB tensors in ``[0, 1]`` for the
+    default/``auto`` preprocessing mode.  The persisted normalization layer
+    applies the same channel-wise mean/std contract as
+    ``tf.keras.applications.densenet.preprocess_input`` (torch mode).
+
+    Clinical convention remains unchanged: sigmoid output is
+    ``probability_parasitized`` (0 = uninfected, 1 = parasitized).
+    """
+    base_model = DenseNet121(
+        include_top=False,
+        weights=weights,
+        input_shape=input_shape,
+    )
+    for layer in base_model.layers:
+        layer.trainable = bool(trainable_backbone)
+
+    inputs = layers.Input(shape=input_shape, name="image")
+    normalized = layers.Normalization(
+        axis=-1,
+        mean=[0.485, 0.456, 0.406],
+        variance=[0.229**2, 0.224**2, 0.225**2],
+        name="densenet_imagenet_normalization",
+    )(inputs)
+    features = base_model(normalized, training=False)
+    pooled = layers.GlobalAveragePooling2D(name="global_avg_pool")(features)
+    dropped = layers.Dropout(dropout_rate, name="dropout_50")(pooled)
+    outputs = layers.Dense(1, activation="sigmoid", name="binary_output")(dropped)
+
+    model = models.Model(
+        inputs=inputs,
+        outputs=outputs,
+        name="tl_densenet121_malaria",
+    )
+    model = compile_binary_model(
+        model,
+        learning_rate=learning_rate,
+        optimizer_name=optimizer_name,
+    )
     return model, base_model
 
 

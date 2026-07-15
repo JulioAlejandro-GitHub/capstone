@@ -15,11 +15,13 @@ import type {
   RunDetailResponse,
   RunImagePrediction,
 } from '../types/api';
+import { explanationImagePath, scorePositive, sourceImagePath, thresholdUsed } from '../utils/explainability';
 import { formatDate, formatMetric, stringifyJson } from '../utils/format';
 
 interface RunDetailProps {
   datasource: string;
   runId: string | null;
+  onExplainabilitySelect?: (item: ExplainabilityCase) => void;
 }
 
 type PredictionFilters = {
@@ -29,7 +31,8 @@ type PredictionFilters = {
   correct: string;
 };
 
-const IMAGE_EXTENSIONS = /\.(png|jpe?g|gif|webp|bmp)$/i;
+const IMAGE_EXTENSIONS = /\.(png|jpe?g|webp)$/i;
+const SERVED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 function stringValue(value: unknown) {
   return typeof value === 'string' ? value : null;
@@ -37,21 +40,28 @@ function stringValue(value: unknown) {
 
 function isImageArtifact(artifact: ArtifactRow | RunArtifact) {
   const mimeType = artifact.mime_type?.toLowerCase() ?? '';
-  const artifactType = artifact.artifact_type?.toLowerCase() ?? '';
   const path = artifactPath(artifact)?.toLowerCase() ?? '';
   const name = stringValue(artifact.name)?.toLowerCase() ?? '';
 
   return (
-    mimeType.startsWith('image/')
+    SERVED_IMAGE_MIME_TYPES.has(mimeType)
     || IMAGE_EXTENSIONS.test(path)
     || IMAGE_EXTENSIONS.test(name)
-    || artifactType.includes('image')
-    || artifactType === 'confusion_matrix_png'
   );
 }
 
 function artifactPath(artifact: ArtifactRow | RunArtifact) {
   return stringValue(('path' in artifact ? artifact.path : null) ?? artifact.artifact_path);
+}
+
+function isCombinedTrainingCurvesArtifact(artifact: ArtifactRow | RunArtifact) {
+  if ('exists' in artifact && artifact.exists === false) return false;
+
+  const path = artifactPath(artifact);
+  const name = stringValue(artifact.name);
+  return [path, name].some((value) => (
+    value?.split(/[\\/]/).pop()?.toLowerCase() === 'combined_training_curves.png'
+  ));
 }
 
 function booleanText(value: boolean | null | undefined) {
@@ -100,7 +110,7 @@ function metricFromRun(run: JsonRecord, name: string) {
   return typeof value === 'number' ? value : null;
 }
 
-export function RunDetail({ datasource, runId }: RunDetailProps) {
+export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDetailProps) {
   const [detail, setDetail] = useState<RunDetailResponse | null>(null);
   const [clinical, setClinical] = useState<RunClinicalSummary | null>(null);
   const [confusion, setConfusion] = useState<JsonRecord[]>([]);
@@ -117,12 +127,14 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
   });
   const [error, setError] = useState<string | null>(null);
   const [predictionsError, setPredictionsError] = useState<string | null>(null);
+  const [trainingCurvesLoadFailed, setTrainingCurvesLoadFailed] = useState(false);
 
   useEffect(() => {
     if (!runId) return;
     setError(null);
     setDetail(null);
     setClinical(null);
+    setTrainingCurvesLoadFailed(false);
 
     Promise.all([
       api.getRun(datasource, runId),
@@ -169,6 +181,14 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
   const run = detail.run;
   const warnings = warningItems(clinical);
   const mergedArtifacts = artifacts.length > 0 ? artifacts : detail.artifacts;
+  const trainingCurvesArtifact = mergedArtifacts.find(isCombinedTrainingCurvesArtifact);
+  const trainingCurvesPath = trainingCurvesArtifact ? artifactPath(trainingCurvesArtifact) : null;
+  const trainingCurvesUrl = trainingCurvesArtifact && trainingCurvesPath
+    ? api.artifactUrl(trainingCurvesPath, {
+        artifactId: typeof trainingCurvesArtifact.id === 'string' ? trainingCurvesArtifact.id : undefined,
+        datasource,
+      })
+    : null;
   const clinicalMetrics = clinical?.clinical_metrics ?? {
     accuracy: metricFromRun(run, 'accuracy'),
     recall_parasitized: metricFromRun(run, 'recall'),
@@ -347,6 +367,25 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
         />
       </section>
 
+      {trainingCurvesUrl && !trainingCurvesLoadFailed ? (
+        <section className="panel">
+          <div className="section-heading">
+            <h2>Curvas de entrenamiento</h2>
+            <a href={trainingCurvesUrl} target="_blank" rel="noreferrer">Abrir imagen</a>
+          </div>
+          <figure className="training-curves-figure">
+            <a href={trainingCurvesUrl} target="_blank" rel="noreferrer">
+              <img
+                src={trainingCurvesUrl}
+                alt="Curvas combinadas de accuracy y loss del entrenamiento"
+                onError={() => setTrainingCurvesLoadFailed(true)}
+              />
+            </a>
+            <figcaption><code>{trainingCurvesPath}</code></figcaption>
+          </figure>
+        </section>
+      ) : null}
+
       <section className="panel">
         <h2>Artefactos</h2>
         <DataTable<RunArtifact | ArtifactRow>
@@ -368,9 +407,12 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
               render: (row) => {
                 const path = artifactPath(row);
                 if (!path) return '-';
+                if (!isImageArtifact(row)) {
+                  return <span className="muted-text">Vista no disponible</span>;
+                }
                 return (
                   <a href={api.artifactUrl(path, { artifactId: 'id' in row && typeof row.id === 'string' ? row.id : undefined, datasource })} target="_blank" rel="noreferrer">
-                    {isImageArtifact(row) ? 'Abrir imagen' : 'Abrir artefacto'}
+                    Abrir imagen
                   </a>
                 );
               },
@@ -386,17 +428,45 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
         <DataTable<ExplainabilityCase>
           rows={explainability}
           columns={[
-            { header: 'Method', render: (row) => row.method },
-            { header: 'Case type', render: (row) => caseTypeLabel(row.case_type) },
-            { header: 'True label', render: (row) => row.true_label ?? '-' },
-            { header: 'Predicted label', render: (row) => row.predicted_label ?? '-' },
-            { header: 'Probability parasitized', render: (row) => formatMetric(row.score_positive_label) },
-            { header: 'Threshold', render: (row) => formatMetric(row.threshold) },
+            {
+              header: 'Fuente',
+              render: (row) => {
+                const path = sourceImagePath(row);
+                const url = api.mediaUrl({ url: row.source_image_url ?? row.image_url, path, datasource });
+                return url ? (
+                  <a className="table-image-cell" href={url} target="_blank" rel="noreferrer">
+                    <img src={url} alt={`Fuente ${row.true_label ?? ''}`} loading="lazy" decoding="async" />
+                    <span>Abrir fuente</span>
+                  </a>
+                ) : <span className="muted-text">Sin fuente</span>;
+              },
+            },
+            {
+              header: 'Explicación',
+              render: (row) => {
+                const path = explanationImagePath(row);
+                const url = api.mediaUrl({ url: row.explanation_url, path, artifactId: row.artifact_id, datasource });
+                return url ? (
+                  <a className="table-image-cell" href={url} target="_blank" rel="noreferrer">
+                    <img src={url} alt={`Explicación ${row.method ?? ''}`} loading="lazy" decoding="async" />
+                    <span>Abrir explicación</span>
+                  </a>
+                ) : <span className="muted-text">Sin explicación</span>;
+              },
+            },
+            { header: 'Método', render: (row) => row.method ?? '-' },
+            { header: 'Tipo de caso', render: (row) => <span className={`case-badge ${row.case_type ?? 'unknown'}`}>{caseTypeLabel(row.case_type)}</span> },
+            { header: 'Clase real', render: (row) => row.true_label ?? '-' },
+            { header: 'Clase predicha', render: (row) => row.predicted_label ?? '-' },
+            { header: 'P(parasitized)', render: (row) => formatMetric(scorePositive(row)) },
+            { header: 'Threshold', render: (row) => formatMetric(thresholdUsed(row)) },
             { header: 'Success', render: (row) => booleanText(row.success) },
             { header: 'Error', render: (row) => row.error_message ?? '-' },
             {
-              header: 'Path',
-              render: (row) => row.explanation_output_path ? <code>{row.explanation_output_path}</code> : '-',
+              header: 'Auditar',
+              render: (row) => onExplainabilitySelect ? (
+                <button className="audit-action-button" type="button" onClick={() => onExplainabilitySelect(row)}>Ver detalle</button>
+              ) : '-',
             },
           ]}
           getRowKey={(row) => row.explainability_id}

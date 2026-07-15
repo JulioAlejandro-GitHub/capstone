@@ -11,6 +11,7 @@ if str(BACKEND_ROOT) not in sys.path:
 from app.routes.runs import (  # noqa: E402
     get_run_artifacts_summary,
     get_run_checkpoint_policy,
+    get_run_explainability,
     get_run_image_predictions,
     get_run_threshold_calibration,
 )
@@ -81,6 +82,39 @@ class RunDetailApiTests(unittest.TestCase):
         self.assertEqual(params["case_type"], "false_negative")
         self.assertEqual(params["class_name"], "parasitized")
         self.assertIs(params["is_correct"], False)
+
+    def test_run_explainability_uses_visual_audit_contract(self):
+        with (
+            mock.patch("app.routes.runs.fetch_one", return_value={"total": 1}),
+            mock.patch(
+                "app.routes.runs.fetch_all",
+                return_value=[
+                    {
+                        "explainability_id": "explain-1",
+                        "run_id": RUN_ID,
+                        "method": "gradcam",
+                        "case_type": "true_positive",
+                        "image_path": "data/source/cell.png",
+                        "explanation_output_path": "outputs/explainability/cell.png",
+                    }
+                ],
+            ) as fetch_all,
+        ):
+            payload = get_run_explainability(
+                run_id=RUN_ID,
+                datasource="malaria",
+                method=None,
+                case_type=None,
+                limit=25,
+                offset=0,
+            )
+
+        self.assertIn("vw_visual_explainability_audit", fetch_all.call_args.args[1])
+        self.assertEqual(
+            payload["items"][0]["image_url"],
+            "/artifacts/file?path=data/source/cell.png",
+        )
+        self.assertIn("región microscópica plausible", payload["items"][0]["interpretation"])
 
 
 if __name__ == "__main__":

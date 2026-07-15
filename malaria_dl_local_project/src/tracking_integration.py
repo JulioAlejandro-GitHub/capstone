@@ -13,9 +13,22 @@ from src.config import (
     POSITIVE_CLASS_INDEX,
     POSITIVE_LABEL,
     RAW_MODEL_SCORE_MEANING,
+    TFDS_ORIGINAL_CLASS_NAMES,
     label_mapping_metadata,
 )
 from src.decision import probability_by_class_from_scalar_score
+from src.execution_types import (
+    ENSEMBLE,
+    EVALUATE,
+    EXPLAINABILITY,
+    FINE_TUNING,
+    INFERENCE,
+    THRESHOLD_CALIBRATION,
+    TRAIN_BASE,
+    TRAIN_COMBINED,
+    TTA,
+    validate_execution_type,
+)
 
 
 EXPERIMENT_NAME = "Capstone Malaria Classification"
@@ -36,11 +49,69 @@ DATASET_CLASS_DISTRIBUTION = {"parasitized": 13779, "uninfected": 13779}
 _REGISTERED_PHYSICAL_SPLITS = set()
 
 
+RUN_TYPE_TO_EXECUTION_TYPE = {
+    "training": TRAIN_BASE,
+    "train": TRAIN_BASE,
+    "svm_features": TRAIN_BASE,
+    FINE_TUNING: FINE_TUNING,
+    "evaluation": EVALUATE,
+    EVALUATE: EVALUATE,
+    "calibration": THRESHOLD_CALIBRATION,
+    THRESHOLD_CALIBRATION: THRESHOLD_CALIBRATION,
+    EXPLAINABILITY: EXPLAINABILITY,
+    INFERENCE: INFERENCE,
+    TTA: TTA,
+    ENSEMBLE: ENSEMBLE,
+}
+
+
 def args_to_parameters(args, extra=None):
     parameters = vars(args).copy()
     if extra:
         parameters.update(extra)
     return parameters
+
+
+def resolve_tracking_execution_type(run_type, parameters=None, execution_type=None):
+    """Resuelve el tipo canonico sin cambiar el run_type historico."""
+    parameters = parameters or {}
+    explicit_type = execution_type or parameters.get("execution_type")
+    if explicit_type:
+        return validate_execution_type(str(explicit_type))
+
+    resolved = RUN_TYPE_TO_EXECUTION_TYPE.get(run_type, run_type)
+    if resolved == TRAIN_BASE:
+        try:
+            fine_tune_epochs = int(parameters.get("fine_tune_epochs") or 0)
+        except (TypeError, ValueError):
+            fine_tune_epochs = 0
+        if fine_tune_epochs > 0:
+            return TRAIN_COMBINED
+    return validate_execution_type(resolved)
+
+
+def resolve_tracking_total_epochs(parameters=None, total_epochs=None):
+    """Obtiene epocas planificadas desde un valor explicito o parametros CLI."""
+    if total_epochs is not None:
+        try:
+            return int(total_epochs)
+        except (TypeError, ValueError):
+            return None
+
+    parameters = parameters or {}
+    if parameters.get("total_epochs") is not None:
+        try:
+            return int(parameters["total_epochs"])
+        except (TypeError, ValueError):
+            return None
+
+    try:
+        base_epochs = int(parameters.get("epochs") or 0)
+        fine_tune_epochs = int(parameters.get("fine_tune_epochs") or 0)
+    except (TypeError, ValueError):
+        return None
+    planned_epochs = base_epochs + fine_tune_epochs
+    return planned_epochs if planned_epochs > 0 else None
 
 
 def json_safe(value):
@@ -195,6 +266,8 @@ def model_name_from_checkpoint(checkpoint):
     parts = {part.lower() for part in checkpoint.parts}
     if "vgg16" in parts:
         return "vgg16_transfer_learning"
+    if "densenet121" in parts:
+        return "densenet121"
     if "custom_cnn" in parts:
         return "custom_cnn"
     if "ensemble" in parts:
@@ -217,6 +290,13 @@ def model_defaults(model_name):
             "model_type": "transfer_learning",
             "framework": "tensorflow/keras",
             "architecture": "VGG16 + custom binary head",
+            "pretrained": True,
+            "pretrained_source": "imagenet",
+        },
+        "densenet121": {
+            "model_type": "transfer_learning",
+            "framework": "tensorflow/keras",
+            "architecture": "DenseNet121 + global average pooling + binary head",
             "pretrained": True,
             "pretrained_source": "imagenet",
         },
@@ -254,8 +334,39 @@ def start_tracking_run(
     run_name=None,
     parameters=None,
     random_seed=None,
+    execution_type=None,
+    execution_parameters=None,
+    fine_tuning_start_epoch=None,
+    total_epochs=None,
+    completed_epochs=0,
 ):
     from src import run_tracker as tracker
+
+    run_parameters = {
+        **(parameters if parameters is not None else args_to_parameters(args)),
+        "label_mapping_version": LABEL_MAPPING_VERSION,
+        "label_mapping": LABEL_MAPPING_METADATA,
+        "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
+    }
+    resolved_execution_type = resolve_tracking_execution_type(
+        run_type,
+        parameters=run_parameters,
+        execution_type=execution_type,
+    )
+    resolved_execution_parameters = (
+        run_parameters
+        if execution_parameters is None
+        else json_safe(execution_parameters)
+    )
+    resolved_total_epochs = resolve_tracking_total_epochs(
+        run_parameters,
+        total_epochs=total_epochs,
+    )
+    resolved_fine_tuning_start_epoch = fine_tuning_start_epoch
+    if resolved_fine_tuning_start_epoch is None:
+        resolved_fine_tuning_start_epoch = run_parameters.get(
+            "fine_tuning_start_epoch"
+        )
 
     experiment_id = tracker.safe_track(
         tracker.create_experiment,
@@ -286,6 +397,12 @@ def start_tracking_run(
     )
 
     defaults = model_defaults(model_name)
+    if getattr(args, "pretrained_weights", None) == "none":
+        defaults = {
+            **defaults,
+            "pretrained": False,
+            "pretrained_source": None,
+        }
     model_id = tracker.safe_track(
         tracker.get_or_create_model,
         name=model_name,
@@ -309,14 +426,12 @@ def start_tracking_run(
         run_type=run_type,
         command=tracker.get_command_line(),
         script_name=script_name,
-        parameters=(
-            {
-                **(parameters if parameters is not None else args_to_parameters(args)),
-                "label_mapping_version": LABEL_MAPPING_VERSION,
-                "label_mapping": LABEL_MAPPING_METADATA,
-                "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
-            }
-        ),
+        parameters=run_parameters,
+        execution_type=resolved_execution_type,
+        execution_parameters=resolved_execution_parameters,
+        fine_tuning_start_epoch=resolved_fine_tuning_start_epoch,
+        total_epochs=resolved_total_epochs,
+        completed_epochs=completed_epochs,
         random_seed=random_seed,
         metadata={
             "tracking_version": "1.0",
@@ -336,6 +451,12 @@ def start_tracking_run(
         "model_id": model_id,
         "model_name": model_name,
         "run_type": run_type,
+        "execution_type": resolved_execution_type,
+        "execution_parameters": resolved_execution_parameters,
+        "fine_tuning_start_epoch": resolved_fine_tuning_start_epoch,
+        "total_epochs": resolved_total_epochs,
+        "completed_epochs": completed_epochs,
+        "data_source": getattr(args, "data_source", None),
         "tracker": tracker,
     }
 
@@ -352,11 +473,51 @@ def fail_tracking_run(context, error, script_name):
     )
 
 
-def finish_tracking_run(context, metadata=None):
+def update_execution_tracking(
+    context,
+    execution_type=None,
+    execution_parameters=None,
+    fine_tuning_start_epoch=None,
+    total_epochs=None,
+    completed_epochs=None,
+):
+    """Actualiza tracking de ejecucion sin propagar errores de PostgreSQL."""
+    if not context or not context.get("run_id"):
+        return None
+    tracker = context["tracker"]
+    result = tracker.safe_track(
+        tracker.update_run_execution,
+        context["run_id"],
+        execution_type=execution_type,
+        execution_parameters=json_safe(execution_parameters)
+        if execution_parameters is not None
+        else None,
+        fine_tuning_start_epoch=fine_tuning_start_epoch,
+        total_epochs=total_epochs,
+        completed_epochs=completed_epochs,
+    )
+    for key, value in {
+        "execution_type": execution_type,
+        "execution_parameters": execution_parameters,
+        "fine_tuning_start_epoch": fine_tuning_start_epoch,
+        "total_epochs": total_epochs,
+        "completed_epochs": completed_epochs,
+    }.items():
+        if value is not None:
+            context[key] = value
+    return result
+
+
+def finish_tracking_run(context, metadata=None, completed_epochs=None):
     if not context or not context.get("run_id"):
         return
     tracker = context["tracker"]
-    tracker.safe_track(tracker.finish_run, context["run_id"], metadata=metadata)
+    tracker.safe_track(
+        tracker.finish_run,
+        context["run_id"],
+        metadata=metadata,
+        completed_epochs=completed_epochs,
+    )
 
 
 def numeric_metric_items(metrics):
@@ -537,7 +698,15 @@ def log_training_history(context, history, phase="training", epoch_offset=0):
         return
     tracker = context["tracker"]
     history_dict = getattr(history, "history", {}) or {}
-    epochs = getattr(history, "epoch", list(range(len(next(iter(history_dict.values()), [])))))
+    epochs = getattr(history, "epoch", None)
+    if epochs is None:
+        epochs = list(range(len(next(iter(history_dict.values()), []))))
+
+    if phase == "fine_tuning" and context.get("fine_tuning_start_epoch") is None:
+        update_execution_tracking(
+            context,
+            fine_tuning_start_epoch=max(int(epoch_offset) - 1, 0),
+        )
 
     for index, epoch in enumerate(epochs):
         epoch_metadata = {
@@ -626,8 +795,16 @@ def log_training_history(context, history, phase="training", epoch_offset=0):
             tracker.log_training_history,
             context["run_id"],
             epoch=int(epoch) + epoch_offset,
+            phase=phase,
             metadata=epoch_metadata,
             **values,
+        )
+
+    if len(epochs) > 0:
+        completed_epochs = max(int(epoch) + epoch_offset for epoch in epochs) + 1
+        context["completed_epochs"] = max(
+            int(context.get("completed_epochs") or 0),
+            completed_epochs,
         )
 
 
@@ -955,6 +1132,12 @@ def log_explainability_outputs(context, cases, summary_rows, output_dir):
     prediction_ids = {}
 
     for case in cases:
+        data_source = context.get("data_source")
+        prediction_source = {
+            "physical": "physical_split",
+            "tfds": "tensorflow_datasets",
+        }.get(data_source, "dataset_explainability")
+        manifest_id = f"{prediction_source}:{run_id}:test:{case['case_id']}"
         prediction_ids[case["case_id"]] = tracker.safe_track(
             tracker.log_prediction,
             run_id,
@@ -969,7 +1152,13 @@ def log_explainability_outputs(context, cases, summary_rows, output_dir):
             case_type=case["case_type"],
             metadata={
                 "dataset_index": case["case_id"],
-                "source": "tensorflow_datasets",
+                "dataset_split": "test",
+                "manifest_id": manifest_id,
+                "remapped_label": CLASS_NAMES.index(case["true_label"]),
+                "original_tfds_label": TFDS_ORIGINAL_CLASS_NAMES.index(
+                    case["true_label"]
+                ),
+                "source": prediction_source,
                 "label_mapping_version": LABEL_MAPPING_VERSION,
                 "label_mapping": LABEL_MAPPING_METADATA,
                 "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,

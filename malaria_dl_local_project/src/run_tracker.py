@@ -1,4 +1,5 @@
 import getpass
+import hashlib
 import mimetypes
 import json
 import os
@@ -345,11 +346,19 @@ def start_run(
     command=None,
     script_name=None,
     parameters=None,
+    execution_type=None,
+    execution_parameters=None,
+    fine_tuning_start_epoch=None,
+    total_epochs=None,
+    completed_epochs=0,
     random_seed=None,
     notes=None,
     metadata=None,
 ):
     env = collect_runtime_environment()
+    effective_execution_parameters = (
+        parameters if execution_parameters is None else execution_parameters
+    )
     return _execute_returning_id(
         """
         INSERT INTO runs (
@@ -357,7 +366,9 @@ def start_run(
             command, script_name, started_at, user_name, host_name,
             working_directory, git_commit, git_branch, python_version,
             tensorflow_version, keras_version, platform, machine, processor,
-            gpu_available, gpu_devices, random_seed, parameters, notes, metadata
+            gpu_available, gpu_devices, random_seed, parameters, notes, metadata,
+            execution_type, execution_parameters, fine_tuning_start_epoch,
+            total_epochs, completed_epochs
         )
         VALUES (
             :experiment_id, :model_id, :dataset_id, :run_name, :run_type, 'started',
@@ -365,7 +376,9 @@ def start_run(
             :working_directory, :git_commit, :git_branch, :python_version,
             :tensorflow_version, :keras_version, :platform, :machine, :processor,
             :gpu_available, CAST(:gpu_devices AS jsonb), :random_seed,
-            CAST(:parameters AS jsonb), :notes, CAST(:metadata AS jsonb)
+            CAST(:parameters AS jsonb), :notes, CAST(:metadata AS jsonb),
+            :execution_type, CAST(:execution_parameters AS jsonb),
+            :fine_tuning_start_epoch, :total_epochs, :completed_epochs
         )
         RETURNING id
         """,
@@ -380,6 +393,11 @@ def start_run(
             "random_seed": random_seed,
             "notes": notes,
             "parameters": _json(parameters),
+            "execution_type": execution_type,
+            "execution_parameters": _json(effective_execution_parameters),
+            "fine_tuning_start_epoch": _integer(fine_tuning_start_epoch),
+            "total_epochs": _integer(total_epochs),
+            "completed_epochs": _integer(completed_epochs) or 0,
             "metadata": _json(metadata),
             "gpu_devices": _json(env["gpu_devices"], default=[]),
             **{key: value for key, value in env.items() if key != "gpu_devices"},
@@ -387,7 +405,58 @@ def start_run(
     )
 
 
-def finish_run(run_id, metrics=None, metadata=None):
+def update_run_execution(
+    run_id,
+    execution_type=None,
+    execution_parameters=None,
+    fine_tuning_start_epoch=None,
+    total_epochs=None,
+    completed_epochs=None,
+):
+    """Actualiza de forma parcial el contrato y progreso de una ejecucion."""
+    if not run_id:
+        _warn("update_run_execution omitido porque run_id es None.")
+        return False
+
+    return _execute(
+        """
+        UPDATE runs
+        SET execution_type = COALESCE(:execution_type, execution_type),
+            execution_parameters = CASE
+                WHEN :has_execution_parameters
+                    THEN COALESCE(execution_parameters, '{}'::jsonb)
+                        || CAST(:execution_parameters AS jsonb)
+                ELSE execution_parameters
+            END,
+            fine_tuning_start_epoch = COALESCE(
+                :fine_tuning_start_epoch,
+                fine_tuning_start_epoch
+            ),
+            total_epochs = COALESCE(:total_epochs, total_epochs),
+            completed_epochs = CASE
+                WHEN CAST(:completed_epochs AS integer) IS NULL
+                    THEN completed_epochs
+                ELSE GREATEST(
+                    COALESCE(completed_epochs, 0),
+                    CAST(:completed_epochs AS integer)
+                )
+            END,
+            updated_at = NOW()
+        WHERE id = :run_id
+        """,
+        {
+            "run_id": run_id,
+            "execution_type": execution_type,
+            "has_execution_parameters": execution_parameters is not None,
+            "execution_parameters": _json(execution_parameters),
+            "fine_tuning_start_epoch": _integer(fine_tuning_start_epoch),
+            "total_epochs": _integer(total_epochs),
+            "completed_epochs": _integer(completed_epochs),
+        },
+    )
+
+
+def finish_run(run_id, metrics=None, metadata=None, completed_epochs=None):
     if not run_id:
         _warn("finish_run omitido porque run_id es None.")
         return False
@@ -399,10 +468,22 @@ def finish_run(run_id, metrics=None, metadata=None):
             finished_at = NOW(),
             duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at)),
             updated_at = NOW(),
+            completed_epochs = CASE
+                WHEN CAST(:completed_epochs AS integer) IS NULL
+                    THEN completed_epochs
+                ELSE GREATEST(
+                    COALESCE(completed_epochs, 0),
+                    CAST(:completed_epochs AS integer)
+                )
+            END,
             metadata = metadata || CAST(:metadata AS jsonb)
         WHERE id = :run_id
         """,
-        {"run_id": run_id, "metadata": _json(metadata)},
+        {
+            "run_id": run_id,
+            "completed_epochs": _integer(completed_epochs),
+            "metadata": _json(metadata),
+        },
     )
 
     if metrics:
@@ -502,10 +583,14 @@ def log_metrics_bulk(run_id, metrics, split_name=None, metadata=None):
     return ids
 
 
-def log_training_history(run_id, epoch, metadata=None, **values):
+def log_training_history(run_id, epoch, phase=None, metadata=None, **values):
     if not run_id:
         _warn("log_training_history omitido porque run_id es None.")
         return None
+
+    metadata_payload = dict(metadata) if isinstance(metadata, dict) else {}
+    effective_phase = phase or metadata_payload.get("phase") or "training"
+    metadata_payload.setdefault("phase", effective_phase)
 
     allowed = {
         "loss",
@@ -521,21 +606,55 @@ def log_training_history(run_id, epoch, metadata=None, **values):
         "learning_rate",
     }
     params = {key: values.get(key) for key in allowed}
-    params.update({"run_id": run_id, "epoch": epoch, "metadata": _json(metadata)})
+    params["loss"] = _first_not_none(values.get("loss"), values.get("train_loss"))
+    params["accuracy"] = _first_not_none(
+        values.get("accuracy"),
+        values.get("train_accuracy"),
+    )
+    params.update(
+        {
+            "run_id": run_id,
+            "epoch": _integer(epoch),
+            "phase": str(effective_phase),
+            "train_loss": _first_not_none(
+                values.get("train_loss"),
+                params["loss"],
+            ),
+            "train_accuracy": _first_not_none(
+                values.get("train_accuracy"),
+                params["accuracy"],
+            ),
+            "metadata": _json(metadata_payload),
+        }
+    )
 
     return _execute_returning_id(
         """
-        INSERT INTO training_history (
-            run_id, epoch, loss, accuracy, precision_value, recall_value, auc,
-            val_loss, val_accuracy, val_precision, val_recall, val_auc,
-            learning_rate, metadata
+        WITH inserted_history AS (
+            INSERT INTO training_history (
+                run_id, epoch, phase, loss, train_loss, accuracy, train_accuracy,
+                precision_value, recall_value, auc, val_loss, val_accuracy,
+                val_precision, val_recall, val_auc, learning_rate, metadata
+            )
+            VALUES (
+                :run_id, :epoch, :phase, :loss, :train_loss, :accuracy,
+                :train_accuracy, :precision_value, :recall_value, :auc,
+                :val_loss, :val_accuracy, :val_precision, :val_recall,
+                :val_auc, :learning_rate, CAST(:metadata AS jsonb)
+            )
+            RETURNING id, run_id, epoch
+        ), updated_run AS (
+            UPDATE runs AS run
+            SET completed_epochs = GREATEST(
+                    COALESCE(run.completed_epochs, 0),
+                    inserted_history.epoch + 1
+                ),
+                updated_at = NOW()
+            FROM inserted_history
+            WHERE run.id = inserted_history.run_id
         )
-        VALUES (
-            :run_id, :epoch, :loss, :accuracy, :precision_value, :recall_value,
-            :auc, :val_loss, :val_accuracy, :val_precision, :val_recall,
-            :val_auc, :learning_rate, CAST(:metadata AS jsonb)
-        )
-        RETURNING id
+        SELECT id
+        FROM inserted_history
         """,
         params,
     )
@@ -684,8 +803,15 @@ def log_artifact(
         _warn("log_artifact omitido porque run_id es None.")
         return None
 
-    if file_size_bytes is None and path and Path(path).exists():
-        file_size_bytes = Path(path).stat().st_size
+    artifact_path = Path(path) if path else None
+    if file_size_bytes is None and artifact_path and artifact_path.is_file():
+        file_size_bytes = artifact_path.stat().st_size
+    if checksum is None and artifact_path and artifact_path.is_file():
+        digest = hashlib.sha256()
+        with artifact_path.open("rb") as file_handle:
+            for chunk in iter(lambda: file_handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        checksum = digest.hexdigest()
 
     return _execute_returning_id(
         """
@@ -1237,6 +1363,19 @@ def infer_artifact_type(path):
         return "model_checkpoint"
     if name == "final_model.keras":
         return "final_model"
+    if name == "combined_training_history.csv":
+        return "training_history_csv"
+    if name in {
+        "combined_accuracy.png",
+        "combined_loss.png",
+        "combined_training_curves.png",
+    }:
+        return "training_curve"
+    if name in {
+        "model_execution_summary.json",
+        "model_execution_summary.md",
+    }:
+        return "model_execution_summary"
     if suffix == ".keras":
         return "model_checkpoint"
     if suffix == ".joblib":

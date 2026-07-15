@@ -93,6 +93,73 @@ class DbMigrationTests(unittest.TestCase):
         self.assertNotIn("DROP TABLE", sql)
         self.assertNotIn("TRUNCATE", sql)
 
+    def test_visual_audit_view_is_non_destructive_and_null_safe(self):
+        migration = PROJECT_ROOT / "db" / "init" / "018_visual_audit_views.sql"
+
+        sql = migration.read_text(encoding="utf-8")
+
+        self.assertIn(
+            "CREATE OR REPLACE VIEW vw_visual_explainability_audit",
+            sql,
+        )
+        for required_field in (
+            "source_image_path",
+            "crop_path",
+            "probability_uninfected",
+            "threshold_source",
+            "confidence_status",
+            "explanation_output_path",
+            "explanation_parameters",
+            "patient_id",
+            "slide_id",
+            "bbox_width",
+            "started_at",
+            "created_at",
+        ):
+            self.assertIn(required_field, sql)
+        self.assertIn("FROM explainability_results er", sql)
+        self.assertIn("LEFT JOIN predictions p", sql)
+        self.assertIn("LEFT JOIN runs r", sql)
+        self.assertIn("LEFT JOIN models m", sql)
+        self.assertIn("LEFT JOIN datasets d", sql)
+        self.assertIn("FROM artifacts source_artifact", sql)
+        self.assertNotIn("DROP TABLE", sql)
+        self.assertNotIn("TRUNCATE", sql)
+        self.assertNotIn("DELETE FROM", sql)
+
+    def test_model_execution_tracking_migration_is_incremental(self):
+        migration = (
+            PROJECT_ROOT
+            / "db"
+            / "init"
+            / "019_model_execution_parameters.sql"
+        )
+
+        sql = migration.read_text(encoding="utf-8")
+
+        self.assertIn("ALTER TABLE runs", sql)
+        for required_column in (
+            "execution_type",
+            "execution_parameters",
+            "fine_tuning_start_epoch",
+            "total_epochs",
+            "completed_epochs",
+        ):
+            self.assertIn(f"ADD COLUMN IF NOT EXISTS {required_column}", sql)
+
+        self.assertIn("ALTER TABLE training_history", sql)
+        for required_column in ("phase", "train_loss", "train_accuracy"):
+            self.assertIn(f"ADD COLUMN IF NOT EXISTS {required_column}", sql)
+
+        self.assertIn("idx_runs_execution_type", sql)
+        self.assertIn("idx_runs_execution_parameters_gin", sql)
+        self.assertIn("idx_training_history_run_phase_epoch", sql)
+        self.assertIn("SET train_loss = loss", sql)
+        self.assertIn("SET train_accuracy = accuracy", sql)
+        self.assertNotIn("DROP TABLE", sql)
+        self.assertNotIn("TRUNCATE", sql)
+        self.assertNotIn("DELETE FROM", sql)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -12,7 +12,7 @@ import { RunDetail } from './pages/RunDetail';
 import { Runs } from './pages/Runs';
 import { UploadedPredictions } from './pages/UploadedPredictions';
 import { DEFAULT_DATASOURCE, api } from './services/api';
-import type { Datasource } from './types/api';
+import type { Datasource, ExplainabilityCase } from './types/api';
 
 function App() {
   const [page, setPage] = useState<PageKey>('dashboard');
@@ -27,6 +27,8 @@ function App() {
     },
   ]);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [selectedExplainabilityCase, setSelectedExplainabilityCase] = useState<ExplainabilityCase | null>(null);
+  const [selectedExplainabilityRunId, setSelectedExplainabilityRunId] = useState<string | null>(null);
 
   useEffect(() => {
     api
@@ -40,13 +42,37 @@ function App() {
     setPage('run-detail');
   };
 
+  const selectExplainabilityCase = (item: ExplainabilityCase) => {
+    setSelectedExplainabilityCase(item);
+    setSelectedExplainabilityRunId(item.run_id ?? null);
+    setPage('explainability');
+  };
+
+  const selectRunExplainability = (runId: string) => {
+    setSelectedExplainabilityCase(null);
+    setSelectedExplainabilityRunId(runId);
+    setPage('explainability');
+  };
+
+  const selectPage = (nextPage: PageKey) => {
+    setSelectedExplainabilityCase(null);
+    setSelectedExplainabilityRunId(null);
+    setPage(nextPage);
+  };
+
+  const selectDatasource = (nextDatasource: string) => {
+    setSelectedExplainabilityCase(null);
+    setSelectedExplainabilityRunId(null);
+    setDatasource(nextDatasource);
+  };
+
   return (
     <Layout
       page={page}
       datasource={datasource}
       datasources={datasources}
-      onPageChange={setPage}
-      onDatasourceChange={setDatasource}
+      onPageChange={selectPage}
+      onDatasourceChange={selectDatasource}
     >
       {page === 'dashboard' ? <Dashboard datasource={datasource} onRunSelect={selectRun} /> : null}
       {page === 'runs' ? <Runs datasource={datasource} onRunSelect={selectRun} /> : null}
@@ -54,10 +80,28 @@ function App() {
         <ClinicalEvaluation datasource={datasource} onRunSelect={selectRun} />
       ) : null}
       {page === 'models' ? <ModelComparison datasource={datasource} /> : null}
-      {page === 'run-detail' ? <RunDetail datasource={datasource} runId={selectedRunId} /> : null}
-      {page === 'explainability' ? <Explainability datasource={datasource} /> : null}
+      {page === 'run-detail' ? (
+        <RunDetail
+          datasource={datasource}
+          runId={selectedRunId}
+          onExplainabilitySelect={selectExplainabilityCase}
+        />
+      ) : null}
+      {page === 'explainability' ? (
+        <Explainability
+          key={datasource}
+          datasource={datasource}
+          initialCase={selectedExplainabilityCase}
+          initialRunId={selectedExplainabilityRunId}
+          onRunSelect={selectRun}
+        />
+      ) : null}
       {page === 'uploaded-predictions' ? (
-        <UploadedPredictions datasource={datasource} onRunSelect={selectRun} />
+        <UploadedPredictions
+          datasource={datasource}
+          onRunSelect={selectRun}
+          onExplainabilityOpen={selectRunExplainability}
+        />
       ) : null}
       {page === 'dataset-browser' ? <DatasetBrowser datasource={datasource} /> : null}
       {page === 'datasets' ? <DatasetsModels datasource={datasource} /> : null}

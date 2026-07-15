@@ -11,15 +11,12 @@ import { formatDate, formatMetric } from '../utils/format';
 interface UploadedPredictionsProps {
   datasource: string;
   onRunSelect: (runId: string) => void;
+  onExplainabilityOpen?: (runId: string) => void;
 }
 
 
 function uploadedImagePath(row: UploadedPrediction) {
-  return row.artifact_path ?? row.image_path;
-}
-
-function probabilityParasitized(row: UploadedPrediction) {
-  return row.probability_parasitized ?? row.score_positive_label;
+  return row.image_stored_path ?? row.artifact_path ?? row.image_path ?? row.original_image_path;
 }
 
 function booleanLabel(value: boolean | null | undefined) {
@@ -61,7 +58,7 @@ function ttaEnsembleLabel(row: UploadedPrediction) {
 }
 
 
-export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredictionsProps) {
+export function UploadedPredictions({ datasource, onRunSelect, onExplainabilityOpen }: UploadedPredictionsProps) {
   const [predictions, setPredictions] = useState<PagedResponse<UploadedPrediction> | null>(null);
   const [modelName, setModelName] = useState('');
   const [predictedLabel, setPredictedLabel] = useState('');
@@ -232,14 +229,18 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
               render: (row) => {
                 const path = uploadedImagePath(row);
                 if (!path) return '-';
+                const imageUrl = api.mediaUrl({ path, artifactId: row.artifact_id, datasource });
+                if (!imageUrl) return '-';
                 return (
-                  <div className="uploaded-image-cell">
+                  <a className="uploaded-image-cell" href={imageUrl} target="_blank" rel="noreferrer">
                     <img
-                      src={api.artifactUrl(path, { artifactId: row.artifact_id, datasource })}
+                      src={imageUrl}
                       alt={row.original_filename ?? row.image_id ?? 'Imagen'}
+                      loading="lazy"
+                      decoding="async"
                     />
                     <small>{row.original_filename ?? row.stored_filename ?? row.image_id}</small>
-                  </div>
+                  </a>
                 );
               },
             },
@@ -250,7 +251,7 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
                 const explanationUrl = api.artifactUrl(row.explainability_path, { datasource });
                 return (
                   <a className="uploaded-image-cell" href={explanationUrl} target="_blank" rel="noreferrer">
-                    <img src={explanationUrl} alt={row.explainability_method ?? 'Explicacion visual'} />
+                    <img src={explanationUrl} alt={row.explainability_method ?? 'Explicacion visual'} loading="lazy" decoding="async" />
                     <small>{row.explainability_method ?? 'explicacion visual'}</small>
                   </a>
                 );
@@ -271,15 +272,15 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
                     </li>
                     <li className="item-lista">
                       <span className="item-lista-titulo">% parasitized:</span>
-                      <span className="item-lista-valor">{row.probability_parasitized ? formatMetric(row.probability_parasitized) : '-'}</span>
+                      <span className="item-lista-valor">{formatMetric(row.probability_parasitized)}</span>
                     </li>
                     <li className="item-lista">
                       <span className="item-lista-titulo">% uninfected:</span>
-                      <span className="item-lista-valor">{row.probability_uninfected ? formatMetric(row.probability_uninfected) : '-'}</span>
+                      <span className="item-lista-valor">{formatMetric(row.probability_uninfected)}</span>
                     </li>
                     <li className="item-lista">
                       <span className="item-lista-titulo">Threshold:</span>
-                      <span className="item-lista-valor">{row.threshold ? formatMetric(row.threshold) : '-'}</span>
+                      <span className="item-lista-valor">{formatMetric(row.threshold)}</span>
                     </li>
                     <li className="item-lista">
                       <span className="item-lista-titulo">Confianza:</span>
@@ -322,6 +323,13 @@ export function UploadedPredictions({ datasource, onRunSelect }: UploadedPredict
                         Ver run
                       </button>
                     </li>
+                    {row.explainability_path && onExplainabilityOpen ? (
+                      <li>
+                        <button className="link-button" onClick={() => onExplainabilityOpen(row.run_id)} type="button">
+                          Auditar explicación
+                        </button>
+                      </li>
+                    ) : null}
                   </ul>
                 );
               }

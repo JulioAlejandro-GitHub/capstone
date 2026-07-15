@@ -31,6 +31,11 @@ type ArtifactUrlOptions = {
   datasource?: string;
 };
 
+type MediaUrlOptions = ArtifactUrlOptions & {
+  url?: string | null;
+  path?: string | null;
+};
+
 async function request<T>(path: string, params: Record<string, QueryValue> = {}) {
   const url = new URL(path, API_BASE_URL);
   Object.entries(params).forEach(([key, value]) => {
@@ -52,6 +57,16 @@ function withDatasource(datasource: string) {
 }
 
 export const api = {
+  absoluteUrl(pathOrUrl: string | null | undefined) {
+    if (!pathOrUrl) return null;
+    try {
+      const url = new URL(pathOrUrl, API_BASE_URL);
+      return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null;
+    } catch {
+      return null;
+    }
+  },
+
   artifactUrl(path: string | null | undefined, options: ArtifactUrlOptions = {}) {
     const url = new URL('/artifacts/file', API_BASE_URL);
     if (options.datasource) {
@@ -63,6 +78,13 @@ export const api = {
       url.searchParams.set('path', path);
     }
     return url.toString();
+  },
+
+  mediaUrl({ url, path, artifactId, datasource }: MediaUrlOptions) {
+    const enrichedUrl = this.absoluteUrl(url);
+    if (enrichedUrl) return enrichedUrl;
+    if (!path && !artifactId) return null;
+    return this.artifactUrl(path, { artifactId, datasource });
   },
 
   datasetImageUrl(imageId: string, datasource: string) {

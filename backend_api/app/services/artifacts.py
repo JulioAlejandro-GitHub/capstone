@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import UUID
@@ -10,30 +9,20 @@ from app.db import fetch_one
 
 CAPSTONE_ROOT = Path(__file__).resolve().parents[3]
 MALARIA_PROJECT_ROOT = CAPSTONE_ROOT / "malaria_dl_local_project"
-ALLOWED_ARTIFACT_ROOTS = [
+ALLOWED_ARTIFACT_ROOTS = (
     (MALARIA_PROJECT_ROOT / "outputs").resolve(),
+    (MALARIA_PROJECT_ROOT / "data").resolve(),
     (CAPSTONE_ROOT / "data").resolve(),
-]
+    (CAPSTONE_ROOT / "data" / "prediction_uploads").resolve(),
+)
 
 IMAGE_MIME_BY_EXTENSION = {
     ".png": "image/png",
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
-    ".gif": "image/gif",
     ".webp": "image/webp",
-    ".bmp": "image/bmp",
-    ".tif": "image/tiff",
-    ".tiff": "image/tiff",
 }
-TEXT_MIME_BY_EXTENSION = {
-    ".csv": "text/csv",
-    ".json": "application/json",
-    ".txt": "text/plain",
-    ".log": "text/plain",
-    ".md": "text/markdown",
-}
-ALLOWED_EXTENSIONS = set(IMAGE_MIME_BY_EXTENSION) | set(TEXT_MIME_BY_EXTENSION)
-TEXT_SAMPLE_BYTES = 8192
+ALLOWED_EXTENSIONS = frozenset(IMAGE_MIME_BY_EXTENSION)
 
 
 @dataclass(frozen=True)
@@ -46,20 +35,38 @@ def resolve_artifact_path(path: str) -> Path:
     if not path:
         raise HTTPException(status_code=400, detail="Parametro path requerido.")
 
-    raw_path = Path(path)
-    candidates = []
+    try:
+        raw_path = Path(path)
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail="Parametro path invalido.") from exc
+
+    candidates: list[Path] = []
     if raw_path.is_absolute():
         candidates.append(raw_path)
     else:
         candidates.append(CAPSTONE_ROOT / raw_path)
-        if raw_path.parts and raw_path.parts[0] == "outputs":
+        if raw_path.parts and raw_path.parts[0] in {"outputs", "data"}:
             candidates.append(MALARIA_PROJECT_ROOT / raw_path)
 
-    resolved = next((candidate.resolve() for candidate in candidates if candidate.exists()), None)
-    if resolved is None:
-        resolved = candidates[0].resolve()
+    try:
+        resolved_candidates = [candidate.resolve(strict=False) for candidate in candidates]
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail="Parametro path invalido.") from exc
 
-    if not any(resolved == root or root in resolved.parents for root in ALLOWED_ARTIFACT_ROOTS):
+    allowed_candidates = [
+        candidate
+        for candidate in resolved_candidates
+        if any(candidate == root or root in candidate.parents for root in ALLOWED_ARTIFACT_ROOTS)
+    ]
+
+    # A relative reference such as ``data/foo.png`` can exist in either the
+    # capstone data directory or the nested malaria project. Prefer the first
+    # existing allowed match, while never falling back to a disallowed path.
+    resolved = next((candidate for candidate in allowed_candidates if candidate.exists()), None)
+    if resolved is None and allowed_candidates:
+        resolved = allowed_candidates[0]
+
+    if resolved is None:
         raise HTTPException(status_code=403, detail="Artefacto fuera de la carpeta permitida.")
     if not resolved.exists() or not resolved.is_file():
         raise HTTPException(status_code=404, detail="Artefacto no encontrado.")
@@ -109,14 +116,10 @@ def validate_served_artifact(path: Path) -> ServedArtifact:
             detail=f"Extension no permitida para artefactos: {suffix or 'sin extension'}.",
         )
 
-    if suffix in IMAGE_MIME_BY_EXTENSION:
-        media_type = detect_image_mime(path)
-        expected_media_type = IMAGE_MIME_BY_EXTENSION[suffix]
-        if media_type != expected_media_type:
-            raise HTTPException(status_code=415, detail="MIME real no coincide con la extension.")
-        return ServedArtifact(path=path, media_type=media_type)
-
-    media_type = detect_text_mime(path, suffix)
+    media_type = detect_image_mime(path)
+    expected_media_type = IMAGE_MIME_BY_EXTENSION[suffix]
+    if media_type != expected_media_type:
+        raise HTTPException(status_code=415, detail="MIME real no coincide con la extension.")
     return ServedArtifact(path=path, media_type=media_type)
 
 
@@ -127,34 +130,6 @@ def detect_image_mime(path: Path) -> str:
         return "image/png"
     if header.startswith(b"\xff\xd8\xff"):
         return "image/jpeg"
-    if header.startswith((b"GIF87a", b"GIF89a")):
-        return "image/gif"
     if len(header) >= 12 and header.startswith(b"RIFF") and header[8:12] == b"WEBP":
         return "image/webp"
-    if header.startswith(b"BM"):
-        return "image/bmp"
-    if header.startswith((b"II*\x00", b"MM\x00*")):
-        return "image/tiff"
     raise HTTPException(status_code=415, detail="MIME real de imagen no permitido.")
-
-
-def detect_text_mime(path: Path, suffix: str) -> str:
-    if suffix == ".json":
-        try:
-            with path.open("r", encoding="utf-8") as file:
-                json.load(file)
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise HTTPException(status_code=415, detail="JSON invalido o no UTF-8.") from exc
-        return "application/json"
-
-    try:
-        with path.open("rb") as file:
-            sample = file.read(TEXT_SAMPLE_BYTES)
-        sample.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise HTTPException(status_code=415, detail="Artefacto de texto no UTF-8.") from exc
-
-    if b"\x00" in sample:
-        raise HTTPException(status_code=415, detail="Artefacto de texto invalido.")
-
-    return TEXT_MIME_BY_EXTENSION[suffix]

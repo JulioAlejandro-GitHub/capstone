@@ -1,6 +1,9 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, Query
 
 from app.db import fetch_all, fetch_one
+from app.services.explainability import enrich_explainability_items
 from app.services.serialization import row_to_dict, rows_to_list
 
 
@@ -490,8 +493,13 @@ def get_run_explainability(
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
 ):
+    try:
+        normalized_run_id = str(UUID(str(run_id)))
+    except (TypeError, ValueError, AttributeError) as exc:
+        raise HTTPException(status_code=422, detail="run_id debe ser un UUID valido.") from exc
+
     conditions = ["run_id = CAST(:run_id AS uuid)"]
-    params = {"run_id": run_id, "limit": limit, "offset": offset}
+    params = {"run_id": normalized_run_id, "limit": limit, "offset": offset}
     if method is not None:
         conditions.append("method = :method")
         params["method"] = method
@@ -502,14 +510,14 @@ def get_run_explainability(
 
     count_row = fetch_one(
         datasource,
-        f"SELECT COUNT(*) AS total FROM vw_case_level_explainability {where_sql}",
+        f"SELECT COUNT(*) AS total FROM vw_visual_explainability_audit {where_sql}",
         params,
     )
     rows = fetch_all(
         datasource,
         f"""
         SELECT *
-        FROM vw_case_level_explainability
+        FROM vw_visual_explainability_audit
         {where_sql}
         ORDER BY started_at DESC NULLS LAST
         LIMIT :limit OFFSET :offset
@@ -517,4 +525,9 @@ def get_run_explainability(
         params,
     )
     total = int(row_to_dict(count_row)["total"]) if count_row else 0
-    return {"items": rows_to_list(rows), "total": total, "limit": limit, "offset": offset}
+    return {
+        "items": enrich_explainability_items(rows_to_list(rows)),
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
