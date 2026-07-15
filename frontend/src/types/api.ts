@@ -87,11 +87,44 @@ export interface ArtifactRow extends JsonRecord {
   mime_type: string | null;
 }
 
+export interface RunRecord extends JsonRecord {
+  id: string;
+  run_name: string | null;
+  run_type: string;
+  execution_type: string | null;
+  status: string;
+  command: string | null;
+  script_name: string | null;
+  model_name: string | null;
+  model_type: string | null;
+  dataset_name: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  duration_seconds: number | null;
+  fine_tuning_start_epoch: number | null;
+  total_epochs: number | null;
+  completed_epochs: number;
+  parameters: JsonValue;
+  execution_parameters: JsonValue;
+}
+
+export interface TrainingHistoryRow extends JsonRecord {
+  epoch: number;
+  phase: string;
+  train_accuracy: number | null;
+  accuracy: number | null;
+  val_accuracy: number | null;
+  train_loss: number | null;
+  loss: number | null;
+  val_loss: number | null;
+  learning_rate: number | null;
+}
+
 export interface RunDetailResponse {
-  run: JsonRecord;
+  run: RunRecord;
   metrics: MetricRow[];
   artifacts: ArtifactRow[];
-  training_history: JsonRecord[];
+  training_history: TrainingHistoryRow[];
   errors: JsonRecord[];
 }
 

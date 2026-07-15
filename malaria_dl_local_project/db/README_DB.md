@@ -39,6 +39,7 @@ Edita `.env` si tu usuario, contraseña, puerto o nombre de base son distintos.
 ## Inicializar esquema
 
 ```bash
+source .venv/bin/activate
 python scripts/init_db.py
 ```
 
@@ -51,6 +52,7 @@ db/init/003_views.sql
 db/init/004_seed.sql
 db/init/007_case_level_explainability_views.sql
 db/init/008_case_level_explainability_indexes.sql
+db/init/020_max_epochs_release.sql
 ```
 
 También ejecuta automáticamente otros archivos numerados `NNN_*.sql` si existen, por ejemplo `005_frontend_views.sql` o `006_frontend_indexes.sql`.
@@ -72,7 +74,7 @@ Los scripts principales aceptan `--track-db`. La bandera está desactivada por d
 Entrenamiento con tracking:
 
 ```bash
-python -m src.train --model custom_cnn --epochs 30 --img-size 200 --batch-size 64 --track-db
+python -m src.train --model custom_cnn --max-epochs 50 --img-size 200 --batch-size 64 --track-db
 ```
 
 Evaluación con tracking:

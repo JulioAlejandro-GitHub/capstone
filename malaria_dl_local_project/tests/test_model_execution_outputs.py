@@ -96,6 +96,25 @@ class ModelExecutionOutputsTests(unittest.TestCase):
             self.assertFalse((snapshot_dir / stale.name).exists())
             self.assertEqual(copied, [str(snapshot_dir / current.name)])
 
+    def test_snapshot_rejects_different_artifacts_with_same_basename(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir) / "model"
+            first_dir = root / "first"
+            second_dir = root / "second"
+            first_dir.mkdir(parents=True)
+            second_dir.mkdir(parents=True)
+            first = first_dir / "metrics.json"
+            second = second_dir / "metrics.json"
+            first.write_text("first", encoding="utf-8")
+            second.write_text("second", encoding="utf-8")
+
+            with self.assertRaises(ValueError):
+                snapshot_execution_artifacts(
+                    root,
+                    "execution-1",
+                    artifact_paths=[first, second],
+                )
+
     def test_combined_history_is_continuous_and_marks_boundary_epoch(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             history_path, marker_epoch, rows = write_combined_training_history(
@@ -116,7 +135,8 @@ class ModelExecutionOutputsTests(unittest.TestCase):
             [row["phase"] for row in rows[5:]],
             ["fine_tuning"] * 6,
         )
-        self.assertEqual(marker_epoch, 4)
+        # The marker identifies the first global 0-based fine-tuning epoch.
+        self.assertEqual(marker_epoch, 5)
 
     def test_execution_summary_writes_json_and_markdown(self):
         with tempfile.TemporaryDirectory() as temp_dir:

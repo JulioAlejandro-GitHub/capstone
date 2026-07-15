@@ -1,0 +1,173 @@
+.clinical-confusion {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.clinical-confusion__table-scroll {
+  max-width: 760px;
+  overflow-x: auto;
+}
+
+.clinical-confusion__table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: separate;
+  border-spacing: 6px;
+  table-layout: fixed;
+}
+
+.clinical-confusion__table caption {
+  padding: 0 0 6px;
+  color: #62708f;
+  font-size: 12px;
+  text-align: left;
+}
+
+.clinical-confusion__table th {
+  padding: 8px 10px;
+  color: #27324a;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  text-transform: none;
+}
+
+.clinical-confusion__table thead th:first-child,
+.clinical-confusion__table tbody th {
+  width: 30%;
+  text-align: left;
+}
+
+.clinical-confusion__cell {
+  position: relative;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #cfd7e8;
+  border-radius: 10px;
+  background: #f8faff;
+  text-align: center;
+  vertical-align: top;
+}
+
+.clinical-confusion__cell--correct {
+  border-left: 4px solid #3f7f62;
+}
+
+.clinical-confusion__cell--error {
+  border-style: dashed;
+  border-left: 4px solid #b56b22;
+  background: #fffaf0;
+}
+
+.clinical-confusion__cell--priority {
+  border-color: #9e3f3f;
+  border-left-color: #9e3f3f;
+  background: #fff6f6;
+}
+
+.clinical-confusion__result {
+  display: block;
+  color: #52617e;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.clinical-confusion__value {
+  display: block;
+  margin: 3px 0;
+  color: #17223b;
+  font-size: clamp(20px, 3vw, 28px);
+  line-height: 1.1;
+}
+
+.clinical-confusion__code,
+.clinical-confusion__percentage {
+  display: block;
+  color: #52617e;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.clinical-confusion__code abbr {
+  color: #27324a;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.clinical-confusion__percentage {
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.clinical-confusion__data-note,
+.clinical-confusion__summary {
+  margin: 0;
+  color: #52617e;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.clinical-confusion__data-note {
+  max-width: 760px;
+  padding: 8px 10px;
+  border-left: 3px solid #92702c;
+  background: #fffaf0;
+}
+
+.clinical-confusion__interpretation {
+  display: grid;
+  max-width: 760px;
+  gap: 6px;
+  color: #3d4963;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.clinical-confusion__interpretation ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 19px;
+}
+
+.clinical-confusion__priority-note strong {
+  color: #8b3030;
+}
+
+.clinical-confusion--empty {
+  justify-items: start;
+  padding: 12px;
+  border: 1px dashed #aeb9ce;
+  border-radius: 10px;
+  color: #52617e;
+  font-size: 13px;
+}
+
+.clinical-confusion--empty strong {
+  color: #27324a;
+}
+
+@media (max-width: 640px) {
+  .clinical-confusion__table {
+    min-width: 460px;
+  }
+
+  .clinical-confusion__cell {
+    padding: 10px 8px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .clinical-confusion__cell {
+    border-width: 2px;
+  }
+
+  .clinical-confusion__cell--correct,
+  .clinical-confusion__cell--error {
+    border-left-width: 6px;
+  }
+}

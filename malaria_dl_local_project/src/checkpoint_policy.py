@@ -29,6 +29,12 @@ CHECKPOINT_POLICY_CHOICES = [
     "balanced_accuracy",
 ]
 
+# Mantiene el orden natural y una derivada prácticamente 1 para métricas
+# habituales, pero acota el score interno para poder separar de forma finita
+# los epochs colapsados. PostgreSQL jsonb no acepta Infinity/-Infinity.
+EARLY_STOPPING_SCORE_BOUND = 1_000_000.0
+COLLAPSED_SCORE_OFFSET = 3.0 * EARLY_STOPPING_SCORE_BOUND
+
 
 @dataclass
 class CheckpointPolicyConfig:
@@ -59,6 +65,62 @@ def get_monitor_for_policy(config: CheckpointPolicyConfig) -> tuple[str, str]:
     if config.policy == "balanced_accuracy":
         return "val_balanced_accuracy", "max"
     return "val_auc", "max"
+
+
+def checkpoint_policy_score(logs: dict, config: CheckpointPolicyConfig):
+    """Return a scalar validation score whose ordering follows the policy."""
+    if config.policy == "f2":
+        return _metric(logs, ["val_f2_parasitized"], default=None)
+    if config.policy == "balanced_accuracy":
+        return _metric(logs, ["val_balanced_accuracy"], default=None)
+    auc_value = _metric(
+        logs,
+        ["val_auc", "val_roc_auc_parasitized", "val_auc_parasitized"],
+        default=None,
+    )
+    if config.policy == "val_auc":
+        return auc_value
+    recall_value = _metric(
+        logs,
+        ["val_recall_parasitized", "val_sensitivity_parasitized", "val_recall"],
+        default=None,
+    )
+    if recall_value is None:
+        return None
+    # Any epoch satisfying min_recall must rank above every fallback epoch.
+    # Within the valid set AUC governs selection; before reaching the constraint,
+    # recall is the fallback objective used by select_best_epoch_from_history.
+    if recall_value >= config.min_recall and auc_value is not None:
+        return 2.0 + float(auc_value)
+    return float(recall_value)
+
+
+def early_stopping_score(
+    logs: dict,
+    *,
+    monitor: str,
+    mode: str,
+    config: CheckpointPolicyConfig,
+):
+    """Normalize any validation objective to a collapse-aware max score."""
+    if mode not in {"min", "max"}:
+        raise ValueError("mode debe ser 'min' o 'max'.")
+    value = _metric(logs, [monitor], default=None)
+    if value is None:
+        return None
+    normalized_value = -float(value) if mode == "min" else float(value)
+    if not np.isfinite(normalized_value):
+        return None
+    bounded_value = EARLY_STOPPING_SCORE_BOUND * np.tanh(
+        normalized_value / EARLY_STOPPING_SCORE_BOUND
+    )
+    if config.reject_prediction_collapse and _is_collapsed(logs):
+        # Todo epoch no colapsado queda por encima de uno colapsado, pero si
+        # una fase completa colapsa se conserva el orden de su métrica. Así
+        # EarlyStopping puede restaurar el mejor candidato clínicamente
+        # degradado sin emitir JSON no estándar.
+        bounded_value -= COLLAPSED_SCORE_OFFSET
+    return float(bounded_value)
 
 
 def _json_safe(value):
@@ -355,6 +417,42 @@ def select_best_epoch_from_history(
     )
 
 
+def select_best_epoch_by_monitor(
+    history_records: list[dict],
+    config: CheckpointPolicyConfig,
+    monitor: str,
+    mode: str,
+) -> dict:
+    """Select a validation checkpoint by an explicit metric and comparison mode."""
+    if mode not in {"min", "max"}:
+        raise ValueError("mode debe ser 'min' o 'max'.")
+    records, all_collapsed, rejected_collapsed, collapse_warning = (
+        _records_after_collapse_filter(history_records, config)
+    )
+    available = [
+        record
+        for record in records
+        if _metric(record, [monitor], default=None) is not None
+    ]
+    if not available:
+        raise ValueError(
+            f"La métrica de validation '{monitor}' no está disponible para seleccionar checkpoint."
+        )
+    if mode == "min":
+        selected, _ = _min_by_metric(available, [monitor])
+    else:
+        selected, _ = _max_by_metric(available, [monitor])
+    return _selection_result(
+        selected_record=selected,
+        config=config,
+        selected_metric=monitor,
+        selected_metric_value=_metric(selected, [monitor]),
+        all_epochs_collapsed=all_collapsed,
+        rejected_collapsed_epochs=rejected_collapsed,
+        warning=collapse_warning,
+    )
+
+
 def checkpoint_policy_summary(
     config: CheckpointPolicyConfig,
     selection: dict,
@@ -402,6 +500,9 @@ class ClinicalValidationMetricsCallback(tf.keras.callbacks.Callback):
         threshold: float = 0.5,
         min_class_fraction: float = 0.05,
         class_names=None,
+        checkpoint_policy_config: CheckpointPolicyConfig | None = None,
+        early_stopping_monitor: str | None = None,
+        early_stopping_mode: str = "max",
         verbose: int = 0,
     ):
         super().__init__()
@@ -409,6 +510,9 @@ class ClinicalValidationMetricsCallback(tf.keras.callbacks.Callback):
         self.threshold = float(threshold)
         self.min_class_fraction = float(min_class_fraction)
         self.class_names = list(class_names or CLASS_NAMES)
+        self.checkpoint_policy_config = checkpoint_policy_config
+        self.early_stopping_monitor = early_stopping_monitor
+        self.early_stopping_mode = str(early_stopping_mode)
         self.verbose = int(verbose)
 
     def on_epoch_end(self, epoch, logs=None):
@@ -465,6 +569,25 @@ class ClinicalValidationMetricsCallback(tf.keras.callbacks.Callback):
         for key, value in metric_updates.items():
             if value is not None:
                 logs[key] = float(value)
+        if self.checkpoint_policy_config is not None:
+            policy_score = checkpoint_policy_score(
+                logs,
+                self.checkpoint_policy_config,
+            )
+            if policy_score is not None:
+                logs["val_checkpoint_policy_score"] = float(policy_score)
+        if (
+            self.checkpoint_policy_config is not None
+            and self.early_stopping_monitor is not None
+        ):
+            normalized_score = early_stopping_score(
+                logs,
+                monitor=self.early_stopping_monitor,
+                mode=self.early_stopping_mode,
+                config=self.checkpoint_policy_config,
+            )
+            if normalized_score is not None:
+                logs["val_early_stopping_score"] = float(normalized_score)
 
         if self.verbose:
             print(
@@ -483,12 +606,18 @@ class ClinicalCheckpointCallback(tf.keras.callbacks.Callback):
         output_dir,
         config: CheckpointPolicyConfig,
         checkpoint_filename: str = "best_model.keras",
+        monitor: str | None = None,
+        mode: str = "max",
         verbose: int = 1,
     ):
         super().__init__()
         self.output_dir = Path(output_dir)
         self.config = config
         self.checkpoint_path = self.output_dir / checkpoint_filename
+        self.monitor = monitor
+        self.mode = str(mode)
+        if self.mode not in {"min", "max"}:
+            raise ValueError("mode debe ser 'min' o 'max'.")
         self.records: list[dict] = []
         self.phase = "training_base"
         self.epoch_offset = 0
@@ -522,11 +651,21 @@ class ClinicalCheckpointCallback(tf.keras.callbacks.Callback):
         write_checkpoint_policy_summary(self.output_dir, summary)
         return summary
 
+    def _select_best(self) -> dict:
+        if self.monitor:
+            return select_best_epoch_by_monitor(
+                self.records,
+                self.config,
+                monitor=self.monitor,
+                mode=self.mode,
+            )
+        return select_best_epoch_from_history(self.records, self.config)
+
     def on_epoch_end(self, epoch, logs=None):
         self.output_dir.mkdir(parents=True, exist_ok=True)
         record = self._record_from_logs(epoch, logs or {})
         self.records.append(record)
-        selection = select_best_epoch_from_history(self.records, self.config)
+        selection = self._select_best()
         self.best_selection = selection
         selected_is_current = selection.get("selected_epoch") == record["epoch"]
         if selected_is_current:
@@ -543,16 +682,13 @@ class ClinicalCheckpointCallback(tf.keras.callbacks.Callback):
 
     def on_train_end(self, logs=None):
         if self.records:
-            self.best_selection = select_best_epoch_from_history(
-                self.records,
-                self.config,
-            )
+            self.best_selection = self._select_best()
             self._write_summary(self.best_selection)
 
     def selection_summary(self):
         if not self.records:
             return None
-        selection = select_best_epoch_from_history(self.records, self.config)
+        selection = self._select_best()
         self.best_selection = selection
         return checkpoint_policy_summary(
             self.config,

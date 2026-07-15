@@ -236,7 +236,7 @@ class ModelExecutionTrackingTests(unittest.TestCase):
 
         self.assertEqual(
             tracker.execution_updates[0][1]["fine_tuning_start_epoch"],
-            1,
+            2,
         )
         _, epoch, values = tracker.history_rows[0]
         self.assertEqual(epoch, 2)

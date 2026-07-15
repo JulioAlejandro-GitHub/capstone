@@ -106,12 +106,186 @@ def resolve_tracking_total_epochs(parameters=None, total_epochs=None):
             return None
 
     try:
-        base_epochs = int(parameters.get("epochs") or 0)
+        base_epochs = int(
+            parameters.get("max_epochs")
+            if parameters.get("max_epochs") is not None
+            else parameters.get("epochs") or 0
+        )
         fine_tune_epochs = int(parameters.get("fine_tune_epochs") or 0)
     except (TypeError, ValueError):
         return None
     planned_epochs = base_epochs + fine_tune_epochs
     return planned_epochs if planned_epochs > 0 else None
+
+
+MAX_EPOCHS_TRACKING_FIELDS = (
+    "max_epochs",
+    "stopped_epoch",
+    "best_epoch",
+    "checkpoint_monitor",
+    "checkpoint_mode",
+    "best_validation_value",
+    "early_stopping_enabled",
+    "early_stopping_patience",
+    "early_stopping_min_delta",
+    "restore_best_weights",
+)
+
+
+def _tracking_payloads(parameters):
+    """Itera payloads conocidos sin acoplar tracking al formato de train."""
+    if not isinstance(parameters, dict):
+        return
+    yield parameters
+    for key in (
+        "execution_parameters",
+        "checkpoint_selection",
+        "checkpoint_policy_summary",
+    ):
+        nested = parameters.get(key)
+        if isinstance(nested, dict):
+            yield nested
+            for nested_payload in _tracking_payloads(nested):
+                if nested_payload is not nested:
+                    yield nested_payload
+
+
+def _tracking_value(parameters, *keys):
+    for payload in _tracking_payloads(parameters):
+        for key in keys:
+            value = payload.get(key)
+            if value is not None:
+                return value
+    return None
+
+
+def _tracking_int(value):
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _tracking_float(value):
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _tracking_bool(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "t", "1", "yes", "y", "on"}:
+            return True
+        if normalized in {"false", "f", "0", "no", "n", "off"}:
+            return False
+        return None
+    return bool(value)
+
+
+def resolve_max_epochs_tracking_fields(
+    parameters=None,
+    total_epochs=None,
+    max_epochs=None,
+    stopped_epoch=None,
+    best_epoch=None,
+    checkpoint_monitor=None,
+    checkpoint_mode=None,
+    best_validation_value=None,
+    early_stopping_enabled=None,
+    early_stopping_patience=None,
+    early_stopping_min_delta=None,
+    restore_best_weights=None,
+):
+    """Normaliza el resumen Max Epochs desde argumentos o metadata existentes."""
+
+    def explicit_or_parameter(explicit, *keys):
+        if explicit is not None:
+            return explicit
+        return _tracking_value(parameters, *keys)
+
+    resolved_max_epochs = explicit_or_parameter(
+        max_epochs,
+        "base_max_epochs",
+        "max_epochs",
+        "epochs",
+    )
+
+    return {
+        "max_epochs": _tracking_int(resolved_max_epochs),
+        "stopped_epoch": _tracking_int(
+            explicit_or_parameter(stopped_epoch, "stopped_epoch")
+        ),
+        "best_epoch": _tracking_int(
+            explicit_or_parameter(best_epoch, "best_epoch", "selected_epoch")
+        ),
+        "checkpoint_monitor": explicit_or_parameter(
+            checkpoint_monitor,
+            "checkpoint_monitor",
+            "checkpoint_metric",
+            "selected_metric",
+        ),
+        "checkpoint_mode": explicit_or_parameter(
+            checkpoint_mode,
+            "checkpoint_mode",
+        ),
+        "best_validation_value": _tracking_float(
+            explicit_or_parameter(
+                best_validation_value,
+                "best_validation_value",
+                "best_checkpoint_value",
+                "selected_metric_value",
+            )
+        ),
+        "early_stopping_enabled": _tracking_bool(
+            explicit_or_parameter(
+                early_stopping_enabled,
+                "early_stopping_enabled",
+                "early_stopping",
+            )
+        ),
+        "early_stopping_patience": _tracking_int(
+            explicit_or_parameter(
+                early_stopping_patience,
+                "early_stopping_patience",
+            )
+        ),
+        "early_stopping_min_delta": _tracking_float(
+            explicit_or_parameter(
+                early_stopping_min_delta,
+                "early_stopping_min_delta",
+            )
+        ),
+        "restore_best_weights": _tracking_bool(
+            explicit_or_parameter(
+                restore_best_weights,
+                "restore_best_weights",
+            )
+        ),
+    }
+
+
+def _with_max_epochs_tracking_fields(parameters, fields):
+    """Materializa el resumen canónico también en execution_parameters."""
+    if parameters is None and not any(value is not None for value in fields.values()):
+        return None
+    payload = dict(parameters) if isinstance(parameters, dict) else {}
+    for key, value in fields.items():
+        if value is not None:
+            payload[key] = value
+    if (
+        fields.get("early_stopping_enabled") is not None
+        and "early_stopping" not in payload
+    ):
+        payload["early_stopping"] = fields["early_stopping_enabled"]
+    return payload
 
 
 def json_safe(value):
@@ -339,6 +513,16 @@ def start_tracking_run(
     fine_tuning_start_epoch=None,
     total_epochs=None,
     completed_epochs=0,
+    max_epochs=None,
+    stopped_epoch=None,
+    best_epoch=None,
+    checkpoint_monitor=None,
+    checkpoint_mode=None,
+    best_validation_value=None,
+    early_stopping_enabled=None,
+    early_stopping_patience=None,
+    early_stopping_min_delta=None,
+    restore_best_weights=None,
 ):
     from src import run_tracker as tracker
 
@@ -358,9 +542,35 @@ def start_tracking_run(
         if execution_parameters is None
         else json_safe(execution_parameters)
     )
+    effective_tracking_parameters = {
+        **run_parameters,
+        **(
+            resolved_execution_parameters
+            if isinstance(resolved_execution_parameters, dict)
+            else {}
+        ),
+    }
     resolved_total_epochs = resolve_tracking_total_epochs(
-        run_parameters,
+        effective_tracking_parameters,
         total_epochs=total_epochs,
+    )
+    max_epochs_fields = resolve_max_epochs_tracking_fields(
+        effective_tracking_parameters,
+        total_epochs=resolved_total_epochs,
+        max_epochs=max_epochs,
+        stopped_epoch=stopped_epoch,
+        best_epoch=best_epoch,
+        checkpoint_monitor=checkpoint_monitor,
+        checkpoint_mode=checkpoint_mode,
+        best_validation_value=best_validation_value,
+        early_stopping_enabled=early_stopping_enabled,
+        early_stopping_patience=early_stopping_patience,
+        early_stopping_min_delta=early_stopping_min_delta,
+        restore_best_weights=restore_best_weights,
+    )
+    resolved_execution_parameters = _with_max_epochs_tracking_fields(
+        resolved_execution_parameters,
+        max_epochs_fields,
     )
     resolved_fine_tuning_start_epoch = fine_tuning_start_epoch
     if resolved_fine_tuning_start_epoch is None:
@@ -432,6 +642,7 @@ def start_tracking_run(
         fine_tuning_start_epoch=resolved_fine_tuning_start_epoch,
         total_epochs=resolved_total_epochs,
         completed_epochs=completed_epochs,
+        **max_epochs_fields,
         random_seed=random_seed,
         metadata={
             "tracking_version": "1.0",
@@ -456,6 +667,7 @@ def start_tracking_run(
         "fine_tuning_start_epoch": resolved_fine_tuning_start_epoch,
         "total_epochs": resolved_total_epochs,
         "completed_epochs": completed_epochs,
+        **max_epochs_fields,
         "data_source": getattr(args, "data_source", None),
         "tracker": tracker,
     }
@@ -480,43 +692,145 @@ def update_execution_tracking(
     fine_tuning_start_epoch=None,
     total_epochs=None,
     completed_epochs=None,
+    max_epochs=None,
+    stopped_epoch=None,
+    best_epoch=None,
+    checkpoint_monitor=None,
+    checkpoint_mode=None,
+    best_validation_value=None,
+    early_stopping_enabled=None,
+    early_stopping_patience=None,
+    early_stopping_min_delta=None,
+    restore_best_weights=None,
 ):
     """Actualiza tracking de ejecucion sin propagar errores de PostgreSQL."""
     if not context or not context.get("run_id"):
         return None
     tracker = context["tracker"]
+    effective_max_epochs = max_epochs
+    if effective_max_epochs is None and _tracking_value(
+        execution_parameters,
+        "base_max_epochs",
+        "max_epochs",
+        "epochs",
+    ) is None:
+        effective_max_epochs = context.get("max_epochs")
+    max_epochs_fields = resolve_max_epochs_tracking_fields(
+        execution_parameters,
+        total_epochs=total_epochs,
+        max_epochs=effective_max_epochs,
+        stopped_epoch=stopped_epoch,
+        best_epoch=best_epoch,
+        checkpoint_monitor=checkpoint_monitor,
+        checkpoint_mode=checkpoint_mode,
+        best_validation_value=best_validation_value,
+        early_stopping_enabled=early_stopping_enabled,
+        early_stopping_patience=early_stopping_patience,
+        early_stopping_min_delta=early_stopping_min_delta,
+        restore_best_weights=restore_best_weights,
+    )
+    effective_execution_parameters = _with_max_epochs_tracking_fields(
+        json_safe(execution_parameters)
+        if execution_parameters is not None
+        else None,
+        max_epochs_fields,
+    )
     result = tracker.safe_track(
         tracker.update_run_execution,
         context["run_id"],
         execution_type=execution_type,
-        execution_parameters=json_safe(execution_parameters)
-        if execution_parameters is not None
-        else None,
+        execution_parameters=effective_execution_parameters,
         fine_tuning_start_epoch=fine_tuning_start_epoch,
         total_epochs=total_epochs,
         completed_epochs=completed_epochs,
+        **max_epochs_fields,
     )
     for key, value in {
         "execution_type": execution_type,
-        "execution_parameters": execution_parameters,
+        "execution_parameters": effective_execution_parameters,
         "fine_tuning_start_epoch": fine_tuning_start_epoch,
         "total_epochs": total_epochs,
         "completed_epochs": completed_epochs,
+        **max_epochs_fields,
     }.items():
         if value is not None:
             context[key] = value
     return result
 
 
-def finish_tracking_run(context, metadata=None, completed_epochs=None):
+def finish_tracking_run(
+    context,
+    metadata=None,
+    completed_epochs=None,
+    max_epochs=None,
+    stopped_epoch=None,
+    best_epoch=None,
+    checkpoint_monitor=None,
+    checkpoint_mode=None,
+    best_validation_value=None,
+    early_stopping_enabled=None,
+    early_stopping_patience=None,
+    early_stopping_min_delta=None,
+    restore_best_weights=None,
+):
     if not context or not context.get("run_id"):
         return
     tracker = context["tracker"]
+    summary_payload = {
+        key: context.get(key)
+        for key in MAX_EPOCHS_TRACKING_FIELDS
+        if context.get(key) is not None
+    }
+    summary_payload["execution_parameters"] = context.get(
+        "execution_parameters"
+    )
+    if isinstance(metadata, dict):
+        summary_payload.update(metadata)
+    effective_max_epochs = max_epochs
+    if effective_max_epochs is None and _tracking_value(
+        summary_payload,
+        "base_max_epochs",
+        "max_epochs",
+        "epochs",
+    ) is None:
+        effective_max_epochs = context.get("max_epochs")
+    max_epochs_fields = resolve_max_epochs_tracking_fields(
+        summary_payload,
+        total_epochs=context.get("total_epochs"),
+        max_epochs=effective_max_epochs,
+        stopped_epoch=stopped_epoch,
+        best_epoch=best_epoch,
+        checkpoint_monitor=checkpoint_monitor,
+        checkpoint_mode=checkpoint_mode,
+        best_validation_value=best_validation_value,
+        early_stopping_enabled=early_stopping_enabled,
+        early_stopping_patience=early_stopping_patience,
+        early_stopping_min_delta=early_stopping_min_delta,
+        restore_best_weights=restore_best_weights,
+    )
+    effective_completed_epochs = (
+        completed_epochs
+        if completed_epochs is not None
+        else context.get("completed_epochs")
+    )
+    effective_execution_parameters = _with_max_epochs_tracking_fields(
+        context.get("execution_parameters"),
+        max_epochs_fields,
+    )
+    if effective_execution_parameters != context.get("execution_parameters"):
+        update_execution_tracking(
+            context,
+            execution_parameters=effective_execution_parameters,
+            total_epochs=context.get("total_epochs"),
+            completed_epochs=effective_completed_epochs,
+            **max_epochs_fields,
+        )
     tracker.safe_track(
         tracker.finish_run,
         context["run_id"],
         metadata=metadata,
-        completed_epochs=completed_epochs,
+        completed_epochs=effective_completed_epochs,
+        **max_epochs_fields,
     )
 
 
@@ -705,7 +1019,7 @@ def log_training_history(context, history, phase="training", epoch_offset=0):
     if phase == "fine_tuning" and context.get("fine_tuning_start_epoch") is None:
         update_execution_tracking(
             context,
-            fine_tuning_start_epoch=max(int(epoch_offset) - 1, 0),
+            fine_tuning_start_epoch=max(int(epoch_offset), 0),
         )
 
     for index, epoch in enumerate(epochs):
@@ -754,6 +1068,16 @@ def log_training_history(context, history, phase="training", epoch_offset=0):
             "val_prediction_collapse_detected": get_history_value(
                 history_dict,
                 "val_prediction_collapse_detected",
+                index,
+            ),
+            "val_checkpoint_policy_score": get_history_value(
+                history_dict,
+                "val_checkpoint_policy_score",
+                index,
+            ),
+            "val_early_stopping_score": get_history_value(
+                history_dict,
+                "val_early_stopping_score",
                 index,
             ),
             "val_n_pred_uninfected": get_history_value(

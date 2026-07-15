@@ -351,6 +351,16 @@ def start_run(
     fine_tuning_start_epoch=None,
     total_epochs=None,
     completed_epochs=0,
+    max_epochs=None,
+    stopped_epoch=None,
+    best_epoch=None,
+    checkpoint_monitor=None,
+    checkpoint_mode=None,
+    best_validation_value=None,
+    early_stopping_enabled=None,
+    early_stopping_patience=None,
+    early_stopping_min_delta=None,
+    restore_best_weights=None,
     random_seed=None,
     notes=None,
     metadata=None,
@@ -368,7 +378,11 @@ def start_run(
             tensorflow_version, keras_version, platform, machine, processor,
             gpu_available, gpu_devices, random_seed, parameters, notes, metadata,
             execution_type, execution_parameters, fine_tuning_start_epoch,
-            total_epochs, completed_epochs
+            total_epochs, completed_epochs, max_epochs, stopped_epoch,
+            best_epoch, checkpoint_monitor, checkpoint_mode,
+            best_validation_value, early_stopping_enabled,
+            early_stopping_patience, early_stopping_min_delta,
+            restore_best_weights
         )
         VALUES (
             :experiment_id, :model_id, :dataset_id, :run_name, :run_type, 'started',
@@ -378,7 +392,11 @@ def start_run(
             :gpu_available, CAST(:gpu_devices AS jsonb), :random_seed,
             CAST(:parameters AS jsonb), :notes, CAST(:metadata AS jsonb),
             :execution_type, CAST(:execution_parameters AS jsonb),
-            :fine_tuning_start_epoch, :total_epochs, :completed_epochs
+            :fine_tuning_start_epoch, :total_epochs, :completed_epochs,
+            :max_epochs, :stopped_epoch, :best_epoch, :checkpoint_monitor,
+            :checkpoint_mode, :best_validation_value,
+            :early_stopping_enabled, :early_stopping_patience,
+            :early_stopping_min_delta, :restore_best_weights
         )
         RETURNING id
         """,
@@ -398,6 +416,16 @@ def start_run(
             "fine_tuning_start_epoch": _integer(fine_tuning_start_epoch),
             "total_epochs": _integer(total_epochs),
             "completed_epochs": _integer(completed_epochs) or 0,
+            "max_epochs": _integer(max_epochs),
+            "stopped_epoch": _integer(stopped_epoch),
+            "best_epoch": _integer(best_epoch),
+            "checkpoint_monitor": checkpoint_monitor,
+            "checkpoint_mode": checkpoint_mode,
+            "best_validation_value": _numeric(best_validation_value),
+            "early_stopping_enabled": _boolean(early_stopping_enabled),
+            "early_stopping_patience": _integer(early_stopping_patience),
+            "early_stopping_min_delta": _numeric(early_stopping_min_delta),
+            "restore_best_weights": _boolean(restore_best_weights),
             "metadata": _json(metadata),
             "gpu_devices": _json(env["gpu_devices"], default=[]),
             **{key: value for key, value in env.items() if key != "gpu_devices"},
@@ -412,6 +440,16 @@ def update_run_execution(
     fine_tuning_start_epoch=None,
     total_epochs=None,
     completed_epochs=None,
+    max_epochs=None,
+    stopped_epoch=None,
+    best_epoch=None,
+    checkpoint_monitor=None,
+    checkpoint_mode=None,
+    best_validation_value=None,
+    early_stopping_enabled=None,
+    early_stopping_patience=None,
+    early_stopping_min_delta=None,
+    restore_best_weights=None,
 ):
     """Actualiza de forma parcial el contrato y progreso de una ejecucion."""
     if not run_id:
@@ -433,6 +471,7 @@ def update_run_execution(
                 fine_tuning_start_epoch
             ),
             total_epochs = COALESCE(:total_epochs, total_epochs),
+            max_epochs = COALESCE(:max_epochs, max_epochs),
             completed_epochs = CASE
                 WHEN CAST(:completed_epochs AS integer) IS NULL
                     THEN completed_epochs
@@ -441,6 +480,33 @@ def update_run_execution(
                     CAST(:completed_epochs AS integer)
                 )
             END,
+            stopped_epoch = COALESCE(:stopped_epoch, stopped_epoch),
+            best_epoch = COALESCE(:best_epoch, best_epoch),
+            checkpoint_monitor = COALESCE(
+                :checkpoint_monitor,
+                checkpoint_monitor
+            ),
+            checkpoint_mode = COALESCE(:checkpoint_mode, checkpoint_mode),
+            best_validation_value = COALESCE(
+                :best_validation_value,
+                best_validation_value
+            ),
+            early_stopping_enabled = COALESCE(
+                :early_stopping_enabled,
+                early_stopping_enabled
+            ),
+            early_stopping_patience = COALESCE(
+                :early_stopping_patience,
+                early_stopping_patience
+            ),
+            early_stopping_min_delta = COALESCE(
+                :early_stopping_min_delta,
+                early_stopping_min_delta
+            ),
+            restore_best_weights = COALESCE(
+                :restore_best_weights,
+                restore_best_weights
+            ),
             updated_at = NOW()
         WHERE id = :run_id
         """,
@@ -452,11 +518,36 @@ def update_run_execution(
             "fine_tuning_start_epoch": _integer(fine_tuning_start_epoch),
             "total_epochs": _integer(total_epochs),
             "completed_epochs": _integer(completed_epochs),
+            "max_epochs": _integer(max_epochs),
+            "stopped_epoch": _integer(stopped_epoch),
+            "best_epoch": _integer(best_epoch),
+            "checkpoint_monitor": checkpoint_monitor,
+            "checkpoint_mode": checkpoint_mode,
+            "best_validation_value": _numeric(best_validation_value),
+            "early_stopping_enabled": _boolean(early_stopping_enabled),
+            "early_stopping_patience": _integer(early_stopping_patience),
+            "early_stopping_min_delta": _numeric(early_stopping_min_delta),
+            "restore_best_weights": _boolean(restore_best_weights),
         },
     )
 
 
-def finish_run(run_id, metrics=None, metadata=None, completed_epochs=None):
+def finish_run(
+    run_id,
+    metrics=None,
+    metadata=None,
+    completed_epochs=None,
+    max_epochs=None,
+    stopped_epoch=None,
+    best_epoch=None,
+    checkpoint_monitor=None,
+    checkpoint_mode=None,
+    best_validation_value=None,
+    early_stopping_enabled=None,
+    early_stopping_patience=None,
+    early_stopping_min_delta=None,
+    restore_best_weights=None,
+):
     if not run_id:
         _warn("finish_run omitido porque run_id es None.")
         return False
@@ -476,12 +567,50 @@ def finish_run(run_id, metrics=None, metadata=None, completed_epochs=None):
                     CAST(:completed_epochs AS integer)
                 )
             END,
+            max_epochs = COALESCE(:max_epochs, max_epochs),
+            stopped_epoch = COALESCE(:stopped_epoch, stopped_epoch),
+            best_epoch = COALESCE(:best_epoch, best_epoch),
+            checkpoint_monitor = COALESCE(
+                :checkpoint_monitor,
+                checkpoint_monitor
+            ),
+            checkpoint_mode = COALESCE(:checkpoint_mode, checkpoint_mode),
+            best_validation_value = COALESCE(
+                :best_validation_value,
+                best_validation_value
+            ),
+            early_stopping_enabled = COALESCE(
+                :early_stopping_enabled,
+                early_stopping_enabled
+            ),
+            early_stopping_patience = COALESCE(
+                :early_stopping_patience,
+                early_stopping_patience
+            ),
+            early_stopping_min_delta = COALESCE(
+                :early_stopping_min_delta,
+                early_stopping_min_delta
+            ),
+            restore_best_weights = COALESCE(
+                :restore_best_weights,
+                restore_best_weights
+            ),
             metadata = metadata || CAST(:metadata AS jsonb)
         WHERE id = :run_id
         """,
         {
             "run_id": run_id,
             "completed_epochs": _integer(completed_epochs),
+            "max_epochs": _integer(max_epochs),
+            "stopped_epoch": _integer(stopped_epoch),
+            "best_epoch": _integer(best_epoch),
+            "checkpoint_monitor": checkpoint_monitor,
+            "checkpoint_mode": checkpoint_mode,
+            "best_validation_value": _numeric(best_validation_value),
+            "early_stopping_enabled": _boolean(early_stopping_enabled),
+            "early_stopping_patience": _integer(early_stopping_patience),
+            "early_stopping_min_delta": _numeric(early_stopping_min_delta),
+            "restore_best_weights": _boolean(restore_best_weights),
             "metadata": _json(metadata),
         },
     )

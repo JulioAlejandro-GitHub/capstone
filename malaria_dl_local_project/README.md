@@ -146,7 +146,7 @@ No mezcles modos entre entrenamiento e inferencia. Un checkpoint VGG16 históric
 ```bash
 python -m src.train \
   --model vgg16 \
-  --epochs 30 \
+  --max-epochs 30 \
   --fine-tune-epochs 10 \
   --img-size 200 \
   --batch-size 64 \
@@ -162,10 +162,29 @@ Los JSON de métricas y CSV de predicciones incluyen `preprocessing_mode` cuando
 
 ## 3. Entrenar modelos
 
+### Política Max Epochs
+
+`--max-epochs` define el máximo de la fase base y reemplaza a `--epochs` como
+nombre recomendado. `--epochs` sigue funcionando como alias legacy; si se
+entregan ambos, gana `--max-epochs`. En transfer learning,
+`--fine-tune-epochs` continúa siendo el máximo independiente de la segunda
+fase:
+
+```text
+base_max_epochs = max_epochs
+fine_tune_max_epochs = fine_tune_epochs
+total_max_epochs = max_epochs + fine_tune_epochs
+```
+
+Early stopping y selección de checkpoint usan únicamente `validation`. Por
+defecto se restauran los mejores pesos y, al terminar, `test` se evalúa una
+sola vez con `best_model.keras`. Para smoke tests puede omitirse esa evaluación
+con `--skip-final-test-evaluation`.
+
 ### Custom CNN
 
 ```bash
-python -m src.train --model custom_cnn --epochs 30 --img-size 200 --batch-size 64
+python -m src.train --model custom_cnn --max-epochs 50 --img-size 200 --batch-size 64
 ```
 
 Si `data/malaria_physical_split/` no existe, `src.train` falla con un mensaje indicando crear el split físico. El fallback dinámico de TFDS está disponible solo de forma explícita con `--data-source tfds`.
@@ -173,7 +192,7 @@ Si `data/malaria_physical_split/` no existe, `src.train` falla con un mensaje in
 ### VGG16 con Transfer Learning
 
 ```bash
-python -m src.train --model vgg16 --epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64
+python -m src.train --model vgg16 --max-epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64
 ```
 
 ### DenseNet121 con entrenamiento combinado
@@ -181,7 +200,7 @@ python -m src.train --model vgg16 --epochs 30 --fine-tune-epochs 10 --img-size 2
 ```bash
 python -m src.train \
   --model densenet121 \
-  --epochs 5 \
+  --max-epochs 30 \
   --fine-tune-epochs 6 \
   --img-size 200 \
   --batch-size 64 \
@@ -201,9 +220,12 @@ inicialización aleatoria agrega `--pretrained-weights none`.
 Con fine-tuning se registra `execution_type=train_combined`; sin él,
 `execution_type=train_base`. Cada ejecución genera:
 
+- `training_history.csv` con el historial canónico y métricas disponibles.
 - `combined_training_history.csv` con épocas continuas y fases.
 - `combined_accuracy.png`, `combined_loss.png` y `combined_training_curves.png`.
 - `model_execution_summary.json` y `model_execution_summary.md`.
+- `checkpoint_selection.json` con máximo, detención y mejor época de validation.
+- Artefactos finales de test cuando esa evaluación está habilitada.
 - Un snapshot auditable en `outputs/<model>/runs/<execution_id>/`.
 
 Los archivos directos de `outputs/<model>/` se mantienen como salida/latest
@@ -217,18 +239,23 @@ Por defecto `best_model.keras` se selecciona con política clínica:
 ```text
 --checkpoint-policy auc_with_min_recall
 --min-recall 0.98
---reject-prediction-collapse true
---early-stopping-monitor val_auc
+--reject-prediction-collapse
 ```
 
 `auc_with_min_recall` selecciona el mayor `val_auc` entre los epochs que cumplen `val_recall_parasitized >= min_recall`. Si ningún epoch cumple la sensibilidad mínima, selecciona fallback por mejor recall y marca `policy_satisfied=false` con warning.
+Cuando no se fuerza un monitor CLI, EarlyStopping sigue un score interno de
+validation con el mismo orden de prioridad: primero alcanzar `min_recall` y
+luego mejorar AUC.
+
+Si no se informa ninguna de las dos banderas de épocas, los máximos base son
+`custom_cnn=50`, `vgg16=30` y `densenet121=30`.
 
 Ejemplo explícito:
 
 ```bash
 python -m src.train \
   --model vgg16 \
-  --epochs 30 \
+  --max-epochs 30 \
   --fine-tune-epochs 10 \
   --img-size 200 \
   --batch-size 64 \
@@ -236,8 +263,6 @@ python -m src.train \
   --learning-rate 1e-4 \
   --checkpoint-policy auc_with_min_recall \
   --min-recall 0.98 \
-  --early-stopping-monitor val_auc \
-  --monitor-mode max\
   --track-db
 ```
 
@@ -246,7 +271,7 @@ También se puede seleccionar por `f2`, `balanced_accuracy` o `val_auc`:
 ```bash
 python -m src.train \
   --model custom_cnn \
-  --epochs 30 \
+  --max-epochs 30 \
   --img-size 200 \
   --batch-size 64 \
   --checkpoint-policy f2 \
@@ -453,7 +478,7 @@ Entrenamiento con calibración integrada:
 ```bash
 python -m src.train \
   --model custom_cnn \
-  --epochs 30 \
+  --max-epochs 30 \
   --img-size 200 \
   --batch-size 64 \
   --checkpoint-policy auc_with_min_recall \
@@ -533,7 +558,7 @@ python -m src.predict_image \
 Ejemplo rápido usando la ruta local TFDS por defecto:
 
 ```bash
-python -m src.train --model custom_cnn --epochs 1 --img-size 200 --batch-size 64
+python -m src.train --model custom_cnn --max-epochs 1 --img-size 200 --batch-size 64
 ```
 
 ## Explicabilidad del modelo: LIME, SHAP y Grad-CAM

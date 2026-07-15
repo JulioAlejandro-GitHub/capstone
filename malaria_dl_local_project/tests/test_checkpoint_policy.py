@@ -2,6 +2,8 @@ import sys
 import unittest
 from pathlib import Path
 
+import numpy as np
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -9,12 +11,94 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.checkpoint_policy import (
     CheckpointPolicyConfig,
+    checkpoint_policy_score,
+    early_stopping_score,
     get_monitor_for_policy,
     select_best_epoch_from_history,
 )
 
 
 class CheckpointPolicyTests(unittest.TestCase):
+    def test_auc_with_min_recall_score_prioritizes_constraint_then_auc(self):
+        config = CheckpointPolicyConfig(
+            policy="auc_with_min_recall",
+            min_recall=0.98,
+        )
+
+        fallback = checkpoint_policy_score(
+            {"val_recall_parasitized": 0.97, "val_auc": 0.99},
+            config,
+        )
+        valid = checkpoint_policy_score(
+            {"val_recall_parasitized": 0.98, "val_auc": 0.80},
+            config,
+        )
+        better_valid = checkpoint_policy_score(
+            {"val_recall_parasitized": 0.98, "val_auc": 0.90},
+            config,
+        )
+
+        self.assertLess(fallback, valid)
+        self.assertLess(valid, better_valid)
+
+    def test_early_stopping_score_rejects_collapsed_epochs(self):
+        config = CheckpointPolicyConfig(
+            policy="auc_with_min_recall",
+            reject_prediction_collapse=True,
+        )
+        logs = {
+            "val_checkpoint_policy_score": 2.99,
+            "val_prediction_collapse_detected": 1.0,
+        }
+
+        score = early_stopping_score(
+            logs,
+            monitor="val_checkpoint_policy_score",
+            mode="max",
+            config=config,
+        )
+
+        self.assertTrue(np.isfinite(score))
+        self.assertLess(score, -1_000_000.0)
+
+    def test_collapsed_scores_remain_ordered_when_all_epochs_collapse(self):
+        config = CheckpointPolicyConfig(
+            policy="auc_with_min_recall",
+            reject_prediction_collapse=True,
+        )
+        lower = early_stopping_score(
+            {
+                "val_checkpoint_policy_score": 2.80,
+                "val_prediction_collapse_detected": 1.0,
+            },
+            monitor="val_checkpoint_policy_score",
+            mode="max",
+            config=config,
+        )
+        higher = early_stopping_score(
+            {
+                "val_checkpoint_policy_score": 2.95,
+                "val_prediction_collapse_detected": 1.0,
+            },
+            monitor="val_checkpoint_policy_score",
+            mode="max",
+            config=config,
+        )
+
+        self.assertTrue(np.isfinite(lower))
+        self.assertTrue(np.isfinite(higher))
+        self.assertLess(lower, higher)
+
+    def test_early_stopping_score_inverts_min_monitors(self):
+        score = early_stopping_score(
+            {"val_loss": 0.25, "val_prediction_collapse_detected": 0.0},
+            monitor="val_loss",
+            mode="min",
+            config=CheckpointPolicyConfig(),
+        )
+
+        self.assertAlmostEqual(score, -0.25)
+
     def test_f2_policy_selects_highest_val_f2(self):
         records = [
             {"epoch": 1, "val_f2_parasitized": 0.80},
