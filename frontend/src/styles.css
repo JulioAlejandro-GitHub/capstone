@@ -614,8 +614,11 @@ a.uploaded-image-cell:hover small {
 
 .case-badge.false_negative,
 .case-card.false_negative {
-  border-color: #e6b15d;
-  background: #fffaf0;
+  /* border-color: #e6b15d;
+  background: #fffaf0; */
+
+  color: #9a2323;
+  background: #fdecec;
 }
 
 .case-badge.false_negative {
@@ -640,8 +643,11 @@ a.uploaded-image-cell:hover small {
 }
 
 .case-badge.true_negative {
-  color: #465574;
-  background: #edf1f8;
+  /* color: #465574;
+  background: #edf1f8; */
+
+  color: #17653b;
+  background: #e7f8ef;
 }
 
 .case-card {
@@ -2232,6 +2238,7 @@ a.uploaded-image-cell:hover small {
 }
 
 @media (max-width: 900px) {
+
   .run-detail-analysis-grid,
   .run-detail-training-grid,
   .run-detail-parameter-groups {

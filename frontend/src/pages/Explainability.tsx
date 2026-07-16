@@ -291,7 +291,8 @@ function CaseDetail({
               <div><strong>Predicción</strong><small>Decisión y contexto del umbral</small></div>
             </div>
             <span className={`case-badge large ${item.case_type ?? 'unknown'}`}>{caseTypeLabel(item.case_type)}</span>
-            <div className="detail-facts prediction-facts">
+            {/* <div className="detail-facts prediction-facts"> */}
+            <div className="detail-facts">
               <DetailFact label="Clase real" value={item.true_label} />
               <DetailFact label="Clase predicha" value={item.predicted_label} />
               <DetailFact label="Clase positiva" value={item.positive_label ?? 'parasitized'} />
