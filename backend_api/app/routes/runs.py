@@ -126,10 +126,134 @@ def list_runs(
     rows = fetch_all(
         datasource,
         """
-        SELECT *
-        FROM vw_run_dashboard
-        ORDER BY run_name DESC, started_at DESC NULLS LAST
-        LIMIT :limit
+        WITH page AS (
+            SELECT *
+            FROM vw_run_dashboard
+            ORDER BY run_name DESC, started_at DESC NULLS LAST
+            LIMIT :limit
+        )
+        SELECT
+            page.*,
+            r.command,
+            clinical.recall_parasitized,
+            clinical.sensitivity_parasitized,
+            clinical.specificity,
+            clinical.f2_parasitized,
+            clinical.roc_auc_parasitized,
+            selected_confusion.tn,
+            selected_confusion.fp,
+            selected_confusion.fn,
+            selected_confusion.tp,
+            selected_confusion.confusion_matrix,
+            CASE LOWER(COALESCE(
+                clinical.prediction_collapse->>'collapsed',
+                clinical.metadata->>'prediction_collapse_detected'
+            ))
+                WHEN 'true' THEN true
+                WHEN 't' THEN true
+                WHEN '1' THEN true
+                WHEN 'false' THEN false
+                WHEN 'f' THEN false
+                WHEN '0' THEN false
+                ELSE NULL
+            END AS prediction_collapse_detected
+        FROM page
+        JOIN runs r ON r.id = page.run_id
+        LEFT JOIN LATERAL (
+            SELECT
+                rcm.recall_parasitized,
+                rcm.sensitivity_parasitized,
+                rcm.specificity,
+                rcm.f2_parasitized,
+                rcm.roc_auc_parasitized,
+                rcm.split_name,
+                rcm.tn,
+                rcm.fp,
+                rcm.fn,
+                rcm.tp,
+                rcm.confusion_matrix,
+                rcm.prediction_collapse,
+                rcm.metadata
+            FROM run_clinical_metrics rcm
+            WHERE rcm.run_id = page.run_id
+            ORDER BY
+                CASE WHEN rcm.split_name IN ('test', 'external') THEN 0 ELSE 1 END,
+                rcm.created_at DESC
+            LIMIT 1
+        ) clinical ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT
+                cm.split_name,
+                cm.matrix,
+                cm.true_positive,
+                cm.true_negative,
+                cm.false_positive,
+                cm.false_negative
+            FROM confusion_matrices cm
+            WHERE cm.run_id = page.run_id
+            ORDER BY
+                CASE
+                    WHEN clinical.split_name IS NOT NULL
+                        AND cm.split_name = clinical.split_name THEN 0
+                    WHEN cm.split_name IN ('test', 'external') THEN 1
+                    ELSE 2
+                END,
+                cm.created_at DESC
+            LIMIT 1
+        ) legacy ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT
+                candidate.tn,
+                candidate.fp,
+                candidate.fn,
+                candidate.tp,
+                candidate.confusion_matrix
+            FROM (
+                SELECT
+                    clinical.tn,
+                    clinical.fp,
+                    clinical.fn,
+                    clinical.tp,
+                    clinical.confusion_matrix,
+                    0 AS source_rank
+                WHERE
+                    clinical.tn IS NOT NULL
+                    OR clinical.fp IS NOT NULL
+                    OR clinical.fn IS NOT NULL
+                    OR clinical.tp IS NOT NULL
+                    OR NULLIF(clinical.confusion_matrix, '[]'::jsonb) IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    legacy.true_negative AS tn,
+                    legacy.false_positive AS fp,
+                    legacy.false_negative AS fn,
+                    legacy.true_positive AS tp,
+                    legacy.matrix AS confusion_matrix,
+                    1 AS source_rank
+                WHERE
+                    legacy.true_negative IS NOT NULL
+                    OR legacy.false_positive IS NOT NULL
+                    OR legacy.false_negative IS NOT NULL
+                    OR legacy.true_positive IS NOT NULL
+                    OR NULLIF(legacy.matrix, '[]'::jsonb) IS NOT NULL
+            ) candidate
+            ORDER BY
+                CASE
+                    WHEN (
+                        candidate.tn IS NOT NULL
+                        AND candidate.fp IS NOT NULL
+                        AND candidate.fn IS NOT NULL
+                        AND candidate.tp IS NOT NULL
+                    ) OR NULLIF(candidate.confusion_matrix, '[]'::jsonb) IS NOT NULL
+                    THEN 0
+                    ELSE 1
+                END,
+                candidate.source_rank
+            LIMIT 1
+        ) selected_confusion ON TRUE
+        ORDER BY page.run_name DESC, page.started_at DESC NULLS LAST
         """,
         {"limit": limit},
     )

@@ -24,6 +24,7 @@ export interface RunDashboard {
   model_name: string | null;
   dataset_name: string | null;
   optimizer: string | null;
+  command?: string | null;
   started_at: string | null;
   finished_at: string | null;
   duration_seconds: number | null;
@@ -32,6 +33,19 @@ export interface RunDashboard {
   recall: number | null;
   f1_score: number | null;
   auc: number | null;
+  recall_parasitized?: number | null;
+  sensitivity_parasitized?: number | null;
+  specificity?: number | null;
+  f2_score?: number | null;
+  f2_parasitized?: number | null;
+  roc_auc?: number | null;
+  roc_auc_parasitized?: number | null;
+  tn?: number | null;
+  fp?: number | null;
+  fn?: number | null;
+  tp?: number | null;
+  confusion_matrix?: number[][] | null;
+  prediction_collapse_detected?: boolean | null;
 }
 
 export interface ModelSummary {

@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { DataTable } from '../components/DataTable';
 import { Loading } from '../components/Loading';
-import { StatusBadge } from '../components/StatusBadge';
+import { RunSummaryRow } from '../components/reports/RunSummaryRow';
 import { api } from '../services/api';
 import type { RunDashboard } from '../types/api';
-import { formatMetric, getRunDuration } from '../utils/format';
+import '../styles/report-components.css';
 
 interface RunsProps {
   datasource: string;
@@ -35,40 +34,27 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
           <p>Listado read-only de runs registrados por el tracking.</p>
         </div>
       </div>
-      <section className="panel">
-        <DataTable<RunDashboard>
-          rows={runs}
-          columns={[
-            {
-              header: 'Run',
-              render: (row) => (
-                <button className="link-button" onClick={() => onRunSelect(row.run_id)} type="button">
-                  {row.run_name ?? row.run_id}
-                </button>
-              ),
-            },
-            { header: 'Tipo', render: (row) => row.run_type },
-            { header: 'Estado', render: (row) => <StatusBadge status={row.status} /> },
-            { header: 'Modelo', render: (row) => row.model_name ?? '-' },
-            {
-              header: 'Optimizer',
-              render: (row) => row.optimizer?.trim() || '-',
-            },
-            { header: 'Accuracy', render: (row) => formatMetric(row.accuracy) },
-            { header: 'Recall', render: (row) => formatMetric(row.recall) },
-            { header: 'F1', render: (row) => formatMetric(row.f1_score) },
-            { header: 'AUC', render: (row) => formatMetric(row.auc) },
-            {
-              header: 'Tiempo de ejecución',
-              render: (row) => getRunDuration(
-                row.started_at,
-                row.finished_at,
-                row.duration_seconds,
-                row.status,
-              ),
-            },
-          ]}
-        />
+      <section className="panel report-panel">
+        {runs.length === 0 ? (
+          <div className="report-empty">Sin ejecuciones registradas</div>
+        ) : (
+          <div
+            aria-label="Resumen de ejecuciones"
+            aria-rowcount={runs.length + 1}
+            className="report-table"
+            role="table"
+          >
+            <div className="report-table__header" role="row">
+              <span className="report-section-title" role="columnheader">RUN</span>
+              <span className="report-section-title" role="columnheader">Modelo</span>
+              <span className="report-section-title" role="columnheader">Resultados</span>
+              <span className="report-section-title" role="columnheader">Análisis automático</span>
+            </div>
+            {runs.map((run) => (
+              <RunSummaryRow key={run.run_id} run={run} onRunSelect={onRunSelect} />
+            ))}
+          </div>
+        )}
       </section>
     </section>
   );

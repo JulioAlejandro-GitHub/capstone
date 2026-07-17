@@ -14,6 +14,7 @@ from app.routes.runs import (  # noqa: E402
     get_run_explainability,
     get_run_image_predictions,
     get_run_threshold_calibration,
+    list_runs,
 )
 
 
@@ -21,6 +22,37 @@ RUN_ID = "11111111-1111-1111-1111-111111111111"
 
 
 class RunDetailApiTests(unittest.TestCase):
+    def test_list_runs_exposes_compact_report_contract_without_n_plus_one(self):
+        row = {
+            "run_id": RUN_ID,
+            "command": "python -m src.train --model custom_cnn --max-epochs 50",
+            "optimizer": "adam",
+            "recall_parasitized": 0.98,
+            "specificity": 0.81,
+            "f2_parasitized": 0.95,
+            "roc_auc_parasitized": 0.97,
+            "tn": 100,
+            "fp": 20,
+            "fn": 2,
+            "tp": 118,
+            "confusion_matrix": [[100, 20], [2, 118]],
+        }
+        with mock.patch("app.routes.runs.fetch_all", return_value=[row]) as fetch_all:
+            payload = list_runs(datasource="malaria", limit=100)
+
+        self.assertEqual(payload["items"][0]["command"], row["command"])
+        self.assertEqual(payload["items"][0]["specificity"], 0.81)
+        self.assertEqual(payload["items"][0]["confusion_matrix"], row["confusion_matrix"])
+        sql = fetch_all.call_args.args[1]
+        self.assertIn("WITH page AS", sql)
+        self.assertIn("r.command", sql)
+        self.assertIn("run_clinical_metrics", sql)
+        self.assertIn("confusion_matrices", sql)
+        self.assertIn("cm.split_name = clinical.split_name", sql)
+        self.assertIn(") selected_confusion ON TRUE", sql)
+        self.assertNotIn("COALESCE(clinical.tn, legacy.true_negative)", sql)
+        self.assertEqual(fetch_all.call_count, 1)
+
     def test_checkpoint_policy_endpoint_returns_policy(self):
         with mock.patch(
             "app.routes.runs.fetch_all",
