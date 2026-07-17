@@ -128,7 +128,7 @@ def list_runs(
         """
         SELECT *
         FROM vw_run_dashboard
-        ORDER BY started_at DESC NULLS LAST
+        ORDER BY run_name DESC, started_at DESC NULLS LAST
         LIMIT :limit
         """,
         {"limit": limit},

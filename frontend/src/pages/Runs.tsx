@@ -5,7 +5,7 @@ import { Loading } from '../components/Loading';
 import { StatusBadge } from '../components/StatusBadge';
 import { api } from '../services/api';
 import type { RunDashboard } from '../types/api';
-import { formatDate, formatMetric } from '../utils/format';
+import { formatMetric, getRunDuration } from '../utils/format';
 
 interface RunsProps {
   datasource: string;
@@ -50,15 +50,26 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
             { header: 'Tipo', render: (row) => row.run_type },
             { header: 'Estado', render: (row) => <StatusBadge status={row.status} /> },
             { header: 'Modelo', render: (row) => row.model_name ?? '-' },
+            {
+              header: 'Optimizer',
+              render: (row) => row.optimizer?.trim() || '-',
+            },
             { header: 'Accuracy', render: (row) => formatMetric(row.accuracy) },
             { header: 'Recall', render: (row) => formatMetric(row.recall) },
             { header: 'F1', render: (row) => formatMetric(row.f1_score) },
             { header: 'AUC', render: (row) => formatMetric(row.auc) },
-            { header: 'Inicio', render: (row) => formatDate(row.started_at) },
+            {
+              header: 'Tiempo de ejecución',
+              render: (row) => getRunDuration(
+                row.started_at,
+                row.finished_at,
+                row.duration_seconds,
+                row.status,
+              ),
+            },
           ]}
         />
       </section>
     </section>
   );
 }
-

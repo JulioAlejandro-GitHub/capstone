@@ -23,6 +23,7 @@ export interface RunDashboard {
   status: string;
   model_name: string | null;
   dataset_name: string | null;
+  optimizer: string | null;
   started_at: string | null;
   finished_at: string | null;
   duration_seconds: number | null;

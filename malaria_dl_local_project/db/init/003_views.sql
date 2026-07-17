@@ -49,7 +49,11 @@ SELECT
     ) AS f1_score,
     MAX(rm.metric_value) FILTER (
         WHERE rm.metric_name IN ('auc', 'test_auc', 'val_auc')
-    ) AS auc
+    ) AS auc,
+    substring(
+        r.command
+        FROM '--optimizer(?:[[:space:]]+|=)([^[:space:]]+)'
+    ) AS optimizer
 FROM runs r
 LEFT JOIN models m ON m.id = r.model_id
 LEFT JOIN datasets d ON d.id = r.dataset_id
