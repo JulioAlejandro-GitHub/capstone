@@ -9,13 +9,91 @@
   gap: 12px;
 }
 
-.report-empty {
+.report-empty,
+.report-empty-state {
   border: 1px dashed #cfd7e8;
   border-radius: 12px;
   background: #fff;
   color: #72809a;
   padding: 28px;
   text-align: center;
+}
+
+.report-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr)) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #dfe5f0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+
+.report-filter-group {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.report-filter-label {
+  color: #52617e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.report-filter-select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #cfd7e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #27324a;
+  padding: 7px 32px 7px 10px;
+  font-size: 12px;
+}
+
+.report-filter-select:disabled {
+  background: #f2f4f8;
+  color: #8a95ad;
+  cursor: not-allowed;
+}
+
+.report-filter-actions {
+  display: flex;
+  align-items: center;
+}
+
+.report-filter-clear {
+  min-height: 38px;
+  border: 1px solid #c7d2e6;
+  border-radius: 8px;
+  background: #fff;
+  color: #315caa;
+  cursor: pointer;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.report-filter-clear:hover:not(:disabled) {
+  border-color: #315caa;
+  background: #eef3ff;
+}
+
+.report-filter-clear:disabled {
+  color: #9aa5ba;
+  cursor: not-allowed;
+}
+
+.report-filter-select:focus-visible,
+.report-filter-clear:focus-visible {
+  outline: 3px solid rgba(49, 92, 170, 0.24);
+  outline-offset: 2px;
 }
 
 .report-table__header,
@@ -312,6 +390,16 @@
   white-space: nowrap;
 }
 
+@media (max-width: 1000px) {
+  .report-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-filter-actions {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 1340px) {
   .report-table__header {
     display: none;
@@ -341,6 +429,15 @@
 @media (max-width: 700px) {
   .report-panel {
     padding: 10px;
+  }
+
+  .report-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .report-filter-actions,
+  .report-filter-clear {
+    width: 100%;
   }
 
   .report-row {

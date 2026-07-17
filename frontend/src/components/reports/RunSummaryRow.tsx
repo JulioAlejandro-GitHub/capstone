@@ -29,7 +29,7 @@ export function RunSummaryRow({ run, onRunSelect }: RunSummaryRowProps) {
     <article className="report-row" role="row">
       <section aria-label="RUN" className="report-cell report-run-cell" data-label="RUN" role="cell">
         <strong className="report-run-name">
-          {run.run_name?.trim() || run.run_id}
+          {run.run_name?.trim() || 'No registrado'}
         </strong>
         <span className="report-muted" title={run.run_id}>
           Run ID: {truncatedRunId(run.run_id)}
@@ -48,7 +48,7 @@ export function RunSummaryRow({ run, onRunSelect }: RunSummaryRowProps) {
       </section>
 
       <section aria-label="Modelo" className="report-cell report-model-cell" data-label="Modelo" role="cell">
-        <strong className="report-primary-value">{run.model_name?.trim() || 'Sin modelo'}</strong>
+        <strong className="report-primary-value">{run.model_name?.trim() || 'No registrado'}</strong>
         <span className="report-muted">
           Optimizer: <strong>{run.optimizer?.trim() || 'No registrado'}</strong>
         </span>
