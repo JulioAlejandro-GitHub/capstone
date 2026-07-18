@@ -2,6 +2,7 @@ import json
 import sys
 import tempfile
 import unittest
+import warnings
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -43,7 +44,7 @@ class ArtifactTrackingTests(unittest.TestCase):
             path = Path(temp_dir) / "curve.png"
             path.write_bytes(b"plot-content")
             with patch(
-                "src.run_tracker._execute_returning_id",
+                "src.run_tracker._log_artifact_idempotent",
                 return_value="artifact-id",
             ) as execute:
                 result = run_tracker.log_artifact(
@@ -53,12 +54,72 @@ class ArtifactTrackingTests(unittest.TestCase):
                 )
 
         self.assertEqual(result, "artifact-id")
-        _, params = execute.call_args.args
+        params = execute.call_args.args[0]
         self.assertEqual(
             params["checksum"],
             "26038f4a193865a1f39d85b260409c56b6909ab2ec7886720bed3409e21e3706",
         )
         self.assertEqual(params["file_size_bytes"], 12)
+
+    def test_log_artifact_is_idempotent_for_the_same_run_and_path(self):
+        connection = MagicMock()
+        lock_result = MagicMock()
+        existing_result = MagicMock()
+        existing_result.first.return_value = ["artifact-id", "checksum"]
+        connection.execute.side_effect = [lock_result, existing_result]
+        context = MagicMock()
+        context.__enter__.return_value = connection
+        context.__exit__.return_value = False
+        params = {
+            "run_id": "run-uuid",
+            "artifact_type": "model_checkpoint",
+            "name": "best_model.keras",
+            "path": "outputs/model/runs/run-uuid/best_model.keras",
+            "mime_type": None,
+            "file_size_bytes": 10,
+            "checksum": "checksum",
+            "metadata": "{}",
+        }
+
+        with patch("src.run_tracker.get_connection", return_value=context):
+            result = run_tracker._log_artifact_idempotent(params)
+
+        self.assertEqual(result, "artifact-id")
+        self.assertEqual(connection.execute.call_count, 2)
+        lock_sql = str(connection.execute.call_args_list[0].args[0])
+        lookup_sql = str(connection.execute.call_args_list[1].args[0])
+        self.assertIn("pg_advisory_xact_lock", lock_sql)
+        self.assertIn("WHERE run_id = :run_id", lookup_sql)
+        self.assertIn("AND path = :path", lookup_sql)
+
+    def test_artifact_path_rejects_different_checksum_for_same_run(self):
+        connection = MagicMock()
+        lock_result = MagicMock()
+        existing_result = MagicMock()
+        existing_result.first.return_value = ["artifact-id", "old-checksum"]
+        connection.execute.side_effect = [lock_result, existing_result]
+        context = MagicMock()
+        context.__enter__.return_value = connection
+        context.__exit__.return_value = False
+
+        with patch(
+            "src.run_tracker.get_connection",
+            return_value=context,
+        ), warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            result = run_tracker._log_artifact_idempotent(
+                {
+                    "run_id": "run-uuid",
+                    "path": "outputs/model/best_model.keras",
+                    "checksum": "new-checksum",
+                }
+            )
+
+        self.assertIsNone(result)
+        self.assertIn(
+            "bytes distintos",
+            str(caught[0].message),
+        )
 
     def test_infers_model_execution_artifact_types(self):
         self.assertEqual(

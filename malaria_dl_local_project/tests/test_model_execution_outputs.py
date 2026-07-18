@@ -12,6 +12,9 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.train import (  # noqa: E402
+    acquire_training_output_lock,
+    release_training_output_lock,
+    resolve_artifact_snapshot_id,
     rewrite_snapshot_json_paths,
     snapshot_execution_artifacts,
     write_combined_training_history,
@@ -33,6 +36,34 @@ def fake_history(epoch_count, learning_rate):
 
 
 class ModelExecutionOutputsTests(unittest.TestCase):
+    def test_training_output_lock_rejects_concurrent_same_model_writer(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            first_lock = acquire_training_output_lock(temp_dir)
+            try:
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "otro entrenamiento activo",
+                ):
+                    acquire_training_output_lock(temp_dir)
+            finally:
+                release_training_output_lock(first_lock)
+
+            second_lock = acquire_training_output_lock(temp_dir)
+            release_training_output_lock(second_lock)
+
+    def test_tracked_snapshot_uses_database_run_id_and_keeps_local_fallback(self):
+        self.assertEqual(
+            resolve_artifact_snapshot_id(
+                "execution-id",
+                {"run_id": "training-run-id"},
+            ),
+            "training-run-id",
+        )
+        self.assertEqual(
+            resolve_artifact_snapshot_id("execution-id", {"run_id": None}),
+            "execution-id",
+        )
+
     def test_snapshot_json_paths_are_self_contained_but_cli_is_preserved(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir) / "model"
@@ -95,6 +126,36 @@ class ModelExecutionOutputsTests(unittest.TestCase):
             self.assertTrue((snapshot_dir / current.name).is_file())
             self.assertFalse((snapshot_dir / stale.name).exists())
             self.assertEqual(copied, [str(snapshot_dir / current.name)])
+
+    def test_snapshot_preserves_required_checkpoint_lineage_artifacts(self):
+        required_names = (
+            "best_model.keras",
+            "final_model.keras",
+            "checkpoint_selection.json",
+            "model_execution_summary.json",
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir) / "custom_cnn"
+            root.mkdir()
+            required_paths = []
+            for name in required_names:
+                path = root / name
+                path.write_bytes(f"artifact:{name}".encode("utf-8"))
+                required_paths.append(path)
+
+            snapshot_dir, copied = snapshot_execution_artifacts(
+                root,
+                "training-run-id",
+                artifact_paths=required_paths,
+            )
+
+            self.assertEqual(snapshot_dir, root / "runs" / "training-run-id")
+            self.assertEqual(
+                {Path(path).name for path in copied},
+                set(required_names),
+            )
+            for name in required_names:
+                self.assertTrue((snapshot_dir / name).is_file())
 
     def test_snapshot_rejects_different_artifacts_with_same_basename(self):
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -942,18 +942,7 @@ def log_artifact(
                 digest.update(chunk)
         checksum = digest.hexdigest()
 
-    return _execute_returning_id(
-        """
-        INSERT INTO artifacts (
-            run_id, artifact_type, name, path, mime_type, file_size_bytes,
-            checksum, metadata
-        )
-        VALUES (
-            :run_id, :artifact_type, :name, :path, :mime_type, :file_size_bytes,
-            :checksum, CAST(:metadata AS jsonb)
-        )
-        RETURNING id
-        """,
+    return _log_artifact_idempotent(
         {
             "run_id": run_id,
             "artifact_type": artifact_type,
@@ -963,8 +952,79 @@ def log_artifact(
             "file_size_bytes": file_size_bytes,
             "checksum": checksum,
             "metadata": _json(metadata),
-        },
+        }
     )
+
+
+def _log_artifact_idempotent(params):
+    """Serializa (run_id, path) y evita duplicados incluso entre procesos."""
+    lock_key = json.dumps(
+        [str(params["run_id"]), str(params["path"])],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    try:
+        with get_connection() as connection:
+            # Debe ser una sentencia separada: al salir de la espera, el SELECT
+            # siguiente obtiene un snapshot READ COMMITTED que ya ve el commit
+            # del proceso que poseía el lock.
+            connection.execute(
+                text(
+                    """
+                    SELECT pg_advisory_xact_lock(
+                        hashtextextended(:artifact_lock_key, 0)
+                    )
+                    """
+                ),
+                {"artifact_lock_key": lock_key},
+            )
+            existing = connection.execute(
+                text(
+                    """
+                    SELECT id::text, checksum
+                    FROM artifacts
+                    WHERE run_id = :run_id
+                      AND path = :path
+                    ORDER BY created_at ASC
+                    LIMIT 1
+                    """
+                ),
+                {"run_id": params["run_id"], "path": params["path"]},
+            ).first()
+            if existing:
+                existing_checksum = existing[1]
+                if (
+                    params.get("checksum")
+                    and existing_checksum
+                    and params["checksum"] != existing_checksum
+                ):
+                    _warn(
+                        "Se rechazó registrar bytes distintos bajo el mismo "
+                        f"run_id/path: {params['run_id']} / {params['path']}"
+                    )
+                    return None
+                return str(existing[0])
+
+            row = connection.execute(
+                text(
+                    """
+                    INSERT INTO artifacts (
+                        run_id, artifact_type, name, path, mime_type,
+                        file_size_bytes, checksum, metadata
+                    )
+                    VALUES (
+                        :run_id, :artifact_type, :name, :path, :mime_type,
+                        :file_size_bytes, :checksum, CAST(:metadata AS jsonb)
+                    )
+                    RETURNING id::text
+                    """
+                ),
+                params,
+            ).first()
+        return str(row[0]) if row else None
+    except Exception as exc:
+        _warn(f"log_artifact falló: {exc}")
+        return None
 
 
 def log_artifacts_from_directory(run_id, directory, artifact_type=None):

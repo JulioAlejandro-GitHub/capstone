@@ -2,6 +2,7 @@ import argparse
 import heapq
 import math
 import re
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -131,7 +132,130 @@ def parse_args(argv=None):
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
     )
+    parser.add_argument(
+        "--source-training-run-id",
+        "--parent-run-id",
+        dest="source_training_run_id",
+        help="UUID del run de entrenamiento que generó el checkpoint.",
+    )
+    parser.add_argument(
+        "--require-lineage",
+        action="store_true",
+        help=(
+            "Fallar si --track-db está activo y no se puede resolver el "
+            "entrenamiento origen."
+        ),
+    )
     return parser.parse_args(argv)
+
+
+def track_source_training_lineage(
+    args,
+    checkpoint,
+    model_name,
+    run_context,
+    relationship_type="explains_checkpoint_from",
+):
+    """Resuelve y registra el entrenamiento origen de un run ya creado."""
+    if not getattr(args, "track_db", False):
+        return None
+
+    child_run_id = (run_context or {}).get("run_id")
+    if not child_run_id:
+        warning = (
+            "No se pudo crear el run de explicabilidad en PostgreSQL; "
+            "no es posible registrar su linaje."
+        )
+        if getattr(args, "require_lineage", False):
+            raise RuntimeError(warning)
+        warnings.warn(warning, RuntimeWarning, stacklevel=2)
+        return {"status": "unresolved", "message": warning}
+
+    from src.run_lineage import (
+        LineageResolutionError,
+        create_run_lineage_with_metadata,
+        mark_lineage_unresolved,
+        resolve_source_training_run,
+    )
+
+    checkpoint_path = str(checkpoint)
+
+    def unresolved_or_raise(message, resolution=None, cause=None):
+        result = resolution or {
+            "status": "unresolved",
+            "confidence": "unknown",
+            "message": message,
+        }
+        effective_message = str(message)
+        try:
+            mark_lineage_unresolved(
+                child_run_id=child_run_id,
+                checkpoint_path=checkpoint_path,
+                warning=effective_message,
+            )
+        except Exception as metadata_error:
+            effective_message = (
+                f"{effective_message} No se pudo guardar metadata de linaje: "
+                f"{metadata_error}"
+            )
+        if getattr(args, "require_lineage", False):
+            error = RuntimeError(effective_message)
+            if cause is not None:
+                raise error from cause
+            raise error
+        warnings.warn(effective_message, RuntimeWarning, stacklevel=2)
+        return result
+
+    try:
+        resolution = resolve_source_training_run(
+            source_training_run_id=getattr(args, "source_training_run_id", None),
+            checkpoint_path=checkpoint_path,
+            model_name=model_name,
+        )
+    except LineageResolutionError:
+        # Un UUID explícito inexistente o no-training siempre es un error de uso.
+        raise
+    except Exception as exc:
+        return unresolved_or_raise(
+            f"No se pudo resolver el linaje de explicabilidad: {exc}",
+            cause=exc,
+        )
+    if resolution.get("status") == "resolved":
+        parent_run_id = resolution.get("training_run_id") or resolution.get("id")
+        if not parent_run_id:
+            return unresolved_or_raise(
+                "La resolución de linaje no entregó un training_run_id.",
+            )
+        confidence = resolution.get("confidence") or (
+            "explicit"
+            if getattr(args, "source_training_run_id", None)
+            else "inferred_exact_checkpoint"
+        )
+        try:
+            lineage_id = create_run_lineage_with_metadata(
+                parent_run_id=parent_run_id,
+                child_run_id=child_run_id,
+                relationship_type=relationship_type,
+                source_training_run=resolution,
+                checkpoint_path=checkpoint_path,
+                checkpoint_artifact_id=resolution.get("checkpoint_artifact_id"),
+                model_version_id=resolution.get("model_version_id"),
+                confidence=confidence,
+            )
+            if not lineage_id:
+                raise RuntimeError("la operación no devolvió lineage_id")
+        except Exception as exc:
+            return unresolved_or_raise(
+                f"No se pudo persistir el linaje de explicabilidad: {exc}",
+                cause=exc,
+            )
+        return resolution
+
+    warning = resolution.get("message") or (
+        "No se pudo inferir de forma única el training_run_id. "
+        "Use --source-training-run-id."
+    )
+    return unresolved_or_raise(warning, resolution=resolution)
 
 
 def methods_to_run(method):
@@ -1060,11 +1184,12 @@ def main():
             start_tracking_run,
         )
 
+        tracked_model_name = model_name_from_checkpoint(checkpoint)
         run_context = start_tracking_run(
             args=args,
             run_type="explainability",
             script_name="src.explain",
-            model_name=model_name_from_checkpoint(checkpoint),
+            model_name=tracked_model_name,
             run_name=f"explain:{checkpoint.stem}:{args.method}",
             parameters=args_to_parameters(
                 args,
@@ -1084,6 +1209,14 @@ def main():
         )
 
     try:
+        if args.track_db:
+            track_source_training_lineage(
+                args=args,
+                checkpoint=checkpoint,
+                model_name=tracked_model_name,
+                run_context=run_context,
+            )
+
         output_dir.mkdir(parents=True, exist_ok=True)
 
         import tensorflow as tf

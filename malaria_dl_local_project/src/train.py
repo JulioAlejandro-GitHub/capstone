@@ -1,6 +1,8 @@
 import argparse
 import csv
+import fcntl
 import json
+import os
 import shutil
 from pathlib import Path
 from uuid import uuid4
@@ -805,6 +807,13 @@ def snapshot_execution_artifacts(
     return snapshot_dir, copied_paths
 
 
+def resolve_artifact_snapshot_id(execution_id, run_context=None):
+    """Use the persisted training run UUID when PostgreSQL tracking is active."""
+    if run_context and run_context.get("run_id"):
+        return str(run_context["run_id"])
+    return str(execution_id)
+
+
 RESERVED_ARTIFACT_BASENAMES = {
     "best_model.keras",
     "final_model.keras",
@@ -1068,6 +1077,38 @@ def stage_latest_run_artifacts(output_dir, execution_id):
     return backup_dir if staged else None
 
 
+def acquire_training_output_lock(output_dir):
+    """Evita que dos trainings del mismo modelo mezclen aliases/checkpoints."""
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    lock_path = output_dir / ".training.lock"
+    lock_handle = lock_path.open("a+", encoding="utf-8")
+    try:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as exc:
+        lock_handle.close()
+        raise RuntimeError(
+            "Ya existe otro entrenamiento activo que escribe en "
+            f"{output_dir}. Espere a que termine antes de iniciar otro run "
+            "del mismo modelo."
+        ) from exc
+
+    lock_handle.seek(0)
+    lock_handle.truncate()
+    lock_handle.write(f"pid={os.getpid()}\n")
+    lock_handle.flush()
+    return lock_handle
+
+
+def release_training_output_lock(lock_handle):
+    if lock_handle is None or lock_handle.closed:
+        return
+    try:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+    finally:
+        lock_handle.close()
+
+
 def discard_latest_artifact_backup(backup_dir):
     if backup_dir is None:
         return
@@ -1149,6 +1190,7 @@ def main():
     args = parse_args()
     run_context = None
     latest_backup_dir = None
+    training_output_lock = None
     execution_id = str(uuid4())
     execution_type = resolve_training_execution_type(args.fine_tune_epochs)
     output_dir = (
@@ -1257,7 +1299,8 @@ def main():
         ),
         **dataset_info,
     }
-    planned_snapshot_dir = output_dir / "runs" / execution_id
+    snapshot_id = resolve_artifact_snapshot_id(execution_id)
+    planned_snapshot_dir = output_dir / "runs" / snapshot_id
     execution_parameters["artifact_snapshot_dir"] = str(planned_snapshot_dir)
 
     if args.track_db:
@@ -1335,6 +1378,13 @@ def main():
             restore_best_weights=args.restore_best_weights,
             random_seed=args.seed,
         )
+
+        # The database UUID is the stable lineage key.  Keep execution_id as the
+        # legacy local identifier, but materialize tracked snapshots under run_id
+        # so evaluate/explain can resolve the producing training run from the path.
+        snapshot_id = resolve_artifact_snapshot_id(execution_id, run_context)
+        planned_snapshot_dir = output_dir / "runs" / snapshot_id
+        execution_parameters["artifact_snapshot_dir"] = str(planned_snapshot_dir)
     # if args.model == "vgg16"
     # if args.model == "custom_cnn":
     # validar datos de ejecucion antes de comenzar... en este caaso el nombre del modelo
@@ -1343,6 +1393,7 @@ def main():
         tf.keras.utils.set_random_seed(args.seed)
 
         output_dir.mkdir(parents=True, exist_ok=True)
+        training_output_lock = acquire_training_output_lock(output_dir)
         latest_backup_dir = stage_latest_run_artifacts(output_dir, execution_id)
 
         ds_train, ds_val, ds_test, _ = load_malaria_splits(
@@ -1974,7 +2025,7 @@ def main():
         summary_paths = write_model_execution_summary(output_dir, execution_summary)
         snapshot_dir, snapshot_artifacts = snapshot_execution_artifacts(
             output_dir,
-            execution_id,
+            snapshot_id,
             artifact_paths=latest_artifacts,
         )
         snapshot_plot_paths = {
@@ -2488,6 +2539,8 @@ def main():
 
             fail_tracking_run(run_context, exc, script_name="src.train")
         raise
+    finally:
+        release_training_output_lock(training_output_lock)
 
 
 if __name__ == "__main__":
