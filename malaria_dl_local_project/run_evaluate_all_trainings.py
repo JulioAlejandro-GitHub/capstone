@@ -81,7 +81,7 @@ def fetch_training_runs(project_dir: Path) -> list[TrainingRun]:
         SELECT DISTINCT ON (r.id)
             r.id::text AS training_run_id,
             r.run_name,
-            m.model_name,
+            m.name AS model_name,
             COALESCE(
                 r.execution_parameters ->> 'optimizer',
                 r.parameters ->> 'optimizer',
