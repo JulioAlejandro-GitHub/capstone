@@ -2,6 +2,7 @@ import type { RunConfusionCounts } from '../../utils/runReport';
 
 interface MiniConfusionMatrixProps {
   counts: RunConfusionCounts;
+  emptyLabel?: string;
 }
 
 const countFormatter = new Intl.NumberFormat('es-CL', {
@@ -18,10 +19,17 @@ function MatrixValue({ code, value }: { code: 'TN' | 'FP' | 'FN' | 'TP'; value: 
   );
 }
 
-export function MiniConfusionMatrix({ counts }: MiniConfusionMatrixProps) {
+export function MiniConfusionMatrix({
+  counts,
+  emptyLabel = 'Sin matriz',
+}: MiniConfusionMatrixProps) {
   const hasValues = Object.values(counts).some((value) => value !== null);
   if (!hasValues) {
-    return <div className="mini-confusion-matrix mini-confusion-matrix--empty">Sin matriz</div>;
+    return (
+      <div className="mini-confusion-matrix mini-confusion-matrix--empty" role="status">
+        {emptyLabel}
+      </div>
+    );
   }
 
   return (

@@ -50,6 +50,7 @@ GET /datasources
 GET /dashboard/summary
 GET /dashboard/clinical
 GET /runs
+GET /runs/grouped-lineage
 GET /runs/{run_id}
 GET /runs/clinical/summary
 GET /runs/{run_id}/clinical-summary
@@ -97,3 +98,14 @@ Los endpoints clinicos usan la convencion `0 = uninfected`, `1 = parasitized` y
 `raw_model_score = probability_parasitized`. `GET /runs/{run_id}/clinical-summary`
 devuelve metricas clinicas, matriz de confusion, checkpoint policy, threshold
 calibrado, conteo de artefactos y conteo de predicciones por imagen.
+
+`GET /runs/grouped-lineage?limit=100` devuelve los trainings recientes como
+`items[]`. Cada item contiene `training`, `evaluations[]` y
+`explainability[]`. Las evaluaciones incluyen metricas clinicas y matriz de
+confusion; los runs de explicabilidad se deduplican por `run_id`, exponen
+`methods[]` y suman `total_explanations`, `success_count` y `failed_count` por
+metodo. Los runs evaluation/explainability sin parent valido se entregan en
+`unlinked`, y los children asociados a mas de un training se excluyen de los
+arboles y se informan en `conflicts` con `candidate_training_run_ids`. `totals`
+resume las colecciones. El parametro `limit` acepta valores entre 1 y 500
+y se aplica a los trainings; no oculta runs sin linaje.

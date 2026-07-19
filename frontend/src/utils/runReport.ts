@@ -111,28 +111,62 @@ function firstMetric(...values: unknown[]): number | null {
   return null;
 }
 
-export function resolveRunConfusion(run: RunDashboard): RunConfusionCounts {
-  const matrix = Array.isArray(run.confusion_matrix) ? run.confusion_matrix : [];
-  const explicitCounts: RunConfusionCounts = {
-    tn: finiteNonNegative(run.tn),
-    fp: finiteNonNegative(run.fp),
-    fn: finiteNonNegative(run.fn),
-    tp: finiteNonNegative(run.tp),
-  };
-  const matrixCounts: RunConfusionCounts = {
-    tn: finiteNonNegative(matrix[0]?.[0]),
-    fp: finiteNonNegative(matrix[0]?.[1]),
-    fn: finiteNonNegative(matrix[1]?.[0]),
-    tp: finiteNonNegative(matrix[1]?.[1]),
-  };
-  const isComplete = (counts: RunConfusionCounts) => (
-    Object.values(counts).every((value) => value !== null)
-  );
+function recordValue(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
 
-  if (isComplete(explicitCounts)) return explicitCounts;
-  if (isComplete(matrixCounts)) return matrixCounts;
-  if (Object.values(explicitCounts).some((value) => value !== null)) return explicitCounts;
-  return matrixCounts;
+function firstCount(...values: unknown[]): number | null {
+  for (const value of values) {
+    const count = finiteNonNegative(value);
+    if (count !== null) return count;
+  }
+  return null;
+}
+
+export function normalizeConfusionMatrix(source: unknown): RunConfusionCounts {
+  const sourceRecord = recordValue(source);
+  const rawMatrix = sourceRecord?.confusion_matrix ?? (Array.isArray(source) ? source : null);
+  const matrixRecord = recordValue(rawMatrix);
+  const matrixRows = Array.isArray(rawMatrix) ? rawMatrix : [];
+  const firstRow = Array.isArray(matrixRows[0]) ? matrixRows[0] : [];
+  const secondRow = Array.isArray(matrixRows[1]) ? matrixRows[1] : [];
+
+  return {
+    tn: firstCount(
+      sourceRecord?.tn,
+      sourceRecord?.true_negative,
+      matrixRecord?.tn,
+      matrixRecord?.true_negative,
+      firstRow[0],
+    ),
+    fp: firstCount(
+      sourceRecord?.fp,
+      sourceRecord?.false_positive,
+      matrixRecord?.fp,
+      matrixRecord?.false_positive,
+      firstRow[1],
+    ),
+    fn: firstCount(
+      sourceRecord?.fn,
+      sourceRecord?.false_negative,
+      matrixRecord?.fn,
+      matrixRecord?.false_negative,
+      secondRow[0],
+    ),
+    tp: firstCount(
+      sourceRecord?.tp,
+      sourceRecord?.true_positive,
+      matrixRecord?.tp,
+      matrixRecord?.true_positive,
+      secondRow[1],
+    ),
+  };
+}
+
+export function resolveRunConfusion(run: RunDashboard): RunConfusionCounts {
+  return normalizeConfusionMatrix(run);
 }
 
 export function resolveRunReportMetrics(run: RunDashboard): RunReportMetrics {

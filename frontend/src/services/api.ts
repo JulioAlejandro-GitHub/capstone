@@ -10,6 +10,7 @@ import type {
   ExplainabilityCase,
   ExplainabilityCaseSummary,
   ExplainabilityRow,
+  GroupedRunLineageResponse,
   JsonRecord,
   ModelSummary,
   PagedResponse,
@@ -107,6 +108,13 @@ export const api = {
 
   getRuns(datasource: string) {
     return request<{ items: RunDashboard[] }>('/runs', withDatasource(datasource));
+  },
+
+  getGroupedRunLineage(datasource: string) {
+    return request<GroupedRunLineageResponse>(
+      '/runs/grouped-lineage',
+      withDatasource(datasource),
+    );
   },
 
   getRun(datasource: string, runId: string) {

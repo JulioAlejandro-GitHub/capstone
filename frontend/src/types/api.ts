@@ -8,6 +8,17 @@ export type JsonValue =
 
 export type JsonRecord = Record<string, JsonValue>;
 
+export interface ConfusionMatrixValues {
+  tn?: number | null;
+  fp?: number | null;
+  fn?: number | null;
+  tp?: number | null;
+  true_negative?: number | null;
+  false_positive?: number | null;
+  false_negative?: number | null;
+  true_positive?: number | null;
+}
+
 export interface Datasource {
   key: string;
   label: string;
@@ -44,8 +55,126 @@ export interface RunDashboard {
   fp?: number | null;
   fn?: number | null;
   tp?: number | null;
-  confusion_matrix?: number[][] | null;
+  true_negative?: number | null;
+  false_positive?: number | null;
+  false_negative?: number | null;
+  true_positive?: number | null;
+  confusion_matrix?: number[][] | ConfusionMatrixValues | null;
   prediction_collapse_detected?: boolean | null;
+}
+
+export type RunLineageConfidence =
+  | 'explicit'
+  | 'inferred_exact_checkpoint'
+  | 'inferred_model_version'
+  | 'inferred_heuristic'
+  | 'unknown';
+
+export interface EvaluationLineageRun {
+  run_id: string;
+  run_name: string | null;
+  run_type: 'evaluation';
+  status: string;
+  started_at: string | null;
+  finished_at?: string | null;
+  duration_seconds?: number | null;
+  model_name?: string | null;
+  optimizer?: string | null;
+  command?: string | null;
+  relationship_type: string | null;
+  confidence: RunLineageConfidence | null;
+  checkpoint_path: string | null;
+  accuracy?: number | null;
+  recall: number | null;
+  specificity: number | null;
+  f2_score: number | null;
+  auc: number | null;
+  tn?: number | null;
+  fp?: number | null;
+  fn?: number | null;
+  tp?: number | null;
+  true_negative?: number | null;
+  false_positive?: number | null;
+  false_negative?: number | null;
+  true_positive?: number | null;
+  confusion_matrix?: number[][] | ConfusionMatrixValues | null;
+  lineage_status?: string | null;
+  lineage_warning?: string | null;
+  candidate_training_run_ids?: string[];
+}
+
+export interface ExplainabilityLineageRun {
+  run_id: string;
+  run_name: string | null;
+  run_type: 'explainability';
+  status: string;
+  started_at: string | null;
+  finished_at?: string | null;
+  duration_seconds?: number | null;
+  model_name?: string | null;
+  optimizer?: string | null;
+  command?: string | null;
+  relationship_type: string | null;
+  confidence: RunLineageConfidence | null;
+  checkpoint_path: string | null;
+  method: string | null;
+  methods?: string[];
+  total_explanations: number;
+  success_count: number;
+  failed_count: number;
+  lineage_status?: string | null;
+  lineage_warning?: string | null;
+  candidate_training_run_ids?: string[];
+}
+
+export interface TrainingRunLineageGroup {
+  training: RunDashboard;
+  evaluations: EvaluationLineageRun[];
+  explainability: ExplainabilityLineageRun[];
+}
+
+export interface UnlinkedLineageRun {
+  run_id: string;
+  run_name: string | null;
+  run_type: 'evaluation' | 'explainability';
+  status: string;
+  started_at: string | null;
+  finished_at?: string | null;
+  duration_seconds?: number | null;
+  model_name?: string | null;
+  optimizer?: string | null;
+  command?: string | null;
+  relationship_type?: null;
+  confidence?: RunLineageConfidence | null;
+  checkpoint_path?: string | null;
+  lineage_status?: string | null;
+  lineage_warning?: string | null;
+}
+
+export type UnresolvedLineageRun =
+  | UnlinkedLineageRun
+  | EvaluationLineageRun
+  | ExplainabilityLineageRun;
+
+export interface GroupedRunLineageResponse {
+  items: TrainingRunLineageGroup[];
+  unlinked: {
+    evaluations: UnlinkedLineageRun[];
+    explainability: UnlinkedLineageRun[];
+  };
+  conflicts: {
+    evaluations: EvaluationLineageRun[];
+    explainability: ExplainabilityLineageRun[];
+  };
+  totals: {
+    training_runs: number;
+    linked_evaluations: number;
+    linked_explainability: number;
+    unlinked_evaluations: number;
+    unlinked_explainability: number;
+    conflicting_evaluations: number;
+    conflicting_explainability: number;
+  };
 }
 
 export interface ModelSummary {

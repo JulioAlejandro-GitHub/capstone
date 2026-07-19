@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from app.db import fetch_all, fetch_one
 from app.services.explainability import enrich_explainability_items
+from app.services.run_lineage import grouped_run_lineage_payload
 from app.services.serialization import row_to_dict, rows_to_list
 
 
@@ -258,6 +259,16 @@ def list_runs(
         {"limit": limit},
     )
     return {"items": rows_to_list(rows)}
+
+
+@router.get("/runs/grouped-lineage")
+@router.get("/api/runs/grouped-lineage")
+def list_grouped_run_lineage(
+    datasource: str | None = Query(default="malaria"),
+    limit: int = Query(default=100, ge=1, le=500),
+):
+    """Group recent training runs with linked children and separate orphans."""
+    return grouped_run_lineage_payload(datasource=datasource, limit=limit)
 
 
 @router.get("/runs/clinical/summary")

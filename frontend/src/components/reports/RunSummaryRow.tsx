@@ -10,24 +10,27 @@ import { AutoAnalysisBadge } from './AutoAnalysisBadge';
 import { CommandChips } from './CommandChips';
 import { MetricChip } from './MetricChip';
 import { MiniConfusionMatrix } from './MiniConfusionMatrix';
+import { RunProcessBadge, type RunProcessKind } from './RunProcessBadge';
 
 interface RunSummaryRowProps {
   run: RunDashboard;
   onRunSelect: (runId: string) => void;
+  processKind?: RunProcessKind;
 }
 
 function truncatedRunId(runId: string): string {
   return runId.length > 12 ? `${runId.slice(0, 8)}…` : runId;
 }
 
-export function RunSummaryRow({ run, onRunSelect }: RunSummaryRowProps) {
+export function RunSummaryRow({ run, onRunSelect, processKind }: RunSummaryRowProps) {
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
   const analysis = generateRunAutoAnalysis(run);
 
   return (
-    <article className="report-row" role="row">
-      <section aria-label="RUN" className="report-cell report-run-cell" data-label="RUN" role="cell">
+    <div className="report-row">
+      <section aria-label="RUN" className="report-cell report-run-cell" data-label="RUN">
+        {processKind ? <RunProcessBadge kind={processKind} /> : null}
         <strong className="report-run-name">
           {run.run_name?.trim() || 'No registrado'}
         </strong>
@@ -47,7 +50,7 @@ export function RunSummaryRow({ run, onRunSelect }: RunSummaryRowProps) {
         </div>
       </section>
 
-      <section aria-label="Modelo" className="report-cell report-model-cell" data-label="Modelo" role="cell">
+      <section aria-label="Modelo" className="report-cell report-model-cell" data-label="Modelo">
         <strong className="report-primary-value">{run.model_name?.trim() || 'No registrado'}</strong>
         <span className="report-muted">
           Optimizer: <strong>{run.optimizer?.trim() || 'No registrado'}</strong>
@@ -55,7 +58,7 @@ export function RunSummaryRow({ run, onRunSelect }: RunSummaryRowProps) {
         <CommandChips command={run.command} />
       </section>
 
-      <section aria-label="Resultados" className="report-cell report-results-cell" data-label="Resultados" role="cell">
+      <section aria-label="Resultados" className="report-cell report-results-cell" data-label="Resultados">
         <MiniConfusionMatrix counts={counts} />
         <div className="metric-grid">
           <MetricChip label="Recall" value={metrics.recall} />
@@ -69,7 +72,6 @@ export function RunSummaryRow({ run, onRunSelect }: RunSummaryRowProps) {
         aria-label="Análisis automático"
         className="report-cell report-analysis-cell"
         data-label="Análisis automático"
-        role="cell"
       >
         <AutoAnalysisBadge analysis={analysis} />
         <button
@@ -81,6 +83,6 @@ export function RunSummaryRow({ run, onRunSelect }: RunSummaryRowProps) {
           Ver detalle
         </button>
       </section>
-    </article>
+    </div>
   );
 }
