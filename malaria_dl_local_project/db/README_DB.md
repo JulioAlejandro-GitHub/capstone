@@ -43,21 +43,42 @@ source .venv/bin/activate
 python scripts/init_db.py
 ```
 
-El script ejecuta en orden:
+El script descubre y ejecuta en orden todos los archivos `db/init/NNN_*.sql`.
+El tramo de gobernanza de modelos es:
 
 ```text
-db/init/001_schema.sql
-db/init/002_indexes.sql
-db/init/003_views.sql
-db/init/004_seed.sql
-db/init/007_case_level_explainability_views.sql
-db/init/008_case_level_explainability_indexes.sql
-db/init/020_max_epochs_release.sql
+db/init/023_schema_migrations_baseline.sql
+db/init/024_model_version_artifact_governance.sql
+db/init/025_deployed_model_versions.sql
+db/init/026_inference_jobs.sql
+db/init/027_model_governance_backfill_constraints.sql
 ```
 
-También ejecuta automáticamente otros archivos numerados `NNN_*.sql` si existen, por ejemplo `005_frontend_views.sql` o `006_frontend_indexes.sql`.
+Los archivos anteriores (`001`–`022`) se mantienen como historial y también se
+ejecutan al crear una base vacía. En una instalación legacy reconocida, el runner
+registra como baseline los archivos existentes de ese tramo sin reejecutarlos.
 
-La inicialización es idempotente: usa `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, `CREATE OR REPLACE VIEW` e inserciones semilla con `WHERE NOT EXISTS`.
+`schema_migrations` conserva el SHA-256 de cada archivo aplicado. Una segunda
+ejecución omite una migración solo cuando su checksum coincide; si un archivo ya
+aplicado cambió, el runner falla y exige una migración nueva. Los cinco scripts de
+gobernanza son aditivos e idempotentes, no crean deployments activos y no borran
+datos. Antes de migrar una instalación con datos se debe tomar backup y revisar
+la estrategia de rollback en `../../docs/model_governance_schema.md`.
+
+Prueba PostgreSQL 17 opt-in sobre una base **desechable** (nunca use
+`malaria_experiments`):
+
+```bash
+createdb -h localhost -p 5432 -U postgres malaria_governance_test
+MODEL_GOVERNANCE_TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/malaria_governance_test \
+MODEL_GOVERNANCE_TEST_ALLOW_SCHEMA_CHANGES=1 \
+python -m unittest tests.test_model_governance_postgres
+```
+
+La prueba rechaza nombres que no contengan `test` o `codex`, aplica las
+migraciones dos veces mediante el ledger, crea el linaje completo dentro de una
+transacción que revierte y verifica constraints, relaciones y borrado
+restringido.
 
 ## Probar conexión e inserción
 
@@ -144,13 +165,18 @@ psql -h localhost -p 5432 -U postgres -d malaria_experiments
 - `dataset_splits`: splits de entrenamiento, validación y test.
 - `models`: modelos disponibles, arquitectura, framework y metadata técnica.
 - `runs`: tabla central; cada ejecución realizada por entrenamiento, evaluación, explicabilidad, TTA, ensemble u otro flujo.
-- `model_versions`: checkpoints y versiones concretas de modelos.
+- `model_versions`: versiones inmutables de pesos, identificadas por training run, artifact y SHA-256.
+- `deployed_model_versions`: revisiones de autorización para inferencia; el default es `pending`.
+- `run_model_deployments`: vínculo auditable entre un run de inferencia y su deployment/version.
+- `image_analysis_jobs`: procesamiento de una imagen dentro de un run de inferencia.
 - `run_metrics`: métricas numéricas por run, split, clase, epoch o step.
 - `training_history`: evolución por epoch durante entrenamiento.
 - `confusion_matrices`: matrices de confusión y conteos TP/TN/FP/FN.
 - `classification_reports`: precision, recall, F1 y support por clase.
-- `predictions`: predicciones individuales, score, clase real, clase predicha y tipo de caso.
+- `predictions`: predicciones individuales; también es el almacenamiento canónico de predicciones celulares gobernadas.
 - `artifacts`: rutas a artefactos generados. No almacena binarios.
+- `model_governance_backfill_audit`: evidencia append-only de atribuciones exactas y reversiones.
+- `schema_migrations`: ledger de migraciones y checksums.
 - `explainability_results`: resultados de LIME, SHAP y Grad-CAM.
 - `execution_logs`: mensajes de ejecución asociados a un run.
 - `errors`: errores, stack traces y script de origen.
@@ -168,6 +194,8 @@ psql -h localhost -p 5432 -U postgres -d malaria_experiments
 - `vw_low_confidence_cases`: predicciones cercanas al umbral de decisión.
 - `vw_case_type_summary`: resumen por modelo, dataset, método y tipo de caso.
 - `vw_explainability_gallery`: galería de imágenes explicadas con rutas de artefactos.
+- `inference_runs`: read model sobre filas `runs` de tipo `inference` y sus deployments.
+- `cell_predictions`: read model sobre filas celulares de `predictions`.
 
 Estas vistas quedan preparadas para alimentar un dashboard web futuro sin acoplar todavía el frontend.
 

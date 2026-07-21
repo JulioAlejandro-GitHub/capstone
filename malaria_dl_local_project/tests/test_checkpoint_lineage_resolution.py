@@ -13,6 +13,8 @@ from src import run_lineage  # noqa: E402
 
 RUN_A = "11111111-1111-4111-8111-111111111111"
 RUN_B = "22222222-2222-4222-8222-222222222222"
+VERSION_A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+ARTIFACT_A = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
 
 
 def training_row(run_id, optimizer="adamw"):
@@ -204,6 +206,116 @@ class CheckpointLineageResolutionTests(unittest.TestCase):
                     RUN_A,
                     "outputs/model.keras",
                 )
+
+    def test_explicit_source_requires_exact_governed_checkpoint_identity(self):
+        exact_resolution = {
+            **training_row(RUN_A),
+            "status": "resolved",
+            "model_version_id": VERSION_A,
+            "checkpoint_artifact_id": ARTIFACT_A,
+            "resolution_method": "model_versions_exact_checkpoint",
+            "confidence": "inferred_model_version",
+        }
+        with (
+            patch(
+                "src.run_lineage.get_training_run",
+                return_value=training_row(RUN_A),
+            ),
+            patch(
+                "src.run_lineage.resolve_training_run_from_checkpoint",
+                return_value=exact_resolution,
+            ) as resolve_checkpoint,
+        ):
+            result = run_lineage.resolve_source_training_run(
+                RUN_A,
+                "outputs/densenet121/best_model.keras",
+                model_name="densenet121",
+            )
+
+        resolve_checkpoint.assert_called_once_with(
+            "outputs/densenet121/best_model.keras",
+            model_name="densenet121",
+        )
+        self.assertEqual(result["training_run_id"], RUN_A)
+        self.assertEqual(result["model_version_id"], VERSION_A)
+        self.assertEqual(result["checkpoint_artifact_id"], ARTIFACT_A)
+        self.assertEqual(result["confidence"], "explicit")
+        self.assertEqual(
+            result["resolution_method"],
+            "explicit_training_run_id_exact_checkpoint",
+        )
+
+    def test_explicit_source_rejects_checkpoint_owned_by_another_training(self):
+        exact_resolution = {
+            **training_row(RUN_B),
+            "status": "resolved",
+            "model_version_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+            "checkpoint_artifact_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        }
+        with (
+            patch(
+                "src.run_lineage.get_training_run",
+                return_value=training_row(RUN_A),
+            ),
+            patch(
+                "src.run_lineage.resolve_training_run_from_checkpoint",
+                return_value=exact_resolution,
+            ),
+            self.assertRaisesRegex(
+                run_lineage.LineageResolutionError,
+                "training run distinto",
+            ),
+        ):
+            run_lineage.resolve_source_training_run(
+                RUN_A,
+                "outputs/densenet121/best_model.keras",
+            )
+
+    def test_explicit_source_rejects_ambiguous_checkpoint_identity(self):
+        with (
+            patch(
+                "src.run_lineage.get_training_run",
+                return_value=training_row(RUN_A),
+            ),
+            patch(
+                "src.run_lineage.resolve_training_run_from_checkpoint",
+                return_value={"status": "ambiguous", "candidates": []},
+            ),
+            self.assertRaisesRegex(
+                run_lineage.LineageResolutionError,
+                "más de una identidad gobernada",
+            ),
+        ):
+            run_lineage.resolve_source_training_run(
+                RUN_A,
+                "outputs/densenet121/best_model.keras",
+            )
+
+    def test_explicit_source_rejects_incomplete_checkpoint_identity(self):
+        incomplete_resolution = {
+            **training_row(RUN_A),
+            "status": "resolved",
+            "model_version_id": VERSION_A,
+            "checkpoint_artifact_id": None,
+        }
+        with (
+            patch(
+                "src.run_lineage.get_training_run",
+                return_value=training_row(RUN_A),
+            ),
+            patch(
+                "src.run_lineage.resolve_training_run_from_checkpoint",
+                return_value=incomplete_resolution,
+            ),
+            self.assertRaisesRegex(
+                run_lineage.LineageResolutionError,
+                "checkpoint_artifact_id gobernados",
+            ),
+        ):
+            run_lineage.resolve_source_training_run(
+                RUN_A,
+                "outputs/densenet121/best_model.keras",
+            )
 
     def test_unresolved_checkpoint_returns_actionable_status(self):
         with patch("src.run_lineage._fetch_all", return_value=[]):

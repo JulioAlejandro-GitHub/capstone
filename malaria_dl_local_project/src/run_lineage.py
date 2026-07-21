@@ -297,7 +297,7 @@ def resolve_training_run_from_checkpoint(
             SELECT
                 {_training_run_projection()},
                 mv.id::text AS model_version_id,
-                NULL::text AS checkpoint_artifact_id,
+                mv.checkpoint_artifact_id::text AS checkpoint_artifact_id,
                 CASE
                     WHEN mv.best_model_path {path_predicate}
                         THEN mv.best_model_path
@@ -420,7 +420,7 @@ def resolve_source_training_run(
     checkpoint_path: str,
     model_name: str | None = None,
 ) -> dict:
-    """Valida un origen explícito o intenta resolverlo desde el checkpoint."""
+    """Valida un origen explícito contra el checkpoint o intenta resolverlo."""
     if source_training_run_id:
         source_run = get_training_run(source_training_run_id)
         if source_run is None:
@@ -433,10 +433,47 @@ def resolve_source_training_run(
                 "--source-training-run-id debe referenciar un run con "
                 f"run_type='training'; se encontró {source_run.get('run_type')!r}."
             )
+
+        checkpoint_resolution = resolve_training_run_from_checkpoint(
+            checkpoint_path,
+            model_name=model_name,
+        )
+        if checkpoint_resolution.get("status") == "ambiguous":
+            raise LineageResolutionError(
+                "El checkpoint coincide con más de una identidad gobernada; "
+                "--source-training-run-id no permite elegir silenciosamente una "
+                "versión o un artefacto."
+            )
+        if checkpoint_resolution.get("status") != "resolved":
+            raise LineageResolutionError(
+                "No existe una coincidencia exacta gobernada para el checkpoint "
+                "indicado por --source-training-run-id."
+            )
+
+        resolved_run_id = checkpoint_resolution.get(
+            "training_run_id"
+        ) or checkpoint_resolution.get("id")
+        explicit_run_id = source_run.get("training_run_id") or source_run.get("id")
+        if str(resolved_run_id) != str(explicit_run_id):
+            raise LineageResolutionError(
+                "El checkpoint pertenece a un training run distinto del indicado "
+                "por --source-training-run-id."
+            )
+
+        has_model_version = bool(checkpoint_resolution.get("model_version_id"))
+        has_artifact = bool(checkpoint_resolution.get("checkpoint_artifact_id"))
+        if not has_model_version or not has_artifact:
+            raise LineageResolutionError(
+                "La coincidencia exacta del checkpoint no tiene model_version_id "
+                "y checkpoint_artifact_id gobernados."
+            )
+
+        verified_source = dict(source_run)
+        verified_source.update(checkpoint_resolution)
         return _resolved_candidate(
-            source_run,
+            verified_source,
             confidence="explicit",
-            resolution_method="explicit_training_run_id",
+            resolution_method="explicit_training_run_id_exact_checkpoint",
             checkpoint_path=str(checkpoint_path),
         )
 

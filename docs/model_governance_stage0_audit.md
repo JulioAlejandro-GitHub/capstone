@@ -3,7 +3,7 @@
 **Fecha de auditoría:** 2026-07-20<br>
 **Repositorio:** rama main, commit bfdf3e8a2a498df73d1a5c588a10c940c52235c8<br>
 **Alcance:** repositorio completo, artefactos locales gobernados y estado de PostgreSQL disponible durante la auditoría<br>
-**Tipo de intervención:** análisis de solo lectura; este documento es el único cambio
+**Tipo de intervención Stage 0:** análisis de solo lectura; en esa etapa este documento fue el único cambio
 
 > Regla Stage 0: **outputs/custom_cnn/best_model.keras no es una identidad de modelo**. Es un alias operacional mutable. La identidad oficial debe ser un model_version_id ligado a un artifact_id inmutable y verificable por checksum.
 
@@ -13,6 +13,70 @@ La convención clínica queda fijada y no se propone modificar:
 - 1 = parasitized.
 - positive_label = parasitized.
 - El score clínico es probability_parasitized.
+
+## Estado postimplementación del esquema de gobernanza
+
+> **Separación de alcance:** esta sección describe la implementación posterior preparada en el repositorio. El resto del informe conserva la evidencia, conteos y conclusiones de Stage 0 como snapshot histórico del commit auditado. La presencia del DDL y de la capa Python en el repositorio **no demuestra** que las migraciones hayan sido aplicadas a la base PostgreSQL viva ni que se hayan ejecutado backfills sobre ella.
+
+La implementación adopta el linaje físico siguiente:
+
+1. Los training, evaluation, explainability e inference runs continúan en la tabla polimórfica `runs`; `inference_runs` es una vista gobernada de los runs de inferencia, no una tabla duplicada.
+2. `model_versions` se amplía como identidad inmutable de los pesos, separando el estado funcional de la resolución del linaje y vinculando la versión con su artifact verificable.
+3. `deployed_model_versions` representa revisiones autorizadas para inferencia. Ninguna versión se activa automáticamente al migrar.
+4. `run_model_deployments` demuestra qué deployment usó cada inference run y mantiene abierta la composición futura de ensembles.
+5. `image_analysis_jobs` representa la solicitud o imagen procesada dentro de un inference run.
+6. `predictions` permanece como tabla canónica; `cell_predictions` es una vista de las filas con alcance celular, no una segunda fuente de verdad.
+7. `run_lineage`, `artifacts`, `run_threshold_calibration`, `run_checkpoint_policy` y las tablas históricas se reutilizan y se enriquecen sin eliminar columnas previas.
+
+~~~mermaid
+flowchart TD
+    TR["training run<br/>runs"] --> MV["model version<br/>model_versions"]
+    MV --> ART["artifact inmutable<br/>artifacts"]
+    MV --> RL["evaluation / explainability<br/>runs + run_lineage"]
+    MV --> DMV["deployed version<br/>deployed_model_versions"]
+    DMV --> RMD["run_model_deployments"]
+    RMD --> IR["inference run<br/>runs / inference_runs"]
+    IR --> J["image analysis job<br/>image_analysis_jobs"]
+    J --> P["cell prediction<br/>predictions / cell_predictions"]
+~~~
+
+### Decisiones de compatibilidad implementadas
+
+- Los paths históricos (`checkpoint_path`, `best_model_path`, `final_model_path`, `image_path`) permanecen disponibles, pero no constituyen por sí solos identidad gobernada.
+- Los contratos nuevos usan UUID y referencias a `model_version_id`, `deployed_model_version_id`, `inference_run_id` e `image_analysis_job_id`.
+- `version_name` y los campos históricos de `runs` y `predictions` se conservan; las equivalencias con el contrato nuevo se documentan en `docs/model_governance_schema.md`.
+- No se crean tablas separadas para evaluation runs, explainability runs, inference runs ni cell predictions.
+- Las migraciones 023–027 son aditivas y mantienen el baseline `001_schema.sql` como evidencia histórica.
+- El runner `scripts/init_db.py` incorpora un ledger `schema_migrations` con SHA-256 del archivo. Una migración ya registrada solo se omite si el checksum coincide; modificar una migración aplicada produce un error y exige crear una nueva.
+- El splitter SQL del runner reconoce strings, comentarios y bloques dollar-quoted requeridos por funciones y triggers PostgreSQL.
+- Las nuevas relaciones gobernadas usan políticas de borrado no destructivas. La aplicación no debe depender de cascadas para eliminar versiones, deployments, jobs, predicciones clínicas o evidencia de linaje.
+- La capa de escritura se concentra en el paquete `src/model_governance`, con operaciones para crear versiones, deployments, inference runs, jobs y predicciones celulares, además de recuperar el linaje.
+
+### Artefactos de implementación
+
+| Área | Implementación preparada |
+|---|---|
+| Ledger y baseline | `023_schema_migrations_baseline.sql` y soporte de checksum/baseline en `scripts/init_db.py` |
+| Versión y artifact | `024_model_version_artifact_governance.sql`; extensión de `model_versions` y relaciones históricas |
+| Deployments | `025_deployed_model_versions.sql`; `deployed_model_versions` y `run_model_deployments` |
+| Inferencia y célula | `026_inference_jobs.sql`; extensión de `runs`/`predictions`, `image_analysis_jobs`, `inference_runs` y `cell_predictions` |
+| Integridad final | `027_model_governance_backfill_constraints.sql`; backfill exacto, constraints, triggers y políticas `RESTRICT` |
+| Acceso Python | Paquete `malaria_dl_local_project/src/model_governance` |
+| Verificación versionada | 25 pruebas de entidades, migraciones y repositorio aprobadas; integración PostgreSQL opt-in versionada y ejecución real pendiente |
+| Especificación operativa | `docs/model_governance_schema.md` |
+
+### Estado de aplicación y riesgos pendientes
+
+- No se aplicaron estas migraciones a la base viva como parte de la edición documental.
+- Las 25 pruebas ejecutadas usan validación de dominio, inspección de DDL y dobles de conexión. `tests/test_model_governance_postgres.py` deja versionado el recorrido real con guardas de base desechable, pero su ejecución sigue pendiente y no debe confundirse con una validación ya realizada sobre PostgreSQL 17.
+- Antes de aplicar sobre una instalación existente se requieren backup verificable, inventario de artifacts, revisión del plan SQL y una ventana sin escritores concurrentes.
+- El primer registro del baseline en el ledger debe revisarse contra el inventario real de la instalación; el ledger acredita archivos ejecutados por el runner, no sustituye una auditoría de esquema o datos.
+- Las FKs/checks se introducen inicialmente como `NOT VALID`; la migración 027 ejecuta backfill exacto y `VALIDATE CONSTRAINT`. Si encuentra una incompatibilidad histórica, la aplicación transaccional debe fallar y la anomalía debe investigarse antes de reintentar.
+- Las filas legacy que no puedan resolverse de forma exacta deben permanecer `unresolved`; nunca se debe escoger “la última” versión para completar un vínculo ambiguo.
+- La migración no crea deployments `active`, no promueve modelos, no reorganiza el frontend y no elimina aliases ni datos históricos.
+- La aplicación debe verificarse sobre PostgreSQL 17 aislado, incluyendo reejecución idempotente, unicidad de deployment activo, validaciones clínicas y bloqueo del borrado destructivo.
+
+El contrato completo de tablas, campos, índices, estados, integridad, comandos y rollback está en `docs/model_governance_schema.md`.
 
 ## Metodología y alcance de la evidencia
 
