@@ -13,6 +13,9 @@ import type {
   GroupedRunLineageResponse,
   JsonRecord,
   ModelSummary,
+  ModelVersionRow,
+  DeploymentRow,
+  ModelVersionLineageRow,
   PagedResponse,
   RunDashboard,
   RunArtifact,
@@ -159,6 +162,22 @@ export const api = {
 
   getModels(datasource: string) {
     return request<{ items: ModelSummary[] }>('/models', withDatasource(datasource));
+  },
+
+  getModelVersions(datasource: string) {
+    return request<{ items: ModelVersionRow[] }>('/api/model-versions', withDatasource(datasource));
+  },
+
+  getModelVersion(datasource: string, modelVersionId: string) {
+    return request<ModelVersionRow>(`/api/model-versions/${modelVersionId}`, withDatasource(datasource));
+  },
+
+  getModelVersionLineage(datasource: string, modelVersionId: string) {
+    return request<{ items: ModelVersionLineageRow[] }>(`/api/model-versions/${modelVersionId}/lineage`, withDatasource(datasource));
+  },
+
+  getDeployments(datasource: string, active = false) {
+    return request<{ items: DeploymentRow[] }>(active ? '/api/deployments/active' : '/api/deployments', withDatasource(datasource));
   },
 
   getClinicalModelComparison(datasource: string) {

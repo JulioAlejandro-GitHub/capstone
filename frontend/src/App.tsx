@@ -8,6 +8,9 @@ import { DatasetsModels } from './pages/DatasetsModels';
 import { ErrorsLogs } from './pages/ErrorsLogs';
 import { Explainability } from './pages/Explainability';
 import { ModelComparison } from './pages/ModelComparison';
+import { ModelVersions } from './pages/ModelVersions';
+import { Deployments } from './pages/Deployments';
+import { Traceability } from './pages/Traceability';
 import { RunDetail } from './pages/RunDetail';
 import { Runs } from './pages/Runs';
 import { UploadedPredictions } from './pages/UploadedPredictions';
@@ -80,6 +83,9 @@ function App() {
         <ClinicalEvaluation datasource={datasource} onRunSelect={selectRun} />
       ) : null}
       {page === 'models' ? <ModelComparison datasource={datasource} /> : null}
+      {page === 'model-versions' ? <ModelVersions datasource={datasource} onRunSelect={selectRun} onDeployments={() => selectPage('deployments')} /> : null}
+      {page === 'deployments' ? <Deployments datasource={datasource} /> : null}
+      {page === 'traceability' ? <Traceability datasource={datasource} onRunSelect={selectRun} /> : null}
       {page === 'run-detail' ? (
         <RunDetail
           datasource={datasource}

@@ -36,9 +36,21 @@ class ImageJobCreate(BaseModel):
 
 @router.get("/model-versions")
 def model_versions(datasource:str|None=Query("malaria")):
-    return {"items":rows_to_list(fetch_all(datasource,"""SELECT id,training_run_id,model_name,version_number,status,lineage_status,
-      artifact_sha256,artifact_size_bytes,framework,framework_version,class_mapping,input_signature,output_signature,created_at
-      FROM model_versions ORDER BY created_at DESC"""))}
+    return {"items":rows_to_list(fetch_all(datasource,"""SELECT mv.id,mv.training_run_id,mv.model_name,mv.version_number,mv.status,mv.lineage_status,
+      mv.artifact_sha256,mv.artifact_size_bytes,mv.framework,mv.framework_version,mv.class_mapping,mv.input_signature,mv.output_signature,mv.created_at,mv.validated_at,
+      evaluation.evaluation_run_id,evaluation.recall_parasitized,evaluation.specificity,evaluation.f2_parasitized,
+      threshold.threshold_used,COALESCE(explanation.available,FALSE) explainability_available,
+      deployment.id active_deployment_id,deployment.alias deployment_alias,deployment.environment deployment_environment
+      FROM model_versions mv
+      LEFT JOIN LATERAL(SELECT r.id evaluation_run_id,metric.recall_parasitized,metric.specificity,metric.f2_parasitized
+        FROM run_lineage rl JOIN runs r ON r.id=rl.child_run_id LEFT JOIN run_clinical_metrics metric ON metric.run_id=r.id
+        WHERE rl.model_version_id=mv.id AND r.run_type='evaluation' ORDER BY r.finished_at DESC NULLS LAST LIMIT 1)evaluation ON TRUE
+      LEFT JOIN LATERAL(SELECT calibration.threshold_selected threshold_used FROM run_threshold_calibration calibration
+        WHERE calibration.model_version_id=mv.id ORDER BY calibration.created_at DESC LIMIT 1)threshold ON TRUE
+      LEFT JOIN LATERAL(SELECT TRUE available FROM run_lineage rl JOIN runs r ON r.id=rl.child_run_id
+        WHERE rl.model_version_id=mv.id AND r.run_type='explainability' AND r.status='completed' LIMIT 1)explanation ON TRUE
+      LEFT JOIN LATERAL(SELECT d.id,d.alias,d.environment FROM deployed_model_versions d WHERE d.model_version_id=mv.id AND d.status='active' ORDER BY d.deployed_at DESC LIMIT 1)deployment ON TRUE
+      ORDER BY mv.created_at DESC"""))}
 @router.get("/model-versions/{model_version_id}")
 def model_version(model_version_id:str,datasource:str|None=Query("malaria")):
     row=fetch_one(datasource,"""SELECT id,training_run_id,model_name,version_number,status,lineage_status,artifact_sha256,

@@ -27,6 +27,28 @@ export interface Datasource {
   database: string;
 }
 
+export interface ModelVersionRow {
+  id: string; training_run_id: string; model_name: string; version_number: number | null;
+  status: string; lineage_status: string; artifact_sha256: string | null;
+  artifact_size_bytes: number | null; framework: string | null; framework_version: string | null;
+  created_at: string | null; validated_at?: string | null; threshold_used?: number | null;
+  recall_parasitized?: number | null; specificity?: number | null; f2_parasitized?: number | null;
+  evaluation_run_id?: string | null; explainability_available?: boolean;
+  active_deployment_id?: string | null; deployment_alias?: string | null; deployment_environment?: string | null;
+}
+
+export interface DeploymentRow {
+  id: string; deployment_name: string; environment: string; alias: string;
+  model_version_id: string; status: string; threshold_value: number;
+  deployed_at: string | null; retired_at: string | null; deployed_by: string | null;
+  created_at?: string | null;
+}
+
+export interface ModelVersionLineageRow {
+  id: string; parent_run_id: string; child_run_id: string; relationship_type: string;
+  model_version_id: string; checkpoint_artifact_id: string | null; confidence: string | null; created_at: string;
+}
+
 export interface RunDashboard {
   run_id: string;
   run_name: string | null;
