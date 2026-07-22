@@ -5,9 +5,11 @@ import { RunSummaryRow } from './RunSummaryRow';
 interface TrainingRunGroupCardProps {
   group: TrainingRunLineageGroup;
   onRunSelect: (runId: string) => void;
+  datasource?: string;
+  onNavigate?: (targetUrl: string) => void;
 }
 
-export function TrainingRunGroupCard({ group, onRunSelect }: TrainingRunGroupCardProps) {
+export function TrainingRunGroupCard({ group, onRunSelect, datasource, onNavigate }: TrainingRunGroupCardProps) {
   const { training, evaluations, explainability } = group;
   const linkedCount = evaluations.length + explainability.length;
 
@@ -17,6 +19,8 @@ export function TrainingRunGroupCard({ group, onRunSelect }: TrainingRunGroupCar
       className="run-lineage-group"
     >
       <RunSummaryRow
+        datasource={datasource}
+        onNavigate={onNavigate}
         onRunSelect={onRunSelect}
         processKind="training"
         run={training}

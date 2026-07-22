@@ -49,6 +49,32 @@ export interface ModelVersionLineageRow {
   model_version_id: string; checkpoint_artifact_id: string | null; confidence: string | null; created_at: string;
 }
 
+export interface PromotionStatusResponse {
+  training_run_id: string;
+  model_version_id?: string | null;
+  model_version_status?: string | null;
+  evaluation_run_id?: string | null;
+  explainability_run_ids?: string[];
+  deployment_id?: string | null;
+  deployment_status?: string | null;
+  environment?: string | null;
+  alias?: string | null;
+  next_action:
+    | 'prepare_release'
+    | 'review_model_version'
+    | 'approve_model_version'
+    | 'create_deployment'
+    | 'review_pending_deployment'
+    | 'view_active_deployment'
+    | 'unavailable';
+  button_label: string;
+  button_enabled: boolean;
+  blocking_reasons: string[];
+  target_url?: string | null;
+  can_release?: boolean;
+  can_deploy?: boolean;
+}
+
 export interface RunDashboard {
   run_id: string;
   run_name: string | null;
@@ -83,7 +109,13 @@ export interface RunDashboard {
   true_positive?: number | null;
   confusion_matrix?: number[][] | ConfusionMatrixValues | null;
   prediction_collapse_detected?: boolean | null;
+  model_version_id?: string | null;
+  model_version_status?: string | null;
+  deployment_id?: string | null;
+  deployment_status?: string | null;
+  promotion_status?: PromotionStatusResponse | null;
 }
+
 
 export type RunLineageConfidence =
   | 'explicit'

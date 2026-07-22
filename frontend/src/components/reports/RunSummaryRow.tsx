@@ -11,21 +11,26 @@ import { CommandChips } from './CommandChips';
 import { MetricChip } from './MetricChip';
 import { MiniConfusionMatrix } from './MiniConfusionMatrix';
 import { RunProcessBadge, type RunProcessKind } from './RunProcessBadge';
+import { PromotionButton } from './PromotionButton';
+import { PromotionTracker } from './PromotionTracker';
 
 interface RunSummaryRowProps {
   run: RunDashboard;
   onRunSelect: (runId: string) => void;
   processKind?: RunProcessKind;
+  datasource?: string;
+  onNavigate?: (targetUrl: string) => void;
 }
 
 function truncatedRunId(runId: string): string {
   return runId.length > 12 ? `${runId.slice(0, 8)}…` : runId;
 }
 
-export function RunSummaryRow({ run, onRunSelect, processKind }: RunSummaryRowProps) {
+export function RunSummaryRow({ run, onRunSelect, processKind, datasource = 'malaria', onNavigate }: RunSummaryRowProps) {
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
   const analysis = generateRunAutoAnalysis(run);
+  const isTrainingCard = !processKind || processKind === 'training';
 
   return (
     <div className="report-row">
@@ -74,15 +79,31 @@ export function RunSummaryRow({ run, onRunSelect, processKind }: RunSummaryRowPr
         data-label="Análisis automático"
       >
         <AutoAnalysisBadge analysis={analysis} />
-        <button
-          aria-label={`Ver detalle de ${run.run_name?.trim() || run.run_id}`}
-          className="report-detail-button"
-          onClick={() => onRunSelect(run.run_id)}
-          type="button"
-        >
-          Ver detalle
-        </button>
+        {isTrainingCard ? (
+          <PromotionTracker runStatus={run.status} status={run.promotion_status || null} />
+        ) : null}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginTop: '6px' }}>
+          <button
+            aria-label={`Ver detalle de ${run.run_name?.trim() || run.run_id}`}
+            className="report-detail-button"
+            onClick={() => onRunSelect(run.run_id)}
+            type="button"
+          >
+            Ver detalle
+          </button>
+
+          {isTrainingCard ? (
+            <PromotionButton
+              datasource={datasource}
+              onNavigate={onNavigate}
+              runStatus={run.status}
+              status={run.promotion_status || null}
+              trainingRunId={run.run_id}
+            />
+          ) : null}
+        </div>
       </section>
     </div>
   );
 }
+

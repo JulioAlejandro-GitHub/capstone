@@ -1,24 +1,18 @@
-# Navegación frontend “Modelo IA”
+# Navegación frontend “Modelo IA” y Flujo de Promoción de Modelos
 
-## Inventario anterior
+## Inventario y Arquitectura
 
-El frontend es React 19 + TypeScript + Vite. No utiliza React Router: la navegación
-se conserva como claves de página en `App.tsx`, por lo que no existían URLs públicas,
-bookmarks, redirects ni breadcrumbs. Había una barra lateral plana con Dashboard,
-Ejecuciones, Evaluación clínica, Comparación, Explicabilidad, Predicciones, Dataset,
-Datasets y modelos, y Errores/logs. No se encontraron permisos, feature flags, tema
-oscuro, navbar separada ni menú móvil independiente.
-
-## Estructura nueva
+El frontend es React 19 + TypeScript + Vite. La navegación se administra en `App.tsx` manteniendo claves de página inmutables.
+El menú padre colapsable **Modelo IA** agrupa jerárquicamente:
 
 ```text
 Modelo IA
 ├── Resumen
-├── Entrenamientos
+├── Ejecuciones (/runs)  <-- Punto de entrada para promoción desde tarjeta TRAIN
 ├── Evaluaciones
 ├── Comparación de modelos
-├── Modelos liberados
-├── Despliegues
+├── Modelos liberados (/model-versions) <-- Ficha de model_version e iniciación de despliegue
+├── Despliegues (/deployments) <-- Activar/retirar/rollback de deployed_model_version
 ├── Trazabilidad
 ├── Explicabilidad
 ├── Predicciones
@@ -28,43 +22,50 @@ Modelo IA
 Errores y logs
 ```
 
-Todas las claves existentes (`dashboard`, `runs`, `clinical-evaluation`, `models`,
-`explainability`, `uploaded-predictions`, `dataset-browser`, `datasets`, `errors` y
-`run-detail`) se mantienen. Se agregaron únicamente `model-versions`, `deployments` y
-`traceability`, respaldadas por endpoints reales. No se agregaron Análisis de imágenes
-ni módulos Etapa 2 porque no existe todavía una vista funcional autorizada.
+## Flujo de Promoción MLOps
 
-## Componentes y visibilidad
+El flujo de promoción se inicia exclusivamente en la **tarjeta TRAIN** del menú Ejecuciones mediante el botón `PromotionButton`:
 
-`Layout` contiene un único grupo colapsable, se abre al activar una hija, guarda su
-estado en `localStorage`, marca `aria-current` y ofrece `aria-expanded`,
-`aria-controls`, flechas izquierda/derecha y breadcrumbs. En móvil el layout pasa a
-una columna y el submenú se adapta de dos a una columna.
+$$\text{TRAIN} \longrightarrow \text{Preparar despliegue} \longrightarrow \text{model\_version} \longrightarrow \text{Modelos liberados} \longrightarrow \text{Crear deployment} \longrightarrow \text{Despliegues} \longrightarrow \text{Activar}$$
 
-`ModelVersions` ofrece filtros de modelo, estado y linaje, detalle, relaciones,
-evaluación y enlace a deployments. Los estados no aptos se muestran con fines de
-auditoría, pero no existe acción para seleccionarlos para análisis. `Deployments` es
-de sólo lectura porque la aplicación no tiene permisos de usuario; no se inventaron
-roles. `Traceability` reutiliza el linaje agrupado existente mediante un árbol simple.
+### Responsabilidades por Pantalla
+1. **Ejecuciones (`/runs`)**: Visualiza el linaje agrupado y permite iniciar/continuar la promoción desde la tarjeta TRAIN (`training_run_id`). Las tarjetas de EVALUATE y EXPLAIN no contienen botones de despliegue directo.
+2. **Modelos liberados (`/model-versions`)**: Permite inspeccionar la versión inmutable (`model_version_id`), validar linaje, revisar la evaluación formal y solicitar la creación de un despliegue en estado `pending`.
+3. **Despliegues (`/deployments`)**: Permite activar, desactivar, retirar o ejecutar rollback de instancias (`deployed_model_version_id`).
 
-Endpoints consumidos:
+## Matriz de Estados del Botón de Promoción
 
-- `GET /api/model-versions`
-- `GET /api/model-versions/{id}`
-- `GET /api/model-versions/{id}/lineage`
-- `GET /api/deployments` y `/active`
-- `GET /runs/grouped-lineage`
+| Estado | Condición Backend | Etiqueta Botón | `button_enabled` | Comportamiento / Destino |
+| :---: | :--- | :--- | :---: | :--- |
+| **A** | Entrenamiento no completado. | **No disponible** | `false` | Tooltip: "El entrenamiento debe finalizar antes de preparar una versión." |
+| **B** | Falta evaluación, linaje o hash mismatch. | **No disponible** | `false` | Muestra popover accesible ⚠️ con la lista de `blocking_reasons`. |
+| **C** | Entrenamiento listo, sin `model_version`. | **Preparar despliegue** | `true` | Llama `POST /prepare-release` y navega a `/modelo-ia/modelos-liberados/{id}`. |
+| **D** | `model_version` en `candidate` / `validated`. | **Ver modelo liberado** | `true` | Redirige a `/modelo-ia/modelos-liberados/{mv_id}`. |
+| **E** | `model_version` aprobada sin despliegue. | **Continuar despliegue** | `true` | Redirige a `/modelo-ia/modelos-liberados/{mv_id}?action=deploy`. |
+| **F** | Despliegue en estado `pending`. | **Ver despliegue pendiente** | `true` | Redirige a `/modelo-ia/despliegues/{dep_id}`. |
+| **G** | Despliegue en estado `active`. | **Ver despliegue** | `true` | Redirige a `/modelo-ia/despliegues/{dep_id}`. |
+| **H** | Modelo en `rejected` / `retired` / `unresolved`. | **No disponible** | `false` | Explicación en popover de bloqueo. |
 
-No existe actualmente un selector de inferencia en el frontend. Cuando se incorpore,
-deberá consumir exclusivamente `/api/deployments/active` y enviar
-`deployed_model_version_id`; nunca checkpoint, path o `best_model.keras`.
+## Indicador Compacto de Progreso (`PromotionTracker`)
 
-## Verificación visual y accesibilidad
+Ubicado en la tarjeta TRAIN para brindar visibilidad sin recargar visualmente:
+- `✓ Entrenamiento`
+- `✓ Evaluación`
+- `✓ Explicabilidad (Opcional)`
+- `○ Versión aprobada`
+- `○ Desplegada`
 
-Ejecutar `npm run dev`, verificar a 1440 px, 900 px y 390 px, navegar con Tab/Enter y
-usar flechas izquierda/derecha sobre “Modelo IA”. Confirmar foco, opción activa,
-breadcrumb, persistencia tras recarga, loading, vacío y error desconectando el API.
-La compilación se valida con `npm run build` y la estructura con `npm test`.
+## Endpoints Consumidos
 
-No se añadió tema oscuro porque el producto actual no lo implementa; los cambios
-mantienen la paleta clara y el sidebar oscuro ya existente.
+- `GET /runs/grouped-lineage`: Obtiene árbol agrupado.
+- `GET /api/training-runs/{training_run_id}/promotion-status`: Consulta *read-only* de estado de promoción.
+- `POST /api/training-runs/{training_run_id}/prepare-release`: Registra o resuelve la `model_version` de forma idempotente.
+- `GET /api/model-versions` y `GET /api/model-versions/{id}`
+- `POST /api/deployments`: Crea un nuevo despliegue pendiente.
+- `POST /api/deployments/{id}/activate`: Activa atómicamente un despliegue.
+
+## Accesibilidad y Verificación
+
+- Atributos `aria-disabled`, `aria-label`, `role="button"` y navegación por teclado.
+- Sin exposición de rutas físicas ni archivos genéricos (`best_model.keras`).
+- Pruebas automatizadas ejecutadas mediante `npm test` (`promotion_ui.test.mjs`) y compilación validada con `npm run build`.

@@ -17,6 +17,7 @@ import type {
   DeploymentRow,
   ModelVersionLineageRow,
   PagedResponse,
+  PromotionStatusResponse,
   RunDashboard,
   RunArtifact,
   RunClinicalSummary,
@@ -274,6 +275,29 @@ export const api = {
   getLogs(datasource: string) {
     return request<{ items: JsonRecord[] }>('/logs', withDatasource(datasource));
   },
+
+  getPromotionStatus(datasource: string, trainingRunId: string) {
+    return request<PromotionStatusResponse>(
+      `/api/training-runs/${trainingRunId}/promotion-status`,
+      withDatasource(datasource),
+    );
+  },
+
+  async prepareRelease(datasource: string, trainingRunId: string, requester = 'user') {
+    const url = new URL(`/api/training-runs/${trainingRunId}/prepare-release`, API_BASE_URL);
+    url.searchParams.set('datasource', datasource);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requester }),
+    });
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(`${response.status} ${response.statusText}: ${message}`);
+    }
+    return response.json() as Promise<PromotionStatusResponse>;
+  },
 };
 
 export type ApiArtifact = ArtifactRow;
+

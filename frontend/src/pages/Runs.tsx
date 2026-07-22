@@ -19,6 +19,7 @@ import '../styles/report-components.css';
 interface RunsProps {
   datasource: string;
   onRunSelect: (runId: string) => void;
+  onNavigate?: (url: string) => void;
 }
 
 const MISSING_MODEL_FILTER = 'missing:';
@@ -50,7 +51,7 @@ function groupContainsRun(group: TrainingRunLineageGroup, runId: string): boolea
     || group.explainability.some((run) => run.run_id === runId);
 }
 
-export function Runs({ datasource, onRunSelect }: RunsProps) {
+export function Runs({ datasource, onRunSelect, onNavigate }: RunsProps) {
   const [lineage, setLineage] = useState<GroupedRunLineageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedRunId, setSelectedRunId] = useState('');
@@ -208,8 +209,10 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
                 </div>
                 {filteredGroups.map((group) => (
                   <TrainingRunGroupCard
+                    datasource={datasource}
                     group={group}
                     key={group.training.run_id}
+                    onNavigate={onNavigate}
                     onRunSelect={onRunSelect}
                   />
                 ))}
