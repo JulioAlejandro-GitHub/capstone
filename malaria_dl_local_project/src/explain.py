@@ -82,7 +82,10 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description="Genera explicaciones visuales post hoc con LIME, SHAP y Grad-CAM."
     )
-    parser.add_argument("--checkpoint", required=True, help="Ruta al modelo .keras entrenado")
+    source=parser.add_mutually_exclusive_group()
+    source.add_argument("--model-version-id", help="UUID de la model version inmutable.")
+    source.add_argument("--checkpoint", "--model-path", dest="checkpoint", help="LEGACY: ruta al modelo .keras")
+    parser.add_argument("--evaluation-run-id", help="Evaluación de la misma model version.")
     parser.add_argument(
         "--method",
         choices=["lime", "shap", "gradcam", "both", "all"],
@@ -146,7 +149,10 @@ def parse_args(argv=None):
             "entrenamiento origen."
         ),
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if not (args.model_version_id or args.checkpoint or args.source_training_run_id):
+        parser.error("indique --model-version-id, --source-training-run-id o --checkpoint")
+    return args
 
 
 def track_source_training_lineage(
@@ -1161,7 +1167,19 @@ def run_gradcam(model, output_dir, case, label_mapping_version=LABEL_MAPPING_VER
 
 def main():
     args = parse_args()
-    checkpoint = Path(args.checkpoint)
+    from src.model_version_resolver import ModelVersionResolver
+    resolver=ModelVersionResolver()
+    resolved_version=resolver.resolve(model_version_id=args.model_version_id,checkpoint=args.checkpoint,
+        source_training_run_id=args.source_training_run_id,require_lineage=args.require_lineage)
+    if resolved_version:
+        checkpoint=resolved_version.checkpoint_path
+        args.source_training_run_id=resolved_version.source_training_run_id
+        if args.evaluation_run_id:
+            resolver.validate_evaluation(args.evaluation_run_id,resolved_version.model_version_id)
+    else:
+        checkpoint = Path(args.checkpoint)
+        if args.track_db:
+            raise RuntimeError("No se guardará explicabilidad legacy sin una model_version resuelta.")
     output_dir = Path(args.output_dir)
     selected_methods = methods_to_run(args.method)
     run_context = None
@@ -1169,7 +1187,10 @@ def main():
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
 
-    preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
+    governed_preprocessing=(resolved_version.preprocessing.get("mode") or resolved_version.preprocessing.get("preprocessing")) if resolved_version else None
+    if args.require_lineage and governed_preprocessing and args.preprocessing not in {"auto",governed_preprocessing}:
+        raise ValueError("El preprocessing solicitado no coincide con la model version.")
+    preprocessing_mode = governed_preprocessing or resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
     mapping_metadata = label_mapping_metadata(args.label_mapping)
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: explicabilidad usando checkpoint legacy_tfds_parasitized_zero.")
@@ -1184,7 +1205,7 @@ def main():
             start_tracking_run,
         )
 
-        tracked_model_name = model_name_from_checkpoint(checkpoint)
+        tracked_model_name = resolved_version.model_name if resolved_version else model_name_from_checkpoint(checkpoint)
         run_context = start_tracking_run(
             args=args,
             run_type="explainability",
@@ -1195,6 +1216,8 @@ def main():
                 args,
                 extra={
                     "checkpoint": str(checkpoint),
+                    **(resolved_version.lineage_metadata() if resolved_version else {}),
+                    "evaluation_run_id": args.evaluation_run_id,
                     "selected_methods": selected_methods,
                     "output_dir": str(output_dir),
                     "preprocessing_mode": preprocessing_mode,
@@ -1405,6 +1428,8 @@ def main():
                     args,
                     extra={
                         "checkpoint": str(checkpoint),
+                        **(resolved_version.lineage_metadata() if resolved_version else {}),
+                        "evaluation_run_id": args.evaluation_run_id,
                         "selected_methods": selected_methods,
                         "dataset_split": "test",
                         "output_dir": str(output_dir),
@@ -1438,6 +1463,8 @@ def main():
                 dataset_metadata=dataset_info,
                 model_metadata={
                     "checkpoint": str(checkpoint),
+                    **(resolved_version.lineage_metadata() if resolved_version else {}),
+                    "evaluation_run_id": args.evaluation_run_id,
                     "preprocessing_mode": preprocessing_mode,
                     "model_name": run_context.get("model_name"),
                     "label_mapping_version": args.label_mapping,
@@ -1459,12 +1486,14 @@ def main():
                 },
                 label_mapping_version=args.label_mapping,
                 raw_model_score_meaning=mapping_metadata["raw_model_score_meaning"],
-                metadata={"status_detail": "explainability completed"},
+                metadata={"status_detail": "explainability completed", **(resolved_version.lineage_metadata() if resolved_version else {}), "evaluation_run_id": args.evaluation_run_id},
             )
             finish_tracking_run(
                 run_context,
                 metadata={
                     "status_detail": "explainability completed",
+                    **(resolved_version.lineage_metadata() if resolved_version else {}),
+                    "evaluation_run_id": args.evaluation_run_id,
                     **threshold_info,
                     **dataset_info,
                 },

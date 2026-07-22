@@ -335,6 +335,8 @@ def compute_clinical_metrics(y_true, y_scores, threshold: float = 0.5) -> dict:
         "true_negative": tn,
         "false_positive": fp,
         "false_negative": fn,
+        "false_positives": fp,
+        "false_negatives": fn,
         "true_positive": tp,
         "classification_report": report_text,
         "classification_report_dict": report_dict,
@@ -349,6 +351,8 @@ def compute_clinical_metrics(y_true, y_scores, threshold: float = 0.5) -> dict:
         "false_positive_rate": float(_safe_divide(fp, tn + fp)),
     }
     metrics["auc"] = metrics["roc_auc_parasitized"]
+    metrics["roc_auc"] = metrics["roc_auc_parasitized"]
+    metrics["pr_auc"] = metrics["pr_auc_parasitized"]
     metrics["auc_parasitized"] = metrics["roc_auc_parasitized"]
     metrics["average_precision_parasitized"] = metrics["pr_auc_parasitized"]
     metrics["clinical_positive_label"] = POSITIVE_LABEL

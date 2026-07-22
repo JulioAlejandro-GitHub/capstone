@@ -20,7 +20,9 @@ from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Evalúa un modelo Keras guardado.")
-    parser.add_argument("--checkpoint", required=True, help="Ruta a .keras")
+    source=parser.add_mutually_exclusive_group()
+    source.add_argument("--model-version-id", help="UUID de la model version inmutable.")
+    source.add_argument("--checkpoint", "--model-path", dest="checkpoint", help="LEGACY: ruta a .keras")
     parser.add_argument("--img-size", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument(
@@ -65,7 +67,10 @@ def parse_args(argv=None):
             "entrenamiento origen."
         ),
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if not (args.model_version_id or args.checkpoint or args.source_training_run_id):
+        parser.error("indique --model-version-id, --source-training-run-id o --checkpoint")
+    return args
 
 
 def track_source_training_lineage(
@@ -179,12 +184,24 @@ def track_source_training_lineage(
 
 def main():
     args = parse_args()
-    checkpoint = Path(args.checkpoint)
+    from src.model_version_resolver import ModelVersionResolver
+    resolved_version=ModelVersionResolver().resolve(model_version_id=args.model_version_id,checkpoint=args.checkpoint,
+        source_training_run_id=args.source_training_run_id,require_lineage=args.require_lineage)
+    if resolved_version:
+        checkpoint=resolved_version.checkpoint_path
+        args.source_training_run_id=resolved_version.source_training_run_id
+    else:
+        checkpoint = Path(args.checkpoint)
+        if args.track_db:
+            raise RuntimeError("No se guardará evaluación legacy sin una model_version resuelta.")
     run_context = None
 
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
-    preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
+    governed_preprocessing=(resolved_version.preprocessing.get("mode") or resolved_version.preprocessing.get("preprocessing")) if resolved_version else None
+    if args.require_lineage and governed_preprocessing and args.preprocessing not in {"auto",governed_preprocessing}:
+        raise ValueError("El preprocessing solicitado no coincide con la model version.")
+    preprocessing_mode = governed_preprocessing or resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
     mapping_metadata = label_mapping_metadata(args.label_mapping)
     if args.positive_label != POSITIVE_LABEL:
         raise ValueError(
@@ -208,7 +225,7 @@ def main():
             start_tracking_run,
         )
 
-        tracked_model_name = model_name_from_checkpoint(checkpoint)
+        tracked_model_name = resolved_version.model_name if resolved_version else model_name_from_checkpoint(checkpoint)
         run_context = start_tracking_run(
             args=args,
             run_type="evaluation",
@@ -219,6 +236,7 @@ def main():
                 args,
                 extra={
                     "checkpoint": str(checkpoint),
+                    **(resolved_version.lineage_metadata() if resolved_version else {}),
                     "preprocessing_mode": preprocessing_mode,
                     "class_names": CLASS_NAMES,
                     "label_mapping_version": args.label_mapping,
@@ -320,6 +338,7 @@ def main():
                     args,
                     extra={
                         "checkpoint": str(checkpoint),
+                        **(resolved_version.lineage_metadata() if resolved_version else {}),
                         "dataset_split": "test",
                         "output_dir": str(output_dir),
                         "preprocessing_mode": preprocessing_mode,
@@ -360,6 +379,7 @@ def main():
                 run_context,
                 metadata={
                     "status_detail": "evaluation completed",
+                    **(resolved_version.lineage_metadata() if resolved_version else {}),
                     "label_mapping_version": args.label_mapping,
                     "label_mapping": mapping_metadata,
                     "raw_model_score_meaning": mapping_metadata["raw_model_score_meaning"],
