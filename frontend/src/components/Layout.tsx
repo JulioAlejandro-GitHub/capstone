@@ -7,16 +7,24 @@ export type PageKey =
   | 'deployments' | 'traceability' | 'run-detail' | 'explainability'
   | 'uploaded-predictions' | 'dataset-browser' | 'datasets' | 'errors';
 
-interface LayoutProps { page: PageKey; datasource: string; datasources: Datasource[];
-  onPageChange: (page: PageKey) => void; onDatasourceChange: (datasource: string) => void; children: ReactNode; }
+interface LayoutProps {
+  page: PageKey; datasource: string; datasources: Datasource[];
+  onPageChange: (page: PageKey) => void; onDatasourceChange: (datasource: string) => void; children: ReactNode;
+}
 
 export const modelAiNavItems: Array<{ page: PageKey; label: string }> = [
-  { page: 'dashboard', label: 'Resumen' }, { page: 'runs', label: 'Entrenamientos' },
-  { page: 'clinical-evaluation', label: 'Evaluaciones' }, { page: 'models', label: 'Comparación de modelos' },
-  { page: 'model-versions', label: 'Modelos liberados' }, { page: 'deployments', label: 'Despliegues' },
-  { page: 'traceability', label: 'Trazabilidad' }, { page: 'explainability', label: 'Explicabilidad' },
-  { page: 'uploaded-predictions', label: 'Predicciones' }, { page: 'dataset-browser', label: 'Dataset' },
+  { page: 'dashboard', label: 'Resumen' },
+  { page: 'runs', label: 'Entrenamientos' },
+  { page: 'clinical-evaluation', label: 'Evaluaciones' },
+  { page: 'models', label: 'Comparación de modelos' },
+  { page: 'model-versions', label: 'Modelos liberados' },
+  { page: 'deployments', label: 'Despliegues' },
+  { page: 'traceability', label: 'Trazabilidad' },
+  { page: 'explainability', label: 'Explicabilidad' },
+  { page: 'uploaded-predictions', label: 'Predicciones' },
+  { page: 'dataset-browser', label: 'Dataset' },
   { page: 'datasets', label: 'Datasets y modelos' },
+  { page: 'errors', label: 'Errores y logs' },
 ];
 
 export function Layout({ page, datasource, datasources, onPageChange, onDatasourceChange, children }: LayoutProps) {
@@ -41,8 +49,8 @@ export function Layout({ page, datasource, datasources, onPageChange, onDatasour
           {modelAiNavItems.map((item) => <button key={item.page} className={page === item.page ? 'active' : ''}
             aria-current={page === item.page ? 'page' : undefined} onClick={() => onPageChange(item.page)} type="button">{item.label}</button>)}
         </div> : null}
-        <button className={page === 'errors' ? 'active' : ''} aria-current={page === 'errors' ? 'page' : undefined}
-          onClick={() => onPageChange('errors')} type="button">Errores y logs</button>
+        {/* <button className={page === 'errors' ? 'active' : ''} aria-current={page === 'errors' ? 'page' : undefined}
+          onClick={() => onPageChange('errors')} type="button">Errores y logs</button> */}
       </nav>
     </aside>
     <main>
