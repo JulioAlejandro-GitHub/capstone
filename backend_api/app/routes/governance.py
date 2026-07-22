@@ -9,11 +9,13 @@ from app.services.serialization import row_to_dict,rows_to_list
 
 CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))
 from src.model_deployment_service import ModelDeploymentService
+from src.model_governance.promotion_service import PrepareModelReleaseService
 from src.traceable_inference import ModelCache,TraceableInferenceService
 
 MODEL_CACHE=ModelCache(maxsize=4)
 DEPLOYMENT_SERVICE=ModelDeploymentService(model_cache=MODEL_CACHE)
 INFERENCE_SERVICE=TraceableInferenceService(cache=MODEL_CACHE)
+PROMOTION_SERVICE=PrepareModelReleaseService()
 
 router=APIRouter(prefix="/api",tags=["model-governance"])
 def uid(value):
@@ -24,6 +26,10 @@ def safe(call):
     except HTTPException:raise
     except Exception as exc:raise HTTPException(409,f"Operación rechazada: {type(exc).__name__}") from exc
 
+class PrepareReleaseRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    requester:str|None="system"
+    target_environment:str|None="production"
 class DeploymentCreate(BaseModel):
     model_config=ConfigDict(extra="forbid")
     model_version_id:str;deployment_name:str;environment:str;alias:str;threshold_profile_id:str;deployed_by:str|None=None;metadata:dict={};activate:bool=False;dry_run:bool=False
@@ -107,3 +113,12 @@ def inference_run(run_id:str,datasource:str|None=Query("malaria")):
       JOIN run_model_deployments b ON b.run_id=r.id AND b.role='primary' WHERE r.id=CAST(:id AS uuid) AND r.run_type='inference'""",{"id":uid(run_id)})
     if not row:raise HTTPException(404,"Inference run no encontrado")
     return row_to_dict(row)
+@router.post("/training-runs/{training_run_id}/prepare-release")
+def prepare_release_endpoint(training_run_id:str,body:PrepareReleaseRequest|None=None):
+    req=body.requester if body else "system"
+    target_env=body.target_environment if body else "production"
+    return safe(lambda:PROMOTION_SERVICE.prepare_release(uid(training_run_id),requester=req,target_environment=target_env))
+@router.get("/training-runs/{training_run_id}/promotion-status")
+def promotion_status_endpoint(training_run_id:str):
+    return safe(lambda:PROMOTION_SERVICE.get_promotion_status(uid(training_run_id)))
+
