@@ -8,6 +8,7 @@ from app.routes import (
     dataset,
     explainability,
     health,
+    governance,
     metrics,
     observability,
     predictions,
@@ -17,8 +18,8 @@ from app.routes import (
 
 app = FastAPI(
     title="Capstone Experiments API",
-    description="Read-only API for ML experiment tracking dashboards.",
-    version="0.1.0",
+    description="Experiment tracking and governed model inference API.",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -28,7 +29,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
     ],
     allow_credentials=True,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -42,3 +43,4 @@ app.include_router(explainability.router)
 app.include_router(predictions.router)
 app.include_router(observability.router)
 app.include_router(artifacts.router)
+app.include_router(governance.router)
