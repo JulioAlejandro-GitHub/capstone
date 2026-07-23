@@ -15,6 +15,8 @@ import type {
   ModelSummary,
   ModelVersionRow,
   DeploymentRow,
+  AvailableModel,
+  InferenceResult,
   ModelVersionLineageRow,
   PagedResponse,
   RunDashboard,
@@ -226,6 +228,58 @@ export const api = {
 
   getDeployments(datasource: string, active = false) {
     return request<{ items: DeploymentRow[] }>(active ? '/api/deployments/active' : '/api/deployments', withDatasource(datasource));
+  },
+
+  getAvailableModels(datasource: string, environment?: string) {
+    return request<{ items: AvailableModel[] }>('/api/models/available', { datasource, environment });
+  },
+
+  validateModelVersion(datasource:string,modelVersionId:string,thresholdProfileId:string,actor:string,reason:string) {
+    return request<ModelVersionRow>(`/api/model-versions/${modelVersionId}/validate`,withDatasource(datasource),{
+      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({threshold_profile_id:thresholdProfileId,actor,reason})},
+    });
+  },
+
+  approveModelVersion(datasource:string,modelVersionId:string,actor:string,reason:string) {
+    return request<ModelVersionRow>(`/api/model-versions/${modelVersionId}/approve`,withDatasource(datasource),{
+      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor,reason})},
+    });
+  },
+
+  createDeployment(datasource:string,payload:{model_version_id:string;deployment_name:string;environment:string;alias:string;threshold_profile_id:string;deployed_by:string}) {
+    return request<DeploymentRow>('/api/deployments',withDatasource(datasource),{
+      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,activate:false})},
+    });
+  },
+
+  smokeTestDeployment(datasource:string,deploymentId:string,sourceImageId:string,actor:string) {
+    return request<{deployment:DeploymentRow;smoke_test:JsonRecord}>(`/api/deployments/${deploymentId}/smoke-test`,withDatasource(datasource),{
+      timeoutMs:30000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_image_id:sourceImageId,actor})},
+    });
+  },
+
+  activateDeployment(datasource:string,deploymentId:string,actor:string,confirmProduction:boolean) {
+    return request<DeploymentRow>(`/api/deployments/${deploymentId}/activate`,withDatasource(datasource),{
+      timeoutMs:30000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor,confirm_production:confirmProduction})},
+    });
+  },
+
+  transitionDeployment(datasource:string,deploymentId:string,action:'deactivate'|'retire',actor:string,reason:string) {
+    return request<DeploymentRow>(`/api/deployments/${deploymentId}/${action}`,withDatasource(datasource),{
+      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor,reason})},
+    });
+  },
+
+  rollbackDeployment(datasource:string,deploymentId:string,targetDeploymentId:string,actor:string,reason:string) {
+    return request<DeploymentRow>(`/api/deployments/${deploymentId}/rollback`,withDatasource(datasource),{
+      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target_deployment_id:targetDeploymentId,actor,reason})},
+    });
+  },
+
+  createImageAnalysisJob(datasource:string,deployedModelVersionId:string,sourceImageId:string) {
+    return request<InferenceResult>('/api/image-analysis-jobs',withDatasource(datasource),{
+      timeoutMs:30000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deployed_model_version_id:deployedModelVersionId,source_image_id:sourceImageId})},
+    });
   },
 
   getClinicalModelComparison(datasource: string) {

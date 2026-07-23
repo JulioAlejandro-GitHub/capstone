@@ -4,7 +4,7 @@ import { DataTable } from '../components/DataTable';
 import { Loading } from '../components/Loading';
 import { StatusBadge } from '../components/StatusBadge';
 import { api } from '../services/api';
-import type { JsonValue, PagedResponse, UploadedPrediction } from '../types/api';
+import type { AvailableModel, InferenceResult, JsonValue, PagedResponse, UploadedPrediction } from '../types/api';
 import { formatDate, formatMetric } from '../utils/format';
 
 
@@ -71,6 +71,19 @@ export function UploadedPredictions({ datasource, onRunSelect, onExplainabilityO
   const [caseType, setCaseType] = useState('');
   const [decisionCode, setDecisionCode] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [availableModels,setAvailableModels]=useState<AvailableModel[]>([]);
+  const [deploymentId,setDeploymentId]=useState('');
+  const [sourceImageId,setSourceImageId]=useState('');
+  const [inference,setInference]=useState<InferenceResult|null>(null);
+  const [inferenceBusy,setInferenceBusy]=useState(false);
+  const [inferenceError,setInferenceError]=useState<string|null>(null);
+
+  useEffect(()=>{Promise.all([api.getAvailableModels(datasource),api.getDatasetImages(datasource,{page_size:24})])
+    .then(([models,images])=>{setAvailableModels(models.items);setDeploymentId(current=>current||models.items[0]?.id||'');setSourceImageId(current=>current||images.items[0]?.image_id||'');})
+    .catch(err=>setInferenceError(err instanceof Error?err.message:String(err)));},[datasource]);
+  const executeInference=async()=>{setInferenceBusy(true);setInferenceError(null);try{
+    setInference(await api.createImageAnalysisJob(datasource,deploymentId,sourceImageId));
+  }catch(err){setInferenceError(err instanceof Error?err.message:String(err));}finally{setInferenceBusy(false);}};
 
   useEffect(() => {
     setError(null);
@@ -123,6 +136,15 @@ export function UploadedPredictions({ datasource, onRunSelect, onExplainabilityO
           Este reporte es una herramienta de apoyo para revision caso a caso. No reemplaza diagnostico
           clinico, validacion de laboratorio ni revision por especialistas.
         </p>
+      </section>
+
+      <section className="panel">
+        <div className="section-heading"><h2>Nuevo análisis trazable</h2><span>{availableModels.length} modelos disponibles</span></div>
+        <div className="filters-grid"><label>Deployment activo<select value={deploymentId} onChange={e=>setDeploymentId(e.target.value)}><option value="">Seleccione un modelo</option>{availableModels.map(model=><option key={model.id} value={model.id}>{model.model_name} v{model.version_number} · {model.environment}/{model.alias}</option>)}</select></label>
+          <label>Imagen registrada<input value={sourceImageId} onChange={e=>setSourceImageId(e.target.value)}/></label>
+          <button disabled={inferenceBusy||!deploymentId||!sourceImageId} onClick={executeInference}>{inferenceBusy?'Analizando…':'Ejecutar análisis'}</button></div>
+        {inferenceError?<div className="warning-panel" role="alert">{inferenceError}</div>:null}
+        {inference?<div className="facts-grid" role="status"><span>Resultado<strong>{inference.predicted_label} ({inference.predicted_class})</strong></span><span>Probabilidad parasitized<strong>{formatMetric(inference.probability_parasitized)}</strong></span><span>Inference run<strong>{inference.inference_run_id}</strong></span><span>Image job<strong>{inference.image_analysis_job_id}</strong></span></div>:null}
       </section>
 
       <section className="panel">

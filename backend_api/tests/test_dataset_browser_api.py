@@ -9,6 +9,8 @@ if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
 from app.routes.dataset import dataset_images, dataset_summary_endpoint  # noqa: E402
+from app.services.dataset_browser import paginated_dataset_images  # noqa: E402
+from fastapi import HTTPException  # noqa: E402
 
 
 class DatasetBrowserApiTests(unittest.TestCase):
@@ -54,6 +56,31 @@ class DatasetBrowserApiTests(unittest.TestCase):
             page=2,
             page_size=24,
         )
+
+    def test_auxiliary_image_page_accepts_every_contract_size(self):
+        for page_size in (12, 24, 48, 96):
+            with self.subTest(page_size=page_size), mock.patch(
+                "app.services.dataset_browser.safe_fetch_one",
+                return_value={"total": 0},
+            ), mock.patch(
+                "app.services.dataset_browser.safe_fetch_all",
+                return_value=[],
+            ):
+                payload = paginated_dataset_images(
+                    datasource="malaria", page=1, page_size=page_size
+                )
+            self.assertEqual(payload["page"], 1)
+            self.assertEqual(payload["page_size"], page_size)
+            self.assertEqual(payload["total_items"], 0)
+            self.assertEqual(payload["total_pages"], 1)
+
+    def test_auxiliary_image_page_rejects_historical_size_20(self):
+        with self.assertRaises(HTTPException) as context:
+            paginated_dataset_images(
+                datasource="malaria", page=1, page_size=20
+            )
+        self.assertEqual(context.exception.status_code, 400)
+        self.assertIn("12, 24, 48 o 96", context.exception.detail)
 
 
 if __name__ == "__main__":

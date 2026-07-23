@@ -97,10 +97,13 @@ test('mantiene separación de responsabilidades y rutas actuales',()=>{
   }
 });
 
-test('Modelos liberados muestra evidencia y no inventa acciones o permisos',()=>{
+test('Modelos liberados muestra evidencia y conecta transiciones explícitas',()=>{
   for(const token of ['evaluation_run_id','explainability_run_ids','threshold','preprocessing_profile_snapshot','artifact_sha256','can_deploy','blocking_reasons']){
     assert.match(versions,new RegExp(token));
   }
-  assert.doesNotMatch(versions,/api\\.(approve|validate|createDeployment)/);
-  assert.match(versions,/no están habilitadas/);
+  for(const action of ['validateModelVersion','approveModelVersion','createDeployment']){
+    assert.match(versions,new RegExp(`api\\.${action}`));
+  }
+  assert.match(versions,/actor|Responsable/);
+  assert.match(versions,/motivo|Motivo/);
 });

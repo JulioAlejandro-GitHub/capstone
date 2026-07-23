@@ -2,12 +2,18 @@
 from __future__ import annotations
 import time
 from collections import OrderedDict
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
 from sqlalchemy import text
 from src.model_governance.releases import sha256_file
 from src.model_governance import repository
 from src.model_deployment_service import ModelDeploymentService
+
+PROJECT_ROOT=Path(__file__).resolve().parents[1]
+def _project_path(value):
+    path=Path(value)
+    return path if path.is_absolute() else PROJECT_ROOT/path
 
 class ModelCache:
     def __init__(self,maxsize=4): self.maxsize=maxsize;self._items=OrderedDict()
@@ -63,32 +69,33 @@ class TraceableInferenceService:
             deployment=self._deployment(c,deployed_model_version_id)
             image=c.execute(text("SELECT image_id::text id,COALESCE(absolute_path,dataset_dir||'/'||relative_path) file_path FROM dataset_split_images WHERE image_id=:id"),{"id":str(UUID(str(source_image_id)))}).mappings().one_or_none()
             if not image:raise ValueError("source_image_id inexistente")
-            path=Path(deployment["artifact_path"]).resolve();image_path=Path(image["file_path"]).resolve()
+            path=_project_path(deployment["artifact_path"]).resolve();image_path=_project_path(image["file_path"]).resolve()
             allowed=(Path(__file__).resolve().parents[1]/"outputs").resolve(),(Path(__file__).resolve().parents[1]/"releases").resolve()
             if not any(path==root or root in path.parents for root in allowed):raise ValueError("artefacto fuera del store autorizado")
             if not path.is_file() or sha256_file(path)!=deployment["model_sha256"]:raise ValueError("integridad del modelo inválida")
             if deployment["model_version_status"] not in {"approved","validated","deployed"} or deployment["lineage_status"]!="resolved":raise ValueError("model version no apta")
             mapping=dict(deployment["class_mapping"] or {})
             if mapping.get("0")!="uninfected" or mapping.get("1")!="parasitized":raise ValueError("class_mapping inválido")
+            run=repository.create_inference_run(deployed_model_version_id=deployed_model_version_id,backend_version="backend-api-0.2",pipeline_version="traceable-image-v1",configuration={"model_version_id":str(deployment["model_version_id"]),"sha256":deployment["model_sha256"]},connection_or_session=c)
+            job=repository.create_image_analysis_job(inference_run_id=run.id,deployed_model_version_id=deployed_model_version_id,source_image_id=source_image_id,status="running",quality_status="not_assessed",threshold_used=float(deployment["threshold_value"]),threshold_source="deployment_snapshot",started_at=run.started_at or datetime.now(UTC),connection_or_session=c)
             try:
-                run=repository.create_inference_run(deployed_model_version_id=deployed_model_version_id,backend_version="backend-api-0.2",pipeline_version="traceable-image-v1",configuration={"model_version_id":str(deployment["model_version_id"]),"sha256":deployment["model_sha256"]},connection_or_session=c)
-                job=repository.create_image_analysis_job(inference_run_id=run.id,deployed_model_version_id=deployed_model_version_id,source_image_id=source_image_id,status="running",quality_status="not_assessed",threshold_used=float(deployment["threshold_value"]),threshold_source="deployment_snapshot",connection_or_session=c)
-                model=self.cache.get_or_load(deployment["model_version_id"],deployment["model_sha256"],path,self.loader)
-                probability=float(self.predictor(model,image_path,dict(deployment["preprocessing_profile_snapshot"] or {}),dict(deployment["input_signature"] or {})))
-                if not 0<=probability<=1:raise ValueError("probabilidad fuera de rango")
-                threshold=float(deployment["threshold_value"]);predicted=1 if probability>=threshold else 0;label="parasitized" if predicted else "uninfected"
-                prediction=c.execute(text("""INSERT INTO predictions(run_id,image_id,predicted_label,score,score_positive_label,threshold,
-                  image_analysis_job_id,model_version_id,deployed_model_version_id,inference_run_id,classifier_model_version_id,
-                  prediction_scope,source_image_id,probability_parasitized,probability_uninfected,threshold_used,predicted_class,
-                  quality_status,review_status,metadata) VALUES(:run,:image,:label,:p,:p,:t,:job,:mv,:dep,:run,:mv,'image',:image,:p,:u,:t,:class,'not_assessed','unreviewed',CAST(:metadata AS jsonb)) RETURNING id"""),
-                  {"run":run.id,"image":str(source_image_id),"label":label,"p":probability,"u":1-probability,"t":threshold,"job":job.id,"mv":str(deployment["model_version_id"]),"dep":str(deployed_model_version_id),"class":predicted,"metadata":'{"stage":"image_classification","object_detection":false}'}).scalar_one()
+                with c.begin_nested():
+                    model=self.cache.get_or_load(deployment["model_version_id"],deployment["model_sha256"],path,self.loader)
+                    probability=float(self.predictor(model,image_path,dict(deployment["preprocessing_profile_snapshot"] or {}),dict(deployment["input_signature"] or {})))
+                    if not 0<=probability<=1:raise ValueError("probabilidad fuera de rango")
+                    threshold=float(deployment["threshold_value"]);predicted=1 if probability>=threshold else 0;label="parasitized" if predicted else "uninfected"
+                    prediction=c.execute(text("""INSERT INTO predictions(run_id,image_id,predicted_label,score,score_positive_label,threshold,
+                      image_analysis_job_id,model_version_id,deployed_model_version_id,inference_run_id,classifier_model_version_id,
+                      prediction_scope,source_image_id,probability_parasitized,probability_uninfected,threshold_used,predicted_class,
+                      quality_status,review_status,metadata) VALUES(:run,:legacy_image,:label,:p,:p,:t,:job,:mv,:dep,:run,:mv,'image',:source_image,:p,:u,:t,:class,'not_assessed','unreviewed',CAST(:metadata AS jsonb)) RETURNING id"""),
+                      {"run":run.id,"legacy_image":str(source_image_id),"source_image":str(source_image_id),"label":label,"p":probability,"u":1-probability,"t":threshold,"job":job.id,"mv":str(deployment["model_version_id"]),"dep":str(deployed_model_version_id),"class":predicted,"metadata":'{"stage":"image_classification","object_detection":false}'}).scalar_one()
                 elapsed=time.perf_counter()-started
-                c.execute(text("UPDATE image_analysis_jobs SET status='completed',completed_at=NOW(),summary=CAST(:summary AS jsonb),updated_at=NOW() WHERE id=:id"),{"id":job.id,"summary":f'{{"prediction_id":"{prediction}","processing_time":{elapsed}}}'})
-                c.execute(text("UPDATE runs SET status='completed',finished_at=NOW() WHERE id=:id"),{"id":run.id})
+                c.execute(text("UPDATE image_analysis_jobs SET status='completed',completed_at=clock_timestamp(),summary=CAST(:summary AS jsonb),updated_at=clock_timestamp() WHERE id=:id"),{"id":job.id,"summary":f'{{"prediction_id":"{prediction}","processing_time":{elapsed}}}'})
+                c.execute(text("UPDATE runs SET status='completed',finished_at=clock_timestamp() WHERE id=:id"),{"id":run.id})
             except Exception as exc:
-                if job:c.execute(text("UPDATE image_analysis_jobs SET status='failed',completed_at=NOW(),error_message=:error WHERE id=:id"),{"id":job.id,"error":type(exc).__name__})
-                if run:c.execute(text("UPDATE runs SET status='failed',finished_at=NOW(),error_message=:error WHERE id=:id"),{"id":run.id,"error":type(exc).__name__})
+                if job:c.execute(text("UPDATE image_analysis_jobs SET status='failed',completed_at=clock_timestamp(),error_message=:error WHERE id=:id"),{"id":job.id,"error":type(exc).__name__})
+                if run:c.execute(text("UPDATE runs SET status='failed',finished_at=clock_timestamp(),error_message=:error WHERE id=:id"),{"id":run.id,"error":type(exc).__name__})
                 failure=exc
         if failure is not None:
-            raise RuntimeError(f"inference failed: {type(failure).__name__}") from failure
+            raise RuntimeError(f"inference failed: {type(failure).__name__}: {failure}") from failure
         return {"inference_run_id":str(run.id),"image_analysis_job_id":str(job.id),"deployed_model_version_id":str(deployed_model_version_id),"model_version_id":str(deployment["model_version_id"]),"model_name":deployment["model_name"],"model_version":deployment["version_number"],"probability_parasitized":probability,"probability_uninfected":1-probability,"predicted_class":predicted,"predicted_label":label,"threshold_used":threshold,"threshold_source":"deployment_snapshot","quality_status":"not_assessed","processing_time":elapsed,"warnings":[]}

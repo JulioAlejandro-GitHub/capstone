@@ -35,6 +35,7 @@ export interface ModelVersionRow {
   recall_parasitized?: number | null; specificity?: number | null; f2_parasitized?: number | null;
   evaluation_run_id?: string | null; explainability_available?: boolean;
   active_deployment_id?: string | null; deployment_alias?: string | null; deployment_environment?: string | null;
+  threshold_profile_id?: string | null;
   preprocessing_profile_snapshot?: JsonRecord;
   class_mapping?: JsonRecord;
   input_signature?: JsonRecord;
@@ -47,6 +48,19 @@ export interface DeploymentRow {
   model_version_id: string; status: string; threshold_value: number;
   deployed_at: string | null; retired_at: string | null; deployed_by: string | null;
   created_at?: string | null;
+  metadata?: JsonRecord; supersedes_deployment_id?: string|null; rollback_of_deployment_id?: string|null;
+}
+
+export interface AvailableModel extends DeploymentRow {
+  training_run_id: string; model_name: string; version_number: number;
+  model_version_status: string;
+}
+
+export interface InferenceResult {
+  inference_run_id:string; image_analysis_job_id:string; deployed_model_version_id:string;
+  model_version_id:string; model_name:string; model_version:number;
+  probability_parasitized:number; probability_uninfected:number;
+  predicted_class:0|1; predicted_label:'uninfected'|'parasitized'; threshold_used:number;
 }
 
 export interface ModelVersionLineageRow {

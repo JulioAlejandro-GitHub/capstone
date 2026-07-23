@@ -111,6 +111,7 @@ function App() {
       {page === 'model-versions' ? (
         <ModelVersions
           datasource={datasource}
+          onDeploymentSelect={selectDeployment}
           onDeployments={() => selectPage('deployments')}
           onExecutions={() => selectPage('runs')}
           onRunSelect={selectRun}

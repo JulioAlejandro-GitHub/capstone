@@ -10,6 +10,7 @@ from app.services.serialization import row_to_dict,rows_to_list
 
 CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))
 from src.model_deployment_service import ModelDeploymentService
+from src.model_release_lifecycle_service import ModelReleaseLifecycleService
 from src.prepare_model_release_service import PrepareModelReleaseService
 from src.traceable_inference import ModelCache,TraceableInferenceService
 
@@ -24,14 +25,23 @@ def uid(value):
 def safe(call):
     try:return call()
     except HTTPException:raise
-    except Exception as exc:raise HTTPException(409,f"Operación rechazada: {type(exc).__name__}") from exc
+    except Exception as exc:raise HTTPException(409,f"Operación rechazada: {exc}") from exc
 
 class DeploymentCreate(BaseModel):
     model_config=ConfigDict(extra="forbid")
     model_version_id:str;deployment_name:str;environment:str;alias:str;threshold_profile_id:str;deployed_by:str|None=None;metadata:dict={};activate:bool=False;dry_run:bool=False
 class Transition(BaseModel):
     model_config=ConfigDict(extra="forbid")
-    actor:str|None=None;reason:str|None=None
+    actor:str|None=None;reason:str|None=None;confirm_production:bool=False
+class ModelVersionTransition(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    actor:str|None=None;reason:str|None=None;threshold_profile_id:str|None=None
+class SmokeTestRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    source_image_id:str;actor:str|None=None
+class RollbackRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    target_deployment_id:str;actor:str|None=None;reason:str|None=None
 class ImageJobCreate(BaseModel):
     model_config=ConfigDict(extra="forbid")
     deployed_model_version_id:str|None=None;deployment_name:str|None=None;environment:str|None=None;alias:str|None=None;source_image_id:str
@@ -46,6 +56,15 @@ def prepare_release_service(datasource:str|None):
         with get_engine(key).begin() as connection:
             yield connection
     return PrepareModelReleaseService(connection_factory=connection_factory)
+
+def governance_services(datasource:str|None):
+    key=resolve_datasource(datasource)
+    @contextmanager
+    def connection_factory():
+        with get_engine(key).begin() as connection:
+            yield connection
+    deployment=ModelDeploymentService(connection_factory=connection_factory,model_cache=MODEL_CACHE)
+    return deployment,ModelReleaseLifecycleService(connection_factory),TraceableInferenceService(connection_factory=connection_factory,cache=MODEL_CACHE)
 
 @router.get("/training-runs/{training_run_id}/promotion-status")
 def promotion_status(training_run_id:str,datasource:str|None=Query("malaria")):
@@ -77,12 +96,13 @@ def model_versions(datasource:str|None=Query("malaria")):
       mv.artifact_sha256,mv.artifact_size_bytes,mv.framework,mv.framework_version,mv.class_mapping,mv.input_signature,mv.output_signature,mv.created_at,mv.validated_at,
       evaluation.evaluation_run_id,evaluation.recall_parasitized,evaluation.specificity,evaluation.f2_parasitized,
       threshold.threshold_used,COALESCE(explanation.available,FALSE) explainability_available,
+      threshold.threshold_profile_id,
       deployment.id active_deployment_id,deployment.alias deployment_alias,deployment.environment deployment_environment
       FROM model_versions mv
       LEFT JOIN LATERAL(SELECT r.id evaluation_run_id,metric.recall_parasitized,metric.specificity,metric.f2_parasitized
         FROM run_lineage rl JOIN runs r ON r.id=rl.child_run_id LEFT JOIN run_clinical_metrics metric ON metric.run_id=r.id
         WHERE rl.model_version_id=mv.id AND r.run_type='evaluation' ORDER BY r.finished_at DESC NULLS LAST LIMIT 1)evaluation ON TRUE
-      LEFT JOIN LATERAL(SELECT calibration.threshold_selected threshold_used FROM run_threshold_calibration calibration
+      LEFT JOIN LATERAL(SELECT calibration.threshold_selected threshold_used,calibration.run_threshold_calibration_id threshold_profile_id FROM run_threshold_calibration calibration
         WHERE calibration.model_version_id=mv.id ORDER BY calibration.created_at DESC LIMIT 1)threshold ON TRUE
       LEFT JOIN LATERAL(SELECT TRUE available FROM run_lineage rl JOIN runs r ON r.id=rl.child_run_id
         WHERE rl.model_version_id=mv.id AND r.run_type='explainability' AND r.status='completed' LIMIT 1)explanation ON TRUE
@@ -105,28 +125,50 @@ def deployments(datasource:str|None=Query("malaria")):
 @router.get("/deployments/active")
 def active_deployments(datasource:str|None=Query("malaria")):
     return {"items":rows_to_list(fetch_all(datasource,"SELECT * FROM deployed_model_versions WHERE status='active' ORDER BY deployment_name,environment,alias"))}
+@router.get("/models/available")
+def available_models(datasource:str|None=Query("malaria"),environment:str|None=None):
+    filters=" AND d.environment=:environment" if environment else ""
+    return {"items":rows_to_list(fetch_all(datasource,"""SELECT d.*,mv.training_run_id,mv.model_name,mv.version_number,
+      mv.status model_version_status FROM deployed_model_versions d JOIN model_versions mv ON mv.id=d.model_version_id
+      WHERE d.status='active' AND mv.status IN ('approved','deployed')"""+filters+
+      " ORDER BY d.environment,d.deployment_name,d.alias",{"environment":environment} if environment else {}))}
 @router.get("/deployments/{deployment_id}")
 def deployment(deployment_id:str,datasource:str|None=Query("malaria")):
     row=fetch_one(datasource,"SELECT * FROM deployed_model_versions WHERE id=CAST(:id AS uuid)",{"id":uid(deployment_id)})
     if not row:raise HTTPException(404,"Deployment no encontrado")
     return row_to_dict(row)
+@router.post("/model-versions/{model_version_id}/validate")
+def validate_model_version(model_version_id:str,body:ModelVersionTransition,datasource:str|None=Query("malaria")):
+    if not body.threshold_profile_id:raise HTTPException(422,"threshold_profile_id requerido")
+    return safe(lambda:governance_services(datasource)[1].validate(uid(model_version_id),uid(body.threshold_profile_id),body.actor,body.reason))
+@router.post("/model-versions/{model_version_id}/approve")
+def approve_model_version(model_version_id:str,body:ModelVersionTransition,datasource:str|None=Query("malaria")):
+    return safe(lambda:governance_services(datasource)[1].approve(uid(model_version_id),body.actor,body.reason))
+@router.post("/model-versions/{model_version_id}/reject")
+def reject_model_version(model_version_id:str,body:ModelVersionTransition,datasource:str|None=Query("malaria")):
+    return safe(lambda:governance_services(datasource)[1].reject(uid(model_version_id),body.actor,body.reason))
 @router.post("/deployments")
-def create_deployment(body:DeploymentCreate):
+def create_deployment(body:DeploymentCreate,datasource:str|None=Query("malaria")):
     def op():
-        service=DEPLOYMENT_SERVICE;result=service.create(model_version_id=body.model_version_id,deployment_name=body.deployment_name,environment=body.environment,alias=body.alias,threshold_profile_id=body.threshold_profile_id,deployed_by=body.deployed_by,metadata=body.metadata,dry_run=body.dry_run)
+        service=governance_services(datasource)[0];result=service.create(model_version_id=body.model_version_id,deployment_name=body.deployment_name,environment=body.environment,alias=body.alias,threshold_profile_id=body.threshold_profile_id,deployed_by=body.deployed_by,metadata=body.metadata,dry_run=body.dry_run)
         if body.activate and not body.dry_run:result=service.activate(result.id,actor=body.deployed_by)
         return result
     return safe(op)
 @router.post("/deployments/{deployment_id}/activate")
-def activate(deployment_id:str,body:Transition):return safe(lambda:DEPLOYMENT_SERVICE.activate(uid(deployment_id),actor=body.actor))
+def activate(deployment_id:str,body:Transition,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].activate(uid(deployment_id),actor=body.actor,confirm_production=body.confirm_production))
+@router.post("/deployments/{deployment_id}/smoke-test")
+def smoke_test(deployment_id:str,body:SmokeTestRequest,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].smoke_test(uid(deployment_id),uid(body.source_image_id),body.actor))
+@router.post("/deployments/{deployment_id}/rollback")
+def rollback(deployment_id:str,body:RollbackRequest,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].rollback(uid(deployment_id),uid(body.target_deployment_id),body.actor,body.reason))
 @router.post("/deployments/{deployment_id}/deactivate")
-def deactivate(deployment_id:str,body:Transition):return safe(lambda:DEPLOYMENT_SERVICE.transition(uid(deployment_id),"inactive",body.actor,body.reason))
+def deactivate(deployment_id:str,body:Transition,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].transition(uid(deployment_id),"inactive",body.actor,body.reason))
 @router.post("/deployments/{deployment_id}/retire")
-def retire(deployment_id:str,body:Transition):return safe(lambda:DEPLOYMENT_SERVICE.transition(uid(deployment_id),"retired",body.actor,body.reason))
+def retire(deployment_id:str,body:Transition,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].transition(uid(deployment_id),"retired",body.actor,body.reason))
 @router.post("/image-analysis-jobs")
-def create_image_job(body:ImageJobCreate):
+def create_image_job(body:ImageJobCreate,datasource:str|None=None):
     if not body.deployed_model_version_id and not all((body.deployment_name,body.environment,body.alias)):raise HTTPException(422,"deployment id o alias requerido")
-    return safe(lambda:INFERENCE_SERVICE.infer(**body.model_dump()))
+    service=governance_services(datasource)[2] if datasource else INFERENCE_SERVICE
+    return safe(lambda:service.infer(**body.model_dump()))
 @router.get("/image-analysis-jobs/{job_id}")
 def image_job(job_id:str,datasource:str|None=Query("malaria")):
     row=fetch_one(datasource,"SELECT * FROM image_analysis_jobs WHERE id=CAST(:id AS uuid)",{"id":uid(job_id)})
