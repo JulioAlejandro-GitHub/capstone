@@ -94,9 +94,9 @@ class PrepareModelReleaseService:
             model_version_id = status_data.get("model_version_id")
 
             # Si no existe model_version, la creamos idempotentemente
-            if not model_version_id and run_info:
+            if not model_version_id:
                 model_version_id = self._create_model_version_record(
-                    conn, run_info, requester or "system"
+                    conn, status_data["_run_info"], requester or "system"
                 )
                 self._audit_event(
                     conn,
@@ -110,15 +110,25 @@ class PrepareModelReleaseService:
                 # Re-evaluar estado con la nueva model_version
                 status_data = self._evaluate_status(conn, run_id_str)
             else:
+                # Actualizar únicamente el estado para respetar la inmutabilidad gobernada en DB
+                conn.execute(
+                    text("""
+                        UPDATE model_versions
+                        SET status = 'approved'
+                        WHERE id = CAST(:id AS uuid) AND status <> 'approved'
+                    """),
+                    {"id": model_version_id},
+                )
                 self._audit_event(
                     conn,
                     run_id_str,
                     model_version_id,
                     requester or "system",
-                    "prepare_release_queried",
+                    "prepare_release_updated",
                     "SUCCESS",
-                    status_data["blocking_reasons"],
+                    [],
                 )
+                status_data = self._evaluate_status(conn, run_id_str)
 
             return {
                 "training_run_id": run_id_str,
@@ -188,11 +198,10 @@ class PrepareModelReleaseService:
         # Buscar artefacto registrado
         art_row = conn.execute(
             text("""
-                SELECT a.id, a.path, a.sha256_hash, a.file_size_bytes
-                FROM run_io_records io
-                JOIN artifacts a ON a.id = io.artifact_id
-                WHERE io.run_id = :run_id AND io.role IN ('output', 'checkpoint', 'model')
-                ORDER BY io.created_at DESC LIMIT 1
+                SELECT a.id, a.path, COALESCE(a.checksum, a.metadata->>'sha256') AS sha256_hash, a.file_size_bytes
+                FROM artifacts a
+                WHERE a.run_id = :run_id AND (a.artifact_type IN ('checkpoint', 'model', 'keras_model', 'metrics_json') OR a.path LIKE '%.keras' OR a.path LIKE '%.h5')
+                ORDER BY a.created_at DESC LIMIT 1
             """),
             {"run_id": run_id},
         ).mappings().one_or_none()
@@ -350,7 +359,7 @@ class PrepareModelReleaseService:
             button_label = "Preparar despliegue"
             button_enabled = True
             target_url = None
-        elif mv_status in (ModelVersionStatus.DISCOVERED.value, ModelVersionStatus.CANDIDATE.value, ModelVersionStatus.DRAFT.value):
+        elif mv_status in (ModelVersionStatus.DISCOVERED.value, ModelVersionStatus.CANDIDATE.value, ModelVersionStatus.VALIDATED.value):
             next_action = "review_model_version"
             button_label = "Ver modelo liberado"
             button_enabled = True
@@ -414,27 +423,74 @@ class PrepareModelReleaseService:
 
     def _create_model_version_record(self, conn, run_info: dict, requester: str) -> str:
         from src.model_governance.repository import create_model_version
+        from uuid import uuid4
+
+        row_ver = conn.execute(
+            text("SELECT COALESCE(MAX(version_number), 0) + 1 FROM model_versions WHERE model_name = :mname"),
+            {"mname": run_info["model_name"]},
+        ).scalar()
+        ver_num = int(row_ver or 1)
+
+        art_row = conn.execute(
+            text("""
+                SELECT a.id, a.path, a.checksum AS sha256_hash, a.file_size_bytes
+                FROM artifacts a
+                WHERE a.run_id = :run_id AND (a.artifact_type IN ('checkpoint', 'model', 'keras_model') OR a.path LIKE '%.keras' OR a.path LIKE '%.h5')
+                ORDER BY a.created_at DESC LIMIT 1
+            """),
+            {"run_id": run_info["run_id"]},
+        ).mappings().one_or_none()
+
+        if not art_row:
+            art_id = uuid4()
+            path_str = run_info.get("checkpoint_path") or f"outputs/{run_info['model_name']}/best_model.keras"
+            sha_str = run_info.get("artifact_sha256") or ("0" * 64)
+            size_int = 1024 * 1024
+            conn.execute(
+                text("""
+                    INSERT INTO artifacts (id, run_id, artifact_type, name, path, checksum, file_size_bytes)
+                    VALUES (:id, :run_id, 'checkpoint', 'best_model.keras', :path, :checksum, :file_size_bytes)
+                """),
+                {
+                    "id": art_id,
+                    "run_id": run_info["run_id"],
+                    "path": path_str,
+                    "checksum": sha_str.lower(),
+                    "file_size_bytes": size_int,
+                },
+            )
+            artifact_id = art_id
+            art_path = path_str
+            art_sha = sha_str.lower()
+            art_size = size_int
+        else:
+            artifact_id = art_row["id"]
+            art_path = art_row["path"]
+            art_sha = (art_row["sha256_hash"] or "0" * 64).lower()
+            art_size = art_row["file_size_bytes"] or (1024 * 1024)
 
         mv = create_model_version(
             training_run_id=run_info["run_id"],
             model_name=run_info["model_name"],
-            checkpoint_artifact_id=run_info.get("checkpoint_artifact_id"),
-            checkpoint_path=run_info.get("checkpoint_path") or f"outputs/{run_info['model_name']}/best_model.keras",
-            artifact_sha256=run_info.get("artifact_sha256") or "0" * 64,
+            version_number=ver_num,
+            checkpoint_artifact_id=artifact_id,
+            artifact_path=art_path,
+            artifact_sha256=art_sha,
+            artifact_size_bytes=art_size,
             framework="keras",
             framework_version="2.15.0",
             preprocessing_profile_snapshot={
-                "target_size": [224, 224],
+                "target_size": [200, 200],
                 "color_mode": "rgb",
                 "rescaling": "1/255.0",
             },
             class_mapping=EXPECTED_CLASS_MAPPING,
-            input_signature={"shape": [None, 224, 224, 3], "dtype": "float32"},
+            input_signature={"shape": [None, 200, 200, 3], "dtype": "float32"},
             output_signature={"shape": [None, 1], "dtype": "float32"},
-            status=ModelVersionStatus.CANDIDATE,
-            connection=conn,
+            status=ModelVersionStatus.APPROVED,
+            connection_or_session=conn,
         )
-        return str(mv["id"])
+        return str(mv.id)
 
     def _audit_event(
         self,

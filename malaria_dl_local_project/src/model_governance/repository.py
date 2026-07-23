@@ -56,7 +56,7 @@ def _connection(connection_or_session=None):
 
 def _json(value: Mapping[str, Any] | None, field_name: str) -> str:
     try:
-        return json.dumps(dict(value or {}), ensure_ascii=False, sort_keys=True)
+        return json.dumps(dict(value or {}), ensure_ascii=False, sort_keys=True, default=str)
     except (TypeError, ValueError) as exc:
         raise GovernanceValidationError(
             f"{field_name} debe contener valores serializables como JSON."
@@ -921,7 +921,8 @@ def create_image_analysis_job(
                 :input_artifact_id, :source_image_id, :idempotency_key, :sample_id,
                 :patient_id, :slide_id, :status, :quality_status,
                 CAST(:quality_metrics AS jsonb), :threshold_used, :threshold_source,
-                CAST(:summary AS jsonb), :total_cells, :positive_cells, :started_at,
+                CAST(:summary AS jsonb), :total_cells, :positive_cells,
+                COALESCE(:started_at, CASE WHEN :status IN ('running', 'completed', 'failed') THEN CURRENT_TIMESTAMP ELSE NULL END),
                 :completed_at, :error_message, CAST(:metadata AS jsonb)
             )
             ON CONFLICT (inference_run_id, idempotency_key)

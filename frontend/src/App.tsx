@@ -33,6 +33,22 @@ function App() {
   const [selectedExplainabilityCase, setSelectedExplainabilityCase] = useState<ExplainabilityCase | null>(null);
   const [selectedExplainabilityRunId, setSelectedExplainabilityRunId] = useState<string | null>(null);
 
+  const [selectedModelVersionId, setSelectedModelVersionId] = useState<string | null>(null);
+
+  const handleNavigate = (url: string) => {
+    if (url.includes('/modelos-liberados')) {
+      const match = url.match(/\/modelos-liberados\/([^\?\/]+)/);
+      if (match) {
+        setSelectedModelVersionId(match[1]);
+      }
+      setPage('model-versions');
+    } else if (url.includes('/despliegues')) {
+      setPage('deployments');
+    } else if (url.includes('/ejecuciones')) {
+      setPage('runs');
+    }
+  };
+
   useEffect(() => {
     api
       .getDatasources()
@@ -78,12 +94,12 @@ function App() {
       onDatasourceChange={selectDatasource}
     >
       {page === 'dashboard' ? <Dashboard datasource={datasource} onRunSelect={selectRun} /> : null}
-      {page === 'runs' ? <Runs datasource={datasource} onRunSelect={selectRun} /> : null}
+      {page === 'runs' ? <Runs datasource={datasource} onRunSelect={selectRun} onNavigate={handleNavigate} /> : null}
       {page === 'clinical-evaluation' ? (
         <ClinicalEvaluation datasource={datasource} onRunSelect={selectRun} />
       ) : null}
       {page === 'models' ? <ModelComparison datasource={datasource} /> : null}
-      {page === 'model-versions' ? <ModelVersions datasource={datasource} onRunSelect={selectRun} onDeployments={() => selectPage('deployments')} /> : null}
+      {page === 'model-versions' ? <ModelVersions datasource={datasource} onRunSelect={selectRun} onDeployments={() => selectPage('deployments')} selectedModelVersionId={selectedModelVersionId} /> : null}
       {page === 'deployments' ? <Deployments datasource={datasource} /> : null}
       {page === 'traceability' ? <Traceability datasource={datasource} onRunSelect={selectRun} /> : null}
       {page === 'run-detail' ? (

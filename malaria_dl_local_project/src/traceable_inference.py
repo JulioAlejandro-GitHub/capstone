@@ -80,10 +80,10 @@ class TraceableInferenceService:
                 prediction=c.execute(text("""INSERT INTO predictions(run_id,image_id,predicted_label,score,score_positive_label,threshold,
                   image_analysis_job_id,model_version_id,deployed_model_version_id,inference_run_id,classifier_model_version_id,
                   prediction_scope,source_image_id,probability_parasitized,probability_uninfected,threshold_used,predicted_class,
-                  quality_status,review_status,metadata) VALUES(:run,:image,:label,:p,:p,:t,:job,:mv,:dep,:run,:mv,'image',:image,:p,:u,:t,:class,'not_assessed','unreviewed',CAST(:metadata AS jsonb)) RETURNING id"""),
-                  {"run":run.id,"image":str(source_image_id),"label":label,"p":probability,"u":1-probability,"t":threshold,"job":job.id,"mv":str(deployment["model_version_id"]),"dep":str(deployed_model_version_id),"class":predicted,"metadata":'{"stage":"image_classification","object_detection":false}'}).scalar_one()
+                  quality_status,review_status,metadata) VALUES(:run,CAST(:image AS uuid),:label,:p,:p,:t,:job,:mv,:dep,:run,:mv,'image',:source_image,:p,:u,:t,:class,'not_assessed','unreviewed',CAST(:metadata AS jsonb)) RETURNING id"""),
+                  {"run":run.id,"image":str(source_image_id),"source_image":str(source_image_id),"label":label,"p":probability,"u":1-probability,"t":threshold,"job":job.id,"mv":str(deployment["model_version_id"]),"dep":str(deployed_model_version_id),"class":predicted,"metadata":'{"stage":"image_classification","object_detection":false}'}).scalar_one()
                 elapsed=time.perf_counter()-started
-                c.execute(text("UPDATE image_analysis_jobs SET status='completed',completed_at=NOW(),summary=CAST(:summary AS jsonb),updated_at=NOW() WHERE id=:id"),{"id":job.id,"summary":f'{{"prediction_id":"{prediction}","processing_time":{elapsed}}}'})
+                c.execute(text("UPDATE image_analysis_jobs SET status='completed',completed_at=GREATEST(NOW(), COALESCE(started_at, NOW())),summary=CAST(:summary AS jsonb),updated_at=NOW() WHERE id=:id"),{"id":job.id,"summary":f'{{"prediction_id":"{prediction}","processing_time":{elapsed}}}'})
                 c.execute(text("UPDATE runs SET status='completed',finished_at=NOW() WHERE id=:id"),{"id":run.id})
             except Exception as exc:
                 if job:c.execute(text("UPDATE image_analysis_jobs SET status='failed',completed_at=NOW(),error_message=:error WHERE id=:id"),{"id":job.id,"error":type(exc).__name__})

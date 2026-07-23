@@ -47,6 +47,7 @@ export function ModelVersions({ datasource, onRunSelect, onDeployments, selected
           if (match) {
             setSelected(match);
             api.getModelVersionLineage(datasource, match.id).then((res) => setLineageRows(res.items)).catch(() => setLineageRows([]));
+            handleOpenDeployModal(match);
           }
         }
       })

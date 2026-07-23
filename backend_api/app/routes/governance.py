@@ -7,7 +7,7 @@ from pydantic import BaseModel,ConfigDict
 from app.db import fetch_all,fetch_one
 from app.services.serialization import row_to_dict,rows_to_list
 
-CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))
+CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"));sys.path.insert(0,str(CAPSTONE_ROOT))
 from src.model_deployment_service import ModelDeploymentService
 from src.model_governance.promotion_service import PrepareModelReleaseService
 from src.traceable_inference import ModelCache,TraceableInferenceService
@@ -21,10 +21,22 @@ router=APIRouter(prefix="/api",tags=["model-governance"])
 def uid(value):
     try:return str(UUID(str(value)))
     except ValueError as exc:raise HTTPException(422,"UUID inválido") from exc
+from src.model_governance.errors import (
+    GovernanceConflictError,
+    GovernanceNotFoundError,
+    GovernanceStateError,
+    GovernanceValidationError,
+)
+
 def safe(call):
-    try:return call()
-    except HTTPException:raise
-    except Exception as exc:raise HTTPException(409,f"Operación rechazada: {type(exc).__name__}") from exc
+    try:
+        return call()
+    except HTTPException:
+        raise
+    except (GovernanceStateError, GovernanceValidationError, GovernanceConflictError, GovernanceNotFoundError) as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(409, f"Operación rechazada: {type(exc).__name__} ({str(exc)})") from exc
 
 class PrepareReleaseRequest(BaseModel):
     model_config=ConfigDict(extra="forbid")
