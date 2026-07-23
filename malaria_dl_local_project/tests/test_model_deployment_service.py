@@ -61,4 +61,10 @@ class DeploymentTests(unittest.TestCase):
         cache=ModelCache();calls=[];loader=lambda _:calls.append(1) or object()
         cache.get_or_load("v1","a",self.path,loader);cache.invalidate_model_version("v1");cache.get_or_load("v1","a",self.path,loader)
         self.assertEqual(len(calls),2)
+    def test_publish_requires_actor_reason_and_confirmation_before_writes(self):
+        service=ModelDeploymentService(factory(Conn()))
+        with self.assertRaisesRegex(GovernanceStateError,"responsable"):
+            service.publish_to_production(model_version_id=self.mv,deployment_name="malaria-classifier",actor="",reason="",confirm_production=True)
+        with self.assertRaisesRegex(GovernanceStateError,"confirmación"):
+            service.publish_to_production(model_version_id=self.mv,deployment_name="malaria-classifier",actor="tester",reason="aprobado",confirm_production=False)
 if __name__=="__main__":unittest.main()

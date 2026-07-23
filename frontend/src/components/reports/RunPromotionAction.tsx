@@ -89,6 +89,13 @@ export function RunPromotionAction({
           {status.model_version_status ? ` · ${status.model_version_status}` : ''}
         </span>
       ) : null}
+      {status?.has_active_production_model ? (
+        <span className="production-run-badge">
+          {status.production_scope==='stage2_technical'
+            ? '✓ Modelo productivo para Etapa 2'
+            : 'Modelo activo en producción clínica'}
+        </span>
+      ) : null}
       {status?.deployment_id ? (
         <span className="report-muted">
           {status.alias || 'deployment'} · {status.environment || 'environment no registrado'}

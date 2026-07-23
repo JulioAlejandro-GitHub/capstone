@@ -121,6 +121,7 @@ function App() {
       {page === 'deployments' ? (
         <Deployments
           datasource={datasource}
+          onAnalysis={() => selectPage('uploaded-predictions')}
           onExecutions={() => selectPage('runs')}
           onModelVersionSelect={selectModelVersion}
           selectedDeploymentId={selectedDeploymentId}

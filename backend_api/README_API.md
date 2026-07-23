@@ -4,13 +4,9 @@ API FastAPI de solo lectura para consultar el tracking PostgreSQL del proyecto C
 
 ## Configuracion
 
-```bash
-cd backend_api
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-```
+La API de gobierno ejecuta inspección Keras, smoke test e inferencia. Por ello
+debe compartir el runtime ML Python 3.12; `backend_api/.venv` sólo sirve para
+tests HTTP/read-only y no contiene TensorFlow.
 
 Datasource activo por defecto:
 
@@ -28,8 +24,11 @@ ENABLE_ANEMIA_DATASOURCE=true
 ## Ejecutar
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+./scripts/start_backend_api.sh
 ```
+
+No iniciar el flujo de deployments con `backend_api/.venv`: Python 3.14 no
+puede cargar el TensorFlow usado por los checkpoints del proyecto.
 
 ## Tests
 

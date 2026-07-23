@@ -391,12 +391,17 @@ class PrepareModelReleaseService:
                 deployments = connection.execute(
                     text(
                         """
-                        SELECT id::text, status, environment, alias, created_at
+                        SELECT id::text, status, environment, alias, metadata, created_at
                         FROM deployed_model_versions
                         WHERE model_version_id = CAST(:version_id AS uuid)
                           AND status IN ('pending', 'failed', 'active')
                         ORDER BY
-                          CASE status WHEN 'active' THEN 0 WHEN 'pending' THEN 1 ELSE 2 END,
+                          CASE
+                            WHEN environment='production' AND alias='champion' AND status='active' THEN 0
+                            WHEN status='active' THEN 1
+                            WHEN status='pending' THEN 2
+                            ELSE 3
+                          END,
                           created_at DESC
                         """
                     ),
@@ -658,11 +663,17 @@ class PrepareModelReleaseService:
             "deployment_status": deployment.get("status"),
             "environment": deployment.get("environment"),
             "alias": deployment.get("alias"),
+            "production_scope": self._json(deployment.get("metadata")).get("production_scope"),
             "next_action": action,
             "button_label": NEXT_ACTION_LABELS[action],
             "button_enabled": action != "unavailable",
             "blocking_reasons": [reason.as_dict() for reason in blockers],
             "target_url": self._target_url(action, context),
+            "has_active_production_model": bool(
+                deployment.get("status") == "active"
+                and deployment.get("environment") == "production"
+                and deployment.get("alias") == "champion"
+            ),
         }
 
     def promotion_status(self, training_run_id: str) -> dict[str, Any]:

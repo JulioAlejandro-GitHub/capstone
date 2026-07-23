@@ -948,3 +948,25 @@
     border-color: #7b8498;
   }
 }
+.stage2-action{display:grid;gap:.3rem;margin-top:.45rem}
+.stage2-action__button{border-color:#6558d3;background:#f3f1ff;color:#40349d}
+.stage2-action__scope,.stage2-kicker{color:#6558d3;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.stage2-action__evidence{display:flex;flex-wrap:wrap;gap:.3rem}.stage2-action__evidence span{padding:.2rem .4rem;border-radius:.35rem;background:#eef9f2;color:#17663a;font-size:.72rem;font-weight:650}
+.stage2-blockers{font-size:.78rem;color:#7b3f00}.stage2-blockers summary{cursor:pointer;font-weight:700}.stage2-blockers ul{margin:.35rem 0 0;padding-left:1.1rem}
+.stage2-modal{max-width:760px}
+.stage2-modal header,.stage2-modal footer{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.stage2-warning{display:grid;gap:.25rem;margin:1rem 0;padding:.85rem;border:1px solid #d9d2ff;border-radius:.65rem;background:#f7f5ff;color:#40349d}
+.stage2-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.stage2-facts div{padding:.7rem;border:1px solid #e1e5ee;border-radius:.55rem;background:#f8f9fc;min-width:0}
+.stage2-facts dt{color:#667085;font-size:.75rem}.stage2-facts dd{margin:.2rem 0 0;overflow-wrap:anywhere;font-weight:650}
+.stage2-warnings{margin:1rem 0;padding:.75rem;background:#fff8e8;border-radius:.55rem}
+.stage2-modal form{display:grid;gap:.75rem}.stage2-modal label{display:grid;gap:.3rem}
+.stage2-modal input,.stage2-modal textarea{padding:.65rem;border:1px solid #ccd2df;border-radius:.45rem}
+.stage2-modal .stage2-confirm{display:flex;grid-template-columns:auto 1fr;align-items:center}
+@media(max-width:700px){.stage2-facts{grid-template-columns:1fr}}
+.active-stage2{border-color:#cfc8ff;background:linear-gradient(135deg,#fff 0%,#f7f5ff 100%)}
+.immutable-badge{display:inline-flex;align-items:center;padding:.3rem .55rem;border-radius:999px;background:#e9e5ff;color:#40349d;font-size:.78rem;font-weight:750}
+.stage2-operational-banner,.stage2-review-option{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:1rem 0;padding:1rem;border:1px solid #cfc8ff;border-radius:.75rem;background:#f7f5ff}
+.stage2-operational-banner>div,.stage2-review-option>div{display:grid;gap:.3rem}.stage2-operational-banner p,.stage2-review-option p{margin:0;color:#53607a}
+.stage2-review-option--blocked{border-color:#f2c5c2;background:#fff8f7}
+@media(max-width:700px){.stage2-operational-banner,.stage2-review-option{align-items:stretch;flex-direction:column}}

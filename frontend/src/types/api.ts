@@ -48,12 +48,15 @@ export interface DeploymentRow {
   model_version_id: string; status: string; threshold_value: number;
   deployed_at: string | null; retired_at: string | null; deployed_by: string | null;
   created_at?: string | null;
+  threshold_calibration_id?:string|null;
   metadata?: JsonRecord; supersedes_deployment_id?: string|null; rollback_of_deployment_id?: string|null;
   training_run_id?:string;model_name?:string;version_number?:number|null;model_version_status?:string;
 }
 
 export interface DeploymentRequirement {
   key:string; label:string; status:'pass'|'pending'|'blocked'|'not_applicable'; detail:string;
+  blocking?:boolean;action_key?:string|null;action_label?:string|null;action_enabled?:boolean;
+  disabled_reason?:string|null;target_url?:string|null;requires_confirmation?:boolean;
 }
 
 export interface DeploymentReadiness {
@@ -61,6 +64,55 @@ export interface DeploymentReadiness {
   version_number:number|null;environment:string;alias:string;deployment_status:string;
   can_run_smoke:boolean;can_activate:boolean;validation_errors:string[];
   requirements:DeploymentRequirement[];smoke_test:JsonRecord|null;
+}
+
+export interface ContractCandidate {
+  source_id:string;source:string;value:JsonValue;
+}
+export interface ContractField {
+  key:string;label:string;current_value:JsonValue|null;candidates:ContractCandidate[];
+  proposed_value:JsonValue|null;proposed_source_id:string|null;
+  status:'complete'|'ready'|'ambiguous'|'blocked';sources_searched:string[];
+}
+export interface ModelContractCandidates {
+  model_version_id:string;training_run_id:string;model_name:string;version_number:number|null;
+  status:string;lineage_status:string;fields:ContractField[];contract_complete:boolean;
+  can_complete_contract:boolean;artifact_inspection_error:string|null;immutable_reason:string|null;
+  production_package:{artifact_id:string;artifact_sha256:string;artifact_size_bytes:number|null;
+    artifact_status:string;artifact_immutable:boolean;training_run_id:string;evaluation_run_ids:string[];
+    framework:string|null;framework_version:string|null;manifest_registered:boolean};
+}
+export interface ModelProductionReadiness {
+  model_version_id:string;deployment_id:string|null;current_step:1|2|3|4;
+  next_action:'build_production_model_version'|'validate_model_version'|'approve_model_version'|'publish_to_production'|'production_blocked'|'view_production_model';
+  action_label:string;can_complete_contract:boolean;can_validate:boolean;can_approve:boolean;
+  can_promote_to_production:boolean;contract:ModelContractCandidates;
+  can_build_package:boolean;can_publish:boolean;is_active_in_production:boolean;
+  requirements:{key:string;status:string;blocking:boolean;action_key:string;detail?:string}[];
+  production_blockers?:string[];
+  deployment_readiness:DeploymentReadiness|null;
+  production_status:{deployment_id:string|null;status:string|null;environment:string|null;alias:string|null;smoke_status:string|null;available_for_inference:boolean};
+}
+export interface ProductionPublicationResult {
+  model_version_id:string;deployment_id:string;environment:'production';alias:'champion';
+  status:'active';smoke_status:'PASS';available_for_inference:boolean;
+  verification_inference:{status:'PASS'|null;inference_run_id:string|null;image_analysis_job_id:string|null};
+  previous_champion_id:string|null;rollback_available:boolean;idempotent:boolean;
+}
+
+export interface Stage2Availability {
+  training_run_id:string;eligible:boolean;available:boolean;
+  next_action:'enable_for_stage2'|'view_stage2_model'|'unavailable';
+  action_label:string;blockers:PromotionBlockingReason[];warnings:string[];
+  model_version_id:string|null;deployment_id:string|null;fixture:boolean;
+  package?:ModelContractCandidates|null;
+}
+export interface Stage2EnablementResult {
+  training_run_id:string;model_version_id:string;deployment_id:string;
+  environment:'stage2';alias:'default';status:'active';artifact_sha256:string;
+  smoke_status:'PASS';available_for_stage2:boolean;
+  verification_inference:{status:'PASS';inference_run_id:string;image_analysis_job_id:string};
+  warnings:string[];rollback_available:boolean;idempotent:boolean;
 }
 
 export interface AvailableModel extends DeploymentRow {
@@ -122,6 +174,8 @@ export interface TrainingPromotionStatus {
   button_enabled: boolean;
   blocking_reasons: PromotionBlockingReason[];
   target_url: string | null;
+  has_active_production_model?:boolean;
+  production_scope?:string|null;
 }
 
 export interface RunDashboard {

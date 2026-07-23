@@ -1,5 +1,5 @@
 import { StatusBadge } from '../StatusBadge';
-import type { RunDashboard, TrainingPromotionStatus } from '../../types/api';
+import type { RunDashboard, Stage2Availability, TrainingPromotionStatus } from '../../types/api';
 import { getRunDuration } from '../../utils/format';
 import {
   generateRunAutoAnalysis,
@@ -12,6 +12,7 @@ import { MetricChip } from './MetricChip';
 import { MiniConfusionMatrix } from './MiniConfusionMatrix';
 import { RunProcessBadge, type RunProcessKind } from './RunProcessBadge';
 import { RunPromotionAction } from './RunPromotionAction';
+import { Stage2AvailabilityAction } from './Stage2AvailabilityAction';
 
 interface RunSummaryRowProps {
   run: RunDashboard;
@@ -22,6 +23,8 @@ interface RunSummaryRowProps {
   promotionPreparing?: boolean;
   promotionStatus?: TrainingPromotionStatus;
   onPromotionAction?: () => void;
+  stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Busy?:boolean;stage2Error?:string;
+  onStage2Enable?:()=>void;onStage2View?:(deploymentId:string)=>void;
 }
 
 function truncatedRunId(runId: string): string {
@@ -37,6 +40,7 @@ export function RunSummaryRow({
   promotionPreparing = false,
   promotionStatus,
   onPromotionAction,
+  stage2Status,stage2Loading=false,stage2Busy=false,stage2Error,onStage2Enable,onStage2View,
 }: RunSummaryRowProps) {
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
@@ -107,6 +111,10 @@ export function RunSummaryRow({
             status={promotionStatus}
           />
         ) : null}
+        {processKind==='training'&&onStage2Enable&&onStage2View?(
+          <Stage2AvailabilityAction status={stage2Status} loading={stage2Loading}
+            busy={stage2Busy} error={stage2Error} onEnable={onStage2Enable} onView={onStage2View}/>
+        ):null}
       </section>
     </div>
   );

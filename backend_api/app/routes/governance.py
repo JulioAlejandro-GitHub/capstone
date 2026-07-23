@@ -10,8 +10,10 @@ from app.services.serialization import row_to_dict,rows_to_list
 
 CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))
 from src.model_deployment_service import ModelDeploymentService
+from src.model_contract_service import ModelContractService
 from src.model_release_lifecycle_service import ModelReleaseLifecycleService
 from src.prepare_model_release_service import PrepareModelReleaseService
+from src.stage2_model_availability_service import Stage2ModelAvailabilityService
 from src.traceable_inference import ModelCache,TraceableInferenceService
 
 MODEL_CACHE=ModelCache(maxsize=4)
@@ -48,6 +50,25 @@ class ImageJobCreate(BaseModel):
 class PrepareReleaseRequest(BaseModel):
     model_config=ConfigDict(extra="forbid")
     target_environment:str|None=None
+class CompleteContractRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    selections:dict[str,str]={};actor:str;reason:str
+class PublishProductionRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    deployment_name:str="malaria-classifier";alias:str="champion"
+    actor:str;reason:str;confirm_production:bool=False;source_image_id:str|None=None
+class Stage2EnableRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    actor:str;reason:str;confirm_stage2_enablement:bool=False
+    preprocessing_candidate_id:str|None=None
+    threshold_candidate_id:str|None=None
+    source_image_id:str|None=None
+class TechnicalProductionRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    actor:str;reason:str;confirm_publication:bool=False
+    preprocessing_profile:str|None=None
+    threshold:float|None=None
+    source_image_id:str|None=None
 
 def prepare_release_service(datasource:str|None):
     key=resolve_datasource(datasource)
@@ -65,6 +86,34 @@ def governance_services(datasource:str|None):
             yield connection
     deployment=ModelDeploymentService(connection_factory=connection_factory,model_cache=MODEL_CACHE)
     return deployment,ModelReleaseLifecycleService(connection_factory),TraceableInferenceService(connection_factory=connection_factory,cache=MODEL_CACHE)
+
+def contract_service(datasource:str|None):
+    key=resolve_datasource(datasource)
+    @contextmanager
+    def connection_factory():
+        with get_engine(key).begin() as connection:
+            yield connection
+    return ModelContractService(connection_factory)
+
+def stage2_service(datasource:str|None):
+    key=resolve_datasource(datasource)
+    @contextmanager
+    def connection_factory():
+        with get_engine(key).begin() as connection:
+            yield connection
+    return Stage2ModelAvailabilityService(connection_factory,cache=MODEL_CACHE)
+
+def technical_production_service(datasource:str|None):
+    key=resolve_datasource(datasource)
+    @contextmanager
+    def connection_factory():
+        with get_engine(key).begin() as connection:
+            yield connection
+    return Stage2ModelAvailabilityService(
+      connection_factory,cache=MODEL_CACHE,environment="production",alias="champion",
+      deployment_name="malaria-classifier",production_scope="stage2_technical",
+      release_channel="production",
+    )
 
 @router.get("/training-runs/{training_run_id}/promotion-status")
 def promotion_status(training_run_id:str,datasource:str|None=Query("malaria")):
@@ -89,6 +138,69 @@ def prepare_release(
         )
     except HTTPException:raise
     except Exception as exc:raise HTTPException(409,{"code":"PREPARE_RELEASE_FAILED","message":type(exc).__name__}) from exc
+
+@router.get("/training-runs/{training_run_id}/stage2-availability")
+def stage2_availability(training_run_id:str,datasource:str|None=Query("malaria")):
+    return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
+
+@router.get("/training-runs/{training_run_id}/stage2-package-preview")
+def stage2_package_preview(training_run_id:str,datasource:str|None=Query("malaria")):
+    return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
+
+@router.post("/training-runs/{training_run_id}/enable-stage2")
+def enable_stage2(training_run_id:str,body:Stage2EnableRequest,datasource:str|None=Query("malaria")):
+    return safe(lambda:stage2_service(datasource).enable(
+      uid(training_run_id),actor=body.actor,reason=body.reason,
+      confirm_stage2_enablement=body.confirm_stage2_enablement,
+      preprocessing_candidate_id=body.preprocessing_candidate_id,
+      threshold_candidate_id=body.threshold_candidate_id,
+      source_image_id=uid(body.source_image_id) if body.source_image_id else None,
+    ))
+
+@router.get("/stage2/models")
+def stage2_models(datasource:str|None=Query("malaria")):
+    return {"items":stage2_service(datasource).models()}
+
+@router.get("/model-versions/{model_version_id}/technical-production-preview")
+def technical_production_preview(model_version_id:str,datasource:str|None=Query("malaria")):
+    row=fetch_one(datasource,"SELECT training_run_id::text FROM model_versions WHERE id=CAST(:id AS uuid)",
+      {"id":uid(model_version_id)})
+    if not row:raise HTTPException(404,"Model version no encontrada")
+    return safe(lambda:technical_production_service(datasource).preview(str(row["training_run_id"])))
+
+@router.post("/model-versions/{model_version_id}/publish-technical-production")
+def publish_model_technical_production(model_version_id:str,body:TechnicalProductionRequest,datasource:str|None=Query("malaria")):
+    row=fetch_one(datasource,"SELECT training_run_id::text FROM model_versions WHERE id=CAST(:id AS uuid)",
+      {"id":uid(model_version_id)})
+    if not row:raise HTTPException(404,"Model version no encontrada")
+    return safe(lambda:technical_production_service(datasource).enable(
+      str(row["training_run_id"]),actor=body.actor,reason=body.reason,
+      confirm_stage2_enablement=body.confirm_publication,
+      preprocessing_candidate_id=body.preprocessing_profile,
+      source_image_id=uid(body.source_image_id) if body.source_image_id else None,
+    ))
+
+@router.post("/training-runs/{training_run_id}/publish-technical-production")
+def publish_training_technical_production(training_run_id:str,body:TechnicalProductionRequest,datasource:str|None=Query("malaria")):
+    return safe(lambda:technical_production_service(datasource).enable(
+      uid(training_run_id),actor=body.actor,reason=body.reason,
+      confirm_stage2_enablement=body.confirm_publication,
+      preprocessing_candidate_id=body.preprocessing_profile,
+      source_image_id=uid(body.source_image_id) if body.source_image_id else None,
+    ))
+
+@router.post("/training-runs/{training_run_id}/build-production-model-version")
+def build_production_model_version(
+    training_run_id:str,body:PrepareReleaseRequest|None=None,
+    datasource:str|None=Query("malaria"),
+    requester:str|None=Header(None,alias="X-Requester"),
+    request_id:str|None=Header(None,alias="X-Request-ID"),
+):
+    request_body=body or PrepareReleaseRequest()
+    return safe(lambda:prepare_release_service(datasource).prepare_release(
+      uid(training_run_id),requester=requester,
+      target_environment=request_body.target_environment,request_id=request_id,
+    ))
 
 @router.get("/model-versions")
 def model_versions(datasource:str|None=Query("malaria")):
@@ -119,6 +231,29 @@ def model_version(model_version_id:str,datasource:str|None=Query("malaria")):
 def model_version_lineage(model_version_id:str,datasource:str|None=Query("malaria")):
     return {"items":rows_to_list(fetch_all(datasource,"""SELECT rl.id,rl.parent_run_id,rl.child_run_id,rl.relationship_type,
       rl.model_version_id,rl.checkpoint_artifact_id,rl.confidence,rl.created_at FROM run_lineage rl WHERE rl.model_version_id=CAST(:id AS uuid) ORDER BY rl.created_at""",{"id":uid(model_version_id)}))}
+@router.get("/model-versions/{model_version_id}/contract-candidates")
+def model_version_contract_candidates(model_version_id:str,datasource:str|None=Query("malaria")):
+    return safe(lambda:contract_service(datasource).candidates(uid(model_version_id)))
+@router.get("/model-versions/{model_version_id}/production-package-preview")
+def production_package_preview(model_version_id:str,datasource:str|None=Query("malaria")):
+    return safe(lambda:contract_service(datasource).candidates(uid(model_version_id)))
+@router.post("/model-versions/{model_version_id}/complete-contract")
+def complete_model_version_contract(model_version_id:str,body:CompleteContractRequest,datasource:str|None=Query("malaria")):
+    return safe(lambda:contract_service(datasource).complete(uid(model_version_id),body.selections,body.actor,body.reason))
+@router.post("/model-versions/{model_version_id}/build-production-package")
+def build_production_package(model_version_id:str,body:CompleteContractRequest,datasource:str|None=Query("malaria")):
+    return safe(lambda:contract_service(datasource).complete(uid(model_version_id),body.selections,body.actor,body.reason))
+@router.get("/model-versions/{model_version_id}/production-readiness")
+def model_version_production_readiness(model_version_id:str,datasource:str|None=Query("malaria")):
+    return safe(lambda:contract_service(datasource).readiness(uid(model_version_id)))
+@router.post("/model-versions/{model_version_id}/publish-to-production")
+def publish_to_production(model_version_id:str,body:PublishProductionRequest,datasource:str|None=Query("malaria")):
+    return safe(lambda:governance_services(datasource)[0].publish_to_production(
+      model_version_id=uid(model_version_id),deployment_name=body.deployment_name,
+      alias=body.alias,actor=body.actor,reason=body.reason,
+      confirm_production=body.confirm_production,
+      source_image_id=uid(body.source_image_id) if body.source_image_id else None,
+    ))
 @router.get("/deployments")
 def deployments(datasource:str|None=Query("malaria")):
     return {"items":rows_to_list(fetch_all(datasource,"""SELECT d.*,mv.training_run_id,mv.model_name,mv.version_number,

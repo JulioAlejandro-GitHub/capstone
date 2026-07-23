@@ -116,6 +116,16 @@ class ModelDeploymentService:
         if dry_run:return plan
         from src.model_governance.repository import create_deployed_model_version
         with self.connection_factory() as c:
+            c.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:key,0))"),
+              {"key":f"deployment:{model_version_id}:{deployment_name}:{environment}:{alias}"})
+            existing=c.execute(text("""SELECT * FROM deployed_model_versions
+              WHERE model_version_id=:mv AND deployment_name=:name AND environment=:env
+                AND alias=:alias AND threshold_calibration_id=:threshold
+                AND status IN ('pending','inactive')
+              ORDER BY created_at DESC LIMIT 1"""),
+              {"mv":str(UUID(str(model_version_id))),"name":deployment_name,"env":environment,
+               "alias":alias,"threshold":str(UUID(str(threshold_profile_id)))}).mappings().one_or_none()
+            if existing:return dict(existing)
             deployment=create_deployed_model_version(model_version_id=model_version_id,deployment_name=deployment_name,environment=environment,alias=alias,
               threshold_value=float(threshold_value),threshold_calibration_id=threshold_profile_id,threshold_profile_snapshot=threshold_snapshot,
               deployed_by=deployed_by,metadata={**(metadata or {}),"explainability_available":bool(version.get("has_explainability")),"audit_event":"deployment_created"},
@@ -226,3 +236,123 @@ class ModelDeploymentService:
             rows=c.execute(text("SELECT * FROM deployed_model_versions WHERE deployment_name=:n AND environment=:e AND alias=:a AND status='active'"),{"n":deployment_name,"e":environment,"a":alias}).mappings().all()
         if len(rows)!=1: raise GovernanceConflictError("alias no resuelve exactamente un deployment activo")
         return dict(rows[0])
+
+    def publish_to_production(self,*,model_version_id,deployment_name,alias="champion",
+                              actor=None,reason=None,confirm_production=False,
+                              source_image_id=None,inference_service=None):
+        """Synchronous, idempotent production publication using governed primitives."""
+        if not actor or not reason:
+            raise GovernanceStateError("publicación exige responsable y motivo")
+        if not confirm_production:
+            raise GovernanceStateError("production exige confirmación explícita")
+        model_version_id=str(UUID(str(model_version_id)))
+        if alias!="champion":
+            raise GovernanceStateError("publicación productiva exige alias champion")
+        with self.connection_factory() as c:
+            version=self._version(c,model_version_id)
+            if version["status"] not in {"approved","deployed"}:
+                raise GovernanceStateError("publicación exige model version approved")
+            thresholds=c.execute(text("""SELECT run_threshold_calibration_id::text id
+              FROM run_threshold_calibration WHERE model_version_id=:mv
+                AND calibration_status IN ('recorded','validated')
+                AND positive_label='parasitized' AND score_name='probability_parasitized'
+              ORDER BY CASE calibration_status WHEN 'validated' THEN 0 ELSE 1 END,created_at DESC"""),
+              {"mv":model_version_id}).scalars().all()
+            active=c.execute(text("""SELECT * FROM deployed_model_versions
+              WHERE model_version_id=:mv AND deployment_name=:name
+                AND environment='production' AND alias='champion' AND status='active'
+              ORDER BY deployed_at DESC LIMIT 1"""),
+              {"mv":model_version_id,"name":deployment_name}).mappings().one_or_none()
+            previous=c.execute(text("""SELECT * FROM deployed_model_versions
+              WHERE deployment_name=:name AND environment='production'
+                AND alias='champion' AND status='active'
+              ORDER BY deployed_at DESC LIMIT 1"""),{"name":deployment_name}).mappings().one_or_none()
+            if not source_image_id:
+                source_image_id=c.execute(text("""SELECT image_id::text FROM dataset_split_images
+                  ORDER BY created_at,image_id LIMIT 1""")).scalar_one_or_none()
+        if len(thresholds)!=1:
+            artifact_path=_project_path(
+                version.get("artifact_registered_path") or version.get("checkpoint_path") or ""
+            )
+            blockers=[]
+            if not artifact_path.is_file():
+                blockers.append("el artifact registrado no existe")
+            elif sha256_file(artifact_path)!=version.get("artifact_sha256"):
+                blockers.append("el SHA-256 registrado no coincide con el artifact")
+            blockers.append(
+                "falta un threshold profile formal asociado a esta model_version"
+                if not thresholds else
+                f"existen {len(thresholds)} threshold profiles formales; debe existir exactamente uno"
+            )
+            raise GovernanceStateError("; ".join(blockers))
+        if not source_image_id:
+            raise GovernanceStateError("no existe una imagen controlada para verificación")
+        threshold_id=str(thresholds[0])
+
+        def verified_response(deployment, inference=None, idempotent=False):
+            metadata=dict(deployment.get("metadata") or {})
+            smoke=metadata.get("smoke_test") or {}
+            verification=inference or metadata.get("verification_inference") or {}
+            available=deployment["status"]=="active" and smoke.get("status")=="PASS"
+            return {
+              "model_version_id":model_version_id,"deployment_id":str(deployment["id"]),
+              "environment":deployment["environment"],"alias":deployment["alias"],
+              "status":deployment["status"],"smoke_status":smoke.get("status"),
+              "available_for_inference":available and bool(verification.get("inference_run_id")),
+              "verification_inference":{"status":"PASS" if verification.get("inference_run_id") else None,
+                "inference_run_id":verification.get("inference_run_id"),
+                "image_analysis_job_id":verification.get("image_analysis_job_id")},
+              "previous_champion_id":str(previous["id"]) if previous and str(previous["id"])!=str(deployment["id"]) else None,
+              "rollback_available":bool(previous and str(previous["id"])!=str(deployment["id"])),
+              "idempotent":idempotent,
+            }
+        if active:
+            response=verified_response(dict(active),idempotent=True)
+            if response["available_for_inference"]:
+                return response
+
+        deployment=self.create(model_version_id=model_version_id,deployment_name=deployment_name,
+          environment="production",alias="champion",threshold_profile_id=threshold_id,
+          deployed_by=actor,metadata={"publication_reason":reason,"audit_event":"production_publication_started"})
+        deployment_id=str(deployment["id"] if isinstance(deployment,dict) else deployment.id)
+        smoke=self.smoke_test(deployment_id,source_image_id,actor)
+        if smoke["smoke_test"]["status"]!="PASS":
+            raise GovernanceStateError("smoke test de producción FAIL; champion actual conservado")
+        activated=self.activate(deployment_id,actor=actor,confirm_production=True)
+        try:
+            if inference_service is None:
+                from src.traceable_inference import TraceableInferenceService
+                inference_service=TraceableInferenceService(
+                    connection_factory=self.connection_factory,cache=self.model_cache
+                )
+            inference=inference_service.infer(
+                deployed_model_version_id=deployment_id,source_image_id=source_image_id
+            )
+            with self.connection_factory() as c:
+                available=c.execute(text("""SELECT COUNT(*) FROM deployed_model_versions d
+                  JOIN model_versions mv ON mv.id=d.model_version_id
+                  WHERE d.id=:id AND d.status='active' AND d.environment='production'
+                    AND d.alias='champion' AND mv.status IN ('approved','deployed')"""),
+                  {"id":deployment_id}).scalar_one()
+                if available!=1:
+                    raise GovernanceStateError("el modelo activado no aparece disponible para inferencia")
+                activated=dict(c.execute(text("""UPDATE deployed_model_versions
+                  SET metadata=metadata||CAST(:audit AS jsonb) WHERE id=:id RETURNING *"""),
+                  {"id":deployment_id,"audit":json.dumps({
+                    "last_audit_event":"production_publication_verified","publication_reason":reason,
+                    "verification_inference":{"inference_run_id":inference["inference_run_id"],
+                      "image_analysis_job_id":inference["image_analysis_job_id"]},
+                    "at":datetime.now(UTC).isoformat(),
+                  })}).mappings().one())
+        except Exception:
+            with self.connection_factory() as c:
+                c.execute(text("""UPDATE deployed_model_versions SET status='inactive',
+                  metadata=metadata||CAST(:audit AS jsonb) WHERE id=:id"""),
+                  {"id":deployment_id,"audit":json.dumps({"last_audit_event":"publication_verification_failed",
+                    "at":datetime.now(UTC).isoformat()})})
+                if previous:
+                    c.execute(text("""UPDATE deployed_model_versions SET status='active',retired_at=NULL
+                      WHERE id=:id"""),{"id":str(previous["id"])})
+            if self.model_cache:self.model_cache.invalidate_model_version(model_version_id)
+            raise
+        return verified_response(activated,inference=inference)

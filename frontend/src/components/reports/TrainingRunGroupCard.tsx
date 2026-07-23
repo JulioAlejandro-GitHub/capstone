@@ -1,4 +1,4 @@
-import type { TrainingRunLineageGroup, TrainingPromotionStatus } from '../../types/api';
+import type { Stage2Availability, TrainingRunLineageGroup, TrainingPromotionStatus } from '../../types/api';
 import { RunLineageChildCard } from './RunLineageChildCard';
 import { RunSummaryRow } from './RunSummaryRow';
 
@@ -10,6 +10,8 @@ interface TrainingRunGroupCardProps {
   promotionPreparing?: boolean;
   promotionStatus?: TrainingPromotionStatus;
   onPromotionAction: (runId: string) => void;
+  stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Busy?:boolean;stage2Error?:string;
+  onStage2Enable:(runId:string)=>void;onStage2View:(deploymentId:string)=>void;
 }
 
 export function TrainingRunGroupCard({
@@ -20,6 +22,7 @@ export function TrainingRunGroupCard({
   promotionPreparing,
   promotionStatus,
   onPromotionAction,
+  stage2Status,stage2Loading,stage2Busy,stage2Error,onStage2Enable,onStage2View,
 }: TrainingRunGroupCardProps) {
   const { training, evaluations, explainability } = group;
   const linkedCount = evaluations.length + explainability.length;
@@ -38,6 +41,12 @@ export function TrainingRunGroupCard({
         promotionPreparing={promotionPreparing}
         promotionStatus={promotionStatus}
         run={training}
+        stage2Status={stage2Status}
+        stage2Loading={stage2Loading}
+        stage2Busy={stage2Busy}
+        stage2Error={stage2Error}
+        onStage2Enable={()=>onStage2Enable(training.run_id)}
+        onStage2View={onStage2View}
       />
 
       <section className="run-lineage-group__children" aria-label="Procesos derivados del entrenamiento">

@@ -73,15 +73,35 @@ class TraceableInferenceService:
             allowed=(Path(__file__).resolve().parents[1]/"outputs").resolve(),(Path(__file__).resolve().parents[1]/"releases").resolve()
             if not any(path==root or root in path.parents for root in allowed):raise ValueError("artefacto fuera del store autorizado")
             if not path.is_file() or sha256_file(path)!=deployment["model_sha256"]:raise ValueError("integridad del modelo inválida")
-            if deployment["model_version_status"] not in {"approved","validated","deployed"} or deployment["lineage_status"]!="resolved":raise ValueError("model version no apta")
-            mapping=dict(deployment["class_mapping"] or {})
+            stage2_metadata=dict(deployment.get("metadata") or {}).get("stage2") or {}
+            stage2_candidate=(
+                (
+                  (deployment["environment"]=="stage2" and deployment["alias"]=="default")
+                  or (
+                    deployment["environment"]=="production" and deployment["alias"]=="champion"
+                    and dict(deployment.get("metadata") or {}).get("production_scope")=="stage2_technical"
+                  )
+                )
+                and deployment["model_version_status"] in {"discovered","candidate","validated","approved","deployed"}
+                and stage2_metadata.get("eligible") is True
+            )
+            formally_released=deployment["model_version_status"] in {"approved","validated","deployed"}
+            if not (formally_released or stage2_candidate) or deployment["lineage_status"]!="resolved":
+                raise ValueError("model version no apta")
+            technical=dict(deployment.get("metadata") or {}).get("technical_contract") or {}
+            mapping=(dict(deployment["class_mapping"] or {})
+              or dict(deployment.get("label_mapping_snapshot") or {})
+              or dict(technical.get("class_mapping") or {}))
             if mapping.get("0")!="uninfected" or mapping.get("1")!="parasitized":raise ValueError("class_mapping inválido")
             run=repository.create_inference_run(deployed_model_version_id=deployed_model_version_id,backend_version="backend-api-0.2",pipeline_version="traceable-image-v1",configuration={"model_version_id":str(deployment["model_version_id"]),"sha256":deployment["model_sha256"]},connection_or_session=c)
             job=repository.create_image_analysis_job(inference_run_id=run.id,deployed_model_version_id=deployed_model_version_id,source_image_id=source_image_id,status="running",quality_status="not_assessed",threshold_used=float(deployment["threshold_value"]),threshold_source="deployment_snapshot",started_at=run.started_at or datetime.now(UTC),connection_or_session=c)
             try:
                 with c.begin_nested():
                     model=self.cache.get_or_load(deployment["model_version_id"],deployment["model_sha256"],path,self.loader)
-                    probability=float(self.predictor(model,image_path,dict(deployment["preprocessing_profile_snapshot"] or {}),dict(deployment["input_signature"] or {})))
+                    technical=dict(deployment.get("metadata") or {}).get("technical_contract") or {}
+                    preprocessing=dict(deployment["preprocessing_profile_snapshot"] or {}) or dict(technical.get("preprocessing") or {})
+                    input_signature=dict(deployment["input_signature"] or {}) or dict(technical.get("input_signature") or {})
+                    probability=float(self.predictor(model,image_path,preprocessing,input_signature))
                     if not 0<=probability<=1:raise ValueError("probabilidad fuera de rango")
                     threshold=float(deployment["threshold_value"]);predicted=1 if probability>=threshold else 0;label="parasitized" if predicted else "uninfected"
                     prediction=c.execute(text("""INSERT INTO predictions(run_id,image_id,predicted_label,score,score_positive_label,threshold,

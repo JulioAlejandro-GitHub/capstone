@@ -1,0 +1,52 @@
+{
+  "artifact_sha256": "d54bbdcddbd4ca3b10ce675eb28f60b24a9718ffba881f83ca24ef19820415d8",
+  "artifact_size_bytes": 5149643,
+  "checkpoint_artifact_id": "c904f3fd-62a1-496c-b1d4-8711b6212dbe",
+  "class_mapping": {
+    "0": "uninfected",
+    "1": "parasitized",
+    "negative_class_index": 0,
+    "negative_class_name": "uninfected",
+    "positive_class": 1,
+    "positive_class_index": 1,
+    "positive_class_name": "parasitized",
+    "positive_label": "parasitized",
+    "raw_model_score_meaning": "probability_parasitized",
+    "version": "clinical_v1_parasitized_positive"
+  },
+  "clinical_approved": false,
+  "created_at": "2026-07-23T20:53:56.301702+00:00",
+  "framework": "tensorflow/keras",
+  "framework_version": "3.14.1",
+  "input_signature": {
+    "dtype": "float32",
+    "shape": [
+      null,
+      200,
+      200,
+      3
+    ]
+  },
+  "model_version_id": "8f5277bd-e2bb-4dff-a4d6-821f9f5a60e7",
+  "output_signature": {
+    "dtype": "float32",
+    "shape": [
+      null,
+      1
+    ]
+  },
+  "preprocessing_profile_snapshot": {
+    "mode": "rescale_0_1"
+  },
+  "production_scope": "stage2_technical",
+  "schema_version": 1,
+  "threshold": {
+    "clinical_calibration": true,
+    "source": "threshold calibration",
+    "value": 0.262956857681274
+  },
+  "threshold_profile_id": "2e51b41c-9a73-4edf-a9ba-23cb70ee73a7",
+  "training_run_id": "371a9e75-2e87-4c22-b1d0-8f249007cc33",
+  "usage": "stage2_technical",
+  "warnings": []
+}

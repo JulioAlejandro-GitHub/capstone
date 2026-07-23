@@ -7,12 +7,14 @@ import {
   type ReportFilterOption,
 } from '../components/reports/ReportSelectFilter';
 import { TrainingRunGroupCard } from '../components/reports/TrainingRunGroupCard';
+import { Stage2EnablementModal } from '../components/stage2/Stage2EnablementModal';
 import { UnlinkedRunsSection } from '../components/reports/UnlinkedRunsSection';
 import { api } from '../services/api';
 import type {
   GroupedRunLineageResponse,
   TrainingRunLineageGroup,
   TrainingPromotionStatus,
+  Stage2Availability,
   UnresolvedLineageRun,
 } from '../types/api';
 import '../styles/report-components.css';
@@ -74,6 +76,19 @@ export function Runs({
   const [promotionLoading, setPromotionLoading] = useState<Record<string, boolean>>({});
   const [preparingRunId, setPreparingRunId] = useState<string | null>(null);
   const [promotionNotice, setPromotionNotice] = useState<string | null>(null);
+  const [stage2Status,setStage2Status]=useState<Record<string,Stage2Availability>>({});
+  const [stage2Loading,setStage2Loading]=useState<Record<string,boolean>>({});
+  const [stage2Errors,setStage2Errors]=useState<Record<string,string>>({});
+  const [stage2Preview,setStage2Preview]=useState<Stage2Availability|null>(null);
+  const [stage2Busy,setStage2Busy]=useState<string|null>(null);
+
+  const loadStage2=async(runId:string)=>{
+    setStage2Loading(current=>({...current,[runId]:true}));
+    try{const response=await api.getStage2Availability(datasource,runId);
+      setStage2Status(current=>({...current,[runId]:response}));return response;
+    }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));return null;}
+    finally{setStage2Loading(current=>({...current,[runId]:false}));}
+  };
 
   const loadPromotionStatus = async (runId: string) => {
     setPromotionLoading((current) => ({ ...current, [runId]: true }));
@@ -115,6 +130,7 @@ export function Runs({
           setLineage(response);
           response.items.forEach((group) => {
             void loadPromotionStatus(group.training.run_id);
+            void loadStage2(group.training.run_id);
           });
         }
       })
@@ -125,6 +141,20 @@ export function Runs({
       active = false;
     };
   }, [datasource]);
+
+  const openStage2=async(runId:string)=>{
+    const preview=stage2Status[runId]??await loadStage2(runId);
+    if(preview?.eligible&&!preview.available)setStage2Preview(preview);
+  };
+  const enableStage2=async(actor:string,reason:string)=>{
+    if(!stage2Preview)return;const runId=stage2Preview.training_run_id;setStage2Busy(runId);
+    setStage2Errors(current=>({...current,[runId]:''}));
+    try{const result=await api.enableStage2(datasource,runId,{actor,reason,confirm_stage2_enablement:true});
+      setStage2Preview(null);setPromotionNotice('Modelo habilitado para Etapa 2 (uso experimental, no clínico).');
+      await loadStage2(runId);onDeploymentSelect(result.deployment_id);
+    }catch(reason){setStage2Errors(current=>({...current,[runId]:reason instanceof Error?reason.message:String(reason)}));}
+    finally{setStage2Busy(null);}
+  };
 
   const navigateForPromotion = (status: TrainingPromotionStatus) => {
     if (
@@ -318,6 +348,12 @@ export function Runs({
                     promotionLoading={promotionLoading[group.training.run_id] ?? false}
                     promotionPreparing={preparingRunId === group.training.run_id}
                     promotionStatus={promotionStatus[group.training.run_id]}
+                    stage2Status={stage2Status[group.training.run_id]}
+                    stage2Loading={stage2Loading[group.training.run_id]??false}
+                    stage2Busy={stage2Busy===group.training.run_id}
+                    stage2Error={stage2Errors[group.training.run_id]}
+                    onStage2Enable={openStage2}
+                    onStage2View={onDeploymentSelect}
                   />
                 ))}
               </div>
@@ -331,6 +367,8 @@ export function Runs({
           </>
         )}
       </section>
+      {stage2Preview?<Stage2EnablementModal preview={stage2Preview} busy={stage2Busy!==null}
+        onClose={()=>setStage2Preview(null)} onConfirm={enableStage2}/>:null}
     </section>
   );
 }

@@ -19,6 +19,9 @@ import type {
   AvailableModel,
   InferenceResult,
   ModelVersionLineageRow,
+  ModelContractCandidates,
+  ModelProductionReadiness,
+  ProductionPublicationResult,
   PagedResponse,
   RunDashboard,
   RunArtifact,
@@ -27,6 +30,8 @@ import type {
   RunImagePrediction,
   ThresholdCalibrationSummary,
   TrainingPromotionStatus,
+  Stage2Availability,
+  Stage2EnablementResult,
   UploadedPrediction,
 } from '../types/api';
 
@@ -171,6 +176,50 @@ export const api = {
     );
   },
 
+  getStage2Availability(datasource:string,trainingRunId:string) {
+    return request<Stage2Availability>(
+      `/api/training-runs/${trainingRunId}/stage2-availability`,
+      withDatasource(datasource),{timeoutMs:30000},
+    );
+  },
+
+  enableStage2(datasource:string,trainingRunId:string,payload:{
+    actor:string;reason:string;confirm_stage2_enablement:boolean;
+    preprocessing_candidate_id?:string;threshold_candidate_id?:string;source_image_id?:string;
+  }) {
+    return request<Stage2EnablementResult>(
+      `/api/training-runs/${trainingRunId}/enable-stage2`,
+      withDatasource(datasource),{
+        timeoutMs:120000,
+        init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
+      },
+    );
+  },
+
+  getStage2Models(datasource:string) {
+    return request<{items:Stage2EnablementResult[]}>('/api/stage2/models',withDatasource(datasource));
+  },
+
+  getTechnicalProductionPreview(datasource:string,modelVersionId:string) {
+    return request<Stage2Availability>(
+      `/api/model-versions/${modelVersionId}/technical-production-preview`,
+      withDatasource(datasource),{timeoutMs:30000},
+    );
+  },
+
+  publishTechnicalProduction(datasource:string,modelVersionId:string,payload:{
+    actor:string;reason:string;confirm_publication:boolean;
+    preprocessing_profile?:string;threshold?:number;source_image_id?:string;
+  }) {
+    return request<Stage2EnablementResult>(
+      `/api/model-versions/${modelVersionId}/publish-technical-production`,
+      withDatasource(datasource),{
+        timeoutMs:120000,
+        init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
+      },
+    );
+  },
+
   getRun(datasource: string, runId: string) {
     return request<RunDetailResponse>(`/runs/${runId}`, withDatasource(datasource));
   },
@@ -225,6 +274,26 @@ export const api = {
 
   getModelVersionLineage(datasource: string, modelVersionId: string) {
     return request<{ items: ModelVersionLineageRow[] }>(`/api/model-versions/${modelVersionId}/lineage`, withDatasource(datasource));
+  },
+
+  getModelVersionContractCandidates(datasource:string,modelVersionId:string) {
+    return request<ModelContractCandidates>(`/api/model-versions/${modelVersionId}/contract-candidates`,withDatasource(datasource),{timeoutMs:30000});
+  },
+
+  completeModelVersionContract(datasource:string,modelVersionId:string,selections:Record<string,string>,actor:string,reason:string) {
+    return request<{model_version:ModelVersionRow;threshold_profile_id:string}>(`/api/model-versions/${modelVersionId}/build-production-package`,withDatasource(datasource),{
+      timeoutMs:30000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({selections,actor,reason})},
+    });
+  },
+
+  publishModelVersionToProduction(datasource:string,modelVersionId:string,payload:{deployment_name:string;alias:'champion';actor:string;reason:string;confirm_production:boolean;source_image_id?:string}) {
+    return request<ProductionPublicationResult>(`/api/model-versions/${modelVersionId}/publish-to-production`,withDatasource(datasource),{
+      timeoutMs:120000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
+    });
+  },
+
+  getModelProductionReadiness(datasource:string,modelVersionId:string) {
+    return request<ModelProductionReadiness>(`/api/model-versions/${modelVersionId}/production-readiness`,withDatasource(datasource),{timeoutMs:30000});
   },
 
   getDeployments(datasource: string, active = false) {

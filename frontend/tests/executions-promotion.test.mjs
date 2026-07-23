@@ -77,6 +77,10 @@ test('incluye accesibilidad, teclado nativo y progreso no dependiente del color'
   assert.match(action,/○/);
   assert.match(styles,/:focus-visible/);
 });
+test('muestra marca productiva derivada del deployment activo',()=>{
+  assert.match(action,/has_active_production_model/);
+  assert.match(action,/Modelo activo en producción/);
+});
 
 test('adapta acción a mobile',()=>{
   assert.match(styles,/@media \(max-width: 700px\)/);
