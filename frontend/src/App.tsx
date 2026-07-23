@@ -122,6 +122,7 @@ function App() {
         <Deployments
           datasource={datasource}
           onExecutions={() => selectPage('runs')}
+          onModelVersionSelect={selectModelVersion}
           selectedDeploymentId={selectedDeploymentId}
         />
       ) : null}

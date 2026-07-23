@@ -22,6 +22,12 @@ EXPECTED_CLASS_MAPPING = {
     "positive_class": 1,
     "positive_label": "parasitized",
 }
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _project_path(value: Any) -> Path:
+    path = Path(str(value or "")).expanduser()
+    return path if path.is_absolute() else PROJECT_ROOT / path
 
 NEXT_ACTION_LABELS = {
     "prepare_release": "Preparar despliegue",
@@ -296,8 +302,8 @@ class PrepareModelReleaseService:
                     WHERE lineage.parent_run_id = :training_id
                       AND lineage.relationship_type = 'evaluates_checkpoint_from'
                       AND child.run_type = 'evaluation'
-                      AND (:version_id IS NULL OR lineage.model_version_id = CAST(:version_id AS uuid))
-                      AND (:artifact_id IS NULL OR lineage.checkpoint_artifact_id = CAST(:artifact_id AS uuid))
+                      AND (CAST(:version_id AS uuid) IS NULL OR lineage.model_version_id = CAST(:version_id AS uuid))
+                      AND (CAST(:artifact_id AS uuid) IS NULL OR lineage.checkpoint_artifact_id = CAST(:artifact_id AS uuid))
                     ORDER BY child.finished_at DESC NULLS LAST, child.id
                     """
                 ),
@@ -323,8 +329,8 @@ class PrepareModelReleaseService:
                       AND lineage.relationship_type = 'explains_checkpoint_from'
                       AND child.run_type = 'explainability'
                       AND child.status = 'completed'
-                      AND (:version_id IS NULL OR lineage.model_version_id = CAST(:version_id AS uuid))
-                      AND (:artifact_id IS NULL OR lineage.checkpoint_artifact_id = CAST(:artifact_id AS uuid))
+                      AND (CAST(:version_id AS uuid) IS NULL OR lineage.model_version_id = CAST(:version_id AS uuid))
+                      AND (CAST(:artifact_id AS uuid) IS NULL OR lineage.checkpoint_artifact_id = CAST(:artifact_id AS uuid))
                     ORDER BY child.finished_at DESC NULLS LAST, child.id
                     """
                 ),
@@ -347,10 +353,10 @@ class PrepareModelReleaseService:
                            positive_label,
                            score_name
                     FROM run_threshold_calibration
-                    WHERE (:version_id IS NULL OR model_version_id = CAST(:version_id AS uuid))
+                    WHERE (CAST(:version_id AS uuid) IS NULL OR model_version_id = CAST(:version_id AS uuid))
                       AND (
                         run_id = CAST(:training_id AS uuid)
-                        OR (:evaluation_id IS NOT NULL AND run_id = CAST(:evaluation_id AS uuid))
+                        OR (CAST(:evaluation_id AS uuid) IS NOT NULL AND run_id = CAST(:evaluation_id AS uuid))
                       )
                     ORDER BY created_at DESC
                     """
@@ -372,7 +378,7 @@ class PrepareModelReleaseService:
                 and row.get("score_name") == "probability_parasitized"
                 and row.get("calibration_status") in {"recorded", "validated"}
             ]
-            if len(valid_thresholds) == 1:
+            if valid_thresholds:
                 threshold = valid_thresholds[0]
                 threshold["evaluated_on_test"] = bool(
                     context.evaluation
@@ -400,7 +406,7 @@ class PrepareModelReleaseService:
                     context.deployment = dict(deployments[0])
 
         if validate_model and context.checkpoint:
-            path = Path(str(context.checkpoint.get("path") or "")).expanduser().resolve()
+            path = _project_path(context.checkpoint.get("path")).resolve()
             try:
                 if not path.is_file():
                     context.model_loadable = False
@@ -450,7 +456,7 @@ class PrepareModelReleaseService:
                     "Una ruta genérica no constituye evidencia suficiente de linaje.",
                 )
             )
-        path = Path(str(checkpoint.get("path") or "")).expanduser().resolve()
+        path = _project_path(checkpoint.get("path")).resolve()
         if not path.is_file():
             reasons.append(
                 BlockingReason("CHECKPOINT_NOT_FOUND", "El artifact registrado no está disponible.")

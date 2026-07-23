@@ -66,12 +66,47 @@ class ModelDeploymentService:
         path=_project_path(version.get("artifact_registered_path") or version.get("checkpoint_path") or "")
         if not path.is_file(): errors.append("artefacto inexistente")
         elif sha256_file(path)!=version.get("artifact_sha256"): errors.append("SHA-256 incorrecto")
-        elif str(version.get("framework") or "").lower() not in {"keras","tensorflow","tf.keras"}: errors.append("framework no soportado")
+        elif str(version.get("framework") or "").lower() not in {"keras","tensorflow","tf.keras","tensorflow/keras"}: errors.append("framework no soportado")
+        elif errors: pass
         else:
             try: self.model_loader(path)
             except Exception as exc: errors.append(f"modelo no cargable: {type(exc).__name__}")
         if errors: raise GovernanceStateError("; ".join(errors))
         return version,dict(threshold)
+
+    def readiness(self,deployment_id):
+        deployment_id=str(UUID(str(deployment_id)))
+        with self.connection_factory() as c:
+            row=c.execute(text("""SELECT d.*,mv.training_run_id,mv.model_name,mv.version_number,
+              mv.status model_version_status,mv.lineage_status
+              FROM deployed_model_versions d JOIN model_versions mv ON mv.id=d.model_version_id
+              WHERE d.id=:id"""),{"id":deployment_id}).mappings().one_or_none()
+        if not row: raise GovernanceNotFoundError("deployment inexistente")
+        validation_errors=[]
+        try:
+            self.validate_activation(row["model_version_id"],row["threshold_calibration_id"])
+        except GovernanceStateError as exc:
+            validation_errors=[item.strip() for item in str(exc).split(";") if item.strip()]
+        smoke=dict(row.get("metadata") or {}).get("smoke_test") or {}
+        requirements=[
+          {"key":"approved","label":"Versión aprobada","status":"pass" if row["model_version_status"] in {"approved","deployed"} else "blocked",
+           "detail":f"Estado actual: {row['model_version_status']}"},
+          {"key":"lineage","label":"Linaje resuelto","status":"pass" if row["lineage_status"]=="resolved" else "blocked",
+           "detail":f"Linaje actual: {row['lineage_status']}"},
+          {"key":"technical","label":"Artifact y contrato técnico","status":"pass" if not validation_errors else "blocked",
+           "detail":"Validación técnica completa." if not validation_errors else " · ".join(validation_errors)},
+          {"key":"smoke","label":"Smoke test","status":"pass" if smoke.get("status")=="PASS" else ("blocked" if smoke.get("status")=="FAIL" else "pending"),
+           "detail":"PASS" if smoke.get("status")=="PASS" else ("FAIL: "+" · ".join(smoke.get("errors") or []) if smoke.get("status")=="FAIL" else "Pendiente de ejecución.")},
+          {"key":"confirmation","label":"Confirmación de producción","status":"pending" if row["environment"]=="production" else "not_applicable",
+           "detail":"Debe confirmarse al activar." if row["environment"]=="production" else "No aplica a este ambiente."},
+        ]
+        can_run_smoke=not validation_errors and row["status"] in {"pending","inactive"}
+        can_activate=can_run_smoke and smoke.get("status")=="PASS" and row["model_version_status"] in {"approved","deployed"}
+        return {"deployment_id":deployment_id,"model_version_id":str(row["model_version_id"]),
+          "training_run_id":str(row["training_run_id"]),"model_name":row["model_name"],
+          "version_number":row["version_number"],"environment":row["environment"],"alias":row["alias"],
+          "deployment_status":row["status"],"can_run_smoke":can_run_smoke,"can_activate":can_activate,
+          "validation_errors":validation_errors,"requirements":requirements,"smoke_test":smoke or None}
 
     def create(self,*,model_version_id,deployment_name,environment,alias,threshold_profile_id,deployed_by=None,metadata=None,dry_run=False):
         version,threshold=self.validate_activation(model_version_id,threshold_profile_id)

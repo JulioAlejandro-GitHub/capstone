@@ -2,6 +2,8 @@ from fastapi import APIRouter, Query
 from fastapi.responses import FileResponse
 
 from app.services.dataset_browser import (
+    DATASET_IMAGE_PAGE_SIZE_CHOICES,
+    DEFAULT_DATASET_IMAGE_PAGE_SIZE,
     dataset_image_detail,
     dataset_summary,
     paginated_dataset_images,
@@ -38,7 +40,11 @@ def dataset_images(
     split: str | None = Query(default=None),
     class_name: str | None = Query(default=None),
     page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=24),
+    page_size: int = Query(
+        default=DEFAULT_DATASET_IMAGE_PAGE_SIZE,
+        description="Tamaño de página permitido: 12, 24, 48 o 96.",
+        json_schema_extra={"enum": list(DATASET_IMAGE_PAGE_SIZE_CHOICES)},
+    ),
 ):
     return paginated_dataset_images(
         datasource=datasource,

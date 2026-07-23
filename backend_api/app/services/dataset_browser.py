@@ -22,7 +22,8 @@ DATASET_DESCRIPTION = (
 )
 SPLIT_NAMES = ("train", "val", "test")
 CLASS_NAMES = ("uninfected", "parasitized")
-PAGE_SIZE_CHOICES = {12, 24, 48, 96}
+DATASET_IMAGE_PAGE_SIZE_CHOICES = (12, 24, 48, 96)
+DEFAULT_DATASET_IMAGE_PAGE_SIZE = 12
 
 
 def missing_dataset_views(exc: Exception) -> bool:
@@ -229,9 +230,9 @@ def paginated_dataset_images(
     split: str | None = None,
     class_name: str | None = None,
     page: int = 1,
-    page_size: int = 24,
+    page_size: int = DEFAULT_DATASET_IMAGE_PAGE_SIZE,
 ):
-    if page_size not in PAGE_SIZE_CHOICES:
+    if page_size not in DATASET_IMAGE_PAGE_SIZE_CHOICES:
         raise HTTPException(status_code=400, detail="page_size debe ser 12, 24, 48 o 96.")
     where_sql, params = dataset_image_filters(split=split, class_name=class_name)
     count_row = row_to_dict(

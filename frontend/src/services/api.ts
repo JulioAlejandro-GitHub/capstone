@@ -15,6 +15,7 @@ import type {
   ModelSummary,
   ModelVersionRow,
   DeploymentRow,
+  DeploymentReadiness,
   AvailableModel,
   InferenceResult,
   ModelVersionLineageRow,
@@ -228,6 +229,10 @@ export const api = {
 
   getDeployments(datasource: string, active = false) {
     return request<{ items: DeploymentRow[] }>(active ? '/api/deployments/active' : '/api/deployments', withDatasource(datasource));
+  },
+
+  getDeploymentReadiness(datasource:string,deploymentId:string) {
+    return request<DeploymentReadiness>(`/api/deployments/${deploymentId}/readiness`,withDatasource(datasource),{timeoutMs:30000});
   },
 
   getAvailableModels(datasource: string, environment?: string) {

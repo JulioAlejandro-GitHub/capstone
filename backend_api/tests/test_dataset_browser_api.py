@@ -82,6 +82,18 @@ class DatasetBrowserApiTests(unittest.TestCase):
         self.assertEqual(context.exception.status_code, 400)
         self.assertIn("12, 24, 48 o 96", context.exception.detail)
 
+    def test_auxiliary_image_page_default_is_12(self):
+        with mock.patch(
+            "app.services.dataset_browser.safe_fetch_one",
+            return_value={"total": 0},
+        ), mock.patch(
+            "app.services.dataset_browser.safe_fetch_all",
+            return_value=[],
+        ):
+            payload = paginated_dataset_images(datasource="malaria")
+        self.assertEqual(payload["page"], 1)
+        self.assertEqual(payload["page_size"], 12)
+
 
 if __name__ == "__main__":
     unittest.main()

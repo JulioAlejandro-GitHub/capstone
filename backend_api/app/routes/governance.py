@@ -121,10 +121,14 @@ def model_version_lineage(model_version_id:str,datasource:str|None=Query("malari
       rl.model_version_id,rl.checkpoint_artifact_id,rl.confidence,rl.created_at FROM run_lineage rl WHERE rl.model_version_id=CAST(:id AS uuid) ORDER BY rl.created_at""",{"id":uid(model_version_id)}))}
 @router.get("/deployments")
 def deployments(datasource:str|None=Query("malaria")):
-    return {"items":rows_to_list(fetch_all(datasource,"SELECT * FROM deployed_model_versions ORDER BY created_at DESC"))}
+    return {"items":rows_to_list(fetch_all(datasource,"""SELECT d.*,mv.training_run_id,mv.model_name,mv.version_number,
+      mv.status model_version_status FROM deployed_model_versions d JOIN model_versions mv ON mv.id=d.model_version_id
+      ORDER BY d.created_at DESC"""))}
 @router.get("/deployments/active")
 def active_deployments(datasource:str|None=Query("malaria")):
-    return {"items":rows_to_list(fetch_all(datasource,"SELECT * FROM deployed_model_versions WHERE status='active' ORDER BY deployment_name,environment,alias"))}
+    return {"items":rows_to_list(fetch_all(datasource,"""SELECT d.*,mv.training_run_id,mv.model_name,mv.version_number,
+      mv.status model_version_status FROM deployed_model_versions d JOIN model_versions mv ON mv.id=d.model_version_id
+      WHERE d.status='active' ORDER BY d.deployment_name,d.environment,d.alias"""))}
 @router.get("/models/available")
 def available_models(datasource:str|None=Query("malaria"),environment:str|None=None):
     filters=" AND d.environment=:environment" if environment else ""
@@ -137,6 +141,9 @@ def deployment(deployment_id:str,datasource:str|None=Query("malaria")):
     row=fetch_one(datasource,"SELECT * FROM deployed_model_versions WHERE id=CAST(:id AS uuid)",{"id":uid(deployment_id)})
     if not row:raise HTTPException(404,"Deployment no encontrado")
     return row_to_dict(row)
+@router.get("/deployments/{deployment_id}/readiness")
+def deployment_readiness(deployment_id:str,datasource:str|None=Query("malaria")):
+    return safe(lambda:governance_services(datasource)[0].readiness(uid(deployment_id)))
 @router.post("/model-versions/{model_version_id}/validate")
 def validate_model_version(model_version_id:str,body:ModelVersionTransition,datasource:str|None=Query("malaria")):
     if not body.threshold_profile_id:raise HTTPException(422,"threshold_profile_id requerido")

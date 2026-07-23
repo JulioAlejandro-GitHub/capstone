@@ -49,6 +49,18 @@ export interface DeploymentRow {
   deployed_at: string | null; retired_at: string | null; deployed_by: string | null;
   created_at?: string | null;
   metadata?: JsonRecord; supersedes_deployment_id?: string|null; rollback_of_deployment_id?: string|null;
+  training_run_id?:string;model_name?:string;version_number?:number|null;model_version_status?:string;
+}
+
+export interface DeploymentRequirement {
+  key:string; label:string; status:'pass'|'pending'|'blocked'|'not_applicable'; detail:string;
+}
+
+export interface DeploymentReadiness {
+  deployment_id:string;model_version_id:string;training_run_id:string;model_name:string;
+  version_number:number|null;environment:string;alias:string;deployment_status:string;
+  can_run_smoke:boolean;can_activate:boolean;validation_errors:string[];
+  requirements:DeploymentRequirement[];smoke_test:JsonRecord|null;
 }
 
 export interface AvailableModel extends DeploymentRow {
