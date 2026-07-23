@@ -382,6 +382,108 @@
   outline-offset: 2px;
 }
 
+.report-detail-button:disabled {
+  border-color: #c5ccda;
+  background: #f1f3f7;
+  color: #7d879b;
+  cursor: not-allowed;
+}
+
+.run-promotion {
+  display: grid;
+  align-content: end;
+  gap: 7px;
+  border-top: 1px solid #e4e9f2;
+  padding-top: 9px;
+}
+
+.run-promotion__progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 7px;
+  color: #72809a;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.run-promotion__progress span {
+  white-space: nowrap;
+}
+
+.run-promotion__progress span[data-complete="true"] {
+  color: #17653b;
+  font-weight: 800;
+}
+
+.run-promotion__progress .run-promotion__title {
+  width: 100%;
+  color: #465574;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.run-promotion__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.run-promotion__spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: run-promotion-spin 700ms linear infinite;
+}
+
+@keyframes run-promotion-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.run-promotion__help {
+  color: #5f6d86;
+  font-size: 10px;
+}
+
+.run-promotion__help summary {
+  width: fit-content;
+  color: #8a4c00;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.run-promotion__help summary:focus-visible {
+  outline: 3px solid rgba(49, 92, 170, 0.24);
+  outline-offset: 2px;
+}
+
+.run-promotion__help p,
+.run-promotion__help ul {
+  margin: 6px 0 0;
+}
+
+.run-promotion__help ul {
+  display: grid;
+  gap: 3px;
+  padding-left: 16px;
+}
+
+.run-promotion-notice {
+  margin-bottom: 12px;
+  border: 1px solid #b8dfca;
+  border-radius: 9px;
+  background: #edf9f2;
+  color: #17653b;
+  padding: 9px 11px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .run-lineage-overview {
   display: flex;
   flex-wrap: wrap;
@@ -797,6 +899,12 @@
 
   .report-results-cell {
     grid-template-columns: 1fr;
+  }
+
+  .run-promotion__button {
+    width: 100%;
+    justify-content: center;
+    min-height: 40px;
   }
 
   .run-lineage-group__children-heading {

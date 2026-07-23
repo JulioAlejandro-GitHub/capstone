@@ -14,7 +14,7 @@ interface LayoutProps {
 
 export const modelAiNavItems: Array<{ page: PageKey; label: string }> = [
   { page: 'dashboard', label: 'Resumen' },
-  { page: 'runs', label: 'Entrenamientos' },
+  { page: 'runs', label: 'Ejecuciones' },
   { page: 'clinical-evaluation', label: 'Evaluaciones' },
   { page: 'models', label: 'Comparación de modelos' },
   { page: 'model-versions', label: 'Modelos liberados' },

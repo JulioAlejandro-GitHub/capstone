@@ -14,7 +14,7 @@ oscuro, navbar separada ni menú móvil independiente.
 ```text
 Modelo IA
 ├── Resumen
-├── Entrenamientos
+├── Ejecuciones
 ├── Evaluaciones
 ├── Comparación de modelos
 ├── Modelos liberados
@@ -58,6 +58,29 @@ Endpoints consumidos:
 No existe actualmente un selector de inferencia en el frontend. Cuando se incorpore,
 deberá consumir exclusivamente `/api/deployments/active` y enviar
 `deployed_model_version_id`; nunca checkpoint, path o `best_model.keras`.
+
+## Promoción desde Ejecuciones
+
+La fila principal TRAIN incorpora una acción secundaria junto a “Ver detalle”. Su
+estado se obtiene desde
+`GET /api/training-runs/{training_run_id}/promotion-status`; EVALUATE y EXPLAIN
+conservan sus acciones y no reciben controles de promoción.
+
+La acción puede preparar una versión mediante
+`POST /api/training-runs/{training_run_id}/prepare-release` o navegar usando
+`model_version_id`/`deployment_id`. Nunca despliega ni activa. Durante el POST se
+bloquea el control, se muestra progreso, existe timeout de 30 segundos y se vuelve a
+consultar el estado al fallar.
+
+`App.tsx` conserva los IDs seleccionados en estado porque el proyecto todavía no
+usa React Router. `ModelVersions` y `Deployments` enfocan su ficha al recibir el ID.
+Las rutas que entrega el backend se usan como contrato de destino; la navegación
+interna actual se resuelve por `PageKey`.
+
+Modelos liberados muestra la evidencia disponible y mantiene deshabilitada la
+operación administrativa: el sistema no expone permisos de usuario ni endpoints de
+validación/aprobación consumibles por esta UI. Despliegues sigue siendo read-only.
+No se inventan roles ni acciones.
 
 ## Verificación visual y accesibilidad
 

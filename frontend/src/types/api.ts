@@ -35,6 +35,11 @@ export interface ModelVersionRow {
   recall_parasitized?: number | null; specificity?: number | null; f2_parasitized?: number | null;
   evaluation_run_id?: string | null; explainability_available?: boolean;
   active_deployment_id?: string | null; deployment_alias?: string | null; deployment_environment?: string | null;
+  preprocessing_profile_snapshot?: JsonRecord;
+  class_mapping?: JsonRecord;
+  input_signature?: JsonRecord;
+  output_signature?: JsonRecord;
+  metadata?: JsonRecord;
 }
 
 export interface DeploymentRow {
@@ -47,6 +52,50 @@ export interface DeploymentRow {
 export interface ModelVersionLineageRow {
   id: string; parent_run_id: string; child_run_id: string; relationship_type: string;
   model_version_id: string; checkpoint_artifact_id: string | null; confidence: string | null; created_at: string;
+}
+
+export type PromotionNextAction =
+  | 'prepare_release'
+  | 'review_model_version'
+  | 'approve_model_version'
+  | 'create_deployment'
+  | 'review_pending_deployment'
+  | 'view_active_deployment'
+  | 'unavailable';
+
+export interface PromotionBlockingReason {
+  code: string;
+  message: string;
+}
+
+export interface PromotionThreshold {
+  value: number;
+  source: string;
+  evaluated_on_test: boolean;
+}
+
+export interface TrainingPromotionStatus {
+  training_run_id: string;
+  training_status: string | null;
+  model_name: string | null;
+  model_version_id: string | null;
+  model_version_status: string | null;
+  lineage_status: string;
+  evaluation_run_id: string | null;
+  explainability_run_ids: string[];
+  checkpoint_sha256: string | null;
+  threshold: PromotionThreshold | null;
+  can_release: boolean;
+  can_deploy: boolean;
+  deployment_id: string | null;
+  deployment_status: string | null;
+  environment: string | null;
+  alias: string | null;
+  next_action: PromotionNextAction;
+  button_label: string;
+  button_enabled: boolean;
+  blocking_reasons: PromotionBlockingReason[];
+  target_url: string | null;
 }
 
 export interface RunDashboard {

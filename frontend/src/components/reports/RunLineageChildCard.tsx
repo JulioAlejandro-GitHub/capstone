@@ -28,11 +28,6 @@ function visibleRunId(runId: string): string {
   return runId.length > 12 ? `${runId.slice(0, 8)}…` : runId;
 }
 
-function checkpointName(path: string | null | undefined): string {
-  if (!path?.trim()) return 'No registrado';
-  return path.trim().split(/[\\/]/).pop() || path.trim();
-}
-
 function countLabel(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(Number(value))) return '-';
   return countFormatter.format(Number(value));
@@ -88,9 +83,7 @@ export function RunLineageChildCard(props: RunLineageChildCardProps) {
 
       <div className="lineage-child-card__lineage">
         <LineageBadge confidence={run.confidence} />
-        <span className="report-muted" title={run.checkpoint_path || undefined}>
-          Checkpoint: <strong>{checkpointName(run.checkpoint_path)}</strong>
-        </span>
+        <span className="report-muted">Linaje del modelo registrado</span>
       </div>
 
       {kind === 'evaluation' ? (

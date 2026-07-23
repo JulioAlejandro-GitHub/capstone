@@ -12,6 +12,7 @@ import { api } from '../services/api';
 import type {
   GroupedRunLineageResponse,
   TrainingRunLineageGroup,
+  TrainingPromotionStatus,
   UnresolvedLineageRun,
 } from '../types/api';
 import '../styles/report-components.css';
@@ -19,6 +20,8 @@ import '../styles/report-components.css';
 interface RunsProps {
   datasource: string;
   onRunSelect: (runId: string) => void;
+  onModelVersionSelect: (modelVersionId: string) => void;
+  onDeploymentSelect: (deploymentId: string) => void;
 }
 
 const MISSING_MODEL_FILTER = 'missing:';
@@ -50,11 +53,49 @@ function groupContainsRun(group: TrainingRunLineageGroup, runId: string): boolea
     || group.explainability.some((run) => run.run_id === runId);
 }
 
-export function Runs({ datasource, onRunSelect }: RunsProps) {
+function promotionErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (message.includes('tiempo de espera')) return 'La consulta tardó demasiado. Intenta nuevamente.';
+  return 'No fue posible consultar el estado de liberación.';
+}
+
+export function Runs({
+  datasource,
+  onRunSelect,
+  onModelVersionSelect,
+  onDeploymentSelect,
+}: RunsProps) {
   const [lineage, setLineage] = useState<GroupedRunLineageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedRunId, setSelectedRunId] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
+  const [promotionStatus, setPromotionStatus] = useState<Record<string, TrainingPromotionStatus>>({});
+  const [promotionErrors, setPromotionErrors] = useState<Record<string, string>>({});
+  const [promotionLoading, setPromotionLoading] = useState<Record<string, boolean>>({});
+  const [preparingRunId, setPreparingRunId] = useState<string | null>(null);
+  const [promotionNotice, setPromotionNotice] = useState<string | null>(null);
+
+  const loadPromotionStatus = async (runId: string) => {
+    setPromotionLoading((current) => ({ ...current, [runId]: true }));
+    setPromotionErrors((current) => {
+      const next = { ...current };
+      delete next[runId];
+      return next;
+    });
+    try {
+      const response = await api.getTrainingPromotionStatus(datasource, runId);
+      setPromotionStatus((current) => ({ ...current, [runId]: response }));
+      return response;
+    } catch (reason) {
+      setPromotionErrors((current) => ({
+        ...current,
+        [runId]: promotionErrorMessage(reason),
+      }));
+      return null;
+    } finally {
+      setPromotionLoading((current) => ({ ...current, [runId]: false }));
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -62,10 +103,20 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
     setLineage(null);
     setSelectedRunId('');
     setSelectedModel('');
+    setPromotionStatus({});
+    setPromotionErrors({});
+    setPromotionLoading({});
+    setPreparingRunId(null);
+    setPromotionNotice(null);
     api
       .getGroupedRunLineage(datasource)
       .then((response) => {
-        if (active) setLineage(response);
+        if (active) {
+          setLineage(response);
+          response.items.forEach((group) => {
+            void loadPromotionStatus(group.training.run_id);
+          });
+        }
       })
       .catch((err: Error) => {
         if (active) setError(err.message);
@@ -74,6 +125,54 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
       active = false;
     };
   }, [datasource]);
+
+  const navigateForPromotion = (status: TrainingPromotionStatus) => {
+    if (
+      ['review_model_version', 'approve_model_version', 'create_deployment'].includes(status.next_action)
+      && status.model_version_id
+    ) {
+      onModelVersionSelect(status.model_version_id);
+      return;
+    }
+    if (
+      ['review_pending_deployment', 'view_active_deployment'].includes(status.next_action)
+      && status.deployment_id
+    ) {
+      onDeploymentSelect(status.deployment_id);
+    }
+  };
+
+  const handlePromotionAction = async (runId: string) => {
+    if (preparingRunId) return;
+    const current = promotionStatus[runId];
+    if (!current) {
+      await loadPromotionStatus(runId);
+      return;
+    }
+    if (current.next_action !== 'prepare_release') {
+      navigateForPromotion(current);
+      return;
+    }
+    setPreparingRunId(runId);
+    setPromotionNotice(null);
+    setPromotionErrors((errors) => {
+      const next = { ...errors };
+      delete next[runId];
+      return next;
+    });
+    try {
+      const prepared = await api.prepareTrainingRelease(datasource, runId);
+      setPromotionStatus((statuses) => ({ ...statuses, [runId]: prepared }));
+      setPromotionNotice('La versión fue preparada correctamente.');
+      navigateForPromotion(prepared);
+    } catch (reason) {
+      const message = promotionErrorMessage(reason);
+      await loadPromotionStatus(runId);
+      setPromotionErrors((errors) => ({ ...errors, [runId]: message }));
+    } finally {
+      setPreparingRunId(null);
+    }
+  };
 
   const unresolvedRuns = useMemo<UnresolvedLineageRun[]>(() => (
     lineage
@@ -158,6 +257,9 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
         </div>
       </div>
       <section className="panel report-panel">
+        {promotionNotice ? (
+          <div className="run-promotion-notice" role="status">{promotionNotice}</div>
+        ) : null}
         <ReportFilters
           hasActiveFilters={hasActiveFilters}
           onClear={() => {
@@ -211,6 +313,11 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
                     group={group}
                     key={group.training.run_id}
                     onRunSelect={onRunSelect}
+                    onPromotionAction={handlePromotionAction}
+                    promotionError={promotionErrors[group.training.run_id]}
+                    promotionLoading={promotionLoading[group.training.run_id] ?? false}
+                    promotionPreparing={preparingRunId === group.training.run_id}
+                    promotionStatus={promotionStatus[group.training.run_id]}
                   />
                 ))}
               </div>

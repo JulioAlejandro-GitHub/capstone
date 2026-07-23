@@ -32,6 +32,8 @@ function App() {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [selectedExplainabilityCase, setSelectedExplainabilityCase] = useState<ExplainabilityCase | null>(null);
   const [selectedExplainabilityRunId, setSelectedExplainabilityRunId] = useState<string | null>(null);
+  const [selectedModelVersionId, setSelectedModelVersionId] = useState<string | null>(null);
+  const [selectedDeploymentId, setSelectedDeploymentId] = useState<string | null>(null);
 
   useEffect(() => {
     api
@@ -43,6 +45,18 @@ function App() {
   const selectRun = (runId: string) => {
     setSelectedRunId(runId);
     setPage('run-detail');
+  };
+
+  const selectModelVersion = (modelVersionId: string) => {
+    setSelectedModelVersionId(modelVersionId);
+    setSelectedDeploymentId(null);
+    setPage('model-versions');
+  };
+
+  const selectDeployment = (deploymentId: string) => {
+    setSelectedDeploymentId(deploymentId);
+    setSelectedModelVersionId(null);
+    setPage('deployments');
   };
 
   const selectExplainabilityCase = (item: ExplainabilityCase) => {
@@ -60,12 +74,16 @@ function App() {
   const selectPage = (nextPage: PageKey) => {
     setSelectedExplainabilityCase(null);
     setSelectedExplainabilityRunId(null);
+    if (nextPage !== 'model-versions') setSelectedModelVersionId(null);
+    if (nextPage !== 'deployments') setSelectedDeploymentId(null);
     setPage(nextPage);
   };
 
   const selectDatasource = (nextDatasource: string) => {
     setSelectedExplainabilityCase(null);
     setSelectedExplainabilityRunId(null);
+    setSelectedModelVersionId(null);
+    setSelectedDeploymentId(null);
     setDatasource(nextDatasource);
   };
 
@@ -78,13 +96,34 @@ function App() {
       onDatasourceChange={selectDatasource}
     >
       {page === 'dashboard' ? <Dashboard datasource={datasource} onRunSelect={selectRun} /> : null}
-      {page === 'runs' ? <Runs datasource={datasource} onRunSelect={selectRun} /> : null}
+      {page === 'runs' ? (
+        <Runs
+          datasource={datasource}
+          onDeploymentSelect={selectDeployment}
+          onModelVersionSelect={selectModelVersion}
+          onRunSelect={selectRun}
+        />
+      ) : null}
       {page === 'clinical-evaluation' ? (
         <ClinicalEvaluation datasource={datasource} onRunSelect={selectRun} />
       ) : null}
       {page === 'models' ? <ModelComparison datasource={datasource} /> : null}
-      {page === 'model-versions' ? <ModelVersions datasource={datasource} onRunSelect={selectRun} onDeployments={() => selectPage('deployments')} /> : null}
-      {page === 'deployments' ? <Deployments datasource={datasource} /> : null}
+      {page === 'model-versions' ? (
+        <ModelVersions
+          datasource={datasource}
+          onDeployments={() => selectPage('deployments')}
+          onExecutions={() => selectPage('runs')}
+          onRunSelect={selectRun}
+          selectedModelVersionId={selectedModelVersionId}
+        />
+      ) : null}
+      {page === 'deployments' ? (
+        <Deployments
+          datasource={datasource}
+          onExecutions={() => selectPage('runs')}
+          selectedDeploymentId={selectedDeploymentId}
+        />
+      ) : null}
       {page === 'traceability' ? <Traceability datasource={datasource} onRunSelect={selectRun} /> : null}
       {page === 'run-detail' ? (
         <RunDetail

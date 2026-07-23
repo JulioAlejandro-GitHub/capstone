@@ -23,6 +23,7 @@ import type {
   RunDetailResponse,
   RunImagePrediction,
   ThresholdCalibrationSummary,
+  TrainingPromotionStatus,
   UploadedPrediction,
 } from '../types/api';
 
@@ -30,6 +31,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000
 export const DEFAULT_DATASOURCE = import.meta.env.VITE_DEFAULT_DATASOURCE ?? 'malaria';
 
 type QueryValue = string | number | boolean | undefined;
+type RequestOptions = {
+  init?: RequestInit;
+  timeoutMs?: number;
+};
 type ArtifactUrlOptions = {
   artifactId?: string | null;
   datasource?: string;
@@ -40,7 +45,11 @@ type MediaUrlOptions = ArtifactUrlOptions & {
   path?: string | null;
 };
 
-async function request<T>(path: string, params: Record<string, QueryValue> = {}) {
+async function request<T>(
+  path: string,
+  params: Record<string, QueryValue> = {},
+  options: RequestOptions = {},
+) {
   const url = new URL(path, API_BASE_URL);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined) {
@@ -48,12 +57,23 @@ async function request<T>(path: string, params: Record<string, QueryValue> = {})
     }
   });
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(`${response.status} ${response.statusText}: ${message}`);
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), options.timeoutMs ?? 15000);
+  try {
+    const response = await fetch(url, { ...options.init, signal: controller.signal });
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(`${response.status} ${response.statusText}: ${message}`);
+    }
+    return response.json() as Promise<T>;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('La solicitud superó el tiempo de espera.');
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
   }
-  return response.json() as Promise<T>;
 }
 
 function withDatasource(datasource: string) {
@@ -117,6 +137,34 @@ export const api = {
     return request<GroupedRunLineageResponse>(
       '/runs/grouped-lineage',
       withDatasource(datasource),
+    );
+  },
+
+  getTrainingPromotionStatus(datasource: string, trainingRunId: string) {
+    return request<TrainingPromotionStatus>(
+      `/api/training-runs/${trainingRunId}/promotion-status`,
+      withDatasource(datasource),
+    );
+  },
+
+  prepareTrainingRelease(
+    datasource: string,
+    trainingRunId: string,
+    targetEnvironment?: string,
+  ) {
+    return request<TrainingPromotionStatus>(
+      `/api/training-runs/${trainingRunId}/prepare-release`,
+      withDatasource(datasource),
+      {
+        timeoutMs: 30000,
+        init: {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            target_environment: targetEnvironment || undefined,
+          }),
+        },
+      },
     );
   },
 

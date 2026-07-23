@@ -1,5 +1,5 @@
 import { StatusBadge } from '../StatusBadge';
-import type { RunDashboard } from '../../types/api';
+import type { RunDashboard, TrainingPromotionStatus } from '../../types/api';
 import { getRunDuration } from '../../utils/format';
 import {
   generateRunAutoAnalysis,
@@ -11,18 +11,33 @@ import { CommandChips } from './CommandChips';
 import { MetricChip } from './MetricChip';
 import { MiniConfusionMatrix } from './MiniConfusionMatrix';
 import { RunProcessBadge, type RunProcessKind } from './RunProcessBadge';
+import { RunPromotionAction } from './RunPromotionAction';
 
 interface RunSummaryRowProps {
   run: RunDashboard;
   onRunSelect: (runId: string) => void;
   processKind?: RunProcessKind;
+  promotionError?: string | null;
+  promotionLoading?: boolean;
+  promotionPreparing?: boolean;
+  promotionStatus?: TrainingPromotionStatus;
+  onPromotionAction?: () => void;
 }
 
 function truncatedRunId(runId: string): string {
   return runId.length > 12 ? `${runId.slice(0, 8)}…` : runId;
 }
 
-export function RunSummaryRow({ run, onRunSelect, processKind }: RunSummaryRowProps) {
+export function RunSummaryRow({
+  run,
+  onRunSelect,
+  processKind,
+  promotionError,
+  promotionLoading = false,
+  promotionPreparing = false,
+  promotionStatus,
+  onPromotionAction,
+}: RunSummaryRowProps) {
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
   const analysis = generateRunAutoAnalysis(run);
@@ -82,6 +97,16 @@ export function RunSummaryRow({ run, onRunSelect, processKind }: RunSummaryRowPr
         >
           Ver detalle
         </button>
+        {processKind === 'training' && onPromotionAction ? (
+          <RunPromotionAction
+            error={promotionError}
+            loading={promotionLoading}
+            onAction={onPromotionAction}
+            preparing={promotionPreparing}
+            runId={run.run_id}
+            status={promotionStatus}
+          />
+        ) : null}
       </section>
     </div>
   );

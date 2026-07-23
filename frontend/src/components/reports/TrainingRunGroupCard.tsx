@@ -1,13 +1,26 @@
-import type { TrainingRunLineageGroup } from '../../types/api';
+import type { TrainingRunLineageGroup, TrainingPromotionStatus } from '../../types/api';
 import { RunLineageChildCard } from './RunLineageChildCard';
 import { RunSummaryRow } from './RunSummaryRow';
 
 interface TrainingRunGroupCardProps {
   group: TrainingRunLineageGroup;
   onRunSelect: (runId: string) => void;
+  promotionError?: string | null;
+  promotionLoading?: boolean;
+  promotionPreparing?: boolean;
+  promotionStatus?: TrainingPromotionStatus;
+  onPromotionAction: (runId: string) => void;
 }
 
-export function TrainingRunGroupCard({ group, onRunSelect }: TrainingRunGroupCardProps) {
+export function TrainingRunGroupCard({
+  group,
+  onRunSelect,
+  promotionError,
+  promotionLoading,
+  promotionPreparing,
+  promotionStatus,
+  onPromotionAction,
+}: TrainingRunGroupCardProps) {
   const { training, evaluations, explainability } = group;
   const linkedCount = evaluations.length + explainability.length;
 
@@ -18,7 +31,12 @@ export function TrainingRunGroupCard({ group, onRunSelect }: TrainingRunGroupCar
     >
       <RunSummaryRow
         onRunSelect={onRunSelect}
+        onPromotionAction={() => onPromotionAction(training.run_id)}
         processKind="training"
+        promotionError={promotionError}
+        promotionLoading={promotionLoading}
+        promotionPreparing={promotionPreparing}
+        promotionStatus={promotionStatus}
         run={training}
       />
 
