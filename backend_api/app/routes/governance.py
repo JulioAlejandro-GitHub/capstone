@@ -2,13 +2,15 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from uuid import UUID
-from fastapi import APIRouter,HTTPException,Query
+from contextlib import contextmanager
+from fastapi import APIRouter,Header,HTTPException,Query
 from pydantic import BaseModel,ConfigDict
-from app.db import fetch_all,fetch_one
+from app.db import fetch_all,fetch_one,get_engine,resolve_datasource
 from app.services.serialization import row_to_dict,rows_to_list
 
 CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))
 from src.model_deployment_service import ModelDeploymentService
+from src.prepare_model_release_service import PrepareModelReleaseService
 from src.traceable_inference import ModelCache,TraceableInferenceService
 
 MODEL_CACHE=ModelCache(maxsize=4)
@@ -33,6 +35,41 @@ class Transition(BaseModel):
 class ImageJobCreate(BaseModel):
     model_config=ConfigDict(extra="forbid")
     deployed_model_version_id:str|None=None;deployment_name:str|None=None;environment:str|None=None;alias:str|None=None;source_image_id:str
+class PrepareReleaseRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    target_environment:str|None=None
+
+def prepare_release_service(datasource:str|None):
+    key=resolve_datasource(datasource)
+    @contextmanager
+    def connection_factory():
+        with get_engine(key).begin() as connection:
+            yield connection
+    return PrepareModelReleaseService(connection_factory=connection_factory)
+
+@router.get("/training-runs/{training_run_id}/promotion-status")
+def promotion_status(training_run_id:str,datasource:str|None=Query("malaria")):
+    try:
+        return prepare_release_service(datasource).promotion_status(uid(training_run_id))
+    except HTTPException:raise
+    except Exception as exc:raise HTTPException(409,{"code":"PROMOTION_STATUS_FAILED","message":type(exc).__name__}) from exc
+
+@router.post("/training-runs/{training_run_id}/prepare-release")
+def prepare_release(
+    training_run_id:str,
+    body:PrepareReleaseRequest|None=None,
+    datasource:str|None=Query("malaria"),
+    requester:str|None=Header(None,alias="X-Requester"),
+    request_id:str|None=Header(None,alias="X-Request-ID"),
+):
+    try:
+        request_body=body or PrepareReleaseRequest()
+        return prepare_release_service(datasource).prepare_release(
+            uid(training_run_id),requester=requester,
+            target_environment=request_body.target_environment,request_id=request_id,
+        )
+    except HTTPException:raise
+    except Exception as exc:raise HTTPException(409,{"code":"PREPARE_RELEASE_FAILED","message":type(exc).__name__}) from exc
 
 @router.get("/model-versions")
 def model_versions(datasource:str|None=Query("malaria")):
