@@ -46,6 +46,7 @@ export interface ModelVersionRow {
 export interface DeploymentRow {
   id: string; deployment_name: string; environment: string; alias: string;
   model_version_id: string; status: string; threshold_value: number;
+  artifact_sha256?: string | null;
   deployed_at: string | null; retired_at: string | null; deployed_by: string | null;
   created_at?: string | null;
   threshold_calibration_id?:string|null;
@@ -101,15 +102,18 @@ export interface ProductionPublicationResult {
 }
 
 export interface Stage2Availability {
-  training_run_id:string;eligible:boolean;available:boolean;
+  training_run_id:string;train_status?:string;evaluation_run_id?:string|null;evaluation_status?:string|null;
+  explainability_run_ids?:string[];eligible:boolean;eligible_for_stage2_production?:boolean;
+  available:boolean;is_stage2_production?:boolean;
+  production_state?:'not_eligible'|'eligible'|'preparing'|'active'|'inactive'|'failed';
   next_action:'enable_for_stage2'|'view_stage2_model'|'unavailable';
-  action_label:string;blockers:PromotionBlockingReason[];warnings:string[];
+  action_label:string;blockers:PromotionBlockingReason[];technical_blockers?:PromotionBlockingReason[];warnings:string[];
   model_version_id:string|null;deployment_id:string|null;fixture:boolean;
   package?:ModelContractCandidates|null;
 }
 export interface Stage2EnablementResult {
   training_run_id:string;model_version_id:string;deployment_id:string;
-  environment:'stage2';alias:'default';status:'active';artifact_sha256:string;
+  environment:'stage2'|'production';alias:'default'|'champion';status:'active';artifact_sha256:string;
   smoke_status:'PASS';available_for_stage2:boolean;
   verification_inference:{status:'PASS';inference_run_id:string;image_analysis_job_id:string};
   warnings:string[];rollback_available:boolean;idempotent:boolean;

@@ -1,5 +1,6 @@
 import { StatusBadge } from '../StatusBadge';
-import type { RunDashboard, Stage2Availability, TrainingPromotionStatus } from '../../types/api';
+import { Link } from 'react-router-dom';
+import type { RunDashboard, Stage2Availability } from '../../types/api';
 import { getRunDuration } from '../../utils/format';
 import {
   generateRunAutoAnalysis,
@@ -11,20 +12,13 @@ import { CommandChips } from './CommandChips';
 import { MetricChip } from './MetricChip';
 import { MiniConfusionMatrix } from './MiniConfusionMatrix';
 import { RunProcessBadge, type RunProcessKind } from './RunProcessBadge';
-import { RunPromotionAction } from './RunPromotionAction';
-import { Stage2AvailabilityAction } from './Stage2AvailabilityAction';
 
 interface RunSummaryRowProps {
   run: RunDashboard;
   onRunSelect: (runId: string) => void;
   processKind?: RunProcessKind;
-  promotionError?: string | null;
-  promotionLoading?: boolean;
-  promotionPreparing?: boolean;
-  promotionStatus?: TrainingPromotionStatus;
-  onPromotionAction?: () => void;
-  stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Busy?:boolean;stage2Error?:string;
-  onStage2Enable?:()=>void;onStage2View?:(deploymentId:string)=>void;
+  stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Error?:string;
+  stage2DetailHref?:string;
 }
 
 function truncatedRunId(runId: string): string {
@@ -35,12 +29,7 @@ export function RunSummaryRow({
   run,
   onRunSelect,
   processKind,
-  promotionError,
-  promotionLoading = false,
-  promotionPreparing = false,
-  promotionStatus,
-  onPromotionAction,
-  stage2Status,stage2Loading=false,stage2Busy=false,stage2Error,onStage2Enable,onStage2View,
+  stage2Status,stage2Loading=false,stage2Error,stage2DetailHref,
 }: RunSummaryRowProps) {
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
@@ -93,28 +82,32 @@ export function RunSummaryRow({
         data-label="Análisis automático"
       >
         <AutoAnalysisBadge analysis={analysis} />
-        <button
+        {processKind !== 'training' ? <button
           aria-label={`Ver detalle de ${run.run_name?.trim() || run.run_id}`}
           className="report-detail-button"
           onClick={() => onRunSelect(run.run_id)}
           type="button"
         >
           Ver detalle
-        </button>
-        {processKind === 'training' && onPromotionAction ? (
-          <RunPromotionAction
-            error={promotionError}
-            loading={promotionLoading}
-            onAction={onPromotionAction}
-            preparing={promotionPreparing}
-            runId={run.run_id}
-            status={promotionStatus}
-          />
-        ) : null}
-        {processKind==='training'&&onStage2Enable&&onStage2View?(
-          <Stage2AvailabilityAction status={stage2Status} loading={stage2Loading}
-            busy={stage2Busy} error={stage2Error} onEnable={onStage2Enable} onView={onStage2View}/>
-        ):null}
+        </button> : null}
+        {processKind === 'training' ? <div className="stage2-release-summary" role="status">
+          <span className="run-promotion__title">Liberación</span>
+          {stage2Loading ? <strong>Consultando estado…</strong>
+            : stage2Status?.is_stage2_production ? <>
+              <strong className="stage2-production-badge"><span aria-hidden="true">✓</span> Productivo Etapa 2</strong>
+              <span>production / champion</span><small>Modelo activo e inmutable</small>
+            </>
+            : stage2Status?.eligible ? <>
+              <strong>Disponible para publicar</strong>
+              <span>✓ TRAIN completado · ✓ EVALUATE completado</span>
+            </>
+            : <>
+              <strong>No disponible</strong>
+              <span>Se requiere un TRAIN completado y un EVALUATE completado asociado.</span>
+            </>}
+          {stage2Error ? <small className="run-promotion-error">{stage2Error}</small> : null}
+          {stage2DetailHref ? <Link className="report-detail-button stage2-detail-link" to={stage2DetailHref}>Ver detalle</Link> : null}
+        </div> : null}
       </section>
     </div>
   );

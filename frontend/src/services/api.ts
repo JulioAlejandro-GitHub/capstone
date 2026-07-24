@@ -182,6 +182,13 @@ export const api = {
       withDatasource(datasource),{timeoutMs:30000},
     );
   },
+  getStage2ReleaseStatus(datasource:string,trainingRunId:string) {
+    return request<Stage2Availability>(
+      `/api/training-runs/${trainingRunId}/stage2-release-status`,
+      withDatasource(datasource),
+      {timeoutMs:30000},
+    );
+  },
 
   enableStage2(datasource:string,trainingRunId:string,payload:{
     actor:string;reason:string;confirm_stage2_enablement:boolean;
@@ -193,6 +200,15 @@ export const api = {
         timeoutMs:120000,
         init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
       },
+    );
+  },
+  publishTrainingStage2(datasource:string,trainingRunId:string,payload:{
+    actor:string;reason:string;confirm_publication:boolean;source_image_id?:string;
+  }) {
+    return request<Stage2EnablementResult>(
+      `/api/training-runs/${trainingRunId}/publish-technical-production`,
+      withDatasource(datasource),
+      {init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},timeoutMs:120000},
     );
   },
 

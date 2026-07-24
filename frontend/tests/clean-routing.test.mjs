@@ -7,6 +7,7 @@ const app=read('src/App.tsx');
 const main=read('src/main.tsx');
 const router=read('src/router.ts');
 const layout=read('src/components/Layout.tsx');
+const sidebar=read('src/components/navigation/AppSidebar.tsx');
 const routeState=read('src/components/RouteState.tsx');
 const deployments=read('src/pages/Deployments.tsx');
 const versions=read('src/pages/ModelVersions.tsx');
@@ -40,9 +41,9 @@ test('preserva datasource y genera URL compartible sin host hardcodeado',()=>{
 });
 
 test('menú usa enlaces nativos y estado activo derivado de URL',()=>{
-  assert.match(layout,/NavLink/);
-  assert.match(layout,/aria-current/);
-  assert.doesNotMatch(layout,/onPageChange/);
+  assert.match(sidebar,/NavLink/);
+  assert.match(sidebar,/useLocation/);
+  assert.doesNotMatch(sidebar,/onPageChange/);
 });
 
 test('run, model version y deployment exponen Copiar enlace canónico',()=>{

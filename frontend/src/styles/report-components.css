@@ -514,6 +514,25 @@
   box-shadow: 0 9px 24px rgba(18, 26, 47, 0.055);
 }
 
+:root {
+  --stage2-production-background: #f1faf5;
+  --stage2-production-border: #2f8a58;
+  --stage2-production-text: #1f6640;
+  --stage2-production-badge-background: #d8f1e2;
+  --stage2-production-badge-text: #185a36;
+}
+
+.training-card--stage2-production {
+  border-color: #91caaa;
+  background: var(--stage2-production-background);
+  box-shadow: inset 5px 0 var(--stage2-production-border), 0 10px 28px rgba(32,104,66,.09);
+}
+.training-card--stage2-production>.report-row { background: linear-gradient(90deg,#f1faf5,#fff 58%); }
+.stage2-release-summary { display: grid; gap: 7px; border-top: 1px solid #e3e8f0; padding-top: 11px; color: #52617f; font-size: 11px; }
+.stage2-release-summary strong { color: #26324a; font-size: 12px; }
+.stage2-production-badge { display: inline-flex; align-items: center; gap: 6px; width: fit-content; border-radius: 999px; background: var(--stage2-production-badge-background); color: var(--stage2-production-badge-text) !important; padding: 6px 9px; }
+.stage2-detail-link { display: inline-flex; width: fit-content; align-items: center; justify-content: center; text-decoration: none; }
+
 .run-lineage-group>.report-row {
   border: 0;
   border-radius: 0;

@@ -1,23 +1,12 @@
-import { useEffect, useState, type KeyboardEvent } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
 import { routes, withAllowedQuery } from '../router';
 import type { Datasource } from '../types/api';
+import { AppSidebar } from './navigation/AppSidebar';
+import { navigationItems, sectionForPath } from './navigation/navigationConfig';
 
-export const modelAiNavItems = [
-  { path: routes.summary, label: 'Resumen' },
-  { path: routes.runs, label: 'Ejecuciones' },
-  { path: routes.evaluations, label: 'Evaluaciones' },
-  { path: routes.comparison, label: 'Comparación de modelos' },
-  { path: routes.modelVersions, label: 'Modelos liberados' },
-  { path: routes.deployments, label: 'Despliegues' },
-  { path: routes.traceability, label: 'Trazabilidad' },
-  { path: routes.explainability, label: 'Explicabilidad' },
-  { path: routes.predictions, label: 'Predicciones' },
-  { path: routes.dataset, label: 'Dataset' },
-  { path: routes.datasetsModels, label: 'Datasets y modelos' },
-  { path: routes.errorsLogs, label: 'Errores y logs' },
-] as const;
+export const modelAiNavItems = navigationItems;
 
 interface LayoutProps {
   datasource: string;
@@ -25,42 +14,36 @@ interface LayoutProps {
   onDatasourceChange: (datasource: string) => void;
 }
 
-const sectionForPath = (pathname: string) =>
-  modelAiNavItems.find((item) => pathname === item.path || pathname.startsWith(`${item.path}/`));
-
 export function Layout({ datasource, datasources, onDatasourceChange }: LayoutProps) {
   const location = useLocation();
-  const childActive = location.pathname.startsWith('/modelo-ia/');
   const active = sectionForPath(location.pathname);
-  const [expanded, setExpanded] = useState(() => localStorage.getItem('model-ai-menu-expanded') !== 'false');
-  useEffect(() => { if (childActive) setExpanded(true); }, [childActive]);
-  useEffect(() => { localStorage.setItem('model-ai-menu-expanded', String(expanded)); }, [expanded]);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     document.title = `${active?.label ?? 'Página no encontrada'} | ML Dashboard`;
   }, [active?.label]);
-  const keyboardToggle = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === 'ArrowRight') setExpanded(true);
-    if (event.key === 'ArrowLeft') setExpanded(false);
-  };
   const query = { datasource };
   return <div className="app-shell">
-    <aside>
-      <div className="brand"><span>Capstone</span><strong>ML Dashboard</strong></div>
-      <nav aria-label="Navegación principal">
-        <button className={`nav-parent ${childActive ? 'active-parent' : ''}`} type="button"
-          aria-expanded={expanded} aria-controls="model-ai-submenu" onClick={() => setExpanded((value) => !value)} onKeyDown={keyboardToggle}>
-          <span aria-hidden="true">◈</span><span>Modelo IA</span><span className="nav-chevron" aria-hidden="true">{expanded ? '▾' : '▸'}</span>
-        </button>
-        {expanded ? <div id="model-ai-submenu" className="nav-submenu">
-          {modelAiNavItems.map((item) => <NavLink key={item.path} to={withAllowedQuery(item.path, query)}
-            className={({ isActive }) => isActive ? 'active' : undefined}>{item.label}</NavLink>)}
-        </div> : null}
-      </nav>
-    </aside>
-    <main>
-      <header className="topbar"><div><p>Datasource</p><select value={datasource} onChange={(event) => onDatasourceChange(event.target.value)} aria-label="Datasource">
-        {datasources.map((item) => <option key={item.key} value={item.key} disabled={!item.enabled}>{item.label} - {item.domain}</option>)}
-      </select></div><span className="api-note">Frontend conectado solo a backend_api</span></header>
+    <AppSidebar datasource={datasource} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)}
+      mobileTriggerRef={mobileTriggerRef} />
+    <main className="app-content">
+      <header className="topbar">
+        <div className="mobile-navigation">
+          <button ref={mobileTriggerRef} className="mobile-menu-trigger" type="button" aria-label="Abrir navegación"
+            aria-expanded={mobileOpen} aria-controls="app-sidebar" onClick={() => setMobileOpen(true)}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          </button>
+          <div><strong>ML Dashboard</strong><span>{active?.label ?? 'Navegación'}</span></div>
+        </div>
+        <label className="datasource-selector"><span>Datasource activo</span>
+          <select value={datasource} onChange={(event) => onDatasourceChange(event.target.value)} aria-label="Datasource">
+            {datasources.map((item) => <option key={item.key} value={item.key} disabled={!item.enabled}>{item.label} - {item.domain}</option>)}
+          </select>
+        </label>
+        <div className="backend-status" title="Frontend conectado mediante backend_api">
+          <span aria-hidden="true" />Backend conectado
+        </div>
+      </header>
       <nav className="breadcrumb" aria-label="Migas de pan">
         <Link to={withAllowedQuery(routes.summary, query)}>Modelo IA</Link><span aria-hidden="true">/</span>
         {active ? <Link to={withAllowedQuery(active.path, query)} aria-current={location.pathname === active.path ? 'page' : undefined}>{active.label}</Link> : <strong>Página no encontrada</strong>}

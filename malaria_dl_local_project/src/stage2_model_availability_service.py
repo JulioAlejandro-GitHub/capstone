@@ -63,15 +63,34 @@ class Stage2ModelAvailabilityService:
 
     def preview(self, training_run_id):
         training_run_id=self._id(training_run_id);training=self._training(training_run_id)
-        blockers=[];warnings=(
+        blockers=[];technical_blockers=[];warnings=(
           ["Modelo productivo técnico para Etapa 2; no constituye validación clínica ni autorización sanitaria."]
           if self.technical_production else [])
         if training["run_type"]!="training":blockers.append({"code":"INVALID_RUN_TYPE","message":"La ejecución no es TRAIN."})
         if training["status"]!="completed":blockers.append({"code":"TRAINING_NOT_COMPLETED","message":"El entrenamiento no está completed."})
         fixture=self._fixture(training)
-        if fixture:blockers.append({"code":"TECHNICAL_FIXTURE","message":"Ejecución técnica sin modelo desplegable."})
+        if fixture:technical_blockers.append({"code":"TECHNICAL_FIXTURE","message":"Ejecución técnica sin modelo desplegable."})
         with self.connection_factory() as connection:
-            versions=connection.execute(text("SELECT id::text FROM model_versions WHERE training_run_id=:id ORDER BY created_at"),{"id":training_run_id}).scalars().all()
+            evaluation=connection.execute(text("""
+              SELECT child.id::text evaluation_run_id,child.status
+              FROM run_lineage lineage JOIN runs child ON child.id=lineage.child_run_id
+              WHERE lineage.parent_run_id=:id
+                AND lineage.relationship_type='evaluates_checkpoint_from'
+                AND child.run_type='evaluation' AND child.status='completed'
+              ORDER BY child.finished_at DESC NULLS LAST,child.created_at DESC,child.id
+              LIMIT 1"""),{"id":training_run_id}).mappings().one_or_none()
+            explanations=connection.execute(text("""
+              SELECT child.id::text FROM run_lineage lineage
+              JOIN runs child ON child.id=lineage.child_run_id
+              WHERE lineage.parent_run_id=:id
+                AND lineage.relationship_type='explains_checkpoint_from'
+                AND child.run_type='explainability'
+              ORDER BY child.finished_at DESC NULLS LAST,child.created_at DESC,child.id"""),
+              {"id":training_run_id}).scalars().all()
+            versions=connection.execute(text("""SELECT id::text FROM model_versions
+              WHERE training_run_id=:id ORDER BY
+                CASE status WHEN 'deployed' THEN 0 WHEN 'approved' THEN 1 ELSE 2 END,
+                created_at DESC"""),{"id":training_run_id}).scalars().all()
             active=connection.execute(text("""SELECT d.id::text FROM deployed_model_versions d
               JOIN model_versions mv ON mv.id=d.model_version_id
               WHERE mv.training_run_id=:id AND d.environment=:environment AND d.alias=:alias
@@ -79,38 +98,54 @@ class Stage2ModelAvailabilityService:
                 AND d.status='active' ORDER BY d.deployed_at DESC LIMIT 1"""),
               {"id":training_run_id,"environment":self.environment,"alias":self.alias,
                "scope":self.production_scope}).scalar_one_or_none()
-        if len(versions)!=1:
-            blockers.append({"code":"MODEL_VERSION_REQUIRED","message":"Debe existir exactamente una model_version gobernada para este training."})
-            return {"training_run_id":training_run_id,"eligible":False,"available":bool(active),
+        if not evaluation:
+            blockers.append({"code":"EVALUATION_REQUIRED","message":"Se requiere un EVALUATE completed asociado a este TRAIN."})
+        eligible=not blockers
+        if not versions:
+            technical_blockers.append({"code":"MODEL_VERSION_REQUIRED","message":"No se pudo resolver todavía una model_version inmutable."})
+            return {"training_run_id":training_run_id,"train_status":training["status"],
+              "evaluation_run_id":str(evaluation["evaluation_run_id"]) if evaluation else None,
+              "evaluation_status":evaluation["status"] if evaluation else None,
+              "explainability_run_ids":[str(item) for item in explanations],
+              "eligible":eligible,"eligible_for_stage2_production":eligible,"available":bool(active),
+              "is_stage2_production":bool(active),"production_state":"active" if active else ("eligible" if eligible else "not_eligible"),
               "next_action":"unavailable","action_label":"No disponible","blockers":blockers,
+              "technical_blockers":technical_blockers,
               "warnings":warnings,"model_version_id":versions[0] if len(versions)==1 else None,
               "deployment_id":active,"fixture":fixture}
         model_version_id=str(versions[0])
         try: package=self.contract.candidates(model_version_id)
         except Exception as exc:
-            blockers.append({"code":"PACKAGE_PREVIEW_FAILED","message":str(exc)})
+            technical_blockers.append({"code":"PACKAGE_PREVIEW_FAILED","message":str(exc)})
             package=None
         if package:
             for field in package["fields"][:4]:
                 if field["status"] not in {"complete","ready"}:
-                    blockers.append({"code":f"MISSING_{field['key'].upper()}","message":f"No se pudo resolver {field['label']}."})
+                    technical_blockers.append({"code":f"MISSING_{field['key'].upper()}","message":f"No se pudo resolver {field['label']}."})
             mapping_field=next(item for item in package["fields"] if item["key"]=="class_mapping")
             mapping=mapping_field.get("current_value") or mapping_field.get("proposed_value") or {}
             if any(mapping.get(key)!=value for key,value in EXPECTED_MAPPING.items()):
-                blockers.append({"code":"CLASS_MAPPING_INVALID","message":"La convención de clases es incompatible."})
+                technical_blockers.append({"code":"CLASS_MAPPING_INVALID","message":"La convención de clases es incompatible."})
             if package.get("artifact_inspection_error"):
-                blockers.append({"code":"MODEL_NOT_LOADABLE","message":package["artifact_inspection_error"]})
+                technical_blockers.append({"code":"MODEL_NOT_LOADABLE","message":package["artifact_inspection_error"]})
             if not package["production_package"]["evaluation_run_ids"]:
                 warnings.append("Sin evaluación clínica formal")
             threshold=next(item for item in package["fields"] if item["key"]=="threshold_profile_id")
             if not threshold["candidates"]:
                 warnings.append("Threshold operativo 0.5 no calibrado clínicamente")
-        action="view_stage2_model" if active else ("enable_for_stage2" if not blockers else "unavailable")
+        action="view_stage2_model" if active else ("enable_for_stage2" if eligible and not technical_blockers else "unavailable")
         enable_label="Publicar como modelo productivo" if self.technical_production else "Habilitar para Etapa 2"
         view_label="Ver modelo productivo" if self.technical_production else "Ver modelo Etapa 2"
-        return {"training_run_id":training_run_id,"eligible":not blockers,"available":bool(active),
-          "next_action":action,"action_label":view_label if active else (enable_label if not blockers else "No disponible"),
-          "blockers":blockers,"warnings":warnings,"model_version_id":model_version_id,
+        return {"training_run_id":training_run_id,"train_status":training["status"],
+          "evaluation_run_id":str(evaluation["evaluation_run_id"]) if evaluation else None,
+          "evaluation_status":evaluation["status"] if evaluation else None,
+          "explainability_run_ids":[str(item) for item in explanations],
+          "eligible":eligible,"eligible_for_stage2_production":eligible,
+          "available":bool(active),"is_stage2_production":bool(active),
+          "production_state":"active" if active else ("eligible" if eligible else "not_eligible"),
+          "next_action":action,"action_label":view_label if active else (enable_label if eligible and not technical_blockers else "No disponible"),
+          "blockers":blockers,"technical_blockers":technical_blockers,
+          "warnings":warnings,"model_version_id":model_version_id,
           "deployment_id":str(active) if active else None,"fixture":fixture,"package":package}
 
     @staticmethod
@@ -193,6 +228,8 @@ class Stage2ModelAvailabilityService:
                     "recovered_at":datetime.now(UTC).isoformat()})})
             return self._result(preview["deployment_id"],idempotent=True)
         if not preview["eligible"]:raise GovernanceStateError("; ".join(item["message"] for item in preview["blockers"]))
+        if preview.get("technical_blockers"):
+            raise GovernanceStateError("; ".join(item["message"] for item in preview["technical_blockers"]))
         target,relative,artifact_id=self._stage2_artifact(preview)
         package=self.contract.candidates(preview["model_version_id"])
         selections={item["key"]:item["proposed_source_id"] for item in package["fields"] if item.get("proposed_source_id")}

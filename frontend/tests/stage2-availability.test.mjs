@@ -4,15 +4,15 @@ import test from 'node:test';
 
 const read=(path)=>readFileSync(new URL(`../src/${path}`,import.meta.url),'utf8');
 
-test('Etapa 2 aparece sólo en TRAIN y usa endpoints separados de producción',()=>{
+test('Etapa 2 aparece sólo en TRAIN y usa producción técnica como fuente',()=>{
   const row=read('components/reports/RunSummaryRow.tsx');
   const child=read('components/reports/RunLineageChildCard.tsx');
   const api=read('services/api.ts');
-  assert.match(row,/processKind==='training'&&onStage2Enable/);
+  assert.match(row,/processKind === 'training'/);
+  assert.match(row,/stage2-release-summary/);
   assert.doesNotMatch(child,/Stage2AvailabilityAction|enableStage2/);
-  assert.match(api,/stage2-availability/);
-  assert.match(api,/enable-stage2/);
-  assert.match(api,/\/api\/stage2\/models/);
+  assert.match(api,/stage2-release-status/);
+  assert.match(api,/publish-technical-production/);
 });
 
 test('modal declara alcance no clínico y no expone paths físicos',()=>{

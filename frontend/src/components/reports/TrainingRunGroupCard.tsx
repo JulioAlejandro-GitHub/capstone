@@ -1,28 +1,18 @@
-import type { Stage2Availability, TrainingRunLineageGroup, TrainingPromotionStatus } from '../../types/api';
+import type { Stage2Availability, TrainingRunLineageGroup } from '../../types/api';
 import { RunLineageChildCard } from './RunLineageChildCard';
 import { RunSummaryRow } from './RunSummaryRow';
 
 interface TrainingRunGroupCardProps {
   group: TrainingRunLineageGroup;
   onRunSelect: (runId: string) => void;
-  promotionError?: string | null;
-  promotionLoading?: boolean;
-  promotionPreparing?: boolean;
-  promotionStatus?: TrainingPromotionStatus;
-  onPromotionAction: (runId: string) => void;
-  stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Busy?:boolean;stage2Error?:string;
-  onStage2Enable:(runId:string)=>void;onStage2View:(deploymentId:string)=>void;
+  stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Error?:string;
+  stage2DetailHref:string;
 }
 
 export function TrainingRunGroupCard({
   group,
   onRunSelect,
-  promotionError,
-  promotionLoading,
-  promotionPreparing,
-  promotionStatus,
-  onPromotionAction,
-  stage2Status,stage2Loading,stage2Busy,stage2Error,onStage2Enable,onStage2View,
+  stage2Status,stage2Loading,stage2Error,stage2DetailHref,
 }: TrainingRunGroupCardProps) {
   const { training, evaluations, explainability } = group;
   const linkedCount = evaluations.length + explainability.length;
@@ -30,23 +20,16 @@ export function TrainingRunGroupCard({
   return (
     <article
       aria-label={`Entrenamiento ${training.run_name?.trim() || training.run_id}`}
-      className="run-lineage-group"
+      className={`run-lineage-group training-card ${stage2Status?.is_stage2_production ? 'training-card--stage2-production' : ''}`}
     >
       <RunSummaryRow
         onRunSelect={onRunSelect}
-        onPromotionAction={() => onPromotionAction(training.run_id)}
         processKind="training"
-        promotionError={promotionError}
-        promotionLoading={promotionLoading}
-        promotionPreparing={promotionPreparing}
-        promotionStatus={promotionStatus}
         run={training}
         stage2Status={stage2Status}
         stage2Loading={stage2Loading}
-        stage2Busy={stage2Busy}
         stage2Error={stage2Error}
-        onStage2Enable={()=>onStage2Enable(training.run_id)}
-        onStage2View={onStage2View}
+        stage2DetailHref={stage2DetailHref}
       />
 
       <section className="run-lineage-group__children" aria-label="Procesos derivados del entrenamiento">

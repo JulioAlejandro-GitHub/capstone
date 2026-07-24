@@ -31,6 +31,8 @@ export function DeploymentReviewPanel(props:Props){
     <div className="section-heading"><div><span className="review-kicker">Está revisando</span><h2 ref={headingRef} tabIndex={-1} id={`review-title-${deployment.id}`}>{identity}</h2><p>{deployment.deployment_name}</p></div><StatusBadge status={deployment.status}/></div>
     <div className="facts-grid deployment-identity"><span>Destino<strong>{deployment.environment} / {deployment.alias}</strong></span><span>Model version<strong>{short(deployment.model_version_id)}</strong></span>
       <span>Training run<strong>{readiness?short(readiness.training_run_id):'Cargando…'}</strong></span><span>Deployment<strong>{short(deployment.id)}</strong></span>
+      <span>SHA-256<strong>{deployment.artifact_sha256?short(deployment.artifact_sha256):'No registrado'}</strong></span>
+      <span>Artifact<strong>{deployment.metadata?.production_scope==='stage2_technical'?'model.keras · inmutable':'Registrado'}</strong></span>
       <span>Threshold<strong>{formatMetric(deployment.threshold_value)}</strong></span><span>Smoke<strong>{smokeStatus}</strong></span>{deployment.deployed_at?<span>Activado<strong>{formatDate(deployment.deployed_at)}</strong></span>:null}</div>
     {readinessLoading?<Loading/>:props.workflow&&deployment.metadata?.production_scope!=='stage2_technical'?<ProductionStepIndicator readiness={props.workflow}/>:null}
     {deployment.environment==='production'&&deployment.alias==='champion'&&deployment.metadata?.production_scope==='stage2_technical'?<div className="stage2-operational-banner">
@@ -78,7 +80,8 @@ export function DeploymentReviewPanel(props:Props){
       (props.workflow.next_action==='build_production_model_version'&&!props.workflow.can_build_package)
       ||props.workflow.next_action==='production_blocked'
     )} onClick={props.onPrimaryAction}>{busy?'Procesando…':props.workflow.action_label}</button>:null}
-    <div className="detail-actions">{deployment.status==='active'?<button onClick={props.onAnalysis}>Ir a análisis</button>:null}{deployment.status==='active'?<button disabled={busy} onClick={props.onDeactivate}>Desactivar</button>:null}
+    <div className="detail-actions">{deployment.status==='active'?<button onClick={props.onAnalysis}>Ir a análisis</button>:null}{deployment.status==='active'?<button disabled={busy} onClick={props.onDeactivate}>{deployment.metadata?.production_scope==='stage2_technical'?'Dar de baja':'Desactivar'}</button>:null}
+      {deployment.status==='inactive'&&deployment.metadata?.production_scope==='stage2_technical'?<button disabled={busy||!readiness?.can_activate} onClick={props.onRequestActivation}>Reactivar como productivo</button>:null}
       {deployment.status==='active'?<button disabled={busy||!props.rollbackTarget||!props.reason.trim()} onClick={props.onRollback}>Crear rollback pendiente</button>:null}
       {deployment.status!=='retired'?<button disabled={busy} onClick={props.onRetire}>Retirar</button>:null}
       {readiness&&!readiness.can_run_smoke?<button onClick={()=>props.onModelVersionSelect(deployment.model_version_id)}>Revisar modelo liberado</button>:null}<button onClick={props.onExecutions}>Volver a Ejecuciones</button></div>

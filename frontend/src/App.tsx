@@ -13,6 +13,7 @@ import { Explainability } from './pages/Explainability';
 import { ModelComparison } from './pages/ModelComparison';
 import { ModelVersions } from './pages/ModelVersions';
 import { RunDetail } from './pages/RunDetail';
+import { Stage2ReleaseDetail } from './pages/Stage2ReleaseDetail';
 import { Runs } from './pages/Runs';
 import { Traceability } from './pages/Traceability';
 import { UploadedPredictions } from './pages/UploadedPredictions';
@@ -70,9 +71,9 @@ function App() {
       <Route path="/" element={<Navigate replace to={withAllowedQuery(routes.summary, { datasource })} />} />
       <Route element={<Layout datasource={datasource} datasources={datasources} onDatasourceChange={selectDatasource} />}>
         <Route path={routes.summary} element={<Dashboard {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
-        <Route path={routes.runs} element={<Runs {...common} onRunSelect={(id) => go(routes.runDetail(id))}
-          onModelVersionSelect={(id) => go(routes.modelVersionDetail(id))} onDeploymentSelect={(id) => go(routes.deploymentDetail(id))} />} />
+        <Route path={routes.runs} element={<Runs {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
         <Route path={`${routes.runs}/:trainingRunId`} element={<RunDetailRoute datasource={datasource} go={go} />} />
+        <Route path={`${routes.runs}/:trainingRunId/liberacion`} element={<Stage2ReleaseDetail datasource={datasource} />} />
         <Route path={`${routes.runs}/RunId=:legacyId`} element={<LegacyRunRedirect />} />
         <Route path={routes.evaluations} element={<ClinicalEvaluation {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
         <Route path={routes.comparison} element={<ModelComparison {...common} />} />

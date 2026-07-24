@@ -143,6 +143,11 @@ def prepare_release(
 def stage2_availability(training_run_id:str,datasource:str|None=Query("malaria")):
     return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
 
+@router.get("/training-runs/{training_run_id}/stage2-release-status")
+def stage2_release_status(training_run_id:str,datasource:str|None=Query("malaria")):
+    """Estado derivado del deployment productivo técnico, no una bandera visual."""
+    return safe(lambda:technical_production_service(datasource).preview(uid(training_run_id)))
+
 @router.get("/training-runs/{training_run_id}/stage2-package-preview")
 def stage2_package_preview(training_run_id:str,datasource:str|None=Query("malaria")):
     return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
