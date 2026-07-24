@@ -4,7 +4,9 @@ import { ClinicalMetricsCards } from '../components/ClinicalMetricsCards';
 import { ConfusionMatrix } from '../components/ConfusionMatrix';
 import { DataTable } from '../components/DataTable';
 import { Loading } from '../components/Loading';
+import { CopyCanonicalLink } from '../components/RouteState';
 import { StatusBadge } from '../components/StatusBadge';
+import { routes } from '../router';
 import { api } from '../services/api';
 import type {
   ArtifactRow,
@@ -713,6 +715,7 @@ export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDeta
             <h1 id="run-detail-title">{modelName}</h1>
             <span className="run-detail-type">{executionType}</span>
             <StatusBadge status={status} />
+            <CopyCanonicalLink pathname={routes.runDetail(runId)} datasource={datasource} />
           </div>
           <p>{String(firstAvailable(run.run_name, run.experiment_name, 'Ejecución registrada'))}</p>
         </div>

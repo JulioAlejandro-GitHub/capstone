@@ -8,8 +8,10 @@ import { ModelApprovalModal } from '../components/deployments/ModelApprovalModal
 import { Stage2EnablementModal } from '../components/stage2/Stage2EnablementModal';
 import { DataTable,type Column } from '../components/DataTable';
 import { Loading } from '../components/Loading';
+import { CopyCanonicalLink } from '../components/RouteState';
 import { StatusBadge } from '../components/StatusBadge';
 import { DEFAULT_DATASET_IMAGE_PAGE_SIZE } from '../config/pagination';
+import { routes } from '../router';
 import { api } from '../services/api';
 import type { DeploymentReadiness,DeploymentRow,ModelProductionReadiness,Stage2Availability } from '../types/api';
 import { formatDate,formatMetric } from '../utils/format';
@@ -19,8 +21,8 @@ const identity=(row:DeploymentRow)=>`${row.model_name??'Modelo no identificado'}
 const priority=(row:DeploymentRow)=>row.environment==='production'&&row.status==='pending'?0:row.environment==='production'&&row.status==='active'?1:
   ['staging','experimental'].includes(row.environment)&&row.status==='pending'?2:row.status==='active'?3:row.status==='inactive'?4:5;
 
-interface Props{datasource:string;selectedDeploymentId:string|null;onExecutions:()=>void;onModelVersionSelect:(id:string)=>void;onAnalysis:()=>void}
-export function Deployments({datasource,selectedDeploymentId,onExecutions,onModelVersionSelect,onAnalysis}:Props){
+interface Props{datasource:string;selectedDeploymentId:string|null;onExecutions:()=>void;onModelVersionSelect:(id:string)=>void;onAnalysis:()=>void;onDeploymentSelect:(id:string|null)=>void}
+export function Deployments({datasource,selectedDeploymentId,onExecutions,onModelVersionSelect,onAnalysis,onDeploymentSelect}:Props){
   const[rows,setRows]=useState<DeploymentRow[]>([]);const[loading,setLoading]=useState(true);const[error,setError]=useState<string|null>(null);
   const[selectedId,setSelectedId]=useState<string|null>(selectedDeploymentId);const[readiness,setReadiness]=useState<DeploymentReadiness|null>(null);
   const[workflow,setWorkflow]=useState<ModelProductionReadiness|null>(null);
@@ -47,7 +49,7 @@ export function Deployments({datasource,selectedDeploymentId,onExecutions,onMode
       setReadiness(nextReadiness);setWorkflow(nextWorkflow);setStage2Availability(nextStage2);
     }catch(e){setNotice(`No fue posible evaluar el deployment. ${e instanceof Error?e.message:String(e)}`);}finally{setReadinessLoading(false);}};
   const reveal=(id:string)=>requestAnimationFrame(()=>document.getElementById(`deployment-review-${id}`)?.scrollIntoView({behavior:'smooth',block:'nearest'}));
-  const toggleDeployment=async(id:string)=>{if(selectedId===id){setSelectedId(null);setReadiness(null);setWorkflow(null);setNotice(null);return;}setSelectedId(id);await loadReadiness(id);reveal(id);};
+  const toggleDeployment=async(id:string)=>{if(selectedId===id){setSelectedId(null);setReadiness(null);setWorkflow(null);setNotice(null);onDeploymentSelect(null);return;}setSelectedId(id);onDeploymentSelect(id);await loadReadiness(id);reveal(id);};
 
   useEffect(()=>{void refresh();},[datasource]);
   useEffect(()=>{if(selectedDeploymentId){setSelectedId(selectedDeploymentId);void loadReadiness(selectedDeploymentId).then(()=>reveal(selectedDeploymentId));}},[selectedDeploymentId,datasource]);
@@ -113,13 +115,13 @@ export function Deployments({datasource,selectedDeploymentId,onExecutions,onMode
     {header:'Threshold',render:r=>formatMetric(r.threshold_value)},{header:'Activación',render:r=>formatDate(r.deployed_at)},
     {header:'Acción',render:r=><button className="table-action" aria-expanded={selectedId===r.id} aria-controls={`deployment-review-${r.id}`} onClick={()=>toggleDeployment(r.id)}>{selectedId===r.id?'Cerrar revisión':'Revisar despliegue'}</button>},
   ];
-  const renderPanel=(row:DeploymentRow)=><DeploymentReviewPanel deployment={row} readiness={selectedId===row.id?readiness:null} readinessLoading={selectedId===row.id&&readinessLoading}
+  const renderPanel=(row:DeploymentRow)=><><div className="deployment-share-action"><CopyCanonicalLink pathname={routes.deploymentDetail(row.id)} datasource={datasource}/></div><DeploymentReviewPanel deployment={row} readiness={selectedId===row.id?readiness:null} readinessLoading={selectedId===row.id&&readinessLoading}
     actor={actor} reason={reason} sourceImageId={sourceImageId} rollbackTarget={rollbackTarget} busy={busy} notice={selectedId===row.id?notice:null} allDeployments={rows} workflow={selectedId===row.id?workflow:null}
     stage2Availability={selectedId===row.id?stage2Availability:null}
     onActor={setActor} onReason={setReason} onSourceImage={setSourceImageId} onRollbackTarget={setRollbackTarget} onSmoke={()=>act('smoke')} onRequestActivation={requestActivation}
     onDeactivate={()=>act('deactivate')} onRetire={()=>act('retire')} onRollback={()=>act('rollback')} onModelVersionSelect={onModelVersionSelect} onExecutions={onExecutions} onAnalysis={onAnalysis} onPrimaryAction={primaryAction}
     onBuild={()=>setContractModal(true)} onValidate={()=>void validateVersion()} onApprove={()=>setApprovalModal(true)} onPublish={()=>setProductionModal(true)}
-    onEnableStage2={()=>setStage2Modal(true)} onViewStage2={(id)=>{setSelectedId(id);void loadReadiness(id).then(()=>reveal(id));}}/>;
+    onEnableStage2={()=>setStage2Modal(true)} onViewStage2={(id)=>{setSelectedId(id);onDeploymentSelect(id);void loadReadiness(id).then(()=>reveal(id));}}/></>;
   const table=(items:DeploymentRow[],empty:string)=><DataTable rows={items} columns={columns} emptyText={empty} getRowKey={row=>row.id} expandedRowKey={selectedId}
     renderExpandedRow={renderPanel} getRowClassName={row=>selectedId===row.id?'deployment-row deployment-row--selected':'deployment-row'} tableClassName="deployment-table" expandedRowIdPrefix="deployment-review"/>;
 

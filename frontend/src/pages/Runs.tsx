@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { Loading } from '../components/Loading';
 import { ReportFilters } from '../components/reports/ReportFilters';
@@ -67,10 +68,11 @@ export function Runs({
   onModelVersionSelect,
   onDeploymentSelect,
 }: RunsProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [lineage, setLineage] = useState<GroupedRunLineageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectedRunId, setSelectedRunId] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
+  const [selectedRunId, setSelectedRunId] = useState(() => searchParams.get('run') ?? '');
+  const [selectedModel, setSelectedModel] = useState(() => searchParams.get('modelo') ?? '');
   const [promotionStatus, setPromotionStatus] = useState<Record<string, TrainingPromotionStatus>>({});
   const [promotionErrors, setPromotionErrors] = useState<Record<string, string>>({});
   const [promotionLoading, setPromotionLoading] = useState<Record<string, boolean>>({});
@@ -81,6 +83,11 @@ export function Runs({
   const [stage2Errors,setStage2Errors]=useState<Record<string,string>>({});
   const [stage2Preview,setStage2Preview]=useState<Stage2Availability|null>(null);
   const [stage2Busy,setStage2Busy]=useState<string|null>(null);
+  useEffect(()=>{setSelectedRunId(searchParams.get('run')??'');setSelectedModel(searchParams.get('modelo')??'');},[searchParams]);
+  const updateFilter=(key:'run'|'modelo',value:string)=>{
+    const next=new URLSearchParams(searchParams);if(value)next.set(key,value);else next.delete(key);
+    setSearchParams(next);if(key==='run')setSelectedRunId(value);else setSelectedModel(value);
+  };
 
   const loadStage2=async(runId:string)=>{
     setStage2Loading(current=>({...current,[runId]:true}));
@@ -295,6 +302,7 @@ export function Runs({
           onClear={() => {
             setSelectedRunId('');
             setSelectedModel('');
+            const next=new URLSearchParams(searchParams);next.delete('run');next.delete('modelo');setSearchParams(next);
           }}
         >
           <ReportSelectFilter
@@ -302,7 +310,7 @@ export function Runs({
             disabled={runOptions.length === 0}
             id="runs-filter-run"
             label="RUN"
-            onChange={setSelectedRunId}
+            onChange={(value)=>updateFilter('run',value)}
             options={runOptions}
             value={selectedRunId}
           />
@@ -311,7 +319,7 @@ export function Runs({
             disabled={modelOptions.length === 0}
             id="runs-filter-model"
             label="Modelo"
-            onChange={setSelectedModel}
+            onChange={(value)=>updateFilter('modelo',value)}
             options={modelOptions}
             value={selectedModel}
           />

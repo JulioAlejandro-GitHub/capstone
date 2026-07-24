@@ -93,11 +93,11 @@ test('no expone rutas físicas ni usa best_model como identidad',()=>{
   }
 });
 
-test('mantiene separación de responsabilidades y rutas actuales',()=>{
+test('mantiene separación de responsabilidades y rutas navegables',()=>{
   assert.doesNotMatch(runs,/activate|retire|rollback|createDeployment/);
   assert.doesNotMatch(child,/deploy|release|promotion/i);
-  for(const key of ['runs','model-versions','deployments','run-detail']){
-    assert.match(app,new RegExp(`'${key}'`));
+  for(const key of ['routes.runs','routes.modelVersions','routes.deployments','routes.runDetail']){
+    assert.match(app,new RegExp(key.replace('.','\\.')));
   }
 });
 

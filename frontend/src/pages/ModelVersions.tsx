@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DataTable } from '../components/DataTable';
 import { Loading } from '../components/Loading';
+import { CopyCanonicalLink } from '../components/RouteState';
 import { StatusBadge } from '../components/StatusBadge';
+import { routes } from '../router';
 import { api } from '../services/api';
 import type { DeploymentRow, ModelVersionLineageRow, ModelVersionRow, TrainingPromotionStatus } from '../types/api';
 import { formatDate, formatMetric } from '../utils/format';
 
 const short=(value:string|null|undefined,size=8)=>value ? `${value.slice(0,size)}…` : '—';
-export function ModelVersions({datasource,onRunSelect,onDeploymentSelect,onDeployments,onExecutions,selectedModelVersionId}:{datasource:string;onRunSelect:(id:string)=>void;onDeploymentSelect:(id:string)=>void;onDeployments:()=>void;onExecutions:()=>void;selectedModelVersionId:string|null}) {
+export function ModelVersions({datasource,onRunSelect,onModelVersionSelect,onDeploymentSelect,onDeployments,onExecutions,selectedModelVersionId}:{datasource:string;onRunSelect:(id:string)=>void;onModelVersionSelect:(id:string|null)=>void;onDeploymentSelect:(id:string)=>void;onDeployments:()=>void;onExecutions:()=>void;selectedModelVersionId:string|null}) {
   const [rows,setRows]=useState<ModelVersionRow[]>([]);const [deployments,setDeployments]=useState<DeploymentRow[]>([]);
   const [loading,setLoading]=useState(true);const [error,setError]=useState<string|null>(null);
   const [model,setModel]=useState('');const [status,setStatus]=useState('');const [lineage,setLineage]=useState('');
@@ -57,8 +59,8 @@ export function ModelVersions({datasource,onRunSelect,onDeploymentSelect,onDeplo
       {header:'Evaluación',render:(row)=><><span>Recall {formatMetric(row.recall_parasitized)}</span><br/><span>Spec. {formatMetric(row.specificity)}</span><br/><span>F2 {formatMetric(row.f2_parasitized)}</span></>},
       {header:'Threshold',render:(row)=>formatMetric(row.threshold_used)},{header:'Creado',render:(row)=>formatDate(row.created_at)},
       {header:'Operación',render:(row)=>{const active=deployments.find((item)=>item.model_version_id===row.id&&item.status==='active');return active?<span>{active.metadata?.production_scope==='stage2_technical'?<strong className="production-run-badge">Productivo Etapa 2</strong>:active.alias}<br/><small>{active.environment} / {active.alias}</small></span>:'Sin deployment activo'}},
-      {header:'Detalle',render:(row)=><button type="button" className="table-action" onClick={()=>open(row)}>Ver detalle</button>},]}/></div>
-    {selected?<div className="panel detail-panel"><div className="section-heading"><h2>{selected.model_name} · v{selected.version_number??'—'}</h2><button type="button" onClick={()=>setSelected(null)}>Cerrar</button></div>
+      {header:'Detalle',render:(row)=><button type="button" className="table-action" onClick={()=>onModelVersionSelect(row.id)}>Ver detalle</button>},]}/></div>
+    {selected?<div className="panel detail-panel"><div className="section-heading"><h2>{selected.model_name} · v{selected.version_number??'—'}</h2><div className="detail-actions"><CopyCanonicalLink pathname={routes.modelVersionDetail(selected.id)} datasource={datasource}/><button type="button" onClick={()=>onModelVersionSelect(null)}>Cerrar</button></div></div>
       <div className="facts-grid"><span>Model version<strong>{selected.id}</strong></span><span>Training run<strong>{selected.training_run_id}</strong></span><span>Linaje<strong>{selected.lineage_status}</strong></span><span>Evaluación<strong>{selectedPromotion?.evaluation_run_id?short(selectedPromotion.evaluation_run_id,12):'No vinculada'}</strong></span>
         <span>Explicabilidad<strong>{selectedPromotion?.explainability_run_ids.length?'Disponible':'Opcional / no registrada'}</strong></span><span>Threshold<strong>{selectedPromotion?.threshold?formatMetric(selectedPromotion.threshold.value):'No validado'}</strong></span>
         <span>Preprocessing<strong>{selected.preprocessing_profile_snapshot&&Object.keys(selected.preprocessing_profile_snapshot).length?JSON.stringify(selected.preprocessing_profile_snapshot):'No registrado'}</strong></span><span>SHA-256<strong>{short(selected.artifact_sha256,12)}</strong></span>

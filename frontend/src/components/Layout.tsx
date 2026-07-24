@@ -1,42 +1,48 @@
-import { useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useState, type KeyboardEvent } from 'react';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 
+import { routes, withAllowedQuery } from '../router';
 import type { Datasource } from '../types/api';
 
-export type PageKey =
-  | 'dashboard' | 'runs' | 'clinical-evaluation' | 'models' | 'model-versions'
-  | 'deployments' | 'traceability' | 'run-detail' | 'explainability'
-  | 'uploaded-predictions' | 'dataset-browser' | 'datasets' | 'errors';
+export const modelAiNavItems = [
+  { path: routes.summary, label: 'Resumen' },
+  { path: routes.runs, label: 'Ejecuciones' },
+  { path: routes.evaluations, label: 'Evaluaciones' },
+  { path: routes.comparison, label: 'Comparación de modelos' },
+  { path: routes.modelVersions, label: 'Modelos liberados' },
+  { path: routes.deployments, label: 'Despliegues' },
+  { path: routes.traceability, label: 'Trazabilidad' },
+  { path: routes.explainability, label: 'Explicabilidad' },
+  { path: routes.predictions, label: 'Predicciones' },
+  { path: routes.dataset, label: 'Dataset' },
+  { path: routes.datasetsModels, label: 'Datasets y modelos' },
+  { path: routes.errorsLogs, label: 'Errores y logs' },
+] as const;
 
 interface LayoutProps {
-  page: PageKey; datasource: string; datasources: Datasource[];
-  onPageChange: (page: PageKey) => void; onDatasourceChange: (datasource: string) => void; children: ReactNode;
+  datasource: string;
+  datasources: Datasource[];
+  onDatasourceChange: (datasource: string) => void;
 }
 
-export const modelAiNavItems: Array<{ page: PageKey; label: string }> = [
-  { page: 'dashboard', label: 'Resumen' },
-  { page: 'runs', label: 'Ejecuciones' },
-  { page: 'clinical-evaluation', label: 'Evaluaciones' },
-  { page: 'models', label: 'Comparación de modelos' },
-  { page: 'model-versions', label: 'Modelos liberados' },
-  { page: 'deployments', label: 'Despliegues' },
-  { page: 'traceability', label: 'Trazabilidad' },
-  { page: 'explainability', label: 'Explicabilidad' },
-  { page: 'uploaded-predictions', label: 'Predicciones' },
-  { page: 'dataset-browser', label: 'Dataset' },
-  { page: 'datasets', label: 'Datasets y modelos' },
-  { page: 'errors', label: 'Errores y logs' },
-];
+const sectionForPath = (pathname: string) =>
+  modelAiNavItems.find((item) => pathname === item.path || pathname.startsWith(`${item.path}/`));
 
-export function Layout({ page, datasource, datasources, onPageChange, onDatasourceChange, children }: LayoutProps) {
-  const childActive = modelAiNavItems.some((item) => item.page === page) || page === 'run-detail';
+export function Layout({ datasource, datasources, onDatasourceChange }: LayoutProps) {
+  const location = useLocation();
+  const childActive = location.pathname.startsWith('/modelo-ia/');
+  const active = sectionForPath(location.pathname);
   const [expanded, setExpanded] = useState(() => localStorage.getItem('model-ai-menu-expanded') !== 'false');
   useEffect(() => { if (childActive) setExpanded(true); }, [childActive]);
   useEffect(() => { localStorage.setItem('model-ai-menu-expanded', String(expanded)); }, [expanded]);
-  const activeLabel = modelAiNavItems.find((item) => item.page === page)?.label ?? (page === 'run-detail' ? 'Detalle de ejecución' : 'Errores y logs');
+  useEffect(() => {
+    document.title = `${active?.label ?? 'Página no encontrada'} | ML Dashboard`;
+  }, [active?.label]);
   const keyboardToggle = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === 'ArrowRight') setExpanded(true);
     if (event.key === 'ArrowLeft') setExpanded(false);
   };
+  const query = { datasource };
   return <div className="app-shell">
     <aside>
       <div className="brand"><span>Capstone</span><strong>ML Dashboard</strong></div>
@@ -46,19 +52,21 @@ export function Layout({ page, datasource, datasources, onPageChange, onDatasour
           <span aria-hidden="true">◈</span><span>Modelo IA</span><span className="nav-chevron" aria-hidden="true">{expanded ? '▾' : '▸'}</span>
         </button>
         {expanded ? <div id="model-ai-submenu" className="nav-submenu">
-          {modelAiNavItems.map((item) => <button key={item.page} className={page === item.page ? 'active' : ''}
-            aria-current={page === item.page ? 'page' : undefined} onClick={() => onPageChange(item.page)} type="button">{item.label}</button>)}
+          {modelAiNavItems.map((item) => <NavLink key={item.path} to={withAllowedQuery(item.path, query)}
+            className={({ isActive }) => isActive ? 'active' : undefined}>{item.label}</NavLink>)}
         </div> : null}
-        {/* <button className={page === 'errors' ? 'active' : ''} aria-current={page === 'errors' ? 'page' : undefined}
-          onClick={() => onPageChange('errors')} type="button">Errores y logs</button> */}
       </nav>
     </aside>
     <main>
       <header className="topbar"><div><p>Datasource</p><select value={datasource} onChange={(event) => onDatasourceChange(event.target.value)} aria-label="Datasource">
         {datasources.map((item) => <option key={item.key} value={item.key} disabled={!item.enabled}>{item.label} - {item.domain}</option>)}
       </select></div><span className="api-note">Frontend conectado solo a backend_api</span></header>
-      <div className="breadcrumb" aria-label="Migas de pan"><span>{childActive ? 'Modelo IA' : 'Administración'}</span><span aria-hidden="true">/</span><strong>{activeLabel}</strong></div>
-      {children}
+      <nav className="breadcrumb" aria-label="Migas de pan">
+        <Link to={withAllowedQuery(routes.summary, query)}>Modelo IA</Link><span aria-hidden="true">/</span>
+        {active ? <Link to={withAllowedQuery(active.path, query)} aria-current={location.pathname === active.path ? 'page' : undefined}>{active.label}</Link> : <strong>Página no encontrada</strong>}
+        {active && location.pathname !== active.path ? <><span aria-hidden="true">/</span><strong>Detalle</strong></> : null}
+      </nav>
+      <Outlet />
     </main>
   </div>;
 }
