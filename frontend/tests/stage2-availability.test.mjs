@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const read=(path)=>readFileSync(new URL(`../src/${path}`,import.meta.url),'utf8');
 
-test('Etapa 2 aparece sólo en TRAIN y usa producción técnica como fuente',()=>{
+test('Etapa 2 aparece sólo en TRAIN y usa publicación persistente como fuente',()=>{
   const row=read('components/reports/RunSummaryRow.tsx');
   const child=read('components/reports/RunLineageChildCard.tsx');
   const api=read('services/api.ts');
@@ -12,21 +12,27 @@ test('Etapa 2 aparece sólo en TRAIN y usa producción técnica como fuente',()=
   assert.match(row,/stage2-release-summary/);
   assert.doesNotMatch(child,/Stage2AvailabilityAction|enableStage2/);
   assert.match(api,/stage2-release-status/);
-  assert.match(api,/publish-technical-production/);
+  assert.match(api,/stage2-publications/);
 });
 
-test('modal declara alcance no clínico y no expone paths físicos',()=>{
-  const modal=read('components/stage2/Stage2EnablementModal.tsx');
-  assert.match(modal,/No constituye validación clínica ni autorización sanitaria/);
-  assert.match(modal,/production\/champion con scope técnico de Etapa 2/);
-  assert.doesNotMatch(modal,/checkpoint_path|artifact_path|best_model\\.keras/);
+test('Ver detalle controla un acordeón accesible con confirmaciones inline',()=>{
+  const row=read('components/reports/RunSummaryRow.tsx');
+  const card=read('components/reports/TrainingRunGroupCard.tsx');
+  const panel=read('components/reports/Stage2PublicationPanel.tsx');
+  assert.match(row,/aria-expanded=\{stage2Expanded\}/);
+  assert.match(row,/aria-controls=\{stage2ControlsId\}/);
+  assert.match(card,/setExpanded\(current=>!current\)/);
+  assert.match(panel,/Confirmar publicación/);
+  assert.match(panel,/Confirmar baja/);
+  assert.match(panel,/No constituye aprobación clínica ni diagnóstico automatizado/);
+  assert.doesNotMatch(panel,/checkpoint_path|artifact_path|best_model\\.keras/);
 });
 
-test('contrato mantiene la convención clínica intacta',()=>{
-  const service=read('../../malaria_dl_local_project/src/malaria_dl/governance/services/stage2_availability_service.py');
-  assert.match(service,/"0": "uninfected"/);
-  assert.match(service,/"1": "parasitized"/);
-  assert.match(service,/"positive_label": "parasitized"/);
+test('la tarjeta presenta estados disponible, productivo y condición faltante',()=>{
+  const row=read('components/reports/RunSummaryRow.tsx');
+  assert.match(row,/Disponible para publicar/);
+  assert.match(row,/Productivo Etapa 2/);
+  assert.match(row,/missing_conditions/);
 });
 
 test('Despliegues identifica el modelo productivo Etapa 2 y preserva producción formal',()=>{

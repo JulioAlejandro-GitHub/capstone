@@ -10,7 +10,6 @@ import {
 import { TrainingRunGroupCard } from '../components/reports/TrainingRunGroupCard';
 import { UnlinkedRunsSection } from '../components/reports/UnlinkedRunsSection';
 import { api } from '../services/api';
-import { routes, withAllowedQuery } from '../router';
 import type {
   GroupedRunLineageResponse,
   TrainingRunLineageGroup,
@@ -79,9 +78,36 @@ export function Runs({
 
   const loadStage2=async(runId:string)=>{
     setStage2Loading(current=>({...current,[runId]:true}));
+    setStage2Errors(current=>{const next={...current};delete next[runId];return next;});
     try{const response=await api.getStage2ReleaseStatus(datasource,runId);
       setStage2Status(current=>({...current,[runId]:response}));return response;
     }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));return null;}
+    finally{setStage2Loading(current=>({...current,[runId]:false}));}
+  };
+  const publishStage2=async(runId:string)=>{
+    const modelVersionId=stage2Status[runId]?.model_version_id;
+    if(!modelVersionId)return;
+    setStage2Loading(current=>({...current,[runId]:true}));
+    setStage2Errors(current=>{const next={...current};delete next[runId];return next;});
+    try{
+      const response=await api.publishStage2Model(datasource,modelVersionId,{
+        reason:'Disponibilización técnica desde el reporte de Ejecuciones',
+      });
+      setStage2Status(current=>({...current,[runId]:response}));
+    }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));}
+    finally{setStage2Loading(current=>({...current,[runId]:false}));}
+  };
+  const deactivateStage2=async(runId:string)=>{
+    const publicationId=stage2Status[runId]?.publication?.id;
+    if(!publicationId)return;
+    setStage2Loading(current=>({...current,[runId]:true}));
+    setStage2Errors(current=>{const next={...current};delete next[runId];return next;});
+    try{
+      const response=await api.deactivateStage2Publication(datasource,publicationId,{
+        reason:'Baja técnica desde el reporte de Ejecuciones',
+      });
+      setStage2Status(current=>({...current,[runId]:response}));
+    }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));}
     finally{setStage2Loading(current=>({...current,[runId]:false}));}
   };
 
@@ -248,12 +274,8 @@ export function Runs({
                     stage2Status={stage2Status[group.training.run_id]}
                     stage2Loading={stage2Loading[group.training.run_id]??false}
                     stage2Error={stage2Errors[group.training.run_id]}
-                    stage2DetailHref={withAllowedQuery(
-                      stage2Status[group.training.run_id]?.deployment_id
-                        ? routes.deploymentDetail(stage2Status[group.training.run_id].deployment_id!)
-                        : routes.runReleaseDetail(group.training.run_id),
-                      {datasource},
-                    )}
+                    onStage2Publish={()=>publishStage2(group.training.run_id)}
+                    onStage2Deactivate={()=>deactivateStage2(group.training.run_id)}
                   />
                 ))}
               </div>

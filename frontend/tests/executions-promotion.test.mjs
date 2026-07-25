@@ -10,11 +10,13 @@ const detail=read('src/pages/Stage2ReleaseDetail.tsx');
 const app=read('src/App.tsx');
 const api=read('src/services/api.ts');
 const styles=read('src/styles/report-components.css');
+const panel=read('src/components/reports/Stage2PublicationPanel.tsx');
 
 test('TRAIN concentra una sola acción de liberación llamada Ver detalle',()=>{
   assert.match(row,/processKind === 'training'/);
-  assert.match(row,/<Link[^>]+stage2-detail-link/);
-  assert.match(row,/>Ver detalle<\/Link>/);
+  assert.match(row,/<button[^]*stage2-detail-link/);
+  assert.match(row,/aria-expanded=\{stage2Expanded\}/);
+  assert.match(row,/>Ver detalle<\/button>/);
   assert.doesNotMatch(row,/Preparar despliegue|Habilitar para Etapa 2|Ver modelo productivo/);
   assert.doesNotMatch(child,/publishTrainingStage2|stage2-release-summary/);
 });
@@ -25,7 +27,7 @@ test('estado productivo deriva del contrato y estiliza toda la tarjeta',()=>{
   for(const token of ['--stage2-production-background','--stage2-production-border','--stage2-production-badge-background'])assert.match(styles,new RegExp(token));
 });
 test('estado no depende solo del color',()=>{
-  for(const token of ['✓','Productivo Etapa 2','Modelo activo e inmutable','production / champion'])assert.match(row,new RegExp(token));
+  for(const token of ['✓','Productivo Etapa 2','Versión activa e inmutable','Disponible como candidato'])assert.match(row,new RegExp(token));
   assert.match(row,/aria-hidden="true"/);assert.match(row,/role="status"/);
 });
 test('elegibilidad visible exige TRAIN y EVALUATE y no EXPLAIN',()=>{
@@ -33,11 +35,16 @@ test('elegibilidad visible exige TRAIN y EVALUATE y no EXPLAIN',()=>{
   assert.match(row,/Se requiere un TRAIN completado y un EVALUATE completado asociado/);
   assert.doesNotMatch(row,/EXPLAIN completado/);
 });
-test('Ver detalle usa URL compartible y conserva datasource',()=>{
-  assert.match(runs,/routes\.deploymentDetail/);
-  assert.match(runs,/routes\.runReleaseDetail/);
-  assert.match(runs,/withAllowedQuery/);
+test('Ver detalle abre el acordeón y la vista anterior permanece compatible',()=>{
+  assert.match(group,/Stage2PublicationPanel/);
+  assert.match(group,/setExpanded/);
   assert.match(app,/Stage2ReleaseDetail/);
+});
+test('acordeón publica y da de baja mediante confirmación inline',()=>{
+  assert.match(panel,/Confirmar publicación/);
+  assert.match(panel,/Confirmar baja/);
+  assert.match(runs,/publishStage2Model/);
+  assert.match(runs,/deactivateStage2Publication/);
 });
 test('detalle publica mediante confirmación y bloquea doble clic',()=>{
   assert.match(detail,/Stage2EnablementModal/);

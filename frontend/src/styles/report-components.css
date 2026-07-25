@@ -530,6 +530,21 @@
 .training-card--stage2-production>.report-row { background: linear-gradient(90deg,#f1faf5,#fff 58%); }
 .stage2-release-summary { display: grid; gap: 7px; border-top: 1px solid #e3e8f0; padding-top: 11px; color: #52617f; font-size: 11px; }
 .stage2-release-summary strong { color: #26324a; font-size: 12px; }
+.stage2-publication-panel { margin: 0 16px 16px; padding: 18px; border: 1px solid #d9e2ef; border-radius: 10px; background: #f8fafc; display: grid; gap: 16px; animation: stage2-panel-in 160ms ease-out; }
+.stage2-publication-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.stage2-publication-panel h3 { margin: 0 0 6px; color: #1f2d45; font-size: 16px; }
+.stage2-publication-panel p { margin: 0; line-height: 1.5; }
+.stage2-publication-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 10px; }
+.stage2-publication-grid span { display: grid; gap: 3px; color: #62708a; font-size: 11px; min-width: 0; }
+.stage2-publication-grid strong { color: #26324a; font-size: 12px; overflow-wrap: anywhere; }
+.stage2-eligibility-badge { color: #17603a; background: #e5f6ed; border: 1px solid #b4dfc7; border-radius: 999px; padding: 5px 9px; white-space: nowrap; }
+.stage2-experimental-warning { padding: 10px 12px; border-left: 3px solid #c38212; background: #fff8e8; color: #684b13; font-size: 12px; }
+.stage2-missing-condition { color: #8a2d2d; font-size: 12px; font-weight: 600; }
+.stage2-inline-confirmation { display: grid; gap: 12px; padding: 12px; border: 1px solid #cbd7e6; border-radius: 8px; background: #fff; }
+.stage2-inline-confirmation > div { display: flex; gap: 8px; flex-wrap: wrap; }
+.stage2-publication-panel button:focus-visible,.stage2-detail-link:focus-visible { outline: 3px solid #2d6cdf; outline-offset: 2px; }
+@keyframes stage2-panel-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .stage2-publication-panel { animation: none; } }
 .stage2-production-badge { display: inline-flex; align-items: center; gap: 6px; width: fit-content; border-radius: 999px; background: var(--stage2-production-badge-background); color: var(--stage2-production-badge-text) !important; padding: 6px 9px; }
 .stage2-detail-link { display: inline-flex; width: fit-content; align-items: center; justify-content: center; text-decoration: none; }
 

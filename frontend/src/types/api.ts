@@ -104,12 +104,22 @@ export interface ProductionPublicationResult {
 export interface Stage2Availability {
   training_run_id:string;train_status?:string;evaluation_run_id?:string|null;evaluation_status?:string|null;
   explainability_run_ids?:string[];eligible:boolean;eligible_for_stage2_production?:boolean;
-  available:boolean;is_stage2_production?:boolean;
+  available?:boolean;is_stage2_available?:boolean;is_stage2_production?:boolean;
+  stage2_status?:'not_available'|'available'|'production';
+  eligibility?:{train_completed:boolean;evaluate_completed:boolean;missing_conditions:string[]};
   production_state?:'not_eligible'|'eligible'|'preparing'|'active'|'inactive'|'failed';
-  next_action:'enable_for_stage2'|'view_stage2_model'|'unavailable';
-  action_label:string;blockers:PromotionBlockingReason[];technical_blockers?:PromotionBlockingReason[];warnings:string[];
-  model_version_id:string|null;deployment_id:string|null;fixture:boolean;
+  next_action?:'enable_for_stage2'|'view_stage2_model'|'unavailable';
+  action_label?:string;blockers:PromotionBlockingReason[];technical_blockers?:PromotionBlockingReason[];warnings:string[];
+  model_version_id:string|null;deployment_id?:string|null;fixture?:boolean;
+  checkpoint_artifact_id?:string;checkpoint?:string;model_name?:string;version_number?:number;
+  publication?:Stage2Publication|null;warning?:string;idempotent?:boolean;
   package?:ModelContractCandidates|null;
+}
+export interface Stage2Publication {
+  id:string;datasource:string;model_version_id:string;training_run_id:string;
+  evaluation_run_id:string;checkpoint_artifact_id:string;scope:'stage2';
+  status:'active'|'inactive';is_active:boolean;published_at:string;published_by:string|null;
+  deactivated_at:string|null;deactivated_by:string|null;created_at:string;updated_at:string;
 }
 export interface Stage2EnablementResult {
   training_run_id:string;model_version_id:string;deployment_id:string;

@@ -1,108 +1,89 @@
-# Tarjeta del modelo productivo para Etapa 2
+# Publicación de candidatos para Etapa 2 desde Ejecuciones
 
-## Regla de elegibilidad
+## Regla única
 
-Un TRAIN es elegible cuando su estado es `completed` y existe al menos un EVALUATE `completed` unido mediante `run_lineage.relationship_type = evaluates_checkpoint_from`.
+Una versión puede publicarse cuando:
 
-EXPLAIN se conserva como evidencia asociada, pero no participa en la elegibilidad. Si existen varios EVALUATE completados se utiliza el más reciente por `finished_at`, luego `created_at` y finalmente UUID. Un EVALUATE de otro TRAIN no puede entrar en la consulta.
+```text
+TRAIN.status = completed
+AND EVALUATE asociado.status = completed
+```
 
-La respuesta distingue:
+El EVALUATE se resuelve por `run_lineage.relationship_type =
+evaluates_checkpoint_from`. Si existe más de uno, se prefiere uno completado y
+el más reciente. EXPLAIN, firmas, TensorFlow, métricas, threshold, estabilidad
+y disponibilidad de GPU no participan en la elegibilidad.
 
-- `eligible_for_stage2_production`: regla funcional TRAIN + EVALUATE;
-- `technical_blockers`: problemas que la preparación automática debe resolver o reportar;
-- `is_stage2_production`: estado derivado del deployment activo;
-- `production_state`: `not_eligible`, `eligible` o `active`.
+La publicación es técnica y experimental; no constituye aprobación clínica ni
+diagnóstico automatizado.
 
-## Fuente de verdad
+## Persistencia e inmutabilidad
 
-No existe una bandera visual independiente. “Productivo Etapa 2” se deriva de:
+La migración `029_stage2_model_publications.sql` agrega:
 
-- `deployed_model_versions.environment = production`;
-- `alias = champion`;
-- `status = active`;
-- `metadata.production_scope = stage2_technical`.
+- `stage2_model_publications`: disponibilidad actual reversible;
+- `stage2_model_publication_events`: bitácora append-only de publicación, baja
+  y reactivación.
 
-La restricción de base y la activación transaccional conservan un solo champion activo. El deployment anterior queda inactivo y disponible para rollback.
+La publicación referencia `model_version_id`, `training_run_id`,
+`evaluation_run_id` y `checkpoint_artifact_id` existentes. No copia, modifica
+ni reemplaza el modelo. La FK compuesta a `model_versions` congela el par
+versión/artefacto y `ON DELETE RESTRICT` protege el linaje.
 
-## Artifact inmutable
+Pueden existir varias versiones activas. La unicidad sólo impide dos
+publicaciones activas contradictorias para la misma `model_version`.
 
-La publicación reutiliza `Stage2ModelAvailabilityService`:
+## Ciclo e idempotencia
 
-1. verifica el artifact fuente y SHA-256;
-2. copia atómicamente a `releases/production/<modelo>/<model_version_id>/model.keras`;
-3. registra el artifact de paquete;
-4. escribe manifest, preprocessing, class mapping, firmas, threshold y checksum;
-5. conserva el artifact y la model_version originales;
-6. ejecuta smoke e inferencia de control antes de activar.
+```text
+available → production → available
+```
 
-El frontend solo muestra nombre lógico, model version y SHA abreviado; nunca expone el path físico.
+Publicar una versión activa o dar de baja una versión ya inactiva devuelve el
+estado existente. Un advisory lock por versión y el índice parcial único
+protegen solicitudes concurrentes.
 
-La convención permanece:
+La baja no elimina registros ni cambia TRAIN, EVALUATE, model version,
+artefactos o trabajos previos. La reactivación conserva el mismo registro y
+agrega un nuevo evento, por lo que todos los intervalos pueden reconstruirse.
 
-- `0 = uninfected`;
-- `1 = parasitized`;
-- `positive_class = 1`;
-- `positive_label = parasitized`;
-- `score_name = probability_parasitized`.
+Eventos:
 
-Si no existe threshold calibrado, el servicio registra `0.5` como threshold operativo no clínico y conserva su procedencia.
+- `MODEL_STAGE2_PUBLISHED`
+- `MODEL_STAGE2_DEACTIVATED`
+- `MODEL_STAGE2_REACTIVATED`
 
-## Tarjeta visual
+## API
 
-Toda tarjeta TRAIN productiva recibe:
+| Método | Endpoint | Uso |
+|---|---|---|
+| GET | `/api/training-runs/{id}/stage2-release-status` | Estado para la tarjeta TRAIN |
+| GET | `/api/model-versions/{id}/stage2-status` | Elegibilidad y publicación |
+| POST | `/api/model-versions/{id}/stage2-publications` | Publicar o reactivar |
+| POST | `/api/stage2-publications/{id}/deactivate` | Dar de baja |
+| GET | `/api/stage2/models?datasource=malaria` | Candidatos activos para trabajos nuevos |
 
-- `training-card--stage2-production`;
-- fondo semántico suave;
-- borde verde;
-- icono de confirmación;
-- badge “Productivo Etapa 2”;
-- texto “Modelo activo e inmutable”;
-- destino `production / champion`.
+Los endpoints anteriores de deployment y la vista de liberación independiente
+se conservan para compatibilidad, pero no son la fuente de verdad de este flujo.
 
-Los colores se centralizan en tokens `--stage2-production-*`. El estado no depende solo del color.
+## Interfaz
 
-La sección Liberación muestra únicamente estado resumido y un enlace real “Ver detalle”. El texto del enlace no cambia.
+“Ver detalle” es un botón con `aria-expanded` y `aria-controls`. Abre un panel
+dentro de la tarjeta TRAIN y conserva visible el linaje TRAIN → EVALUATE /
+EXPLAIN. El panel muestra regla, identidades, checkpoint, estado, publicación,
+actor y advertencia experimental.
 
-## Routing
+Las confirmaciones de publicación y baja son inline, sin modal. Tras cada
+acción sólo se actualiza la tarjeta afectada. Una publicación activa aplica
+estilo success tenue, badge textual e icono, sin depender únicamente del color.
 
-- Con deployment: `/modelo-ia/despliegues/:deploymentId?datasource=malaria`.
-- Sin deployment: `/modelo-ia/ejecuciones/:trainingRunId/liberacion?datasource=malaria`.
+## Prueba manual
 
-El detalle carga por ID, conserva datasource, tiene URL copiable y no usa `location.state`.
-
-## Publicación
-
-El detalle de liberación muestra TRAIN, EVALUATE utilizado, EXPLAIN opcionales, model version y scope. “Publicar para Etapa 2” abre una confirmación con responsable, motivo y checkbox explícito.
-
-La llamada es idempotente. Si el deployment ya está activo devuelve las mismas identidades sin copiar ni crear otra versión.
-
-## Baja, reactivación y reemplazo
-
-La administración se mantiene en Despliegues:
-
-- “Dar de baja” cambia el deployment técnico activo a inactivo;
-- “Reactivar como productivo” usa la activación gobernada;
-- publicar otro modelo desactiva transaccionalmente el champion anterior;
-- no se eliminan TRAIN, EVALUATE, model version o artifact.
-
-## Rollback
-
-Se conserva la convención existente: el rollback crea una revisión pendiente basada en una versión histórica y exige verificación antes de activarla. No se sobrescribe ni reactiva silenciosamente una revisión histórica. Esto preserva inmutabilidad y auditoría.
-
-## Endpoints
-
-- `GET /api/training-runs/{id}/stage2-release-status`
-- `POST /api/training-runs/{id}/publish-technical-production`
-- `GET /api/deployments`
-- `GET /api/deployments/{id}/readiness`
-- `POST /api/deployments/{id}/deactivate`
-- `POST /api/deployments/{id}/activate`
-- `POST /api/deployments/{id}/rollback`
-
-## Pruebas
-
-- Elegibilidad unitaria con TRAIN/EVALUATE y EXPLAIN ausente.
-- Contratos frontend de acción única, estilo, accesibilidad, routing y confirmación.
-- Build TypeScript.
-- E2E idempotente sobre el TRAIN real `371a9e75-…`.
-- Verificación de un único deployment `production/champion/stage2_technical`.
+1. Aplicar migraciones y arrancar backend/frontend.
+2. Abrir `/modelo-ia/ejecuciones?datasource=malaria`.
+3. En un TRAIN con EVALUATE completed, pulsar “Ver detalle”.
+4. Confirmar “Disponibilizar para Etapa 2”.
+5. Verificar badge y borde success.
+6. Consultar `/api/stage2/models?datasource=malaria`.
+7. Confirmar la baja y verificar que desaparece del selector.
+8. Publicar nuevamente y consultar los eventos de auditoría.

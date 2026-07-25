@@ -189,6 +189,26 @@ export const api = {
       {timeoutMs:30000},
     );
   },
+  publishStage2Model(datasource:string,modelVersionId:string,payload:{
+    actor?:string;reason?:string;
+  }) {
+    return request<Stage2Availability>(
+      `/api/model-versions/${modelVersionId}/stage2-publications`,
+      withDatasource(datasource),{
+        init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
+      },
+    );
+  },
+  deactivateStage2Publication(datasource:string,publicationId:string,payload:{
+    actor?:string;reason?:string;
+  }) {
+    return request<Stage2Availability>(
+      `/api/stage2-publications/${publicationId}/deactivate`,
+      withDatasource(datasource),{
+        init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
+      },
+    );
+  },
 
   enableStage2(datasource:string,trainingRunId:string,payload:{
     actor:string;reason:string;confirm_stage2_enablement:boolean;

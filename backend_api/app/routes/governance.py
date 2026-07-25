@@ -14,6 +14,7 @@ from src.malaria_dl.governance.services.contract_service import ModelContractSer
 from src.malaria_dl.governance.services.lifecycle_service import ModelReleaseLifecycleService
 from src.malaria_dl.governance.services.prepare_release_service import PrepareModelReleaseService
 from src.malaria_dl.governance.services.stage2_availability_service import Stage2ModelAvailabilityService
+from src.malaria_dl.governance.services.stage2_publication_service import Stage2PublicationService
 from src.malaria_dl.inference.traceable import ModelCache,TraceableInferenceService
 
 MODEL_CACHE=ModelCache(maxsize=4)
@@ -69,6 +70,9 @@ class TechnicalProductionRequest(BaseModel):
     preprocessing_profile:str|None=None
     threshold:float|None=None
     source_image_id:str|None=None
+class Stage2PublicationRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    actor:str|None=None;reason:str|None=None
 
 def prepare_release_service(datasource:str|None):
     key=resolve_datasource(datasource)
@@ -115,6 +119,14 @@ def technical_production_service(datasource:str|None):
       release_channel="production",
     )
 
+def stage2_publication_service(datasource:str|None):
+    key=resolve_datasource(datasource)
+    @contextmanager
+    def connection_factory():
+        with get_engine(key).begin() as connection:
+            yield connection
+    return Stage2PublicationService(connection_factory,datasource=key)
+
 @router.get("/training-runs/{training_run_id}/promotion-status")
 def promotion_status(training_run_id:str,datasource:str|None=Query("malaria")):
     try:
@@ -145,8 +157,32 @@ def stage2_availability(training_run_id:str,datasource:str|None=Query("malaria")
 
 @router.get("/training-runs/{training_run_id}/stage2-release-status")
 def stage2_release_status(training_run_id:str,datasource:str|None=Query("malaria")):
-    """Estado derivado del deployment productivo técnico, no una bandera visual."""
-    return safe(lambda:technical_production_service(datasource).preview(uid(training_run_id)))
+    """Estado persistente del candidato técnico; sólo TRAIN + EVALUATE bloquean."""
+    return safe(lambda:stage2_publication_service(datasource).status_for_training(uid(training_run_id)))
+
+@router.get("/model-versions/{model_version_id}/stage2-status")
+def model_version_stage2_status(model_version_id:str,datasource:str|None=Query("malaria")):
+    return safe(lambda:stage2_publication_service(datasource).status(uid(model_version_id)))
+
+@router.post("/model-versions/{model_version_id}/stage2-publications")
+def publish_stage2_model(
+    model_version_id:str,body:Stage2PublicationRequest,
+    datasource:str|None=Query("malaria"),
+    request_id:str|None=Header(None,alias="X-Request-ID"),
+):
+    return safe(lambda:stage2_publication_service(datasource).publish(
+      uid(model_version_id),body.actor,body.reason,request_id,
+    ))
+
+@router.post("/stage2-publications/{publication_id}/deactivate")
+def deactivate_stage2_publication(
+    publication_id:str,body:Stage2PublicationRequest,
+    datasource:str|None=Query("malaria"),
+    request_id:str|None=Header(None,alias="X-Request-ID"),
+):
+    return safe(lambda:stage2_publication_service(datasource).deactivate(
+      uid(publication_id),body.actor,body.reason,request_id,
+    ))
 
 @router.get("/training-runs/{training_run_id}/stage2-package-preview")
 def stage2_package_preview(training_run_id:str,datasource:str|None=Query("malaria")):
@@ -164,7 +200,7 @@ def enable_stage2(training_run_id:str,body:Stage2EnableRequest,datasource:str|No
 
 @router.get("/stage2/models")
 def stage2_models(datasource:str|None=Query("malaria")):
-    return {"items":stage2_service(datasource).models()}
+    return {"items":stage2_publication_service(datasource).models()}
 
 @router.get("/model-versions/{model_version_id}/technical-production-preview")
 def technical_production_preview(model_version_id:str,datasource:str|None=Query("malaria")):

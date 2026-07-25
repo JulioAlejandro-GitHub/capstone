@@ -1,5 +1,4 @@
 import { StatusBadge } from '../StatusBadge';
-import { Link } from 'react-router-dom';
 import type { RunDashboard, Stage2Availability } from '../../types/api';
 import { getRunDuration } from '../../utils/format';
 import {
@@ -18,7 +17,7 @@ interface RunSummaryRowProps {
   onRunSelect: (runId: string) => void;
   processKind?: RunProcessKind;
   stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Error?:string;
-  stage2DetailHref?:string;
+  stage2Expanded?:boolean;stage2ControlsId?:string;onStage2Toggle?:()=>void;
 }
 
 function truncatedRunId(runId: string): string {
@@ -29,7 +28,8 @@ export function RunSummaryRow({
   run,
   onRunSelect,
   processKind,
-  stage2Status,stage2Loading=false,stage2Error,stage2DetailHref,
+  stage2Status,stage2Loading=false,stage2Error,
+  stage2Expanded=false,stage2ControlsId,onStage2Toggle,
 }: RunSummaryRowProps) {
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
@@ -95,7 +95,8 @@ export function RunSummaryRow({
           {stage2Loading ? <strong>Consultando estado…</strong>
             : stage2Status?.is_stage2_production ? <>
               <strong className="stage2-production-badge"><span aria-hidden="true">✓</span> Productivo Etapa 2</strong>
-              <span>production / champion</span><small>Modelo activo e inmutable</small>
+              <span>Disponible como candidato para nuevos análisis de frotis completo.</span>
+              <small>Versión activa e inmutable</small>
             </>
             : stage2Status?.eligible ? <>
               <strong>Disponible para publicar</strong>
@@ -103,10 +104,13 @@ export function RunSummaryRow({
             </>
             : <>
               <strong>No disponible</strong>
-              <span>Se requiere un TRAIN completado y un EVALUATE completado asociado.</span>
+              <span>{stage2Status?.eligibility?.missing_conditions.join(' · ')
+                || 'Se requiere un TRAIN completado y un EVALUATE completado asociado.'}</span>
             </>}
           {stage2Error ? <small className="run-promotion-error">{stage2Error}</small> : null}
-          {stage2DetailHref ? <Link className="report-detail-button stage2-detail-link" to={stage2DetailHref}>Ver detalle</Link> : null}
+          <button aria-controls={stage2ControlsId} aria-expanded={stage2Expanded}
+            className="report-detail-button stage2-detail-link" disabled={stage2Loading}
+            onClick={onStage2Toggle} type="button">Ver detalle</button>
         </div> : null}
       </section>
     </div>

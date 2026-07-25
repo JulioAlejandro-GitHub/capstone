@@ -1,21 +1,25 @@
 import type { Stage2Availability, TrainingRunLineageGroup } from '../../types/api';
 import { RunLineageChildCard } from './RunLineageChildCard';
 import { RunSummaryRow } from './RunSummaryRow';
+import { Stage2PublicationPanel } from './Stage2PublicationPanel';
+import { useState } from 'react';
 
 interface TrainingRunGroupCardProps {
   group: TrainingRunLineageGroup;
   onRunSelect: (runId: string) => void;
   stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Error?:string;
-  stage2DetailHref:string;
+  onStage2Publish:()=>Promise<void>;onStage2Deactivate:()=>Promise<void>;
 }
 
 export function TrainingRunGroupCard({
   group,
   onRunSelect,
-  stage2Status,stage2Loading,stage2Error,stage2DetailHref,
+  stage2Status,stage2Loading,stage2Error,onStage2Publish,onStage2Deactivate,
 }: TrainingRunGroupCardProps) {
   const { training, evaluations, explainability } = group;
   const linkedCount = evaluations.length + explainability.length;
+  const [expanded,setExpanded]=useState(false);
+  const panelId=`stage2-publication-${training.run_id}`;
 
   return (
     <article
@@ -29,7 +33,9 @@ export function TrainingRunGroupCard({
         stage2Status={stage2Status}
         stage2Loading={stage2Loading}
         stage2Error={stage2Error}
-        stage2DetailHref={stage2DetailHref}
+        stage2Expanded={expanded}
+        stage2ControlsId={panelId}
+        onStage2Toggle={()=>setExpanded(current=>!current)}
       />
 
       <section className="run-lineage-group__children" aria-label="Procesos derivados del entrenamiento">
@@ -69,6 +75,9 @@ export function TrainingRunGroupCard({
           </div>
         </div>
       </section>
+      {expanded?<Stage2PublicationPanel id={panelId} status={stage2Status}
+        loading={stage2Loading} error={stage2Error} explainCount={explainability.length}
+        onPublish={onStage2Publish} onDeactivate={onStage2Deactivate}/>:null}
     </article>
   );
 }
