@@ -969,55 +969,12 @@
   }
 }
 
-.stage2-action {
-  display: grid;
-  gap: .3rem;
-  margin-top: .45rem
-}
-
-.stage2-action__button {
-  border-color: #6558d3;
-  background: #f3f1ff;
-  color: #40349d
-}
-
-.stage2-action__scope,
 .stage2-kicker {
   color: #6558d3;
   font-size: .72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .04em
-}
-
-.stage2-action__evidence {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .3rem
-}
-
-.stage2-action__evidence span {
-  padding: .2rem .4rem;
-  border-radius: .35rem;
-  background: #eef9f2;
-  color: #17663a;
-  font-size: .72rem;
-  font-weight: 650
-}
-
-.stage2-blockers {
-  font-size: .78rem;
-  color: #7b3f00
-}
-
-.stage2-blockers summary {
-  cursor: pointer;
-  font-weight: 700
-}
-
-.stage2-blockers ul {
-  margin: .35rem 0 0;
-  padding-left: 1.1rem
 }
 
 .stage2-modal {
