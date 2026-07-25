@@ -30,6 +30,7 @@ from pathlib import Path
 @dataclass
 class TrainingRun:
     training_run_id: str
+    model_version_id: str
     run_name: str | None
     model_name: str | None
     optimizer: str | None
@@ -79,6 +80,7 @@ def fetch_training_runs(project_dir: Path) -> list[TrainingRun]:
     query = """
         SELECT DISTINCT ON (r.id)
             r.id::text AS training_run_id,
+            mv.id::text AS model_version_id,
             r.run_name,
             m.name AS model_name,
             COALESCE(
@@ -107,6 +109,10 @@ def fetch_training_runs(project_dir: Path) -> list[TrainingRun]:
         JOIN model_versions mv ON mv.training_run_id = r.id
         WHERE r.run_type = 'training'
           AND r.status = 'completed'
+          AND mv.status IN ('candidate', 'validated', 'approved', 'deployed')
+          AND mv.lineage_status = 'resolved'
+          AND mv.checkpoint_artifact_id IS NOT NULL
+          AND mv.artifact_sha256 IS NOT NULL
           AND COALESCE(mv.best_model_path, mv.checkpoint_path) IS NOT NULL
         ORDER BY r.id, mv.created_at DESC;
     """
@@ -119,13 +125,14 @@ def fetch_training_runs(project_dir: Path) -> list[TrainingRun]:
     return [
         TrainingRun(
             training_run_id=row[0],
-            run_name=row[1],
-            model_name=row[2],
-            optimizer=row[3],
-            checkpoint_path=row[4],
-            img_size=str(row[5] or "200"),
-            batch_size=str(row[6] or "64"),
-            preprocessing=row[7] or "auto",
+            model_version_id=row[1],
+            run_name=row[2],
+            model_name=row[3],
+            optimizer=row[4],
+            checkpoint_path=row[5],
+            img_size=str(row[6] or "200"),
+            batch_size=str(row[7] or "64"),
+            preprocessing=row[8] or "auto",
         )
         for row in rows
     ]
@@ -175,13 +182,14 @@ def build_explain_command(
     return [
         sys.executable,
         "-m", "src.explain",
-        "--checkpoint", run.checkpoint_path,
+        "--model-version-id", run.model_version_id,
         "--source-training-run-id", run.training_run_id,
         "--method", method,
         "--img-size", run.img_size,
         "--batch-size", run.batch_size,
         "--num-samples", str(num_samples),
         "--threshold", threshold,
+        "--preprocessing", run.preprocessing,
         "--positive-label", "parasitized",
         "--track-db",
         "--require-lineage",
@@ -229,7 +237,8 @@ def main() -> int:
     for run in runs:
         print(
             f"\nTraining: {run.training_run_id} | "
-            f"model={run.model_name} | optimizer={run.optimizer} | checkpoint={run.checkpoint_path}"
+            f"model_version={run.model_version_id} | model={run.model_name} | "
+            f"optimizer={run.optimizer} | checkpoint={run.checkpoint_path}"
         )
         cmd = build_explain_command(
             run,

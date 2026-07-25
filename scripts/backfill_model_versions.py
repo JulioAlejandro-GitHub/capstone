@@ -20,6 +20,7 @@ def plan(connection, model_name=None, training_run_id=None):
     registered={(str(Path(x["path"]).resolve()),x.get("checksum")):x for x in artifacts if x.get("path")}
     actions=[]
     for item in items:
+        if Path(item["absolute_path"]).name != "best_model.keras": continue
         if item["lineage_status"]!="resolved": continue
         if model_name and item.get("model_name")!=model_name: continue
         if training_run_id and item.get("training_run_id")!=training_run_id: continue
@@ -28,6 +29,16 @@ def plan(connection, model_name=None, training_run_id=None):
         exists=connection.execute(text("SELECT id FROM model_versions WHERE checkpoint_artifact_id=:id OR artifact_sha256=:sha LIMIT 1"),{"id":artifact["id"],"sha":item["sha256"]}).scalar_one_or_none()
         if not exists: actions.append({"artifact":artifact,"item":item})
     return actions,items
+
+def preprocessing_profile(item):
+    metadata_path=Path(item["absolute_path"]).parent/"model_metadata.json"
+    if not metadata_path.is_file():
+        raise RuntimeError(f"Falta model_metadata.json para {item['absolute_path']}")
+    metadata=json.loads(metadata_path.read_text())
+    mode=metadata.get("preprocessing") or metadata.get("preprocessing_mode")
+    if not mode:
+        raise RuntimeError(f"Falta preprocessing en {metadata_path}")
+    return {"mode":mode}
 
 def main():
     p=argparse.ArgumentParser(); mode=p.add_mutually_exclusive_group(); mode.add_argument("--dry-run",action="store_true"); mode.add_argument("--apply",action="store_true")
@@ -43,12 +54,19 @@ def main():
                   (id,model_id,training_run_id,version_name,version_number,model_name,status,lineage_status,
                    checkpoint_path,checkpoint_artifact_id,artifact_sha256,artifact_size_bytes,framework,
                    preprocessing_profile_snapshot,class_mapping,input_signature,output_signature,metadata)
-                  VALUES (:id,:model_id,:run,:version_name,:number,:name,'candidate','resolved',:path,:artifact_id,:sha,:size,:framework,
-                    CAST(:pre AS jsonb),CAST(:mapping AS jsonb),CAST(:input AS jsonb),CAST(:output AS jsonb),CAST(:metadata AS jsonb))
-                  ON CONFLICT (checkpoint_artifact_id) DO NOTHING RETURNING id::text"""),{
+                  SELECT CAST(:id AS uuid),CAST(:model_id AS uuid),CAST(:run AS uuid),:version_name,:number,:name,
+                    'candidate','resolved',:path,CAST(:artifact_id AS uuid),:sha,:size,:framework,
+                    CAST(:pre AS jsonb),CAST(:mapping AS jsonb),CAST(:input AS jsonb),
+                    CAST(:output AS jsonb),CAST(:metadata AS jsonb)
+                  WHERE NOT EXISTS (
+                    SELECT 1 FROM model_versions
+                    WHERE checkpoint_artifact_id=CAST(:artifact_id AS uuid)
+                       OR artifact_sha256=:sha
+                  )
+                  RETURNING id::text"""),{
                     "id":str(uuid.uuid4()),"model_id":model_id,"run":item["training_run_id"],"version_name":f"backfill-v{number}","number":number,"name":item["model_name"],
                     "path":artifact["path"],"artifact_id":artifact["id"],"sha":item["sha256"],"size":item["size_bytes"],"framework":item["format"],
-                    "pre":"{}","mapping":json.dumps(CLASS_MAPPING),"input":"{}","output":"{}","metadata":json.dumps({"backfilled":True,"lineage_evidence":item["lineage_evidence"],"legacy_generic_path":item["generic_path"]})}).scalar_one_or_none()
+                    "pre":json.dumps(preprocessing_profile(item)),"mapping":json.dumps(CLASS_MAPPING),"input":"{}","output":"{}","metadata":json.dumps({"backfilled":True,"lineage_evidence":item["lineage_evidence"],"legacy_generic_path":item["generic_path"],"source":"tracked_training_best_checkpoint"})}).scalar_one_or_none()
                 if result: changes.append(result)
         unresolved=[x for x in items if x["lineage_status"]!="resolved"]
         report={"mode":"apply" if a.apply else "dry-run","planned":len(actions),"created":len(changes),"created_ids":changes,"unresolved":unresolved,"deployment_changes":0}
