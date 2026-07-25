@@ -1,5 +1,10 @@
 # Malaria Parasite Detection — Entorno local con Python
 
+La arquitectura canónica reside en `src/malaria_dl/`. Los imports y comandos
+históricos `src.*` continúan soportados mediante adaptadores sin lógica
+duplicada. Véanse `docs/architecture_after_refactor.md` y
+`docs/legacy_compatibility.md`.
+
 Proyecto local para entrenar y evaluar modelos de Deep Learning sobre el dataset **NIH / NLM Malaria Cell Images** usando TensorFlow Datasets.
 
 Incluye:

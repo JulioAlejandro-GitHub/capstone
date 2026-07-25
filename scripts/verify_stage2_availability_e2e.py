@@ -13,7 +13,7 @@ PROJECT=ROOT/"malaria_dl_local_project"
 sys.path.insert(0,str(PROJECT))
 
 from src.db import get_connection,get_engine
-from src.stage2_model_availability_service import Stage2ModelAvailabilityService
+from src.malaria_dl.governance.services.stage2_availability_service import Stage2ModelAvailabilityService
 
 TRAINING_RUN_ID="8dca1f53-bcb6-443e-8130-f654e6e518ae"
 EXPECTED_MODEL_VERSION_ID="03bf43fa-7e8a-4b3c-84ec-686238325322"

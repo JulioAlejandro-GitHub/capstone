@@ -9,12 +9,12 @@ from app.db import fetch_all,fetch_one,get_engine,resolve_datasource
 from app.services.serialization import row_to_dict,rows_to_list
 
 CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))
-from src.model_deployment_service import ModelDeploymentService
-from src.model_contract_service import ModelContractService
-from src.model_release_lifecycle_service import ModelReleaseLifecycleService
-from src.prepare_model_release_service import PrepareModelReleaseService
-from src.stage2_model_availability_service import Stage2ModelAvailabilityService
-from src.traceable_inference import ModelCache,TraceableInferenceService
+from src.malaria_dl.governance.services.deployment_service import ModelDeploymentService
+from src.malaria_dl.governance.services.contract_service import ModelContractService
+from src.malaria_dl.governance.services.lifecycle_service import ModelReleaseLifecycleService
+from src.malaria_dl.governance.services.prepare_release_service import PrepareModelReleaseService
+from src.malaria_dl.governance.services.stage2_availability_service import Stage2ModelAvailabilityService
+from src.malaria_dl.inference.traceable import ModelCache,TraceableInferenceService
 
 MODEL_CACHE=ModelCache(maxsize=4)
 DEPLOYMENT_SERVICE=ModelDeploymentService(model_cache=MODEL_CACHE)

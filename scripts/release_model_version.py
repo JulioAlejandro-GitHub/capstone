@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse, json, sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"malaria_dl_local_project"))
-from src.model_governance.releases import create_release  # noqa:E402
+from src.malaria_dl.governance.releases import create_release  # noqa:E402
 def main():
     p=argparse.ArgumentParser(); p.add_argument("--training-run-id",required=True); p.add_argument("--evaluation-run-id"); p.add_argument("--explainability-run-id")
     group=p.add_mutually_exclusive_group(required=True); group.add_argument("--artifact-path",type=Path); group.add_argument("--artifact-id")

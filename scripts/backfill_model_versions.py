@@ -6,7 +6,7 @@ from pathlib import Path
 from sqlalchemy import inspect, text
 ROOT=Path(__file__).resolve().parents[1]; APP=ROOT/"malaria_dl_local_project"; sys.path.insert(0,str(APP))
 from src.db import get_connection  # noqa:E402
-from src.model_governance.releases import CLASS_MAPPING, inventory_artifacts, resolve_lineage  # noqa:E402
+from src.malaria_dl.governance.releases import CLASS_MAPPING, inventory_artifacts, resolve_lineage  # noqa:E402
 
 def plan(connection, model_name=None, training_run_id=None):
     required={"model_name","version_number","checkpoint_artifact_id","artifact_sha256","artifact_size_bytes","framework","status","lineage_status"}

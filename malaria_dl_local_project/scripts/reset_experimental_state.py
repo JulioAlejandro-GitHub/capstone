@@ -1,11 +1,38 @@
 import argparse
+import importlib.util
+import os
+import sys
 from pathlib import Path
 
 from clean_training_outputs import clean_training_outputs
-from purge_db_data import purge_database_data
 
 
 SAFE_CONFIRMATION = "RESET_EXPERIMENTS"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_PYTHON = PROJECT_ROOT / ".venv" / "bin" / "python"
+
+
+def ensure_project_environment() -> None:
+    """Re-execute this CLI with the project virtualenv when DB deps are absent."""
+    if importlib.util.find_spec("sqlalchemy") is not None:
+        return
+    if os.environ.get("MALARIA_RESET_VENV_REEXEC") == "1":
+        raise RuntimeError(
+            "El entorno virtual del proyecto no contiene SQLAlchemy. "
+            "Instale requirements.txt dentro de malaria_dl_local_project/.venv."
+        )
+    if not PROJECT_PYTHON.is_file():
+        raise RuntimeError(
+            "El Python actual no contiene SQLAlchemy y no existe .venv/bin/python. "
+            "Cree el entorno e instale requirements.txt."
+        )
+    environment = dict(os.environ)
+    environment["MALARIA_RESET_VENV_REEXEC"] = "1"
+    os.execve(
+        str(PROJECT_PYTHON),
+        [str(PROJECT_PYTHON), str(Path(__file__).resolve()), *sys.argv[1:]],
+        environment,
+    )
 
 
 def parse_args():
@@ -50,6 +77,8 @@ def reset_experimental_state(
 
     results = {"mode": "EXECUTE" if execute else "DRY RUN"}
     if not skip_db:
+        from purge_db_data import purge_database_data
+
         results["db"] = purge_database_data(
             execute=execute,
             confirm="PURGE_DB" if execute else None,
@@ -108,8 +137,9 @@ def print_summary(results: dict) -> None:
 
 
 def main():
-    args = parse_args()
     try:
+        ensure_project_environment()
+        args = parse_args()
         results = reset_experimental_state(
             execute=bool(args.execute),
             confirm=args.confirm,

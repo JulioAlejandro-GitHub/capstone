@@ -23,7 +23,7 @@ test('modal declara alcance no clínico y no expone paths físicos',()=>{
 });
 
 test('contrato mantiene la convención clínica intacta',()=>{
-  const service=read('../../malaria_dl_local_project/src/stage2_model_availability_service.py');
+  const service=read('../../malaria_dl_local_project/src/malaria_dl/governance/services/stage2_availability_service.py');
   assert.match(service,/"0": "uninfected"/);
   assert.match(service,/"1": "parasitized"/);
   assert.match(service,/"positive_label": "parasitized"/);

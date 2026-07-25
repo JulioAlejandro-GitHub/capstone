@@ -1,4 +1,7 @@
 
+La arquitectura Python canónica reside en `src/malaria_dl/`; los comandos
+históricos permanecen compatibles durante la migración. Consulte
+`docs/legacy_compatibility.md`.
 
 Run paso a paso
 

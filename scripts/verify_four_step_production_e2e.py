@@ -12,10 +12,10 @@ from sqlalchemy import create_engine, text
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "malaria_dl_local_project"))
 
-from src.model_contract_service import ModelContractService  # noqa: E402
-from src.model_deployment_service import ModelDeploymentService  # noqa: E402
-from src.model_release_lifecycle_service import ModelReleaseLifecycleService  # noqa: E402
-from src.traceable_inference import TraceableInferenceService  # noqa: E402
+from src.malaria_dl.governance.services.contract_service import ModelContractService  # noqa: E402
+from src.malaria_dl.governance.services.deployment_service import ModelDeploymentService  # noqa: E402
+from src.malaria_dl.governance.services.lifecycle_service import ModelReleaseLifecycleService  # noqa: E402
+from src.malaria_dl.inference.traceable import TraceableInferenceService  # noqa: E402
 
 
 def main():

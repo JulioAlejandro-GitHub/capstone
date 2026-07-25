@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "malaria_dl_local_project"
 sys.path.insert(0, str(APP))
-from src.model_governance.releases import inventory_artifacts, resolve_lineage  # noqa:E402
+from src.malaria_dl.governance.releases import inventory_artifacts, resolve_lineage  # noqa:E402
 
 def database_snapshot():
     from sqlalchemy import inspect, text

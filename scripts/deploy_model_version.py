@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse,json,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/"malaria_dl_local_project"))
-from src.model_deployment_service import ModelDeploymentService
+from src.malaria_dl.governance.services.deployment_service import ModelDeploymentService
 def serial(value):
     if hasattr(value,"__dict__"): return value.__dict__
     return str(value)

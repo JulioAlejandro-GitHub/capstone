@@ -8,8 +8,8 @@ from sqlalchemy import text
 ROOT=Path(__file__).resolve().parents[1];PROJECT=ROOT/"malaria_dl_local_project"
 sys.path.insert(0,str(PROJECT))
 from src.db import get_connection,get_engine
-from src.model_governance.releases import sha256_file
-from src.stage2_model_availability_service import Stage2ModelAvailabilityService
+from src.malaria_dl.governance.releases import sha256_file
+from src.malaria_dl.governance.services.stage2_availability_service import Stage2ModelAvailabilityService
 
 BASELINE_TRAINING="8dca1f53-bcb6-443e-8130-f654e6e518ae"
 TARGET_TRAINING="371a9e75-2e87-4c22-b1d0-8f249007cc33"
