@@ -123,7 +123,8 @@ producción todavía.
 - `frontend/src/pages/Runs.tsx`
 - `frontend/src/components/reports/TrainingRunGroupCard.tsx`
 - `frontend/src/components/reports/RunSummaryRow.tsx`
-- `frontend/src/components/reports/RunPromotionAction.tsx`
+- `frontend/src/components/reports/RunPromotionAction.tsx` (componente histórico,
+  reemplazado posteriormente por el detalle de liberación de Etapa 2)
 - `frontend/src/components/reports/RunLineageChildCard.tsx`
 - `frontend/src/pages/ModelVersions.tsx`
 - `frontend/src/pages/Deployments.tsx`
@@ -388,4 +389,3 @@ Problemas restantes exactos:
 6. No existe rollback como nueva revisión inmutable con `rollback_of` y
    `supersedes`.
 7. No existen pruebas E2E de navegador/componentes DOM para el flujo completo.
-

@@ -149,7 +149,9 @@ revisión se activó al enviar `confirm_production=true`.
 
 ## 8. Evidencia frontend
 
-- `RunPromotionAction` continúa existiendo solo en la tarjeta TRAIN.
+- En esta etapa, `RunPromotionAction` existía solo en la tarjeta TRAIN. El flujo
+  vigente lo reemplazó por `RunSummaryRow`, `Stage2AvailabilityAction` y el
+  detalle de liberación de Etapa 2.
 - EVALUATE y EXPLAIN conservan sus acciones y no crean deployments.
 - `ModelVersions` valida, aprueba y crea el deployment pendiente.
 - `Deployments` muestra el smoke y sus errores, exige confirmación de production
