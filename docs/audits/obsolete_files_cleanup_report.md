@@ -7,8 +7,9 @@ Commit base: `8f3988d6`
 ## 1. Resumen ejecutivo
 
 Se auditaron los 418 archivos versionados del repositorio. La limpieza aplicó
-un criterio conservador: sólo se eliminó un componente React sin consumidores
-y reemplazado por el flujo vigente de liberación de Etapa 2. No se eliminaron
+un criterio conservador: se eliminaron dos componentes React sin consumidores
+y reemplazados por el flujo vigente de liberación de Etapa 2, además de los
+selectores CSS exclusivos del segundo componente. No se eliminaron
 adaptadores públicos, migraciones, scripts manuales, evidencia académica,
 artefactos, manifests, checkpoints ni archivos locales ignorados.
 
@@ -23,13 +24,13 @@ migraciones 001–028 y fue eliminada al terminar.
 |---|---:|
 | Archivos versionados analizados | 418 |
 | Líneas de texto inventariadas | 72.081 |
-| Archivos eliminados | 1 |
+| Archivos eliminados | 2 |
 | Directorios eliminados | 0 |
-| Líneas eliminadas por la limpieza | 109 |
+| Líneas de fuente y CSS eliminadas | 185 |
+| Líneas totales eliminadas, incluidos ajustes documentales | 188 |
 | Líneas añadidas por ajustes documentales de la limpieza | 5 |
 | Dependencias eliminadas | 0 |
-| Reducción del árbol por el commit de limpieza | 4.054 bytes |
-| Reducción del componente fuente eliminado | 4.274 bytes |
+| Reducción acumulada de los commits de limpieza | 7.049 bytes |
 
 La documentación de auditoría añade tamaño neto al repositorio; la cifra de
 reducción corresponde exclusivamente al commit de limpieza.
@@ -39,9 +40,12 @@ reducción corresponde exclusivamente al commit de limpieza.
 | Archivo eliminado | Motivo | Evidencia | Reemplazo actual | Validación |
 |---|---|---|---|---|
 | `frontend/src/components/reports/RunPromotionAction.tsx` | Implementación anterior de la promoción desde tarjeta TRAIN | Sin importadores, ruta, lazy import, configuración, test ni consumidor; las únicas referencias externas eran informes históricos | `RunSummaryRow.tsx`, `Stage2ReleaseDetail.tsx` | 58/58 tests frontend, typecheck y build Vite; búsqueda global sin referencias operativas |
+| `frontend/src/components/reports/Stage2AvailabilityAction.tsx` | Acción técnica intermedia reemplazada por resumen y detalle navegable | Fuera del grafo de imports desde `main.tsx`; sin importadores ni rutas; un test exige que el flujo actual no use el componente | `RunSummaryRow.tsx`, `Stage2ReleaseDetail.tsx` | 58/58 tests, typecheck y build; bundle JS sin cambios |
 
-Las dos menciones documentales históricas se corrigieron para distinguir el
-estado de aquella etapa del flujo vigente.
+Las menciones documentales se corrigieron para distinguir el estado de etapas
+anteriores del flujo vigente. También se eliminaron 43 líneas de selectores
+`stage2-action*` y `stage2-blockers`, sin consumidores; `.stage2-kicker` se
+conservó porque cuatro componentes activos la utilizan.
 
 ## 4. Archivos conservados por seguridad
 
@@ -69,12 +73,22 @@ estado de aquella etapa del flujo vigente.
 | Fachadas de explicabilidad y custom metrics | Uso externo/dinámico no demostrable desde el repositorio | Mantener como API pública hasta versionar una ruptura |
 | Documentos de etapas previas | Pueden parecer obsoletos, pero forman trazabilidad | Archivar con política documental, no borrar como código muerto |
 
+La segunda pasada también construyó un inventario AST de módulos Python sin
+imports estáticos entrantes. No se promovió ninguno a eliminación: la lista
+está dominada por CLI ejecutadas como `python -m`, scripts manuales y fachadas
+añadidas por el refactor canónico `679ac79a`. El historial, los README y
+`legacy_compatibility.md` prueban que esas superficies se mantienen
+deliberadamente. Las únicas copias byte a byte restantes corresponden a
+metadata replicada entre paquetes productivos y Stage 2; se conservan para que
+cada paquete sea autocontenido y verificable.
+
 ## 6. Validaciones ejecutadas
 
 | Área | Validación | Resultado |
 |---|---|---|
 | Frontend | `npm test` antes y después | PASS — 58/58 en ambas ejecuciones |
 | Frontend | TypeScript + `vite build` antes y después | PASS — 97 módulos; bundle JS 419,43 kB y CSS 64,90 kB |
+| Frontend | Segunda pasada de grafo y build | PASS — sólo `vite-env.d.ts` queda fuera del grafo ejecutable; JS 419,43 kB, CSS baja a 64,39 kB |
 | ML | Suite completa `pytest -q` | PASS — 368 passed, 1 skipped, 37 subtests passed |
 | API | Suite con entorno ML | PASS — 45 passed, 3 skipped, 4 subtests passed |
 | API | Importación FastAPI + OpenAPI | PASS — 91 paths y 92 operaciones |
@@ -138,6 +152,9 @@ datos: la base temporal de validación fue eliminada.
 |---|---|
 | `58e77f8b` | `chore(audit): inventory obsolete files` |
 | `e7a3eaa8` | `chore(cleanup): remove obsolete frontend promotion component` |
+| `0d70452d` | `docs(cleanup): report obsolete file audit results` |
+| `f99c5fef` | `chore(audit): document second-pass frontend candidate` |
+| `62d03672` | `chore(cleanup): remove obsolete stage2 action component` |
 
 El commit que incorpora este informe se identifica en el historial de la rama,
 porque un commit no puede incluir de forma estable su propio hash.
