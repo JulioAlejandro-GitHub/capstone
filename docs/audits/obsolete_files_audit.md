@@ -57,17 +57,23 @@ ello no hay entrypoints de esas categorías que puedan alcanzar archivos.
 
 | Archivo | Clasificación | Evidencia de no uso | Reemplazado por | Riesgo | Acción |
 |---|---|---|---|---|---|
-| `frontend/src/components/reports/RunPromotionAction.tsx` | D — obsoleto reemplazado | Cero imports/exports consumidores; no aparece en `App.tsx`, rutas, lazy imports, configuración ni tests. Búsqueda global del nombre sólo encuentra el propio archivo y documentación histórica. El flujo activo renderiza directamente `RunSummaryRow` y `Stage2AvailabilityAction`. | `RunSummaryRow.tsx`, `Stage2AvailabilityAction.tsx` y detalle `Stage2ReleaseDetail.tsx` | Bajo | Eliminar después de validar línea base; ejecutar tests, typecheck y build frontend; repetir búsqueda global |
+| `frontend/src/components/reports/RunPromotionAction.tsx` | D — obsoleto reemplazado | Cero imports/exports consumidores; no aparece en `App.tsx`, rutas, lazy imports, configuración ni tests. Búsqueda global del nombre sólo encuentra el propio archivo y documentación histórica. | `RunSummaryRow.tsx` y detalle `Stage2ReleaseDetail.tsx` | Bajo | Eliminado y validado en la primera pasada |
+| `frontend/src/components/reports/Stage2AvailabilityAction.tsx` | D — obsoleto reemplazado | El grafo de imports desde `main.tsx` no lo alcanza; no tiene importadores, rutas, lazy imports ni consumidores. `stage2-availability.test.mjs` exige explícitamente que el flujo vigente no use `Stage2AvailabilityAction`. Sus selectores `stage2-action*` y `stage2-blockers` son exclusivos. | Resumen integrado en `RunSummaryRow.tsx` y flujo completo en `Stage2ReleaseDetail.tsx` | Bajo | Eliminar junto con CSS exclusivo; ejecutar tests, typecheck, build y búsqueda global |
 
 ### Función histórica y efectos previstos
 
 `RunPromotionAction.tsx` presentaba el flujo anterior de preparación y promoción
 desde una tarjeta TRAIN. La UX actual concentra una única acción “Ver detalle”
-en `RunSummaryRow`, y gobierna la disponibilidad técnica de Etapa 2 con
-`Stage2AvailabilityAction`. El componente antiguo dejó de ser importado al
-introducirse ese flujo. Su eliminación no modifica CSS compartido ni el tipo
-`TrainingPromotionStatus`, ambos usados por componentes activos. El efecto
-previsto es exclusivamente reducir código fuente desconectado.
+en `RunSummaryRow` y el detalle de liberación. El componente antiguo dejó de
+ser importado al introducirse ese flujo. Su eliminación no modifica CSS
+compartido ni el tipo `TrainingPromotionStatus`, ambos usados por componentes
+activos.
+
+`Stage2AvailabilityAction.tsx` fue introducido como acción técnica intermedia,
+pero el cambio posterior movió el estado resumido a `RunSummaryRow` y las
+operaciones a `Stage2ReleaseDetail`. Su eliminación tampoco cambia el bundle:
+Vite ya no lo incluye en el grafo productivo. Se retiene la regla compartida
+`.stage2-kicker`; sólo se eliminan los selectores exclusivos del componente.
 
 ## Elementos conservados por seguridad
 
@@ -108,4 +114,3 @@ previsto es exclusivamente reducir código fuente desconectado.
 | Frontend typecheck + build Vite | PASS — 97 módulos |
 | Backend tests con `backend_api/.venv` | No ejecutable: el entorno no contiene `pytest` |
 | Suite ML | En ejecución al registrar este inventario |
-

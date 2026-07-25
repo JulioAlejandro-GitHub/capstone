@@ -38,7 +38,7 @@ reducción corresponde exclusivamente al commit de limpieza.
 
 | Archivo eliminado | Motivo | Evidencia | Reemplazo actual | Validación |
 |---|---|---|---|---|
-| `frontend/src/components/reports/RunPromotionAction.tsx` | Implementación anterior de la promoción desde tarjeta TRAIN | Sin importadores, ruta, lazy import, configuración, test ni consumidor; las únicas referencias externas eran informes históricos | `RunSummaryRow.tsx`, `Stage2AvailabilityAction.tsx`, `Stage2ReleaseDetail.tsx` | 58/58 tests frontend, typecheck y build Vite; búsqueda global sin referencias operativas |
+| `frontend/src/components/reports/RunPromotionAction.tsx` | Implementación anterior de la promoción desde tarjeta TRAIN | Sin importadores, ruta, lazy import, configuración, test ni consumidor; las únicas referencias externas eran informes históricos | `RunSummaryRow.tsx`, `Stage2ReleaseDetail.tsx` | 58/58 tests frontend, typecheck y build Vite; búsqueda global sin referencias operativas |
 
 Las dos menciones documentales históricas se corrigieron para distinguir el
 estado de aquella etapa del flujo vigente.
@@ -141,4 +141,3 @@ datos: la base temporal de validación fue eliminada.
 
 El commit que incorpora este informe se identifica en el historial de la rama,
 porque un commit no puede incluir de forma estable su propio hash.
-
