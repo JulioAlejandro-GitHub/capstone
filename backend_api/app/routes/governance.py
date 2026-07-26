@@ -3,10 +3,11 @@ import sys
 from pathlib import Path
 from uuid import UUID
 from contextlib import contextmanager
-from fastapi import APIRouter,Header,HTTPException,Query
+from fastapi import APIRouter,Depends,Header,HTTPException,Query
 from pydantic import BaseModel,ConfigDict
 from app.db import fetch_all,fetch_one,get_engine,resolve_datasource
 from app.services.serialization import row_to_dict,rows_to_list
+from app.security import Permission,require_permission
 
 CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))
 from src.malaria_dl.governance.services.deployment_service import ModelDeploymentService
@@ -164,7 +165,8 @@ def stage2_release_status(training_run_id:str,datasource:str|None=Query("malaria
 def model_version_stage2_status(model_version_id:str,datasource:str|None=Query("malaria")):
     return safe(lambda:stage2_publication_service(datasource).status(uid(model_version_id)))
 
-@router.post("/model-versions/{model_version_id}/stage2-publications")
+@router.post("/model-versions/{model_version_id}/stage2-publications",
+             dependencies=[Depends(require_permission(Permission.MODELS_PUBLISH))])
 def publish_stage2_model(
     model_version_id:str,body:Stage2PublicationRequest,
     datasource:str|None=Query("malaria"),
@@ -174,7 +176,8 @@ def publish_stage2_model(
       uid(model_version_id),body.actor,body.reason,request_id,
     ))
 
-@router.post("/stage2-publications/{publication_id}/deactivate")
+@router.post("/stage2-publications/{publication_id}/deactivate",
+             dependencies=[Depends(require_permission(Permission.MODELS_DEACTIVATE))])
 def deactivate_stage2_publication(
     publication_id:str,body:Stage2PublicationRequest,
     datasource:str|None=Query("malaria"),
@@ -188,7 +191,8 @@ def deactivate_stage2_publication(
 def stage2_package_preview(training_run_id:str,datasource:str|None=Query("malaria")):
     return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
 
-@router.post("/training-runs/{training_run_id}/enable-stage2")
+@router.post("/training-runs/{training_run_id}/enable-stage2",
+             dependencies=[Depends(require_permission(Permission.MODELS_SET_DEFAULT))])
 def enable_stage2(training_run_id:str,body:Stage2EnableRequest,datasource:str|None=Query("malaria")):
     return safe(lambda:stage2_service(datasource).enable(
       uid(training_run_id),actor=body.actor,reason=body.reason,

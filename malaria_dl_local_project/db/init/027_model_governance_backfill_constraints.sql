@@ -21,7 +21,8 @@ BEGIN
                     THEN COALESCE(r.keras_version, r.tensorflow_version)
                 ELSE COALESCE(r.tensorflow_version, r.keras_version)
             END AS observed_framework_version,
-            COUNT(*) OVER (PARTITION BY mv.id) AS candidate_count
+            COUNT(*) OVER (PARTITION BY mv.id) AS candidate_count,
+            COUNT(*) OVER (PARTITION BY a.id) AS version_candidate_count
         FROM model_versions mv
         JOIN artifacts a
           ON a.run_id = mv.training_run_id
@@ -50,6 +51,11 @@ BEGIN
         JOIN model_versions mv
           ON mv.id = candidates.model_version_id
         WHERE candidates.candidate_count = 1
+          AND candidates.version_candidate_count = 1
+          -- El backfill solo completa filas legacy. Una versión que ya pasó a
+          -- candidate (o a un estado posterior) está gobernada y su payload es
+          -- deliberadamente inmutable, incluso al reintentar esta migración.
+          AND mv.status = 'discovered'
           AND (
               mv.checkpoint_artifact_id IS NULL
               OR mv.checkpoint_artifact_id = candidates.checkpoint_artifact_id

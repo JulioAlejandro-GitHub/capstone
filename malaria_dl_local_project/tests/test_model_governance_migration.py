@@ -144,6 +144,17 @@ class ModelGovernanceMigrationContractTests(unittest.TestCase):
         self.assertIn("model_versions_training_run_id_fkey", final_sql)
         self.assertIn("ON DELETE RESTRICT", final_sql)
 
+    def test_backfill_only_mutates_legacy_discovered_versions(self):
+        sql = self.sql_by_name[
+            "027_model_governance_backfill_constraints.sql"
+        ]
+        self.assertIn("AND mv.status = 'discovered'", sql)
+        self.assertIn(
+            "COUNT(*) OVER (PARTITION BY a.id) AS version_candidate_count",
+            sql,
+        )
+        self.assertIn("AND candidates.version_candidate_count = 1", sql)
+
     def test_runner_supports_functions_comments_and_migration_checksums(self):
         sql = """
         -- un punto y coma en comentario ; no divide

@@ -8,12 +8,11 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 
 from src.malaria_dl.common.paths import PROJECT_ROOT
-DEFAULT_DATABASE_URL = "postgresql+psycopg://postgres:postgres@localhost:5432/malaria_experiments"
+DEFAULT_DATABASE_URL = "postgresql+psycopg://capstone_local:local-only@localhost:55432/capstone_local"
 
 
 def load_environment():
     load_dotenv(PROJECT_ROOT / ".env")
-    load_dotenv(PROJECT_ROOT / ".env.example")
 
 
 def normalize_database_url(database_url):
@@ -29,11 +28,13 @@ def get_database_url():
     if database_url:
         return normalize_database_url(database_url)
 
-    host = os.getenv("DB_HOST", "localhost")
-    port = os.getenv("DB_PORT", "5432")
-    name = os.getenv("DB_NAME", "malaria_experiments")
-    user = os.getenv("DB_USER", "postgres")
-    password = os.getenv("DB_PASSWORD", "postgres")
+    if os.getenv("APP_ENV", "local") != "local":
+        raise RuntimeError("DATABASE_URL es obligatoria fuera del entorno local")
+    host = os.getenv("DATABASE_HOST", os.getenv("DB_HOST", "localhost"))
+    port = os.getenv("DATABASE_PORT", os.getenv("DB_PORT", "55432"))
+    name = os.getenv("DATABASE_NAME", os.getenv("DB_NAME", "capstone_local"))
+    user = os.getenv("DATABASE_USER", os.getenv("DB_USER", "capstone_local"))
+    password = os.getenv("DATABASE_PASSWORD", os.getenv("DB_PASSWORD", "local-only"))
     return f"postgresql+psycopg://{user}:{password}@{host}:{port}/{name}"
 
 
@@ -55,10 +56,8 @@ def get_connection():
     except OperationalError as exc:
         original_error = getattr(exc, "orig", exc)
         raise RuntimeError(
-            "No se pudo conectar a PostgreSQL local. Verifica que PostgreSQL 17.9 "
-            "esté ejecutándose en localhost, que la base malaria_experiments exista "
-            "y que las credenciales de .env sean correctas. Para crear la base: "
-            "createdb -h localhost -p 5432 -U postgres malaria_experiments. "
+            "No se pudo conectar al PostgreSQL configurado. Verifica DATABASE_URL "
+            "y usa el entorno efímero documentado para pruebas. "
             f"Detalle original: {original_error}"
         ) from exc
     except SQLAlchemyError as exc:

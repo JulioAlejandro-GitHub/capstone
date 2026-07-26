@@ -9,12 +9,12 @@ Estimación relativa: XS, S, M, L, XL. No representa horas ni fechas.
 |E0|Decisión cerrada|Cola PostgreSQL, polling y recuperación|Crítica|M|—|Aprobado: SKIP LOCKED, lease, tres intentos|ADR-001/006/008|
 |E0|Decisión cerrada|StorageProvider e inmutabilidad|Crítica|M|—|Aprobado: LocalStorageProvider|ADR-003|
 |E0|Spike|Licencia/contrato RBCNet y NIH/NLM|Alta|M|—|Uso permitido y formatos confirmados|Nota de evidencia primaria|
-|E1 Fundación|Tarea|Baseline Alembic en migración 029|Alta|L|E0|Up en BD efímera sin reescribir historia|Migration test|
-|E1|Tarea|Settings tipados compartidos y perfiles local/test/demo|Alta|M|E0|Backend/ML resuelven misma BD sin defaults secretos|Config tests|
-|E1|Historia|Autenticación académica y RBAC|Crítica|XL|E0|Viewer/analyst/expert/publisher/admin aplicados|API auth matrix|
-|E1|Tarea|JSON logging + correlation propagation|Alta|M|Settings|request→job→run correlacionable|Log fixture|
-|E1|Tarea|Docker/Compose API, worker, frontend y PostgreSQL|Alta|L|ADR cola|Health reproducible|Compose smoke|
-|E1|Tarea|CI lint/type/test/build/E2E efímero|Alta|L|Docker/Alembic|PR gate sin BD del usuario|Workflow run|
+|E1 Fundación|Tarea implementada|Baseline Alembic en migración 029|Alta|L|E0|Up en BD efímera sin reescribir historia|Baseline + adoption verifier|
+|E1|Tarea implementada|Settings validados y perfiles local/test/demo|Alta|M|E0|Sin defaults a DB personal|Config tests|
+|E1|Historia parcial|Autenticación académica y RBAC|Crítica|XL|E0|Cinco roles, JWT y guards; auditoría completa diferida|API auth matrix|
+|E1|Tarea implementada|JSON logging + correlation propagation|Alta|M|Settings|Request correlacionable|Log fixture|
+|E1|Tarea implementada|Docker/Compose API y PostgreSQL|Alta|L|ADR cola|Health reproducible; worker no creado por alcance|Compose smoke|
+|E1|Tarea implementada|CI test/build/Alembic/Docker/ML rápido|Alta|L|Docker/Alembic|PR gate sin BD del usuario|Workflow|
 |E2 Dominio|Historia|Subjects pseudonimizados, samples, slides|Crítica|L|Alembic/auth|Constraints y audit, sin PII|Migration/API tests|
 |E2|Historia|Lab, microscope, camera, capture session|Alta|M|samples|Snapshots de captura|Schema tests|
 |E2|Historia|Full smear images y relación 1:N|Crítica|L|subjects/storage ADR|Original identity estable|Migration tests|

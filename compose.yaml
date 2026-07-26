@@ -1,0 +1,31 @@
+name: capstone-demo
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: capstone_demo
+      POSTGRES_USER: capstone_demo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U capstone_demo -d capstone_demo"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes: [postgres-data:/var/lib/postgresql/data]
+  backend:
+    build: {context: ., dockerfile: backend_api/Dockerfile}
+    environment:
+      APP_ENV: demo
+      DATABASE_URL: postgresql://capstone_demo:${POSTGRES_PASSWORD:?required}@postgres:5432/capstone_demo
+      AUTH_MODE: local_jwt
+      JWT_SECRET: ${JWT_SECRET:?required}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      STORAGE_ROOT: /app/var/storage
+      ARTIFACTS_ROOT: /app/var/artifacts
+    depends_on:
+      postgres: {condition: service_healthy}
+    ports: ["8000:8000"]
+    volumes: [storage:/app/var]
+volumes:
+  postgres-data:
+  storage:

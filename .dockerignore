@@ -1,0 +1,14 @@
+.git
+**/.venv
+**/__pycache__
+**/.pytest_cache
+frontend/node_modules
+frontend/dist
+data
+**/outputs
+**/backups
+**/.env
+*.h5
+*.keras
+*.ckpt
+*.tfrecord*

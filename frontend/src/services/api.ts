@@ -37,6 +37,8 @@ import type {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 export const DEFAULT_DATASOURCE = import.meta.env.VITE_DEFAULT_DATASOURCE ?? 'malaria';
+let accessToken: string | null = null;
+export function setAccessToken(token: string | null) { accessToken = token; }
 
 type QueryValue = string | number | boolean | undefined;
 type RequestOptions = {
@@ -68,7 +70,10 @@ async function request<T>(
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), options.timeoutMs ?? 15000);
   try {
-    const response = await fetch(url, { ...options.init, signal: controller.signal });
+    const headers = new Headers(options.init?.headers);
+    if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+    const response = await fetch(url, { ...options.init, headers, signal: controller.signal });
+    if (response.status === 401) accessToken = null;
     if (!response.ok) {
       const message = await response.text();
       throw new Error(`${response.status} ${response.statusText}: ${message}`);
@@ -83,6 +88,18 @@ async function request<T>(
     window.clearTimeout(timeout);
   }
 }
+
+export const authApi = {
+  login(username: string, password: string) {
+    return request<{ access_token: string }>('/api/v1/auth/login', {}, {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }) },
+    });
+  },
+  me() {
+    return request<{ id: string; username: string; roles: string[]; permissions: string[] }>('/api/v1/auth/me');
+  },
+};
 
 function withDatasource(datasource: string) {
   return { datasource };

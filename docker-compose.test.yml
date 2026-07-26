@@ -1,0 +1,24 @@
+name: capstone-test
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: capstone-test-postgres
+    environment:
+      POSTGRES_DB: capstone_test
+      POSTGRES_USER: capstone_test
+      POSTGRES_PASSWORD: test-only-password
+    ports:
+      - "127.0.0.1:55433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U capstone_test -d capstone_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    tmpfs:
+      - /var/lib/postgresql/data
+    labels:
+      edu.uai.capstone.environment: test
+    networks: [capstone-test]
+networks:
+  capstone-test:
+    name: capstone-test

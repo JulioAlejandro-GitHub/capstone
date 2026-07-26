@@ -112,3 +112,10 @@ Mantener TRAIN/EVALUATE/EXPLAIN e inferencia actual; crear tablas especializadas
 13. Revisión, anotaciones, versionado y auditoría.
 14. Scientific Workbench.
 15. Reportes, agentes restringidos y validación E2E.
+
+## Estado Prompt 2
+
+La fundación local/test/demo, PostgreSQL 17 efímero, baseline Alembic, auth/RBAC inicial,
+correlation/logging, health/readiness, Docker y CI quedaron implementados. Gate G1 queda
+condicionado a ejecutar exitosamente la suite de integración Docker en el entorno receptor.
+Prompt 3 puede depender de la revisión `20260726_01`; no debe alterar 001–029.

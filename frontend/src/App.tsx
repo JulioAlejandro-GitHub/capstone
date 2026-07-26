@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { Layout } from './components/Layout';
+import { ProtectedRoute } from './auth';
 import { InvalidEntityId, NotFound, RouteEffects } from './components/RouteState';
 import { ClinicalEvaluation } from './pages/ClinicalEvaluation';
 import { Dashboard } from './pages/Dashboard';
@@ -17,6 +18,7 @@ import { Stage2ReleaseDetail } from './pages/Stage2ReleaseDetail';
 import { Runs } from './pages/Runs';
 import { Traceability } from './pages/Traceability';
 import { UploadedPredictions } from './pages/UploadedPredictions';
+import { Login } from './pages/Login';
 import { isValidPublicId, routes, withAllowedQuery } from './router';
 import { DEFAULT_DATASOURCE, api } from './services/api';
 import type { Datasource } from './types/api';
@@ -68,8 +70,9 @@ function App() {
   return <>
     <RouteEffects />
     <Routes>
-      <Route path="/" element={<Navigate replace to={withAllowedQuery(routes.summary, { datasource })} />} />
-      <Route element={<Layout datasource={datasource} datasources={datasources} onDatasourceChange={selectDatasource} />}>
+      <Route path="/login" element={<Login />} />
+      <Route element={<ProtectedRoute><Layout datasource={datasource} datasources={datasources} onDatasourceChange={selectDatasource} /></ProtectedRoute>}>
+        <Route path="/" element={<Navigate replace to={withAllowedQuery(routes.summary, { datasource })} />} />
         <Route path={routes.summary} element={<Dashboard {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
         <Route path={routes.runs} element={<Runs {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
         <Route path={`${routes.runs}/:trainingRunId`} element={<RunDetailRoute datasource={datasource} go={go} />} />

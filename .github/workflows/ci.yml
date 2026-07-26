@@ -1,0 +1,81 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  docs-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: git diff --check
+      - run: test -f .env.example && test -f docs/engineering/configuration.md
+  backend-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -r backend_api/requirements.txt
+      - run: PYTHONPATH=backend_api pytest backend_api/tests/test_foundation_config.py backend_api/tests/test_foundation_http.py
+  backend-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: capstone_test
+          POSTGRES_USER: capstone_test
+          POSTGRES_PASSWORD: test-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U capstone_test -d capstone_test"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      APP_ENV: test
+      DATABASE_URL: postgresql://capstone_test:test-only-password@localhost:5432/capstone_test
+      TEST_DATABASE_URL: postgresql://capstone_test:test-only-password@localhost:5432/capstone_test
+      TEST_DATABASE_ALLOW_RESET: "true"
+      JWT_SECRET: test-only-secret-at-least-thirty-two-characters
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -r backend_api/requirements.txt
+      - run: PYTHONPATH=malaria_dl_local_project:backend_api python malaria_dl_local_project/scripts/init_db.py
+      - run: alembic stamp 20260726_00 && alembic upgrade head && alembic current && alembic heads
+      - run: python scripts/db/verify_alembic_adoption.py
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: "22", cache: npm, cache-dependency-path: frontend/package-lock.json}
+      - run: npm ci
+        working-directory: frontend
+      - run: npm test
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+  ml-fast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -r malaria_dl_local_project/requirements.txt
+      - run: PYTHONPATH=malaria_dl_local_project python -m pytest malaria_dl_local_project/tests/test_label_mapping.py malaria_dl_local_project/tests/test_decision.py malaria_dl_local_project/tests/test_image_quality.py
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f docker-compose.test.yml config
+      - run: docker build -f backend_api/Dockerfile .
