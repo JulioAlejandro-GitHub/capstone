@@ -1,0 +1,15 @@
+httpx2 es un error de tipeo y no debe ser considerado;
+
+PostgreSQL queue: aprobado.
+
+Como obserbacion general es:
+el flujo de "etapa 2" que corresponde al analisis de una imagen de frotis completo, debe ser:
+
+- se sibe la imagen.
+- se analiza la calidad.
+- no pasa la calidad, se avisa a frontend usuario y termian el proceso.
+- si pasa, se envia a reconocimineto para recorte de celulas.
+- cada celula recortada se muestra en frontend con su box.
+- cada celula es enviada a reconocimineto individual para determinar su tipo.
+- se retorna el reporte con el tipo de cada celula y una imagen explicada de cada celula.
+- al finalizar todas las celulas, se entrega un resultado cuantitativo y el resultado de la evaluacion deep learning del o los modelos que hicieron la evaluacion.

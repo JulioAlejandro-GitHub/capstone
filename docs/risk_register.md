@@ -4,19 +4,18 @@ Escala cualitativa: probabilidad/impacto Bajo, Medio, Alto; nivel combina ambos.
 
 |ID|Categoría|Riesgo y evidencia actual|Causa|Consecuencia|Prob.|Impacto|Nivel|Mitigación|Contingencia|Componente|Prompt|Estado|
 |---|---|---|---|---|:---:|:---:|:---:|---|---|---|---|---|
-|R01|Arquitectura|Dos fuentes “Productivo E2”: deployments y publications no acopladas|Evolución paralela|Modelo visible no inferible o viceversa|Alta|Alto|Crítico|ADR y servicio transaccional/default único|Bloquear inferencia ante divergencia|Gobierno|P1|Abierto|
-|R02|Operación|Endpoint de job ejecuta inferencia síncrona|No cola/worker|Timeout, pérdida por reinicio|Alta|Alto|Crítico|Worker, lease, retry, idempotencia|Deshabilitar lotes grandes hasta P6|Jobs|P6|Abierto|
+|R01|Arquitectura|Implementación actual aún no acopla catálogo y default|Evolución paralela histórica|Modelo visible no inferible hasta implementar ADR|Media|Alto|Alto|ADR-002 aprobado; FK/servicio transaccional/default único|Bloquear inferencia ante divergencia|Gobierno|P3/P10|Controlado por diseño|
+|R02|Operación|Endpoint actual ejecuta inferencia síncrona|No worker implementado todavía|Timeout, pérdida por reinicio|Alta|Alto|Crítico|ADR-001/006: cola PostgreSQL, worker, lease, retry, idempotencia|No usar endpoint legacy para frotis|Jobs|P6|Diseño cerrado; implementación pendiente|
 |R03|Ciencia|Clasificar imagen completa con clasificador celular|Smoke reutiliza `dataset_split_images`|Resultado inválido interpretado como científico|Media|Alto|Crítico|Scope explícito y detector/crops antes de agregado|Marcar sólo smoke técnico|Inference|P1/P10|Abierto|
 |R04|Datos|Split actual carece de patient_id|TFDS celular|Leakage y métricas infladas|Alta|Alto|Crítico|Manifest/split por paciente|No publicar métricas E2 sin gate|Dataset|P7|Abierto|
 |R05|Seguridad|Writes sin auth/RBAC; actor viene del cliente|Sin middleware|Publicación/review no autorizada|Alta|Alto|Crítico|OIDC/local + RBAC + audit|Restringir bind/red local|Backend|P2|Abierto|
-|R06|Datos|Originales no tienen contrato global inmutable|Filesystem directo|Sobrescritura/pérdida de evidencia|Media|Alto|Crítico|StorageProvider write-once/checksum|Backup read-only y quarantine|Storage|P4|Abierto|
+|R06|Datos|Originales aún no tienen provider global|Filesystem directo actual|Sobrescritura/pérdida de evidencia|Media|Alto|Crítico|ADR-003 LocalStorageProvider write-once/checksum|Backup read-only y quarantine|Storage|P4|Diseño cerrado; implementación pendiente|
 |R07|Arquitectura|`predictions` mezcla legacy/image/cell/review|Reserva anticipada en 026|Acoplamiento y pérdida semántica|Alta|Alto|Crítico|Tablas especializadas + vistas|Congelar nuevas columnas|DB|P3|Abierto|
 |R08|Ciencia|QC warnings igualmente pasan|`passed = not fatal`|Imágenes deficientes llegan al detector|Alta|Alto|Crítico|Policy versionada y gate revisable|Warning visible; revisión manual|QC|P5|Abierto|
 |R09|Reproducibilidad|Paths físicos persistidos|Sin storage abstraction|Migración S3 rompe lineage|Alta|Medio|Alto|URI lógica/provider|Resolver paths históricos con adapter|Storage/artifacts|P4|Abierto|
 |R10|ML|No detector ni contrato coords|Frontera documental|Crops/boxes incompatibles|Alta|Alto|Crítico|CellDetector + coordinate ADR + fake|Annotation adapter como baseline|Detection|P8|Abierto|
 |R11|Datos|Formato/licencia RBCNet/NIH no verificados aquí|No descarga por alcance|Retraso o restricción de uso|Media|Alto|Alto|Spike con fuentes primarias|Detector alternativo/anotaciones|Dataset/detector|P1/P7|Abierto|
 |R12|Operación|Python ML 3.12 y backend 3.14 diferentes|Dos venvs|Import/runtime incompatibles|Alta|Medio|Alto|Matriz soportada/contenedores|Separar worker ML de API|Infra|P2|Abierto|
-|R13|Calidad|Backend full suite no importa por `httpx2`|Dependency drift|Falsos verdes en validate|Alta|Medio|Alto|Lockfile y CI full discovery|Mantener test específico temporal|Tests|P2|Abierto|
 |R14|Auditoría|Correlation ID parcial|Headers sólo algunas rutas|No reconstruir acción→artefacto|Alta|Alto|Crítico|Middleware y propagación|Consulta por run/job mientras tanto|Observability|P2|Abierto|
 |R15|Seguridad|Upload sin límite/MIME fuerte|Helper centrado en path|DoS/image bomb/contenido inválido|Media|Alto|Crítico|Streaming limits, decode sandbox, MIME|Quarantine y rechazo|Ingest|P4|Abierto|
 |R16|Operación|Sin Docker/CI/backups/restore|Entorno local|No reproducible; pérdida DB|Alta|Alto|Crítico|Compose, CI, backup runbook|Export manual antes de demo|Infra|P2/P15|Abierto|

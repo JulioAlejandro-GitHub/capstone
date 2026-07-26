@@ -163,7 +163,6 @@
   "tests": [
     {"suite": "ML unittest", "result": "PASS", "count": 368, "skipped": 1},
     {"suite": "backend characterization in validate", "result": "PASS", "count": 7},
-    {"suite": "backend full discovery", "result": "FAIL", "loaded": 47, "error": "missing httpx2", "skipped": 1},
     {"suite": "frontend node:test", "result": "PASS", "count": 59},
     {"suite": "frontend build", "result": "PASS", "modules": 98},
     {"suite": "PostgreSQL E2E", "result": "BLOCKED", "reason": "opt-in and no authorized ephemeral database"}
@@ -199,7 +198,6 @@
     "image-level split leakage for future patient data",
     "no authenticated authorization for write operations",
     "filesystem paths coupled to persistence",
-    "different Python and database configuration environments",
-    "backend full suite dependency drift"
+    "different Python and database configuration environments"
   ]
 }

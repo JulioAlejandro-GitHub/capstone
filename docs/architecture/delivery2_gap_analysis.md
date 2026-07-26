@@ -24,7 +24,7 @@ Clasificación: A reutilizar sin cambios; B extender; C adaptar; D refactorizar;
 |18|Analysis jobs|P|Tabla `image_analysis_jobs`|Gobierno/E2E opt-in|No pipeline completo|D|Evolucionar + attempts/events|Crítico|3–7|Job por imagen, snapshot pipeline|P6|
 |19|Prioridad 1–100|N|Sin columna priority|Sin test|Scheduling|F|Constraint 1–100|Alto|18|Validación API/DB|P6|
 |20|Orden prioridad/creación|N|Índice status/created DESC|Sin test|Orden incorrecto|F|Índice/claim query|Alto|19|`priority DESC, created_at ASC`|P6|
-|21|Cola persistente|N|Sin broker/claim loop|Sin test|Ejecución|F|Dramatiq+Redis o PG queue|Crítico|18|Sobrevive reinicio|P2,6|
+|21|Cola persistente|N|Sin broker/claim loop|Sin test|Ejecución|F|Cola PostgreSQL aprobada por ADR-001|Crítico|18|Sobrevive reinicio|P2,6|
 |22|Worker|N|Sin proceso worker|Sin test|Ejecución|F|Worker separado|Crítico|21|Consume y heartbeat|P6|
 |23|Progreso|N|Sólo estados terminales|Sin test|Observabilidad|F|Etapas/%/events|Alto|18,22|Monótono y consultable|P6|
 |24|Reintentos|N|Sin attempt/max retries|Sin test|Resiliencia|F|Attempts/backoff|Alto|22|Retry acotado y auditado|P6|

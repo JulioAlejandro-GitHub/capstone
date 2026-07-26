@@ -4,18 +4,17 @@ Estimación relativa: XS, S, M, L, XL. No representa horas ni fechas.
 
 |Épica|Tipo|Ítem|Prioridad|Est.|Dependencias|Criterio de aceptación|Evidencia esperada|
 |---|---|---|---|:---:|---|---|---|
-|E0 Arquitectura|Decisión|ADR fuente de verdad Productivo Etapa 2/default/rollback|Crítica|M|—|Publicación y deployment sin estados contradictorios|ADR + state diagram + tests contrato|
-|E0|Decisión|ADR monolito modular, límites y lenguaje no diagnóstico|Crítica|S|—|Módulos y prohibiciones explícitos|ADR aprobado|
-|E0|Decisión|ADR cola/broker, polling y recuperación|Crítica|M|—|Tradeoffs y fallo/retry definidos|ADR + failure model|
-|E0|Decisión|ADR StorageProvider e inmutabilidad|Crítica|M|—|URI/checksum/retención definidos|ADR + interface|
+|E0 Arquitectura|Decisión cerrada|ADR fuente de verdad Productivo Etapa 2/default/rollback|Crítica|M|—|Aprobado: catálogo multi-modelo + default único|ADR-002 + baseline v1.1|
+|E0|Decisión cerrada|ADR monolito modular, límites y lenguaje no diagnóstico|Crítica|S|—|Aprobado|ADR-015 + baseline v1.1|
+|E0|Decisión cerrada|Cola PostgreSQL, polling y recuperación|Crítica|M|—|Aprobado: SKIP LOCKED, lease, tres intentos|ADR-001/006/008|
+|E0|Decisión cerrada|StorageProvider e inmutabilidad|Crítica|M|—|Aprobado: LocalStorageProvider|ADR-003|
 |E0|Spike|Licencia/contrato RBCNet y NIH/NLM|Alta|M|—|Uso permitido y formatos confirmados|Nota de evidencia primaria|
 |E1 Fundación|Tarea|Baseline Alembic en migración 029|Alta|L|E0|Up en BD efímera sin reescribir historia|Migration test|
 |E1|Tarea|Settings tipados compartidos y perfiles local/test/demo|Alta|M|E0|Backend/ML resuelven misma BD sin defaults secretos|Config tests|
 |E1|Historia|Autenticación académica y RBAC|Crítica|XL|E0|Viewer/analyst/expert/publisher/admin aplicados|API auth matrix|
 |E1|Tarea|JSON logging + correlation propagation|Alta|M|Settings|request→job→run correlacionable|Log fixture|
-|E1|Tarea|Docker/Compose API, worker, frontend, PG, Redis|Alta|L|ADR cola|Health reproducible|Compose smoke|
+|E1|Tarea|Docker/Compose API, worker, frontend y PostgreSQL|Alta|L|ADR cola|Health reproducible|Compose smoke|
 |E1|Tarea|CI lint/type/test/build/E2E efímero|Alta|L|Docker/Alembic|PR gate sin BD del usuario|Workflow run|
-|E1|Deuda|Alinear dependencia backend `httpx2`|Alta|XS|—|Full discovery importa sin error|Suite log|
 |E2 Dominio|Historia|Subjects pseudonimizados, samples, slides|Crítica|L|Alembic/auth|Constraints y audit, sin PII|Migration/API tests|
 |E2|Historia|Lab, microscope, camera, capture session|Alta|M|samples|Snapshots de captura|Schema tests|
 |E2|Historia|Full smear images y relación 1:N|Crítica|L|subjects/storage ADR|Original identity estable|Migration tests|
@@ -61,6 +60,6 @@ Estimación relativa: XS, S, M, L, XL. No representa horas ni fechas.
 |E14 Validación|Tarea|Métricas clasificador/detector/E2E|Crítica|XL|Pipeline|Protocolos por paciente aprobados|Evaluation package|
 |E14 Operación|Tarea|Readiness, backup/restore y runbook|Alta|L|Infra|Restore drill y degradación documentada|Runbook log|
 
-## Decisiones pendientes
+## Decisiones diferidas no estructurales
 
-Además de los ADR de E0: reglas científicas de QC, agregado y OOD; identidad de paciente suministrada por NIH; política de múltiples modelos activos; retención; criterios métricos del detector; selección automática de XAI; firma de revisión; contenido y destinatario del reporte.
+Los ADR de E0 están cerrados. Se difieren valores numéricos QC, lease/backoff exactos, licencia/adapter RBCNet, thresholds de confianza/OOD, retención temporal y motor de PDF hasta sus prompts y evidencia de datos/profiling. La política multimodelo, XAI, review y report ya tiene contrato estructural.

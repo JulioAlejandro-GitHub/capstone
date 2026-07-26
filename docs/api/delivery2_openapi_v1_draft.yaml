@@ -1,0 +1,630 @@
+openapi: 3.1.0
+info:
+  title: Capstone Etapa 2 API Draft
+  version: 1.1.0-draft
+  description: >
+    API planificada para una plataforma científica experimental de apoyo al
+    análisis de imágenes microscópicas. No constituye una API diagnóstica.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+tags:
+  - {name: Subjects}
+  - {name: Samples}
+  - {name: Images}
+  - {name: Jobs}
+  - {name: Cells}
+  - {name: Results}
+  - {name: Reviews}
+  - {name: Reports}
+  - {name: Models}
+paths:
+  /subjects:
+    post:
+      tags: [Subjects]
+      summary: Crear sujeto pseudonimizado
+      operationId: createSubject
+      x-implementation-status: planned
+      x-required-permissions: ['subject:create']
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SubjectCreate'}
+            example: {pseudonym: SUBJECT-001}
+      responses:
+        '201': {description: Creado, content: {application/json: {schema: {$ref: '#/components/schemas/IdResponse'}}}}
+        default: {$ref: '#/components/responses/Error'}
+    get:
+      tags: [Subjects]
+      summary: Listar sujetos
+      operationId: listSubjects
+      x-implementation-status: planned
+      x-required-permissions: ['subject:read']
+      parameters: [{$ref: '#/components/parameters/Limit'}, {$ref: '#/components/parameters/Cursor'}]
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+  /samples:
+    post:
+      tags: [Samples]
+      summary: Crear muestra
+      operationId: createSample
+      x-implementation-status: planned
+      x-required-permissions: ['sample:create']
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SampleCreate'}
+            example: {subject_id: 00000000-0000-4000-8000-000000000001}
+      responses:
+        '201': {description: Creada, content: {application/json: {schema: {$ref: '#/components/schemas/IdResponse'}}}}
+        default: {$ref: '#/components/responses/Error'}
+    get:
+      tags: [Samples]
+      summary: Listar muestras
+      operationId: listSamples
+      x-implementation-status: planned
+      x-required-permissions: ['sample:read']
+      parameters:
+        - {$ref: '#/components/parameters/Limit'}
+        - {$ref: '#/components/parameters/Cursor'}
+        - {name: subject_id, in: query, schema: {type: string, format: uuid}}
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+  /samples/{sample_id}:
+    get:
+      tags: [Samples]
+      summary: Obtener muestra
+      operationId: getSample
+      x-implementation-status: planned
+      x-required-permissions: ['sample:read']
+      parameters: [{$ref: '#/components/parameters/SampleId'}]
+      responses:
+        '200': {description: Muestra, content: {application/json: {schema: {type: object}}}}
+        default: {$ref: '#/components/responses/Error'}
+  /samples/{sample_id}/images:
+    post:
+      tags: [Images]
+      summary: Cargar imagen completa y ejecutar calidad
+      operationId: uploadImage
+      x-implementation-status: planned
+      x-required-permissions: ['image:upload', 'quality:execute']
+      parameters: [{$ref: '#/components/parameters/SampleId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [file, metadata]
+              properties:
+                file: {type: string, format: binary}
+                metadata: {$ref: '../contracts/image-upload.schema.json'}
+      responses:
+        '201': {description: Imagen almacenada y assessment aceptado, content: {application/json: {schema: {type: object}}}}
+        '422':
+          description: Imagen conservada pero rechazada por calidad
+          content: {application/json: {schema: {$ref: '../contracts/error.schema.json'}}}
+        default: {$ref: '#/components/responses/Error'}
+  /images/{image_id}:
+    get:
+      tags: [Images]
+      summary: Obtener metadata de imagen
+      operationId: getImage
+      x-implementation-status: planned
+      x-required-permissions: ['image:read']
+      parameters: [{$ref: '#/components/parameters/ImageId'}]
+      responses:
+        '200': {description: Imagen, content: {application/json: {schema: {type: object}}}}
+        default: {$ref: '#/components/responses/Error'}
+  /images/{image_id}/content:
+    get:
+      tags: [Images]
+      summary: Obtener contenido autorizado
+      operationId: getImageContent
+      x-implementation-status: planned
+      x-required-permissions: ['image:read']
+      parameters: [{$ref: '#/components/parameters/ImageId'}]
+      responses:
+        '302': {description: Referencia opaca temporal, headers: {Location: {schema: {type: string}}}}
+        '200': {description: Stream de imagen, content: {image/png: {}, image/jpeg: {}, image/tiff: {}}}
+        default: {$ref: '#/components/responses/Error'}
+  /images/{image_id}/quality-assessments:
+    post:
+      tags: [Images]
+      summary: Crear nueva evaluación de calidad
+      operationId: createQualityAssessment
+      x-implementation-status: planned
+      x-required-permissions: ['quality:execute']
+      parameters: [{$ref: '#/components/parameters/ImageId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [quality_policy_version_id]
+              properties:
+                quality_policy_version_id: {type: string, format: uuid}
+      responses:
+        '201': {description: Assessment, content: {application/json: {schema: {$ref: '../contracts/quality-assessment.schema.json'}}}}
+        default: {$ref: '#/components/responses/Error'}
+    get:
+      tags: [Images]
+      summary: Listar evaluaciones de calidad
+      operationId: listQualityAssessments
+      x-implementation-status: planned
+      x-required-permissions: ['quality:read']
+      parameters: [{$ref: '#/components/parameters/ImageId'}, {$ref: '#/components/parameters/Limit'}, {$ref: '#/components/parameters/Cursor'}]
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs:
+    post:
+      tags: [Jobs]
+      summary: Crear y encolar análisis
+      operationId: createAnalysisJob
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:create', 'model:select']
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AnalysisJobCreate'}
+            example:
+              image_id: 00000000-0000-4000-8000-000000000001
+              pipeline_version_id: 00000000-0000-4000-8000-000000000002
+              priority: 50
+              model_publication_ids: []
+      responses:
+        '202': {description: Encolado, content: {application/json: {schema: {$ref: '../contracts/analysis-job.schema.json'}}}}
+        default: {$ref: '#/components/responses/Error'}
+    get:
+      tags: [Jobs]
+      summary: Listar jobs
+      operationId: listAnalysisJobs
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters:
+        - {$ref: '#/components/parameters/Limit'}
+        - {$ref: '#/components/parameters/Cursor'}
+        - {name: status, in: query, schema: {type: string}}
+        - {name: image_id, in: query, schema: {type: string, format: uuid}}
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}:
+    get:
+      tags: [Jobs]
+      summary: Consultar progreso
+      operationId: getAnalysisJob
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters: [{$ref: '#/components/parameters/JobId'}]
+      responses:
+        '200': {description: Progreso, content: {application/json: {schema: {$ref: '../contracts/analysis-progress.schema.json'}}}}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/cancel:
+    post:
+      tags: [Jobs]
+      summary: Solicitar cancelación
+      operationId: cancelAnalysisJob
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:cancel']
+      parameters: [{$ref: '#/components/parameters/JobId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {$ref: '#/components/requestBodies/Reason'}
+      responses:
+        '202': {description: Cancelling}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/retry:
+    post:
+      tags: [Jobs]
+      summary: Reintentar mediante nuevo intento o job
+      operationId: retryAnalysisJob
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:retry']
+      parameters: [{$ref: '#/components/parameters/JobId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {$ref: '#/components/requestBodies/Reason'}
+      responses:
+        '202': {description: Retry programado}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/priority:
+    patch:
+      tags: [Jobs]
+      summary: Cambiar prioridad
+      operationId: updateAnalysisJobPriority
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:priority']
+      parameters: [{$ref: '#/components/parameters/JobId'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [priority, reason]
+              properties:
+                priority: {type: integer, minimum: 1, maximum: 100}
+                reason: {type: string, minLength: 1}
+      responses:
+        '200': {description: Actualizado}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/events:
+    get:
+      tags: [Jobs]
+      summary: Consultar eventos
+      operationId: listAnalysisJobEvents
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters: [{$ref: '#/components/parameters/JobId'}, {$ref: '#/components/parameters/Limit'}, {$ref: '#/components/parameters/Cursor'}]
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/cells:
+    get:
+      tags: [Cells]
+      summary: Consultar células progresivamente
+      operationId: listAnalysisCells
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters:
+        - {$ref: '#/components/parameters/JobId'}
+        - {$ref: '#/components/parameters/Limit'}
+        - {$ref: '#/components/parameters/Cursor'}
+        - {name: updated_after, in: query, schema: {type: string, format: date-time}}
+        - {name: status, in: query, schema: {type: string}}
+        - {name: model_version_id, in: query, schema: {type: string, format: uuid}}
+        - {name: sort, in: query, schema: {type: string, enum: [updated_at, probability, cell_index]}}
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+  /images/{image_id}/detections:
+    get:
+      tags: [Cells]
+      summary: Listar detecciones
+      operationId: listImageDetections
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters: [{$ref: '#/components/parameters/ImageId'}, {$ref: '#/components/parameters/Limit'}, {$ref: '#/components/parameters/Cursor'}]
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+  /detections/{detection_id}:
+    get:
+      tags: [Cells]
+      summary: Obtener detección
+      operationId: getDetection
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters: [{$ref: '#/components/parameters/DetectionId'}]
+      responses:
+        '200': {description: Detección, content: {application/json: {schema: {$ref: '../contracts/detection.schema.json'}}}}
+        default: {$ref: '#/components/responses/Error'}
+  /cell-crops/{crop_id}:
+    get:
+      tags: [Cells]
+      summary: Obtener crop
+      operationId: getCellCrop
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters: [{$ref: '#/components/parameters/CropId'}]
+      responses:
+        '200': {description: Crop, content: {application/json: {schema: {$ref: '../contracts/crop.schema.json'}}}}
+        default: {$ref: '#/components/responses/Error'}
+  /cell-predictions/{prediction_id}:
+    get:
+      tags: [Cells]
+      summary: Obtener predicción
+      operationId: getCellPrediction
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters: [{$ref: '#/components/parameters/PredictionId'}]
+      responses:
+        '200': {description: Predicción, content: {application/json: {schema: {$ref: '../contracts/cell-prediction.schema.json'}}}}
+        default: {$ref: '#/components/responses/Error'}
+  /cell-predictions/{prediction_id}/explanations:
+    get:
+      tags: [Cells]
+      summary: Listar explicaciones
+      operationId: listPredictionExplanations
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters: [{$ref: '#/components/parameters/PredictionId'}]
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+    post:
+      tags: [Cells]
+      summary: Solicitar explicación
+      operationId: requestPredictionExplanation
+      x-implementation-status: planned
+      x-required-permissions: ['explanation:create']
+      parameters: [{$ref: '#/components/parameters/PredictionId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [method]
+              properties:
+                method: {type: string, enum: [gradcam, lime, shap]}
+                parameters: {type: object}
+      responses:
+        '202': {description: Solicitud aceptada}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/result:
+    get:
+      tags: [Results]
+      summary: Resultado experimental agregado
+      operationId: getAnalysisResult
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters: [{$ref: '#/components/parameters/JobId'}]
+      responses:
+        '200': {description: Resultado, content: {application/json: {schema: {$ref: '../contracts/image-result.schema.json'}}}}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/model-results:
+    get:
+      tags: [Results]
+      summary: Resultados separados por modelo
+      operationId: getModelResults
+      x-implementation-status: planned
+      x-required-permissions: ['analysis:read']
+      parameters: [{$ref: '#/components/parameters/JobId'}]
+      responses:
+        '200': {description: Model results, content: {application/json: {schema: {type: array, items: {$ref: '../contracts/model-result.schema.json'}}}}}
+        default: {$ref: '#/components/responses/Error'}
+  /cell-predictions/{prediction_id}/reviews:
+    post:
+      tags: [Reviews]
+      summary: Crear revisión celular
+      operationId: createCellReview
+      x-implementation-status: planned
+      x-required-permissions: ['review:cell']
+      parameters: [{$ref: '#/components/parameters/PredictionId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '../contracts/cell-review.schema.json'}}}
+      responses:
+        '201': {description: Revisión creada}
+        default: {$ref: '#/components/responses/Error'}
+    get:
+      tags: [Reviews]
+      summary: Historial de revisión celular
+      operationId: listCellReviews
+      x-implementation-status: planned
+      x-required-permissions: ['review:read']
+      parameters: [{$ref: '#/components/parameters/PredictionId'}, {$ref: '#/components/parameters/Limit'}, {$ref: '#/components/parameters/Cursor'}]
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/reviews:
+    post:
+      tags: [Reviews]
+      summary: Crear revisión general
+      operationId: createImageReview
+      x-implementation-status: planned
+      x-required-permissions: ['review:image']
+      parameters: [{$ref: '#/components/parameters/JobId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '../contracts/image-review.schema.json'}}}
+      responses:
+        '201': {description: Revisión creada}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/annotations:
+    post:
+      tags: [Reviews]
+      summary: Crear anotación general
+      operationId: createAnalysisAnnotation
+      x-implementation-status: planned
+      x-required-permissions: ['review:annotate']
+      parameters: [{$ref: '#/components/parameters/JobId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [annotation_type, content]
+              properties:
+                annotation_type: {type: string}
+                content: {type: string, minLength: 1, maxLength: 4000}
+      responses:
+        '201': {description: Anotación creada}
+        default: {$ref: '#/components/responses/Error'}
+  /analysis-jobs/{analysis_job_id}/reports:
+    post:
+      tags: [Reports]
+      summary: Solicitar reporte versionado
+      operationId: createReport
+      x-implementation-status: planned
+      x-required-permissions: ['report:create']
+      parameters: [{$ref: '#/components/parameters/JobId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [format]
+              properties:
+                format: {type: string, enum: [json, html, pdf]}
+      responses:
+        '202': {description: Reporte solicitado}
+        default: {$ref: '#/components/responses/Error'}
+  /reports/{report_id}:
+    get:
+      tags: [Reports]
+      summary: Obtener metadata de reporte
+      operationId: getReport
+      x-implementation-status: planned
+      x-required-permissions: ['report:read']
+      parameters: [{$ref: '#/components/parameters/ReportId'}]
+      responses:
+        '200': {description: Reporte, content: {application/json: {schema: {type: object}}}}
+        default: {$ref: '#/components/responses/Error'}
+  /reports/{report_id}/content:
+    get:
+      tags: [Reports]
+      summary: Obtener contenido autorizado de reporte
+      operationId: getReportContent
+      x-implementation-status: planned
+      x-required-permissions: ['report:export']
+      parameters: [{$ref: '#/components/parameters/ReportId'}]
+      responses:
+        '302': {description: Referencia temporal opaca}
+        default: {$ref: '#/components/responses/Error'}
+  /stage2/models:
+    get:
+      tags: [Models]
+      summary: Modelos publicados activos
+      operationId: listStage2Models
+      x-implementation-status: planned
+      x-required-permissions: ['model:read']
+      parameters: [{$ref: '#/components/parameters/Limit'}, {$ref: '#/components/parameters/Cursor'}]
+      responses:
+        '200': {$ref: '#/components/responses/Page'}
+        default: {$ref: '#/components/responses/Error'}
+  /stage2/default-model:
+    get:
+      tags: [Models]
+      summary: Obtener modelo predeterminado
+      operationId: getStage2DefaultModel
+      x-implementation-status: planned
+      x-required-permissions: ['model:read']
+      responses:
+        '200': {description: Slot y publicación activa, content: {application/json: {schema: {type: object}}}}
+        default: {$ref: '#/components/responses/Error'}
+    put:
+      tags: [Models]
+      summary: Reasignar o desactivar modelo predeterminado
+      operationId: putStage2DefaultModel
+      x-implementation-status: planned
+      x-required-permissions: ['model:default:update']
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [reason]
+              properties:
+                stage2_publication_id: {type: [string, 'null'], format: uuid}
+                reason: {type: string, minLength: 1}
+      responses:
+        '200': {description: Nueva revisión del slot}
+        default: {$ref: '#/components/responses/Error'}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema: {type: integer, minimum: 1, maximum: 200, default: 50}
+    Cursor:
+      name: cursor
+      in: query
+      schema: {type: string}
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, minLength: 8, maxLength: 255}
+    SampleId: {name: sample_id, in: path, required: true, schema: {type: string, format: uuid}}
+    ImageId: {name: image_id, in: path, required: true, schema: {type: string, format: uuid}}
+    JobId: {name: analysis_job_id, in: path, required: true, schema: {type: string, format: uuid}}
+    DetectionId: {name: detection_id, in: path, required: true, schema: {type: string, format: uuid}}
+    CropId: {name: crop_id, in: path, required: true, schema: {type: string, format: uuid}}
+    PredictionId: {name: prediction_id, in: path, required: true, schema: {type: string, format: uuid}}
+    ReportId: {name: report_id, in: path, required: true, schema: {type: string, format: uuid}}
+  requestBodies:
+    Reason:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [reason]
+            properties:
+              reason: {type: string, minLength: 1, maxLength: 1000}
+  responses:
+    Error:
+      description: Error común
+      content:
+        application/json:
+          schema: {$ref: '../contracts/error.schema.json'}
+          example:
+            error:
+              code: VALIDATION_ERROR
+              category: validation
+              message: Solicitud inválida.
+              details: {}
+              correlation_id: 00000000-0000-4000-8000-000000000001
+              retryable: false
+    Page:
+      description: Página por cursor
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Page'}
+  schemas:
+    SubjectCreate:
+      type: object
+      additionalProperties: false
+      required: [pseudonym]
+      properties:
+        pseudonym: {type: string, minLength: 1, maxLength: 100}
+    SampleCreate:
+      type: object
+      additionalProperties: false
+      required: [subject_id]
+      properties:
+        subject_id: {type: string, format: uuid}
+        collected_at: {type: [string, 'null'], format: date-time}
+    AnalysisJobCreate:
+      type: object
+      additionalProperties: false
+      required: [image_id, pipeline_version_id, priority]
+      properties:
+        image_id: {type: string, format: uuid}
+        pipeline_version_id: {type: string, format: uuid}
+        priority: {type: integer, minimum: 1, maximum: 100}
+        model_publication_ids:
+          type: array
+          uniqueItems: true
+          items: {type: string, format: uuid}
+          description: Vacío u omitido resuelve stage2/default.
+    IdResponse:
+      type: object
+      additionalProperties: false
+      required: [id]
+      properties:
+        id: {type: string, format: uuid}
+    Page:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor]
+      properties:
+        items: {type: array, items: {}}
+        next_cursor: {type: [string, 'null']}

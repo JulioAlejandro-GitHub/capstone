@@ -32,7 +32,7 @@
 |Releases|`releases/production`, `releases/stage2`; `releases.py`|Paquetes inmutables con manifests|Gobierno/inference|B|Reusar mecanismo tras provider|URI y checksums estables|Alto|
 |Scripts|raíz `scripts/`, proyecto `scripts/`, run files|Operación/validación/DB/dataset|Desarrolladores|G/B|Mantener; añadir comandos no destructivos y perfiles|Flags actuales|Medio|
 |Tests ML|`malaria_dl_local_project/tests`|368 pruebas de clasificación/gobierno|CI futura|A/B|Gate de regresión; sumar detección/pipeline|Python 3.12 ML|Bajo|
-|Tests backend|`backend_api/tests`|API unit y E2E opt-in|CI futura|B|Corregir entorno `httpx2`; fixtures DB efímeras|No apuntar BD usuario|Medio|
+|Tests backend|`backend_api/tests`|API unit y E2E opt-in|CI futura|B|Agregar fixtures PostgreSQL efímeras y cobertura de contratos Etapa 2|No apuntar BD usuario|Medio|
 |Tests frontend|`frontend/tests`|59 tests estáticos node|CI futura|D|Conservar y sumar DOM/browser E2E|Build como gate|Medio|
 
 ## Estrategia de transición

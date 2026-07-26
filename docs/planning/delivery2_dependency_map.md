@@ -73,7 +73,7 @@ No paralelizar cambios a `predictions`, publicación/default y job schema sin un
 - **Backend**: auth/unit-of-work/storage → ingest/QC/jobs → detector/crops/classifier → aggregation/XAI/review/report.
 - **Frontend**: auth/session + contratos tipados → muestra/QC/progreso → viewer/inspector → review/report.
 - **IA**: patient split → annotations → detector metrics → crops → classifier calibration → aggregation/XAI/E2E.
-- **Infra**: perfiles/CI → Redis/worker → health/readiness/metrics → backups/restore.
+- **Infra**: perfiles/CI → worker con cola PostgreSQL → health/readiness/metrics → backups/restore.
 
 ## Gates
 
@@ -97,7 +97,7 @@ Mantener TRAIN/EVALUATE/EXPLAIN e inferencia actual; crear tablas especializadas
 
 ## Secuencia recomendada de prompts
 
-1. Architecture Baseline + ADRs (incluye 20 decisiones de la auditoría).
+1. Architecture Baseline + ADRs (**cerrado por Baseline v1.1**).
 2. Fundación: settings, Alembic baseline, CI, Docker, auth/RBAC, logging/correlation.
 3. Dominio y auditoría: subjects a reviews/pipeline policies en esquema.
 4. StorageProvider e ingesta inmutable.

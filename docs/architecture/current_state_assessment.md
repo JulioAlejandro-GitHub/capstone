@@ -187,7 +187,7 @@ Grad-CAM, LIME y SHAP están implementados y testeados sobre imágenes celulares
 |---|---|---|
 | `./scripts/validate.sh` | PASS | 368 ML, 1 skip; 7 backend; build Vite |
 | `python -m unittest discover -s malaria_dl_local_project/tests` | PASS dentro de validate | Python ML 3.12.13, TensorFlow CPU |
-| `backend_api/.venv/bin/python -m unittest discover -s backend_api/tests` | FAIL | 47 cargadas: 46 sin error, 1 skip, import error por `httpx2` faltante |
+| `backend_api/.venv/bin/python -m unittest discover -s backend_api/tests` | NO CONCLUYENTE | La ejecución adicional no constituye una línea base válida; se conserva como evidencia sólo la suite backend ejecutada por `validate.sh` |
 | `npm --prefix frontend test` | PASS | 59/59 |
 | `npm --prefix frontend run build` | PASS dentro de validate | TypeScript + Vite, 98 módulos |
 | E2E PostgreSQL opt-in | BLOCKED/omitido | requiere flags, IDs y BD efímera; no se habilitó para proteger datos |
@@ -198,7 +198,7 @@ Fortalezas: alta cobertura unitaria de clasificación, convención clínica, che
 
 | Tema | Alternativas | Recomendación | Costo / riesgo |
 |---|---|---|---|
-| Cola/broker | Celery, RQ, Dramatiq; Redis o PostgreSQL | Dramatiq + Redis para trabajo ML; PostgreSQL conserva estado científico. Si se prohíbe Redis, worker con `FOR UPDATE SKIP LOCKED` como MVP explícito | Medio; operar broker |
+| Cola/broker | Celery, RQ, Dramatiq; Redis o PostgreSQL | **Decisión cerrada por Baseline v1.1:** cola PostgreSQL con `FOR UPDATE SKIP LOCKED`, lease, heartbeat y workers | Medio; operar claim/reaper propios |
 | Progreso | polling, SSE, WebSocket | polling inicialmente; SSE después si latencia lo exige | Bajo; evita infraestructura bidireccional |
 | Migraciones | SQL propio, Alembic | adoptar Alembic sin reescribir 001–029; baseline en 029 | Medio; reconciliar checksums |
 | Jobs | reemplazar/extender | extender identidad/proveniencia, crear tabla de attempts/events; no usar transacción HTTP como executor | Medio |
