@@ -1,0 +1,205 @@
+{
+  "snapshot": {
+    "branch": "main",
+    "commit": "092a237497615ac3f1e775a61c54c6d6417dd515",
+    "tracked_files": 423,
+    "working_tree_initial": "clean",
+    "os": "Darwin 25.5.0 arm64",
+    "python_host": "3.14.4",
+    "python_ml": "3.12.13",
+    "python_backend": "3.14.4",
+    "node": "22.23.1",
+    "npm": "10.9.8",
+    "psql_client": "17.9"
+  },
+  "entrypoints": [
+    "backend_api/app/main.py:app",
+    "frontend/src/main.tsx",
+    "malaria_dl_local_project/run_train_all_models.py",
+    "malaria_dl_local_project/run_evaluate_all_trainings.py",
+    "malaria_dl_local_project/run_explain_all_trainings.py",
+    "malaria_dl_local_project/src/malaria_dl/training/cli.py",
+    "malaria_dl_local_project/src/malaria_dl/evaluation/cli.py",
+    "malaria_dl_local_project/src/malaria_dl/explainability/cli.py",
+    "malaria_dl_local_project/src/malaria_dl/inference/cli.py",
+    "malaria_dl_local_project/scripts/init_db.py",
+    "scripts/start_backend.sh",
+    "scripts/validate.sh"
+  ],
+  "python_modules": [
+    "malaria_dl.common", "malaria_dl.config", "malaria_dl.data",
+    "malaria_dl.models", "malaria_dl.training", "malaria_dl.evaluation",
+    "malaria_dl.explainability", "malaria_dl.inference",
+    "malaria_dl.persistence", "malaria_dl.governance",
+    "malaria_dl.feature_engineering", "malaria_dl.cell_detection",
+    "backend_api.app.routes", "backend_api.app.services"
+  ],
+  "legacy_adapters": [
+    "calibrate", "calibration", "checkpoint_policy", "config", "data",
+    "dataset_registry", "db", "decision", "ensemble", "evaluate",
+    "explain", "export_dataset", "image_quality", "inference_pipeline",
+    "metrics", "model_contract_service", "model_deployment_service",
+    "model_release_lifecycle_service", "model_version_resolver", "models",
+    "predict_image", "prediction_uploads", "prepare_model_release_service",
+    "preprocessing", "run_lineage", "run_tracker",
+    "stage2_model_availability_service", "svm_features",
+    "threshold_calibration", "traceable_inference",
+    "tracking_integration", "train", "training_plots", "tta",
+    "model_governance/*"
+  ],
+  "backend_routes": [
+    "health:/health,/datasources",
+    "dashboard:/dashboard/summary,/dashboard/clinical",
+    "runs:/runs,/api/runs and detail/metrics/artifacts/predictions/lineage",
+    "catalog:/models,/models/comparison,/datasets",
+    "dataset:/api/dataset,/summary,/split,/images,/images/{id}/file",
+    "metrics:/metrics/{run_id},/confusion-matrix/{run_id},/classification-report/{run_id}",
+    "explainability:/explainability and cases/gallery",
+    "predictions:/predictions/uploads",
+    "observability:/errors,/logs",
+    "artifacts:/artifacts/file",
+    "governance:/api/training-runs,/model-versions,/deployments,/stage2-publications,/image-analysis-jobs,/inference-runs"
+  ],
+  "frontend_routes": [
+    "/modelo-ia/resumen", "/modelo-ia/ejecuciones",
+    "/modelo-ia/ejecuciones/:id", "/modelo-ia/ejecuciones/:id/liberacion",
+    "/modelo-ia/evaluaciones", "/modelo-ia/comparacion",
+    "/modelo-ia/modelos-liberados", "/modelo-ia/modelos-liberados/:id",
+    "/modelo-ia/despliegues", "/modelo-ia/despliegues/:id",
+    "/modelo-ia/trazabilidad", "/modelo-ia/explicabilidad",
+    "/modelo-ia/predicciones", "/modelo-ia/dataset",
+    "/modelo-ia/datasets-modelos", "/modelo-ia/errores-logs"
+  ],
+  "database_objects": {
+    "tables": [
+      "experiments", "datasets", "dataset_splits", "dataset_split_images",
+      "run_dataset_images", "models", "runs", "model_versions", "run_metrics",
+      "training_history", "confusion_matrices", "classification_reports",
+      "predictions", "artifacts", "explainability_results", "execution_logs",
+      "errors", "environment_packages", "synthetic_data_runs",
+      "run_clinical_metrics", "run_checkpoint_policy",
+      "run_threshold_calibration", "run_image_predictions", "run_io_records",
+      "run_lineage", "deployed_model_versions", "run_model_deployments",
+      "image_analysis_jobs", "schema_migrations",
+      "model_governance_backfill_audit", "stage2_model_publications",
+      "stage2_model_publication_events"
+    ],
+    "views": [
+      "vw_model_run_summary", "vw_run_dashboard", "vw_explainability_summary",
+      "vw_uploaded_predictions", "vw_case_level_explainability",
+      "vw_false_positive_cases", "vw_false_negative_cases",
+      "vw_low_confidence_cases", "vw_case_type_summary",
+      "vw_explainability_gallery", "vw_clinical_inference_predictions",
+      "vw_dataset_split_images_summary", "vw_run_dataset_usage_summary",
+      "vw_run_io_summary", "vw_dataset_browser_summary",
+      "vw_dataset_browser_images", "vw_checkpoint_policy_summary",
+      "vw_threshold_calibration_summary", "vw_run_artifacts_summary",
+      "vw_run_image_predictions_summary", "vw_clinical_run_summary",
+      "vw_visual_explainability_audit", "vw_run_lineage",
+      "vw_evaluation_lineage", "vw_explainability_lineage",
+      "inference_runs", "cell_predictions"
+    ],
+    "functions": [
+      "prevent_model_governance_audit_mutation",
+      "enforce_model_version_governance", "enforce_run_lineage_governance",
+      "validate_deployed_model_version", "protect_deployed_model_version_payload",
+      "validate_run_model_deployment", "validate_image_analysis_job",
+      "protect_governed_artifact_identity",
+      "prevent_stage2_publication_event_mutation"
+    ],
+    "triggers": [
+      "trg_model_governance_audit_append_only", "trg_model_versions_governance",
+      "trg_run_lineage_governance", "trg_deployed_model_versions_10_immutable",
+      "trg_deployed_model_versions_20_validate",
+      "trg_run_model_deployments_validate", "trg_image_analysis_jobs_validate",
+      "trg_artifacts_protect_governed_identity",
+      "trg_stage2_publication_events_append_only"
+    ],
+    "indexes": [
+      {"count_declared": 122},
+      "uq_model_versions_name_number", "uq_model_versions_checkpoint_artifact",
+      "uq_deployed_model_versions_active_slot",
+      "uq_deployed_model_versions_one_production_champion",
+      "uq_image_analysis_jobs_idempotency",
+      "uq_predictions_job_cell_index",
+      "uq_stage2_publication_active_version"
+    ],
+    "migrations": [
+      "001_schema.sql", "002_indexes.sql", "003_views.sql", "004_seed.sql",
+      "007_case_level_explainability_views.sql",
+      "008_case_level_explainability_indexes.sql",
+      "009_uploaded_predictions_views.sql",
+      "010_clinical_inference_tracking.sql",
+      "011_label_mapping_clinical_v1.sql",
+      "012_dataset_split_image_tracking.sql", "013_dataset_browser_views.sql",
+      "017_clinical_run_tracking.sql", "018_visual_audit_views.sql",
+      "019_model_execution_parameters.sql", "020_max_epochs_release.sql",
+      "022_run_lineage.sql", "023_schema_migrations_baseline.sql",
+      "024_model_version_artifact_governance.sql",
+      "025_deployed_model_versions.sql", "026_inference_jobs.sql",
+      "027_model_governance_backfill_constraints.sql",
+      "028_stage2_model_availability.sql",
+      "029_stage2_model_publications.sql"
+    ]
+  },
+  "model_governance": {
+    "identity": "model_versions.id + checkpoint_artifact_id + sha256",
+    "deployment_slots": "deployed_model_versions",
+    "stage2_default": "environment=stage2, alias=default",
+    "technical_production": "environment=production, alias=champion, production_scope=stage2_technical",
+    "publication_catalog": "stage2_model_publications",
+    "publication_multiplicity": "multiple active versions",
+    "contradiction": "publication and deployment states are not transactionally coupled",
+    "clinical_mapping": {"0": "uninfected", "1": "parasitized", "raw_model_score": "probability_parasitized"}
+  },
+  "storage_locations": [
+    "malaria_dl_local_project/data",
+    "malaria_dl_local_project/data/malaria_physical_split",
+    "malaria_dl_local_project/outputs",
+    "malaria_dl_local_project/releases/production",
+    "malaria_dl_local_project/releases/stage2",
+    "data/prediction_uploads"
+  ],
+  "tests": [
+    {"suite": "ML unittest", "result": "PASS", "count": 368, "skipped": 1},
+    {"suite": "backend characterization in validate", "result": "PASS", "count": 7},
+    {"suite": "backend full discovery", "result": "FAIL", "loaded": 47, "error": "missing httpx2", "skipped": 1},
+    {"suite": "frontend node:test", "result": "PASS", "count": 59},
+    {"suite": "frontend build", "result": "PASS", "modules": 98},
+    {"suite": "PostgreSQL E2E", "result": "BLOCKED", "reason": "opt-in and no authorized ephemeral database"}
+  ],
+  "configuration": [
+    "MALARIA_DATABASE_URL", "BACTERIA_DATABASE_URL", "ANEMIA_DATABASE_URL",
+    "ENABLE_MALARIA_DATASOURCE", "ENABLE_BACTERIA_DATASOURCE",
+    "ENABLE_ANEMIA_DATASOURCE", "DATABASE_URL", "DB_HOST", "DB_PORT",
+    "DB_NAME", "DB_USER", "DB_PASSWORD", "TFDS_DATA_DIR",
+    "VITE_API_BASE_URL", "VITE_DEFAULT_DATASOURCE",
+    "RUN_MODEL_AVAILABILITY_E2E", "RUN_STAGE2_PUBLICATION_E2E",
+    "RUN_PRODUCTION_E2E"
+  ],
+  "stage2_capabilities": [
+    "governed immutable classifier", "stage2 publication catalog",
+    "stage2/default deployment", "technical smoke inference",
+    "threshold snapshots", "class mapping enforcement", "model cache",
+    "image job provenance schema", "cell prediction reserve columns",
+    "basic image quality primitives", "Grad-CAM", "LIME", "SHAP"
+  ],
+  "missing_capabilities": [
+    "patient/sample/slide domain", "full smear ingest", "StorageProvider",
+    "versioned quality policy", "persistent queue", "worker",
+    "cell detector/RBCNet", "tiling/NMS/global coordinates",
+    "crop generator", "image aggregation", "expert review",
+    "smear report/workbench", "authentication/RBAC", "Docker/CI",
+    "NIH Point/Polygon parsers", "patient-aware split", "end-to-end metrics"
+  ],
+  "risks": [
+    "two contradictory Stage2 production identities",
+    "synchronous work hidden behind job endpoint",
+    "predictions semantic overload",
+    "image-level split leakage for future patient data",
+    "no authenticated authorization for write operations",
+    "filesystem paths coupled to persistence",
+    "different Python and database configuration environments",
+    "backend full suite dependency drift"
+  ]
+}
