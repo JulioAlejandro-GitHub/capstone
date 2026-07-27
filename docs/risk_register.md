@@ -38,3 +38,10 @@ Escala cualitativa: probabilidad/impacto Bajo, Medio, Alto; nivel combina ambos.
 |R30|Alcance científico|Producto puede percibirse diagnóstico|Terminología “productivo”|Uso indebido|Media|Alto|Crítico|Vocabulario experimental, disclaimers, RBAC|Retirar report/export ambiguo|Producto|P1/P15|Abierto|
 |R31|Storage|Caída abrupta entre move y commit|Sin transacción distribuida|Archivo huérfano|Baja|Medio|Medio|UUID, compensación, reconcile y staging cleanup|Reconciliar manualmente|Backend|P4|Mitigado|
 |R32|Privacidad|Identidad externa contiene PII no declarada|Fuente externa|Exposición científica|Media|Alto|Alto|Valor opaco, UI anti-PII, metadata filtrada y RBAC|Archivar y revisar fuente|Producto|P4|Abierto|
+# Riesgos Prompt 5
+
+- Pendiente: calibrar thresholds con imágenes reales y revisión experta.
+- Mitigado: originales inmutables, checksum recalculado, perfiles congelados.
+- Mitigado: warnings requieren revisión auditada; fails no son aprobables.
+- Pendiente: Pillow advierte de una API de píxeles deprecada para su versión 14;
+  migrar antes de esa actualización.

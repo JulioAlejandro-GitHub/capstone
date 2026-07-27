@@ -22,6 +22,7 @@ export const routes = {
   datasetsModels: '/modelo-ia/datasets-modelos',
   errorsLogs: '/modelo-ia/errores-logs',
   smearUpload: '/frotis/cargar',
+  smearAnalysis: '/frotis/analisis',
 } as const;
 
 export const isValidPublicId = (value: string | undefined): value is string =>

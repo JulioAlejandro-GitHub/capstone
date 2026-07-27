@@ -49,6 +49,18 @@ export type ImageUploadResponse = {
   status: 'complete' | 'incomplete' | 'inconsistent';
   counts: { received: number; expected: number | null; ignored: number };
 };
+export type EligibleBatch = { id:string; status:string; acquisition_origin:string; source_system:string|null;
+  received_image_count:number; subject_code:string; sample_code:string; slide_code:string; previous_run_code:string|null };
+export type QualityImage = { id:string; microscopy_image_id:string; sequence_number:number; input_sha256:string;
+  input_width_px:number; input_height_px:number; original_filename:string; quality_verdict:string|null;
+  integrity_verified:boolean|null; warning_codes:string[]|null; failure_codes:string[]|null;
+  brightness_mean:number|null; contrast_p95_p05:number|null; entropy_bits:number|null;
+  laplacian_variance:number|null; tenengrad_mean:number|null; dark_pixel_ratio:number|null;
+  bright_pixel_ratio:number|null; usable_field_ratio:number|null };
+export type AnalysisRun = { id:string; run_code:string; ingestion_batch_id:string; subject_code:string;
+  sample_code:string; slide_code:string; input_image_count:number; quality_profile_key:string;
+  quality_profile_version:string; run_status:string; quality_gate_status:string; ready_for_analysis:boolean;
+  active_stage:string; requested_by_username:string; created_at:string; images:QualityImage[]; decisions:Array<Record<string,unknown>> };
 
 function readStoredAccessToken() {
   try {
@@ -226,6 +238,33 @@ export const api = {
     return request<ImageUploadResponse>('/api/v1/scientific/images/upload', {}, {
       timeoutMs: 120000,
       init: { method: 'POST', body: form },
+    });
+  },
+
+  getEligibleBatches(params:Record<string,QueryValue>={}) {
+    return request<{items:EligibleBatch[];total:number}>('/api/v1/analysis/eligible-batches',params);
+  },
+  createAnalysisRun(ingestion_batch_id:string) {
+    return request<AnalysisRun>('/api/v1/analysis/runs',{},{
+      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingestion_batch_id})},
+    });
+  },
+  executeQuality(runId:string) {
+    return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-assessment`,{},{
+      timeoutMs:120000,init:{method:'POST'},
+    });
+  },
+  getAnalysisRun(runId:string) { return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}`); },
+  async getMicroscopyImageBlob(imageId:string) {
+    const headers=new Headers();
+    if(accessToken) headers.set('Authorization',`Bearer ${accessToken}`);
+    const response=await fetch(new URL(`/api/v1/scientific/images/${imageId}/content`,API_BASE_URL),{headers});
+    if(!response.ok) throw new ApiError('Contenido no disponible.',response.status,'http');
+    return URL.createObjectURL(await response.blob());
+  },
+  reviewQuality(runId:string,decision:'approve_with_warnings'|'reject',comment:string) {
+    return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-decision`,{},{
+      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decision,comment})},
     });
   },
 

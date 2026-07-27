@@ -127,3 +127,7 @@ Prompt 3 puede depender de la revisión `20260726_01`; no debe alterar 001–029
 Prompt 4 cierra identidad e ingesta para Prompt 5. Prompt 5 podrá crear
 `analysis_runs` sólo tras calidad; Prompt 6 consumirá `microscopy_images.id` y
 Prompt 7 las futuras detecciones.
+# Prompt 5
+
+Ingesta segura (Prompt 4) → run congelado → quality gate técnico → habilitación
+trazable. Prompt 6 dependerá exclusivamente de runs `ready_for_analysis`.

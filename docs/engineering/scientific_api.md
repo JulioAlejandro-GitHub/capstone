@@ -38,3 +38,7 @@ reviewer y read_only sólo leen. El archivado queda reservado al administrator.
 
 La extensión Prompt 4 (`image_upload_api.md`) añade lookup exacto, generación
 automática, muestras por sujeto, multipart y contenido autenticado.
+# Análisis técnico
+
+La API científica se amplía mediante el router separado `/api/v1/analysis`;
+véase `analysis_api.md`. No reutiliza endpoints ni ejecuciones de entrenamiento.

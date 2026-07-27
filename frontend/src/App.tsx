@@ -20,6 +20,7 @@ import { Traceability } from './pages/Traceability';
 import { UploadedPredictions } from './pages/UploadedPredictions';
 import { Login } from './pages/Login';
 import { SmearUpload } from './pages/SmearUpload';
+import { SmearAnalysis } from './pages/SmearAnalysis';
 import { isValidPublicId, routes, withAllowedQuery } from './router';
 import { DEFAULT_DATASOURCE, api } from './services/api';
 import type { Datasource } from './types/api';
@@ -93,6 +94,7 @@ function App() {
         <Route path={routes.datasetsModels} element={<DatasetsModels {...common} />} />
         <Route path={routes.errorsLogs} element={<ErrorsLogs {...common} />} />
         <Route path={routes.smearUpload} element={<SmearUpload />} />
+        <Route path={routes.smearAnalysis} element={<SmearAnalysis />} />
         <Route path="/runs" element={<Navigate replace to={`${routes.runs}${location.search}`} />} />
         <Route path="/evaluations" element={<Navigate replace to={`${routes.evaluations}${location.search}`} />} />
         <Route path="/model-versions" element={<Navigate replace to={`${routes.modelVersions}${location.search}`} />} />

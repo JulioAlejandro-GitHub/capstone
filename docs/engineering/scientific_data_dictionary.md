@@ -24,3 +24,9 @@ debe contener PII. No hay columnas `BYTEA`, large objects ni multipart en este a
 
 Prompt 4 añade lote, origen de identidad de muestra, procedencia y propiedades
 técnicas. Multipart es transporte API; PostgreSQL continúa sin binarios.
+# Diccionario Prompt 5
+
+Las tablas `microscopy_analysis_runs`, `microscopy_analysis_run_images`,
+`image_quality_assessments`, `microscopy_analysis_events` y
+`quality_gate_decisions` se definen íntegramente en la migración
+`20260727_03_microscopy_quality_gate.py`, incluidos checks, FKs e índices.

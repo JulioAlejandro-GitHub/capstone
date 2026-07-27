@@ -17,3 +17,7 @@ que ya tenían acceso a la carga y contiene **Cargar imágenes** (`/frotis/carga
 permite buscar o generar paciente, seleccionar o generar muestra y cargar múltiples
 originales sin calcular metadata técnica en el cliente. Las futuras funciones operacionales
 de la Etapa 2 se incorporarán bajo este módulo; este cambio no agrega funcionalidad nueva.
+# Control de calidad
+
+La ruta protegida `/frotis/analisis` lista lotes, crea runs, ejecuta el gate y
+presenta métricas y revisión según los permisos del usuario.

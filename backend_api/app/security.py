@@ -54,6 +54,10 @@ class Permission(StrEnum):
     SCIENTIFIC_IMAGES_REGISTER = "scientific.images.register"
     SCIENTIFIC_IMAGES_UPDATE = "scientific.images.update"
     SCIENTIFIC_IMAGES_ARCHIVE = "scientific.images.archive"
+    SCIENTIFIC_ANALYSIS_READ = "scientific.analysis.read"
+    SCIENTIFIC_ANALYSIS_CREATE = "scientific.analysis.create"
+    SCIENTIFIC_ANALYSIS_QUALITY_EXECUTE = "scientific.analysis.quality.execute"
+    SCIENTIFIC_ANALYSIS_QUALITY_REVIEW = "scientific.analysis.quality.review"
 
 
 READ = {
@@ -64,6 +68,7 @@ SCIENTIFIC_READ = {
     Permission.SCIENTIFIC_SUBJECTS_READ, Permission.SCIENTIFIC_CASES_READ,
     Permission.SCIENTIFIC_SAMPLES_READ, Permission.SCIENTIFIC_SLIDES_READ,
     Permission.SCIENTIFIC_IMAGES_READ,
+    Permission.SCIENTIFIC_ANALYSIS_READ,
 }
 SCIENTIFIC_WRITE = {
     Permission.SCIENTIFIC_SUBJECTS_CREATE, Permission.SCIENTIFIC_SUBJECTS_UPDATE,
@@ -71,11 +76,13 @@ SCIENTIFIC_WRITE = {
     Permission.SCIENTIFIC_SAMPLES_CREATE, Permission.SCIENTIFIC_SAMPLES_UPDATE,
     Permission.SCIENTIFIC_SLIDES_CREATE, Permission.SCIENTIFIC_SLIDES_UPDATE,
     Permission.SCIENTIFIC_IMAGES_REGISTER, Permission.SCIENTIFIC_IMAGES_UPDATE,
+    Permission.SCIENTIFIC_ANALYSIS_CREATE, Permission.SCIENTIFIC_ANALYSIS_QUALITY_EXECUTE,
 }
 ROLE_PERMISSIONS = {
     "administrator": set(Permission),
     "researcher": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {
         Permission.PREDICTIONS_EXECUTE, Permission.AUDIT_READ,
+        Permission.SCIENTIFIC_ANALYSIS_QUALITY_REVIEW,
     },
     "operator": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {Permission.PREDICTIONS_EXECUTE},
     "reviewer": READ | SCIENTIFIC_READ,

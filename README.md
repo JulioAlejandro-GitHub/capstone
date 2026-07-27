@@ -19,3 +19,8 @@ operativa, CI ni criterios de aprobación. Consulte
 
 La ingesta protegida está disponible en `/frotis/cargar`: resuelve identidad
 pseudonimizada y preserva originales en `var/storage`.
+# Control técnico de calidad
+
+El dominio Análisis de frotis incluye carga inmutable y quality gate técnico en
+`/frotis/analisis`; permanece separado del entrenamiento y Modelo IA. Consulta
+`docs/architecture/microscopy_quality_gate.md`.

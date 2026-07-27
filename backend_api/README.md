@@ -18,3 +18,7 @@ del flujo oficial.
 
 Prompt 4 agrega multipart por streaming, validación Pillow, SHA-256 backend-only,
 lotes científicos y contenido autenticado. Use las variables de `.env.example`.
+# Microscopy analysis API
+
+`/api/v1/analysis` expone lotes elegibles, runs congelados, evaluaciones
+técnicas, eventos y decisiones auditadas. Requiere PostgreSQL y storage local.

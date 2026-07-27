@@ -62,6 +62,7 @@ class Settings:
     upload_chunk_size_bytes: int
     staging_retention_hours: int
     allowed_microscopy_formats: tuple[str, ...]
+    quality_analysis_max_dimension: int
     correlation_id_header: str
     include_stacktrace: bool
     sql_logging: bool
@@ -136,6 +137,7 @@ class Settings:
                 os.getenv("ALLOWED_MICROSCOPY_FORMATS", "JPEG,PNG,TIFF").split(",")
                 if item.strip()
             ),
+            quality_analysis_max_dimension=_int("QUALITY_ANALYSIS_MAX_DIMENSION", 2048, 64),
             correlation_id_header=os.getenv("CORRELATION_ID_HEADER", "X-Correlation-ID"),
             include_stacktrace=_bool("INCLUDE_STACKTRACE"),
             sql_logging=_bool("SQL_LOGGING"),

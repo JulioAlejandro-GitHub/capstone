@@ -59,3 +59,8 @@ actores ni metadata libre.
 Prompt 4 incorpora `image_ingestion_batches`, procedencia externa separada y
 metadata técnica detectada. `microscopy_images.id` queda como identidad estable
 para futuros análisis; los binarios permanecen fuera de PostgreSQL.
+# Extensión Prompt 5
+
+`microscopy_analysis_runs` referencia sujeto, caso, muestra, frotis y lote.
+`microscopy_analysis_run_images` congela inputs; assessments, eventos y
+decisiones conservan resultados técnicos y trazabilidad append-only.

@@ -17,3 +17,8 @@
 - Ingesta multipart segura, streaming, SHA-256, JPEG/PNG/TIFF y recuperación.
 - Paciente/muestra automáticos, lotes e importación NIH-NLM idempotente.
 - Storage compensable, UI `/frotis/cargar` y contrato RBCNet documental.
+# 2026-07-27 — Prompt 5
+
+- Quality gate técnico reproducible, runs científicos con inputs congelados,
+  perfiles versionados, RBAC, auditoría y revisión de advertencias.
+- UI `/frotis/analisis`, migración `20260727_03`.

@@ -70,6 +70,7 @@ export const navigationModules: NavigationModule[] = [
       label: 'Operación',
       items: [
         { id: 'smear-upload', label: 'Cargar imágenes', path: routes.smearUpload, icon: 'explain' },
+        { id: 'smear-analysis', label: 'Control de calidad', path: routes.smearAnalysis, icon: 'evaluation' },
       ],
     }],
   },
