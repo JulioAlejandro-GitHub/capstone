@@ -18,11 +18,54 @@ export function Login() {
     }
   }
   if (user) return <Navigate to="/" replace />;
-  return <main className="login-page"><form onSubmit={submit}>
-    <h1>Ingreso académico</h1>
-    <label>Usuario<input name="username" autoComplete="username" required /></label>
-    <label>Contraseña<input name="password" type="password" autoComplete="current-password" required /></label>
-    {error && <p role="alert">{error}</p>}
-    <button type="submit">Ingresar</button>
-  </form></main>;
+  return (
+    <main className="login-page">
+      <section className="login-shell" aria-labelledby="login-title">
+        <header className="login-heading">
+          <div className="login-brand" aria-label="Capstone IA">
+            <span className="login-brand-mark" aria-hidden="true">CI</span>
+            <span>Capstone IA</span>
+          </div>
+          {/* <h1 id="login-title">Ingreso académico</h1> */}
+          <p>
+            Plataforma de análisis de frotis sanguíneo asistido por inteligencia artificial
+          </p>
+        </header>
+
+        <form className="login-card" onSubmit={submit}>
+          <div className="login-field">
+            <label htmlFor="login-username">Usuario</label>
+            <input
+              id="login-username"
+              name="username"
+              autoComplete="username"
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'login-error' : undefined}
+              required
+            />
+          </div>
+
+          <div className="login-field">
+            <label htmlFor="login-password">Contraseña</label>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'login-error' : undefined}
+              required
+            />
+          </div>
+
+          {error && <p id="login-error" className="login-error" role="alert">{error}</p>}
+          <button className="login-submit" type="submit">Ingresar</button>
+        </form>
+
+        <p className="login-restriction">
+          Acceso restringido a usuarios autorizados del proyecto.
+        </p>
+      </section>
+    </main>
+  );
 }

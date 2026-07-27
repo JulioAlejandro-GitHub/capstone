@@ -2471,3 +2471,223 @@ a.uploaded-image-cell:hover small {
     text-align: left;
   }
 }
+.login-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: grid;
+  place-items: center;
+  padding: clamp(28px, 6vh, 64px) 20px;
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at 50% 5%, rgba(71, 104, 176, 0.2), transparent 34rem),
+    #091a38;
+}
+
+.login-page,
+.login-page * {
+  box-sizing: border-box;
+}
+
+.login-shell {
+  width: min(100%, 500px);
+  text-align: center;
+}
+
+.login-heading {
+  margin-bottom: 28px;
+}
+
+.login-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 24px;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: 0.025em;
+}
+
+.login-brand-mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 12px;
+  color: #102654;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+.login-heading h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2rem, 7vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.login-heading p {
+  max-width: 440px;
+  margin: 14px auto 0;
+  color: #c8d5eb;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.login-card {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  padding: clamp(26px, 6vw, 38px);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 24px 65px rgba(2, 10, 27, 0.34);
+  text-align: left;
+}
+
+.login-field {
+  display: grid;
+  gap: 8px;
+}
+
+.login-field label {
+  color: #17243d;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.login-field input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 15px;
+  border: 1px solid #bdc8da;
+  border-radius: 11px;
+  outline: none;
+  color: #111c31;
+  background: #f9fbfe;
+  font: inherit;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.login-field input:hover {
+  border-color: #8597b4;
+}
+
+.login-field input:focus-visible {
+  border-color: #315fba;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(49, 95, 186, 0.18);
+}
+
+.login-field input[aria-invalid="true"] {
+  border-color: #bd3d4d;
+}
+
+.login-error {
+  margin: -2px 0 0;
+  padding: 11px 13px;
+  border: 1px solid #efb8bf;
+  border-radius: 10px;
+  color: #8f1d2c;
+  background: #fff1f3;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.login-submit {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 2px;
+  border: 1px solid #244da3;
+  border-radius: 11px;
+  color: #fff;
+  background: #315fba;
+  box-shadow: 0 8px 18px rgba(49, 95, 186, 0.24);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.login-submit:hover:not(:disabled) {
+  background: #244da3;
+  box-shadow: 0 10px 22px rgba(37, 77, 163, 0.3);
+  transform: translateY(-1px);
+}
+
+.login-submit:focus-visible {
+  outline: 3px solid #9ab8f3;
+  outline-offset: 3px;
+}
+
+.login-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.login-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+  box-shadow: none;
+}
+
+.login-restriction {
+  margin: 20px 12px 0;
+  color: #adbed9;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    align-items: start;
+    padding: 28px 14px;
+  }
+
+  .login-heading {
+    margin-bottom: 22px;
+  }
+
+  .login-brand {
+    margin-bottom: 18px;
+  }
+
+  .login-heading p {
+    font-size: 0.92rem;
+  }
+
+  .login-card {
+    gap: 18px;
+    border-radius: 18px;
+  }
+}
+
+@media (max-height: 660px) and (min-width: 481px) {
+  .login-page {
+    align-items: start;
+    padding-block: 24px;
+  }
+
+  .login-heading {
+    margin-bottom: 20px;
+  }
+
+  .login-brand {
+    margin-bottom: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-field input,
+  .login-submit {
+    transition: none;
+  }
+}
