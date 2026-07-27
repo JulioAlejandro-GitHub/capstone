@@ -4,9 +4,9 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { routes, withAllowedQuery } from '../router';
 import type { Datasource } from '../types/api';
 import { AppSidebar } from './navigation/AppSidebar';
-import { navigationItems, sectionForPath } from './navigation/navigationConfig';
+import { moduleForPath, navigationGroups, sectionForPath } from './navigation/navigationConfig';
 
-export const modelAiNavItems = navigationItems;
+export const modelAiNavItems = navigationGroups.flatMap((group) => group.items);
 
 interface LayoutProps {
   datasource: string;
@@ -17,6 +17,7 @@ interface LayoutProps {
 export function Layout({ datasource, datasources, onDatasourceChange }: LayoutProps) {
   const location = useLocation();
   const active = sectionForPath(location.pathname);
+  const activeModule = moduleForPath(location.pathname);
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -45,7 +46,10 @@ export function Layout({ datasource, datasources, onDatasourceChange }: LayoutPr
         </div>
       </header>
       <nav className="breadcrumb" aria-label="Migas de pan">
-        <Link to={withAllowedQuery(routes.summary, query)}>Modelo IA</Link><span aria-hidden="true">/</span>
+        {activeModule?.id === 'model-ai'
+          ? <Link to={withAllowedQuery(routes.summary, query)}>{activeModule.label}</Link>
+          : <strong>{activeModule?.label ?? 'Navegación'}</strong>}
+        <span aria-hidden="true">/</span>
         {active ? <Link to={withAllowedQuery(active.path, query)} aria-current={location.pathname === active.path ? 'page' : undefined}>{active.label}</Link> : <strong>Página no encontrada</strong>}
         {active && location.pathname !== active.path ? <><span aria-hidden="true">/</span><strong>Detalle</strong></> : null}
       </nav>

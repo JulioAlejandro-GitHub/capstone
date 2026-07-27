@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Navegación: nuevo módulo principal **Análisis de frotis**, separado de **Modelo IA**,
+  con la carga existente disponible únicamente como **Cargar imágenes** en `/frotis/cargar`.
 - Modelo científico pseudonimizado, API RBAC, auditoría atómica y trazabilidad mediante
   revisión Alembic `20260727_01`; las imágenes se registran sólo por metadata.
 - Docker retirado de la arquitectura operativa, Makefile, CI y gates de aprobación.

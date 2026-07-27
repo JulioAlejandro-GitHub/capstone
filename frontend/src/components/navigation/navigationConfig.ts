@@ -15,7 +15,16 @@ export type NavigationGroup = {
   }>;
 };
 
-export const navigationGroups: NavigationGroup[] = [
+export type NavigationModule = {
+  id: string;
+  label: string;
+  pathPrefix: string;
+  mark?: string;
+  icon?: NavigationIconName;
+  groups: NavigationGroup[];
+};
+
+const modelAiGroups: NavigationGroup[] = [
   {
     id: 'general', label: 'General', items: [
       { id: 'summary', label: 'Resumen', path: routes.summary, icon: 'dashboard' },
@@ -44,14 +53,44 @@ export const navigationGroups: NavigationGroup[] = [
   // },
   {
     id: 'data', label: 'Datos', items: [
-      { id: 'smear-upload', label: 'Cargar frotis', path: routes.smearUpload, icon: 'database' },
       { id: 'dataset', label: 'Dataset', path: routes.dataset, icon: 'database' },
       { id: 'datasets-models', label: 'Datasets y modelos', path: routes.datasetsModels, icon: 'datasets' },
     ]
   },
 ];
 
-export const navigationItems = navigationGroups.flatMap((group) => group.items);
+export const navigationModules: NavigationModule[] = [
+  {
+    id: 'smear-analysis',
+    label: 'Análisis de frotis',
+    pathPrefix: '/frotis',
+    icon: 'prediction',
+    groups: [{
+      id: 'smear-operation',
+      label: 'Operación',
+      items: [
+        { id: 'smear-upload', label: 'Cargar imágenes', path: routes.smearUpload, icon: 'explain' },
+      ],
+    }],
+  },
+  {
+    id: 'model-ai',
+    label: 'Modelo IA',
+    pathPrefix: '/modelo-ia',
+    mark: 'AI',
+    groups: modelAiGroups,
+  },
+];
+
+export const navigationGroups = modelAiGroups;
+export const navigationItems = navigationModules.flatMap((module) =>
+  module.groups.flatMap((group) => group.items));
+
+export const pathMatches = (pathname: string, path: string) =>
+  pathname === path || pathname.startsWith(`${path}/`);
+
+export const moduleForPath = (pathname: string) =>
+  navigationModules.find((module) => pathMatches(pathname, module.pathPrefix));
 
 export const sectionForPath = (pathname: string) =>
-  navigationItems.find((item) => pathname === item.path || pathname.startsWith(`${item.path}/`));
+  navigationItems.find((item) => pathMatches(pathname, item.path));

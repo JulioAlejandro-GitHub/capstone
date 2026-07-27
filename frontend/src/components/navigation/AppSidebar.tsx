@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 
 import { withAllowedQuery } from '../../router';
 import { NavigationIcon } from './NavigationIcon';
-import { navigationGroups } from './navigationConfig';
+import { moduleForPath, navigationModules } from './navigationConfig';
 
 const COLLAPSED_KEY = 'ml-dashboard.sidebar.collapsed';
 
@@ -21,11 +21,14 @@ interface Props {
 export function AppSidebar({ datasource, mobileOpen, onMobileClose, mobileTriggerRef }: Props) {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(readCollapsedPreference);
-  const [submenuOpen, setSubmenuOpen] = useState(true);
+  const activeModule = moduleForPath(location.pathname);
+  const [openModules, setOpenModules] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(navigationModules.map((module) => [module.id, true])));
   const asideRef = useRef<HTMLElement>(null);
-  const routeInside = location.pathname.startsWith('/modelo-ia/');
 
-  useEffect(() => { if (routeInside) setSubmenuOpen(true); }, [routeInside]);
+  useEffect(() => {
+    if (activeModule) setOpenModules((current) => ({ ...current, [activeModule.id]: true }));
+  }, [activeModule?.id]);
   useEffect(() => { try { localStorage.setItem(COLLAPSED_KEY, String(collapsed)); } catch { /* storage is optional */ } }, [collapsed]);
   useEffect(() => { if (mobileOpen) onMobileClose(); }, [location.pathname]);
   useEffect(() => {
@@ -62,27 +65,39 @@ export function AppSidebar({ datasource, mobileOpen, onMobileClose, mobileTrigge
         <button className="sidebar-mobile-close" type="button" aria-label="Cerrar navegación" onClick={closeMobile}>×</button>
       </div>
       <nav className="sidebar-nav" aria-label="Módulos">
-        <button className={`sidebar-parent ${routeInside ? 'contains-active' : ''}`} type="button"
-          aria-expanded={submenuOpen} aria-controls="model-ai-submenu"
-          onClick={() => setSubmenuOpen((value) => !value)}
-          onKeyDown={(event) => {
-            if (event.key === 'ArrowRight') setSubmenuOpen(true);
-            if (event.key === 'ArrowLeft') setSubmenuOpen(false);
-          }}>
-          <span className="sidebar-parent-mark" aria-hidden="true">AI</span>
-          <span className="sidebar-label">Modelo IA</span>
-          <svg className="sidebar-chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4" /></svg>
-        </button>
-        {submenuOpen ? <div id="model-ai-submenu" className="sidebar-submenu">
-          {navigationGroups.map((group) => <section className="sidebar-group" key={group.id} aria-labelledby={`nav-group-${group.id}`}>
-            <h2 id={`nav-group-${group.id}`}>{group.label}</h2>
-            {group.items.map((item) => <NavLink key={item.id} to={withAllowedQuery(item.path, { datasource })}
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-              data-tooltip={collapsed ? item.label : undefined} aria-label={collapsed ? item.label : undefined}>
-              <NavigationIcon name={item.icon} /><span className="sidebar-label">{item.label}</span>
-            </NavLink>)}
-          </section>)}
-        </div> : null}
+        {navigationModules.map((module) => {
+          const isOpen = openModules[module.id] ?? false;
+          const containsActive = activeModule?.id === module.id;
+          const submenuId = `${module.id}-submenu`;
+          return <div className="sidebar-module" key={module.id}>
+            <button className={`sidebar-parent ${containsActive ? 'contains-active' : ''}`} type="button"
+              aria-expanded={isOpen} aria-controls={submenuId}
+              aria-label={collapsed ? module.label : undefined}
+              data-tooltip={collapsed ? module.label : undefined}
+              onClick={() => setOpenModules((current) => ({ ...current, [module.id]: !isOpen }))}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowRight') setOpenModules((current) => ({ ...current, [module.id]: true }));
+                if (event.key === 'ArrowLeft') setOpenModules((current) => ({ ...current, [module.id]: false }));
+              }}>
+              <span className="sidebar-parent-mark" aria-hidden="true">
+                {module.icon ? <NavigationIcon name={module.icon} /> : module.mark}
+              </span>
+              <span className="sidebar-label">{module.label}</span>
+              <svg className="sidebar-chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4" /></svg>
+            </button>
+            {isOpen ? <div id={submenuId} className="sidebar-submenu">
+              {module.groups.map((group) => <section className="sidebar-group" key={group.id} aria-labelledby={`nav-group-${group.id}`}>
+                <h2 id={`nav-group-${group.id}`}>{group.label}</h2>
+                {group.items.map((item) => <NavLink key={item.id} to={withAllowedQuery(item.path, { datasource })}
+                  className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                  data-tooltip={collapsed ? item.label : undefined} aria-label={collapsed ? item.label : undefined}
+                  aria-current={location.pathname === item.path ? 'page' : undefined}>
+                  <NavigationIcon name={item.icon} /><span className="sidebar-label">{item.label}</span>
+                </NavLink>)}
+              </section>)}
+            </div> : null}
+          </div>;
+        })}
       </nav>
       <footer className="sidebar-footer">
         <span className="connection-dot" aria-hidden="true" /><span className="sidebar-label">Backend conectado</span>

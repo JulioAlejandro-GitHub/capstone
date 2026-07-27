@@ -11,5 +11,9 @@ npm --prefix frontend run dev
 
 El frontend oficial se ejecuta con Node/Vite local. Docker no es un gate ni una dependencia.
 
-`/frotis/cargar` permite buscar o generar paciente, seleccionar o generar muestra
-y cargar múltiples originales sin calcular metadata técnica en el cliente.
+La navegación separa el desarrollo de modelos en **Modelo IA** de su uso operacional en
+**Análisis de frotis**. Este último módulo se muestra a los mismos usuarios autenticados
+que ya tenían acceso a la carga y contiene **Cargar imágenes** (`/frotis/cargar`), que
+permite buscar o generar paciente, seleccionar o generar muestra y cargar múltiples
+originales sin calcular metadata técnica en el cliente. Las futuras funciones operacionales
+de la Etapa 2 se incorporarán bajo este módulo; este cambio no agrega funcionalidad nueva.
