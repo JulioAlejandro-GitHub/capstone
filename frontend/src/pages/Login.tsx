@@ -1,23 +1,29 @@
 import { FormEvent, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
-import { useAuth } from '../auth';
+import { SessionStatus, useAuth } from '../auth';
 
 export function Login() {
-  const { login, user } = useAuth();
+  const { login, user, status, retrySession } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState('');
+  const requestedPath = (location.state as { from?: string } | null)?.from ?? '/';
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     try {
       await login(String(form.get('username')), String(form.get('password')));
-      navigate('/', { replace: true });
+      navigate(requestedPath, { replace: true });
     } catch {
       setError('Credenciales inválidas.');
     }
   }
-  if (user) return <Navigate to="/" replace />;
+  if (status === 'initializing') return <SessionStatus message="Validando sesión…" />;
+  if (status === 'unavailable') {
+    return <SessionStatus message="No fue posible validar la sesión." onRetry={retrySession} />;
+  }
+  if (user) return <Navigate to={requestedPath} replace />;
   return (
     <main className="login-page">
       <section className="login-shell" aria-labelledby="login-title">

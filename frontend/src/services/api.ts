@@ -37,8 +37,56 @@ import type {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 export const DEFAULT_DATASOURCE = import.meta.env.VITE_DEFAULT_DATASOURCE ?? 'malaria';
-let accessToken: string | null = null;
-export function setAccessToken(token: string | null) { accessToken = token; }
+const ACCESS_TOKEN_KEY = 'capstone.access_token';
+const activeRequests = new Set<AbortController>();
+let authenticationFailureHandler: (() => void) | null = null;
+
+function readStoredAccessToken() {
+  try {
+    return window.localStorage.getItem(ACCESS_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+// Module initialization happens before React effects, so early application requests
+// also carry the persisted credential while AuthProvider validates it with /me.
+let accessToken: string | null = readStoredAccessToken();
+
+export function restoreAccessToken() {
+  accessToken = readStoredAccessToken();
+  return accessToken;
+}
+
+export function setAccessToken(token: string | null) {
+  accessToken = token;
+  try {
+    if (token) window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
+    else window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+  } catch {
+    // Storage can be unavailable; the in-memory session remains usable.
+  }
+}
+
+export function onAuthenticationFailure(handler: (() => void) | null) {
+  authenticationFailureHandler = handler;
+}
+
+export function cancelPendingRequests() {
+  activeRequests.forEach((controller) => controller.abort());
+  activeRequests.clear();
+}
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number | null,
+    public readonly kind: 'http' | 'network' | 'timeout',
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
 
 type QueryValue = string | number | boolean | undefined;
 type RequestOptions = {
@@ -68,24 +116,33 @@ async function request<T>(
   });
 
   const controller = new AbortController();
+  activeRequests.add(controller);
   const timeout = window.setTimeout(() => controller.abort(), options.timeoutMs ?? 15000);
   try {
     const headers = new Headers(options.init?.headers);
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
     const response = await fetch(url, { ...options.init, headers, signal: controller.signal });
-    if (response.status === 401) accessToken = null;
+    if (response.status === 401) {
+      setAccessToken(null);
+      authenticationFailureHandler?.();
+    }
     if (!response.ok) {
       const message = await response.text();
-      throw new Error(`${response.status} ${response.statusText}: ${message}`);
+      throw new ApiError(`${response.status} ${response.statusText}: ${message}`, response.status, 'http');
     }
     return response.json() as Promise<T>;
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error('La solicitud superó el tiempo de espera.');
+      throw new ApiError('La solicitud fue cancelada o superó el tiempo de espera.', null, 'timeout');
+    }
+    if (error instanceof ApiError) throw error;
+    if (error instanceof TypeError) {
+      throw new ApiError('No fue posible conectar con el servidor.', null, 'network');
     }
     throw error;
   } finally {
     window.clearTimeout(timeout);
+    activeRequests.delete(controller);
   }
 }
 
