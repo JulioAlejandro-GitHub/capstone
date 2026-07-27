@@ -4,6 +4,9 @@ Escala cualitativa: probabilidad/impacto Bajo, Medio, Alto; nivel combina ambos.
 
 |ID|Categoría|Riesgo y evidencia actual|Causa|Consecuencia|Prob.|Impacto|Nivel|Mitigación|Contingencia|Componente|Prompt|Estado|
 |---|---|---|---|---|:---:|:---:|:---:|---|---|---|---|---|
+|R-P3-01|Privacidad|PII en metadata científica|Entrada libre|Exposición de identidad|Baja|Alto|Medio|Sin columnas PII y bloqueo recursivo de claves|Revisión humana|Dominio|P3|Mitigado; residual|
+|R-P3-02|Storage|Key referencia objeto ausente|Ingesta fuera de alcance|Imagen no disponible|Media|Medio|Medio|Checksum y estado explícitos|Verificar en Prompt 4|Storage|P4|Pendiente|
+|R-P3-03|Documentación|Colisión histórica ADR-014|Numeración previa|Ambigüedad de catálogo|Baja|Bajo|Bajo|Nombres de archivo distintos|Renumerar índice sin alterar ADR|Docs|P3|Pendiente|
 |R01|Arquitectura|Implementación actual aún no acopla catálogo y default|Evolución paralela histórica|Modelo visible no inferible hasta implementar ADR|Media|Alto|Alto|ADR-002 aprobado; FK/servicio transaccional/default único|Bloquear inferencia ante divergencia|Gobierno|P3/P10|Controlado por diseño|
 |R02|Operación|Endpoint actual ejecuta inferencia síncrona|No worker implementado todavía|Timeout, pérdida por reinicio|Alta|Alto|Crítico|ADR-001/006: cola PostgreSQL, worker, lease, retry, idempotencia|No usar endpoint legacy para frotis|Jobs|P6|Diseño cerrado; implementación pendiente|
 |R03|Ciencia|Clasificar imagen completa con clasificador celular|Smoke reutiliza `dataset_split_images`|Resultado inválido interpretado como científico|Media|Alto|Crítico|Scope explícito y detector/crops antes de agregado|Marcar sólo smoke técnico|Inference|P1/P10|Abierto|

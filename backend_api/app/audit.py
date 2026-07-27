@@ -39,8 +39,12 @@ def record_event(
     before_state: dict | None = None,
     after_state: dict | None = None,
     connection: Connection | None = None,
+    resource_type: str | None = None,
+    resource_id: str | None = None,
 ) -> None:
-    resource_type, resource_id = _resource(request)
+    inferred_type, inferred_id = _resource(request)
+    resource_type = resource_type or inferred_type
+    resource_id = resource_id or inferred_id
     safe_metadata = sanitize(metadata or {})
     parameters = {
         "id": uuid4(), "event_type": event_type, "action": action,
@@ -100,6 +104,21 @@ def audited_permission(permission: Permission, event_type: str) -> Callable:
                     principal=principal, request=request, success=True,
                     connection=connection,
                 )
+            finally:
+                audit_transaction_connection.reset(token)
+
+    return dependency
+
+
+def transactional_permission(permission: Permission) -> Callable:
+    """Authorize a mutation and expose one transaction for domain mutation + audit."""
+    permission_dependency = require_permission(permission)
+
+    async def dependency(principal: Principal = Depends(permission_dependency)):
+        with get_primary_engine().begin() as connection:
+            token = audit_transaction_connection.set(connection)
+            try:
+                yield principal
             finally:
                 audit_transaction_connection.reset(token)
 

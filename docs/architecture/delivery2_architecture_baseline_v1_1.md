@@ -2,6 +2,10 @@
 
 Estado: **APROBADA PARA IMPLEMENTACIÓN POR PROMPTS**, sujeta a los gates de [architecture_approval_v1_1.md](architecture_approval_v1_1.md).
 
+Extensión 2026-07-27: la baseline incorpora `research_subjects`, `scientific_cases`,
+`blood_samples`, `smear_slides` y `microscopy_images` como dominio transaccional.
+Storage, calidad e inferencia permanecen componentes futuros separados.
+
 Snapshot: `main` en `3c79bb08a36f210c58d7076cf58111d4de554752`. El delta desde `092a237497615ac3f1e775a61c54c6d6417dd515` contiene sólo los siete documentos de Prompt 0; no cambia código ni migraciones. Archivo local previo `complemento e2.txt`: fuera de alcance y no modificado.
 
 ## Visión y naturaleza

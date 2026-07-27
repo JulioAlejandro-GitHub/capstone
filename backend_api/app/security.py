@@ -34,18 +34,52 @@ class Permission(StrEnum):
     DATASETS_READ = "datasets.read"
     ARTIFACTS_READ = "artifacts.read"
     AUDIT_READ = "audit.read"
+    SCIENTIFIC_SUBJECTS_READ = "scientific.subjects.read"
+    SCIENTIFIC_SUBJECTS_CREATE = "scientific.subjects.create"
+    SCIENTIFIC_SUBJECTS_UPDATE = "scientific.subjects.update"
+    SCIENTIFIC_SUBJECTS_ARCHIVE = "scientific.subjects.archive"
+    SCIENTIFIC_CASES_READ = "scientific.cases.read"
+    SCIENTIFIC_CASES_CREATE = "scientific.cases.create"
+    SCIENTIFIC_CASES_UPDATE = "scientific.cases.update"
+    SCIENTIFIC_CASES_ARCHIVE = "scientific.cases.archive"
+    SCIENTIFIC_SAMPLES_READ = "scientific.samples.read"
+    SCIENTIFIC_SAMPLES_CREATE = "scientific.samples.create"
+    SCIENTIFIC_SAMPLES_UPDATE = "scientific.samples.update"
+    SCIENTIFIC_SAMPLES_ARCHIVE = "scientific.samples.archive"
+    SCIENTIFIC_SLIDES_READ = "scientific.slides.read"
+    SCIENTIFIC_SLIDES_CREATE = "scientific.slides.create"
+    SCIENTIFIC_SLIDES_UPDATE = "scientific.slides.update"
+    SCIENTIFIC_SLIDES_ARCHIVE = "scientific.slides.archive"
+    SCIENTIFIC_IMAGES_READ = "scientific.images.read"
+    SCIENTIFIC_IMAGES_REGISTER = "scientific.images.register"
+    SCIENTIFIC_IMAGES_UPDATE = "scientific.images.update"
+    SCIENTIFIC_IMAGES_ARCHIVE = "scientific.images.archive"
 
 
 READ = {
     Permission.SYSTEM_READ, Permission.MODELS_READ, Permission.RUNS_READ,
     Permission.PREDICTIONS_READ, Permission.DATASETS_READ, Permission.ARTIFACTS_READ,
 }
+SCIENTIFIC_READ = {
+    Permission.SCIENTIFIC_SUBJECTS_READ, Permission.SCIENTIFIC_CASES_READ,
+    Permission.SCIENTIFIC_SAMPLES_READ, Permission.SCIENTIFIC_SLIDES_READ,
+    Permission.SCIENTIFIC_IMAGES_READ,
+}
+SCIENTIFIC_WRITE = {
+    Permission.SCIENTIFIC_SUBJECTS_CREATE, Permission.SCIENTIFIC_SUBJECTS_UPDATE,
+    Permission.SCIENTIFIC_CASES_CREATE, Permission.SCIENTIFIC_CASES_UPDATE,
+    Permission.SCIENTIFIC_SAMPLES_CREATE, Permission.SCIENTIFIC_SAMPLES_UPDATE,
+    Permission.SCIENTIFIC_SLIDES_CREATE, Permission.SCIENTIFIC_SLIDES_UPDATE,
+    Permission.SCIENTIFIC_IMAGES_REGISTER, Permission.SCIENTIFIC_IMAGES_UPDATE,
+}
 ROLE_PERMISSIONS = {
     "administrator": set(Permission),
-    "researcher": READ | {Permission.PREDICTIONS_EXECUTE, Permission.AUDIT_READ},
-    "operator": READ | {Permission.PREDICTIONS_EXECUTE},
-    "reviewer": READ,
-    "read_only": READ,
+    "researcher": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {
+        Permission.PREDICTIONS_EXECUTE, Permission.AUDIT_READ,
+    },
+    "operator": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {Permission.PREDICTIONS_EXECUTE},
+    "reviewer": READ | SCIENTIFIC_READ,
+    "read_only": READ | SCIENTIFIC_READ,
 }
 
 

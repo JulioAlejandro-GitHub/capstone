@@ -4,6 +4,10 @@ Monolito modular con FastAPI, React/TypeScript, PostgreSQL y `malaria_dl`. No es
 herramienta diagnóstica. La fundación de Etapa 2 se documenta en
 `docs/engineering/local_development.md` y `docs/engineering/test_environment.md`.
 
+La API `/api/v1/scientific` registra trazabilidad pseudonimizada caso → muestra → frotis
+→ imagen (sólo metadata). Véanse `docs/architecture/scientific_data_model.md` y
+`docs/engineering/scientific_api.md`.
+
 Comandos principales: `make validate`, `make test`, `make test-db-up`,
 `make test-db-bootstrap` y `make test-db-down`.
 # Operación de la fundación

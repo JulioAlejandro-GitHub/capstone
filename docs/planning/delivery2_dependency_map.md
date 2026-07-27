@@ -1,5 +1,9 @@
 # Mapa de dependencias — Entrega 2
 
+Prompt 3 deja disponible la fundación de sujetos pseudonimizados, casos, muestras, frotis
+e imágenes por metadata. Prompt 4 puede depender de `microscopy_images` para ingesta segura
+sin alterar identidad ni trazabilidad.
+
 ```mermaid
 flowchart TD
   P1[1 Baseline + ADR] --> P2[2 Fundación ingeniería]
