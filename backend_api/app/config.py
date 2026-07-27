@@ -42,10 +42,12 @@ class Settings:
     database_pool_min_size: int
     database_pool_max_size: int
     database_connect_timeout: int
-    test_database_url: str | None
-    test_database_name: str
-    test_database_allow_reset: bool
-    test_database_require_ephemeral: bool
+    test_execution: bool
+    test_isolation_mode: str
+    test_schema_prefix: str
+    allow_temporary_test_schema: bool
+    allow_database_drop: bool
+    allow_public_schema_drop: bool
     auth_mode: str
     jwt_secret: str | None
     jwt_algorithm: str
@@ -63,47 +65,39 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
-        env = os.getenv("APP_ENV", "local").strip().lower()
-        if env not in {"local", "test", "demo"}:
-            raise ValueError("APP_ENV debe ser local, test o demo")
+        env = os.getenv("APP_ENV", "development").strip().lower()
+        if env != "development":
+            raise ValueError("APP_ENV solo admite development")
         auth_mode = os.getenv("AUTH_MODE", "local_jwt").strip().lower()
         insecure = _bool("ALLOW_INSECURE_LOCAL_AUTH")
         if auth_mode not in {"local_jwt", "disabled"}:
             raise ValueError("AUTH_MODE debe ser local_jwt o disabled")
-        if auth_mode == "disabled" and (env != "local" or not insecure):
-            raise ValueError("AUTH_MODE=disabled sólo se permite en local con autorización explícita")
+        if auth_mode == "disabled" and not insecure:
+            raise ValueError("AUTH_MODE=disabled requiere autorización explícita")
         secret = os.getenv("JWT_SECRET")
-        if env == "demo" and (
-            auth_mode == "disabled"
-            or not secret
-            or secret.lower() in {"change-me", "changeme", "secret", "example"}
-            or len(secret) < 32
-        ):
-            raise ValueError("demo requiere autenticación y JWT_SECRET seguro (>=32 caracteres)")
         if auth_mode == "local_jwt" and not secret:
-            if env != "local":
-                raise ValueError("JWT_SECRET es obligatorio fuera de local")
-            secret = "local-only-insecure-secret-change-before-demo"
+            raise ValueError("JWT_SECRET es obligatorio; no existe un secreto por defecto")
         database_url = os.getenv("DATABASE_URL", "").strip()
-        if not database_url and env == "local":
-            database_url = "postgresql://capstone_local:local-only@localhost:55432/capstone_local"
         if not database_url:
-            raise ValueError("DATABASE_URL es obligatorio fuera de local; no existe una base personal por defecto")
+            raise ValueError("DATABASE_URL es obligatorio; no existe una base por defecto")
+        if os.getenv("TEST_DATABASE_URL"):
+            raise ValueError("TEST_DATABASE_URL está prohibida: las pruebas usan la base Capstone")
         pool_min = _int("DATABASE_POOL_MIN_SIZE", 1, 1)
         pool_max = _int("DATABASE_POOL_MAX_SIZE", 5, 1)
         if pool_min > pool_max:
             raise ValueError("DATABASE_POOL_MIN_SIZE no puede superar DATABASE_POOL_MAX_SIZE")
         storage_root = Path(os.getenv("STORAGE_ROOT", "./var/storage")).expanduser()
         artifacts_root = Path(os.getenv("ARTIFACTS_ROOT", "./var/artifacts")).expanduser()
-        if env == "demo" and (not storage_root.is_absolute() or not artifacts_root.is_absolute()):
-            raise ValueError("demo requiere STORAGE_ROOT y ARTIFACTS_ROOT absolutos")
+        isolation_mode = os.getenv("TEST_ISOLATION_MODE", "transaction").strip().lower()
+        if isolation_mode not in {"transaction", "temporary_schema"}:
+            raise ValueError("TEST_ISOLATION_MODE debe ser transaction o temporary_schema")
         return cls(
             app_env=env,
             app_name=os.getenv("APP_NAME", "Capstone Experiments API"),
             app_version=os.getenv("APP_VERSION", "0.3.0"),
             debug=_bool("DEBUG"),
             log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
-            log_format=os.getenv("LOG_FORMAT", "json" if env != "local" else "text"),
+            log_format=os.getenv("LOG_FORMAT", "text"),
             api_prefix=os.getenv("API_PREFIX", "/api/v1").rstrip("/"),
             frontend_origin=os.getenv("FRONTEND_ORIGIN", "http://localhost:5173").rstrip("/"),
             cors_origins=_origins(os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")),
@@ -111,10 +105,12 @@ class Settings:
             database_pool_min_size=pool_min,
             database_pool_max_size=pool_max,
             database_connect_timeout=_int("DATABASE_CONNECT_TIMEOUT", 5, 1),
-            test_database_url=os.getenv("TEST_DATABASE_URL"),
-            test_database_name=os.getenv("TEST_DATABASE_NAME", "capstone_test"),
-            test_database_allow_reset=_bool("TEST_DATABASE_ALLOW_RESET"),
-            test_database_require_ephemeral=_bool("TEST_DATABASE_REQUIRE_EPHEMERAL", True),
+            test_execution=_bool("TEST_EXECUTION"),
+            test_isolation_mode=isolation_mode,
+            test_schema_prefix=os.getenv("TEST_SCHEMA_PREFIX", "capstone_test_"),
+            allow_temporary_test_schema=_bool("ALLOW_TEMPORARY_TEST_SCHEMA", True),
+            allow_database_drop=False,
+            allow_public_schema_drop=False,
             auth_mode=auth_mode,
             jwt_secret=secret,
             jwt_algorithm=os.getenv("JWT_ALGORITHM", "HS256"),

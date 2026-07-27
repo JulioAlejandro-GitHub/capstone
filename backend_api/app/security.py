@@ -9,8 +9,10 @@ import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pwdlib import PasswordHash
+from sqlalchemy import text
 
 from app.config import get_settings
+from app.db import get_primary_engine
 
 
 password_hasher = PasswordHash.recommended()
@@ -92,8 +94,16 @@ def current_principal(credentials: HTTPAuthorizationCredentials | None = Depends
     except jwt.InvalidTokenError as exc:
         raise HTTPException(401, "Token inválido.") from exc
     roles = tuple(role for role in claims.get("roles", []) if role in ROLE_PERMISSIONS)
+    with get_primary_engine().connect() as connection:
+        user = connection.execute(
+            text("SELECT username, status FROM users WHERE id=CAST(:id AS uuid)"),
+            {"id": str(claims["sub"])},
+        ).mappings().first()
+    if not user or user["status"] != "active":
+        raise HTTPException(401, "Usuario inactivo.")
+    roles = tuple(connection_role for connection_role in roles)
     permissions = frozenset().union(*(ROLE_PERMISSIONS[role] for role in roles))
-    return Principal(str(claims["sub"]), str(claims.get("username", "")), roles, permissions)
+    return Principal(str(claims["sub"]), str(user["username"]), roles, permissions)
 
 
 def require_permission(permission: Permission):

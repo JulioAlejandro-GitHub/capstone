@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import re
 from urllib.parse import urlparse
 
 from app.config import Settings
 
-
-PERSONAL_DATABASES = {"malaria_experiments", "bacteria_experiments", "anemia_experiments", "postgres"}
-LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "postgres", "capstone-test-postgres"}
+TEMPORARY_SCHEMA_RE = re.compile(r"^capstone_test_[a-z0-9_]{6,48}$")
+SYSTEM_SCHEMAS = {"public", "information_schema", "pg_catalog", "pg_toast"}
 
 
 def database_target(url: str) -> tuple[str, int, str]:
@@ -21,21 +21,32 @@ def redacted_database_target(url: str) -> str:
     return f"{host}:{port}/{name}"
 
 
-def assert_safe_test_database(settings: Settings, *, confirmation: bool) -> str:
-    if settings.app_env != "test":
-        raise RuntimeError("Operación destructiva rechazada: APP_ENV debe ser test")
-    if not settings.test_database_allow_reset:
-        raise RuntimeError("Operación destructiva rechazada: TEST_DATABASE_ALLOW_RESET no está habilitado")
-    if settings.test_database_require_ephemeral and not confirmation:
-        raise RuntimeError("Operación destructiva rechazada: falta confirmación programática de base efímera")
-    url = settings.test_database_url or settings.database_url
-    host, _, name = database_target(url)
-    if name in PERSONAL_DATABASES or "test" not in name.lower():
-        raise RuntimeError(f"Base rechazada: {host}/<redacted>; el nombre debe identificar inequívocamente test")
-    if host not in LOCAL_HOSTS:
-        raise RuntimeError("Host de test no autorizado")
-    if settings.database_url != url:
-        db_target = database_target(settings.database_url)
-        if db_target == database_target(url) and db_target[2] != settings.test_database_name:
-            raise RuntimeError("DATABASE_URL y TEST_DATABASE_URL apuntan al mismo destino no autorizado")
-    return url
+def assert_capstone_database(settings: Settings, actual_database: str | None = None) -> str:
+    _, _, expected = database_target(settings.database_url)
+    if expected in {"postgres", "template0", "template1"}:
+        raise RuntimeError("La base de mantenimiento no puede ser la base Capstone")
+    if actual_database is not None and actual_database != expected:
+        raise RuntimeError("La conexión no corresponde a la base Capstone configurada")
+    return expected
+
+
+def assert_database_drop_forbidden() -> None:
+    raise RuntimeError("DROP DATABASE está permanentemente prohibido")
+
+
+def assert_public_schema_drop_forbidden(schema: str) -> None:
+    if schema.lower() == "public":
+        raise RuntimeError("DROP SCHEMA public está permanentemente prohibido")
+
+
+def assert_safe_temporary_schema(settings: Settings, schema: str) -> str:
+    if not settings.test_execution or not settings.allow_temporary_test_schema:
+        raise RuntimeError("Schema temporal rechazado fuera de una ejecución de pruebas autorizada")
+    if schema.lower() in SYSTEM_SCHEMAS or not TEMPORARY_SCHEMA_RE.fullmatch(schema):
+        raise RuntimeError("Nombre de schema temporal inseguro")
+    return schema
+
+
+def assert_test_transaction_required(settings: Settings) -> None:
+    if not settings.test_execution or settings.test_isolation_mode != "transaction":
+        raise RuntimeError("Las pruebas PostgreSQL de escritura requieren transacción con rollback")

@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 set -euo pipefail
-docker compose -f docker-compose.test.yml up -d --wait postgres
+echo "Retirado: PostgreSQL local ya debe estar activo. Use make db-status o make test-db."

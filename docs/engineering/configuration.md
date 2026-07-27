@@ -1,5 +1,11 @@
 # Configuración
 
-`APP_ENV=local|test|demo` selecciona la política. Consulte los tres `.env.*.example`; no se versionan `.env`. Demo exige JWT de al menos 32 caracteres, auth habilitada y paths absolutos. Test exige URL explícita. Local usa valores simples controlados, nunca `malaria_experiments`.
+Las credenciales E2E solo se aceptan mediante `CAPSTONE_E2E_USERNAME` y
+`CAPSTONE_E2E_PASSWORD` privadas y nunca se documentan con valores.
 
-Variables de API, DB, auth, storage, observabilidad y futuro worker están inventariadas en `.env.example`. Las variables worker son sólo contrato: no existe worker científico. CORS acepta únicamente orígenes HTTP(S) explícitos. Passwords, tokens y URLs completas se sanitizan.
+`APP_ENV=development` es el único ambiente. `.env.example` no contiene secretos ni una URL
+operativa. `DATABASE_URL` y `JWT_SECRET` son obligatorios. `TEST_DATABASE_URL` se rechaza:
+los tests usan la misma base con aislamiento obligatorio. Drops de base y de `public`
+permanecen deshabilitados.
+
+Passwords, tokens y URLs completas no se registran. CORS acepta orígenes HTTP(S) explícitos.

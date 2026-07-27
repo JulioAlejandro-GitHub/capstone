@@ -20,12 +20,19 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
-    connectable = engine_from_config(config.get_section(config.config_ini_section), prefix="sqlalchemy.",
-                                     poolclass=pool.NullPool)
-    with connectable.connect() as connection:
+    supplied_connection = config.attributes.get("connection")
+    connectable = supplied_connection or engine_from_config(
+        config.get_section(config.config_ini_section), prefix="sqlalchemy.", poolclass=pool.NullPool
+    )
+    def migrate(connection):
         context.configure(connection=connection)
         with context.begin_transaction():
             context.run_migrations()
+    if supplied_connection is not None:
+        migrate(supplied_connection)
+    else:
+        with connectable.connect() as connection:
+            migrate(connection)
 
 
 run_migrations_offline() if context.is_offline_mode() else run_migrations_online()

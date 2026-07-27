@@ -98,7 +98,7 @@ Mantener TRAIN/EVALUATE/EXPLAIN e inferencia actual; crear tablas especializadas
 ## Secuencia recomendada de prompts
 
 1. Architecture Baseline + ADRs (**cerrado por Baseline v1.1**).
-2. Fundación: settings, Alembic baseline, CI, Docker, auth/RBAC, logging/correlation.
+2. Fundación: settings, Alembic baseline, CI, auth/RBAC, logging/correlation.
 3. Dominio y auditoría: subjects a reviews/pipeline policies en esquema.
 4. StorageProvider e ingesta inmutable.
 5. QC versionado y gate.
@@ -116,6 +116,6 @@ Mantener TRAIN/EVALUATE/EXPLAIN e inferencia actual; crear tablas especializadas
 ## Estado Prompt 2
 
 La fundación local/test/demo, PostgreSQL 17 efímero, baseline Alembic, auth/RBAC inicial,
-correlation/logging, health/readiness, Docker y CI quedaron implementados. Gate G1 queda
-condicionado a ejecutar exitosamente la suite de integración Docker en el entorno receptor.
+correlation/logging, health/readiness y CI quedaron implementados. Docker fue retirado del
+alcance operativo. Gate G1 depende de los gates locales PostgreSQL y autenticación.
 Prompt 3 puede depender de la revisión `20260726_01`; no debe alterar 001–029.

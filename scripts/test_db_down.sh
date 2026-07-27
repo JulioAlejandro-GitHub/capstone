@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 set -euo pipefail
-docker compose -f docker-compose.test.yml down -v --remove-orphans
+echo "Retirado: este proyecto nunca detiene PostgreSQL local."

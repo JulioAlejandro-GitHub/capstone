@@ -15,10 +15,10 @@ Escala cualitativa: probabilidad/impacto Bajo, Medio, Alto; nivel combina ambos.
 |R09|Reproducibilidad|Paths físicos persistidos|Sin storage abstraction|Migración S3 rompe lineage|Alta|Medio|Alto|URI lógica/provider|Resolver paths históricos con adapter|Storage/artifacts|P4|Abierto|
 |R10|ML|No detector ni contrato coords|Frontera documental|Crops/boxes incompatibles|Alta|Alto|Crítico|CellDetector + coordinate ADR + fake|Annotation adapter como baseline|Detection|P8|Abierto|
 |R11|Datos|Formato/licencia RBCNet/NIH no verificados aquí|No descarga por alcance|Retraso o restricción de uso|Media|Alto|Alto|Spike con fuentes primarias|Detector alternativo/anotaciones|Dataset/detector|P1/P7|Abierto|
-|R12|Operación|Host puede tener Python 3.14; runtime soportado es 3.12|Dos venvs locales|Import/runtime incompatibles|Media|Medio|Medio|Docker/CI y matriz 3.12|Recrear venv backend 3.12|Infra|P2|Mitigado|
+|R12|Operación|Host puede tener Python 3.14; runtime soportado es 3.12|Dos venvs locales|Import/runtime incompatibles|Media|Medio|Medio|CI 3.12 y venv local|Recrear venv backend 3.12|Infra|P2|Mitigado|
 |R14|Auditoría|Correlation ID HTTP completo; persistencia futura pendiente|Jobs aún fuera de alcance|No reconstruir request→job futuro|Media|Alto|Alto|Propagar a analysis_jobs en P6|Consulta por logs|Observability|P2/P6|Mitigación parcial|
 |R15|Seguridad|Upload sin límite/MIME fuerte|Helper centrado en path|DoS/image bomb/contenido inválido|Media|Alto|Crítico|Streaming limits, decode sandbox, MIME|Quarantine y rechazo|Ingest|P4|Abierto|
-|R16|Operación|Docker/CI implementados; backup/restore demo pendiente|Fundación inicial|Pérdida DB demo|Media|Alto|Alto|Restore drill en P15|Volumen y export administrado|Infra|P2/P15|Mitigación parcial|
+|R16|Superado|Docker/demo fuera de arquitectura operativa|Decisión Prompt 2.2.1|No aplica|Baja|Bajo|Bajo|Base local única y backups|Runbook Capstone|Infra|P2|Cerrado|
 |R17|UX|Páginas reales ocultas del menú|Config comentada|Flujos inconsistentes|Alta|Medio|Alto|IA de navegación por roles|Deep links documentados|Frontend|P14|Abierto|
 |R18|UX|Viewer científico inexistente|Frontend experimental|No revisar boxes/contexto|Alta|Alto|Crítico|Viewer con coordinate contract|Galería estática temporal|Workbench|P14|Abierto|
 |R19|Ciencia|Agregación por imagen no definida|Sin entidad/método|Claims no comparables|Alta|Alto|Crítico|Protocolo científico/versionado|Mostrar sólo células, sin agregado|Aggregator|P11|Abierto|

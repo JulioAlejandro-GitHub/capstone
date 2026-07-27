@@ -1,11 +1,11 @@
 # Entorno de test
 
 ```bash
-make test-db-up
-make test-db-bootstrap
-make test-backend
+make db-status
+make test-db
 make test-frontend
-make test-db-down
+make test-schema-clean
 ```
 
-La guarda exige `APP_ENV=test`, autorización de reset, nombre con `test`, host allowlisted y confirmación efímera. Nunca reemplace estos valores por una base personal.
+No existe ambiente persistente de test ni segunda URL. Las escrituras se revierten; los
+schemas temporales son la excepción controlada.

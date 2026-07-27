@@ -1,21 +1,35 @@
-.PHONY: validate test test-backend test-frontend test-db-up test-db-bootstrap test-db-reset test-db-down lint docker-build
+.PHONY: validate test test-backend test-backend-integration test-frontend test-ml db-status db-backup db-migrate-check db-migrate test-db test-schema-clean test-db-up test-db-down test-db-reset test-db-bootstrap lint
+
+PYTHON ?= backend_api/.venv/bin/python
+
 validate:
 	./scripts/validate.sh
 test: test-backend test-frontend
 test-backend:
-	backend_api/.venv/bin/python -m pytest backend_api/tests
+	PYTHONPATH=backend_api $(PYTHON) -m pytest backend_api/tests
+test-backend-integration test-db:
+	TEST_EXECUTION=true TEST_ISOLATION_MODE=transaction PYTHONPATH=backend_api $(PYTHON) -m pytest backend_api/tests -m requires_local_postgres
 test-frontend:
 	npm --prefix frontend test
 	npm --prefix frontend run build
-test-db-up:
-	./scripts/test_db_up.sh
-test-db-bootstrap:
-	./scripts/test_db_bootstrap.sh
-test-db-reset:
-	./scripts/test_db_reset.sh
-test-db-down:
-	./scripts/test_db_down.sh
+test-ml:
+	PYTHONPATH=malaria_dl_local_project malaria_dl_local_project/.venv/bin/python -m pytest \
+		malaria_dl_local_project/tests/test_label_mapping.py \
+		malaria_dl_local_project/tests/test_decision.py \
+		malaria_dl_local_project/tests/test_image_quality.py
+db-status:
+	./scripts/db/status.sh
+db-backup:
+	./scripts/db/backup.sh
+db-migrate-check:
+	PYTHONPATH=backend_api $(PYTHON) scripts/db/verify_alembic_adoption.py
+	PYTHONPATH=backend_api $(PYTHON) -m alembic current
+	PYTHONPATH=backend_api $(PYTHON) -m alembic heads
+db-migrate:
+	./scripts/db/migrate.sh
+test-schema-clean:
+	./scripts/db/test_schema_clean.sh
+test-db-up test-db-down test-db-reset test-db-bootstrap:
+	@echo "Comando retirado: PostgreSQL local no se inicia, detiene, resetea ni reconstruye. Use make test-db."
 lint:
 	git diff --check
-docker-build:
-	docker compose build backend

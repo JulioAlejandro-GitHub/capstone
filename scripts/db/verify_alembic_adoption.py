@@ -8,7 +8,7 @@ from sqlalchemy import create_engine, text
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "backend_api"))
 from app.config import get_settings
-from app.database_safety import assert_safe_test_database
+from app.database_safety import assert_capstone_database
 from app.db import normalize_sqlalchemy_url
 
 
@@ -17,9 +17,12 @@ def main():
     parser.add_argument("--pre-stamp", action="store_true")
     args = parser.parse_args()
     settings = get_settings()
-    url = assert_safe_test_database(settings, confirmation=True)
+    url = settings.database_url
+    assert_capstone_database(settings)
     required = {"runs", "model_versions", "stage2_model_publications", "schema_migrations"}
     with create_engine(normalize_sqlalchemy_url(url)).connect() as connection:
+        actual_database = connection.execute(text("SELECT current_database()")).scalar_one()
+        assert_capstone_database(settings, actual_database)
         tables = set(connection.execute(text(
             "SELECT tablename FROM pg_tables WHERE schemaname='public'"
         )).scalars())
@@ -34,9 +37,9 @@ def main():
         raise SystemExit(f"Esquema incompatible; faltan tablas/migración final: {sorted(missing)}")
     if args.pre_stamp and version is not None:
         raise SystemExit("La base ya posee alembic_version; adopción pre-stamp rechazada")
-    if not args.pre_stamp and version not in {"20260726_00", "20260726_01"}:
+    if not args.pre_stamp and version not in {"20260726_00", "20260726_01", "20260726_02"}:
         raise SystemExit("alembic_version incompatible")
-    print(f"Adopción Alembic válida: {version or 'pre-stamp'}")
+    print(f"Adopción Alembic válida en {actual_database}: {version or 'pre-stamp'}")
 
 
 if __name__ == "__main__":

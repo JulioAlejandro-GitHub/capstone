@@ -8,6 +8,7 @@ from pydantic import BaseModel,ConfigDict
 from app.db import fetch_all,fetch_one,get_engine,resolve_datasource
 from app.services.serialization import row_to_dict,rows_to_list
 from app.security import Permission,require_permission
+from app.audit import audited_permission,mutation_connection
 
 CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))
 from src.malaria_dl.governance.services.deployment_service import ModelDeploymentService
@@ -79,7 +80,7 @@ def prepare_release_service(datasource:str|None):
     key=resolve_datasource(datasource)
     @contextmanager
     def connection_factory():
-        with get_engine(key).begin() as connection:
+        with mutation_connection(get_engine(key)) as connection:
             yield connection
     return PrepareModelReleaseService(connection_factory=connection_factory)
 
@@ -87,7 +88,7 @@ def governance_services(datasource:str|None):
     key=resolve_datasource(datasource)
     @contextmanager
     def connection_factory():
-        with get_engine(key).begin() as connection:
+        with mutation_connection(get_engine(key)) as connection:
             yield connection
     deployment=ModelDeploymentService(connection_factory=connection_factory,model_cache=MODEL_CACHE)
     return deployment,ModelReleaseLifecycleService(connection_factory),TraceableInferenceService(connection_factory=connection_factory,cache=MODEL_CACHE)
@@ -96,7 +97,7 @@ def contract_service(datasource:str|None):
     key=resolve_datasource(datasource)
     @contextmanager
     def connection_factory():
-        with get_engine(key).begin() as connection:
+        with mutation_connection(get_engine(key)) as connection:
             yield connection
     return ModelContractService(connection_factory)
 
@@ -104,7 +105,7 @@ def stage2_service(datasource:str|None):
     key=resolve_datasource(datasource)
     @contextmanager
     def connection_factory():
-        with get_engine(key).begin() as connection:
+        with mutation_connection(get_engine(key)) as connection:
             yield connection
     return Stage2ModelAvailabilityService(connection_factory,cache=MODEL_CACHE)
 
@@ -112,7 +113,7 @@ def technical_production_service(datasource:str|None):
     key=resolve_datasource(datasource)
     @contextmanager
     def connection_factory():
-        with get_engine(key).begin() as connection:
+        with mutation_connection(get_engine(key)) as connection:
             yield connection
     return Stage2ModelAvailabilityService(
       connection_factory,cache=MODEL_CACHE,environment="production",alias="champion",
@@ -124,7 +125,7 @@ def stage2_publication_service(datasource:str|None):
     key=resolve_datasource(datasource)
     @contextmanager
     def connection_factory():
-        with get_engine(key).begin() as connection:
+        with mutation_connection(get_engine(key)) as connection:
             yield connection
     return Stage2PublicationService(connection_factory,datasource=key)
 
@@ -135,7 +136,8 @@ def promotion_status(training_run_id:str,datasource:str|None=Query("malaria")):
     except HTTPException:raise
     except Exception as exc:raise HTTPException(409,{"code":"PROMOTION_STATUS_FAILED","message":type(exc).__name__}) from exc
 
-@router.post("/training-runs/{training_run_id}/prepare-release")
+@router.post("/training-runs/{training_run_id}/prepare-release",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_RELEASE_PREPARED"))])
 def prepare_release(
     training_run_id:str,
     body:PrepareReleaseRequest|None=None,
@@ -166,7 +168,7 @@ def model_version_stage2_status(model_version_id:str,datasource:str|None=Query("
     return safe(lambda:stage2_publication_service(datasource).status(uid(model_version_id)))
 
 @router.post("/model-versions/{model_version_id}/stage2-publications",
-             dependencies=[Depends(require_permission(Permission.MODELS_PUBLISH))])
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_PUBLISHED_STAGE2"))])
 def publish_stage2_model(
     model_version_id:str,body:Stage2PublicationRequest,
     datasource:str|None=Query("malaria"),
@@ -177,7 +179,7 @@ def publish_stage2_model(
     ))
 
 @router.post("/stage2-publications/{publication_id}/deactivate",
-             dependencies=[Depends(require_permission(Permission.MODELS_DEACTIVATE))])
+             dependencies=[Depends(audited_permission(Permission.MODELS_DEACTIVATE, "MODEL_PUBLICATION_DEACTIVATED"))])
 def deactivate_stage2_publication(
     publication_id:str,body:Stage2PublicationRequest,
     datasource:str|None=Query("malaria"),
@@ -192,7 +194,7 @@ def stage2_package_preview(training_run_id:str,datasource:str|None=Query("malari
     return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
 
 @router.post("/training-runs/{training_run_id}/enable-stage2",
-             dependencies=[Depends(require_permission(Permission.MODELS_SET_DEFAULT))])
+             dependencies=[Depends(audited_permission(Permission.MODELS_SET_DEFAULT, "STAGE2_DEFAULT_CHANGED"))])
 def enable_stage2(training_run_id:str,body:Stage2EnableRequest,datasource:str|None=Query("malaria")):
     return safe(lambda:stage2_service(datasource).enable(
       uid(training_run_id),actor=body.actor,reason=body.reason,
@@ -213,7 +215,8 @@ def technical_production_preview(model_version_id:str,datasource:str|None=Query(
     if not row:raise HTTPException(404,"Model version no encontrada")
     return safe(lambda:technical_production_service(datasource).preview(str(row["training_run_id"])))
 
-@router.post("/model-versions/{model_version_id}/publish-technical-production")
+@router.post("/model-versions/{model_version_id}/publish-technical-production",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_PUBLISHED_TECHNICAL"))])
 def publish_model_technical_production(model_version_id:str,body:TechnicalProductionRequest,datasource:str|None=Query("malaria")):
     row=fetch_one(datasource,"SELECT training_run_id::text FROM model_versions WHERE id=CAST(:id AS uuid)",
       {"id":uid(model_version_id)})
@@ -225,7 +228,8 @@ def publish_model_technical_production(model_version_id:str,body:TechnicalProduc
       source_image_id=uid(body.source_image_id) if body.source_image_id else None,
     ))
 
-@router.post("/training-runs/{training_run_id}/publish-technical-production")
+@router.post("/training-runs/{training_run_id}/publish-technical-production",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_PUBLISHED_TECHNICAL"))])
 def publish_training_technical_production(training_run_id:str,body:TechnicalProductionRequest,datasource:str|None=Query("malaria")):
     return safe(lambda:technical_production_service(datasource).enable(
       uid(training_run_id),actor=body.actor,reason=body.reason,
@@ -234,7 +238,8 @@ def publish_training_technical_production(training_run_id:str,body:TechnicalProd
       source_image_id=uid(body.source_image_id) if body.source_image_id else None,
     ))
 
-@router.post("/training-runs/{training_run_id}/build-production-model-version")
+@router.post("/training-runs/{training_run_id}/build-production-model-version",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_VERSION_BUILT"))])
 def build_production_model_version(
     training_run_id:str,body:PrepareReleaseRequest|None=None,
     datasource:str|None=Query("malaria"),
@@ -282,16 +287,19 @@ def model_version_contract_candidates(model_version_id:str,datasource:str|None=Q
 @router.get("/model-versions/{model_version_id}/production-package-preview")
 def production_package_preview(model_version_id:str,datasource:str|None=Query("malaria")):
     return safe(lambda:contract_service(datasource).candidates(uid(model_version_id)))
-@router.post("/model-versions/{model_version_id}/complete-contract")
+@router.post("/model-versions/{model_version_id}/complete-contract",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_CONTRACT_COMPLETED"))])
 def complete_model_version_contract(model_version_id:str,body:CompleteContractRequest,datasource:str|None=Query("malaria")):
     return safe(lambda:contract_service(datasource).complete(uid(model_version_id),body.selections,body.actor,body.reason))
-@router.post("/model-versions/{model_version_id}/build-production-package")
+@router.post("/model-versions/{model_version_id}/build-production-package",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_PACKAGE_BUILT"))])
 def build_production_package(model_version_id:str,body:CompleteContractRequest,datasource:str|None=Query("malaria")):
     return safe(lambda:contract_service(datasource).complete(uid(model_version_id),body.selections,body.actor,body.reason))
 @router.get("/model-versions/{model_version_id}/production-readiness")
 def model_version_production_readiness(model_version_id:str,datasource:str|None=Query("malaria")):
     return safe(lambda:contract_service(datasource).readiness(uid(model_version_id)))
-@router.post("/model-versions/{model_version_id}/publish-to-production")
+@router.post("/model-versions/{model_version_id}/publish-to-production",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_PUBLISHED_PRODUCTION"))])
 def publish_to_production(model_version_id:str,body:PublishProductionRequest,datasource:str|None=Query("malaria")):
     return safe(lambda:governance_services(datasource)[0].publish_to_production(
       model_version_id=uid(model_version_id),deployment_name=body.deployment_name,
@@ -324,34 +332,44 @@ def deployment(deployment_id:str,datasource:str|None=Query("malaria")):
 @router.get("/deployments/{deployment_id}/readiness")
 def deployment_readiness(deployment_id:str,datasource:str|None=Query("malaria")):
     return safe(lambda:governance_services(datasource)[0].readiness(uid(deployment_id)))
-@router.post("/model-versions/{model_version_id}/validate")
+@router.post("/model-versions/{model_version_id}/validate",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_VALIDATED"))])
 def validate_model_version(model_version_id:str,body:ModelVersionTransition,datasource:str|None=Query("malaria")):
     if not body.threshold_profile_id:raise HTTPException(422,"threshold_profile_id requerido")
     return safe(lambda:governance_services(datasource)[1].validate(uid(model_version_id),uid(body.threshold_profile_id),body.actor,body.reason))
-@router.post("/model-versions/{model_version_id}/approve")
+@router.post("/model-versions/{model_version_id}/approve",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_APPROVED"))])
 def approve_model_version(model_version_id:str,body:ModelVersionTransition,datasource:str|None=Query("malaria")):
     return safe(lambda:governance_services(datasource)[1].approve(uid(model_version_id),body.actor,body.reason))
-@router.post("/model-versions/{model_version_id}/reject")
+@router.post("/model-versions/{model_version_id}/reject",
+             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_REJECTED"))])
 def reject_model_version(model_version_id:str,body:ModelVersionTransition,datasource:str|None=Query("malaria")):
     return safe(lambda:governance_services(datasource)[1].reject(uid(model_version_id),body.actor,body.reason))
-@router.post("/deployments")
+@router.post("/deployments",
+             dependencies=[Depends(audited_permission(Permission.SYSTEM_ADMIN, "DEPLOYMENT_CREATED"))])
 def create_deployment(body:DeploymentCreate,datasource:str|None=Query("malaria")):
     def op():
         service=governance_services(datasource)[0];result=service.create(model_version_id=body.model_version_id,deployment_name=body.deployment_name,environment=body.environment,alias=body.alias,threshold_profile_id=body.threshold_profile_id,deployed_by=body.deployed_by,metadata=body.metadata,dry_run=body.dry_run)
         if body.activate and not body.dry_run:result=service.activate(result.id,actor=body.deployed_by)
         return result
     return safe(op)
-@router.post("/deployments/{deployment_id}/activate")
+@router.post("/deployments/{deployment_id}/activate",
+             dependencies=[Depends(audited_permission(Permission.SYSTEM_ADMIN, "DEPLOYMENT_UPDATED"))])
 def activate(deployment_id:str,body:Transition,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].activate(uid(deployment_id),actor=body.actor,confirm_production=body.confirm_production))
-@router.post("/deployments/{deployment_id}/smoke-test")
+@router.post("/deployments/{deployment_id}/smoke-test",
+             dependencies=[Depends(audited_permission(Permission.SYSTEM_ADMIN, "DEPLOYMENT_SMOKE_TESTED"))])
 def smoke_test(deployment_id:str,body:SmokeTestRequest,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].smoke_test(uid(deployment_id),uid(body.source_image_id),body.actor))
-@router.post("/deployments/{deployment_id}/rollback")
+@router.post("/deployments/{deployment_id}/rollback",
+             dependencies=[Depends(audited_permission(Permission.SYSTEM_ADMIN, "DEPLOYMENT_ROLLED_BACK"))])
 def rollback(deployment_id:str,body:RollbackRequest,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].rollback(uid(deployment_id),uid(body.target_deployment_id),body.actor,body.reason))
-@router.post("/deployments/{deployment_id}/deactivate")
+@router.post("/deployments/{deployment_id}/deactivate",
+             dependencies=[Depends(audited_permission(Permission.SYSTEM_ADMIN, "DEPLOYMENT_UPDATED"))])
 def deactivate(deployment_id:str,body:Transition,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].transition(uid(deployment_id),"inactive",body.actor,body.reason))
-@router.post("/deployments/{deployment_id}/retire")
+@router.post("/deployments/{deployment_id}/retire",
+             dependencies=[Depends(audited_permission(Permission.SYSTEM_ADMIN, "DEPLOYMENT_UPDATED"))])
 def retire(deployment_id:str,body:Transition,datasource:str|None=Query("malaria")):return safe(lambda:governance_services(datasource)[0].transition(uid(deployment_id),"retired",body.actor,body.reason))
-@router.post("/image-analysis-jobs")
+@router.post("/image-analysis-jobs",
+             dependencies=[Depends(audited_permission(Permission.PREDICTIONS_EXECUTE, "TRACEABLE_INFERENCE_REQUESTED"))])
 def create_image_job(body:ImageJobCreate,datasource:str|None=None):
     if not body.deployed_model_version_id and not all((body.deployment_name,body.environment,body.alias)):raise HTTPException(422,"deployment id o alias requerido")
     service=governance_services(datasource)[2] if datasource else INFERENCE_SERVICE

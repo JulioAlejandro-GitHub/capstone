@@ -6,3 +6,9 @@ herramienta diagnóstica. La fundación de Etapa 2 se documenta en
 
 Comandos principales: `make validate`, `make test`, `make test-db-up`,
 `make test-db-bootstrap` y `make test-db-down`.
+# Operación de la fundación
+
+Backend y frontend se ejecutan localmente con Python y Node/Vite contra PostgreSQL 17.9
+Homebrew y la base `malaria_experiments`. Docker no forma parte de la arquitectura
+operativa, CI ni criterios de aprobación. Consulte
+`docs/engineering/local_development.md`.

@@ -1,3 +1,6 @@
 # Pipeline CI
 
-`.github/workflows/ci.yml` separa documentación/configuración, backend unitario, integración PostgreSQL 17, frontend test/build, ML rápido determinista, Alembic y Docker. Usa permisos read-only, timeouts y credenciales efímeras. No descarga datasets/modelos, no entrena, publica ni despliega.
+`.github/workflows/ci.yml` configura validación, backend sin PostgreSQL, seguridad pura,
+frontend, ML rápido y validación estática de Alembic. No crea PostgreSQL ni ejecuta Docker.
+La integración real es el gate local `requires_local_postgres`. Sin commit/push solo puede
+declararse `REMOTE_CI_CONFIGURATION=PASS`, no una ejecución remota.

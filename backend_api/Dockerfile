@@ -1,3 +1,5 @@
+# HISTORICAL / OUT OF OPERATIONAL SCOPE.
+# Capstone runs the backend directly with the local Python environment.
 FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app

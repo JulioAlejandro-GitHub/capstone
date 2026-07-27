@@ -1,11 +1,13 @@
 # Desarrollo local
 
-Use Python 3.12 y Node 22. Cree un entorno backend, instale `backend_api/requirements.txt`, copie `.env.example` a un `.env` no versionado y exporte sus valores. Inicie PostgreSQL controlado, ejecute el bootstrap y luego:
+Use Python 3.12, Node 22 y PostgreSQL 17.9 Homebrew. Configure privadamente
+`APP_ENV=development`, `DATABASE_URL`, `JWT_SECRET` y storage. No copie credenciales a Git.
 
 ```bash
-PYTHONPATH=backend_api uvicorn app.main:app --reload
+PYTHONPATH=backend_api backend_api/.venv/bin/uvicorn app.main:app --reload
 npm --prefix frontend run dev
-python scripts/create_admin.py --username admin --email admin@example.edu
 ```
 
-TRAIN/EVALUATE/EXPLAIN conservan sus comandos y adaptadores actuales. Esta fundación no añade procesamiento científico.
+Compruebe `/health`, `/ready` y el frontend Vite. Docker no forma parte de la arquitectura
+operativa, del desarrollo ni de los gates. TRAIN/EVALUATE/EXPLAIN y sus adaptadores
+permanecen sin cambios; esta fundación no añade procesamiento científico.

@@ -1,5 +1,9 @@
 # Autenticación y RBAC
 
+El gate real usa exclusivamente `CAPSTONE_E2E_USERNAME` y `CAPSTONE_E2E_PASSWORD` privados.
+Si faltan, login autorizado y `/auth/me` quedan BLOCKED; nunca se crean credenciales para
+hacer pasar el gate. Usuarios deshabilitados se prueban con fixtures sintéticas revertidas.
+
 `POST /api/v1/auth/login` entrega JWT corto y `GET /api/v1/auth/me` devuelve el principal. Passwords usan Argon2 mediante `pwdlib`; JWT usa PyJWT/HS256 configurable. El token vive sólo en memoria del tab: reduce persistencia ante XSS, pero se pierde al recargar.
 
 |Rol|Acceso actual|
