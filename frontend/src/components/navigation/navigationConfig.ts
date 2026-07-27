@@ -44,6 +44,7 @@ export const navigationGroups: NavigationGroup[] = [
   // },
   {
     id: 'data', label: 'Datos', items: [
+      { id: 'smear-upload', label: 'Cargar frotis', path: routes.smearUpload, icon: 'database' },
       { id: 'dataset', label: 'Dataset', path: routes.dataset, icon: 'database' },
       { id: 'datasets-models', label: 'Datasets y modelos', path: routes.datasetsModels, icon: 'datasets' },
     ]

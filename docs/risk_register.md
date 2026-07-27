@@ -36,3 +36,5 @@ Escala cualitativa: probabilidad/impacto Bajo, Medio, Alto; nivel combina ambos.
 |R28|Seguridad|CORS sólo GET/POST localhost|Configuración fija|Futuros métodos fallan o apertura ad hoc insegura|Media|Medio|Medio|Origins/methods por perfil|Proxy same-origin|Backend|P2|Abierto|
 |R29|Reproducibilidad|Git commit no garantizado en cada futuro stage|Tracking heterogéneo|No reproducir resultado|Media|Alto|Alto|Pipeline manifest obligatorio|Bloquear cierre de job incompleto|Pipeline|P11|Abierto|
 |R30|Alcance científico|Producto puede percibirse diagnóstico|Terminología “productivo”|Uso indebido|Media|Alto|Crítico|Vocabulario experimental, disclaimers, RBAC|Retirar report/export ambiguo|Producto|P1/P15|Abierto|
+|R31|Storage|Caída abrupta entre move y commit|Sin transacción distribuida|Archivo huérfano|Baja|Medio|Medio|UUID, compensación, reconcile y staging cleanup|Reconciliar manualmente|Backend|P4|Mitigado|
+|R32|Privacidad|Identidad externa contiene PII no declarada|Fuente externa|Exposición científica|Media|Alto|Alto|Valor opaco, UI anti-PII, metadata filtrada y RBAC|Archivar y revisar fuente|Producto|P4|Abierto|

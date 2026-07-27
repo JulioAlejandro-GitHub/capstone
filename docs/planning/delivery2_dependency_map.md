@@ -123,3 +123,7 @@ La fundación local/test/demo, PostgreSQL 17 efímero, baseline Alembic, auth/RB
 correlation/logging, health/readiness y CI quedaron implementados. Docker fue retirado del
 alcance operativo. Gate G1 depende de los gates locales PostgreSQL y autenticación.
 Prompt 3 puede depender de la revisión `20260726_01`; no debe alterar 001–029.
+
+Prompt 4 cierra identidad e ingesta para Prompt 5. Prompt 5 podrá crear
+`analysis_runs` sólo tras calidad; Prompt 6 consumirá `microscopy_images.id` y
+Prompt 7 las futuras detecciones.

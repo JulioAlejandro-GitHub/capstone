@@ -21,3 +21,7 @@ archivarse directamente. No se aplica cascada.
 Las pruebas PostgreSQL usan transacción exterior y savepoints por request; el rollback final
 elimina usuarios, entidades y eventos. Una constraint de test provoca un fallo real al
 insertar `audit_events` y demuestra que la mutación también se revierte.
+
+Prompt 4 añade checks e índices parciales de origen, estados, conteos, canales,
+secuencias e identidades externas. La validación binaria está en
+`image_security_validation.md`.

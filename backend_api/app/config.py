@@ -58,6 +58,10 @@ class Settings:
     storage_root: Path
     artifacts_root: Path
     max_upload_size_bytes: int
+    max_image_pixels: int
+    upload_chunk_size_bytes: int
+    staging_retention_hours: int
+    allowed_microscopy_formats: tuple[str, ...]
     correlation_id_header: str
     include_stacktrace: bool
     sql_logging: bool
@@ -86,7 +90,10 @@ class Settings:
         pool_max = _int("DATABASE_POOL_MAX_SIZE", 5, 1)
         if pool_min > pool_max:
             raise ValueError("DATABASE_POOL_MIN_SIZE no puede superar DATABASE_POOL_MAX_SIZE")
+        project_root = Path(__file__).resolve().parents[2]
         storage_root = Path(os.getenv("STORAGE_ROOT", "./var/storage")).expanduser()
+        if not storage_root.is_absolute():
+            storage_root = project_root / storage_root
         artifacts_root = Path(os.getenv("ARTIFACTS_ROOT", "./var/artifacts")).expanduser()
         isolation_mode = os.getenv("TEST_ISOLATION_MODE", "transaction").strip().lower()
         if isolation_mode not in {"transaction", "temporary_schema"}:
@@ -121,6 +128,14 @@ class Settings:
             storage_root=storage_root,
             artifacts_root=artifacts_root,
             max_upload_size_bytes=_int("MAX_UPLOAD_SIZE_BYTES", 20_971_520, 1),
+            max_image_pixels=_int("MAX_IMAGE_PIXELS", 100_000_000, 1),
+            upload_chunk_size_bytes=_int("UPLOAD_CHUNK_SIZE_BYTES", 1_048_576, 1),
+            staging_retention_hours=_int("STAGING_RETENTION_HOURS", 24, 1),
+            allowed_microscopy_formats=tuple(
+                item.strip().upper() for item in
+                os.getenv("ALLOWED_MICROSCOPY_FORMATS", "JPEG,PNG,TIFF").split(",")
+                if item.strip()
+            ),
             correlation_id_header=os.getenv("CORRELATION_ID_HEADER", "X-Correlation-ID"),
             include_stacktrace=_bool("INCLUDE_STACKTRACE"),
             sql_logging=_bool("SQL_LOGGING"),

@@ -1,10 +1,9 @@
-# ADR-014 — Modelo de datos científicos
+# ADR-016 — Modelo de datos científicos
 
 Estado: aceptado — 2026-07-27
 
-> Nota de catálogo: el repositorio ya contenía `ADR-014-explainability-policy.md`. Se conserva
-> inmutable y se usa el nombre solicitado por Prompt 3; el índice ADR debe renumerarse en una
-> tarea documental posterior para eliminar la colisión histórica.
+> Renumerado desde ADR-014 por la colisión histórica con
+> `ADR-014-explainability-policy.md`; no cambia la decisión técnica.
 
 ## Decisión
 

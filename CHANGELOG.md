@@ -9,3 +9,9 @@
   efímero, transición Alembic, auth JWT/Argon2, RBAC, correlation ID, logging,
   health/readiness, Docker, CI y login frontend.
 - Migraciones históricas 001–029 preservadas.
+
+## 2026-07-27 — Prompt 4
+
+- Ingesta multipart segura, streaming, SHA-256, JPEG/PNG/TIFF y recuperación.
+- Paciente/muestra automáticos, lotes e importación NIH-NLM idempotente.
+- Storage compensable, UI `/frotis/cargar` y contrato RBCNet documental.

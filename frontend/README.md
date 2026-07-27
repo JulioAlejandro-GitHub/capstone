@@ -10,3 +10,6 @@ npm --prefix frontend run dev
 ```
 
 El frontend oficial se ejecuta con Node/Vite local. Docker no es un gate ni una dependencia.
+
+`/frotis/cargar` permite buscar o generar paciente, seleccionar o generar muestra
+y cargar múltiples originales sin calcular metadata técnica en el cliente.

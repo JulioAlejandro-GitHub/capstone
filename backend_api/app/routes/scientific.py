@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+import json
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.responses import FileResponse
 
 from app.audit import transactional_permission
 from app.schemas.scientific import (
@@ -11,10 +15,13 @@ from app.schemas.scientific import (
 )
 from app.security import Permission, Principal, require_permission
 from app.services.scientific import ScientificError, ScientificService
+from app.services.image_ingestion import ImageIngestionService
+from app.services.local_storage import LocalStorage, StorageError
 
 
 router = APIRouter(prefix="/api/v1/scientific", tags=["scientific-data"])
 service = ScientificService()
+ingestion = ImageIngestionService()
 
 
 def execute(call):
@@ -40,6 +47,40 @@ def create_subject(
     principal: Principal = Depends(transactional_permission(Permission.SCIENTIFIC_SUBJECTS_CREATE)),
 ):
     return execute(lambda: service.create("subject", values(body), principal, request))
+
+
+@router.get("/subjects/lookup")
+def lookup_subject(
+    subject_code: str = Query(min_length=1, max_length=120),
+    _: Principal = Depends(require_permission(Permission.SCIENTIFIC_SUBJECTS_READ)),
+):
+    return execute(lambda: ingestion.lookup_subject(subject_code))
+
+
+@router.post("/subjects/auto", status_code=201)
+def auto_subject(
+    request: Request,
+    principal: Principal = Depends(transactional_permission(Permission.SCIENTIFIC_SUBJECTS_CREATE)),
+):
+    return execute(lambda: ingestion.auto_subject(principal, request))
+
+
+@router.get("/subjects/{subject_id}/samples")
+def subject_samples(
+    subject_id: UUID, sample_code: str | None = Query(None, max_length=120),
+    _: Principal = Depends(require_permission(Permission.SCIENTIFIC_SAMPLES_READ)),
+):
+    return execute(lambda: {
+        "items": ingestion.samples_for_subject(str(subject_id), sample_code)
+    })
+
+
+@router.post("/subjects/{subject_id}/samples/auto", status_code=201)
+def auto_sample(
+    subject_id: UUID, request: Request,
+    principal: Principal = Depends(transactional_permission(Permission.SCIENTIFIC_SAMPLES_CREATE)),
+):
+    return execute(lambda: ingestion.auto_sample(str(subject_id), principal, request))
 
 
 @router.get("/subjects", dependencies=[Depends(require_permission(Permission.SCIENTIFIC_SUBJECTS_READ))])
@@ -198,12 +239,82 @@ def list_images(
     return listing("image", status, search, limit, offset, parent_column="slide_id", parent_id=str(slide_id))
 
 
-@router.get("/images/{image_id}", dependencies=[Depends(require_permission(Permission.SCIENTIFIC_IMAGES_READ))])
+@router.get("/images/{image_id:uuid}", dependencies=[Depends(require_permission(Permission.SCIENTIFIC_IMAGES_READ))])
 def get_image(image_id: UUID):
     return execute(lambda: service.get("image", str(image_id)))
 
 
-@router.patch("/images/{image_id}")
+@router.post("/images/upload", status_code=201)
+async def upload_images(
+    request: Request,
+    files: list[UploadFile] = File(...),
+    subject_mode: str = Form(...),
+    subject_code: str | None = Form(None),
+    sample_mode: str = Form(...),
+    sample_id: str | None = Form(None),
+    acquisition_origin: str = Form("manual_upload"),
+    source_system: str | None = Form(None),
+    external_patient_id: str | None = Form(None),
+    external_sample_id: str | None = Form(None),
+    source_component_id: str | None = Form(None),
+    source_group_key: str | None = Form(None),
+    captured_at: datetime | None = Form(None),
+    metadata_json: str = Form("{}"),
+    principal: Principal = Depends(transactional_permission(Permission.SCIENTIFIC_IMAGES_REGISTER)),
+):
+    forbidden = {
+        "created_by", "uploaded_by", "storage_key", "sha256", "mime_type",
+        "file_size_bytes", "width_px", "height_px", "bit_depth", "channel_count",
+        "color_space", "orientation", "status", "ingestion_status",
+        "received_image_count", "created_at", "expected_image_count",
+    }
+    form = await request.form()
+    supplied = sorted(forbidden.intersection(form.keys()))
+    if supplied:
+        raise HTTPException(422, f"Campos controlados por backend: {', '.join(supplied)}")
+    try:
+        parsed_metadata = json.loads(metadata_json)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(422, "metadata_json debe ser JSON válido.") from exc
+    if not isinstance(parsed_metadata, dict):
+        raise HTTPException(422, "metadata_json debe ser un objeto.")
+    try:
+        return await ingestion.upload(
+            files=files, subject_mode=subject_mode, subject_code=subject_code,
+            sample_mode=sample_mode, sample_id=sample_id,
+            acquisition_origin=acquisition_origin, source_system=source_system,
+            external_patient_id=external_patient_id, external_sample_id=external_sample_id,
+            source_component_id=source_component_id, source_group_key=source_group_key,
+            captured_at=captured_at, metadata_json=parsed_metadata,
+            principal=principal, request=request,
+        )
+    except ScientificError as exc:
+        raise HTTPException(exc.status_code, exc.detail) from exc
+
+
+@router.get("/images/{image_id:uuid}/content")
+def image_content(
+    image_id: UUID,
+    _: Principal = Depends(require_permission(Permission.SCIENTIFIC_IMAGES_READ)),
+):
+    image = execute(lambda: service.get("image", str(image_id)))
+    if image["status"] == "archived":
+        raise HTTPException(404, "Imagen archivada.")
+    try:
+        path = LocalStorage().resolve(image["storage_key"], must_exist=True)
+    except (StorageError, OSError) as exc:
+        raise HTTPException(404, "Contenido no disponible.") from exc
+    return FileResponse(
+        path, media_type=image["mime_type"], filename=image["original_filename"] or "image",
+        headers={
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, no-store",
+            "ETag": f'"sha256-{image["sha256"]}"',
+        },
+    )
+
+
+@router.patch("/images/{image_id:uuid}")
 def update_image(
     image_id: UUID, body: ImageUpdate, request: Request,
     principal: Principal = Depends(transactional_permission(Permission.SCIENTIFIC_IMAGES_UPDATE)),
@@ -211,7 +322,7 @@ def update_image(
     return execute(lambda: service.update("image", str(image_id), values(body), principal, request))
 
 
-@router.post("/images/{image_id}/archive")
+@router.post("/images/{image_id:uuid}/archive")
 def archive_image(
     image_id: UUID, body: ArchiveRequest, request: Request,
     principal: Principal = Depends(transactional_permission(Permission.SCIENTIFIC_IMAGES_ARCHIVE)),

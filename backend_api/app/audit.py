@@ -114,12 +114,19 @@ def transactional_permission(permission: Permission) -> Callable:
     """Authorize a mutation and expose one transaction for domain mutation + audit."""
     permission_dependency = require_permission(permission)
 
-    async def dependency(principal: Principal = Depends(permission_dependency)):
-        with get_primary_engine().begin() as connection:
-            token = audit_transaction_connection.set(connection)
-            try:
-                yield principal
-            finally:
-                audit_transaction_connection.reset(token)
+    async def dependency(
+        request: Request, principal: Principal = Depends(permission_dependency),
+    ):
+        try:
+            with get_primary_engine().begin() as connection:
+                token = audit_transaction_connection.set(connection)
+                try:
+                    yield principal
+                finally:
+                    audit_transaction_connection.reset(token)
+        except Exception:
+            from app.services.local_storage import LocalStorage
+            LocalStorage.cleanup(getattr(request.state, "storage_compensation", []))
+            raise
 
     return dependency

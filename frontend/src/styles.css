@@ -276,6 +276,20 @@ main {
   color: #62708f;
 }
 
+.ingestion-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.ingestion-card { min-width: 0; border: 1px solid #d7deeb; border-radius: 14px; background: #fff; padding: 18px; }
+.ingestion-card legend { padding: 0 8px; color: #173b78; font-weight: 800; }
+.ingestion-card label:not(.check-row) { display: grid; gap: 7px; margin: 12px 0; font-weight: 700; }
+.ingestion-card input:not([type="checkbox"]), .ingestion-card select { width: 100%; border: 1px solid #b9c5d9; border-radius: 8px; padding: 10px; background: #fff; }
+.ingestion-card button, .ingestion-submit button { border: 0; border-radius: 9px; background: #2458b8; color: #fff; padding: 10px 16px; font-weight: 750; cursor: pointer; }
+.ingestion-card button:disabled, .ingestion-submit button:disabled { opacity: .5; cursor: not-allowed; }
+.check-row { display: flex; align-items: center; gap: 9px; margin-top: 15px; }
+.privacy-note { border-left: 3px solid #d49a1c; background: #fff8e5; padding: 10px; color: #5c430b; }
+.file-list { max-height: 180px; overflow: auto; padding-left: 20px; }
+.file-list li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }
+.ingestion-submit { display: flex; align-items: center; gap: 18px; margin-top: 20px; }
+@media (max-width: 800px) { .ingestion-grid { grid-template-columns: 1fr; } }
+
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));

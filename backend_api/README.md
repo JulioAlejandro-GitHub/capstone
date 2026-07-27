@@ -15,3 +15,6 @@ PYTHONPATH=backend_api backend_api/.venv/bin/uvicorn app.main:app --reload
 
 Requiere `APP_ENV=development`, `DATABASE_URL` y `JWT_SECRET` privados. Docker no es parte
 del flujo oficial.
+
+Prompt 4 agrega multipart por streaming, validación Pillow, SHA-256 backend-only,
+lotes científicos y contenido autenticado. Use las variables de `.env.example`.

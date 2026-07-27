@@ -41,6 +41,15 @@ const ACCESS_TOKEN_KEY = 'capstone.access_token';
 const activeRequests = new Set<AbortController>();
 let authenticationFailureHandler: (() => void) | null = null;
 
+export type ScientificSubject = { id: string; subject_code: string; status: string };
+export type ScientificSample = { id: string; sample_code: string; status: string };
+export type ImageUploadResponse = {
+  subject: ScientificSubject;
+  sample: ScientificSample;
+  status: 'complete' | 'incomplete' | 'inconsistent';
+  counts: { received: number; expected: number | null; ignored: number };
+};
+
 function readStoredAccessToken() {
   try {
     return window.localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -201,6 +210,23 @@ export const api = {
 
   getDatasources() {
     return request<{ items: Datasource[] }>('/datasources');
+  },
+
+  lookupScientificSubject(subjectCode: string) {
+    return request<ScientificSubject>('/api/v1/scientific/subjects/lookup', {
+      subject_code: subjectCode,
+    });
+  },
+
+  getScientificSamples(subjectId: string) {
+    return request<{items: ScientificSample[]}>(`/api/v1/scientific/subjects/${subjectId}/samples`);
+  },
+
+  uploadMicroscopyImages(form: FormData) {
+    return request<ImageUploadResponse>('/api/v1/scientific/images/upload', {}, {
+      timeoutMs: 120000,
+      init: { method: 'POST', body: form },
+    });
   },
 
   getDashboardSummary(datasource: string) {

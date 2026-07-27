@@ -21,3 +21,6 @@ nacimiento, contacto o diagnóstico. La API rechaza esas claves, incluso anidada
 
 `storage_provider` y `storage_key` son referencias. `original_filename` es informativo y no
 debe contener PII. No hay columnas `BYTEA`, large objects ni multipart en este alcance.
+
+Prompt 4 añade lote, origen de identidad de muestra, procedencia y propiedades
+técnicas. Multipart es transporte API; PostgreSQL continúa sin binarios.

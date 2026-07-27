@@ -35,3 +35,6 @@ dependencia activa; y 422 por payload inválido.
 
 Roles: administrator posee todo; researcher y operator leen/crean/actualizan/registran;
 reviewer y read_only sólo leen. El archivado queda reservado al administrator.
+
+La extensión Prompt 4 (`image_upload_api.md`) añade lookup exacto, generación
+automática, muestras por sujeto, multipart y contenido autenticado.

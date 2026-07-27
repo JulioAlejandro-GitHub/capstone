@@ -55,3 +55,7 @@ técnica. No representa una predicción ni altera la convención futura
 `GET /api/v1/scientific/cases/{id}/traceability` ejecuta un join ordenado y arma
 caso/sujeto/muestras/frotis/imágenes. La respuesta no incluye `storage_key`, rutas absolutas,
 actores ni metadata libre.
+
+Prompt 4 incorpora `image_ingestion_batches`, procedencia externa separada y
+metadata técnica detectada. `microscopy_images.id` queda como identidad estable
+para futuros análisis; los binarios permanecen fuera de PostgreSQL.

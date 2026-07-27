@@ -16,3 +16,6 @@ Backend y frontend se ejecutan localmente con Python y Node/Vite contra PostgreS
 Homebrew y la base `malaria_experiments`. Docker no forma parte de la arquitectura
 operativa, CI ni criterios de aprobación. Consulte
 `docs/engineering/local_development.md`.
+
+La ingesta protegida está disponible en `/frotis/cargar`: resuelve identidad
+pseudonimizada y preserva originales en `var/storage`.

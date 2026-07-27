@@ -1,15 +1,17 @@
 import os
 from contextlib import contextmanager
+from io import BytesIO
 from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, inspect, text
+from PIL import Image
 
 import app.audit as audit
 import app.security as security
 import app.services.scientific as scientific_service
-from app.config import Settings
+from app.config import Settings, reset_settings_cache
 from app.database_safety import assert_capstone_database
 from app.db import normalize_sqlalchemy_url
 from app.main import app
@@ -33,7 +35,7 @@ class TransactionEngine:
 
 
 @pytest.fixture()
-def scientific_client(monkeypatch):
+def scientific_client(monkeypatch, tmp_path):
     if os.getenv("TEST_EXECUTION", "").lower() != "true":
         pytest.skip("requiere gate PostgreSQL local explícito")
     settings = Settings.from_env()
@@ -61,6 +63,8 @@ def scientific_client(monkeypatch):
       UNION ALL SELECT :reviewer,id FROM roles WHERE name='reviewer'
     """), {"admin": admin_id, "reviewer": reviewer_id})
     shared = TransactionEngine(connection)
+    monkeypatch.setenv("STORAGE_ROOT", str(tmp_path / "storage"))
+    reset_settings_cache()
     monkeypatch.setattr(security, "get_primary_engine", lambda: shared)
     monkeypatch.setattr(audit, "get_primary_engine", lambda: shared)
     monkeypatch.setattr(scientific_service, "get_primary_engine", lambda: shared)
@@ -74,6 +78,7 @@ def scientific_client(monkeypatch):
                 suffix,
             )
     finally:
+        reset_settings_cache()
         outer.rollback()
         connection.close()
         engine.dispose()
@@ -225,6 +230,83 @@ def test_real_audit_failure_rolls_back_mutation(scientific_client):
         text("SELECT count(*) FROM research_subjects WHERE subject_code=:code"),
         {"code": f"ROLLBACK-{suffix}"},
     ).scalar_one() == 0
+
+
+def _png(index: int) -> bytes:
+    output = BytesIO()
+    Image.new("RGB", (16, 12), (index, 20, 30)).save(output, "PNG")
+    return output.getvalue()
+
+
+def test_secure_nih_upload_identity_content_and_idempotent_retry(scientific_client):
+    client, connection, admin, reviewer, suffix = scientific_client
+    data = {
+        "subject_mode": "automatic_new",
+        "sample_mode": "automatic_new",
+        "acquisition_origin": "research_dataset_import",
+        "source_system": "nih_nlm_thin_blood_smears_pf",
+        "external_patient_id": f"opaque-{suffix}",
+    }
+    first = client.post(
+        "/api/v1/scientific/images/upload", headers=admin, data=data,
+        files=[("files", (f"image_{index}.png", _png(index), "application/octet-stream"))
+               for index in range(1, 5)] + [
+                   ("files", ("Thumbs.db", b"ignored", "application/octet-stream")),
+                   ("files", (".DS_Store", b"ignored", "application/octet-stream")),
+               ],
+    )
+    assert first.status_code == 201, first.text
+    body = first.json()
+    assert body["status"] == "incomplete"
+    assert body["counts"]["received"] == 4
+    assert body["counts"]["ignored"] == 2
+    assert body["ingestion_batch"]["expected_image_count"] == 5
+    subject_id, sample_id = body["subject"]["id"], body["sample"]["id"]
+    assert connection.execute(text("""
+      SELECT external_patient_id FROM research_subjects WHERE id=:id
+    """), {"id": subject_id}).scalar_one() == f"opaque-{suffix}"
+    sample = connection.execute(text("""
+      SELECT external_sample_id,sample_identity_origin,source_group_key
+      FROM blood_samples WHERE id=:id
+    """), {"id": sample_id}).mappings().one()
+    assert sample["external_sample_id"] is None
+    assert sample["sample_identity_origin"] == "generated_by_capstone"
+    assert sample["source_group_key"] == f"opaque-{suffix}"
+    image_id = body["images"][0]["id"]
+    content = client.get(f"/api/v1/scientific/images/{image_id}/content", headers=reviewer)
+    assert content.status_code == 200
+    assert content.headers["x-content-type-options"] == "nosniff"
+    assert content.content == _png(1)
+
+    retry = client.post(
+        "/api/v1/scientific/images/upload", headers=admin, data=data,
+        files=[
+            ("files", ("image_1.png", _png(1), "image/png")),
+            ("files", ("image_5.png", _png(5), "image/png")),
+        ],
+    )
+    assert retry.status_code == 201, retry.text
+    retried = retry.json()
+    assert retried["status"] == "complete"
+    assert retried["counts"]["received"] == 5
+    assert retried["subject"]["id"] == subject_id
+    assert retried["sample"]["id"] == sample_id
+    assert connection.execute(text("""
+      SELECT count(*) FROM microscopy_images WHERE ingestion_batch_id=:id
+    """), {"id": retried["ingestion_batch"]["id"]}).scalar_one() == 5
+    assert connection.execute(text("""
+      SELECT count(*) FROM audit_events
+      WHERE actor_user_id=(SELECT created_by FROM microscopy_images WHERE id=:image)
+        AND event_type='scientific.image.imported'
+    """), {"image": image_id}).scalar_one() >= 1
+
+    excess = client.post(
+        "/api/v1/scientific/images/upload", headers=admin, data=data,
+        files=[("files", ("image_6.png", _png(6), "image/png"))],
+    )
+    assert excess.status_code == 201
+    assert excess.json()["status"] == "inconsistent"
+    assert excess.json()["counts"]["received"] == 6
     assert connection.execute(
         text("SELECT count(*) FROM audit_events WHERE resource_id IS NOT NULL "
              "AND event_type='SCIENTIFIC_SUBJECT_CREATED'")
