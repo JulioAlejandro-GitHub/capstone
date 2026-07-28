@@ -61,6 +61,11 @@ export type AnalysisRun = { id:string; run_code:string; ingestion_batch_id:strin
   sample_code:string; slide_code:string; input_image_count:number; quality_profile_key:string;
   quality_profile_version:string; run_status:string; quality_gate_status:string; ready_for_analysis:boolean;
   active_stage:string; requested_by_username:string; created_at:string; images:QualityImage[]; decisions:Array<Record<string,unknown>> };
+export type QueuePriority = 1|50|100;
+export type QualityQueueItem = { queue_item_id:string;analysis_run_id:string;run_code:string;
+  subject_code:string;sample_code:string;priority:QueuePriority;status:'queued'|'running'|'completed'|'failed';
+  attempt_count:number;requested_by:string;requested_by_username:string;requested_at:string;
+  started_at:string|null;completed_at:string|null;failed_at:string|null;last_error_message:string|null };
 
 function readStoredAccessToken() {
   try {
@@ -265,6 +270,24 @@ export const api = {
   reviewQuality(runId:string,decision:'approve_with_warnings'|'reject',comment:string) {
     return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-decision`,{},{
       init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decision,comment})},
+    });
+  },
+  enqueueQuality(analysis_run_id:string,priority:QueuePriority=50) {
+    return request<Record<string,unknown>>('/api/v1/analysis/queue',{},{
+      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysis_run_id,priority})},
+    });
+  },
+  getQualityQueue(params:Record<string,QueryValue>={}) {
+    return request<{items:QualityQueueItem[];total:number}>('/api/v1/analysis/queue',params);
+  },
+  executeQueueItem(queueItemId:string) {
+    return request<Record<string,unknown>>(`/api/v1/analysis/queue/${queueItemId}/execute`,{},{
+      timeoutMs:120000,init:{method:'POST'},
+    });
+  },
+  retryQueueItem(queueItemId:string,priority:QueuePriority) {
+    return request<Record<string,unknown>>(`/api/v1/analysis/queue/${queueItemId}/retry`,{},{
+      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({priority})},
     });
   },
 
