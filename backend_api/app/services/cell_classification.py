@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import logging
 import math
 import os
 import secrets
@@ -44,6 +45,7 @@ AGGREGATION_POLICY_VERSION = "cell-candidate-aggregation-v1"
 PROBABILITY_SUM_TOLERANCE = 1e-6
 ACTIVE_RUN_STALE_AFTER_SECONDS = 60 * 60
 PENDING_EXPLANATION_STALE_AFTER_SECONDS = 15 * 60
+logger = logging.getLogger(__name__)
 
 
 class CellClassificationError(ValueError):
@@ -52,10 +54,17 @@ class CellClassificationError(ValueError):
         status_code: int,
         detail: str,
         code: str = "CELL_CLASSIFICATION_ERROR",
+        *,
+        classification_run_id: str | None = None,
+        stage: str | None = None,
+        retryable: bool | None = None,
     ):
         self.status_code = status_code
         self.detail = detail
         self.code = code
+        self.classification_run_id = classification_run_id
+        self.stage = stage
+        self.retryable = retryable
         super().__init__(detail)
 
 
@@ -2148,6 +2157,7 @@ class CellClassificationService:
             return self._public_record(result)
         run_id = UUID(str(run["id"]))
         eligible_count = sum(item["eligible"] for item in inputs)
+        stage = "run_start"
         try:
             self._start(
                 run_id,
@@ -2155,15 +2165,19 @@ class CellClassificationService:
                 principal=principal,
                 request=request,
             )
+            stage = "model_loading"
             model = self.model_resolver.load(resolved)
+            stage = "model_contract_validation"
             self._validate_loaded_model_contract(model, resolved)
             self._record_model_loaded(run_id, resolved)
+            stage = "inference"
             predictions = self._run_batches(
                 run_id=run_id,
                 model=model,
                 resolved=resolved,
                 inputs=inputs,
             )
+            stage = "summary_persistence"
             status = self._finalize(
                 run=run,
                 inputs=inputs,
@@ -2172,15 +2186,30 @@ class CellClassificationService:
                 request=request,
             )
         except Exception as exc:
+            logger.exception(
+                "Cell classification execution failed",
+                extra={
+                    "classification_run_id": str(run_id),
+                    "detection_run_id": detection_run_id,
+                    "stage": stage,
+                },
+            )
             if isinstance(exc, CellClassificationError):
                 code, detail = exc.code, exc.detail
             else:
                 code, detail = (
-                    "CELL_CLASSIFICATION_FAILED",
+                    "CELL_CLASSIFICATION_EXECUTION_FAILED",
                     "La clasificación celular no pudo completarse.",
                 )
             self._fail_run(run, principal, request, code=code, detail=detail)
-            raise CellClassificationError(500, detail, code) from exc
+            raise CellClassificationError(
+                500,
+                detail,
+                code,
+                classification_run_id=str(run_id),
+                stage=stage,
+                retryable=True,
+            ) from exc
         result = self.get_run(str(run_id))
         result["idempotent"] = False
         if status == "failed":

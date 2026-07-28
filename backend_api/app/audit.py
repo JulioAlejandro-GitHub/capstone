@@ -90,7 +90,7 @@ def mutation_connection(engine: Engine):
 def audited_permission(permission: Permission, event_type: str) -> Callable:
     permission_dependency = require_permission(permission)
 
-    def dependency(
+    async def dependency(
         request: Request,
         principal: Principal = Depends(permission_dependency),
     ):

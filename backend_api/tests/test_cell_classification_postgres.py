@@ -1083,6 +1083,28 @@ def test_api_rbac_and_safe_block_without_productive_model(
 ):
     context = classification_postgres
     source = context.completed_detection()
+    # The local gate may legitimately have a real productive model. Isolate
+    # the zero-model scenario inside the fixture's outer rollback transaction.
+    context.connection.execute(
+        text(
+            """
+            UPDATE stage2_model_publications
+            SET status='inactive',is_active=FALSE,
+                deactivated_at=NOW(),deactivated_by='postgres-test-rollback'
+            WHERE scope='stage2' AND status='active' AND is_active=TRUE
+            """
+        )
+    )
+    context.connection.execute(
+        text(
+            """
+            UPDATE deployed_model_versions
+            SET status='inactive',retired_at=NOW(),
+                retired_by='postgres-test-rollback'
+            WHERE environment='stage2' AND alias='default' AND status='active'
+            """
+        )
+    )
     productive_count = context.connection.execute(
         text(
             """
@@ -1110,7 +1132,7 @@ def test_api_rbac_and_safe_block_without_productive_model(
     candidate = eligible.json()["items"][0]
     assert candidate["detection_run_id"] == str(source["detection_run_id"])
     assert candidate["eligible"] is False
-    assert candidate["reason_code"] == "PRODUCTIVE_MODEL_NOT_UNIQUE"
+    assert candidate["reason_code"] == "PRODUCTIVE_MODEL_NOT_FOUND"
     assert candidate["productive_model"] is None
 
     payload = {"detection_run_id": str(source["detection_run_id"])}
@@ -1128,7 +1150,7 @@ def test_api_rbac_and_safe_block_without_productive_model(
     assert blocked.status_code == 409, blocked.text
     body = blocked.json()
     assert body["error"]["code"] == "CONFLICT"
-    assert "modelo productivo válido" in body["error"]["message"].lower()
+    assert body["error"]["message"] == "No existe un modelo Productivo Etapa 2."
     assert context.connection.execute(
         text(
             """
@@ -1156,7 +1178,7 @@ def test_api_rbac_and_safe_block_without_productive_model(
     ).mappings().all()
     assert len(rejection_audit) == 1
     assert rejection_audit[0]["success"] is False
-    assert rejection_audit[0]["error_code"] == "PRODUCTIVE_MODEL_NOT_UNIQUE"
+    assert rejection_audit[0]["error_code"] == "PRODUCTIVE_MODEL_NOT_FOUND"
     safe_audit = json.dumps(rejection_audit[0], default=str).lower()
     assert "checkpoint_path" not in safe_audit
     assert "artifact_path" not in safe_audit

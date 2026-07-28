@@ -266,6 +266,8 @@ class CellExplanationStorage:
                 os.replace(artifact.path, destination)
                 os.chmod(destination, 0o600)
                 promoted.append(destination)
+            # os.replace() leaves the per-explanation staging hierarchy empty.
+            self.cleanup([staged.heatmap.path.parent])
             return destinations[0], destinations[1]
         except Exception:
             self.cleanup(promoted)

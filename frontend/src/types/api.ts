@@ -112,6 +112,9 @@ export interface Stage2Availability {
   action_label?:string;blockers:PromotionBlockingReason[];technical_blockers?:PromotionBlockingReason[];warnings:string[];
   model_version_id:string|null;deployment_id?:string|null;fixture?:boolean;
   checkpoint_artifact_id?:string;checkpoint?:string;model_name?:string;version_number?:number;
+  environment?:'stage2';alias?:'default';deployment_status?:string;
+  artifact_sha256?:string;threshold?:number;threshold_source?:string;deployed_at?:string;
+  smoke_status?:string;available_for_inference?:boolean;
   publication?:Stage2Publication|null;warning?:string;idempotent?:boolean;
   package?:ModelContractCandidates|null;
 }
@@ -124,6 +127,7 @@ export interface Stage2Publication {
 export interface Stage2EnablementResult {
   training_run_id:string;model_version_id:string;deployment_id:string;
   environment:'stage2'|'production';alias:'default'|'champion';status:'active';artifact_sha256:string;
+  threshold:number;threshold_source:string;deployed_at:string;
   smoke_status:'PASS';available_for_stage2:boolean;
   verification_inference:{status:'PASS';inference_run_id:string;image_analysis_job_id:string};
   warnings:string[];rollback_available:boolean;idempotent:boolean;

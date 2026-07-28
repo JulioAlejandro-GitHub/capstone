@@ -348,15 +348,19 @@ def test_productive_resolver_rejects_absent_or_ambiguous_and_accepts_published_h
         "priority_hints": ["parasitized", "near_threshold"],
     }
 
-    with pytest.raises(ProductiveModelError):
+    with pytest.raises(ProductiveModelError) as missing:
         ProductiveModelResolver(
             candidate_loader=lambda: [], ml_project_root=ml_root
         ).resolve()
-    with pytest.raises(ProductiveModelError):
+    assert missing.value.code == "PRODUCTIVE_MODEL_NOT_FOUND"
+    assert missing.value.detail == "No existe un modelo Productivo Etapa 2."
+    with pytest.raises(ProductiveModelError) as ambiguous:
         ProductiveModelResolver(
             candidate_loader=lambda: [candidate, candidate],
             ml_project_root=ml_root,
         ).resolve()
+    assert ambiguous.value.code == "PRODUCTIVE_MODEL_NOT_UNIQUE"
+    assert "Existe más de un modelo Productivo Etapa 2" in ambiguous.value.detail
     inconsistent = {**candidate, "calibration_threshold_source": "other"}
     with pytest.raises(ProductiveModelError) as error:
         ProductiveModelResolver(
@@ -392,7 +396,7 @@ def test_productive_resolver_query_starts_from_active_publication_and_uses_real_
     sql = " ".join(str(captured["sql"]).split()).lower()
     assert "from stage2_model_publications publication" in sql
     assert (
-        "join deployed_model_versions d on "
+        "left join deployed_model_versions d on "
         "d.model_version_id=publication.model_version_id and "
         "d.checkpoint_artifact_id=publication.checkpoint_artifact_id"
     ) in sql
@@ -408,6 +412,31 @@ def test_productive_resolver_query_starts_from_active_publication_and_uses_real_
         "publication_id": None,
         "checkpoint_sha256": None,
     }
+
+
+def test_active_publication_is_not_reinterpreted_by_inference_lifecycle_checks(
+    tmp_path: Path,
+):
+    ml_root = tmp_path / "ml"
+    model_path = ml_root / "outputs" / "run" / "model.keras"
+    model_path.parent.mkdir(parents=True)
+    model_path.write_bytes(b"controlled-model")
+    candidate = _candidate(model_path)
+    candidate.update(
+        training_status="failed",
+        evaluation_status="failed",
+        evaluation_lineage_valid=False,
+        model_version_status="retired",
+        lineage_status="unresolved",
+        deployment_metadata={"technical_contract": candidate["deployment_metadata"]["technical_contract"]},
+    )
+
+    resolved = ProductiveModelResolver(
+        candidate_loader=lambda: [candidate],
+        ml_project_root=ml_root,
+    ).resolve_current_stage2_productive_model()
+
+    assert resolved.publication_id == candidate["publication_id"]
 
 
 def test_historical_snapshot_resolves_exact_identity_without_current_default_fallback(
@@ -580,6 +609,7 @@ def test_explanation_storage_stages_promotes_hashes_and_never_touches_crop(
     heatmap, overlay = storage.promote(staged)
     assert heatmap.read_bytes() == _png("L")
     assert overlay.read_bytes() == _png("RGB")
+    assert not staged.heatmap.path.parent.exists()
     assert crop.read_bytes() == before
     assert staged.heatmap.sha256 == hashlib.sha256(_png("L")).hexdigest()
     with pytest.raises(StorageError, match="no se sobrescribe"):
@@ -827,6 +857,52 @@ class _CountingResolver:
     def load(self, _resolved):
         self.load_count += 1
         return object()
+
+
+class _MissingTensorFlowResolver(_CountingResolver):
+    def load(self, _resolved):
+        self.load_count += 1
+        raise ModuleNotFoundError("No module named 'tensorflow'")
+
+
+def test_missing_tensorflow_during_model_loading_is_terminal_and_structured(
+    tmp_path: Path,
+    caplog,
+):
+    repository = _ExecutionRepository([_detection(1)])
+    resolver = _MissingTensorFlowResolver(_resolved(tmp_path))
+    service = CellClassificationService(
+        engine=_FakeEngine(),
+        settings=SimpleNamespace(
+            cell_classification_batch_size=2,
+            cell_classification_review_margin=0.01,
+        ),
+        repository_factory=lambda _connection: repository,
+        model_resolver=resolver,
+        auditor=lambda **_kwargs: None,
+    )
+    service._preflight_detections = lambda rows: [dict(row) for row in rows]
+
+    with pytest.raises(CellClassificationError) as error:
+        service.execute_classification(
+            str(repository.detection_run_id),
+            SimpleNamespace(user_id=str(uuid4())),
+            SimpleNamespace(),
+        )
+
+    assert error.value.status_code == 500
+    assert error.value.code == "CELL_CLASSIFICATION_EXECUTION_FAILED"
+    assert error.value.detail == "La clasificación celular no pudo completarse."
+    assert error.value.classification_run_id == str(repository.run["id"])
+    assert error.value.stage == "model_loading"
+    assert error.value.retryable is True
+    assert repository.run["status"] == "failed"
+    assert repository.run["error_code"] == "CELL_CLASSIFICATION_EXECUTION_FAILED"
+    assert any(
+        event["event_type"] == "cell_classification.run.failed"
+        for event in repository.event_rows
+    )
+    assert "No module named 'tensorflow'" in caplog.text
 
 
 def test_execution_loads_once_batches_and_persists_thresholded_partial_records(

@@ -235,26 +235,24 @@ class Stage2ModelAvailabilityService:
         selections={item["key"]:item["proposed_source_id"] for item in package["fields"] if item.get("proposed_source_id")}
         if preprocessing_candidate_id:selections["preprocessing_profile_snapshot"]=preprocessing_candidate_id
         threshold_field=next(item for item in package["fields"] if item["key"]=="threshold_profile_id")
-        threshold_value=0.5;threshold_source="stage2_operational_default";threshold_id=None
+        threshold_value=None;threshold_source=None;threshold_id=None
         if threshold_candidate_id:selections["threshold_profile_id"]=threshold_candidate_id
         if threshold_field["candidates"]:
             selected=next((item for item in threshold_field["candidates"] if item["source_id"]==(threshold_candidate_id or threshold_field.get("proposed_source_id"))),None)
             if selected:
-                threshold_id=selected["source_id"];threshold_value=float(selected["value"]["threshold"]);threshold_source=selected["source"]
+                threshold_id=selected["source_id"]
+                threshold_value=float(selected["value"]["threshold"])
+                threshold_source=selected["value"].get("threshold_source")
         if not threshold_id:
-            with self.connection_factory() as connection:
-                threshold_id=connection.execute(text("""INSERT INTO run_threshold_calibration(
-                  run_id,model_name,threshold_policy,threshold_source,threshold_selected,
-                  default_threshold,calibration_split,metadata,model_version_id,
-                  score_name,positive_label,calibration_status)
-                  VALUES(:run,:model,'stage2_operational','stage2_operational_default',0.5,0.5,'val',
-                    CAST(:metadata AS jsonb),CAST(:mv AS uuid),'probability_parasitized',
-                    'parasitized','recorded') RETURNING run_threshold_calibration_id::text"""),
-                  {"run":preview["training_run_id"],"model":package["model_name"],
-                   "mv":preview["model_version_id"],"metadata":json.dumps({
-                     "usage":"stage2_technical","clinical_calibration":False,
-                     "warning":"Threshold operativo por defecto; no es umbral clínico."})}).scalar_one()
-            selections["threshold_profile_id"]=threshold_id
+            raise GovernanceStateError(
+                "threshold faltante: se requiere una calibración registrada y "
+                "trazable para la model version"
+            )
+        if not threshold_source:
+            raise GovernanceStateError(
+                "threshold source faltante en la calibración registrada"
+            )
+        selections["threshold_profile_id"]=threshold_id
         def selected_value(key):
             field=next(item for item in package["fields"] if item["key"]==key)
             return field.get("current_value") or field.get("proposed_value") or {}
@@ -283,7 +281,8 @@ class Stage2ModelAvailabilityService:
                     "technical_production_verified_at":datetime.now(UTC).isoformat()})})
         stage2_manifest={**manifest,"usage":self.production_scope,"clinical_approved":False,
           "production_scope":self.production_scope,
-          "threshold":{"value":threshold_value,"source":threshold_source,"clinical_calibration":threshold_source not in {"stage2_operational_default","stage2_default"}},
+          "threshold":{"value":threshold_value,"source":threshold_source,
+            "clinical_calibration":True},
           "warnings":preview["warnings"]}
         self._write_json(target.parent/"manifest.json",stage2_manifest)
         self._write_json(target.parent/"preprocessing.json",manifest.get("preprocessing_profile_snapshot",{}))
@@ -377,6 +376,41 @@ class Stage2ModelAvailabilityService:
               deployed_by=:actor,deployment_reason=:reason WHERE id=:id"""),
               {"id":deployment_id,"actor":actor,"reason":reason})
 
+    def deactivate(self, deployment_id, *, actor, reason):
+        """Close Stage 2 availability without deleting immutable history."""
+        deployment_id = self._id(deployment_id)
+        with self.connection_factory() as connection:
+            connection.execute(
+                text("SELECT pg_advisory_xact_lock(hashtextextended(:key,0))"),
+                {"key": f"deployment-slot:{self.environment}:{self.alias}"},
+            )
+            row = connection.execute(text("""
+              SELECT * FROM deployed_model_versions
+              WHERE id=CAST(:id AS uuid) FOR UPDATE
+            """), {"id": deployment_id}).mappings().one_or_none()
+            if not row:
+                raise GovernanceNotFoundError("deployment inexistente")
+            if row["environment"] != self.environment or row["alias"] != self.alias:
+                raise GovernanceStateError("deployment no pertenece a stage2/default")
+            if row["status"] != "active":
+                return self._result(deployment_id, idempotent=True)
+            connection.execute(text("""
+              UPDATE deployed_model_versions SET status='inactive',
+                metadata=metadata||CAST(:audit AS jsonb)
+              WHERE id=CAST(:id AS uuid)
+            """), {
+                "id": deployment_id,
+                "audit": json.dumps({
+                    "last_audit_event": "scientific.model.deployment.deactivated",
+                    "deactivated_by": actor,
+                    "deactivation_reason": reason,
+                    "deactivated_at": datetime.now(UTC).isoformat(),
+                }),
+            })
+        if self.cache:
+            self.cache.invalidate_model_version(row["model_version_id"])
+        return self._result(deployment_id)
+
     def _result(self,deployment_id,idempotent=False):
         with self.connection_factory() as connection:
             row=dict(connection.execute(text("""SELECT d.*,mv.training_run_id,mv.model_name,mv.version_number
@@ -384,6 +418,7 @@ class Stage2ModelAvailabilityService:
               WHERE d.id=:id"""),{"id":deployment_id}).mappings().one())
         metadata=dict(row.get("metadata") or {});smoke=metadata.get("technical_smoke_test") or metadata.get("stage2_smoke_test") or {}
         verification=metadata.get("technical_verification") or metadata.get("stage2_verification") or {}
+        threshold_snapshot=dict(row.get("threshold_profile_snapshot") or {})
         with self.connection_factory() as connection:
             rollback_available=bool(connection.execute(text("""SELECT 1 FROM deployed_model_versions
               WHERE environment=:environment AND alias=:alias
@@ -394,7 +429,11 @@ class Stage2ModelAvailabilityService:
                "id":deployment_id}).scalar_one_or_none())
         return {"training_run_id":str(row["training_run_id"]),"model_version_id":str(row["model_version_id"]),
           "deployment_id":str(row["id"]),"environment":row["environment"],"alias":row["alias"],
-          "status":row["status"],"artifact_sha256":row["artifact_sha256"],"smoke_status":smoke.get("status"),
+          "status":row["status"],"artifact_sha256":row["artifact_sha256"],
+          "threshold":float(row["threshold_value"]),
+          "threshold_source":threshold_snapshot.get("source"),
+          "deployed_at":row["deployed_at"].isoformat() if row.get("deployed_at") else None,
+          "smoke_status":smoke.get("status"),
           "production_scope":metadata.get("production_scope",self.production_scope),
           "available_for_stage2":row["status"]=="active" and smoke.get("status")=="PASS" and verification.get("status")=="PASS",
           "available_for_inference":row["status"]=="active" and smoke.get("status")=="PASS" and verification.get("status")=="PASS",

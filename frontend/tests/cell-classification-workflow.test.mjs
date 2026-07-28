@@ -59,6 +59,21 @@ test('cliente no puede elegir modelo, checkpoint, mapping ni threshold', () => {
   assert.doesNotMatch(feature, /threshold\s*\?\?\s*0\.5|threshold\s*\|\|\s*0\.5/);
 });
 
+test('cliente preserva error HTTP estructurado y distingue abort, red y parseo', () => {
+  for (const field of [
+    'status',
+    'code',
+    'classificationRunId',
+    'stage',
+    'retryable',
+  ]) assert.match(api, new RegExp(field));
+  assert.match(api, /kind: 'http' \| 'network' \| 'timeout' \| 'abort' \| 'parse'/);
+  assert.match(api, /detail\.classification_run_id/);
+  assert.match(api, /error\.name === 'AbortError'/);
+  assert.match(api, /error instanceof TypeError/);
+  assert.match(api, /respuesta JSON inválida/);
+});
+
 test('ausencia de modelo detiene el flujo sin fallback y retry es manual', () => {
   assert.match(hook, /reasonCode\.startsWith\('PRODUCTIVE_'\)/);
   assert.match(

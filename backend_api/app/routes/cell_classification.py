@@ -28,11 +28,26 @@ router = APIRouter(
 service = CellClassificationService()
 
 
+def _http_exception(exc: CellClassificationError) -> HTTPException:
+    if exc.classification_run_id is None:
+        return HTTPException(exc.status_code, exc.detail)
+    return HTTPException(
+        exc.status_code,
+        {
+            "code": exc.code,
+            "message": exc.detail,
+            "classification_run_id": exc.classification_run_id,
+            "stage": exc.stage,
+            "retryable": bool(exc.retryable),
+        },
+    )
+
+
 def execute(call):
     try:
         return call()
     except CellClassificationError as exc:
-        raise HTTPException(exc.status_code, exc.detail) from exc
+        raise _http_exception(exc) from exc
 
 
 @router.get("/eligible-detection-runs")
@@ -73,7 +88,7 @@ async def create_classification_run(
             request,
         )
     except CellClassificationError as exc:
-        raise HTTPException(exc.status_code, exc.detail) from exc
+        raise _http_exception(exc) from exc
 
 
 @router.get("/classification-runs")

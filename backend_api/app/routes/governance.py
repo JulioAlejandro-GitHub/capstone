@@ -7,7 +7,7 @@ from fastapi import APIRouter,Depends,Header,HTTPException,Query
 from pydantic import BaseModel,ConfigDict
 from app.db import fetch_all,fetch_one,get_engine,resolve_datasource
 from app.services.serialization import row_to_dict,rows_to_list
-from app.security import Permission,require_permission
+from app.security import Permission,Principal,require_permission
 from app.audit import audited_permission,mutation_connection
 
 CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))
@@ -129,6 +129,26 @@ def stage2_publication_service(datasource:str|None):
             yield connection
     return Stage2PublicationService(connection_factory,datasource=key)
 
+def stage2_status_with_deployment(response:dict,datasource:str|None):
+    deployment=fetch_one(datasource,"""SELECT id::text deployment_id,environment,alias,
+      status deployment_status,artifact_sha256,threshold_value::float threshold,
+      threshold_profile_snapshot->>'source' threshold_source,deployed_at,
+      metadata->'technical_smoke_test'->>'status' smoke_status
+      FROM deployed_model_versions
+      WHERE model_version_id=CAST(:model_version AS uuid)
+        AND checkpoint_artifact_id=CAST(:artifact AS uuid)
+        AND environment='stage2' AND alias='default'
+      ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,created_at DESC LIMIT 1""",{
+        "model_version":response["model_version_id"],
+        "artifact":response["checkpoint_artifact_id"],
+      })
+    if deployment:
+        response.update(row_to_dict(deployment))
+        response["available_for_inference"]=(
+          response["deployment_status"]=="active" and response["smoke_status"]=="PASS"
+        )
+    return response
+
 @router.get("/training-runs/{training_run_id}/promotion-status")
 def promotion_status(training_run_id:str,datasource:str|None=Query("malaria")):
     try:
@@ -161,33 +181,91 @@ def stage2_availability(training_run_id:str,datasource:str|None=Query("malaria")
 @router.get("/training-runs/{training_run_id}/stage2-release-status")
 def stage2_release_status(training_run_id:str,datasource:str|None=Query("malaria")):
     """Estado persistente del candidato técnico; sólo TRAIN + EVALUATE bloquean."""
-    return safe(lambda:stage2_publication_service(datasource).status_for_training(uid(training_run_id)))
+    return safe(lambda:stage2_status_with_deployment(
+      stage2_publication_service(datasource).status_for_training(uid(training_run_id)),
+      datasource,
+    ))
 
 @router.get("/model-versions/{model_version_id}/stage2-status")
 def model_version_stage2_status(model_version_id:str,datasource:str|None=Query("malaria")):
-    return safe(lambda:stage2_publication_service(datasource).status(uid(model_version_id)))
+    return safe(lambda:stage2_status_with_deployment(
+      stage2_publication_service(datasource).status(uid(model_version_id)),datasource,
+    ))
 
-@router.post("/model-versions/{model_version_id}/stage2-publications",
-             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_PUBLISHED_STAGE2"))])
+@router.post("/model-versions/{model_version_id}/stage2-publications")
 def publish_stage2_model(
     model_version_id:str,body:Stage2PublicationRequest,
     datasource:str|None=Query("malaria"),
     request_id:str|None=Header(None,alias="X-Request-ID"),
+    principal:Principal=Depends(
+      audited_permission(Permission.MODELS_PUBLISH, "scientific.model.deployment.activated")
+    ),
 ):
-    return safe(lambda:stage2_publication_service(datasource).publish(
-      uid(model_version_id),body.actor,body.reason,request_id,
-    ))
+    def op():
+        actor=principal.username
+        reason=body.reason or "Publicación y deployment en Etapa 2"
+        publication=stage2_publication_service(datasource).publish(
+          uid(model_version_id),actor,reason,request_id,
+        )
+        deployment=stage2_service(datasource).enable(
+          publication["training_run_id"],actor=actor,reason=reason,
+          confirm_stage2_enablement=True,
+        )
+        publication.update({
+          "deployment_id":deployment["deployment_id"],
+          "environment":deployment["environment"],
+          "alias":deployment["alias"],
+          "deployment_status":deployment["status"],
+          "artifact_sha256":deployment["artifact_sha256"],
+          "threshold":deployment["threshold"],
+          "threshold_source":deployment["threshold_source"],
+          "deployed_at":deployment["deployed_at"],
+          "smoke_status":deployment["smoke_status"],
+          "available_for_inference":deployment["available_for_inference"],
+          "idempotent":publication["idempotent"] and deployment["idempotent"],
+        })
+        return publication
+    return safe(op)
 
-@router.post("/stage2-publications/{publication_id}/deactivate",
-             dependencies=[Depends(audited_permission(Permission.MODELS_DEACTIVATE, "MODEL_PUBLICATION_DEACTIVATED"))])
+@router.post("/stage2-publications/{publication_id}/deactivate")
 def deactivate_stage2_publication(
     publication_id:str,body:Stage2PublicationRequest,
     datasource:str|None=Query("malaria"),
     request_id:str|None=Header(None,alias="X-Request-ID"),
+    principal:Principal=Depends(
+      audited_permission(Permission.MODELS_DEACTIVATE, "scientific.model.deployment.deactivated")
+    ),
 ):
-    return safe(lambda:stage2_publication_service(datasource).deactivate(
-      uid(publication_id),body.actor,body.reason,request_id,
-    ))
+    def op():
+        actor=principal.username
+        reason=body.reason or "Baja de deployment en Etapa 2"
+        publication=stage2_publication_service(datasource).deactivate(
+          uid(publication_id),actor,reason,request_id,
+        )
+        with mutation_connection(get_engine(resolve_datasource(datasource))) as connection:
+            deployment_id=connection.execute(text("""
+              SELECT id::text FROM deployed_model_versions
+              WHERE model_version_id=CAST(:model_version AS uuid)
+                AND checkpoint_artifact_id=CAST(:artifact AS uuid)
+                AND environment='stage2' AND alias='default'
+              ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,
+                created_at DESC LIMIT 1
+            """), {
+              "model_version":publication["model_version_id"],
+              "artifact":publication["checkpoint_artifact_id"],
+            }).scalar_one_or_none()
+        if deployment_id:
+            deployment=stage2_service(datasource).deactivate(
+              deployment_id,actor=actor,reason=reason,
+            )
+            publication.update({
+              "deployment_id":deployment_id,
+              "environment":"stage2","alias":"default",
+              "deployment_status":deployment["status"],
+              "available_for_inference":False,
+            })
+        return publication
+    return safe(op)
 
 @router.get("/training-runs/{training_run_id}/stage2-package-preview")
 def stage2_package_preview(training_run_id:str,datasource:str|None=Query("malaria")):

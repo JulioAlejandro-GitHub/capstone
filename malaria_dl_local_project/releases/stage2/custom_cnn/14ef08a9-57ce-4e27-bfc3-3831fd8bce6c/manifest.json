@@ -1,0 +1,46 @@
+{
+  "artifact_sha256": "17d713f1cbc0d107f6197174a87fd09a2fd637a5a30c41b0a12dabac9134f71c",
+  "artifact_size_bytes": 5149668,
+  "checkpoint_artifact_id": "1aae2ffe-ad2d-4657-bb03-5249cf36c904",
+  "class_mapping": {
+    "0": "uninfected",
+    "1": "parasitized",
+    "positive_class": 1,
+    "positive_label": "parasitized"
+  },
+  "clinical_approved": false,
+  "created_at": "2026-07-28T22:09:20.299913+00:00",
+  "framework": "keras",
+  "framework_version": null,
+  "input_signature": {
+    "dtype": "float32",
+    "shape": [
+      null,
+      200,
+      200,
+      3
+    ]
+  },
+  "model_version_id": "14ef08a9-57ce-4e27-bfc3-3831fd8bce6c",
+  "output_signature": {
+    "dtype": "float32",
+    "shape": [
+      null,
+      1
+    ]
+  },
+  "preprocessing_profile_snapshot": {
+    "mode": "rescale_0_1"
+  },
+  "production_scope": "stage2_experimental",
+  "schema_version": 1,
+  "threshold": {
+    "clinical_calibration": true,
+    "source": "validation_calibration",
+    "value": 0.126208126544952
+  },
+  "threshold_profile_id": "9dab536a-6e64-4fad-8cba-8dbd36e6157e",
+  "training_run_id": "3c24335a-ef54-4edc-a7fa-a967407471cc",
+  "usage": "stage2_experimental",
+  "warnings": []
+}

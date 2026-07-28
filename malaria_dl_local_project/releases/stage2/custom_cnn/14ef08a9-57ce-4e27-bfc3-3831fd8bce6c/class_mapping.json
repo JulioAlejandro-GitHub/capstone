@@ -1,0 +1,6 @@
+{
+  "0": "uninfected",
+  "1": "parasitized",
+  "positive_class": 1,
+  "positive_label": "parasitized"
+}

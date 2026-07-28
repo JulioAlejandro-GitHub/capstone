@@ -370,11 +370,20 @@ class ProductiveModelResolver:
                   AND lineage.relationship_type='evaluates_checkpoint_from'
               ) evaluation_lineage_valid
             FROM stage2_model_publications publication
-            JOIN deployed_model_versions d
+            LEFT JOIN deployed_model_versions d
               ON d.model_version_id=publication.model_version_id
              AND d.checkpoint_artifact_id=publication.checkpoint_artifact_id
-            JOIN model_versions mv ON mv.id=d.model_version_id
-            JOIN artifacts artifact ON artifact.id=d.checkpoint_artifact_id
+             AND (
+               :historical
+               OR (
+                 d.environment=:environment
+                 AND d.alias=:alias
+                 AND d.status='active'
+               )
+             )
+            JOIN model_versions mv ON mv.id=publication.model_version_id
+            JOIN artifacts artifact
+              ON artifact.id=publication.checkpoint_artifact_id
             JOIN runs training ON training.id=mv.training_run_id
             JOIN runs evaluation ON evaluation.id=publication.evaluation_run_id
             LEFT JOIN run_threshold_calibration calibration
@@ -387,9 +396,6 @@ class ProductiveModelResolver:
                 AND publication.status='active'
                 AND publication.is_active=true
                 AND publication.training_run_id=mv.training_run_id
-                AND d.environment=:environment
-                AND d.alias=:alias
-                AND d.status='active'
               )
               OR
               (
@@ -480,6 +486,11 @@ class ProductiveModelResolver:
         *,
         require_active: bool,
     ) -> ResolvedProductiveModel:
+        if not row.get("deployment_id"):
+            raise ProductiveModelError(
+                "PRODUCTIVE_DEPLOYMENT_MISSING",
+                reason="la publicación productiva no tiene deployment operativo",
+            )
         if row.get("environment") != STAGE2_ENVIRONMENT or row.get("alias") != STAGE2_ALIAS:
             raise ProductiveModelError(
                 "PRODUCTIVE_SLOT_INVALID", reason="contexto no es stage2/default"
@@ -499,32 +510,9 @@ class ProductiveModelResolver:
             raise ProductiveModelError(
                 "PRODUCTIVE_PUBLICATION_INACTIVE", reason="publicación no activa"
             )
-        if row.get("training_type") != "training" or row.get("training_status") != "completed":
-            raise ProductiveModelError(
-                "PRODUCTIVE_TRAIN_INCOMPLETE", reason="TRAIN no completed"
-            )
-        if (
-            row.get("evaluation_type") != "evaluation"
-            or row.get("evaluation_status") != "completed"
-            or row.get("evaluation_lineage_valid") is not True
-        ):
-            raise ProductiveModelError(
-                "PRODUCTIVE_EVALUATION_INCOMPLETE", reason="EVALUATE no completed"
-            )
-        if require_active and row.get("model_version_status") not in {
-            "candidate",
-            "validated",
-            "approved",
-            "deployed",
-        }:
-            raise ProductiveModelError(
-                "PRODUCTIVE_MODEL_STATUS_INVALID",
-                reason="model version no utilizable",
-            )
-        if row.get("lineage_status") != "resolved":
-            raise ProductiveModelError(
-                "PRODUCTIVE_LINEAGE_INVALID", reason="lineage no resolved"
-            )
+        # TRAIN + EVALUATE are the publication service's only eligibility
+        # conditions.  Once that publication is active, inference must not
+        # reinterpret lifecycle, lineage, metrics or model-version status.
         framework = str(row.get("framework") or "").strip().lower()
         if framework not in SUPPORTED_FRAMEWORKS:
             raise ProductiveModelError(
@@ -543,16 +531,6 @@ class ProductiveModelResolver:
             )
 
         deployment_metadata = _json_object(row.get("deployment_metadata"))
-        stage2 = _json_object(deployment_metadata.get("stage2"))
-        smoke = _json_object(
-            deployment_metadata.get("technical_smoke_test")
-            or deployment_metadata.get("stage2_smoke_test")
-        )
-        if stage2.get("eligible") is not True or smoke.get("status") != "PASS":
-            raise ProductiveModelError(
-                "PRODUCTIVE_STAGE2_EVIDENCE_MISSING",
-                reason="stage2 eligibility/smoke PASS ausente",
-            )
         technical = _json_object(deployment_metadata.get("technical_contract"))
         input_signature = _json_object(
             technical.get("input_signature") or row.get("input_signature")
@@ -933,18 +911,33 @@ class ProductiveModelResolver:
                 reason="slot stage2/default congelado no coincide",
             )
 
-    def resolve(self) -> ResolvedProductiveModel:
+    def resolve_current_stage2_productive_model(self) -> ResolvedProductiveModel:
+        """Resolve the one active Stage 2 publication, then validate inference."""
         rows = list(
             self.candidate_loader()
             if self.candidate_loader is not None
             else self._fetch_candidates()
         )
+        if not rows:
+            raise ProductiveModelError(
+                "PRODUCTIVE_MODEL_NOT_FOUND",
+                "No existe un modelo Productivo Etapa 2.",
+                reason="no existe una publicación stage2 activa",
+            )
         if len(rows) != 1:
             raise ProductiveModelError(
                 "PRODUCTIVE_MODEL_NOT_UNIQUE",
+                (
+                    "Existe más de un modelo Productivo Etapa 2. "
+                    "Revise la configuración de liberación."
+                ),
                 reason=f"stage2/default resolvió {len(rows)} filas",
             )
         return self._safe_validate(rows[0], require_active=True)
+
+    def resolve(self) -> ResolvedProductiveModel:
+        """Backward-compatible entry point used by classification services."""
+        return self.resolve_current_stage2_productive_model()
 
     def resolve_snapshot(
         self,

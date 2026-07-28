@@ -216,7 +216,11 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public readonly status: number | null,
-    public readonly kind: 'http' | 'network' | 'timeout',
+    public readonly kind: 'http' | 'network' | 'timeout' | 'abort' | 'parse',
+    public readonly code: string | null = null,
+    public readonly classificationRunId: string | null = null,
+    public readonly stage: string | null = null,
+    public readonly retryable: boolean | null = null,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -251,8 +255,12 @@ async function request<T>(
   });
 
   const controller = new AbortController();
+  let timedOut = false;
   activeRequests.add(controller);
-  const timeout = window.setTimeout(() => controller.abort(), options.timeoutMs ?? 15000);
+  const timeout = window.setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, options.timeoutMs ?? 15000);
   try {
     const headers = new Headers(options.init?.headers);
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
@@ -262,13 +270,45 @@ async function request<T>(
       authenticationFailureHandler?.();
     }
     if (!response.ok) {
-      const message = await response.text();
-      throw new ApiError(`${response.status} ${response.statusText}: ${message}`, response.status, 'http');
+      const raw = await response.text();
+      let payload: JsonObject = {};
+      try {
+        payload = asObject(JSON.parse(raw));
+      } catch {
+        // Non-JSON HTTP errors remain HTTP errors, never parse/network errors.
+      }
+      const detail = asObject(payload.detail);
+      const message = typeof detail.message === 'string'
+        ? detail.message
+        : (typeof payload.detail === 'string' ? payload.detail : raw || response.statusText);
+      throw new ApiError(
+        message,
+        response.status,
+        'http',
+        typeof detail.code === 'string' ? detail.code : null,
+        typeof detail.classification_run_id === 'string' ? detail.classification_run_id : null,
+        typeof detail.stage === 'string' ? detail.stage : null,
+        typeof detail.retryable === 'boolean' ? detail.retryable : null,
+      );
     }
-    return response.json() as Promise<T>;
+    try {
+      return await response.json() as T;
+    } catch {
+      throw new ApiError(
+        'El servidor devolvió una respuesta JSON inválida.',
+        response.status,
+        'parse',
+      );
+    }
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new ApiError('La solicitud fue cancelada o superó el tiempo de espera.', null, 'timeout');
+      throw new ApiError(
+        timedOut
+          ? 'La solicitud superó el tiempo de espera.'
+          : 'La solicitud fue cancelada.',
+        null,
+        timedOut ? 'timeout' : 'abort',
+      );
     }
     if (error instanceof ApiError) throw error;
     if (error instanceof TypeError) {

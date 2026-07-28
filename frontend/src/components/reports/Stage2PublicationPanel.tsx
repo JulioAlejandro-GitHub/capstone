@@ -38,6 +38,10 @@ export function Stage2PublicationPanel({
       <span>Versión del modelo<strong>{value(status?.model_version_id)}</strong></span>
       <span>Modelo / checkpoint<strong>{value(status?.model_name)} · {value(status?.checkpoint)}</strong></span>
       <span>Estado Etapa 2<strong>{active?'Activo para nuevos trabajos':status?.eligible?'Disponible para publicar':'No disponible'}</strong></span>
+      {status?.deployment_id?<><span>Deployment<strong>{status.deployment_id.slice(0,8)}</strong></span>
+        <span>Slot productivo<strong>{status.environment} / {status.alias}</strong></span>
+        <span>Threshold<strong>{status.threshold??'Registrado'} · {status.threshold_source??'fuente registrada'}</strong></span>
+        <span>Desplegado<strong>{date(status.deployed_at)}</strong></span></>:null}
       {status?.publication?<><span>Publicación<strong>{status.publication.id}</strong></span>
         <span>Publicado<strong>{date(status.publication.published_at)} · {value(status.publication.published_by)}</strong></span></>:null}
     </div>
@@ -57,8 +61,8 @@ export function Stage2PublicationPanel({
         <button disabled={loading} onClick={()=>setConfirm(null)} type="button">Cancelar</button></div>
     </div>:status?.eligible?<button className={active?'':'primary-action'} disabled={loading}
       onClick={()=>setConfirm(active?'deactivate':'publish')} type="button">
-      {active?'Dar de baja de Etapa 2':'Disponibilizar para Etapa 2'}
+      {active?'Dar de baja de Etapa 2':'Publicar y desplegar en Etapa 2'}
     </button>:<button disabled title={status?.eligibility?.missing_conditions.join(', ')}
-      type="button">Disponibilizar para Etapa 2</button>}
+      type="button">Publicar y desplegar en Etapa 2</button>}
   </section>;
 }

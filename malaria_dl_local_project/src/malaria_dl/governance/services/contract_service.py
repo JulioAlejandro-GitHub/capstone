@@ -236,6 +236,7 @@ class ModelContractService:
                 "value": {
                     "threshold_profile_id": str(item["id"]),
                     "threshold": float(item["threshold_selected"]),
+                    "threshold_source": item["threshold_source"],
                     "score_name": item["score_name"],
                     "positive_label": item["positive_label"],
                 },
