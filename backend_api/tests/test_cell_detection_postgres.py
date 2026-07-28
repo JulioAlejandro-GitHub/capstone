@@ -374,11 +374,11 @@ def postgres_context(tmp_path):
     assert connection.execute(
         text(
             """
-            SELECT version_num='20260727_05'
+            SELECT version_num='20260728_03'
             FROM alembic_version
             """
         )
-    ).scalar_one(), "la migración 20260727_05 debe estar aplicada"
+    ).scalar_one(), "la migración 20260728_03 debe estar aplicada"
 
     actor_id = uuid4()
     suffix = uuid4().hex[:10]

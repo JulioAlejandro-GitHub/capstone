@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,6 +18,23 @@ def _int(name: str, default: int, minimum: int = 0) -> int:
     value = int(os.getenv(name, str(default)))
     if value < minimum:
         raise ValueError(f"{name} debe ser >= {minimum}")
+    return value
+
+
+def _float(
+    name: str,
+    default: float,
+    minimum: float = 0.0,
+    maximum: float | None = None,
+) -> float:
+    value = float(os.getenv(name, str(default)))
+    if (
+        not math.isfinite(value)
+        or value < minimum
+        or (maximum is not None and value > maximum)
+    ):
+        upper = f" y <= {maximum}" if maximum is not None else ""
+        raise ValueError(f"{name} debe ser >= {minimum}{upper}")
     return value
 
 
@@ -64,6 +82,9 @@ class Settings:
     allowed_microscopy_formats: tuple[str, ...]
     quality_analysis_max_dimension: int
     cell_detection_page_max: int
+    cell_classification_batch_size: int
+    cell_classification_review_margin: float
+    cell_classification_page_max: int
     correlation_id_header: str
     include_stacktrace: bool
     sql_logging: bool
@@ -140,6 +161,15 @@ class Settings:
             ),
             quality_analysis_max_dimension=_int("QUALITY_ANALYSIS_MAX_DIMENSION", 2048, 64),
             cell_detection_page_max=_int("CELL_DETECTION_PAGE_MAX", 500, 500),
+            cell_classification_batch_size=_int(
+                "CELL_CLASSIFICATION_BATCH_SIZE", 32, 1
+            ),
+            cell_classification_review_margin=_float(
+                "CELL_CLASSIFICATION_REVIEW_MARGIN", 0.05, 0.0, 1.0
+            ),
+            cell_classification_page_max=_int(
+                "CELL_CLASSIFICATION_PAGE_MAX", 500, 100
+            ),
             correlation_id_header=os.getenv("CORRELATION_ID_HEADER", "X-Correlation-ID"),
             include_stacktrace=_bool("INCLUDE_STACKTRACE"),
             sql_logging=_bool("SQL_LOGGING"),

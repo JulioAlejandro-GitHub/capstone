@@ -47,6 +47,17 @@ import type {
   ScientificCellReview,
   CellDetectionSummary,
 } from '../types/cellReview';
+import type {
+  CellClassificationPage,
+  CellClassificationReview,
+  CellClassificationReviewCreate,
+  CellClassificationRunDetail,
+  CellExplanation,
+  CellPredictionDetail,
+  CellPredictionSummary,
+  EligibleCellClassificationRun,
+  SmearAnalysisSummary,
+} from '../types/cellClassification';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 export const DEFAULT_DATASOURCE = import.meta.env.VITE_DEFAULT_DATASOURCE ?? 'malaria';
@@ -134,6 +145,8 @@ export type SmearWorkflowResponse = {
   analysis_run:AnalysisRun|null;
   queue_item:QualityQueueItem|null;
   detection_run:CellDetectionRunDetail|null;
+  classification_run?:CellClassificationRunDetail|null;
+  classification_summary?:SmearAnalysisSummary|null;
 };
 export type SmearAnalysisHistoryItem = {
   ingestion_batch_id:string;
@@ -321,6 +334,145 @@ function trustedCellContentPath(candidate: string | null | undefined, fallback: 
     // A backend-provided malformed URL never replaces the governed fallback.
   }
   return fallback;
+}
+
+type JsonObject = Record<string, unknown>;
+
+const asObject = (value: unknown): JsonObject => (
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? value as JsonObject
+    : {}
+);
+
+function normalizeClassificationRun(
+  value: CellClassificationRunDetail,
+): CellClassificationRunDetail {
+  const raw = value as CellClassificationRunDetail & {
+    reviewed_count?: number;
+    unreviewed_count?: number;
+    confirmed_count?: number;
+    corrected_count?: number;
+    needs_attention_review_count?: number;
+  };
+  if (raw.review_counts) return raw;
+  return {
+    ...raw,
+    review_counts: {
+      unreviewed: raw.unreviewed_count ?? Math.max(
+        0,
+        (raw.processed_count ?? 0) - (raw.reviewed_count ?? 0),
+      ),
+      confirmed: raw.confirmed_count ?? 0,
+      corrected: raw.corrected_count ?? 0,
+      needs_attention: raw.needs_attention_review_count ?? 0,
+    },
+  };
+}
+
+function normalizeExplanation(raw: JsonObject): CellExplanation | null {
+  const nested = asObject(raw.explanation);
+  if (Object.keys(nested).length) return nested as unknown as CellExplanation;
+  const id = raw.explanation_id;
+  if (typeof id !== 'string') return null;
+  return {
+    id,
+    cell_prediction_id: String(raw.id ?? ''),
+    method: String(raw.explanation_method ?? ''),
+    method_version: String(raw.explanation_method_version ?? ''),
+    status: String(raw.explanation_status ?? 'not_requested') as CellExplanation['status'],
+    last_conv_layer:
+      typeof raw.explanation_last_conv_layer === 'string'
+        ? raw.explanation_last_conv_layer
+        : null,
+    parameters_json: asObject(raw.explanation_parameters_json),
+    width_px: typeof raw.explanation_width_px === 'number' ? raw.explanation_width_px : null,
+    height_px: typeof raw.explanation_height_px === 'number' ? raw.explanation_height_px : null,
+    started_at:
+      typeof raw.explanation_started_at === 'string' ? raw.explanation_started_at : null,
+    completed_at:
+      typeof raw.explanation_completed_at === 'string' ? raw.explanation_completed_at : null,
+    error_code:
+      typeof raw.explanation_error_code === 'string' ? raw.explanation_error_code : null,
+    error_message:
+      typeof raw.explanation_error_message === 'string' ? raw.explanation_error_message : null,
+    created_at:
+      typeof raw.explanation_created_at === 'string'
+        ? raw.explanation_created_at
+        : String(raw.created_at ?? ''),
+  };
+}
+
+function normalizeClassificationReview(raw: JsonObject): CellClassificationReview | null {
+  const nested = asObject(raw.latest_review);
+  if (Object.keys(nested).length) {
+    return nested as unknown as CellClassificationReview;
+  }
+  if (typeof raw.latest_review_id !== 'string') return null;
+  return {
+    id: raw.latest_review_id,
+    cell_prediction_id: String(raw.id ?? ''),
+    decision: String(raw.review_status ?? 'comment_only') as CellClassificationReview['decision'],
+    reviewed_label:
+      raw.latest_reviewed_label === 'parasitized'
+      || raw.latest_reviewed_label === 'uninfected'
+        ? raw.latest_reviewed_label
+        : null,
+    comment:
+      typeof raw.latest_review_comment === 'string' ? raw.latest_review_comment : null,
+    actor_user_id: String(raw.latest_review_actor_user_id ?? ''),
+    actor_username:
+      typeof raw.latest_review_actor_username === 'string'
+        ? raw.latest_review_actor_username
+        : null,
+    created_at: String(raw.latest_review_created_at ?? ''),
+  };
+}
+
+function normalizePrediction<T extends CellPredictionSummary>(value: T): T {
+  const raw = value as T & JsonObject;
+  const crop = Object.keys(asObject(raw.crop)).length
+    ? raw.crop
+    : typeof raw.crop_id === 'string'
+      ? {
+          id: raw.crop_id,
+          sha256: String(raw.crop_persisted_sha256 ?? ''),
+          width_px: Number(raw.crop_width_px ?? 0),
+          height_px: Number(raw.crop_height_px ?? 0),
+          format: 'png',
+          padding_px: 0,
+          content_url: `/api/v1/cell-analysis/crops/${encodeURIComponent(raw.crop_id)}/content`,
+        }
+      : null;
+  const publicRaw = { ...raw };
+  [
+    'crop_storage_key',
+    'relative_storage_key',
+    'checkpoint_path',
+    'model_path',
+    'heatmap_storage_key',
+    'overlay_storage_key',
+  ].forEach((key) => delete publicRaw[key]);
+  return {
+    ...publicRaw,
+    crop,
+    explanation: normalizeExplanation(raw),
+    latest_review: normalizeClassificationReview(raw),
+  } as T;
+}
+
+function normalizeClassificationSummary(
+  value: SmearAnalysisSummary | {
+    automatic_summary: SmearAnalysisSummary;
+    reviewed_summary?: SmearAnalysisSummary['reviewed_summary'];
+  },
+): SmearAnalysisSummary {
+  if ('automatic_summary' in value) {
+    return {
+      ...value.automatic_summary,
+      reviewed_summary: value.reviewed_summary ?? null,
+    };
+  }
+  return value;
 }
 
 export const authApi = {
@@ -514,6 +666,132 @@ export const api = {
   ) {
     const fallback=`/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}/images/${encodeURIComponent(microscopyImageId)}/content`;
     return requestBlob(trustedCellContentPath(contentUrl,fallback),signal);
+  },
+  getEligibleCellClassificationRuns(params:Record<string,QueryValue>={}) {
+    return request<CellClassificationPage<EligibleCellClassificationRun & {id?:string}>>(
+      '/api/v1/cell-classification/eligible-detection-runs',
+      params,
+    ).then((page) => ({
+      ...page,
+      items: page.items.map((item) => ({
+        ...item,
+        detection_run_id: item.detection_run_id ?? item.id ?? '',
+        eligible: item.eligible ?? true,
+        productive_model: item.productive_model ?? null,
+      })),
+    }));
+  },
+  createCellClassificationRun(detectionRunId:string) {
+    return request<CellClassificationRunDetail>(
+      '/api/v1/cell-classification/classification-runs',
+      {},
+      {
+        timeoutMs:600000,
+        init:{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({detection_run_id:detectionRunId}),
+        },
+      },
+    ).then(normalizeClassificationRun);
+  },
+  getCellClassificationRuns(params:Record<string,QueryValue>={}) {
+    return request<CellClassificationPage<CellClassificationRunDetail>>(
+      '/api/v1/cell-classification/classification-runs',
+      params,
+    ).then((page) => ({
+      ...page,
+      items: page.items.map(normalizeClassificationRun),
+    }));
+  },
+  getCellClassificationRun(classificationRunId:string) {
+    return request<CellClassificationRunDetail>(
+      `/api/v1/cell-classification/classification-runs/${encodeURIComponent(classificationRunId)}`,
+    ).then(normalizeClassificationRun);
+  },
+  getCellClassificationPredictions(
+    classificationRunId:string,
+    params:Record<string,QueryValue>={},
+  ) {
+    return request<CellClassificationPage<CellPredictionSummary>>(
+      `/api/v1/cell-classification/classification-runs/${encodeURIComponent(classificationRunId)}/predictions`,
+      params,
+    ).then((page) => ({
+      ...page,
+      items: page.items.map(normalizePrediction),
+    }));
+  },
+  getCellClassificationSummary(classificationRunId:string) {
+    return request<
+      SmearAnalysisSummary
+      | {
+          automatic_summary: SmearAnalysisSummary;
+          reviewed_summary?: SmearAnalysisSummary['reviewed_summary'];
+        }
+    >(
+      `/api/v1/cell-classification/classification-runs/${encodeURIComponent(classificationRunId)}/summary`,
+    ).then(normalizeClassificationSummary);
+  },
+  getCellPrediction(predictionId:string) {
+    return request<CellPredictionDetail>(
+      `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}`,
+    ).then(normalizePrediction);
+  },
+  createCellExplanation(predictionId:string,retry=false) {
+    return request<CellExplanation>(
+      `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/explanation`,
+      {},
+      {
+        timeoutMs:180000,
+        init:{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({retry}),
+        },
+      },
+    );
+  },
+  getCellExplanation(predictionId:string) {
+    return request<CellExplanation>(
+      `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/explanation`,
+    );
+  },
+  getCellExplanationHeatmapBlob(explanationId:string,signal?:AbortSignal) {
+    return requestBlob(
+      `/api/v1/cell-classification/explanations/${encodeURIComponent(explanationId)}/heatmap`,
+      signal,
+    );
+  },
+  getCellExplanationOverlayBlob(explanationId:string,signal?:AbortSignal) {
+    return requestBlob(
+      `/api/v1/cell-classification/explanations/${encodeURIComponent(explanationId)}/overlay`,
+      signal,
+    );
+  },
+  createCellClassificationReview(
+    predictionId:string,
+    payload:CellClassificationReviewCreate,
+  ) {
+    return request<CellClassificationReview>(
+      `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/reviews`,
+      {},
+      {
+        init:{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            decision:payload.decision,
+            reviewed_label:payload.reviewed_label,
+            comment:payload.comment?.trim()||undefined,
+          }),
+        },
+      },
+    );
+  },
+  getCellClassificationReviews(predictionId:string) {
+    return request<CellClassificationPage<CellClassificationReview>>(
+      `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/reviews`,
+    );
   },
   reviewQuality(runId:string,decision:'approve_with_warnings'|'reject',comment:string) {
     return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-decision`,{},{

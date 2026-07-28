@@ -131,3 +131,11 @@ Prompt 7 las futuras detecciones.
 
 Ingesta segura (Prompt 4) → run congelado → quality gate técnico → habilitación
 trazable. Prompt 6 dependerá exclusivamente de runs `ready_for_analysis`.
+
+# Estado Prompt 8
+
+Detección/crops → resolución estricta `stage2/default` → clasificación por
+batches → agregado experimental → Grad-CAM/revisión manual. Este prompt cierra
+G6 para el contrato de implementación y parte de G7/G8, pero el entorno
+operativo permanece bloqueado mientras no exista un slot productivo válido. La
+publicación de catálogo no satisface esa dependencia por sí sola.

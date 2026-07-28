@@ -493,18 +493,18 @@ def test_manual_upload_is_immediately_eligible_and_refreshable(scientific_client
     assert equivalent_detection.json()["id"] == detected.json()["id"]
     assert equivalent_detection.json()["idempotent"] is True
 
-    review_ready = client.get(
+    awaiting_productive_model = client.get(
         f"/api/v1/scientific/workflows/{batch_id}", headers=reviewer
     )
-    assert review_ready.status_code == 200
-    refreshed = review_ready.json()
-    assert refreshed["stage"] == "review_ready"
+    assert awaiting_productive_model.status_code == 200
+    refreshed = awaiting_productive_model.json()
+    assert refreshed["stage"] == "awaiting_productive_model"
     assert refreshed["batch"]["id"] == batch_id
     assert refreshed["images"][0]["id"] == uploaded["images"][0]["id"]
     assert refreshed["analysis_run"]["id"] == created.json()["id"]
     assert refreshed["queue_item"]["queue_item_id"] == queue_item["id"]
     assert refreshed["detection_run"]["id"] == detected.json()["id"]
-    assert "storage_key" not in review_ready.text
+    assert "storage_key" not in awaiting_productive_model.text
     row_counts_before = connection.execute(text("""
       SELECT
         (SELECT count(*) FROM microscopy_analysis_runs),
@@ -544,11 +544,17 @@ def test_manual_upload_is_immediately_eligible_and_refreshable(scientific_client
         headers=reviewer,
         params={"sample_code": uploaded["sample"]["sample_code"]},
     ).json()["total"] == 1
-    assert client.get(
+    ready_history = client.get(
         "/api/v1/scientific/workflows",
         headers=reviewer,
         params={"status": "ready_for_analysis"},
-    ).json()["total"] == 1
+    )
+    assert ready_history.status_code == 200
+    ready_history_page = ready_history.json()
+    assert ready_history_page["total"] >= 1
+    assert created.json()["id"] in {
+        item["analysis_run_id"] for item in ready_history_page["items"]
+    }
     assert client.get(
         "/api/v1/scientific/workflows",
         headers=reviewer,

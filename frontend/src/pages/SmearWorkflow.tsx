@@ -17,7 +17,7 @@ import {
 } from '../services/api';
 import { SmearUpload } from './SmearUpload';
 
-type ContextStep = 'upload' | 'quality' | 'detection' | 'review';
+type ContextStep = 'upload' | 'quality' | 'detection' | 'classification' | 'review';
 type StepState = 'pending' | 'active' | 'complete' | 'warning' | 'failed' | 'locked';
 type MobilePane = 'progress' | 'image' | 'cells' | 'detail';
 type WorkflowCapabilities = {
@@ -27,13 +27,15 @@ type WorkflowCapabilities = {
   canRetryQueue: boolean;
   canReviewQuality: boolean;
   canExecuteDetection: boolean;
+  canExecuteClassification: boolean;
 };
 
 const contextSteps: Array<{ id: ContextStep; label: string }> = [
   { id: 'upload', label: 'Carga' },
   { id: 'quality', label: 'Calidad de muestra' },
   { id: 'detection', label: 'Detección' },
-  { id: 'review', label: 'Revisión celular' },
+  { id: 'classification', label: 'Clasificación IA' },
+  { id: 'review', label: 'Revisión y resultado' },
 ];
 
 const stageLabel: Record<SmearWorkflowStage, string> = {
@@ -47,6 +49,12 @@ const stageLabel: Record<SmearWorkflowStage, string> = {
   quality_failed: 'Bloqueo técnico',
   ready_for_detection: 'Lista para detección',
   detection_processing: 'Detección en curso',
+  awaiting_productive_model: 'Modelo productivo requerido',
+  classification_pending: 'Clasificación pendiente',
+  classification_processing: 'Clasificación IA en curso',
+  classification_completed: 'Clasificación completada',
+  classification_warning: 'Clasificación con advertencias',
+  classification_failed: 'Clasificación fallida',
   review_ready: 'Revisión disponible',
   error: 'Interrupción técnica',
 };
@@ -62,6 +70,12 @@ const activityLabel: Record<SmearWorkflowStage, string> = {
   quality_failed: 'El quality gate bloqueó el análisis',
   ready_for_detection: 'Preparando imagen para detección',
   detection_processing: 'Detectando regiones celulares y generando crops',
+  awaiting_productive_model: 'No hay un modelo productivo válido disponible para Etapa 2',
+  classification_pending: 'Validando modelo productivo y preparando crops elegibles',
+  classification_processing: 'Clasificando células con el modelo productivo registrado',
+  classification_completed: 'Resultado experimental disponible para revisión',
+  classification_warning: 'Resultados disponibles con advertencias técnicas',
+  classification_failed: 'La clasificación se detuvo y requiere un reintento manual',
   review_ready: 'Detecciones disponibles para revisión',
   error: 'El workflow se detuvo en la etapa fallida',
 };
@@ -71,12 +85,21 @@ const processingStages: SmearWorkflowStage[] = [
   'creating_analysis',
   'quality_processing',
   'detection_processing',
+  'classification_pending',
+  'classification_processing',
 ];
 const knownWorkflowStages = new Set<SmearWorkflowStage>(Object.keys(stageLabel) as SmearWorkflowStage[]);
 
 const historyFailure = (
   workflow: SmearWorkflowResponse,
 ): { step: SmearWorkflowFailureStep; message: string } | null => {
+  if (workflow.classification_run?.status === 'failed') {
+    return {
+      step: 'classification',
+      message: workflow.classification_run.error_message
+        || 'La clasificación terminó con error.',
+    };
+  }
   if (workflow.detection_run?.status === 'failed') {
     return {
       step: 'detection',
@@ -119,8 +142,28 @@ function contextStepState(
   stage: SmearWorkflowStage,
   failureStep: SmearWorkflowFailureStep | undefined,
 ): StepState {
-  if (stage === 'review_ready') {
-    return step === 'review' ? 'active' : 'complete';
+  if (
+    stage === 'review_ready'
+    || stage === 'classification_completed'
+    || stage === 'classification_warning'
+  ) {
+    if (step === 'review') return 'active';
+    if (step === 'classification' && stage === 'classification_warning') return 'warning';
+    return 'complete';
+  }
+  if (
+    stage === 'awaiting_productive_model'
+    || stage === 'classification_pending'
+    || stage === 'classification_processing'
+    || stage === 'classification_failed'
+  ) {
+    if (step === 'upload' || step === 'quality' || step === 'detection') return 'complete';
+    if (step === 'classification') {
+      if (stage === 'classification_failed') return 'failed';
+      if (stage === 'awaiting_productive_model') return 'warning';
+      return 'active';
+    }
+    return 'locked';
   }
   if (stage === 'detection_processing' || stage === 'ready_for_detection') {
     if (step === 'upload' || step === 'quality') return 'complete';
@@ -141,12 +184,17 @@ function contextStepState(
       queue: 'quality',
       quality: 'quality',
       detection: 'detection',
+      classification: 'classification',
       recovery: 'upload',
     };
     const failed = failedContext[failureStep ?? 'recovery'];
     if (step === failed) return 'failed';
     if (failed === 'quality' && step === 'upload') return 'complete';
     if (failed === 'detection' && (step === 'upload' || step === 'quality')) return 'complete';
+    if (
+      failed === 'classification'
+      && (step === 'upload' || step === 'quality' || step === 'detection')
+    ) return 'complete';
     return 'locked';
   }
   if (['ingested', 'creating_analysis', 'quality_queued', 'quality_processing'].includes(stage)) {
@@ -213,6 +261,7 @@ function milestoneState(
   const { stage, identifiers, snapshot, failure } = controller;
   const run = snapshot.analysisRun;
   const detection = snapshot.detectionRun;
+  const classification = snapshot.classificationRun;
   if (milestone === 0) {
     if (stage === 'error' && failure?.step === 'upload') return 'failed';
     return identifiers.ingestionBatchId ? 'complete' : stage === 'uploading' ? 'active' : 'pending';
@@ -242,9 +291,24 @@ function milestoneState(
     if (stage === 'detection_processing' || stage === 'ready_for_detection') return 'active';
     return run?.ready_for_analysis ? 'pending' : 'locked';
   }
-  if (stage === 'review_ready') return 'complete';
-  if (detection?.status === 'failed') return 'failed';
-  return detection ? 'pending' : 'locked';
+  if (milestone === 5) {
+    if (classification?.status === 'completed') return 'complete';
+    if (classification?.status === 'completed_with_warnings') return 'warning';
+    if (classification?.status === 'failed' || stage === 'classification_failed') return 'failed';
+    if (
+      stage === 'classification_pending'
+      || stage === 'classification_processing'
+      || stage === 'awaiting_productive_model'
+    ) return stage === 'awaiting_productive_model' ? 'warning' : 'active';
+    return detection ? 'pending' : 'locked';
+  }
+  if (
+    stage === 'review_ready'
+    || stage === 'classification_completed'
+    || stage === 'classification_warning'
+  ) return 'complete';
+  if (classification?.status === 'failed') return 'failed';
+  return classification ? 'pending' : 'locked';
 }
 
 function QualityMetrics({ image }: { image: QualityImage | null }) {
@@ -315,16 +379,41 @@ function WorkflowProcessing({
   const batch = snapshot.upload?.ingestion_batch ?? snapshot.persisted?.batch;
   const queue = snapshot.queueItem;
   const queueStatus = queue?.status;
-  const events = run?.events ?? [];
+  const classificationEvents: AnalysisEvent[] = (
+    snapshot.classificationRun?.events ?? []
+  ).map((event) => ({
+    id: event.id,
+    analysis_run_id: snapshot.classificationRun?.analysis_run_id ?? run?.id ?? '',
+    microscopy_image_id: null,
+    event_type: event.event_type,
+    stage: 'cell_classification',
+    status: event.status,
+    message_code: event.message_code,
+    message: event.message,
+    progress_current: event.progress_current,
+    progress_total: event.progress_total,
+    created_at: event.created_at,
+  }));
+  const events = [...(run?.events ?? []), ...classificationEvents];
+  const latestClassificationProgress = [...classificationEvents]
+    .reverse()
+    .find((event) => (
+      event.progress_current != null
+      && event.progress_total != null
+    ));
   const canRetryFailure = failure?.step === 'analysis'
     ? capabilities.canCreateAnalysis
     : failure?.step === 'queue'
       ? capabilities.canCreateQueue
       : failure?.step === 'detection'
         ? capabilities.canExecuteDetection
+        : failure?.step === 'classification'
+          ? capabilities.canExecuteClassification
         : failure?.step === 'recovery';
   const canContinueRecovered = stage === 'ready_for_detection'
     ? capabilities.canExecuteDetection
+    : stage === 'classification_pending' || stage === 'awaiting_productive_model'
+      ? capabilities.canExecuteClassification
     : run ? capabilities.canCreateQueue : capabilities.canCreateAnalysis;
   const eventAt = (eventType: string) =>
     events.find((event) => event.event_type === eventType)?.created_at;
@@ -334,7 +423,8 @@ function WorkflowProcessing({
     eventAt('quality.run.completed') ?? queue?.completed_at,
     run?.completed_at ?? eventAt('quality.run.completed'),
     snapshot.detectionRun?.started_at,
-    snapshot.detectionRun?.completed_at,
+    snapshot.classificationRun?.started_at,
+    snapshot.classificationRun?.completed_at,
   ];
   const milestones = [
     ['Imagen recibida', 'Original persistido sin modificaciones'],
@@ -342,7 +432,8 @@ function WorkflowProcessing({
     ['Control de calidad', 'Nitidez, exposición y campo útil'],
     ['Lista para análisis', 'Quality gate autorizado'],
     ['Detección celular', 'Regiones candidatas y crops'],
-    ['Revisión disponible', 'Workspace interactivo habilitado'],
+    ['Clasificación IA', 'Predicción reproducible con el modelo productivo'],
+    ['Revisión y resultado', 'Resumen experimental y workspace interactivo'],
   ] as const;
 
   async function decide(decision: 'approve_with_warnings' | 'reject') {
@@ -439,6 +530,19 @@ function WorkflowProcessing({
               <div><dt>Prioridad</dt><dd>{queue?.priority ?? 50} · Normal</dd></div>
               <div><dt>Cola</dt><dd>{queueStatus ?? 'Pendiente'}</dd></div>
               <div><dt>Intentos</dt><dd>{queue?.attempt_count ?? 0}</dd></div>
+              <div><dt>Modelo</dt><dd>{snapshot.classificationRun?.model_name ?? snapshot.classificationEligibility?.productive_model?.model_name ?? 'Pendiente'}</dd></div>
+              <div><dt>Versión</dt><dd>{snapshot.classificationRun?.model_version ?? snapshot.classificationEligibility?.productive_model?.model_version ?? '—'}</dd></div>
+              <div><dt>Crops elegibles</dt><dd>{snapshot.classificationRun?.eligible_count ?? snapshot.classificationEligibility?.eligible_count ?? '—'}</dd></div>
+              <div>
+                <dt>Avance real</dt>
+                <dd>
+                  {latestClassificationProgress
+                    ? `${latestClassificationProgress.progress_current} / ${latestClassificationProgress.progress_total}`
+                    : snapshot.classificationRun
+                      ? `${snapshot.classificationRun.processed_count} / ${snapshot.classificationRun.eligible_count}`
+                      : '—'}
+                </dd>
+              </div>
             </dl>
 
             {run?.ready_for_analysis ? (
@@ -453,8 +557,30 @@ function WorkflowProcessing({
                 <p>
                   {stage === 'detection_processing'
                     ? 'La detección se inició como continuación de la acción Cargar y analizar.'
-                    : 'La ejecución está habilitada para iniciar la detección celular.'}
+                    : stage.startsWith('classification') || stage === 'awaiting_productive_model'
+                      ? 'La detección terminó y sus crops permanecen congelados para clasificación.'
+                      : 'La ejecución está habilitada para iniciar la detección celular.'}
                 </p>
+              </section>
+            ) : null}
+
+            {stage === 'awaiting_productive_model' ? (
+              <section className="workflow-decision-card status-warning" role="alert">
+                <span>Modelo productivo requerido</span>
+                <h3>
+                  {failure?.message
+                    ?? 'No existe un modelo productivo válido para Etapa 2. Publique un modelo desde Modelo IA antes de continuar.'}
+                </h3>
+                <p>No se seleccionó un modelo alternativo ni se aplicó un threshold por defecto.</p>
+                {!readOnly && capabilities.canExecuteClassification ? (
+                  <button
+                    type="button"
+                    disabled={controller.busy}
+                    onClick={() => void controller.continueWorkflow()}
+                  >
+                    Verificar nuevamente
+                  </button>
+                ) : null}
               </section>
             ) : null}
 
@@ -501,7 +627,7 @@ function WorkflowProcessing({
               </section>
             ) : null}
 
-            {stage === 'error' && failure ? (
+            {(stage === 'error' || stage === 'classification_failed') && failure ? (
               <section className="workflow-decision-card status-failed" role="alert">
                 <span>Etapa interrumpida: {failure.step}</span>
                 <h3>{failure.message}</h3>
@@ -511,18 +637,19 @@ function WorkflowProcessing({
                   {identifiers.analysisRunId ? <li>Analysis run {identifiers.analysisRunId}</li> : null}
                   {identifiers.queueItemId ? <li>Queue item {identifiers.queueItemId}</li> : null}
                   {identifiers.detectionRunId ? <li>Detection run {identifiers.detectionRunId}</li> : null}
+                  {identifiers.classificationRunId ? <li>Classification run {identifiers.classificationRunId}</li> : null}
                 </ul>
-                {failure.step === 'quality' && queueStatus === 'failed' ? (
+                {!readOnly && failure.step === 'quality' && queueStatus === 'failed' ? (
                   capabilities.canRetryQueue ? (
                     <button type="button" disabled={controller.busy} onClick={() => void controller.requeueQuality()}>
                       Reingresar a cola
                     </button>
                   ) : <p>Tu rol no permite reingresar solicitudes fallidas a la cola.</p>
-                ) : failure.step !== 'upload' && canRetryFailure ? (
+                ) : !readOnly && failure.step !== 'upload' && canRetryFailure ? (
                   <button type="button" disabled={controller.busy} onClick={() => void controller.retryFailedStep()}>
                     Reintentar desde esta etapa
                   </button>
-                ) : failure.step !== 'upload'
+                ) : !readOnly && failure.step !== 'upload'
                   ? <p>Tu rol no permite reintentar esta etapa.</p>
                   : null}
               </section>
@@ -545,12 +672,15 @@ function WorkflowProcessing({
               (stage === 'ingested' && !queue)
               || (stage === 'creating_analysis' && run && !queue)
               || (stage === 'ready_for_detection' && run?.ready_for_analysis)
+              || (stage === 'classification_pending' && snapshot.detectionRun)
             ) ? (
               <section className="workflow-decision-card">
                 <span>Estado recuperado</span>
                 <h3>
                   {stage === 'ready_for_detection'
                     ? 'La calidad está aprobada y la detección aún no existe'
+                    : stage === 'classification_pending'
+                      ? 'La detección está lista y la clasificación aún no existe'
                     : run
                       ? 'La ejecución existe y espera su solicitud de calidad'
                       : 'Imagen cargada, esperando control técnico'}
@@ -558,7 +688,11 @@ function WorkflowProcessing({
                 <p>Continuar es una acción manual y reutilizará los identificadores persistidos.</p>
                 {canContinueRecovered ? (
                   <button type="button" disabled={controller.busy} onClick={() => void controller.continueWorkflow()}>
-                    {stage === 'ready_for_detection' ? 'Iniciar detección' : 'Continuar análisis'}
+                  {stage === 'ready_for_detection'
+                    ? 'Iniciar detección'
+                    : stage === 'classification_pending'
+                      ? 'Iniciar clasificación'
+                      : 'Continuar análisis'}
                   </button>
                 ) : <p>Tu rol no permite continuar esta etapa.</p>}
               </section>
@@ -581,6 +715,7 @@ const readOnlyCapabilities: WorkflowCapabilities = {
   canRetryQueue: false,
   canReviewQuality: false,
   canExecuteDetection: false,
+  canExecuteClassification: false,
 };
 
 export function SmearAnalysisReadOnlyView({
@@ -605,7 +740,9 @@ export function SmearAnalysisReadOnlyView({
       analysisRunId: workflow.analysis_run?.id ?? null,
       queueItemId: workflow.queue_item?.queue_item_id ?? null,
       detectionRunId: workflow.detection_run?.id ?? null,
+      classificationRunId: workflow.classification_run?.id ?? null,
       selectedDetectionId: null,
+      selectedPredictionId: null,
     },
     snapshot: {
       upload: null,
@@ -613,6 +750,9 @@ export function SmearAnalysisReadOnlyView({
       analysisRun: workflow.analysis_run,
       queueItem: workflow.queue_item,
       detectionRun: workflow.detection_run,
+      classificationRun: workflow.classification_run ?? null,
+      classificationSummary: workflow.classification_summary ?? null,
+      classificationEligibility: null,
     },
     selectedFiles: [],
     previewUrl: null,
@@ -658,11 +798,20 @@ export function SmearAnalysisReadOnlyView({
         <span>{workflow.batch.source_system ?? workflow.batch.acquisition_origin}</span>
       </section>
 
-      {stage === 'review_ready' && workflow.detection_run ? (
+      {(
+        stage === 'review_ready'
+        || stage === 'classification_completed'
+        || stage === 'classification_warning'
+      ) && workflow.detection_run ? (
         <section className="workflow-review-frame">
           <CellReviewWorkspace
             detectionRunId={workflow.detection_run.id}
             canReview={false}
+            classificationRunId={workflow.classification_run?.id}
+            initialClassificationSummary={workflow.classification_summary}
+            canExplain={false}
+            canClassificationReview={false}
+            readOnly
             onClose={onBack}
             closeLabel="Volver al historial"
             initialMicroscopyImageId={firstImage?.id}
@@ -698,6 +847,7 @@ export function SmearWorkflow() {
     'scientific.analysis.queue.create',
     'scientific.analysis.queue.execute',
     'scientific.cell_detection.execute',
+    'scientific.cell_classification.execute',
   ].every((permission) => permissions.has(permission));
   const canReviewQuality = permissions.has('scientific.analysis.quality.review');
   const capabilities: WorkflowCapabilities = {
@@ -707,13 +857,22 @@ export function SmearWorkflow() {
     canRetryQueue: permissions.has('scientific.analysis.queue.retry'),
     canReviewQuality,
     canExecuteDetection: permissions.has('scientific.cell_detection.execute'),
+    canExecuteClassification: permissions.has('scientific.cell_classification.execute'),
   };
   const canReadCells = permissions.has('scientific.cell_detection.read');
   const canReviewCells = permissions.has('scientific.cell_detection.review');
+  const canReadClassification = permissions.has('scientific.cell_classification.read');
+  const canExplainClassification = permissions.has('scientific.cell_classification.explain');
+  const canReviewClassification = permissions.has('scientific.cell_classification.review');
   const isUploadFailure = stage === 'error' && failure?.step === 'upload' && !identifiers.ingestionBatchId;
+  const reviewStage = (
+    stage === 'review_ready'
+    || stage === 'classification_completed'
+    || stage === 'classification_warning'
+  );
   const mode = stage === 'setup' || isUploadFailure
     ? 'setup'
-    : stage === 'review_ready' ? 'review' : 'processing';
+    : reviewStage ? 'review' : 'processing';
   const patientCode = (
     snapshot.analysisRun?.subject_code
     ?? snapshot.persisted?.subject.subject_code
@@ -799,23 +958,33 @@ export function SmearWorkflow() {
 
       {mode === 'review' && !recovering ? (
         <section className="workflow-review-frame">
-          {identifiers.detectionRunId && canReadCells ? (
+          {identifiers.detectionRunId && canReadCells && (
+            !identifiers.classificationRunId || canReadClassification
+          ) ? (
             <CellReviewWorkspace
               detectionRunId={identifiers.detectionRunId}
               canReview={canReviewCells}
+              classificationRunId={identifiers.classificationRunId}
+              initialClassificationSummary={snapshot.classificationSummary}
+              canExplain={canExplainClassification}
+              canClassificationReview={canReviewClassification}
               onClose={controller.newAnalysis}
               closeLabel="Nuevo análisis"
               initialMicroscopyImageId={identifiers.microscopyImageId}
               onMicroscopyImageChange={controller.selectImage}
               initialSelectedDetectionId={identifiers.selectedDetectionId}
               onSelectedDetectionChange={controller.selectDetection}
+              initialSelectedPredictionId={identifiers.selectedPredictionId}
+              onSelectedPredictionChange={controller.selectPrediction}
             />
           ) : (
             <section className="workflow-review-unavailable" role="alert">
               <h2>Revisión disponible con acceso restringido</h2>
               <p>
-                La detección terminó, pero tu rol no incluye
-                scientific.cell_detection.read.
+                La detección terminó, pero tu rol no incluye{' '}
+                {!canReadCells
+                  ? 'scientific.cell_detection.read.'
+                  : 'scientific.cell_classification.read.'}
               </p>
             </section>
           )}

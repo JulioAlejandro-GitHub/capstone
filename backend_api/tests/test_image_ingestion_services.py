@@ -84,3 +84,17 @@ def test_rejects_symlink_and_sanitizes_control_characters(storage):
     with pytest.raises(StorageError, match="symlink"):
         storage.resolve("link", must_exist=True)
     assert sanitize_filename("folder\\bad\x01 name.png") == "bad name.png"
+
+
+def test_rejects_symlink_configured_as_storage_root(tmp_path, monkeypatch):
+    real_root = tmp_path / "real-storage"
+    real_root.mkdir()
+    linked_root = tmp_path / "linked-storage"
+    linked_root.symlink_to(real_root, target_is_directory=True)
+    monkeypatch.setenv("STORAGE_ROOT", str(linked_root))
+    reset_settings_cache()
+    try:
+        with pytest.raises(StorageError, match="STORAGE_ROOT"):
+            LocalStorage(get_settings())
+    finally:
+        reset_settings_cache()

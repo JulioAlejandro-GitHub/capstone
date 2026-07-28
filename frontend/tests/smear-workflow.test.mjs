@@ -18,11 +18,14 @@ test('declara una máquina de estados central y conserva todos los identificador
   for (const stage of [
     'setup', 'uploading', 'ingested', 'creating_analysis', 'quality_queued',
     'quality_processing', 'quality_warning', 'quality_failed', 'ready_for_detection',
-    'detection_processing', 'review_ready', 'error',
+    'detection_processing', 'awaiting_productive_model', 'classification_pending',
+    'classification_processing', 'classification_completed', 'classification_warning',
+    'classification_failed', 'review_ready', 'error',
   ]) assert.match(hook, new RegExp(`'${stage}'`));
   for (const id of [
     'ingestionBatchId', 'microscopyImageId', 'analysisRunId',
-    'queueItemId', 'detectionRunId', 'selectedDetectionId',
+    'queueItemId', 'detectionRunId', 'classificationRunId',
+    'selectedDetectionId', 'selectedPredictionId',
   ]) assert.match(hook, new RegExp(id));
   assert.match(hook, /useState<SmearWorkflowStage>\('setup'\)/);
 });
@@ -73,7 +76,10 @@ test('preview local es inmediata, reemplazable y revoca object URLs', () => {
 });
 
 test('URL conserva IDs y recuperación sólo ejecuta lecturas', () => {
-  for (const key of ['batch', 'image', 'analysis', 'queue', 'detection', 'selected']) {
+  for (const key of [
+    'batch', 'image', 'analysis', 'queue', 'detection', 'classification',
+    'selected_detection', 'selected_prediction',
+  ]) {
     assert.match(hook, new RegExp(`'${key}'`));
   }
   assert.match(api, /\/api\/v1\/scientific\/workflows\//);
@@ -81,7 +87,7 @@ test('URL conserva IDs y recuperación sólo ejecuta lecturas', () => {
   assert.match(hook, /isValidPublicId/);
   assert.match(
     hook,
-    /queryIdentifiers\.analysis,\s*queryIdentifiers\.batch,\s*queryIdentifiers\.detection,\s*recover,/,
+    /queryIdentifiers\.analysis,\s*queryIdentifiers\.batch,\s*queryIdentifiers\.classification,\s*queryIdentifiers\.detection,\s*recover,/,
   );
   const recovery = hook.slice(hook.indexOf('const recover ='), hook.indexOf('useEffect(() => {'));
   assert.doesNotMatch(

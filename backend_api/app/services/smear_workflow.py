@@ -4,8 +4,13 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
 from app.db import get_primary_engine
+from app.repositories.cell_classification import CellClassificationRepository
 from app.services.cell_analysis import CellAnalysisService
 from app.services.microscopy_analysis import MicroscopyAnalysisService
+from app.services.productive_model import (
+    ProductiveModelError,
+    ProductiveModelResolver,
+)
 from app.services.scientific import ScientificError
 
 
@@ -121,6 +126,64 @@ DETECTION_FIELDS = (
     "events",
     "review_counts",
 )
+CLASSIFICATION_FIELDS = (
+    "id",
+    "analysis_run_id",
+    "detection_run_id",
+    "classification_run_code",
+    "production_model_id",
+    "stage2_publication_id",
+    "model_registry_id",
+    "model_name",
+    "model_version",
+    "model_snapshot",
+    "input_manifest_sha256",
+    "status",
+    "input_count",
+    "eligible_count",
+    "excluded_count",
+    "processed_count",
+    "parasitized_count",
+    "uninfected_count",
+    "near_threshold_count",
+    "failed_count",
+    "requested_by",
+    "retry_of_run_id",
+    "started_at",
+    "completed_at",
+    "failed_at",
+    "error_code",
+    "error_message",
+    "created_at",
+    "updated_at",
+    "events",
+    "reviewed_count",
+    "unreviewed_count",
+    "confirmed_count",
+    "corrected_count",
+    "needs_attention_review_count",
+)
+CLASSIFICATION_SUMMARY_FIELDS = (
+    "id",
+    "classification_run_id",
+    "analysis_run_id",
+    "detection_run_id",
+    "outcome",
+    "eligible_cell_count",
+    "classified_cell_count",
+    "parasitized_candidate_count",
+    "uninfected_candidate_count",
+    "near_threshold_count",
+    "failed_prediction_count",
+    "parasitized_candidate_fraction",
+    "maximum_probability_parasitized",
+    "mean_probability_parasitized",
+    "median_probability_parasitized",
+    "per_image_summary",
+    "aggregation_policy_snapshot",
+    "reviewed_summary",
+    "created_at",
+)
 
 
 def _only(row: dict | None, fields: tuple[str, ...]) -> dict | None:
@@ -134,9 +197,27 @@ def derive_workflow_stage(
     analysis_run: dict | None,
     queue_item: dict | None,
     detection_run: dict | None,
+    classification_run: dict | None = None,
+    productive_model_available: bool | None = None,
 ) -> str:
+    if classification_run:
+        if classification_run["status"] == "completed_with_warnings":
+            return "classification_warning"
+        if classification_run["status"] == "completed":
+            return "classification_completed"
+        if classification_run["status"] == "processing":
+            return "classification_processing"
+        if classification_run["status"] == "created":
+            return "classification_pending"
+        if classification_run["status"] == "failed":
+            return "classification_failed"
+
     if detection_run:
         if detection_run["status"] in {"completed", "completed_with_warnings"}:
+            if productive_model_available is False:
+                return "awaiting_productive_model"
+            if productive_model_available is True:
+                return "classification_pending"
             return "review_ready"
         if detection_run["status"] in {"created", "processing"}:
             return "detection_processing"
@@ -180,6 +261,9 @@ def build_workflow_payload(
     analysis_row: dict | None,
     queue_row: dict | None,
     detection_row: dict | None,
+    classification_row: dict | None = None,
+    classification_summary_row: dict | None = None,
+    productive_model_available: bool | None = None,
 ) -> dict:
     batch = {
         "id": batch_row["batch_id"],
@@ -210,9 +294,35 @@ def build_workflow_payload(
     analysis_run = _only(analysis_row, ANALYSIS_FIELDS)
     queue_item = _only(queue_row, QUEUE_FIELDS)
     detection_run = _only(detection_row, DETECTION_FIELDS)
+    classification_run = _only(classification_row, CLASSIFICATION_FIELDS)
+    classification_summary = _only(
+        classification_summary_row, CLASSIFICATION_SUMMARY_FIELDS
+    )
+    if classification_run is not None:
+        from app.services.cell_classification import CellClassificationService
+
+        classification_run["model_snapshot"] = (
+            CellClassificationService.public_model_snapshot(
+                classification_run.get("model_snapshot") or {}
+            )
+        )
+        classification_run["review_counts"] = {
+            "reviewed": classification_run.pop("reviewed_count") or 0,
+            "unreviewed": classification_run.pop("unreviewed_count") or 0,
+            "confirmed": classification_run.pop("confirmed_count") or 0,
+            "corrected": classification_run.pop("corrected_count") or 0,
+            "needs_attention": (
+                classification_run.pop("needs_attention_review_count") or 0
+            ),
+        }
     return {
         "stage": derive_workflow_stage(
-            batch, analysis_run, queue_item, detection_run
+            batch,
+            analysis_run,
+            queue_item,
+            detection_run,
+            classification_run,
+            productive_model_available,
         ),
         "batch": batch,
         "subject": {
@@ -239,6 +349,8 @@ def build_workflow_payload(
         "analysis_run": analysis_run,
         "queue_item": queue_item,
         "detection_run": detection_run,
+        "classification_run": classification_run,
+        "classification_summary": classification_summary,
     }
 
 
@@ -317,6 +429,20 @@ class SmearWorkflowService:
             LIMIT 1
           ) d ON true
           LEFT JOIN LATERAL (
+            SELECT
+              classification.id,
+              classification.classification_run_code,
+              classification.status,
+              classification.model_name,
+              classification.model_version
+            FROM cell_classification_runs classification
+            WHERE classification.detection_run_id = d.id
+            ORDER BY classification.created_at DESC, classification.id DESC
+            LIMIT 1
+          ) classification ON true
+          LEFT JOIN smear_analysis_summaries classification_summary
+            ON classification_summary.classification_run_id = classification.id
+          LEFT JOIN LATERAL (
             SELECT count(*) FILTER (
                      WHERE latest.decision IS NOT NULL
                        AND latest.decision <> 'comment_only'
@@ -354,6 +480,12 @@ class SmearWorkflowService:
                       d.id detection_run_id,
                       d.status detection_status,
                       COALESCE(d.detection_count, 0)::integer detection_count,
+                      classification.id classification_run_id,
+                      classification.classification_run_code,
+                      classification.status classification_status,
+                      classification.model_name classification_model_name,
+                      classification.model_version classification_model_version,
+                      classification_summary.outcome classification_outcome,
                       COALESCE(reviews.reviewed_count, 0)::integer reviewed_count,
                       u.username requested_by_username,
                       b.source_system,
@@ -467,6 +599,7 @@ class SmearWorkflowService:
             analysis = None
             queue = None
             detection_id = None
+            classification_id = None
             if analysis_identity:
                 analysis = MicroscopyAnalysisService().get(
                     str(analysis_identity["id"]), connection
@@ -516,12 +649,64 @@ class SmearWorkflowService:
                 detection_id = (
                     detection_identity["id"] if detection_identity else None
                 )
+                if detection_id:
+                    classification_identity = connection.execute(
+                        text(
+                            """
+                            SELECT id
+                            FROM cell_classification_runs
+                            WHERE detection_run_id=:id
+                            ORDER BY created_at DESC,id DESC
+                            LIMIT 1
+                            """
+                        ),
+                        {"id": detection_id},
+                    ).mappings().first()
+                    classification_id = (
+                        classification_identity["id"]
+                        if classification_identity
+                        else None
+                    )
 
         detection = (
             CellAnalysisService(engine=self.engine).get_run(str(detection_id))
             if detection_id
             else None
         )
+        classification = None
+        classification_summary = None
+        if classification_id:
+            with self.engine.connect() as connection:
+                repository = CellClassificationRepository(connection)
+                classification = repository.get_run(str(classification_id))
+                classification_summary = repository.get_summary(
+                    str(classification_id)
+                )
+                if classification_summary is not None:
+                    from app.services.cell_classification import (
+                        build_revised_summary,
+                    )
+
+                    classification_summary["reviewed_summary"] = (
+                        build_revised_summary(
+                            classification_summary,
+                            repository.latest_reviews_for_summary(
+                                str(classification_id)
+                            ),
+                        )
+                    )
+
+        productive_model_available: bool | None = None
+        if (
+            detection
+            and detection["status"] in {"completed", "completed_with_warnings"}
+            and classification is None
+        ):
+            try:
+                ProductiveModelResolver(engine=self.engine).resolve()
+                productive_model_available = True
+            except ProductiveModelError:
+                productive_model_available = False
 
         return build_workflow_payload(
             dict(batch),
@@ -529,4 +714,7 @@ class SmearWorkflowService:
             analysis,
             dict(queue) if queue else None,
             detection,
+            classification,
+            classification_summary,
+            productive_model_available,
         )

@@ -59,6 +59,10 @@ SUMMARY_COLUMNS = [
 ]
 
 
+class GradCAMUnsupportedError(ValueError):
+    """The registered model/input contract is incompatible with Grad-CAM."""
+
+
 def get_pyplot():
     import matplotlib
 
@@ -953,33 +957,53 @@ def find_last_conv_layer(model):
             if layer_is_connected_to_model(model, layer, tf):
                 return layer
 
-    raise ValueError("No se encontró una capa convolucional compatible para Grad-CAM.")
+    raise GradCAMUnsupportedError(
+        "No se encontró una capa convolucional compatible para Grad-CAM."
+    )
 
 
-def explain_with_gradcam(
+def compute_gradcam_artifacts(
     model,
     image,
     pred_idx,
-    output_path,
-    title,
     last_conv_layer_name=None,
     invert_scalar_output=False,
     preprocessing_mode=PREPROCESSING_RESCALE_0_1,
 ):
+    """Return the shared Grad-CAM heatmap, derived overlay, and layer name.
+
+    This is the only mathematical implementation used by both the batch
+    explainability pipeline and the on-demand cell explanation service. It
+    performs no persistence and never mutates the source image.
+    """
     import tensorflow as tf
 
     plt = get_pyplot()
     model_image = np.asarray(image, dtype=np.float32)
+    if model_image.ndim != 3 or model_image.shape[-1] not in {1, 3}:
+        raise GradCAMUnsupportedError(
+            "Grad-CAM requiere una imagen HxWxC compatible."
+        )
     display_image = model_image_to_display(model_image, preprocessing_mode)
 
     if last_conv_layer_name is None:
         last_conv_layer = find_last_conv_layer(model)
     else:
-        last_conv_layer = model.get_layer(last_conv_layer_name)
+        try:
+            last_conv_layer = model.get_layer(last_conv_layer_name)
+        except (AttributeError, TypeError, ValueError) as exc:
+            raise GradCAMUnsupportedError(
+                "La capa Grad-CAM registrada no existe en el modelo."
+            ) from exc
 
     print("Última capa convolucional usada para Grad-CAM:", last_conv_layer.name)
 
-    grad_model = build_gradcam_model(model, last_conv_layer, tf)
+    try:
+        grad_model = build_gradcam_model(model, last_conv_layer, tf)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise GradCAMUnsupportedError(
+            "El grafo del modelo no expone una salida convolucional compatible."
+        ) from exc
 
     image_batch = tf.convert_to_tensor(np.expand_dims(model_image, axis=0), dtype=tf.float32)
     with tf.GradientTape() as tape:
@@ -989,11 +1013,16 @@ def explain_with_gradcam(
         elif len(model_output.shape) == 1:
             class_channel = 1.0 - model_output if invert_scalar_output else model_output
         else:
+            output_width = model_output.shape[-1]
+            if output_width is not None and not 0 <= int(pred_idx) < int(output_width):
+                raise GradCAMUnsupportedError(
+                    "La clase objetivo no existe en la salida del modelo."
+                )
             class_channel = model_output[:, pred_idx]
 
     grads = tape.gradient(class_channel, conv_outputs)
     if grads is None:
-        raise ValueError(
+        raise GradCAMUnsupportedError(
             f"No se pudieron calcular gradientes para la capa {last_conv_layer.name}."
         )
 
@@ -1017,6 +1046,29 @@ def explain_with_gradcam(
 
     heatmap_rgb = plt.get_cmap("jet")(heatmap)[..., :3].astype(np.float32)
     overlay = np.clip((0.6 * display_image) + (0.4 * heatmap_rgb), 0.0, 1.0)
+    return heatmap.astype(np.float32), overlay.astype(np.float32), last_conv_layer.name
+
+
+def explain_with_gradcam(
+    model,
+    image,
+    pred_idx,
+    output_path,
+    title,
+    last_conv_layer_name=None,
+    invert_scalar_output=False,
+    preprocessing_mode=PREPROCESSING_RESCALE_0_1,
+):
+    heatmap, overlay, last_conv_layer_name = compute_gradcam_artifacts(
+        model=model,
+        image=image,
+        pred_idx=pred_idx,
+        last_conv_layer_name=last_conv_layer_name,
+        invert_scalar_output=invert_scalar_output,
+        preprocessing_mode=preprocessing_mode,
+    )
+    plt = get_pyplot()
+    display_image = model_image_to_display(image, preprocessing_mode)
 
     fig, axes = plt.subplots(1, 3, figsize=(12, 4))
     axes[0].imshow(display_image)
@@ -1037,7 +1089,7 @@ def explain_with_gradcam(
     fig.savefig(output_path, dpi=160, bbox_inches="tight")
     plt.close(fig)
 
-    return True, None, last_conv_layer.name
+    return True, None, last_conv_layer_name
 
 
 def make_summary_row(

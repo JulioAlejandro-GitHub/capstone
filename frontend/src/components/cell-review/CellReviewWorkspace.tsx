@@ -21,8 +21,53 @@ import type {
 } from '../../types/cellReview';
 import { AuthenticatedCropImage } from './AuthenticatedCellImage';
 import { CellImageViewer } from './CellImageViewer';
+import { CellClassificationAuditModal } from './CellClassificationAuditModal';
+import type {
+  CanonicalCellLabel,
+  CellClassificationReview,
+  CellClassificationReviewDecision,
+  CellClassificationRunDetail,
+  CellPredictionDetail,
+  CellPredictionSummary,
+  SmearAnalysisSummary,
+} from '../../types/cellClassification';
 
 const PAGE_SIZE = 100;
+
+type ClassificationFilter =
+  | 'all'
+  | 'parasitized'
+  | 'uninfected'
+  | 'near_threshold'
+  | 'failed'
+  | 'unreviewed'
+  | 'confirmed'
+  | 'corrected'
+  | 'needs_attention';
+
+const classificationFilterLabel: Record<ClassificationFilter, string> = {
+  all: 'Todas',
+  parasitized: 'Predichas parasitized',
+  uninfected: 'Predichas uninfected',
+  near_threshold: 'Próximas al threshold',
+  failed: 'Predicciones fallidas',
+  unreviewed: 'Sin revisión',
+  confirmed: 'Confirmadas',
+  corrected: 'Corregidas',
+  needs_attention: 'Requieren atención',
+};
+
+const classificationFilterSymbol: Record<ClassificationFilter, string> = {
+  all: '∑',
+  parasitized: 'P',
+  uninfected: 'U',
+  near_threshold: '≈',
+  failed: '×',
+  unreviewed: '○',
+  confirmed: '✓',
+  corrected: '↺',
+  needs_attention: '!',
+};
 
 const reviewStatusLabel: Record<CellReviewStatus, string> = {
   unreviewed: 'Sin revisar',
@@ -87,6 +132,13 @@ type CellReviewWorkspaceProps = {
   onMicroscopyImageChange?: (microscopyImageId: string | null) => void;
   initialSelectedDetectionId?: string | null;
   onSelectedDetectionChange?: (detectionId: string | null) => void;
+  classificationRunId?: string | null;
+  initialClassificationSummary?: SmearAnalysisSummary | null;
+  canExplain?: boolean;
+  canClassificationReview?: boolean;
+  readOnly?: boolean;
+  initialSelectedPredictionId?: string | null;
+  onSelectedPredictionChange?: (predictionId: string | null) => void;
 };
 
 export function CellReviewWorkspace({
@@ -98,11 +150,20 @@ export function CellReviewWorkspace({
   onMicroscopyImageChange,
   initialSelectedDetectionId = null,
   onSelectedDetectionChange,
+  classificationRunId = null,
+  initialClassificationSummary = null,
+  canExplain = false,
+  canClassificationReview = false,
+  readOnly = false,
+  initialSelectedPredictionId = null,
+  onSelectedPredictionChange,
 }: CellReviewWorkspaceProps) {
   const [run, setRun] = useState<CellDetectionRunDetail | null>(null);
   const [images, setImages] = useState<CellDetectionImage[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [filter, setFilter] = useState<CellReviewFilter>('all');
+  const [classificationFilter, setClassificationFilter] =
+    useState<ClassificationFilter>('all');
   const [detections, setDetections] = useState<CellDetectionSummary[]>([]);
   const [overlayDetections, setOverlayDetections] = useState<CellDetectionSummary[]>([]);
   const [detectionTotal, setDetectionTotal] = useState(0);
@@ -120,6 +181,25 @@ export function CellReviewWorkspace({
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSaving, setReviewSaving] = useState(false);
   const [liveMessage, setLiveMessage] = useState('');
+  const [classificationRun, setClassificationRun] =
+    useState<CellClassificationRunDetail | null>(null);
+  const [classificationSummary, setClassificationSummary] =
+    useState<SmearAnalysisSummary | null>(initialClassificationSummary);
+  const [predictions, setPredictions] = useState<CellPredictionSummary[]>([]);
+  const [predictionDetail, setPredictionDetail] =
+    useState<CellPredictionDetail | null>(null);
+  const [classificationReviews, setClassificationReviews] =
+    useState<CellClassificationReview[]>([]);
+  const [classificationLoading, setClassificationLoading] = useState(false);
+  const [classificationRefreshToken, setClassificationRefreshToken] = useState(0);
+  const [classificationError, setClassificationError] = useState('');
+  const [classificationComment, setClassificationComment] = useState('');
+  const [reviewedLabel, setReviewedLabel] =
+    useState<CanonicalCellLabel>('parasitized');
+  const [classificationSaving, setClassificationSaving] = useState(false);
+  const [classificationReviewError, setClassificationReviewError] = useState('');
+  const [explanationSaving, setExplanationSaving] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
   const [focusRequest, setFocusRequest] = useState(0);
   const [summaryCollapsed, setSummaryCollapsed] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>('image');
@@ -129,11 +209,13 @@ export function CellReviewWorkspace({
   const selectFirstUnreviewed = useRef(false);
   const selectedDetectionIdRef = useRef<string | null>(null);
   const pendingInitialSelection = useRef<string | null>(initialSelectedDetectionId);
+  const pendingInitialPrediction = useRef<string | null>(initialSelectedPredictionId);
   const pendingInitialImage = useRef<string | null>(initialMicroscopyImageId);
   const initialSelectionAttempted = useRef(false);
   const selectionDetectionRunId = useRef(detectionRunId);
   const lastNotifiedImage = useRef<string | null | undefined>(undefined);
   const lastNotifiedSelection = useRef<string | null | undefined>(undefined);
+  const lastNotifiedPrediction = useRef<string | null | undefined>(undefined);
 
   const commitSelectedDetectionId = useCallback((detectionId: string | null) => {
     selectedDetectionIdRef.current = detectionId;
@@ -150,9 +232,11 @@ export function CellReviewWorkspace({
     selectionDetectionRunId.current = detectionRunId;
     pendingInitialImage.current = initialMicroscopyImageId;
     pendingInitialSelection.current = initialSelectedDetectionId;
+    pendingInitialPrediction.current = initialSelectedPredictionId;
     initialSelectionAttempted.current = false;
     lastNotifiedImage.current = undefined;
     lastNotifiedSelection.current = undefined;
+    lastNotifiedPrediction.current = undefined;
     setSelectionResolved(false);
     commitSelectedDetectionId(null);
   }, [
@@ -160,6 +244,7 @@ export function CellReviewWorkspace({
     detectionRunId,
     initialMicroscopyImageId,
     initialSelectedDetectionId,
+    initialSelectedPredictionId,
     selectionResolved,
   ]);
 
@@ -189,7 +274,42 @@ export function CellReviewWorkspace({
     () => detections.find((item) => item.id === selectedDetectionId) ?? null,
     [detections, selectedDetectionId],
   );
+  const predictionByDetectionId = useMemo(
+    () => new Map(predictions.map((item) => [item.cell_detection_id, item])),
+    [predictions],
+  );
+  const selectedPrediction = selectedDetectionId
+    ? predictionByDetectionId.get(selectedDetectionId) ?? null
+    : null;
+  const galleryDetections = useMemo(() => {
+    if (!classificationRunId) return detections;
+    return overlayDetections.filter((detection) => {
+      const prediction = predictionByDetectionId.get(detection.id);
+      if (!prediction) return false;
+      if (classificationFilter === 'all') return true;
+      if (classificationFilter === 'parasitized' || classificationFilter === 'uninfected') {
+        return prediction.predicted_label === classificationFilter;
+      }
+      if (classificationFilter === 'near_threshold') return prediction.near_threshold;
+      if (classificationFilter === 'failed') return prediction.prediction_status === 'failed';
+      return prediction.review_status === classificationFilter;
+    });
+  }, [
+    classificationFilter,
+    classificationRunId,
+    detections,
+    overlayDetections,
+    predictionByDetectionId,
+  ]);
   const counts = runCounts(run);
+
+  useEffect(() => {
+    if (!selectionResolved || !onSelectedPredictionChange) return;
+    const predictionId = selectedPrediction?.id ?? null;
+    if (lastNotifiedPrediction.current === predictionId) return;
+    lastNotifiedPrediction.current = predictionId;
+    onSelectedPredictionChange(predictionId);
+  }, [onSelectedPredictionChange, selectedPrediction?.id, selectionResolved]);
 
   const loadWorkspace = useCallback(async () => {
     setWorkspaceLoading(true);
@@ -222,6 +342,87 @@ export function CellReviewWorkspace({
   }, [loadWorkspace]);
 
   useEffect(() => {
+    setClassificationSummary(initialClassificationSummary);
+  }, [initialClassificationSummary]);
+
+  useEffect(() => {
+    if (!classificationRunId) {
+      setClassificationRun(null);
+      setPredictions([]);
+      setPredictionDetail(null);
+      setClassificationReviews([]);
+      setClassificationError('');
+      return;
+    }
+    let active = true;
+    setClassificationLoading(true);
+    setClassificationError('');
+    Promise.all([
+      api.getCellClassificationRun(classificationRunId),
+      api.getCellClassificationSummary(classificationRunId),
+    ])
+      .then(([nextRun, nextSummary]) => {
+        if (!active) return;
+        setClassificationRun(nextRun);
+        setClassificationSummary(nextSummary);
+      })
+      .catch(() => {
+        if (active) {
+          setClassificationError('No fue posible cargar la clasificación celular.');
+        }
+      })
+      .finally(() => {
+        if (active) setClassificationLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [classificationRefreshToken, classificationRunId]);
+
+  useEffect(() => {
+    if (!classificationRunId || !selectedImageId) {
+      setPredictions([]);
+      return;
+    }
+    let active = true;
+    setClassificationLoading(true);
+    setClassificationError('');
+    api.getCellClassificationPredictions(classificationRunId, {
+      microscopy_image_id: selectedImageId,
+      limit: 500,
+      offset: 0,
+    })
+      .then((page) => {
+        if (!active) return;
+        setPredictions(page.items);
+        const requestedPrediction = page.items.find(
+          (item) => item.id === pendingInitialPrediction.current,
+        );
+        if (requestedPrediction) {
+          commitSelectedDetectionId(requestedPrediction.cell_detection_id);
+          pendingInitialPrediction.current = null;
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setPredictions([]);
+          setClassificationError('No fue posible cargar las predicciones de esta imagen.');
+        }
+      })
+      .finally(() => {
+        if (active) setClassificationLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    classificationRefreshToken,
+    classificationRunId,
+    commitSelectedDetectionId,
+    selectedImageId,
+  ]);
+
+  useEffect(() => {
     if (workspaceLoading) return;
     if (!selectedImageId) {
       setDetections([]);
@@ -236,7 +437,10 @@ export function CellReviewWorkspace({
     setGalleryLoading(true);
     setGalleryError('');
     setSelectionResolved(false);
-    const query = { review_status: filter === 'all' ? undefined : filter };
+    const query = {
+      review_status:
+        classificationRunId || filter === 'all' ? undefined : filter,
+    };
     Promise.all([
       api.getCellDetections(detectionRunId, selectedImageId, {
         ...query,
@@ -290,6 +494,7 @@ export function CellReviewWorkspace({
       });
   }, [
     commitSelectedDetectionId,
+    classificationRunId,
     detectionRunId,
     filter,
     selectedImageId,
@@ -327,8 +532,54 @@ export function CellReviewWorkspace({
   }, [selectedDetectionId]);
 
   useEffect(() => {
+    if (!selectedPrediction) {
+      setPredictionDetail(null);
+      setClassificationReviews([]);
+      return;
+    }
+    let active = true;
+    setClassificationLoading(true);
+    setClassificationError('');
+    Promise.all([
+      api.getCellPrediction(selectedPrediction.id),
+      api.getCellClassificationReviews(selectedPrediction.id),
+    ])
+      .then(async ([detail, reviews]) => {
+        if (!active) return;
+        let explanation = detail.explanation;
+        if (
+          detail.explanation_status
+          && detail.explanation_status !== 'not_requested'
+        ) {
+          try {
+            explanation = await api.getCellExplanation(detail.id);
+          } catch {
+            // The prediction remains readable even if its optional artefact is unavailable.
+          }
+        }
+        if (!active) return;
+        setPredictionDetail({ ...detail, explanation });
+        setClassificationReviews(reviews.items);
+      })
+      .catch(() => {
+        if (active) {
+          setClassificationError('No fue posible cargar el detalle de clasificación.');
+        }
+      })
+      .finally(() => {
+        if (active) setClassificationLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [classificationRefreshToken, selectedPrediction?.id]);
+
+  useEffect(() => {
     setReviewComment('');
     setReviewError('');
+    setClassificationComment('');
+    setClassificationReviewError('');
+    setAuditOpen(false);
   }, [selectedDetectionId]);
 
   useEffect(() => {
@@ -380,19 +631,54 @@ export function CellReviewWorkspace({
   }
 
   function selectRelative(direction: -1 | 1) {
-    if (!detections.length) return;
-    const currentIndex = detections.findIndex((item) => item.id === selectedDetectionId);
-    if (direction === 1 && currentIndex === detections.length - 1 && detections.length < detectionTotal) {
+    const visibleDetections = classificationRunId ? galleryDetections : detections;
+    if (!visibleDetections.length) return;
+    const currentIndex = visibleDetections.findIndex(
+      (item) => item.id === selectedDetectionId,
+    );
+    if (
+      !classificationRunId
+      && direction === 1
+      && currentIndex === visibleDetections.length - 1
+      && visibleDetections.length < detectionTotal
+    ) {
       void loadMore(true);
       return;
     }
     const nextIndex = currentIndex < 0
       ? 0
-      : (currentIndex + direction + detections.length) % detections.length;
-    selectDetection(detections[nextIndex], true);
+      : (
+          currentIndex
+          + direction
+          + visibleDetections.length
+        ) % visibleDetections.length;
+    selectDetection(visibleDetections[nextIndex], true);
   }
 
   function nextUnreviewed() {
+    if (classificationRunId) {
+      const currentIndex = galleryDetections.findIndex(
+        (item) => item.id === selectedDetectionId,
+      );
+      const ordered = [
+        ...galleryDetections.slice(Math.max(0, currentIndex + 1)),
+        ...galleryDetections.slice(0, Math.max(0, currentIndex + 1)),
+      ];
+      const next = ordered.find((item) => (
+        predictionByDetectionId.get(item.id)?.review_status === 'unreviewed'
+        && item.id !== selectedDetectionId
+      ));
+      if (next) {
+        selectDetection(next, true);
+        return;
+      }
+      if (classificationFilter !== 'unreviewed') {
+        setClassificationFilter('unreviewed');
+        return;
+      }
+      setLiveMessage('No quedan clasificaciones sin revisar en esta imagen.');
+      return;
+    }
     const currentIndex = detections.findIndex((item) => item.id === selectedDetectionId);
     const ordered = [
       ...detections.slice(Math.max(0, currentIndex + 1)),
@@ -488,6 +774,7 @@ export function CellReviewWorkspace({
       }
       setReviewComment('');
       setLiveMessage(`Revisión guardada para ${reviewTarget.cell_code}. Puedes continuar con la siguiente sin revisar.`);
+      if (classificationRunId) await refreshClassificationSummary();
     } catch (error) {
       setReviewError(
         error instanceof ApiError && error.status === 403
@@ -496,6 +783,117 @@ export function CellReviewWorkspace({
       );
     } finally {
       setReviewSaving(false);
+    }
+  }
+
+  async function refreshClassificationSummary() {
+    if (!classificationRunId) return;
+    try {
+      const [nextSummary, nextRun] = await Promise.all([
+        api.getCellClassificationSummary(classificationRunId),
+        api.getCellClassificationRun(classificationRunId),
+      ]);
+      setClassificationSummary(nextSummary);
+      setClassificationRun(nextRun);
+    } catch {
+      setClassificationError('No fue posible actualizar el resumen revisado.');
+    }
+  }
+
+  async function generateExplanation() {
+    const target = predictionDetail ?? selectedPrediction;
+    if (!target || !canExplain || readOnly) return;
+    setExplanationSaving(true);
+    setClassificationError('');
+    try {
+      const explanation = await api.createCellExplanation(
+        target.id,
+        target.explanation?.status === 'failed',
+      );
+      setPredictionDetail((current) => current ? {
+        ...current,
+        explanation,
+        explanation_status: explanation.status,
+      } : current);
+      setPredictions((items) => items.map((item) => (
+        item.id === target.id
+          ? { ...item, explanation, explanation_status: explanation.status }
+          : item
+      )));
+      setLiveMessage(`Explicación ${explanation.status} para ${target.cell_code}.`);
+    } catch {
+      try {
+        const explanation = await api.getCellExplanation(target.id);
+        setPredictionDetail((current) => current ? {
+          ...current,
+          explanation,
+          explanation_status: explanation.status,
+        } : current);
+        setPredictions((items) => items.map((item) => (
+          item.id === target.id
+            ? { ...item, explanation, explanation_status: explanation.status }
+            : item
+        )));
+        setLiveMessage(`Estado de explicación recuperado: ${explanation.status}.`);
+      } catch {
+        setClassificationError('No fue posible generar la explicación Grad-CAM.');
+      }
+    } finally {
+      setExplanationSaving(false);
+    }
+  }
+
+  async function submitClassificationReview(
+    decision: CellClassificationReviewDecision,
+  ) {
+    const target = predictionDetail ?? selectedPrediction;
+    if (!target || !canClassificationReview || readOnly) return;
+    const comment = classificationComment.trim();
+    if (decision === 'corrected' && !comment) {
+      setClassificationReviewError('La corrección exige label y comentario.');
+      return;
+    }
+    if (
+      (decision === 'needs_attention' || decision === 'comment_only')
+      && !comment
+    ) {
+      setClassificationReviewError('Esta decisión requiere un comentario.');
+      return;
+    }
+    setClassificationSaving(true);
+    setClassificationReviewError('');
+    try {
+      const review = await api.createCellClassificationReview(target.id, {
+        decision,
+        reviewed_label: decision === 'corrected' ? reviewedLabel : undefined,
+        comment: comment || undefined,
+      });
+      const nextStatus = decision === 'comment_only'
+        ? target.review_status
+        : decision;
+      setPredictions((items) => items.map((item) => (
+        item.id === target.id
+          ? { ...item, latest_review: review, review_status: nextStatus }
+          : item
+      )));
+      setPredictionDetail((current) => current ? {
+        ...current,
+        latest_review: review,
+        review_status: nextStatus,
+        review_history: [...(current.review_history ?? []), review],
+      } : current);
+      setClassificationReviews((items) => [...items, review]);
+      setClassificationComment('');
+      await refreshClassificationSummary();
+      setLiveMessage(`Revisión de clasificación guardada para ${target.cell_code}.`);
+    } catch (error) {
+      setClassificationReviewError(
+        error instanceof ApiError && error.status === 403
+          ? 'Tu rol no tiene permiso para revisar clasificaciones.'
+          : 'No fue posible guardar la revisión de clasificación.',
+      );
+    } finally {
+      setClassificationSaving(false);
     }
   }
 
@@ -535,9 +933,22 @@ export function CellReviewWorkspace({
         <div>
           <p className="cell-workspace-kicker">Estación visual científica</p>
           <strong>{run.detection_run_code}</strong>
-          <span>{run.subject_code} · {run.sample_code} · {run.slide_code}</span>
+          <span>
+            {run.subject_code} · {run.sample_code} · {run.slide_code}
+            {classificationRun ? ` · ${classificationRun.classification_run_code}` : ''}
+          </span>
         </div>
         <div>
+          {readOnly ? <span className="cell-readonly-badge">Solo lectura</span> : null}
+          {classificationRunId ? (
+            <button
+              type="button"
+              disabled={classificationLoading}
+              onClick={() => setClassificationRefreshToken((value) => value + 1)}
+            >
+              Actualizar clasificación
+            </button>
+          ) : null}
           <button
             type="button"
             aria-pressed={summaryCollapsed}
@@ -548,6 +959,49 @@ export function CellReviewWorkspace({
           <button type="button" onClick={onClose}>{closeLabel}</button>
         </div>
       </header>
+
+      {classificationRun && classificationSummary ? (
+        <section className="cell-experimental-summary" aria-labelledby="cell-experimental-summary-heading">
+          <div>
+            <p className="cell-workspace-kicker">Resultado experimental del análisis</p>
+            <h2 id="cell-experimental-summary-heading">
+              {classificationSummary.outcome === 'suspicious_cells_detected'
+                ? 'Células candidatas sospechosas detectadas'
+                : classificationSummary.outcome === 'no_suspicious_cells_detected'
+                  ? 'Sin candidatos clasificados como parasitized'
+                  : 'Resultado experimental inconcluso'}
+            </h2>
+            <p>
+              {classificationSummary.outcome === 'suspicious_cells_detected'
+                ? 'Se identificaron células candidatas clasificadas como parasitized. El resultado requiere revisión experta y no constituye un diagnóstico clínico.'
+                : classificationSummary.outcome === 'no_suspicious_cells_detected'
+                  ? 'No se identificaron células candidatas clasificadas como parasitized dentro del conjunto procesado. Esto no descarta malaria ni reemplaza la revisión experta.'
+                  : 'El procesamiento no permite establecer un resultado experimental completo. Revise los fallos, advertencias y células próximas al threshold.'}
+            </p>
+          </div>
+          <dl>
+            <div><dt>Elegibles</dt><dd>{classificationSummary.eligible_cell_count}</dd></div>
+            <div><dt>Clasificadas</dt><dd>{classificationSummary.classified_cell_count}</dd></div>
+            <div><dt>Candidatos parasitized</dt><dd>{classificationSummary.parasitized_candidate_count}</dd></div>
+            <div><dt>Candidatos uninfected</dt><dd>{classificationSummary.uninfected_candidate_count}</dd></div>
+            <div><dt>Próximas al threshold</dt><dd>{classificationSummary.near_threshold_count}</dd></div>
+            <div><dt>Fallidas</dt><dd>{classificationSummary.failed_prediction_count}</dd></div>
+            <div><dt>Fracción experimental</dt><dd>{classificationSummary.parasitized_candidate_fraction == null ? '—' : `${(classificationSummary.parasitized_candidate_fraction * 100).toFixed(1)} %`}</dd></div>
+            <div><dt>Probabilidad máxima</dt><dd>{optionalMetric(classificationSummary.maximum_probability_parasitized)}</dd></div>
+            <div><dt>Modelo</dt><dd>{classificationRun.model_name} {classificationRun.model_version ?? ''}</dd></div>
+            <div><dt>Threshold publicado</dt><dd>{optionalMetric(classificationRun.model_snapshot.threshold)} · {classificationRun.model_snapshot.threshold_source}</dd></div>
+          </dl>
+          <div className="cell-summary-comparison">
+            <strong>Resumen automático ≠ Resumen revisado</strong>
+            <span>
+              Automático: {classificationSummary.outcome.replaceAll('_', ' ')}
+              {' · '}
+              Revisado: {classificationSummary.reviewed_summary?.outcome?.replaceAll('_', ' ') ?? 'sin revisión suficiente'}
+            </span>
+          </div>
+        </section>
+      ) : null}
+      {classificationError ? <p className="cell-classification-error" role="alert">{classificationError}</p> : null}
 
       <div className="cell-review-mobile-tabs" role="tablist" aria-label="Paneles de revisión">
         {([
@@ -587,9 +1041,56 @@ export function CellReviewWorkspace({
             <div><dt>Detecciones</dt><dd>{run.detection_count}</dd></div>
             <div><dt>Revisadas</dt><dd>{run.reviewed_count}</dd></div>
             <div><dt>Pendientes</dt><dd>{counts.unreviewed}</dd></div>
+            {classificationRun ? (
+              <>
+                <div><dt>Modelo</dt><dd>{classificationRun.model_name}</dd></div>
+                <div><dt>Versión</dt><dd>{classificationRun.model_version ?? '—'}</dd></div>
+                <div><dt>Threshold</dt><dd>{optionalMetric(classificationRun.model_snapshot.threshold)}</dd></div>
+                <div><dt>Fuente threshold</dt><dd>{classificationRun.model_snapshot.threshold_source}</dd></div>
+              </>
+            ) : null}
           </dl>
 
-          <nav className="cell-status-filters" aria-label="Filtrar por estado de revisión">
+          {classificationRun ? (
+            <nav className="cell-status-filters classification-filters" aria-label="Filtrar clasificación celular">
+              {(Object.keys(classificationFilterLabel) as ClassificationFilter[]).map((status) => {
+                const reviewCounts = classificationRun.review_counts ?? {};
+                const count = status === 'all'
+                  ? classificationRun.eligible_count
+                  : status === 'parasitized'
+                    ? classificationRun.parasitized_count
+                    : status === 'uninfected'
+                      ? classificationRun.uninfected_count
+                      : status === 'near_threshold'
+                        ? classificationRun.near_threshold_count
+                        : status === 'failed'
+                          ? classificationRun.failed_count
+                          : reviewCounts[status] ?? 0;
+                const percentage = classificationRun.eligible_count
+                  ? count / classificationRun.eligible_count * 100
+                  : 0;
+                return (
+                  <button
+                    key={status}
+                    type="button"
+                    className={`classification-status-${status}`}
+                    aria-pressed={classificationFilter === status}
+                    onClick={() => setClassificationFilter(status)}
+                  >
+                    <span className="cell-filter-name">
+                      <span aria-hidden="true">{classificationFilterSymbol[status]}</span>
+                      {classificationFilterLabel[status]}
+                    </span>
+                    <strong>{count}</strong>
+                    <small>{percentage.toFixed(1)}%</small>
+                    <span className="cell-filter-progress" aria-hidden="true">
+                      <span style={{ width: `${percentage}%` }} />
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+          ) : <nav className="cell-status-filters" aria-label="Filtrar por estado de revisión">
             {(['all', 'unreviewed', 'accepted', 'rejected', 'needs_attention'] as CellReviewFilter[]).map((status) => {
               const count = status === 'all' ? run.detection_count : counts[status];
               const percentage = run.detection_count ? count / run.detection_count * 100 : 0;
@@ -613,7 +1114,7 @@ export function CellReviewWorkspace({
                 </button>
               );
             })}
-          </nav>
+          </nav>}
 
           <section className="cell-image-list" aria-labelledby="cell-image-list-heading">
             <h3 id="cell-image-list-heading">Imágenes del frotis</h3>
@@ -644,15 +1145,20 @@ export function CellReviewWorkspace({
               <h2 id="cell-gallery-heading">Detecciones candidatas</h2>
               <p>{selectedImage ? `${selectedImage.sequence_number}. ${selectedImage.safe_name}` : 'Sin imagen seleccionada'}</p>
             </div>
-            <span>{detectionTotal} filtradas · {selectedImage?.detection_count ?? 0} totales · {filterLabel[filter]}</span>
+            <span>
+              {classificationRun
+                ? `${galleryDetections.length} mostradas · ${classificationFilterLabel[classificationFilter]}`
+                : `${detectionTotal} filtradas · ${selectedImage?.detection_count ?? 0} totales · ${filterLabel[filter]}`}
+            </span>
           </header>
           <div className="cell-gallery-scroll">
             {galleryError ? <p className="cell-error" role="alert">{galleryError}</p> : null}
             <div className="cell-crop-gallery" aria-busy={galleryLoading}>
-              {detections.map((detection) => (
+              {galleryDetections.map((detection) => (
                 <DetectionCard
                   key={detection.id}
                   detection={detection}
+                  prediction={predictionByDetectionId.get(detection.id) ?? null}
                   selected={detection.id === selectedDetectionId}
                   register={(node) => {
                     if (node) cardRefs.current.set(detection.id, node);
@@ -663,14 +1169,14 @@ export function CellReviewWorkspace({
               ))}
             </div>
             {galleryLoading ? <p className="cell-panel-state" aria-live="polite">Cargando detecciones…</p> : null}
-            {!galleryLoading && !galleryError && selectedImage && !detections.length ? (
+            {!galleryLoading && !galleryError && selectedImage && !galleryDetections.length ? (
               <p className="cell-empty-state">
                 {selectedImage.detection_count === 0
                   ? 'Esta imagen no contiene detecciones candidatas.'
                   : 'No hay detecciones para el filtro seleccionado.'}
               </p>
             ) : null}
-            {galleryOffset < detectionTotal ? (
+            {!classificationRun && galleryOffset < detectionTotal ? (
               <button className="cell-load-more" type="button" disabled={galleryLoading} onClick={() => void loadMore()}>
                 Cargar más ({Math.min(galleryOffset, detectionTotal)} de {detectionTotal})
               </button>
@@ -686,6 +1192,7 @@ export function CellReviewWorkspace({
                 images={images}
                 image={selectedImage}
                 detections={overlayDetections}
+                classificationAnnotations={predictionByDetectionId}
                 selectedDetectionId={selectedDetectionId}
                 focusRequest={focusRequest}
                 onImageChange={(id) => {
@@ -709,6 +1216,18 @@ export function CellReviewWorkspace({
             selected={selectedDetection}
             detail={selectedDetail}
             history={reviewHistory}
+            prediction={predictionDetail ?? selectedPrediction}
+            classificationHistory={classificationReviews}
+            classificationRun={classificationRun}
+            classificationLoading={classificationLoading}
+            classificationError={classificationError}
+            canExplain={canExplain && !readOnly}
+            canClassificationReview={canClassificationReview && !readOnly}
+            classificationComment={classificationComment}
+            reviewedLabel={reviewedLabel}
+            classificationSaving={classificationSaving}
+            explanationSaving={explanationSaving}
+            classificationReviewError={classificationReviewError}
             loading={detailLoading}
             error={detailError}
             canReview={canReview}
@@ -723,21 +1242,38 @@ export function CellReviewWorkspace({
             }}
             onReview={submitReview}
             onNextUnreviewed={nextUnreviewed}
+            onClassificationCommentChange={(value) => {
+              setClassificationComment(value);
+              setClassificationReviewError('');
+            }}
+            onReviewedLabelChange={setReviewedLabel}
+            onClassificationReview={submitClassificationReview}
+            onGenerateExplanation={generateExplanation}
+            onAudit={() => setAuditOpen(true)}
           />
         </div>
       </div>
       <p className="cell-review-live" aria-live="polite">{liveMessage}</p>
+      {auditOpen && (predictionDetail ?? selectedPrediction) ? (
+        <CellClassificationAuditModal
+          prediction={predictionDetail ?? selectedPrediction!}
+          run={classificationRun}
+          onClose={() => setAuditOpen(false)}
+        />
+      ) : null}
     </section>
   );
 }
 
 const DetectionCard = memo(function DetectionCard({
   detection,
+  prediction,
   selected,
   register,
   onSelect,
 }: {
   detection: CellDetectionSummary;
+  prediction: CellPredictionSummary | null;
   selected: boolean;
   register: (node: HTMLButtonElement | null) => void;
   onSelect: () => void;
@@ -751,7 +1287,7 @@ const DetectionCard = memo(function DetectionCard({
         ref={register}
         type="button"
         aria-pressed={selected}
-        aria-label={`${detection.cell_code}, ${reviewStatusLabel[detection.review_status]}`}
+        aria-label={`${detection.cell_code}, ${prediction?.predicted_label ?? reviewStatusLabel[detection.review_status]}`}
         onClick={onSelect}
       >
         <AuthenticatedCropImage
@@ -761,10 +1297,29 @@ const DetectionCard = memo(function DetectionCard({
         />
         <span className="cell-card-caption">
           <strong>{detection.cell_code}</strong>
-          <span className={`cell-review-status status-${detection.review_status}`}>
-            <span aria-hidden="true">{reviewStatusSymbol[detection.review_status]}</span>
-            {reviewStatusLabel[detection.review_status]}
-          </span>
+          {prediction ? (
+            <>
+              <span className={`cell-prediction-label prediction-${prediction.predicted_label ?? 'failed'}`}>
+                {prediction.prediction_status === 'failed'
+                  ? '× Predicción fallida'
+                  : `${prediction.predicted_label === 'parasitized' ? 'P' : 'U'} ${prediction.predicted_label}`}
+              </span>
+              <small>
+                P(parasitized) {optionalMetric(prediction.probability_parasitized)}
+                {prediction.near_threshold ? ' · ≈ Próxima al threshold' : ''}
+              </small>
+              <small>
+                Explicación: {prediction.explanation?.status ?? prediction.explanation_status ?? 'not_requested'}
+                {' · '}
+                Revisión: {classificationFilterLabel[prediction.review_status]}
+              </small>
+            </>
+          ) : (
+            <span className={`cell-review-status status-${detection.review_status}`}>
+              <span aria-hidden="true">{reviewStatusSymbol[detection.review_status]}</span>
+              {reviewStatusLabel[detection.review_status]}
+            </span>
+          )}
         </span>
         {hasWarning ? <span className="cell-card-warning" aria-label="Advertencia técnica">⚠</span> : null}
       </button>
@@ -776,6 +1331,18 @@ function CellDetailPanel({
   selected,
   detail,
   history,
+  prediction,
+  classificationHistory,
+  classificationRun,
+  classificationLoading,
+  classificationError,
+  canExplain,
+  canClassificationReview,
+  classificationComment,
+  reviewedLabel,
+  classificationSaving,
+  explanationSaving,
+  classificationReviewError,
   loading,
   error,
   canReview,
@@ -787,10 +1354,27 @@ function CellDetailPanel({
   onCommentChange,
   onReview,
   onNextUnreviewed,
+  onClassificationCommentChange,
+  onReviewedLabelChange,
+  onClassificationReview,
+  onGenerateExplanation,
+  onAudit,
 }: {
   selected: CellDetectionSummary | null;
   detail: CellDetectionDetail | null;
   history: ScientificCellReview[];
+  prediction: CellPredictionSummary | CellPredictionDetail | null;
+  classificationHistory: CellClassificationReview[];
+  classificationRun: CellClassificationRunDetail | null;
+  classificationLoading: boolean;
+  classificationError: string;
+  canExplain: boolean;
+  canClassificationReview: boolean;
+  classificationComment: string;
+  reviewedLabel: CanonicalCellLabel;
+  classificationSaving: boolean;
+  explanationSaving: boolean;
+  classificationReviewError: string;
   loading: boolean;
   error: string;
   canReview: boolean;
@@ -802,6 +1386,11 @@ function CellDetailPanel({
   onCommentChange: (value: string) => void;
   onReview: (decision: CellReviewDecision) => void;
   onNextUnreviewed: () => void;
+  onClassificationCommentChange: (value: string) => void;
+  onReviewedLabelChange: (value: CanonicalCellLabel) => void;
+  onClassificationReview: (decision: CellClassificationReviewDecision) => void;
+  onGenerateExplanation: () => void;
+  onAudit: () => void;
 }) {
   const detection = detail ?? selected;
   return (
@@ -847,8 +1436,125 @@ function CellDetailPanel({
           {loading ? <p className="cell-panel-state">Cargando historial…</p> : null}
           {error ? <p className="cell-error" role="alert">{error}</p> : null}
 
+          {classificationRun ? (
+            <section className="cell-classification-detail" aria-labelledby="cell-classification-detail-heading">
+              <div className="cell-classification-heading">
+                <div>
+                  <h3 id="cell-classification-detail-heading">Predicción automática inmutable</h3>
+                  <p>{classificationRun.classification_run_code}</p>
+                </div>
+                {prediction ? (
+                  <span className={`cell-prediction-label prediction-${prediction.predicted_label ?? 'failed'}`}>
+                    {prediction.prediction_status === 'failed'
+                      ? '× Fallida'
+                      : `${prediction.predicted_label === 'parasitized' ? 'P' : 'U'} ${prediction.predicted_label}`}
+                  </span>
+                ) : null}
+              </div>
+              {classificationLoading ? <p className="cell-panel-state">Cargando clasificación…</p> : null}
+              {classificationError ? <p className="cell-error" role="alert">{classificationError}</p> : null}
+              {prediction ? (
+                <>
+                  <dl className="cell-detail-facts classification-facts">
+                    <div><dt>P(parasitized)</dt><dd>{optionalMetric(prediction.probability_parasitized)}</dd></div>
+                    <div><dt>P(uninfected)</dt><dd>{optionalMetric(prediction.probability_uninfected)}</dd></div>
+                    <div><dt>Threshold</dt><dd>{optionalMetric(prediction.threshold_used)}</dd></div>
+                    <div><dt>Fuente threshold</dt><dd>{prediction.threshold_source}</dd></div>
+                    <div><dt>Margen de decisión</dt><dd>{optionalMetric(prediction.decision_margin)}</dd></div>
+                    <div><dt>Próxima al threshold</dt><dd>{prediction.near_threshold ? '≈ Sí · revisión prioritaria' : 'No'}</dd></div>
+                    <div><dt>Modelo</dt><dd>{classificationRun.model_name}</dd></div>
+                    <div><dt>Versión</dt><dd>{classificationRun.model_version ?? '—'}</dd></div>
+                    <div><dt>Checkpoint</dt><dd>{`${classificationRun.model_snapshot.checkpoint_sha256.slice(0, 12)}…`}</dd></div>
+                    <div><dt>Preprocessing</dt><dd>{
+                      'preprocessing_snapshot' in prediction
+                        ? JSON.stringify(prediction.preprocessing_snapshot)
+                        : JSON.stringify(classificationRun.model_snapshot.preprocessing ?? {})
+                    }</dd></div>
+                    <div><dt>Estado explicación</dt><dd>{prediction.explanation?.status ?? prediction.explanation_status ?? 'not_requested'}</dd></div>
+                    <div><dt>Revisión de clasificación</dt><dd>{classificationFilterLabel[prediction.review_status]}</dd></div>
+                  </dl>
+
+                  <section className="cell-explanation-actions" aria-labelledby="cell-explanation-heading">
+                    <h4 id="cell-explanation-heading">Explicabilidad Grad-CAM</h4>
+                    {prediction.explanation?.status === 'unsupported' ? (
+                      <p>El modelo productivo no admite Grad-CAM con la configuración registrada.</p>
+                    ) : null}
+                    {prediction.explanation?.status === 'failed' ? (
+                      <p>{prediction.explanation.error_message || 'La explicación terminó con error.'}</p>
+                    ) : null}
+                    {prediction.explanation?.status === 'pending' ? (
+                      <p>La explicación permanece en procesamiento. Actualiza el estado para consultarla.</p>
+                    ) : null}
+                    <div>
+                      <button type="button" onClick={onAudit}>Auditar clasificación</button>
+                      {canExplain && prediction.prediction_status === 'completed'
+                        && prediction.explanation?.status !== 'generated'
+                        && prediction.explanation?.status !== 'pending'
+                        && prediction.explanation?.status !== 'unsupported' ? (
+                            <button type="button" disabled={explanationSaving} onClick={onGenerateExplanation}>
+                              {explanationSaving
+                                ? 'Generando explicación…'
+                                : prediction.explanation?.status === 'failed'
+                                  ? 'Reintentar explicación'
+                                  : 'Generar explicación'}
+                            </button>
+                          ) : null}
+                    </div>
+                  </section>
+
+                  <section className="cell-classification-review" aria-labelledby="cell-classification-review-heading">
+                    <h4 id="cell-classification-review-heading">Revisión humana de clasificación</h4>
+                    {prediction.latest_review ? (
+                      <p>
+                        Última decisión: <strong>{prediction.latest_review.decision.replaceAll('_', ' ')}</strong>
+                        {' · '}{safeDate(prediction.latest_review.created_at)}
+                      </p>
+                    ) : <p>Sin revisión de clasificación registrada.</p>}
+                    {canClassificationReview ? (
+                      <div className="cell-review-form">
+                        <label>
+                          Label revisado para corrección
+                          <select
+                            value={reviewedLabel}
+                            onChange={(event) => onReviewedLabelChange(
+                              event.target.value as CanonicalCellLabel,
+                            )}
+                          >
+                            <option value="parasitized">parasitized</option>
+                            <option value="uninfected">uninfected</option>
+                          </select>
+                        </label>
+                        <label>
+                          Comentario de clasificación
+                          <textarea
+                            value={classificationComment}
+                            maxLength={4000}
+                            placeholder="Obligatorio para corregir, requerir atención o comentar."
+                            onChange={(event) => onClassificationCommentChange(event.target.value)}
+                          />
+                        </label>
+                        <div className="cell-review-actions">
+                          <button type="button" disabled={classificationSaving} onClick={() => onClassificationReview('confirmed')}>Confirmar predicción</button>
+                          <button type="button" disabled={classificationSaving} onClick={() => onClassificationReview('corrected')}>Corregir clasificación</button>
+                          <button type="button" disabled={classificationSaving} onClick={() => onClassificationReview('needs_attention')}>Requiere atención</button>
+                          <button type="button" disabled={classificationSaving} onClick={() => onClassificationReview('comment_only')}>Agregar comentario</button>
+                          <button type="button" disabled={classificationSaving} onClick={onNextUnreviewed}>Siguiente sin revisar</button>
+                        </div>
+                        {classificationReviewError ? <p className="cell-error" role="alert">{classificationReviewError}</p> : null}
+                      </div>
+                    ) : (
+                      <p className="cell-readonly-note">
+                        Vista de consulta: la predicción automática permanece separada de toda revisión humana.
+                      </p>
+                    )}
+                  </section>
+                </>
+              ) : <p>No existe una predicción para esta detección.</p>}
+            </section>
+          ) : null}
+
           <section className="cell-human-review" aria-labelledby="cell-human-review-heading">
-            <h3 id="cell-human-review-heading">Revisión humana</h3>
+            <h3 id="cell-human-review-heading">Revisión humana de detección</h3>
             {detail?.latest_review ? (
               <p>
                 Última revisión: <strong>{reviewDecisionLabel[detail.latest_review.decision]}</strong> ·{' '}
@@ -881,6 +1587,28 @@ function CellDetailPanel({
               </p>
             )}
           </section>
+
+          {classificationRun ? (
+            <section className="cell-review-history classification-review-history" aria-labelledby="cell-classification-history-heading">
+              <h3 id="cell-classification-history-heading">Historial de clasificación</h3>
+              {classificationHistory.length ? (
+                <ol>
+                  {classificationHistory.map((review) => (
+                    <li key={review.id}>
+                      <div>
+                        <strong>{review.decision.replaceAll('_', ' ')}</strong>
+                        <span>{safeDate(review.created_at)} · {review.actor_username ?? review.actor_user_id}</span>
+                      </div>
+                      <p>
+                        {review.reviewed_label ? `Label revisado: ${review.reviewed_label}. ` : ''}
+                        {review.comment || 'Sin comentario.'}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              ) : <p>No existen revisiones de clasificación.</p>}
+            </section>
+          ) : null}
 
           <section className="cell-review-history" aria-labelledby="cell-review-history-heading">
             <h3 id="cell-review-history-heading">Historial de revisión</h3>

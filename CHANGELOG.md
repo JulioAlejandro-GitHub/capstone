@@ -11,6 +11,16 @@
   efímero, transición Alembic, auth JWT/Argon2, RBAC, correlation ID, logging,
   health/readiness, Docker, CI y login frontend.
 - Migraciones históricas 001–029 preservadas.
+- Prompt 8: clasificación de crops con `stage2/default`, snapshot de modelo e
+  inputs, predicciones canónicas, threshold publicado, agregado experimental,
+  Grad-CAM manual, reviews append-only, RBAC/auditoría y workflow single page.
+  La persistencia usa la cadena Alembic `20260728_01/02/03`; el summary público
+  separa automático inmutable y proyección revisada, y los artefactos usan
+  storage local confinado sin exponer keys.
+- Validación Prompt 8: no se encontró un slot real `stage2/default`, por lo que
+  no hubo fallback ni inferencia E2E y el estado seguro es
+  `awaiting_productive_model`. Las dependencias API/ML faltantes quedaron
+  declaradas y protegidas por preflight, pero no instaladas ni descargadas.
 
 ## 2026-07-27 — Prompt 4
 

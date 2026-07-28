@@ -64,3 +64,14 @@ para futuros análisis; los binarios permanecen fuera de PostgreSQL.
 `microscopy_analysis_runs` referencia sujeto, caso, muestra, frotis y lote.
 `microscopy_analysis_run_images` congela inputs; assessments, eventos y
 decisiones conservan resultados técnicos y trazabilidad append-only.
+
+# Extensión Prompt 8
+
+`cell_classification_runs` enlaza analysis/detection, el slot
+`stage2/default` y la publicación activa. Sus inputs congelados producen
+`cell_predictions`; explicaciones, summaries, eventos y reviews se relacionan
+por FK `RESTRICT`. Predicción y summary automático son inmutables. La revisión
+de clasificación es independiente de `scientific_reviews`.
+
+Los PNG Grad-CAM viven en storage local. PostgreSQL conserva solamente claves
+relativas, SHA-256, tamaño y dimensiones.

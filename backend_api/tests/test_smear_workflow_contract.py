@@ -133,6 +133,40 @@ def test_workflow_stage_derives_from_durable_backend_state(
     ) == expected
 
 
+@pytest.mark.parametrize(
+    ("classification_status", "expected"),
+    [
+        ("created", "classification_pending"),
+        ("processing", "classification_processing"),
+        ("completed", "classification_completed"),
+        ("completed_with_warnings", "classification_warning"),
+        ("failed", "classification_failed"),
+    ],
+)
+def test_workflow_stage_includes_durable_classification_state(
+    classification_status, expected
+):
+    assert derive_workflow_stage(
+        _batch(),
+        _analysis(ready_for_analysis=True, quality_gate_status="pass"),
+        {"status": "completed"},
+        {"status": "completed"},
+        {"status": classification_status},
+        True,
+    ) == expected
+
+
+def test_workflow_stage_blocks_safely_without_productive_model():
+    assert derive_workflow_stage(
+        _batch(),
+        _analysis(ready_for_analysis=True, quality_gate_status="pass"),
+        {"status": "completed"},
+        {"status": "completed"},
+        None,
+        False,
+    ) == "awaiting_productive_model"
+
+
 def test_workflow_payload_is_curated_and_never_exposes_storage_paths():
     ids = [uuid4() for _ in range(6)]
     batch_row = {

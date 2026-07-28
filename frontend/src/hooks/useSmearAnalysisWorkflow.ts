@@ -11,6 +11,11 @@ import {
   type SmearWorkflowResponse,
 } from '../services/api';
 import type { CellDetectionRunDetail } from '../types/cellReview';
+import type {
+  CellClassificationRunDetail,
+  EligibleCellClassificationRun,
+  SmearAnalysisSummary,
+} from '../types/cellClassification';
 
 export type SmearWorkflowStage =
   | 'setup'
@@ -23,6 +28,12 @@ export type SmearWorkflowStage =
   | 'quality_failed'
   | 'ready_for_detection'
   | 'detection_processing'
+  | 'awaiting_productive_model'
+  | 'classification_pending'
+  | 'classification_processing'
+  | 'classification_completed'
+  | 'classification_warning'
+  | 'classification_failed'
   | 'review_ready'
   | 'error';
 
@@ -32,6 +43,7 @@ export type SmearWorkflowFailureStep =
   | 'queue'
   | 'quality'
   | 'detection'
+  | 'classification'
   | 'recovery';
 
 export type SmearWorkflowIdentifiers = {
@@ -40,7 +52,9 @@ export type SmearWorkflowIdentifiers = {
   analysisRunId: string | null;
   queueItemId: string | null;
   detectionRunId: string | null;
+  classificationRunId: string | null;
   selectedDetectionId: string | null;
+  selectedPredictionId: string | null;
 };
 
 export type SmearWorkflowError = {
@@ -54,6 +68,9 @@ export type SmearWorkflowSnapshot = {
   analysisRun: AnalysisRun | null;
   queueItem: QualityQueueRecord | null;
   detectionRun: CellDetectionRunDetail | null;
+  classificationRun: CellClassificationRunDetail | null;
+  classificationSummary: SmearAnalysisSummary | null;
+  classificationEligibility: EligibleCellClassificationRun | null;
 };
 
 const emptyIdentifiers: SmearWorkflowIdentifiers = {
@@ -62,7 +79,9 @@ const emptyIdentifiers: SmearWorkflowIdentifiers = {
   analysisRunId: null,
   queueItemId: null,
   detectionRunId: null,
+  classificationRunId: null,
   selectedDetectionId: null,
+  selectedPredictionId: null,
 };
 
 const emptySnapshot: SmearWorkflowSnapshot = {
@@ -71,6 +90,9 @@ const emptySnapshot: SmearWorkflowSnapshot = {
   analysisRun: null,
   queueItem: null,
   detectionRun: null,
+  classificationRun: null,
+  classificationSummary: null,
+  classificationEligibility: null,
 };
 
 const createUploadRequestId = () => {
@@ -99,6 +121,12 @@ const workflowStages = new Set<SmearWorkflowStage>([
   'quality_failed',
   'ready_for_detection',
   'detection_processing',
+  'awaiting_productive_model',
+  'classification_pending',
+  'classification_processing',
+  'classification_completed',
+  'classification_warning',
+  'classification_failed',
   'review_ready',
   'error',
 ]);
@@ -124,17 +152,62 @@ const sanitizeFailure = (
     queue: 'La ejecución existe, pero no fue posible crear la solicitud de calidad.',
     quality: 'El control técnico no pudo completarse. No se realizará un reintento automático.',
     detection: 'La calidad fue aprobada, pero la detección celular no pudo completarse.',
+    classification: 'La detección se conservó, pero la clasificación celular no pudo completarse.',
     recovery: 'No fue posible reconstruir el workflow persistido.',
   };
   return { step, message: fallback[step] };
 };
 
-const stageFromResponse = (response: SmearWorkflowResponse): SmearWorkflowStage =>
-  workflowStages.has(response.stage as SmearWorkflowStage)
+const stageFromResponse = (
+  response: SmearWorkflowResponse,
+  classificationRun: CellClassificationRunDetail | null = response.classification_run ?? null,
+): SmearWorkflowStage => {
+  const reportedStage = workflowStages.has(response.stage as SmearWorkflowStage)
     ? response.stage as SmearWorkflowStage
-    : 'error';
+    : null;
+  if (
+    reportedStage === 'awaiting_productive_model'
+    || reportedStage === 'classification_pending'
+    || reportedStage === 'classification_processing'
+    || reportedStage === 'classification_completed'
+    || reportedStage === 'classification_warning'
+    || reportedStage === 'classification_failed'
+    || reportedStage === 'review_ready'
+  ) {
+    return reportedStage;
+  }
+  if (classificationRun?.status === 'completed_with_warnings') return 'classification_warning';
+  if (classificationRun?.status === 'completed') return 'classification_completed';
+  if (classificationRun?.status === 'failed') return 'classification_failed';
+  if (classificationRun?.status === 'processing') return 'classification_processing';
+  if (classificationRun?.status === 'created') return 'classification_pending';
+  if (
+    response.detection_run?.status === 'completed'
+    || response.detection_run?.status === 'completed_with_warnings'
+  ) {
+    return 'classification_pending';
+  }
+  return reportedStage ?? 'error';
+};
 
-const persistedFailure = (response: SmearWorkflowResponse): SmearWorkflowError | null => {
+const persistedFailure = (
+  response: SmearWorkflowResponse,
+  classificationRun: CellClassificationRunDetail | null = response.classification_run ?? null,
+): SmearWorkflowError | null => {
+  if (response.stage === 'awaiting_productive_model') {
+    return {
+      step: 'classification',
+      message:
+        'No existe un modelo productivo válido para Etapa 2. Publique un modelo desde Modelo IA antes de continuar.',
+    };
+  }
+  if (classificationRun?.status === 'failed') {
+    return {
+      step: 'classification',
+      message: classificationRun.error_message
+        || 'La clasificación celular persistida terminó con un error técnico.',
+    };
+  }
   if (response.detection_run?.status === 'failed') {
     return {
       step: 'detection',
@@ -172,8 +245,11 @@ export function useSmearAnalysisWorkflow() {
     analysis: searchParams.get('analysis'),
     queue: searchParams.get('queue'),
     detection: searchParams.get('detection') ?? searchParams.get('detection_run_id'),
+    classification: searchParams.get('classification'),
     image: searchParams.get('image'),
-    selected: searchParams.get('selected'),
+    selectedDetection:
+      searchParams.get('selected_detection') ?? searchParams.get('selected'),
+    selectedPrediction: searchParams.get('selected_prediction'),
   }), [searchParams]);
 
   const writeIdentifiers = useCallback((
@@ -188,7 +264,9 @@ export function useSmearAnalysisWorkflow() {
         ['analysisRunId', 'analysis'],
         ['queueItemId', 'queue'],
         ['detectionRunId', 'detection'],
-        ['selectedDetectionId', 'selected'],
+        ['classificationRunId', 'classification'],
+        ['selectedDetectionId', 'selected_detection'],
+        ['selectedPredictionId', 'selected_prediction'],
       ];
       queryMap.forEach(([stateKey, queryKey]) => {
         if (!(stateKey in values)) return;
@@ -197,6 +275,7 @@ export function useSmearAnalysisWorkflow() {
         else next.delete(queryKey);
       });
       next.delete('detection_run_id');
+      next.delete('selected');
       return next;
     }, { replace: true });
   }, [setSearchParams]);
@@ -214,7 +293,13 @@ export function useSmearAnalysisWorkflow() {
       setStage('error');
       return;
     }
-    if (!candidate.batch && !candidate.analysis && !candidate.detection) {
+    if (
+      !candidate.batch
+      && !candidate.analysis
+      && !candidate.detection
+      && !candidate.classification
+      && !candidate.selectedPrediction
+    ) {
       setRecovering(false);
       return;
     }
@@ -222,29 +307,78 @@ export function useSmearAnalysisWorkflow() {
     setFailure(null);
     try {
       let batchId = candidate.batch;
-      if (!batchId && candidate.detection) {
-        const detection = await api.getCellDetectionRun(candidate.detection);
+      let analysisId = candidate.analysis;
+      let detectionId = candidate.detection;
+      let classificationId = candidate.classification;
+      let imageId = candidate.image;
+      let selectedDetectionId = candidate.selectedDetection;
+      let requestedClassification: CellClassificationRunDetail | null = null;
+      let requestedPrediction: Awaited<ReturnType<typeof api.getCellPrediction>> | null = null;
+
+      if (candidate.selectedPrediction) {
+        requestedPrediction = await api.getCellPrediction(candidate.selectedPrediction);
+        classificationId = requestedPrediction.classification_run_id;
+        analysisId = requestedPrediction.analysis_run_id ?? analysisId;
+        detectionId = requestedPrediction.detection_run_id ?? detectionId;
+        imageId = requestedPrediction.microscopy_image_id || imageId;
+        selectedDetectionId = requestedPrediction.cell_detection_id || selectedDetectionId;
+      }
+      if (classificationId) {
+        requestedClassification = await api.getCellClassificationRun(classificationId);
+        analysisId = requestedClassification.analysis_run_id;
+        detectionId = requestedClassification.detection_run_id;
+      }
+      if (!batchId && detectionId) {
+        const detection = await api.getCellDetectionRun(detectionId);
         const analysis = await api.getAnalysisRun(detection.analysis_run_id);
         batchId = analysis.ingestion_batch_id;
-      } else if (!batchId && candidate.analysis) {
-        const analysis = await api.getAnalysisRun(candidate.analysis);
+      } else if (!batchId && analysisId) {
+        const analysis = await api.getAnalysisRun(analysisId);
         batchId = analysis.ingestion_batch_id;
       }
       if (!batchId) throw new Error('workflow without batch');
       const response = await api.getSmearWorkflow(batchId);
       setIdentifiers((current) => ({
         ...current,
-        selectedDetectionId: candidate.selected ?? current.selectedDetectionId,
+        selectedDetectionId: selectedDetectionId ?? current.selectedDetectionId,
+        selectedPredictionId:
+          requestedPrediction?.id ?? candidate.selectedPrediction ?? current.selectedPredictionId,
       }));
       const firstImage = response.images[0] ?? null;
-      const requestedImage = response.images.find((image) => image.id === candidate.image) ?? null;
+      const requestedImage = response.images.find((image) => image.id === imageId) ?? null;
+      const nextDetectionId = response.detection_run?.id ?? detectionId;
+      requestedClassification ??= response.classification_run ?? null;
+      if (!requestedClassification && nextDetectionId) {
+        const classificationPage = await api.getCellClassificationRuns({
+          detection_run_id: nextDetectionId,
+          limit: 1,
+          offset: 0,
+        });
+        requestedClassification = classificationPage.items[0] ?? null;
+      }
+      let classificationSummary = response.classification_summary ?? null;
+      if (
+        requestedClassification
+        && requestedClassification.status !== 'failed'
+        && !classificationSummary
+      ) {
+        try {
+          classificationSummary = await api.getCellClassificationSummary(
+            requestedClassification.id,
+          );
+        } catch {
+          classificationSummary = null;
+        }
+      }
       const nextIdentifiers: SmearWorkflowIdentifiers = {
         ingestionBatchId: response.batch.id,
         microscopyImageId: requestedImage?.id ?? firstImage?.id ?? null,
-        analysisRunId: response.analysis_run?.id ?? candidate.analysis,
+        analysisRunId: response.analysis_run?.id ?? analysisId,
         queueItemId: queueId(response.queue_item) ?? candidate.queue,
-        detectionRunId: response.detection_run?.id ?? candidate.detection,
-        selectedDetectionId: candidate.selected,
+        detectionRunId: nextDetectionId,
+        classificationRunId: requestedClassification?.id ?? classificationId,
+        selectedDetectionId,
+        selectedPredictionId: requestedPrediction?.id ?? candidate.selectedPrediction,
       };
       setSnapshot({
         upload: null,
@@ -252,11 +386,14 @@ export function useSmearAnalysisWorkflow() {
         analysisRun: response.analysis_run,
         queueItem: response.queue_item,
         detectionRun: response.detection_run,
+        classificationRun: requestedClassification,
+        classificationSummary,
+        classificationEligibility: null,
       });
       setIdentifiers(nextIdentifiers);
       writeIdentifiers(nextIdentifiers);
-      setFailure(persistedFailure(response));
-      setStage(stageFromResponse(response));
+      setFailure(persistedFailure(response, requestedClassification));
+      setStage(stageFromResponse(response, requestedClassification));
     } catch (error) {
       setFailure(sanitizeFailure(error, 'recovery'));
       setStage('error');
@@ -270,6 +407,7 @@ export function useSmearAnalysisWorkflow() {
       queryIdentifiers.batch,
       queryIdentifiers.analysis,
       queryIdentifiers.detection,
+      queryIdentifiers.classification,
     ].join('|');
     if (!key.replaceAll('|', '') || activeAction.current || hydratedKey.current === key) return;
     hydratedKey.current = key;
@@ -277,6 +415,7 @@ export function useSmearAnalysisWorkflow() {
   }, [
     queryIdentifiers.analysis,
     queryIdentifiers.batch,
+    queryIdentifiers.classification,
     queryIdentifiers.detection,
     recover,
   ]);
@@ -296,6 +435,140 @@ export function useSmearAnalysisWorkflow() {
     setUploadRequestId(createUploadRequestId());
   }, []);
 
+  const executeClassification = useCallback(async (
+    detectionRun: CellDetectionRunDetail,
+  ) => {
+    setStage('classification_pending');
+    setFailure(null);
+    try {
+      const eligibilityPage = await api.getEligibleCellClassificationRuns({
+        detection_run_id: detectionRun.id,
+        limit: 1,
+        offset: 0,
+      });
+      const eligibility = eligibilityPage.items.find(
+        (item) => item.detection_run_id === detectionRun.id,
+      ) ?? eligibilityPage.items[0] ?? null;
+      setSnapshot((current) => ({
+        ...current,
+        classificationEligibility: eligibility,
+      }));
+      if (!eligibility?.eligible || !eligibility.productive_model) {
+        const reasonCode = eligibility?.reason_code ?? '';
+        const productiveModelBlocked = (
+          !eligibility
+          || !eligibility.productive_model
+          || reasonCode.startsWith('PRODUCTIVE_')
+          || reasonCode.startsWith('MODEL_')
+        );
+        setFailure({
+          step: 'classification',
+          message: eligibility?.message
+            || 'No existe un modelo productivo válido para Etapa 2. Publique un modelo desde Modelo IA antes de continuar.',
+        });
+        setStage(
+          productiveModelBlocked
+            ? 'awaiting_productive_model'
+            : 'classification_failed',
+        );
+        return null;
+      }
+
+      setStage('classification_processing');
+      const classificationRun = await api.createCellClassificationRun(detectionRun.id);
+      setSnapshot((current) => ({
+        ...current,
+        classificationRun,
+        classificationSummary: null,
+      }));
+      writeIdentifiers({ classificationRunId: classificationRun.id });
+
+      if (
+        classificationRun.status === 'completed'
+        || classificationRun.status === 'completed_with_warnings'
+      ) {
+        const classificationSummary = await api.getCellClassificationSummary(
+          classificationRun.id,
+        );
+        setSnapshot((current) => ({ ...current, classificationSummary }));
+        setStage(
+          classificationRun.status === 'completed_with_warnings'
+            ? 'classification_warning'
+            : 'classification_completed',
+        );
+      } else if (classificationRun.status === 'failed') {
+        setFailure({
+          step: 'classification',
+          message: classificationRun.error_message
+            || 'La clasificación celular terminó con error. La detección permanece disponible.',
+        });
+        setStage('classification_failed');
+      } else {
+        setStage(
+          classificationRun.status === 'processing'
+            ? 'classification_processing'
+            : 'classification_pending',
+        );
+      }
+      return classificationRun;
+    } catch (error) {
+      try {
+        const persistedPage = await api.getCellClassificationRuns({
+          detection_run_id: detectionRun.id,
+          limit: 1,
+          offset: 0,
+        });
+        const persisted = persistedPage.items[0] ?? null;
+        if (persisted) {
+          setSnapshot((current) => ({
+            ...current,
+            classificationRun: persisted,
+          }));
+          writeIdentifiers({ classificationRunId: persisted.id });
+          if (
+            persisted.status === 'completed'
+            || persisted.status === 'completed_with_warnings'
+          ) {
+            const classificationSummary = await api.getCellClassificationSummary(
+              persisted.id,
+            );
+            setSnapshot((current) => ({
+              ...current,
+              classificationSummary,
+            }));
+            setStage(
+              persisted.status === 'completed_with_warnings'
+                ? 'classification_warning'
+                : 'classification_completed',
+            );
+            return persisted;
+          }
+          if (persisted.status === 'failed') {
+            setFailure({
+              step: 'classification',
+              message: persisted.error_message
+                || sanitizeFailure(error, 'classification').message,
+            });
+            setStage('classification_failed');
+            return persisted;
+          }
+          setFailure(null);
+          setStage(
+            persisted.status === 'processing'
+              ? 'classification_processing'
+              : 'classification_pending',
+          );
+          return persisted;
+        }
+      } catch {
+        // The original safe error remains authoritative if recovery is unavailable.
+      }
+      setFailure(sanitizeFailure(error, 'classification'));
+      setStage('classification_failed');
+      return null;
+    }
+  }, [writeIdentifiers]);
+
   const executeDetection = useCallback(async (analysisRun: AnalysisRun) => {
     setStage('detection_processing');
     setFailure(null);
@@ -304,7 +577,7 @@ export function useSmearAnalysisWorkflow() {
       setSnapshot((current) => ({ ...current, detectionRun }));
       writeIdentifiers({ detectionRunId: detectionRun.id });
       if (detectionRun.status === 'completed' || detectionRun.status === 'completed_with_warnings') {
-        setStage('review_ready');
+        await executeClassification(detectionRun);
       } else if (detectionRun.status === 'failed') {
         setFailure(sanitizeFailure(new Error('detection failed'), 'detection'));
         setStage('error');
@@ -317,7 +590,7 @@ export function useSmearAnalysisWorkflow() {
       setStage('error');
       return null;
     }
-  }, [writeIdentifiers]);
+  }, [executeClassification, writeIdentifiers]);
 
   const evaluateQuality = useCallback(async (analysisRun: AnalysisRun) => {
     setSnapshot((current) => ({ ...current, analysisRun }));
@@ -446,15 +719,28 @@ export function useSmearAnalysisWorkflow() {
               analysisRun: persisted.analysis_run,
               queueItem: persisted.queue_item,
               detectionRun: persisted.detection_run,
+              classificationRun: persisted.classification_run ?? null,
+              classificationSummary: persisted.classification_summary ?? null,
             }));
             writeIdentifiers({
               analysisRunId: persisted.analysis_run.id,
               queueItemId: queueId(persisted.queue_item),
               detectionRunId: persisted.detection_run?.id ?? null,
+              classificationRunId: persisted.classification_run?.id ?? null,
             });
             if (persisted.detection_run) {
-              setFailure(persistedFailure(persisted));
-              setStage(stageFromResponse(persisted));
+              if (
+                !persisted.classification_run
+                && (
+                  persisted.detection_run.status === 'completed'
+                  || persisted.detection_run.status === 'completed_with_warnings'
+                )
+              ) {
+                await executeClassification(persisted.detection_run);
+              } else {
+                setFailure(persistedFailure(persisted));
+                setStage(stageFromResponse(persisted));
+              }
             } else if (persisted.analysis_run.ready_for_analysis) {
               await executeDetection(persisted.analysis_run);
             } else if (
@@ -485,6 +771,7 @@ export function useSmearAnalysisWorkflow() {
   }, [
     createQueueAndAssess,
     evaluateQuality,
+    executeClassification,
     executeDetection,
     executeQueuedQuality,
     writeIdentifiers,
@@ -600,18 +887,29 @@ export function useSmearAnalysisWorkflow() {
       }
       return;
     }
+    if (failure.step === 'classification' && snapshot.detectionRun) {
+      activeAction.current = true;
+      try {
+        await executeClassification(snapshot.detectionRun);
+      } finally {
+        activeAction.current = false;
+      }
+      return;
+    }
     if (failure.step === 'recovery') {
       await recover(queryIdentifiers);
     }
   }, [
     createAnalysisAndContinue,
     createQueueAndAssess,
+    executeClassification,
     executeDetection,
     failure,
     identifiers.ingestionBatchId,
     queryIdentifiers,
     recover,
     snapshot.analysisRun,
+    snapshot.detectionRun,
   ]);
 
   const continueWorkflow = useCallback(async () => {
@@ -634,6 +932,15 @@ export function useSmearAnalysisWorkflow() {
         && !snapshot.detectionRun
       ) {
         await executeDetection(snapshot.analysisRun);
+      } else if (
+        snapshot.detectionRun
+        && (
+          snapshot.detectionRun.status === 'completed'
+          || snapshot.detectionRun.status === 'completed_with_warnings'
+        )
+        && !snapshot.classificationRun
+      ) {
+        await executeClassification(snapshot.detectionRun);
       }
     } finally {
       activeAction.current = false;
@@ -641,10 +948,12 @@ export function useSmearAnalysisWorkflow() {
   }, [
     createAnalysisAndContinue,
     createQueueAndAssess,
+    executeClassification,
     executeDetection,
     executeQueuedQuality,
     identifiers.ingestionBatchId,
     snapshot.analysisRun,
+    snapshot.classificationRun,
     snapshot.detectionRun,
     snapshot.queueItem,
   ]);
@@ -658,13 +967,19 @@ export function useSmearAnalysisWorkflow() {
       analysis: identifiers.analysisRunId,
       queue: identifiers.queueItemId,
       detection: identifiers.detectionRunId,
+      classification: identifiers.classificationRunId,
       image: identifiers.microscopyImageId,
-      selected: identifiers.selectedDetectionId,
+      selectedDetection: identifiers.selectedDetectionId,
+      selectedPrediction: identifiers.selectedPredictionId,
     });
   }, [identifiers, recover]);
 
   const selectDetection = useCallback((id: string | null) => {
     writeIdentifiers({ selectedDetectionId: id });
+  }, [writeIdentifiers]);
+
+  const selectPrediction = useCallback((id: string | null) => {
+    writeIdentifiers({ selectedPredictionId: id });
   }, [writeIdentifiers]);
 
   const selectImage = useCallback((id: string | null) => {
@@ -683,7 +998,18 @@ export function useSmearAnalysisWorkflow() {
     setRecovering(false);
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
-      ['batch', 'image', 'analysis', 'queue', 'detection', 'detection_run_id', 'selected']
+      [
+        'batch',
+        'image',
+        'analysis',
+        'queue',
+        'detection',
+        'detection_run_id',
+        'classification',
+        'selected',
+        'selected_detection',
+        'selected_prediction',
+      ]
         .forEach((key) => next.delete(key));
       return next;
     }, { replace: true });
@@ -702,6 +1028,8 @@ export function useSmearAnalysisWorkflow() {
       'creating_analysis',
       'quality_processing',
       'detection_processing',
+      'classification_pending',
+      'classification_processing',
     ].includes(stage),
     setSelectedFiles,
     start,
@@ -713,6 +1041,7 @@ export function useSmearAnalysisWorkflow() {
     refresh,
     selectImage,
     selectDetection,
+    selectPrediction,
     newAnalysis,
   };
 }

@@ -24,3 +24,17 @@ pseudonimizada y preserva originales en `var/storage`.
 El dominio Análisis de frotis incluye carga inmutable y quality gate técnico en
 `/frotis/analisis`; permanece separado del entrenamiento y Modelo IA. Consulta
 `docs/architecture/microscopy_quality_gate.md`.
+
+# Clasificación celular experimental
+
+Prompt 8 añade clasificación por crop con el único slot productivo
+`stage2/default`, threshold publicado, predicciones automáticas inmutables,
+Grad-CAM manual y revisión humana separada. El resultado agregado es
+experimental: no constituye diagnóstico ni estimación de parasitemia. Consulte
+`docs/architecture/cell_classification_pipeline.md`.
+
+El precheck de Prompt 8 no encontró un `stage2/default` real: la publicación
+activa de catálogo no es fallback y el workflow queda de forma segura en
+`awaiting_productive_model`. La cadena de datos requiere Alembic
+`20260728_01 → 20260728_02 → 20260728_03`. Consulte la evidencia y los gates
+pendientes en `docs/engineering/prompt8_validation.md`.

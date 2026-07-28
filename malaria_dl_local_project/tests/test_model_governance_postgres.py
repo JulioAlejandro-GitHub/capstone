@@ -107,6 +107,20 @@ class ModelGovernancePostgres17IntegrationTests(unittest.TestCase):
                 "La reejecución no fue idempotente o el ledger quedó incompleto."
             )
 
+        # This disposable fixture applies the numbered SQL baseline rather than
+        # Alembic. Mirror Prompt 8's non-destructive compatibility rename so the
+        # legacy consumer is tested against its post-migration relation name.
+        with cls.engine.begin() as connection:
+            if connection.execute(
+                text("SELECT to_regclass('public.legacy_cell_predictions')")
+            ).scalar_one_or_none() is None:
+                connection.execute(
+                    text(
+                        "ALTER VIEW cell_predictions "
+                        "RENAME TO legacy_cell_predictions"
+                    )
+                )
+
     def test_full_lineage_constraints_and_delete_restriction(self):
         checksum = "a" * 64
         now = datetime.now(UTC)
@@ -271,7 +285,10 @@ class ModelGovernancePostgres17IntegrationTests(unittest.TestCase):
                              WHERE run_id = :inference_run_id) AS bindings,
                             (SELECT COUNT(*) FROM image_analysis_jobs
                              WHERE id = :image_job_id) AS jobs,
-                            (SELECT COUNT(*) FROM cell_predictions
+                            -- Prompt 8 reserves cell_predictions for the
+                            -- specialized classifier table; this assertion
+                            -- intentionally reads the renamed legacy view.
+                            (SELECT COUNT(*) FROM legacy_cell_predictions
                              WHERE id = :prediction_id) AS cells
                         """
                     ),

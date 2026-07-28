@@ -10,6 +10,17 @@ if [[ ! -x "$ML_PYTHON" ]]; then
   exit 1
 fi
 
+if ! "$ML_PYTHON" -c \
+  'import PIL, fastapi, jwt, multipart, numpy, psycopg, pwdlib, sqlalchemy, tensorflow, uvicorn' \
+  >/dev/null 2>&1; then
+  echo "El runtime ML no contiene todas las dependencias API/ML declaradas." >&2
+  echo "Instale malaria_dl_local_project/requirements.txt antes de iniciar." >&2
+  exit 1
+fi
+
+export MPLCONFIGDIR="${MPLCONFIGDIR:-${TMPDIR:-/tmp}/capstone-matplotlib}"
+mkdir -p "$MPLCONFIGDIR"
+
 exec "$ML_PYTHON" -m uvicorn app.main:app \
   --app-dir "$CAPSTONE_ROOT/backend_api" \
   --host 127.0.0.1 \

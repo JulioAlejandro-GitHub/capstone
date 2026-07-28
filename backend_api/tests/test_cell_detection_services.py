@@ -295,9 +295,8 @@ def test_crop_storage_rejects_symlinked_staging_parent(tmp_path: Path):
         max_upload_size_bytes=10_000_000,
         upload_chunk_size_bytes=1024,
     )
-    local = LocalStorage(settings)
     with pytest.raises(StorageError):
-        CellCropStorage(local)
+        LocalStorage(settings)
     assert not (outside / "cell-detection").exists()
 
 

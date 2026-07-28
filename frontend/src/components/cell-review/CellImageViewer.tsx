@@ -14,6 +14,7 @@ import type {
   CellReviewStatus,
 } from '../../types/cellReview';
 import { useAuthenticatedObjectUrl } from './AuthenticatedCellImage';
+import type { CellPredictionSummary } from '../../types/cellClassification';
 
 const statusLabel: Record<CellReviewStatus, string> = {
   unreviewed: 'Sin revisar',
@@ -29,6 +30,60 @@ const statusSymbol: Record<CellReviewStatus, string> = {
   needs_attention: '!',
 };
 
+type OverlayColorMode = 'detection' | 'prediction' | 'classification_review';
+
+const overlayModeLabel: Record<OverlayColorMode, string> = {
+  detection: 'Estado de detección',
+  prediction: 'Predicción IA',
+  classification_review: 'Revisión humana',
+};
+
+function classificationVisual(
+  detection: CellDetectionSummary,
+  prediction: CellPredictionSummary | undefined,
+  mode: OverlayColorMode,
+) {
+  if (mode === 'detection') {
+    return {
+      className: `status-${detection.review_status}`,
+      label: statusLabel[detection.review_status],
+      symbol: statusSymbol[detection.review_status],
+    };
+  }
+  if (!prediction) {
+    return { className: 'classification-missing', label: 'Sin predicción', symbol: '—' };
+  }
+  if (mode === 'prediction') {
+    if (prediction.prediction_status === 'failed') {
+      return { className: 'prediction-failed', label: 'Predicción fallida', symbol: '×' };
+    }
+    return {
+      className: `prediction-${prediction.predicted_label}`,
+      label: `${prediction.predicted_label}${prediction.near_threshold ? ', próxima al threshold' : ''}`,
+      symbol: prediction.near_threshold
+        ? '≈'
+        : prediction.predicted_label === 'parasitized' ? 'P' : 'U',
+    };
+  }
+  const symbols = {
+    unreviewed: '○',
+    confirmed: '✓',
+    corrected: '↺',
+    needs_attention: '!',
+  } as const;
+  const labels = {
+    unreviewed: 'Sin revisión',
+    confirmed: 'Confirmada',
+    corrected: 'Corregida',
+    needs_attention: 'Requiere atención',
+  } as const;
+  return {
+    className: `classification-review-${prediction.review_status}`,
+    label: labels[prediction.review_status],
+    symbol: symbols[prediction.review_status],
+  };
+}
+
 const clamp = (value: number, minimum: number, maximum: number) =>
   Math.min(maximum, Math.max(minimum, value));
 
@@ -37,6 +92,7 @@ type CellImageViewerProps = {
   images: CellDetectionImage[];
   image: CellDetectionImage;
   detections: CellDetectionSummary[];
+  classificationAnnotations?: ReadonlyMap<string, CellPredictionSummary>;
   selectedDetectionId: string | null;
   focusRequest: number;
   onImageChange: (microscopyImageId: string) => void;
@@ -51,6 +107,7 @@ export const CellImageViewer = memo(function CellImageViewer({
   images,
   image,
   detections,
+  classificationAnnotations = new Map(),
   selectedDetectionId,
   focusRequest,
   onImageChange,
@@ -67,6 +124,7 @@ export const CellImageViewer = memo(function CellImageViewer({
   const [showBoxes, setShowBoxes] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
   const [showGrid, setShowGrid] = useState(false);
+  const [overlayMode, setOverlayMode] = useState<OverlayColorMode>('detection');
   const [dragging, setDragging] = useState(false);
   const dragPoint = useRef<{ x: number; y: number } | null>(null);
 
@@ -219,6 +277,20 @@ export const CellImageViewer = memo(function CellImageViewer({
         <button type="button" aria-pressed={showGrid} onClick={() => setShowGrid((value) => !value)}>
           Rejilla
         </button>
+        {classificationAnnotations.size ? (
+          <label>
+            <span>Color de cajas</span>
+            <select
+              aria-label="Colorear bounding boxes por"
+              value={overlayMode}
+              onChange={(event) => setOverlayMode(event.target.value as OverlayColorMode)}
+            >
+              {(Object.keys(overlayModeLabel) as OverlayColorMode[]).map((mode) => (
+                <option key={mode} value={mode}>{overlayModeLabel[mode]}</option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <button type="button" onClick={onPrevious} aria-label="Detección anterior">← Anterior</button>
         <button type="button" onClick={onNext} aria-label="Detección siguiente">Siguiente →</button>
         <button type="button" onClick={onNextUnreviewed}>Siguiente sin revisar</button>
@@ -269,14 +341,19 @@ export const CellImageViewer = memo(function CellImageViewer({
             ) : null}
             {showBoxes || showLabels ? detections.map((detection) => {
               const isSelected = detection.id === selectedDetectionId;
+              const visual = classificationVisual(
+                detection,
+                classificationAnnotations.get(detection.id),
+                overlayMode,
+              );
               return (
                 <g
                   key={detection.id}
-                  className={`cell-box status-${detection.review_status}${isSelected ? ' is-selected' : ''}`}
+                  className={`cell-box ${visual.className}${isSelected ? ' is-selected' : ''}`}
                   data-detection-box
                   role="button"
                   tabIndex={0}
-                  aria-label={`${detection.cell_code}, ${statusLabel[detection.review_status]}${isSelected ? ', seleccionada' : ''}`}
+                  aria-label={`${detection.cell_code}, ${visual.label}${isSelected ? ', seleccionada' : ''}`}
                   onClick={(event) => selectBox(event, detection)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
@@ -285,7 +362,7 @@ export const CellImageViewer = memo(function CellImageViewer({
                     }
                   }}
                 >
-                  <title>{detection.cell_code} · {statusLabel[detection.review_status]}</title>
+                  <title>{detection.cell_code} · {visual.label}</title>
                   {showBoxes ? (
                     <>
                       <rect
@@ -312,7 +389,7 @@ export const CellImageViewer = memo(function CellImageViewer({
                       y={Math.max(labelSize, detection.bbox_y - labelSize * 0.3)}
                       style={{ fontSize: labelSize }}
                     >
-                      {statusSymbol[detection.review_status]} {detection.cell_code}
+                      {visual.symbol} {detection.cell_code}
                     </text>
                   ) : null}
                 </g>
@@ -323,19 +400,36 @@ export const CellImageViewer = memo(function CellImageViewer({
       </div>
 
       <div className="cell-viewer-footer">
-        <ul className="cell-box-legend" aria-label="Leyenda de estados">
-          {(Object.keys(statusLabel) as CellReviewStatus[]).map((status) => (
-            <li key={status} className={`status-${status}`}>
-              <span aria-hidden="true">{statusSymbol[status]}</span>{statusLabel[status]}
-            </li>
-          ))}
+        <ul className="cell-box-legend" aria-label={`Leyenda: ${overlayModeLabel[overlayMode]}`}>
+          {overlayMode === 'detection'
+            ? (Object.keys(statusLabel) as CellReviewStatus[]).map((status) => (
+              <li key={status} className={`status-${status}`}>
+                <span aria-hidden="true">{statusSymbol[status]}</span>{statusLabel[status]}
+              </li>
+            ))
+            : Array.from(new Map(detections.map((detection) => {
+              const visual = classificationVisual(
+                detection,
+                classificationAnnotations.get(detection.id),
+                overlayMode,
+              );
+              return [visual.className, visual] as const;
+            })).values()).map((visual) => (
+              <li key={visual.className} className={visual.className}>
+                <span aria-hidden="true">{visual.symbol}</span>{visual.label}
+              </li>
+            ))}
         </ul>
         {selected ? (
           <p aria-live="polite">
             <strong>{selected.cell_code}</strong> · bbox [{selected.bbox_x}, {selected.bbox_y},{' '}
             {selected.bbox_width}, {selected.bbox_height}] · área {selected.component.area_px} px² ·{' '}
             score geométrico {selected.detector_score == null ? '—' : selected.detector_score.toFixed(4)} ·{' '}
-            {statusLabel[selected.review_status]}
+            {classificationVisual(
+              selected,
+              classificationAnnotations.get(selected.id),
+              overlayMode,
+            ).label}
           </p>
         ) : <p>Ninguna detección seleccionada.</p>}
       </div>

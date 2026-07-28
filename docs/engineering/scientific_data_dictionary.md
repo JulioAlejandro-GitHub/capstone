@@ -30,3 +30,19 @@ Las tablas `microscopy_analysis_runs`, `microscopy_analysis_run_images`,
 `image_quality_assessments`, `microscopy_analysis_events` y
 `quality_gate_decisions` se definen íntegramente en la migración
 `20260727_03_microscopy_quality_gate.py`, incluidos checks, FKs e índices.
+
+# Diccionario Prompt 8
+
+| Tabla | Identidad | Mutabilidad | Contenido |
+|---|---|---|---|
+| `cell_classification_runs` | `id`, `CLS-*` | lifecycle controlado; terminal inmutable | slot, publicación, snapshots, manifest, conteos |
+| `cell_classification_inputs` | run + detection/order | append-only | crop/detector/review congelados y elegibilidad |
+| `cell_predictions` | input único | append-only | raw output, probabilidades, label, threshold y margen |
+| `cell_explanations` | prediction única | transición limitada | método, estado y metadata de dos PNG |
+| `smear_analysis_summaries` | run único | append-only | outcome y agregado automático |
+| `cell_classification_events` | UUID | append-only | progreso y mensajes sanitizados |
+| `cell_classification_reviews` | UUID | append-only | decisión humana y comentario |
+
+`probability_parasitized + probability_uninfected` tolera sólo error numérico
+documentado. `positive_label=parasitized` y `positive_class_index=1` son checks.
+No hay columnas binarias.

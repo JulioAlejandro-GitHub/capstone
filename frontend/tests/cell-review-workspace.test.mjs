@@ -86,13 +86,13 @@ test('tablet conserva galería y visor en dos columnas con resumen colapsable', 
   assert.match(tablet, /is-summary-collapsed \.cell-summary-panel[\s\S]*display: none/);
 });
 
-test('filtros muestran estados, conteos y porcentajes sin categorías clínicas', () => {
+test('filtros legacy de detección conservan estados no clínicos', () => {
   for (const status of ['all', 'unreviewed', 'accepted', 'rejected', 'needs_attention']) {
     assert.match(workspace, new RegExp(`'${status}'`));
   }
   assert.match(workspace, /percentage\.toFixed\(1\)/);
   assert.match(workspace, /review_counts/);
-  assert.doesNotMatch(feature, /Blast|Promyelocyte|N\/C ratio|Oil Immersion|parasitized|uninfected/i);
+  assert.doesNotMatch(page, /Blast|Promyelocyte|N\/C ratio|Oil Immersion/i);
 });
 
 test('crops son lazy, autenticados y revocan todos los object URLs', () => {

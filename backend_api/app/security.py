@@ -65,6 +65,10 @@ class Permission(StrEnum):
     SCIENTIFIC_CELL_DETECTION_READ = "scientific.cell_detection.read"
     SCIENTIFIC_CELL_DETECTION_EXECUTE = "scientific.cell_detection.execute"
     SCIENTIFIC_CELL_DETECTION_REVIEW = "scientific.cell_detection.review"
+    SCIENTIFIC_CELL_CLASSIFICATION_READ = "scientific.cell_classification.read"
+    SCIENTIFIC_CELL_CLASSIFICATION_EXECUTE = "scientific.cell_classification.execute"
+    SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN = "scientific.cell_classification.explain"
+    SCIENTIFIC_CELL_CLASSIFICATION_REVIEW = "scientific.cell_classification.review"
 
 
 READ = {
@@ -78,6 +82,7 @@ SCIENTIFIC_READ = {
     Permission.SCIENTIFIC_ANALYSIS_READ,
     Permission.SCIENTIFIC_ANALYSIS_QUEUE_READ,
     Permission.SCIENTIFIC_CELL_DETECTION_READ,
+    Permission.SCIENTIFIC_CELL_CLASSIFICATION_READ,
 }
 SCIENTIFIC_WRITE = {
     Permission.SCIENTIFIC_SUBJECTS_CREATE, Permission.SCIENTIFIC_SUBJECTS_UPDATE,
@@ -89,6 +94,7 @@ SCIENTIFIC_WRITE = {
     Permission.SCIENTIFIC_ANALYSIS_QUEUE_CREATE, Permission.SCIENTIFIC_ANALYSIS_QUEUE_EXECUTE,
     Permission.SCIENTIFIC_ANALYSIS_QUEUE_RETRY,
     Permission.SCIENTIFIC_CELL_DETECTION_EXECUTE,
+    Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXECUTE,
 }
 ROLE_PERMISSIONS = {
     "administrator": set(Permission),
@@ -96,9 +102,15 @@ ROLE_PERMISSIONS = {
         Permission.PREDICTIONS_EXECUTE, Permission.AUDIT_READ,
         Permission.SCIENTIFIC_ANALYSIS_QUALITY_REVIEW,
         Permission.SCIENTIFIC_CELL_DETECTION_REVIEW,
+        Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN,
+        Permission.SCIENTIFIC_CELL_CLASSIFICATION_REVIEW,
     },
     "operator": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {Permission.PREDICTIONS_EXECUTE},
-    "reviewer": READ | SCIENTIFIC_READ | {Permission.SCIENTIFIC_CELL_DETECTION_REVIEW},
+    "reviewer": READ | SCIENTIFIC_READ | {
+        Permission.SCIENTIFIC_CELL_DETECTION_REVIEW,
+        Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN,
+        Permission.SCIENTIFIC_CELL_CLASSIFICATION_REVIEW,
+    },
     "read_only": READ | SCIENTIFIC_READ,
 }
 

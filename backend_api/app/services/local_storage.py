@@ -45,9 +45,25 @@ class LocalStorage:
         self.settings = settings or get_settings()
         if self.settings.storage_provider != "local":
             raise StorageError("Prompt 4 solo admite STORAGE_PROVIDER=local.")
-        self.root = self.settings.storage_root.resolve()
+        configured_root = self.settings.storage_root.absolute()
+        current = Path(configured_root.anchor)
+        for part in configured_root.parts[1:]:
+            current /= part
+            try:
+                info = current.lstat()
+            except FileNotFoundError:
+                break
+            if stat.S_ISLNK(info.st_mode):
+                raise StorageError(
+                    "No se permiten symlinks en STORAGE_ROOT ni sus ancestros."
+                )
+            if not stat.S_ISDIR(info.st_mode):
+                raise StorageError("STORAGE_ROOT atraviesa una ruta no directorio.")
+        self.root = configured_root.resolve(strict=False)
         self.staging = self.root / ".staging"
         self.staging.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if self.root.is_symlink() or self.staging.is_symlink():
+            raise StorageError("No se permiten symlinks en storage.")
 
     def resolve(self, storage_key: str, *, must_exist: bool = False) -> Path:
         if "\x00" in storage_key:
