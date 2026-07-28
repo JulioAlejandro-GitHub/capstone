@@ -39,3 +39,5 @@ backend_api/.venv/
 .env.*
 !.env.example
 !**/.env.example
+/var/storage/cell-crops
+/var/storage/microscopy-images
