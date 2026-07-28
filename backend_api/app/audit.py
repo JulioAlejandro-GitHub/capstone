@@ -130,3 +130,20 @@ def transactional_permission(permission: Permission) -> Callable:
             raise
 
     return dependency
+
+
+def service_audited_permission(permission: Permission) -> Callable:
+    """Authorize a mutation whose service owns and audits multiple transactions.
+
+    Long-running synchronous workflows cannot keep the request transaction open
+    while CPU work executes. The service must explicitly record its lifecycle
+    audit events in each durable state transition.
+    """
+    permission_dependency = require_permission(permission)
+
+    def dependency(
+        principal: Principal = Depends(permission_dependency),
+    ) -> Principal:
+        return principal
+
+    return dependency

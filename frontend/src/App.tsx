@@ -19,8 +19,11 @@ import { Runs } from './pages/Runs';
 import { Traceability } from './pages/Traceability';
 import { UploadedPredictions } from './pages/UploadedPredictions';
 import { Login } from './pages/Login';
-import { SmearUpload } from './pages/SmearUpload';
-import { SmearAnalysis } from './pages/SmearAnalysis';
+import { SmearWorkflow } from './pages/SmearWorkflow';
+import {
+  SmearAnalysisHistory,
+  SmearAnalysisHistoryDetail,
+} from './pages/SmearAnalysisHistory';
 import { isValidPublicId, routes, withAllowedQuery } from './router';
 import { DEFAULT_DATASOURCE, api } from './services/api';
 import type { Datasource } from './types/api';
@@ -36,6 +39,11 @@ function LegacyRunRedirect() {
   return isValidPublicId(normalized)
     ? <Navigate replace to={`${routes.runDetail(normalized)}?${search.toString()}`} />
     : <InvalidEntityId kind="ejecución" listPath={routes.runs} />;
+}
+
+function LegacySmearRedirect() {
+  const location = useLocation();
+  return <Navigate replace to={`${routes.smearWorkflow}${location.search}`} />;
 }
 
 function App() {
@@ -93,8 +101,12 @@ function App() {
         <Route path={routes.dataset} element={<DatasetBrowser {...common} />} />
         <Route path={routes.datasetsModels} element={<DatasetsModels {...common} />} />
         <Route path={routes.errorsLogs} element={<ErrorsLogs {...common} />} />
-        <Route path={routes.smearUpload} element={<SmearUpload />} />
-        <Route path={routes.smearAnalysis} element={<SmearAnalysis />} />
+        <Route path={routes.smearWorkflow} element={<SmearWorkflow />} />
+        <Route path={routes.smearHistory} element={<SmearAnalysisHistory />} />
+        <Route path={`${routes.smearHistory}/:analysisRunId`} element={<SmearHistoryDetailRoute />} />
+        <Route path={routes.smearUpload} element={<LegacySmearRedirect />} />
+        <Route path={routes.smearAnalysis} element={<LegacySmearRedirect />} />
+        <Route path={routes.smearReview} element={<LegacySmearRedirect />} />
         <Route path="/runs" element={<Navigate replace to={`${routes.runs}${location.search}`} />} />
         <Route path="/evaluations" element={<Navigate replace to={`${routes.evaluations}${location.search}`} />} />
         <Route path="/model-versions" element={<Navigate replace to={`${routes.modelVersions}${location.search}`} />} />
@@ -103,6 +115,14 @@ function App() {
       </Route>
     </Routes>
   </>;
+}
+
+function SmearHistoryDetailRoute() {
+  const { analysisRunId } = useParams();
+  if (!isValidPublicId(analysisRunId)) {
+    return <InvalidEntityId kind="análisis histórico" listPath={routes.smearHistory} />;
+  }
+  return <SmearAnalysisHistoryDetail analysisRunId={analysisRunId} />;
 }
 
 function RunDetailRoute({ datasource }: { datasource: string }) {

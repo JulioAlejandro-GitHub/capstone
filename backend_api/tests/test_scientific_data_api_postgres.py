@@ -1,3 +1,4 @@
+import json
 import os
 from contextlib import contextmanager
 from io import BytesIO
@@ -9,12 +10,16 @@ from sqlalchemy import create_engine, inspect, text
 from PIL import Image
 
 import app.audit as audit
+import app.routes.analysis as analysis_routes
+import app.routes.cell_analysis as cell_analysis_routes
+import app.routes.scientific as scientific_routes
 import app.security as security
 import app.services.scientific as scientific_service
 from app.config import Settings, reset_settings_cache
 from app.database_safety import assert_capstone_database
 from app.db import normalize_sqlalchemy_url
 from app.main import app
+from app.services.microscopy_analysis import MicroscopyAnalysisService
 
 
 pytestmark = pytest.mark.requires_local_postgres
@@ -68,6 +73,11 @@ def scientific_client(monkeypatch, tmp_path):
     monkeypatch.setattr(security, "get_primary_engine", lambda: shared)
     monkeypatch.setattr(audit, "get_primary_engine", lambda: shared)
     monkeypatch.setattr(scientific_service, "get_primary_engine", lambda: shared)
+    monkeypatch.setattr(analysis_routes.service, "engine", shared)
+    monkeypatch.setattr(analysis_routes.queue_service, "engine", shared)
+    monkeypatch.setattr(MicroscopyAnalysisService, "engine", shared)
+    monkeypatch.setattr(cell_analysis_routes.service, "engine", shared)
+    monkeypatch.setattr(scientific_routes.workflow_service, "engine", shared)
     try:
         with TestClient(app, raise_server_exceptions=False) as client:
             yield (
@@ -238,6 +248,22 @@ def _png(index: int) -> bytes:
     return output.getvalue()
 
 
+def _quality_png() -> bytes:
+    image = Image.new("RGB", (160, 160))
+    image.putdata([
+        (
+            20 + ((x * 37 + y * 73 + x * y) % 216),
+            20 + ((x * 61 + y * 29 + x * y * 3) % 216),
+            20 + ((x * 17 + y * 89 + x * y * 5) % 216),
+        )
+        for y in range(image.height)
+        for x in range(image.width)
+    ])
+    output = BytesIO()
+    image.save(output, "PNG")
+    return output.getvalue()
+
+
 def test_secure_nih_upload_identity_content_and_idempotent_retry(scientific_client):
     client, connection, admin, reviewer, suffix = scientific_client
     data = {
@@ -311,3 +337,282 @@ def test_secure_nih_upload_identity_content_and_idempotent_retry(scientific_clie
         text("SELECT count(*) FROM audit_events WHERE resource_id IS NOT NULL "
              "AND event_type='SCIENTIFIC_SUBJECT_CREATED'")
     ).scalar_one() == 0
+
+
+def test_manual_upload_is_immediately_eligible_and_refreshable(scientific_client):
+    client, connection, admin, reviewer, _ = scientific_client
+    upload_data = {
+        "subject_mode": "automatic_new",
+        "sample_mode": "automatic_new",
+        "acquisition_origin": "manual_upload",
+        "metadata_json": json.dumps({"client_request_id": str(uuid4())}),
+    }
+    upload = client.post(
+        "/api/v1/scientific/images/upload",
+        headers=admin,
+        data=upload_data,
+        files=[("files", ("manual-smear.png", _quality_png(), "image/png"))],
+    )
+    assert upload.status_code == 201, upload.text
+    uploaded = upload.json()
+    batch_id = uploaded["ingestion_batch"]["id"]
+    replayed = client.post(
+        "/api/v1/scientific/images/upload",
+        headers=admin,
+        data=upload_data,
+        files=[("files", ("manual-smear.png", _quality_png(), "image/png"))],
+    )
+    assert replayed.status_code == 201
+    assert replayed.json()["ingestion_batch"]["id"] == batch_id
+    assert replayed.json()["subject"]["id"] == uploaded["subject"]["id"]
+    assert connection.execute(
+        text(
+            "SELECT count(*) FROM image_ingestion_batches "
+            "WHERE metadata_json->>'client_request_id'=:request_id"
+        ),
+        {"request_id": json.loads(upload_data["metadata_json"])["client_request_id"]},
+    ).scalar_one() == 1
+    lineage = connection.execute(
+        text(
+            """
+            SELECT c.status case_status,bs.status sample_status
+            FROM image_ingestion_batches b
+            JOIN scientific_cases c ON c.id=b.case_id
+            JOIN blood_samples bs ON bs.id=b.sample_id
+            WHERE b.id=:id
+            """
+        ),
+        {"id": batch_id},
+    ).mappings().one()
+    assert lineage == {"case_status": "registered", "sample_status": "registered"}
+
+    eligible = client.get("/api/v1/analysis/eligible-batches", headers=reviewer)
+    assert eligible.status_code == 200
+    assert batch_id in {item["id"] for item in eligible.json()["items"]}
+
+    before = client.get(
+        f"/api/v1/scientific/workflows/{batch_id}", headers=reviewer
+    )
+    assert before.status_code == 200
+    assert before.json()["stage"] == "ingested"
+    assert before.json()["analysis_run"] is None
+    assert "storage_key" not in before.text
+
+    created = client.post(
+        "/api/v1/analysis/runs",
+        headers=admin,
+        json={"ingestion_batch_id": batch_id},
+    )
+    assert created.status_code == 201, created.text
+    after = client.get(
+        f"/api/v1/scientific/workflows/{batch_id}", headers=reviewer
+    )
+    assert after.status_code == 200
+    assert after.json()["analysis_run"]["id"] == created.json()["id"]
+    assert after.json()["analysis_run"]["run_status"] == "quality_pending"
+    assert after.json()["analysis_run"]["images"]
+    assert after.json()["analysis_run"]["events"]
+    assert after.json()["stage"] == "creating_analysis"
+
+    equivalent = client.post(
+        "/api/v1/analysis/runs",
+        headers=admin,
+        json={"ingestion_batch_id": batch_id},
+    )
+    assert equivalent.status_code == 201
+    assert equivalent.json()["id"] == created.json()["id"]
+    assert connection.execute(
+        text(
+            "SELECT count(*) FROM microscopy_analysis_runs "
+            "WHERE ingestion_batch_id=:id"
+        ),
+        {"id": batch_id},
+    ).scalar_one() == 1
+
+    queued = client.post(
+        "/api/v1/analysis/queue",
+        headers=admin,
+        json={"analysis_run_id": created.json()["id"], "priority": 50},
+    )
+    assert queued.status_code == 201, queued.text
+    queue_item = queued.json()
+    assert queue_item["priority"] == 50
+    duplicate_queue = client.post(
+        "/api/v1/analysis/queue",
+        headers=admin,
+        json={"analysis_run_id": created.json()["id"], "priority": 50},
+    )
+    assert duplicate_queue.status_code == 409
+    assert connection.execute(
+        text(
+            "SELECT count(*) FROM quality_assessment_queue_items "
+            "WHERE analysis_run_id=:id"
+        ),
+        {"id": created.json()["id"]},
+    ).scalar_one() == 1
+
+    quality_queued = client.get(
+        f"/api/v1/scientific/workflows/{batch_id}", headers=reviewer
+    )
+    assert quality_queued.status_code == 200
+    assert quality_queued.json()["stage"] == "quality_queued"
+    assert quality_queued.json()["queue_item"]["queue_item_id"] == queue_item["id"]
+
+    executed = client.post(
+        f"/api/v1/analysis/queue/{queue_item['id']}/execute",
+        headers=admin,
+    )
+    assert executed.status_code == 200, executed.text
+    ready = client.get(
+        f"/api/v1/scientific/workflows/{batch_id}", headers=reviewer
+    )
+    assert ready.status_code == 200
+    assert ready.json()["stage"] == "ready_for_detection"
+    assert ready.json()["analysis_run"]["quality_gate_status"] == "pass"
+    assert ready.json()["analysis_run"]["ready_for_analysis"] is True
+
+    forbidden_detection = client.post(
+        "/api/v1/cell-analysis/detection-runs",
+        headers=reviewer,
+        json={"analysis_run_id": created.json()["id"]},
+    )
+    assert forbidden_detection.status_code == 403
+    detected = client.post(
+        "/api/v1/cell-analysis/detection-runs",
+        headers=admin,
+        json={"analysis_run_id": created.json()["id"]},
+    )
+    assert detected.status_code == 201, detected.text
+    assert detected.json()["status"] in {"completed", "completed_with_warnings"}
+    equivalent_detection = client.post(
+        "/api/v1/cell-analysis/detection-runs",
+        headers=admin,
+        json={"analysis_run_id": created.json()["id"]},
+    )
+    assert equivalent_detection.status_code == 201
+    assert equivalent_detection.json()["id"] == detected.json()["id"]
+    assert equivalent_detection.json()["idempotent"] is True
+
+    review_ready = client.get(
+        f"/api/v1/scientific/workflows/{batch_id}", headers=reviewer
+    )
+    assert review_ready.status_code == 200
+    refreshed = review_ready.json()
+    assert refreshed["stage"] == "review_ready"
+    assert refreshed["batch"]["id"] == batch_id
+    assert refreshed["images"][0]["id"] == uploaded["images"][0]["id"]
+    assert refreshed["analysis_run"]["id"] == created.json()["id"]
+    assert refreshed["queue_item"]["queue_item_id"] == queue_item["id"]
+    assert refreshed["detection_run"]["id"] == detected.json()["id"]
+    assert "storage_key" not in review_ready.text
+    row_counts_before = connection.execute(text("""
+      SELECT
+        (SELECT count(*) FROM microscopy_analysis_runs),
+        (SELECT count(*) FROM quality_assessment_queue_items),
+        (SELECT count(*) FROM cell_detection_runs),
+        (SELECT count(*) FROM scientific_reviews)
+    """)).one()
+    history = client.get(
+        "/api/v1/scientific/workflows",
+        headers=reviewer,
+        params={"run_code": created.json()["run_code"], "limit": 1, "offset": 0},
+    )
+    assert history.status_code == 200, history.text
+    history_page = history.json()
+    assert history_page["total"] == 1
+    assert history_page["limit"] == 1
+    assert history_page["offset"] == 0
+    history_row = history_page["items"][0]
+    assert history_row["analysis_run_id"] == created.json()["id"]
+    assert history_row["ingestion_batch_id"] == batch_id
+    assert history_row["run_code"] == created.json()["run_code"]
+    assert history_row["subject_code"] == uploaded["subject"]["subject_code"]
+    assert history_row["sample_code"] == uploaded["sample"]["sample_code"]
+    assert history_row["quality_gate_status"] == "pass"
+    assert history_row["ready_for_analysis"] is True
+    assert history_row["detection_run_id"] == detected.json()["id"]
+    assert history_row["detection_count"] == detected.json()["detection_count"]
+    assert history_row["reviewed_count"] == 0
+    assert "storage_key" not in history.text
+    assert client.get(
+        "/api/v1/scientific/workflows",
+        headers=reviewer,
+        params={"subject_code": uploaded["subject"]["subject_code"]},
+    ).json()["total"] == 1
+    assert client.get(
+        "/api/v1/scientific/workflows",
+        headers=reviewer,
+        params={"sample_code": uploaded["sample"]["sample_code"]},
+    ).json()["total"] == 1
+    assert client.get(
+        "/api/v1/scientific/workflows",
+        headers=reviewer,
+        params={"status": "ready_for_analysis"},
+    ).json()["total"] == 1
+    assert client.get(
+        "/api/v1/scientific/workflows",
+        headers=reviewer,
+        params={"created_from": "2999-01-01"},
+    ).json()["total"] == 0
+    detail = client.get(
+        f"/api/v1/scientific/analysis-history/{created.json()['id']}",
+        headers=reviewer,
+    )
+    assert detail.status_code == 200
+    assert detail.json()["analysis_run"]["id"] == created.json()["id"]
+    assert detail.json()["detection_run"]["id"] == detected.json()["id"]
+    assert "storage_key" not in detail.text
+    assert client.get(
+        f"/api/v1/scientific/analysis-history/{uuid4()}",
+        headers=reviewer,
+    ).status_code == 404
+    row_counts_after = connection.execute(text("""
+      SELECT
+        (SELECT count(*) FROM microscopy_analysis_runs),
+        (SELECT count(*) FROM quality_assessment_queue_items),
+        (SELECT count(*) FROM cell_detection_runs),
+        (SELECT count(*) FROM scientific_reviews)
+    """)).one()
+    assert row_counts_after == row_counts_before
+    assert connection.execute(
+        text(
+            "SELECT count(*) FROM audit_events "
+            "WHERE resource_id IN (:analysis_id,:queue_id,:detection_id)"
+        ),
+        {
+            "analysis_id": created.json()["id"],
+            "queue_id": queue_item["id"],
+            "detection_id": detected.json()["id"],
+        },
+    ).scalar_one() >= 3
+
+
+def test_upload_rejects_an_archived_subject(scientific_client):
+    client, _, admin, _, suffix = scientific_client
+    code = f"ARCHIVED-{suffix}"
+    created = client.post(
+        "/api/v1/scientific/subjects",
+        headers=admin,
+        json={"subject_code": code},
+    )
+    assert created.status_code == 201
+    archived = client.post(
+        f"/api/v1/scientific/subjects/{created.json()['id']}/archive",
+        headers=admin,
+        json={"reason": "fixture de estado"},
+    )
+    assert archived.status_code == 200
+
+    rejected = client.post(
+        "/api/v1/scientific/images/upload",
+        headers=admin,
+        data={
+            "subject_mode": "existing",
+            "subject_code": code,
+            "sample_mode": "automatic_new",
+            "acquisition_origin": "manual_upload",
+        },
+        files=[("files", ("must-not-persist.png", _png(8), "image/png"))],
+    )
+    assert rejected.status_code == 409
+    assert "archivado" in rejected.text.lower()

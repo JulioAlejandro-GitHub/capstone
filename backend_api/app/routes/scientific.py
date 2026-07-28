@@ -3,7 +3,7 @@ from __future__ import annotations
 from uuid import UUID
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse
@@ -17,11 +17,13 @@ from app.security import Permission, Principal, require_permission
 from app.services.scientific import ScientificError, ScientificService
 from app.services.image_ingestion import ImageIngestionService
 from app.services.local_storage import LocalStorage, StorageError
+from app.services.smear_workflow import SmearWorkflowService
 
 
 router = APIRouter(prefix="/api/v1/scientific", tags=["scientific-data"])
 service = ScientificService()
 ingestion = ImageIngestionService()
+workflow_service = SmearWorkflowService()
 
 
 def execute(call):
@@ -242,6 +244,60 @@ def list_images(
 @router.get("/images/{image_id:uuid}", dependencies=[Depends(require_permission(Permission.SCIENTIFIC_IMAGES_READ))])
 def get_image(image_id: UUID):
     return execute(lambda: service.get("image", str(image_id)))
+
+
+@router.get("/workflows/{ingestion_batch_id}")
+def get_smear_workflow(
+    ingestion_batch_id: UUID,
+    _: Principal = Depends(
+        require_permission(Permission.SCIENTIFIC_ANALYSIS_READ)
+    ),
+):
+    return execute(lambda: workflow_service.get(str(ingestion_batch_id)))
+
+
+@router.get("/workflows")
+def list_smear_workflows(
+    run_code: str | None = Query(None, max_length=120),
+    subject_code: str | None = Query(None, max_length=120),
+    sample_code: str | None = Query(None, max_length=120),
+    status: str | None = Query(None, max_length=40),
+    quality_gate_status: str | None = Query(None, max_length=40),
+    ready_for_analysis: bool | None = None,
+    created_from: date | None = None,
+    created_to: date | None = None,
+    limit: int = Query(25, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    _: Principal = Depends(
+        require_permission(Permission.SCIENTIFIC_ANALYSIS_READ)
+    ),
+):
+    if created_from and created_to and created_from > created_to:
+        raise HTTPException(422, "El rango de fechas es inválido.")
+    return execute(lambda: workflow_service.list(
+        run_code=run_code,
+        subject_code=subject_code,
+        sample_code=sample_code,
+        status=status,
+        quality_gate_status=quality_gate_status,
+        ready_for_analysis=ready_for_analysis,
+        created_from=created_from,
+        created_to=created_to,
+        limit=limit,
+        offset=offset,
+    ))
+
+
+@router.get("/analysis-history/{analysis_run_id}")
+def get_smear_history(
+    analysis_run_id: UUID,
+    _: Principal = Depends(
+        require_permission(Permission.SCIENTIFIC_ANALYSIS_READ)
+    ),
+):
+    return execute(
+        lambda: workflow_service.get_by_analysis_run(str(analysis_run_id))
+    )
 
 
 @router.post("/images/upload", status_code=201)

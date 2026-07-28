@@ -91,3 +91,12 @@ def test_logging_sanitization_and_correlation_id():
     cleaned = sanitize({"password": "hidden", "nested": {"Authorization": "Bearer abc"}})
     assert cleaned == {"password": "<redacted>", "nested": {"Authorization": "<redacted>"}}
     assert valid_correlation_id("x") != "x"
+
+
+def test_cell_detection_page_limit_supports_at_least_five_hundred(monkeypatch):
+    _development(monkeypatch)
+    monkeypatch.setenv("CELL_DETECTION_PAGE_MAX", "499")
+    with pytest.raises(ValueError):
+        Settings.from_env()
+    monkeypatch.setenv("CELL_DETECTION_PAGE_MAX", "500")
+    assert Settings.from_env().cell_detection_page_max == 500

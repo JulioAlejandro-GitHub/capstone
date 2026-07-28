@@ -62,6 +62,9 @@ class Permission(StrEnum):
     SCIENTIFIC_ANALYSIS_QUEUE_CREATE = "scientific.analysis.queue.create"
     SCIENTIFIC_ANALYSIS_QUEUE_EXECUTE = "scientific.analysis.queue.execute"
     SCIENTIFIC_ANALYSIS_QUEUE_RETRY = "scientific.analysis.queue.retry"
+    SCIENTIFIC_CELL_DETECTION_READ = "scientific.cell_detection.read"
+    SCIENTIFIC_CELL_DETECTION_EXECUTE = "scientific.cell_detection.execute"
+    SCIENTIFIC_CELL_DETECTION_REVIEW = "scientific.cell_detection.review"
 
 
 READ = {
@@ -74,6 +77,7 @@ SCIENTIFIC_READ = {
     Permission.SCIENTIFIC_IMAGES_READ,
     Permission.SCIENTIFIC_ANALYSIS_READ,
     Permission.SCIENTIFIC_ANALYSIS_QUEUE_READ,
+    Permission.SCIENTIFIC_CELL_DETECTION_READ,
 }
 SCIENTIFIC_WRITE = {
     Permission.SCIENTIFIC_SUBJECTS_CREATE, Permission.SCIENTIFIC_SUBJECTS_UPDATE,
@@ -84,15 +88,17 @@ SCIENTIFIC_WRITE = {
     Permission.SCIENTIFIC_ANALYSIS_CREATE, Permission.SCIENTIFIC_ANALYSIS_QUALITY_EXECUTE,
     Permission.SCIENTIFIC_ANALYSIS_QUEUE_CREATE, Permission.SCIENTIFIC_ANALYSIS_QUEUE_EXECUTE,
     Permission.SCIENTIFIC_ANALYSIS_QUEUE_RETRY,
+    Permission.SCIENTIFIC_CELL_DETECTION_EXECUTE,
 }
 ROLE_PERMISSIONS = {
     "administrator": set(Permission),
     "researcher": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {
         Permission.PREDICTIONS_EXECUTE, Permission.AUDIT_READ,
         Permission.SCIENTIFIC_ANALYSIS_QUALITY_REVIEW,
+        Permission.SCIENTIFIC_CELL_DETECTION_REVIEW,
     },
     "operator": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {Permission.PREDICTIONS_EXECUTE},
-    "reviewer": READ | SCIENTIFIC_READ,
+    "reviewer": READ | SCIENTIFIC_READ | {Permission.SCIENTIFIC_CELL_DETECTION_REVIEW},
     "read_only": READ | SCIENTIFIC_READ,
 }
 

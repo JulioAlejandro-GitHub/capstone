@@ -69,8 +69,8 @@ export const navigationModules: NavigationModule[] = [
       id: 'smear-operation',
       label: 'Operación',
       items: [
-        { id: 'smear-upload', label: 'Cargar imágenes', path: routes.smearUpload, icon: 'explain' },
-        { id: 'smear-analysis', label: 'Control de calidad', path: routes.smearAnalysis, icon: 'evaluation' },
+        { id: 'smear-workflow', label: 'Analizar imagen', path: routes.smearWorkflow, icon: 'prediction' },
+        { id: 'smear-history', label: 'Historial de análisis', path: routes.smearHistory, icon: 'activity' },
       ],
     }],
   },

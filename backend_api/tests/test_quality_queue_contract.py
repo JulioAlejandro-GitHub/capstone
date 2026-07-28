@@ -55,3 +55,12 @@ def test_queue_service_contains_no_automatic_processing_primitives():
     source = open("backend_api/app/services/quality_queue.py", encoding="utf-8").read().lower()
     for forbidden in ("celery", "redis", "rabbitmq", "scheduler", "backoff", "websocket"):
         assert forbidden not in source
+
+
+def test_manual_retry_clears_previous_error_without_executing():
+    source = open("backend_api/app/services/quality_queue.py", encoding="utf-8").read()
+    retry_body = source.split("def retry(", 1)[1]
+    assert "status='queued'" in retry_body
+    assert "last_error_code=NULL" in retry_body
+    assert "last_error_message=NULL" in retry_body
+    assert "self.execute(" not in retry_body

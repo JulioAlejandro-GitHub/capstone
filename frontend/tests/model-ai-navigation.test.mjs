@@ -8,8 +8,9 @@ const styles=read('src/styles.css');const app=read('src/App.tsx');const versions
 test('renderiza Modelo IA con sus vistas existentes',()=>{assert.equal((config.match(/label: 'Modelo IA'/g)||[]).length,1);for(const label of ['Resumen','Ejecuciones','Evaluaciones','Comparación de modelos','Modelos liberados','Despliegues','Trazabilidad','Explicabilidad','Predicciones','Dataset','Datasets y modelos','Errores y logs'])assert.match(config,new RegExp(label));});
 test('separa la operación en un único módulo Análisis de frotis',()=>{
   assert.equal((config.match(/label: 'Análisis de frotis'/g)||[]).length,1);
-  assert.equal((config.match(/label: 'Cargar imágenes'/g)||[]).length,1);
-  assert.equal((config.match(/routes\.smearUpload/g)||[]).length,1);
+  assert.equal((config.match(/label: 'Analizar imagen'/g)||[]).length,1);
+  assert.equal((config.match(/routes\.smearWorkflow/g)||[]).length,1);
+  assert.doesNotMatch(config,/label: '(Cargar imágenes|Control de calidad|Revisión celular)'/);
   assert.match(config,/pathPrefix: '\/frotis'/);
   assert.match(config,/pathPrefix: '\/modelo-ia'/);
   assert.ok(config.indexOf("label: 'Análisis de frotis'") < config.indexOf("label: 'Modelo IA'"));

@@ -49,6 +49,63 @@ def _event(connection, request, principal, event_type, resource_type, row, after
     )
 
 
+def _upload_response(connection, batch_id, ignored: int) -> dict:
+    lineage = _row(connection, """
+      SELECT b.*,rs.subject_code,rs.status subject_status,c.case_code,
+        bs.sample_code,bs.status sample_status,ss.slide_code
+      FROM image_ingestion_batches b
+      JOIN research_subjects rs ON rs.id=b.subject_id
+      JOIN scientific_cases c ON c.id=b.case_id
+      JOIN blood_samples bs ON bs.id=b.sample_id
+      JOIN smear_slides ss ON ss.id=b.slide_id
+      WHERE b.id=:id
+    """, {"id": batch_id})
+    assert lineage is not None
+    images = connection.execute(text("""
+      SELECT id,original_filename,sha256,width_px,height_px
+      FROM microscopy_images
+      WHERE ingestion_batch_id=:id
+      ORDER BY image_sequence_number,id
+    """), {"id": batch_id}).mappings().all()
+    return {
+        "subject": {
+            "id": lineage["subject_id"],
+            "subject_code": lineage["subject_code"],
+            "status": lineage["subject_status"],
+        },
+        "case": {"id": lineage["case_id"], "case_code": lineage["case_code"]},
+        "sample": {
+            "id": lineage["sample_id"],
+            "sample_code": lineage["sample_code"],
+            "status": lineage["sample_status"],
+        },
+        "slide": {"id": lineage["slide_id"], "slide_code": lineage["slide_code"]},
+        "ingestion_batch": {
+            key: lineage[key]
+            for key in (
+                "id",
+                "status",
+                "acquisition_origin",
+                "source_system",
+                "received_image_count",
+                "expected_image_count",
+                "created_at",
+                "completed_at",
+            )
+        },
+        "images": [{
+            **dict(image),
+            "content_url": f"/api/v1/scientific/images/{image['id']}/content",
+        } for image in images],
+        "counts": {
+            "received": lineage["received_image_count"],
+            "expected": lineage["expected_image_count"],
+            "ignored": ignored,
+        },
+        "status": lineage["status"],
+    }
+
+
 class ImageIngestionService:
     @staticmethod
     def lookup_subject(subject_code: str) -> dict:
@@ -57,7 +114,7 @@ class ImageIngestionService:
         with get_primary_engine().connect() as connection:
             subject = _row(connection, """
               SELECT id,subject_code,status,source_system,external_patient_id
-              FROM research_subjects WHERE subject_code=:code
+              FROM research_subjects WHERE upper(subject_code)=:code
             """, {"code": code})
         if not subject:
             raise ScientificError(404, "No se encontró el paciente ingresado.")
@@ -97,6 +154,8 @@ class ImageIngestionService:
         subject = _row(connection, "SELECT * FROM research_subjects WHERE id=CAST(:id AS uuid)", {"id": subject_id})
         if not subject:
             raise ScientificError(404, "Paciente no encontrado.")
+        if subject["status"] != "active":
+            raise ScientificError(409, "No se puede reutilizar un paciente archivado.")
         case = self._resolve_case(connection, subject, "manual_upload", None, principal, request)
         return self._create_sample(connection, subject, case, None, None, None, principal, request)
 
@@ -125,8 +184,9 @@ class ImageIngestionService:
         }[origin]
         case = _row(connection, """
           SELECT * FROM scientific_cases
-          WHERE subject_id=:subject AND source_type=:source_type AND status<>'archived'
-          ORDER BY created_at LIMIT 1
+          WHERE subject_id=:subject AND source_type=:source_type
+            AND status IN ('registered','ready')
+          ORDER BY CASE status WHEN 'ready' THEN 0 ELSE 1 END,created_at LIMIT 1
         """, {"subject": subject["id"], "source_type": source_type})
         if case:
             return case
@@ -188,12 +248,50 @@ class ImageIngestionService:
         source_group_key = (
             (external_sample_id or external_patient_id) if is_nih else source_group_key
         )
+        selected = [
+            upload for upload in files
+            if (upload.filename or "").lower() not in IGNORED_NAMES
+            and not (upload.filename or "").startswith(".")
+        ]
+        if not selected:
+            raise ScientificError(422, "No se recibieron imágenes científicas válidas.")
+
+        client_request_id = metadata_json.get("client_request_id")
+        if client_request_id is not None:
+            try:
+                client_request_id = str(UUID(str(client_request_id)))
+            except (TypeError, ValueError, AttributeError) as exc:
+                raise ScientificError(422, "client_request_id inválido.") from exc
+            metadata_json["client_request_id"] = client_request_id
+            connection.execute(
+                text("SELECT pg_advisory_xact_lock(hashtextextended(:key,0))"),
+                {"key": f"{principal.user_id}:{client_request_id}"},
+            )
+            existing_batch_id = connection.execute(text("""
+              SELECT id
+              FROM image_ingestion_batches
+              WHERE created_by=CAST(:actor AS uuid)
+                AND metadata_json->>'client_request_id'=:request_id
+              ORDER BY created_at,id
+              LIMIT 1
+            """), {
+                "actor": principal.user_id,
+                "request_id": client_request_id,
+            }).scalar()
+            if existing_batch_id:
+                return _upload_response(
+                    connection,
+                    existing_batch_id,
+                    len(files) - len(selected),
+                )
 
         if subject_mode == "existing":
-            subject = _row(connection, "SELECT * FROM research_subjects WHERE subject_code=:code",
+            subject = _row(connection, "SELECT * FROM research_subjects WHERE upper(subject_code)=:code",
                            {"code": normalize_subject_code(subject_code or "")})
             if not subject:
                 raise ScientificError(404, "No se encontró el paciente ingresado.")
+            if subject["status"] != "active":
+                raise ScientificError(409, "No se puede reutilizar un paciente archivado.")
         else:
             subject = None
             if source_system and external_patient_id:
@@ -201,10 +299,13 @@ class ImageIngestionService:
                   SELECT * FROM research_subjects
                   WHERE source_system=:source AND external_patient_id=:external
                 """, {"source": source_system, "external": external_patient_id})
+                if subject and subject["status"] != "active":
+                    raise ScientificError(
+                        409, "La identidad externa corresponde a un paciente archivado."
+                    )
             subject = subject or self._create_subject(
                 connection, principal, request, source_system, external_patient_id,
             )
-        case = self._resolve_case(connection, subject, acquisition_origin, source_system, principal, request)
 
         if sample_mode == "existing":
             sample = _row(connection, """
@@ -213,7 +314,22 @@ class ImageIngestionService:
             """, {"id": sample_id, "subject": subject["id"]})
             if not sample:
                 raise ScientificError(409, "La muestra no pertenece al paciente.")
+            if sample["status"] == "archived":
+                raise ScientificError(409, "No se puede reutilizar una muestra archivada.")
+            case = _row(
+                connection,
+                "SELECT * FROM scientific_cases WHERE id=:id",
+                {"id": sample["case_id"]},
+            )
+            if not case or case["status"] not in {"registered", "ready"}:
+                raise ScientificError(
+                    409, "La muestra pertenece a un caso no reutilizable."
+                )
         else:
+            case = self._resolve_case(
+                connection, subject, acquisition_origin, source_system,
+                principal, request,
+            )
             sample = None
             if source_system and source_group_key:
                 sample = _row(connection, """
@@ -224,6 +340,10 @@ class ImageIngestionService:
                   ORDER BY bs.created_at LIMIT 1
                 """, {"case": case["id"], "source": source_system,
                       "external": external_sample_id, "group_key": source_group_key})
+                if sample and sample["status"] == "archived":
+                    raise ScientificError(
+                        409, "La identidad externa corresponde a una muestra archivada."
+                    )
             sample = sample or self._create_sample(
                 connection, subject, case, source_system, external_sample_id,
                 source_group_key, principal, request,
@@ -237,6 +357,17 @@ class ImageIngestionService:
             """, {"source": source_system, "group_key": source_group_key})
         if batch:
             slide = _row(connection, "SELECT * FROM smear_slides WHERE id=:id", {"id": batch["slide_id"]})
+            same_lineage = (
+                str(batch["subject_id"]) == str(subject["id"])
+                and str(batch["case_id"]) == str(case["id"])
+                and str(batch["sample_id"]) == str(sample["id"])
+            )
+            if not same_lineage:
+                raise ScientificError(
+                    409, "El grupo de origen ya pertenece a otro linaje científico."
+                )
+            if not slide or slide["status"] == "archived":
+                raise ScientificError(409, "No se puede reutilizar un frotis archivado.")
         else:
             slide = _row(connection, """
               INSERT INTO smear_slides(id,sample_id,slide_code,smear_type,status,created_by)
@@ -260,13 +391,6 @@ class ImageIngestionService:
             _event(connection, request, principal, "scientific.ingestion_batch.created",
                    "image_ingestion_batch", batch)
 
-        selected = [
-            upload for upload in files
-            if (upload.filename or "").lower() not in IGNORED_NAMES
-            and not (upload.filename or "").startswith(".")
-        ]
-        if not selected:
-            raise ScientificError(422, "No se recibieron imágenes científicas válidas.")
         storage = LocalStorage()
         staged: list[tuple[StagedUpload, object, UploadFile]] = []
         final_paths: list[Path] = []
@@ -372,21 +496,11 @@ class ImageIngestionService:
             """), {"status": status, "expected": expected, "id": sample["id"]})
             _event(connection, request, principal, "scientific.ingestion_batch.updated",
                    "image_ingestion_batch", batch)
-            return {
-                "subject": {"id": subject["id"], "subject_code": subject["subject_code"]},
-                "case": {"id": case["id"], "case_code": case["case_code"]},
-                "sample": {"id": sample["id"], "sample_code": sample["sample_code"]},
-                "slide": {"id": slide["id"], "slide_code": slide["slide_code"]},
-                "ingestion_batch": batch,
-                "images": [{
-                    "id": image["id"], "original_filename": image["original_filename"],
-                    "sha256": image["sha256"], "width_px": image["width_px"],
-                    "height_px": image["height_px"],
-                    "content_url": f"/api/v1/scientific/images/{image['id']}/content",
-                } for image in images],
-                "counts": {"received": received, "expected": expected, "ignored": len(files) - len(selected)},
-                "status": status,
-            }
+            return _upload_response(
+                connection,
+                batch["id"],
+                len(files) - len(selected),
+            )
         except UploadTooLarge as exc:
             raise ScientificError(413, str(exc)) from exc
         except (StorageError, ImageValidationError) as exc:

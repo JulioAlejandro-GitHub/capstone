@@ -137,7 +137,9 @@ class QualityQueueService:
                 raise AnalysisError(409, "Solo puede reintentarse una solicitud fallida.")
             item = connection.execute(text("""UPDATE quality_assessment_queue_items
               SET status='queued',priority=:priority,requested_at=now(),started_at=NULL,
-                  completed_at=NULL,failed_at=NULL,updated_at=now() WHERE id=:id RETURNING *"""),
+                  completed_at=NULL,failed_at=NULL,last_error_code=NULL,
+                  last_error_message=NULL,updated_at=now()
+              WHERE id=:id RETURNING *"""),
               {"id": item["id"], "priority": priority}).mappings().one()
             self._audit(connection, "scientific.quality_queue.retried", "retry",
                         item, principal, request)

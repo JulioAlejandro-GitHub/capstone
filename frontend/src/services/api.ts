@@ -34,6 +34,19 @@ import type {
   Stage2EnablementResult,
   UploadedPrediction,
 } from '../types/api';
+import type {
+  CellAnalysisPage,
+  CellDetectionDetail,
+  CellDetectionImage,
+  CellDetectionReviewResult,
+  CellDetectionRunDetail,
+  CellDetectionRunSummary,
+  CellReviewDecision,
+  CellReviewFilter,
+  EligibleCellAnalysisRun,
+  ScientificCellReview,
+  CellDetectionSummary,
+} from '../types/cellReview';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 export const DEFAULT_DATASOURCE = import.meta.env.VITE_DEFAULT_DATASOURCE ?? 'malaria';
@@ -43,9 +56,30 @@ let authenticationFailureHandler: (() => void) | null = null;
 
 export type ScientificSubject = { id: string; subject_code: string; status: string };
 export type ScientificSample = { id: string; sample_code: string; status: string };
+export type UploadedMicroscopyImage = {
+  id: string;
+  original_filename: string;
+  sha256: string;
+  width_px: number;
+  height_px: number;
+  content_url: string;
+};
 export type ImageUploadResponse = {
   subject: ScientificSubject;
   sample: ScientificSample;
+  case: { id: string; case_code: string };
+  slide: { id: string; slide_code: string };
+  ingestion_batch: {
+    id: string;
+    status: 'complete' | 'incomplete' | 'inconsistent';
+    acquisition_origin: string;
+    source_system: string | null;
+    received_image_count: number;
+    expected_image_count: number | null;
+    created_at: string;
+    completed_at: string | null;
+  };
+  images: UploadedMicroscopyImage[];
   status: 'complete' | 'incomplete' | 'inconsistent';
   counts: { received: number; expected: number | null; ignored: number };
 };
@@ -57,15 +91,77 @@ export type QualityImage = { id:string; microscopy_image_id:string; sequence_num
   brightness_mean:number|null; contrast_p95_p05:number|null; entropy_bits:number|null;
   laplacian_variance:number|null; tenengrad_mean:number|null; dark_pixel_ratio:number|null;
   bright_pixel_ratio:number|null; usable_field_ratio:number|null };
+export type AnalysisEvent = {
+  id:string; analysis_run_id:string; microscopy_image_id:string|null; event_type:string;
+  stage:string; status:string; message_code:string|null; message:string|null;
+  progress_current:number|null; progress_total:number|null; created_at:string;
+};
 export type AnalysisRun = { id:string; run_code:string; ingestion_batch_id:string; subject_code:string;
   sample_code:string; slide_code:string; input_image_count:number; quality_profile_key:string;
   quality_profile_version:string; run_status:string; quality_gate_status:string; ready_for_analysis:boolean;
-  active_stage:string; requested_by_username:string; created_at:string; images:QualityImage[]; decisions:Array<Record<string,unknown>> };
+  active_stage:string; requested_by_username:string; created_at:string; images:QualityImage[];
+  started_at?:string|null;completed_at?:string|null;updated_at?:string|null;
+  events:AnalysisEvent[]; decisions:Array<Record<string,unknown>> };
 export type QueuePriority = 1|50|100;
 export type QualityQueueItem = { queue_item_id:string;analysis_run_id:string;run_code:string;
   subject_code:string;sample_code:string;priority:QueuePriority;status:'queued'|'running'|'completed'|'failed';
   attempt_count:number;requested_by:string;requested_by_username:string;requested_at:string;
   started_at:string|null;completed_at:string|null;failed_at:string|null;last_error_message:string|null };
+export type QualityQueueMutation = {
+  id:string;analysis_run_id:string;priority:QueuePriority;status:'queued'|'running'|'completed'|'failed';
+  attempt_count:number;requested_by:string;requested_at:string;started_at:string|null;
+  completed_at:string|null;failed_at:string|null;last_error_code:string|null;last_error_message:string|null;
+};
+export type QualityQueueRecord = QualityQueueItem | QualityQueueMutation;
+export type SmearWorkflowImage = UploadedMicroscopyImage & {
+  mime_type:string;
+  file_size_bytes:number;
+  image_sequence_number:number;
+  detected_format:string|null;
+};
+export type SmearWorkflowResponse = {
+  stage:string;
+  batch:{
+    id:string;status:string;acquisition_origin:string;source_system:string|null;
+    received_image_count:number;expected_image_count:number|null;created_at:string;
+    completed_at:string|null;
+  };
+  subject:{id:string;subject_code:string;status:string};
+  case:{id:string;case_code:string;status:string};
+  sample:{id:string;sample_code:string;status:string};
+  slide:{id:string;slide_code:string;status:string};
+  images:SmearWorkflowImage[];
+  analysis_run:AnalysisRun|null;
+  queue_item:QualityQueueItem|null;
+  detection_run:CellDetectionRunDetail|null;
+};
+export type SmearAnalysisHistoryItem = {
+  ingestion_batch_id:string;
+  analysis_run_id:string;
+  run_code:string;
+  subject_code:string;
+  sample_code:string;
+  slide_code:string;
+  image_count:number;
+  analysis_status:string;
+  quality_gate_status:string;
+  ready_for_analysis:boolean;
+  queue_status:string|null;
+  detection_run_id:string|null;
+  detection_status:string|null;
+  detection_count:number;
+  reviewed_count:number;
+  requested_by_username:string;
+  source_system:string|null;
+  created_at:string;
+  completed_at:string|null;
+};
+export type SmearAnalysisHistoryPage = {
+  items:SmearAnalysisHistoryItem[];
+  total:number;
+  limit:number;
+  offset:number;
+};
 
 function readStoredAccessToken() {
   try {
@@ -172,6 +268,61 @@ async function request<T>(
   }
 }
 
+async function requestBlob(path: string, externalSignal?: AbortSignal) {
+  const controller = new AbortController();
+  const abortFromCaller = () => controller.abort();
+  if (externalSignal?.aborted) controller.abort();
+  externalSignal?.addEventListener('abort', abortFromCaller, { once: true });
+  activeRequests.add(controller);
+  const timeout = window.setTimeout(() => controller.abort(), 30000);
+  try {
+    const headers = new Headers();
+    if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+    const response = await fetch(new URL(path, API_BASE_URL), {
+      headers,
+      signal: controller.signal,
+    });
+    if (response.status === 401) {
+      setAccessToken(null);
+      authenticationFailureHandler?.();
+    }
+    if (!response.ok) {
+      throw new ApiError('Contenido autenticado no disponible.', response.status, 'http');
+    }
+    return response.blob();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError('La descarga fue cancelada o superó el tiempo de espera.', null, 'timeout');
+    }
+    if (error instanceof ApiError) throw error;
+    if (error instanceof TypeError) {
+      throw new ApiError('No fue posible conectar con el servidor.', null, 'network');
+    }
+    throw error;
+  } finally {
+    externalSignal?.removeEventListener('abort', abortFromCaller);
+    window.clearTimeout(timeout);
+    activeRequests.delete(controller);
+  }
+}
+
+function trustedCellContentPath(candidate: string | null | undefined, fallback: string) {
+  if (!candidate) return fallback;
+  try {
+    const parsed = new URL(candidate, API_BASE_URL);
+    const base = new URL(API_BASE_URL);
+    if (
+      parsed.origin === base.origin
+      && parsed.pathname.startsWith('/api/v1/cell-analysis/')
+    ) {
+      return `${parsed.pathname}${parsed.search}`;
+    }
+  } catch {
+    // A backend-provided malformed URL never replaces the governed fallback.
+  }
+  return fallback;
+}
+
 export const authApi = {
   login(username: string, password: string) {
     return request<{ access_token: string }>('/api/v1/auth/login', {}, {
@@ -260,12 +411,109 @@ export const api = {
     });
   },
   getAnalysisRun(runId:string) { return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}`); },
+  getSmearWorkflow(ingestionBatchId:string) {
+    return request<SmearWorkflowResponse>(
+      `/api/v1/scientific/workflows/${encodeURIComponent(ingestionBatchId)}`,
+    );
+  },
+  getSmearAnalysisHistory(params:Record<string,QueryValue>={}) {
+    return request<SmearAnalysisHistoryPage>(
+      '/api/v1/scientific/workflows',
+      params,
+    );
+  },
+  getSmearAnalysisHistoryDetail(analysisRunId:string) {
+    return request<SmearWorkflowResponse>(
+      `/api/v1/scientific/analysis-history/${encodeURIComponent(analysisRunId)}`,
+    );
+  },
   async getMicroscopyImageBlob(imageId:string) {
-    const headers=new Headers();
-    if(accessToken) headers.set('Authorization',`Bearer ${accessToken}`);
-    const response=await fetch(new URL(`/api/v1/scientific/images/${imageId}/content`,API_BASE_URL),{headers});
-    if(!response.ok) throw new ApiError('Contenido no disponible.',response.status,'http');
-    return URL.createObjectURL(await response.blob());
+    const blob = await requestBlob(
+      `/api/v1/scientific/images/${encodeURIComponent(imageId)}/content`,
+    );
+    return URL.createObjectURL(blob);
+  },
+  getEligibleCellAnalysisRuns(params:Record<string,QueryValue>={}) {
+    return request<CellAnalysisPage<EligibleCellAnalysisRun>>(
+      '/api/v1/cell-analysis/eligible-analysis-runs',
+      params,
+    );
+  },
+  createCellDetectionRun(analysisRunId:string) {
+    return request<CellDetectionRunDetail>('/api/v1/cell-analysis/detection-runs',{},{
+      timeoutMs:120000,
+      init:{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({analysis_run_id:analysisRunId}),
+      },
+    });
+  },
+  getCellDetectionRuns(params:Record<string,QueryValue>={}) {
+    return request<CellAnalysisPage<CellDetectionRunSummary>>(
+      '/api/v1/cell-analysis/detection-runs',
+      params,
+    );
+  },
+  getCellDetectionRun(detectionRunId:string) {
+    return request<CellDetectionRunDetail>(
+      `/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}`,
+    );
+  },
+  getCellDetectionImages(detectionRunId:string) {
+    return request<CellAnalysisPage<CellDetectionImage>>(
+      `/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}/images`,
+    );
+  },
+  getCellDetections(
+    detectionRunId:string,
+    microscopyImageId:string,
+    params:{review_status?:Exclude<CellReviewFilter,'all'>;limit?:number;offset?:number}={},
+  ) {
+    return request<CellAnalysisPage<CellDetectionSummary>>(
+      `/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}/images/${encodeURIComponent(microscopyImageId)}/detections`,
+      params,
+    );
+  },
+  getCellDetection(cellDetectionId:string) {
+    return request<CellDetectionDetail>(
+      `/api/v1/cell-analysis/detections/${encodeURIComponent(cellDetectionId)}`,
+    );
+  },
+  getCellReviews(cellDetectionId:string) {
+    return request<CellAnalysisPage<ScientificCellReview>>(
+      `/api/v1/cell-analysis/detections/${encodeURIComponent(cellDetectionId)}/reviews`,
+    );
+  },
+  createCellReview(
+    cellDetectionId:string,
+    decision:CellReviewDecision,
+    comment?:string,
+  ) {
+    return request<CellDetectionReviewResult>(
+      `/api/v1/cell-analysis/detections/${encodeURIComponent(cellDetectionId)}/reviews`,
+      {},
+      {
+        init:{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({decision,comment:comment?.trim()||undefined}),
+        },
+      },
+    );
+  },
+  getCellCropBlob(cropId:string,contentUrl?:string|null,signal?:AbortSignal) {
+    const fallback=`/api/v1/cell-analysis/crops/${encodeURIComponent(cropId)}/content`;
+    return requestBlob(trustedCellContentPath(contentUrl,fallback),signal);
+  },
+  getCellOriginalImageBlob(
+    detectionRunId:string,
+    microscopyImageId:string,
+    contentUrl?:string|null,
+    signal?:AbortSignal,
+  ) {
+    const fallback=`/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}/images/${encodeURIComponent(microscopyImageId)}/content`;
+    return requestBlob(trustedCellContentPath(contentUrl,fallback),signal);
   },
   reviewQuality(runId:string,decision:'approve_with_warnings'|'reject',comment:string) {
     return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-decision`,{},{
@@ -273,7 +521,7 @@ export const api = {
     });
   },
   enqueueQuality(analysis_run_id:string,priority:QueuePriority=50) {
-    return request<Record<string,unknown>>('/api/v1/analysis/queue',{},{
+    return request<QualityQueueMutation>('/api/v1/analysis/queue',{},{
       init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysis_run_id,priority})},
     });
   },
@@ -281,12 +529,12 @@ export const api = {
     return request<{items:QualityQueueItem[];total:number}>('/api/v1/analysis/queue',params);
   },
   executeQueueItem(queueItemId:string) {
-    return request<Record<string,unknown>>(`/api/v1/analysis/queue/${queueItemId}/execute`,{},{
+    return request<QualityQueueMutation>(`/api/v1/analysis/queue/${queueItemId}/execute`,{},{
       timeoutMs:120000,init:{method:'POST'},
     });
   },
   retryQueueItem(queueItemId:string,priority:QueuePriority) {
-    return request<Record<string,unknown>>(`/api/v1/analysis/queue/${queueItemId}/retry`,{},{
+    return request<QualityQueueMutation>(`/api/v1/analysis/queue/${queueItemId}/retry`,{},{
       init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({priority})},
     });
   },

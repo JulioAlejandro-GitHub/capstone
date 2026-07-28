@@ -20,6 +20,19 @@ class AnalysisError(ValueError):
         super().__init__(detail)
 
 
+ELIGIBLE_CASE_STATUSES = frozenset({"registered", "ready"})
+ELIGIBLE_SAMPLE_STATUSES = frozenset({"registered", "received", "prepared"})
+
+
+def eligible_lineage(batch: dict) -> bool:
+    return (
+        batch["subject_status"] == "active"
+        and batch["case_status"] in ELIGIBLE_CASE_STATUSES
+        and batch["sample_status"] in ELIGIBLE_SAMPLE_STATUSES
+        and batch["slide_status"] != "archived"
+    )
+
+
 def _dict(row):
     return dict(row) if row else None
 
@@ -46,7 +59,10 @@ class MicroscopyAnalysisService:
     engine = get_primary_engine()
 
     def eligible_batches(self, **filters):
-        clauses = ["rs.status='active'", "c.status='active'", "bs.status='active'",
+        case_statuses = ",".join(f"'{status}'" for status in sorted(ELIGIBLE_CASE_STATUSES))
+        sample_statuses = ",".join(f"'{status}'" for status in sorted(ELIGIBLE_SAMPLE_STATUSES))
+        clauses = ["rs.status='active'", f"c.status IN ({case_statuses})",
+                   f"bs.status IN ({sample_statuses})",
                    "ss.status<>'archived'", "b.status NOT IN ('failed','inconsistent')",
                    "b.received_image_count=(SELECT count(*) FROM microscopy_images mi WHERE mi.ingestion_batch_id=b.id)",
                    "NOT EXISTS(SELECT 1 FROM microscopy_images mi WHERE mi.ingestion_batch_id=b.id AND mi.status<>'available')",
@@ -82,9 +98,8 @@ class MicroscopyAnalysisService:
             if not batch: raise AnalysisError(404, "Lote de ingesta inexistente.")
             images = [dict(row) for row in connection.execute(text("""SELECT * FROM microscopy_images
               WHERE ingestion_batch_id=:batch ORDER BY image_sequence_number,id"""), {"batch": batch["id"]}).mappings()]
-            active = all(batch[key] == "active" for key in ("subject_status","case_status","sample_status"))
             is_nih = batch["acquisition_origin"] == "research_dataset_import" and "nih" in (batch["source_system"] or "").lower()
-            eligible = active and batch["slide_status"] != "archived" and batch["status"] not in ("failed","inconsistent")
+            eligible = eligible_lineage(batch) and batch["status"] not in ("failed","inconsistent")
             eligible = eligible and len(images) == batch["received_image_count"] and images and all(i["status"] == "available" for i in images)
             eligible = eligible and (not is_nih or (batch["status"] == "complete" and len(images) == 5))
             if not eligible: raise AnalysisError(409, "El lote no cumple las condiciones técnicas de elegibilidad.")

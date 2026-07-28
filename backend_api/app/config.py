@@ -63,6 +63,7 @@ class Settings:
     staging_retention_hours: int
     allowed_microscopy_formats: tuple[str, ...]
     quality_analysis_max_dimension: int
+    cell_detection_page_max: int
     correlation_id_header: str
     include_stacktrace: bool
     sql_logging: bool
@@ -138,6 +139,7 @@ class Settings:
                 if item.strip()
             ),
             quality_analysis_max_dimension=_int("QUALITY_ANALYSIS_MAX_DIMENSION", 2048, 64),
+            cell_detection_page_max=_int("CELL_DETECTION_PAGE_MAX", 500, 500),
             correlation_id_header=os.getenv("CORRELATION_ID_HEADER", "X-Correlation-ID"),
             include_stacktrace=_bool("INCLUDE_STACKTRACE"),
             sql_logging=_bool("SQL_LOGGING"),
