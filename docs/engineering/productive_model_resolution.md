@@ -2,9 +2,15 @@
 
 ## Fuente de verdad
 
-El resolver exige exactamente un `deployed_model_versions` activo para
-`environment=stage2` y `alias=default`, unido por `model_version_id` a una
-`stage2_model_publication` activa con scope `stage2`.
+El resolver parte de exactamente una `stage2_model_publications` con
+`scope=stage2`, `status=active` e `is_active=true`. Luego exige su
+`deployed_model_versions` para `environment=stage2` y `alias=default`. Las dos
+tablas se unen por la identidad compuesta real
+`(model_version_id, checkpoint_artifact_id)`; ambas columnas están protegidas
+en cada tabla por una FK a
+`model_versions(id, checkpoint_artifact_id)`. No existe una FK directa entre
+publicación y deployment, ni una columna
+`deployed_model_versions.is_active`.
 
 Después valida:
 
@@ -36,7 +42,47 @@ para UI es:
 La clasificación sólo lee gobierno de modelos: no publica, desactiva, calibra ni
 modifica `stage2/default`.
 
-## Estado observado en Prompt 8
+## Consulta de verificación
+
+```sql
+SELECT
+  publication.id AS publication_id,
+  publication.is_active,
+  deployment.environment,
+  deployment.alias,
+  deployment.id AS deployed_model_version_id,
+  model_version.id AS model_id,
+  model_version.model_name,
+  publication.training_run_id AS train_id,
+  training.status AS train_status,
+  publication.evaluation_run_id AS evaluate_id,
+  evaluation.status AS evaluate_status,
+  publication.checkpoint_artifact_id AS checkpoint_id,
+  deployment.threshold_value AS threshold,
+  calibration.threshold_source,
+  publication.published_at
+FROM stage2_model_publications publication
+JOIN deployed_model_versions deployment
+  ON deployment.model_version_id = publication.model_version_id
+ AND deployment.checkpoint_artifact_id = publication.checkpoint_artifact_id
+JOIN model_versions model_version
+  ON model_version.id = publication.model_version_id
+JOIN runs training
+  ON training.id = publication.training_run_id
+JOIN runs evaluation
+  ON evaluation.id = publication.evaluation_run_id
+JOIN run_threshold_calibration calibration
+  ON calibration.run_threshold_calibration_id =
+       deployment.threshold_calibration_id
+ AND calibration.model_version_id = deployment.model_version_id
+WHERE publication.scope = 'stage2'
+  AND publication.status = 'active'
+  AND publication.is_active = true
+  AND deployment.environment = 'stage2'
+  AND deployment.alias = 'default';
+```
+
+## Estado observado en la corrección de Prompt 8
 
 El precheck encontró cero filas en `deployed_model_versions` y una publicación
 Stage 2 activa de catálogo. En consecuencia no existe un slot inferible real:

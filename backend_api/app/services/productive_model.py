@@ -369,29 +369,24 @@ class ProductiveModelResolver:
                   AND lineage.checkpoint_artifact_id=d.checkpoint_artifact_id
                   AND lineage.relationship_type='evaluates_checkpoint_from'
               ) evaluation_lineage_valid
-            FROM deployed_model_versions d
+            FROM stage2_model_publications publication
+            JOIN deployed_model_versions d
+              ON d.model_version_id=publication.model_version_id
+             AND d.checkpoint_artifact_id=publication.checkpoint_artifact_id
             JOIN model_versions mv ON mv.id=d.model_version_id
             JOIN artifacts artifact ON artifact.id=d.checkpoint_artifact_id
             JOIN runs training ON training.id=mv.training_run_id
-            LEFT JOIN stage2_model_publications publication
-              ON publication.model_version_id=d.model_version_id
-             AND publication.training_run_id=mv.training_run_id
-             AND publication.checkpoint_artifact_id=d.checkpoint_artifact_id
-             AND publication.scope='stage2'
-             AND (
-               :historical
-               OR (
-                 publication.status='active'
-                 AND publication.is_active=true
-               )
-             )
-            LEFT JOIN runs evaluation ON evaluation.id=publication.evaluation_run_id
+            JOIN runs evaluation ON evaluation.id=publication.evaluation_run_id
             LEFT JOIN run_threshold_calibration calibration
               ON calibration.run_threshold_calibration_id=d.threshold_calibration_id
              AND calibration.model_version_id=d.model_version_id
             WHERE (
               (
                 NOT :historical
+                AND publication.scope='stage2'
+                AND publication.status='active'
+                AND publication.is_active=true
+                AND publication.training_run_id=mv.training_run_id
                 AND d.environment=:environment
                 AND d.alias=:alias
                 AND d.status='active'
@@ -403,6 +398,8 @@ class ProductiveModelResolver:
                 AND d.model_version_id=CAST(:model_version_id AS uuid)
                 AND d.checkpoint_artifact_id=CAST(:artifact_id AS uuid)
                 AND publication.id=CAST(:publication_id AS uuid)
+                AND publication.scope='stage2'
+                AND publication.training_run_id=mv.training_run_id
                 AND artifact.checksum=:checkpoint_sha256
               )
             )

@@ -366,6 +366,50 @@ def test_productive_resolver_rejects_absent_or_ambiguous_and_accepts_published_h
     assert error.value.code == "PRODUCTIVE_THRESHOLD_INVALID"
 
 
+def test_productive_resolver_query_starts_from_active_publication_and_uses_real_fk():
+    captured: dict[str, object] = {}
+
+    class EmptyMappings:
+        @staticmethod
+        def all():
+            return []
+
+    class EmptyResult:
+        @staticmethod
+        def mappings():
+            return EmptyMappings()
+
+    class RecordingConnection:
+        @staticmethod
+        def execute(statement, params):
+            captured["sql"] = str(statement)
+            captured["params"] = params
+            return EmptyResult()
+
+    resolver = ProductiveModelResolver()
+    assert resolver._fetch_candidates(connection=RecordingConnection()) == []
+
+    sql = " ".join(str(captured["sql"]).split()).lower()
+    assert "from stage2_model_publications publication" in sql
+    assert (
+        "join deployed_model_versions d on "
+        "d.model_version_id=publication.model_version_id and "
+        "d.checkpoint_artifact_id=publication.checkpoint_artifact_id"
+    ) in sql
+    assert "publication.is_active=true" in sql
+    assert "d.is_active" not in sql
+    assert captured["params"] == {
+        "historical": False,
+        "environment": "stage2",
+        "alias": "default",
+        "deployment_id": None,
+        "model_version_id": None,
+        "artifact_id": None,
+        "publication_id": None,
+        "checkpoint_sha256": None,
+    }
+
+
 def test_historical_snapshot_resolves_exact_identity_without_current_default_fallback(
     tmp_path: Path,
 ):
