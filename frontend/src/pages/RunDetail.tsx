@@ -6,6 +6,7 @@ import { DataTable } from '../components/DataTable';
 import { Loading } from '../components/Loading';
 import { CopyCanonicalLink } from '../components/RouteState';
 import { StatusBadge } from '../components/StatusBadge';
+import { CaseDetail } from './Explainability';
 import { routes } from '../router';
 import { api } from '../services/api';
 import type {
@@ -36,7 +37,6 @@ import {
 interface RunDetailProps {
   datasource: string;
   runId: string | null;
-  onExplainabilitySelect?: (item: ExplainabilityCase) => void;
 }
 
 type PredictionFilters = {
@@ -425,7 +425,7 @@ async function copyToClipboard(value: string) {
   }
 }
 
-export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDetailProps) {
+export function RunDetail({ datasource, runId }: RunDetailProps) {
   const [detail, setDetail] = useState<RunDetailResponse | null>(null);
   const [clinical, setClinical] = useState<RunClinicalSummary | null>(null);
   const [confusion, setConfusion] = useState<JsonRecord[]>([]);
@@ -434,6 +434,7 @@ export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDeta
   const [imagePredictions, setImagePredictions] = useState<RunImagePrediction[]>([]);
   const [imagePredictionTotal, setImagePredictionTotal] = useState(0);
   const [explainability, setExplainability] = useState<ExplainabilityCase[]>([]);
+  const [selectedExplainabilityCase, setSelectedExplainabilityCase] = useState<ExplainabilityCase | null>(null);
   const [predictionFilters, setPredictionFilters] = useState<PredictionFilters>({
     split: '',
     caseType: '',
@@ -448,6 +449,7 @@ export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDeta
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   useEffect(() => {
+    setSelectedExplainabilityCase(null);
     if (!runId) return;
     let active = true;
     setError(null);
@@ -580,7 +582,7 @@ export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDeta
   )).toLowerCase();
   const checkpointRecallReference = checkpointPolicyName.includes('min_recall')
     ? numberValue(clinical?.checkpoint_policy.min_recall_required)
-      ?? numberValue(parameterValue(executionParameters, cliArguments, 'min_recall'))
+    ?? numberValue(parameterValue(executionParameters, cliArguments, 'min_recall'))
     : null;
   const thresholdParameter = parameterValue(executionParameters, cliArguments, 'threshold');
   const calibrationEnabled = clinical?.clinical_threshold.enabled === true
@@ -588,7 +590,7 @@ export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDeta
     || textValue(thresholdParameter)?.toLowerCase() === 'clinical';
   const calibrationRecallReference = calibrationEnabled
     ? numberValue(clinical?.clinical_threshold.target_recall)
-      ?? numberValue(parameterValue(executionParameters, cliArguments, 'target_recall'))
+    ?? numberValue(parameterValue(executionParameters, cliArguments, 'target_recall'))
     : null;
   const recallReference = checkpointRecallReference ?? calibrationRecallReference;
   const recallReferenceLabel = checkpointRecallReference !== null
@@ -642,9 +644,9 @@ export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDeta
   const trainingCurvesPath = trainingCurvesArtifact ? artifactPath(trainingCurvesArtifact) : null;
   const trainingCurvesUrl = trainingCurvesArtifact && trainingCurvesPath
     ? api.artifactUrl(trainingCurvesPath, {
-        artifactId: artifactId(trainingCurvesArtifact),
-        datasource,
-      })
+      artifactId: artifactId(trainingCurvesArtifact),
+      datasource,
+    })
     : null;
   const effectiveThreshold = numberValue(clinical?.clinical_threshold.threshold_used)
     ?? numberValue(thresholdParameter);
@@ -1012,7 +1014,7 @@ export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDeta
               { header: 'Threshold', render: (row) => formatMetric(thresholdUsed(row)) },
               { header: 'Correcta', render: (row) => booleanText(booleanValue(row.is_correct)) },
               { header: 'Error', render: (row) => row.error_message ?? '-' },
-              { header: 'Auditar', render: (row) => onExplainabilitySelect ? <button className="audit-action-button" type="button" onClick={() => onExplainabilitySelect(row)}>Ver detalle</button> : '-' },
+              { header: 'Auditar', render: (row) => <button className="audit-action-button" type="button" onClick={() => setSelectedExplainabilityCase(row)}>Ver detalle</button> },
             ]}
             getRowKey={(row) => row.explainability_id}
           />
@@ -1076,6 +1078,14 @@ export function RunDetail({ datasource, runId, onExplainabilitySelect }: RunDeta
           )) : <p className="run-detail-empty-state">No hay artefactos registrados para esta ejecución.</p>}
         </div>
       </details>
+
+      {selectedExplainabilityCase ? (
+        <CaseDetail
+          item={selectedExplainabilityCase}
+          datasource={datasource}
+          onClose={() => setSelectedExplainabilityCase(null)}
+        />
+      ) : null}
     </section>
   );
 }

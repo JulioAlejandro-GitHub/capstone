@@ -77,7 +77,7 @@ function App() {
         <Route path="/" element={<Navigate replace to={withAllowedQuery(routes.summary, { datasource })} />} />
         <Route path={routes.summary} element={<Dashboard {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
         <Route path={routes.runs} element={<Runs {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
-        <Route path={`${routes.runs}/:trainingRunId`} element={<RunDetailRoute datasource={datasource} go={go} />} />
+        <Route path={`${routes.runs}/:trainingRunId`} element={<RunDetailRoute datasource={datasource} />} />
         <Route path={`${routes.runs}/:trainingRunId/liberacion`} element={<Stage2ReleaseDetail datasource={datasource} />} />
         <Route path={`${routes.runs}/RunId=:legacyId`} element={<LegacyRunRedirect />} />
         <Route path={routes.evaluations} element={<ClinicalEvaluation {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
@@ -105,10 +105,10 @@ function App() {
   </>;
 }
 
-function RunDetailRoute({ datasource, go }: { datasource: string; go: (path: string) => void }) {
+function RunDetailRoute({ datasource }: { datasource: string }) {
   const { trainingRunId } = useParams();
   if (!isValidPublicId(trainingRunId)) return <InvalidEntityId kind="ejecución" listPath={withAllowedQuery(routes.runs, { datasource })} />;
-  return <RunDetail datasource={datasource} runId={trainingRunId} onExplainabilitySelect={() => go(routes.explainability)} />;
+  return <RunDetail datasource={datasource} runId={trainingRunId} />;
 }
 
 function ModelVersionsRoute({ datasource, go }: { datasource: string; go: (path: string) => void }) {

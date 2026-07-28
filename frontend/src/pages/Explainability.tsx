@@ -221,7 +221,7 @@ function DetailFact({ label, value }: { label: string; value: string | number | 
   );
 }
 
-function CaseDetail({
+export function CaseDetail({
   item,
   datasource,
   onClose,
