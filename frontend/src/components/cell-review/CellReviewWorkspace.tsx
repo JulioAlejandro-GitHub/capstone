@@ -202,6 +202,7 @@ export function CellReviewWorkspace({
   const [auditOpen, setAuditOpen] = useState(false);
   const [focusRequest, setFocusRequest] = useState(0);
   const [summaryCollapsed, setSummaryCollapsed] = useState(false);
+  const [cellSearch, setCellSearch] = useState('');
   const [mobileTab, setMobileTab] = useState<MobileTab>('image');
   const [selectionResolved, setSelectionResolved] = useState(false);
   const cardRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -282,8 +283,11 @@ export function CellReviewWorkspace({
     ? predictionByDetectionId.get(selectedDetectionId) ?? null
     : null;
   const galleryDetections = useMemo(() => {
-    if (!classificationRunId) return detections;
+    const matchesSearch = (detection: CellDetectionSummary) =>
+      detection.cell_code.toLocaleLowerCase().includes(cellSearch.trim().toLocaleLowerCase());
+    if (!classificationRunId) return detections.filter(matchesSearch);
     return overlayDetections.filter((detection) => {
+      if (!matchesSearch(detection)) return false;
       const prediction = predictionByDetectionId.get(detection.id);
       if (!prediction) return false;
       if (classificationFilter === 'all') return true;
@@ -295,6 +299,7 @@ export function CellReviewWorkspace({
       return prediction.review_status === classificationFilter;
     });
   }, [
+    cellSearch,
     classificationFilter,
     classificationRunId,
     detections,
@@ -1150,6 +1155,15 @@ export function CellReviewWorkspace({
                 ? `${galleryDetections.length} mostradas · ${classificationFilterLabel[classificationFilter]}`
                 : `${detectionTotal} filtradas · ${selectedImage?.detection_count ?? 0} totales · ${filterLabel[filter]}`}
             </span>
+            <label className="cell-gallery-search">
+              <span>Buscar célula</span>
+              <input
+                type="search"
+                value={cellSearch}
+                placeholder="cell_code"
+                onChange={(event) => setCellSearch(event.target.value)}
+              />
+            </label>
           </header>
           <div className="cell-gallery-scroll">
             {galleryError ? <p className="cell-error" role="alert">{galleryError}</p> : null}

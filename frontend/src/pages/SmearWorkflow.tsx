@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '../auth';
-import { CellReviewWorkspace } from '../components/cell-review/CellReviewWorkspace';
+import { SmearAnalysisResultsView } from '../components/cell-review/SmearAnalysisResultsView';
 import {
   useSmearAnalysisWorkflow,
   type SmearWorkflowController,
@@ -765,10 +765,15 @@ export function SmearAnalysisReadOnlyView({
     contextStepState(id, stage, failure?.step),
   ]));
   const run = workflow.analysis_run;
+  const hasResults = (
+    stage === 'review_ready'
+    || stage === 'classification_completed'
+    || stage === 'classification_warning'
+  ) && Boolean(workflow.detection_run);
 
   return (
     <section className="page smear-workflow smear-workflow-history" data-mode="history">
-      <header className="workflow-context-header">
+      {!hasResults ? <header className="workflow-context-header">
         <div className="workflow-case-context">
           <p className="workflow-kicker">Análisis de frotis</p>
           <strong>{workflow.subject.subject_code}</strong>
@@ -790,31 +795,37 @@ export function SmearAnalysisReadOnlyView({
         <div className="workflow-header-actions">
           <button type="button" onClick={onBack}>Volver al historial</button>
         </div>
-      </header>
-      <section className="workflow-history-banner" aria-label="Modo de consulta">
+      </header> : null}
+      {!hasResults ? <section className="workflow-history-banner" aria-label="Modo de consulta">
         <strong>Vista histórica · Solo lectura</strong>
         <span>{run?.run_code ?? 'Análisis persistido'}</span>
         <span>{safeDate(run?.created_at)}</span>
         <span>{workflow.batch.source_system ?? workflow.batch.acquisition_origin}</span>
-      </section>
+      </section> : null}
 
-      {(
-        stage === 'review_ready'
-        || stage === 'classification_completed'
-        || stage === 'classification_warning'
-      ) && workflow.detection_run ? (
+      {hasResults && workflow.detection_run ? (
         <section className="workflow-review-frame">
-          <CellReviewWorkspace
-            detectionRunId={workflow.detection_run.id}
-            canReview={false}
-            classificationRunId={workflow.classification_run?.id}
-            initialClassificationSummary={workflow.classification_summary}
-            canExplain={false}
-            canClassificationReview={false}
-            readOnly
-            onClose={onBack}
-            closeLabel="Volver al historial"
-            initialMicroscopyImageId={firstImage?.id}
+          <SmearAnalysisResultsView
+            mode="history"
+            workflow={{
+              subjectCode: workflow.subject.subject_code,
+              sampleCode: workflow.sample.sample_code,
+              analysisRunCode: run?.run_code ?? 'Análisis persistido',
+              status: stageLabel[stage],
+              modelName: workflow.classification_run?.model_name,
+              modelVersion: workflow.classification_run?.model_version,
+              createdAt: run?.created_at ?? workflow.batch.created_at,
+              detectionRunId: workflow.detection_run.id,
+              classificationRunId: workflow.classification_run?.id,
+              classificationSummary: workflow.classification_summary,
+              microscopyImageId: firstImage?.id,
+            }}
+            permissions={{
+              canReviewDetection: false,
+              canExplain: false,
+              canReviewClassification: false,
+            }}
+            actions={{ onBack, backLabel: 'Volver al historial' }}
           />
         </section>
       ) : (
@@ -961,21 +972,36 @@ export function SmearWorkflow() {
           {identifiers.detectionRunId && canReadCells && (
             !identifiers.classificationRunId || canReadClassification
           ) ? (
-            <CellReviewWorkspace
-              detectionRunId={identifiers.detectionRunId}
-              canReview={canReviewCells}
-              classificationRunId={identifiers.classificationRunId}
-              initialClassificationSummary={snapshot.classificationSummary}
-              canExplain={canExplainClassification}
-              canClassificationReview={canReviewClassification}
-              onClose={controller.newAnalysis}
-              closeLabel="Nuevo análisis"
-              initialMicroscopyImageId={identifiers.microscopyImageId}
-              onMicroscopyImageChange={controller.selectImage}
-              initialSelectedDetectionId={identifiers.selectedDetectionId}
-              onSelectedDetectionChange={controller.selectDetection}
-              initialSelectedPredictionId={identifiers.selectedPredictionId}
-              onSelectedPredictionChange={controller.selectPrediction}
+            <SmearAnalysisResultsView
+              mode="live"
+              workflow={{
+                subjectCode: patientCode,
+                sampleCode,
+                analysisRunCode: snapshot.analysisRun?.run_code ?? 'Análisis activo',
+                status: headerState,
+                modelName: snapshot.classificationRun?.model_name,
+                modelVersion: snapshot.classificationRun?.model_version,
+                createdAt: snapshot.analysisRun?.created_at,
+                detectionRunId: identifiers.detectionRunId,
+                classificationRunId: identifiers.classificationRunId,
+                classificationSummary: snapshot.classificationSummary,
+                microscopyImageId: identifiers.microscopyImageId,
+                selectedDetectionId: identifiers.selectedDetectionId,
+                selectedPredictionId: identifiers.selectedPredictionId,
+              }}
+              permissions={{
+                canReviewDetection: canReviewCells,
+                canExplain: canExplainClassification,
+                canReviewClassification,
+              }}
+              actions={{
+                onBack: controller.newAnalysis,
+                backLabel: 'Nuevo análisis',
+                onRefresh: () => void controller.refresh(),
+                onImageChange: controller.selectImage,
+                onDetectionChange: controller.selectDetection,
+                onPredictionChange: controller.selectPrediction,
+              }}
             />
           ) : (
             <section className="workflow-review-unavailable" role="alert">

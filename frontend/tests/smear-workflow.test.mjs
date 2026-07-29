@@ -65,14 +65,48 @@ test('bloquea doble envío antes del rerender y no usa procesamiento automático
 });
 
 test('preview local es inmediata, reemplazable y revoca object URLs', () => {
-  assert.match(upload, /Vista previa local/);
-  assert.match(upload, /Quitar selección/);
-  assert.match(upload, /Reemplazar imágenes/);
+  assert.match(upload, /Vista previa de/);
+  assert.match(upload, />Quitar</);
+  assert.match(upload, />Reemplazar</);
   assert.match(hook, /URL\.createObjectURL\(selectedFiles\[0\]\)/);
   assert.match(hook, /URL\.revokeObjectURL\(objectUrl\)/);
   assert.match(page, /if \(!active\)[\s\S]*URL\.revokeObjectURL\(url\)/);
   assert.match(page, /previewUrl/);
   assert.match(page, /AuthenticatedWorkflowImage/);
+});
+
+test('setup Liquid Glass conserva datos reales y estructura 4/8', () => {
+  for (const text of [
+    'Datos de muestra', 'ID PACIENTE', 'ID MUESTRA', 'TIPO',
+    'Frotis de sangre periférica', 'Cargar imagen de frotis', 'INICIAR ANÁLISIS',
+  ]) assert.match(upload, new RegExp(text));
+  assert.match(upload, /automatic_new/);
+  assert.match(upload, /lookupScientificSubject/);
+  assert.match(upload, /getScientificSamples/);
+  assert.match(styles, /\.smear-setup__sample-column[\s\S]*grid-column:\s*span 4/);
+  assert.match(styles, /\.smear-setup__upload-column[\s\S]*grid-column:\s*span 8/);
+});
+
+test('dropzone admite clic, teclado, drag and drop y rechazo de formatos', () => {
+  assert.match(upload, /onDragEnter/);
+  assert.match(upload, /onDragOver/);
+  assert.match(upload, /onDragLeave/);
+  assert.match(upload, /onDrop=\{handleDrop\}/);
+  assert.match(upload, /event\.key === 'Enter' \|\| event\.key === ' '/);
+  assert.match(upload, /ACCEPTED_TYPES/);
+  assert.match(upload, /no es compatible/);
+  assert.match(upload, /aria-live="polite"/);
+  assert.match(upload, /Suelte la imagen para cargarla/);
+});
+
+test('preview muestra metadatos y usa el microscopio local adjunto', () => {
+  assert.match(upload, /smear-microscope\.jpg/);
+  assert.match(upload, /naturalWidth/);
+  assert.match(upload, /naturalHeight/);
+  for (const label of ['Archivo', 'Formato', 'Dimensiones', 'Tamaño']) {
+    assert.match(upload, new RegExp(`<dt>${label}</dt>`));
+  }
+  assert.doesNotMatch(upload, /https?:\/\//);
 });
 
 test('URL conserva IDs y recuperación sólo ejecuta lecturas', () => {
@@ -123,12 +157,12 @@ test('errores conservan recursos y ofrecen retry desde la etapa fallida', () => 
   assert.match(page, /Reingresar a cola/);
 });
 
-test('detección completada reutiliza CellReviewWorkspace y persiste selección', () => {
-  assert.match(page, /<CellReviewWorkspace/);
-  assert.match(page, /initialMicroscopyImageId=\{identifiers\.microscopyImageId\}/);
-  assert.match(page, /onMicroscopyImageChange=\{controller\.selectImage\}/);
-  assert.match(page, /initialSelectedDetectionId=\{identifiers\.selectedDetectionId\}/);
-  assert.match(page, /onSelectedDetectionChange=\{controller\.selectDetection\}/);
+test('detección completada reutiliza SmearAnalysisResultsView y persiste selección', () => {
+  assert.match(page, /<SmearAnalysisResultsView/);
+  assert.match(page, /microscopyImageId: identifiers\.microscopyImageId/);
+  assert.match(page, /onImageChange: controller\.selectImage/);
+  assert.match(page, /selectedDetectionId: identifiers\.selectedDetectionId/);
+  assert.match(page, /onDetectionChange: controller\.selectDetection/);
   assert.match(workspace, /initialSelectedDetectionId/);
   assert.match(workspace, /onSelectedDetectionChange/);
 });

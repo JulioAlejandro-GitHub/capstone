@@ -6,6 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 const page = read('src/pages/SmearAnalysisHistory.tsx');
 const workflow = read('src/pages/SmearWorkflow.tsx');
 const hook = read('src/hooks/useSmearAnalysisHistoryDetail.ts');
+const results = read('src/components/cell-review/SmearAnalysisResultsView.tsx');
 const api = read('src/services/api.ts');
 const navigation = read('src/components/navigation/navigationConfig.ts');
 const router = read('src/router.ts');
@@ -36,7 +37,8 @@ test('detalle es deep link validado y reutiliza la presentación del workflow', 
   assert.match(app, /isValidPublicId\(analysisRunId\)/);
   assert.match(page, /SmearAnalysisReadOnlyView/);
   assert.match(workflow, /WorkflowProcessing[\s\S]*readOnly/);
-  assert.match(workflow, /CellReviewWorkspace[\s\S]*canReview=\{false\}/);
+  assert.match(workflow, /SmearAnalysisResultsView[\s\S]*mode="history"/);
+  assert.match(results, /readOnly=\{mode === 'history'\}/);
   assert.match(workflow, /Vista histórica · Solo lectura/);
   assert.match(workflow, /Volver al historial/);
 });

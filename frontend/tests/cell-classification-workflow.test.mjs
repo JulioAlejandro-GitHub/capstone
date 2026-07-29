@@ -232,10 +232,11 @@ test('historial reutiliza workspace en solo lectura sin mutaciones', () => {
     page.indexOf('export function SmearAnalysisReadOnlyView'),
     page.indexOf('export function SmearWorkflow'),
   );
-  assert.match(readOnlyView, /classificationRunId=\{workflow\.classification_run\?\.id\}/);
-  assert.match(readOnlyView, /canExplain=\{false\}/);
-  assert.match(readOnlyView, /canClassificationReview=\{false\}/);
-  assert.match(readOnlyView, /readOnly/);
+  assert.match(readOnlyView, /<SmearAnalysisResultsView/);
+  assert.match(readOnlyView, /classificationRunId: workflow\.classification_run\?\.id/);
+  assert.match(readOnlyView, /canExplain: false/);
+  assert.match(readOnlyView, /canReviewClassification: false/);
+  assert.match(readOnlyView, /mode="history"/);
   assert.doesNotMatch(
     readOnlyView,
     /createCellClassificationRun|createCellExplanation|createCellClassificationReview/,

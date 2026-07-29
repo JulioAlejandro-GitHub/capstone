@@ -1,8 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+  type KeyboardEvent,
+} from 'react';
 
+import microscopeImage from '../assets/smear-microscope.jpg';
 import { ApiError, api, type ScientificSample, type ScientificSubject } from '../services/api';
 
 const NIH_SOURCE = 'nih_nlm_thin_blood_smears_pf';
+const ACCEPTED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'tif', 'tiff'];
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/tiff'];
 
 export type SmearUploadProps = {
   files: File[];
@@ -18,6 +28,23 @@ const fileFormat = (file: File) => {
   const extension = file.name.split('.').pop();
   return extension ? extension.toUpperCase() : 'Desconocido';
 };
+
+const isAcceptedFile = (file: File) => {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+  return ACCEPTED_TYPES.includes(file.type) || ACCEPTED_EXTENSIONS.includes(extension);
+};
+
+function Icon({ name }: { name: 'patient' | 'sample' | 'science' | 'upload' | 'play' | 'check' }) {
+  const paths = {
+    patient: <><circle cx="12" cy="8" r="3" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></>,
+    sample: <><path d="M9 3h6M10 3v5l-4.5 8a3 3 0 0 0 2.6 4.5h7.8a3 3 0 0 0 2.6-4.5L14 8V3" /><path d="M8 15h8" /></>,
+    science: <><path d="M9 3h6M10 3v5l-5 9a2.7 2.7 0 0 0 2.4 4h9.2a2.7 2.7 0 0 0 2.4-4l-5-9V3" /><path d="M8 15h8" /></>,
+    upload: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6M12 18v-6m-3 3 3-3 3 3" /></>,
+    play: <path d="m9 7 8 5-8 5Z" />,
+    check: <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.5 2.5L16 9" /></>,
+  };
+  return <svg className="smear-setup__icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
+}
 
 export function SmearUpload({
   files,
@@ -39,6 +66,10 @@ export function SmearUpload({
   const [externalSampleId, setExternalSampleId] = useState('');
   const [externalSystem, setExternalSystem] = useState('');
   const [inputKey, setInputKey] = useState(0);
+  const [dragDepth, setDragDepth] = useState(0);
+  const [fileError, setFileError] = useState('');
+  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!subject) {
@@ -50,6 +81,8 @@ export function SmearUpload({
       .then((response) => setSamples(response.items))
       .catch(() => setSamples([]));
   }, [subject]);
+
+  useEffect(() => setDimensions(null), [previewUrl]);
 
   const selectedBytes = useMemo(
     () => files.reduce((total, file) => total + file.size, 0),
@@ -72,9 +105,37 @@ export function SmearUpload({
     }
   }
 
+  function selectFiles(nextFiles: File[]) {
+    const invalid = nextFiles.find((file) => !isAcceptedFile(file));
+    if (invalid) {
+      setFileError(`“${invalid.name}” no es compatible. Use JPEG, PNG o TIFF.`);
+      return;
+    }
+    setFileError('');
+    onFilesChange(nextFiles);
+  }
+
   function clearFiles() {
     onFilesChange([]);
+    setFileError('');
     setInputKey((value) => value + 1);
+  }
+
+  function openPicker() {
+    if (!busy) fileInput.current?.click();
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setDragDepth(0);
+    if (!busy) selectFiles(Array.from(event.dataTransfer.files));
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openPicker();
+    }
   }
 
   async function submit() {
@@ -106,108 +167,104 @@ export function SmearUpload({
   const originReady = origin === 'nih'
     ? Boolean(externalPatientId.trim())
     : origin === 'external' ? Boolean(externalSystem.trim()) : true;
-  const formReady = (
-    canAnalyze
-    && identityReady
-    && sampleReady
-    && originReady
-    && files.length > 0
-  );
+  const formReady = canAnalyze && identityReady && sampleReady && originReady && files.length > 0;
+  const isDragging = dragDepth > 0;
+  const statusText = busy
+    ? 'Iniciando análisis.'
+    : !canAnalyze
+      ? 'Backend conectado. Permisos insuficientes para iniciar.'
+      : files.length
+        ? 'Backend conectado. Imagen seleccionada.'
+        : 'Backend conectado. Sistema listo para recibir imágenes.';
 
   return (
     <section className="smear-setup" aria-labelledby="smear-setup-title">
-      <div className="smear-setup-copy">
-        <p className="workflow-kicker">Nuevo análisis</p>
-        <h2 id="smear-setup-title">Configura la muestra y selecciona la imagen</h2>
-        <p>
-          El archivo se mostrará de inmediato. La carga, el control técnico y la detección
-          se ejecutarán como una sola acción manual trazable.
-        </p>
-      </div>
+      <h2 id="smear-setup-title" className="sr-only">Nuevo análisis de frotis</h2>
+      <div className="smear-setup__grid">
+        <div className="smear-setup__sample-column">
+          <section className="smear-setup__glass smear-setup__sample-panel">
+            <h3>Datos de muestra</h3>
 
-      <div className="smear-setup-layout">
-        <div className="ingestion-grid smear-ingestion-grid">
-          <fieldset className="ingestion-card">
-            <legend><span>1</span> Paciente</legend>
-            <p className="privacy-note">
-              Usa un identificador pseudonimizado. No ingreses datos personales.
-            </p>
-            <label>
-              Código de paciente
-              <div className="workflow-inline-field">
+            <div className="smear-setup__field">
+              <label htmlFor="smear-patient">ID PACIENTE</label>
+              <div className="smear-setup__control">
+                <Icon name="patient" />
                 <input
-                  value={subjectCode}
+                  id="smear-patient"
+                  value={automaticSubject ? 'PAT-AUTOMÁTICO' : subjectCode}
                   disabled={automaticSubject || busy}
-                  placeholder="Ej. SUB-…"
+                  aria-describedby="smear-patient-help"
                   onChange={(event) => {
                     setSubjectCode(event.target.value);
                     setSubject(null);
                   }}
                 />
-                <button
-                  type="button"
-                  disabled={automaticSubject || busy || !subjectCode.trim()}
-                  onClick={() => void lookup()}
-                >
-                  Buscar
-                </button>
+                {!automaticSubject ? (
+                  <button type="button" disabled={busy || !subjectCode.trim()} onClick={() => void lookup()}>
+                    Buscar
+                  </button>
+                ) : null}
               </div>
-            </label>
-            <label className="check-row">
-              <input
-                type="checkbox"
-                checked={automaticSubject}
-                disabled={busy}
-                onChange={(event) => {
-                  setAutomaticSubject(event.target.checked);
-                  setSubject(null);
-                }}
-              />
-              Crear paciente automáticamente
-            </label>
-            <p className="workflow-field-note">
-              {automaticSubject
-                ? 'Capstone generará un código pseudonimizado.'
-                : subjectMessage || 'Busca y confirma un paciente existente.'}
-            </p>
-          </fieldset>
+              <label className="smear-setup__mode">
+                <input
+                  type="checkbox"
+                  checked={automaticSubject}
+                  disabled={busy}
+                  onChange={(event) => {
+                    setAutomaticSubject(event.target.checked);
+                    setSubject(null);
+                  }}
+                />
+                Crear paciente automáticamente
+              </label>
+              <small id="smear-patient-help">
+                {automaticSubject ? 'Se asignará un ID pseudonimizado PAT-…' : subjectMessage || 'Busque un paciente existente.'}
+              </small>
+            </div>
 
-          <fieldset className="ingestion-card" disabled={!identityReady || busy}>
-            <legend><span>2</span> Muestra</legend>
-            <label>
-              Muestra existente
-              <select
-                value={sampleId}
-                disabled={automaticSample || busy}
-                onChange={(event) => setSampleId(event.target.value)}
-              >
-                <option value="">Selecciona una muestra</option>
-                {samples.map((sample) => (
-                  <option key={sample.id} value={sample.id}>{sample.sample_code}</option>
-                ))}
-              </select>
-            </label>
-            <label className="check-row">
-              <input
-                type="checkbox"
-                checked={automaticSample}
-                disabled={busy}
-                onChange={(event) => setAutomaticSample(event.target.checked)}
-              />
-              Crear muestra automáticamente
-            </label>
-            <p className="workflow-field-note">
-              {automaticSample
-                ? 'Se generará una muestra asociada al paciente.'
-                : 'Selecciona una muestra activa.'}
-            </p>
-          </fieldset>
+            <div className="smear-setup__field">
+              <label htmlFor="smear-sample">ID MUESTRA</label>
+              <div className="smear-setup__control">
+                <Icon name="sample" />
+                <select
+                  id="smear-sample"
+                  value={automaticSample ? 'automatic' : sampleId}
+                  disabled={busy || !identityReady}
+                  onChange={(event) => setSampleId(event.target.value)}
+                >
+                  {automaticSample ? <option value="automatic">SMP-AUTOMÁTICA</option> : <option value="">Seleccione una muestra</option>}
+                  {!automaticSample && samples.map((sample) => (
+                    <option key={sample.id} value={sample.id}>{sample.sample_code}</option>
+                  ))}
+                </select>
+              </div>
+              <label className="smear-setup__mode">
+                <input
+                  type="checkbox"
+                  checked={automaticSample}
+                  disabled={busy}
+                  onChange={(event) => setAutomaticSample(event.target.checked)}
+                />
+                Crear muestra automáticamente
+              </label>
+              <small>Se asociará al paciente seleccionado.</small>
+            </div>
 
-          <fieldset className="ingestion-card">
-            <legend><span>3</span> Origen</legend>
-            <label>
-              Modalidad
+            <div className="smear-setup__field">
+              <label htmlFor="smear-type">TIPO</label>
+              <div className="smear-setup__control">
+                <Icon name="science" />
+                <select id="smear-type" value="peripheral-smear" disabled={busy}>
+                  <option value="peripheral-smear">Frotis de sangre periférica</option>
+                </select>
+              </div>
+            </div>
+
+            <details className="smear-setup__origin">
+              <summary>Modalidad u origen</summary>
+              <label htmlFor="smear-origin">Origen de adquisición</label>
               <select
+                id="smear-origin"
                 value={origin}
                 disabled={busy}
                 onChange={(event) => setOrigin(event.target.value as typeof origin)}
@@ -216,127 +273,118 @@ export function SmearUpload({
                 <option value="nih">Dataset NIH-NLM</option>
                 <option value="external">Sistema externo</option>
               </select>
-            </label>
-            {origin === 'nih' ? (
-              <>
-                <label>
-                  ID externo de paciente
-                  <input
-                    value={externalPatientId}
-                    disabled={busy}
-                    onChange={(event) => setExternalPatientId(event.target.value)}
-                  />
-                </label>
-                <label>
-                  ID externo de muestra (opcional)
-                  <input
-                    value={externalSampleId}
-                    disabled={busy}
-                    onChange={(event) => setExternalSampleId(event.target.value)}
-                  />
-                </label>
-                <p className="workflow-field-note">Este perfil espera 5 imágenes.</p>
-              </>
-            ) : null}
-            {origin === 'external' ? (
-              <label>
-                Sistema externo
-                <input
-                  value={externalSystem}
-                  disabled={busy}
-                  onChange={(event) => setExternalSystem(event.target.value)}
-                />
-              </label>
-            ) : null}
-          </fieldset>
+              {origin === 'nih' ? (
+                <>
+                  <label htmlFor="external-patient">ID externo de paciente</label>
+                  <input id="external-patient" value={externalPatientId} disabled={busy} onChange={(event) => setExternalPatientId(event.target.value)} />
+                  <label htmlFor="external-sample">ID externo de muestra (opcional)</label>
+                  <input id="external-sample" value={externalSampleId} disabled={busy} onChange={(event) => setExternalSampleId(event.target.value)} />
+                  <small>Este perfil espera 5 imágenes.</small>
+                </>
+              ) : null}
+              {origin === 'external' ? (
+                <>
+                  <label htmlFor="external-system">Sistema externo</label>
+                  <input id="external-system" value={externalSystem} disabled={busy} onChange={(event) => setExternalSystem(event.target.value)} />
+                </>
+              ) : null}
+            </details>
+          </section>
 
-          <fieldset className="ingestion-card workflow-file-card">
-            <legend><span>4</span> Imagen</legend>
-            <label className="workflow-file-picker">
-              <span>{files.length ? 'Reemplazar imágenes' : 'Seleccionar imágenes'}</span>
-              <small>JPEG, PNG o TIFF</small>
-              <input
-                key={inputKey}
-                type="file"
-                multiple
-                disabled={busy}
-                accept=".jpg,.jpeg,.png,.tif,.tiff,image/jpeg,image/png,image/tiff"
-                onChange={(event) => onFilesChange(Array.from(event.target.files ?? []))}
+          <section className="smear-setup__glass smear-setup__status" aria-live="polite" data-state={!canAnalyze ? 'error' : busy ? 'busy' : 'ready'}>
+            <Icon name={canAnalyze ? 'check' : 'upload'} />
+            <div><span>ESTADO DEL SISTEMA</span><strong>{statusText}</strong></div>
+          </section>
+        </div>
+
+        <div className="smear-setup__upload-column">
+          <div
+            className="smear-setup__glass smear-setup__dropzone"
+            data-state={busy ? 'uploading' : fileError ? 'invalid' : isDragging ? 'drag-active' : files.length ? 'selected' : 'idle'}
+            role="button"
+            tabIndex={busy ? -1 : 0}
+            aria-disabled={busy}
+            aria-describedby="smear-drop-help smear-file-feedback"
+            onClick={(event) => {
+              if (!(event.target instanceof HTMLButtonElement)) openPicker();
+            }}
+            onKeyDown={handleKeyDown}
+            onDragEnter={(event) => {
+              event.preventDefault();
+              if (!busy) setDragDepth((value) => value + 1);
+            }}
+            onDragOver={(event) => event.preventDefault()}
+            onDragLeave={(event) => {
+              event.preventDefault();
+              setDragDepth((value) => Math.max(0, value - 1));
+            }}
+            onDrop={handleDrop}
+          >
+            <input
+              ref={fileInput}
+              key={inputKey}
+              className="smear-setup__file-input"
+              type="file"
+              multiple
+              disabled={busy}
+              accept=".jpg,.jpeg,.png,.tif,.tiff,image/jpeg,image/png,image/tiff"
+              tabIndex={-1}
+              onChange={(event) => selectFiles(Array.from(event.target.files ?? []))}
+            />
+            <div className="smear-setup__glow" aria-hidden="true" />
+            {previewUrl ? (
+              <img
+                className="smear-setup__preview"
+                src={previewUrl}
+                alt={`Vista previa de ${files[0]?.name ?? 'la imagen seleccionada'}`}
+                onLoad={(event) => setDimensions({
+                  width: event.currentTarget.naturalWidth,
+                  height: event.currentTarget.naturalHeight,
+                })}
               />
-            </label>
-            {files.length ? (
-              <div className="workflow-file-summary">
-                <div>
-                  <strong>{files.length}</strong>
-                  <span>{files.length === 1 ? 'imagen' : 'imágenes'}</span>
-                </div>
-                <div>
-                  <strong>{(selectedBytes / 1024 / 1024).toFixed(2)}</strong>
-                  <span>MiB</span>
-                </div>
-                <div>
-                  <strong>{fileFormat(files[0])}</strong>
-                  <span>formato inicial</span>
+            ) : (
+              <img className="smear-setup__microscope" src={microscopeImage} alt="Microscopio clínico para análisis de frotis" />
+            )}
+            <div className="smear-setup__drop-copy">
+              <span className="smear-setup__upload-icon"><Icon name="upload" /></span>
+              <h3>{isDragging ? 'Suelte la imagen para cargarla' : 'Cargar imagen de frotis'}</h3>
+              <p id="smear-drop-help">Arrastre y suelte una imagen aquí o selecciónela desde su equipo.</p>
+              <small>JPEG, PNG o TIFF</small>
+            </div>
+          </div>
+
+          <div id="smear-file-feedback" className="smear-setup__feedback" aria-live="polite">
+            {fileError ? <p role="alert">{fileError}</p> : null}
+            {files[0] ? (
+              <div className="smear-setup__file-details">
+                <dl>
+                  <div><dt>Archivo</dt><dd>{files[0].name}</dd></div>
+                  <div><dt>Formato</dt><dd>{fileFormat(files[0])}</dd></div>
+                  <div><dt>Dimensiones</dt><dd>{dimensions ? `${dimensions.width} × ${dimensions.height} px` : 'Leyendo…'}</dd></div>
+                  <div><dt>Tamaño</dt><dd>{(selectedBytes / 1024 / 1024).toFixed(2)} MiB</dd></div>
+                </dl>
+                <div className="smear-setup__file-actions">
+                  <button type="button" disabled={busy} onClick={openPicker}>Reemplazar</button>
+                  <button type="button" disabled={busy} onClick={clearFiles}>Quitar</button>
                 </div>
               </div>
-            ) : <p className="workflow-empty-copy">No hay imagen seleccionada.</p>}
-            <ul className="file-list workflow-file-list">
-              {files.map((file) => (
-                <li key={`${file.name}-${file.lastModified}`}>
-                  <span>{file.name}</span>
-                  <small>{(file.size / 1024).toFixed(1)} KiB</small>
-                </li>
-              ))}
-            </ul>
-            {files.length ? (
-              <button className="workflow-remove-file" type="button" disabled={busy} onClick={clearFiles}>
-                Quitar selección
-              </button>
             ) : null}
-          </fieldset>
-        </div>
+          </div>
 
-        <aside className={`workflow-local-preview${previewUrl ? ' has-image' : ''}`}>
-          <div className="workflow-preview-heading">
-            <span>Vista previa local</span>
-            {files[0] ? <small>{fileFormat(files[0])}</small> : null}
-          </div>
-          <div className="workflow-preview-frame">
-            {previewUrl
-              ? <img src={previewUrl} alt={`Vista previa de ${files[0]?.name ?? 'la imagen seleccionada'}`} />
-              : (
-                <div className="workflow-preview-empty">
-                  <span aria-hidden="true">＋</span>
-                  <strong>Selecciona una imagen</strong>
-                  <p>La vista previa aparecerá aquí antes de cargarla.</p>
-                </div>
-              )}
-          </div>
-          {files[0] ? (
-            <dl className="workflow-preview-facts">
-              <div><dt>Archivo</dt><dd>{files[0].name}</dd></div>
-              <div><dt>Tamaño</dt><dd>{(files[0].size / 1024 / 1024).toFixed(2)} MiB</dd></div>
-              <div><dt>Formato</dt><dd>{fileFormat(files[0])}</dd></div>
-              <div><dt>Cantidad</dt><dd>{files.length}</dd></div>
-            </dl>
-          ) : null}
-        </aside>
+          <footer className="smear-setup__actions">
+            <p>El control de calidad se ejecutará antes de la detección.</p>
+            <button
+              type="button"
+              disabled={busy || !formReady}
+              title={!canAnalyze ? 'Tu rol no permite ejecutar el workflow completo.' : undefined}
+              onClick={() => void submit()}
+            >
+              <Icon name="play" />
+              {busy ? 'INICIANDO ANÁLISIS…' : 'INICIAR ANÁLISIS'}
+            </button>
+          </footer>
+        </div>
       </div>
-
-      <footer className="ingestion-submit workflow-submit">
-        <div>
-          <strong>El quality gate no se omitirá.</strong>
-          <span>Advertencias y fallos detienen el avance.</span>
-        </div>
-        <button
-          type="button"
-          disabled={busy || !formReady}
-          title={canAnalyze ? undefined : 'Tu rol no permite ejecutar el workflow completo.'}
-          onClick={() => void submit()}
-        >
-          {busy ? 'Procesando…' : 'Cargar y analizar'}
-        </button>
-      </footer>
     </section>
   );
 }

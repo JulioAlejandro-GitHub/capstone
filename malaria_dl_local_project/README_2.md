@@ -6,6 +6,18 @@ históricos permanecen compatibles durante la migración. Consulte
 Run paso a paso
 
 
+backend_api:
+```bash
+cd "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/backend_api"
+
+../malaria_dl_local_project/.venv/bin/python -m uvicorn \
+  app.main:app \
+  --reload \
+  --port 8000 \
+  --env-file ../.env
+```
+
+
 ```bash
 cd malaria_dl_local_project
 source .venv/bin/activate
