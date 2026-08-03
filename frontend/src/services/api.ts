@@ -94,86 +94,94 @@ export type ImageUploadResponse = {
   status: 'complete' | 'incomplete' | 'inconsistent';
   counts: { received: number; expected: number | null; ignored: number };
 };
-export type EligibleBatch = { id:string; status:string; acquisition_origin:string; source_system:string|null;
-  received_image_count:number; subject_code:string; sample_code:string; slide_code:string; previous_run_code:string|null };
-export type QualityImage = { id:string; microscopy_image_id:string; sequence_number:number; input_sha256:string;
-  input_width_px:number; input_height_px:number; original_filename:string; quality_verdict:string|null;
-  integrity_verified:boolean|null; warning_codes:string[]|null; failure_codes:string[]|null;
-  brightness_mean:number|null; contrast_p95_p05:number|null; entropy_bits:number|null;
-  laplacian_variance:number|null; tenengrad_mean:number|null; dark_pixel_ratio:number|null;
-  bright_pixel_ratio:number|null; usable_field_ratio:number|null };
-export type AnalysisEvent = {
-  id:string; analysis_run_id:string; microscopy_image_id:string|null; event_type:string;
-  stage:string; status:string; message_code:string|null; message:string|null;
-  progress_current:number|null; progress_total:number|null; created_at:string;
+export type EligibleBatch = {
+  id: string; status: string; acquisition_origin: string; source_system: string | null;
+  received_image_count: number; subject_code: string; sample_code: string; slide_code: string; previous_run_code: string | null
 };
-export type AnalysisRun = { id:string; run_code:string; ingestion_batch_id:string; subject_code:string;
-  sample_code:string; slide_code:string; input_image_count:number; quality_profile_key:string;
-  quality_profile_version:string; run_status:string; quality_gate_status:string; ready_for_analysis:boolean;
-  active_stage:string; requested_by_username:string; created_at:string; images:QualityImage[];
-  started_at?:string|null;completed_at?:string|null;updated_at?:string|null;
-  events:AnalysisEvent[]; decisions:Array<Record<string,unknown>> };
-export type QueuePriority = 1|50|100;
-export type QualityQueueItem = { queue_item_id:string;analysis_run_id:string;run_code:string;
-  subject_code:string;sample_code:string;priority:QueuePriority;status:'queued'|'running'|'completed'|'failed';
-  attempt_count:number;requested_by:string;requested_by_username:string;requested_at:string;
-  started_at:string|null;completed_at:string|null;failed_at:string|null;last_error_message:string|null };
+export type QualityImage = {
+  id: string; microscopy_image_id: string; sequence_number: number; input_sha256: string;
+  input_width_px: number; input_height_px: number; original_filename: string; quality_verdict: string | null;
+  integrity_verified: boolean | null; warning_codes: string[] | null; failure_codes: string[] | null;
+  brightness_mean: number | null; contrast_p95_p05: number | null; entropy_bits: number | null;
+  laplacian_variance: number | null; tenengrad_mean: number | null; dark_pixel_ratio: number | null;
+  bright_pixel_ratio: number | null; usable_field_ratio: number | null
+};
+export type AnalysisEvent = {
+  id: string; analysis_run_id: string; microscopy_image_id: string | null; event_type: string;
+  stage: string; status: string; message_code: string | null; message: string | null;
+  progress_current: number | null; progress_total: number | null; created_at: string;
+};
+export type AnalysisRun = {
+  id: string; run_code: string; ingestion_batch_id: string; subject_code: string;
+  sample_code: string; slide_code: string; input_image_count: number; quality_profile_key: string;
+  quality_profile_version: string; run_status: string; quality_gate_status: string; ready_for_analysis: boolean;
+  active_stage: string; requested_by_username: string; created_at: string; images: QualityImage[];
+  started_at?: string | null; completed_at?: string | null; updated_at?: string | null;
+  events: AnalysisEvent[]; decisions: Array<Record<string, unknown>>
+};
+export type QueuePriority = 1 | 50 | 100;
+export type QualityQueueItem = {
+  queue_item_id: string; analysis_run_id: string; run_code: string;
+  subject_code: string; sample_code: string; priority: QueuePriority; status: 'queued' | 'running' | 'completed' | 'failed';
+  attempt_count: number; requested_by: string; requested_by_username: string; requested_at: string;
+  started_at: string | null; completed_at: string | null; failed_at: string | null; last_error_message: string | null
+};
 export type QualityQueueMutation = {
-  id:string;analysis_run_id:string;priority:QueuePriority;status:'queued'|'running'|'completed'|'failed';
-  attempt_count:number;requested_by:string;requested_at:string;started_at:string|null;
-  completed_at:string|null;failed_at:string|null;last_error_code:string|null;last_error_message:string|null;
+  id: string; analysis_run_id: string; priority: QueuePriority; status: 'queued' | 'running' | 'completed' | 'failed';
+  attempt_count: number; requested_by: string; requested_at: string; started_at: string | null;
+  completed_at: string | null; failed_at: string | null; last_error_code: string | null; last_error_message: string | null;
 };
 export type QualityQueueRecord = QualityQueueItem | QualityQueueMutation;
 export type SmearWorkflowImage = UploadedMicroscopyImage & {
-  mime_type:string;
-  file_size_bytes:number;
-  image_sequence_number:number;
-  detected_format:string|null;
+  mime_type: string;
+  file_size_bytes: number;
+  image_sequence_number: number;
+  detected_format: string | null;
 };
 export type SmearWorkflowResponse = {
-  stage:string;
-  batch:{
-    id:string;status:string;acquisition_origin:string;source_system:string|null;
-    received_image_count:number;expected_image_count:number|null;created_at:string;
-    completed_at:string|null;
+  stage: string;
+  batch: {
+    id: string; status: string; acquisition_origin: string; source_system: string | null;
+    received_image_count: number; expected_image_count: number | null; created_at: string;
+    completed_at: string | null;
   };
-  subject:{id:string;subject_code:string;status:string};
-  case:{id:string;case_code:string;status:string};
-  sample:{id:string;sample_code:string;status:string};
-  slide:{id:string;slide_code:string;status:string};
-  images:SmearWorkflowImage[];
-  analysis_run:AnalysisRun|null;
-  queue_item:QualityQueueItem|null;
-  detection_run:CellDetectionRunDetail|null;
-  classification_run?:CellClassificationRunDetail|null;
-  classification_summary?:SmearAnalysisSummary|null;
+  subject: { id: string; subject_code: string; status: string };
+  case: { id: string; case_code: string; status: string };
+  sample: { id: string; sample_code: string; status: string };
+  slide: { id: string; slide_code: string; status: string };
+  images: SmearWorkflowImage[];
+  analysis_run: AnalysisRun | null;
+  queue_item: QualityQueueItem | null;
+  detection_run: CellDetectionRunDetail | null;
+  classification_run?: CellClassificationRunDetail | null;
+  classification_summary?: SmearAnalysisSummary | null;
 };
 export type SmearAnalysisHistoryItem = {
-  ingestion_batch_id:string;
-  analysis_run_id:string;
-  run_code:string;
-  subject_code:string;
-  sample_code:string;
-  slide_code:string;
-  image_count:number;
-  analysis_status:string;
-  quality_gate_status:string;
-  ready_for_analysis:boolean;
-  queue_status:string|null;
-  detection_run_id:string|null;
-  detection_status:string|null;
-  detection_count:number;
-  reviewed_count:number;
-  requested_by_username:string;
-  source_system:string|null;
-  created_at:string;
-  completed_at:string|null;
+  ingestion_batch_id: string;
+  analysis_run_id: string;
+  run_code: string;
+  subject_code: string;
+  sample_code: string;
+  slide_code: string;
+  image_count: number;
+  analysis_status: string;
+  quality_gate_status: string;
+  ready_for_analysis: boolean;
+  queue_status: string | null;
+  detection_run_id: string | null;
+  detection_status: string | null;
+  detection_count: number;
+  reviewed_count: number;
+  requested_by_username: string;
+  source_system: string | null;
+  created_at: string;
+  completed_at: string | null;
 };
 export type SmearAnalysisHistoryPage = {
-  items:SmearAnalysisHistoryItem[];
-  total:number;
-  limit:number;
-  offset:number;
+  items: SmearAnalysisHistoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
 };
 
 function readStoredAccessToken() {
@@ -454,7 +462,7 @@ function normalizeClassificationReview(raw: JsonObject): CellClassificationRevie
     decision: String(raw.review_status ?? 'comment_only') as CellClassificationReview['decision'],
     reviewed_label:
       raw.latest_reviewed_label === 'parasitized'
-      || raw.latest_reviewed_label === 'uninfected'
+        || raw.latest_reviewed_label === 'uninfected'
         ? raw.latest_reviewed_label
         : null,
     comment:
@@ -474,14 +482,14 @@ function normalizePrediction<T extends CellPredictionSummary>(value: T): T {
     ? raw.crop
     : typeof raw.crop_id === 'string'
       ? {
-          id: raw.crop_id,
-          sha256: String(raw.crop_persisted_sha256 ?? ''),
-          width_px: Number(raw.crop_width_px ?? 0),
-          height_px: Number(raw.crop_height_px ?? 0),
-          format: 'png',
-          padding_px: 0,
-          content_url: `/api/v1/cell-analysis/crops/${encodeURIComponent(raw.crop_id)}/content`,
-        }
+        id: raw.crop_id,
+        sha256: String(raw.crop_persisted_sha256 ?? ''),
+        width_px: Number(raw.crop_width_px ?? 0),
+        height_px: Number(raw.crop_height_px ?? 0),
+        format: 'png',
+        padding_px: 0,
+        content_url: `/api/v1/cell-analysis/crops/${encodeURIComponent(raw.crop_id)}/content`,
+      }
       : null;
   const publicRaw = { ...raw };
   [
@@ -518,8 +526,10 @@ function normalizeClassificationSummary(
 export const authApi = {
   login(username: string, password: string) {
     return request<{ access_token: string }>('/api/v1/auth/login', {}, {
-      init: { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }) },
+      init: {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      },
     });
   },
   me() {
@@ -579,136 +589,141 @@ export const api = {
   },
 
   getScientificSamples(subjectId: string) {
-    return request<{items: ScientificSample[]}>(`/api/v1/scientific/subjects/${subjectId}/samples`);
+    return request<{ items: ScientificSample[] }>(`/api/v1/scientific/subjects/${subjectId}/samples`);
   },
 
   uploadMicroscopyImages(form: FormData) {
+    const token = localStorage.getItem('capstone.access_token');
+    const headers = new Headers();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
     return request<ImageUploadResponse>('/api/v1/scientific/images/upload', {}, {
       timeoutMs: 120000,
-      init: { method: 'POST', body: form },
+      init: { method: 'POST', body: form, headers },
     });
   },
 
-  getEligibleBatches(params:Record<string,QueryValue>={}) {
-    return request<{items:EligibleBatch[];total:number}>('/api/v1/analysis/eligible-batches',params);
+  getEligibleBatches(params: Record<string, QueryValue> = {}) {
+    return request<{ items: EligibleBatch[]; total: number }>('/api/v1/analysis/eligible-batches', params);
   },
-  createAnalysisRun(ingestion_batch_id:string) {
-    return request<AnalysisRun>('/api/v1/analysis/runs',{},{
-      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingestion_batch_id})},
+  createAnalysisRun(ingestion_batch_id: string) {
+    return request<AnalysisRun>('/api/v1/analysis/runs', {}, {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ingestion_batch_id }) },
     });
   },
-  executeQuality(runId:string) {
-    return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-assessment`,{},{
-      timeoutMs:120000,init:{method:'POST'},
+  executeQuality(runId: string) {
+    return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-assessment`, {}, {
+      timeoutMs: 120000, init: { method: 'POST' },
     });
   },
-  getAnalysisRun(runId:string) { return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}`); },
-  getSmearWorkflow(ingestionBatchId:string) {
+  getAnalysisRun(runId: string) { return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}`); },
+  getSmearWorkflow(ingestionBatchId: string) {
     return request<SmearWorkflowResponse>(
       `/api/v1/scientific/workflows/${encodeURIComponent(ingestionBatchId)}`,
     );
   },
-  getSmearAnalysisHistory(params:Record<string,QueryValue>={}) {
+  getSmearAnalysisHistory(params: Record<string, QueryValue> = {}) {
     return request<SmearAnalysisHistoryPage>(
       '/api/v1/scientific/workflows',
       params,
     );
   },
-  getSmearAnalysisHistoryDetail(analysisRunId:string) {
+  getSmearAnalysisHistoryDetail(analysisRunId: string) {
     return request<SmearWorkflowResponse>(
       `/api/v1/scientific/analysis-history/${encodeURIComponent(analysisRunId)}`,
     );
   },
-  async getMicroscopyImageBlob(imageId:string) {
+  async getMicroscopyImageBlob(imageId: string) {
     const blob = await requestBlob(
       `/api/v1/scientific/images/${encodeURIComponent(imageId)}/content`,
     );
     return URL.createObjectURL(blob);
   },
-  getEligibleCellAnalysisRuns(params:Record<string,QueryValue>={}) {
+  getEligibleCellAnalysisRuns(params: Record<string, QueryValue> = {}) {
     return request<CellAnalysisPage<EligibleCellAnalysisRun>>(
       '/api/v1/cell-analysis/eligible-analysis-runs',
       params,
     );
   },
-  createCellDetectionRun(analysisRunId:string) {
-    return request<CellDetectionRunDetail>('/api/v1/cell-analysis/detection-runs',{},{
-      timeoutMs:120000,
-      init:{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({analysis_run_id:analysisRunId}),
+  createCellDetectionRun(analysisRunId: string) {
+    return request<CellDetectionRunDetail>('/api/v1/cell-analysis/detection-runs', {}, {
+      timeoutMs: 120000,
+      init: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysis_run_id: analysisRunId }),
       },
     });
   },
-  getCellDetectionRuns(params:Record<string,QueryValue>={}) {
+  getCellDetectionRuns(params: Record<string, QueryValue> = {}) {
     return request<CellAnalysisPage<CellDetectionRunSummary>>(
       '/api/v1/cell-analysis/detection-runs',
       params,
     );
   },
-  getCellDetectionRun(detectionRunId:string) {
+  getCellDetectionRun(detectionRunId: string) {
     return request<CellDetectionRunDetail>(
       `/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}`,
     );
   },
-  getCellDetectionImages(detectionRunId:string) {
+  getCellDetectionImages(detectionRunId: string) {
     return request<CellAnalysisPage<CellDetectionImage>>(
       `/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}/images`,
     );
   },
   getCellDetections(
-    detectionRunId:string,
-    microscopyImageId:string,
-    params:{review_status?:Exclude<CellReviewFilter,'all'>;limit?:number;offset?:number}={},
+    detectionRunId: string,
+    microscopyImageId: string,
+    params: { review_status?: Exclude<CellReviewFilter, 'all'>; limit?: number; offset?: number } = {},
   ) {
     return request<CellAnalysisPage<CellDetectionSummary>>(
       `/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}/images/${encodeURIComponent(microscopyImageId)}/detections`,
       params,
     );
   },
-  getCellDetection(cellDetectionId:string) {
+  getCellDetection(cellDetectionId: string) {
     return request<CellDetectionDetail>(
       `/api/v1/cell-analysis/detections/${encodeURIComponent(cellDetectionId)}`,
     );
   },
-  getCellReviews(cellDetectionId:string) {
+  getCellReviews(cellDetectionId: string) {
     return request<CellAnalysisPage<ScientificCellReview>>(
       `/api/v1/cell-analysis/detections/${encodeURIComponent(cellDetectionId)}/reviews`,
     );
   },
   createCellReview(
-    cellDetectionId:string,
-    decision:CellReviewDecision,
-    comment?:string,
+    cellDetectionId: string,
+    decision: CellReviewDecision,
+    comment?: string,
   ) {
     return request<CellDetectionReviewResult>(
       `/api/v1/cell-analysis/detections/${encodeURIComponent(cellDetectionId)}/reviews`,
       {},
       {
-        init:{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({decision,comment:comment?.trim()||undefined}),
+        init: {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ decision, comment: comment?.trim() || undefined }),
         },
       },
     );
   },
-  getCellCropBlob(cropId:string,contentUrl?:string|null,signal?:AbortSignal) {
-    const fallback=`/api/v1/cell-analysis/crops/${encodeURIComponent(cropId)}/content`;
-    return requestBlob(trustedCellContentPath(contentUrl,fallback),signal);
+  getCellCropBlob(cropId: string, contentUrl?: string | null, signal?: AbortSignal) {
+    const fallback = `/api/v1/cell-analysis/crops/${encodeURIComponent(cropId)}/content`;
+    return requestBlob(trustedCellContentPath(contentUrl, fallback), signal);
   },
   getCellOriginalImageBlob(
-    detectionRunId:string,
-    microscopyImageId:string,
-    contentUrl?:string|null,
-    signal?:AbortSignal,
+    detectionRunId: string,
+    microscopyImageId: string,
+    contentUrl?: string | null,
+    signal?: AbortSignal,
   ) {
-    const fallback=`/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}/images/${encodeURIComponent(microscopyImageId)}/content`;
-    return requestBlob(trustedCellContentPath(contentUrl,fallback),signal);
+    const fallback = `/api/v1/cell-analysis/detection-runs/${encodeURIComponent(detectionRunId)}/images/${encodeURIComponent(microscopyImageId)}/content`;
+    return requestBlob(trustedCellContentPath(contentUrl, fallback), signal);
   },
-  getEligibleCellClassificationRuns(params:Record<string,QueryValue>={}) {
-    return request<CellClassificationPage<EligibleCellClassificationRun & {id?:string}>>(
+  getEligibleCellClassificationRuns(params: Record<string, QueryValue> = {}) {
+    return request<CellClassificationPage<EligibleCellClassificationRun & { id?: string }>>(
       '/api/v1/cell-classification/eligible-detection-runs',
       params,
     ).then((page) => ({
@@ -721,21 +736,21 @@ export const api = {
       })),
     }));
   },
-  createCellClassificationRun(detectionRunId:string) {
+  createCellClassificationRun(detectionRunId: string) {
     return request<CellClassificationRunDetail>(
       '/api/v1/cell-classification/classification-runs',
       {},
       {
-        timeoutMs:600000,
-        init:{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({detection_run_id:detectionRunId}),
+        timeoutMs: 600000,
+        init: {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ detection_run_id: detectionRunId }),
         },
       },
     ).then(normalizeClassificationRun);
   },
-  getCellClassificationRuns(params:Record<string,QueryValue>={}) {
+  getCellClassificationRuns(params: Record<string, QueryValue> = {}) {
     return request<CellClassificationPage<CellClassificationRunDetail>>(
       '/api/v1/cell-classification/classification-runs',
       params,
@@ -744,14 +759,14 @@ export const api = {
       items: page.items.map(normalizeClassificationRun),
     }));
   },
-  getCellClassificationRun(classificationRunId:string) {
+  getCellClassificationRun(classificationRunId: string) {
     return request<CellClassificationRunDetail>(
       `/api/v1/cell-classification/classification-runs/${encodeURIComponent(classificationRunId)}`,
     ).then(normalizeClassificationRun);
   },
   getCellClassificationPredictions(
-    classificationRunId:string,
-    params:Record<string,QueryValue>={},
+    classificationRunId: string,
+    params: Record<string, QueryValue> = {},
   ) {
     return request<CellClassificationPage<CellPredictionSummary>>(
       `/api/v1/cell-classification/classification-runs/${encodeURIComponent(classificationRunId)}/predictions`,
@@ -761,99 +776,99 @@ export const api = {
       items: page.items.map(normalizePrediction),
     }));
   },
-  getCellClassificationSummary(classificationRunId:string) {
+  getCellClassificationSummary(classificationRunId: string) {
     return request<
       SmearAnalysisSummary
       | {
-          automatic_summary: SmearAnalysisSummary;
-          reviewed_summary?: SmearAnalysisSummary['reviewed_summary'];
-        }
+        automatic_summary: SmearAnalysisSummary;
+        reviewed_summary?: SmearAnalysisSummary['reviewed_summary'];
+      }
     >(
       `/api/v1/cell-classification/classification-runs/${encodeURIComponent(classificationRunId)}/summary`,
     ).then(normalizeClassificationSummary);
   },
-  getCellPrediction(predictionId:string) {
+  getCellPrediction(predictionId: string) {
     return request<CellPredictionDetail>(
       `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}`,
     ).then(normalizePrediction);
   },
-  createCellExplanation(predictionId:string,retry=false) {
+  createCellExplanation(predictionId: string, retry = false) {
     return request<CellExplanation>(
       `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/explanation`,
       {},
       {
-        timeoutMs:180000,
-        init:{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({retry}),
+        timeoutMs: 180000,
+        init: {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ retry }),
         },
       },
     );
   },
-  getCellExplanation(predictionId:string) {
+  getCellExplanation(predictionId: string) {
     return request<CellExplanation>(
       `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/explanation`,
     );
   },
-  getCellExplanationHeatmapBlob(explanationId:string,signal?:AbortSignal) {
+  getCellExplanationHeatmapBlob(explanationId: string, signal?: AbortSignal) {
     return requestBlob(
       `/api/v1/cell-classification/explanations/${encodeURIComponent(explanationId)}/heatmap`,
       signal,
     );
   },
-  getCellExplanationOverlayBlob(explanationId:string,signal?:AbortSignal) {
+  getCellExplanationOverlayBlob(explanationId: string, signal?: AbortSignal) {
     return requestBlob(
       `/api/v1/cell-classification/explanations/${encodeURIComponent(explanationId)}/overlay`,
       signal,
     );
   },
   createCellClassificationReview(
-    predictionId:string,
-    payload:CellClassificationReviewCreate,
+    predictionId: string,
+    payload: CellClassificationReviewCreate,
   ) {
     return request<CellClassificationReview>(
       `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/reviews`,
       {},
       {
-        init:{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            decision:payload.decision,
-            reviewed_label:payload.reviewed_label,
-            comment:payload.comment?.trim()||undefined,
+        init: {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            decision: payload.decision,
+            reviewed_label: payload.reviewed_label,
+            comment: payload.comment?.trim() || undefined,
           }),
         },
       },
     );
   },
-  getCellClassificationReviews(predictionId:string) {
+  getCellClassificationReviews(predictionId: string) {
     return request<CellClassificationPage<CellClassificationReview>>(
       `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/reviews`,
     );
   },
-  reviewQuality(runId:string,decision:'approve_with_warnings'|'reject',comment:string) {
-    return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-decision`,{},{
-      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decision,comment})},
+  reviewQuality(runId: string, decision: 'approve_with_warnings' | 'reject', comment: string) {
+    return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-decision`, {}, {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision, comment }) },
     });
   },
-  enqueueQuality(analysis_run_id:string,priority:QueuePriority=50) {
-    return request<QualityQueueMutation>('/api/v1/analysis/queue',{},{
-      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysis_run_id,priority})},
+  enqueueQuality(analysis_run_id: string, priority: QueuePriority = 50) {
+    return request<QualityQueueMutation>('/api/v1/analysis/queue', {}, {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ analysis_run_id, priority }) },
     });
   },
-  getQualityQueue(params:Record<string,QueryValue>={}) {
-    return request<{items:QualityQueueItem[];total:number}>('/api/v1/analysis/queue',params);
+  getQualityQueue(params: Record<string, QueryValue> = {}) {
+    return request<{ items: QualityQueueItem[]; total: number }>('/api/v1/analysis/queue', params);
   },
-  executeQueueItem(queueItemId:string) {
-    return request<QualityQueueMutation>(`/api/v1/analysis/queue/${queueItemId}/execute`,{},{
-      timeoutMs:120000,init:{method:'POST'},
+  executeQueueItem(queueItemId: string) {
+    return request<QualityQueueMutation>(`/api/v1/analysis/queue/${queueItemId}/execute`, {}, {
+      timeoutMs: 120000, init: { method: 'POST' },
     });
   },
-  retryQueueItem(queueItemId:string,priority:QueuePriority) {
-    return request<QualityQueueMutation>(`/api/v1/analysis/queue/${queueItemId}/retry`,{},{
-      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({priority})},
+  retryQueueItem(queueItemId: string, priority: QueuePriority) {
+    return request<QualityQueueMutation>(`/api/v1/analysis/queue/${queueItemId}/retry`, {}, {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ priority }) },
     });
   },
 
@@ -904,83 +919,83 @@ export const api = {
     );
   },
 
-  getStage2Availability(datasource:string,trainingRunId:string) {
+  getStage2Availability(datasource: string, trainingRunId: string) {
     return request<Stage2Availability>(
       `/api/training-runs/${trainingRunId}/stage2-availability`,
-      withDatasource(datasource),{timeoutMs:30000},
+      withDatasource(datasource), { timeoutMs: 30000 },
     );
   },
-  getStage2ReleaseStatus(datasource:string,trainingRunId:string) {
+  getStage2ReleaseStatus(datasource: string, trainingRunId: string) {
     return request<Stage2Availability>(
       `/api/training-runs/${trainingRunId}/stage2-release-status`,
       withDatasource(datasource),
-      {timeoutMs:30000},
+      { timeoutMs: 30000 },
     );
   },
-  publishStage2Model(datasource:string,modelVersionId:string,payload:{
-    actor?:string;reason?:string;
+  publishStage2Model(datasource: string, modelVersionId: string, payload: {
+    actor?: string; reason?: string;
   }) {
     return request<Stage2Availability>(
       `/api/model-versions/${modelVersionId}/stage2-publications`,
-      withDatasource(datasource),{
-        init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
-      },
+      withDatasource(datasource), {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
+    },
     );
   },
-  deactivateStage2Publication(datasource:string,publicationId:string,payload:{
-    actor?:string;reason?:string;
+  deactivateStage2Publication(datasource: string, publicationId: string, payload: {
+    actor?: string; reason?: string;
   }) {
     return request<Stage2Availability>(
       `/api/stage2-publications/${publicationId}/deactivate`,
-      withDatasource(datasource),{
-        init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
-      },
+      withDatasource(datasource), {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
+    },
     );
   },
 
-  enableStage2(datasource:string,trainingRunId:string,payload:{
-    actor:string;reason:string;confirm_stage2_enablement:boolean;
-    preprocessing_candidate_id?:string;threshold_candidate_id?:string;source_image_id?:string;
+  enableStage2(datasource: string, trainingRunId: string, payload: {
+    actor: string; reason: string; confirm_stage2_enablement: boolean;
+    preprocessing_candidate_id?: string; threshold_candidate_id?: string; source_image_id?: string;
   }) {
     return request<Stage2EnablementResult>(
       `/api/training-runs/${trainingRunId}/enable-stage2`,
-      withDatasource(datasource),{
-        timeoutMs:120000,
-        init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
-      },
+      withDatasource(datasource), {
+      timeoutMs: 120000,
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
+    },
     );
   },
-  publishTrainingStage2(datasource:string,trainingRunId:string,payload:{
-    actor:string;reason:string;confirm_publication:boolean;source_image_id?:string;
+  publishTrainingStage2(datasource: string, trainingRunId: string, payload: {
+    actor: string; reason: string; confirm_publication: boolean; source_image_id?: string;
   }) {
     return request<Stage2EnablementResult>(
       `/api/training-runs/${trainingRunId}/publish-technical-production`,
       withDatasource(datasource),
-      {init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},timeoutMs:120000},
+      { init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }, timeoutMs: 120000 },
     );
   },
 
-  getStage2Models(datasource:string) {
-    return request<{items:Stage2EnablementResult[]}>('/api/stage2/models',withDatasource(datasource));
+  getStage2Models(datasource: string) {
+    return request<{ items: Stage2EnablementResult[] }>('/api/stage2/models', withDatasource(datasource));
   },
 
-  getTechnicalProductionPreview(datasource:string,modelVersionId:string) {
+  getTechnicalProductionPreview(datasource: string, modelVersionId: string) {
     return request<Stage2Availability>(
       `/api/model-versions/${modelVersionId}/technical-production-preview`,
-      withDatasource(datasource),{timeoutMs:30000},
+      withDatasource(datasource), { timeoutMs: 30000 },
     );
   },
 
-  publishTechnicalProduction(datasource:string,modelVersionId:string,payload:{
-    actor:string;reason:string;confirm_publication:boolean;
-    preprocessing_profile?:string;threshold?:number;source_image_id?:string;
+  publishTechnicalProduction(datasource: string, modelVersionId: string, payload: {
+    actor: string; reason: string; confirm_publication: boolean;
+    preprocessing_profile?: string; threshold?: number; source_image_id?: string;
   }) {
     return request<Stage2EnablementResult>(
       `/api/model-versions/${modelVersionId}/publish-technical-production`,
-      withDatasource(datasource),{
-        timeoutMs:120000,
-        init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
-      },
+      withDatasource(datasource), {
+      timeoutMs: 120000,
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
+    },
     );
   },
 
@@ -1040,83 +1055,83 @@ export const api = {
     return request<{ items: ModelVersionLineageRow[] }>(`/api/model-versions/${modelVersionId}/lineage`, withDatasource(datasource));
   },
 
-  getModelVersionContractCandidates(datasource:string,modelVersionId:string) {
-    return request<ModelContractCandidates>(`/api/model-versions/${modelVersionId}/contract-candidates`,withDatasource(datasource),{timeoutMs:30000});
+  getModelVersionContractCandidates(datasource: string, modelVersionId: string) {
+    return request<ModelContractCandidates>(`/api/model-versions/${modelVersionId}/contract-candidates`, withDatasource(datasource), { timeoutMs: 30000 });
   },
 
-  completeModelVersionContract(datasource:string,modelVersionId:string,selections:Record<string,string>,actor:string,reason:string) {
-    return request<{model_version:ModelVersionRow;threshold_profile_id:string}>(`/api/model-versions/${modelVersionId}/build-production-package`,withDatasource(datasource),{
-      timeoutMs:30000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({selections,actor,reason})},
+  completeModelVersionContract(datasource: string, modelVersionId: string, selections: Record<string, string>, actor: string, reason: string) {
+    return request<{ model_version: ModelVersionRow; threshold_profile_id: string }>(`/api/model-versions/${modelVersionId}/build-production-package`, withDatasource(datasource), {
+      timeoutMs: 30000, init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ selections, actor, reason }) },
     });
   },
 
-  publishModelVersionToProduction(datasource:string,modelVersionId:string,payload:{deployment_name:string;alias:'champion';actor:string;reason:string;confirm_production:boolean;source_image_id?:string}) {
-    return request<ProductionPublicationResult>(`/api/model-versions/${modelVersionId}/publish-to-production`,withDatasource(datasource),{
-      timeoutMs:120000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
+  publishModelVersionToProduction(datasource: string, modelVersionId: string, payload: { deployment_name: string; alias: 'champion'; actor: string; reason: string; confirm_production: boolean; source_image_id?: string }) {
+    return request<ProductionPublicationResult>(`/api/model-versions/${modelVersionId}/publish-to-production`, withDatasource(datasource), {
+      timeoutMs: 120000, init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
     });
   },
 
-  getModelProductionReadiness(datasource:string,modelVersionId:string) {
-    return request<ModelProductionReadiness>(`/api/model-versions/${modelVersionId}/production-readiness`,withDatasource(datasource),{timeoutMs:30000});
+  getModelProductionReadiness(datasource: string, modelVersionId: string) {
+    return request<ModelProductionReadiness>(`/api/model-versions/${modelVersionId}/production-readiness`, withDatasource(datasource), { timeoutMs: 30000 });
   },
 
   getDeployments(datasource: string, active = false) {
     return request<{ items: DeploymentRow[] }>(active ? '/api/deployments/active' : '/api/deployments', withDatasource(datasource));
   },
 
-  getDeploymentReadiness(datasource:string,deploymentId:string) {
-    return request<DeploymentReadiness>(`/api/deployments/${deploymentId}/readiness`,withDatasource(datasource),{timeoutMs:30000});
+  getDeploymentReadiness(datasource: string, deploymentId: string) {
+    return request<DeploymentReadiness>(`/api/deployments/${deploymentId}/readiness`, withDatasource(datasource), { timeoutMs: 30000 });
   },
 
   getAvailableModels(datasource: string, environment?: string) {
     return request<{ items: AvailableModel[] }>('/api/models/available', { datasource, environment });
   },
 
-  validateModelVersion(datasource:string,modelVersionId:string,thresholdProfileId:string,actor:string,reason:string) {
-    return request<ModelVersionRow>(`/api/model-versions/${modelVersionId}/validate`,withDatasource(datasource),{
-      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({threshold_profile_id:thresholdProfileId,actor,reason})},
+  validateModelVersion(datasource: string, modelVersionId: string, thresholdProfileId: string, actor: string, reason: string) {
+    return request<ModelVersionRow>(`/api/model-versions/${modelVersionId}/validate`, withDatasource(datasource), {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ threshold_profile_id: thresholdProfileId, actor, reason }) },
     });
   },
 
-  approveModelVersion(datasource:string,modelVersionId:string,actor:string,reason:string) {
-    return request<ModelVersionRow>(`/api/model-versions/${modelVersionId}/approve`,withDatasource(datasource),{
-      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor,reason})},
+  approveModelVersion(datasource: string, modelVersionId: string, actor: string, reason: string) {
+    return request<ModelVersionRow>(`/api/model-versions/${modelVersionId}/approve`, withDatasource(datasource), {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ actor, reason }) },
     });
   },
 
-  createDeployment(datasource:string,payload:{model_version_id:string;deployment_name:string;environment:string;alias:string;threshold_profile_id:string;deployed_by:string}) {
-    return request<DeploymentRow>('/api/deployments',withDatasource(datasource),{
-      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,activate:false})},
+  createDeployment(datasource: string, payload: { model_version_id: string; deployment_name: string; environment: string; alias: string; threshold_profile_id: string; deployed_by: string }) {
+    return request<DeploymentRow>('/api/deployments', withDatasource(datasource), {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payload, activate: false }) },
     });
   },
 
-  smokeTestDeployment(datasource:string,deploymentId:string,sourceImageId:string,actor:string) {
-    return request<{deployment:DeploymentRow;smoke_test:JsonRecord}>(`/api/deployments/${deploymentId}/smoke-test`,withDatasource(datasource),{
-      timeoutMs:30000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_image_id:sourceImageId,actor})},
+  smokeTestDeployment(datasource: string, deploymentId: string, sourceImageId: string, actor: string) {
+    return request<{ deployment: DeploymentRow; smoke_test: JsonRecord }>(`/api/deployments/${deploymentId}/smoke-test`, withDatasource(datasource), {
+      timeoutMs: 30000, init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source_image_id: sourceImageId, actor }) },
     });
   },
 
-  activateDeployment(datasource:string,deploymentId:string,actor:string,confirmProduction:boolean) {
-    return request<DeploymentRow>(`/api/deployments/${deploymentId}/activate`,withDatasource(datasource),{
-      timeoutMs:30000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor,confirm_production:confirmProduction})},
+  activateDeployment(datasource: string, deploymentId: string, actor: string, confirmProduction: boolean) {
+    return request<DeploymentRow>(`/api/deployments/${deploymentId}/activate`, withDatasource(datasource), {
+      timeoutMs: 30000, init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ actor, confirm_production: confirmProduction }) },
     });
   },
 
-  transitionDeployment(datasource:string,deploymentId:string,action:'deactivate'|'retire',actor:string,reason:string) {
-    return request<DeploymentRow>(`/api/deployments/${deploymentId}/${action}`,withDatasource(datasource),{
-      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor,reason})},
+  transitionDeployment(datasource: string, deploymentId: string, action: 'deactivate' | 'retire', actor: string, reason: string) {
+    return request<DeploymentRow>(`/api/deployments/${deploymentId}/${action}`, withDatasource(datasource), {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ actor, reason }) },
     });
   },
 
-  rollbackDeployment(datasource:string,deploymentId:string,targetDeploymentId:string,actor:string,reason:string) {
-    return request<DeploymentRow>(`/api/deployments/${deploymentId}/rollback`,withDatasource(datasource),{
-      init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target_deployment_id:targetDeploymentId,actor,reason})},
+  rollbackDeployment(datasource: string, deploymentId: string, targetDeploymentId: string, actor: string, reason: string) {
+    return request<DeploymentRow>(`/api/deployments/${deploymentId}/rollback`, withDatasource(datasource), {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target_deployment_id: targetDeploymentId, actor, reason }) },
     });
   },
 
-  createImageAnalysisJob(datasource:string,deployedModelVersionId:string,sourceImageId:string) {
-    return request<InferenceResult>('/api/image-analysis-jobs',withDatasource(datasource),{
-      timeoutMs:30000,init:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deployed_model_version_id:deployedModelVersionId,source_image_id:sourceImageId})},
+  createImageAnalysisJob(datasource: string, deployedModelVersionId: string, sourceImageId: string) {
+    return request<InferenceResult>('/api/image-analysis-jobs', withDatasource(datasource), {
+      timeoutMs: 30000, init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deployed_model_version_id: deployedModelVersionId, source_image_id: sourceImageId }) },
     });
   },
 

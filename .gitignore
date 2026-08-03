@@ -41,3 +41,6 @@ backend_api/.venv/
 !**/.env.example
 /var/storage/cell-crops
 /var/storage/microscopy-images
+venv/
+docs/dump-malaria_experiments-202607290730.sql
+docs/dump-malaria_experiments-202607290730.sql
