@@ -12,7 +12,7 @@ WORKDIR /app
 # Install system dependencies
 # Requires libgl1-mesa-glx and libglib2.0-0 for OpenCV and general vision tasks
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
