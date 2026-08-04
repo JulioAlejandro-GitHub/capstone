@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { isValidPublicId } from '../router';
 import {
   ApiError,
+  DEFAULT_DATASOURCE,
   api,
   type AnalysisRun,
   type ImageUploadResponse,
@@ -400,7 +401,7 @@ export function useSmearAnalysisWorkflow() {
     } finally {
       setRecovering(false);
     }
-  }, [writeIdentifiers]);
+  }, [searchParams, writeIdentifiers]);
 
   useEffect(() => {
     const key = [
@@ -441,6 +442,13 @@ export function useSmearAnalysisWorkflow() {
     setStage('classification_pending');
     setFailure(null);
     try {
+      const datasource = searchParams.get('datasource') ?? DEFAULT_DATASOURCE;
+      const availability = await api.getProductiveModelAvailability(datasource);
+      if (!availability.available || !availability.model) {
+        setFailure({ step: 'classification', message: availability.message });
+        setStage('awaiting_productive_model');
+        return null;
+      }
       const eligibilityPage = await api.getEligibleCellClassificationRuns({
         detection_run_id: detectionRun.id,
         limit: 1,

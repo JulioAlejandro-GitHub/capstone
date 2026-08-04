@@ -112,11 +112,19 @@ export interface Stage2Availability {
   action_label?:string;blockers:PromotionBlockingReason[];technical_blockers?:PromotionBlockingReason[];warnings:string[];
   model_version_id:string|null;deployment_id?:string|null;fixture?:boolean;
   checkpoint_artifact_id?:string;checkpoint?:string;model_name?:string;version_number?:number;
-  environment?:'stage2';alias?:'default';deployment_status?:string;
+  environment?:'stage2'|'production';alias?:'default'|'champion';production_scope?:'stage2_experimental'|'stage2_technical';deployment_status?:string;
   artifact_sha256?:string;threshold?:number;threshold_source?:string;deployed_at?:string;
   smoke_status?:string;available_for_inference?:boolean;
   publication?:Stage2Publication|null;warning?:string;idempotent?:boolean;
   package?:ModelContractCandidates|null;
+}
+export interface ProductiveModelAvailability {
+  available:boolean;code:string|null;message:string;
+  environment:'stage2';alias:'default';production_scope:'stage2_experimental';
+  model:null|{deployment_id:string;deployment_name:string;publication_id:string;
+    model_version_id:string;training_run_id:string;evaluation_run_id:string;
+    model_name:string;model_version:string|null;checkpoint_sha256:string;
+    threshold:number;threshold_source:string;published_at:string};
 }
 export interface Stage2Publication {
   id:string;datasource:string;model_version_id:string;training_run_id:string;

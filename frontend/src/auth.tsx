@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 import {
-  ApiError,
   authApi,
   cancelPendingRequests,
   onAuthenticationFailure,
@@ -11,7 +10,7 @@ import {
 } from './services/api';
 
 export type AuthUser = { id: string; username: string; roles: string[]; permissions: string[] };
-export type AuthStatus = 'initializing' | 'authenticated' | 'unauthenticated' | 'unavailable';
+export type AuthStatus = 'initializing' | 'authenticated' | 'unauthenticated';
 type AuthContextValue = {
   user: AuthUser | null;
   status: AuthStatus;
@@ -50,15 +49,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(restoredUser);
         setStatus('authenticated');
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         if (!active) return;
+        // An initial session that cannot be validated is never retained.
+        setAccessToken(null);
         setUser(null);
-        if (error instanceof ApiError && error.status === 401) {
-          setAccessToken(null);
-          setStatus('unauthenticated');
-        } else {
-          setStatus('unavailable');
-        }
+        setStatus('unauthenticated');
       });
     return () => { active = false; };
   }, [restoreAttempt]);
@@ -98,12 +94,9 @@ export function useAuth() {
 }
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, status, retrySession } = useAuth();
+  const { user, status } = useAuth();
   const location = useLocation();
   if (status === 'initializing') return <SessionStatus message="Validando sesión…" />;
-  if (status === 'unavailable') {
-    return <SessionStatus message="No fue posible validar la sesión." onRetry={retrySession} />;
-  }
   return user && status === 'authenticated'
     ? children
     : <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;

@@ -2,9 +2,10 @@ import { FormEvent, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 import { SessionStatus, useAuth } from '../auth';
+import { ApiError } from '../services/api';
 
 export function Login() {
-  const { login, user, status, retrySession } = useAuth();
+  const { login, user, status } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState('');
@@ -15,14 +16,17 @@ export function Login() {
     try {
       await login(String(form.get('username')), String(form.get('password')));
       navigate(requestedPath, { replace: true });
-    } catch {
-      setError('Credenciales inválidas.');
+    } catch (reason) {
+      setError(
+        reason instanceof ApiError && reason.status === 401
+          ? 'Usuario o contraseña incorrectos.'
+          : reason instanceof ApiError && (reason.kind === 'network' || reason.kind === 'timeout')
+            ? 'No fue posible conectar con el servidor. Intenta nuevamente.'
+            : 'No fue posible iniciar sesión. Intenta nuevamente.',
+      );
     }
   }
   if (status === 'initializing') return <SessionStatus message="Validando sesión…" />;
-  if (status === 'unavailable') {
-    return <SessionStatus message="No fue posible validar la sesión." onRetry={retrySession} />;
-  }
   if (user) return <Navigate to={requestedPath} replace />;
   return (
     <main className="login-page">

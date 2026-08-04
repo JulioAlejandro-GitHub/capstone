@@ -735,6 +735,7 @@ class CellClassificationService:
                     "deployment_name",
                     "environment",
                     "alias",
+                    "production_scope",
                     "deployment_id",
                 )
                 if key in stage2
@@ -1183,6 +1184,7 @@ class CellClassificationService:
                         "preprocessing": resolved.preprocessing,
                         "environment": "stage2",
                         "alias": "default",
+                        "production_scope": "stage2_experimental",
                     }
                     if resolved is not None
                     else None

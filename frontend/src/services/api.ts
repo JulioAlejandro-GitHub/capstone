@@ -22,6 +22,7 @@ import type {
   ModelContractCandidates,
   ModelProductionReadiness,
   ProductionPublicationResult,
+  ProductiveModelAvailability,
   PagedResponse,
   RunDashboard,
   RunArtifact,
@@ -209,6 +210,13 @@ export function setAccessToken(token: string | null) {
   } catch {
     // Storage can be unavailable; the in-memory session remains usable.
   }
+  if (!token) {
+    try {
+      window.sessionStorage.clear();
+    } catch {
+      // Session invalidation remains effective even when storage is unavailable.
+    }
+  }
 }
 
 export function onAuthenticationFailure(handler: (() => void) | null) {
@@ -218,6 +226,16 @@ export function onAuthenticationFailure(handler: (() => void) | null) {
 export function cancelPendingRequests() {
   activeRequests.forEach((controller) => controller.abort());
   activeRequests.clear();
+}
+
+function handleAuthenticationFailure() {
+  setAccessToken(null);
+  if (authenticationFailureHandler) {
+    authenticationFailureHandler();
+    return;
+  }
+  // Fallback for requests that fail before AuthProvider registers its handler.
+  if (window.location.pathname !== '/login') window.location.replace('/login');
 }
 
 export class ApiError extends Error {
@@ -274,8 +292,7 @@ async function request<T>(
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
     const response = await fetch(url, { ...options.init, headers, signal: controller.signal });
     if (response.status === 401) {
-      setAccessToken(null);
-      authenticationFailureHandler?.();
+      handleAuthenticationFailure();
     }
     if (!response.ok) {
       const raw = await response.text();
@@ -344,8 +361,7 @@ async function requestBlob(path: string, externalSignal?: AbortSignal) {
       signal: controller.signal,
     });
     if (response.status === 401) {
-      setAccessToken(null);
-      authenticationFailureHandler?.();
+      handleAuthenticationFailure();
     }
     if (!response.ok) {
       throw new ApiError('Contenido autenticado no disponible.', response.status, 'http');
@@ -929,6 +945,12 @@ export const api = {
     return request<Stage2Availability>(
       `/api/training-runs/${trainingRunId}/stage2-release-status`,
       withDatasource(datasource),
+      { timeoutMs: 30000 },
+    );
+  },
+  getProductiveModelAvailability(datasource: string) {
+    return request<ProductiveModelAvailability>(
+      '/api/stage2/productive-model-availability', withDatasource(datasource),
       { timeoutMs: 30000 },
     );
   },

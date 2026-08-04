@@ -1,0 +1,19 @@
+services:
+  backend:
+    environment:
+      MALARIA_DL_PROJECT_ROOT: /app/malaria_dl_local_project
+    volumes:
+      - ./backend_api:/app
+      # El bind de /app oculta los archivos copiados en la imagen. Montamos
+      # explícitamente el proyecto ML requerido por los imports `src.*`.
+      - ./malaria_dl_local_project:/app/malaria_dl_local_project:ro
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    # Ignoramos el Dockerfile (Nginx) y usamos Node puro temporalmente
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    # Forzamos a que instale dependencias y corra en el puerto 80 para coincidir con Nginx
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 80"

@@ -21,6 +21,7 @@ from app.db import get_primary_engine
 
 STAGE2_ENVIRONMENT = "stage2"
 STAGE2_ALIAS = "default"
+STAGE2_PRODUCTION_SCOPE = "stage2_experimental"
 EXPECTED_DEPLOYMENT_NAME = "malaria-stage2-classifier"
 EXPECTED_LABEL_MAPPING = {
     "0": "uninfected",
@@ -140,6 +141,7 @@ class ResolvedProductiveModel:
                 "deployment_name": self.deployment_name,
                 "environment": STAGE2_ENVIRONMENT,
                 "alias": STAGE2_ALIAS,
+                "production_scope": STAGE2_PRODUCTION_SCOPE,
                 "deployment_id": self.deployment_id,
             },
             "loader_version": LOADER_VERSION,
@@ -296,8 +298,11 @@ class ProductiveModelResolver:
         self.model_loader = model_loader or self._keras_loader
         self.cache = cache or ProductiveModelCache()
         capstone_root = Path(__file__).resolve().parents[3]
+        configured_ml_root = os.getenv("MALARIA_DL_PROJECT_ROOT")
         self.ml_project_root = (
-            ml_project_root or capstone_root / "malaria_dl_local_project"
+            ml_project_root
+            or (Path(configured_ml_root) if configured_ml_root else None)
+            or capstone_root / "malaria_dl_local_project"
         ).resolve()
         roots = allowed_roots or (
             self.ml_project_root / "releases",
@@ -379,6 +384,7 @@ class ProductiveModelResolver:
                  d.environment=:environment
                  AND d.alias=:alias
                  AND d.status='active'
+                 AND d.metadata->>'production_scope'=:production_scope
                )
              )
             JOIN model_versions mv ON mv.id=publication.model_version_id
@@ -416,6 +422,7 @@ class ProductiveModelResolver:
             "historical": historical,
             "environment": STAGE2_ENVIRONMENT,
             "alias": STAGE2_ALIAS,
+            "production_scope": STAGE2_PRODUCTION_SCOPE,
             "deployment_id": (
                 str(snapshot.get("production_model_id")) if snapshot else None
             ),
@@ -450,7 +457,12 @@ class ProductiveModelResolver:
                 "MODEL_ARTIFACT_MISSING", reason="artifact path ausente"
             )
         path = Path(str(raw_path))
-        if not path.is_absolute():
+        if path.is_absolute() and self.ml_project_root.name in path.parts:
+            # Development records may contain an absolute host path. Rebase its
+            # project-relative suffix to the configured container project root.
+            marker = path.parts.index(self.ml_project_root.name)
+            path = self.ml_project_root.joinpath(*path.parts[marker + 1 :])
+        elif not path.is_absolute():
             path = self.ml_project_root / path
         lexical = Path(path.absolute())
         current = Path(lexical.anchor)
@@ -494,6 +506,12 @@ class ProductiveModelResolver:
         if row.get("environment") != STAGE2_ENVIRONMENT or row.get("alias") != STAGE2_ALIAS:
             raise ProductiveModelError(
                 "PRODUCTIVE_SLOT_INVALID", reason="contexto no es stage2/default"
+            )
+        deployment_metadata = _mapping(row.get("deployment_metadata"))
+        if deployment_metadata.get("production_scope") != STAGE2_PRODUCTION_SCOPE:
+            raise ProductiveModelError(
+                "PRODUCTIVE_SLOT_INVALID",
+                reason="deployment no tiene alcance stage2_experimental",
             )
         if require_active and row.get("production_status") != "active":
             raise ProductiveModelError(
@@ -903,6 +921,7 @@ class ProductiveModelResolver:
         if not isinstance(stage2, Mapping) or (
             str(stage2.get("environment")) != STAGE2_ENVIRONMENT
             or str(stage2.get("alias")) != STAGE2_ALIAS
+            or str(stage2.get("production_scope")) != STAGE2_PRODUCTION_SCOPE
             or str(stage2.get("deployment_id")) != resolved.deployment_id
             or str(stage2.get("deployment_name")) != resolved.deployment_name
         ):
@@ -938,6 +957,43 @@ class ProductiveModelResolver:
     def resolve(self) -> ResolvedProductiveModel:
         """Backward-compatible entry point used by classification services."""
         return self.resolve_current_stage2_productive_model()
+
+    def availability(self) -> dict[str, Any]:
+        """Public, non-sensitive view of the canonical Stage 2 production slot."""
+        try:
+            resolved = self.resolve_current_stage2_productive_model()
+        except ProductiveModelError as exc:
+            return {
+                "available": False,
+                "code": exc.code,
+                "message": exc.detail,
+                "environment": STAGE2_ENVIRONMENT,
+                "alias": STAGE2_ALIAS,
+                "production_scope": STAGE2_PRODUCTION_SCOPE,
+                "model": None,
+            }
+        return {
+            "available": True,
+            "code": None,
+            "message": "Modelo Productivo Etapa 2 disponible.",
+            "environment": STAGE2_ENVIRONMENT,
+            "alias": STAGE2_ALIAS,
+            "production_scope": STAGE2_PRODUCTION_SCOPE,
+            "model": {
+                "deployment_id": resolved.deployment_id,
+                "deployment_name": resolved.deployment_name,
+                "publication_id": resolved.publication_id,
+                "model_version_id": resolved.model_version_id,
+                "training_run_id": resolved.source_training_run_id,
+                "evaluation_run_id": resolved.source_evaluation_run_id,
+                "model_name": resolved.model_name,
+                "model_version": resolved.model_version,
+                "checkpoint_sha256": resolved.checkpoint_sha256,
+                "threshold": resolved.threshold,
+                "threshold_source": resolved.threshold_source,
+                "published_at": resolved.published_at,
+            },
+        }
 
     def resolve_snapshot(
         self,

@@ -409,12 +409,12 @@ function WorkflowProcessing({
         ? capabilities.canExecuteDetection
         : failure?.step === 'classification'
           ? capabilities.canExecuteClassification
-        : failure?.step === 'recovery';
+          : failure?.step === 'recovery';
   const canContinueRecovered = stage === 'ready_for_detection'
     ? capabilities.canExecuteDetection
     : stage === 'classification_pending' || stage === 'awaiting_productive_model'
       ? capabilities.canExecuteClassification
-    : run ? capabilities.canCreateQueue : capabilities.canCreateAnalysis;
+      : run ? capabilities.canCreateQueue : capabilities.canCreateAnalysis;
   const eventAt = (eventType: string) =>
     events.find((event) => event.event_type === eventType)?.created_at;
   const milestoneTimes = [
@@ -681,18 +681,18 @@ function WorkflowProcessing({
                     ? 'La calidad está aprobada y la detección aún no existe'
                     : stage === 'classification_pending'
                       ? 'La detección está lista y la clasificación aún no existe'
-                    : run
-                      ? 'La ejecución existe y espera su solicitud de calidad'
-                      : 'Imagen cargada, esperando control técnico'}
+                      : run
+                        ? 'La ejecución existe y espera su solicitud de calidad'
+                        : 'Imagen cargada, esperando control técnico'}
                 </h3>
                 <p>Continuar es una acción manual y reutilizará los identificadores persistidos.</p>
                 {canContinueRecovered ? (
                   <button type="button" disabled={controller.busy} onClick={() => void controller.continueWorkflow()}>
-                  {stage === 'ready_for_detection'
-                    ? 'Iniciar detección'
-                    : stage === 'classification_pending'
-                      ? 'Iniciar clasificación'
-                      : 'Continuar análisis'}
+                    {stage === 'ready_for_detection'
+                      ? 'Iniciar detección'
+                      : stage === 'classification_pending'
+                        ? 'Iniciar clasificación'
+                        : 'Continuar análisis'}
                   </button>
                 ) : <p>Tu rol no permite continuar esta etapa.</p>}
               </section>

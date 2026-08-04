@@ -7,6 +7,7 @@ from fastapi import APIRouter,Depends,Header,HTTPException,Query
 from pydantic import BaseModel,ConfigDict
 from app.db import fetch_all,fetch_one,get_engine,resolve_datasource
 from app.services.serialization import row_to_dict,rows_to_list
+from app.services.productive_model import ProductiveModelResolver
 from app.security import Permission,Principal,require_permission
 from app.audit import audited_permission,mutation_connection
 
@@ -177,6 +178,12 @@ def prepare_release(
 @router.get("/training-runs/{training_run_id}/stage2-availability")
 def stage2_availability(training_run_id:str,datasource:str|None=Query("malaria")):
     return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
+
+@router.get("/stage2/productive-model-availability")
+def productive_model_availability(datasource:str|None=Query("malaria")):
+    """Canonical availability consumed by executions and smear analysis."""
+    engine=get_engine(resolve_datasource(datasource))
+    return ProductiveModelResolver(engine=engine).availability()
 
 @router.get("/training-runs/{training_run_id}/stage2-release-status")
 def stage2_release_status(training_run_id:str,datasource:str|None=Query("malaria")):

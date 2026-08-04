@@ -17,7 +17,9 @@ test('login y me usan el cliente HTTP central y persisten solamente el bearer', 
 test('401 elimina la sesión persistida y logout cancela solicitudes pendientes', () => {
   assert.match(api, /response\.status === 401/);
   assert.match(api, /localStorage\.removeItem\(ACCESS_TOKEN_KEY\)/);
-  assert.match(api, /authenticationFailureHandler\?\.\(\)/);
+  assert.match(api, /sessionStorage\.clear\(\)/);
+  assert.match(api, /handleAuthenticationFailure\(\)/);
+  assert.match(api, /window\.location\.replace\('\/login'\)/);
   assert.match(auth, /logout\(\).*setAccessToken\(null\)/s);
   assert.match(auth, /logout\(\).*cancelPendingRequests\(\)/s);
 });
@@ -33,20 +35,20 @@ test('la inicialización restaura el token y valida la sesión con el backend', 
   assert.match(auth, /restoreAccessToken\(\)/);
   assert.match(auth, /authApi\.me\(\)/);
   assert.match(auth, /setStatus\('authenticated'\)/);
-  assert.match(auth, /error instanceof ApiError && error\.status === 401/);
-  assert.match(auth, /setStatus\('unavailable'\)/);
+  assert.match(auth, /\.catch\(\(\) => .*setAccessToken\(null\).*setStatus\('unauthenticated'\)/s);
+  assert.doesNotMatch(auth, /setStatus\('unavailable'\)/);
 });
 
 test('la guarda espera la validación y conserva la URL solicitada completa', () => {
   assert.match(auth, /status === 'initializing'.*SessionStatus/s);
-  assert.match(auth, /status === 'unavailable'.*retrySession/s);
+  assert.doesNotMatch(auth, /No fue posible validar la sesión/);
   assert.match(auth, /location\.pathname.*location\.search.*location\.hash/s);
 });
 
 test('login espera restauración y vuelve a la ruta protegida solicitada', () => {
   const login = readFileSync(new URL('../src/pages/Login.tsx', import.meta.url), 'utf8');
   assert.match(login, /status === 'initializing'.*SessionStatus/s);
-  assert.match(login, /status === 'unavailable'.*retrySession/s);
+  assert.doesNotMatch(login, /No fue posible validar la sesión/);
   assert.match(login, /navigate\(requestedPath/);
   assert.match(login, /Navigate to=\{requestedPath\}/);
 });

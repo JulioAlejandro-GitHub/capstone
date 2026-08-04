@@ -264,6 +264,7 @@ def _candidate(model_path: Path, *, threshold_source: str = "fixed_cli") -> dict
         "positive_label": "parasitized",
         "score_name": "probability_parasitized",
         "deployment_metadata": {
+            "production_scope": "stage2_experimental",
             "stage2": {"eligible": True},
             "technical_smoke_test": {"status": "PASS"},
             "technical_contract": {
@@ -406,6 +407,7 @@ def test_productive_resolver_query_starts_from_active_publication_and_uses_real_
         "historical": False,
         "environment": "stage2",
         "alias": "default",
+        "production_scope": "stage2_experimental",
         "deployment_id": None,
         "model_version_id": None,
         "artifact_id": None,

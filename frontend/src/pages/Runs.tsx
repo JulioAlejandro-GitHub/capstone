@@ -79,7 +79,19 @@ export function Runs({
   const loadStage2=async(runId:string)=>{
     setStage2Loading(current=>({...current,[runId]:true}));
     setStage2Errors(current=>{const next={...current};delete next[runId];return next;});
-    try{const response=await api.getStage2ReleaseStatus(datasource,runId);
+    try{const [release,availability]=await Promise.all([
+      api.getStage2ReleaseStatus(datasource,runId),
+      api.getProductiveModelAvailability(datasource),
+    ]);
+      const isCurrent=availability.available&&availability.model?.training_run_id===runId;
+      const response:Stage2Availability=isCurrent?{
+        ...release,available:true,is_stage2_available:true,is_stage2_production:true,
+        stage2_status:'production',production_state:'active',
+        deployment_id:availability.model!.deployment_id,
+        environment:availability.environment,alias:availability.alias,
+        production_scope:availability.production_scope,
+        deployment_status:'active',available_for_inference:true,
+      }:release;
       setStage2Status(current=>({...current,[runId]:response}));return response;
     }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));return null;}
     finally{setStage2Loading(current=>({...current,[runId]:false}));}
