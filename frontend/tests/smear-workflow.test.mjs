@@ -7,6 +7,7 @@ const hook = read('src/hooks/useSmearAnalysisWorkflow.ts');
 const page = read('src/pages/SmearWorkflow.tsx');
 const upload = read('src/pages/SmearUpload.tsx');
 const workspace = read('src/components/cell-review/CellReviewWorkspace.tsx');
+const immersive = read('src/components/cell-review/SmearAnalysisImmersiveView.tsx');
 const api = read('src/services/api.ts');
 const app = read('src/App.tsx');
 const router = read('src/router.ts');
@@ -119,6 +120,13 @@ test('URL conserva IDs y recuperación sólo ejecuta lecturas', () => {
   assert.match(api, /\/api\/v1\/scientific\/workflows\//);
   assert.match(hook, /getSmearWorkflow/);
   assert.match(hook, /isValidPublicId/);
+  assert.match(hook, /const workflowQueryRef = useRef\(searchParams\)/);
+  assert.match(hook, /workflowQueryRef\.current = searchParams/);
+  assert.match(hook, /new URLSearchParams\(workflowQueryRef\.current\)/);
+  assert.ok(
+    hook.indexOf('workflowQueryRef.current = next')
+      < hook.indexOf('setSearchParams(next, { replace: true })'),
+  );
   assert.match(
     hook,
     /queryIdentifiers\.analysis,\s*queryIdentifiers\.batch,\s*queryIdentifiers\.classification,\s*queryIdentifiers\.detection,\s*recover,/,
@@ -157,14 +165,20 @@ test('errores conservan recursos y ofrecen retry desde la etapa fallida', () => 
   assert.match(page, /Reingresar a cola/);
 });
 
-test('detección completada reutiliza SmearAnalysisResultsView y persiste selección', () => {
-  assert.match(page, /<SmearAnalysisResultsView/);
+test('detección completada reutiliza SmearAnalysisImmersiveView y persiste selección', () => {
+  assert.match(page, /<SmearAnalysisImmersiveView/);
+  assert.match(page, /mode="live"/);
+  assert.match(page, /mode === 'review' \? ' smear-workflow--immersive' : ''/);
   assert.match(page, /microscopyImageId: identifiers\.microscopyImageId/);
   assert.match(page, /onImageChange: controller\.selectImage/);
   assert.match(page, /selectedDetectionId: identifiers\.selectedDetectionId/);
   assert.match(page, /onDetectionChange: controller\.selectDetection/);
+  assert.match(page, /selectedPredictionId: identifiers\.selectedPredictionId/);
+  assert.match(page, /onPredictionChange: controller\.selectPrediction/);
   assert.match(workspace, /initialSelectedDetectionId/);
   assert.match(workspace, /onSelectedDetectionChange/);
+  assert.match(immersive, /<CellReviewWorkspace/);
+  assert.equal((immersive.match(/<CellReviewWorkspace/g) ?? []).length, 1);
 });
 
 test('ruta canónica y aliases legacy comparten el workflow sin tocar Modelo IA', () => {

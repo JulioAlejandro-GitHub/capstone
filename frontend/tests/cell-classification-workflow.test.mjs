@@ -7,7 +7,9 @@ const hook = read('src/hooks/useSmearAnalysisWorkflow.ts');
 const page = read('src/pages/SmearWorkflow.tsx');
 const workspace = read('src/components/cell-review/CellReviewWorkspace.tsx');
 const viewer = read('src/components/cell-review/CellImageViewer.tsx');
+const gradCamPreview = read('src/components/cell-review/CellGradCamPreview.tsx');
 const modal = read('src/components/cell-review/CellClassificationAuditModal.tsx');
+const immersiveView = read('src/components/cell-review/SmearAnalysisImmersiveView.tsx');
 const api = read('src/services/api.ts');
 const types = read('src/types/cellClassification.ts');
 const history = read('src/pages/SmearAnalysisHistory.tsx');
@@ -51,7 +53,7 @@ test('cliente no puede elegir modelo, checkpoint, mapping ni threshold', () => {
     api.indexOf('createCellClassificationRun'),
     api.indexOf('getCellClassificationRuns'),
   );
-  assert.match(create, /JSON\.stringify\(\{detection_run_id:detectionRunId\}\)/);
+  assert.match(create, /JSON\.stringify\(\{\s*detection_run_id:\s*detectionRunId\s*\}\)/);
   assert.doesNotMatch(
     create,
     /model_id|production_model_id|checkpoint|threshold|label_mapping|preprocessing/,
@@ -119,7 +121,7 @@ test('workspace presenta modelo, threshold, predicciones y filtros científicos'
     'Predichas parasitized',
     'Predichas uninfected',
     'Próximas al threshold',
-    'Predicciones fallidas',
+    'Sin clasificar o fallidas',
     'Sin revisión',
     'Confirmadas',
     'Corregidas',
@@ -168,9 +170,17 @@ test('Grad-CAM se genera sólo por acción explícita y retry failed se declara'
   assert.match(workspace, /onClick=\{onGenerateExplanation\}/);
   assert.match(workspace, /Generar explicación/);
   assert.match(workspace, /target\.explanation\?\.status === 'failed'/);
-  assert.match(api, /createCellExplanation\(predictionId:string,retry=false\)/);
-  assert.match(api, /JSON\.stringify\(\{retry\}\)/);
+  assert.match(api, /createCellExplanation\(predictionId:\s*string,\s*retry\s*=\s*false\)/);
+  assert.match(api, /JSON\.stringify\(\{\s*retry\s*\}\)/);
   assert.match(workspace, /El modelo productivo no admite Grad-CAM con la configuración registrada/);
+  assert.match(workspace, /<CellGradCamPreview prediction=\{prediction\}/);
+  assert.match(gradCamPreview, /role="tablist"/);
+  for (const tab of ['Crop original', 'Heatmap', 'Overlay']) {
+    assert.match(gradCamPreview, new RegExp(tab));
+  }
+  assert.match(gradCamPreview, /disabled=\{id !== 'original' && !generated\}/);
+  assert.match(workspace, /onClick=\{onAudit\}>Auditar clasificación/);
+  assert.doesNotMatch(gradCamPreview, /createCellExplanation/);
   assert.doesNotMatch(hook, /createCellExplanation/);
 });
 
@@ -226,17 +236,30 @@ test('RBAC separa execute, read, explain y review', () => {
   assert.match(workspace, /canClassificationReview && !readOnly/);
 });
 
-test('historial reutiliza workspace en solo lectura sin mutaciones', () => {
+test('historial reutiliza la vista inmersiva mediante una unión de solo lectura', () => {
   assert.match(history, /SmearAnalysisReadOnlyView/);
   const readOnlyView = page.slice(
     page.indexOf('export function SmearAnalysisReadOnlyView'),
     page.indexOf('export function SmearWorkflow'),
   );
-  assert.match(readOnlyView, /<SmearAnalysisResultsView/);
+  assert.match(readOnlyView, /<SmearAnalysisImmersiveView/);
   assert.match(readOnlyView, /classificationRunId: workflow\.classification_run\?\.id/);
-  assert.match(readOnlyView, /canExplain: false/);
-  assert.match(readOnlyView, /canReviewClassification: false/);
   assert.match(readOnlyView, /mode="history"/);
+  assert.doesNotMatch(readOnlyView, /permissions=\{/);
+  assert.match(
+    immersiveView,
+    /type SmearAnalysisHistoryViewProps[\s\S]*mode: 'history';[\s\S]*permissions\?: never/,
+  );
+  assert.match(
+    immersiveView,
+    /SmearAnalysisImmersiveViewProps\s*=[\s\S]*SmearAnalysisLiveViewProps[\s\S]*SmearAnalysisHistoryViewProps/,
+  );
+  assert.match(immersiveView, /canExplain=\{livePermissions\?\.canExplain \?\? false\}/);
+  assert.match(
+    immersiveView,
+    /canClassificationReview=\{livePermissions\?\.canReviewClassification \?\? false\}/,
+  );
+  assert.match(immersiveView, /readOnly=\{isHistory\}/);
   assert.doesNotMatch(
     readOnlyView,
     /createCellClassificationRun|createCellExplanation|createCellClassificationReview/,
@@ -250,5 +273,7 @@ test('artefactos explicativos usan blobs autenticados y object URLs revocables',
   assert.match(api, /requestBlob/);
   assert.match(authenticated, /URL\.createObjectURL/);
   assert.match(authenticated, /URL\.revokeObjectURL/);
+  assert.match(gradCamPreview, /`\$\{explanation\.id\}:\$\{mode\}`/);
+  assert.match(modal, /`\$\{explanation\.id\}:\$\{kind\}`/);
   assert.doesNotMatch(types + workspace + modal, /checkpoint_path|storage_key|relative_storage_key/);
 });

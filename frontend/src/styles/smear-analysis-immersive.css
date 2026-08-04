@@ -1,0 +1,1910 @@
+/* Approved Dark Laboratory workspace. Every visual rule is scoped to smear results. */
+
+.app-content:has(> .smear-workflow--immersive) {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page.smear-workflow.smear-workflow--immersive {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0;
+  padding: 0;
+  background: #0b1326;
+}
+
+.smear-workflow--immersive > .workflow-context-header {
+  display: none;
+}
+
+.smear-workflow--immersive .workflow-review-frame,
+.smear-workflow--immersive .workflow-review-frame > .smear-analysis-immersive {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.smear-analysis-immersive {
+  --smear-background: #0b1326;
+  --smear-surface-lowest: #060e20;
+  --smear-surface-low: #131b2e;
+  --smear-surface: #171f33;
+  --smear-surface-high: #222a3d;
+  --smear-surface-highest: #2d3449;
+  --smear-primary: #a4e6ff;
+  --smear-primary-bright: #4cd6ff;
+  --smear-secondary: #4edea3;
+  --smear-tertiary: #ffd5a5;
+  --smear-error: #ffb4ab;
+  --smear-text: #dae2fd;
+  --smear-muted: #bbc9cf;
+  --smear-outline: #859399;
+  --smear-outline-variant: #3c494e;
+  --smear-glass: rgba(11, 19, 38, .74);
+  --smear-glass-border: rgba(164, 230, 255, .17);
+  --smear-panel-left: 24px;
+  --smear-panel-right: 24px;
+  --smear-detail-width: 320px;
+  --smear-rail-width: 120px;
+  --cell-surface: var(--smear-surface);
+  --cell-surface-elevated: var(--smear-surface-high);
+  --cell-border: var(--smear-outline-variant);
+  --cell-text: var(--smear-text);
+  --cell-muted: var(--smear-muted);
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(49, 57, 77, .22), transparent 48%),
+    var(--smear-background);
+  color: var(--smear-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.smear-analysis-immersive button,
+.smear-analysis-immersive input,
+.smear-analysis-immersive select,
+.smear-analysis-immersive textarea {
+  font: inherit;
+}
+
+.smear-analysis-immersive button:focus-visible,
+.smear-analysis-immersive input:focus-visible,
+.smear-analysis-immersive select:focus-visible,
+.smear-analysis-immersive textarea:focus-visible,
+.smear-analysis-immersive [tabindex="0"]:focus-visible {
+  outline: 2px solid var(--smear-primary);
+  outline-offset: 2px;
+}
+
+.smear-analysis-immersive .smear-glass-panel,
+.smear-analysis-immersive .cell-viewer-controls,
+.smear-analysis-immersive .cell-immersive-top-controls > *,
+.smear-analysis-immersive .cell-detail-panel,
+.smear-analysis-immersive .cell-gallery-panel,
+.smear-analysis-immersive .cell-review-progress-ring,
+.smear-analysis-immersive .cell-viewer-minimap,
+.smear-analysis-immersive .cell-experimental-summary,
+.smear-analysis-immersive .cell-panel-restore {
+  border: 1px solid var(--smear-glass-border);
+  background: var(--smear-glass);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.smear-analysis-immersive > .smear-results-header {
+  display: contents;
+}
+
+.smear-analysis-immersive .smear-results-case-panel {
+  position: absolute;
+  z-index: 50;
+  top: 24px;
+  left: var(--smear-panel-left);
+  display: block;
+  width: 280px;
+  min-width: 0;
+  min-height: 82px;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.smear-analysis-immersive .smear-results-case-panel > div {
+  width: 100%;
+}
+
+.smear-analysis-immersive .smear-results-case-panel p {
+  margin: 0 0 8px;
+  color: rgba(164, 230, 255, .72);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .smear-results-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .smear-results-case-data {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  margin: 0;
+  border-top: 1px solid rgba(164, 230, 255, .14);
+  padding-top: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.smear-analysis-immersive .smear-results-case-data > div:last-child {
+  grid-column: 1 / -1;
+}
+
+.smear-analysis-immersive .smear-results-case-data dt {
+  color: rgba(164, 230, 255, .66);
+  font-size: 8px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .smear-results-case-data dd {
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: #fff;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .smear-results-actions {
+  position: absolute;
+  z-index: 60;
+  top: 24px;
+  right: var(--smear-panel-right);
+  display: flex;
+  width: auto;
+  min-width: 0;
+  min-height: 42px;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  padding: 5px;
+}
+
+.smear-analysis-immersive .smear-results-run-data {
+  display: none;
+}
+
+.smear-analysis-immersive .smear-glass-button,
+.smear-analysis-immersive .smear-results-context-action {
+  min-height: 32px;
+  border: 1px solid rgba(164, 230, 255, .34);
+  border-radius: 999px;
+  background: rgba(164, 230, 255, .055);
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 6px 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .smear-glass-button:hover {
+  border-color: rgba(164, 230, 255, .68);
+  background: rgba(164, 230, 255, .12);
+  box-shadow: 0 0 16px rgba(76, 214, 255, .12);
+}
+
+.smear-analysis-immersive .smear-status-badge {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  border: 1px solid rgba(78, 222, 163, .38);
+  border-radius: 999px;
+  background: rgba(78, 222, 163, .1);
+  color: var(--smear-secondary);
+  padding: 5px 9px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive > .cell-workspace-shell,
+.smear-analysis-immersive .cell-workspace-shell--immersive {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.smear-analysis-immersive .cell-workspace-actions--sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-classification-error {
+  position: absolute;
+  z-index: 70;
+  top: 78px;
+  left: 50%;
+  width: min(560px, calc(100% - 48px));
+  margin: 0;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 180, 171, .45);
+  border-radius: 6px;
+  background: rgba(91, 22, 28, .9);
+  color: #ffdad6;
+  padding: 7px 10px;
+  font-size: 11px;
+}
+
+.smear-analysis-immersive > .cell-workspace-loading {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  place-content: center;
+  gap: 12px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--smear-surface-lowest);
+  color: var(--smear-muted);
+  text-align: center;
+}
+
+.smear-analysis-immersive > .cell-workspace-loading > div {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.smear-analysis-immersive > .cell-workspace-loading button {
+  min-height: 40px;
+  border: 1px solid rgba(164, 230, 255, .32);
+  border-radius: 999px;
+  background: rgba(164, 230, 255, .08);
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 8px 14px;
+}
+
+.smear-analysis-immersive .cell-review-workspace,
+.smear-analysis-immersive .cell-review-workspace--immersive {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.smear-analysis-immersive .cell-immersive-canvas,
+.smear-analysis-immersive .cell-review-right,
+.smear-analysis-immersive #cell-image-panel,
+.smear-analysis-immersive .cell-viewer-section,
+.smear-analysis-immersive .cell-image-viewport {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-viewer-section::after {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 46%, rgba(11, 19, 38, .34) 76%, rgba(6, 14, 32, .75) 100%),
+    linear-gradient(90deg, rgba(6, 14, 32, .18), transparent 18%, transparent 80%, rgba(6, 14, 32, .24));
+  content: "";
+  pointer-events: none;
+}
+
+.smear-analysis-immersive .cell-image-canvas {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.smear-analysis-immersive .cell-image-backdrop {
+  position: absolute;
+  z-index: 1;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  object-fit: cover;
+  filter: blur(12px) saturate(.78) brightness(.46);
+  opacity: .72;
+  transform: scale(1.035);
+  pointer-events: none;
+  user-select: none;
+}
+
+.smear-analysis-immersive .cell-viewer-state {
+  z-index: 10;
+  color: var(--smear-muted);
+  font-size: 12px;
+}
+
+.smear-analysis-immersive .cell-viewer-overlay-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-viewer-controls {
+  position: absolute;
+  z-index: 55;
+  top: 24px;
+  left: 316px;
+  display: flex;
+  width: auto;
+  min-height: 42px;
+  align-items: center;
+  gap: 5px;
+  overflow: visible;
+  border-radius: 999px;
+  padding: 5px;
+}
+
+.smear-analysis-immersive .cell-viewer-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.smear-analysis-immersive .cell-viewer-icon-button {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(164, 230, 255, .7);
+  cursor: pointer;
+  padding: 7px;
+}
+
+.smear-analysis-immersive .cell-viewer-icon-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.smear-analysis-immersive .cell-viewer-icon-button:hover,
+.smear-analysis-immersive .cell-viewer-icon-button[aria-pressed="true"] {
+  border-color: rgba(164, 230, 255, .32);
+  background: rgba(164, 230, 255, .11);
+  color: var(--smear-primary);
+  box-shadow: 0 0 12px rgba(76, 214, 255, .1);
+}
+
+.smear-analysis-immersive .cell-viewer-tool-separator {
+  width: 1px;
+  height: 22px;
+  margin: 0 2px;
+  background: rgba(164, 230, 255, .18);
+}
+
+.smear-analysis-immersive .cell-viewer-selectors {
+  position: absolute;
+  top: 47px;
+  left: 0;
+  display: flex;
+  gap: 5px;
+}
+
+.smear-analysis-immersive .cell-viewer-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.smear-analysis-immersive .cell-viewer-selector > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.smear-analysis-immersive .cell-viewer-selector select {
+  width: 144px;
+  min-width: 0;
+  height: 27px;
+  border: 1px solid rgba(164, 230, 255, .16);
+  border-radius: 5px;
+  background: rgba(6, 14, 32, .84);
+  color: var(--smear-muted);
+  padding: 3px 21px 3px 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-immersive-top-controls {
+  position: absolute;
+  z-index: 58;
+  top: 24px;
+  left: clamp(638px, 37%, 752px);
+  display: flex;
+  width: min(620px, calc(100% - 840px));
+  min-width: 540px;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  transform: none;
+}
+
+.smear-analysis-immersive .cell-gallery-search {
+  position: relative;
+  display: grid;
+  flex: 0 0 260px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  border-radius: 999px;
+  padding: 5px 7px 5px 13px;
+}
+
+.smear-analysis-immersive .cell-gallery-search > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.smear-analysis-immersive .cell-gallery-search > span {
+  color: rgba(164, 230, 255, .7);
+  font-size: 17px;
+}
+
+.smear-analysis-immersive .cell-gallery-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  padding: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-gallery-search input::placeholder {
+  color: rgba(218, 226, 253, .36);
+}
+
+.smear-analysis-immersive .cell-gallery-search button {
+  min-height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(164, 230, 255, .11);
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 8px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 42px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid var(--smear-glass-border);
+  border-radius: 999px;
+  background: var(--smear-glass);
+  padding: 4px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  scrollbar-width: none;
+  backdrop-filter: blur(12px);
+}
+
+.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 32px;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(187, 201, 207, .58);
+  cursor: pointer;
+  padding: 5px 9px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: .025em;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters button > strong {
+  opacity: .7;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters button[aria-pressed="true"] {
+  border-color: rgba(78, 222, 163, .4);
+  background: rgba(78, 222, 163, .15);
+  color: var(--smear-secondary) !important;
+  box-shadow: 0 0 12px rgba(78, 222, 163, .14);
+}
+
+.smear-analysis-immersive .cell-immersive-top-controls .classification-status-parasitized[aria-pressed="true"],
+.smear-analysis-immersive .cell-immersive-top-controls .classification-status-near_threshold[aria-pressed="true"],
+.smear-analysis-immersive .cell-immersive-top-controls .classification-status-needs_attention[aria-pressed="true"] {
+  border-color: rgba(255, 213, 165, .43);
+  background: rgba(255, 176, 68, .13);
+  color: var(--smear-tertiary) !important;
+}
+
+.smear-analysis-immersive .cell-immersive-top-controls .classification-status-failed[aria-pressed="true"],
+.smear-analysis-immersive .cell-immersive-top-controls .classification-status-corrected[aria-pressed="true"] {
+  border-color: rgba(255, 180, 171, .4);
+  background: rgba(147, 0, 10, .18);
+  color: var(--smear-error) !important;
+}
+
+.smear-analysis-immersive .cell-detail-panel {
+  position: absolute;
+  z-index: 35;
+  top: 146px;
+  bottom: 108px;
+  left: var(--smear-panel-left);
+  display: block;
+  width: var(--smear-detail-width);
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 8px;
+  color: var(--smear-text);
+  scrollbar-color: rgba(164, 230, 255, .32) transparent;
+  scrollbar-width: thin;
+}
+
+.smear-analysis-immersive .cell-detail-panel > .cell-panel-heading,
+.smear-analysis-immersive .cell-detail-content > .cell-panel-heading,
+.smear-analysis-immersive .cell-gallery-panel > .cell-panel-heading {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid rgba(164, 230, 255, .13);
+  background: rgba(11, 19, 38, .9);
+  padding: 10px 12px;
+  backdrop-filter: blur(12px);
+}
+
+.smear-analysis-immersive .cell-panel-heading h2 {
+  margin: 0;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.smear-analysis-immersive .cell-panel-heading p {
+  margin: 3px 0 0;
+  color: var(--smear-secondary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-panel-heading > button,
+.smear-analysis-immersive .cell-panel-heading-actions > button {
+  display: grid;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(164, 230, 255, .2);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--smear-muted);
+  cursor: pointer;
+}
+
+.smear-analysis-immersive .cell-panel-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.smear-analysis-immersive .cell-review-status,
+.smear-analysis-immersive .cell-prediction-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 12px 14px;
+}
+
+.smear-analysis-immersive .cell-detail-crop {
+  width: 100%;
+  height: 170px;
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+  border-bottom: 1px solid rgba(164, 230, 255, .14);
+  border-radius: 0;
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-detail-crop .cell-crop-image {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-detail-crop img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.smear-analysis-immersive .cell-detail-facts,
+.smear-analysis-immersive .classification-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(164, 230, 255, .1);
+  border-radius: 5px;
+  background: rgba(164, 230, 255, .1);
+}
+
+.smear-analysis-immersive .cell-detail-facts > div {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(6, 14, 32, .72);
+  padding: 7px 8px;
+}
+
+.smear-analysis-immersive .cell-detail-facts dt {
+  color: var(--smear-muted);
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-detail-facts dd {
+  margin: 2px 0 0;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.smear-analysis-immersive .cell-classification-detail,
+.smear-analysis-immersive .cell-human-review,
+.smear-analysis-immersive .cell-review-history {
+  width: 100%;
+  border-color: rgba(164, 230, 255, .12);
+  border-radius: 6px;
+  background: rgba(6, 14, 32, .38);
+  padding: 10px;
+}
+
+.smear-analysis-immersive .cell-classification-heading h3,
+.smear-analysis-immersive .cell-human-review h3,
+.smear-analysis-immersive .cell-review-history h3,
+.smear-analysis-immersive .cell-explanation-actions h4,
+.smear-analysis-immersive .cell-classification-review h4,
+.smear-analysis-immersive .cell-gradcam-preview h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 11px;
+}
+
+.smear-analysis-immersive .cell-review-form textarea,
+.smear-analysis-immersive .cell-review-form select {
+  min-height: 36px;
+  border: 1px solid rgba(164, 230, 255, .2);
+  border-radius: 5px;
+  background: rgba(6, 14, 32, .72);
+  color: var(--smear-text);
+  padding: 7px;
+  font-size: 10px;
+}
+
+.smear-analysis-immersive .cell-review-form textarea {
+  min-height: 62px;
+}
+
+.smear-analysis-immersive .cell-review-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.smear-analysis-immersive .cell-review-actions button,
+.smear-analysis-immersive .cell-explanation-actions button {
+  min-height: 32px;
+  border: 1px solid rgba(78, 222, 163, .3);
+  border-radius: 4px;
+  background: rgba(78, 222, 163, .07);
+  color: var(--smear-secondary);
+  cursor: pointer;
+  padding: 5px 7px;
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-review-actions button.danger {
+  border-color: rgba(255, 180, 171, .32);
+  background: rgba(147, 0, 10, .14);
+  color: var(--smear-error);
+}
+
+.smear-analysis-immersive .cell-review-actions button:disabled,
+.smear-analysis-immersive .cell-explanation-actions button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.smear-analysis-immersive .cell-readonly-note {
+  border-color: rgba(164, 230, 255, .16);
+  background: rgba(164, 230, 255, .05);
+  color: var(--smear-muted);
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-review-history li {
+  border-left-color: var(--smear-primary-bright);
+  background: rgba(34, 42, 61, .72);
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview {
+  display: grid;
+  gap: 7px;
+  border-top: 1px solid rgba(164, 230, 255, .12);
+  padding-top: 9px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview > header {
+  display: grid;
+  gap: 7px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview [role="tablist"] {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview [role="tab"] {
+  min-height: 28px;
+  border: 1px solid rgba(164, 230, 255, .16);
+  border-radius: 4px;
+  background: rgba(6, 14, 32, .5);
+  color: var(--smear-muted);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview [role="tab"][aria-selected="true"] {
+  border-color: rgba(78, 222, 163, .42);
+  background: rgba(78, 222, 163, .1);
+  color: var(--smear-secondary);
+}
+
+.smear-analysis-immersive .cell-gradcam-preview [role="tab"]:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.smear-analysis-immersive .cell-gradcam-image {
+  display: grid;
+  min-height: 130px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(164, 230, 255, .12);
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-gradcam-image > img,
+.smear-analysis-immersive .cell-gradcam-image .cell-crop-image {
+  width: 100%;
+  height: 150px;
+  object-fit: contain;
+}
+
+.smear-analysis-immersive .cell-gradcam-state {
+  color: var(--smear-muted);
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-gallery-panel {
+  position: absolute;
+  z-index: 40;
+  top: 96px;
+  right: var(--smear-panel-right);
+  bottom: 128px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: var(--smear-rail-width);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading {
+  align-items: center;
+  padding: 8px;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading h2 {
+  color: var(--smear-secondary);
+  font-size: 8px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading p {
+  display: none;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading > button {
+  flex-basis: 22px;
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+}
+
+.smear-analysis-immersive .cell-gallery-scroll {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 7px;
+  scrollbar-color: rgba(78, 222, 163, .28) transparent;
+  scrollbar-width: thin;
+}
+
+.smear-analysis-immersive .cell-crop-gallery {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.smear-analysis-immersive .cell-detection-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(78, 222, 163, .2);
+  border-radius: 5px;
+  background: rgba(6, 14, 32, .72);
+}
+
+.smear-analysis-immersive .cell-detection-card.is-selected {
+  border-color: var(--smear-secondary);
+  box-shadow: 0 0 0 1px rgba(78, 222, 163, .6), 0 0 14px rgba(78, 222, 163, .3);
+}
+
+.smear-analysis-immersive .cell-detection-card > button {
+  display: grid;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--smear-text);
+  cursor: pointer;
+  padding: 0;
+}
+
+.smear-analysis-immersive .cell-detection-card .cell-crop-image {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-detection-card img {
+  transition: transform 180ms ease;
+}
+
+.smear-analysis-immersive .cell-detection-card:hover img,
+.smear-analysis-immersive .cell-detection-card:focus-within img {
+  transform: scale(1.06);
+}
+
+.smear-analysis-immersive .cell-card-caption {
+  display: grid;
+  gap: 3px;
+  border-top: 1px solid rgba(78, 222, 163, .12);
+  padding: 5px 3px;
+  text-align: center;
+}
+
+.smear-analysis-immersive .cell-card-caption > strong {
+  overflow: hidden;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-card-caption small {
+  display: none;
+}
+
+.smear-analysis-immersive .cell-card-caption .cell-prediction-label,
+.smear-analysis-immersive .cell-card-caption .cell-review-status {
+  justify-self: center;
+  max-width: 100%;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-card-warning {
+  top: 4px;
+  right: 4px;
+  width: 19px;
+  height: 19px;
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-load-more {
+  width: 100%;
+  margin: 9px 0 0;
+  border: 1px solid rgba(164, 230, 255, .2);
+  border-radius: 4px;
+  background: rgba(164, 230, 255, .06);
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 6px 3px;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-panel-restore {
+  position: absolute;
+  z-index: 42;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  border-radius: 6px;
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+  writing-mode: vertical-rl;
+}
+
+.smear-analysis-immersive .cell-panel-restore--detail {
+  top: 45%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.smear-analysis-immersive .cell-panel-restore--rail {
+  top: 45%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.smear-analysis-immersive .cell-viewer-navigation {
+  position: absolute;
+  z-index: 12;
+  bottom: 24px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid rgba(164, 230, 255, .16);
+  border-radius: 999px;
+  background: rgba(11, 19, 38, .72);
+  padding: 4px;
+  transform: translateX(-50%);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .35);
+  backdrop-filter: blur(10px);
+}
+
+.smear-analysis-immersive .cell-viewer-navigation-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 7px;
+}
+
+.smear-analysis-immersive .cell-viewer-navigation-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.smear-analysis-immersive .cell-viewer-navigation-button:hover {
+  border-color: rgba(164, 230, 255, .26);
+  background: rgba(164, 230, 255, .1);
+}
+
+.smear-analysis-immersive .cell-viewer-navigation-position {
+  min-width: 42px;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  text-align: center;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap {
+  position: absolute;
+  z-index: 11;
+  bottom: 24px;
+  left: var(--smear-panel-left);
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  grid-template-rows: auto;
+  width: 184px;
+  min-height: 76px;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-heading {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0 4px 8px;
+  color: var(--smear-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-heading output {
+  color: rgba(187, 201, 207, .62);
+  font-size: 7px;
+  text-transform: none;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-canvas {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
+  width: 72px;
+  height: 60px;
+  border: 1px solid rgba(164, 230, 255, .26);
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-box {
+  opacity: .55;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-viewport {
+  filter: drop-shadow(0 0 3px rgba(164, 230, 255, .65));
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-selection {
+  filter: drop-shadow(0 0 3px rgba(78, 222, 163, .8));
+}
+
+.smear-analysis-immersive .cell-viewer-overlay-footer {
+  position: absolute;
+  z-index: 10;
+  right: calc(var(--smear-panel-right) + var(--smear-rail-width) + 16px);
+  bottom: 10px;
+  left: calc(var(--smear-panel-left) + 200px);
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  pointer-events: none;
+}
+
+.smear-analysis-immersive .cell-viewer-overlay-footer .cell-box-legend {
+  display: none;
+}
+
+.smear-analysis-immersive .cell-viewer-overlay-footer p {
+  max-width: min(720px, 70%);
+  margin: 0;
+  overflow: hidden;
+  color: rgba(218, 226, 253, .64);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-box rect {
+  vector-effect: non-scaling-stroke;
+}
+
+.smear-analysis-immersive .cell-box.is-selected rect,
+.smear-analysis-immersive .cell-image-selection-outline {
+  filter: drop-shadow(0 0 6px rgba(78, 222, 163, .78));
+}
+
+.smear-analysis-immersive .cell-image-selection-outline {
+  stroke: var(--smear-secondary) !important;
+}
+
+.smear-analysis-immersive .cell-image-selection-anchor {
+  fill: var(--smear-secondary);
+  stroke: var(--smear-secondary);
+}
+
+.smear-analysis-immersive .cell-image-selected-label {
+  fill: var(--smear-secondary) !important;
+  filter: drop-shadow(0 0 4px rgba(78, 222, 163, .7));
+}
+
+.smear-analysis-immersive .cell-review-progress {
+  position: absolute;
+  z-index: 45;
+  right: 28px;
+  bottom: 22px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 104px;
+  color: var(--smear-primary);
+}
+
+.smear-analysis-immersive .cell-review-progress-ring {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+}
+
+.smear-analysis-immersive .cell-review-progress-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.smear-analysis-immersive .cell-review-progress-ring circle {
+  fill: none;
+  stroke-width: 6;
+}
+
+.smear-analysis-immersive .cell-review-progress-track {
+  stroke: rgba(218, 226, 253, .12);
+}
+
+.smear-analysis-immersive .cell-review-progress-value {
+  stroke: var(--smear-primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 240ms ease;
+  filter: drop-shadow(0 0 4px rgba(164, 230, 255, .8));
+}
+
+.smear-analysis-immersive .cell-review-progress-ring > span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.smear-analysis-immersive .cell-review-progress-ring strong {
+  font-size: 18px;
+}
+
+.smear-analysis-immersive .cell-review-progress-ring small {
+  color: rgba(164, 230, 255, .65);
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-review-progress > p {
+  margin: 0;
+  color: rgba(164, 230, 255, .78);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(164, 230, 255, .45);
+}
+
+.smear-analysis-immersive .cell-experimental-summary {
+  position: absolute;
+  z-index: 32;
+  top: auto;
+  right: auto;
+  bottom: 24px;
+  left: 216px;
+  display: block;
+  width: 230px;
+  height: auto;
+  max-height: calc(100% - 150px);
+  overflow: hidden;
+  border-radius: 6px;
+  padding: 0;
+}
+
+.smear-analysis-immersive .cell-result-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 7px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .cell-result-toggle strong {
+  color: #fff;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-result-content {
+  display: none;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.smear-analysis-immersive .cell-experimental-summary.is-expanded {
+  width: min(720px, calc(100% - 520px));
+  min-width: 520px;
+}
+
+.smear-analysis-immersive .cell-experimental-summary.is-expanded .cell-result-content {
+  display: grid;
+  grid-template-columns: minmax(190px, .9fr) minmax(300px, 1.4fr);
+  gap: 12px;
+  max-height: min(420px, calc(100dvh - 290px));
+}
+
+.smear-analysis-immersive .cell-result-content h2 {
+  margin: 3px 0 7px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.smear-analysis-immersive .cell-result-content p {
+  margin: 0;
+  color: var(--smear-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.smear-analysis-immersive .cell-result-content dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+}
+
+.smear-analysis-immersive .cell-result-content dl > div {
+  min-width: 0;
+  border: 1px solid rgba(164, 230, 255, .1);
+  border-radius: 4px;
+  background: rgba(6, 14, 32, .52);
+  padding: 6px;
+}
+
+.smear-analysis-immersive .cell-result-content dt {
+  color: var(--smear-muted);
+  font-size: 7px;
+}
+
+.smear-analysis-immersive .cell-result-content dd {
+  margin: 2px 0 0;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.smear-analysis-immersive .cell-result-content .cell-summary-comparison {
+  grid-column: 1 / -1;
+  border-top: 1px solid rgba(164, 230, 255, .12);
+  color: var(--smear-muted);
+  padding-top: 8px;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .smear-analysis-disclaimer {
+  position: absolute;
+  z-index: 48;
+  right: 150px;
+  bottom: 4px;
+  left: 470px;
+  margin: 0;
+  overflow: hidden;
+  color: rgba(187, 201, 207, .58);
+  font-size: 7px;
+  letter-spacing: .015em;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.smear-analysis-immersive .cell-review-mobile-tabs {
+  display: none;
+}
+
+@media (max-width: 1799px) {
+  .smear-analysis-immersive {
+    --smear-panel-left: 16px;
+    --smear-panel-right: 16px;
+    --smear-detail-width: 296px;
+    --smear-rail-width: 108px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-panel {
+    top: 16px;
+    width: 250px;
+  }
+
+  .smear-analysis-immersive .smear-results-actions {
+    top: 16px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-controls {
+    top: 16px;
+    left: 282px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selectors {
+    top: 47px;
+    left: 0;
+  }
+
+  .smear-analysis-immersive .cell-immersive-top-controls {
+    top: 76px;
+    right: 16px;
+    left: 620px;
+    width: auto;
+    min-width: 0;
+  }
+
+  .smear-analysis-immersive .cell-detail-panel {
+    top: 132px;
+  }
+
+  .smear-analysis-immersive .cell-gallery-panel {
+    top: 86px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .smear-analysis-immersive .smear-results-case-panel {
+    width: 236px;
+    min-height: 70px;
+    padding: 8px 10px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-panel p {
+    margin-bottom: 5px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data {
+    padding-top: 5px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data > div:last-child {
+    display: none;
+  }
+
+  .smear-analysis-immersive .cell-immersive-top-controls {
+    top: 76px;
+    right: 16px;
+    left: 280px;
+    width: auto;
+    min-width: 0;
+    transform: none;
+  }
+
+  .smear-analysis-immersive .cell-viewer-controls {
+    top: 18px;
+    left: 264px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selectors {
+    top: 72px;
+    left: -248px;
+  }
+
+  .smear-analysis-immersive .cell-detail-panel {
+    z-index: 70;
+    top: 134px;
+    bottom: 64px;
+    left: 12px;
+    width: min(340px, calc(100% - 24px));
+  }
+
+  .smear-analysis-immersive .cell-gallery-panel {
+    z-index: 70;
+    top: 134px;
+    right: 12px;
+    bottom: 64px;
+    width: min(300px, calc(100% - 24px));
+  }
+
+  .smear-analysis-immersive .cell-gallery-panel .cell-crop-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .smear-analysis-immersive .cell-panel-restore--detail,
+  .smear-analysis-immersive .cell-panel-restore--rail {
+    top: 52%;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-content:has(> .smear-workflow--immersive) {
+    height: 100dvh;
+  }
+
+  .smear-analysis-immersive .smear-results-actions {
+    right: 10px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selector select {
+    width: 126px;
+  }
+}
+
+@media (max-width: 700px) {
+  .page.smear-workflow.smear-workflow--immersive {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .smear-analysis-immersive {
+    --smear-panel-left: 8px;
+    --smear-panel-right: 8px;
+    min-height: 0;
+  }
+
+  .smear-analysis-immersive .smear-results-case-panel {
+    top: 7px;
+    left: 8px;
+    width: calc(100% - 190px);
+    min-height: 48px;
+    border-radius: 6px;
+    padding: 7px 9px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-panel p {
+    display: none;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data {
+    gap: 4px 8px;
+    border: 0;
+    padding: 0;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data > div:last-child {
+    display: none;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data dt {
+    font-size: 7px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data dd {
+    font-size: 8px;
+  }
+
+  .smear-analysis-immersive .smear-results-actions {
+    top: 7px;
+    right: 8px;
+    min-height: 48px;
+    border-radius: 6px;
+    padding: 2px;
+  }
+
+  .smear-analysis-immersive .smear-status-badge {
+    display: inline-flex;
+    width: 78px;
+    min-width: 78px;
+    min-height: 44px;
+    justify-content: center;
+    overflow: hidden;
+    padding: 4px;
+    font-size: 0;
+  }
+
+  .smear-analysis-immersive .smear-status-badge::after {
+    content: "Solo lectura";
+    font-size: 7px;
+  }
+
+  .smear-analysis-immersive:has(.smear-status-badge) .smear-results-case-panel {
+    width: calc(100% - 225px);
+  }
+
+  .smear-analysis-immersive .smear-glass-button,
+  .smear-analysis-immersive .smear-results-context-action {
+    min-height: 44px;
+    max-width: 132px;
+    overflow: hidden;
+    border-radius: 5px;
+    padding-inline: 9px;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .smear-analysis-immersive .smear-results-actions .smear-glass-button:not(.smear-results-context-action) {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .smear-analysis-immersive .smear-results-actions .smear-glass-button:not(.smear-results-context-action)::before {
+    content: "↻";
+    font-size: 17px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-controls {
+    z-index: 62;
+    top: 62px;
+    right: 8px;
+    left: 8px;
+    display: block;
+    min-height: 42px;
+    overflow-x: auto;
+    overflow-y: visible;
+    border-radius: 6px;
+    padding: 4px;
+    scrollbar-width: none;
+  }
+
+  .smear-analysis-immersive .cell-viewer-tool-group {
+    width: max-content;
+  }
+
+  .smear-analysis-immersive .cell-viewer-icon-button {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 9px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selectors {
+    position: static;
+    display: flex;
+    margin-bottom: 4px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selector {
+    flex: 1 1 0;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selector select {
+    width: 100%;
+    height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-immersive-top-controls {
+    z-index: 61;
+    top: 170px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    min-width: 0;
+    transform: none;
+  }
+
+  .smear-analysis-immersive .cell-gallery-search {
+    flex-basis: 50%;
+    min-width: 0;
+    min-height: 44px;
+    border-radius: 6px;
+  }
+
+  .smear-analysis-immersive .cell-gallery-search button {
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters {
+    min-height: 44px;
+    border-radius: 6px;
+  }
+
+  .smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters button {
+    min-height: 44px;
+    padding: 4px 7px;
+  }
+
+  .smear-analysis-immersive .cell-gallery-panel .cell-panel-heading,
+  .smear-analysis-immersive .cell-detail-panel > .cell-panel-heading {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .smear-analysis-immersive .cell-review-mobile-tabs {
+    position: absolute;
+    z-index: 100;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3px;
+    border-top: 1px solid rgba(164, 230, 255, .16);
+    background: rgba(6, 14, 32, .94);
+    padding: 6px;
+    backdrop-filter: blur(14px);
+  }
+
+  .smear-analysis-immersive .cell-review-mobile-tabs button {
+    min-height: 44px;
+    border: 1px solid rgba(164, 230, 255, .15);
+    border-radius: 5px;
+    background: rgba(34, 42, 61, .72);
+    color: var(--smear-muted);
+    cursor: pointer;
+    padding: 6px 3px;
+    font-size: 10px;
+  }
+
+  .smear-analysis-immersive .cell-panel-heading > button,
+  .smear-analysis-immersive .cell-panel-heading-actions > button,
+  .smear-analysis-immersive .cell-gallery-panel .cell-panel-heading > button {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-review-actions button,
+  .smear-analysis-immersive .cell-explanation-actions button,
+  .smear-analysis-immersive .cell-review-form select {
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-navigation-button {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-review-mobile-tabs button[aria-selected="true"] {
+    border-color: rgba(78, 222, 163, .5);
+    background: rgba(78, 222, 163, .13);
+    color: var(--smear-secondary);
+  }
+
+  .smear-analysis-immersive .cell-viewer-minimap,
+  .smear-analysis-immersive .cell-viewer-overlay-footer,
+  .smear-analysis-immersive .cell-panel-restore,
+  .smear-analysis-immersive .cell-review-progress,
+  .smear-analysis-immersive .cell-result-toggle {
+    display: none;
+  }
+
+  .smear-analysis-immersive .cell-viewer-navigation {
+    bottom: 64px;
+  }
+
+  .smear-analysis-immersive .smear-analysis-disclaimer {
+    right: 8px;
+    bottom: 124px;
+    left: 8px;
+    font-size: 6px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-immersive-canvas,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-immersive-canvas,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-immersive-canvas {
+    visibility: hidden;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-immersive-top-controls,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-immersive-top-controls,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="image"] .cell-gallery-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="image"] .cell-detail-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="image"] .cell-experimental-summary,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-detail-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-experimental-summary,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-gallery-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-experimental-summary,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-gallery-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-detail-panel {
+    display: none;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-gallery-panel {
+    position: absolute;
+    inset: 194px 8px 60px;
+    display: grid;
+    width: auto;
+    height: auto;
+    max-height: none;
+    border-radius: 7px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-immersive-top-controls {
+    top: 62px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-crop-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-detail-panel {
+    position: absolute;
+    inset: 62px 8px 60px;
+    display: block;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    border-radius: 7px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-experimental-summary {
+    position: absolute;
+    inset: 62px 8px 60px;
+    display: block;
+    width: auto;
+    min-width: 0;
+    max-height: none;
+    overflow-y: auto;
+    border-radius: 7px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-result-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .smear-analysis-immersive .cell-result-content dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .smear-analysis-immersive:has(.cell-review-workspace[data-mobile-tab="cells"]) .smear-analysis-disclaimer,
+  .smear-analysis-immersive:has(.cell-review-workspace[data-mobile-tab="detail"]) .smear-analysis-disclaimer,
+  .smear-analysis-immersive:has(.cell-review-workspace[data-mobile-tab="result"]) .smear-analysis-disclaimer {
+    display: none;
+  }
+
+}
+
+@media (max-width: 440px) {
+  .smear-analysis-immersive .cell-immersive-top-controls {
+    flex-direction: column;
+  }
+
+  .smear-analysis-immersive .cell-gallery-search,
+  .smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-gallery-panel {
+    top: 190px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-crop-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .smear-analysis-immersive .cell-detail-facts,
+  .smear-analysis-immersive .classification-facts,
+  .smear-analysis-immersive .cell-review-actions,
+  .smear-analysis-immersive .cell-result-content dl {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smear-analysis-immersive *,
+  .smear-analysis-immersive *::before,
+  .smear-analysis-immersive *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

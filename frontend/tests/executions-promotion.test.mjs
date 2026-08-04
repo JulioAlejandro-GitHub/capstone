@@ -59,7 +59,7 @@ test('detalle muestra TRAIN EVALUATE EXPLAIN opcional y model version',()=>{
 test('API utiliza estado y publicación de producción técnica',()=>{
   assert.match(api,/stage2-release-status/);
   assert.match(api,/publish-technical-production/);
-  assert.match(api,/timeoutMs:120000/);
+  assert.match(api,/timeoutMs:\s*120000/);
 });
 test('no expone rutas físicas ni usa checkpoint como identidad',()=>{
   for(const source of [row,group,child,runs,detail,app])assert.doesNotMatch(source,/checkpoint_path|artifact_path|best_model\.keras|outputs\//);

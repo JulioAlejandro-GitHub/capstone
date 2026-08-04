@@ -6,7 +6,8 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 const page = read('src/pages/SmearAnalysisHistory.tsx');
 const workflow = read('src/pages/SmearWorkflow.tsx');
 const hook = read('src/hooks/useSmearAnalysisHistoryDetail.ts');
-const results = read('src/components/cell-review/SmearAnalysisResultsView.tsx');
+const compatibility = read('src/components/cell-review/SmearAnalysisResultsView.tsx');
+const immersive = read('src/components/cell-review/SmearAnalysisImmersiveView.tsx');
 const api = read('src/services/api.ts');
 const navigation = read('src/components/navigation/navigationConfig.ts');
 const router = read('src/router.ts');
@@ -37,10 +38,32 @@ test('detalle es deep link validado y reutiliza la presentación del workflow', 
   assert.match(app, /isValidPublicId\(analysisRunId\)/);
   assert.match(page, /SmearAnalysisReadOnlyView/);
   assert.match(workflow, /WorkflowProcessing[\s\S]*readOnly/);
-  assert.match(workflow, /SmearAnalysisResultsView[\s\S]*mode="history"/);
-  assert.match(results, /readOnly=\{mode === 'history'\}/);
-  assert.match(workflow, /Vista histórica · Solo lectura/);
+  assert.match(workflow, /SmearAnalysisImmersiveView[\s\S]*mode="history"/);
+  assert.match(compatibility, /SmearAnalysisImmersiveView as SmearAnalysisResultsView/);
+  assert.match(immersive, /readOnly=\{isHistory\}/);
+  assert.match(immersive, /Vista histórica · Solo lectura/);
   assert.match(workflow, /Volver al historial/);
+  assert.match(
+    workflow,
+    /smear-workflow-history\$\{hasResults \? ' smear-workflow--immersive' : ''\}/,
+  );
+});
+
+test('detalle histórico conserva y reconstruye selección en query params', () => {
+  assert.match(workflow, /const \[searchParams, setSearchParams\] = useSearchParams\(\)/);
+  assert.match(workflow, /const selectionQueryRef = useRef\(searchParams\)/);
+  assert.match(workflow, /selectionQueryRef\.current = searchParams/);
+  assert.match(workflow, /const next = new URLSearchParams\(selectionQueryRef\.current\)/);
+  assert.match(workflow, /selectionQueryRef\.current = next/);
+  assert.match(workflow, /\{ replace: true \}/);
+  for (const key of ['image', 'selected_detection', 'selected_prediction']) {
+    assert.match(workflow, new RegExp(`'${key}'`));
+    assert.match(workflow, new RegExp(`searchParams\\.get\\('${key}'\\)`));
+  }
+  assert.match(workflow, /microscopyImageId: searchParams\.get\('image'\) \?\? firstImage\?\.id/);
+  assert.match(workflow, /onImageChange: selectHistoryImage/);
+  assert.match(workflow, /onDetectionChange: selectHistoryDetection/);
+  assert.match(workflow, /onPredictionChange: selectHistoryPrediction/);
 });
 
 test('hook histórico y su API realizan exclusivamente consultas GET', () => {
@@ -54,7 +77,11 @@ test('hook histórico y su API realizan exclusivamente consultas GET', () => {
 
 test('modo histórico no presenta acciones de mutación', () => {
   const historyView = workflow.slice(workflow.indexOf('export function SmearAnalysisReadOnlyView'), workflow.indexOf('export function SmearWorkflow'));
+  const historyCall = historyView.slice(historyView.indexOf('<SmearAnalysisImmersiveView'));
   for (const action of ['Aprobar con advertencias', 'Bloquear análisis', 'Reingresar a cola', 'Ejecutar control', 'Iniciar detección', 'Nuevo análisis']) {
     assert.doesNotMatch(historyView, new RegExp(action));
   }
+  assert.doesNotMatch(historyCall, /permissions=/);
+  assert.match(immersive, /mode: 'history'[\s\S]*permissions\?: never/);
+  assert.match(immersive, /canReview=\{livePermissions\?\.canReviewDetection \?\? false\}/);
 });

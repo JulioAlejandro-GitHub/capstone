@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { useAuth } from '../auth';
-import { SmearAnalysisResultsView } from '../components/cell-review/SmearAnalysisResultsView';
+import { SmearAnalysisImmersiveView } from '../components/cell-review/SmearAnalysisImmersiveView';
 import {
   useSmearAnalysisWorkflow,
   type SmearWorkflowController,
@@ -725,6 +726,11 @@ export function SmearAnalysisReadOnlyView({
   workflow: SmearWorkflowResponse;
   onBack: () => void;
 }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectionQueryRef = useRef(searchParams);
+  useEffect(() => {
+    selectionQueryRef.current = searchParams;
+  }, [searchParams]);
   const stage = (
     knownWorkflowStages.has(workflow.stage as SmearWorkflowStage)
       ? workflow.stage
@@ -769,10 +775,39 @@ export function SmearAnalysisReadOnlyView({
     stage === 'review_ready'
     || stage === 'classification_completed'
     || stage === 'classification_warning'
+    || stage === 'classification_failed'
+    || stage === 'awaiting_productive_model'
   ) && Boolean(workflow.detection_run);
+  const updateSelectionQuery = useCallback((
+    key: 'image' | 'selected_detection' | 'selected_prediction',
+    value: string | null,
+  ) => {
+    const next = new URLSearchParams(selectionQueryRef.current);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    // Keep a synchronous snapshot so image, detection and prediction updates
+    // emitted in the same React commit merge instead of overwriting each other.
+    selectionQueryRef.current = next;
+    setSearchParams(next, { replace: true });
+  }, [setSearchParams]);
+  const selectHistoryImage = useCallback(
+    (id: string | null) => updateSelectionQuery('image', id),
+    [updateSelectionQuery],
+  );
+  const selectHistoryDetection = useCallback(
+    (id: string | null) => updateSelectionQuery('selected_detection', id),
+    [updateSelectionQuery],
+  );
+  const selectHistoryPrediction = useCallback(
+    (id: string | null) => updateSelectionQuery('selected_prediction', id),
+    [updateSelectionQuery],
+  );
 
   return (
-    <section className="page smear-workflow smear-workflow-history" data-mode="history">
+    <section
+      className={`page smear-workflow smear-workflow-history${hasResults ? ' smear-workflow--immersive' : ''}`}
+      data-mode="history"
+    >
       {!hasResults ? <header className="workflow-context-header">
         <div className="workflow-case-context">
           <p className="workflow-kicker">Análisis de frotis</p>
@@ -805,7 +840,7 @@ export function SmearAnalysisReadOnlyView({
 
       {hasResults && workflow.detection_run ? (
         <section className="workflow-review-frame">
-          <SmearAnalysisResultsView
+          <SmearAnalysisImmersiveView
             mode="history"
             workflow={{
               subjectCode: workflow.subject.subject_code,
@@ -818,14 +853,17 @@ export function SmearAnalysisReadOnlyView({
               detectionRunId: workflow.detection_run.id,
               classificationRunId: workflow.classification_run?.id,
               classificationSummary: workflow.classification_summary,
-              microscopyImageId: firstImage?.id,
+              microscopyImageId: searchParams.get('image') ?? firstImage?.id,
+              selectedDetectionId: searchParams.get('selected_detection'),
+              selectedPredictionId: searchParams.get('selected_prediction'),
             }}
-            permissions={{
-              canReviewDetection: false,
-              canExplain: false,
-              canReviewClassification: false,
+            actions={{
+              onBack,
+              backLabel: 'Volver al historial',
+              onImageChange: selectHistoryImage,
+              onDetectionChange: selectHistoryDetection,
+              onPredictionChange: selectHistoryPrediction,
             }}
-            actions={{ onBack, backLabel: 'Volver al historial' }}
           />
         </section>
       ) : (
@@ -907,7 +945,10 @@ export function SmearWorkflow() {
   );
 
   return (
-    <section className="page smear-workflow" data-mode={mode}>
+    <section
+      className={`page smear-workflow${mode === 'review' ? ' smear-workflow--immersive' : ''}`}
+      data-mode={mode}
+    >
       <header className="workflow-context-header">
         <div className="workflow-case-context">
           <p className="workflow-kicker">Análisis de frotis</p>
@@ -972,7 +1013,7 @@ export function SmearWorkflow() {
           {identifiers.detectionRunId && canReadCells && (
             !identifiers.classificationRunId || canReadClassification
           ) ? (
-            <SmearAnalysisResultsView
+            <SmearAnalysisImmersiveView
               mode="live"
               workflow={{
                 subjectCode: patientCode,

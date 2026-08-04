@@ -27,6 +27,7 @@ function ExplanationImage({
   const image = useAuthenticatedObjectUrl(
     load,
     explanation.status === 'generated',
+    `${explanation.id}:${kind}`,
   );
   if (image.loading) return <div className="image-placeholder">Cargando artefacto autenticado…</div>;
   if (!image.url || image.error) return <div className="image-placeholder">Artefacto no disponible.</div>;

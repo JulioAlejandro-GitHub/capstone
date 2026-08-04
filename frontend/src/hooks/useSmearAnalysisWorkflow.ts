@@ -240,6 +240,11 @@ export function useSmearAnalysisWorkflow() {
   const [recovering, setRecovering] = useState(false);
   const activeAction = useRef(false);
   const hydratedKey = useRef('');
+  const workflowQueryRef = useRef(searchParams);
+
+  useEffect(() => {
+    workflowQueryRef.current = searchParams;
+  }, [searchParams]);
 
   const queryIdentifiers = useMemo(() => ({
     batch: searchParams.get('batch'),
@@ -257,28 +262,27 @@ export function useSmearAnalysisWorkflow() {
     values: Partial<SmearWorkflowIdentifiers>,
   ) => {
     setIdentifiers((current) => ({ ...current, ...values }));
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
-      const queryMap: Array<[keyof SmearWorkflowIdentifiers, string]> = [
-        ['ingestionBatchId', 'batch'],
-        ['microscopyImageId', 'image'],
-        ['analysisRunId', 'analysis'],
-        ['queueItemId', 'queue'],
-        ['detectionRunId', 'detection'],
-        ['classificationRunId', 'classification'],
-        ['selectedDetectionId', 'selected_detection'],
-        ['selectedPredictionId', 'selected_prediction'],
-      ];
-      queryMap.forEach(([stateKey, queryKey]) => {
-        if (!(stateKey in values)) return;
-        const value = values[stateKey];
-        if (value) next.set(queryKey, value);
-        else next.delete(queryKey);
-      });
-      next.delete('detection_run_id');
-      next.delete('selected');
-      return next;
-    }, { replace: true });
+    const next = new URLSearchParams(workflowQueryRef.current);
+    const queryMap: Array<[keyof SmearWorkflowIdentifiers, string]> = [
+      ['ingestionBatchId', 'batch'],
+      ['microscopyImageId', 'image'],
+      ['analysisRunId', 'analysis'],
+      ['queueItemId', 'queue'],
+      ['detectionRunId', 'detection'],
+      ['classificationRunId', 'classification'],
+      ['selectedDetectionId', 'selected_detection'],
+      ['selectedPredictionId', 'selected_prediction'],
+    ];
+    queryMap.forEach(([stateKey, queryKey]) => {
+      if (!(stateKey in values)) return;
+      const value = values[stateKey];
+      if (value) next.set(queryKey, value);
+      else next.delete(queryKey);
+    });
+    next.delete('detection_run_id');
+    next.delete('selected');
+    workflowQueryRef.current = next;
+    setSearchParams(next, { replace: true });
   }, [setSearchParams]);
 
   const recover = useCallback(async (
@@ -1004,23 +1008,22 @@ export function useSmearAnalysisWorkflow() {
     setUploadRequestId(createUploadRequestId());
     setFailure(null);
     setRecovering(false);
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
-      [
-        'batch',
-        'image',
-        'analysis',
-        'queue',
-        'detection',
-        'detection_run_id',
-        'classification',
-        'selected',
-        'selected_detection',
-        'selected_prediction',
-      ]
-        .forEach((key) => next.delete(key));
-      return next;
-    }, { replace: true });
+    const next = new URLSearchParams(workflowQueryRef.current);
+    [
+      'batch',
+      'image',
+      'analysis',
+      'queue',
+      'detection',
+      'detection_run_id',
+      'classification',
+      'selected',
+      'selected_detection',
+      'selected_prediction',
+    ]
+      .forEach((key) => next.delete(key));
+    workflowQueryRef.current = next;
+    setSearchParams(next, { replace: true });
   }, [setSearchParams]);
 
   return {

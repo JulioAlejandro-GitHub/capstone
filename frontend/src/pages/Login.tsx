@@ -37,9 +37,9 @@ export function Login() {
             <span>Capstone IA</span>
           </div>
           {/* <h1 id="login-title">Ingreso académico</h1> */}
-          <p>
+          {/* <p>
             Plataforma de análisis de frotis sanguíneo asistido por inteligencia artificial
-          </p>
+          </p> */}
         </header>
 
         <form className="login-card" onSubmit={submit}>
@@ -73,7 +73,7 @@ export function Login() {
         </form>
 
         <p className="login-restriction">
-          Acceso restringido a usuarios autorizados del proyecto.
+          Plataforma de análisis de frotis sanguíneo asistido por inteligencia artificial
         </p>
       </section>
     </main>
