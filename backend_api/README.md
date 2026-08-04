@@ -1,50 +1,66 @@
 # Backend API
 
-Runtime soportado: Python 3.12. `backend_api/.venv` conserva el entorno liviano
-para tests y migraciones; no contiene TensorFlow. Para servir clasificación,
-instale las dependencias declaradas por `malaria_dl_local_project/requirements.txt`
-en su entorno Python 3.12 y use `scripts/start_backend_api.sh`. Auth está en
-`/api/v1/auth`; liveness en `/health` y readiness en `/ready`.
+API FastAPI del monolito modular Capstone. Expone autenticación local,
+trazabilidad experimental, gobierno de modelos y análisis técnico de frotis.
+No sirve el frontend y sus resultados no constituyen diagnóstico clínico.
 
-El venv ML observado durante Prompt 8 aún no contiene `PyJWT`, `pwdlib` ni
-`python-multipart`: están declaradas, pero no fueron instaladas porque no se
-permitieron descargas. El script de inicio falla de forma explícita en su
-preflight hasta sincronizar ese entorno; no debe interpretarse como una API
-productiva arrancable en el estado validado.
+## Runtime
 
-`/api/v1/scientific` ofrece registro, consulta, actualización, archivado y trazabilidad
-con JWT, RBAC y auditoría atómica. No carga binarios ni admite DELETE físico. Requiere la
-revisión Alembic `20260727_01`.
-# Ejecución local
+El único entorno local soportado para API e inferencia es Python 3.12 en
+`malaria_dl_local_project/.venv`. Desde la raíz del repositorio:
 
 ```bash
-./scripts/start_backend_api.sh
+./malaria_dl_local_project/.venv/bin/python -m uvicorn \
+  app.main:app \
+  --app-dir backend_api \
+  --reload \
+  --port 8000 \
+  --env-file .env
 ```
 
-Requiere `APP_ENV=development`, `DATABASE_URL` y `JWT_SECRET` privados. Docker no es parte
-del flujo oficial.
+`./scripts/start_backend_api.sh` añade validación de `.env` y dependencias y
+limita el bind a `127.0.0.1`. Requiere `DATABASE_URL` y `JWT_SECRET` privados;
+la plantilla única está en `/.env.example`.
 
-Prompt 4 agrega multipart por streaming, validación Pillow, SHA-256 backend-only,
-lotes científicos y contenido autenticado. Use las variables de `.env.example`.
-# Microscopy analysis API
+Liveness: `GET /health`. Readiness: `GET /ready`.
 
-`/api/v1/analysis` expone lotes elegibles, runs congelados, evaluaciones
-técnicas, eventos y decisiones auditadas. Requiere PostgreSQL y storage local.
+## Superficies HTTP
 
-# Cell classification API
+- `/api/v1/auth`: login y principal autenticado.
+- `/api/v1/scientific`: identidad pseudonimizada y trazabilidad de casos,
+  muestras, frotis e imágenes.
+- `/api/v1/analysis`: quality gate y runs de análisis.
+- `/api/v1/cell-analysis`: detección, crops y revisión.
+- `/api/v1/cell-classification`: clasificación, resúmenes, Grad-CAM y revisión.
+- `/api/...`: endpoints existentes de runs, artefactos, catálogo y gobierno de
+  modelos.
 
-`/api/v1/cell-classification` resuelve exclusivamente `stage2/default`, congela
-modelo e inputs, clasifica crops por batches y expone predicciones, resumen,
-Grad-CAM manual y reviews append-only. Sin un slot válido responde con un
-bloqueo explícito y no usa el último modelo. No usa `0.5` por defecto: ese
-valor sólo es admisible cuando está publicado explícitamente y vinculado a la
-calibración; nunca se usa como fallback.
+JWT, RBAC y ownership se validan en backend. Las respuestas públicas no deben
+exponer paths físicos, storage keys privadas, secretos ni stack traces. Las
+mutaciones sensibles escriben auditoría en la misma transacción.
 
-Variables: `CELL_CLASSIFICATION_BATCH_SIZE`,
-`CELL_CLASSIFICATION_REVIEW_MARGIN` y `CELL_CLASSIFICATION_PAGE_MAX`.
+## Base de datos
 
-El esquema de esta API requiere la cadena Alembic
-`20260728_01 → 20260728_02 → 20260728_03`. El endpoint de summary responde con
-`automatic_summary` inmutable y `reviewed_summary` derivado. Las respuestas
-públicas no incluyen storage keys, paths del checkpoint ni paths físicos; los
-PNG Grad-CAM se descargan sólo mediante endpoints autenticados.
+El bootstrap SQL histórico y toda la cadena Alembic son inmutables. Antes de
+iniciar contra una base persistente:
+
+```bash
+make db-status
+make db-migrate-check
+```
+
+Use `make db-migrate` para backup, preflight transaccional y upgrade al head
+vigente. No use `stamp`, downgrade o resets como atajo. La política completa
+está en [`../docs/database.md`](../docs/database.md).
+
+## Pruebas
+
+```bash
+make test-backend
+make test-backend-integration  # PostgreSQL local, rollback obligatorio
+```
+
+Arquitectura y operación: [`../docs/architecture.md`](../docs/architecture.md),
+[`../docs/security.md`](../docs/security.md),
+[`../docs/stage2-workflow.md`](../docs/stage2-workflow.md) y
+[`../docs/operations.md`](../docs/operations.md).

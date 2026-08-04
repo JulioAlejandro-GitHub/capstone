@@ -161,12 +161,3 @@ class ImageUpdate(MetadataSchema):
 
 class ArchiveRequest(ScientificSchema):
     reason: str | None = Field(None, max_length=500)
-
-
-class ScientificRead(ScientificSchema):
-    id: UUID
-    status: str
-    metadata_json: dict[str, Any]
-    created_at: datetime
-    updated_at: datetime
-    archived_at: datetime | None = None

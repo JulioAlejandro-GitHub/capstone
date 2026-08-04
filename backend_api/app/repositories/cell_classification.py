@@ -30,7 +30,7 @@ RUN_LIST_FROM = """
 FROM cell_classification_runs cr
 JOIN cell_detection_runs dr ON dr.id=cr.detection_run_id
 JOIN microscopy_analysis_runs ar ON ar.id=cr.analysis_run_id
-JOIN deployed_model_versions deployment ON deployment.id=cr.production_model_id
+LEFT JOIN deployed_model_versions deployment ON deployment.id=cr.production_model_id
 JOIN stage2_model_publications publication
   ON publication.id=cr.stage2_publication_id
 LEFT JOIN smear_analysis_summaries summary
@@ -168,83 +168,6 @@ class CellClassificationRepository:
 
     def __init__(self, connection: Connection):
         self.connection = connection
-
-    def stage2_default_candidates(
-        self,
-        *,
-        deployment_name: str = "malaria-stage2-classifier",
-        environment: str = "stage2",
-        alias: str = "default",
-        for_share: bool = False,
-    ) -> list[dict]:
-        lock = " FOR SHARE OF deployment,version,publication,artifact" if for_share else ""
-        rows = self.connection.execute(
-            text(
-                f"""
-                SELECT
-                  deployment.*,
-                  version.id model_registry_id,
-                  version.model_name,
-                  version.version_number,
-                  version.status model_registry_status,
-                  version.lineage_status,
-                  version.framework,
-                  version.framework_version,
-                  version.preprocessing_profile_snapshot,
-                  version.class_mapping,
-                  version.input_signature,
-                  version.output_signature,
-                  version.training_run_id source_training_run_id,
-                  model.architecture,
-                  model.input_shape model_input_shape,
-                  artifact.path checkpoint_path,
-                  artifact.checksum checkpoint_artifact_sha256,
-                  artifact.file_size_bytes checkpoint_artifact_size_bytes,
-                  artifact.artifact_status,
-                  publication.id stage2_publication_id,
-                  publication.evaluation_run_id source_evaluation_run_id,
-                  publication.published_at,
-                  publication.status publication_status,
-                  publication.is_active publication_is_active,
-                  training.status training_status,
-                  evaluation.status evaluation_status,
-                  threshold.threshold_source calibration_threshold_source,
-                  threshold.threshold_selected calibration_threshold,
-                  threshold.calibration_status,
-                  threshold.score_name calibration_score_name,
-                  threshold.positive_label calibration_positive_label
-                FROM deployed_model_versions deployment
-                JOIN model_versions version
-                  ON version.id=deployment.model_version_id
-                JOIN models model ON model.id=version.model_id
-                JOIN artifacts artifact
-                  ON artifact.id=deployment.checkpoint_artifact_id
-                JOIN stage2_model_publications publication
-                  ON publication.model_version_id=version.id
-                  AND publication.scope='stage2'
-                  AND publication.status='active'
-                  AND publication.is_active=true
-                JOIN runs training ON training.id=version.training_run_id
-                JOIN runs evaluation
-                  ON evaluation.id=publication.evaluation_run_id
-                LEFT JOIN run_threshold_calibration threshold
-                  ON threshold.run_threshold_calibration_id=
-                    deployment.threshold_calibration_id
-                  AND threshold.model_version_id=version.id
-                WHERE deployment.deployment_name=:deployment_name
-                  AND deployment.environment=:environment
-                  AND deployment.alias=:alias
-                  AND deployment.status='active'
-                ORDER BY deployment.deployed_at DESC,deployment.id{lock}
-                """
-            ),
-            {
-                "deployment_name": deployment_name,
-                "environment": environment,
-                "alias": alias,
-            },
-        ).mappings().all()
-        return [dict(row) for row in rows]
 
     def eligible_detection_runs(
         self,
@@ -411,10 +334,9 @@ class CellClassificationRepository:
         self,
         *,
         detection_run_id: str | UUID,
-        production_model_id: str | UUID,
-        checkpoint_sha256: str,
-        model_version: str | None,
-        inference_version: str,
+        production_model_id: str | UUID | None,
+        stage2_publication_id: str | UUID,
+        model_snapshot: Mapping,
         input_manifest_sha256: str,
     ) -> dict | None:
         return _dict(
@@ -424,13 +346,11 @@ class CellClassificationRepository:
                     SELECT *
                     FROM cell_classification_runs
                     WHERE detection_run_id=CAST(:detection_run_id AS uuid)
-                      AND production_model_id=
+                      AND production_model_id IS NOT DISTINCT FROM
                         CAST(:production_model_id AS uuid)
-                      AND model_version IS NOT DISTINCT FROM :model_version
-                      AND model_snapshot->>'checkpoint_sha256'=
-                        :checkpoint_sha256
-                      AND model_snapshot->>'inference_version'=
-                        :inference_version
+                      AND stage2_publication_id=
+                        CAST(:stage2_publication_id AS uuid)
+                      AND model_snapshot=CAST(:model_snapshot AS jsonb)
                       AND input_manifest_sha256=:input_manifest_sha256
                       AND status IN (
                         'created','processing','completed',
@@ -442,10 +362,11 @@ class CellClassificationRepository:
                 ),
                 {
                     "detection_run_id": str(detection_run_id),
-                    "production_model_id": str(production_model_id),
-                    "checkpoint_sha256": checkpoint_sha256,
-                    "model_version": model_version,
-                    "inference_version": inference_version,
+                    "production_model_id": (
+                        str(production_model_id) if production_model_id else None
+                    ),
+                    "stage2_publication_id": str(stage2_publication_id),
+                    "model_snapshot": _json(model_snapshot),
                     "input_manifest_sha256": input_manifest_sha256,
                 },
             ).mappings().first()
@@ -455,10 +376,9 @@ class CellClassificationRepository:
         self,
         *,
         detection_run_id: str | UUID,
-        production_model_id: str | UUID,
-        checkpoint_sha256: str,
-        model_version: str | None,
-        inference_version: str,
+        production_model_id: str | UUID | None,
+        stage2_publication_id: str | UUID,
+        model_snapshot: Mapping,
         input_manifest_sha256: str,
     ) -> dict | None:
         return _dict(
@@ -468,13 +388,11 @@ class CellClassificationRepository:
                     SELECT *
                     FROM cell_classification_runs
                     WHERE detection_run_id=CAST(:detection_run_id AS uuid)
-                      AND production_model_id=
+                      AND production_model_id IS NOT DISTINCT FROM
                         CAST(:production_model_id AS uuid)
-                      AND model_version IS NOT DISTINCT FROM :model_version
-                      AND model_snapshot->>'checkpoint_sha256'=
-                        :checkpoint_sha256
-                      AND model_snapshot->>'inference_version'=
-                        :inference_version
+                      AND stage2_publication_id=
+                        CAST(:stage2_publication_id AS uuid)
+                      AND model_snapshot=CAST(:model_snapshot AS jsonb)
                       AND input_manifest_sha256=:input_manifest_sha256
                       AND status='failed'
                     ORDER BY failed_at DESC,created_at DESC,id DESC
@@ -483,10 +401,11 @@ class CellClassificationRepository:
                 ),
                 {
                     "detection_run_id": str(detection_run_id),
-                    "production_model_id": str(production_model_id),
-                    "checkpoint_sha256": checkpoint_sha256,
-                    "model_version": model_version,
-                    "inference_version": inference_version,
+                    "production_model_id": (
+                        str(production_model_id) if production_model_id else None
+                    ),
+                    "stage2_publication_id": str(stage2_publication_id),
+                    "model_snapshot": _json(model_snapshot),
                     "input_manifest_sha256": input_manifest_sha256,
                 },
             ).mappings().first()
@@ -497,7 +416,7 @@ class CellClassificationRepository:
         *,
         analysis_run_id: str | UUID,
         detection_run_id: str | UUID,
-        production_model_id: str | UUID,
+        production_model_id: str | UUID | None,
         stage2_publication_id: str | UUID,
         model_registry_id: str | UUID,
         model_name: str,
@@ -545,7 +464,9 @@ class CellClassificationRepository:
                 "analysis_run_id": str(analysis_run_id),
                 "detection_run_id": str(detection_run_id),
                 "classification_run_code": classification_run_code,
-                "production_model_id": str(production_model_id),
+                "production_model_id": (
+                    str(production_model_id) if production_model_id else None
+                ),
                 "stage2_publication_id": str(stage2_publication_id),
                 "model_registry_id": str(model_registry_id),
                 "model_name": model_name,

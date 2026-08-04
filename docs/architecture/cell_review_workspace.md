@@ -2,14 +2,16 @@
 
 ## Ubicación y jerarquía
 
-La ruta oficial es `/frotis/revision`, bajo:
+La revisión está integrada en el workflow canónico `/frotis/analizar`, bajo:
 
 ```text
 Análisis de frotis
-  - Cargar imágenes
-  - Control de calidad
-  - Revisión celular
+  - Analizar frotis
+  - Historial
 ```
+
+La ruta histórica `/frotis/revision` se conserva únicamente como redirect de
+compatibilidad y no representa una página independiente.
 
 No se agrega al grupo `Modelo IA`. El shell, sidebar, tokens, botones e iconos
 siguen siendo los existentes. La maqueta de referencia sólo informa jerarquía,

@@ -10,7 +10,8 @@ test('Etapa 2 aparece sólo en TRAIN y usa publicación persistente como fuente'
   const api=read('services/api.ts');
   assert.match(row,/processKind === 'training'/);
   assert.match(row,/stage2-release-summary/);
-  assert.doesNotMatch(child,/Stage2AvailabilityAction|enableStage2/);
+  assert.match(row,/publication\?\.is_active/);
+  assert.doesNotMatch(child,/Stage2AvailabilityAction|enableStage2|publishStage2Model/);
   assert.match(api,/stage2-release-status/);
   assert.match(api,/stage2-publications/);
 });
@@ -25,25 +26,38 @@ test('Ver detalle controla un acordeón accesible con confirmaciones inline',()=
   assert.match(panel,/Confirmar publicación/);
   assert.match(panel,/Confirmar baja/);
   assert.match(panel,/No constituye aprobación clínica ni diagnóstico automatizado/);
-  assert.doesNotMatch(panel,/checkpoint_path|artifact_path|best_model\\.keras/);
+  assert.doesNotMatch(panel,/checkpoint_path|artifact_path|best_model\.keras/);
 });
 
-test('la tarjeta presenta estados disponible, productivo y condición faltante',()=>{
+test('la tarjeta presenta estados elegible, publicado y condición faltante',()=>{
   const row=read('components/reports/RunSummaryRow.tsx');
   assert.match(row,/Disponible para publicar/);
-  assert.match(row,/Productivo Etapa 2/);
+  assert.match(row,/Publicado para Etapa 2/);
   assert.match(row,/missing_conditions/);
 });
 
-test('Despliegues identifica el modelo productivo Etapa 2 y preserva producción formal',()=>{
+test('Deployments conserva Stage 2 histórico sin controles obsoletos',()=>{
   const page=read('pages/Deployments.tsx');
   const panel=read('components/deployments/DeploymentReviewPanel.tsx');
-  const active=read('components/deployments/ActiveStage2Model.tsx');
-  assert.match(page,/environment==='production'&&row\.status==='active'&&row\.alias==='champion'/);
-  assert.match(page,/production_scope==='stage2_technical'/);
-  assert.match(active,/Modelo productivo para Etapa 2/);
-  assert.match(active,/🔒 Inmutable/);
-  assert.match(panel,/Publicar como modelo productivo/);
-  assert.match(panel,/artefacto protegido y verificado por SHA-256/);
-  assert.match(panel,/deployment\.metadata\?\.production_scope!=='stage2_technical'/);
+  const versions=read('pages/ModelVersions.tsx');
+  assert.match(page,/isLegacyStage2/);
+  assert.match(panel,/Registro histórico Etapa 2/);
+  assert.match(panel,/Consulta sin operaciones/);
+  assert.match(panel,/Ir a la publicación vigente/);
+  assert.match(versions,/Registro histórico Etapa 2/);
+  for(const source of [page,panel,versions]){
+    assert.match(source,/stage2_experimental/);
+    assert.match(source,/stage2_technical/);
+    assert.match(source,/environment==='stage2'/);
+  }
+  for(const source of [page,panel])assert.doesNotMatch(source,/Stage2EnablementModal|publishTechnicalProduction|getTechnicalProductionPreview|Publicar como modelo productivo|onEnableStage2|onViewStage2/);
+});
+
+test('gobierno formal no Stage 2 permanece disponible',()=>{
+  const page=read('pages/Deployments.tsx');
+  const panel=read('components/deployments/DeploymentReviewPanel.tsx');
+  assert.match(page,/getModelProductionReadiness/);
+  assert.match(page,/publishModelVersionToProduction/);
+  assert.match(panel,/ProductionStepIndicator/);
+  for(const label of ['Versión inmutable y contrato técnico','Validación','Aprobación','Publicación en producción'])assert.match(panel,new RegExp(label));
 });

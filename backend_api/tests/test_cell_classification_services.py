@@ -239,15 +239,22 @@ def test_revised_summary_recomputes_failed_near_and_rejected_population():
     assert reviewed["outcome"] == "inconclusive"
 
 
-def _candidate(model_path: Path, *, threshold_source: str = "fixed_cli") -> dict:
+def _candidate(
+    model_path: Path,
+    *,
+    threshold_source: str = "fixed_cli",
+    legacy_deployment: bool = False,
+) -> dict:
     payload = model_path.read_bytes()
     digest = hashlib.sha256(payload).hexdigest()
     train_id, evaluation_id = uuid4(), uuid4()
     return {
-        "deployment_id": str(uuid4()),
-        "deployment_name": "malaria-stage2-classifier",
-        "environment": "stage2",
-        "alias": "default",
+        "deployment_id": str(uuid4()) if legacy_deployment else None,
+        "deployment_name": (
+            "malaria-stage2-classifier" if legacy_deployment else None
+        ),
+        "environment": "stage2" if legacy_deployment else None,
+        "alias": "default" if legacy_deployment else None,
         "production_status": "active",
         "model_version_id": str(uuid4()),
         "checkpoint_artifact_id": str(uuid4()),
@@ -263,19 +270,21 @@ def _candidate(model_path: Path, *, threshold_source: str = "fixed_cli") -> dict
         "label_mapping_snapshot": _mapping(),
         "positive_label": "parasitized",
         "score_name": "probability_parasitized",
-        "deployment_metadata": {
-            "production_scope": "stage2_experimental",
-            "stage2": {"eligible": True},
-            "technical_smoke_test": {"status": "PASS"},
-            "technical_contract": {
-                "architecture": "custom_cnn",
-                "input_signature": {"shape": [None, 20, 20, 3]},
-                "output_signature": {
-                    "shape": [None, 1],
-                    "activation": "sigmoid",
+        "deployment_metadata": (
+            {
+                "production_scope": "stage2_experimental",
+                "technical_contract": {
+                    "architecture": "custom_cnn",
+                    "input_signature": {"shape": [None, 20, 20, 3]},
+                    "output_signature": {
+                        "shape": [None, 1],
+                        "activation": "sigmoid",
+                    },
                 },
             }
-        },
+            if legacy_deployment
+            else {}
+        ),
         "model_name": "custom_cnn",
         "version_number": 1,
         "model_version_status": "candidate",
@@ -333,12 +342,19 @@ def test_productive_resolver_rejects_absent_or_ambiguous_and_accepts_published_h
     assert resolved.threshold == 0.5
     assert resolved.threshold_source == "fixed_cli"
     assert resolved.output_signature["activation"] == "sigmoid"
-    assert "checkpoint_path" not in resolved.snapshot(
+    snapshot = resolved.snapshot(
         inference_version="test", review_margin=0.05, batch_size=32
     )
-    xai_policy = resolved.snapshot(
-        inference_version="test", review_margin=0.05, batch_size=32
-    )["explainability_policy"]
+    assert resolved.deployment_id is None
+    assert snapshot["schema_version"] == 2
+    assert snapshot["stage2_publication"] == {
+        "publication_id": resolved.publication_id,
+        "scope": "stage2",
+    }
+    assert "production_model_id" not in snapshot
+    assert "stage2_default" not in snapshot
+    assert "checkpoint_path" not in snapshot
+    xai_policy = snapshot["explainability_policy"]
     assert xai_policy == {
         "version": "cell-gradcam-manual-v1",
         "method": "gradcam",
@@ -371,6 +387,33 @@ def test_productive_resolver_rejects_absent_or_ambiguous_and_accepts_published_h
     assert error.value.code == "PRODUCTIVE_THRESHOLD_INVALID"
 
 
+def test_availability_is_lightweight_but_inference_validates_contract(tmp_path: Path):
+    ml_root = tmp_path / "ml"
+    model_path = ml_root / "outputs" / "run" / "model.keras"
+    model_path.parent.mkdir(parents=True)
+    model_path.write_bytes(b"controlled-model")
+    candidate = {
+        **_candidate(model_path),
+        "framework": "unsupported-runtime",
+        "artifact_path": str(ml_root / "outputs" / "missing.keras"),
+    }
+    resolver = ProductiveModelResolver(
+        candidate_loader=lambda: [candidate],
+        ml_project_root=ml_root,
+    )
+
+    availability = resolver.availability()
+
+    assert availability["available"] is True
+    assert availability["model"]["publication_id"] == candidate["publication_id"]
+    assert availability["model"]["checkpoint_sha256"] is None
+    assert availability["model"]["threshold"] is None
+    assert availability["model"]["technical_validation"] == "pending_inference"
+    with pytest.raises(ProductiveModelError) as error:
+        resolver.resolve()
+    assert error.value.code == "PRODUCTIVE_FRAMEWORK_UNSUPPORTED"
+
+
 def test_productive_resolver_query_starts_from_active_publication_and_uses_real_fk():
     captured: dict[str, object] = {}
 
@@ -398,16 +441,17 @@ def test_productive_resolver_query_starts_from_active_publication_and_uses_real_
     assert "from stage2_model_publications publication" in sql
     assert (
         "left join deployed_model_versions d on "
+        ":legacy_deployment and d.id=cast(:deployment_id as uuid) and "
         "d.model_version_id=publication.model_version_id and "
         "d.checkpoint_artifact_id=publication.checkpoint_artifact_id"
     ) in sql
+    assert "left join lateral" in sql
     assert "publication.is_active=true" in sql
+    assert "d.status='active'" not in sql
     assert "d.is_active" not in sql
     assert captured["params"] == {
         "historical": False,
-        "environment": "stage2",
-        "alias": "default",
-        "production_scope": "stage2_experimental",
+        "legacy_deployment": False,
         "deployment_id": None,
         "model_version_id": None,
         "artifact_id": None,
@@ -425,12 +469,14 @@ def test_active_publication_is_not_reinterpreted_by_inference_lifecycle_checks(
     model_path.write_bytes(b"controlled-model")
     candidate = _candidate(model_path)
     candidate.update(
+        deployment_id=None,
+        deployment_name=None,
         training_status="failed",
         evaluation_status="failed",
         evaluation_lineage_valid=False,
         model_version_status="retired",
         lineage_status="unresolved",
-        deployment_metadata={"technical_contract": candidate["deployment_metadata"]["technical_contract"]},
+        deployment_metadata={},
     )
 
     resolved = ProductiveModelResolver(
@@ -451,7 +497,7 @@ def test_historical_snapshot_resolves_exact_identity_without_current_default_fal
     current_path.parent.mkdir(parents=True)
     historical_path.write_bytes(b"historical-model")
     current_path.write_bytes(b"current-model")
-    historical = _candidate(historical_path)
+    historical = _candidate(historical_path, legacy_deployment=True)
     current = _candidate(current_path)
     historical.update(
         production_status="inactive",
@@ -639,6 +685,23 @@ class _FakeEngine:
         yield object()
 
 
+def _availability_for(resolved: ResolvedProductiveModel) -> dict:
+    return {
+        "available": True,
+        "code": None,
+        "message": "Modelo Productivo Etapa 2 publicado.",
+        "model": {
+            "publication_id": resolved.publication_id,
+            "model_version_id": resolved.model_version_id,
+            "training_run_id": resolved.source_training_run_id,
+            "evaluation_run_id": resolved.source_evaluation_run_id,
+            "model_name": resolved.model_name,
+            "model_version": resolved.model_version,
+            "technical_validation": "pending_inference",
+        },
+    }
+
+
 class _EligibilityRepository:
     def __init__(self):
         self.run_id = uuid4()
@@ -671,13 +734,19 @@ class _EligibilityRepository:
 def test_eligible_runs_explain_productive_model_block_without_exposing_paths():
     repository = _EligibilityRepository()
 
-    def unavailable():
-        raise ProductiveModelError("PRODUCTIVE_MODEL_NOT_UNIQUE")
-
     service = CellClassificationService(
         engine=_FakeEngine(),
         repository_factory=lambda _connection: repository,
-        model_resolver=SimpleNamespace(resolve=unavailable),
+        model_resolver=SimpleNamespace(
+            availability=lambda: {
+                "available": False,
+                "code": "PRODUCTIVE_MODEL_NOT_UNIQUE",
+                "message": ProductiveModelError(
+                    "PRODUCTIVE_MODEL_NOT_UNIQUE"
+                ).detail,
+                "model": None,
+            }
+        ),
     )
     result = service.eligible_detection_runs(limit=50, offset=0)
     item = result["items"][0]
@@ -735,7 +804,9 @@ def test_targeted_eligibility_returns_block_reason_instead_of_empty(
     service = CellClassificationService(
         engine=_FakeEngine(),
         repository_factory=lambda _connection: Repository(),
-        model_resolver=SimpleNamespace(resolve=lambda: _resolved(tmp_path)),
+        model_resolver=SimpleNamespace(
+            availability=lambda: _availability_for(_resolved(tmp_path))
+        ),
     )
     service._preflight_detections = lambda rows: [dict(row) for row in rows]
     result = service.eligible_detection_runs(
@@ -849,6 +920,9 @@ class _CountingResolver:
 
     def resolve(self):
         return self.resolved
+
+    def availability(self):
+        return _availability_for(self.resolved)
 
     def revalidate(self, _resolved, *, connection):
         return self.resolved
@@ -1161,8 +1235,8 @@ def _resolved(tmp_path: Path) -> ResolvedProductiveModel:
     model = tmp_path / "model.keras"
     model.write_bytes(b"x")
     return ResolvedProductiveModel(
-        deployment_id=str(uuid4()),
-        deployment_name="malaria-stage2-classifier",
+        deployment_id=None,
+        deployment_name=None,
         publication_id=str(uuid4()),
         model_version_id=str(uuid4()),
         model_name="custom_cnn",

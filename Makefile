@@ -1,6 +1,6 @@
-.PHONY: validate test test-backend test-backend-integration test-frontend test-ml db-status db-backup db-migrate-check db-migrate test-db test-schema-clean test-db-up test-db-down test-db-reset test-db-bootstrap lint
+.PHONY: validate test test-backend test-backend-integration test-frontend test-ml db-status db-backup db-migrate-check db-migrate test-db test-schema-clean test-fresh-schema lint
 
-PYTHON ?= backend_api/.venv/bin/python
+PYTHON ?= malaria_dl_local_project/.venv/bin/python
 
 validate:
 	./scripts/validate.sh
@@ -13,10 +13,7 @@ test-frontend:
 	npm --prefix frontend test
 	npm --prefix frontend run build
 test-ml:
-	PYTHONPATH=malaria_dl_local_project malaria_dl_local_project/.venv/bin/python -m pytest \
-		malaria_dl_local_project/tests/test_label_mapping.py \
-		malaria_dl_local_project/tests/test_decision.py \
-		malaria_dl_local_project/tests/test_image_quality.py
+	PYTHONPATH=malaria_dl_local_project $(PYTHON) -m pytest malaria_dl_local_project/tests -q -rs
 db-status:
 	./scripts/db/status.sh
 db-backup:
@@ -29,7 +26,7 @@ db-migrate:
 	./scripts/db/migrate.sh
 test-schema-clean:
 	./scripts/db/test_schema_clean.sh
-test-db-up test-db-down test-db-reset test-db-bootstrap:
-	@echo "Comando retirado: PostgreSQL local no se inicia, detiene, resetea ni reconstruye. Use make test-db."
+test-fresh-schema:
+	PYTHONPATH=backend_api:malaria_dl_local_project $(PYTHON) scripts/db/validate_fresh_schema.py
 lint:
 	git diff --check

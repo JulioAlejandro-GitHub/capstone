@@ -36,9 +36,12 @@ export interface ProductiveModelDisplay {
   model_registry_id: string;
   model_name: string;
   model_version: string | null;
-  checkpoint_sha256: string;
-  threshold: number;
-  threshold_source: string;
+  production_model_id?: string | null;
+  stage2_publication_id?: string;
+  checkpoint_sha256?: string | null;
+  threshold?: number | null;
+  threshold_source?: string | null;
+  technical_validation?: 'pending_inference';
   input_width?: number;
   input_height?: number;
   input_channels?: number;
@@ -46,6 +49,9 @@ export interface ProductiveModelDisplay {
 }
 
 export interface CellClassificationModelSnapshot extends ProductiveModelDisplay {
+  checkpoint_sha256: string;
+  threshold: number;
+  threshold_source: string;
   source_training_run_id?: string | null;
   source_evaluation_run_id?: string | null;
   checkpoint_artifact_id?: string | null;
@@ -58,6 +64,7 @@ export interface CellClassificationModelSnapshot extends ProductiveModelDisplay 
   published_at?: string | null;
   production_status?: string;
   stage2_default?: string | boolean | Record<string, unknown>;
+  stage2_publication?: Record<string, unknown>;
   loader_version?: string;
   inference_version?: string;
   review_margin?: number;
@@ -104,7 +111,8 @@ export interface CellClassificationRunDetail {
   analysis_run_id: string;
   detection_run_id: string;
   classification_run_code: string;
-  production_model_id: string;
+  production_model_id: string | null;
+  stage2_publication_id: string;
   model_name: string;
   model_version: string | null;
   model_snapshot: CellClassificationModelSnapshot;

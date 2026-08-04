@@ -67,8 +67,9 @@ decisiones conservan resultados técnicos y trazabilidad append-only.
 
 # Extensión Prompt 8
 
-`cell_classification_runs` enlaza analysis/detection, el slot
-`stage2/default` y la publicación activa. Sus inputs congelados producen
+`cell_classification_runs` enlaza analysis/detection y una publicación activa.
+Los runs nuevos usan snapshot publication-first v2; el deployment de snapshots
+v1 se conserva sólo como identidad histórica. Sus inputs congelados producen
 `cell_predictions`; explicaciones, summaries, eventos y reviews se relacionan
 por FK `RESTRICT`. Predicción y summary automático son inmutables. La revisión
 de clasificación es independiente de `scientific_reviews`.

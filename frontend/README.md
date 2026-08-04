@@ -1,36 +1,54 @@
 # Frontend
 
-Use Node 22/npm 10. `npm ci`, `npm test`, `npm run build` y `npm run dev`. El JWT se
-mantiene sólo en memoria; recargar requiere autenticar nuevamente. La UI maneja 401,
-403 y rutas protegidas sin agregar todavía el flujo Frotis.
-# Ejecución local
+SPA React 19/TypeScript para gobierno de modelos y análisis técnico de frotis.
+Requiere Node.js 22 y npm 10.
+
+## Desarrollo
+
+Desde la raíz del repositorio:
 
 ```bash
+npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
-El frontend oficial se ejecuta con Node/Vite local. Docker no es un gate ni una dependencia.
+El backend debe estar disponible en `http://127.0.0.1:8000` y permitir el
+origen Vite configurado. Docker no forma parte del runtime.
 
-La navegación separa el desarrollo de modelos en **Modelo IA** de su uso operacional en
-**Análisis de frotis**. Este último módulo se muestra a los mismos usuarios autenticados
-que ya tenían acceso a la carga y contiene **Cargar imágenes** (`/frotis/cargar`), que
-permite buscar o generar paciente, seleccionar o generar muestra y cargar múltiples
-originales sin calcular metadata técnica en el cliente. Las futuras funciones operacionales
-de la Etapa 2 se incorporarán bajo este módulo; este cambio no agrega funcionalidad nueva.
-# Control de calidad
+## Sesión
 
-La ruta protegida `/frotis/analisis` lista lotes, crea runs, ejecuta el gate y
-presenta métricas y revisión según los permisos del usuario.
+El login obtiene un JWT desde `/api/v1/auth/login`. La aplicación lo guarda en
+`localStorage`, restaura el principal al recargar mediante `/api/v1/auth/me` y
+lo elimina al cerrar sesión. El frontend maneja 401/403, pero el backend sigue
+siendo la autoridad de roles y ownership. Nunca escriba tokens, credenciales o
+paths físicos en URLs, mensajes o logs.
 
-# Clasificación IA
+## Navegación
 
-El workflow single page incorpora la etapa **Clasificación IA** después de
-detección. La URL conserva classification run y selección; un refresh sólo
-reconstruye mediante GET. El workspace muestra probabilidades, threshold,
-modelo, agregado experimental, Grad-CAM manual y revisión de clasificación sin
-mezclarla con la revisión de detección.
+- `/modelo-ia/...`: datasets, ejecuciones, evaluaciones, versiones,
+  publicaciones y trazabilidad.
+- `/frotis/analizar`: workflow canónico de configuración, ingesta, calidad,
+  detección, clasificación y resultados.
+- `/frotis/historial`: lista de análisis persistidos.
+- `/frotis/historial/:analysisRunId`: reconstrucción de un análisis por UUID.
 
-Si no existe un deployment válido `stage2/default`, la UI conserva y explica
-`awaiting_productive_model`; no toma la publicación más reciente ni habilita
-una inferencia alternativa. Grad-CAM se solicita por célula y un retry sólo
-ocurre por acción manual explícita.
+`/frotis/cargar`, `/frotis/analisis` y `/frotis/revision` son redirects de
+compatibilidad hacia `/frotis/analizar`. Las rutas se construyen exclusivamente
+con `src/router.ts`; los deep links se restauran desde la API, no desde objetos
+React serializados.
+
+El workflow muestra por separado resultados automáticos, decisiones humanas,
+modelo/threshold congelados y advertencia experimental. Un modelo no disponible
+produce un estado bloqueado explícito; la UI no elige el último checkpoint ni
+inventa un fallback.
+
+## Calidad
+
+```bash
+npm --prefix frontend test
+npm --prefix frontend run build
+```
+
+Diseño, rutas y accesibilidad: [`../docs/design-system.md`](../docs/design-system.md).
+Workflow científico: [`../docs/ai-pipeline.md`](../docs/ai-pipeline.md) y
+[`../docs/stage2-workflow.md`](../docs/stage2-workflow.md).

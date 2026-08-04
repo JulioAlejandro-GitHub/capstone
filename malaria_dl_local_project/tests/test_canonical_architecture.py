@@ -53,7 +53,7 @@ class CanonicalArchitectureTests(unittest.TestCase):
             "src.malaria_dl.inference.pipeline",
             "src.malaria_dl.persistence.lineage",
             "src.malaria_dl.governance.repository",
-            "src.malaria_dl.governance.services.stage2_availability_service",
+            "src.malaria_dl.governance.services.stage2_publication_service",
         ]
         for module in modules:
             with self.subTest(module=module):

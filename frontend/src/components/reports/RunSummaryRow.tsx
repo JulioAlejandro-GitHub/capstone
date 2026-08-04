@@ -1,5 +1,5 @@
 import { StatusBadge } from '../StatusBadge';
-import type { RunDashboard, Stage2Availability } from '../../types/api';
+import type { RunDashboard, Stage2PublicationStatus } from '../../types/api';
 import { getRunDuration } from '../../utils/format';
 import {
   generateRunAutoAnalysis,
@@ -16,7 +16,7 @@ interface RunSummaryRowProps {
   run: RunDashboard;
   onRunSelect: (runId: string) => void;
   processKind?: RunProcessKind;
-  stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Error?:string;
+  stage2Status?:Stage2PublicationStatus;stage2Loading?:boolean;stage2Error?:string;
   stage2Expanded?:boolean;stage2ControlsId?:string;onStage2Toggle?:()=>void;
 }
 
@@ -34,6 +34,7 @@ export function RunSummaryRow({
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
   const analysis = generateRunAutoAnalysis(run);
+  const stage2Published = Boolean(stage2Status?.publication?.is_active);
 
   return (
     <div className="report-row">
@@ -91,12 +92,12 @@ export function RunSummaryRow({
           Ver detalle
         </button> : null}
         {processKind === 'training' ? <div className="stage2-release-summary" role="status">
-          <span className="run-promotion__title">Liberación</span>
+          <span className="stage2-release-summary__title">Publicación Etapa 2</span>
           {stage2Loading ? <strong>Consultando estado…</strong>
-            : stage2Status?.is_stage2_production ? <>
-              <strong className="stage2-production-badge"><span aria-hidden="true">✓</span> Productivo Etapa 2</strong>
-              <span>Disponible como candidato para nuevos análisis de frotis completo.</span>
-              <small>Versión activa e inmutable</small>
+            : stage2Published ? <>
+              <strong className="stage2-production-badge"><span aria-hidden="true">✓</span> Publicado para Etapa 2</strong>
+              <span>Disponible en el catálogo de candidatos para nuevos análisis.</span>
+              <small>Referencia activa; la compatibilidad se valida al ejecutar inferencia</small>
             </>
             : stage2Status?.eligible ? <>
               <strong>Disponible para publicar</strong>
@@ -107,7 +108,7 @@ export function RunSummaryRow({
               <span>{stage2Status?.eligibility?.missing_conditions.join(' · ')
                 || 'Se requiere un TRAIN completado y un EVALUATE completado asociado.'}</span>
             </>}
-          {stage2Error ? <small className="run-promotion-error">{stage2Error}</small> : null}
+          {stage2Error ? <small className="stage2-publication-error">{stage2Error}</small> : null}
           <button aria-controls={stage2ControlsId} aria-expanded={stage2Expanded}
             className="report-detail-button stage2-detail-link" disabled={stage2Loading}
             onClick={onStage2Toggle} type="button">Ver detalle</button>

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-python_bin="${PYTHON:-backend_api/.venv/bin/python}"
+python_bin="${PYTHON:-malaria_dl_local_project/.venv/bin/python}"
 PYTHONPATH=backend_api "$python_bin" scripts/db/verify_alembic_adoption.py
 ./scripts/db/backup.sh
 PYTHONPATH=backend_api "$python_bin" scripts/db/validate_alembic_transactionally.py

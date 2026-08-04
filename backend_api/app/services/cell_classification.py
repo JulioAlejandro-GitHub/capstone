@@ -740,6 +740,13 @@ class CellClassificationService:
                 )
                 if key in stage2
             }
+        publication = snapshot.get("stage2_publication")
+        if isinstance(publication, Mapping):
+            result["stage2_publication"] = {
+                key: publication[key]
+                for key in ("publication_id", "scope")
+                if key in publication
+            }
         policy = snapshot.get("explainability_policy")
         if isinstance(policy, Mapping):
             result["explainability_policy"] = {
@@ -1082,12 +1089,22 @@ class CellClassificationService:
         limit: int,
         offset: int,
     ) -> dict[str, Any]:
-        resolved: ResolvedProductiveModel | None = None
+        published_model: Mapping[str, Any] | None = None
         model_error: ProductiveModelError | None = None
-        try:
-            resolved = self.model_resolver.resolve()
-        except ProductiveModelError as exc:
-            model_error = exc
+        availability = self.model_resolver.availability()
+        if availability.get("available") and isinstance(
+            availability.get("model"), Mapping
+        ):
+            published_model = availability["model"]
+        else:
+            model_error = ProductiveModelError(
+                str(availability.get("code") or "PRODUCTIVE_MODEL_NOT_FOUND"),
+                str(
+                    availability.get("message")
+                    or "No existe un modelo Productivo Etapa 2."
+                ),
+                reason="preflight de publicación Stage 2",
+            )
         with self.engine.connect() as connection:
             repository = self._repository(connection)
             result = repository.eligible_detection_runs(
@@ -1113,7 +1130,7 @@ class CellClassificationService:
                 checked = self._preflight_detections(
                     full["detections"] if full else []
                 )
-                inputs, manifest_sha256 = freeze_classification_inputs(checked)
+                inputs, _manifest_sha256 = freeze_classification_inputs(checked)
                 eligible_count = sum(input_row["eligible"] for input_row in inputs)
                 excluded_count = len(inputs) - eligible_count
                 exclusion_reasons = sorted(
@@ -1123,21 +1140,6 @@ class CellClassificationService:
                         if input_row["exclusion_reason"]
                     }
                 )
-                equivalent = None
-                if (
-                    detection_error is None
-                    and model_error is None
-                    and resolved is not None
-                    and eligible_count > 0
-                ):
-                    equivalent = repository.find_equivalent(
-                        detection_run_id=UUID(str(item["id"])),
-                        production_model_id=UUID(resolved.deployment_id),
-                        model_version=resolved.model_version,
-                        checkpoint_sha256=resolved.checkpoint_sha256,
-                        inference_version=INFERENCE_VERSION,
-                        input_manifest_sha256=manifest_sha256,
-                    )
                 if detection_error is not None:
                     eligible = False
                     reason = detection_error.code
@@ -1153,13 +1155,6 @@ class CellClassificationService:
                         "La ejecución no contiene crops íntegros y elegibles "
                         "para clasificación."
                     )
-                elif equivalent is not None:
-                    eligible = False
-                    reason = "EQUIVALENT_CLASSIFICATION_EXISTS"
-                    message = (
-                        "Ya existe una clasificación activa o completada "
-                        "para el mismo modelo e inputs."
-                    )
                 else:
                     eligible = True
                     reason = None
@@ -1170,23 +1165,13 @@ class CellClassificationService:
                     )
                 productive_model = (
                     {
-                        "production_model_id": resolved.deployment_id,
-                        "stage2_publication_id": resolved.publication_id,
-                        "model_registry_id": resolved.model_version_id,
-                        "model_name": resolved.model_name,
-                        "model_version": resolved.model_version,
-                        "checkpoint_sha256": resolved.checkpoint_sha256,
-                        "threshold": resolved.threshold,
-                        "threshold_source": resolved.threshold_source,
-                        "input_width": resolved.input_width,
-                        "input_height": resolved.input_height,
-                        "input_channels": resolved.input_channels,
-                        "preprocessing": resolved.preprocessing,
-                        "environment": "stage2",
-                        "alias": "default",
-                        "production_scope": "stage2_experimental",
+                        "stage2_publication_id": published_model["publication_id"],
+                        "model_registry_id": published_model["model_version_id"],
+                        "model_name": published_model["model_name"],
+                        "model_version": published_model.get("model_version"),
+                        "technical_validation": "pending_inference",
                     }
-                    if resolved is not None
+                    if published_model is not None
                     else None
                 )
                 enriched.append(
@@ -1308,10 +1293,13 @@ class CellClassificationService:
                 )
             existing = repository.find_equivalent(
                 detection_run_id=UUID(str(detection["id"])),
-                production_model_id=UUID(resolved.deployment_id),
-                model_version=resolved.model_version,
-                checkpoint_sha256=resolved.checkpoint_sha256,
-                inference_version=INFERENCE_VERSION,
+                production_model_id=(
+                    UUID(resolved.deployment_id)
+                    if resolved.deployment_id
+                    else None
+                ),
+                stage2_publication_id=UUID(resolved.publication_id),
+                model_snapshot=snapshot,
                 input_manifest_sha256=manifest_sha256,
             )
             if existing:
@@ -1370,10 +1358,13 @@ class CellClassificationService:
             failed = (
                 find_failed(
                     detection_run_id=UUID(str(detection["id"])),
-                    production_model_id=UUID(resolved.deployment_id),
-                    model_version=resolved.model_version,
-                    checkpoint_sha256=resolved.checkpoint_sha256,
-                    inference_version=INFERENCE_VERSION,
+                    production_model_id=(
+                        UUID(resolved.deployment_id)
+                        if resolved.deployment_id
+                        else None
+                    ),
+                    stage2_publication_id=UUID(resolved.publication_id),
+                    model_snapshot=snapshot,
                     input_manifest_sha256=manifest_sha256,
                 )
                 if find_failed is not None
@@ -1385,7 +1376,11 @@ class CellClassificationService:
                 analysis_run_id=detection["analysis_run_id"],
                 detection_run_id=detection["id"],
                 classification_run_code=f"CLS-{secrets.token_hex(4).upper()}",
-                production_model_id=UUID(resolved.deployment_id),
+                production_model_id=(
+                    UUID(resolved.deployment_id)
+                    if resolved.deployment_id
+                    else None
+                ),
                 stage2_publication_id=UUID(resolved.publication_id),
                 model_registry_id=UUID(resolved.model_version_id),
                 model_name=resolved.model_name,
@@ -1413,6 +1408,7 @@ class CellClassificationService:
                 progress_total=eligible_count,
                 metadata={
                     "production_model_id": resolved.deployment_id,
+                    "stage2_publication_id": resolved.publication_id,
                     "model_version": resolved.model_version,
                     "checkpoint_sha256": resolved.checkpoint_sha256,
                     "input_manifest_sha256": manifest_sha256,
@@ -1430,6 +1426,7 @@ class CellClassificationService:
                     "classification_run_id": str(run_id),
                     "detection_run_id": str(detection["id"]),
                     "production_model_id": resolved.deployment_id,
+                    "stage2_publication_id": resolved.publication_id,
                     "model_version": resolved.model_version,
                     "checkpoint_sha256": resolved.checkpoint_sha256,
                     "threshold": resolved.threshold,
@@ -2060,7 +2057,12 @@ class CellClassificationService:
                 after_state={
                     "classification_run_id": str(run["id"]),
                     "detection_run_id": str(run["detection_run_id"]),
-                    "production_model_id": str(run["production_model_id"]),
+                    "production_model_id": (
+                        str(run["production_model_id"])
+                        if run.get("production_model_id")
+                        else None
+                    ),
+                    "stage2_publication_id": str(run["stage2_publication_id"]),
                     "model_version": run.get("model_version"),
                     "checkpoint_sha256": run["model_snapshot"][
                         "checkpoint_sha256"

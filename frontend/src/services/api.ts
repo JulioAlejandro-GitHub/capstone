@@ -1,6 +1,4 @@
 import type {
-  ArtifactRow,
-  CheckpointPolicySummary,
   ClinicalDashboard,
   ClinicalRunSummary,
   DashboardSummary,
@@ -8,8 +6,6 @@ import type {
   DatasetImagePage,
   Datasource,
   ExplainabilityCase,
-  ExplainabilityCaseSummary,
-  ExplainabilityRow,
   GroupedRunLineageResponse,
   JsonRecord,
   ModelSummary,
@@ -24,15 +20,12 @@ import type {
   ProductionPublicationResult,
   ProductiveModelAvailability,
   PagedResponse,
-  RunDashboard,
   RunArtifact,
   RunClinicalSummary,
   RunDetailResponse,
   RunImagePrediction,
-  ThresholdCalibrationSummary,
   TrainingPromotionStatus,
-  Stage2Availability,
-  Stage2EnablementResult,
+  Stage2PublicationStatus,
   UploadedPrediction,
 } from '../types/api';
 import type {
@@ -94,10 +87,6 @@ export type ImageUploadResponse = {
   images: UploadedMicroscopyImage[];
   status: 'complete' | 'incomplete' | 'inconsistent';
   counts: { received: number; expected: number | null; ignored: number };
-};
-export type EligibleBatch = {
-  id: string; status: string; acquisition_origin: string; source_system: string | null;
-  received_image_count: number; subject_code: string; sample_code: string; slide_code: string; previous_run_code: string | null
 };
 export type QualityImage = {
   id: string; microscopy_image_id: string; sequence_number: number; input_sha256: string;
@@ -620,17 +609,9 @@ export const api = {
     });
   },
 
-  getEligibleBatches(params: Record<string, QueryValue> = {}) {
-    return request<{ items: EligibleBatch[]; total: number }>('/api/v1/analysis/eligible-batches', params);
-  },
   createAnalysisRun(ingestion_batch_id: string) {
     return request<AnalysisRun>('/api/v1/analysis/runs', {}, {
       init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ingestion_batch_id }) },
-    });
-  },
-  executeQuality(runId: string) {
-    return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-assessment`, {}, {
-      timeoutMs: 120000, init: { method: 'POST' },
     });
   },
   getAnalysisRun(runId: string) { return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}`); },
@@ -874,9 +855,6 @@ export const api = {
       init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ analysis_run_id, priority }) },
     });
   },
-  getQualityQueue(params: Record<string, QueryValue> = {}) {
-    return request<{ items: QualityQueueItem[]; total: number }>('/api/v1/analysis/queue', params);
-  },
   executeQueueItem(queueItemId: string) {
     return request<QualityQueueMutation>(`/api/v1/analysis/queue/${queueItemId}/execute`, {}, {
       timeoutMs: 120000, init: { method: 'POST' },
@@ -896,10 +874,6 @@ export const api = {
     return request<ClinicalDashboard>('/dashboard/clinical', withDatasource(datasource));
   },
 
-  getRuns(datasource: string) {
-    return request<{ items: RunDashboard[] }>('/runs', withDatasource(datasource));
-  },
-
   getGroupedRunLineage(datasource: string) {
     return request<GroupedRunLineageResponse>(
       '/runs/grouped-lineage',
@@ -914,35 +888,8 @@ export const api = {
     );
   },
 
-  prepareTrainingRelease(
-    datasource: string,
-    trainingRunId: string,
-    targetEnvironment?: string,
-  ) {
-    return request<TrainingPromotionStatus>(
-      `/api/training-runs/${trainingRunId}/prepare-release`,
-      withDatasource(datasource),
-      {
-        timeoutMs: 30000,
-        init: {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            target_environment: targetEnvironment || undefined,
-          }),
-        },
-      },
-    );
-  },
-
-  getStage2Availability(datasource: string, trainingRunId: string) {
-    return request<Stage2Availability>(
-      `/api/training-runs/${trainingRunId}/stage2-availability`,
-      withDatasource(datasource), { timeoutMs: 30000 },
-    );
-  },
   getStage2ReleaseStatus(datasource: string, trainingRunId: string) {
-    return request<Stage2Availability>(
+    return request<Stage2PublicationStatus>(
       `/api/training-runs/${trainingRunId}/stage2-release-status`,
       withDatasource(datasource),
       { timeoutMs: 30000 },
@@ -957,7 +904,7 @@ export const api = {
   publishStage2Model(datasource: string, modelVersionId: string, payload: {
     actor?: string; reason?: string;
   }) {
-    return request<Stage2Availability>(
+    return request<Stage2PublicationStatus>(
       `/api/model-versions/${modelVersionId}/stage2-publications`,
       withDatasource(datasource), {
       init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
@@ -967,55 +914,9 @@ export const api = {
   deactivateStage2Publication(datasource: string, publicationId: string, payload: {
     actor?: string; reason?: string;
   }) {
-    return request<Stage2Availability>(
+    return request<Stage2PublicationStatus>(
       `/api/stage2-publications/${publicationId}/deactivate`,
       withDatasource(datasource), {
-      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
-    },
-    );
-  },
-
-  enableStage2(datasource: string, trainingRunId: string, payload: {
-    actor: string; reason: string; confirm_stage2_enablement: boolean;
-    preprocessing_candidate_id?: string; threshold_candidate_id?: string; source_image_id?: string;
-  }) {
-    return request<Stage2EnablementResult>(
-      `/api/training-runs/${trainingRunId}/enable-stage2`,
-      withDatasource(datasource), {
-      timeoutMs: 120000,
-      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
-    },
-    );
-  },
-  publishTrainingStage2(datasource: string, trainingRunId: string, payload: {
-    actor: string; reason: string; confirm_publication: boolean; source_image_id?: string;
-  }) {
-    return request<Stage2EnablementResult>(
-      `/api/training-runs/${trainingRunId}/publish-technical-production`,
-      withDatasource(datasource),
-      { init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }, timeoutMs: 120000 },
-    );
-  },
-
-  getStage2Models(datasource: string) {
-    return request<{ items: Stage2EnablementResult[] }>('/api/stage2/models', withDatasource(datasource));
-  },
-
-  getTechnicalProductionPreview(datasource: string, modelVersionId: string) {
-    return request<Stage2Availability>(
-      `/api/model-versions/${modelVersionId}/technical-production-preview`,
-      withDatasource(datasource), { timeoutMs: 30000 },
-    );
-  },
-
-  publishTechnicalProduction(datasource: string, modelVersionId: string, payload: {
-    actor: string; reason: string; confirm_publication: boolean;
-    preprocessing_profile?: string; threshold?: number; source_image_id?: string;
-  }) {
-    return request<Stage2EnablementResult>(
-      `/api/model-versions/${modelVersionId}/publish-technical-production`,
-      withDatasource(datasource), {
-      timeoutMs: 120000,
       init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
     },
     );
@@ -1027,20 +928,6 @@ export const api = {
 
   getRunClinicalSummary(datasource: string, runId: string) {
     return request<RunClinicalSummary>(`/runs/${runId}/clinical-summary`, withDatasource(datasource));
-  },
-
-  getRunCheckpointPolicy(datasource: string, runId: string) {
-    return request<{ items: CheckpointPolicySummary[] }>(
-      `/runs/${runId}/checkpoint-policy`,
-      withDatasource(datasource),
-    );
-  },
-
-  getRunThresholdCalibration(datasource: string, runId: string) {
-    return request<{ items: ThresholdCalibrationSummary[] }>(
-      `/runs/${runId}/threshold-calibration`,
-      withDatasource(datasource),
-    );
   },
 
   getRunArtifactsSummary(datasource: string, runId: string) {
@@ -1176,23 +1063,12 @@ export const api = {
     });
   },
 
-  getMetrics(datasource: string, runId: string) {
-    return request<{ items: JsonRecord[] }>(`/metrics/${runId}`, withDatasource(datasource));
-  },
-
   getConfusionMatrix(datasource: string, runId: string) {
     return request<{ items: JsonRecord[] }>(`/confusion-matrix/${runId}`, withDatasource(datasource));
   },
 
   getClassificationReport(datasource: string, runId: string) {
     return request<{ items: JsonRecord[] }>(`/classification-report/${runId}`, withDatasource(datasource));
-  },
-
-  getExplainability(datasource: string) {
-    return request<{ summary: JsonRecord[]; items: ExplainabilityRow[] }>(
-      '/explainability',
-      withDatasource(datasource),
-    );
   },
 
   getExplainabilityCases(datasource: string, params: Record<string, QueryValue> = {}) {
@@ -1223,13 +1099,6 @@ export const api = {
     });
   },
 
-  getExplainabilityCaseSummary(datasource: string, params: Record<string, QueryValue> = {}) {
-    return request<PagedResponse<ExplainabilityCaseSummary>>('/explainability/cases/summary', {
-      datasource,
-      ...params,
-    });
-  },
-
   getExplainabilityGallery(datasource: string, params: Record<string, QueryValue> = {}) {
     return request<PagedResponse<ExplainabilityCase>>('/explainability/gallery', {
       datasource,
@@ -1252,5 +1121,3 @@ export const api = {
     return request<{ items: JsonRecord[] }>('/logs', withDatasource(datasource));
   },
 };
-
-export type ApiArtifact = ArtifactRow;

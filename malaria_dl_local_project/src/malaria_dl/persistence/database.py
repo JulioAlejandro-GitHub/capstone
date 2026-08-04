@@ -57,7 +57,7 @@ def get_connection():
         original_error = getattr(exc, "orig", exc)
         raise RuntimeError(
             "No se pudo conectar al PostgreSQL configurado. Verifica DATABASE_URL "
-            "y usa el entorno efímero documentado para pruebas. "
+            "de la raíz; las pruebas de esquema usan un schema temporal controlado. "
             f"Detalle original: {original_error}"
         ) from exc
     except SQLAlchemyError as exc:

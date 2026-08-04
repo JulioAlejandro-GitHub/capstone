@@ -5,6 +5,12 @@
 **Convención clínica:** `0 = uninfected`, `1 = parasitized`  
 **Estado del documento:** contrato del esquema preparado en el repositorio; no acredita aplicación sobre una base viva
 
+> Referencia histórica: este documento describe el flujo genérico
+> deployment-backed de `runs`/`predictions`. La clasificación celular actual
+> usa identidad publication-first para runs nuevos según
+> [ADR-021](adr/ADR-021-stage2-publication-first-inference.md); los objetos
+> deployment-backed se preservan para compatibilidad y otros consumidores.
+
 ## Alcance
 
 Este documento especifica el modelo físico que representa el linaje:
@@ -507,28 +513,27 @@ El ledger demuestra lo ejecutado o reconocido explícitamente por este runner de
 Antes de migrar una instalación existente:
 
 ```bash
-pg_dump --format=custom --file=malaria_experiments_pre_governance.dump malaria_experiments
-pg_restore --list malaria_experiments_pre_governance.dump >/dev/null
+cd <PROJECT_ROOT>
+make db-status
+make db-backup
 ```
 
 También se debe generar un manifiesto de artifacts con tamaño y SHA-256, registrar el commit desplegado, comprobar espacio disponible y pausar temporalmente escritores de training, evaluación, explicación e inferencia.
 
 ### Inicialización o migración
 
-Desde la raíz del repositorio:
-
-```bash
-cd malaria_dl_local_project
-DATABASE_URL='postgresql+psycopg://USER:PASSWORD@HOST:5432/DATABASE' \
-  .venv/bin/python scripts/init_db.py
-```
-
-El mismo comando sirve para una instalación nueva y para una existente: el runner aplica únicamente migraciones no registradas. No se debe ejecutar contra producción sin backup, revisión de checksums y ventana operacional.
+La receta histórica que ejecutaba `scripts/init_db.py` directamente ya no es el
+procedimiento operacional. Ese runner sólo administra el ledger SQL y no adopta
+Alembic. Use la verificación, backup y migración protegida de
+[`database.md`](database.md); una adopción sin `alembic_version` requiere
+aprobación manual.
 
 ### Verificación posterior
 
 ```bash
-psql 'postgresql://USER:PASSWORD@HOST:5432/DATABASE' -v ON_ERROR_STOP=1
+cd <PROJECT_ROOT>
+make db-status
+make db-migrate-check
 ```
 
 Dentro de `psql`:
@@ -587,21 +592,18 @@ malaria_dl_local_project/.venv/bin/python -B -m unittest \
 
 La verificación local de esta implementación reportó 25 pruebas aprobadas. Estas suites validan entidades, parser/checksums, control de reejecución, contrato SQL, transacción externa, recuperación del linaje y atomicidad del repositorio mediante dobles de conexión; no equivalen a aplicar 023–027 sobre PostgreSQL real.
 
-La integración real está versionada como una prueba opt-in que se niega a usar
-`malaria_experiments` y exige un nombre de base que contenga `test` o `codex`:
+La receta histórica con una URL de test y una segunda base ya no es canónica.
+La integración actual usa un schema temporal controlado en la misma base
+Capstone:
 
 ```bash
-cd malaria_dl_local_project
-MODEL_GOVERNANCE_TEST_DATABASE_URL='postgresql://USER:PASSWORD@HOST:5432/malaria_governance_test' \
-MODEL_GOVERNANCE_TEST_ALLOW_SCHEMA_CHANGES=1 \
-  .venv/bin/python -m unittest tests.test_model_governance_postgres
+cd <PROJECT_ROOT>
+make test-fresh-schema
 ```
 
-Esa prueba aplica el historial numerado, verifica una segunda pasada no-op del
-ledger, recorre el linaje completo, prueba los checks clínicos, la unicidad del
-deployment activo y el bloqueo al borrar el training run. No se ejecutó durante
-esta implementación porque no estuvo disponible una base PostgreSQL 17
-desechable autorizada; sin las dos variables la prueba queda omitida.
+El validador aplica el historial numerado y Alembic, comprueba una segunda
+pasada de seeds, compara el fingerprint estructural, ejecuta smoke HTTP y borra
+el schema generado aunque falle. No crea, resetea ni elimina bases.
 
 ## Estrategia de rollback
 

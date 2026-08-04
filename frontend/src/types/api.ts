@@ -101,30 +101,21 @@ export interface ProductionPublicationResult {
   previous_champion_id:string|null;rollback_available:boolean;idempotent:boolean;
 }
 
-export interface Stage2Availability {
+export interface Stage2PublicationStatus {
   training_run_id:string;train_status?:string;evaluation_run_id?:string|null;evaluation_status?:string|null;
-  explainability_run_ids?:string[];eligible:boolean;eligible_for_stage2_production?:boolean;
-  available?:boolean;is_stage2_available?:boolean;is_stage2_production?:boolean;
-  stage2_status?:'not_available'|'available'|'production';
+  eligible:boolean;
   eligibility?:{train_completed:boolean;evaluate_completed:boolean;missing_conditions:string[]};
-  production_state?:'not_eligible'|'eligible'|'preparing'|'active'|'inactive'|'failed';
-  next_action?:'enable_for_stage2'|'view_stage2_model'|'unavailable';
-  action_label?:string;blockers:PromotionBlockingReason[];technical_blockers?:PromotionBlockingReason[];warnings:string[];
-  model_version_id:string|null;deployment_id?:string|null;fixture?:boolean;
-  checkpoint_artifact_id?:string;checkpoint?:string;model_name?:string;version_number?:number;
-  environment?:'stage2'|'production';alias?:'default'|'champion';production_scope?:'stage2_experimental'|'stage2_technical';deployment_status?:string;
-  artifact_sha256?:string;threshold?:number;threshold_source?:string;deployed_at?:string;
-  smoke_status?:string;available_for_inference?:boolean;
+  model_version_id:string|null;model_name?:string;version_number?:number;
   publication?:Stage2Publication|null;warning?:string;idempotent?:boolean;
-  package?:ModelContractCandidates|null;
 }
 export interface ProductiveModelAvailability {
   available:boolean;code:string|null;message:string;
   environment:'stage2';alias:'default';production_scope:'stage2_experimental';
-  model:null|{deployment_id:string;deployment_name:string;publication_id:string;
+  model:null|{deployment_id:string|null;deployment_name:string|null;publication_id:string;
     model_version_id:string;training_run_id:string;evaluation_run_id:string;
-    model_name:string;model_version:string|null;checkpoint_sha256:string;
-    threshold:number;threshold_source:string;published_at:string};
+    model_name:string;model_version:string|null;checkpoint_sha256:string|null;
+    threshold:number|null;threshold_source:string|null;published_at:string;
+    technical_validation?:'pending_inference'};
 }
 export interface Stage2Publication {
   id:string;datasource:string;model_version_id:string;training_run_id:string;
@@ -132,15 +123,6 @@ export interface Stage2Publication {
   status:'active'|'inactive';is_active:boolean;published_at:string;published_by:string|null;
   deactivated_at:string|null;deactivated_by:string|null;created_at:string;updated_at:string;
 }
-export interface Stage2EnablementResult {
-  training_run_id:string;model_version_id:string;deployment_id:string;
-  environment:'stage2'|'production';alias:'default'|'champion';status:'active';artifact_sha256:string;
-  threshold:number;threshold_source:string;deployed_at:string;
-  smoke_status:'PASS';available_for_stage2:boolean;
-  verification_inference:{status:'PASS';inference_run_id:string;image_analysis_job_id:string};
-  warnings:string[];rollback_available:boolean;idempotent:boolean;
-}
-
 export interface AvailableModel extends DeploymentRow {
   training_run_id: string; model_name: string; version_number: number;
   model_version_status: string;
@@ -606,21 +588,6 @@ export interface ClinicalDashboard {
   label_mapping: LabelMapping;
 }
 
-export interface ExplainabilityRow extends JsonRecord {
-  id: string;
-  run_id: string;
-  method: string;
-  output_path: string | null;
-  true_label: string | null;
-  predicted_label: string | null;
-  score: number | null;
-  case_type: string | null;
-  success: boolean;
-  error_message: string | null;
-  run_name: string | null;
-  model_name: string | null;
-}
-
 export interface PagedResponse<T> {
   items: T[];
   total: number;
@@ -774,18 +741,6 @@ export interface ExplainabilityCase {
   bbox_y?: number | null;
   bbox_width?: number | null;
   bbox_height?: number | null;
-}
-
-export interface ExplainabilityCaseSummary extends JsonRecord {
-  model_name: string | null;
-  dataset_name: string | null;
-  method: string | null;
-  case_type: string | null;
-  total_cases: number;
-  avg_score: number | null;
-  min_score: number | null;
-  max_score: number | null;
-  latest_run_at: string | null;
 }
 
 export interface UploadedPrediction extends JsonRecord {

@@ -389,101 +389,6 @@
   cursor: not-allowed;
 }
 
-.run-promotion {
-  display: grid;
-  align-content: end;
-  gap: 7px;
-  border-top: 1px solid #e4e9f2;
-  padding-top: 9px;
-}
-
-.run-promotion__progress {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 7px;
-  color: #72809a;
-  font-size: 9px;
-  line-height: 1.35;
-}
-
-.run-promotion__progress span {
-  white-space: nowrap;
-}
-
-.run-promotion__progress span[data-complete="true"] {
-  color: #17653b;
-  font-weight: 800;
-}
-
-.run-promotion__progress .run-promotion__title {
-  width: 100%;
-  color: #465574;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.run-promotion__button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.run-promotion__spinner {
-  width: 10px;
-  height: 10px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: run-promotion-spin 700ms linear infinite;
-}
-
-@keyframes run-promotion-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.run-promotion__help {
-  color: #5f6d86;
-  font-size: 10px;
-}
-
-.run-promotion__help summary {
-  width: fit-content;
-  color: #8a4c00;
-  cursor: pointer;
-  font-weight: 800;
-}
-
-.run-promotion__help summary:focus-visible {
-  outline: 3px solid rgba(49, 92, 170, 0.24);
-  outline-offset: 2px;
-}
-
-.run-promotion__help p,
-.run-promotion__help ul {
-  margin: 6px 0 0;
-}
-
-.run-promotion__help ul {
-  display: grid;
-  gap: 3px;
-  padding-left: 16px;
-}
-
-.run-promotion-notice {
-  margin-bottom: 12px;
-  border: 1px solid #b8dfca;
-  border-radius: 9px;
-  background: #edf9f2;
-  color: #17653b;
-  padding: 9px 11px;
-  font-size: 11px;
-  font-weight: 800;
-}
-
 .run-lineage-overview {
   display: flex;
   flex-wrap: wrap;
@@ -530,6 +435,7 @@
 .training-card--stage2-production>.report-row { background: linear-gradient(90deg,#f1faf5,#fff 58%); }
 .stage2-release-summary { display: grid; gap: 7px; border-top: 1px solid #e3e8f0; padding-top: 11px; color: #52617f; font-size: 11px; }
 .stage2-release-summary strong { color: #26324a; font-size: 12px; }
+.stage2-release-summary__title { color: #465574; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
 .stage2-publication-panel { margin: 0 16px 16px; padding: 18px; border: 1px solid #d9e2ef; border-radius: 10px; background: #f8fafc; display: grid; gap: 16px; animation: stage2-panel-in 160ms ease-out; }
 .stage2-publication-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .stage2-publication-panel h3 { margin: 0 0 6px; color: #1f2d45; font-size: 16px; }
@@ -540,6 +446,7 @@
 .stage2-eligibility-badge { color: #17603a; background: #e5f6ed; border: 1px solid #b4dfc7; border-radius: 999px; padding: 5px 9px; white-space: nowrap; }
 .stage2-experimental-warning { padding: 10px 12px; border-left: 3px solid #c38212; background: #fff8e8; color: #684b13; font-size: 12px; }
 .stage2-missing-condition { color: #8a2d2d; font-size: 12px; font-weight: 600; }
+.stage2-publication-error { color: #8a2d2d; font-size: 12px; font-weight: 650; }
 .stage2-inline-confirmation { display: grid; gap: 12px; padding: 12px; border: 1px solid #cbd7e6; border-radius: 8px; background: #fff; }
 .stage2-inline-confirmation > div { display: flex; gap: 8px; flex-wrap: wrap; }
 .stage2-publication-panel button:focus-visible,.stage2-detail-link:focus-visible { outline: 3px solid #2d6cdf; outline-offset: 2px; }
@@ -936,12 +843,6 @@
     grid-template-columns: 1fr;
   }
 
-  .run-promotion__button {
-    width: 100%;
-    justify-content: center;
-    min-height: 40px;
-  }
-
   .run-lineage-group__children-heading {
     align-items: flex-start;
     flex-direction: column;
@@ -992,95 +893,6 @@
   letter-spacing: .04em
 }
 
-.stage2-modal {
-  max-width: 760px
-}
-
-.stage2-modal header,
-.stage2-modal footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem
-}
-
-.stage2-warning {
-  display: grid;
-  gap: .25rem;
-  margin: 1rem 0;
-  padding: .85rem;
-  border: 1px solid #d9d2ff;
-  border-radius: .65rem;
-  background: #f7f5ff;
-  color: #40349d
-}
-
-.stage2-facts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: .75rem
-}
-
-.stage2-facts div {
-  padding: .7rem;
-  border: 1px solid #e1e5ee;
-  border-radius: .55rem;
-  background: #f8f9fc;
-  min-width: 0
-}
-
-.stage2-facts dt {
-  color: #667085;
-  font-size: .75rem
-}
-
-.stage2-facts dd {
-  margin: .2rem 0 0;
-  overflow-wrap: anywhere;
-  font-weight: 650
-}
-
-.stage2-warnings {
-  margin: 1rem 0;
-  padding: .75rem;
-  background: #fff8e8;
-  border-radius: .55rem
-}
-
-.stage2-modal form {
-  display: grid;
-  gap: .75rem
-}
-
-.stage2-modal label {
-  display: grid;
-  gap: .3rem
-}
-
-.stage2-modal input,
-.stage2-modal textarea {
-  padding: .65rem;
-  border: 1px solid #ccd2df;
-  border-radius: .45rem
-}
-
-.stage2-modal .stage2-confirm {
-  display: flex;
-  grid-template-columns: auto 1fr;
-  align-items: center
-}
-
-@media(max-width:700px) {
-  .stage2-facts {
-    grid-template-columns: 1fr
-  }
-}
-
-.active-stage2 {
-  border-color: #cfc8ff;
-  background: linear-gradient(135deg, #fff 0%, #f7f5ff 100%)
-}
-
 .immutable-badge {
   display: inline-flex;
   align-items: center;
@@ -1092,8 +904,7 @@
   font-weight: 750
 }
 
-.stage2-operational-banner,
-.stage2-review-option {
+.stage2-operational-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1105,27 +916,18 @@
   background: #f7f5ff
 }
 
-.stage2-operational-banner>div,
-.stage2-review-option>div {
+.stage2-operational-banner>div {
   display: grid;
   gap: .3rem
 }
 
-.stage2-operational-banner p,
-.stage2-review-option p {
+.stage2-operational-banner p {
   margin: 0;
   color: #53607a
 }
 
-.stage2-review-option--blocked {
-  border-color: #f2c5c2;
-  background: #fff8f7
-}
-
 @media(max-width:700px) {
-
-  .stage2-operational-banner,
-  .stage2-review-option {
+  .stage2-operational-banner {
     align-items: stretch;
     flex-direction: column
   }

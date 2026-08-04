@@ -200,6 +200,7 @@ La migración instala triggers append-only para
 `cell_detection_events` y `scientific_reviews`; rechazan `UPDATE` y `DELETE` en
 PostgreSQL, no sólo en la API.
 
-Las restricciones y nombres finales deben verificarse contra la migración
-Alembic de Prompt 7 antes de aprobar la entrega; la evidencia se registra en
-`docs/engineering/prompt7_validation.md`.
+Las restricciones y nombres finales deben verificarse contra la revisión
+Alembic `20260727_05` y las pruebas vigentes del dominio antes de aprobar una
+entrega. El procedimiento canónico se mantiene en
+[`docs/testing.md`](../testing.md) y [`docs/database.md`](../database.md).

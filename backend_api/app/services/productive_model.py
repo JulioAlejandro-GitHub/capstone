@@ -21,7 +21,7 @@ from app.db import get_primary_engine
 
 STAGE2_ENVIRONMENT = "stage2"
 STAGE2_ALIAS = "default"
-STAGE2_PRODUCTION_SCOPE = "stage2_experimental"
+LEGACY_STAGE2_PRODUCTION_SCOPE = "stage2_experimental"
 EXPECTED_DEPLOYMENT_NAME = "malaria-stage2-classifier"
 EXPECTED_LABEL_MAPPING = {
     "0": "uninfected",
@@ -60,8 +60,8 @@ class ProductiveModelError(ValueError):
 
 @dataclass(frozen=True)
 class ResolvedProductiveModel:
-    deployment_id: str
-    deployment_name: str
+    deployment_id: str | None
+    deployment_name: str | None
     publication_id: str
     model_version_id: str
     model_name: str
@@ -102,10 +102,9 @@ class ResolvedProductiveModel:
         review_margin: float,
         batch_size: int,
     ) -> dict[str, Any]:
-        return {
-            "schema_version": 1,
+        snapshot = {
+            "schema_version": 2 if self.deployment_id is None else 1,
             "model_registry_id": self.model_version_id,
-            "production_model_id": self.deployment_id,
             "stage2_publication_id": self.publication_id,
             "model_name": self.model_name,
             "model_version": self.model_version,
@@ -137,13 +136,6 @@ class ResolvedProductiveModel:
                 else str(self.published_at)
             ),
             "production_status": self.production_status,
-            "stage2_default": {
-                "deployment_name": self.deployment_name,
-                "environment": STAGE2_ENVIRONMENT,
-                "alias": STAGE2_ALIAS,
-                "production_scope": STAGE2_PRODUCTION_SCOPE,
-                "deployment_id": self.deployment_id,
-            },
             "loader_version": LOADER_VERSION,
             "inference_version": inference_version,
             "batch_size": batch_size,
@@ -158,6 +150,21 @@ class ResolvedProductiveModel:
                 "priority_hints": ["parasitized", "near_threshold"],
             },
         }
+        if self.deployment_id is not None:
+            snapshot["production_model_id"] = self.deployment_id
+            snapshot["stage2_default"] = {
+                "deployment_name": self.deployment_name,
+                "environment": STAGE2_ENVIRONMENT,
+                "alias": STAGE2_ALIAS,
+                "production_scope": LEGACY_STAGE2_PRODUCTION_SCOPE,
+                "deployment_id": self.deployment_id,
+            }
+        else:
+            snapshot["stage2_publication"] = {
+                "publication_id": self.publication_id,
+                "scope": "stage2",
+            }
+        return snapshot
 
 
 class ProductiveModelCache:
@@ -271,11 +278,12 @@ def validate_output_signature(signature: Mapping[str, Any]) -> None:
 
 
 class ProductiveModelResolver:
-    """Resolve only the unique active Stage 2 default deployment.
+    """Resolve the unique active Stage 2 publication at inference time.
 
-    A publication is a catalog authorization, never a fallback. The resolver
-    consequently starts at the active ``stage2/default`` deployment and then
-    requires one matching active publication.
+    Publication eligibility is limited to completed TRAIN and EVALUATE runs.
+    Executable-contract checks belong here, inside the classification request
+    that is about to run inference. Historical schema-v1 snapshots may still
+    reference a deployment, but new resolutions do not require one.
     """
 
     def __init__(
@@ -325,20 +333,43 @@ class ProductiveModelResolver:
         snapshot: Mapping[str, Any] | None = None,
         connection: Any | None = None,
     ) -> list[dict[str, Any]]:
-        # environment+alias are authoritative. Querying every active row in the
-        # context lets us reject ambiguity across differing deployment names.
         historical = snapshot is not None
+        legacy_deployment = bool(snapshot and snapshot.get("production_model_id"))
         statement = text(
             """
             SELECT
               d.id::text deployment_id,d.deployment_name,d.environment,d.alias,
-              d.status production_status,d.model_version_id::text,
-              d.checkpoint_artifact_id::text,d.artifact_sha256 deployment_sha256,
-              d.artifact_size_bytes deployment_size_bytes,
-              d.threshold_calibration_id::text,d.threshold_value,
-              d.threshold_profile_snapshot,d.preprocessing_profile_snapshot,
-              d.label_mapping_snapshot,d.positive_label,d.score_name,
-              d.metadata deployment_metadata,
+              COALESCE(d.status,publication.status) production_status,
+              mv.id::text model_version_id,
+              artifact.id::text checkpoint_artifact_id,
+              COALESCE(d.artifact_sha256,mv.artifact_sha256)
+                deployment_sha256,
+              COALESCE(d.artifact_size_bytes,mv.artifact_size_bytes)
+                deployment_size_bytes,
+              calibration.run_threshold_calibration_id::text
+                threshold_calibration_id,
+              COALESCE(d.threshold_value,calibration.threshold_selected)
+                threshold_value,
+              COALESCE(
+                d.threshold_profile_snapshot,
+                jsonb_build_object(
+                  'value',calibration.threshold_selected,
+                  'source',calibration.threshold_source
+                )
+              ) threshold_profile_snapshot,
+              COALESCE(
+                d.preprocessing_profile_snapshot,
+                mv.preprocessing_profile_snapshot
+              ) preprocessing_profile_snapshot,
+              COALESCE(d.label_mapping_snapshot,mv.class_mapping)
+                label_mapping_snapshot,
+              COALESCE(d.positive_label,calibration.positive_label,'parasitized')
+                positive_label,
+              COALESCE(
+                d.score_name,calibration.score_name,
+                'probability_parasitized'
+              ) score_name,
+              COALESCE(d.metadata,'{}'::jsonb) deployment_metadata,
               mv.model_name,mv.version_number,mv.status model_version_status,
               mv.lineage_status,mv.training_run_id::text source_training_run_id,
               mv.artifact_sha256 model_sha256,
@@ -371,30 +402,56 @@ class ProductiveModelResolver:
                 WHERE lineage.parent_run_id=mv.training_run_id
                   AND lineage.child_run_id=publication.evaluation_run_id
                   AND lineage.model_version_id=mv.id
-                  AND lineage.checkpoint_artifact_id=d.checkpoint_artifact_id
+                  AND lineage.checkpoint_artifact_id=
+                    publication.checkpoint_artifact_id
                   AND lineage.relationship_type='evaluates_checkpoint_from'
               ) evaluation_lineage_valid
             FROM stage2_model_publications publication
             LEFT JOIN deployed_model_versions d
-              ON d.model_version_id=publication.model_version_id
+              ON :legacy_deployment
+             AND d.id=CAST(:deployment_id AS uuid)
+             AND d.model_version_id=publication.model_version_id
              AND d.checkpoint_artifact_id=publication.checkpoint_artifact_id
-             AND (
-               :historical
-               OR (
-                 d.environment=:environment
-                 AND d.alias=:alias
-                 AND d.status='active'
-                 AND d.metadata->>'production_scope'=:production_scope
-               )
-             )
             JOIN model_versions mv ON mv.id=publication.model_version_id
             JOIN artifacts artifact
               ON artifact.id=publication.checkpoint_artifact_id
             JOIN runs training ON training.id=mv.training_run_id
             JOIN runs evaluation ON evaluation.id=publication.evaluation_run_id
-            LEFT JOIN run_threshold_calibration calibration
-              ON calibration.run_threshold_calibration_id=d.threshold_calibration_id
-             AND calibration.model_version_id=d.model_version_id
+            LEFT JOIN LATERAL (
+              SELECT candidate.*
+              FROM run_threshold_calibration candidate
+              WHERE (
+                :legacy_deployment
+                AND candidate.run_threshold_calibration_id=
+                  d.threshold_calibration_id
+                AND candidate.model_version_id=d.model_version_id
+              ) OR (
+                NOT :legacy_deployment
+                AND :historical
+                AND candidate.run_threshold_calibration_id=
+                  CAST(:threshold_calibration_id AS uuid)
+                AND candidate.run_id=publication.evaluation_run_id
+                AND (
+                  candidate.model_version_id IS NULL
+                  OR candidate.model_version_id=mv.id
+                )
+              ) OR (
+                NOT :legacy_deployment
+                AND NOT :historical
+                AND candidate.run_id=publication.evaluation_run_id
+                AND (
+                  candidate.model_version_id IS NULL
+                  OR candidate.model_version_id=mv.id
+                )
+              )
+              ORDER BY
+                CASE candidate.calibration_status
+                  WHEN 'validated' THEN 0 WHEN 'recorded' THEN 1 ELSE 2
+                END,
+                candidate.created_at DESC,
+                candidate.run_threshold_calibration_id DESC
+              LIMIT 1
+            ) calibration ON true
             WHERE (
               (
                 NOT :historical
@@ -406,23 +463,26 @@ class ProductiveModelResolver:
               OR
               (
                 :historical
-                AND d.id=CAST(:deployment_id AS uuid)
-                AND d.model_version_id=CAST(:model_version_id AS uuid)
-                AND d.checkpoint_artifact_id=CAST(:artifact_id AS uuid)
                 AND publication.id=CAST(:publication_id AS uuid)
+                AND publication.model_version_id=
+                  CAST(:model_version_id AS uuid)
+                AND publication.checkpoint_artifact_id=
+                  CAST(:artifact_id AS uuid)
                 AND publication.scope='stage2'
                 AND publication.training_run_id=mv.training_run_id
                 AND artifact.checksum=:checkpoint_sha256
+                AND (
+                  NOT :legacy_deployment
+                  OR d.id=CAST(:deployment_id AS uuid)
+                )
               )
             )
-            ORDER BY d.created_at,d.id
+            ORDER BY publication.published_at,publication.id
             """
         )
         params = {
             "historical": historical,
-            "environment": STAGE2_ENVIRONMENT,
-            "alias": STAGE2_ALIAS,
-            "production_scope": STAGE2_PRODUCTION_SCOPE,
+            "legacy_deployment": legacy_deployment,
             "deployment_id": (
                 str(snapshot.get("production_model_id")) if snapshot else None
             ),
@@ -437,6 +497,15 @@ class ProductiveModelResolver:
             ),
             "checkpoint_sha256": (
                 str(snapshot.get("checkpoint_sha256")).lower()
+                if snapshot
+                else None
+            ),
+            "threshold_calibration_id": (
+                str(
+                    _json_object(snapshot.get("calibration_metadata")).get(
+                        "threshold_calibration_id"
+                    )
+                )
                 if snapshot
                 else None
             ),
@@ -498,29 +567,18 @@ class ProductiveModelResolver:
         *,
         require_active: bool,
     ) -> ResolvedProductiveModel:
-        if not row.get("deployment_id"):
-            raise ProductiveModelError(
-                "PRODUCTIVE_DEPLOYMENT_MISSING",
-                reason="la publicación productiva no tiene deployment operativo",
-            )
-        if row.get("environment") != STAGE2_ENVIRONMENT or row.get("alias") != STAGE2_ALIAS:
-            raise ProductiveModelError(
-                "PRODUCTIVE_SLOT_INVALID", reason="contexto no es stage2/default"
-            )
         deployment_metadata = _mapping(row.get("deployment_metadata"))
-        if deployment_metadata.get("production_scope") != STAGE2_PRODUCTION_SCOPE:
-            raise ProductiveModelError(
-                "PRODUCTIVE_SLOT_INVALID",
-                reason="deployment no tiene alcance stage2_experimental",
-            )
-        if require_active and row.get("production_status") != "active":
-            raise ProductiveModelError(
-                "PRODUCTIVE_MODEL_INACTIVE", reason="deployment inactivo"
-            )
-        if not str(row.get("deployment_name") or "").strip():
-            raise ProductiveModelError(
-                "PRODUCTIVE_SLOT_INVALID", reason="deployment_name vacío"
-            )
+        if row.get("deployment_id"):
+            if (
+                row.get("environment") != STAGE2_ENVIRONMENT
+                or row.get("alias") != STAGE2_ALIAS
+                or deployment_metadata.get("production_scope")
+                != LEGACY_STAGE2_PRODUCTION_SCOPE
+            ):
+                raise ProductiveModelError(
+                    "PRODUCTIVE_SLOT_INVALID",
+                    reason="deployment histórico no pertenece a stage2/default",
+                )
         if require_active and (
             row.get("publication_status") != "active"
             or row.get("publication_is_active") is not True
@@ -650,17 +708,31 @@ class ProductiveModelResolver:
                 reason="fuente del threshold snapshot/calibración no coincide",
             )
 
-        expected_sha = str(row.get("deployment_sha256") or "").lower()
-        checksums = {
-            expected_sha,
-            str(row.get("model_sha256") or "").lower(),
-            str(row.get("artifact_checksum") or "").lower(),
-        }
-        if len(checksums) != 1 or len(expected_sha) != 64:
+        expected_sha = str(
+            row.get("deployment_sha256")
+            or row.get("model_sha256")
+            or row.get("artifact_checksum")
+            or ""
+        ).lower()
+        checksum_values = [
+            str(value).lower()
+            for value in (
+                row.get("deployment_sha256"),
+                row.get("model_sha256"),
+                row.get("artifact_checksum"),
+            )
+            if value
+        ]
+        checksums = set(checksum_values)
+        if not checksum_values or len(checksums) != 1 or len(expected_sha) != 64:
             raise ProductiveModelError(
                 "MODEL_CHECKSUM_MISMATCH", reason="SHA de registros no coincide"
             )
-        expected_size = row.get("deployment_size_bytes")
+        expected_size = (
+            row.get("deployment_size_bytes")
+            if row.get("deployment_size_bytes") is not None
+            else row.get("model_size_bytes")
+        )
         try:
             sizes = {
                 int(value)
@@ -713,8 +785,12 @@ class ProductiveModelResolver:
             "metadata": _json_object(row.get("calibration_metadata")),
         }
         return ResolvedProductiveModel(
-            deployment_id=str(row["deployment_id"]),
-            deployment_name=str(row["deployment_name"]),
+            deployment_id=(
+                str(row["deployment_id"]) if row.get("deployment_id") else None
+            ),
+            deployment_name=(
+                str(row["deployment_name"]) if row.get("deployment_name") else None
+            ),
             publication_id=str(row["publication_id"]),
             model_version_id=str(row["model_version_id"]),
             model_name=str(row["model_name"]),
@@ -787,9 +863,40 @@ class ProductiveModelResolver:
         )
 
     @staticmethod
-    def _snapshot_identity(snapshot: Mapping[str, Any]) -> tuple[str, ...]:
+    def _snapshot_calibration_id(snapshot: Mapping[str, Any]) -> str:
+        calibration = snapshot.get("calibration_metadata")
+        if not isinstance(calibration, Mapping):
+            raise ProductiveModelError(
+                "FROZEN_MODEL_SNAPSHOT_INVALID",
+                reason="calibration_metadata congelado ausente",
+            )
+        raw_calibration_id = str(
+            calibration.get("threshold_calibration_id") or ""
+        ).strip()
+        try:
+            return str(UUID(raw_calibration_id))
+        except (ValueError, AttributeError) as exc:
+            raise ProductiveModelError(
+                "FROZEN_MODEL_SNAPSHOT_INVALID",
+                reason="threshold_calibration_id congelado inválido",
+            ) from exc
+
+    @staticmethod
+    def _snapshot_identity(snapshot: Mapping[str, Any]) -> tuple[str | None, ...]:
+        try:
+            schema_version = int(snapshot.get("schema_version", 1))
+        except (TypeError, ValueError) as exc:
+            raise ProductiveModelError(
+                "FROZEN_MODEL_SNAPSHOT_INVALID",
+                reason="schema_version congelado inválido",
+            ) from exc
+        if schema_version not in {1, 2}:
+            raise ProductiveModelError(
+                "FROZEN_MODEL_SNAPSHOT_INVALID",
+                reason="schema_version congelado no soportado",
+            )
+        ProductiveModelResolver._snapshot_calibration_id(snapshot)
         keys = (
-            "production_model_id",
             "stage2_publication_id",
             "model_registry_id",
             "checkpoint_artifact_id",
@@ -815,7 +922,22 @@ class ProductiveModelResolver:
                 "FROZEN_MODEL_SNAPSHOT_INVALID",
                 reason="checkpoint_sha256 congelado inválido",
             )
-        return (*identifiers, values[-1].lower())
+        deployment_id: str | None = None
+        if schema_version == 1:
+            raw_deployment_id = str(snapshot.get("production_model_id") or "").strip()
+            if not raw_deployment_id:
+                raise ProductiveModelError(
+                    "FROZEN_MODEL_SNAPSHOT_INVALID",
+                    reason="production_model_id ausente en snapshot v1",
+                )
+            try:
+                deployment_id = str(UUID(raw_deployment_id))
+            except (ValueError, AttributeError) as exc:
+                raise ProductiveModelError(
+                    "FROZEN_MODEL_SNAPSHOT_INVALID",
+                    reason="production_model_id congelado inválido",
+                ) from exc
+        return (deployment_id, *identifiers, values[-1].lower())
 
     @staticmethod
     def _canonical(value: Any) -> str:
@@ -917,17 +1039,29 @@ class ProductiveModelResolver:
                 "FROZEN_MODEL_SNAPSHOT_MISMATCH",
                 reason="contrato JSON congelado no coincide",
             )
-        stage2 = snapshot.get("stage2_default")
-        if not isinstance(stage2, Mapping) or (
-            str(stage2.get("environment")) != STAGE2_ENVIRONMENT
-            or str(stage2.get("alias")) != STAGE2_ALIAS
-            or str(stage2.get("production_scope")) != STAGE2_PRODUCTION_SCOPE
-            or str(stage2.get("deployment_id")) != resolved.deployment_id
-            or str(stage2.get("deployment_name")) != resolved.deployment_name
-        ):
+        schema_version = int(snapshot.get("schema_version", 1))
+        if schema_version == 1:
+            stage2 = snapshot.get("stage2_default")
+            valid_stage2_identity = isinstance(stage2, Mapping) and (
+                str(stage2.get("environment")) == STAGE2_ENVIRONMENT
+                and str(stage2.get("alias")) == STAGE2_ALIAS
+                and str(stage2.get("production_scope"))
+                == LEGACY_STAGE2_PRODUCTION_SCOPE
+                and str(stage2.get("deployment_id")) == resolved.deployment_id
+                and str(stage2.get("deployment_name"))
+                == resolved.deployment_name
+            )
+        else:
+            stage2 = snapshot.get("stage2_publication")
+            valid_stage2_identity = isinstance(stage2, Mapping) and (
+                str(stage2.get("publication_id")) == resolved.publication_id
+                and str(stage2.get("scope")) == "stage2"
+                and resolved.deployment_id is None
+            )
+        if not valid_stage2_identity:
             raise ProductiveModelError(
                 "FROZEN_MODEL_SNAPSHOT_MISMATCH",
-                reason="slot stage2/default congelado no coincide",
+                reason="identidad Stage 2 congelada no coincide",
             )
 
     def resolve_current_stage2_productive_model(self) -> ResolvedProductiveModel:
@@ -958,40 +1092,87 @@ class ProductiveModelResolver:
         """Backward-compatible entry point used by classification services."""
         return self.resolve_current_stage2_productive_model()
 
+    def _published_models(self) -> list[dict[str, Any]]:
+        """Return publication identity only; never inspect executable bytes."""
+        if self.candidate_loader is not None:
+            return [dict(row) for row in self.candidate_loader()]
+        with self._engine().connect() as connection:
+            rows = connection.execute(
+                text(
+                    """
+                    SELECT
+                      publication.id::text publication_id,
+                      publication.model_version_id::text model_version_id,
+                      publication.training_run_id::text source_training_run_id,
+                      publication.evaluation_run_id::text source_evaluation_run_id,
+                      publication.checkpoint_artifact_id::text
+                        checkpoint_artifact_id,
+                      publication.published_at,
+                      publication.status publication_status,
+                      publication.is_active publication_is_active,
+                      mv.model_name,mv.version_number,
+                      training.status training_status,
+                      evaluation.status evaluation_status
+                    FROM stage2_model_publications publication
+                    JOIN model_versions mv
+                      ON mv.id=publication.model_version_id
+                    JOIN runs training
+                      ON training.id=publication.training_run_id
+                    JOIN runs evaluation
+                      ON evaluation.id=publication.evaluation_run_id
+                    WHERE publication.scope='stage2'
+                      AND publication.status='active'
+                      AND publication.is_active=true
+                    ORDER BY publication.published_at,publication.id
+                    """
+                )
+            ).mappings().all()
+        return [dict(row) for row in rows]
+
     def availability(self) -> dict[str, Any]:
-        """Public, non-sensitive view of the canonical Stage 2 production slot."""
-        try:
-            resolved = self.resolve_current_stage2_productive_model()
-        except ProductiveModelError as exc:
+        """Public publication status without inference-time validation."""
+        rows = self._published_models()
+        if not rows:
             return {
                 "available": False,
-                "code": exc.code,
-                "message": exc.detail,
-                "environment": STAGE2_ENVIRONMENT,
-                "alias": STAGE2_ALIAS,
-                "production_scope": STAGE2_PRODUCTION_SCOPE,
+                "code": "PRODUCTIVE_MODEL_NOT_FOUND",
+                "message": "No existe un modelo Productivo Etapa 2.",
                 "model": None,
             }
+        if len(rows) != 1:
+            return {
+                "available": False,
+                "code": "PRODUCTIVE_MODEL_NOT_UNIQUE",
+                "message": (
+                    "Existe más de un modelo Productivo Etapa 2; "
+                    "despublique candidatos hasta dejar sólo uno activo."
+                ),
+                "model": None,
+            }
+        row = rows[0]
         return {
             "available": True,
             "code": None,
-            "message": "Modelo Productivo Etapa 2 disponible.",
-            "environment": STAGE2_ENVIRONMENT,
-            "alias": STAGE2_ALIAS,
-            "production_scope": STAGE2_PRODUCTION_SCOPE,
+            "message": (
+                "Modelo Productivo Etapa 2 publicado. "
+                "El contrato técnico se validará al ejecutar inferencia."
+            ),
             "model": {
-                "deployment_id": resolved.deployment_id,
-                "deployment_name": resolved.deployment_name,
-                "publication_id": resolved.publication_id,
-                "model_version_id": resolved.model_version_id,
-                "training_run_id": resolved.source_training_run_id,
-                "evaluation_run_id": resolved.source_evaluation_run_id,
-                "model_name": resolved.model_name,
-                "model_version": resolved.model_version,
-                "checkpoint_sha256": resolved.checkpoint_sha256,
-                "threshold": resolved.threshold,
-                "threshold_source": resolved.threshold_source,
-                "published_at": resolved.published_at,
+                "publication_id": str(row["publication_id"]),
+                "model_version_id": str(row["model_version_id"]),
+                "training_run_id": str(row["source_training_run_id"]),
+                "evaluation_run_id": str(row["source_evaluation_run_id"]),
+                "model_name": str(row["model_name"]),
+                "model_version": (
+                    str(row["version_number"])
+                    if row.get("version_number") is not None
+                    else None
+                ),
+                "checkpoint_sha256": None,
+                "threshold": None,
+                "threshold_source": None,
+                "published_at": row["published_at"],
+                "technical_validation": "pending_inference",
             },
         }
 
@@ -1000,21 +1181,37 @@ class ProductiveModelResolver:
         snapshot: Mapping[str, Any],
     ) -> ResolvedProductiveModel:
         identity = self._snapshot_identity(snapshot)
+        frozen_calibration_id = self._snapshot_calibration_id(snapshot)
         if self.snapshot_loader is not None:
             rows = list(self.snapshot_loader(snapshot))
         elif self.candidate_loader is not None:
-            rows = [
-                row
-                for row in self.candidate_loader()
-                if (
-                    str(row.get("deployment_id") or ""),
+            rows = []
+            for row in self.candidate_loader():
+                deployment_id = (
+                    str(row.get("deployment_id"))
+                    if row.get("deployment_id")
+                    else None
+                )
+                checksum = str(
+                    row.get("deployment_sha256")
+                    or row.get("model_sha256")
+                    or row.get("artifact_checksum")
+                    or ""
+                ).lower()
+                candidate_identity = (
+                    deployment_id,
                     str(row.get("publication_id") or ""),
                     str(row.get("model_version_id") or ""),
                     str(row.get("checkpoint_artifact_id") or ""),
-                    str(row.get("deployment_sha256") or "").lower(),
+                    checksum,
                 )
-                == identity
-            ]
+                calibration_matches = (
+                    identity[0] is not None
+                    or str(row.get("threshold_calibration_id") or "")
+                    == frozen_calibration_id
+                )
+                if candidate_identity == identity and calibration_matches:
+                    rows.append(row)
         else:
             rows = self._fetch_candidates(snapshot=snapshot)
         if len(rows) != 1:
@@ -1032,7 +1229,7 @@ class ProductiveModelResolver:
         *,
         connection: Any,
     ) -> ResolvedProductiveModel:
-        """Lock and revalidate the active slot immediately before run creation."""
+        """Lock and revalidate the publication immediately before run creation."""
 
         if self.candidate_loader is not None:
             current = self.resolve()
@@ -1045,20 +1242,12 @@ class ProductiveModelResolver:
         locked = connection.execute(
             text(
                 """
-                SELECT d.id
-                FROM deployed_model_versions d
-                JOIN model_versions mv ON mv.id=d.model_version_id
-                JOIN artifacts artifact ON artifact.id=d.checkpoint_artifact_id
-                JOIN stage2_model_publications publication
-                  ON publication.id=CAST(:publication_id AS uuid)
-                 AND publication.model_version_id=d.model_version_id
-                 AND publication.training_run_id=mv.training_run_id
-                 AND publication.checkpoint_artifact_id=d.checkpoint_artifact_id
-                 AND publication.scope='stage2'
-                JOIN run_threshold_calibration calibration
-                  ON calibration.run_threshold_calibration_id=
-                    d.threshold_calibration_id
-                 AND calibration.model_version_id=d.model_version_id
+                SELECT publication.id
+                FROM stage2_model_publications publication
+                JOIN model_versions mv
+                  ON mv.id=publication.model_version_id
+                JOIN artifacts artifact
+                  ON artifact.id=publication.checkpoint_artifact_id
                 JOIN runs training ON training.id=mv.training_run_id
                 JOIN runs evaluation
                   ON evaluation.id=publication.evaluation_run_id
@@ -1066,45 +1255,64 @@ class ProductiveModelResolver:
                   ON lineage.parent_run_id=mv.training_run_id
                  AND lineage.child_run_id=publication.evaluation_run_id
                  AND lineage.model_version_id=mv.id
-                 AND lineage.checkpoint_artifact_id=d.checkpoint_artifact_id
+                 AND lineage.checkpoint_artifact_id=
+                   publication.checkpoint_artifact_id
                  AND lineage.relationship_type='evaluates_checkpoint_from'
-                WHERE d.id=CAST(:deployment_id AS uuid)
-                  AND d.model_version_id=CAST(:model_version_id AS uuid)
-                  AND d.checkpoint_artifact_id=CAST(:artifact_id AS uuid)
-                  AND d.environment=:environment
-                  AND d.alias=:alias
-                  AND d.status='active'
+                JOIN LATERAL (
+                  SELECT candidate.run_threshold_calibration_id
+                  FROM run_threshold_calibration candidate
+                  WHERE candidate.run_id=publication.evaluation_run_id
+                    AND (
+                      candidate.model_version_id IS NULL
+                      OR candidate.model_version_id=mv.id
+                    )
+                  ORDER BY
+                    CASE candidate.calibration_status
+                      WHEN 'validated' THEN 0 WHEN 'recorded' THEN 1 ELSE 2
+                    END,
+                    candidate.created_at DESC,
+                    candidate.run_threshold_calibration_id DESC
+                  LIMIT 1
+                ) selected_calibration ON true
+                JOIN run_threshold_calibration calibration
+                  ON calibration.run_threshold_calibration_id=
+                    selected_calibration.run_threshold_calibration_id
+                WHERE publication.id=CAST(:publication_id AS uuid)
+                  AND publication.model_version_id=
+                    CAST(:model_version_id AS uuid)
+                  AND publication.checkpoint_artifact_id=
+                    CAST(:artifact_id AS uuid)
+                  AND publication.training_run_id=mv.training_run_id
+                  AND publication.scope='stage2'
                   AND publication.status='active'
                   AND publication.is_active=true
-                  AND mv.status IN (
-                    'candidate','validated','approved','deployed'
-                  )
-                  AND mv.lineage_status='resolved'
                   AND artifact.artifact_status='available'
                   AND artifact.checksum=:checkpoint_sha256
                   AND artifact.file_size_bytes=:checkpoint_size_bytes
-                  AND d.artifact_sha256=:checkpoint_sha256
-                  AND d.artifact_size_bytes=:checkpoint_size_bytes
+                  AND mv.artifact_sha256=:checkpoint_sha256
+                  AND mv.artifact_size_bytes=:checkpoint_size_bytes
                   AND training.run_type='training'
                   AND training.status='completed'
                   AND evaluation.run_type='evaluation'
                   AND evaluation.status='completed'
+                  AND calibration.run_threshold_calibration_id=
+                    CAST(:threshold_calibration_id AS uuid)
                   AND calibration.calibration_status IN ('recorded','validated')
                   AND calibration.threshold_selected=:threshold
                   AND calibration.threshold_source=:threshold_source
                 FOR SHARE OF
-                  d,mv,artifact,publication,calibration,training,evaluation,lineage
+                  mv,artifact,publication,calibration,training,evaluation,lineage
                 """
             ),
             {
-                "deployment_id": resolved.deployment_id,
                 "publication_id": resolved.publication_id,
                 "model_version_id": resolved.model_version_id,
                 "artifact_id": resolved.checkpoint_artifact_id,
-                "environment": STAGE2_ENVIRONMENT,
-                "alias": STAGE2_ALIAS,
                 "checkpoint_sha256": resolved.checkpoint_sha256,
                 "checkpoint_size_bytes": resolved.checkpoint_size_bytes,
+                "threshold_calibration_id": resolved.calibration_metadata[
+                    "threshold_calibration_id"
+                ],
                 "threshold": resolved.threshold,
                 "threshold_source": resolved.threshold_source,
             },

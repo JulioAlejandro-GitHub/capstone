@@ -1,40 +1,86 @@
-# Capstone MIA — plataforma científica experimental
+# Capstone MIA — análisis experimental de malaria
 
-Monolito modular con FastAPI, React/TypeScript, PostgreSQL y `malaria_dl`. No es una
-herramienta diagnóstica. La fundación de Etapa 2 se documenta en
-`docs/engineering/local_development.md` y `docs/engineering/test_environment.md`.
+Plataforma científica local para trazabilidad de experimentos de deep learning y
+análisis técnico de frotis. Integra FastAPI, React/TypeScript, PostgreSQL y el
+paquete `malaria_dl` en un monolito modular. Sus resultados son experimentales:
+**no constituyen diagnóstico, decisión clínica ni estimación validada de
+parasitemia**.
 
-La API `/api/v1/scientific` registra trazabilidad pseudonimizada caso → muestra → frotis
-→ imagen (sólo metadata). Véanse `docs/architecture/scientific_data_model.md` y
-`docs/engineering/scientific_api.md`.
+## Inicio rápido
 
-Comandos principales: `make validate`, `make test`, `make test-db-up`,
-`make test-db-bootstrap` y `make test-db-down`.
-# Operación de la fundación
+Requisitos soportados: Python 3.12, Node.js 22/npm 10 y una instancia local de
+PostgreSQL 17. El runtime oficial no usa Docker.
 
-Backend y frontend se ejecutan localmente con Python y Node/Vite contra PostgreSQL 17.9
-Homebrew y la base `malaria_experiments`. Docker no forma parte de la arquitectura
-operativa, CI ni criterios de aprobación. Consulte
-`docs/engineering/local_development.md`.
+1. Copie `.env.example` a `.env` y complete, al menos, `DATABASE_URL` y
+   `JWT_SECRET`. Nunca confirme secretos en Git.
+2. Cree el entorno Python e instale las dependencias:
 
-La ingesta protegida está disponible en `/frotis/cargar`: resuelve identidad
-pseudonimizada y preserva originales en `var/storage`.
-# Control técnico de calidad
+   ```bash
+   python3.12 -m venv malaria_dl_local_project/.venv
+   ./malaria_dl_local_project/.venv/bin/python -m pip install -r malaria_dl_local_project/requirements.txt
+   ```
 
-El dominio Análisis de frotis incluye carga inmutable y quality gate técnico en
-`/frotis/analisis`; permanece separado del entrenamiento y Modelo IA. Consulta
-`docs/architecture/microscopy_quality_gate.md`.
+3. Verifique la base existente y aplique migraciones sólo mediante el flujo
+   protegido descrito en [docs/database.md](docs/database.md):
 
-# Clasificación celular experimental
+   ```bash
+   make db-status
+   make db-migrate-check
+   ```
 
-Prompt 8 añade clasificación por crop con el único slot productivo
-`stage2/default`, threshold publicado, predicciones automáticas inmutables,
-Grad-CAM manual y revisión humana separada. El resultado agregado es
-experimental: no constituye diagnóstico ni estimación de parasitemia. Consulte
-`docs/architecture/cell_classification_pipeline.md`.
+4. Desde la raíz del repositorio, inicie la API:
 
-El precheck de Prompt 8 no encontró un `stage2/default` real: la publicación
-activa de catálogo no es fallback y el workflow queda de forma segura en
-`awaiting_productive_model`. La cadena de datos requiere Alembic
-`20260728_01 → 20260728_02 → 20260728_03`. Consulte la evidencia y los gates
-pendientes en `docs/engineering/prompt8_validation.md`.
+   ```bash
+   ./malaria_dl_local_project/.venv/bin/python -m uvicorn \
+     app.main:app \
+     --app-dir backend_api \
+     --reload \
+     --port 8000 \
+     --env-file .env
+   ```
+
+   `./scripts/start_backend_api.sh` ejecuta el mismo runtime, agrega un preflight
+   de dependencias y fija el host local.
+
+5. En otra terminal, inicie el frontend:
+
+   ```bash
+   npm --prefix frontend ci
+   npm --prefix frontend run dev
+   ```
+
+La API expone liveness en `http://127.0.0.1:8000/health` y readiness en
+`http://127.0.0.1:8000/ready`. La SPA se sirve normalmente en
+`http://localhost:5173`; su flujo de frotis canónico es `/frotis/analizar` y el
+historial es `/frotis/historial`.
+
+## Documentación canónica
+
+- [Arquitectura actual](docs/architecture.md)
+- [Desarrollo local](docs/local-development.md)
+- [Base de datos y Alembic](docs/database.md)
+- [Pipeline de IA y linaje científico](docs/ai-pipeline.md)
+- [Workflow y publicación de Etapa 2](docs/stage2-workflow.md)
+- [Seguridad](docs/security.md)
+- [Pruebas y gates](docs/testing.md)
+- [Operaciones](docs/operations.md)
+- [Sistema de diseño y rutas](docs/design-system.md)
+
+Los ADR, contratos JSON y documentos científicos detallados se conservan como
+fuentes especializadas y están enlazados desde estos nueve documentos. Los
+artefactos de Delivery 2 se conservan únicamente como `DESIGN_REFERENCE /
+NOT_RUNTIME`; no describen por sí solos la implementación ejecutable.
+
+## Comandos de calidad
+
+```bash
+make validate
+make test
+make test-ml
+make test-backend-integration  # requiere PostgreSQL local configurado
+make lint
+```
+
+No ejecute resets, downgrades, `DROP DATABASE` ni `DROP SCHEMA public`. Las
+migraciones SQL históricas, las revisiones Alembic y `var/storage` forman parte
+de la trazabilidad persistente del proyecto.

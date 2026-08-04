@@ -13,7 +13,7 @@ import { api } from '../services/api';
 import type {
   GroupedRunLineageResponse,
   TrainingRunLineageGroup,
-  Stage2Availability,
+  Stage2PublicationStatus,
   UnresolvedLineageRun,
 } from '../types/api';
 import '../styles/report-components.css';
@@ -55,7 +55,7 @@ function groupContainsRun(group: TrainingRunLineageGroup, runId: string): boolea
 function promotionErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   if (message.includes('tiempo de espera')) return 'La consulta tardó demasiado. Intenta nuevamente.';
-  return 'No fue posible consultar el estado de liberación.';
+  return 'No fue posible consultar el estado de publicación.';
 }
 
 export function Runs({
@@ -67,31 +67,24 @@ export function Runs({
   const [error, setError] = useState<string | null>(null);
   const [selectedRunId, setSelectedRunId] = useState(() => searchParams.get('run') ?? '');
   const [selectedModel, setSelectedModel] = useState(() => searchParams.get('modelo') ?? '');
-  const [stage2Status,setStage2Status]=useState<Record<string,Stage2Availability>>({});
+  const stage2PublicationRunId = searchParams.get('stage2') === 'publicacion'
+    ? selectedRunId
+    : '';
+  const [stage2Status,setStage2Status]=useState<Record<string,Stage2PublicationStatus>>({});
   const [stage2Loading,setStage2Loading]=useState<Record<string,boolean>>({});
   const [stage2Errors,setStage2Errors]=useState<Record<string,string>>({});
   useEffect(()=>{setSelectedRunId(searchParams.get('run')??'');setSelectedModel(searchParams.get('modelo')??'');},[searchParams]);
   const updateFilter=(key:'run'|'modelo',value:string)=>{
     const next=new URLSearchParams(searchParams);if(value)next.set(key,value);else next.delete(key);
+    if(key==='run')next.delete('stage2');
     setSearchParams(next);if(key==='run')setSelectedRunId(value);else setSelectedModel(value);
   };
 
   const loadStage2=async(runId:string)=>{
     setStage2Loading(current=>({...current,[runId]:true}));
     setStage2Errors(current=>{const next={...current};delete next[runId];return next;});
-    try{const [release,availability]=await Promise.all([
-      api.getStage2ReleaseStatus(datasource,runId),
-      api.getProductiveModelAvailability(datasource),
-    ]);
-      const isCurrent=availability.available&&availability.model?.training_run_id===runId;
-      const response:Stage2Availability=isCurrent?{
-        ...release,available:true,is_stage2_available:true,is_stage2_production:true,
-        stage2_status:'production',production_state:'active',
-        deployment_id:availability.model!.deployment_id,
-        environment:availability.environment,alias:availability.alias,
-        production_scope:availability.production_scope,
-        deployment_status:'active',available_for_inference:true,
-      }:release;
+    try{
+      const response=await api.getStage2ReleaseStatus(datasource,runId);
       setStage2Status(current=>({...current,[runId]:response}));return response;
     }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));return null;}
     finally{setStage2Loading(current=>({...current,[runId]:false}));}
@@ -103,7 +96,7 @@ export function Runs({
     setStage2Errors(current=>{const next={...current};delete next[runId];return next;});
     try{
       const response=await api.publishStage2Model(datasource,modelVersionId,{
-        reason:'Disponibilización técnica desde el reporte de Ejecuciones',
+        reason:'Publicación para Etapa 2 desde el reporte de Ejecuciones',
       });
       setStage2Status(current=>({...current,[runId]:response}));
     }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));}
@@ -116,7 +109,7 @@ export function Runs({
     setStage2Errors(current=>{const next={...current};delete next[runId];return next;});
     try{
       const response=await api.deactivateStage2Publication(datasource,publicationId,{
-        reason:'Baja técnica desde el reporte de Ejecuciones',
+        reason:'Baja de publicación para Etapa 2 desde el reporte de Ejecuciones',
       });
       setStage2Status(current=>({...current,[runId]:response}));
     }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));}
@@ -225,7 +218,7 @@ export function Runs({
       <div className="page-title">
         <div>
           <h1>Ejecuciones</h1>
-          <p>Linaje read-only de cada entrenamiento y sus procesos derivados.</p>
+          <p>Linaje de cada entrenamiento, sus procesos derivados y su publicación para Etapa 2.</p>
         </div>
       </div>
       <section className="panel report-panel">
@@ -234,7 +227,7 @@ export function Runs({
           onClear={() => {
             setSelectedRunId('');
             setSelectedModel('');
-            const next=new URLSearchParams(searchParams);next.delete('run');next.delete('modelo');setSearchParams(next);
+            const next=new URLSearchParams(searchParams);next.delete('run');next.delete('modelo');next.delete('stage2');setSearchParams(next);
           }}
         >
           <ReportSelectFilter
@@ -286,6 +279,7 @@ export function Runs({
                     stage2Status={stage2Status[group.training.run_id]}
                     stage2Loading={stage2Loading[group.training.run_id]??false}
                     stage2Error={stage2Errors[group.training.run_id]}
+                    defaultStage2Open={stage2PublicationRunId === group.training.run_id}
                     onStage2Publish={()=>publishStage2(group.training.run_id)}
                     onStage2Deactivate={()=>deactivateStage2(group.training.run_id)}
                   />

@@ -16,7 +16,6 @@ from src.malaria_dl.governance.services.deployment_service import ModelDeploymen
 from src.malaria_dl.governance.services.contract_service import ModelContractService
 from src.malaria_dl.governance.services.lifecycle_service import ModelReleaseLifecycleService
 from src.malaria_dl.governance.services.prepare_release_service import PrepareModelReleaseService
-from src.malaria_dl.governance.services.stage2_availability_service import Stage2ModelAvailabilityService
 from src.malaria_dl.governance.services.stage2_publication_service import Stage2PublicationService
 from src.malaria_dl.inference.traceable import ModelCache,TraceableInferenceService
 
@@ -61,18 +60,6 @@ class PublishProductionRequest(BaseModel):
     model_config=ConfigDict(extra="forbid")
     deployment_name:str="malaria-classifier";alias:str="champion"
     actor:str;reason:str;confirm_production:bool=False;source_image_id:str|None=None
-class Stage2EnableRequest(BaseModel):
-    model_config=ConfigDict(extra="forbid")
-    actor:str;reason:str;confirm_stage2_enablement:bool=False
-    preprocessing_candidate_id:str|None=None
-    threshold_candidate_id:str|None=None
-    source_image_id:str|None=None
-class TechnicalProductionRequest(BaseModel):
-    model_config=ConfigDict(extra="forbid")
-    actor:str;reason:str;confirm_publication:bool=False
-    preprocessing_profile:str|None=None
-    threshold:float|None=None
-    source_image_id:str|None=None
 class Stage2PublicationRequest(BaseModel):
     model_config=ConfigDict(extra="forbid")
     actor:str|None=None;reason:str|None=None
@@ -102,26 +89,6 @@ def contract_service(datasource:str|None):
             yield connection
     return ModelContractService(connection_factory)
 
-def stage2_service(datasource:str|None):
-    key=resolve_datasource(datasource)
-    @contextmanager
-    def connection_factory():
-        with mutation_connection(get_engine(key)) as connection:
-            yield connection
-    return Stage2ModelAvailabilityService(connection_factory,cache=MODEL_CACHE)
-
-def technical_production_service(datasource:str|None):
-    key=resolve_datasource(datasource)
-    @contextmanager
-    def connection_factory():
-        with mutation_connection(get_engine(key)) as connection:
-            yield connection
-    return Stage2ModelAvailabilityService(
-      connection_factory,cache=MODEL_CACHE,environment="production",alias="champion",
-      deployment_name="malaria-classifier",production_scope="stage2_technical",
-      release_channel="production",
-    )
-
 def stage2_publication_service(datasource:str|None):
     key=resolve_datasource(datasource)
     @contextmanager
@@ -129,26 +96,6 @@ def stage2_publication_service(datasource:str|None):
         with mutation_connection(get_engine(key)) as connection:
             yield connection
     return Stage2PublicationService(connection_factory,datasource=key)
-
-def stage2_status_with_deployment(response:dict,datasource:str|None):
-    deployment=fetch_one(datasource,"""SELECT id::text deployment_id,environment,alias,
-      status deployment_status,artifact_sha256,threshold_value::float threshold,
-      threshold_profile_snapshot->>'source' threshold_source,deployed_at,
-      metadata->'technical_smoke_test'->>'status' smoke_status
-      FROM deployed_model_versions
-      WHERE model_version_id=CAST(:model_version AS uuid)
-        AND checkpoint_artifact_id=CAST(:artifact AS uuid)
-        AND environment='stage2' AND alias='default'
-      ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,created_at DESC LIMIT 1""",{
-        "model_version":response["model_version_id"],
-        "artifact":response["checkpoint_artifact_id"],
-      })
-    if deployment:
-        response.update(row_to_dict(deployment))
-        response["available_for_inference"]=(
-          response["deployment_status"]=="active" and response["smoke_status"]=="PASS"
-        )
-    return response
 
 @router.get("/training-runs/{training_run_id}/promotion-status")
 def promotion_status(training_run_id:str,datasource:str|None=Query("malaria")):
@@ -175,10 +122,6 @@ def prepare_release(
     except HTTPException:raise
     except Exception as exc:raise HTTPException(409,{"code":"PREPARE_RELEASE_FAILED","message":type(exc).__name__}) from exc
 
-@router.get("/training-runs/{training_run_id}/stage2-availability")
-def stage2_availability(training_run_id:str,datasource:str|None=Query("malaria")):
-    return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
-
 @router.get("/stage2/productive-model-availability")
 def productive_model_availability(datasource:str|None=Query("malaria")):
     """Canonical availability consumed by executions and smear analysis."""
@@ -187,16 +130,15 @@ def productive_model_availability(datasource:str|None=Query("malaria")):
 
 @router.get("/training-runs/{training_run_id}/stage2-release-status")
 def stage2_release_status(training_run_id:str,datasource:str|None=Query("malaria")):
-    """Estado persistente del candidato técnico; sólo TRAIN + EVALUATE bloquean."""
-    return safe(lambda:stage2_status_with_deployment(
-      stage2_publication_service(datasource).status_for_training(uid(training_run_id)),
-      datasource,
+    """Estado persistente de publicación; sólo TRAIN + EVALUATE bloquean."""
+    return safe(lambda:stage2_publication_service(datasource).status_for_training(
+      uid(training_run_id)
     ))
 
 @router.get("/model-versions/{model_version_id}/stage2-status")
 def model_version_stage2_status(model_version_id:str,datasource:str|None=Query("malaria")):
-    return safe(lambda:stage2_status_with_deployment(
-      stage2_publication_service(datasource).status(uid(model_version_id)),datasource,
+    return safe(lambda:stage2_publication_service(datasource).status(
+      uid(model_version_id)
     ))
 
 @router.post("/model-versions/{model_version_id}/stage2-publications")
@@ -205,33 +147,17 @@ def publish_stage2_model(
     datasource:str|None=Query("malaria"),
     request_id:str|None=Header(None,alias="X-Request-ID"),
     principal:Principal=Depends(
-      audited_permission(Permission.MODELS_PUBLISH, "scientific.model.deployment.activated")
+      audited_permission(
+        Permission.MODELS_PUBLISH,"scientific.model.stage2_publication.activated"
+      )
     ),
 ):
     def op():
         actor=principal.username
-        reason=body.reason or "Publicación y deployment en Etapa 2"
-        publication=stage2_publication_service(datasource).publish(
+        reason=body.reason or "Publicación en Etapa 2"
+        return stage2_publication_service(datasource).publish(
           uid(model_version_id),actor,reason,request_id,
         )
-        deployment=stage2_service(datasource).enable(
-          publication["training_run_id"],actor=actor,reason=reason,
-          confirm_stage2_enablement=True,
-        )
-        publication.update({
-          "deployment_id":deployment["deployment_id"],
-          "environment":deployment["environment"],
-          "alias":deployment["alias"],
-          "deployment_status":deployment["status"],
-          "artifact_sha256":deployment["artifact_sha256"],
-          "threshold":deployment["threshold"],
-          "threshold_source":deployment["threshold_source"],
-          "deployed_at":deployment["deployed_at"],
-          "smoke_status":deployment["smoke_status"],
-          "available_for_inference":deployment["available_for_inference"],
-          "idempotent":publication["idempotent"] and deployment["idempotent"],
-        })
-        return publication
     return safe(op)
 
 @router.post("/stage2-publications/{publication_id}/deactivate")
@@ -240,88 +166,22 @@ def deactivate_stage2_publication(
     datasource:str|None=Query("malaria"),
     request_id:str|None=Header(None,alias="X-Request-ID"),
     principal:Principal=Depends(
-      audited_permission(Permission.MODELS_DEACTIVATE, "scientific.model.deployment.deactivated")
+      audited_permission(
+        Permission.MODELS_DEACTIVATE,"scientific.model.stage2_publication.deactivated"
+      )
     ),
 ):
     def op():
         actor=principal.username
-        reason=body.reason or "Baja de deployment en Etapa 2"
-        publication=stage2_publication_service(datasource).deactivate(
+        reason=body.reason or "Baja de publicación en Etapa 2"
+        return stage2_publication_service(datasource).deactivate(
           uid(publication_id),actor,reason,request_id,
         )
-        with mutation_connection(get_engine(resolve_datasource(datasource))) as connection:
-            deployment_id=connection.execute(text("""
-              SELECT id::text FROM deployed_model_versions
-              WHERE model_version_id=CAST(:model_version AS uuid)
-                AND checkpoint_artifact_id=CAST(:artifact AS uuid)
-                AND environment='stage2' AND alias='default'
-              ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,
-                created_at DESC LIMIT 1
-            """), {
-              "model_version":publication["model_version_id"],
-              "artifact":publication["checkpoint_artifact_id"],
-            }).scalar_one_or_none()
-        if deployment_id:
-            deployment=stage2_service(datasource).deactivate(
-              deployment_id,actor=actor,reason=reason,
-            )
-            publication.update({
-              "deployment_id":deployment_id,
-              "environment":"stage2","alias":"default",
-              "deployment_status":deployment["status"],
-              "available_for_inference":False,
-            })
-        return publication
     return safe(op)
-
-@router.get("/training-runs/{training_run_id}/stage2-package-preview")
-def stage2_package_preview(training_run_id:str,datasource:str|None=Query("malaria")):
-    return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
-
-@router.post("/training-runs/{training_run_id}/enable-stage2",
-             dependencies=[Depends(audited_permission(Permission.MODELS_SET_DEFAULT, "STAGE2_DEFAULT_CHANGED"))])
-def enable_stage2(training_run_id:str,body:Stage2EnableRequest,datasource:str|None=Query("malaria")):
-    return safe(lambda:stage2_service(datasource).enable(
-      uid(training_run_id),actor=body.actor,reason=body.reason,
-      confirm_stage2_enablement=body.confirm_stage2_enablement,
-      preprocessing_candidate_id=body.preprocessing_candidate_id,
-      threshold_candidate_id=body.threshold_candidate_id,
-      source_image_id=uid(body.source_image_id) if body.source_image_id else None,
-    ))
 
 @router.get("/stage2/models")
 def stage2_models(datasource:str|None=Query("malaria")):
     return {"items":stage2_publication_service(datasource).models()}
-
-@router.get("/model-versions/{model_version_id}/technical-production-preview")
-def technical_production_preview(model_version_id:str,datasource:str|None=Query("malaria")):
-    row=fetch_one(datasource,"SELECT training_run_id::text FROM model_versions WHERE id=CAST(:id AS uuid)",
-      {"id":uid(model_version_id)})
-    if not row:raise HTTPException(404,"Model version no encontrada")
-    return safe(lambda:technical_production_service(datasource).preview(str(row["training_run_id"])))
-
-@router.post("/model-versions/{model_version_id}/publish-technical-production",
-             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_PUBLISHED_TECHNICAL"))])
-def publish_model_technical_production(model_version_id:str,body:TechnicalProductionRequest,datasource:str|None=Query("malaria")):
-    row=fetch_one(datasource,"SELECT training_run_id::text FROM model_versions WHERE id=CAST(:id AS uuid)",
-      {"id":uid(model_version_id)})
-    if not row:raise HTTPException(404,"Model version no encontrada")
-    return safe(lambda:technical_production_service(datasource).enable(
-      str(row["training_run_id"]),actor=body.actor,reason=body.reason,
-      confirm_stage2_enablement=body.confirm_publication,
-      preprocessing_candidate_id=body.preprocessing_profile,
-      source_image_id=uid(body.source_image_id) if body.source_image_id else None,
-    ))
-
-@router.post("/training-runs/{training_run_id}/publish-technical-production",
-             dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_PUBLISHED_TECHNICAL"))])
-def publish_training_technical_production(training_run_id:str,body:TechnicalProductionRequest,datasource:str|None=Query("malaria")):
-    return safe(lambda:technical_production_service(datasource).enable(
-      uid(training_run_id),actor=body.actor,reason=body.reason,
-      confirm_stage2_enablement=body.confirm_publication,
-      preprocessing_candidate_id=body.preprocessing_profile,
-      source_image_id=uid(body.source_image_id) if body.source_image_id else None,
-    ))
 
 @router.post("/training-runs/{training_run_id}/build-production-model-version",
              dependencies=[Depends(audited_permission(Permission.MODELS_PUBLISH, "MODEL_VERSION_BUILT"))])

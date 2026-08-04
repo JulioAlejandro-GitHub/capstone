@@ -2,6 +2,15 @@
 
 Escala cualitativa: probabilidad/impacto Bajo, Medio, Alto; nivel combina ambos.
 
+Este registro es acumulativo y conserva estados observados durante entregas
+anteriores; no es una descripción del runtime actual. Para operación vigente
+prevalecen [architecture.md](architecture.md), [operations.md](operations.md) y
+[ADR-021](adr/ADR-021-stage2-publication-first-inference.md). En particular, la
+revisión `20260804_01` cierra el desacople publication/deployment descrito en
+R01/R33 para runs nuevos, y el runtime único Python 3.12 sustituye la separación
+de venvs descrita en R12/R37. Las filas se mantienen sin reescribir para
+preservar la evidencia histórica.
+
 |ID|Categoría|Riesgo y evidencia actual|Causa|Consecuencia|Prob.|Impacto|Nivel|Mitigación|Contingencia|Componente|Prompt|Estado|
 |---|---|---|---|---|:---:|:---:|:---:|---|---|---|---|---|
 |R-P3-01|Privacidad|PII en metadata científica|Entrada libre|Exposición de identidad|Baja|Alto|Medio|Sin columnas PII y bloqueo recursivo de claves|Revisión humana|Dominio|P3|Mitigado; residual|

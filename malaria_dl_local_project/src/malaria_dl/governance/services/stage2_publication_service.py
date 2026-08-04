@@ -39,6 +39,8 @@ class Stage2PublicationService:
           JOIN runs child ON child.id=lineage.child_run_id
           WHERE lineage.parent_run_id=CAST(:training AS uuid)
             AND lineage.relationship_type='evaluates_checkpoint_from'
+            AND lineage.model_version_id=CAST(:model_version AS uuid)
+            AND lineage.checkpoint_artifact_id=CAST(:checkpoint AS uuid)
             AND child.run_type='evaluation'
           ORDER BY
             CASE WHEN child.status='completed' THEN 0 ELSE 1 END,
@@ -46,6 +48,8 @@ class Stage2PublicationService:
           LIMIT 1
         """), {
             "training": row["training_run_id"],
+            "model_version": row["model_version_id"],
+            "checkpoint": row["checkpoint_artifact_id"],
         }).mappings().one_or_none()
         result = dict(row)
         result.update(dict(evaluation) if evaluation else {
@@ -206,6 +210,7 @@ class Stage2PublicationService:
     def _response(self, context, publication, idempotent=False):
         eligible, eligibility = self._eligibility(context)
         active = bool(publication and publication["is_active"])
+        serialized_publication = self._serialize(publication) if publication else None
         return {
             "model_version_id": context["model_version_id"],
             "training_run_id": context["training_run_id"],
@@ -224,7 +229,17 @@ class Stage2PublicationService:
             ),
             "is_stage2_available": active,
             "is_stage2_production": active,
-            "publication": self._serialize(publication) if publication else None,
+            "publication_id": (
+                serialized_publication["id"] if serialized_publication else None
+            ),
+            "publication_status": (
+                serialized_publication["status"] if serialized_publication else None
+            ),
+            "published_at": (
+                serialized_publication["published_at"]
+                if serialized_publication else None
+            ),
+            "publication": serialized_publication,
             "idempotent": idempotent,
             "blockers": [
                 {"code": "STAGE2_CONDITION_MISSING", "message": item}
@@ -232,7 +247,7 @@ class Stage2PublicationService:
             ],
             "warnings": [],
             "warning": (
-                "Esta publicación es técnica y experimental. No constituye "
+                "Esta publicación es experimental. No constituye "
                 "aprobación clínica ni diagnóstico automatizado."
             ),
         }

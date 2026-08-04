@@ -1517,7 +1517,7 @@ def test_reviews_audit_idempotency_and_append_only_integrity(
 
     equivalent = repository.find_equivalent(
         detection_run_id=seeded.detection_run_id,
-        production_model_id=seeded.deployment_id,
+        stage2_publication_id=seeded.publication_id,
         model_version=seeded.model_version,
         checkpoint_sha256=seeded.checkpoint_sha256,
         inference_version="cell-classification-v1",

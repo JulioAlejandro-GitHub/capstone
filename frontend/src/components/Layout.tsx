@@ -4,9 +4,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { routes, withAllowedQuery } from '../router';
 import type { Datasource } from '../types/api';
 import { AppSidebar } from './navigation/AppSidebar';
-import { moduleForPath, navigationGroups, sectionForPath } from './navigation/navigationConfig';
-
-export const modelAiNavItems = navigationGroups.flatMap((group) => group.items);
+import { moduleForPath, sectionForPath } from './navigation/navigationConfig';
 
 interface LayoutProps {
   datasource: string;

@@ -5,6 +5,12 @@ históricos `src.*` continúan soportados mediante adaptadores sin lógica
 duplicada. Véanse `docs/architecture_after_refactor.md` y
 `docs/legacy_compatibility.md`.
 
+Este entorno Python 3.12 es también el runtime único soportado para la API,
+inferencia, migraciones y pruebas del repositorio Capstone. La configuración de
+PostgreSQL y JWT vive en el `.env` privado de la raíz; este subproyecto no
+mantiene credenciales ni una segunda configuración operativa. Para arrancar la
+plataforma completa consulte [`../docs/local-development.md`](../docs/local-development.md).
+
 Proyecto local para entrenar y evaluar modelos de Deep Learning sobre el dataset **NIH / NLM Malaria Cell Images** usando TensorFlow Datasets.
 
 Incluye:

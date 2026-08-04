@@ -1,5 +1,13 @@
 # Matriz de seguridad de mutaciones legacy
 
+> **HISTORICAL_SNAPSHOT / NOT_RUNTIME (2026-07-26).** Esta matriz preserva el
+> inventario observado en esa fecha y no debe usarse como catálogo de rutas
+> actual. Los endpoints `/api/training-runs/{id}/enable-stage2`,
+> `/api/model-versions/{id}/publish-technical-production` y
+> `/api/training-runs/{id}/publish-technical-production` aquí listados fueron
+> retirados. Las rutas vigentes se obtienen del OpenAPI generado por la API y
+> de [stage2-workflow.md](../stage2-workflow.md).
+
 Prompt 2.2.1 conserva el inventario y su test fail-closed. RBAC central está PASS. La
 atomicidad por familia permanece BLOCKED hasta disponer de E2E de cada repositorio.
 

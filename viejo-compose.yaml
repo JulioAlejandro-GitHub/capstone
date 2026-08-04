@@ -1,4 +1,0 @@
-# SUPERSEDED — historical filename retained because it existed before Prompt 2.2.1.
-# Backend and frontend run locally. Docker Compose is not part of Capstone's
-# operational architecture, development workflow, CI, or approval gates.
-services: {}

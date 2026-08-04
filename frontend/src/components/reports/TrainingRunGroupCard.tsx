@@ -1,30 +1,37 @@
-import type { Stage2Availability, TrainingRunLineageGroup } from '../../types/api';
+import type { Stage2PublicationStatus, TrainingRunLineageGroup } from '../../types/api';
 import { RunLineageChildCard } from './RunLineageChildCard';
 import { RunSummaryRow } from './RunSummaryRow';
 import { Stage2PublicationPanel } from './Stage2PublicationPanel';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface TrainingRunGroupCardProps {
   group: TrainingRunLineageGroup;
   onRunSelect: (runId: string) => void;
-  stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Error?:string;
+  stage2Status?:Stage2PublicationStatus;stage2Loading?:boolean;stage2Error?:string;
+  defaultStage2Open?:boolean;
   onStage2Publish:()=>Promise<void>;onStage2Deactivate:()=>Promise<void>;
 }
 
 export function TrainingRunGroupCard({
   group,
   onRunSelect,
-  stage2Status,stage2Loading,stage2Error,onStage2Publish,onStage2Deactivate,
+  stage2Status,stage2Loading,stage2Error,defaultStage2Open=false,
+  onStage2Publish,onStage2Deactivate,
 }: TrainingRunGroupCardProps) {
   const { training, evaluations, explainability } = group;
   const linkedCount = evaluations.length + explainability.length;
-  const [expanded,setExpanded]=useState(false);
+  const [expanded,setExpanded]=useState(defaultStage2Open);
   const panelId=`stage2-publication-${training.run_id}`;
+  const published=Boolean(stage2Status?.publication?.is_active);
+
+  useEffect(()=>{
+    if(defaultStage2Open)setExpanded(true);
+  },[defaultStage2Open]);
 
   return (
     <article
       aria-label={`Entrenamiento ${training.run_name?.trim() || training.run_id}`}
-      className={`run-lineage-group training-card ${stage2Status?.is_stage2_production ? 'training-card--stage2-production' : ''}`}
+      className={`run-lineage-group training-card ${published ? 'training-card--stage2-production' : ''}`}
     >
       <RunSummaryRow
         onRunSelect={onRunSelect}

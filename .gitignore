@@ -9,9 +9,19 @@ __pycache__/
 *.pyo
 *.pyd
 .venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+*.egg-info/
+.ipynb_checkpoints/
 
 # Proyecto malaria
 malaria_dl_local_project/.venv/
+malaria_dl_local_project/source/
 malaria_dl_local_project/outputs/
 malaria_dl_local_project/tensorflow_datasets/
 
@@ -30,6 +40,7 @@ backups/
 # Frontend
 frontend/node_modules/
 frontend/dist/
+frontend/.vite/
 
 # Backend API
 backend_api/.venv/
@@ -41,8 +52,16 @@ backend_api/.venv/
 !**/.env.example
 /var/storage/cell-crops
 /var/storage/microscopy-images
+/var/storage/cell-explanations/
+/var/storage/.staging/
 venv/
 docs/dump-malaria_experiments-202607290730.sql
-docs/dump-malaria_experiments-202607290730.sql
-/backend_api/var/storage/cell-crops
-/backend_api/var/storage/microscopy-images
+/backend_api/var/storage/
+
+# Herramientas y artefactos locales
+.idea/
+.vscode/
+*.log
+*.tmp
+*.swp
+*~

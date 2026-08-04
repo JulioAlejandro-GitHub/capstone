@@ -9,6 +9,10 @@ import type { DeploymentRow, ModelVersionLineageRow, ModelVersionRow, TrainingPr
 import { formatDate, formatMetric } from '../utils/format';
 
 const short=(value:string|null|undefined,size=8)=>value ? `${value.slice(0,size)}…` : '—';
+const isLegacyStage2=(deployment:DeploymentRow)=>[
+  'stage2_experimental','stage2_technical',
+].includes(String(deployment.metadata?.production_scope??''))
+  ||(deployment.environment==='stage2'&&deployment.alias==='default');
 export function ModelVersions({datasource,onRunSelect,onModelVersionSelect,onDeploymentSelect,onDeployments,onExecutions,selectedModelVersionId}:{datasource:string;onRunSelect:(id:string)=>void;onModelVersionSelect:(id:string|null)=>void;onDeploymentSelect:(id:string)=>void;onDeployments:()=>void;onExecutions:()=>void;selectedModelVersionId:string|null}) {
   const [rows,setRows]=useState<ModelVersionRow[]>([]);const [deployments,setDeployments]=useState<DeploymentRow[]>([]);
   const [loading,setLoading]=useState(true);const [error,setError]=useState<string|null>(null);
@@ -58,7 +62,7 @@ export function ModelVersions({datasource,onRunSelect,onModelVersionSelect,onDep
       {header:'Training',render:(row)=><code>{short(row.training_run_id)}</code>},{header:'SHA-256',render:(row)=><code>{short(row.artifact_sha256,12)}</code>},
       {header:'Evaluación',render:(row)=><><span>Recall {formatMetric(row.recall_parasitized)}</span><br/><span>Spec. {formatMetric(row.specificity)}</span><br/><span>F2 {formatMetric(row.f2_parasitized)}</span></>},
       {header:'Threshold',render:(row)=>formatMetric(row.threshold_used)},{header:'Creado',render:(row)=>formatDate(row.created_at)},
-      {header:'Operación',render:(row)=>{const active=deployments.find((item)=>item.model_version_id===row.id&&item.status==='active');return active?<span>{active.metadata?.production_scope==='stage2_technical'?<strong className="production-run-badge">Productivo Etapa 2</strong>:active.alias}<br/><small>{active.environment} / {active.alias}</small></span>:'Sin deployment activo'}},
+      {header:'Operación',render:(row)=>{const active=deployments.find((item)=>item.model_version_id===row.id&&item.status==='active');return active?<span>{isLegacyStage2(active)?<strong className="production-run-badge">Registro histórico Etapa 2</strong>:active.alias}<br/><small>{active.environment} / {active.alias}</small></span>:'Sin deployment activo'}},
       {header:'Detalle',render:(row)=><button type="button" className="table-action" onClick={()=>onModelVersionSelect(row.id)}>Ver detalle</button>},]}/></div>
     {selected?<div className="panel detail-panel"><div className="section-heading"><h2>{selected.model_name} · v{selected.version_number??'—'}</h2><div className="detail-actions"><CopyCanonicalLink pathname={routes.modelVersionDetail(selected.id)} datasource={datasource}/><button type="button" onClick={()=>onModelVersionSelect(null)}>Cerrar</button></div></div>
       <div className="facts-grid"><span>Model version<strong>{selected.id}</strong></span><span>Training run<strong>{selected.training_run_id}</strong></span><span>Linaje<strong>{selected.lineage_status}</strong></span><span>Evaluación<strong>{selectedPromotion?.evaluation_run_id?short(selectedPromotion.evaluation_run_id,12):'No vinculada'}</strong></span>

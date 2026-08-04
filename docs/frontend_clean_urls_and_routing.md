@@ -17,6 +17,7 @@ El archivo central es `frontend/src/router.ts`. Los componentes no deben constru
 | Resumen | `/modelo-ia/resumen` | — | `datasource` |
 | Ejecuciones | `/modelo-ia/ejecuciones` | — | `datasource`, `run`, `modelo` |
 | Detalle de ejecución | `/modelo-ia/ejecuciones/:trainingRunId` | UUID de run | `datasource` |
+| Liberación de ejecución | `/modelo-ia/ejecuciones/:trainingRunId/liberacion` | UUID de TRAIN | `datasource` |
 | Evaluaciones | `/modelo-ia/evaluaciones` | — | `datasource` |
 | Comparación | `/modelo-ia/comparacion` | — | `datasource` |
 | Modelos liberados | `/modelo-ia/modelos-liberados` | — | `datasource` |
@@ -29,6 +30,9 @@ El archivo central es `frontend/src/router.ts`. Los componentes no deben constru
 | Dataset | `/modelo-ia/dataset` | — | `datasource` |
 | Datasets y modelos | `/modelo-ia/datasets-modelos` | — | `datasource` |
 | Errores y logs | `/modelo-ia/errores-logs` | — | `datasource` |
+| Analizar frotis | `/frotis/analizar` | — | estado permitido del workflow |
+| Historial de frotis | `/frotis/historial` | — | filtros permitidos |
+| Detalle histórico | `/frotis/historial/:analysisRunId` | UUID de analysis run | — |
 
 No se añadieron rutas de detalle para evaluación, explicabilidad o predicción: el frontend actual no dispone de una carga estable del objeto individual por el ID público correspondiente. Añadir la URL antes del endpoint produciría un deep link que no podría reconstruirse.
 
@@ -57,6 +61,9 @@ Se normalizan con `replace` y se conserva el query string:
 - `/model-versions` → `/modelo-ia/modelos-liberados`
 - `/deployments` → `/modelo-ia/despliegues`
 - `/modelo-ia/ejecuciones/RunId=<uuid>` → ruta canónica del run
+- `/frotis/cargar` → `/frotis/analizar`
+- `/frotis/analisis` → `/frotis/analizar`
+- `/frotis/revision` → `/frotis/analizar`
 
 La ruta `/` redirige a `/modelo-ia/resumen`.
 

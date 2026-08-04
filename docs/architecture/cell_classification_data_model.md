@@ -1,22 +1,24 @@
 # Modelo de datos de clasificación celular
 
-La cadena lineal de Prompt 8 es:
+La cadena lineal del dominio es:
 
 1. `20260728_01`: introduce las entidades de clasificación, explicabilidad,
    agregado y revisión;
 2. `20260728_02`: vuelve a declarar la validación de integridad del agregado
    para bases que alcanzaron la primera revisión durante el desarrollo;
 3. `20260728_03`: alinea esa validación con el contrato canónico final de
-   `per_image_summary`.
+   `per_image_summary`;
+4. `20260804_01`: mantiene snapshots deployment-backed v1, permite snapshots
+   publication-first v2 y hace opcional `production_model_id` en runs nuevos.
 
-Por tanto, el esquema operativo de Prompt 8 requiere head `20260728_03`; no
-basta con aplicar solamente `20260728_01`.
+Por tanto, el esquema operativo requiere el head vigente; no basta con aplicar
+solamente la revisión que creó las tablas.
 
 La revisión base introduce:
 
 | Tabla | Responsabilidad |
 |---|---|
-| `cell_classification_runs` | identidad, slot productivo, snapshots, estado y contadores |
+| `cell_classification_runs` | identidad de publicación/deployment legacy, snapshots, estado y contadores |
 | `cell_classification_inputs` | manifest tabular congelado, elegibilidad y exclusión |
 | `cell_predictions` | resultado automático inmutable por crop |
 | `cell_explanations` | lifecycle y metadata de artefactos Grad-CAM |

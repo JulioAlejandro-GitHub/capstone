@@ -4,5 +4,6 @@
 - `Base rechazada`: confirme `APP_ENV=development` e identidad local sin imprimir secretos.
 - `/ready` 503: revise por componente DB, migrations o storage.
 - Alembic incompatible: no haga stamp; restaure/complete 001–029 y ejecute el verificador.
-- Frontend 401: vuelva a ingresar; el token es deliberadamente sólo memoria.
+- Frontend 401: el token persistido en `localStorage` puede haber expirado o ser
+  inválido; vuelva a ingresar y no copie tokens desde logs o herramientas.
 - Docker no aplica: backend, frontend y PostgreSQL se ejecutan localmente.

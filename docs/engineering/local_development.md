@@ -1,13 +1,9 @@
-# Desarrollo local
+# Desarrollo local — detalle histórico consolidado
 
-Use Python 3.12, Node 22 y PostgreSQL 17.9 Homebrew. Configure privadamente
-`APP_ENV=development`, `DATABASE_URL`, `JWT_SECRET` y storage. No copie credenciales a Git.
+La guía operativa vigente está en [`../local-development.md`](../local-development.md).
+El runtime soportado usa un único entorno Python 3.12 en
+`malaria_dl_local_project/.venv`, PostgreSQL local y Node/Vite; Docker no forma
+parte de la arquitectura ni de los gates.
 
-```bash
-PYTHONPATH=backend_api backend_api/.venv/bin/uvicorn app.main:app --reload
-npm --prefix frontend run dev
-```
-
-Compruebe `/health`, `/ready` y el frontend Vite. Docker no forma parte de la arquitectura
-operativa, del desarrollo ni de los gates. TRAIN/EVALUATE/EXPLAIN y sus adaptadores
-permanecen sin cambios; esta fundación no añade procesamiento científico.
+Este archivo se conserva como alias documental para enlaces existentes. No
+agregue aquí un segundo procedimiento de arranque.

@@ -4,8 +4,8 @@
 
 ```text
 detection run terminal
-  -> resolver stage2/default
-  -> validar publicación, TRAIN, EVALUATE y checkpoint
+  -> resolver una publicación Stage 2 activa
+  -> validar contrato técnico y checkpoint al iniciar inferencia
   -> congelar manifest y model snapshot
   -> cargar modelo una vez
   -> preprocess + inferencia por batches
@@ -16,12 +16,11 @@ detection run terminal
   -> revisión y Grad-CAM manual
 ```
 
-El resolver parte exclusivamente de un deployment activo de
-`deployed_model_versions` para `environment=stage2` y `alias=default`, y exige
-la publicación Stage 2 activa del mismo model version. El precheck real de
-Prompt 8 encontró la publicación, pero ningún deployment; por ello este
-pipeline permanece bloqueado en `awaiting_productive_model` y no ejecuta
-inferencia.
+El resolver actual parte de exactamente una publicación Stage 2 activa. No
+requiere un deployment para runs nuevos: congela un snapshot publication-first
+esquema v2. Los snapshots esquema v1 con deployment se conservan para lectura
+histórica. Cero o varias publicaciones activas bloquean el inicio; tampoco se
+elige “latest”.
 
 La ejecución HTTP usa el threadpool de FastAPI. No hay worker, broker, polling ni
 retry automático. Los errores de modelo, mapping, preprocessing o checksum son
@@ -41,7 +40,7 @@ revisión son elegibles.
 
 ## Idempotencia y fallos
 
-La equivalencia combina detection run, slot productivo, checkpoint, versión de
+La equivalencia v2 combina detection run, publicación, checkpoint, versión de
 modelo, versión de inferencia y manifest. Un run `failed` nunca se sobrescribe:
 el retry manual crea otro con `retry_of_run_id`.
 
@@ -51,4 +50,4 @@ PII ni paths absolutos en eventos o snapshots.
 El agregado persistido se expone como `automatic_summary`; la revisión produce
 un `reviewed_summary` derivado. El contrato canónico de desglose por imagen es
 `{"images": [...]}` y queda protegido por la cadena Alembic
-`20260728_01 → 20260728_02 → 20260728_03`.
+`20260728_01 → 20260728_02 → 20260728_03 → 20260804_01`.
