@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic_core import PydanticCustomError
 
 
@@ -191,6 +191,61 @@ class ScientificValidationUpdate(ScientificSchema):
     name: str | None = Field(None, min_length=1, max_length=200)
     description: str | None = Field(None, max_length=4000)
     status: ValidationStatus | None = None
+
+
+class ScientificValidationAnnotationCreate(ScientificSchema):
+    target_type: Literal["cell", "analysis"]
+    cell_id: UUID | None = None
+    analysis_run_id: UUID | None = None
+    category: str = Field(min_length=1, max_length=120)
+    content: str = Field(min_length=1, max_length=10000)
+
+    @field_validator("content", "category")
+    @classmethod
+    def annotation_text_is_not_blank(cls, value: str):
+        if not value.strip():
+            raise ValueError("El texto no puede estar vacío.")
+        return value
+
+    @model_validator(mode="after")
+    def validate_target(self):
+        valid = (
+            self.target_type == "cell" and self.cell_id is not None and self.analysis_run_id is None
+        ) or (
+            self.target_type == "analysis" and self.analysis_run_id is not None and self.cell_id is None
+        )
+        if not valid:
+            raise PydanticCustomError(
+                "annotation_target",
+                "Debe especificarse exactamente el target correspondiente.",
+            )
+        return self
+
+
+class ScientificValidationAnnotationUpdate(ScientificSchema):
+    category: str | None = Field(None, min_length=1, max_length=120)
+    content: str | None = Field(None, min_length=1, max_length=10000)
+    version: int = Field(gt=0)
+
+    @field_validator("content", "category")
+    @classmethod
+    def updated_annotation_text_is_not_blank(cls, value: str | None):
+        if value is not None and not value.strip():
+            raise ValueError("El texto no puede estar vacío.")
+        return value
+
+    @model_validator(mode="after")
+    def contains_change(self):
+        changed = self.model_fields_set.intersection({"category", "content"})
+        if not changed:
+            raise PydanticCustomError(
+                "annotation_change", "Debe enviarse al menos un campo editable."
+            )
+        if any(getattr(self, field) is None for field in changed):
+            raise PydanticCustomError(
+                "annotation_null", "Los campos editables no admiten null."
+            )
+        return self
 
 
 class ScientificRead(ScientificSchema):

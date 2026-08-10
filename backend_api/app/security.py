@@ -73,6 +73,7 @@ class Permission(StrEnum):
     SCIENTIFIC_VALIDATION_CREATE = "scientific.validation.create"
     SCIENTIFIC_VALIDATION_UPDATE = "scientific.validation.update"
     SCIENTIFIC_VALIDATION_ARCHIVE = "scientific.validation.archive"
+    SCIENTIFIC_VALIDATION_ANNOTATE = "scientific.validation.annotate"
 
 
 READ = {
@@ -112,12 +113,14 @@ ROLE_PERMISSIONS = {
         Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN,
         Permission.SCIENTIFIC_CELL_CLASSIFICATION_REVIEW,
         Permission.SCIENTIFIC_VALIDATION_ARCHIVE,
+        Permission.SCIENTIFIC_VALIDATION_ANNOTATE,
     },
     "operator": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {Permission.PREDICTIONS_EXECUTE},
     "reviewer": READ | SCIENTIFIC_READ | {
         Permission.SCIENTIFIC_CELL_DETECTION_REVIEW,
         Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN,
         Permission.SCIENTIFIC_CELL_CLASSIFICATION_REVIEW,
+        Permission.SCIENTIFIC_VALIDATION_ANNOTATE,
     },
     "read_only": READ | SCIENTIFIC_READ,
 }

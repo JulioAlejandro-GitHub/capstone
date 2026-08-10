@@ -140,3 +140,220 @@ class ScientificValidationRepository:
           WHERE id=CAST(:id AS uuid)
         """), {"id": session_id, "actor": actor_id})
         return self.get(session_id, for_update=True)
+
+    def target_belongs_to_session(
+        self,
+        session_id: str,
+        *,
+        target_type: str,
+        target_id: str,
+    ) -> bool:
+        if target_type == "cell":
+            statement = text("""
+              SELECT 1
+              FROM cell_detections detection
+              JOIN scientific_validation_detection_runs membership
+                ON membership.detection_run_id=detection.detection_run_id
+              WHERE membership.session_id=CAST(:session_id AS uuid)
+                AND detection.id=CAST(:target_id AS uuid)
+            """)
+        elif target_type == "analysis":
+            statement = text("""
+              SELECT 1 FROM microscopy_analysis_runs analysis
+              WHERE analysis.id=CAST(:target_id AS uuid) AND (
+                EXISTS(
+                  SELECT 1 FROM scientific_validation_detection_runs membership
+                  JOIN cell_detection_runs run ON run.id=membership.detection_run_id
+                  WHERE membership.session_id=CAST(:session_id AS uuid)
+                    AND run.analysis_run_id=analysis.id
+                ) OR EXISTS(
+                  SELECT 1 FROM scientific_validation_classification_runs membership
+                  JOIN cell_classification_runs run ON run.id=membership.classification_run_id
+                  WHERE membership.session_id=CAST(:session_id AS uuid)
+                    AND run.analysis_run_id=analysis.id
+                ) OR EXISTS(
+                  SELECT 1 FROM scientific_validation_images membership
+                  JOIN microscopy_analysis_run_images run_image
+                    ON run_image.microscopy_image_id=membership.microscopy_image_id
+                  WHERE membership.session_id=CAST(:session_id AS uuid)
+                    AND run_image.analysis_run_id=analysis.id
+                )
+              )
+            """)
+        else:
+            return False
+        return bool(self.connection.execute(
+            statement, {"session_id": session_id, "target_id": target_id}
+        ).scalar())
+
+    @staticmethod
+    def _annotation_state(row: dict) -> dict:
+        return {
+            "id": str(row["id"]),
+            "validation_session_id": str(row["validation_session_id"]),
+            "target_type": row["target_type"],
+            "cell_id": str(row["cell_detection_id"]) if row.get("cell_detection_id") else None,
+            "analysis_run_id": str(row["analysis_run_id"]) if row.get("analysis_run_id") else None,
+            "category": row["category"],
+            "content": row["content"],
+            "version": row["version"],
+            "created_by": str(row["created_by"]),
+            "created_at": row["created_at"].isoformat(),
+            "updated_by": str(row["updated_by"]),
+            "updated_at": row["updated_at"].isoformat(),
+        }
+
+    def _append_annotation_event(
+        self,
+        row: dict,
+        event_type: str,
+        actor_id: str,
+        before: dict | None,
+    ) -> dict:
+        after_state = self._annotation_state(row)
+        event = self.connection.execute(text("""
+          INSERT INTO scientific_validation_annotation_events(
+            id,annotation_id,validation_session_id,event_type,annotation_version,
+            actor_user_id,before_state,after_state
+          ) VALUES(
+            :id,:annotation_id,:session_id,:event_type,:version,
+            CAST(:actor AS uuid),CAST(:before AS jsonb),CAST(:after AS jsonb)
+          ) RETURNING *
+        """), {
+            "id": uuid4(), "annotation_id": row["id"],
+            "session_id": row["validation_session_id"], "event_type": event_type,
+            "version": row["version"], "actor": actor_id,
+            "before": json.dumps(before, default=str) if before is not None else None,
+            "after": json.dumps(after_state, default=str),
+        }).mappings().one()
+        return dict(event)
+
+    def create_annotation(self, session_id: str, values: dict, actor_id: str) -> dict:
+        annotation_id = uuid4()
+        row = self.connection.execute(text("""
+          INSERT INTO scientific_validation_annotations(
+            id,validation_session_id,target_type,cell_detection_id,analysis_run_id,
+            category,content,created_by,updated_by
+          ) VALUES(
+            :id,CAST(:session_id AS uuid),:target_type,CAST(:cell_id AS uuid),
+            CAST(:analysis_run_id AS uuid),:category,:content,
+            CAST(:actor AS uuid),CAST(:actor AS uuid)
+          ) RETURNING *
+        """), {
+            "id": annotation_id, "session_id": session_id,
+            "target_type": values["target_type"], "cell_id": values.get("cell_id"),
+            "analysis_run_id": values.get("analysis_run_id"),
+            "category": values["category"], "content": values["content"],
+            "actor": actor_id,
+        }).mappings().one()
+        result = dict(row)
+        self._append_annotation_event(result, "created", actor_id, None)
+        return result
+
+    def get_annotation(self, session_id: str, annotation_id: str) -> dict | None:
+        row = self.connection.execute(text("""
+          SELECT annotation.*,creator.username created_by_username,
+                 updater.username updated_by_username
+          FROM scientific_validation_annotations annotation
+          JOIN users creator ON creator.id=annotation.created_by
+          JOIN users updater ON updater.id=annotation.updated_by
+          WHERE annotation.validation_session_id=CAST(:session_id AS uuid)
+            AND annotation.id=CAST(:annotation_id AS uuid)
+        """), {"session_id": session_id, "annotation_id": annotation_id}).mappings().first()
+        return dict(row) if row else None
+
+    def list_annotations(
+        self,
+        session_id: str,
+        *,
+        target_type: str | None,
+        cell_id: str | None,
+        analysis_run_id: str | None,
+        category: str | None,
+        limit: int,
+        offset: int,
+    ) -> dict:
+        clauses = ["annotation.validation_session_id=CAST(:session_id AS uuid)"]
+        params = {"session_id": session_id, "limit": limit, "offset": offset}
+        for name, column, cast in (
+            ("target_type", "annotation.target_type", ""),
+            ("cell_id", "annotation.cell_detection_id", "::uuid"),
+            ("analysis_run_id", "annotation.analysis_run_id", "::uuid"),
+            ("category", "annotation.category", ""),
+        ):
+            value = locals()[name]
+            if value is not None:
+                clauses.append(f"{column}=CAST(:{name} AS uuid)" if cast else f"{column}=:{name}")
+                params[name] = value
+        where = " AND ".join(clauses)
+        rows = self.connection.execute(text(f"""
+          SELECT annotation.*,creator.username created_by_username,
+                 updater.username updated_by_username
+          FROM scientific_validation_annotations annotation
+          JOIN users creator ON creator.id=annotation.created_by
+          JOIN users updater ON updater.id=annotation.updated_by
+          WHERE {where}
+          ORDER BY annotation.created_at,annotation.id LIMIT :limit OFFSET :offset
+        """), params).mappings().all()
+        total = self.connection.execute(text(f"""
+          SELECT count(*) FROM scientific_validation_annotations annotation WHERE {where}
+        """), params).scalar_one()
+        return {"items": [dict(row) for row in rows], "total": total, "limit": limit, "offset": offset}
+
+    def update_annotation(
+        self,
+        session_id: str,
+        annotation_id: str,
+        values: dict,
+        expected_version: int,
+        actor_id: str,
+    ) -> tuple[dict, dict] | None:
+        before_row = self.connection.execute(text("""
+          SELECT * FROM scientific_validation_annotations
+          WHERE validation_session_id=CAST(:session_id AS uuid)
+            AND id=CAST(:annotation_id AS uuid)
+        """), {"session_id": session_id, "annotation_id": annotation_id}).mappings().first()
+        if not before_row:
+            return None
+        assignments = [f"{column}=:{column}" for column in values]
+        row = self.connection.execute(text(f"""
+          UPDATE scientific_validation_annotations
+          SET {','.join(assignments)},version=version+1,updated_by=CAST(:actor AS uuid),
+              updated_at=clock_timestamp()
+          WHERE validation_session_id=CAST(:session_id AS uuid)
+            AND id=CAST(:annotation_id AS uuid) AND version=:expected_version
+          RETURNING *
+        """), {
+            **values, "actor": actor_id, "session_id": session_id,
+            "annotation_id": annotation_id, "expected_version": expected_version,
+        }).mappings().first()
+        if not row:
+            return ({}, dict(before_row))
+        before = self._annotation_state(dict(before_row))
+        result = dict(row)
+        self._append_annotation_event(result, "updated", actor_id, before)
+        return result, dict(before_row)
+
+    def annotation_history(
+        self, session_id: str, annotation_id: str, *, limit: int, offset: int
+    ) -> dict | None:
+        if not self.get_annotation(session_id, annotation_id):
+            return None
+        params = {"session_id": session_id, "annotation_id": annotation_id,
+                  "limit": limit, "offset": offset}
+        rows = self.connection.execute(text("""
+          SELECT event.*,actor.username actor_username
+          FROM scientific_validation_annotation_events event
+          JOIN users actor ON actor.id=event.actor_user_id
+          WHERE event.validation_session_id=CAST(:session_id AS uuid)
+            AND event.annotation_id=CAST(:annotation_id AS uuid)
+          ORDER BY event.annotation_version,event.created_at,event.id
+          LIMIT :limit OFFSET :offset
+        """), params).mappings().all()
+        total = self.connection.execute(text("""
+          SELECT count(*) FROM scientific_validation_annotation_events
+          WHERE validation_session_id=CAST(:session_id AS uuid)
+            AND annotation_id=CAST(:annotation_id AS uuid)
+        """), params).scalar_one()
+        return {"items": [dict(row) for row in rows], "total": total,
+                "limit": limit, "offset": offset}

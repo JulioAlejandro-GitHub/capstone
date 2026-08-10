@@ -177,3 +177,108 @@ class ScientificValidationService:
                 resource_type="scientific_validation_session", resource_id=session_id,
             )
             return after
+
+    @staticmethod
+    def _annotation_audit_state(row: dict) -> dict:
+        return ScientificValidationRepository._annotation_state(row)
+
+    @staticmethod
+    def _ensure_annotation_session(session: dict | None) -> None:
+        if not session:
+            raise ScientificError(404, "Sesión de validación no encontrada.")
+        if session["status"] in {"completed", "archived"}:
+            raise ScientificError(409, "La sesión no admite cambios de anotaciones.")
+
+    def create_annotation(
+        self, session_id: str, values: dict, principal: Principal, request: Request
+    ) -> dict:
+        actor_id = _actor(principal)
+        target_type = values["target_type"]
+        target_id = str(values["cell_id"] if target_type == "cell" else values["analysis_run_id"])
+        with mutation_connection(self._engine) as connection:
+            repository = ScientificValidationRepository(connection)
+            session = repository.get(session_id, for_update=True)
+            self._ensure_annotation_session(session)
+            if not repository.target_belongs_to_session(
+                session_id, target_type=target_type, target_id=target_id
+            ):
+                raise ScientificError(409, "El target no pertenece a la sesión de validación.")
+            row = repository.create_annotation(session_id, values, actor_id)
+            state = self._annotation_audit_state(row)
+            record_event(
+                event_type="SCIENTIFIC_VALIDATION_ANNOTATION_CREATED",
+                action="scientific.validation.annotation.created",
+                principal=principal, request=request, success=True,
+                after_state=state, connection=connection,
+                resource_type="scientific_validation_annotation",
+                resource_id=str(row["id"]),
+                metadata={"validation_session_id": session_id, "target_type": target_type},
+            )
+            return row
+
+    def list_annotations(self, session_id: str, **filters) -> dict:
+        with self._engine.connect() as connection:
+            repository = ScientificValidationRepository(connection)
+            if not repository.get(session_id):
+                raise ScientificError(404, "Sesión de validación no encontrada.")
+            return repository.list_annotations(session_id, **filters)
+
+    def get_annotation(self, session_id: str, annotation_id: str) -> dict:
+        with self._engine.connect() as connection:
+            repository = ScientificValidationRepository(connection)
+            if not repository.get(session_id):
+                raise ScientificError(404, "Sesión de validación no encontrada.")
+            row = repository.get_annotation(session_id, annotation_id)
+        if not row:
+            raise ScientificError(404, "Anotación no encontrada.")
+        return row
+
+    def update_annotation(
+        self,
+        session_id: str,
+        annotation_id: str,
+        values: dict,
+        principal: Principal,
+        request: Request,
+    ) -> dict:
+        actor_id = _actor(principal)
+        expected_version = values.pop("version")
+        with mutation_connection(self._engine) as connection:
+            repository = ScientificValidationRepository(connection)
+            session = repository.get(session_id)
+            self._ensure_annotation_session(session)
+            outcome = repository.update_annotation(
+                session_id, annotation_id, values, expected_version, actor_id
+            )
+            if outcome is None:
+                raise ScientificError(404, "Anotación no encontrada.")
+            after, before = outcome
+            if not after:
+                raise ScientificError(409, "La anotación fue modificada por otro usuario.")
+            record_event(
+                event_type="SCIENTIFIC_VALIDATION_ANNOTATION_UPDATED",
+                action="scientific.validation.annotation.updated",
+                principal=principal, request=request, success=True,
+                before_state=self._annotation_audit_state(before),
+                after_state=self._annotation_audit_state(after),
+                connection=connection, resource_type="scientific_validation_annotation",
+                resource_id=annotation_id,
+                metadata={"validation_session_id": session_id,
+                          "previous_version": expected_version,
+                          "version": after["version"]},
+            )
+            return after
+
+    def annotation_history(
+        self, session_id: str, annotation_id: str, *, limit: int, offset: int
+    ) -> dict:
+        with self._engine.connect() as connection:
+            repository = ScientificValidationRepository(connection)
+            if not repository.get(session_id):
+                raise ScientificError(404, "Sesión de validación no encontrada.")
+            result = repository.annotation_history(
+                session_id, annotation_id, limit=limit, offset=offset
+            )
+        if result is None:
+            raise ScientificError(404, "Anotación no encontrada.")
+        return result
