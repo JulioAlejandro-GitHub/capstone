@@ -69,6 +69,10 @@ class Permission(StrEnum):
     SCIENTIFIC_CELL_CLASSIFICATION_EXECUTE = "scientific.cell_classification.execute"
     SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN = "scientific.cell_classification.explain"
     SCIENTIFIC_CELL_CLASSIFICATION_REVIEW = "scientific.cell_classification.review"
+    SCIENTIFIC_VALIDATION_READ = "scientific.validation.read"
+    SCIENTIFIC_VALIDATION_CREATE = "scientific.validation.create"
+    SCIENTIFIC_VALIDATION_UPDATE = "scientific.validation.update"
+    SCIENTIFIC_VALIDATION_ARCHIVE = "scientific.validation.archive"
 
 
 READ = {
@@ -83,6 +87,7 @@ SCIENTIFIC_READ = {
     Permission.SCIENTIFIC_ANALYSIS_QUEUE_READ,
     Permission.SCIENTIFIC_CELL_DETECTION_READ,
     Permission.SCIENTIFIC_CELL_CLASSIFICATION_READ,
+    Permission.SCIENTIFIC_VALIDATION_READ,
 }
 SCIENTIFIC_WRITE = {
     Permission.SCIENTIFIC_SUBJECTS_CREATE, Permission.SCIENTIFIC_SUBJECTS_UPDATE,
@@ -95,6 +100,8 @@ SCIENTIFIC_WRITE = {
     Permission.SCIENTIFIC_ANALYSIS_QUEUE_RETRY,
     Permission.SCIENTIFIC_CELL_DETECTION_EXECUTE,
     Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXECUTE,
+    Permission.SCIENTIFIC_VALIDATION_CREATE,
+    Permission.SCIENTIFIC_VALIDATION_UPDATE,
 }
 ROLE_PERMISSIONS = {
     "administrator": set(Permission),
@@ -104,6 +111,7 @@ ROLE_PERMISSIONS = {
         Permission.SCIENTIFIC_CELL_DETECTION_REVIEW,
         Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN,
         Permission.SCIENTIFIC_CELL_CLASSIFICATION_REVIEW,
+        Permission.SCIENTIFIC_VALIDATION_ARCHIVE,
     },
     "operator": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {Permission.PREDICTIONS_EXECUTE},
     "reviewer": READ | SCIENTIFIC_READ | {

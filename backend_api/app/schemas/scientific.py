@@ -163,6 +163,36 @@ class ArchiveRequest(ScientificSchema):
     reason: str | None = Field(None, max_length=500)
 
 
+ValidationStatus = Literal[
+    "draft", "annotation_in_progress", "ready_for_analysis", "completed", "archived"
+]
+
+
+class ScientificValidationCreate(ScientificSchema):
+    name: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(None, max_length=4000)
+    datasource: Literal["malaria"] = "malaria"
+    image_ids: list[UUID] = Field(min_length=1, max_length=10000)
+    detection_run_ids: list[UUID] = Field(default_factory=list, max_length=1000)
+    classification_run_ids: list[UUID] = Field(default_factory=list, max_length=1000)
+    matching_iou_threshold: float = Field(gt=0, le=1)
+    protocol_key: str = Field(min_length=1, max_length=120)
+    protocol_version: str = Field(min_length=1, max_length=80)
+
+    @field_validator("image_ids", "detection_run_ids", "classification_run_ids")
+    @classmethod
+    def identifiers_are_unique(cls, value: list[UUID]):
+        if len(value) != len(set(value)):
+            raise ValueError("Los identificadores no pueden repetirse.")
+        return value
+
+
+class ScientificValidationUpdate(ScientificSchema):
+    name: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = Field(None, max_length=4000)
+    status: ValidationStatus | None = None
+
+
 class ScientificRead(ScientificSchema):
     id: UUID
     status: str
