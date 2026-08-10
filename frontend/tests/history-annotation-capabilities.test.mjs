@@ -39,4 +39,6 @@ test('optimistic locking, recarga y deep link no activan el pipeline', () => {
   assert.doesNotMatch(annotations, /createCellExplanation|createCellClassification|createCellDetection/);
   assert.match(api, /target_type: ScientificValidationTarget/);
   assert.match(api, /sample_id\?: string/);
+  assert.match(immersive, /sessionId=\{null\}/);
+  assert.doesNotMatch(immersive, /resolveScientificValidationSession/);
 });

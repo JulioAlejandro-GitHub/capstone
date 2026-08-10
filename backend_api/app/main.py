@@ -50,5 +50,5 @@ for router in (health.router, auth.router, dashboard.router, runs.router, catalo
                metrics.router, explainability.router, predictions.router, observability.router,
                artifacts.router, governance.router, scientific.router, analysis.router,
                cell_analysis.router, cell_classification.router,
-               scientific_validation.router):
+               scientific_validation.router, scientific_validation.annotations_router):
     app.include_router(router)

@@ -1,7 +1,4 @@
-import { useEffect, useState } from 'react';
 import type { SmearAnalysisSummary } from '../../types/cellClassification';
-import type { ScientificValidationSession } from '../../types/scientificValidation';
-import { api } from '../../services/api';
 import { CellReviewWorkspace } from './CellReviewWorkspace';
 import { ScientificAnnotations } from './ScientificAnnotations';
 
@@ -78,21 +75,6 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
   const modeLabel = isHistory ? 'Histórico' : 'En vivo';
   const livePermissions = props.mode === 'live' ? props.permissions : null;
   const annotationPermissions = props.permissions;
-  const [validationSession, setValidationSession] = useState<ScientificValidationSession | null>(null);
-  const validationMutable = validationSession != null
-    && validationSession.status !== 'archived';
-
-  useEffect(() => {
-    if (!annotationPermissions.canReadValidation) {
-      setValidationSession(null);
-      return;
-    }
-    let active = true;
-    api.resolveScientificValidationSession(workflow.detectionRunId, workflow.classificationRunId)
-      .then((session) => { if (active) setValidationSession(session); })
-      .catch(() => { if (active) setValidationSession(null); });
-    return () => { active = false; };
-  }, [annotationPermissions.canReadValidation, workflow.classificationRunId, workflow.detectionRunId]);
 
   return (
     <section
@@ -147,11 +129,11 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
 
       <ScientificAnnotations
         title="ANOTACIONES DE LA MUESTRA"
-        sessionId={validationSession?.id ?? null}
+        sessionId={null}
         targetType="sample"
-        targetId={workflow.sampleId ?? null}
+        targetId={annotationPermissions.canReadValidation ? workflow.sampleId ?? null : null}
         targetContext={`MUESTRA · ${workflow.sampleCode}`}
-        canAnnotate={annotationPermissions.canAnnotateValidation && validationMutable}
+        canAnnotate={annotationPermissions.canAnnotateValidation}
         readOnly={false}
       />
 
@@ -165,8 +147,9 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
         canReview={livePermissions?.canReviewDetection ?? false}
         canExplain={livePermissions?.canExplain ?? false}
         canClassificationReview={livePermissions?.canReviewClassification ?? false}
-        canAnnotateValidation={annotationPermissions.canAnnotateValidation && validationMutable}
-        validationSessionId={validationSession?.id ?? null}
+        canAnnotateValidation={annotationPermissions.canAnnotateValidation}
+        canReadValidationAnnotations={annotationPermissions.canReadValidation}
+        validationSessionId={null}
         readOnly={isHistory}
         onClose={actions.onBack}
         closeLabel={actions.backLabel}

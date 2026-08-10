@@ -212,11 +212,26 @@ class ScientificValidationRepository:
             statement, {"session_id": session_id, "target_id": target_id}
         ).scalar())
 
+    def target_exists(self, *, target_type: str, target_id: str) -> bool:
+        table = {
+            "cell": "cell_detections",
+            "analysis": "microscopy_analysis_runs",
+            "sample": "blood_samples",
+        }.get(target_type)
+        if not table:
+            return False
+        return bool(self.connection.execute(
+            text(f"SELECT 1 FROM {table} WHERE id=CAST(:target_id AS uuid)"),
+            {"target_id": target_id},
+        ).scalar())
+
     @staticmethod
     def _annotation_state(row: dict) -> dict:
         return {
             "id": str(row["id"]),
-            "validation_session_id": str(row["validation_session_id"]),
+            "validation_session_id": (
+                str(row["validation_session_id"]) if row.get("validation_session_id") else None
+            ),
             "target_type": row["target_type"],
             "cell_id": str(row["cell_detection_id"]) if row.get("cell_detection_id") else None,
             "analysis_run_id": str(row["analysis_run_id"]) if row.get("analysis_run_id") else None,
@@ -255,7 +270,7 @@ class ScientificValidationRepository:
         }).mappings().one()
         return dict(event)
 
-    def create_annotation(self, session_id: str, values: dict, actor_id: str) -> dict:
+    def create_annotation(self, session_id: str | None, values: dict, actor_id: str) -> dict:
         annotation_id = uuid4()
         row = self.connection.execute(text("""
           INSERT INTO scientific_validation_annotations(
@@ -278,21 +293,25 @@ class ScientificValidationRepository:
         self._append_annotation_event(result, "created", actor_id, None)
         return result
 
-    def get_annotation(self, session_id: str, annotation_id: str) -> dict | None:
-        row = self.connection.execute(text("""
+    def get_annotation(self, session_id: str | None, annotation_id: str) -> dict | None:
+        session_clause = (
+            "annotation.validation_session_id=CAST(:session_id AS uuid)"
+            if session_id else "annotation.validation_session_id IS NULL"
+        )
+        row = self.connection.execute(text(f"""
           SELECT annotation.*,creator.username created_by_username,
                  updater.username updated_by_username
           FROM scientific_validation_annotations annotation
           JOIN users creator ON creator.id=annotation.created_by
           JOIN users updater ON updater.id=annotation.updated_by
-          WHERE annotation.validation_session_id=CAST(:session_id AS uuid)
+          WHERE {session_clause}
             AND annotation.id=CAST(:annotation_id AS uuid)
         """), {"session_id": session_id, "annotation_id": annotation_id}).mappings().first()
         return dict(row) if row else None
 
     def list_annotations(
         self,
-        session_id: str,
+        session_id: str | None,
         *,
         target_type: str | None,
         cell_id: str | None,
@@ -302,7 +321,8 @@ class ScientificValidationRepository:
         limit: int,
         offset: int,
     ) -> dict:
-        clauses = ["annotation.validation_session_id=CAST(:session_id AS uuid)"]
+        clauses = (["annotation.validation_session_id=CAST(:session_id AS uuid)"]
+                   if session_id else ["annotation.validation_session_id IS NULL"])
         params = {"session_id": session_id, "limit": limit, "offset": offset}
         for name, column, cast in (
             ("target_type", "annotation.target_type", ""),
@@ -332,15 +352,19 @@ class ScientificValidationRepository:
 
     def update_annotation(
         self,
-        session_id: str,
+        session_id: str | None,
         annotation_id: str,
         values: dict,
         expected_version: int,
         actor_id: str,
     ) -> tuple[dict, dict] | None:
-        before_row = self.connection.execute(text("""
+        session_clause = (
+            "validation_session_id=CAST(:session_id AS uuid)"
+            if session_id else "validation_session_id IS NULL"
+        )
+        before_row = self.connection.execute(text(f"""
           SELECT * FROM scientific_validation_annotations
-          WHERE validation_session_id=CAST(:session_id AS uuid)
+          WHERE {session_clause}
             AND id=CAST(:annotation_id AS uuid)
         """), {"session_id": session_id, "annotation_id": annotation_id}).mappings().first()
         if not before_row:
@@ -350,7 +374,7 @@ class ScientificValidationRepository:
           UPDATE scientific_validation_annotations
           SET {','.join(assignments)},version=version+1,updated_by=CAST(:actor AS uuid),
               updated_at=clock_timestamp()
-          WHERE validation_session_id=CAST(:session_id AS uuid)
+          WHERE {session_clause}
             AND id=CAST(:annotation_id AS uuid) AND version=:expected_version
           RETURNING *
         """), {
@@ -365,24 +389,29 @@ class ScientificValidationRepository:
         return result, dict(before_row)
 
     def annotation_history(
-        self, session_id: str, annotation_id: str, *, limit: int, offset: int
+        self, session_id: str | None, annotation_id: str, *, limit: int, offset: int
     ) -> dict | None:
         if not self.get_annotation(session_id, annotation_id):
             return None
         params = {"session_id": session_id, "annotation_id": annotation_id,
                   "limit": limit, "offset": offset}
-        rows = self.connection.execute(text("""
+        session_clause = (
+            "event.validation_session_id=CAST(:session_id AS uuid)"
+            if session_id else "event.validation_session_id IS NULL"
+        )
+        rows = self.connection.execute(text(f"""
           SELECT event.*,actor.username actor_username
           FROM scientific_validation_annotation_events event
           JOIN users actor ON actor.id=event.actor_user_id
-          WHERE event.validation_session_id=CAST(:session_id AS uuid)
+          WHERE {session_clause}
             AND event.annotation_id=CAST(:annotation_id AS uuid)
           ORDER BY event.annotation_version,event.created_at,event.id
           LIMIT :limit OFFSET :offset
         """), params).mappings().all()
-        total = self.connection.execute(text("""
+        total_clause = session_clause.replace("event.", "")
+        total = self.connection.execute(text(f"""
           SELECT count(*) FROM scientific_validation_annotation_events
-          WHERE validation_session_id=CAST(:session_id AS uuid)
+          WHERE {total_clause}
             AND annotation_id=CAST(:annotation_id AS uuid)
         """), params).scalar_one()
         return {"items": [dict(row) for row in rows], "total": total,

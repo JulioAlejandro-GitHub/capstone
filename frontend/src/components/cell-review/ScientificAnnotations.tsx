@@ -46,7 +46,7 @@ export function ScientificAnnotations({
   useEffect(() => { countChangeRef.current = onCountChange; }, [onCountChange]);
 
   const load = useCallback(async () => {
-    if (!sessionId || !targetId) {
+    if (!targetId) {
       setItems([]);
       countChangeRef.current?.(0);
       return;
@@ -84,7 +84,7 @@ export function ScientificAnnotations({
   };
 
   const save = async () => {
-    if (!sessionId || !targetId || !content.trim() || !category.trim()) return;
+    if (!targetId || !content.trim() || !category.trim()) return;
     setSaving(true);
     setError('');
     try {
@@ -123,7 +123,7 @@ export function ScientificAnnotations({
   };
 
   const loadHistory = async (annotationId: string) => {
-    if (!sessionId || histories[annotationId]) return;
+    if (histories[annotationId]) return;
     try {
       const page = await api.getScientificValidationAnnotationHistory(sessionId, annotationId);
       setHistories((current) => ({ ...current, [annotationId]: page.items }));
@@ -132,7 +132,7 @@ export function ScientificAnnotations({
     }
   };
 
-  const editable = Boolean(sessionId && targetId && canAnnotate && !readOnly);
+  const editable = Boolean(targetId && canAnnotate && !readOnly);
   return (
     <section className="scientific-annotations" aria-label={title}>
       <header>
@@ -146,7 +146,6 @@ export function ScientificAnnotations({
           </button>
         ) : null}
       </header>
-      {!sessionId ? <p className="cell-readonly-note">Sin sesión de validación científica asociada.</p> : null}
       {items.length ? (
         <ul>
           {items.map((annotation) => (
@@ -175,7 +174,7 @@ export function ScientificAnnotations({
             </li>
           ))}
         </ul>
-      ) : sessionId ? <p>Sin anotaciones.</p> : null}
+      ) : targetId ? <p>Sin anotaciones.</p> : null}
       {(adding || editingId) && editable ? (
         <div className="scientific-annotation-form">
           <label>Categoría<input value={category} maxLength={120} onChange={(event) => setCategory(event.target.value)} /></label>

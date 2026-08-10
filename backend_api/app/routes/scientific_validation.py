@@ -16,6 +16,9 @@ from app.services.scientific_validation import ScientificValidationService
 
 
 router = APIRouter(prefix="/api/v1/scientific-validation/sessions", tags=["scientific-validation"])
+annotations_router = APIRouter(
+    prefix="/api/v1/scientific-annotations", tags=["scientific-validation"]
+)
 service = ScientificValidationService()
 
 
@@ -115,6 +118,66 @@ def annotation_history(
 ):
     return execute(lambda: service.annotation_history(
         str(session_id), str(annotation_id), limit=limit, offset=offset
+    ))
+
+
+@annotations_router.post("", status_code=201)
+def create_general_annotation(
+    body: ScientificValidationAnnotationCreate,
+    request: Request,
+    principal: Principal = Depends(
+        transactional_permission(Permission.SCIENTIFIC_VALIDATION_ANNOTATE)
+    ),
+):
+    return execute(lambda: service.create_annotation(None, body.model_dump(), principal, request))
+
+
+@annotations_router.get("")
+def list_general_annotations(
+    target_type: str = Query(pattern="^(cell|analysis|sample)$"),
+    cell_id: UUID | None = None,
+    analysis_run_id: UUID | None = None,
+    sample_id: UUID | None = None,
+    category: str | None = Query(None, min_length=1, max_length=120),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    _: Principal = Depends(require_permission(Permission.SCIENTIFIC_VALIDATION_READ)),
+):
+    target_ids = {"cell": cell_id, "analysis": analysis_run_id, "sample": sample_id}
+    if target_ids[target_type] is None or sum(value is not None for value in target_ids.values()) != 1:
+        raise HTTPException(422, "Debe especificarse exactamente el identificador del target.")
+    return execute(lambda: service.list_annotations(
+        None, target_type=target_type,
+        cell_id=str(cell_id) if cell_id else None,
+        analysis_run_id=str(analysis_run_id) if analysis_run_id else None,
+        sample_id=str(sample_id) if sample_id else None,
+        category=category, limit=limit, offset=offset,
+    ))
+
+
+@annotations_router.patch("/{annotation_id}")
+def update_general_annotation(
+    annotation_id: UUID,
+    body: ScientificValidationAnnotationUpdate,
+    request: Request,
+    principal: Principal = Depends(
+        transactional_permission(Permission.SCIENTIFIC_VALIDATION_ANNOTATE)
+    ),
+):
+    return execute(lambda: service.update_annotation(
+        None, str(annotation_id), body.model_dump(exclude_unset=True), principal, request
+    ))
+
+
+@annotations_router.get("/{annotation_id}/history")
+def general_annotation_history(
+    annotation_id: UUID,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    _: Principal = Depends(require_permission(Permission.SCIENTIFIC_VALIDATION_READ)),
+):
+    return execute(lambda: service.annotation_history(
+        None, str(annotation_id), limit=limit, offset=offset
     ))
 
 

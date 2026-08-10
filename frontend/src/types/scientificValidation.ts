@@ -14,7 +14,7 @@ export interface ScientificValidationSession extends ScientificValidationSession
 
 export interface ScientificValidationAnnotation {
   id: string;
-  validation_session_id: string;
+  validation_session_id: string | null;
   target_type: ScientificValidationTarget;
   cell_detection_id: string | null;
   analysis_run_id: string | null;

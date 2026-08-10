@@ -300,3 +300,50 @@ def test_cell_analysis_multiple_edit_history_rbac_audit_and_conflict(annotation_
     assert updated_audit["actor_user_id"] == users["reviewer"][0]
     assert updated_audit["before_state"]["content"] == "Initial observation"
     assert updated_audit["after_state"]["content"] == "Revised observation"
+
+
+def test_general_cell_and_sample_annotations_do_not_require_validation_session(annotation_client):
+    client, connection, headers, users, _, candidate = annotation_client
+    for target_type, target_key, target_id in (
+        ("cell", "cell_id", candidate["cell_id"]),
+        ("sample", "sample_id", candidate["sample_id"]),
+    ):
+        created = client.post(
+            "/api/v1/scientific-annotations", headers=headers["researcher"],
+            json={"target_type": target_type, target_key: str(target_id),
+                  "category": "general", "content": f"{target_type} note"},
+        )
+        assert created.status_code == 201, created.text
+        body = created.json()
+        assert body["validation_session_id"] is None
+        assert body["created_by"] == str(users["researcher"][0])
+        listing = client.get(
+            "/api/v1/scientific-annotations", headers=headers["read_only"],
+            params={"target_type": target_type, target_key: str(target_id)},
+        )
+        assert listing.status_code == 200
+        assert body["id"] in {item["id"] for item in listing.json()["items"]}
+        updated = client.patch(
+            f"/api/v1/scientific-annotations/{body['id']}", headers=headers["reviewer"],
+            json={"version": 1, "content": f"{target_type} note updated"},
+        )
+        assert updated.status_code == 200, updated.text
+        history = client.get(
+            f"/api/v1/scientific-annotations/{body['id']}/history",
+            headers=headers["read_only"],
+        )
+        assert [event["event_type"] for event in history.json()["items"]] == ["created", "updated"]
+        assert client.patch(
+            f"/api/v1/scientific-annotations/{body['id']}", headers=headers["researcher"],
+            json={"version": 1, "content": "stale"},
+        ).status_code == 409
+    assert client.post(
+        "/api/v1/scientific-annotations", headers=headers["read_only"],
+        json={"target_type": "cell", "cell_id": str(candidate["cell_id"]),
+              "category": "general", "content": "forbidden"},
+    ).status_code == 403
+    assert connection.execute(text("""
+      SELECT count(*) FROM audit_events
+      WHERE resource_type='scientific_validation_annotation'
+        AND after_state->>'validation_session_id' IS NULL
+    """)).scalar_one() >= 4

@@ -190,7 +190,7 @@ class ScientificValidationService:
             raise ScientificError(409, "La sesión no admite cambios de anotaciones.")
 
     def create_annotation(
-        self, session_id: str, values: dict, principal: Principal, request: Request
+        self, session_id: str | None, values: dict, principal: Principal, request: Request
     ) -> dict:
         actor_id = _actor(principal)
         target_type = values["target_type"]
@@ -201,12 +201,18 @@ class ScientificValidationService:
         }[target_type])
         with mutation_connection(self._engine) as connection:
             repository = ScientificValidationRepository(connection)
-            session = repository.get(session_id, for_update=True)
-            self._ensure_annotation_session(session)
-            if not repository.target_belongs_to_session(
-                session_id, target_type=target_type, target_id=target_id
-            ):
-                raise ScientificError(409, "El target no pertenece a la sesión de validación.")
+            if session_id:
+                session = repository.get(session_id, for_update=True)
+                self._ensure_annotation_session(session)
+                target_valid = repository.target_belongs_to_session(
+                    session_id, target_type=target_type, target_id=target_id
+                )
+            else:
+                target_valid = repository.target_exists(
+                    target_type=target_type, target_id=target_id
+                )
+            if not target_valid:
+                raise ScientificError(409, "El target científico no existe o no pertenece al contexto.")
             row = repository.create_annotation(session_id, values, actor_id)
             state = self._annotation_audit_state(row)
             record_event(
@@ -220,17 +226,17 @@ class ScientificValidationService:
             )
             return row
 
-    def list_annotations(self, session_id: str, **filters) -> dict:
+    def list_annotations(self, session_id: str | None, **filters) -> dict:
         with self._engine.connect() as connection:
             repository = ScientificValidationRepository(connection)
-            if not repository.get(session_id):
+            if session_id and not repository.get(session_id):
                 raise ScientificError(404, "Sesión de validación no encontrada.")
             return repository.list_annotations(session_id, **filters)
 
-    def get_annotation(self, session_id: str, annotation_id: str) -> dict:
+    def get_annotation(self, session_id: str | None, annotation_id: str) -> dict:
         with self._engine.connect() as connection:
             repository = ScientificValidationRepository(connection)
-            if not repository.get(session_id):
+            if session_id and not repository.get(session_id):
                 raise ScientificError(404, "Sesión de validación no encontrada.")
             row = repository.get_annotation(session_id, annotation_id)
         if not row:
@@ -239,7 +245,7 @@ class ScientificValidationService:
 
     def update_annotation(
         self,
-        session_id: str,
+        session_id: str | None,
         annotation_id: str,
         values: dict,
         principal: Principal,
@@ -249,8 +255,9 @@ class ScientificValidationService:
         expected_version = values.pop("version")
         with mutation_connection(self._engine) as connection:
             repository = ScientificValidationRepository(connection)
-            session = repository.get(session_id)
-            self._ensure_annotation_session(session)
+            if session_id:
+                session = repository.get(session_id)
+                self._ensure_annotation_session(session)
             outcome = repository.update_annotation(
                 session_id, annotation_id, values, expected_version, actor_id
             )
@@ -274,11 +281,11 @@ class ScientificValidationService:
             return after
 
     def annotation_history(
-        self, session_id: str, annotation_id: str, *, limit: int, offset: int
+        self, session_id: str | None, annotation_id: str, *, limit: int, offset: int
     ) -> dict:
         with self._engine.connect() as connection:
             repository = ScientificValidationRepository(connection)
-            if not repository.get(session_id):
+            if session_id and not repository.get(session_id):
                 raise ScientificError(404, "Sesión de validación no encontrada.")
             result = repository.annotation_history(
                 session_id, annotation_id, limit=limit, offset=offset

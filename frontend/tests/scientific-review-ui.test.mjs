@@ -44,7 +44,7 @@ test('selección, carrusel, siguiente sin revisar y modo histórico comparten es
   assert.match(workspace, /Revisada \$\{humanLabel\}/);
   assert.match(workspace, /Requiere atención/);
   assert.match(immersive, /readOnly=\{isHistory\}/);
-  assert.match(immersive, /canAnnotate=\{annotationPermissions\.canAnnotateValidation && validationMutable\}/);
+  assert.match(immersive, /canAnnotate=\{annotationPermissions\.canAnnotateValidation\}/);
 });
 
 test('RBAC, accesibilidad y responsive se preservan sin CSS global nuevo', () => {

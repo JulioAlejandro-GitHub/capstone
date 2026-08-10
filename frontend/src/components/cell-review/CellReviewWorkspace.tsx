@@ -253,6 +253,7 @@ type CellReviewWorkspaceProps = {
   onSelectedPredictionChange?: (predictionId: string | null) => void;
   validationSessionId?: string | null;
   canAnnotateValidation?: boolean;
+  canReadValidationAnnotations?: boolean;
 };
 
 export function CellReviewWorkspace({
@@ -273,6 +274,7 @@ export function CellReviewWorkspace({
   onSelectedPredictionChange,
   validationSessionId = null,
   canAnnotateValidation = false,
+  canReadValidationAnnotations = false,
 }: CellReviewWorkspaceProps) {
   const [run, setRun] = useState<CellDetectionRunDetail | null>(null);
   const [images, setImages] = useState<CellDetectionImage[]>([]);
@@ -1496,7 +1498,8 @@ export function CellReviewWorkspace({
             canExplain={canExplain && !readOnly}
             canClassificationReview={canClassificationReview && !readOnly}
             validationSessionId={validationSessionId}
-            canAnnotateValidation={canAnnotateValidation && !readOnly}
+            canAnnotateValidation={canAnnotateValidation}
+            canReadValidationAnnotations={canReadValidationAnnotations}
             readOnly={readOnly}
             classificationComment={classificationComment}
             reviewedLabel={reviewedLabel}
@@ -1729,6 +1732,7 @@ function CellDetailPanel({
   canClassificationReview,
   validationSessionId,
   canAnnotateValidation,
+  canReadValidationAnnotations,
   readOnly,
   classificationComment,
   reviewedLabel,
@@ -1769,6 +1773,7 @@ function CellDetailPanel({
   canClassificationReview: boolean;
   validationSessionId: string | null;
   canAnnotateValidation: boolean;
+  canReadValidationAnnotations: boolean;
   readOnly: boolean;
   classificationComment: string;
   reviewedLabel: CanonicalCellLabel;
@@ -1973,7 +1978,7 @@ function CellDetailPanel({
             title="ANOTACIONES"
             sessionId={validationSessionId}
             targetType="cell"
-            targetId={detection?.id ?? null}
+            targetId={canReadValidationAnnotations ? detection?.id ?? null : null}
             targetContext={`CÉLULA · ${detection?.cell_code ?? '—'}`}
             canAnnotate={canAnnotateValidation}
             readOnly={false}

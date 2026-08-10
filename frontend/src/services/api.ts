@@ -926,7 +926,7 @@ export const api = {
     return null;
   },
   listScientificValidationAnnotations(
-    sessionId: string,
+    sessionId: string | null,
     filters: {
       target_type?: ScientificValidationTarget;
       cell_id?: string;
@@ -936,12 +936,14 @@ export const api = {
     },
   ) {
     return request<ScientificValidationPage<ScientificValidationAnnotation>>(
-      `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations`,
+      sessionId
+        ? `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations`
+        : '/api/v1/scientific-annotations',
       { ...filters, limit: 500, offset: 0 },
     );
   },
   createScientificValidationAnnotation(
-    sessionId: string,
+    sessionId: string | null,
     payload: {
       target_type: ScientificValidationTarget;
       cell_id?: string;
@@ -952,25 +954,31 @@ export const api = {
     },
   ) {
     return request<ScientificValidationAnnotation>(
-      `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations`,
+      sessionId
+        ? `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations`
+        : '/api/v1/scientific-annotations',
       {},
       { init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) } },
     );
   },
   updateScientificValidationAnnotation(
-    sessionId: string,
+    sessionId: string | null,
     annotationId: string,
     payload: { category: string; content: string; version: number },
   ) {
     return request<ScientificValidationAnnotation>(
-      `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations/${encodeURIComponent(annotationId)}`,
+      sessionId
+        ? `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations/${encodeURIComponent(annotationId)}`
+        : `/api/v1/scientific-annotations/${encodeURIComponent(annotationId)}`,
       {},
       { init: { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) } },
     );
   },
-  getScientificValidationAnnotationHistory(sessionId: string, annotationId: string) {
+  getScientificValidationAnnotationHistory(sessionId: string | null, annotationId: string) {
     return request<ScientificValidationPage<ScientificValidationAnnotationEvent>>(
-      `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations/${encodeURIComponent(annotationId)}/history`,
+      sessionId
+        ? `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations/${encodeURIComponent(annotationId)}/history`
+        : `/api/v1/scientific-annotations/${encodeURIComponent(annotationId)}/history`,
     );
   },
   reviewQuality(runId: string, decision: 'approve_with_warnings' | 'reject', comment: string) {
