@@ -97,6 +97,7 @@ def test_cell_classification_mutations_are_not_audit_policy_exceptions():
     assert {route.path for route in routes} == {
         "/api/v1/cell-classification/classification-runs",
         "/api/v1/cell-classification/predictions/{prediction_id}/explanation",
+        "/api/v1/cell-classification/predictions/{prediction_id}/human-classification",
         "/api/v1/cell-classification/predictions/{prediction_id}/reviews",
     }
     assert all(_has_central_audit_policy(route) for route in routes)

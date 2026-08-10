@@ -846,6 +846,7 @@ export function SmearAnalysisReadOnlyView({
               subjectCode: workflow.subject.subject_code,
               sampleCode: workflow.sample.sample_code,
               analysisRunCode: run?.run_code ?? 'Análisis persistido',
+              analysisRunId: run?.id ?? null,
               status: stageLabel[stage],
               modelName: workflow.classification_run?.model_name,
               modelVersion: workflow.classification_run?.model_version,
@@ -913,6 +914,8 @@ export function SmearWorkflow() {
   const canReadClassification = permissions.has('scientific.cell_classification.read');
   const canExplainClassification = permissions.has('scientific.cell_classification.explain');
   const canReviewClassification = permissions.has('scientific.cell_classification.review');
+  const canReadValidation = permissions.has('scientific.validation.read');
+  const canAnnotateValidation = permissions.has('scientific.validation.annotate');
   const isUploadFailure = stage === 'error' && failure?.step === 'upload' && !identifiers.ingestionBatchId;
   const reviewStage = (
     stage === 'review_ready'
@@ -1019,6 +1022,7 @@ export function SmearWorkflow() {
                 subjectCode: patientCode,
                 sampleCode,
                 analysisRunCode: snapshot.analysisRun?.run_code ?? 'Análisis activo',
+                analysisRunId: snapshot.analysisRun?.id ?? null,
                 status: headerState,
                 modelName: snapshot.classificationRun?.model_name,
                 modelVersion: snapshot.classificationRun?.model_version,
@@ -1034,6 +1038,8 @@ export function SmearWorkflow() {
                 canReviewDetection: canReviewCells,
                 canExplain: canExplainClassification,
                 canReviewClassification,
+                canReadValidation,
+                canAnnotateValidation,
               }}
               actions={{
                 onBack: controller.newAnalysis,

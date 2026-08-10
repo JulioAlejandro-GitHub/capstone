@@ -58,7 +58,17 @@ import type {
   CellPredictionSummary,
   EligibleCellClassificationRun,
   SmearAnalysisSummary,
+  HumanCellClassification,
+  HumanCellClassificationHistoryPage,
 } from '../types/cellClassification';
+import type {
+  ScientificValidationAnnotation,
+  ScientificValidationAnnotationEvent,
+  ScientificValidationPage,
+  ScientificValidationSession,
+  ScientificValidationSessionSummary,
+  ScientificValidationTarget,
+} from '../types/scientificValidation';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 export const DEFAULT_DATASOURCE = import.meta.env.VITE_DEFAULT_DATASOURCE ?? 'malaria';
@@ -862,6 +872,103 @@ export const api = {
   getCellClassificationReviews(predictionId: string) {
     return request<CellClassificationPage<CellClassificationReview>>(
       `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/reviews`,
+    );
+  },
+  getHumanCellClassification(predictionId: string) {
+    return request<HumanCellClassification>(
+      `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/human-classification`,
+    );
+  },
+  saveHumanCellClassification(
+    predictionId: string,
+    label: 'parasitized' | 'uninfected',
+    comment?: string,
+  ) {
+    return request<HumanCellClassification>(
+      `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/human-classification`,
+      {},
+      {
+        init: {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label, comment: comment?.trim() || null }),
+        },
+      },
+    );
+  },
+  getHumanCellClassificationHistory(predictionId: string) {
+    return request<HumanCellClassificationHistoryPage>(
+      `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/human-classification/history`,
+    );
+  },
+  listScientificValidationSessions() {
+    return request<ScientificValidationPage<ScientificValidationSessionSummary>>(
+      '/api/v1/scientific-validation/sessions', { limit: 200, offset: 0 },
+    );
+  },
+  getScientificValidationSession(sessionId: string) {
+    return request<ScientificValidationSession>(
+      `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}`,
+    );
+  },
+  async resolveScientificValidationSession(
+    detectionRunId: string,
+    classificationRunId?: string | null,
+  ) {
+    const page = await this.listScientificValidationSessions();
+    for (const item of page.items) {
+      const session = await this.getScientificValidationSession(item.id);
+      if (
+        session.detection_run_ids.includes(detectionRunId)
+        || Boolean(classificationRunId && session.classification_run_ids.includes(classificationRunId))
+      ) return session;
+    }
+    return null;
+  },
+  listScientificValidationAnnotations(
+    sessionId: string,
+    filters: {
+      target_type?: ScientificValidationTarget;
+      cell_id?: string;
+      analysis_run_id?: string;
+      category?: string;
+    },
+  ) {
+    return request<ScientificValidationPage<ScientificValidationAnnotation>>(
+      `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations`,
+      { ...filters, limit: 500, offset: 0 },
+    );
+  },
+  createScientificValidationAnnotation(
+    sessionId: string,
+    payload: {
+      target_type: ScientificValidationTarget;
+      cell_id?: string;
+      analysis_run_id?: string;
+      category: string;
+      content: string;
+    },
+  ) {
+    return request<ScientificValidationAnnotation>(
+      `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations`,
+      {},
+      { init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) } },
+    );
+  },
+  updateScientificValidationAnnotation(
+    sessionId: string,
+    annotationId: string,
+    payload: { category: string; content: string; version: number },
+  ) {
+    return request<ScientificValidationAnnotation>(
+      `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations/${encodeURIComponent(annotationId)}`,
+      {},
+      { init: { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) } },
+    );
+  },
+  getScientificValidationAnnotationHistory(sessionId: string, annotationId: string) {
+    return request<ScientificValidationPage<ScientificValidationAnnotationEvent>>(
+      `/api/v1/scientific-validation/sessions/${encodeURIComponent(sessionId)}/annotations/${encodeURIComponent(annotationId)}/history`,
     );
   },
   reviewQuality(runId: string, decision: 'approve_with_warnings' | 'reject', comment: string) {

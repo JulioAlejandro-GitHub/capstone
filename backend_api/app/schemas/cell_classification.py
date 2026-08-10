@@ -54,3 +54,18 @@ class CellClassificationReviewCreate(BaseModel):
             if self.comment is None:
                 raise ValueError(f"{self.decision} requiere comentario.")
         return self
+
+
+class HumanCellClassificationSet(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    label: CanonicalLabel
+    comment: str | None = Field(default=None, max_length=4000)
+
+    @field_validator("comment")
+    @classmethod
+    def normalize_human_comment(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None

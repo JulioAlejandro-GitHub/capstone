@@ -1397,6 +1397,50 @@ class CellClassificationRepository:
         ).mappings().one()
         return dict(row)
 
+    def latest_human_classification(
+        self, cell_prediction_id: str | UUID
+    ) -> dict | None:
+        return _dict(self.connection.execute(text("""
+          SELECT review.*,actor.username actor_username,
+                 prediction.predicted_label automatic_label
+          FROM cell_predictions prediction
+          LEFT JOIN LATERAL (
+            SELECT item.* FROM cell_classification_reviews item
+            WHERE item.cell_prediction_id=prediction.id
+              AND item.decision IN ('confirmed','corrected')
+            ORDER BY item.created_at DESC,item.id DESC LIMIT 1
+          ) review ON true
+          LEFT JOIN users actor ON actor.id=review.actor_user_id
+          WHERE prediction.id=CAST(:id AS uuid)
+        """), {"id": str(cell_prediction_id)}).mappings().first())
+
+    def human_classification_history(
+        self, cell_prediction_id: str | UUID, *, limit: int, offset: int
+    ) -> dict | None:
+        if not self.connection.execute(
+            text("SELECT 1 FROM cell_predictions WHERE id=CAST(:id AS uuid)"),
+            {"id": str(cell_prediction_id)},
+        ).scalar():
+            return None
+        params = {"id": str(cell_prediction_id), "limit": limit, "offset": offset}
+        rows = self.connection.execute(text("""
+          SELECT review.*,actor.username actor_username,
+                 prediction.predicted_label automatic_label
+          FROM cell_classification_reviews review
+          JOIN users actor ON actor.id=review.actor_user_id
+          JOIN cell_predictions prediction ON prediction.id=review.cell_prediction_id
+          WHERE review.cell_prediction_id=CAST(:id AS uuid)
+            AND review.decision IN ('confirmed','corrected')
+          ORDER BY review.created_at,review.id LIMIT :limit OFFSET :offset
+        """), params).mappings().all()
+        total = self.connection.execute(text("""
+          SELECT count(*) FROM cell_classification_reviews
+          WHERE cell_prediction_id=CAST(:id AS uuid)
+            AND decision IN ('confirmed','corrected')
+        """), params).scalar_one()
+        return {"items": [dict(row) for row in rows], "total": int(total),
+                "limit": limit, "offset": offset}
+
     def reviews(
         self,
         cell_prediction_id: str | UUID,

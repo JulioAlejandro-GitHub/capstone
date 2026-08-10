@@ -27,14 +27,15 @@ import {
 import { CellGradCamPreview } from './CellGradCamPreview';
 import { CellImageViewer } from './CellImageViewer';
 import { CellClassificationAuditModal } from './CellClassificationAuditModal';
+import { ScientificAnnotations } from './ScientificAnnotations';
 import type {
   CanonicalCellLabel,
   CellClassificationReview,
-  CellClassificationReviewDecision,
   CellClassificationRunDetail,
   CellPredictionDetail,
   CellPredictionSummary,
   SmearAnalysisSummary,
+  HumanCellClassification,
 } from '../../types/cellClassification';
 
 const PAGE_SIZE = 100;
@@ -116,6 +117,12 @@ const safeDate = (value: string | null | undefined) => {
 
 const optionalMetric = (value: number | null | undefined, digits = 4) =>
   value == null ? '—' : value.toFixed(digits);
+
+const inferredHumanLabel = (prediction: CellPredictionSummary | null) => {
+  const review = prediction?.latest_review;
+  if (!prediction || !review || review.decision === 'needs_attention' || review.decision === 'comment_only') return null;
+  return review.reviewed_label ?? (review.decision === 'confirmed' ? prediction.predicted_label : null);
+};
 
 const normalizedSearch = (value: string) => value.trim().toLocaleLowerCase();
 
@@ -244,6 +251,8 @@ type CellReviewWorkspaceProps = {
   readOnly?: boolean;
   initialSelectedPredictionId?: string | null;
   onSelectedPredictionChange?: (predictionId: string | null) => void;
+  validationSessionId?: string | null;
+  canAnnotateValidation?: boolean;
 };
 
 export function CellReviewWorkspace({
@@ -262,6 +271,8 @@ export function CellReviewWorkspace({
   readOnly = false,
   initialSelectedPredictionId = null,
   onSelectedPredictionChange,
+  validationSessionId = null,
+  canAnnotateValidation = false,
 }: CellReviewWorkspaceProps) {
   const [run, setRun] = useState<CellDetectionRunDetail | null>(null);
   const [images, setImages] = useState<CellDetectionImage[]>([]);
@@ -295,6 +306,13 @@ export function CellReviewWorkspace({
     useState<CellPredictionDetail | null>(null);
   const [classificationReviews, setClassificationReviews] =
     useState<CellClassificationReview[]>([]);
+  const [humanClassification, setHumanClassification] =
+    useState<HumanCellClassification | null>(null);
+  const [humanByPredictionId, setHumanByPredictionId] =
+    useState<Record<string, HumanCellClassification>>({});
+  const [classificationEditing, setClassificationEditing] = useState(false);
+  const [annotationCountByCell, setAnnotationCountByCell] =
+    useState<Record<string, number>>({});
   const [classificationLoading, setClassificationLoading] = useState(false);
   const [classificationError, setClassificationError] = useState('');
   const [classificationComment, setClassificationComment] = useState('');
@@ -631,6 +649,7 @@ export function CellReviewWorkspace({
       setPredictions([]);
       setPredictionDetail(null);
       setClassificationReviews([]);
+      setHumanClassification(null);
       setClassificationError('');
       return;
     }
@@ -832,9 +851,10 @@ export function CellReviewWorkspace({
     setClassificationError('');
     Promise.all([
       api.getCellPrediction(selectedPrediction.id),
-      api.getCellClassificationReviews(selectedPrediction.id),
+      api.getHumanCellClassificationHistory(selectedPrediction.id),
+      api.getHumanCellClassification(selectedPrediction.id),
     ])
-      .then(async ([detail, reviews]) => {
+      .then(async ([detail, reviews, human]) => {
         if (!active) return;
         let explanation = detail.explanation;
         if (
@@ -850,6 +870,11 @@ export function CellReviewWorkspace({
         if (!active) return;
         setPredictionDetail({ ...detail, explanation });
         setClassificationReviews(reviews.items);
+        setHumanClassification(human);
+        setHumanByPredictionId((current) => ({ ...current, [detail.id]: human }));
+        setReviewedLabel(human.label ?? detail.predicted_label ?? 'parasitized');
+        setClassificationComment(human.comment ?? '');
+        setClassificationEditing(human.status === 'unreviewed');
       })
       .catch(() => {
         if (active) {
@@ -868,6 +893,8 @@ export function CellReviewWorkspace({
     setReviewComment('');
     setReviewError('');
     setClassificationComment('');
+    setHumanClassification(null);
+    setClassificationEditing(false);
     setClassificationReviewError('');
     setAuditOpen(false);
   }, [selectedDetectionId]);
@@ -996,7 +1023,11 @@ export function CellReviewWorkspace({
         ...galleryDetections.slice(0, Math.max(0, currentIndex + 1)),
       ];
       const next = ordered.find((item) => (
-        predictionByDetectionId.get(item.id)?.review_status === 'unreviewed'
+        (() => {
+          const prediction = predictionByDetectionId.get(item.id) ?? null;
+          return prediction
+            && !(humanByPredictionId[prediction.id]?.label ?? inferredHumanLabel(prediction));
+        })()
         && item.id !== selectedDetectionId
       ));
       if (next) {
@@ -1174,53 +1205,28 @@ export function CellReviewWorkspace({
     }
   }
 
-  async function submitClassificationReview(
-    decision: CellClassificationReviewDecision,
-  ) {
+  async function submitHumanClassification() {
     const target = predictionDetail ?? selectedPrediction;
     if (!target || !canClassificationReview || readOnly) return;
-    const comment = classificationComment.trim();
-    if (decision === 'corrected' && !comment) {
-      setClassificationReviewError('La corrección exige label y comentario.');
-      return;
-    }
-    if (
-      (decision === 'needs_attention' || decision === 'comment_only')
-      && !comment
-    ) {
-      setClassificationReviewError('Esta decisión requiere un comentario.');
-      return;
-    }
     setClassificationSaving(true);
     setClassificationReviewError('');
     try {
-      const review = await api.createCellClassificationReview(target.id, {
-        decision,
-        reviewed_label: decision === 'corrected' ? reviewedLabel : undefined,
-        comment: comment || undefined,
-      });
-      const nextStatus = decision === 'comment_only'
-        ? target.review_status
-        : decision;
-      setPredictions((items) => items.map((item) => (
-        item.id === target.id
-          ? { ...item, latest_review: review, review_status: nextStatus }
-          : item
-      )));
-      setPredictionDetail((current) => current ? {
-        ...current,
-        latest_review: review,
-        review_status: nextStatus,
-        review_history: [...(current.review_history ?? []), review],
-      } : current);
-      setClassificationReviews((items) => [...items, review]);
-      setClassificationComment('');
+      const human = await api.saveHumanCellClassification(
+        target.id, reviewedLabel, classificationComment,
+      );
+      const history = await api.getHumanCellClassificationHistory(target.id);
+      setHumanClassification(human);
+      setHumanByPredictionId((current) => ({ ...current, [target.id]: human }));
+      setClassificationReviews(history.items);
+      setClassificationEditing(false);
       await refreshClassificationSummary();
-      setLiveMessage(`Revisión de clasificación guardada para ${target.cell_code}.`);
+      setLiveMessage(`Clasificación humana guardada para ${target.cell_code}.`);
     } catch (error) {
       setClassificationReviewError(
         error instanceof ApiError && error.status === 403
           ? 'Tu rol no tiene permiso para revisar clasificaciones.'
+          : error instanceof ApiError && error.status === 409
+            ? 'Conflicto: la clasificación cambió. Actualiza antes de volver a guardar.'
           : 'No fue posible guardar la revisión de clasificación.',
       );
     } finally {
@@ -1428,6 +1434,9 @@ export function CellReviewWorkspace({
                     detection={detection}
                     prediction={predictionByDetectionId.get(detection.id) ?? null}
                     classificationExpected={Boolean(classificationRun)}
+                    humanLabel={humanByPredictionId[predictionByDetectionId.get(detection.id)?.id ?? '']?.label
+                      ?? inferredHumanLabel(predictionByDetectionId.get(detection.id) ?? null)}
+                    annotationCount={annotationCountByCell[detection.id] ?? 0}
                     selected={detection.id === selectedDetectionId}
                     register={(node) => {
                       if (node) cardRefs.current.set(detection.id, node);
@@ -1479,11 +1488,16 @@ export function CellReviewWorkspace({
             history={reviewHistory}
             prediction={predictionDetail ?? selectedPrediction}
             classificationHistory={classificationReviews}
+            humanClassification={humanClassification}
+            classificationEditing={classificationEditing}
             classificationRun={classificationRun}
             classificationLoading={classificationLoading}
             classificationError={classificationError}
             canExplain={canExplain && !readOnly}
             canClassificationReview={canClassificationReview && !readOnly}
+            validationSessionId={validationSessionId}
+            canAnnotateValidation={canAnnotateValidation && !readOnly}
+            readOnly={readOnly}
             classificationComment={classificationComment}
             reviewedLabel={reviewedLabel}
             classificationSaving={classificationSaving}
@@ -1509,7 +1523,12 @@ export function CellReviewWorkspace({
               setClassificationReviewError('');
             }}
             onReviewedLabelChange={setReviewedLabel}
-            onClassificationReview={submitClassificationReview}
+            onClassificationSave={submitHumanClassification}
+            onClassificationEdit={() => setClassificationEditing(true)}
+            onAnnotationCountChange={(count) => {
+              if (!selectedDetectionId) return;
+              setAnnotationCountByCell((current) => ({ ...current, [selectedDetectionId]: count }));
+            }}
             onGenerateExplanation={generateExplanation}
             onAudit={() => setAuditOpen(true)}
           />
@@ -1622,6 +1641,8 @@ const DetectionCard = memo(function DetectionCard({
   detection,
   prediction,
   classificationExpected,
+  humanLabel,
+  annotationCount,
   selected,
   register,
   onSelect,
@@ -1629,6 +1650,8 @@ const DetectionCard = memo(function DetectionCard({
   detection: CellDetectionSummary;
   prediction: CellPredictionSummary | null;
   classificationExpected: boolean;
+  humanLabel: CanonicalCellLabel | null;
+  annotationCount: number;
   selected: boolean;
   register: (node: HTMLButtonElement | null) => void;
   onSelect: () => void;
@@ -1642,7 +1665,7 @@ const DetectionCard = memo(function DetectionCard({
         ref={register}
         type="button"
         aria-pressed={selected}
-        aria-label={`${detection.cell_code}, ${prediction?.predicted_label ?? reviewStatusLabel[detection.review_status]}`}
+        aria-label={`${detection.cell_code}, ${prediction?.predicted_label ?? reviewStatusLabel[detection.review_status]}, clasificación humana ${humanLabel ?? 'sin revisar'}${annotationCount ? `, ${annotationCount} anotaciones` : ''}`}
         onClick={onSelect}
       >
         <AuthenticatedCropImage
@@ -1668,6 +1691,11 @@ const DetectionCard = memo(function DetectionCard({
                 {' · '}
                 Revisión: {classificationFilterLabel[prediction.review_status]}
               </small>
+              <small className="cell-card-human-indicators">
+                {humanLabel ? `Revisada ${humanLabel}` : '○ Sin revisar'}
+                {annotationCount ? ` · 📝 ${annotationCount}` : ''}
+                {prediction.review_status === 'needs_attention' ? ' · ! Requiere atención' : ''}
+              </small>
             </>
           ) : classificationExpected ? (
             <span className="cell-prediction-label prediction-failed">
@@ -1692,11 +1720,16 @@ function CellDetailPanel({
   history,
   prediction,
   classificationHistory,
+  humanClassification,
+  classificationEditing,
   classificationRun,
   classificationLoading,
   classificationError,
   canExplain,
   canClassificationReview,
+  validationSessionId,
+  canAnnotateValidation,
+  readOnly,
   classificationComment,
   reviewedLabel,
   classificationSaving,
@@ -1716,7 +1749,9 @@ function CellDetailPanel({
   onNextUnreviewed,
   onClassificationCommentChange,
   onReviewedLabelChange,
-  onClassificationReview,
+  onClassificationSave,
+  onClassificationEdit,
+  onAnnotationCountChange,
   onGenerateExplanation,
   onAudit,
 }: {
@@ -1725,11 +1760,16 @@ function CellDetailPanel({
   history: ScientificCellReview[];
   prediction: CellPredictionSummary | CellPredictionDetail | null;
   classificationHistory: CellClassificationReview[];
+  humanClassification: HumanCellClassification | null;
+  classificationEditing: boolean;
   classificationRun: CellClassificationRunDetail | null;
   classificationLoading: boolean;
   classificationError: string;
   canExplain: boolean;
   canClassificationReview: boolean;
+  validationSessionId: string | null;
+  canAnnotateValidation: boolean;
+  readOnly: boolean;
   classificationComment: string;
   reviewedLabel: CanonicalCellLabel;
   classificationSaving: boolean;
@@ -1749,7 +1789,9 @@ function CellDetailPanel({
   onNextUnreviewed: () => void;
   onClassificationCommentChange: (value: string) => void;
   onReviewedLabelChange: (value: CanonicalCellLabel) => void;
-  onClassificationReview: (decision: CellClassificationReviewDecision) => void;
+  onClassificationSave: () => void;
+  onClassificationEdit: () => void;
+  onAnnotationCountChange: (count: number) => void;
   onGenerateExplanation: () => void;
   onAudit: () => void;
 }) {
@@ -1806,7 +1848,7 @@ function CellDetailPanel({
             <section className="cell-classification-detail" aria-labelledby="cell-classification-detail-heading">
               <div className="cell-classification-heading">
                 <div>
-                  <h3 id="cell-classification-detail-heading">Predicción automática inmutable</h3>
+                  <h3 id="cell-classification-detail-heading">Predicción automática</h3>
                   <p>{classificationRun.classification_run_code}</p>
                 </div>
                 {prediction ? (
@@ -1872,40 +1914,45 @@ function CellDetailPanel({
 
                   <section className="cell-classification-review" aria-labelledby="cell-classification-review-heading">
                     <h4 id="cell-classification-review-heading">Revisión humana de clasificación</h4>
-                    {prediction.latest_review ? (
-                      <p>
-                        Última decisión: <strong>{prediction.latest_review.decision.replaceAll('_', ' ')}</strong>
-                        {' · '}{safeDate(prediction.latest_review.created_at)}
-                      </p>
+                    {humanClassification?.label ? (
+                      <div className="human-classification-current">
+                        <span>Clasificación humana</span>
+                        <strong>{humanClassification.label === 'parasitized' ? 'Parasitized' : 'Uninfected'}</strong>
+                        {humanClassification.comment ? <p>{humanClassification.comment}</p> : null}
+                        <small>
+                          {humanClassification.actor_username ?? humanClassification.actor_user_id}
+                          {' · '}{safeDate(humanClassification.created_at)}
+                        </small>
+                        {humanClassification.label !== prediction.predicted_label ? (
+                          <span className="human-ai-disagreement" role="status">
+                            Diferencia IA / revisión
+                          </span>
+                        ) : null}
+                        {canClassificationReview && !classificationEditing ? (
+                          <button type="button" onClick={onClassificationEdit}>Editar</button>
+                        ) : null}
+                      </div>
                     ) : <p>Sin revisión de clasificación registrada.</p>}
-                    {canClassificationReview ? (
+                    {canClassificationReview && (classificationEditing || !humanClassification?.label) ? (
                       <div className="cell-review-form">
+                        <fieldset className="human-label-buttons">
+                          <legend>Clasificación humana</legend>
+                          <button type="button" aria-pressed={reviewedLabel === 'parasitized'} onClick={() => onReviewedLabelChange('parasitized')}>Parasitized</button>
+                          <button type="button" aria-pressed={reviewedLabel === 'uninfected'} onClick={() => onReviewedLabelChange('uninfected')}>Uninfected</button>
+                        </fieldset>
                         <label>
-                          Label revisado para corrección
-                          <select
-                            value={reviewedLabel}
-                            onChange={(event) => onReviewedLabelChange(
-                              event.target.value as CanonicalCellLabel,
-                            )}
-                          >
-                            <option value="parasitized">parasitized</option>
-                            <option value="uninfected">uninfected</option>
-                          </select>
-                        </label>
-                        <label>
-                          Comentario de clasificación
+                          Comentario <span>(opcional)</span>
                           <textarea
                             value={classificationComment}
                             maxLength={4000}
-                            placeholder="Obligatorio para corregir, requerir atención o comentar."
+                            placeholder="Contexto de la clasificación humana"
                             onChange={(event) => onClassificationCommentChange(event.target.value)}
                           />
                         </label>
                         <div className="cell-review-actions">
-                          <button type="button" disabled={classificationSaving} onClick={() => onClassificationReview('confirmed')}>Confirmar predicción</button>
-                          <button type="button" disabled={classificationSaving} onClick={() => onClassificationReview('corrected')}>Corregir clasificación</button>
-                          <button type="button" disabled={classificationSaving} onClick={() => onClassificationReview('needs_attention')}>Requiere atención</button>
-                          <button type="button" disabled={classificationSaving} onClick={() => onClassificationReview('comment_only')}>Agregar comentario</button>
+                          <button type="button" disabled={classificationSaving} onClick={onClassificationSave}>
+                            {humanClassification?.label ? 'Guardar cambios' : 'Guardar'}
+                          </button>
                           <button type="button" disabled={classificationSaving} onClick={onNextUnreviewed}>Siguiente sin revisar</button>
                         </div>
                         {classificationReviewError ? <p className="cell-error" role="alert">{classificationReviewError}</p> : null}
@@ -1916,10 +1963,21 @@ function CellDetailPanel({
                       </p>
                     )}
                   </section>
+
                 </>
               ) : <p>No existe una predicción para esta detección.</p>}
             </section>
           ) : null}
+
+          <ScientificAnnotations
+            title="ANOTACIONES"
+            sessionId={validationSessionId}
+            targetType="cell"
+            targetId={detection?.id ?? null}
+            canAnnotate={canAnnotateValidation}
+            readOnly={readOnly}
+            onCountChange={onAnnotationCountChange}
+          />
 
           <section className="cell-human-review" aria-labelledby="cell-human-review-heading">
             <h3 id="cell-human-review-heading">Revisión humana de detección</h3>
@@ -1958,9 +2016,9 @@ function CellDetailPanel({
 
           {classificationRun ? (
             <section className="cell-review-history classification-review-history" aria-labelledby="cell-classification-history-heading">
-              <h3 id="cell-classification-history-heading">Historial de clasificación</h3>
-              {classificationHistory.length ? (
-                <ol>
+              <details>
+                <summary><h3 id="cell-classification-history-heading">Historial de clasificación humana</h3></summary>
+                {classificationHistory.length ? <ol>
                   {classificationHistory.map((review) => (
                     <li key={review.id}>
                       <div>
@@ -1973,8 +2031,8 @@ function CellDetailPanel({
                       </p>
                     </li>
                   ))}
-                </ol>
-              ) : <p>No existen revisiones de clasificación.</p>}
+                </ol> : <p>No existen revisiones de clasificación.</p>}
+              </details>
             </section>
           ) : null}
 

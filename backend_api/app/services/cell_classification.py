@@ -2862,3 +2862,156 @@ class CellClassificationService:
                 404, "Predicción inexistente.", "NOT_FOUND"
             )
         return self._public_record(result)
+
+    @staticmethod
+    def _human_classification_state(row: Mapping[str, Any]) -> dict[str, Any]:
+        review_id = row.get("id")
+        if not review_id:
+            return {
+                "status": "unreviewed",
+                "label": None,
+                "comment": None,
+                "review_id": None,
+                "actor_user_id": None,
+                "actor_username": None,
+                "created_at": None,
+            }
+        label = (
+            row.get("reviewed_label")
+            if row.get("decision") == "corrected"
+            else row.get("reviewed_label") or row.get("automatic_label")
+        )
+        return {
+            "status": label,
+            "label": label,
+            "comment": row.get("comment"),
+            "review_id": str(review_id),
+            "actor_user_id": str(row["actor_user_id"]),
+            "actor_username": row.get("actor_username"),
+            "created_at": row.get("created_at"),
+        }
+
+    def get_human_classification(self, prediction_id: str) -> dict[str, Any]:
+        with self.engine.connect() as connection:
+            row = self._repository(connection).latest_human_classification(prediction_id)
+        if not row:
+            raise CellClassificationError(
+                404, "Predicción inexistente.", "NOT_FOUND"
+            )
+        return self._public_record(self._human_classification_state(row))
+
+    def set_human_classification(
+        self,
+        prediction_id: str,
+        label: str,
+        comment: str | None,
+        principal: Principal,
+        request: Request,
+    ) -> dict[str, Any]:
+        clean = comment.strip() if comment else None
+        with self.engine.begin() as connection:
+            repository = self._repository(connection)
+            prediction = repository.prediction_for_review(prediction_id)
+            if not prediction:
+                raise CellClassificationError(
+                    404, "Predicción inexistente.", "NOT_FOUND"
+                )
+            if prediction.get("prediction_status") != "completed":
+                raise CellClassificationError(
+                    409,
+                    "Sólo una predicción completada admite clasificación humana.",
+                    "PREDICTION_NOT_REVIEWABLE",
+                )
+            previous_row = repository.latest_human_classification(prediction_id)
+            previous = self._human_classification_state(previous_row or {})
+            decision = (
+                "confirmed"
+                if label == prediction.get("predicted_label")
+                else "corrected"
+            )
+            review = repository.create_review(
+                cell_prediction_id=UUID(prediction_id),
+                decision=decision,
+                reviewed_label=label,
+                comment=clean,
+                actor_user_id=UUID(str(principal.user_id)),
+            )
+            if not review:
+                raise CellClassificationError(
+                    409,
+                    "La predicción cambió durante la revisión.",
+                    "REVIEW_STATE_CONFLICT",
+                )
+            event_kind = "created" if previous["status"] == "unreviewed" else "updated"
+            repository.add_event(
+                classification_run_id=review["classification_run_id"],
+                cell_detection_id=review["cell_detection_id"],
+                cell_prediction_id=prediction_id,
+                event_type=f"cell_classification.human_classification.{event_kind}",
+                status="completed",
+                metadata={
+                    "previous_label": previous["label"],
+                    "label": label,
+                    "comment_present": clean is not None,
+                    "comment_length": len(clean) if clean else 0,
+                },
+            )
+            after = {
+                "status": label,
+                "label": label,
+                "comment": clean,
+                "review_id": str(review["id"]),
+                "actor_user_id": str(principal.user_id),
+                "actor_username": principal.username,
+                "created_at": review["created_at"],
+            }
+            self.auditor(
+                event_type=(
+                    "scientific.cell_classification.human_classification."
+                    f"{event_kind}"
+                ),
+                action="human-classification",
+                principal=principal,
+                request=request,
+                success=True,
+                connection=connection,
+                resource_type="cell_prediction",
+                resource_id=prediction_id,
+                before_state=(
+                    None if previous["status"] == "unreviewed" else {
+                        "human_label": previous["label"],
+                        "comment": previous["comment"],
+                        "review_id": previous["review_id"],
+                    }
+                ),
+                after_state={
+                    "human_label": label,
+                    "comment": clean,
+                    "review_id": str(review["id"]),
+                    "automatic_label": prediction["predicted_label"],
+                },
+            )
+        return self._public_record(after)
+
+    def human_classification_history(
+        self, prediction_id: str, *, limit: int, offset: int
+    ) -> dict[str, Any]:
+        with self.engine.connect() as connection:
+            result = self._repository(connection).human_classification_history(
+                prediction_id, limit=limit, offset=offset
+            )
+        if result is None:
+            raise CellClassificationError(
+                404, "Predicción inexistente.", "NOT_FOUND"
+            )
+        result["items"] = [
+            {
+                **self._public_record(dict(item)),
+                "label": (
+                    item.get("reviewed_label")
+                    or item.get("automatic_label")
+                ),
+            }
+            for item in result["items"]
+        ]
+        return result

@@ -1,5 +1,9 @@
+import { useEffect, useState } from 'react';
 import type { SmearAnalysisSummary } from '../../types/cellClassification';
+import type { ScientificValidationSession } from '../../types/scientificValidation';
+import { api } from '../../services/api';
 import { CellReviewWorkspace } from './CellReviewWorkspace';
+import { ScientificAnnotations } from './ScientificAnnotations';
 
 export type SmearAnalysisViewMode = 'live' | 'history';
 
@@ -7,6 +11,7 @@ export type SmearAnalysisViewModel = {
   subjectCode: string;
   sampleCode: string;
   analysisRunCode: string;
+  analysisRunId?: string | null;
   status: string;
   modelName?: string | null;
   modelVersion?: string | null;
@@ -23,6 +28,8 @@ export type SmearAnalysisPermissions = {
   canReviewDetection: boolean;
   canExplain: boolean;
   canReviewClassification: boolean;
+  canReadValidation: boolean;
+  canAnnotateValidation: boolean;
 };
 
 /** Navigation and selection callbacks are safe in both live and historical views. */
@@ -69,6 +76,22 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
   const isHistory = mode === 'history';
   const modeLabel = isHistory ? 'Histórico' : 'En vivo';
   const livePermissions = props.mode === 'live' ? props.permissions : null;
+  const [validationSession, setValidationSession] = useState<ScientificValidationSession | null>(null);
+  const validationMutable = validationSession != null
+    && validationSession.status !== 'completed'
+    && validationSession.status !== 'archived';
+
+  useEffect(() => {
+    if (mode === 'live' && !livePermissions?.canReadValidation) {
+      setValidationSession(null);
+      return;
+    }
+    let active = true;
+    api.resolveScientificValidationSession(workflow.detectionRunId, workflow.classificationRunId)
+      .then((session) => { if (active) setValidationSession(session); })
+      .catch(() => { if (active) setValidationSession(null); });
+    return () => { active = false; };
+  }, [livePermissions?.canReadValidation, mode, workflow.classificationRunId, workflow.detectionRunId]);
 
   return (
     <section
@@ -121,6 +144,15 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
         </div>
       </header>
 
+      <ScientificAnnotations
+        title="ANOTACIONES DEL ANÁLISIS"
+        sessionId={validationSession?.id ?? null}
+        targetType="analysis"
+        targetId={workflow.analysisRunId ?? workflow.classificationSummary?.analysis_run_id ?? null}
+        canAnnotate={(livePermissions?.canAnnotateValidation ?? false) && validationMutable}
+        readOnly={isHistory}
+      />
+
       <CellReviewWorkspace
         detectionRunId={workflow.detectionRunId}
         classificationRunId={workflow.classificationRunId}
@@ -131,6 +163,8 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
         canReview={livePermissions?.canReviewDetection ?? false}
         canExplain={livePermissions?.canExplain ?? false}
         canClassificationReview={livePermissions?.canReviewClassification ?? false}
+        canAnnotateValidation={(livePermissions?.canAnnotateValidation ?? false) && validationMutable}
+        validationSessionId={validationSession?.id ?? null}
         readOnly={isHistory}
         onClose={actions.onBack}
         closeLabel={actions.backLabel}

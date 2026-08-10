@@ -899,8 +899,8 @@ def classification_postgres(monkeypatch, tmp_path):
         connection.execute(text("SELECT current_database()")).scalar_one(),
     )
     assert connection.execute(
-        text("SELECT version_num='20260728_03' FROM alembic_version")
-    ).scalar_one(), "la migración 20260728_03 debe estar aplicada"
+        text("SELECT version_num='20260810_03' FROM alembic_version")
+    ).scalar_one(), "la migración 20260810_03 debe estar aplicada"
     baseline = _database_counts(connection)
     suffix = uuid4().hex[:10]
     roles = ("administrator", "operator", "reviewer", "read_only")
@@ -1840,3 +1840,97 @@ def test_reviews_audit_idempotency_and_append_only_integrity(
             "explanation_id": explanation["id"],
         },
     ).one() == (1, 1, 1, 1)
+def test_human_classification_is_editable_audited_and_keeps_ai_immutable(
+    classification_postgres,
+):
+    context = classification_postgres
+    seeded = context.seed_terminal_prediction()
+    endpoint = (
+        "/api/v1/cell-classification/predictions/"
+        f"{seeded.prediction_id}/human-classification"
+    )
+    immutable_before = context.connection.execute(text("""
+      SELECT prediction.predicted_label,prediction.probability_parasitized,
+             prediction.probability_uninfected,prediction.threshold_used,
+             prediction.threshold_source,prediction.classification_run_id,
+             run.model_version,run.model_snapshot
+      FROM cell_predictions prediction
+      JOIN cell_classification_runs run ON run.id=prediction.classification_run_id
+      WHERE prediction.id=:id
+    """), {"id": seeded.prediction_id}).mappings().one()
+
+    initial = context.client.get(endpoint, headers=context.headers["read_only"])
+    assert initial.status_code == 200
+    assert initial.json()["status"] == "unreviewed"
+    assert initial.json()["label"] is None
+    assert context.client.put(
+        endpoint, headers=context.headers["operator"],
+        json={"label": "uninfected"},
+    ).status_code == 403
+
+    first = context.client.put(
+        endpoint, headers=context.headers["reviewer"],
+        json={"label": "uninfected"},
+    )
+    assert first.status_code == 200, first.text
+    assert first.json()["label"] == "uninfected"
+    assert first.json()["comment"] is None
+    assert first.json()["actor_user_id"] == context.principals["reviewer"].user_id
+
+    second = context.client.put(
+        endpoint, headers=context.headers["administrator"],
+        json={"label": "parasitized", "comment": "Consenso inicial."},
+    )
+    assert second.status_code == 200, second.text
+    assert second.json()["label"] == "parasitized"
+
+    third = context.client.put(
+        endpoint, headers=context.headers["reviewer"],
+        json={"label": "uninfected", "comment": "Comentario editado."},
+    )
+    assert third.status_code == 200, third.text
+    assert third.json()["label"] == "uninfected"
+    assert third.json()["comment"] == "Comentario editado."
+
+    current = context.client.get(endpoint, headers=context.headers["read_only"])
+    assert current.status_code == 200
+    assert current.json()["label"] == "uninfected"
+    assert current.json()["comment"] == "Comentario editado."
+    history = context.client.get(
+        f"{endpoint}/history", headers=context.headers["read_only"]
+    )
+    assert history.status_code == 200
+    assert history.json()["total"] == 3
+    assert [item["label"] for item in history.json()["items"]] == [
+        "uninfected", "parasitized", "uninfected"
+    ]
+    assert [item["comment"] for item in history.json()["items"]] == [
+        None, "Consenso inicial.", "Comentario editado."
+    ]
+
+    immutable_after = context.connection.execute(text("""
+      SELECT prediction.predicted_label,prediction.probability_parasitized,
+             prediction.probability_uninfected,prediction.threshold_used,
+             prediction.threshold_source,prediction.classification_run_id,
+             run.model_version,run.model_snapshot
+      FROM cell_predictions prediction
+      JOIN cell_classification_runs run ON run.id=prediction.classification_run_id
+      WHERE prediction.id=:id
+    """), {"id": seeded.prediction_id}).mappings().one()
+    assert dict(immutable_after) == dict(immutable_before)
+
+    audits = context.connection.execute(text("""
+      SELECT event_type,actor_user_id,before_state,after_state
+      FROM audit_events WHERE resource_type='cell_prediction'
+        AND resource_id=:id
+        AND action='human-classification'
+    """), {"id": str(seeded.prediction_id)}).mappings().all()
+    assert len(audits) == 3
+    assert sum(row["before_state"] is None for row in audits) == 1
+    assert {row["after_state"]["human_label"] for row in audits} == {
+        "parasitized", "uninfected"
+    }
+    assert {row["actor_user_id"] for row in audits} == {
+        UUID(context.principals["reviewer"].user_id),
+        UUID(context.principals["administrator"].user_id),
+    }

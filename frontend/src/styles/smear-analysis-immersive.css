@@ -1908,3 +1908,57 @@
     transition-duration: .01ms !important;
   }
 }
+
+.smear-analysis-immersive .scientific-annotations {
+  border: 1px solid color-mix(in srgb, var(--color-border, #64748b) 38%, transparent);
+  border-radius: .75rem;
+  padding: .75rem;
+  min-width: 0;
+}
+
+.smear-analysis-immersive > .scientific-annotations {
+  margin: 0 1rem .75rem;
+  background: color-mix(in srgb, var(--color-surface, #fff) 92%, transparent);
+}
+
+.smear-analysis-immersive .scientific-annotations > header,
+.smear-analysis-immersive .scientific-annotation-actions,
+.smear-analysis-immersive .scientific-annotation-form > div,
+.smear-analysis-immersive .human-label-buttons {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.smear-analysis-immersive .scientific-annotations > header { justify-content: space-between; }
+.smear-analysis-immersive .scientific-annotations h3 { margin: 0; font-size: .82rem; letter-spacing: .06em; }
+.smear-analysis-immersive .scientific-annotations ul,
+.smear-analysis-immersive .scientific-annotations ol { margin: .6rem 0 0; padding-left: 1.15rem; }
+.smear-analysis-immersive .scientific-annotations li > div:first-child { display: grid; gap: .2rem; }
+.smear-analysis-immersive .scientific-annotations small { display: block; opacity: .78; margin-top: .2rem; }
+.smear-analysis-immersive .scientific-annotation-form { display: grid; gap: .55rem; margin-top: .6rem; }
+.smear-analysis-immersive .scientific-annotation-form label { display: grid; gap: .2rem; }
+.smear-analysis-immersive .scientific-annotation-form input,
+.smear-analysis-immersive .scientific-annotation-form textarea { width: 100%; box-sizing: border-box; }
+.smear-analysis-immersive .human-label-buttons { border: 0; padding: 0; margin: 0; }
+.smear-analysis-immersive .human-label-buttons legend { width: 100%; }
+.smear-analysis-immersive .human-label-buttons button[aria-pressed='true'] {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  font-weight: 700;
+}
+.smear-analysis-immersive .human-classification-current { display: grid; gap: .35rem; }
+.smear-analysis-immersive .human-classification-current > strong { font-size: 1.05rem; }
+.smear-analysis-immersive .human-ai-disagreement {
+  width: fit-content;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: .2rem .5rem;
+  font-size: .75rem;
+}
+.smear-analysis-immersive .classification-review-history summary h3 { display: inline; }
+
+@media (max-width: 720px) {
+  .smear-analysis-immersive > .scientific-annotations { margin-inline: .5rem; }
+}

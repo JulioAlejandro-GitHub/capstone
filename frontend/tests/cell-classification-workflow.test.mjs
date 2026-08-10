@@ -149,9 +149,9 @@ test('crop y bbox permanecen sincronizados y el overlay cambia por tres modos', 
   assert.match(viewer, /visual\.symbol/);
 });
 
-test('detalle conserva predicción automática inmutable y revisión separada', () => {
+test('detalle conserva predicción automática inmutable y clasificación humana separada', () => {
   for (const label of [
-    'Predicción automática inmutable',
+    'Predicción automática',
     'P\\(parasitized\\)',
     'P\\(uninfected\\)',
     'Margen de decisión',
@@ -163,7 +163,9 @@ test('detalle conserva predicción automática inmutable y revisión separada', 
     'Historial de clasificación',
   ]) assert.match(workspace, new RegExp(label));
   assert.match(types, /CanonicalCellLabel = 'uninfected' \| 'parasitized'/);
-  assert.doesNotMatch(api, /PUT|PATCH.*cell-classification/);
+  assert.match(api, /saveHumanCellClassification/);
+  assert.match(api, /method: 'PUT'/);
+  assert.match(api, /JSON\.stringify\(\{ label, comment:/);
 });
 
 test('Grad-CAM se genera sólo por acción explícita y retry failed se declara', () => {
@@ -196,17 +198,14 @@ test('modal audita exactamente una célula con crop, predicción y Grad-CAM', ()
   assert.doesNotMatch(modal, /storage_key|relative_storage_key|\/Users\//);
 });
 
-test('revisión de clasificación valida corrección y atención antes del POST', () => {
-  assert.match(api, /createCellClassificationReview/);
-  assert.match(workspace, /decision === 'corrected' && !comment/);
-  assert.match(workspace, /reviewed_label: decision === 'corrected' \? reviewedLabel : undefined/);
-  assert.match(workspace, /decision === 'needs_attention' \|\| decision === 'comment_only'/);
-  for (const action of [
-    'Confirmar predicción',
-    'Corregir clasificación',
-    'Requiere atención',
-    'Agregar comentario',
-  ]) assert.match(workspace, new RegExp(action));
+test('clasificación humana usa dos labels, comentario opcional y edición directa', () => {
+  assert.match(api, /saveHumanCellClassification/);
+  assert.match(workspace, /onReviewedLabelChange\('parasitized'\)/);
+  assert.match(workspace, /onReviewedLabelChange\('uninfected'\)/);
+  assert.match(workspace, /Comentario <span>\(opcional\)<\/span>/);
+  assert.match(workspace, /Guardar cambios/);
+  assert.match(workspace, /Diferencia IA \/ revisión/);
+  assert.doesNotMatch(workspace, /<select[\s\S]*Label revisado/);
 });
 
 test('resultado agregado usa terminología experimental y disclaimers', () => {

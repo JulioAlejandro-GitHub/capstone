@@ -13,6 +13,23 @@ export type CellClassificationRunStatus =
 export type CellPredictionStatus = 'completed' | 'failed';
 export type CanonicalCellLabel = 'uninfected' | 'parasitized';
 
+export interface HumanCellClassification {
+  status: 'unreviewed' | CanonicalCellLabel;
+  label: CanonicalCellLabel | null;
+  comment: string | null;
+  review_id: string | null;
+  actor_user_id: string | null;
+  actor_username?: string | null;
+  created_at: string | null;
+}
+
+export interface HumanCellClassificationHistoryPage {
+  items: CellClassificationReview[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export type CellExplanationStatus =
   | 'pending'
   | 'generated'

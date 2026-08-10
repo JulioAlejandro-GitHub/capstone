@@ -11,6 +11,7 @@ from app.audit import service_audited_permission, transactional_permission
 from app.config import get_settings
 from app.schemas.cell_classification import (
     CellClassificationReviewCreate,
+    HumanCellClassificationSet,
     CellClassificationRunCreate,
     CellExplanationRequest,
 )
@@ -303,3 +304,41 @@ def prediction_reviews(
     return execute(
         lambda: service.reviews(str(prediction_id), limit=limit, offset=offset)
     )
+
+
+@router.get("/predictions/{prediction_id}/human-classification")
+def get_human_classification(
+    prediction_id: UUID,
+    _: Principal = Depends(
+        require_permission(Permission.SCIENTIFIC_CELL_CLASSIFICATION_READ)
+    ),
+):
+    return execute(lambda: service.get_human_classification(str(prediction_id)))
+
+
+@router.put("/predictions/{prediction_id}/human-classification")
+def set_human_classification(
+    prediction_id: UUID,
+    body: HumanCellClassificationSet,
+    request: Request,
+    principal: Principal = Depends(
+        transactional_permission(Permission.SCIENTIFIC_CELL_CLASSIFICATION_REVIEW)
+    ),
+):
+    return execute(lambda: service.set_human_classification(
+        str(prediction_id), body.label, body.comment, principal, request
+    ))
+
+
+@router.get("/predictions/{prediction_id}/human-classification/history")
+def human_classification_history(
+    prediction_id: UUID,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    _: Principal = Depends(
+        require_permission(Permission.SCIENTIFIC_CELL_CLASSIFICATION_READ)
+    ),
+):
+    return execute(lambda: service.human_classification_history(
+        str(prediction_id), limit=limit, offset=offset
+    ))
