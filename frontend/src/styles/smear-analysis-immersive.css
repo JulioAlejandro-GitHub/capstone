@@ -777,6 +777,7 @@
   font-size: 11px;
 }
 
+.smear-analysis-immersive .cell-review-form input,
 .smear-analysis-immersive .cell-review-form textarea,
 .smear-analysis-immersive .cell-review-form select {
   min-height: 36px;

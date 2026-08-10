@@ -862,6 +862,9 @@ export function SmearAnalysisReadOnlyView({
               selectedPredictionId: searchParams.get('selected_prediction'),
             }}
             permissions={{
+              canReviewDetection: historyPermissions.has('scientific.cell_detection.review'),
+              canExplain: false,
+              canReviewClassification: historyPermissions.has('scientific.cell_classification.review'),
               canReadValidation: historyPermissions.has('scientific.validation.read'),
               canAnnotateValidation: historyPermissions.has('scientific.validation.annotate'),
             }}

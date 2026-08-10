@@ -173,11 +173,9 @@ const runCounts = (run: CellDetectionRunDetail | null): CellReviewCounts => ({
 function ReviewProgressRing({
   run,
   classificationRun,
-  readOnly,
 }: {
   run: CellDetectionRunDetail;
   classificationRun: CellClassificationRunDetail | null;
-  readOnly: boolean;
 }) {
   const isClassifying = classificationRun?.status === 'created'
     || classificationRun?.status === 'processing';
@@ -194,13 +192,11 @@ function ReviewProgressRing({
   const safeCurrent = Math.min(total, Math.max(0, current));
   const progress = total ? safeCurrent / total : 0;
   const radius = 43;
-  const label = readOnly
-    ? 'Vista histórica'
-    : isClassifying
-      ? 'Clasificando'
-      : total > 0 && safeCurrent >= total
-        ? 'Revisión completada'
-        : 'Revisión activa';
+  const label = isClassifying
+    ? 'Clasificando'
+    : total > 0 && safeCurrent >= total
+      ? 'Revisión completada'
+      : 'Revisión activa';
 
   return (
     <section
@@ -248,7 +244,6 @@ type CellReviewWorkspaceProps = {
   initialClassificationSummary?: SmearAnalysisSummary | null;
   canExplain?: boolean;
   canClassificationReview?: boolean;
-  readOnly?: boolean;
   initialSelectedPredictionId?: string | null;
   onSelectedPredictionChange?: (predictionId: string | null) => void;
   validationSessionId?: string | null;
@@ -269,7 +264,6 @@ export function CellReviewWorkspace({
   initialClassificationSummary = null,
   canExplain = false,
   canClassificationReview = false,
-  readOnly = false,
   initialSelectedPredictionId = null,
   onSelectedPredictionChange,
   validationSessionId = null,
@@ -1069,7 +1063,7 @@ export function CellReviewWorkspace({
 
   async function submitReview(decision: CellReviewDecision) {
     const reviewTarget = selectedDetail ?? selectedDetection;
-    if (!reviewTarget || !canReview || readOnly) return;
+    if (!reviewTarget || !canReview) return;
     const comment = reviewComment.trim();
     if (decision !== 'accepted' && !comment) {
       setReviewError('Esta decisión requiere un comentario.');
@@ -1166,7 +1160,7 @@ export function CellReviewWorkspace({
 
   async function generateExplanation() {
     const target = predictionDetail ?? selectedPrediction;
-    if (!target || !canExplain || readOnly) return;
+    if (!target || !canExplain) return;
     setExplanationSaving(true);
     setClassificationError('');
     try {
@@ -1209,7 +1203,7 @@ export function CellReviewWorkspace({
 
   async function submitHumanClassification() {
     const target = predictionDetail ?? selectedPrediction;
-    if (!target || !canClassificationReview || readOnly) return;
+    if (!target || !canClassificationReview) return;
     setClassificationSaving(true);
     setClassificationReviewError('');
     try {
@@ -1270,14 +1264,12 @@ export function CellReviewWorkspace({
     <AuthenticatedImageCacheProvider>
       <section
         className="cell-workspace-shell cell-workspace-shell--immersive"
-        data-read-only={readOnly || undefined}
         aria-label="Estación visual de revisión celular"
       >
       <header className="cell-workspace-actions cell-workspace-actions--sr">
         <p>Estación visual científica</p>
         <strong>{run.detection_run_code}</strong>
         <span>{run.subject_code} · {run.sample_code} · {run.slide_code}</span>
-        {readOnly ? <span>Solo lectura</span> : null}
         <button type="button" onClick={onClose}>{closeLabel}</button>
       </header>
 
@@ -1495,12 +1487,11 @@ export function CellReviewWorkspace({
             classificationRun={classificationRun}
             classificationLoading={classificationLoading}
             classificationError={classificationError}
-            canExplain={canExplain && !readOnly}
-            canClassificationReview={canClassificationReview && !readOnly}
+            canExplain={canExplain}
+            canClassificationReview={canClassificationReview}
             validationSessionId={validationSessionId}
             canAnnotateValidation={canAnnotateValidation}
             canReadValidationAnnotations={canReadValidationAnnotations}
-            readOnly={readOnly}
             classificationComment={classificationComment}
             reviewedLabel={reviewedLabel}
             classificationSaving={classificationSaving}
@@ -1508,7 +1499,7 @@ export function CellReviewWorkspace({
             classificationReviewError={classificationReviewError}
             loading={detailLoading}
             error={detailError}
-            canReview={canReview && !readOnly}
+            canReview={canReview}
             comment={reviewComment}
             saving={reviewSaving}
             reviewError={reviewError}
@@ -1625,7 +1616,7 @@ export function CellReviewWorkspace({
           </div>
         </section>
 
-        <ReviewProgressRing run={run} classificationRun={classificationRun} readOnly={readOnly} />
+        <ReviewProgressRing run={run} classificationRun={classificationRun} />
       </div>
       <p className="cell-review-live" aria-live="polite">{liveMessage}</p>
       {auditOpen && (predictionDetail ?? selectedPrediction) ? (
@@ -1733,7 +1724,6 @@ function CellDetailPanel({
   validationSessionId,
   canAnnotateValidation,
   canReadValidationAnnotations,
-  readOnly,
   classificationComment,
   reviewedLabel,
   classificationSaving,
@@ -1774,7 +1764,6 @@ function CellDetailPanel({
   validationSessionId: string | null;
   canAnnotateValidation: boolean;
   canReadValidationAnnotations: boolean;
-  readOnly: boolean;
   classificationComment: string;
   reviewedLabel: CanonicalCellLabel;
   classificationSaving: boolean;
@@ -1981,7 +1970,6 @@ function CellDetailPanel({
             targetId={canReadValidationAnnotations ? detection?.id ?? null : null}
             targetContext={`CÉLULA · ${detection?.cell_code ?? '—'}`}
             canAnnotate={canAnnotateValidation}
-            readOnly={false}
             onCountChange={onAnnotationCountChange}
           />
 

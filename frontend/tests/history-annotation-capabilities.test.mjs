@@ -9,14 +9,20 @@ const workspace = read('src/components/cell-review/CellReviewWorkspace.tsx');
 const annotations = read('src/components/cell-review/ScientificAnnotations.tsx');
 const api = read('src/services/api.ts');
 
-test('History habilita sólo anotaciones mediante RBAC explícito', () => {
+test('History propaga las mismas capabilities humanas mediante RBAC explícito', () => {
   assert.match(page, /mode="history"[\s\S]*canReadValidation: historyPermissions\.has/);
   assert.match(page, /canAnnotateValidation: historyPermissions\.has/);
-  assert.match(immersive, /livePermissions = props\.mode === 'live'/);
-  assert.match(immersive, /canReview=\{livePermissions\?\.canReviewDetection \?\? false\}/);
-  assert.match(immersive, /canExplain=\{livePermissions\?\.canExplain \?\? false\}/);
-  assert.match(immersive, /canClassificationReview=\{livePermissions\?\.canReviewClassification \?\? false\}/);
-  assert.match(immersive, /canAnnotateValidation=\{annotationPermissions\.canAnnotateValidation/);
+  assert.match(page, /canReviewDetection: historyPermissions\.has\('scientific\.cell_detection\.review'\)/);
+  assert.match(page, /canReviewClassification: historyPermissions\.has\('scientific\.cell_classification\.review'\)/);
+  assert.doesNotMatch(immersive, /livePermissions|readOnly=\{isHistory\}/);
+  for (const capability of ['canReviewDetection', 'canReviewClassification', 'canAnnotateValidation']) {
+    assert.match(immersive, new RegExp(`permissions\\.${capability}`));
+  }
+});
+
+test('formulario de anotaciones compone los primitives canónicos', () => {
+  assert.match(annotations, /className="cell-review-form scientific-annotation-form"/);
+  assert.match(annotations, /className="cell-review-actions scientific-annotation-actions"/);
 });
 
 test('History reutiliza un único formulario para CÉLULA y MUESTRA', () => {

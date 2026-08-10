@@ -18,7 +18,6 @@ type Props = {
   targetType: ScientificValidationTarget;
   targetId: string | null;
   canAnnotate: boolean;
-  readOnly: boolean;
   onCountChange?: (count: number) => void;
   targetContext?: string;
 };
@@ -29,7 +28,6 @@ export function ScientificAnnotations({
   targetType,
   targetId,
   canAnnotate,
-  readOnly,
   onCountChange,
   targetContext,
 }: Props) {
@@ -132,7 +130,7 @@ export function ScientificAnnotations({
     }
   };
 
-  const editable = Boolean(targetId && canAnnotate && !readOnly);
+  const editable = Boolean(targetId && canAnnotate);
   return (
     <section className="scientific-annotations" aria-label={title}>
       <header>
@@ -176,10 +174,10 @@ export function ScientificAnnotations({
         </ul>
       ) : targetId ? <p>Sin anotaciones.</p> : null}
       {(adding || editingId) && editable ? (
-        <div className="scientific-annotation-form">
+        <div className="cell-review-form scientific-annotation-form">
           <label>Categoría<input value={category} maxLength={120} onChange={(event) => setCategory(event.target.value)} /></label>
           <label>Nota<textarea value={content} maxLength={10000} onChange={(event) => setContent(event.target.value)} /></label>
-          <div>
+          <div className="cell-review-actions scientific-annotation-actions">
             <button type="button" disabled={saving || !content.trim() || !category.trim()} onClick={() => void save()}>
               {editingId ? 'Guardar cambios' : 'Guardar'}
             </button>

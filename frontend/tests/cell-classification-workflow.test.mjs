@@ -231,11 +231,11 @@ test('RBAC separa execute, read, explain y review', () => {
     'scientific.cell_classification.explain',
     'scientific.cell_classification.review',
   ]) assert.match(page, new RegExp(permission.replaceAll('.', '\\.')));
-  assert.match(workspace, /canExplain && !readOnly/);
-  assert.match(workspace, /canClassificationReview && !readOnly/);
+  assert.match(workspace, /!target \|\| !canExplain/);
+  assert.match(workspace, /canClassificationReview && \(classificationEditing/);
 });
 
-test('historial reutiliza la vista inmersiva con capabilities exclusivas de anotación', () => {
+test('historial reutiliza la vista inmersiva con capabilities humanas granulares', () => {
   assert.match(history, /SmearAnalysisReadOnlyView/);
   const readOnlyView = page.slice(
     page.indexOf('export function SmearAnalysisReadOnlyView'),
@@ -247,18 +247,18 @@ test('historial reutiliza la vista inmersiva con capabilities exclusivas de anot
   assert.match(readOnlyView, /canAnnotateValidation: historyPermissions\.has/);
   assert.match(
     immersiveView,
-    /type SmearAnalysisHistoryViewProps[\s\S]*mode: 'history';[\s\S]*Pick<SmearAnalysisPermissions/,
+    /type SmearAnalysisHistoryViewProps[\s\S]*mode: 'history';[\s\S]*permissions: SmearAnalysisPermissions/,
   );
   assert.match(
     immersiveView,
     /SmearAnalysisImmersiveViewProps\s*=[\s\S]*SmearAnalysisLiveViewProps[\s\S]*SmearAnalysisHistoryViewProps/,
   );
-  assert.match(immersiveView, /canExplain=\{livePermissions\?\.canExplain \?\? false\}/);
+  assert.match(immersiveView, /canExplain=\{permissions\.canExplain\}/);
   assert.match(
     immersiveView,
-    /canClassificationReview=\{livePermissions\?\.canReviewClassification \?\? false\}/,
+    /canClassificationReview=\{permissions\.canReviewClassification\}/,
   );
-  assert.match(immersiveView, /readOnly=\{isHistory\}/);
+  assert.doesNotMatch(immersiveView, /livePermissions|readOnly=\{isHistory\}/);
   assert.doesNotMatch(
     readOnlyView,
     /createCellClassificationRun|createCellExplanation|createCellClassificationReview/,

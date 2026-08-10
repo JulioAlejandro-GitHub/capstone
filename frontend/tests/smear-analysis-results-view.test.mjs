@@ -15,10 +15,10 @@ test('live e history comparten una sola composición React de resultados', () =>
   assert.match(immersive, /export function SmearAnalysisImmersiveView/);
   assert.match(immersive, /export type SmearAnalysisViewMode = 'live' \| 'history'/);
   assert.match(immersive, /mode: 'live'[\s\S]*permissions: SmearAnalysisPermissions/);
-  assert.match(immersive, /mode: 'history'[\s\S]*Pick<SmearAnalysisPermissions/);
+  assert.match(immersive, /mode: 'history'[\s\S]*permissions: SmearAnalysisPermissions/);
   assert.equal((`${compatibility}\n${immersive}`.match(/<CellReviewWorkspace/g) ?? []).length, 1);
-  assert.match(immersive, /livePermissions = props\.mode === 'live' \? props\.permissions : null/);
-  assert.match(immersive, /readOnly=\{isHistory\}/);
+  assert.doesNotMatch(immersive, /livePermissions|readOnly=\{isHistory\}/);
+  assert.match(immersive, /canClassificationReview=\{permissions\.canReviewClassification\}/);
 });
 
 test('composición y CSS reproducen el workspace inmersivo aprobado sin alterar page global', () => {

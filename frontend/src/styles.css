@@ -3653,6 +3653,7 @@ a.uploaded-image-cell:hover small {
   font-weight: 720;
 }
 
+.cell-review-form input,
 .cell-review-form textarea {
   width: 100%;
   min-height: 78px;

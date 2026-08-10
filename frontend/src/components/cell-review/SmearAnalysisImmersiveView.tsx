@@ -52,8 +52,7 @@ export type SmearAnalysisLiveViewProps = SharedSmearAnalysisProps & {
 
 export type SmearAnalysisHistoryViewProps = SharedSmearAnalysisProps & {
   mode: 'history';
-  /** History exposes annotation capabilities only; every pipeline mutation stays disabled. */
-  permissions: Pick<SmearAnalysisPermissions, 'canReadValidation' | 'canAnnotateValidation'>;
+  permissions: SmearAnalysisPermissions;
 };
 
 export type SmearAnalysisImmersiveViewProps =
@@ -73,8 +72,7 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
   const { mode, workflow, actions } = props;
   const isHistory = mode === 'history';
   const modeLabel = isHistory ? 'Histórico' : 'En vivo';
-  const livePermissions = props.mode === 'live' ? props.permissions : null;
-  const annotationPermissions = props.permissions;
+  const { permissions } = props;
 
   return (
     <section
@@ -131,10 +129,9 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
         title="ANOTACIONES DE LA MUESTRA"
         sessionId={null}
         targetType="sample"
-        targetId={annotationPermissions.canReadValidation ? workflow.sampleId ?? null : null}
+        targetId={permissions.canReadValidation ? workflow.sampleId ?? null : null}
         targetContext={`MUESTRA · ${workflow.sampleCode}`}
-        canAnnotate={annotationPermissions.canAnnotateValidation}
-        readOnly={false}
+        canAnnotate={permissions.canAnnotateValidation}
       />
 
       <CellReviewWorkspace
@@ -144,13 +141,12 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
         initialMicroscopyImageId={workflow.microscopyImageId}
         initialSelectedDetectionId={workflow.selectedDetectionId}
         initialSelectedPredictionId={workflow.selectedPredictionId}
-        canReview={livePermissions?.canReviewDetection ?? false}
-        canExplain={livePermissions?.canExplain ?? false}
-        canClassificationReview={livePermissions?.canReviewClassification ?? false}
-        canAnnotateValidation={annotationPermissions.canAnnotateValidation}
-        canReadValidationAnnotations={annotationPermissions.canReadValidation}
+        canReview={permissions.canReviewDetection}
+        canExplain={permissions.canExplain}
+        canClassificationReview={permissions.canReviewClassification}
+        canAnnotateValidation={permissions.canAnnotateValidation}
+        canReadValidationAnnotations={permissions.canReadValidation}
         validationSessionId={null}
-        readOnly={isHistory}
         onClose={actions.onBack}
         closeLabel={actions.backLabel}
         onMicroscopyImageChange={actions.onImageChange}

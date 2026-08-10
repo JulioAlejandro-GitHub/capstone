@@ -84,8 +84,9 @@ test('workspace admite cierre contextual y sincronización segura de selección'
   assert.match(workspace, /externalImageChange[\s\S]*externalDetectionChange[\s\S]*externalPredictionChange/);
   assert.match(workspace, /selectionRefreshToken/);
   assert.match(workspace, /selectionResolved \|\| !onSelectedDetectionChange/);
-  assert.match(workspace, /!reviewTarget \|\| !canReview \|\| readOnly/);
-  assert.match(workspace, /canReview=\{canReview && !readOnly\}/);
+  assert.match(workspace, /!reviewTarget \|\| !canReview/);
+  assert.match(workspace, /canReview=\{canReview\}/);
+  assert.doesNotMatch(workspace, /readOnly/);
   assert.doesNotMatch(workspace, /getCellDetection\(initialSelectedDetectionId\)/);
 });
 

@@ -40,7 +40,7 @@ test('detalle es deep link validado y reutiliza la presentación del workflow', 
   assert.match(workflow, /WorkflowProcessing[\s\S]*readOnly/);
   assert.match(workflow, /SmearAnalysisImmersiveView[\s\S]*mode="history"/);
   assert.match(compatibility, /SmearAnalysisImmersiveView as SmearAnalysisResultsView/);
-  assert.match(immersive, /readOnly=\{isHistory\}/);
+  assert.doesNotMatch(immersive, /readOnly=\{isHistory\}|livePermissions/);
   assert.match(immersive, /Vista histórica · Pipeline en solo lectura/);
   assert.match(workflow, /Volver al historial/);
   assert.match(
@@ -75,13 +75,15 @@ test('hook histórico y su API realizan exclusivamente consultas GET', () => {
   assert.doesNotMatch(historyApi, /method:/);
 });
 
-test('modo histórico no presenta acciones de mutación', () => {
+test('modo histórico separa acciones humanas de mutaciones automáticas', () => {
   const historyView = workflow.slice(workflow.indexOf('export function SmearAnalysisReadOnlyView'), workflow.indexOf('export function SmearWorkflow'));
   const historyCall = historyView.slice(historyView.indexOf('<SmearAnalysisImmersiveView'));
   for (const action of ['Aprobar con advertencias', 'Bloquear análisis', 'Reingresar a cola', 'Ejecutar control', 'Iniciar detección', 'Nuevo análisis']) {
     assert.doesNotMatch(historyView, new RegExp(action));
   }
   assert.match(historyCall, /permissions=\{\{/);
-  assert.match(immersive, /mode: 'history'[\s\S]*Pick<SmearAnalysisPermissions/);
-  assert.match(immersive, /canReview=\{livePermissions\?\.canReviewDetection \?\? false\}/);
+  assert.match(immersive, /mode: 'history'[\s\S]*permissions: SmearAnalysisPermissions/);
+  assert.match(historyCall, /canReviewClassification: historyPermissions\.has/);
+  assert.match(historyCall, /canReviewDetection: historyPermissions\.has/);
+  assert.match(historyCall, /canExplain: false/);
 });
