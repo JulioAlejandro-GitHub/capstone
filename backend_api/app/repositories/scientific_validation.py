@@ -180,6 +180,32 @@ class ScientificValidationRepository:
                 )
               )
             """)
+        elif target_type == "sample":
+            statement = text("""
+              SELECT 1 FROM blood_samples sample
+              WHERE sample.id=CAST(:target_id AS uuid) AND (
+                EXISTS(
+                  SELECT 1 FROM scientific_validation_detection_runs membership
+                  JOIN cell_detection_runs run ON run.id=membership.detection_run_id
+                  JOIN microscopy_analysis_runs analysis ON analysis.id=run.analysis_run_id
+                  WHERE membership.session_id=CAST(:session_id AS uuid)
+                    AND analysis.sample_id=sample.id
+                ) OR EXISTS(
+                  SELECT 1 FROM scientific_validation_classification_runs membership
+                  JOIN cell_classification_runs run ON run.id=membership.classification_run_id
+                  JOIN microscopy_analysis_runs analysis ON analysis.id=run.analysis_run_id
+                  WHERE membership.session_id=CAST(:session_id AS uuid)
+                    AND analysis.sample_id=sample.id
+                ) OR EXISTS(
+                  SELECT 1 FROM scientific_validation_images membership
+                  JOIN microscopy_analysis_run_images run_image
+                    ON run_image.microscopy_image_id=membership.microscopy_image_id
+                  JOIN microscopy_analysis_runs analysis ON analysis.id=run_image.analysis_run_id
+                  WHERE membership.session_id=CAST(:session_id AS uuid)
+                    AND analysis.sample_id=sample.id
+                )
+              )
+            """)
         else:
             return False
         return bool(self.connection.execute(
@@ -194,6 +220,7 @@ class ScientificValidationRepository:
             "target_type": row["target_type"],
             "cell_id": str(row["cell_detection_id"]) if row.get("cell_detection_id") else None,
             "analysis_run_id": str(row["analysis_run_id"]) if row.get("analysis_run_id") else None,
+            "sample_id": str(row["sample_id"]) if row.get("sample_id") else None,
             "category": row["category"],
             "content": row["content"],
             "version": row["version"],
@@ -232,17 +259,18 @@ class ScientificValidationRepository:
         annotation_id = uuid4()
         row = self.connection.execute(text("""
           INSERT INTO scientific_validation_annotations(
-            id,validation_session_id,target_type,cell_detection_id,analysis_run_id,
+            id,validation_session_id,target_type,cell_detection_id,analysis_run_id,sample_id,
             category,content,created_by,updated_by
           ) VALUES(
             :id,CAST(:session_id AS uuid),:target_type,CAST(:cell_id AS uuid),
-            CAST(:analysis_run_id AS uuid),:category,:content,
+            CAST(:analysis_run_id AS uuid),CAST(:sample_id AS uuid),:category,:content,
             CAST(:actor AS uuid),CAST(:actor AS uuid)
           ) RETURNING *
         """), {
             "id": annotation_id, "session_id": session_id,
             "target_type": values["target_type"], "cell_id": values.get("cell_id"),
             "analysis_run_id": values.get("analysis_run_id"),
+            "sample_id": values.get("sample_id"),
             "category": values["category"], "content": values["content"],
             "actor": actor_id,
         }).mappings().one()
@@ -269,6 +297,7 @@ class ScientificValidationRepository:
         target_type: str | None,
         cell_id: str | None,
         analysis_run_id: str | None,
+        sample_id: str | None,
         category: str | None,
         limit: int,
         offset: int,
@@ -279,6 +308,7 @@ class ScientificValidationRepository:
             ("target_type", "annotation.target_type", ""),
             ("cell_id", "annotation.cell_detection_id", "::uuid"),
             ("analysis_run_id", "annotation.analysis_run_id", "::uuid"),
+            ("sample_id", "annotation.sample_id", "::uuid"),
             ("category", "annotation.category", ""),
         ):
             value = locals()[name]

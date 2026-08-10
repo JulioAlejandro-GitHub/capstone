@@ -726,6 +726,8 @@ export function SmearAnalysisReadOnlyView({
   workflow: SmearWorkflowResponse;
   onBack: () => void;
 }) {
+  const { user } = useAuth();
+  const historyPermissions = new Set(user?.permissions ?? []);
   const [searchParams, setSearchParams] = useSearchParams();
   const selectionQueryRef = useRef(searchParams);
   useEffect(() => {
@@ -847,6 +849,7 @@ export function SmearAnalysisReadOnlyView({
               sampleCode: workflow.sample.sample_code,
               analysisRunCode: run?.run_code ?? 'Análisis persistido',
               analysisRunId: run?.id ?? null,
+              sampleId: workflow.sample.id,
               status: stageLabel[stage],
               modelName: workflow.classification_run?.model_name,
               modelVersion: workflow.classification_run?.model_version,
@@ -857,6 +860,10 @@ export function SmearAnalysisReadOnlyView({
               microscopyImageId: searchParams.get('image') ?? firstImage?.id,
               selectedDetectionId: searchParams.get('selected_detection'),
               selectedPredictionId: searchParams.get('selected_prediction'),
+            }}
+            permissions={{
+              canReadValidation: historyPermissions.has('scientific.validation.read'),
+              canAnnotateValidation: historyPermissions.has('scientific.validation.annotate'),
             }}
             actions={{
               onBack,
@@ -1023,6 +1030,7 @@ export function SmearWorkflow() {
                 sampleCode,
                 analysisRunCode: snapshot.analysisRun?.run_code ?? 'Análisis activo',
                 analysisRunId: snapshot.analysisRun?.id ?? null,
+                sampleId: snapshot.persisted?.sample.id ?? snapshot.upload?.sample.id ?? null,
                 status: headerState,
                 modelName: snapshot.classificationRun?.model_name,
                 modelVersion: snapshot.classificationRun?.model_version,

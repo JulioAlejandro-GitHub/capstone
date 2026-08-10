@@ -899,8 +899,8 @@ def classification_postgres(monkeypatch, tmp_path):
         connection.execute(text("SELECT current_database()")).scalar_one(),
     )
     assert connection.execute(
-        text("SELECT version_num='20260810_03' FROM alembic_version")
-    ).scalar_one(), "la migración 20260810_03 debe estar aplicada"
+        text("SELECT version_num='20260810_04' FROM alembic_version")
+    ).scalar_one(), "la migración 20260810_04 debe estar aplicada"
     baseline = _database_counts(connection)
     suffix = uuid4().hex[:10]
     roles = ("administrator", "operator", "reviewer", "read_only")

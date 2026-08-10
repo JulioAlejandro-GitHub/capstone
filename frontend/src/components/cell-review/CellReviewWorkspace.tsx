@@ -1974,8 +1974,9 @@ function CellDetailPanel({
             sessionId={validationSessionId}
             targetType="cell"
             targetId={detection?.id ?? null}
+            targetContext={`CÉLULA · ${detection?.cell_code ?? '—'}`}
             canAnnotate={canAnnotateValidation}
-            readOnly={readOnly}
+            readOnly={false}
             onCountChange={onAnnotationCountChange}
           />
 

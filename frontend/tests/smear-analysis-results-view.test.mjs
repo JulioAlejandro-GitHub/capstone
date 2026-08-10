@@ -15,7 +15,7 @@ test('live e history comparten una sola composición React de resultados', () =>
   assert.match(immersive, /export function SmearAnalysisImmersiveView/);
   assert.match(immersive, /export type SmearAnalysisViewMode = 'live' \| 'history'/);
   assert.match(immersive, /mode: 'live'[\s\S]*permissions: SmearAnalysisPermissions/);
-  assert.match(immersive, /mode: 'history'[\s\S]*permissions\?: never/);
+  assert.match(immersive, /mode: 'history'[\s\S]*Pick<SmearAnalysisPermissions/);
   assert.equal((`${compatibility}\n${immersive}`.match(/<CellReviewWorkspace/g) ?? []).length, 1);
   assert.match(immersive, /livePermissions = props\.mode === 'live' \? props\.permissions : null/);
   assert.match(immersive, /readOnly=\{isHistory\}/);

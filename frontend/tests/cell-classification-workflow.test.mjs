@@ -235,7 +235,7 @@ test('RBAC separa execute, read, explain y review', () => {
   assert.match(workspace, /canClassificationReview && !readOnly/);
 });
 
-test('historial reutiliza la vista inmersiva mediante una unión de solo lectura', () => {
+test('historial reutiliza la vista inmersiva con capabilities exclusivas de anotación', () => {
   assert.match(history, /SmearAnalysisReadOnlyView/);
   const readOnlyView = page.slice(
     page.indexOf('export function SmearAnalysisReadOnlyView'),
@@ -244,10 +244,10 @@ test('historial reutiliza la vista inmersiva mediante una unión de solo lectura
   assert.match(readOnlyView, /<SmearAnalysisImmersiveView/);
   assert.match(readOnlyView, /classificationRunId: workflow\.classification_run\?\.id/);
   assert.match(readOnlyView, /mode="history"/);
-  assert.doesNotMatch(readOnlyView, /permissions=\{/);
+  assert.match(readOnlyView, /canAnnotateValidation: historyPermissions\.has/);
   assert.match(
     immersiveView,
-    /type SmearAnalysisHistoryViewProps[\s\S]*mode: 'history';[\s\S]*permissions\?: never/,
+    /type SmearAnalysisHistoryViewProps[\s\S]*mode: 'history';[\s\S]*Pick<SmearAnalysisPermissions/,
   );
   assert.match(
     immersiveView,

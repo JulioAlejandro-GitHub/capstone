@@ -64,6 +64,16 @@ def test_annotation_contract_enforces_exact_target_and_server_owned_actor():
         ScientificValidationAnnotationCreate(
             target_type="analysis", category="quality", content="note"
         )
+    sample_id = uuid4()
+    sample = ScientificValidationAnnotationCreate(
+        target_type="sample", sample_id=sample_id, category="quality", content="note"
+    )
+    assert sample.sample_id == sample_id
+    with pytest.raises(ValidationError):
+        ScientificValidationAnnotationCreate(
+            target_type="sample", sample_id=sample_id, cell_id=cell_id,
+            category="quality", content="note",
+        )
     with pytest.raises(ValidationError):
         ScientificValidationAnnotationCreate(
             target_type="cell", cell_id=cell_id, category="quality", content="note",

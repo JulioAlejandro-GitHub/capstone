@@ -12,6 +12,7 @@ export type SmearAnalysisViewModel = {
   sampleCode: string;
   analysisRunCode: string;
   analysisRunId?: string | null;
+  sampleId?: string | null;
   status: string;
   modelName?: string | null;
   modelVersion?: string | null;
@@ -54,8 +55,8 @@ export type SmearAnalysisLiveViewProps = SharedSmearAnalysisProps & {
 
 export type SmearAnalysisHistoryViewProps = SharedSmearAnalysisProps & {
   mode: 'history';
-  /** Historical callers cannot opt back into mutation capabilities. */
-  permissions?: never;
+  /** History exposes annotation capabilities only; every pipeline mutation stays disabled. */
+  permissions: Pick<SmearAnalysisPermissions, 'canReadValidation' | 'canAnnotateValidation'>;
 };
 
 export type SmearAnalysisImmersiveViewProps =
@@ -76,13 +77,13 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
   const isHistory = mode === 'history';
   const modeLabel = isHistory ? 'Histórico' : 'En vivo';
   const livePermissions = props.mode === 'live' ? props.permissions : null;
+  const annotationPermissions = props.permissions;
   const [validationSession, setValidationSession] = useState<ScientificValidationSession | null>(null);
   const validationMutable = validationSession != null
-    && validationSession.status !== 'completed'
     && validationSession.status !== 'archived';
 
   useEffect(() => {
-    if (mode === 'live' && !livePermissions?.canReadValidation) {
+    if (!annotationPermissions.canReadValidation) {
       setValidationSession(null);
       return;
     }
@@ -91,7 +92,7 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
       .then((session) => { if (active) setValidationSession(session); })
       .catch(() => { if (active) setValidationSession(null); });
     return () => { active = false; };
-  }, [livePermissions?.canReadValidation, mode, workflow.classificationRunId, workflow.detectionRunId]);
+  }, [annotationPermissions.canReadValidation, workflow.classificationRunId, workflow.detectionRunId]);
 
   return (
     <section
@@ -118,7 +119,7 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
         <div className="smear-results-actions smear-glass-panel">
           {isHistory ? (
             <strong className="smear-status-badge" role="status">
-              Vista histórica · Solo lectura
+              Vista histórica · Pipeline en solo lectura
             </strong>
           ) : null}
           <dl className="smear-results-run-data">
@@ -145,12 +146,13 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
       </header>
 
       <ScientificAnnotations
-        title="ANOTACIONES DEL ANÁLISIS"
+        title="ANOTACIONES DE LA MUESTRA"
         sessionId={validationSession?.id ?? null}
-        targetType="analysis"
-        targetId={workflow.analysisRunId ?? workflow.classificationSummary?.analysis_run_id ?? null}
-        canAnnotate={(livePermissions?.canAnnotateValidation ?? false) && validationMutable}
-        readOnly={isHistory}
+        targetType="sample"
+        targetId={workflow.sampleId ?? null}
+        targetContext={`MUESTRA · ${workflow.sampleCode}`}
+        canAnnotate={annotationPermissions.canAnnotateValidation && validationMutable}
+        readOnly={false}
       />
 
       <CellReviewWorkspace
@@ -163,7 +165,7 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
         canReview={livePermissions?.canReviewDetection ?? false}
         canExplain={livePermissions?.canExplain ?? false}
         canClassificationReview={livePermissions?.canReviewClassification ?? false}
-        canAnnotateValidation={(livePermissions?.canAnnotateValidation ?? false) && validationMutable}
+        canAnnotateValidation={annotationPermissions.canAnnotateValidation && validationMutable}
         validationSessionId={validationSession?.id ?? null}
         readOnly={isHistory}
         onClose={actions.onBack}

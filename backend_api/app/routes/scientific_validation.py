@@ -62,9 +62,10 @@ def create_annotation(
 @router.get("/{session_id}/annotations")
 def list_annotations(
     session_id: UUID,
-    target_type: str | None = Query(None, pattern="^(cell|analysis)$"),
+    target_type: str | None = Query(None, pattern="^(cell|analysis|sample)$"),
     cell_id: UUID | None = None,
     analysis_run_id: UUID | None = None,
+    sample_id: UUID | None = None,
     category: str | None = Query(None, min_length=1, max_length=120),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
@@ -74,6 +75,7 @@ def list_annotations(
         str(session_id), target_type=target_type,
         cell_id=str(cell_id) if cell_id else None,
         analysis_run_id=str(analysis_run_id) if analysis_run_id else None,
+        sample_id=str(sample_id) if sample_id else None,
         category=category, limit=limit, offset=offset,
     ))
 

@@ -194,9 +194,10 @@ class ScientificValidationUpdate(ScientificSchema):
 
 
 class ScientificValidationAnnotationCreate(ScientificSchema):
-    target_type: Literal["cell", "analysis"]
+    target_type: Literal["cell", "analysis", "sample"]
     cell_id: UUID | None = None
     analysis_run_id: UUID | None = None
+    sample_id: UUID | None = None
     category: str = Field(min_length=1, max_length=120)
     content: str = Field(min_length=1, max_length=10000)
 
@@ -210,9 +211,14 @@ class ScientificValidationAnnotationCreate(ScientificSchema):
     @model_validator(mode="after")
     def validate_target(self):
         valid = (
-            self.target_type == "cell" and self.cell_id is not None and self.analysis_run_id is None
+            self.target_type == "cell" and self.cell_id is not None
+            and self.analysis_run_id is None and self.sample_id is None
         ) or (
-            self.target_type == "analysis" and self.analysis_run_id is not None and self.cell_id is None
+            self.target_type == "analysis" and self.analysis_run_id is not None
+            and self.cell_id is None and self.sample_id is None
+        ) or (
+            self.target_type == "sample" and self.sample_id is not None
+            and self.cell_id is None and self.analysis_run_id is None
         )
         if not valid:
             raise PydanticCustomError(

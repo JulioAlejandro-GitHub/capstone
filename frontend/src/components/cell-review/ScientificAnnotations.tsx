@@ -20,6 +20,7 @@ type Props = {
   canAnnotate: boolean;
   readOnly: boolean;
   onCountChange?: (count: number) => void;
+  targetContext?: string;
 };
 
 export function ScientificAnnotations({
@@ -30,6 +31,7 @@ export function ScientificAnnotations({
   canAnnotate,
   readOnly,
   onCountChange,
+  targetContext,
 }: Props) {
   const [items, setItems] = useState<ScientificValidationAnnotation[]>([]);
   const [histories, setHistories] = useState<Record<string, ScientificValidationAnnotationEvent[]>>({});
@@ -52,7 +54,9 @@ export function ScientificAnnotations({
     try {
       const page = await api.listScientificValidationAnnotations(sessionId, {
         target_type: targetType,
-        ...(targetType === 'cell' ? { cell_id: targetId } : { analysis_run_id: targetId }),
+        ...(targetType === 'cell'
+          ? { cell_id: targetId }
+          : targetType === 'sample' ? { sample_id: targetId } : { analysis_run_id: targetId }),
       });
       setItems(page.items);
       countChangeRef.current?.(page.total);
@@ -94,7 +98,9 @@ export function ScientificAnnotations({
       } else {
         await api.createScientificValidationAnnotation(sessionId, {
           target_type: targetType,
-          ...(targetType === 'cell' ? { cell_id: targetId } : { analysis_run_id: targetId }),
+          ...(targetType === 'cell'
+            ? { cell_id: targetId }
+            : targetType === 'sample' ? { sample_id: targetId } : { analysis_run_id: targetId }),
           category: category.trim(), content: content.trim(),
         });
         setMessage('Anotación agregada.');
@@ -106,7 +112,7 @@ export function ScientificAnnotations({
       await load();
     } catch (caught) {
       setError(caught instanceof ApiError && caught.status === 409
-        ? 'Conflicto: otra persona modificó esta anotación. Se recargó la versión vigente.'
+        ? 'Esta anotación fue modificada por otro usuario. Actualice la información antes de guardar.'
         : caught instanceof ApiError && caught.status === 403
           ? 'Tu rol no permite editar anotaciones científicas.'
           : 'No fue posible guardar la anotación.');
@@ -130,7 +136,10 @@ export function ScientificAnnotations({
   return (
     <section className="scientific-annotations" aria-label={title}>
       <header>
-        <h3>{title}</h3>
+        <div>
+          <h3>{title}</h3>
+          {targetContext ? <small>{targetContext}</small> : null}
+        </div>
         {editable && !adding && !editingId ? (
           <button type="button" onClick={() => setAdding(true)} aria-label={`Agregar ${title.toLocaleLowerCase()}`}>
             + Agregar

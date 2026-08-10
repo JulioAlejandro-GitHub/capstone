@@ -1,4 +1,4 @@
-export type ScientificValidationTarget = 'cell' | 'analysis';
+export type ScientificValidationTarget = 'cell' | 'analysis' | 'sample';
 
 export interface ScientificValidationSessionSummary {
   id: string;
@@ -18,6 +18,7 @@ export interface ScientificValidationAnnotation {
   target_type: ScientificValidationTarget;
   cell_detection_id: string | null;
   analysis_run_id: string | null;
+  sample_id: string | null;
   category: string;
   content: string;
   created_by: string;

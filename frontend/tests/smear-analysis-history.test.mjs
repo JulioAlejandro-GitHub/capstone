@@ -41,7 +41,7 @@ test('detalle es deep link validado y reutiliza la presentación del workflow', 
   assert.match(workflow, /SmearAnalysisImmersiveView[\s\S]*mode="history"/);
   assert.match(compatibility, /SmearAnalysisImmersiveView as SmearAnalysisResultsView/);
   assert.match(immersive, /readOnly=\{isHistory\}/);
-  assert.match(immersive, /Vista histórica · Solo lectura/);
+  assert.match(immersive, /Vista histórica · Pipeline en solo lectura/);
   assert.match(workflow, /Volver al historial/);
   assert.match(
     workflow,
@@ -81,7 +81,7 @@ test('modo histórico no presenta acciones de mutación', () => {
   for (const action of ['Aprobar con advertencias', 'Bloquear análisis', 'Reingresar a cola', 'Ejecutar control', 'Iniciar detección', 'Nuevo análisis']) {
     assert.doesNotMatch(historyView, new RegExp(action));
   }
-  assert.doesNotMatch(historyCall, /permissions=/);
-  assert.match(immersive, /mode: 'history'[\s\S]*permissions\?: never/);
+  assert.match(historyCall, /permissions=\{\{/);
+  assert.match(immersive, /mode: 'history'[\s\S]*Pick<SmearAnalysisPermissions/);
   assert.match(immersive, /canReview=\{livePermissions\?\.canReviewDetection \?\? false\}/);
 });

@@ -931,6 +931,7 @@ export const api = {
       target_type?: ScientificValidationTarget;
       cell_id?: string;
       analysis_run_id?: string;
+      sample_id?: string;
       category?: string;
     },
   ) {
@@ -945,6 +946,7 @@ export const api = {
       target_type: ScientificValidationTarget;
       cell_id?: string;
       analysis_run_id?: string;
+      sample_id?: string;
       category: string;
       content: string;
     },

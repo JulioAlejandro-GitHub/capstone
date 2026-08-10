@@ -47,8 +47,10 @@ def annotation_client(monkeypatch):
     )
     candidate = connection.execute(text("""
       SELECT detection.id cell_id,detection.analysis_run_id,detection.detection_run_id,
-             detection.microscopy_image_id,image.sha256
+             detection.microscopy_image_id,image.sha256,analysis.sample_id,sample.sample_code
       FROM cell_detections detection
+      JOIN microscopy_analysis_runs analysis ON analysis.id=detection.analysis_run_id
+      JOIN blood_samples sample ON sample.id=analysis.sample_id
       JOIN microscopy_images image ON image.id=detection.microscopy_image_id
       ORDER BY detection.created_at LIMIT 1
     """)).mappings().one()
@@ -118,6 +120,14 @@ def test_annotation_schema_constraints_and_append_only_history(annotation_client
         )
     }
     assert "ck_validation_annotation_exact_target" in annotation_checks
+    assert "sample_id" in {
+        column["name"] for column in inspector.get_columns("scientific_validation_annotations")
+    }
+    sample_fk = next(
+        item for item in inspector.get_foreign_keys("scientific_validation_annotations")
+        if item["constrained_columns"] == ["sample_id"]
+    )
+    assert sample_fk["referred_table"] == "blood_samples"
     triggers = {
         row[0] for row in connection.execute(text("""
           SELECT tgname FROM pg_trigger
@@ -164,12 +174,60 @@ def test_cell_analysis_multiple_edit_history_rbac_audit_and_conflict(annotation_
     )
     assert analysis.status_code == 201, analysis.text
 
+    sample = client.post(
+        f"/api/v1/scientific-validation/sessions/{session_id}/annotations",
+        headers=headers["researcher"], json={
+            "target_type": "sample", "sample_id": str(candidate["sample_id"]),
+            "category": "historical_note", "content": "Historical sample observation",
+        },
+    )
+    assert sample.status_code == 201, sample.text
+    sample_body = sample.json()
+    sample_updated = client.patch(
+        f"/api/v1/scientific-validation/sessions/{session_id}/annotations/{sample_body['id']}",
+        headers=headers["reviewer"],
+        json={"version": 1, "content": "Historical sample observation updated"},
+    )
+    assert sample_updated.status_code == 200, sample_updated.text
+    assert sample_updated.json()["created_by"] == str(users["researcher"][0])
+    assert sample_updated.json()["updated_by"] == str(users["reviewer"][0])
+    sample_history = client.get(
+        f"/api/v1/scientific-validation/sessions/{session_id}/annotations/{sample_body['id']}/history",
+        headers=headers["read_only"],
+    ).json()["items"]
+    assert sample_history[1]["before_state"]["content"] == "Historical sample observation"
+    assert sample_history[1]["after_state"]["content"] == "Historical sample observation updated"
+    immutable_before = connection.execute(text("""
+      SELECT
+        (SELECT count(*) FROM cell_detection_runs) detection_runs,
+        (SELECT count(*) FROM cell_classification_runs) classification_runs,
+        (SELECT md5(COALESCE(string_agg(row_to_json(prediction)::text, '' ORDER BY prediction.id), ''))
+           FROM cell_predictions prediction) predictions_digest
+    """)).mappings().one()
+    connection.execute(text("""
+      UPDATE scientific_validation_sessions SET status='completed'
+      WHERE id=CAST(:id AS uuid)
+    """), {"id": session_id})
+    historical_cell = client.post(
+        f"/api/v1/scientific-validation/sessions/{session_id}/annotations",
+        headers=headers["reviewer"], json={**cell_payload, "content": "Historical cell note"},
+    )
+    assert historical_cell.status_code == 201, historical_cell.text
+    immutable_after = connection.execute(text("""
+      SELECT
+        (SELECT count(*) FROM cell_detection_runs) detection_runs,
+        (SELECT count(*) FROM cell_classification_runs) classification_runs,
+        (SELECT md5(COALESCE(string_agg(row_to_json(prediction)::text, '' ORDER BY prediction.id), ''))
+           FROM cell_predictions prediction) predictions_digest
+    """)).mappings().one()
+    assert immutable_after == immutable_before
+
     listing = client.get(
         f"/api/v1/scientific-validation/sessions/{session_id}/annotations",
         headers=headers["read_only"], params={"target_type": "cell"},
     )
     assert listing.status_code == 200
-    assert listing.json()["total"] == 2
+    assert listing.json()["total"] == 3
 
     updated = client.patch(
         f"/api/v1/scientific-validation/sessions/{session_id}/annotations/{first_body['id']}",

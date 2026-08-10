@@ -26,9 +26,9 @@ test('predicción y clasificación humana son visibles, editables y separadas', 
   assert.match(workspace, /aria-pressed=\{reviewedLabel/);
 });
 
-test('anotaciones de célula y análisis soportan altas, edición, varias notas e historial', () => {
+test('anotaciones de célula y muestra soportan altas, edición, varias notas e historial', () => {
   assert.match(workspace, /title="ANOTACIONES"[\s\S]*targetType="cell"/);
-  assert.match(immersive, /title="ANOTACIONES DEL ANÁLISIS"[\s\S]*targetType="analysis"/);
+  assert.match(immersive, /title="ANOTACIONES DE LA MUESTRA"[\s\S]*targetType="sample"/);
   assert.match(annotations, /items\.map/);
   assert.match(annotations, /\+ Agregar/);
   assert.match(annotations, />Editar</);
@@ -44,7 +44,7 @@ test('selección, carrusel, siguiente sin revisar y modo histórico comparten es
   assert.match(workspace, /Revisada \$\{humanLabel\}/);
   assert.match(workspace, /Requiere atención/);
   assert.match(immersive, /readOnly=\{isHistory\}/);
-  assert.match(immersive, /canAnnotate=\{\(livePermissions\?\.canAnnotateValidation \?\? false\) && validationMutable\}/);
+  assert.match(immersive, /canAnnotate=\{annotationPermissions\.canAnnotateValidation && validationMutable\}/);
 });
 
 test('RBAC, accesibilidad y responsive se preservan sin CSS global nuevo', () => {

@@ -186,7 +186,7 @@ class ScientificValidationService:
     def _ensure_annotation_session(session: dict | None) -> None:
         if not session:
             raise ScientificError(404, "Sesión de validación no encontrada.")
-        if session["status"] in {"completed", "archived"}:
+        if session["status"] == "archived":
             raise ScientificError(409, "La sesión no admite cambios de anotaciones.")
 
     def create_annotation(
@@ -194,7 +194,11 @@ class ScientificValidationService:
     ) -> dict:
         actor_id = _actor(principal)
         target_type = values["target_type"]
-        target_id = str(values["cell_id"] if target_type == "cell" else values["analysis_run_id"])
+        target_id = str({
+            "cell": values.get("cell_id"),
+            "analysis": values.get("analysis_run_id"),
+            "sample": values.get("sample_id"),
+        }[target_type])
         with mutation_connection(self._engine) as connection:
             repository = ScientificValidationRepository(connection)
             session = repository.get(session_id, for_update=True)
