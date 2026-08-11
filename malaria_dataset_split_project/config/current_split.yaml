@@ -10,3 +10,6 @@ patient_mapping_uninfected: malaria_dataset_split_project/var/audit/source/patie
 patient_mapping_parasitized_url: https://data.lhncbc.nlm.nih.gov/public/Malaria/patientid_cellmapping_parasitized.csv
 patient_mapping_uninfected_url: https://data.lhncbc.nlm.nih.gov/public/Malaria/patientid_cellmapping_uninfected.csv
 identity_audit_output: malaria_dataset_split_project/var/audit/patient_identity_audit.json
+malaria_project_root: malaria_dl_local_project
+database_schema: public
+system_contract_audit_output: malaria_dataset_split_project/var/audit/system_contract_audit.json

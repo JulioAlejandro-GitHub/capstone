@@ -2,8 +2,9 @@ import argparse
 import json
 import os
 from pathlib import Path
+import sys
 
-from malaria_split.discovery import scan_current_physical_split
+from malaria_split.discovery import audit_database, scan_current_physical_split
 from malaria_split.identity import (
     IdentityStatus,
     analyze_identities,
@@ -111,6 +112,35 @@ def audit_patient_identity(config_path: Path) -> int:
     return 0 if len(records) == 27558 and not index_diagnostics["mapping_errors"] else 1
 
 
+def audit_system_contracts(config_path: Path) -> int:
+    config = _read_simple_config(config_path)
+    malaria_project = _configured_path(config.get("malaria_project_root", "malaria_dl_local_project"))
+    sys.path.insert(0, str(malaria_project))
+    try:
+        from src.malaria_dl.persistence.database import get_engine
+
+        payload = audit_database(get_engine(), schema=config.get("database_schema", "public"))
+    finally:
+        if sys.path and sys.path[0] == str(malaria_project):
+            sys.path.pop(0)
+    output = _configured_path(config.get(
+        "system_contract_audit_output",
+        "malaria_dataset_split_project/var/audit/system_contract_audit.json",
+    ))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps({"artifact_classification": "DERIVED AUDIT ARTIFACT", **payload}, indent=2), encoding="utf-8")
+    print(json.dumps({
+        "artifact_classification": "DERIVED AUDIT ARTIFACT",
+        "output": str(output.resolve()),
+        "database": payload["database"],
+        "schema_fingerprint_sha256": payload["schema_fingerprint_sha256"],
+        "migration_state": payload["migration_state"],
+        "table_row_counts": {name: value["row_count"] for name, value in payload["tables"].items()},
+        "checksum_counts": payload["checksum_counts"],
+    }, indent=2))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoría read-only del split físico")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -119,11 +149,15 @@ def main(argv: list[str] | None = None) -> int:
     audit.add_argument("--root", help="Override explícito de la ruta auditada")
     identity = subparsers.add_parser("audit-patient-identity")
     identity.add_argument("--config", type=Path, default=_project_root() / "config/current_split.yaml")
+    contracts = subparsers.add_parser("audit-system-contracts")
+    contracts.add_argument("--config", type=Path, default=_project_root() / "config/current_split.yaml")
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
     if args.command == "audit-patient-identity":
         return audit_patient_identity(args.config)
+    if args.command == "audit-system-contracts":
+        return audit_system_contracts(args.config)
     return 2
 
 

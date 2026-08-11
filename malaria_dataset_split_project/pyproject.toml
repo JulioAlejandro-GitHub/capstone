@@ -7,7 +7,7 @@ name = "malaria-dataset-split-project"
 version = "0.1.0"
 description = "Auditoría y gobierno reproducible del dataset de malaria"
 requires-python = ">=3.10"
-dependencies = ["Pillow>=10"]
+dependencies = ["Pillow>=10", "SQLAlchemy>=2"]
 
 [project.scripts]
 malaria-split = "malaria_split.cli:main"

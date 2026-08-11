@@ -55,3 +55,10 @@ PYTHONPATH=src python -m malaria_split.cli audit-patient-identity
 Los dos CSV oficiales NLM indicados en `config/current_split.yaml` se mantienen como
 copias regenerables bajo `var/audit/source/`; tanto ellos como el JSON detallado son
 artefactos locales ignorados por Git. No son la persistencia científica definitiva.
+
+SPLIT 1C incorpora introspección PostgreSQL explícitamente read-only:
+
+```bash
+PYTHONPATH=src ../malaria_dl_local_project/.venv/bin/python \
+  -m malaria_split.cli audit-system-contracts
+```
