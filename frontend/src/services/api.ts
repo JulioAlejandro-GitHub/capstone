@@ -837,6 +837,13 @@ export const api = {
       `/api/v1/cell-classification/predictions/${encodeURIComponent(predictionId)}/explanation`,
     );
   },
+  generateCaseGradCam(explainabilityId: string) {
+    return request<ExplainabilityCase>(
+      `/api/v1/explainability/cases/${encodeURIComponent(explainabilityId)}/gradcam`,
+      {},
+      { timeoutMs: 180000, init: { method: 'POST' } },
+    );
+  },
   getCellExplanationHeatmapBlob(explanationId: string, signal?: AbortSignal) {
     return requestBlob(
       `/api/v1/cell-classification/explanations/${encodeURIComponent(explanationId)}/heatmap`,

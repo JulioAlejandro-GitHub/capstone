@@ -1212,6 +1212,29 @@ class CellClassificationRepository:
             ).mappings().first()
         )
 
+    def mark_explanation_artifact_missing(
+        self, explanation_id: str | UUID
+    ) -> dict | None:
+        return _dict(
+            self.connection.execute(
+                text(
+                    """
+                    UPDATE cell_explanations SET
+                      status='failed', last_conv_layer=NULL,
+                      heatmap_storage_key=NULL, heatmap_sha256=NULL,
+                      heatmap_file_size_bytes=NULL, overlay_storage_key=NULL,
+                      overlay_sha256=NULL, overlay_file_size_bytes=NULL,
+                      width_px=NULL, height_px=NULL, completed_at=now(),
+                      error_code='ARTIFACT_MISSING',
+                      error_message='El artefacto Grad-CAM ya no está disponible.'
+                    WHERE id=CAST(:id AS uuid) AND status='generated'
+                    RETURNING *
+                    """
+                ),
+                {"id": str(explanation_id)},
+            ).mappings().first()
+        )
+
     def complete_explanation(
         self,
         explanation_id: str | UUID,

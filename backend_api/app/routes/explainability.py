@@ -1,14 +1,31 @@
 from datetime import date, datetime, time, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.concurrency import run_in_threadpool
 
 from app.db import fetch_all, fetch_one
 from app.services.explainability import enrich_explainability_items
+from app.audit import service_audited_permission
+from app.security import Permission, Principal
+from app.services.case_gradcam import CaseGradCamError, CaseGradCamService
 from app.services.serialization import row_to_dict, rows_to_list
 
 
 router = APIRouter(tags=["explainability"])
+case_gradcam_service = CaseGradCamService()
+
+
+@router.post("/api/v1/explainability/cases/{explainability_id}/gradcam", status_code=201)
+async def generate_case_gradcam(
+    explainability_id: UUID,
+    request: Request,
+    principal: Principal = Depends(service_audited_permission(Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN)),
+):
+    try:
+        return await run_in_threadpool(case_gradcam_service.generate, str(explainability_id), principal, request)
+    except CaseGradCamError as exc:
+        raise HTTPException(exc.status_code, {"code": exc.code, "message": exc.detail}) from exc
 
 VISUAL_AUDIT_VIEW = "vw_visual_explainability_audit"
 

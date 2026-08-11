@@ -85,5 +85,5 @@ test('modo histórico separa acciones humanas de mutaciones automáticas', () =>
   assert.match(immersive, /mode: 'history'[\s\S]*permissions: SmearAnalysisPermissions/);
   assert.match(historyCall, /canReviewClassification: historyPermissions\.has/);
   assert.match(historyCall, /canReviewDetection: historyPermissions\.has/);
-  assert.match(historyCall, /canExplain: false/);
+  assert.match(historyCall, /canExplain: historyPermissions\.has\('scientific\.cell_classification\.explain'\)/);
 });

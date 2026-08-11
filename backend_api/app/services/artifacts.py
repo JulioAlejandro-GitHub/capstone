@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import UUID
@@ -7,13 +8,24 @@ from fastapi import HTTPException
 from app.db import fetch_one
 
 
-CAPSTONE_ROOT = Path(__file__).resolve().parents[3]
-MALARIA_PROJECT_ROOT = CAPSTONE_ROOT / "malaria_dl_local_project"
+_SOURCE_CAPSTONE_ROOT = Path(__file__).resolve().parents[3]
+_CONFIGURED_ML_ROOT = os.getenv("MALARIA_DL_PROJECT_ROOT", "").strip()
+MALARIA_PROJECT_ROOT = (
+    Path(_CONFIGURED_ML_ROOT).expanduser().resolve()
+    if _CONFIGURED_ML_ROOT
+    else (_SOURCE_CAPSTONE_ROOT / "malaria_dl_local_project").resolve()
+)
+CAPSTONE_ROOT = (
+    MALARIA_PROJECT_ROOT.parent
+    if _CONFIGURED_ML_ROOT
+    else _SOURCE_CAPSTONE_ROOT
+)
 ALLOWED_ARTIFACT_ROOTS = (
     (MALARIA_PROJECT_ROOT / "outputs").resolve(),
     (MALARIA_PROJECT_ROOT / "data").resolve(),
     (CAPSTONE_ROOT / "data").resolve(),
     (CAPSTONE_ROOT / "data" / "prediction_uploads").resolve(),
+    (CAPSTONE_ROOT / "var" / "storage" / "model-explanations").resolve(),
 )
 
 IMAGE_MIME_BY_EXTENSION = {
@@ -43,6 +55,18 @@ def resolve_artifact_path(path: str) -> Path:
     candidates: list[Path] = []
     if raw_path.is_absolute():
         candidates.append(raw_path)
+        # Historical rows can contain an absolute path from another checkout
+        # (for example the host path while the API runs from /app). Rebase only
+        # known project-owned suffixes; the allowed-root check below remains the
+        # final authority and prevents arbitrary absolute-path traversal.
+        parts = raw_path.parts
+        if "malaria_dl_local_project" in parts:
+            marker = parts.index("malaria_dl_local_project")
+            candidates.append(MALARIA_PROJECT_ROOT.joinpath(*parts[marker + 1 :]))
+        elif "var" in parts:
+            marker = parts.index("var")
+            if len(parts) > marker + 1 and parts[marker + 1] == "storage":
+                candidates.append(CAPSTONE_ROOT.joinpath(*parts[marker:]))
     else:
         candidates.append(CAPSTONE_ROOT / raw_path)
         if raw_path.parts and raw_path.parts[0] in {"outputs", "data"}:

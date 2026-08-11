@@ -9,6 +9,8 @@ const workspace = read('src/components/cell-review/CellReviewWorkspace.tsx');
 const viewer = read('src/components/cell-review/CellImageViewer.tsx');
 const gradCamPreview = read('src/components/cell-review/CellGradCamPreview.tsx');
 const modal = read('src/components/cell-review/CellClassificationAuditModal.tsx');
+const caseExplainability = read('src/components/explainability/CaseExplainabilityView.tsx');
+const caseAdapters = read('src/components/explainability/explainabilityCaseAdapters.ts');
 const immersiveView = read('src/components/cell-review/SmearAnalysisImmersiveView.tsx');
 const api = read('src/services/api.ts');
 const types = read('src/types/cellClassification.ts');
@@ -169,12 +171,13 @@ test('detalle conserva predicción automática inmutable y clasificación humana
 });
 
 test('Grad-CAM se genera sólo por acción explícita y retry failed se declara', () => {
-  assert.match(workspace, /onClick=\{onGenerateExplanation\}/);
-  assert.match(workspace, /Generar explicación/);
+  assert.match(caseExplainability, /onClick=\{\(\) => void generate\(\)\}/);
+  assert.match(caseExplainability, /Generar Grad-CAM/);
+  assert.match(workspace, /onGenerate=\{generateExplanation\}/);
   assert.match(workspace, /target\.explanation\?\.status === 'failed'/);
   assert.match(api, /createCellExplanation\(predictionId:\s*string,\s*retry\s*=\s*false\)/);
   assert.match(api, /JSON\.stringify\(\{\s*retry\s*\}\)/);
-  assert.match(workspace, /El modelo productivo no admite Grad-CAM con la configuración registrada/);
+  assert.match(caseExplainability, /Grad-CAM no está disponible para este modelo/);
   assert.match(workspace, /<CellGradCamPreview prediction=\{prediction\}/);
   assert.match(gradCamPreview, /role="tablist"/);
   for (const tab of ['Crop original', 'Heatmap', 'Overlay']) {
@@ -186,16 +189,29 @@ test('Grad-CAM se genera sólo por acción explícita y retry failed se declara'
   assert.doesNotMatch(hook, /createCellExplanation/);
 });
 
+test('un POST Grad-CAM rechazado no consulta una explicación inexistente', () => {
+  assert.match(workspace, /const hasPersistedExplanation = Boolean/);
+  assert.match(workspace, /target\.explanation_status !== 'not_requested'/);
+  assert.match(workspace, /if \(!hasPersistedExplanation\)/);
+  assert.ok(
+    workspace.indexOf('if (!hasPersistedExplanation)')
+      < workspace.indexOf('api.getCellExplanation(target.id)'),
+  );
+});
+
 test('modal audita exactamente una célula con crop, predicción y Grad-CAM', () => {
   assert.match(workspace, /setAuditOpen\(true\)/);
   assert.match(workspace, /<CellClassificationAuditModal/);
-  assert.match(modal, /Clasificación de \{prediction\.cell_code\}/);
+  assert.match(modal, /<CaseExplainabilityView/);
+  assert.match(modal, /toSmearCellExplainabilityCase\(prediction, run\)/);
+  assert.match(caseExplainability, /Clasificación de \{activeCase\.caseCode\}/);
   for (const panel of ['Crop fuente', 'Predicción', 'Explicación Grad-CAM']) {
-    assert.match(modal, new RegExp(panel));
+    assert.match(caseExplainability, new RegExp(panel));
   }
-  assert.match(modal, /getCellExplanationHeatmapBlob/);
-  assert.match(modal, /getCellExplanationOverlayBlob/);
-  assert.doesNotMatch(modal, /storage_key|relative_storage_key|\/Users\//);
+  assert.match(caseExplainability, /getCellExplanationHeatmapBlob/);
+  assert.match(caseExplainability, /getCellExplanationOverlayBlob/);
+  assert.match(caseAdapters, /toSmearCellExplainabilityCase/);
+  assert.doesNotMatch(modal + caseExplainability, /storage_key|relative_storage_key|\/Users\//);
 });
 
 test('clasificación humana usa dos labels, comentario opcional y edición directa', () => {
@@ -273,6 +289,6 @@ test('artefactos explicativos usan blobs autenticados y object URLs revocables',
   assert.match(authenticated, /URL\.createObjectURL/);
   assert.match(authenticated, /URL\.revokeObjectURL/);
   assert.match(gradCamPreview, /`\$\{explanation\.id\}:\$\{mode\}`/);
-  assert.match(modal, /`\$\{explanation\.id\}:\$\{kind\}`/);
-  assert.doesNotMatch(types + workspace + modal, /checkpoint_path|storage_key|relative_storage_key/);
+  assert.match(caseExplainability, /`\$\{media\.explanation\.id\}:\$\{media\.variant\}`/);
+  assert.doesNotMatch(types + workspace + modal + caseExplainability, /checkpoint_path|storage_key|relative_storage_key/);
 });

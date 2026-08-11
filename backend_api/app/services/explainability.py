@@ -3,6 +3,10 @@ from collections.abc import Mapping
 from numbers import Number
 from urllib.parse import quote
 
+from fastapi import HTTPException
+
+from app.services.artifacts import resolve_artifact_reference
+
 
 LOW_CONFIDENCE_DISTANCE = 0.10
 
@@ -77,6 +81,18 @@ def artifact_file_url(path) -> str | None:
     if normalized is None:
         return None
     return f"/artifacts/file?path={quote(normalized, safe='/')}"
+
+
+def _artifact_reference(path) -> dict[str, str | None]:
+    """Resolve governed visual artifacts before advertising them to the client."""
+    normalized = _path(path)
+    if normalized is None:
+        return {"availability": "not_registered", "url": None}
+    try:
+        resolve_artifact_reference(path=normalized)
+    except (HTTPException, OSError):
+        return {"availability": "missing", "url": None}
+    return {"availability": "available", "url": artifact_file_url(normalized)}
 
 
 def _infer_case_type(true_label, predicted_label, positive_label):
@@ -199,6 +215,10 @@ def enrich_explainability_case(item: Mapping) -> dict:
             explanation_output_path = _path(_pick(item, "artifact_path"))
 
     started_at = _pick(item, "started_at", "created_at")
+    image_artifact = _artifact_reference(image_path)
+    source_image_artifact = _artifact_reference(source_image_path)
+    crop_artifact = _artifact_reference(crop_path)
+    explanation_artifact = _artifact_reference(explanation_output_path)
 
     contract = {
         "explainability_id": _pick(item, "explainability_id", "gallery_id", "id"),
@@ -219,13 +239,17 @@ def enrich_explainability_case(item: Mapping) -> dict:
         "confidence_distance": confidence_distance,
         "confidence_status": confidence_status,
         "image_path": image_path,
-        "image_url": artifact_file_url(image_path),
+        "image_url": image_artifact["url"],
+        "image_artifact_availability": image_artifact["availability"],
         "explanation_output_path": explanation_output_path,
-        "explanation_url": artifact_file_url(explanation_output_path),
+        "explanation_url": explanation_artifact["url"],
+        "explanation_artifact_availability": explanation_artifact["availability"],
         "source_image_path": source_image_path,
-        "source_image_url": artifact_file_url(source_image_path),
+        "source_image_url": source_image_artifact["url"],
+        "source_image_availability": source_image_artifact["availability"],
         "crop_path": crop_path,
-        "crop_url": artifact_file_url(crop_path),
+        "crop_url": crop_artifact["url"],
+        "crop_availability": crop_artifact["availability"],
         "last_conv_layer": _pick(item, "last_conv_layer"),
         "success": _pick(item, "success"),
         "error_message": _pick(item, "error_message"),

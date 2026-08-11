@@ -61,6 +61,26 @@ class ArtifactFileApiTests(unittest.TestCase):
 
             self.assertEqual(context.exception.status_code, 404)
 
+    def test_historical_absolute_project_path_is_safely_rebased(self):
+        with tempfile.TemporaryDirectory() as directory:
+            current_project = Path(directory).resolve() / "malaria_dl_local_project"
+            current_data = current_project / "data"
+            image_path = current_data / "split" / "case.png"
+            image_path.parent.mkdir(parents=True)
+            image_path.write_bytes(PNG_HEADER)
+            historical_path = Path(
+                "/old/checkout/capstone/malaria_dl_local_project/data/split/case.png"
+            )
+
+            with (
+                mock.patch.object(artifacts, "MALARIA_PROJECT_ROOT", current_project),
+                mock.patch.object(artifacts, "ALLOWED_ARTIFACT_ROOTS", (current_data,)),
+            ):
+                resolved = artifacts.resolve_artifact_reference(path=str(historical_path))
+
+            self.assertEqual(resolved.path, image_path)
+            self.assertEqual(resolved.media_type, "image/png")
+
     def test_non_whitelisted_extension_is_forbidden(self):
         with tempfile.TemporaryDirectory() as directory:
             allowed_root = Path(directory).resolve()
@@ -81,6 +101,11 @@ class ArtifactFileApiTests(unittest.TestCase):
             (artifacts.CAPSTONE_ROOT / "data" / "prediction_uploads").resolve(),
         }
         self.assertTrue(expected_roots.issubset(set(artifacts.ALLOWED_ARTIFACT_ROOTS)))
+
+    def test_runtime_root_honors_declared_ml_project_location(self):
+        source = Path(artifacts.__file__).read_text()
+        self.assertIn('os.getenv("MALARIA_DL_PROJECT_ROOT", "")', source)
+        self.assertIn("MALARIA_PROJECT_ROOT.parent", source)
 
 
 if __name__ == "__main__":

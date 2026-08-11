@@ -44,6 +44,16 @@ def endpoint_arguments(**overrides):
 
 
 class ExplainabilityApiTests(unittest.TestCase):
+    def setUp(self):
+        self.artifact_resolver = mock.patch(
+            "app.services.explainability.resolve_artifact_reference",
+            return_value=mock.Mock(),
+        )
+        self.artifact_resolver.start()
+
+    def tearDown(self):
+        self.artifact_resolver.stop()
+
     def test_cases_return_visual_audit_contract_and_encoded_urls(self):
         row = {
             "explainability_id": "explain-1",
@@ -88,6 +98,8 @@ class ExplainabilityApiTests(unittest.TestCase):
         )
         self.assertEqual(item["source_image_path"], "data/source/original 01.jpg")
         self.assertEqual(item["crop_url"], "/artifacts/file?path=data/crops/cell%2001.png")
+        self.assertEqual(item["explanation_artifact_availability"], "available")
+        self.assertEqual(item["crop_availability"], "available")
         self.assertEqual(item["patient_id"], "patient-7")
         self.assertIn("posible confusión visual", item["interpretation"])
         self.assertIn("vw_visual_explainability_audit", fetch_all.call_args.args[1])
@@ -111,6 +123,22 @@ class ExplainabilityApiTests(unittest.TestCase):
         self.assertIsNone(item["image_url"])
         self.assertIsNone(item["source_image_url"])
         self.assertTrue(item["explanation_url"].endswith("/maps/map.webp"))
+
+    def test_generated_metadata_does_not_advertise_a_missing_artifact(self):
+        from app.services.explainability import enrich_explainability_case
+
+        with mock.patch(
+            "app.services.explainability.resolve_artifact_reference",
+            side_effect=HTTPException(status_code=404, detail="missing"),
+        ):
+            item = enrich_explainability_case({
+                "method": "gradcam",
+                "success": True,
+                "explanation_output_path": "outputs/gradcam/lost.png",
+            })
+
+        self.assertEqual(item["explanation_artifact_availability"], "missing")
+        self.assertIsNone(item["explanation_url"])
 
     def test_stored_image_precedes_external_original_in_source_fallback(self):
         row = {

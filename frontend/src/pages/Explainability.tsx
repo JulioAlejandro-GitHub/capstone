@@ -1,20 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../auth';
 
 import { DataTable } from '../components/DataTable';
 import { Loading } from '../components/Loading';
+import { CaseExplainabilityView } from '../components/explainability/CaseExplainabilityView';
+import { toModelExecutionExplainabilityCase } from '../components/explainability/explainabilityCaseAdapters';
 import { api } from '../services/api';
 import type { ExplainabilityCase, PagedResponse } from '../types/api';
 import {
   caseTypeLabel,
-  confidenceLabel,
-  evaluatedImagePath,
   explanationImagePath,
   generateCaseInterpretation,
   scorePositive,
   sourceImagePath,
   thresholdUsed,
 } from '../utils/explainability';
-import { formatDate, formatMetric, stringifyJson } from '../utils/format';
+import { formatDate, formatMetric } from '../utils/format';
 
 interface ExplainabilityProps {
   datasource: string;
@@ -90,14 +91,6 @@ function sourceReference(item: ExplainabilityCase, datasource: string): MediaRef
   };
 }
 
-function evaluatedReference(item: ExplainabilityCase, datasource: string): MediaReference {
-  const path = evaluatedImagePath(item);
-  return {
-    path,
-    url: api.mediaUrl({ url: item.crop_url ?? item.image_url, path, datasource }),
-  };
-}
-
 function explanationReference(item: ExplainabilityCase, datasource: string): MediaReference {
   const path = explanationImagePath(item);
   return {
@@ -161,214 +154,33 @@ function TableImagePreview({
   );
 }
 
-function PathActions({ reference, label }: { reference: MediaReference; label: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const copyPath = async () => {
-    if (!reference.path) return;
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(reference.path);
-      } else {
-        const textarea = document.createElement('textarea');
-        textarea.value = reference.path;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        const copiedWithFallback = document.execCommand('copy');
-        textarea.remove();
-        if (!copiedWithFallback) throw new Error('Clipboard unavailable');
-      }
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      const textarea = document.createElement('textarea');
-      textarea.value = reference.path;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      const copiedWithFallback = document.execCommand('copy');
-      textarea.remove();
-      setCopied(copiedWithFallback);
-      if (copiedWithFallback) window.setTimeout(() => setCopied(false), 1800);
-    }
-  };
-
-  return (
-    <div className="path-actions">
-      {reference.url ? (
-        <a className="audit-action-link" href={reference.url} target="_blank" rel="noreferrer">
-          Abrir {label}
-        </a>
-      ) : (
-        <span className="muted-text">{label} no disponible</span>
-      )}
-      <button type="button" onClick={copyPath} disabled={!reference.path}>
-        {copied ? 'Ruta copiada' : 'Copiar ruta'}
-      </button>
-    </div>
-  );
-}
-
-function DetailFact({ label, value }: { label: string; value: string | number | null | undefined }) {
-  return (
-    <span>
-      {label}
-      <strong>{value === null || value === undefined || value === '' ? '-' : value}</strong>
-    </span>
-  );
-}
-
 export function CaseDetail({
   item,
   datasource,
   onClose,
   onRunSelect,
+  onGenerated,
 }: {
   item: ExplainabilityCase;
   datasource: string;
   onClose: () => void;
   onRunSelect?: (runId: string) => void;
+  onGenerated?: (item: ExplainabilityCase) => void;
 }) {
-  const source = sourceReference(item, datasource);
-  const evaluated = evaluatedReference(item, datasource);
-  const explanation = explanationReference(item, datasource);
-  const hasSeparateCrop = Boolean(evaluated.path && source.path && evaluated.path !== source.path);
-  const bbox = [item.bbox_x, item.bbox_y, item.bbox_width, item.bbox_height];
-  const hasBbox = bbox.some((value) => value !== null && value !== undefined);
-
-  useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [onClose]);
-
+  const { user } = useAuth();
+  const canGenerate = Boolean(user?.permissions.includes('scientific.cell_classification.explain'));
   return (
-    <div className="audit-modal-backdrop" role="presentation" onMouseDown={onClose}>
-      <section
-        className="audit-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="audit-detail-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <header className="audit-modal-header">
-          <div>
-            <p>Auditoría visual · {methodLabel(item.method)}</p>
-            <h2 id="audit-detail-title">Comparación de fuente y explicación</h2>
-          </div>
-          <button className="modal-close" type="button" onClick={onClose} aria-label="Cerrar detalle">×</button>
-        </header>
-
-        <div className="audit-detail-grid">
-          <article className="audit-detail-panel">
-            <div className="audit-panel-heading">
-              <span>01</span>
-              <div><strong>Fuente original</strong><small>Imagen y trazabilidad de origen</small></div>
-            </div>
-            <div className="audit-detail-image">
-              <ImageWithFallback reference={source} alt="Fuente original del caso" emptyText="Fuente original no registrada." />
-            </div>
-            <PathActions reference={source} label="fuente original" />
-            <code>{source.path ?? 'Ruta original no registrada'}</code>
-            <div className="detail-facts">
-              <DetailFact label="Dataset" value={item.dataset_name} />
-              <DetailFact label="Run ID" value={item.run_id} />
-              <DetailFact label="Modelo" value={item.model_name} />
-              <DetailFact label="Método" value={methodLabel(item.method)} />
-              <DetailFact label="Split" value={item.dataset_split} />
-              <DetailFact label="Índice dataset" value={item.dataset_index} />
-            </div>
-          </article>
-
-          <article className="audit-detail-panel prediction-panel">
-            <div className="audit-panel-heading">
-              <span>02</span>
-              <div><strong>Predicción</strong><small>Decisión y contexto del umbral</small></div>
-            </div>
-            <span className={`case-badge large ${item.case_type ?? 'unknown'}`}>{caseTypeLabel(item.case_type)}</span>
-            {/* <div className="detail-facts prediction-facts"> */}
-            <div className="detail-facts">
-              <DetailFact label="Clase real" value={item.true_label} />
-              <DetailFact label="Clase predicha" value={item.predicted_label} />
-              <DetailFact label="Clase positiva" value={item.positive_label ?? 'parasitized'} />
-              <DetailFact label="Score clase positiva" value={formatMetric(scorePositive(item))} />
-              <DetailFact label="P(parasitized)" value={formatMetric(item.probability_parasitized ?? scorePositive(item))} />
-              <DetailFact label="P(uninfected)" value={formatMetric(item.probability_uninfected)} />
-              <DetailFact label="Threshold usado" value={formatMetric(thresholdUsed(item))} />
-              <DetailFact label="Fuente threshold" value={item.threshold_source} />
-              <DetailFact label="Confianza" value={confidenceLabel(item)} />
-              <DetailFact label="Explicación exitosa" value={item.success === true ? 'Sí' : item.success === false ? 'No' : '-'} />
-              <DetailFact label="Fecha" value={formatDate(caseDate(item))} />
-            </div>
-            <div className="interpretation-box">
-              <strong>Interpretación automática</strong>
-              <p>{generateCaseInterpretation(item)}</p>
-            </div>
-            <div className="clinical-mini-disclaimer">
-              Uso experimental. La explicación visual apoya la revisión de un especialista y no constituye un diagnóstico clínico.
-            </div>
-            {item.run_id && onRunSelect ? (
-              <button className="audit-action-button" type="button" onClick={() => onRunSelect(item.run_id!)}>Abrir run asociado</button>
-            ) : null}
-          </article>
-
-          <article className="audit-detail-panel">
-            <div className="audit-panel-heading">
-              <span>03</span>
-              <div><strong>Explicación visual</strong><small>{methodLabel(item.method)} y parámetros</small></div>
-            </div>
-            <div className="audit-detail-image">
-              <ImageWithFallback reference={explanation} alt={`Explicación ${methodLabel(item.method)}`} emptyText="Explicación visual no disponible." />
-            </div>
-            <PathActions reference={explanation} label="explicación" />
-            <code>{explanation.path ?? 'Ruta de explicación no registrada'}</code>
-            <div className="detail-facts">
-              <DetailFact label="Última capa convolucional" value={item.last_conv_layer} />
-              <DetailFact label="Estado" value={item.success === false ? 'Fallida' : item.success === true ? 'Generada' : 'Desconocido'} />
-            </div>
-            {item.error_message ? <p className="detail-error">{item.error_message}</p> : null}
-            <details className="parameters-details">
-              <summary>Parámetros de explicación</summary>
-              <pre>{stringifyJson(item.explanation_parameters)}</pre>
-            </details>
-          </article>
-        </div>
-
-        <section className="audit-lineage" aria-label="Trazabilidad del caso">
-          <div><small>Fuente</small><strong>{item.source_image_id ?? item.image_id ?? item.original_filename ?? 'Sin ID'}</strong></div>
-          <span aria-hidden="true">→</span>
-          <div><small>Crop / imagen evaluada</small><strong>{hasSeparateCrop ? evaluated.path : 'Misma imagen de fuente'}</strong></div>
-          <span aria-hidden="true">→</span>
-          <div><small>Predicción</small><strong>{item.prediction_id ?? 'Sin ID'}</strong></div>
-          <span aria-hidden="true">→</span>
-          <div><small>Explicación</small><strong>{item.explainability_id ?? 'Sin ID'}</strong></div>
-        </section>
-
-        {hasSeparateCrop ? (
-          <section className="evaluated-source-row">
-            <div>
-              <strong>Imagen evaluada / crop</strong>
-              <code>{evaluated.path}</code>
-            </div>
-            <PathActions reference={evaluated} label="crop" />
-          </section>
-        ) : null}
-
-        {(item.patient_id || item.slide_id || hasBbox) ? (
-          <section className="future-traceability">
-            <strong>Metadatos preparados para imagen completa</strong>
-            <span>Paciente: {item.patient_id ?? '-'}</span>
-            <span>Slide: {item.slide_id ?? '-'}</span>
-            <span>BBox: {hasBbox ? bbox.map((value) => value ?? '-').join(', ') : '-'}</span>
-          </section>
-        ) : null}
-      </section>
-    </div>
+    <CaseExplainabilityView
+      case={toModelExecutionExplainabilityCase(item, datasource)}
+      onClose={onClose}
+      onRunSelect={onRunSelect}
+      canGenerate={canGenerate}
+      onGenerate={async () => {
+        const generated = await api.generateCaseGradCam(item.explainability_id);
+        onGenerated?.(generated);
+        return toModelExecutionExplainabilityCase(generated, datasource);
+      }}
+    />
   );
 }
 

@@ -831,6 +831,8 @@ class ProductiveModelResolver:
         self,
         snapshot: Mapping[str, Any],
         resolved: ResolvedProductiveModel,
+        *,
+        require_current_slot_metadata: bool = True,
     ) -> None:
         expected_identity = self._snapshot_identity(snapshot)
         actual_identity = (
@@ -918,13 +920,13 @@ class ProductiveModelResolver:
                 reason="contrato JSON congelado no coincide",
             )
         stage2 = snapshot.get("stage2_default")
-        if not isinstance(stage2, Mapping) or (
+        if require_current_slot_metadata and (not isinstance(stage2, Mapping) or (
             str(stage2.get("environment")) != STAGE2_ENVIRONMENT
             or str(stage2.get("alias")) != STAGE2_ALIAS
             or str(stage2.get("production_scope")) != STAGE2_PRODUCTION_SCOPE
             or str(stage2.get("deployment_id")) != resolved.deployment_id
             or str(stage2.get("deployment_name")) != resolved.deployment_name
-        ):
+        )):
             raise ProductiveModelError(
                 "FROZEN_MODEL_SNAPSHOT_MISMATCH",
                 reason="slot stage2/default congelado no coincide",
@@ -998,6 +1000,8 @@ class ProductiveModelResolver:
     def resolve_snapshot(
         self,
         snapshot: Mapping[str, Any],
+        *,
+        require_current_slot_metadata: bool = True,
     ) -> ResolvedProductiveModel:
         identity = self._snapshot_identity(snapshot)
         if self.snapshot_loader is not None:
@@ -1023,7 +1027,11 @@ class ProductiveModelResolver:
                 reason=f"snapshot histórico resolvió {len(rows)} filas",
             )
         resolved = self._safe_validate(rows[0], require_active=False)
-        self._validate_snapshot_contract(snapshot, resolved)
+        self._validate_snapshot_contract(
+            snapshot,
+            resolved,
+            require_current_slot_metadata=require_current_slot_metadata,
+        )
         return resolved
 
     def revalidate(

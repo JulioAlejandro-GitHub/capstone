@@ -1158,15 +1158,15 @@ export function CellReviewWorkspace({
     }
   }
 
-  async function generateExplanation() {
+  async function generateExplanation(regenerate = false) {
     const target = predictionDetail ?? selectedPrediction;
-    if (!target || !canExplain) return;
+    if (!target || !canExplain) throw new Error('Explicación no autorizada.');
     setExplanationSaving(true);
     setClassificationError('');
     try {
       const explanation = await api.createCellExplanation(
         target.id,
-        target.explanation?.status === 'failed',
+        regenerate || target.explanation?.status === 'failed',
       );
       setPredictionDetail((current) => current ? {
         ...current,
@@ -1179,7 +1179,16 @@ export function CellReviewWorkspace({
           : item
       )));
       setLiveMessage(`Explicación ${explanation.status} para ${target.cell_code}.`);
-    } catch {
+      return explanation;
+    } catch (generationError) {
+      const hasPersistedExplanation = Boolean(
+        target.explanation
+        || (target.explanation_status && target.explanation_status !== 'not_requested')
+      );
+      if (!hasPersistedExplanation) {
+        setClassificationError('No fue posible generar la explicación Grad-CAM.');
+        throw generationError;
+      }
       try {
         const explanation = await api.getCellExplanation(target.id);
         setPredictionDetail((current) => current ? {
@@ -1193,8 +1202,10 @@ export function CellReviewWorkspace({
             : item
         )));
         setLiveMessage(`Estado de explicación recuperado: ${explanation.status}.`);
+        return explanation;
       } catch {
         setClassificationError('No fue posible generar la explicación Grad-CAM.');
+        throw generationError;
       }
     } finally {
       setExplanationSaving(false);
@@ -1624,6 +1635,8 @@ export function CellReviewWorkspace({
           prediction={predictionDetail ?? selectedPrediction!}
           run={classificationRun}
           onClose={() => setAuditOpen(false)}
+          canGenerate={canExplain}
+          onGenerate={generateExplanation}
         />
       ) : null}
       </section>
@@ -1891,18 +1904,6 @@ function CellDetailPanel({
                     ) : null}
                     <div>
                       <button type="button" onClick={onAudit}>Auditar clasificación</button>
-                      {canExplain && prediction.prediction_status === 'completed'
-                        && prediction.explanation?.status !== 'generated'
-                        && prediction.explanation?.status !== 'pending'
-                        && prediction.explanation?.status !== 'unsupported' ? (
-                            <button type="button" disabled={explanationSaving} onClick={onGenerateExplanation}>
-                              {explanationSaving
-                                ? 'Generando explicación…'
-                                : prediction.explanation?.status === 'failed'
-                                  ? 'Reintentar explicación'
-                                  : 'Generar explicación'}
-                            </button>
-                          ) : null}
                     </div>
                   </section>
 

@@ -2352,7 +2352,12 @@ class CellClassificationService:
                 "El resolver no admite la identidad histórica congelada.",
                 "FROZEN_MODEL_RESOLVER_UNAVAILABLE",
             )
-        resolved = exact(snapshot)
+        try:
+            resolved = exact(snapshot, require_current_slot_metadata=False)
+        except TypeError:
+            # Compatibility with injected test resolvers implementing the
+            # original one-argument protocol.
+            resolved = exact(snapshot)
         expected = (
             str(snapshot["model_registry_id"]),
             str(snapshot["checkpoint_artifact_id"]),
@@ -2440,6 +2445,39 @@ class CellClassificationService:
                     },
                 )
                 return self._public_explanation(existing)
+            if existing and existing["status"] == "generated" and retry:
+                try:
+                    self.explanation_content(str(existing["id"]), "heatmap")
+                    self.explanation_content(str(existing["id"]), "overlay")
+                except CellClassificationError as artifact_error:
+                    if artifact_error.code != "CONTENT_UNAVAILABLE":
+                        raise
+                    previous_artifacts = {
+                        key: existing.get(key) for key in (
+                            "heatmap_storage_key", "heatmap_sha256", "heatmap_file_size_bytes",
+                            "overlay_storage_key", "overlay_sha256", "overlay_file_size_bytes",
+                        )
+                    }
+                    existing = repository.mark_explanation_artifact_missing(existing["id"])
+                    if not existing:
+                        raise CellClassificationError(409, "La explicación cambió durante la regeneración.", "EXPLANATION_STATE_CONFLICT")
+                    repository.add_event(
+                        classification_run_id=prediction["classification_run_id"],
+                        cell_detection_id=prediction["cell_detection_id"],
+                        cell_prediction_id=prediction_id,
+                        event_type="cell_explanation.artifact_missing",
+                        status="failed",
+                        message_code="ARTIFACT_MISSING",
+                        metadata={"previous_artifacts": previous_artifacts},
+                    )
+                    self.auditor(
+                        event_type="scientific.cell_explanation.artifact_missing",
+                        action="regenerate", principal=principal, request=request,
+                        success=False, error_code="ARTIFACT_MISSING", connection=connection,
+                        resource_type="cell_prediction", resource_id=prediction_id,
+                        before_state={"explanation_id": str(existing["id"]), **previous_artifacts},
+                        after_state={"status": "failed", "manual_regeneration": True},
+                    )
             if existing and existing["status"] in {"generated", "unsupported"}:
                 self.auditor(
                     event_type="scientific.cell_explanation.reused",

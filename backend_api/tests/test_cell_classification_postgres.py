@@ -1664,7 +1664,12 @@ def test_reviews_audit_idempotency_and_append_only_integrity(
             "preprocessing": {"mode": "rescale_0_1"},
         },
     )
-    repository.start_explanation(explanation["id"], retry=False)
+    started_explanation = repository.start_explanation(
+        explanation["id"], retry=False
+    )
+    assert started_explanation is not None
+    assert started_explanation["status"] == "pending"
+    assert started_explanation["started_at"] is not None
     foreign_analysis_id = uuid4()
     foreign_run_id = uuid4()
     foreign_detection_id = uuid4()

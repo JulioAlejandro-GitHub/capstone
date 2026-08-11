@@ -493,7 +493,7 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
     loadOptional('reporte de clasificación', api.getClassificationReport(datasource, runId), (response) => setReport(response.items));
     loadOptional('resumen clínico', api.getRunClinicalSummary(datasource, runId), setClinical);
     loadOptional('artefactos', api.getRunArtifactsSummary(datasource, runId), (response) => setArtifacts(response.items));
-    loadOptional('explicabilidad', api.getRunExplainability(datasource, runId, { limit: 50 }), (response) => setExplainability(response.items));
+    loadOptional('explicabilidad', api.getRunExplainability(datasource, runId, { limit: 500 }), (response) => setExplainability(response.items));
 
     return () => {
       active = false;
@@ -1081,9 +1081,18 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
 
       {selectedExplainabilityCase ? (
         <CaseDetail
-          item={selectedExplainabilityCase}
+          item={explainability.find((candidate) => (
+            candidate.prediction_id === selectedExplainabilityCase.prediction_id
+            && candidate.run_id === selectedExplainabilityCase.run_id
+            && (candidate.method ?? '').replace(/[-_\s]/g, '').toLowerCase() === 'gradcam'
+            && candidate.success === true
+          )) ?? selectedExplainabilityCase}
           datasource={datasource}
           onClose={() => setSelectedExplainabilityCase(null)}
+          onGenerated={(generated) => {
+            setSelectedExplainabilityCase(generated);
+            setExplainability((items) => [generated, ...items.filter((item) => item.explainability_id !== generated.explainability_id)]);
+          }}
         />
       ) : null}
     </section>

@@ -537,11 +537,14 @@ export interface RunImagePrediction {
   relative_path?: string | null;
   image_path?: string | null;
   image_url?: string | null;
+  image_artifact_availability?: 'available' | 'missing' | 'not_registered' | null;
   source_image_path?: string | null;
   source_image_url?: string | null;
+  source_image_availability?: 'available' | 'missing' | 'not_registered' | null;
   source_image_id?: string | null;
   crop_path?: string | null;
   crop_url?: string | null;
+  crop_availability?: 'available' | 'missing' | 'not_registered' | null;
   true_label?: number | null;
   true_label_name?: string | null;
   predicted_label?: number | null;
@@ -751,6 +754,7 @@ export interface ExplainabilityCase {
   crop_url?: string | null;
   explanation_output_path?: string | null;
   explanation_url?: string | null;
+  explanation_artifact_availability?: 'available' | 'missing' | 'not_registered' | null;
   artifact_id?: string | null;
   artifact_path?: string | null;
   artifact_type?: string | null;

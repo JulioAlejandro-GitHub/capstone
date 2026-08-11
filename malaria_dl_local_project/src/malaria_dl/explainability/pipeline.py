@@ -928,6 +928,23 @@ def build_gradcam_model(model, target_layer, tf):
         except Exception:
             pass
 
+    # Keras 3 nested applications expose their original internal output via
+    # ``layer.output``. Prefer the most recent inbound-node tensor, which is
+    # the tensor connected to the governed outer classifier graph.
+    for node in reversed(getattr(target_layer, "_inbound_nodes", ())):
+        target_output = getattr(node, "output_tensors", None)
+        if isinstance(target_output, (list, tuple)) and len(target_output) == 1:
+            target_output = target_output[0]
+        if target_output is None:
+            continue
+        try:
+            return tf.keras.models.Model(
+                inputs=model.inputs,
+                outputs=[target_output, get_model_output_tensor(model)],
+            )
+        except Exception:
+            continue
+
     try:
         return tf.keras.models.Model(
             inputs=model.inputs,
