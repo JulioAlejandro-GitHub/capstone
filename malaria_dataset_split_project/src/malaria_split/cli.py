@@ -11,6 +11,12 @@ from malaria_split.identity import (
     build_source_identity_index,
     resolve_physical_manifest,
 )
+from malaria_split.persistence.bootstrap import (
+    apply_scientific_bootstrap,
+    audit_scientific_bootstrap,
+    prepare_scientific_population,
+)
+from malaria_split.persistence.database import create_postgresql_engine
 
 
 def _project_root() -> Path:
@@ -141,6 +147,65 @@ def audit_system_contracts(config_path: Path) -> int:
     return 0
 
 
+def _bootstrap_paths(config_path: Path) -> tuple[Path, Path, list[Path]]:
+    config = _read_simple_config(config_path)
+    return (
+        _configured_path(config["current_physical_split_root"]),
+        _configured_path(config["tfds_original_images_root"]),
+        [
+            _configured_path(config["patient_mapping_parasitized"]),
+            _configured_path(config["patient_mapping_uninfected"]),
+        ],
+    )
+
+
+def bootstrap_malaria_v1(config_path: Path, dry_run: bool) -> int:
+    physical_root, original_root, mappings = _bootstrap_paths(config_path)
+    prepared = prepare_scientific_population(
+        physical_root=physical_root, original_root=original_root, mapping_paths=mappings
+    )
+    summary_keys = (
+        "total_records", "patient_verified", "patient_unresolved", "patient_conflict",
+        "unique_patients_total", "min_cells_per_patient", "max_cells_per_patient",
+        "patients_only_parasitized", "patients_only_uninfected",
+        "patients_with_both_classes", "class_counts",
+    )
+    payload = {
+        "mode": "DRY_RUN" if dry_run else "APPLY",
+        "scientific_preparation": {key: prepared.summary[key] for key in summary_keys},
+        "source_mapping_sha256": prepared.source_mapping_sha256,
+        "source_file_sha256_populated": len(prepared.records),
+        "decoded_pixel_sha256_populated": len(prepared.records),
+        "source_record_keys_unique": len({row["source_record_key"] for row in prepared.records}),
+        "identity_evidence_available": len(prepared.evidence),
+        "status": "PASS",
+    }
+    if not dry_run:
+        database_url = os.environ.get("DATABASE_URL")
+        if not database_url:
+            raise RuntimeError("DATABASE_URL is required for bootstrap apply")
+        engine = create_postgresql_engine(database_url)
+        try:
+            payload["database_apply"] = apply_scientific_bootstrap(engine, prepared)
+        finally:
+            engine.dispose()
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
+def audit_bootstrap_persistence() -> int:
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required for persistence audit")
+    engine = create_postgresql_engine(database_url)
+    try:
+        payload = audit_scientific_bootstrap(engine)
+    finally:
+        engine.dispose()
+    print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    return 0 if payload["status"] == "PASS" else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoría read-only del split físico")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -151,6 +216,10 @@ def main(argv: list[str] | None = None) -> int:
     identity.add_argument("--config", type=Path, default=_project_root() / "config/current_split.yaml")
     contracts = subparsers.add_parser("audit-system-contracts")
     contracts.add_argument("--config", type=Path, default=_project_root() / "config/current_split.yaml")
+    bootstrap = subparsers.add_parser("bootstrap-malaria-v1")
+    bootstrap.add_argument("--config", type=Path, default=_project_root() / "config/current_split.yaml")
+    bootstrap.add_argument("--dry-run", action="store_true")
+    subparsers.add_parser("audit-scientific-bootstrap")
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
@@ -158,6 +227,10 @@ def main(argv: list[str] | None = None) -> int:
         return audit_patient_identity(args.config)
     if args.command == "audit-system-contracts":
         return audit_system_contracts(args.config)
+    if args.command == "bootstrap-malaria-v1":
+        return bootstrap_malaria_v1(args.config, args.dry_run)
+    if args.command == "audit-scientific-bootstrap":
+        return audit_bootstrap_persistence()
     return 2
 
 

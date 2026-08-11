@@ -57,3 +57,29 @@ class SourceRecordRepository:
             ),
             {"dataset_id": dataset_id, "source_record_key": source_record_key},
         ).mappings().one_or_none()
+
+
+class ScientificBootstrapRepository:
+    """Set-oriented primitives used by the atomic scientific bootstrap."""
+
+    def __init__(self, connection: Connection) -> None:
+        self.connection = connection
+
+    def rows_by_key(self, table: str, columns: str, key: str) -> dict[Any, Mapping[str, Any]]:
+        allowed = {
+            "clinical_identities": "source_identifier",
+            "dataset_source_records": "source_record_key",
+            "identity_evidence": "source_record_id",
+        }
+        if allowed.get(table) != key:
+            raise ValueError("Unsupported bootstrap lookup")
+        rows = self.connection.execute(text(f"SELECT {columns} FROM {table}")).mappings()
+        return {row[key]: row for row in rows}
+
+    def insert_many(self, statement: str, rows: list[dict[str, Any]], batch_size: int = 1000) -> None:
+        sql = text(statement)
+        for offset in range(0, len(rows), batch_size):
+            self.connection.execute(sql, rows[offset : offset + batch_size])
+
+    def scalar(self, statement: str, parameters: Mapping[str, Any] | None = None) -> Any:
+        return self.connection.execute(text(statement), parameters or {}).scalar_one()

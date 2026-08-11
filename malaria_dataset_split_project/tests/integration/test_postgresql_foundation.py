@@ -42,7 +42,7 @@ class TestPostgresqlFoundation:
         run_columns = {column["name"]: column for column in inspector.get_columns("runs")}
         assert run_columns["dataset_version_id"]["nullable"] is True
 
-    def test_new_tables_are_empty(self):
+    def test_foundation_tables_are_queryable(self):
         tables = (
             "dataset_versions", "dataset_version_sources", "dataset_source_records",
             "clinical_identities", "identity_evidence", "dataset_split_assignments",
@@ -51,7 +51,7 @@ class TestPostgresqlFoundation:
         )
         with self.engine.connect() as connection:
             for table in tables:
-                assert connection.execute(text(f"SELECT count(*) FROM {table}")).scalar_one() == 0
+                assert connection.execute(text(f"SELECT count(*) FROM {table}")).scalar_one() >= 0
 
     def test_ratio_and_version_uniqueness_constraints_with_rollback(self):
         with self.engine.connect() as connection, connection.begin():
@@ -160,6 +160,24 @@ class TestPostgresqlFoundation:
             try:
                 connection.execute(assignment_sql, {**assignment_values, "id": uuid4()})
                 raise AssertionError("assignment uniqueness was not enforced")
+            except IntegrityError:
+                nested.rollback()
+            connection.rollback()
+
+    def test_clinical_identity_uniqueness_with_rollback(self):
+        with self.engine.connect() as connection, connection.begin():
+            current = connection.execute(text("""
+                SELECT dataset_id,identity_type,source_identifier,status
+                FROM clinical_identities ORDER BY id LIMIT 1
+            """)).mappings().one()
+            nested = connection.begin_nested()
+            try:
+                connection.execute(text("""
+                    INSERT INTO clinical_identities (
+                      id,dataset_id,identity_type,source_identifier,status
+                    ) VALUES (:id,:dataset_id,:identity_type,:source_identifier,:status)
+                """), {"id": uuid4(), **dict(current)})
+                raise AssertionError("clinical identity uniqueness was not enforced")
             except IntegrityError:
                 nested.rollback()
             connection.rollback()
