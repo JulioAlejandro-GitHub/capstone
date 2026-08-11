@@ -1,0 +1,6 @@
+# Las rutas se resuelven respecto de la raíz del repositorio capstone.
+current_physical_split_root: malaria_dl_local_project/data/malaria_physical_split
+expected_splits: train,val,test
+expected_classes: parasitized,uninfected
+expected_extensions: .png,.jpg,.jpeg
+
