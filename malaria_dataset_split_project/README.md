@@ -43,3 +43,15 @@ Los tests no requieren dependencias externas:
 ```bash
 PYTHONPATH=src python -m unittest discover -s tests -p 'test_*.py'
 ```
+
+La auditoría de identidad requiere Pillow para calcular hashes de píxeles decodificados.
+
+SPLIT 1B agrega una auditoría de identidad clínica:
+
+```bash
+PYTHONPATH=src python -m malaria_split.cli audit-patient-identity
+```
+
+Los dos CSV oficiales NLM indicados en `config/current_split.yaml` se mantienen como
+copias regenerables bajo `var/audit/source/`; tanto ellos como el JSON detallado son
+artefactos locales ignorados por Git. No son la persistencia científica definitiva.

@@ -3,4 +3,10 @@ current_physical_split_root: malaria_dl_local_project/data/malaria_physical_spli
 expected_splits: train,val,test
 expected_classes: parasitized,uninfected
 expected_extensions: .png,.jpg,.jpeg
-
+tfds_dataset_path: data/tensorflow_datasets/malaria/1.0.0
+tfds_original_images_root: data/tensorflow_datasets/downloads/extracted/ZIP.data.lhnc.nlm.nih.gov_publ_Mala_cell_imagCpSVVrJBQVm1EAGSYJgFN2ZUxCZtjRh76bGSL61Dxmg.zip/cell_images
+patient_mapping_parasitized: malaria_dataset_split_project/var/audit/source/patientid_cellmapping_parasitized.csv
+patient_mapping_uninfected: malaria_dataset_split_project/var/audit/source/patientid_cellmapping_uninfected.csv
+patient_mapping_parasitized_url: https://data.lhncbc.nlm.nih.gov/public/Malaria/patientid_cellmapping_parasitized.csv
+patient_mapping_uninfected_url: https://data.lhncbc.nlm.nih.gov/public/Malaria/patientid_cellmapping_uninfected.csv
+identity_audit_output: malaria_dataset_split_project/var/audit/patient_identity_audit.json
