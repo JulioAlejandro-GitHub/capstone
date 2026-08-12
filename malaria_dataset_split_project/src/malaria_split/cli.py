@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 import sys
 
+from sqlalchemy import text
+
 from malaria_split.discovery import audit_database, scan_current_physical_split
 from malaria_split.identity import (
     IdentityStatus,
@@ -17,6 +19,13 @@ from malaria_split.persistence.bootstrap import (
     prepare_scientific_population,
 )
 from malaria_split.persistence.database import create_postgresql_engine
+from malaria_split.splitting import (
+    build_seeded_greedy_baseline,
+    evaluate_candidate,
+    load_patient_profiles,
+    randomized_patient_sequence,
+)
+from malaria_split.splitting.patient_profiles import PatientClassProfile
 
 
 def _project_root() -> Path:
@@ -206,6 +215,72 @@ def audit_bootstrap_persistence() -> int:
     return 0 if payload["status"] == "PASS" else 1
 
 
+def audit_patient_profiles_v1(dataset_version_id: str) -> int:
+    """Read-only 3A.1 audit; baseline is evaluated but never persisted or selected."""
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required for patient profile audit")
+    engine = create_postgresql_engine(database_url)
+    try:
+        with engine.connect() as connection:
+            from uuid import UUID
+
+            version_id = UUID(dataset_version_id)
+            profiles = load_patient_profiles(connection, version_id)
+            sequence = randomized_patient_sequence(profiles)
+            baseline = build_seeded_greedy_baseline(profiles)
+            evaluation = evaluate_candidate(profiles, baseline)
+            duplicate_groups = connection.execute(text("""
+                SELECT count(*) FROM (
+                  SELECT source_file_sha256 FROM dataset_source_records
+                  GROUP BY source_file_sha256 HAVING count(*) > 1
+                ) duplicates
+            """)).scalar_one()
+    finally:
+        engine.dispose()
+    profile_counts = {
+        kind.value: sum(item.patient_class_profile == kind for item in profiles)
+        for kind in PatientClassProfile
+    }
+    sizes = sorted(item.total_records for item in profiles)
+    payload = {
+        "mode": "READ_ONLY_PATIENT_PROFILE_AUDIT",
+        "dataset_version_id": dataset_version_id,
+        "patients": len(profiles),
+        "records": sum(item.total_records for item in profiles),
+        "classes": {
+            "parasitized": sum(item.parasitized_records for item in profiles),
+            "uninfected": sum(item.uninfected_records for item in profiles),
+        },
+        "patient_class_profiles": profile_counts,
+        "patient_size_distribution": {
+            "min": sizes[0], "median": sizes[len(sizes) // 2], "max": sizes[-1]
+        },
+        "exact_duplicate_hash_groups": duplicate_groups,
+        "canonical_order_first_patient": profiles[0].source_identifier,
+        "seeded_sequence_first_patient": sequence[0].source_identifier,
+        "random_seed": 42,
+        "baseline_is_official_candidate": False,
+        "baseline_valid": evaluation.valid,
+        "baseline_hard_constraint_violations": evaluation.hard_constraint_violations,
+        "baseline_objective_tuple": evaluation.objective_tuple,
+        "baseline_digest": evaluation.canonical_assignment_digest,
+        "database_assignments_written": 0,
+        "status": "PASS" if (
+            len(profiles) == 201
+            and sum(item.total_records for item in profiles) == 27558
+            and profile_counts == {
+                "BOTH_CLASSES": 151,
+                "UNINFECTED_ONLY": 50,
+                "PARASITIZED_ONLY": 0,
+            }
+            and duplicate_groups == 0
+        ) else "FAIL",
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    return 0 if payload["status"] == "PASS" else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoría read-only del split físico")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -220,6 +295,11 @@ def main(argv: list[str] | None = None) -> int:
     bootstrap.add_argument("--config", type=Path, default=_project_root() / "config/current_split.yaml")
     bootstrap.add_argument("--dry-run", action="store_true")
     subparsers.add_parser("audit-scientific-bootstrap")
+    profiles = subparsers.add_parser("audit-patient-profiles-v1")
+    profiles.add_argument(
+        "--dataset-version-id",
+        default="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    )
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
@@ -231,6 +311,8 @@ def main(argv: list[str] | None = None) -> int:
         return bootstrap_malaria_v1(args.config, args.dry_run)
     if args.command == "audit-scientific-bootstrap":
         return audit_bootstrap_persistence()
+    if args.command == "audit-patient-profiles-v1":
+        return audit_patient_profiles_v1(args.dataset_version_id)
     return 2
 
 
