@@ -26,6 +26,9 @@ from malaria_split.splitting import (
     randomized_patient_sequence,
 )
 from malaria_split.splitting.patient_profiles import PatientClassProfile
+from malaria_split.splitting.optimizer import optimize_patient_split
+from malaria_split.splitting.reporting import candidate_composition
+from malaria_split.splitting.candidate import candidate_sort_key
 
 
 def _project_root() -> Path:
@@ -281,6 +284,89 @@ def audit_patient_profiles_v1(dataset_version_id: str) -> int:
     return 0 if payload["status"] == "PASS" else 1
 
 
+def generate_patient_split_v1(dataset_version_id: str, dry_run: bool) -> int:
+    if not dry_run:
+        raise RuntimeError("SPLIT 3A.2 only permits --dry-run")
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required")
+    from uuid import UUID
+
+    version_id = UUID(dataset_version_id)
+
+    def run_from_postgresql(seed: int):
+        engine = create_postgresql_engine(database_url)
+        try:
+            with engine.connect() as connection:
+                status = connection.execute(
+                    text("SELECT status FROM dataset_versions WHERE id=:id"), {"id": version_id}
+                ).scalar_one()
+                assignment_count = connection.execute(text("""
+                    SELECT count(*) FROM dataset_split_assignments WHERE dataset_version_id=:id
+                """), {"id": version_id}).scalar_one()
+                if status != "DRAFT" or assignment_count != 0:
+                    raise RuntimeError("SPLIT 3A.2 precondition failed")
+                profiles = load_patient_profiles(connection, version_id)
+            return profiles, optimize_patient_split(profiles, seed)
+        finally:
+            engine.dispose()
+
+    profiles_a, run_a = run_from_postgresql(42)
+    profiles_b, run_b = run_from_postgresql(42)
+    _, seed_43 = run_from_postgresql(43)
+    winner = run_a.winner
+    composition = candidate_composition(profiles_a, winner.assignments)
+    baseline_key = candidate_sort_key(run_a.baseline.evaluation)
+    winner_key = candidate_sort_key(winner.evaluation)
+    comparison = "BETTER" if winner_key < baseline_key else "EQUIVALENT" if winner_key == baseline_key else "WORSE"
+    payload = {
+        "mode": "NON_AUTHORITATIVE_DRY_RUN",
+        "dataset_version_id": dataset_version_id,
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "seed": 42,
+        "initial_candidates": run_a.initial_candidates,
+        "candidates_evaluated": run_a.candidates_evaluated,
+        "local_search_iterations": run_a.local_search_iterations,
+        "winner": {
+            "candidate_id": winner.candidate_id,
+            "assignment_digest": winner.evaluation.canonical_assignment_digest,
+            "objective": winner.evaluation.objective.__dict__ if hasattr(winner.evaluation.objective, "__dict__") else {
+                field: getattr(winner.evaluation.objective, field)
+                for field in winner.evaluation.objective.__dataclass_fields__
+            },
+            "objective_tuple": winner.evaluation.objective_tuple,
+            "hard_constraint_violations": winner.evaluation.hard_constraint_violations,
+            "composition": composition,
+        },
+        "baseline": {
+            "assignment_digest": run_a.baseline.evaluation.canonical_assignment_digest,
+            "objective_tuple": run_a.baseline.evaluation.objective_tuple,
+        },
+        "winner_vs_baseline": comparison,
+        "reproducibility": {
+            "run_a_digest": winner.evaluation.canonical_assignment_digest,
+            "run_b_digest": run_b.winner.evaluation.canonical_assignment_digest,
+            "run_a_objective": winner.evaluation.objective_tuple,
+            "run_b_objective": run_b.winner.evaluation.objective_tuple,
+            "deterministic": (
+                winner.evaluation.canonical_assignment_digest
+                == run_b.winner.evaluation.canonical_assignment_digest
+                and winner.evaluation.objective_tuple == run_b.winner.evaluation.objective_tuple
+            ),
+            "seed_43_digest": seed_43.winner.evaluation.canonical_assignment_digest,
+        },
+        "database_assignments_written": 0,
+    }
+    payload["status"] = "PASS" if (
+        winner.evaluation.valid
+        and comparison in ("BETTER", "EQUIVALENT")
+        and payload["reproducibility"]["deterministic"]
+    ) else "FAIL"
+    print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    return 0 if payload["status"] == "PASS" else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoría read-only del split físico")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -300,6 +386,12 @@ def main(argv: list[str] | None = None) -> int:
         "--dataset-version-id",
         default="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
     )
+    generate = subparsers.add_parser("generate-patient-split-v1")
+    generate.add_argument("--dry-run", action="store_true")
+    generate.add_argument(
+        "--dataset-version-id",
+        default="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    )
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
@@ -313,6 +405,8 @@ def main(argv: list[str] | None = None) -> int:
         return audit_bootstrap_persistence()
     if args.command == "audit-patient-profiles-v1":
         return audit_patient_profiles_v1(args.dataset_version_id)
+    if args.command == "generate-patient-split-v1":
+        return generate_patient_split_v1(args.dataset_version_id, args.dry_run)
     return 2
 
 
