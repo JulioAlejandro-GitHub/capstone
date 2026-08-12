@@ -40,6 +40,16 @@ class DatasetVersionRepository:
         )
         return self._connection.execute(statement, dict(values)).scalar_one()
 
+    def list_frozen(self) -> list[Mapping[str, Any]]:
+        return list(
+            self._connection.execute(
+                text(
+                    """SELECT * FROM dataset_versions WHERE status='FROZEN'
+                    ORDER BY frozen_at DESC NULLS LAST, id DESC"""
+                )
+            ).mappings()
+        )
+
 
 class SourceRecordRepository:
     def __init__(self, connection: Connection) -> None:
