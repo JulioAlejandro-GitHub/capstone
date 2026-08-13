@@ -29,6 +29,11 @@ from malaria_split.splitting.patient_profiles import PatientClassProfile
 from malaria_split.splitting.optimizer import optimize_patient_split
 from malaria_split.splitting.reporting import candidate_composition
 from malaria_split.splitting.candidate import candidate_sort_key
+from malaria_split.persistence.split_generation import (
+    PersistenceMode,
+    prepare_split_generation,
+    persist_split_generation,
+)
 
 
 def _project_root() -> Path:
@@ -367,6 +372,53 @@ def generate_patient_split_v1(dataset_version_id: str, dry_run: bool) -> int:
     return 0 if payload["status"] == "PASS" else 1
 
 
+def persist_patient_split_v1(rehearse: bool) -> int:
+    if not rehearse:
+        raise RuntimeError("SPLIT 3B.1 only permits --rehearse")
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required")
+    engine = create_postgresql_engine(database_url)
+    try:
+        with engine.connect() as preparation_connection:
+            prepared = prepare_split_generation(preparation_connection)
+        result = persist_split_generation(engine, prepared, PersistenceMode.REHEARSE)
+        with engine.connect() as verification:
+            after = {
+                "status": verification.execute(text(
+                    "SELECT status FROM dataset_versions WHERE id=:id"
+                ), {"id": prepared.dataset_version_id}).scalar_one(),
+                "assignments": verification.execute(text(
+                    "SELECT count(*) FROM dataset_split_assignments WHERE dataset_version_id=:id"
+                ), {"id": prepared.dataset_version_id}).scalar_one(),
+            }
+    finally:
+        engine.dispose()
+    audit_payload = dict(result.audit)
+    for key in ("class_counts", "profile_counts"):
+        audit_payload[key] = {
+            "|".join(item): value for item, value in result.audit[key].items()
+        }
+    payload = {
+        "mode": "REHEARSE_ROLLBACK",
+        "dataset_version_id": str(prepared.dataset_version_id),
+        "regenerated_assignment_digest": result.regenerated_digest,
+        "patient_assignments_prepared": len(prepared.optimization.winner.assignments),
+        "assignment_rows_prepared": len(prepared.assignment_rows),
+        "dataset_version_write_lock": "SELECT_FOR_UPDATE_NOWAIT",
+        "bulk_insert_method": "SQLALCHEMY_EXECUTEMANY_BATCH_1000_SINGLE_TRANSACTION",
+        "audit_inside_transaction": audit_payload,
+        "persisted_assignment_digest": result.persisted_assignment_digest,
+        "persisted_record_assignment_digest": result.persisted_record_assignment_digest,
+        "methodology_metadata_prepared": True,
+        "rollback_executed": result.rolled_back,
+        "after_rollback": after,
+        "status": "PASS" if result.rolled_back and after == {"status": "DRAFT", "assignments": 0} else "FAIL",
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    return 0 if payload["status"] == "PASS" else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoría read-only del split físico")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -392,6 +444,8 @@ def main(argv: list[str] | None = None) -> int:
         "--dataset-version-id",
         default="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
     )
+    persistence = subparsers.add_parser("persist-patient-split-v1")
+    persistence.add_argument("--rehearse", action="store_true")
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
@@ -407,6 +461,8 @@ def main(argv: list[str] | None = None) -> int:
         return audit_patient_profiles_v1(args.dataset_version_id)
     if args.command == "generate-patient-split-v1":
         return generate_patient_split_v1(args.dataset_version_id, args.dry_run)
+    if args.command == "persist-patient-split-v1":
+        return persist_patient_split_v1(args.rehearse)
     return 2
 
 
