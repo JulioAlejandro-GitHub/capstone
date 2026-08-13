@@ -216,6 +216,126 @@ def verify_version_methodology(actual: dict[str, Any], expected: dict[str, Any])
     _assert_equal("dataset version methodology", actual, expected)
 
 
+def verify_methodology_subset(actual: dict[str, Any], expected: dict[str, Any]) -> None:
+    """Verify bootstrap-owned fields while permitting later governed extensions."""
+    for key, expected_value in expected.items():
+        if key not in actual:
+            raise BootstrapConflict(f"dataset version methodology missing field: {key}")
+        actual_value = actual[key]
+        if isinstance(expected_value, dict):
+            if not isinstance(actual_value, dict):
+                raise BootstrapConflict(f"dataset version methodology field is not an object: {key}")
+            verify_methodology_subset(actual_value, expected_value)
+        else:
+            _assert_equal(f"dataset version methodology {key}", actual_value, expected_value)
+
+
+def audit_existing_scientific_bootstrap(
+    engine: Engine, prepared: PreparedScientificPopulation
+) -> dict[str, Any]:
+    """Read-only recognition of the bootstrapped v1 after legitimate lifecycle advance."""
+    version_id = uuid5(ID_NAMESPACE, f"{VERSION_NAME}:{VERSION_SEMVER}")
+    with engine.connect() as connection:
+        version = connection.execute(text("""
+            SELECT * FROM dataset_versions WHERE id=:id
+        """), {"id": version_id}).mappings().one_or_none()
+        if version is None:
+            raise BootstrapConflict("Expected Malaria Patient Split v1 was not found")
+        _assert_equal("dataset version name", version["name"], VERSION_NAME)
+        _assert_equal("dataset version semantic_version", version["semantic_version"], VERSION_SEMVER)
+        for field, expected in {
+            "grouping_strategy": "patient_group", "grouping_field": "patient_id",
+            "stratification_strategy": "patient_group_stratified",
+            "split_algorithm": "patient_group_stratified_v1",
+            "split_algorithm_version": "1.0.0", "random_seed": 42,
+            "positive_class": "parasitized", "source_record_count": EXPECTED_RECORDS,
+            "class_mapping": {"0": "uninfected", "1": "parasitized"},
+        }.items():
+            _assert_equal(f"dataset version {field}", version[field], expected)
+        for field, expected in {
+            "target_train_ratio": "0.8000000", "target_val_ratio": "0.1000000",
+            "target_test_ratio": "0.1000000",
+        }.items():
+            _assert_equal(field, str(version[field]), expected)
+        verify_methodology_subset(version["methodology_json"], expected_methodology())
+
+        links = connection.execute(text("""
+            SELECT d.* FROM dataset_version_sources dvs
+            JOIN datasets d ON d.id=dvs.dataset_id
+            WHERE dvs.dataset_version_id=:id AND dvs.role='PRIMARY'
+        """), {"id": version_id}).mappings().all()
+        if len(links) != 1:
+            raise BootstrapConflict("Expected exactly one PRIMARY source link")
+        source = links[0]
+        for field, expected in {
+            "name": SOURCE_NAME, "provider": SOURCE_PROVIDER,
+            "source_reference": SOURCE_REFERENCE, "source_version": SOURCE_VERSION,
+        }.items():
+            _assert_equal(f"dataset source {field}", source[field], expected)
+        provenance = dict(source["metadata"] or {}).get("scientific_provenance", {})
+        _assert_equal(
+            "official patient mapping sha256",
+            provenance.get("official_patient_mapping_sha256"),
+            prepared.source_mapping_sha256,
+        )
+
+        identities = dict(connection.execute(text("""
+            SELECT source_identifier,id FROM clinical_identities
+            WHERE dataset_id=:dataset AND identity_type='PATIENT' AND status='VERIFIED'
+        """), {"dataset": source["id"]}).all())
+        _assert_equal("verified patient population", set(identities), set(prepared.patients))
+        records = connection.execute(text("""
+            SELECT r.source_record_key,i.source_identifier patient_id,r.class_index,r.class_name,
+                   r.source_file_sha256,r.decoded_pixel_sha256,r.identity_status
+            FROM dataset_source_records r JOIN clinical_identities i ON i.id=r.clinical_identity_id
+            WHERE r.dataset_id=:dataset
+        """), {"dataset": source["id"]}).mappings().all()
+        actual_records = {row["source_record_key"]: row for row in records}
+        _assert_equal("source record keys", set(actual_records), {
+            row["source_record_key"] for row in prepared.records
+        })
+        for expected in prepared.records:
+            actual = actual_records[expected["source_record_key"]]
+            for field in (
+                "patient_id", "class_index", "class_name", "source_file_sha256",
+                "decoded_pixel_sha256",
+            ):
+                _assert_equal(
+                    f"source record {expected['source_record_key']} {field}",
+                    actual[field], expected[field],
+                )
+            _assert_equal(
+                f"source record {expected['source_record_key']} identity_status",
+                actual["identity_status"], "VERIFIED",
+            )
+
+        assignment_count = connection.execute(text("""
+            SELECT count(*) FROM dataset_split_assignments WHERE dataset_version_id=:id
+        """), {"id": version_id}).scalar_one()
+        lifecycle_accepted = (
+            (version["status"] == "DRAFT" and assignment_count == 0)
+            or (version["status"] == "GENERATED" and assignment_count == EXPECTED_RECORDS)
+        )
+        if not lifecycle_accepted:
+            raise BootstrapConflict(
+                f"Unsupported bootstrap lifecycle/count: {version['status']}/{assignment_count}"
+            )
+        return {
+            "bootstrap_version_found": True,
+            "bootstrap_version_id_match": version["id"] == version_id,
+            "bootstrap_scientific_population_match": True,
+            "current_lifecycle_status": version["status"],
+            "current_assignment_count": assignment_count,
+            "lifecycle_state_accepted": True,
+            "dry_run_database_writes": 0,
+            "result": (
+                "ALREADY_BOOTSTRAPPED_AND_ADVANCED"
+                if version["status"] == "GENERATED"
+                else "ALREADY_BOOTSTRAPPED_DRAFT"
+            ),
+        }
+
+
 def apply_scientific_bootstrap(engine: Engine, prepared: PreparedScientificPopulation) -> dict[str, str]:
     """Phase B: verify-or-insert the complete population in one transaction."""
     with engine.begin() as connection:

@@ -10,12 +10,13 @@ from malaria_split.persistence.bootstrap import (
     expected_methodology,
     is_sha256,
     verify_source_record_compatible,
+    verify_methodology_subset,
     verify_version_methodology,
 )
 
 
 class ScientificBootstrapTests(TestCase):
-    def test_dry_run_does_not_construct_database_engine(self):
+    def test_dry_run_recognizes_existing_generated_version_without_apply(self):
         summary = {
             "total_records": 27558, "patient_verified": 27558,
             "patient_unresolved": 0, "patient_conflict": 0,
@@ -31,9 +32,18 @@ class ScientificBootstrapTests(TestCase):
         )
         with patch.object(cli, "_bootstrap_paths", return_value=(None, None, [])), \
              patch.object(cli, "prepare_scientific_population", return_value=prepared), \
-             patch.object(cli, "create_postgresql_engine") as engine:
+             patch.object(cli, "audit_existing_scientific_bootstrap", return_value={
+                 "bootstrap_version_found": True,
+                 "current_lifecycle_status": "GENERATED",
+                 "current_assignment_count": 27558,
+                 "dry_run_database_writes": 0,
+                 "result": "ALREADY_BOOTSTRAPPED_AND_ADVANCED",
+             }) as audit, \
+             patch.object(cli, "create_postgresql_engine") as engine, \
+             patch.dict("os.environ", {"DATABASE_URL": "postgresql://fixture"}):
             self.assertEqual(cli.bootstrap_malaria_v1(None, True), 0)
-            engine.assert_not_called()
+            engine.assert_called_once()
+            audit.assert_called_once()
 
     def test_same_source_record_content_is_idempotent(self):
         identity = uuid4()
@@ -76,3 +86,15 @@ class ScientificBootstrapTests(TestCase):
         methodology = expected_methodology()
         with self.assertRaises(BootstrapConflict):
             verify_version_methodology(methodology, {**methodology, "seed": 99})
+
+    def test_bootstrap_methodology_subset_accepts_generation_extension(self):
+        methodology = expected_methodology()
+        verify_methodology_subset(
+            {**methodology, "generation_contract": {"algorithm_version": "1.0.0"}},
+            methodology,
+        )
+
+    def test_bootstrap_methodology_subset_rejects_scientific_conflict(self):
+        methodology = expected_methodology()
+        with self.assertRaises(BootstrapConflict):
+            verify_methodology_subset({**methodology, "seed": 99}, methodology)

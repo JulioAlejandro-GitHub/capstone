@@ -15,6 +15,7 @@ from malaria_split.identity import (
 )
 from malaria_split.persistence.bootstrap import (
     apply_scientific_bootstrap,
+    audit_existing_scientific_bootstrap,
     audit_scientific_bootstrap,
     prepare_scientific_population,
 )
@@ -197,10 +198,16 @@ def bootstrap_malaria_v1(config_path: Path, dry_run: bool) -> int:
         "identity_evidence_available": len(prepared.evidence),
         "status": "PASS",
     }
-    if not dry_run:
-        database_url = os.environ.get("DATABASE_URL")
-        if not database_url:
-            raise RuntimeError("DATABASE_URL is required for bootstrap apply")
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required for bootstrap database recognition")
+    if dry_run:
+        engine = create_postgresql_engine(database_url)
+        try:
+            payload["database_recognition"] = audit_existing_scientific_bootstrap(engine, prepared)
+        finally:
+            engine.dispose()
+    else:
         engine = create_postgresql_engine(database_url)
         try:
             payload["database_apply"] = apply_scientific_bootstrap(engine, prepared)
