@@ -372,9 +372,9 @@ def generate_patient_split_v1(dataset_version_id: str, dry_run: bool) -> int:
     return 0 if payload["status"] == "PASS" else 1
 
 
-def persist_patient_split_v1(rehearse: bool) -> int:
-    if not rehearse:
-        raise RuntimeError("SPLIT 3B.1 only permits --rehearse")
+def persist_patient_split_v1(rehearse: bool, apply: bool) -> int:
+    if rehearse == apply:
+        raise RuntimeError("Choose exactly one of --rehearse or --apply")
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
         raise RuntimeError("DATABASE_URL is required")
@@ -382,7 +382,8 @@ def persist_patient_split_v1(rehearse: bool) -> int:
     try:
         with engine.connect() as preparation_connection:
             prepared = prepare_split_generation(preparation_connection)
-        result = persist_split_generation(engine, prepared, PersistenceMode.REHEARSE)
+        mode = PersistenceMode.REHEARSE if rehearse else PersistenceMode.APPLY
+        result = persist_split_generation(engine, prepared, mode)
         with engine.connect() as verification:
             after = {
                 "status": verification.execute(text(
@@ -390,6 +391,9 @@ def persist_patient_split_v1(rehearse: bool) -> int:
                 ), {"id": prepared.dataset_version_id}).scalar_one(),
                 "assignments": verification.execute(text(
                     "SELECT count(*) FROM dataset_split_assignments WHERE dataset_version_id=:id"
+                ), {"id": prepared.dataset_version_id}).scalar_one(),
+                "generated_at": verification.execute(text(
+                    "SELECT generated_at FROM dataset_versions WHERE id=:id"
                 ), {"id": prepared.dataset_version_id}).scalar_one(),
             }
     finally:
@@ -400,7 +404,7 @@ def persist_patient_split_v1(rehearse: bool) -> int:
             "|".join(item): value for item, value in result.audit[key].items()
         }
     payload = {
-        "mode": "REHEARSE_ROLLBACK",
+        "mode": "REHEARSE_ROLLBACK" if rehearse else "APPLY_COMMIT",
         "dataset_version_id": str(prepared.dataset_version_id),
         "regenerated_assignment_digest": result.regenerated_digest,
         "patient_assignments_prepared": len(prepared.optimization.winner.assignments),
@@ -412,8 +416,12 @@ def persist_patient_split_v1(rehearse: bool) -> int:
         "persisted_record_assignment_digest": result.persisted_record_assignment_digest,
         "methodology_metadata_prepared": True,
         "rollback_executed": result.rolled_back,
+        "already_applied": result.already_applied,
         "after_rollback": after,
-        "status": "PASS" if result.rolled_back and after == {"status": "DRAFT", "assignments": 0} else "FAIL",
+        "status": "PASS" if (
+            (rehearse and result.rolled_back and after["status"] == "DRAFT" and after["assignments"] == 0)
+            or (apply and after["status"] == "GENERATED" and after["assignments"] == 27558)
+        ) else "FAIL",
     }
     print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
     return 0 if payload["status"] == "PASS" else 1
@@ -446,6 +454,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     persistence = subparsers.add_parser("persist-patient-split-v1")
     persistence.add_argument("--rehearse", action="store_true")
+    persistence.add_argument("--apply", action="store_true")
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
@@ -462,7 +471,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "generate-patient-split-v1":
         return generate_patient_split_v1(args.dataset_version_id, args.dry_run)
     if args.command == "persist-patient-split-v1":
-        return persist_patient_split_v1(args.rehearse)
+        return persist_patient_split_v1(args.rehearse, args.apply)
     return 2
 
 

@@ -485,7 +485,7 @@ def audit_scientific_bootstrap(engine: Engine) -> dict[str, Any]:
             "v1_current_activation_count": scalar("SELECT count(*) FROM dataset_materialization_activations WHERE dataset_version_id=:version_id AND deactivated_at IS NULL"),
         }
         expected = {
-            "dataset_version_status": "DRAFT", "dataset_version_source_links": 1,
+            "dataset_version_source_links": 1,
             "dataset_version_primary_source_links": 1, "clinical_identity_count": 201,
             "patient_identities_verified": 201, "patient_identities_unresolved": 0,
             "patient_identities_conflict": 0, "source_record_count": 27558,
@@ -498,10 +498,17 @@ def audit_scientific_bootstrap(engine: Engine) -> dict[str, Any]:
             "max_cells_per_patient": 702, "patients_only_parasitized": 0,
             "patients_only_uninfected": 50, "patients_with_both_classes": 151,
             "class_counts": {"parasitized": 13779, "uninfected": 13779},
-            "v1_assignment_count": 0, "v1_statistics_count": 0,
+            "v1_statistics_count": 0,
             "v1_validation_check_count": 0, "v1_materialization_count": 0,
             "v1_current_activation_count": 0,
         }
-        result["status"] = "PASS" if all(result.get(k) == v for k, v in expected.items()) else "FAIL"
+        lifecycle_population_consistent = (
+            (result["dataset_version_status"] == "DRAFT" and result["v1_assignment_count"] == 0)
+            or (result["dataset_version_status"] == "GENERATED" and result["v1_assignment_count"] == 27558)
+        )
+        result["status"] = "PASS" if (
+            lifecycle_population_consistent
+            and all(result.get(k) == v for k, v in expected.items())
+        ) else "FAIL"
         result["expected"] = expected
         return result

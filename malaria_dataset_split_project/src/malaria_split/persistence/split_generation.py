@@ -20,6 +20,7 @@ from malaria_split.splitting.optimizer import OptimizationResult, optimize_patie
 
 V1_ID = UUID("d8c0cab5-09dd-597f-9de7-7ca01aee2ec2")
 APPROVED_ASSIGNMENT_DIGEST = "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+APPROVED_RECORD_ASSIGNMENT_DIGEST = "9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2"
 ASSIGNMENT_NAMESPACE = UUID("ec41e4bb-4967-5dbf-b311-3c8dd44a87df")
 
 
@@ -48,6 +49,7 @@ class PersistenceResult:
     persisted_record_assignment_digest: str
     audit: dict[str, Any]
     rolled_back: bool
+    already_applied: bool = False
 
 
 def _methodology(existing: dict[str, Any], optimization: OptimizationResult) -> dict[str, Any]:
@@ -60,6 +62,7 @@ def _methodology(existing: dict[str, Any], optimization: OptimizationResult) -> 
         "randomization_unit": "clinical_identity_id",
         "randomization_method": "canonical_order_plus_local_seeded_prng_permutations",
         "objective": list(winner.evaluation.objective_tuple),
+        "objective_function": "lexicographic_normalized_maximum_deviations",
         "objective_priority": [
             "representativeness", "class_balance", "record_ratio",
             "patient_ratio", "canonical_assignment_digest",
@@ -71,6 +74,7 @@ def _methodology(existing: dict[str, Any], optimization: OptimizationResult) -> 
         },
         "tie_break": "canonical_assignment_digest_ASC",
         "approved_assignment_digest": winner.evaluation.canonical_assignment_digest,
+        "record_assignment_digest": APPROVED_RECORD_ASSIGNMENT_DIGEST,
         "winning_candidate_id": winner.candidate_id,
         "patient_counts": {split: winner.evaluation.split_metrics[split].patients for split in ("train", "val", "test")},
         "record_counts": {split: winner.evaluation.split_metrics[split].records for split in ("train", "val", "test")},
@@ -98,8 +102,10 @@ def prepare_split_generation(
         text("SELECT count(*) FROM dataset_split_assignments WHERE dataset_version_id=:id"),
         {"id": dataset_version_id},
     ).scalar_one()
-    if version["status"] != "DRAFT" or assignment_count != 0:
-        raise RuntimeError("Split generation requires DRAFT with zero assignments")
+    if version["status"] not in ("DRAFT", "GENERATED"):
+        raise RuntimeError("Split generation requires DRAFT or matching GENERATED state")
+    if version["status"] == "DRAFT" and assignment_count != 0:
+        raise RuntimeError("DRAFT split generation requires zero assignments")
     profiles = load_patient_profiles(connection, dataset_version_id)
     optimization = optimize_patient_split(profiles, 42)
     regenerated = optimization.winner.evaluation.canonical_assignment_digest
@@ -238,6 +244,22 @@ def persist_split_generation(
         count = connection.execute(text("""
             SELECT count(*) FROM dataset_split_assignments WHERE dataset_version_id=:id
         """), {"id": prepared.dataset_version_id}).scalar_one()
+        if locked == "GENERATED":
+            audit = audit_persisted_assignments(connection, prepared.dataset_version_id)
+            if (
+                count != 27_558
+                or audit["patient_digest"] != APPROVED_ASSIGNMENT_DIGEST
+                or audit["record_digest"] != APPROVED_RECORD_ASSIGNMENT_DIGEST
+            ):
+                raise RuntimeError("GENERATED_STATE_CONFLICT")
+            transaction.rollback()
+            rolled_back = True
+            return PersistenceResult(
+                mode=mode, regenerated_digest=prepared.optimization.winner.evaluation.canonical_assignment_digest,
+                persisted_assignment_digest=audit["patient_digest"],
+                persisted_record_assignment_digest=audit["record_digest"], audit=audit,
+                rolled_back=True, already_applied=True,
+            )
         if locked != "DRAFT" or count != 0:
             raise RuntimeError("Transactional precondition failed")
         _bulk_insert(connection, prepared.assignment_rows)
@@ -261,6 +283,7 @@ def persist_split_generation(
             },
             "patient_overlap": 0, "duplicate_cross_split_overlap": 0,
             "patient_digest": approved,
+            "record_digest": APPROVED_RECORD_ASSIGNMENT_DIGEST,
         }
         for key, value in expected.items():
             if audit[key] != value:
@@ -273,6 +296,10 @@ def persist_split_generation(
         transition_dataset_version(connection, prepared.dataset_version_id, "GENERATED")
         audit["status_inside_transaction"] = connection.execute(
             text("SELECT status FROM dataset_versions WHERE id=:id"), {"id": prepared.dataset_version_id}
+        ).scalar_one()
+        audit["generated_at_inside_transaction"] = connection.execute(
+            text("SELECT generated_at FROM dataset_versions WHERE id=:id"),
+            {"id": prepared.dataset_version_id},
         ).scalar_one()
         audit["trainable_inside_transaction"] = get_dataset_version_trainability(
             connection, prepared.dataset_version_id
@@ -287,6 +314,7 @@ def persist_split_generation(
             persisted_assignment_digest=audit["patient_digest"],
             persisted_record_assignment_digest=audit["record_digest"],
             audit=audit, rolled_back=rolled_back,
+            already_applied=False,
         )
     except Exception:
         if transaction.is_active:
