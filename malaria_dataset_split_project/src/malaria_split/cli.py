@@ -35,6 +35,10 @@ from malaria_split.persistence.split_generation import (
     prepare_split_generation,
     persist_split_generation,
 )
+from malaria_split.persistence.formal_validation import (
+    apply_formal_validation,
+    prepare_formal_validation,
+)
 
 
 def _project_root() -> Path:
@@ -434,6 +438,54 @@ def persist_patient_split_v1(rehearse: bool, apply: bool) -> int:
     return 0 if payload["status"] == "PASS" else 1
 
 
+def validate_patient_split_v1() -> int:
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required")
+    engine = create_postgresql_engine(database_url)
+    try:
+        with engine.connect() as connection:
+            prepared = prepare_formal_validation(connection)
+        failed = [name for name, check in prepared.checks.items() if check["status"] != "PASS"]
+        if failed:
+            print(json.dumps({
+                "mode": "FORMAL_SCIENTIFIC_VALIDATION", "prevalidation": "FAIL",
+                "checks": prepared.checks, "failed_checks": failed,
+            }, indent=2, default=str))
+            return 1
+        result = apply_formal_validation(engine, prepared)
+        with engine.connect() as connection:
+            post = {
+                "status": connection.execute(text(
+                    "SELECT status FROM dataset_versions WHERE id=:id"
+                ), {"id": prepared.dataset_version_id}).scalar_one(),
+                "statistics": connection.execute(text(
+                    "SELECT count(*) FROM dataset_split_statistics WHERE dataset_version_id=:id"
+                ), {"id": prepared.dataset_version_id}).scalar_one(),
+                "checks": connection.execute(text(
+                    "SELECT count(*) FROM dataset_split_validation_checks WHERE dataset_version_id=:id"
+                ), {"id": prepared.dataset_version_id}).scalar_one(),
+            }
+    finally:
+        engine.dispose()
+    payload = {
+        "mode": "FORMAL_SCIENTIFIC_VALIDATION",
+        "dataset_version_id": str(prepared.dataset_version_id),
+        "prevalidation": "PASS", "required_checks": len(prepared.checks),
+        "required_checks_pass": sum(c["status"] == "PASS" for c in prepared.checks.values()),
+        "required_checks_fail": 0, "checks": prepared.checks,
+        "patient_assignment_digest": prepared.patient_digest,
+        "record_assignment_digest": prepared.record_digest,
+        "statistics": prepared.statistics,
+        "result": "ALREADY_VALIDATED_MATCH_NO_OP" if result.already_validated else "VALIDATED_COMMIT",
+        "already_validated": result.already_validated,
+        "validated_at": result.validated_at, "postcommit": post,
+        "status": "PASS" if post == {"status": "VALIDATED", "statistics": 1, "checks": 12} else "FAIL",
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    return 0 if payload["status"] == "PASS" else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoría read-only del split físico")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -462,6 +514,7 @@ def main(argv: list[str] | None = None) -> int:
     persistence = subparsers.add_parser("persist-patient-split-v1")
     persistence.add_argument("--rehearse", action="store_true")
     persistence.add_argument("--apply", action="store_true")
+    subparsers.add_parser("validate-patient-split-v1")
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
@@ -479,6 +532,8 @@ def main(argv: list[str] | None = None) -> int:
         return generate_patient_split_v1(args.dataset_version_id, args.dry_run)
     if args.command == "persist-patient-split-v1":
         return persist_patient_split_v1(args.rehearse, args.apply)
+    if args.command == "validate-patient-split-v1":
+        return validate_patient_split_v1()
     return 2
 
 

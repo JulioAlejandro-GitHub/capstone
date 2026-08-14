@@ -33,12 +33,12 @@ def test_real_scientific_bootstrap_contract():
     finally:
         engine.dispose()
     assert audit["status"] == "PASS"
-    assert audit["dataset_version_status"] in ("DRAFT", "GENERATED")
+    assert audit["dataset_version_status"] in ("DRAFT", "GENERATED", "VALIDATED")
     assert audit["v1_assignment_count"] in (0, 27558)
     assert audit["v1_materialization_count"] == 0
 
 
-def test_generated_bootstrap_audit_is_read_only():
+def test_advanced_bootstrap_audit_is_read_only():
     engine = create_postgresql_engine(os.environ["DATABASE_URL"])
     try:
         before = _v1_snapshot(engine)
@@ -46,6 +46,6 @@ def test_generated_bootstrap_audit_is_read_only():
         after = _v1_snapshot(engine)
     finally:
         engine.dispose()
-    assert audit["dataset_version_status"] == "GENERATED"
+    assert audit["dataset_version_status"] in ("GENERATED", "VALIDATED")
     assert audit["v1_assignment_count"] == 27558
     assert before == after

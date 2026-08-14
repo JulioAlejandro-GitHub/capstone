@@ -314,7 +314,10 @@ def audit_existing_scientific_bootstrap(
         """), {"id": version_id}).scalar_one()
         lifecycle_accepted = (
             (version["status"] == "DRAFT" and assignment_count == 0)
-            or (version["status"] == "GENERATED" and assignment_count == EXPECTED_RECORDS)
+            or (
+                version["status"] in ("GENERATED", "VALIDATED")
+                and assignment_count == EXPECTED_RECORDS
+            )
         )
         if not lifecycle_accepted:
             raise BootstrapConflict(
@@ -330,7 +333,7 @@ def audit_existing_scientific_bootstrap(
             "dry_run_database_writes": 0,
             "result": (
                 "ALREADY_BOOTSTRAPPED_AND_ADVANCED"
-                if version["status"] == "GENERATED"
+                if version["status"] in ("GENERATED", "VALIDATED")
                 else "ALREADY_BOOTSTRAPPED_DRAFT"
             ),
         }
@@ -618,13 +621,28 @@ def audit_scientific_bootstrap(engine: Engine) -> dict[str, Any]:
             "max_cells_per_patient": 702, "patients_only_parasitized": 0,
             "patients_only_uninfected": 50, "patients_with_both_classes": 151,
             "class_counts": {"parasitized": 13779, "uninfected": 13779},
-            "v1_statistics_count": 0,
-            "v1_validation_check_count": 0, "v1_materialization_count": 0,
+            "v1_materialization_count": 0,
             "v1_current_activation_count": 0,
         }
         lifecycle_population_consistent = (
-            (result["dataset_version_status"] == "DRAFT" and result["v1_assignment_count"] == 0)
-            or (result["dataset_version_status"] == "GENERATED" and result["v1_assignment_count"] == 27558)
+            (
+                result["dataset_version_status"] == "DRAFT"
+                and result["v1_assignment_count"] == 0
+                and result["v1_statistics_count"] == 0
+                and result["v1_validation_check_count"] == 0
+            )
+            or (
+                result["dataset_version_status"] == "GENERATED"
+                and result["v1_assignment_count"] == 27558
+                and result["v1_statistics_count"] == 0
+                and result["v1_validation_check_count"] == 0
+            )
+            or (
+                result["dataset_version_status"] == "VALIDATED"
+                and result["v1_assignment_count"] == 27558
+                and result["v1_statistics_count"] == 1
+                and result["v1_validation_check_count"] == 12
+            )
         )
         result["status"] = "PASS" if (
             lifecycle_population_consistent
