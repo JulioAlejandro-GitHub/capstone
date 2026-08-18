@@ -35,7 +35,7 @@ def test_real_scientific_bootstrap_contract():
     assert audit["status"] == "PASS"
     assert audit["dataset_version_status"] in ("DRAFT", "GENERATED", "VALIDATED")
     assert audit["v1_assignment_count"] in (0, 27558)
-    assert audit["v1_materialization_count"] == 0
+    assert audit["v1_materialization_count"] in (0, 1)
 
 
 def test_advanced_bootstrap_audit_is_read_only():

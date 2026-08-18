@@ -621,7 +621,6 @@ def audit_scientific_bootstrap(engine: Engine) -> dict[str, Any]:
             "max_cells_per_patient": 702, "patients_only_parasitized": 0,
             "patients_only_uninfected": 50, "patients_with_both_classes": 151,
             "class_counts": {"parasitized": 13779, "uninfected": 13779},
-            "v1_materialization_count": 0,
             "v1_current_activation_count": 0,
         }
         lifecycle_population_consistent = (
@@ -642,6 +641,7 @@ def audit_scientific_bootstrap(engine: Engine) -> dict[str, Any]:
                 and result["v1_assignment_count"] == 27558
                 and result["v1_statistics_count"] == 1
                 and result["v1_validation_check_count"] == 12
+                and result["v1_materialization_count"] in (0, 1)
             )
         )
         result["status"] = "PASS" if (

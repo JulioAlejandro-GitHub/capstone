@@ -39,6 +39,10 @@ from malaria_split.persistence.formal_validation import (
     apply_formal_validation,
     prepare_formal_validation,
 )
+from malaria_split.persistence.materialization import (
+    build_materialization_plan,
+    materialize_dataset_version,
+)
 
 
 def _project_root() -> Path:
@@ -486,6 +490,43 @@ def validate_patient_split_v1() -> int:
     return 0 if payload["status"] == "PASS" else 1
 
 
+def materialize_patient_split_v1(config_path: Path) -> int:
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required")
+    config = _read_simple_config(config_path)
+    source_root = _configured_path(config["tfds_original_images_root"])
+    versions_root = _capstone_root() / "malaria_dl_local_project/data/malaria_dataset_versions"
+    engine = create_postgresql_engine(database_url)
+    try:
+        with engine.connect() as connection:
+            plan = build_materialization_plan(connection, source_root)
+        outcome = materialize_dataset_version(engine, plan, versions_root)
+    finally:
+        engine.dispose()
+    reconciliation = outcome.reconciliation
+    payload = {
+        "mode": "VERSIONED_PHYSICAL_MATERIALIZATION",
+        "dataset_version_id": str(plan.dataset_version_id),
+        "materialization_id": str(outcome.materialization_id),
+        "attempt_number": outcome.attempt_number,
+        "result": "ALREADY_MATERIALIZED_MATCH_NO_OP" if outcome.already_materialized else "READY_PASS_COMMIT",
+        "already_materialized": outcome.already_materialized,
+        "version_root": str(outcome.final_root), "staging_root": str(outcome.staging_root),
+        "filename_strategy": plan.filename_strategy,
+        "filename_collisions": plan.filename_collisions,
+        "source_files_expected": len(plan.entries), "source_files_resolved": len(plan.entries),
+        "missing_source_files": 0,
+        "reconciliation": {
+            field: getattr(reconciliation, field)
+            for field in reconciliation.__dataclass_fields__
+        },
+        "status": "PASS" if reconciliation.passed else "FAIL",
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    return 0 if payload["status"] == "PASS" else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoría read-only del split físico")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -515,6 +556,8 @@ def main(argv: list[str] | None = None) -> int:
     persistence.add_argument("--rehearse", action="store_true")
     persistence.add_argument("--apply", action="store_true")
     subparsers.add_parser("validate-patient-split-v1")
+    materialize = subparsers.add_parser("materialize-patient-split-v1")
+    materialize.add_argument("--config", type=Path, default=_project_root() / "config/current_split.yaml")
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
@@ -534,6 +577,8 @@ def main(argv: list[str] | None = None) -> int:
         return persist_patient_split_v1(args.rehearse, args.apply)
     if args.command == "validate-patient-split-v1":
         return validate_patient_split_v1()
+    if args.command == "materialize-patient-split-v1":
+        return materialize_patient_split_v1(args.config)
     return 2
 
 
