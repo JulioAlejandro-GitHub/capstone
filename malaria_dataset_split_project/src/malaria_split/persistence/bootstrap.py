@@ -315,7 +315,7 @@ def audit_existing_scientific_bootstrap(
         lifecycle_accepted = (
             (version["status"] == "DRAFT" and assignment_count == 0)
             or (
-                version["status"] in ("GENERATED", "VALIDATED")
+                version["status"] in ("GENERATED", "VALIDATED", "FROZEN")
                 and assignment_count == EXPECTED_RECORDS
             )
         )
@@ -333,7 +333,7 @@ def audit_existing_scientific_bootstrap(
             "dry_run_database_writes": 0,
             "result": (
                 "ALREADY_BOOTSTRAPPED_AND_ADVANCED"
-                if version["status"] in ("GENERATED", "VALIDATED")
+                if version["status"] in ("GENERATED", "VALIDATED", "FROZEN")
                 else "ALREADY_BOOTSTRAPPED_DRAFT"
             ),
         }
@@ -642,6 +642,13 @@ def audit_scientific_bootstrap(engine: Engine) -> dict[str, Any]:
                 and result["v1_statistics_count"] == 1
                 and result["v1_validation_check_count"] == 12
                 and result["v1_materialization_count"] in (0, 1)
+            )
+            or (
+                result["dataset_version_status"] == "FROZEN"
+                and result["v1_assignment_count"] == 27558
+                and result["v1_statistics_count"] == 1
+                and result["v1_validation_check_count"] == 12
+                and result["v1_materialization_count"] == 1
             )
         )
         result["status"] = "PASS" if (

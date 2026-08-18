@@ -69,6 +69,13 @@ def fake_plots(*, output_dir, **_kwargs):
 
 
 class MaxEpochsMainSmokeTests(unittest.TestCase):
+    def _governed(self, output_dir):
+        return SimpleNamespace(
+            dataset_version_id="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+            dataset_root=Path(output_dir),
+            metadata=lambda: {"dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2"},
+        )
+
     def _run(self, output_dir, skip_test):
         argv = [
             "--model",
@@ -89,11 +96,15 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
             },
         }
         with patch("src.train.parse_args", return_value=args), patch(
+            "src.train.resolve_governed_dataset", return_value=self._governed(output_dir),
+        ), patch(
             "src.train.dataset_tracking_metadata",
             return_value={"data_source": "physical", "dataset_name": "smoke"},
         ), patch(
             "src.train.load_malaria_splits",
             return_value=(object(), object(), object(), {}),
+        ), patch(
+            "src.train.load_governed_test_split", return_value=object(),
         ), patch(
             "src.train.build_custom_cnn",
             return_value=FakeTrainModel(),
@@ -177,6 +188,8 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
             )
 
             with patch("src.train.parse_args", return_value=args), patch(
+                "src.train.resolve_governed_dataset", return_value=self._governed(output_dir),
+            ), patch(
                 "src.train.dataset_tracking_metadata",
                 return_value={"data_source": "physical", "dataset_name": "smoke"},
             ), patch(
@@ -214,6 +227,8 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
             )
 
             with patch("src.train.parse_args", return_value=args), patch(
+                "src.train.resolve_governed_dataset", return_value=self._governed(output_dir),
+            ), patch(
                 "src.train.dataset_tracking_metadata",
                 return_value={"data_source": "physical", "dataset_name": "smoke"},
             ), patch(

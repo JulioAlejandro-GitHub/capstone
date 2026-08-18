@@ -650,6 +650,7 @@ def start_tracking_run(
             "label_mapping": LABEL_MAPPING_METADATA,
             "raw_model_score_meaning": RAW_MODEL_SCORE_MEANING,
         },
+        dataset_version_id=getattr(args, "dataset_version_id", None),
     )
 
     if not run_id:
@@ -1169,6 +1170,8 @@ def record_run_io(
     label_mapping_version=LABEL_MAPPING_VERSION,
     raw_model_score_meaning=RAW_MODEL_SCORE_MEANING,
     metadata=None,
+    dataset_version_id=None,
+    dataset_materialization_id=None,
 ):
     if not context or not context.get("run_id"):
         return None
@@ -1179,6 +1182,12 @@ def record_run_io(
     }
     if metadata:
         io_metadata.update(metadata)
+    dataset_metadata = dataset_metadata or {}
+    dataset_version_id = dataset_version_id or dataset_metadata.get("dataset_version_id")
+    dataset_materialization_id = (
+        dataset_materialization_id
+        or dataset_metadata.get("dataset_materialization_id")
+    )
 
     return tracker.safe_track(
         tracker.log_run_io_record,
@@ -1190,12 +1199,14 @@ def record_run_io(
         input_parameters=json_safe(input_parameters),
         output_results=json_safe(output_results),
         output_artifacts=json_safe(output_artifacts or []),
-        dataset_metadata=json_safe(dataset_metadata or {}),
+        dataset_metadata=json_safe(dataset_metadata),
         model_metadata=json_safe(model_metadata or {}),
         clinical_metadata=json_safe(clinical_metadata or {}),
         label_mapping_version=label_mapping_version,
         raw_model_score_meaning=raw_model_score_meaning,
         metadata=json_safe(io_metadata),
+        dataset_version_id=dataset_version_id,
+        dataset_materialization_id=dataset_materialization_id,
     )
 
 

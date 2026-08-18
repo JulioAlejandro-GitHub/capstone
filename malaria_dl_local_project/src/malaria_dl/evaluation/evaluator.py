@@ -194,6 +194,14 @@ def main():
         checkpoint = Path(args.checkpoint)
         if args.track_db:
             raise RuntimeError("No se guardará evaluación legacy sin una model_version resuelta.")
+    governed_dataset = None
+    if args.source_training_run_id:
+        from src.malaria_dl.data.governed_dataset import resolve_training_run_dataset
+        governed_dataset = resolve_training_run_dataset(args.source_training_run_id)
+        if governed_dataset is not None:
+            args.dataset_version_id = str(governed_dataset.dataset_version_id)
+            args.dataset_dir = str(governed_dataset.dataset_root)
+            args.data_source = "physical"
     run_context = None
 
     if not checkpoint.exists():
@@ -214,7 +222,11 @@ def main():
     )
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: evaluando checkpoint legacy_tfds_parasitized_zero.")
-    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
+    dataset_info = dataset_tracking_metadata(
+        args.data_source, args.dataset_dir, governed=governed_dataset is not None
+    )
+    if governed_dataset is not None:
+        dataset_info.update(governed_dataset.metadata())
     threshold_info = resolve_threshold_for_checkpoint(args.threshold, checkpoint)
     threshold_value = threshold_info["threshold_used"]
 
@@ -265,6 +277,7 @@ def main():
             preprocessing_mode=preprocessing_mode,
             data_source=args.data_source,
             dataset_dir=args.dataset_dir,
+            governed=governed_dataset is not None,
         )
 
         class_names = CLASS_NAMES

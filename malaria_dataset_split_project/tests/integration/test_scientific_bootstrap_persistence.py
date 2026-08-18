@@ -33,7 +33,7 @@ def test_real_scientific_bootstrap_contract():
     finally:
         engine.dispose()
     assert audit["status"] == "PASS"
-    assert audit["dataset_version_status"] in ("DRAFT", "GENERATED", "VALIDATED")
+    assert audit["dataset_version_status"] in ("DRAFT", "GENERATED", "VALIDATED", "FROZEN")
     assert audit["v1_assignment_count"] in (0, 27558)
     assert audit["v1_materialization_count"] in (0, 1)
 
@@ -46,6 +46,6 @@ def test_advanced_bootstrap_audit_is_read_only():
         after = _v1_snapshot(engine)
     finally:
         engine.dispose()
-    assert audit["dataset_version_status"] in ("GENERATED", "VALIDATED")
+    assert audit["dataset_version_status"] in ("GENERATED", "VALIDATED", "FROZEN")
     assert audit["v1_assignment_count"] == 27558
     assert before == after

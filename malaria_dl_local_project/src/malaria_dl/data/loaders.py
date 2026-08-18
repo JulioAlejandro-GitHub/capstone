@@ -100,7 +100,7 @@ def load_physical_split_metadata(dataset_dir: Path | str | None = None) -> dict:
     return json.loads(metadata_path.read_text(encoding="utf-8"))
 
 
-def validate_physical_split(dataset_dir: Path | str | None = None) -> dict:
+def validate_physical_split(dataset_dir: Path | str | None = None, *, governed=False) -> dict:
     dataset_dir = resolve_physical_dataset_dir(dataset_dir)
     if not dataset_dir.exists():
         raise FileNotFoundError(
@@ -124,7 +124,21 @@ def validate_physical_split(dataset_dir: Path | str | None = None) -> dict:
             + "\n".join(f"- {path}" for path in missing)
         )
 
-    metadata = load_physical_split_metadata(dataset_dir)
+    if governed and not (dataset_dir / "metadata.json").exists():
+        counts = count_physical_split_images(dataset_dir)
+        metadata = {
+            "label_mapping_version": LABEL_MAPPING_VERSION,
+            "class_names": CLASS_NAMES,
+            "negative_class_index": NEGATIVE_CLASS_INDEX,
+            "negative_class_name": NEGATIVE_LABEL,
+            "positive_class_index": POSITIVE_CLASS_INDEX,
+            "positive_class_name": POSITIVE_LABEL,
+            "project_mapping": {"0": NEGATIVE_LABEL, "1": POSITIVE_LABEL},
+            "counts": counts,
+            "governed_dataset": True,
+        }
+    else:
+        metadata = load_physical_split_metadata(dataset_dir)
     expected_metadata = {
         "label_mapping_version": LABEL_MAPPING_VERSION,
         "class_names": CLASS_NAMES,
@@ -185,9 +199,9 @@ def print_physical_split_summary(dataset_dir, metadata):
         print(f"  {split}: {counts[split]['total']} imágenes")
 
 
-def build_dataset_info(data_source, dataset_dir=None, metadata=None):
+def build_dataset_info(data_source, dataset_dir=None, metadata=None, *, governed=False):
     if data_source == DATA_SOURCE_PHYSICAL:
-        metadata = metadata or validate_physical_split(dataset_dir)
+        metadata = metadata or validate_physical_split(dataset_dir, governed=governed)
         dataset_dir = resolve_physical_dataset_dir(dataset_dir)
         return {
             "dataset_source": "physical_split",
@@ -217,8 +231,8 @@ def build_dataset_info(data_source, dataset_dir=None, metadata=None):
     raise ValueError(f"data_source no soportado: {data_source}")
 
 
-def dataset_tracking_metadata(data_source=DATA_SOURCE_PHYSICAL, dataset_dir=None):
-    return build_dataset_info(data_source, dataset_dir)
+def dataset_tracking_metadata(data_source=DATA_SOURCE_PHYSICAL, dataset_dir=None, *, governed=False):
+    return build_dataset_info(data_source, dataset_dir, governed=governed)
 
 
 def add_data_source_args(parser):
@@ -281,6 +295,8 @@ def load_malaria_splits(
     preprocessing_mode: str = PREPROCESSING_RESCALE_0_1,
     data_source: str = DATA_SOURCE_PHYSICAL,
     dataset_dir: Path | str | None = None,
+    governed: bool = False,
+    include_test: bool = True,
 ):
     """
     Carga NIH/NLM Malaria Cell Images.
@@ -301,6 +317,8 @@ def load_malaria_splits(
             augment=augment,
             preprocessing_mode=preprocessing_mode,
             seed=seed,
+            governed=governed,
+            include_test=include_test,
         )
     if data_source != DATA_SOURCE_TFDS:
         raise ValueError(f"data_source no soportado: {data_source}")
@@ -431,9 +449,11 @@ def load_physical_split(
     augment: bool = True,
     preprocessing_mode: str = PREPROCESSING_RESCALE_0_1,
     seed: int = 42,
+    governed: bool = False,
+    include_test: bool = True,
 ):
     dataset_dir = resolve_physical_dataset_dir(dataset_dir)
-    metadata = validate_physical_split(dataset_dir)
+    metadata = validate_physical_split(dataset_dir, governed=governed)
     print_physical_split_summary(dataset_dir, metadata)
 
     ds_train = make_image_dataset_from_directory(
@@ -450,13 +470,12 @@ def load_physical_split(
         shuffle=False,
         seed=seed,
     )
-    ds_test = make_image_dataset_from_directory(
-        dataset_dir / "test",
-        img_size=img_size,
-        batch_size=batch_size,
-        shuffle=False,
-        seed=seed,
-    )
+    ds_test = None
+    if include_test:
+        ds_test = make_image_dataset_from_directory(
+            dataset_dir / "test", img_size=img_size, batch_size=batch_size,
+            shuffle=False, seed=seed,
+        )
 
     return (
         preprocess_physical_dataset(
@@ -469,12 +488,24 @@ def load_physical_split(
             preprocessing_mode=preprocessing_mode,
             augment=False,
         ),
-        preprocess_physical_dataset(
-            ds_test,
-            preprocessing_mode=preprocessing_mode,
-            augment=False,
+        None if ds_test is None else preprocess_physical_dataset(
+            ds_test, preprocessing_mode=preprocessing_mode, augment=False,
         ),
-        build_dataset_info(DATA_SOURCE_PHYSICAL, dataset_dir, metadata),
+        build_dataset_info(DATA_SOURCE_PHYSICAL, dataset_dir, metadata, governed=governed),
+    )
+
+
+def load_governed_test_split(dataset_dir, img_size, batch_size,
+                             preprocessing_mode, seed=42):
+    """Open test only at the final independent-evaluation boundary."""
+    dataset_dir = resolve_physical_dataset_dir(dataset_dir)
+    validate_physical_split(dataset_dir, governed=True)
+    dataset = make_image_dataset_from_directory(
+        dataset_dir / "test", img_size=img_size, batch_size=batch_size,
+        shuffle=False, seed=seed,
+    )
+    return preprocess_physical_dataset(
+        dataset, preprocessing_mode=preprocessing_mode, augment=False,
     )
 
 

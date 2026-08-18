@@ -364,6 +364,7 @@ def start_run(
     random_seed=None,
     notes=None,
     metadata=None,
+    dataset_version_id=None,
 ):
     env = collect_runtime_environment()
     effective_execution_parameters = (
@@ -382,7 +383,7 @@ def start_run(
             best_epoch, checkpoint_monitor, checkpoint_mode,
             best_validation_value, early_stopping_enabled,
             early_stopping_patience, early_stopping_min_delta,
-            restore_best_weights
+            restore_best_weights, dataset_version_id
         )
         VALUES (
             :experiment_id, :model_id, :dataset_id, :run_name, :run_type, 'started',
@@ -396,7 +397,7 @@ def start_run(
             :max_epochs, :stopped_epoch, :best_epoch, :checkpoint_monitor,
             :checkpoint_mode, :best_validation_value,
             :early_stopping_enabled, :early_stopping_patience,
-            :early_stopping_min_delta, :restore_best_weights
+            :early_stopping_min_delta, :restore_best_weights, :dataset_version_id
         )
         RETURNING id
         """,
@@ -427,6 +428,7 @@ def start_run(
             "early_stopping_min_delta": _numeric(early_stopping_min_delta),
             "restore_best_weights": _boolean(restore_best_weights),
             "metadata": _json(metadata),
+            "dataset_version_id": dataset_version_id,
             "gpu_devices": _json(env["gpu_devices"], default=[]),
             **{key: value for key, value in env.items() if key != "gpu_devices"},
         },
@@ -1067,6 +1069,8 @@ def log_run_io_record(
     label_mapping_version=LABEL_MAPPING_VERSION,
     raw_model_score_meaning=RAW_MODEL_SCORE_MEANING,
     metadata=None,
+    dataset_version_id=None,
+    dataset_materialization_id=None,
 ):
     if not run_id:
         _warn("log_run_io_record omitido porque run_id es None.")
@@ -1077,7 +1081,8 @@ def log_run_io_record(
         INSERT INTO run_io_records (
             run_id, script_name, run_type, model_name, command, input_parameters,
             output_results, output_artifacts, dataset_metadata, model_metadata,
-            clinical_metadata, label_mapping_version, raw_model_score_meaning, metadata
+            clinical_metadata, label_mapping_version, raw_model_score_meaning, metadata,
+            dataset_version_id, dataset_materialization_id
         )
         VALUES (
             :run_id, :script_name, :run_type, :model_name, :command,
@@ -1085,7 +1090,8 @@ def log_run_io_record(
             CAST(:output_results AS jsonb), CAST(:output_artifacts AS jsonb),
             CAST(:dataset_metadata AS jsonb), CAST(:model_metadata AS jsonb),
             CAST(:clinical_metadata AS jsonb), :label_mapping_version,
-            :raw_model_score_meaning, CAST(:metadata AS jsonb)
+            :raw_model_score_meaning, CAST(:metadata AS jsonb),
+            :dataset_version_id, :dataset_materialization_id
         )
         RETURNING run_io_id
         """,
@@ -1104,6 +1110,8 @@ def log_run_io_record(
             "label_mapping_version": label_mapping_version,
             "raw_model_score_meaning": raw_model_score_meaning,
             "metadata": _json(metadata),
+            "dataset_version_id": dataset_version_id,
+            "dataset_materialization_id": dataset_materialization_id,
         },
     )
 

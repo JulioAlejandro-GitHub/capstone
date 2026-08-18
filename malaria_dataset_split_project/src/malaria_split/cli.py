@@ -43,6 +43,7 @@ from malaria_split.persistence.materialization import (
     build_materialization_plan,
     materialize_dataset_version,
 )
+from malaria_split.governance.freeze import freeze_dataset_version
 
 
 def _project_root() -> Path:
@@ -527,6 +528,34 @@ def materialize_patient_split_v1(config_path: Path) -> int:
     return 0 if payload["status"] == "PASS" else 1
 
 
+def freeze_patient_split_v1() -> int:
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required")
+    engine = create_postgresql_engine(database_url)
+    try:
+        outcome = freeze_dataset_version(engine)
+    finally:
+        engine.dispose()
+    payload = {
+        "mode": "ATOMIC_DATASET_FREEZE",
+        "dataset_version_id": str(outcome.dataset_version_id),
+        "materialization_id": str(outcome.materialization_id),
+        "result": outcome.result,
+        "freeze_contract_version": "malaria_patient_split_freeze_v1",
+        "fingerprints": outcome.fingerprints.__dict__ if hasattr(outcome.fingerprints, "__dict__") else {
+            field: getattr(outcome.fingerprints, field)
+            for field in outcome.fingerprints.__dataclass_fields__
+        },
+        "frozen_at": outcome.frozen_at,
+        "trainable": outcome.trainable,
+        "trainability_reasons": outcome.trainability_reasons,
+        "status": "PASS" if outcome.trainable else "FAIL",
+    }
+    print(json.dumps(payload, indent=2, default=str))
+    return 0 if payload["status"] == "PASS" else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoría read-only del split físico")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -558,6 +587,7 @@ def main(argv: list[str] | None = None) -> int:
     subparsers.add_parser("validate-patient-split-v1")
     materialize = subparsers.add_parser("materialize-patient-split-v1")
     materialize.add_argument("--config", type=Path, default=_project_root() / "config/current_split.yaml")
+    subparsers.add_parser("freeze-patient-split-v1")
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
@@ -579,6 +609,8 @@ def main(argv: list[str] | None = None) -> int:
         return validate_patient_split_v1()
     if args.command == "materialize-patient-split-v1":
         return materialize_patient_split_v1(args.config)
+    if args.command == "freeze-patient-split-v1":
+        return freeze_patient_split_v1()
     return 2
 
 

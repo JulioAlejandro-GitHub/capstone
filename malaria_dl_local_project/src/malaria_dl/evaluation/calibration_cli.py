@@ -81,6 +81,7 @@ def parse_args(argv=None):
     parser.add_argument("--grid-size", type=int, default=200)
     parser.add_argument("--refinement-rounds", type=int, default=3)
     add_data_source_args(parser)
+    parser.add_argument("--source-training-run-id", default=None)
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -408,6 +409,14 @@ def main():
     checkpoint = Path(args.checkpoint).expanduser()
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
+    governed_dataset = None
+    if args.source_training_run_id:
+        from src.malaria_dl.data.governed_dataset import resolve_training_run_dataset
+        governed_dataset = resolve_training_run_dataset(args.source_training_run_id)
+        if governed_dataset is not None:
+            args.dataset_version_id = str(governed_dataset.dataset_version_id)
+            args.dataset_dir = str(governed_dataset.dataset_root)
+            args.data_source = "physical"
 
     output_file = (
         Path(args.output_json or args.output_file).expanduser()
@@ -421,7 +430,11 @@ def main():
     preprocessing_mode = resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: calibrando checkpoint legacy_tfds_parasitized_zero.")
-    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
+    dataset_info = dataset_tracking_metadata(
+        args.data_source, args.dataset_dir, governed=governed_dataset is not None
+    )
+    if governed_dataset is not None:
+        dataset_info.update(governed_dataset.metadata())
 
     _, ds_val, _, _ = load_malaria_splits(
         img_size=args.img_size,
@@ -430,6 +443,8 @@ def main():
         preprocessing_mode=preprocessing_mode,
         data_source=args.data_source,
         dataset_dir=args.dataset_dir,
+        governed=governed_dataset is not None,
+        include_test=False,
     )
     class_names = CLASS_NAMES
     if POSITIVE_LABEL not in class_names:

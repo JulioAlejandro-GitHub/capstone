@@ -25,7 +25,10 @@ from src.config import (
     RAW_MODEL_SCORE_MEANING,
     OUTPUT_DIR,
 )
-from src.data import add_data_source_args, dataset_tracking_metadata, load_malaria_splits
+from src.data import (
+    add_data_source_args, dataset_tracking_metadata, load_governed_test_split,
+    load_malaria_splits,
+)
 from src.execution_types import FINE_TUNING, TRAIN_BASE, TRAIN_COMBINED
 from src.metrics import collect_predictions, evaluate_keras_model
 from src.model_execution_config import ModelExecutionConfig
@@ -48,6 +51,7 @@ from src.threshold_calibration import (
     find_threshold_for_target_recall,
     write_threshold_calibration,
 )
+from src.malaria_dl.data.governed_dataset import resolve_governed_dataset
 
 
 CHECKPOINT_METRIC_CHOICES = [
@@ -270,6 +274,10 @@ def parse_args(argv=None):
         help="Clase clínica positiva fija del proyecto (1 = parasitized).",
     )
     add_data_source_args(parser)
+    parser.add_argument(
+        "--dataset-version-id", default=None,
+        help="UUID gobernado; si se omite se usa el trainable más reciente.",
+    )
     parser.add_argument(
         "--track-db",
         action="store_true",
@@ -1188,6 +1196,10 @@ def evaluate_selected_checkpoint_if_enabled(enabled, **evaluation_kwargs):
 
 def main():
     args = parse_args()
+    governed_dataset = resolve_governed_dataset(args.dataset_version_id)
+    args.dataset_version_id = str(governed_dataset.dataset_version_id)
+    args.dataset_dir = str(governed_dataset.dataset_root)
+    args.data_source = "physical"
     run_context = None
     latest_backup_dir = None
     training_output_lock = None
@@ -1235,7 +1247,10 @@ def main():
             args.early_stopping_mode,
         )
     )
-    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
+    dataset_info = {
+        **dataset_tracking_metadata(args.data_source, args.dataset_dir, governed=True),
+        **governed_dataset.metadata(),
+    }
     learning_rate = args.learning_rate if args.learning_rate is not None else 1e-4
     fine_tune_learning_rate = (
         args.fine_tune_learning_rate
@@ -1404,6 +1419,8 @@ def main():
             preprocessing_mode=preprocessing_mode,
             data_source=args.data_source,
             dataset_dir=args.dataset_dir,
+            governed=True,
+            include_test=False,
         )
 
         class_names = CLASS_NAMES
@@ -1784,6 +1801,10 @@ def main():
         clear_final_test_artifacts(output_dir)
         metrics = None
         if args.evaluate_best_on_test:
+            ds_test = load_governed_test_split(
+                args.dataset_dir, args.img_size, args.batch_size,
+                preprocessing_mode, args.seed,
+            )
             print("Evaluación final única en test con el mejor checkpoint:")
             metrics = evaluate_selected_checkpoint_once(
                 model=evaluation_model,

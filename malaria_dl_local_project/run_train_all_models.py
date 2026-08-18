@@ -76,7 +76,7 @@ def build_train_command(
     img_size: int,
     batch_size: int,
     seed: int,
-    dataset_dir: str,
+    dataset_version_id: str | None,
     target_recall: float,
     early_stopping_patience: int,
 ) -> list[str]:
@@ -109,8 +109,7 @@ def build_train_command(
         "--calibrate-threshold",
         "--target-recall", str(target_recall),
         "--evaluate-best-on-test",
-        "--data-source", "physical",
-        "--dataset-dir", dataset_dir,
+        *(["--dataset-version-id", dataset_version_id] if dataset_version_id else []),
         "--preprocessing", "auto",
         "--positive-label", "parasitized",
         "--track-db",
@@ -146,7 +145,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--target-recall", type=float, default=0.98)
     parser.add_argument("--early-stopping-patience", type=int, default=12)
-    parser.add_argument("--dataset-dir", default="data/malaria_physical_split")
+    parser.add_argument("--dataset-version-id", default=None)
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -187,7 +186,7 @@ def main() -> int:
                 img_size=args.img_size,
                 batch_size=args.batch_size,
                 seed=args.seed,
-                dataset_dir=args.dataset_dir,
+                dataset_version_id=args.dataset_version_id,
                 target_recall=args.target_recall,
                 early_stopping_patience=args.early_stopping_patience,
             )

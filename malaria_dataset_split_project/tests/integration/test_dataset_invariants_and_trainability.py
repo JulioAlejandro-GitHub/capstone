@@ -327,6 +327,7 @@ def test_trainable_list_and_default_are_deterministic(db):
 
 
 def test_default_with_zero_and_one_candidates(db):
+    db.execute(text("UPDATE dataset_versions SET status='ARCHIVED' WHERE status='FROZEN'"))
     assert resolve_default_trainable_dataset_version(db) is None
     version = _version(db)
     _validation_pass(db, version)
