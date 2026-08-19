@@ -6,6 +6,8 @@ import type {
   DashboardSummary,
   DatasetBrowserSummary,
   DatasetImagePage,
+  DatasetVersionDetail,
+  DatasetVersionSummary,
   Datasource,
   ExplainabilityCase,
   ExplainabilityCaseSummary,
@@ -1291,6 +1293,14 @@ export const api = {
 
   getDatasetSummary(datasource: string) {
     return request<DatasetBrowserSummary>('/api/dataset/summary', withDatasource(datasource));
+  },
+
+  getDatasetVersions(datasource: string) {
+    return request<{ items: DatasetVersionSummary[] }>('/api/datasets', withDatasource(datasource));
+  },
+
+  getDatasetVersionDetail(datasource: string, datasetVersionId: string) {
+    return request<DatasetVersionDetail>(`/api/datasets/${datasetVersionId}`, withDatasource(datasource));
   },
 
   getDatasetImages(datasource: string, params: Record<string, QueryValue> = {}) {

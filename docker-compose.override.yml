@@ -7,6 +7,7 @@ services:
       # El bind de /app oculta los archivos copiados en la imagen. Montamos
       # explícitamente el proyecto ML requerido por los imports `src.*`.
       - ./malaria_dl_local_project:/app/malaria_dl_local_project:ro
+      - ./malaria_dataset_split_project/src:/app/malaria_dataset_split_project/src:ro
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:

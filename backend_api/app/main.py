@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.observability import configure_logging, correlation_id_context, request_context_middleware
-from app.routes import analysis, artifacts, auth, catalog, cell_analysis, cell_classification, dashboard, dataset, explainability, governance, health, metrics, observability, predictions, runs, scientific, scientific_validation
+from app.routes import analysis, artifacts, auth, catalog, cell_analysis, cell_classification, dashboard, dataset, dataset_versions, explainability, governance, health, metrics, observability, predictions, runs, scientific, scientific_validation
 
 
 settings = get_settings()
@@ -47,6 +47,7 @@ async def internal_error(_: Request, __: Exception):
 
 
 for router in (health.router, auth.router, dashboard.router, runs.router, catalog.router, dataset.router,
+               dataset_versions.router,
                metrics.router, explainability.router, predictions.router, observability.router,
                artifacts.router, governance.router, scientific.router, analysis.router,
                cell_analysis.router, cell_classification.router,

@@ -33,6 +33,7 @@ def training_row(run_id, model_name):
         "status": "completed",
         "model_name": model_name,
         "dataset_name": "malaria",
+        "dataset_version_id": "88888888-8888-4888-8888-888888888888",
         "started_at": datetime(2026, 7, 18, 12, 0, tzinfo=timezone.utc),
         "finished_at": datetime(2026, 7, 18, 12, 5, tzinfo=timezone.utc),
         "duration_seconds": Decimal("300.5"),
@@ -201,6 +202,10 @@ class GroupedRunLineageApiTests(unittest.TestCase):
         self.assertEqual(first["training"]["run_id"], TRAINING_A)
         self.assertEqual(first["training"]["model_name"], "densenet121")
         self.assertEqual(first["training"]["optimizer"], "adamw")
+        self.assertEqual(
+            first["training"]["dataset_version_id"],
+            "88888888-8888-4888-8888-888888888888",
+        )
         self.assertNotIn("resolved_model_name", first["training"])
         self.assertNotIn("resolved_optimizer", first["training"])
         self.assertEqual(first["training"]["duration_seconds"], 300.5)
@@ -251,6 +256,7 @@ class GroupedRunLineageApiTests(unittest.TestCase):
         sql_statements = [call.args[1] for call in fetch_all.call_args_list]
         self.assertIn("vw_run_dashboard", sql_statements[0])
         self.assertIn("AS resolved_optimizer", sql_statements[0])
+        self.assertIn("r.dataset_version_id", sql_statements[0])
         self.assertIn("vw_evaluation_lineage", sql_statements[1])
         self.assertIn("WHEN 'test' THEN 0", sql_statements[1])
         self.assertIn("vw_explainability_lineage", sql_statements[2])

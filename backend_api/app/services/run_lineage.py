@@ -19,6 +19,7 @@ WITH selected_trainings AS (
 SELECT
     page.*,
     r.command,
+    r.dataset_version_id,
     COALESCE(
         NULLIF(page.model_name, ''),
         NULLIF(r.execution_parameters->>'model_name', ''),

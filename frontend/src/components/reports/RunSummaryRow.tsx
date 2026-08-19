@@ -45,6 +45,11 @@ export function RunSummaryRow({
         <span className="report-muted" title={run.run_id}>
           Run ID: {truncatedRunId(run.run_id)}
         </span>
+        {processKind === 'training' ? (
+          <span className="report-muted" title={run.dataset_version_id ?? undefined}>
+            dataset-version-id: {run.dataset_version_id || 'No registrado'}
+          </span>
+        ) : null}
         <div className="report-inline-facts">
           <StatusBadge status={run.status} />
           <span className="report-duration">

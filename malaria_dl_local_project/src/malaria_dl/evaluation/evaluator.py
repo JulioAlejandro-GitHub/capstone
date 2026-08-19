@@ -49,6 +49,10 @@ def parse_args(argv=None):
     )
     add_data_source_args(parser)
     parser.add_argument(
+        "--dataset-version-id",
+        help="UUID gobernado; debe coincidir con el dataset heredado del TRAIN.",
+    )
+    parser.add_argument(
         "--track-db",
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
@@ -199,6 +203,13 @@ def main():
         from src.malaria_dl.data.governed_dataset import resolve_training_run_dataset
         governed_dataset = resolve_training_run_dataset(args.source_training_run_id)
         if governed_dataset is not None:
+            if (
+                args.dataset_version_id
+                and args.dataset_version_id != str(governed_dataset.dataset_version_id)
+            ):
+                raise ValueError(
+                    "--dataset-version-id no coincide con el dataset del TRAIN origen."
+                )
             args.dataset_version_id = str(governed_dataset.dataset_version_id)
             args.dataset_dir = str(governed_dataset.dataset_root)
             args.data_source = "physical"

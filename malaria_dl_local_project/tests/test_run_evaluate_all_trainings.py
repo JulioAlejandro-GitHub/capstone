@@ -17,6 +17,7 @@ class RunEvaluateAllTrainingsTests(unittest.TestCase):
             img_size="200",
             batch_size="64",
             preprocessing="rescale_0_1",
+            dataset_version_id="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
         )
 
         command = build_evaluate_command(
@@ -33,6 +34,10 @@ class RunEvaluateAllTrainingsTests(unittest.TestCase):
         )
         self.assertNotIn("--checkpoint", command)
         self.assertNotIn(run.checkpoint_path, command)
+        self.assertEqual(
+            command[command.index("--dataset-version-id") + 1],
+            run.dataset_version_id,
+        )
 
 
 if __name__ == "__main__":

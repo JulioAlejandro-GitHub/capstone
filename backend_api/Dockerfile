@@ -33,7 +33,10 @@ RUN mkdir -p /app/var/storage /app/var/artifacts && chown -R capstone:capstone /
 # Copy the ML source files
 # First we copy the entire ML project since it contains necessary modules to be imported
 COPY malaria_dl_local_project /app/malaria_dl_local_project
-ENV PYTHONPATH="/app/malaria_dl_local_project:/app"
+# Dataset governance is a shared runtime library used by the read-only Dataset UI.
+# Copy its source instead of duplicating trainability/materialization rules in FastAPI.
+COPY malaria_dataset_split_project/src /app/malaria_dataset_split_project/src
+ENV PYTHONPATH="/app/malaria_dataset_split_project/src:/app/malaria_dl_local_project:/app"
 
 # Copy the backend API files
 COPY backend_api/app /app/app

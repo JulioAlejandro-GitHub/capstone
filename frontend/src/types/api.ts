@@ -211,6 +211,7 @@ export interface RunDashboard {
   status: string;
   model_name: string | null;
   dataset_name: string | null;
+  dataset_version_id?: string | null;
   optimizer: string | null;
   command?: string | null;
   started_at: string | null;
@@ -701,6 +702,26 @@ export interface DatasetImagePage {
     class_name: string | null;
   };
   items: DatasetImageItem[];
+}
+
+export interface DatasetVersionSummary {
+  dataset_version_id: string; name: string; semantic_version: string; status: string;
+  trainable: boolean; trainability_reasons: string[]; source_record_count: number;
+  patient_count: number; train_records: number; val_records: number; test_records: number;
+  train_patients: number; val_patients: number; test_patients: number;
+  validation_pass_count: number; validation_required_count: number;
+  materialization_status: string | null; reconciliation_status: string | null;
+  created_at: string; generated_at: string | null; validated_at: string | null; frozen_at: string | null;
+}
+export interface DatasetVersionDetail {
+  dataset: DatasetVersionSummary & { grouping_strategy: string; grouping_field: string; split_algorithm: string; split_algorithm_version: string; random_seed: number; positive_class: string; class_mapping: Record<string, string> };
+  distribution: { records: Record<string, number>; patients: Record<string, number>; class_counts: Record<string, { parasitized: number; uninfected: number }>; total_patients: number; total_records: number };
+  integrity: { patient_disjoint: boolean; patient_train_val_overlap: number; patient_train_test_overlap: number; patient_val_test_overlap: number; duplicate_cross_split_overlap: number };
+  validation: { required_count: number; pass_count: number; fail_count: number; checks: Array<{ check_name: string; status: string; observed_value: string | null; expected_value: string | null }> };
+  materialization: null | { dataset_materialization_id: string; status: string; reconciliation_status: string; record_count: number; sha_files_checked: number; sha_match: number; sha_mismatch: number; attempt_number: number; relative_root: string; started_at: string | null; completed_at: string | null };
+  lineage: { contract_version: string | null; source_population_fingerprint: string | null; clinical_identity_fingerprint: string | null; patient_assignment_fingerprint: string | null; record_assignment_fingerprint: string | null };
+  lifecycle: string[];
+  runs: { count: number; items: Array<{ run_id: string; run_name: string | null; model_name: string | null; run_type: string; status: string; started_at: string | null }> };
 }
 
 export interface ExplainabilityCase {

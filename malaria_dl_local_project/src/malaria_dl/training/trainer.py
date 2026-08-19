@@ -2441,6 +2441,15 @@ def main():
                 },
                 metadata={"status_detail": "training completed"},
             )
+            from src.malaria_dl.governance.services.training_model_version_finalizer import (
+                finalize_training_model_version,
+            )
+
+            finalized_version = finalize_training_model_version(run_context["run_id"])
+            print(
+                "Model version gobernada finalizada: "
+                f"{finalized_version.model_version_id} ({finalized_version.action})"
+            )
             finish_tracking_run(
                 run_context,
                 completed_epochs=len(combined_history_rows),
