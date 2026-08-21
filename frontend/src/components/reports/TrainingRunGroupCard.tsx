@@ -8,7 +8,8 @@ interface TrainingRunGroupCardProps {
   group: TrainingRunLineageGroup;
   onRunSelect: (runId: string) => void;
   stage2Status?:Stage2Availability;stage2Loading?:boolean;stage2Error?:string;
-  onStage2Publish:()=>Promise<void>;onStage2Deactivate:()=>Promise<void>;
+  onStage2Publish:(replaceExisting:boolean)=>Promise<'published'|'replacement-required'|'failed'>;
+  onStage2Deactivate:()=>Promise<void>;
 }
 
 export function TrainingRunGroupCard({

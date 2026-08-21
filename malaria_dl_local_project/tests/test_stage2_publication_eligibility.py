@@ -3,6 +3,8 @@ import unittest
 from src.malaria_dl.governance.services.stage2_publication_service import (
     Stage2PublicationService,
 )
+from src.malaria_dl.governance.services.deployment_service import _project_path
+from src.malaria_dl.common.paths import PROJECT_ROOT
 
 
 class Stage2PublicationEligibilityTests(unittest.TestCase):
@@ -37,6 +39,12 @@ class Stage2PublicationEligibilityTests(unittest.TestCase):
     def test_explain_signatures_tensorflow_and_metrics_do_not_participate(self):
         eligible, _ = self.eligibility()
         self.assertTrue(eligible)
+
+    def test_historical_host_artifact_path_is_rebased_to_runtime_project(self):
+        resolved = _project_path(
+            "/historical/checkout/malaria_dl_local_project/outputs/model.keras"
+        )
+        self.assertEqual(resolved, PROJECT_ROOT / "outputs/model.keras")
 
 
 if __name__ == "__main__":

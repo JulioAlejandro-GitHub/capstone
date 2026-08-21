@@ -75,7 +75,7 @@ class TechnicalProductionRequest(BaseModel):
     source_image_id:str|None=None
 class Stage2PublicationRequest(BaseModel):
     model_config=ConfigDict(extra="forbid")
-    actor:str|None=None;reason:str|None=None
+    actor:str|None=None;reason:str|None=None;replace_existing:bool=False
 
 def prepare_release_service(datasource:str|None):
     key=resolve_datasource(datasource)
@@ -213,6 +213,7 @@ def publish_stage2_model(
         reason=body.reason or "Publicación y deployment en Etapa 2"
         publication=stage2_publication_service(datasource).publish(
           uid(model_version_id),actor,reason,request_id,
+          replace_existing=body.replace_existing,
         )
         deployment=stage2_service(datasource).enable(
           publication["training_run_id"],actor=actor,reason=reason,

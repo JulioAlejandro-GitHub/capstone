@@ -13,6 +13,7 @@ test('Etapa 2 aparece sólo en TRAIN y usa publicación persistente como fuente'
   assert.doesNotMatch(child,/Stage2AvailabilityAction|enableStage2/);
   assert.match(api,/stage2-release-status/);
   assert.match(api,/stage2-publications/);
+  assert.match(read('pages/Runs.tsx'),/getProductiveModelAvailability[^]*replacement-required/);
 });
 
 test('Ver detalle controla un acordeón accesible con confirmaciones inline',()=>{
@@ -23,6 +24,8 @@ test('Ver detalle controla un acordeón accesible con confirmaciones inline',()=
   assert.match(row,/aria-controls=\{stage2ControlsId\}/);
   assert.match(card,/setExpanded\(current=>!current\)/);
   assert.match(panel,/Confirmar publicación/);
+  assert.match(panel,/Ya existe un modelo elegido para Etapa 2/);
+  assert.match(panel,/Continuar y reemplazar/);
   assert.match(panel,/Confirmar baja/);
   assert.match(panel,/No constituye aprobación clínica ni diagnóstico automatizado/);
   assert.doesNotMatch(panel,/checkpoint_path|artifact_path|best_model\\.keras/);

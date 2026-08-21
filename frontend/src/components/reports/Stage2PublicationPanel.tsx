@@ -3,7 +3,9 @@ import type { Stage2Availability } from '../../types/api';
 
 interface Props {
   id:string;status?:Stage2Availability;loading?:boolean;error?:string;
-  explainCount:number;onPublish:()=>Promise<void>;onDeactivate:()=>Promise<void>;
+  explainCount:number;
+  onPublish:(replaceExisting:boolean)=>Promise<'published'|'replacement-required'|'failed'>;
+  onDeactivate:()=>Promise<void>;
 }
 
 const value=(raw?:string|null)=>raw||'No registrado';
@@ -14,9 +16,17 @@ const date=(raw?:string|null)=>raw?new Intl.DateTimeFormat('es-CL',{
 export function Stage2PublicationPanel({
   id,status,loading=false,error,explainCount,onPublish,onDeactivate,
 }:Props) {
-  const [confirm,setConfirm]=useState<'publish'|'deactivate'|null>(null);
+  const [confirm,setConfirm]=useState<'publish'|'replace'|'deactivate'|null>(null);
   const active=Boolean(status?.is_stage2_available);
-  const execute=async()=>{if(confirm==='publish')await onPublish();else if(confirm==='deactivate')await onDeactivate();setConfirm(null);};
+  const execute=async()=>{
+    if(confirm==='publish'||confirm==='replace'){
+      const result=await onPublish(confirm==='replace');
+      if(result==='replacement-required'){setConfirm('replace');return;}
+      if(result==='failed')return;
+    }else if(confirm==='deactivate')await onDeactivate();
+    setConfirm(null);
+  };
+  const publishable=Boolean(status?.eligible&&!status?.technical_blockers?.length);
   return <section aria-label="Detalle de disponibilidad para Etapa 2"
     className="stage2-publication-panel" id={id}>
     <header>
@@ -45,8 +55,9 @@ export function Stage2PublicationPanel({
       {status?.publication?<><span>Publicación<strong>{status.publication.id}</strong></span>
         <span>Publicado<strong>{date(status.publication.published_at)} · {value(status.publication.published_by)}</strong></span></>:null}
     </div>
-    {!status?.eligible?<p className="stage2-missing-condition" role="status">
-      {status?.eligibility?.missing_conditions.join(' · ')||'Estado no elegible.'}
+    {!publishable?<p className="stage2-missing-condition" role="status">
+      {status?.technical_blockers?.map((item)=>item.message).join(' · ')
+        ||status?.eligibility?.missing_conditions.join(' · ')||'Estado no elegible.'}
     </p>:null}
     <p className="stage2-experimental-warning">
       Esta publicación es técnica y experimental. No constituye aprobación clínica ni diagnóstico automatizado.
@@ -55,14 +66,17 @@ export function Stage2PublicationPanel({
     {confirm?<div className="stage2-inline-confirmation" role="alert">
       <p>{confirm==='publish'
         ?'Se publicará una referencia inmutable de esta versión. La Etapa 2 podrá seleccionarla para nuevos análisis.'
+        :confirm==='replace'
+          ?'Ya existe un modelo elegido para Etapa 2. Si continúas, el modelo anterior dejará de estar elegido y esta versión pasará a ser la nueva elegida.'
         :'Los análisis anteriores conservarán su trazabilidad. El modelo dejará de estar disponible únicamente para nuevos trabajos de Etapa 2.'}</p>
-      <div><button className={confirm==='publish'?'primary-action':''} disabled={loading}
-        onClick={()=>void execute()} type="button">{confirm==='publish'?'Confirmar publicación':'Confirmar baja'}</button>
+      <div><button className={confirm==='deactivate'?'':'primary-action'} disabled={loading}
+        onClick={()=>void execute()} type="button">{confirm==='publish'?'Confirmar publicación':confirm==='replace'?'Continuar y reemplazar':'Confirmar baja'}</button>
         <button disabled={loading} onClick={()=>setConfirm(null)} type="button">Cancelar</button></div>
-    </div>:status?.eligible?<button className={active?'':'primary-action'} disabled={loading}
+    </div>:active||publishable?<button className={active?'':'primary-action'} disabled={loading}
       onClick={()=>setConfirm(active?'deactivate':'publish')} type="button">
       {active?'Dar de baja de Etapa 2':'Publicar y desplegar en Etapa 2'}
-    </button>:<button disabled title={status?.eligibility?.missing_conditions.join(', ')}
+    </button>:<button disabled title={status?.technical_blockers?.map((item)=>item.message).join(', ')
+      ||status?.eligibility?.missing_conditions.join(', ')}
       type="button">Publicar y desplegar en Etapa 2</button>}
   </section>;
 }

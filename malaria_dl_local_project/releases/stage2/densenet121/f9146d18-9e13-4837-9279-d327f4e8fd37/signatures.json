@@ -1,0 +1,18 @@
+{
+  "input": {
+    "dtype": "float32",
+    "shape": [
+      null,
+      200,
+      200,
+      3
+    ]
+  },
+  "output": {
+    "dtype": "float32",
+    "shape": [
+      null,
+      1
+    ]
+  }
+}

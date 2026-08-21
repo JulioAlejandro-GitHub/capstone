@@ -97,14 +97,50 @@ class Stage2PublicationService:
             raise GovernanceNotFoundError("model version inexistente")
         return self.status(model_version_id)
 
-    def publish(self, model_version_id, actor=None, reason=None, correlation_id=None):
+    def publish(self, model_version_id, actor=None, reason=None, correlation_id=None,
+                *, replace_existing=False):
         model_version_id = self._id(model_version_id)
         with self.connection_factory() as connection:
+            connection.execute(
+                text("SELECT pg_advisory_xact_lock(hashtext(:key))"),
+                {"key": f"stage2-selection:{self.datasource}"},
+            )
             context = self._context(connection, model_version_id)
             eligible, eligibility = self._eligibility(context)
             if not eligible:
                 raise GovernanceStateError(
                     "No elegible: " + ", ".join(eligibility["missing_conditions"])
+                )
+            previous_publications = connection.execute(text("""
+              SELECT * FROM stage2_model_publications
+              WHERE datasource=:datasource AND scope='stage2' AND is_active
+                AND model_version_id<>CAST(:id AS uuid)
+              ORDER BY published_at DESC FOR UPDATE
+            """), {
+                "datasource": self.datasource, "id": model_version_id,
+            }).mappings().all()
+            if previous_publications and not replace_existing:
+                raise GovernanceStateError(
+                    "STAGE2_SELECTION_EXISTS: ya existe un modelo elegido para Etapa 2"
+                )
+            for previous_publication in previous_publications:
+                replaced = connection.execute(text("""
+                  UPDATE stage2_model_publications SET
+                    status='inactive',is_active=FALSE,deactivated_at=NOW(),
+                    deactivated_by=:actor,updated_at=NOW(),
+                    metadata=metadata||CAST(:metadata AS jsonb)
+                  WHERE id=:id RETURNING *
+                """), {
+                    "id": previous_publication["id"], "actor": actor,
+                    "metadata": json.dumps({
+                        "deactivation_reason": reason,
+                        "replaced_by_model_version_id": model_version_id,
+                    }),
+                }).mappings().one()
+                self._event(
+                    connection, replaced, "MODEL_STAGE2_DEACTIVATED",
+                    "active", "inactive", actor,
+                    reason or "Reemplazado por un nuevo modelo elegido", correlation_id,
                 )
             publication = connection.execute(text("""
               SELECT * FROM stage2_model_publications

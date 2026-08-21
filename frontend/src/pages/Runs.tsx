@@ -9,7 +9,7 @@ import {
 } from '../components/reports/ReportSelectFilter';
 import { TrainingRunGroupCard } from '../components/reports/TrainingRunGroupCard';
 import { UnlinkedRunsSection } from '../components/reports/UnlinkedRunsSection';
-import { api } from '../services/api';
+import { ApiError, api } from '../services/api';
 import type {
   GroupedRunLineageResponse,
   TrainingRunLineageGroup,
@@ -79,8 +79,9 @@ export function Runs({
   const loadStage2=async(runId:string)=>{
     setStage2Loading(current=>({...current,[runId]:true}));
     setStage2Errors(current=>{const next={...current};delete next[runId];return next;});
-    try{const [release,availability]=await Promise.all([
+    try{const [release,preview,availability]=await Promise.all([
       api.getStage2ReleaseStatus(datasource,runId),
+      api.getStage2Availability(datasource,runId),
       api.getProductiveModelAvailability(datasource),
     ]);
       const isCurrent=availability.available&&availability.model?.training_run_id===runId;
@@ -91,22 +92,44 @@ export function Runs({
         environment:availability.environment,alias:availability.alias,
         production_scope:availability.production_scope,
         deployment_status:'active',available_for_inference:true,
-      }:release;
+      }:{...release,technical_blockers:preview.technical_blockers};
       setStage2Status(current=>({...current,[runId]:response}));return response;
     }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));return null;}
     finally{setStage2Loading(current=>({...current,[runId]:false}));}
   };
-  const publishStage2=async(runId:string)=>{
+  const publishStage2=async(runId:string,replaceExisting=false):Promise<'published'|'replacement-required'|'failed'>=>{
     const modelVersionId=stage2Status[runId]?.model_version_id;
-    if(!modelVersionId)return;
+    if(!modelVersionId)return 'failed';
     setStage2Loading(current=>({...current,[runId]:true}));
     setStage2Errors(current=>{const next={...current};delete next[runId];return next;});
     try{
+      if(!replaceExisting){
+        const current=await api.getProductiveModelAvailability(datasource);
+        if(current.available&&current.model?.model_version_id!==modelVersionId){
+          return 'replacement-required';
+        }
+      }
       const response=await api.publishStage2Model(datasource,modelVersionId,{
         reason:'Disponibilización técnica desde el reporte de Ejecuciones',
+        replace_existing:replaceExisting,
       });
       setStage2Status(current=>({...current,[runId]:response}));
-    }catch(reason){setStage2Errors(current=>({...current,[runId]:promotionErrorMessage(reason)}));}
+      await Promise.all(
+        Object.keys(stage2Status)
+          .filter((visibleRunId)=>visibleRunId!==runId)
+          .map((visibleRunId)=>loadStage2(visibleRunId)),
+      );
+      return 'published';
+    }catch(reason){
+      if(reason instanceof ApiError&&reason.status===409&&reason.message.includes('STAGE2_SELECTION_EXISTS')){
+        return 'replacement-required';
+      }
+      const message=reason instanceof ApiError&&reason.message
+        ?`No fue posible publicar el modelo: ${reason.message}`
+        :promotionErrorMessage(reason);
+      setStage2Errors(current=>({...current,[runId]:message}));
+      return 'failed';
+    }
     finally{setStage2Loading(current=>({...current,[runId]:false}));}
   };
   const deactivateStage2=async(runId:string)=>{
@@ -286,7 +309,7 @@ export function Runs({
                     stage2Status={stage2Status[group.training.run_id]}
                     stage2Loading={stage2Loading[group.training.run_id]??false}
                     stage2Error={stage2Errors[group.training.run_id]}
-                    onStage2Publish={()=>publishStage2(group.training.run_id)}
+                    onStage2Publish={(replaceExisting)=>publishStage2(group.training.run_id,replaceExisting)}
                     onStage2Deactivate={()=>deactivateStage2(group.training.run_id)}
                   />
                 ))}

@@ -3,17 +3,13 @@ from __future__ import annotations
 import time
 from collections import OrderedDict
 from datetime import UTC, datetime
-from pathlib import Path
 from uuid import UUID
 from sqlalchemy import text
 from src.model_governance.releases import sha256_file
 from src.model_governance import repository
-from src.model_deployment_service import ModelDeploymentService
+from src.model_deployment_service import ModelDeploymentService, _project_path
 
 from src.malaria_dl.common.paths import PROJECT_ROOT
-def _project_path(value):
-    path=Path(value)
-    return path if path.is_absolute() else PROJECT_ROOT/path
 
 class ModelCache:
     def __init__(self,maxsize=4): self.maxsize=maxsize;self._items=OrderedDict()

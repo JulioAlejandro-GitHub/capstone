@@ -11,6 +11,7 @@ from uuid import UUID
 from sqlalchemy import text
 
 from src.model_contract_service import ModelContractService
+from src.model_deployment_service import _project_path
 from src.model_governance import repository
 from src.model_governance.errors import GovernanceNotFoundError, GovernanceStateError
 from src.model_governance.releases import sha256_file
@@ -170,8 +171,7 @@ class Stage2ModelAvailabilityService:
     def _stage2_artifact(self, preview):
         package=preview["package"];model_version_id=preview["model_version_id"]
         row=self.contract._load(model_version_id)
-        source=Path(row["artifact_path"])
-        if not source.is_absolute():source=PROJECT_ROOT/source
+        source=_project_path(row["artifact_path"])
         if not source.is_file() or sha256_file(source)!=package["production_package"]["artifact_sha256"]:
             raise GovernanceStateError("artifact fuente inexistente o con SHA inválido")
         relative=Path("releases")/self.release_channel/package["model_name"]/model_version_id/"model.keras"
@@ -337,8 +337,8 @@ class Stage2ModelAvailabilityService:
             image=connection.execute(text("""SELECT COALESCE(absolute_path,dataset_dir||'/'||relative_path)
               FROM dataset_split_images WHERE image_id=:id"""),{"id":self._id(source_image_id)}).scalar_one()
         try:
-            artifact=Path(row["artifact_path"]);artifact=artifact if artifact.is_absolute() else PROJECT_ROOT/artifact
-            image_path=Path(image);image_path=image_path if image_path.is_absolute() else PROJECT_ROOT/image_path
+            artifact=_project_path(row["artifact_path"])
+            image_path=_project_path(image)
             if sha256_file(artifact)!=row["artifact_sha256"]:raise ValueError("SHA-256 incorrecto")
             technical=dict(row.get("metadata") or {}).get("technical_contract") or {}
             preprocessing=dict(row["preprocessing_profile_snapshot"] or {}) or dict(technical.get("preprocessing") or {})

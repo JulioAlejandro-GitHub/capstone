@@ -14,7 +14,14 @@ EXPECTED_MAPPING={"0":"uninfected","1":"parasitized"}
 
 def _project_path(value):
     path=Path(value or "")
-    return path if path.is_absolute() else PROJECT_ROOT/path
+    if not path.is_absolute():
+        return PROJECT_ROOT/path
+    # Persisted artifacts may come from the host checkout while this service
+    # runs inside a container. Only rebase the known project-owned suffix.
+    if not path.exists() and "malaria_dl_local_project" in path.parts:
+        marker=path.parts.index("malaria_dl_local_project")
+        return PROJECT_ROOT.joinpath(*path.parts[marker+1:])
+    return path
 
 class ModelDeploymentService:
     def __init__(self, connection_factory=None, model_loader=None, model_cache=None):

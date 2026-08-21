@@ -1,0 +1,12 @@
+{
+  "0": "uninfected",
+  "1": "parasitized",
+  "negative_class_index": 0,
+  "negative_class_name": "uninfected",
+  "positive_class": 1,
+  "positive_class_index": 1,
+  "positive_class_name": "parasitized",
+  "positive_label": "parasitized",
+  "raw_model_score_meaning": "probability_parasitized",
+  "version": "clinical_v1_parasitized_positive"
+}

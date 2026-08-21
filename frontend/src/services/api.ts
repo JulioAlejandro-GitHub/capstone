@@ -1081,7 +1081,7 @@ export const api = {
     );
   },
   publishStage2Model(datasource: string, modelVersionId: string, payload: {
-    actor?: string; reason?: string;
+    actor?: string; reason?: string; replace_existing?: boolean;
   }) {
     return request<Stage2Availability>(
       `/api/model-versions/${modelVersionId}/stage2-publications`,

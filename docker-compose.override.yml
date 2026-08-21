@@ -7,6 +7,10 @@ services:
       # El bind de /app oculta los archivos copiados en la imagen. Montamos
       # explícitamente el proyecto ML requerido por los imports `src.*`.
       - ./malaria_dl_local_project:/app/malaria_dl_local_project:ro
+      # Los releases son artefactos runtime inmutables creados al publicar.
+      # Este bind más específico mantiene el código en modo read-only y
+      # habilita escritura únicamente en el directorio gobernado de releases.
+      - ./malaria_dl_local_project/releases:/app/malaria_dl_local_project/releases
       - ./malaria_dataset_split_project/src:/app/malaria_dataset_split_project/src:ro
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
