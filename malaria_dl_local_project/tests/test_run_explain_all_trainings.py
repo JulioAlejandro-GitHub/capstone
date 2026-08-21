@@ -1,6 +1,7 @@
 """Regression tests for governed batch explainability."""
 
 import unittest
+from pathlib import Path
 
 from run_explain_all_trainings import TrainingRun, build_explain_command
 
@@ -17,6 +18,7 @@ class RunExplainAllTrainingsTests(unittest.TestCase):
             img_size="200",
             batch_size="64",
             preprocessing="rescale_0_1",
+            dataset_version_id="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
         )
 
         command = build_explain_command(
@@ -38,6 +40,16 @@ class RunExplainAllTrainingsTests(unittest.TestCase):
         )
         self.assertNotIn("--checkpoint", command)
         self.assertNotIn(run.checkpoint_path, command)
+        self.assertEqual(
+            command[command.index("--dataset-version-id") + 1],
+            run.dataset_version_id,
+        )
+
+    def test_pipeline_loads_inherited_dataset_as_governed(self):
+        pipeline = Path("src/malaria_dl/explainability/pipeline.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("governed=governed_dataset is not None", pipeline)
 
 
 if __name__ == "__main__":

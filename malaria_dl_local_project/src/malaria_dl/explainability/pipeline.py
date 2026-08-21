@@ -135,6 +135,10 @@ def parse_args(argv=None):
     )
     add_data_source_args(parser)
     parser.add_argument(
+        "--dataset-version-id",
+        help="UUID gobernado; debe coincidir con el dataset heredado del TRAIN.",
+    )
+    parser.add_argument(
         "--track-db",
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
@@ -1249,6 +1253,22 @@ def main():
         checkpoint = Path(args.checkpoint)
         if args.track_db:
             raise RuntimeError("No se guardará explicabilidad legacy sin una model_version resuelta.")
+    governed_dataset = None
+    if args.source_training_run_id:
+        from src.malaria_dl.data.governed_dataset import resolve_training_run_dataset
+
+        governed_dataset = resolve_training_run_dataset(args.source_training_run_id)
+        if governed_dataset is not None:
+            if (
+                args.dataset_version_id
+                and args.dataset_version_id != str(governed_dataset.dataset_version_id)
+            ):
+                raise ValueError(
+                    "--dataset-version-id no coincide con el dataset del TRAIN origen."
+                )
+            args.dataset_version_id = str(governed_dataset.dataset_version_id)
+            args.dataset_dir = str(governed_dataset.dataset_root)
+            args.data_source = "physical"
     output_dir = Path(args.output_dir)
     selected_methods = methods_to_run(args.method)
     run_context = None
@@ -1263,7 +1283,11 @@ def main():
     mapping_metadata = label_mapping_metadata(args.label_mapping)
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: explicabilidad usando checkpoint legacy_tfds_parasitized_zero.")
-    dataset_info = dataset_tracking_metadata(args.data_source, args.dataset_dir)
+    dataset_info = dataset_tracking_metadata(
+        args.data_source, args.dataset_dir, governed=governed_dataset is not None
+    )
+    if governed_dataset is not None:
+        dataset_info.update(governed_dataset.metadata())
     threshold_info = resolve_threshold_for_checkpoint(args.threshold, checkpoint)
     threshold_value = threshold_info["threshold_used"]
 
@@ -1326,6 +1350,7 @@ def main():
             preprocessing_mode=preprocessing_mode,
             data_source=args.data_source,
             dataset_dir=args.dataset_dir,
+            governed=governed_dataset is not None,
         )
 
         class_names = CLASS_NAMES

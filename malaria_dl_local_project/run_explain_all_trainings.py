@@ -38,6 +38,8 @@ class TrainingRun:
     img_size: str
     batch_size: str
     preprocessing: str
+    dataset_version_id: str | None = None
+    exclusion_reasons: tuple[str, ...] = ()
 
 
 def load_database_url(project_dir: Path) -> str:
@@ -76,7 +78,10 @@ def connect(project_dir: Path):
     return psycopg.connect(psycopg_url)
 
 
-def fetch_training_runs(project_dir: Path) -> list[TrainingRun]:
+def fetch_training_inventory(
+    project_dir: Path,
+    dataset_version_id: str | None = None,
+) -> list[TrainingRun]:
     query = """
         SELECT DISTINCT ON (r.id)
             r.id::text AS training_run_id,
@@ -103,27 +108,43 @@ def fetch_training_runs(project_dir: Path) -> list[TrainingRun]:
                 r.execution_parameters ->> 'preprocessing',
                 r.parameters ->> 'preprocessing',
                 'auto'
-            ) AS preprocessing
+            ) AS preprocessing,
+            r.dataset_version_id::text,
+            mv.status,
+            mv.lineage_status,
+            mv.checkpoint_artifact_id IS NOT NULL AS has_checkpoint_artifact,
+            mv.artifact_sha256 IS NOT NULL AS has_artifact_sha
         FROM runs r
         LEFT JOIN models m ON m.id = r.model_id
         JOIN model_versions mv ON mv.training_run_id = r.id
         WHERE r.run_type = 'training'
           AND r.status = 'completed'
-          AND mv.status IN ('candidate', 'validated', 'approved', 'deployed')
-          AND mv.lineage_status = 'resolved'
-          AND mv.checkpoint_artifact_id IS NOT NULL
-          AND mv.artifact_sha256 IS NOT NULL
-          AND COALESCE(mv.best_model_path, mv.checkpoint_path) IS NOT NULL
+          AND (
+              CAST(%(dataset_version_id)s AS uuid) IS NULL
+              OR r.dataset_version_id=CAST(%(dataset_version_id)s AS uuid)
+          )
         ORDER BY r.id, mv.created_at DESC;
     """
 
     with connect(project_dir) as conn:
         with conn.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, {"dataset_version_id": dataset_version_id})
             rows = cur.fetchall()
 
-    return [
-        TrainingRun(
+    inventory = []
+    for row in rows:
+        reasons = []
+        if row[10] not in {"candidate", "validated", "approved", "deployed"}:
+            reasons.append(f"model_version status={row[10]}")
+        if row[11] != "resolved":
+            reasons.append(f"lineage_status={row[11]}")
+        if not row[12]:
+            reasons.append("missing checkpoint_artifact_id")
+        if not row[13]:
+            reasons.append("missing artifact_sha256")
+        if not row[5]:
+            reasons.append("missing checkpoint_path")
+        inventory.append(TrainingRun(
             training_run_id=row[0],
             model_version_id=row[1],
             run_name=row[2],
@@ -133,9 +154,14 @@ def fetch_training_runs(project_dir: Path) -> list[TrainingRun]:
             img_size=str(row[6] or "200"),
             batch_size=str(row[7] or "64"),
             preprocessing=row[8] or "auto",
-        )
-        for row in rows
-    ]
+            dataset_version_id=row[9],
+            exclusion_reasons=tuple(reasons),
+        ))
+    return inventory
+
+
+def fetch_training_runs(project_dir: Path) -> list[TrainingRun]:
+    return [run for run in fetch_training_inventory(project_dir) if not run.exclusion_reasons]
 
 
 def filter_runs(
@@ -184,6 +210,10 @@ def build_explain_command(
         "-m", "src.explain",
         "--model-version-id", run.model_version_id,
         "--source-training-run-id", run.training_run_id,
+        *(
+            ["--dataset-version-id", run.dataset_version_id]
+            if run.dataset_version_id else []
+        ),
         "--method", method,
         "--img-size", run.img_size,
         "--batch-size", run.batch_size,
@@ -206,6 +236,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--method", default="all", choices=["gradcam", "lime", "shap", "all"])
     parser.add_argument("--num-samples", type=int, default=50)
     parser.add_argument("--threshold", default="clinical")
+    parser.add_argument("--dataset-version-id", default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--continue-on-error", action="store_true")
@@ -224,8 +255,20 @@ def main() -> int:
         )
         return 2
 
-    runs = fetch_training_runs(project_dir)
+    inventory = fetch_training_inventory(project_dir, args.dataset_version_id)
+    excluded = [run for run in inventory if run.exclusion_reasons]
+    runs = [run for run in inventory if not run.exclusion_reasons]
     runs = filter_runs(runs, args.models, args.optimizers, args.limit)
+
+    print(
+        f"TRAIN encontrados: {len(inventory)} | elegibles: {len(inventory) - len(excluded)} "
+        f"| excluidos: {len(excluded)}"
+    )
+    for run in excluded:
+        print(
+            f"EXCLUIDO: training_run_id={run.training_run_id} | "
+            + " | ".join(run.exclusion_reasons)
+        )
 
     if not runs:
         print("No hay training runs completados que coincidan con los filtros.")
