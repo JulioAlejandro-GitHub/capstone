@@ -371,6 +371,21 @@ def test_productive_resolver_rejects_absent_or_ambiguous_and_accepts_published_h
     assert error.value.code == "PRODUCTIVE_THRESHOLD_INVALID"
 
 
+def test_productive_resolver_accepts_canonical_tensorflow_keras_framework(tmp_path: Path):
+    ml_root = tmp_path / "ml"
+    model_path = ml_root / "outputs" / "run" / "model.keras"
+    model_path.parent.mkdir(parents=True)
+    model_path.write_bytes(b"controlled-model")
+    candidate = {**_candidate(model_path), "framework": "tensorflow.keras"}
+
+    resolved = ProductiveModelResolver(
+        candidate_loader=lambda: [candidate],
+        ml_project_root=ml_root,
+    ).resolve_current_stage2_productive_model()
+
+    assert resolved.framework == "tensorflow.keras"
+
+
 def test_productive_resolver_query_starts_from_active_publication_and_uses_real_fk():
     captured: dict[str, object] = {}
 

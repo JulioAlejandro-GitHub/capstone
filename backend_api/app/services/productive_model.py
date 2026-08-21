@@ -32,6 +32,7 @@ EXPECTED_LABEL_MAPPING = {
 SUPPORTED_FRAMEWORKS = {
     "keras",
     "tensorflow",
+    "tensorflow.keras",
     "tf.keras",
     "tensorflow/keras",
 }
