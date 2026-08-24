@@ -1,5 +1,9 @@
 # Secuencias de análisis — Entrega 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; secuencias objetivo de Architecture Baseline v1.1.
+> **Snapshot:** Entrega 2, antes de la implementación final de los workflows.
+
 ## Imagen rechazada por calidad
 
 ```mermaid
@@ -155,4 +159,3 @@ flowchart LR
   P6-->P8
   P10-->P11[Aggregation]-->P12[XAI]-->P13[Review]-->P14[Workbench]-->P15[Report/Validation]
 ```
-

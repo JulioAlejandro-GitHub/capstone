@@ -1,5 +1,9 @@
 # Validación Prompt 5
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; resultados y conteos corresponden a Prompt 5.
+> **Snapshot:** 2026-07-27, head `20260727_03`.
+
 Validación ejecutada el 2026-07-27:
 
 - Alembic: `20260727_03 (head)`; cinco tablas creadas.

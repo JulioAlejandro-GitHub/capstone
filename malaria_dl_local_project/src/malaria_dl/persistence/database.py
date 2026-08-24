@@ -1,6 +1,5 @@
 import os
 from contextlib import contextmanager
-from pathlib import Path
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text

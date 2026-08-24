@@ -1,5 +1,9 @@
 # Análisis de gaps de Entrega 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; gaps medidos antes de la implementación de Etapa 2.
+> **Snapshot:** Entrega 2, sobre el inventario anterior a Prompts 2–8.
+
 Clasificación: A reutilizar sin cambios; B extender; C adaptar; D refactorizar; E reemplazar; F crear; G compatibilidad heredada; H diferir. Estados: R reutilizable, P parcial, A adaptador, C conflicto semántico, N no existe, H fuera de MVP. Evidencia transversal: migraciones `db/init/001–029`, paquete `src/malaria_dl`, API `backend_api/app`, UI `frontend/src` y tests homónimos. “Sin test” significa que la búsqueda del inventario no encontró una prueba de la capacidad, no que una ruta nominal garantice funcionamiento.
 
 |ID|Requisito|Estado actual|Evidencia en código|Tests|Gap|Clase|Cambio requerido|Riesgo|Dependencia|Criterio de aceptación futuro|Prompt/release|

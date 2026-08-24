@@ -1,5 +1,9 @@
 # Architecture Baseline v1.1 — Etapa 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; baseline objetivo aprobado, no descripción del runtime vigente.
+> **Snapshot:** Entrega 2 / Architecture Baseline v1.1.
+
 Estado: **APROBADA PARA IMPLEMENTACIÓN POR PROMPTS**, sujeta a los gates de [architecture_approval_v1_1.md](architecture_approval_v1_1.md).
 
 Extensión 2026-07-27: la baseline incorpora `research_subjects`, `scientific_cases`,

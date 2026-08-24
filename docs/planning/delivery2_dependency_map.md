@@ -1,5 +1,13 @@
 # Mapa de dependencias — Entrega 2
 
+> [!NOTE]
+> **HISTORICAL_AUDIT — mapa de diseño de Entrega 2.** Este documento conserva la
+> secuencia prevista entre prompts y no representa el estado operativo actual ni un
+> plan pendiente de ejecución. Para operación vigente use el
+> [índice documental](../README.md) y la guía correspondiente en
+> `docs/engineering/`; para la regla de publicación técnica de Etapa 2 use
+> [stage2_productive_training_card.md](../stage2_productive_training_card.md).
+
 Prompt 3 deja disponible la fundación de sujetos pseudonimizados, casos, muestras, frotis
 e imágenes por metadata. Prompt 4 puede depender de `microscopy_images` para ingesta segura
 sin alterar identidad ni trazabilidad.

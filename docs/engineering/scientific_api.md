@@ -1,8 +1,8 @@
 # API científica
 
 Prefijo: `/api/v1/scientific`. Todas las rutas requieren Bearer JWT y permisos científicos.
-Listados aceptan `limit` (1–200), `offset`, `status` y `search`, ordenados por
-`created_at DESC`.
+Los listados de las familias CRUD indicadas abajo aceptan `limit` (1–200), `offset`,
+`status` y `search`, ordenados por `created_at DESC`.
 
 Familias CRUD sin DELETE:
 
@@ -38,6 +38,11 @@ reviewer y read_only sólo leen. El archivado queda reservado al administrator.
 
 La extensión Prompt 4 (`image_upload_api.md`) añade lookup exacto, generación
 automática, muestras por sujeto, multipart y contenido autenticado.
+
+`GET /workflows` usa un contrato distinto: `limit` 1–100, `offset`, `run_code`,
+`subject_code`, `sample_code`, `status`, `quality_gate_status`,
+`ready_for_analysis`, `created_from` y `created_to`. Ordena por `updated_at DESC`,
+`created_at DESC` e ID; no acepta `search`.
 # Análisis técnico
 
 La API científica se amplía mediante el router separado `/api/v1/analysis`;

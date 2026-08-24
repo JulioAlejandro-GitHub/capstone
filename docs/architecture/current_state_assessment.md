@@ -1,5 +1,9 @@
 # Evaluación del estado actual — Prompt 0
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; no describe el repositorio ni el runtime actuales.
+> **Snapshot:** `main@092a237497615ac3f1e775a61c54c6d6417dd515`, 423 archivos versionados.
+
 ## Resumen ejecutivo
 
 Snapshot auditado: rama `main`, commit `092a237497615ac3f1e775a61c54c6d6417dd515`, working tree inicialmente limpio, 423 archivos versionados, macOS Darwin arm64. La solución es un monolito modular académico con tres superficies: paquete ML Python, API FastAPI y SPA React. Su activo principal es la trazabilidad reproducible de clasificación celular: runs, checkpoints, checksum, calibración, explicabilidad, linaje y gobierno. No existe aún el pipeline de frotis completo.

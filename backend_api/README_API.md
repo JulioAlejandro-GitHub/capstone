@@ -87,6 +87,14 @@ Los endpoints de casos aceptan filtros opcionales como `model_name`, `dataset_na
 
 Los endpoints `/explainability/cases`, sus subconjuntos, `/explainability/gallery` y `/runs/{run_id}/explainability` leen `vw_visual_explainability_audit`. Cada caso agrega URLs relativas y codificadas para imagen, fuente, crop y explicacion, junto con probabilidades binarias, confianza, interpretacion y campos futuros de trazabilidad de imagen completa. Los campos no disponibles se devuelven como `null`.
 
+`/runs/{run_id}/explainability` conserva la consulta exacta para un EXPLAIN y también
+resuelve por `run_lineage` los EXPLAIN hijos de TRAIN o el sibling gobernado de un
+EVALUATE. El cruce de EVALUATE exige la misma Dataset Version y prioriza
+`model_version_id`, luego `checkpoint_artifact_id` y finalmente un checkpoint path no
+nulo; nunca elige por recencia. `compact=true` evita metadata cruda duplicada y está
+destinado a la tabla de detalle. `available` en las URLs significa que el archivo es
+resoluble y servible; no acredita por sí solo que su checksum histórico coincida.
+
 `GET /predictions/uploads` lista imagenes externas evaluadas con `src.predict_image --track-db`. Acepta filtros `model_name`, `predicted_label`, `limit` y `offset`. La respuesta incluye `probability_parasitized`, `probability_uninfected`, `confidence_level`, `decision`, `tta`, `n_aug` y datos de explicabilidad si existen.
 
 `GET /api/dataset/images` acepta `split`, `class_name`, `page` y `page_size`. El endpoint de archivo de dataset solo resuelve imágenes por `image_id` y valida que estén dentro de `data/malaria_physical_split`.

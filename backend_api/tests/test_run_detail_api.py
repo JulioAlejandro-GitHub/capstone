@@ -116,20 +116,35 @@ class RunDetailApiTests(unittest.TestCase):
         self.assertIs(params["is_correct"], False)
 
     def test_run_explainability_uses_visual_audit_contract(self):
+        scope = [{"run_id": RUN_ID, "model_version_id": "version-1"}]
+        cases = [
+            {
+                "explainability_id": "explain-1",
+                "run_id": RUN_ID,
+                "method": "gradcam",
+                "case_type": "true_positive",
+                "image_path": "data/source/cell.png",
+                "explanation_output_path": "outputs/explainability/cell.png",
+                "_total_count": 2,
+            },
+            {
+                "explainability_id": "explain-2",
+                "run_id": RUN_ID,
+                "method": "lime",
+                "case_type": "true_positive",
+                "image_path": "data/source/cell.png",
+                "explanation_output_path": "outputs/explainability/cell-lime.png",
+                "_total_count": 2,
+            },
+        ]
         with (
-            mock.patch("app.routes.runs.fetch_one", return_value={"total": 1}),
+            mock.patch(
+                "app.services.explainability.resolve_artifact_reference",
+                return_value=mock.Mock(),
+            ),
             mock.patch(
                 "app.routes.runs.fetch_all",
-                return_value=[
-                    {
-                        "explainability_id": "explain-1",
-                        "run_id": RUN_ID,
-                        "method": "gradcam",
-                        "case_type": "true_positive",
-                        "image_path": "data/source/cell.png",
-                        "explanation_output_path": "outputs/explainability/cell.png",
-                    }
-                ],
+                side_effect=[scope, cases],
             ) as fetch_all,
         ):
             payload = get_run_explainability(
@@ -139,14 +154,79 @@ class RunDetailApiTests(unittest.TestCase):
                 case_type=None,
                 limit=25,
                 offset=0,
+                compact=True,
             )
 
-        self.assertIn("vw_visual_explainability_audit", fetch_all.call_args.args[1])
+        self.assertEqual(fetch_all.call_count, 2)
+        scope_sql = fetch_all.call_args_list[0].args[1]
+        audit_sql = fetch_all.call_args_list[1].args[1]
+        self.assertIn("requested.run_type = 'training'", scope_sql)
+        self.assertIn("requested.run_type = 'evaluation'", scope_sql)
+        self.assertIn("evaluation.model_version_id IS NOT NULL", scope_sql)
+        self.assertIn("evaluation.checkpoint_artifact_id IS NOT NULL", scope_sql)
+        self.assertIn("evaluation.checkpoint_path IS NOT NULL", scope_sql)
+        self.assertIn("child.dataset_version_id = evaluation.dataset_version_id", scope_sql)
+        self.assertIn("vw_visual_explainability_audit", audit_sql)
+        self.assertIn("COUNT(*) OVER ()", audit_sql)
+        self.assertNotIn("SELECT COUNT(*) AS total", audit_sql)
+        self.assertNotIn("audit.*", audit_sql)
+        self.assertIn("audit.explanation_parameters", audit_sql)
+        self.assertEqual(
+            fetch_all.call_args_list[1].args[2]["scope_run_id_0"],
+            RUN_ID,
+        )
+        self.assertEqual(payload["total"], 2)
+        self.assertTrue(all("_total_count" not in item for item in payload["items"]))
         self.assertEqual(
             payload["items"][0]["image_url"],
             "/artifacts/file?path=data/source/cell.png",
         )
         self.assertIn("región microscópica plausible", payload["items"][0]["interpretation"])
+
+    def test_run_explainability_keeps_total_for_an_out_of_range_page(self):
+        scope = [{"run_id": RUN_ID, "model_version_id": None}]
+        with (
+            mock.patch(
+                "app.routes.runs.fetch_all",
+                side_effect=[scope, []],
+            ) as fetch_all,
+            mock.patch(
+                "app.routes.runs.fetch_one", return_value={"total": 150}
+            ) as fetch_one,
+        ):
+            payload = get_run_explainability(
+                run_id=RUN_ID,
+                datasource="malaria",
+                method=None,
+                case_type=None,
+                limit=25,
+                offset=200,
+                compact=True,
+            )
+
+        self.assertEqual(fetch_all.call_count, 2)
+        self.assertEqual(fetch_one.call_count, 1)
+        self.assertIn("SELECT COUNT(*) AS total", fetch_one.call_args.args[1])
+        self.assertEqual(payload["items"], [])
+        self.assertEqual(payload["total"], 150)
+
+    def test_run_explainability_returns_empty_when_run_does_not_exist(self):
+        with mock.patch("app.routes.runs.fetch_all", return_value=[]) as fetch_all:
+            payload = get_run_explainability(
+                run_id=RUN_ID,
+                datasource="malaria",
+                method=None,
+                case_type=None,
+                limit=25,
+                offset=0,
+                compact=True,
+            )
+
+        self.assertEqual(fetch_all.call_count, 1)
+        self.assertEqual(
+            payload,
+            {"items": [], "total": 0, "limit": 25, "offset": 0},
+        )
 
 
 if __name__ == "__main__":

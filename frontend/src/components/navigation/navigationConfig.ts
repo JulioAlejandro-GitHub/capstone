@@ -33,24 +33,8 @@ const modelAiGroups: NavigationGroup[] = [
   {
     id: 'experimentation', label: 'Experimentación', items: [
       { id: 'runs', label: 'Ejecuciones', path: routes.runs, icon: 'activity' },
-      // { id: 'evaluations', label: 'Evaluaciones', path: routes.evaluations, icon: 'evaluation' },
-      // { id: 'comparison', label: 'Comparación de modelos', path: routes.comparison, icon: 'compare' },
-      // { id: 'explainability', label: 'Explicabilidad', path: routes.explainability, icon: 'explain' },
     ]
   },
-  // {
-  //   id: 'governance', label: 'Gobernanza', items: [
-  //     { id: 'model-versions', label: 'Modelos liberados', path: routes.modelVersions, icon: 'package' },
-  //     { id: 'deployments', label: 'Despliegues', path: routes.deployments, icon: 'rocket' },
-  //     { id: 'traceability', label: 'Trazabilidad', path: routes.traceability, icon: 'trace' },
-  //   ]
-  // },
-  // {
-  //   id: 'operation', label: 'Operación', items: [
-  //     { id: 'predictions', label: 'Predicciones', path: routes.predictions, icon: 'prediction' },
-  //     { id: 'logs', label: 'Errores y logs', path: routes.errorsLogs, icon: 'logs' },
-  //   ]
-  // },
   {
     id: 'data', label: 'Datos', items: [
       { id: 'dataset', label: 'Dataset', path: routes.dataset, icon: 'database' },
@@ -83,7 +67,6 @@ export const navigationModules: NavigationModule[] = [
   },
 ];
 
-export const navigationGroups = modelAiGroups;
 export const navigationItems = navigationModules.flatMap((module) =>
   module.groups.flatMap((group) => group.items));
 

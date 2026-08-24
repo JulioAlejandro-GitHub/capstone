@@ -1,5 +1,9 @@
 # Validación runtime Alembic
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; los resultados no representan el head actual.
+> **Snapshot:** head `20260726_02`; el head versionado actual es `20260812_02`.
+
 |Gate|Resultado|Evidencia|
 |---|---|---|
 |Head único|PASS|`20260726_02`|

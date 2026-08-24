@@ -3,6 +3,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, text
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -10,6 +12,18 @@ sys.path.insert(0, str(ROOT / "backend_api"))
 from app.config import get_settings
 from app.database_safety import assert_capstone_database
 from app.db import normalize_sqlalchemy_url
+
+
+def _linear_head() -> str:
+    scripts = ScriptDirectory.from_config(Config(str(ROOT / "alembic.ini")))
+    heads = scripts.get_heads()
+    revisions = list(scripts.walk_revisions())
+    if len(heads) != 1 or any(
+        revision.is_branch_point or revision.is_merge_point
+        for revision in revisions
+    ):
+        raise SystemExit("Historial Alembic incompatible: se requiere una línea única")
+    return heads[0]
 
 
 def main():
@@ -37,7 +51,13 @@ def main():
         raise SystemExit(f"Esquema incompatible; faltan tablas/migración final: {sorted(missing)}")
     if args.pre_stamp and version is not None:
         raise SystemExit("La base ya posee alembic_version; adopción pre-stamp rechazada")
-    if not args.pre_stamp and version not in {"20260726_00", "20260726_01", "20260726_02"}:
+    compatible_versions = {
+        "20260726_00",
+        "20260726_01",
+        "20260726_02",
+        _linear_head(),
+    }
+    if not args.pre_stamp and version not in compatible_versions:
         raise SystemExit("alembic_version incompatible")
     print(f"Adopción Alembic válida en {actual_database}: {version or 'pre-stamp'}")
 

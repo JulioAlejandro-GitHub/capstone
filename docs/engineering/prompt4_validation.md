@@ -1,5 +1,9 @@
 # Validación de Prompt 4
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; describe el alcance de validación de Prompt 4.
+> **Snapshot:** Prompt 4 / ingesta segura inicial.
+
 La validación cubre revisión Alembic, constraints, JWT/RBAC, identidad,
 multipart/streaming, metadata backend-only, formatos, duplicados, contenido,
 auditoría, compensación, perfil NIH-NLM, frontend, scripts y ausencia de

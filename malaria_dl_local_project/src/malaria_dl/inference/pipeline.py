@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import numpy as np
-import tensorflow as tf
 from PIL import Image
 
 from src.calibration import calibrate_probability

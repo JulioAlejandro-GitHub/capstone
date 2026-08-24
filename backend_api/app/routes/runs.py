@@ -22,6 +22,165 @@ LABEL_MAPPING = {
 }
 
 
+RUN_EXPLAINABILITY_SCOPE_SQL = """
+WITH requested_run AS (
+    SELECT id, run_type, dataset_version_id
+    FROM runs
+    WHERE id = CAST(:run_id AS uuid)
+), evaluation_source AS (
+    SELECT
+        lineage.parent_run_id,
+        lineage.model_version_id,
+        lineage.checkpoint_artifact_id,
+        lineage.checkpoint_path,
+        requested.dataset_version_id
+    FROM requested_run requested
+    JOIN run_lineage lineage ON lineage.child_run_id = requested.id
+    WHERE requested.run_type = 'evaluation'
+      AND lineage.relationship_type = 'evaluates_checkpoint_from'
+), scope_candidates AS (
+    -- Preserve the historical exact-run lookup for every run type.
+    SELECT
+        requested.id AS run_id,
+        direct_lineage.model_version_id
+    FROM requested_run requested
+    LEFT JOIN LATERAL (
+        SELECT lineage.model_version_id
+        FROM run_lineage lineage
+        WHERE requested.run_type = 'explainability'
+          AND lineage.child_run_id = requested.id
+          AND lineage.relationship_type = 'explains_checkpoint_from'
+        ORDER BY lineage.created_at DESC, lineage.id
+        LIMIT 1
+    ) direct_lineage ON TRUE
+
+    UNION ALL
+
+    -- A TRAIN detail owns every explicitly linked EXPLAIN child.
+    SELECT lineage.child_run_id, lineage.model_version_id
+    FROM requested_run requested
+    JOIN run_lineage lineage ON lineage.parent_run_id = requested.id
+    JOIN runs child ON child.id = lineage.child_run_id
+    WHERE requested.run_type = 'training'
+      AND child.run_type = 'explainability'
+      AND lineage.relationship_type = 'explains_checkpoint_from'
+
+    UNION ALL
+
+    -- An EVALUATE detail may expose only EXPLAIN siblings for the same governed
+    -- model/checkpoint identity. Each fallback is used only when the stronger
+    -- identity is absent, so legacy siblings are never selected by recency.
+    SELECT explanation.child_run_id, explanation.model_version_id
+    FROM evaluation_source evaluation
+    JOIN run_lineage explanation
+      ON explanation.parent_run_id = evaluation.parent_run_id
+     AND explanation.relationship_type = 'explains_checkpoint_from'
+    JOIN runs child
+      ON child.id = explanation.child_run_id
+     AND child.run_type = 'explainability'
+    WHERE
+        (
+            evaluation.dataset_version_id IS NULL
+            OR child.dataset_version_id = evaluation.dataset_version_id
+        )
+        AND (
+            (
+                evaluation.model_version_id IS NOT NULL
+                AND explanation.model_version_id = evaluation.model_version_id
+            )
+            OR (
+                evaluation.model_version_id IS NULL
+                AND evaluation.checkpoint_artifact_id IS NOT NULL
+                AND explanation.checkpoint_artifact_id = evaluation.checkpoint_artifact_id
+            )
+            OR (
+                evaluation.model_version_id IS NULL
+                AND evaluation.checkpoint_artifact_id IS NULL
+                AND evaluation.checkpoint_path IS NOT NULL
+                AND explanation.checkpoint_path = evaluation.checkpoint_path
+            )
+        )
+), explainability_scope AS (
+    SELECT
+        run_id,
+        CASE
+            WHEN COUNT(DISTINCT model_version_id) = 1
+            THEN MIN(model_version_id::text)::uuid
+            ELSE NULL
+        END AS model_version_id
+    FROM scope_candidates
+    GROUP BY run_id
+)
+SELECT run_id::text AS run_id, model_version_id::text AS model_version_id
+FROM explainability_scope
+ORDER BY run_id
+"""
+
+
+RUN_EXPLAINABILITY_COMPACT_COLUMNS = """
+    audit.explainability_id,
+    audit.prediction_id,
+    audit.run_id,
+    audit.model_name,
+    audit.dataset_name,
+    audit.run_name,
+    audit.run_type,
+    audit.run_status,
+    audit.dataset_source,
+    audit.dataset_split,
+    audit.dataset_index,
+    audit.manifest_id,
+    audit.dataset_image_id,
+    audit.original_tfds_label,
+    audit.remapped_label,
+    audit.label_mapping_version,
+    audit.method,
+    audit.case_type,
+    audit.true_label,
+    audit.predicted_label,
+    audit.positive_label,
+    audit.score,
+    audit.score_positive_label,
+    audit.probability_parasitized,
+    audit.probability_uninfected,
+    audit.threshold,
+    audit.threshold_used,
+    audit.threshold_source,
+    audit.confidence_distance,
+    audit.confidence_status,
+    audit.is_correct,
+    audit.image_id,
+    audit.image_path,
+    audit.source_image_path,
+    audit.original_image_path,
+    audit.original_filename,
+    audit.image_stored_path,
+    audit.crop_path,
+    audit.source_image_id,
+    audit.patient_id,
+    audit.slide_id,
+    audit.bbox_x,
+    audit.bbox_y,
+    audit.bbox_width,
+    audit.bbox_height,
+    audit.prediction_upload_id,
+    audit.uploaded_at,
+    audit.explanation_output_path,
+    audit.last_conv_layer,
+    audit.success,
+    audit.error_message,
+    audit.explanation_parameters,
+    audit.interpretation,
+    audit.artifact_id,
+    audit.artifact_path,
+    audit.artifact_type,
+    audit.started_at,
+    audit.created_at,
+    {model_version_expression} AS model_version,
+    {model_version_expression} AS model_version_id
+"""
+
+
 def latest_item(rows):
     items = rows_to_list(rows)
     return items[0] if items else None
@@ -627,41 +786,103 @@ def get_run_explainability(
     case_type: str | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    compact: bool = False,
 ):
     try:
         normalized_run_id = str(UUID(str(run_id)))
     except (TypeError, ValueError, AttributeError) as exc:
         raise HTTPException(status_code=422, detail="run_id debe ser un UUID valido.") from exc
 
-    conditions = ["run_id = CAST(:run_id AS uuid)"]
-    params = {"run_id": normalized_run_id, "limit": limit, "offset": offset}
+    scope = rows_to_list(
+        fetch_all(
+            datasource,
+            RUN_EXPLAINABILITY_SCOPE_SQL,
+            {"run_id": normalized_run_id},
+        )
+    )
+    if not scope:
+        return {"items": [], "total": 0, "limit": limit, "offset": offset}
+
+    params = {"limit": limit, "offset": offset}
+    scope_placeholders = []
+    model_version_cases = []
+    for index, scoped_run in enumerate(scope):
+        run_key = f"scope_run_id_{index}"
+        params[run_key] = scoped_run["run_id"]
+        scope_placeholders.append(f"CAST(:{run_key} AS uuid)")
+        if scoped_run.get("model_version_id"):
+            version_key = f"scope_model_version_id_{index}"
+            params[version_key] = scoped_run["model_version_id"]
+            model_version_cases.append(
+                f"WHEN audit.run_id = CAST(:{run_key} AS uuid) THEN :{version_key}"
+            )
+
+    conditions = [f"audit.run_id IN ({', '.join(scope_placeholders)})"]
     if method is not None:
-        conditions.append("method = :method")
+        conditions.append("audit.method = :method")
         params["method"] = method
     if case_type is not None:
-        conditions.append("case_type = :case_type")
+        conditions.append("audit.case_type = :case_type")
         params["case_type"] = case_type
-    where_sql = f"WHERE {' AND '.join(conditions)}"
+    where_sql = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    model_version_expression = (
+        "COALESCE("
+        f"CASE {' '.join(model_version_cases)} ELSE NULL END, "
+        "NULLIF(audit.run_parameters->>'model_version_id', ''), "
+        "NULLIF(audit.run_metadata->>'model_version_id', '')"
+        ")"
+        if model_version_cases
+        else (
+            "COALESCE(NULLIF(audit.run_parameters->>'model_version_id', ''), "
+            "NULLIF(audit.run_metadata->>'model_version_id', ''))"
+        )
+    )
+    selected_columns = (
+        RUN_EXPLAINABILITY_COMPACT_COLUMNS.format(
+            model_version_expression=model_version_expression
+        )
+        if compact
+        else "audit.*"
+    )
 
-    count_row = fetch_one(
-        datasource,
-        f"SELECT COUNT(*) AS total FROM vw_visual_explainability_audit {where_sql}",
-        params,
+    items = rows_to_list(
+        fetch_all(
+            datasource,
+            f"""
+            SELECT
+                {selected_columns},
+                COUNT(*) OVER () AS _total_count
+            FROM vw_visual_explainability_audit audit
+            {where_sql}
+            ORDER BY
+                audit.started_at DESC NULLS LAST,
+                audit.created_at DESC NULLS LAST,
+                audit.explainability_id
+            LIMIT :limit OFFSET :offset
+            """,
+            params,
+        )
     )
-    rows = fetch_all(
-        datasource,
-        f"""
-        SELECT *
-        FROM vw_visual_explainability_audit
-        {where_sql}
-        ORDER BY started_at DESC NULLS LAST
-        LIMIT :limit OFFSET :offset
-        """,
-        params,
-    )
-    total = int(row_to_dict(count_row)["total"]) if count_row else 0
+    total = int(items[0].get("_total_count", 0)) if items else 0
+    for item in items:
+        item.pop("_total_count", None)
+
+    # COUNT(*) OVER() avoids a second scan of the expensive audit view. Only an
+    # out-of-range page needs a fallback query to preserve the total contract.
+    if not items and offset > 0:
+        count_row = fetch_one(
+            datasource,
+            f"""
+            SELECT COUNT(*) AS total
+            FROM vw_visual_explainability_audit audit
+            {where_sql}
+            """,
+            params,
+        )
+        total = int(row_to_dict(count_row)["total"]) if count_row else 0
+
     return {
-        "items": enrich_explainability_items(rows_to_list(rows)),
+        "items": enrich_explainability_items(items),
         "total": total,
         "limit": limit,
         "offset": offset,

@@ -1,5 +1,9 @@
 # Estado actual de la fundación — Prompt 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; “estado actual” se refiere exclusivamente al cierre de Prompt 2.
+> **Snapshot:** `main@d7e3bbd45e4c772ab063d7e1027923e12b38e9cd`.
+
 Snapshot inicial: rama `main`, commit `d7e3bbd45e4c772ab063d7e1027923e12b38e9cd`, árbol limpio. Difiere del snapshot auditado `3c79bb0`: el delta agrega la documentación de arquitectura v1.1 y `complemento e2.txt`; no había fundación Prompt 2. Snapshot final de trabajo: misma rama y commit (sin commits por instrucción), con cambios no confirmados enumerables mediante `git status`.
 
 Validación local: frontend 59/59, ML rápido 17/17, backend 56 passed/4 skipped y build TypeScript/Vite correcto. Docker Compose test valida. El bootstrap PostgreSQL/Alembic y Docker build no pudieron ejecutarse porque el daemon Docker local no estaba iniciado; deben ejecutarse en CI o tras iniciar Docker Desktop.

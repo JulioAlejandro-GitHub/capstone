@@ -1,5 +1,9 @@
 # Paridad local con CI — SUPERSEDED
 
+> **Estado documental:** `OBSOLETE_DOC` / `SUPERSEDED`
+> **Uso operativo:** No; la tabla y sus conteos pertenecen a un workflow anterior.
+> **Sustitución:** `ci_pipeline.md`, `test_environment.md` y el workflow versionado.
+
 Las referencias Docker posteriores son históricas. El workflow actual no contiene jobs
 Docker ni PostgreSQL; `requires_local_postgres` pertenece al gate local.
 

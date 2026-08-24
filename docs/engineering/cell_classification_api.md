@@ -16,6 +16,8 @@ Base: `/api/v1/cell-classification`. Todas las rutas requieren JWT y permisos
 | GET | `/explanations/{id}/heatmap` | PNG autenticado |
 | GET | `/explanations/{id}/overlay` | PNG autenticado |
 | POST/GET | `/predictions/{id}/reviews` | revisión append-only/historial |
+| GET/PUT | `/predictions/{id}/human-classification` | clasificación humana efectiva, separada del label automático |
+| GET | `/predictions/{id}/human-classification/history` | historial cronológico de clasificaciones humanas |
 
 El body de creación rechaza campos extra. List predictions filtra por imagen,
 label, near-threshold, status, review status y `cell_code`, ordenando por
@@ -31,3 +33,9 @@ Los endpoints PNG verifican confinement, symlinks, checksum y tamaño, y devuelv
 Las respuestas JSON públicas eliminan claves relativas de storage, paths/URI
 físicos, secretos y tokens; para una explicación generada exponen únicamente
 URLs autenticadas de contenido.
+
+`reviews` conserva las decisiones científicas append-only (`confirmed`,
+`corrected`, `needs_attention`, `comment_only`). `human-classification` expone
+la etiqueta humana efectiva `parasitized|uninfected` y su historial; un PUT
+crea una nueva revisión, no modifica la predicción automática ni borra filas
+anteriores.

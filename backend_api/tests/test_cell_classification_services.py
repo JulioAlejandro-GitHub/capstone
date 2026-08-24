@@ -445,7 +445,10 @@ def test_active_publication_is_not_reinterpreted_by_inference_lifecycle_checks(
         evaluation_lineage_valid=False,
         model_version_status="retired",
         lineage_status="unresolved",
-        deployment_metadata={"technical_contract": candidate["deployment_metadata"]["technical_contract"]},
+        deployment_metadata={
+            "production_scope": candidate["deployment_metadata"]["production_scope"],
+            "technical_contract": candidate["deployment_metadata"]["technical_contract"],
+        },
     )
 
     resolved = ProductiveModelResolver(

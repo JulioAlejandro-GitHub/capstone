@@ -252,12 +252,3 @@ class ScientificValidationAnnotationUpdate(ScientificSchema):
                 "annotation_null", "Los campos editables no admiten null."
             )
         return self
-
-
-class ScientificRead(ScientificSchema):
-    id: UUID
-    status: str
-    metadata_json: dict[str, Any]
-    created_at: datetime
-    updated_at: datetime
-    archived_at: datetime | None = None

@@ -1,4 +1,0 @@
-# SUPERSEDED — do not use.
-# PostgreSQL tests use malaria_experiments with transaction rollback. No test
-# database, PostgreSQL container, or Docker gate is supported.
-services: {}

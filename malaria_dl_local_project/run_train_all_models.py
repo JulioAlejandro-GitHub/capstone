@@ -22,7 +22,6 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-from typing import Iterable
 
 
 DEFAULT_MODELS = ["custom_cnn", "vgg16", "densenet121"]

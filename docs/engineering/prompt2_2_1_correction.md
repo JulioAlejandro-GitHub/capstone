@@ -1,5 +1,9 @@
 # Corrección Prompt 2.2.1
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; conserva las correcciones efectuadas en ese prompt.
+> **Snapshot:** 2026-07-27 / Prompt 2.2.1.
+
 Fecha: 2026-07-27.
 
 Se retiraron los archivos frontend Docker creados por los prompts, el target Docker del

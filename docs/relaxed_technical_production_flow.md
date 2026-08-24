@@ -1,5 +1,16 @@
 # Producción técnica relajada para Etapa 2
 
+> **Estado documental: LEGACY_REQUIRED / COMPATIBILITY.** Conserva evidencia de un
+> flujo técnico anterior y de endpoints aún compatibles; **no autoriza publicar sin un
+> EVALUATE completado ni define la fuente de verdad actual**. La regla mínima de
+> elegibilidad vigente es `TRAIN completed + EVALUATE completed`; la habilitación
+> técnica añade contrato, threshold, smoke e inferencia. Consulte
+> [stage2_productive_training_card.md](stage2_productive_training_card.md).
+
+> **Lectura del cuerpo:** los enunciados del flujo relajado son un snapshot histórico,
+> no el contrato vigente de los endpoints compatibles. Cuando difieren, prevalecen la
+> regla anterior y el servicio actual.
+
 ## Fuente de verdad
 
 La disponibilidad se deriva exclusivamente de:
@@ -26,15 +37,20 @@ congelado, verificado, cargado y ejecutó una inferencia real. No significa
 certificación clínica, autorización sanitaria ni aprobación para diagnóstico.
 El flujo clínico estricto permanece disponible y separado.
 
-## Readiness relajado
+## Readiness del snapshot relajado
 
-No bloquean: ausencia de explainability o evaluación formal, falta de aprobación
-clínica, estado discovered/candidate, metadata histórica parcial ni ausencia de
-threshold formal. Se persisten como advertencias.
+En el snapshot no bloqueaban la ausencia de explainability o evaluación formal, la
+falta de aprobación clínica, el estado discovered/candidate, la metadata histórica
+parcial ni la ausencia de threshold formal; se persistían como advertencias.
 
-Sí bloquean: archivo no localizable/copiable, SHA inválido, modelo corrupto o no
-cargable, preprocessing no ejecutable, firma incompatible, mapping invertido,
-inferencia fallida o error transaccional.
+En la implementación compatible vigente, EXPLAIN y la aprobación clínica siguen sin
+participar en la elegibilidad, pero un EVALUATE `completed` sí es obligatorio y la
+habilitación técnica rechaza una model version sin calibración de threshold registrada
+y trazable.
+
+En el snapshot sí bloqueaban: archivo no localizable/copiable, SHA inválido, modelo
+corrupto o no cargable, preprocessing no ejecutable, firma incompatible, mapping
+invertido, inferencia fallida o error transaccional.
 
 La convención obligatoria es:
 
@@ -64,10 +80,10 @@ releases/production/<model>/<model_version_id>/
   checksums.sha256
 ```
 
-Las firmas se inspeccionan cargando Keras con `compile=false`. El threshold se
-elige desde calibración, evaluación, training o deployment; si no existe se
-registra `0.5` como `stage2_operational_default`, nunca como calibrado
-clínicamente.
+En el snapshot las firmas se inspeccionaban cargando Keras con `compile=false`. El
+threshold se elegía desde calibración, evaluación, training o deployment; si no
+existía, se registraba `0.5` como `stage2_operational_default`, nunca como calibrado
+clínicamente. Ese fallback ya no describe el servicio compatible vigente.
 
 ## Publicación y rollback
 

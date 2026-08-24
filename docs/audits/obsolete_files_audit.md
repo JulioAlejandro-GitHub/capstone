@@ -1,5 +1,9 @@
 # Auditoría inicial de archivos obsoletos
 
+> **Estado documental: HISTORICAL_AUDIT.** Inventario ligado a la rama, commit y fecha
+> indicados. Las rutas eliminadas siguen citadas como evidencia y no son referencias
+> operativas rotas.
+
 Fecha: 2026-07-25  
 Rama: `chore/remove-obsolete-files`  
 Commit base: `8f3988d6`

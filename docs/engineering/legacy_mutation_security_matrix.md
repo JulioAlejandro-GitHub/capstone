@@ -1,5 +1,9 @@
 # Matriz de seguridad de mutaciones legacy
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; la API y su inventario de mutaciones crecieron después de este corte.
+> **Snapshot:** Prompt 2.2.1, 2026-07-26.
+
 Prompt 2.2.1 conserva el inventario y su test fail-closed. RBAC central está PASS. La
 atomicidad por familia permanece BLOCKED hasta disponer de E2E de cada repositorio.
 

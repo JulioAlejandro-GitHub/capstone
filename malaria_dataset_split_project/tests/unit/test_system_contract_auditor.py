@@ -1,7 +1,6 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 from malaria_split.discovery import classify_table, has_column, scan_current_physical_split
 

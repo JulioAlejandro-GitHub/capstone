@@ -1,5 +1,9 @@
 # Diseño de cola PostgreSQL — Entrega 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; diseño conceptual no materializado como worker con leases.
+> **Snapshot:** Entrega 2 / Architecture Baseline v1.1.
+
 Estado: decisión aprobada; diseño conceptual, sin SQL productivo.
 
 ## Contrato de `analysis_jobs`
@@ -106,4 +110,3 @@ Contrato polling:
 - `completed`: detector válido, agregado completo y todas las asignaciones requeridas cerradas; fallos XAI tolerados se exponen pero no fuerzan parcial si la policy los declara no bloqueantes.
 - `partial_failure`: existe resultado cuantitativo reproducible, pero una o más células/modelos/crops obligatorios fallaron.
 - `failed`: no existe resultado cuantitativo válido (detector total, storage crítico o agregador irrecuperable tras intentos).
-

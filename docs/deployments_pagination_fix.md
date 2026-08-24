@@ -1,5 +1,10 @@
 # Corrección de carga de Despliegues por contrato de paginación
 
+> **Estado documental: HISTORICAL_AUDIT.** Registra el estado en que se corrigió este incidente.
+> La limpieza posterior retiró `DATASET_IMAGE_PAGE_SIZES` y
+> `normalizeDatasetImagePageSize` porque no tenían consumidores; permanece activo
+> `DEFAULT_DATASET_IMAGE_PAGE_SIZE = 12` y el contrato backend `12/24/48/96`.
+
 ## Resumen
 
 La página **Modelo IA → Despliegues** volvía error porque cargaba en paralelo:

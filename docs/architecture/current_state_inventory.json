@@ -1,4 +1,10 @@
 {
+  "document_status": {
+    "classification": "HISTORICAL_AUDIT",
+    "operational_use": false,
+    "snapshot": "main@092a237497615ac3f1e775a61c54c6d6417dd515",
+    "note": "Inventario de Prompt 0; no representa el repositorio ni el runtime actuales."
+  },
   "snapshot": {
     "branch": "main",
     "commit": "092a237497615ac3f1e775a61c54c6d6417dd515",

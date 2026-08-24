@@ -9,8 +9,10 @@ La cadena lineal de Prompt 8 es:
 3. `20260728_03`: alinea esa validación con el contrato canónico final de
    `per_image_summary`.
 
-Por tanto, el esquema operativo de Prompt 8 requiere head `20260728_03`; no
-basta con aplicar solamente `20260728_01`.
+Por tanto, el contrato de Prompt 8 quedó completo por primera vez en
+`20260728_03`; no basta con aplicar solamente `20260728_01`. Esa revisión es un
+mínimo histórico, no el head operativo vigente. El head versionado actual es
+`20260812_02` y operación debe comprobar siempre `current=head`.
 
 La revisión base introduce:
 

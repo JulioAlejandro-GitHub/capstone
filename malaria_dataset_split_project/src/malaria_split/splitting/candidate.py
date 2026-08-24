@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from collections import Counter, defaultdict
+from collections import defaultdict
 from dataclasses import dataclass
 from statistics import fmean
 from typing import Mapping

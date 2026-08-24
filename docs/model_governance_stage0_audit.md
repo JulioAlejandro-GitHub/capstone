@@ -1,5 +1,9 @@
 # Auditoría técnica Stage 0: gobierno y linaje de modelos
 
+> **Estado documental: HISTORICAL_AUDIT.** El cuerpo conserva deliberadamente la
+> fotografía de Stage 0 y una sección postimplementación separada. No armonizar sus
+> conteos o brechas históricas con el estado actual.
+
 **Fecha de auditoría:** 2026-07-20<br>
 **Repositorio:** rama main, commit bfdf3e8a2a498df73d1a5c588a10c940c52235c8<br>
 **Alcance:** repositorio completo, artefactos locales gobernados y estado de PostgreSQL disponible durante la auditoría<br>

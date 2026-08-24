@@ -1,5 +1,10 @@
 # Flujo de usuario: Ejecuciones → liberación → despliegue
 
+> **Estado documental: OBSOLETE_DOC. Uso operativo: NO.** Describe la navegación por
+> `PageKey` anterior a React Router. El contrato vigente está en
+> [frontend_clean_urls_and_routing.md](frontend_clean_urls_and_routing.md) y la regla
+> de Etapa 2 en [stage2_productive_training_card.md](stage2_productive_training_card.md).
+
 ## Descripción visual
 
 Cada grupo mantiene su estructura actual:
@@ -113,4 +118,3 @@ npm run build
 
 Verificar visualmente a 1440 px, 900 px y 390 px, incluyendo foco por teclado,
 motivos desplegados, loading, timeout y selección en las páginas de destino.
-

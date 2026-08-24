@@ -1,5 +1,10 @@
 # Validación Docker — SUPERSEDED
 
+> **Estado documental:** `OBSOLETE_DOC` / `SUPERSEDED`
+> **Uso operativo:** No; conserva evidencia del experimento Docker de 2026-07-26.
+> **Sustitución:** runtime local oficial; Compose/Dockerfiles se conservan sólo como
+> entrypoints opcionales, fuera de los gates oficiales.
+
 Documento histórico. Desde Prompt 2.2.1 Docker no forma parte de la arquitectura
 operativa, desarrollo, CI ni gates de aprobación. Backend y frontend se ejecutan localmente.
 

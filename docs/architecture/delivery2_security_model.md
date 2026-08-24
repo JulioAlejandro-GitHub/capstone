@@ -1,5 +1,9 @@
 # Modelo de seguridad y RBAC — Entrega 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; diseño previo a la matriz RBAC implementada.
+> **Snapshot:** Entrega 2 / Architecture Baseline v1.1.
+
 ## Autenticación académica
 
 MVP: identidad local administrada, contraseña con hash resistente, sesión/JWT de corta duración, rotación/revocación y HTTPS en despliegue. El diseño admite OIDC posterior mapeando `subject` externo al mismo usuario interno. Headers `actor`/`X-Requester` dejan de ser identidad y pasan a metadata opcional.
@@ -45,4 +49,3 @@ Obligatorios para publicación/desactivación, default/rollback, prioridad, canc
 ## Amenazas y controles
 
 Traversal/symlink → provider confinado; image bomb → límites de píxeles/bytes; IDOR → autorización por recurso; job duplication → idempotency; worker spoofing → credencial técnica y lease/fencing; model substitution → publication/default + SHA; review tampering → append-only; diagnostic misuse → vocabulario, disclaimers, roles y export control.
-

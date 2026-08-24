@@ -10,6 +10,7 @@ const adapters = read('components/explainability/explainabilityCaseAdapters.ts')
 const smearAudit = read('components/cell-review/CellClassificationAuditModal.tsx');
 const styles = read('styles.css');
 const app = read('App.tsx');
+const api = read('services/api.ts');
 
 test('RunDetail abre localmente el CaseDetail con el caso seleccionado', () => {
   assert.match(runDetail, /import \{ CaseDetail \} from '\.\/Explainability';/);
@@ -21,12 +22,25 @@ test('RunDetail abre localmente el CaseDetail con el caso seleccionado', () => {
 });
 
 test('el detalle prefiere el Grad-CAM hermano ya generado para la misma predicción', () => {
-  assert.match(runDetail, /getRunExplainability\(datasource, runId, \{ limit: 500 \}\)/);
+  assert.match(runDetail, /getRunExplainability\(datasource, runId, \{ limit: 500, compact: true \}\)/);
   assert.match(runDetail, /candidate\.prediction_id === selectedExplainabilityCase\.prediction_id/);
   assert.match(runDetail, /candidate\.run_id === selectedExplainabilityCase\.run_id/);
   assert.match(runDetail, /toLowerCase\(\) === 'gradcam'/);
   assert.match(runDetail, /candidate\.success === true/);
   assert.match(runDetail, /\) \?\? selectedExplainabilityCase\}/);
+});
+
+test('la explicabilidad tiene timeout extendido, carga independiente y reintento visible', () => {
+  assert.match(api, /getRunExplainability[\s\S]*timeoutMs: 30000/);
+  assert.match(runDetail, /useState\(false\).*explainabilityLoading|explainabilityLoading, setExplainabilityLoading/s);
+  assert.match(runDetail, /setExplainabilityLoading\(true\)/);
+  assert.match(runDetail, /setExplainabilityTotal\(response\.total\)/);
+  assert.match(runDetail, /de \$\{explainabilityTotal\} resultados cargados/);
+  assert.match(runDetail, /setExplainabilityError\(requestError\.message\)/);
+  assert.match(runDetail, /Cargando explicabilidad por caso…/);
+  assert.match(runDetail, /No fue posible cargar la explicabilidad:/);
+  assert.match(runDetail, /setExplainabilityRequestVersion\(\(current\) => current \+ 1\)/);
+  assert.match(runDetail, />\s*Reintentar\s*<\/button>/);
 });
 
 test('cambiar el run cierra el detalle antes de cargar sus datos', () => {

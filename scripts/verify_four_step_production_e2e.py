@@ -21,9 +21,12 @@ from src.malaria_dl.inference.traceable import TraceableInferenceService  # noqa
 def main():
     if os.getenv("RUN_PRODUCTION_E2E") != "1":
         raise SystemExit("Defina RUN_PRODUCTION_E2E=1 para ejecutar escrituras reales.")
-    database_url = os.getenv(
-        "MALARIA_DATABASE_URL", "postgresql+psycopg://julio@localhost:5432/malaria_experiments"
-    ).replace("postgresql://", "postgresql+psycopg://", 1)
+    database_url = os.getenv("MALARIA_DATABASE_URL") or os.getenv("DATABASE_URL")
+    if not database_url:
+        raise SystemExit(
+            "Defina DATABASE_URL (o MALARIA_DATABASE_URL) para ejecutar la verificación E2E."
+        )
+    database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
     model_version_id = os.environ["MODEL_VERSION_ID"]
     source_image_id = os.environ["SOURCE_IMAGE_ID"]
     actor = os.getenv("E2E_ACTOR", "operador-web-e2e")

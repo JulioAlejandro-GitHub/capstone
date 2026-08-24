@@ -1,5 +1,15 @@
 # Flujo de cuatro pasos para producción
 
+> **Estado documental: LEGACY_REQUIRED / COMPATIBILITY.** Documenta el lifecycle de
+> deployments conservado por compatibilidad; **no es fuente de verdad para publicar en
+> Etapa 2**. La regla mínima de elegibilidad vigente es
+> `TRAIN completed + EVALUATE completed`; la habilitación técnica conserva requisitos
+> adicionales. La fuente vigente está documentada en
+> [stage2_productive_training_card.md](stage2_productive_training_card.md).
+
+> **Lectura del cuerpo:** el flujo `production/champion` que sigue es un snapshot de
+> compatibilidad. Sus gates no sustituyen la elegibilidad ni el flujo Stage 2 vigentes.
+
 ## 1. Problema original
 
 La vista de Despliegues exponía directamente smoke y activación sobre un
@@ -111,16 +121,16 @@ desde `candidate`.
 - E2E opt-in: `scripts/verify_four_step_production_e2e.py`; requiere
   `RUN_PRODUCTION_E2E=1` y IDs reales. No se ejecuta implícitamente.
 
-## 10. Gate de Etapa 2
+## 10. Gate legacy del snapshot
 
 El gate solo es PASS si existe un único deployment active
 `production/champion`, visible en `/api/models/available`, con smoke PASS y una
 inferencia real que persista los cinco IDs del linaje. Un `approved` aislado no
 habilita Etapa 2.
 
-Estado verificado al cierre: **ETAPA 2 BLOQUEADA — NO EXISTE MODELO ACTIVO EN
-PRODUCCIÓN**. La ejecución real fue denegada antes de efectuar escrituras; no se
-declara éxito.
+Estado histórico verificado al cierre del snapshot: **ETAPA 2 BLOQUEADA — NO
+EXISTE MODELO ACTIVO EN PRODUCCIÓN**. La ejecución real fue denegada antes de
+efectuar escrituras; no se declara éxito.
 
 ## 11. Promover otro modelo
 
@@ -128,4 +138,3 @@ Desde Despliegues, abrir la fila, seguir la única acción principal, revisar la
 fuentes del contrato, validar, aprobar con motivo y confirmar producción. Si un
 requisito carece de evidencia, completar primero el entrenamiento/evaluación
 relacionada; nunca ingresar metadata clínica manualmente.
-

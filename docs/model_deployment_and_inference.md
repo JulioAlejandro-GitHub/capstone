@@ -1,12 +1,19 @@
 # Despliegue controlado e inferencia trazable
 
+> **Estado documental: OPTIONAL_CAPABILITY.** Describe el subsistema compatible de
+> deployments e inferencia por alias. No define la publicación productiva de Etapa 2:
+> esa elegibilidad continúa siendo únicamente `TRAIN completed + EVALUATE completed`,
+> según [stage2_productive_training_card.md](stage2_productive_training_card.md).
+
 ## Ciclo de vida
 
 Un deployment se crea como `pending`, puede pasar a `active`, volver a `inactive` y
 terminar en `retired`. La activación valida nuevamente la model version, evaluación,
 threshold calibrado, snapshots clínicos, firmas, artifact store, SHA-256 y carga
-Keras. `approved` y `validated` son los estados de versión aceptados por la política.
-Explicabilidad se registra como disponible/no disponible, pero no bloquea.
+Keras. Una versión `validated` puede superar la validación técnica y originar una
+revisión `pending`, pero la activación exige que la model version esté `approved` o
+ya `deployed`. Explicabilidad se registra como disponible/no disponible, pero no
+bloquea.
 
 Un alias (`candidate`, `challenger`, `champion`, `experimental`) identifica un único
 deployment activo dentro de `(deployment_name, environment, alias)`. Activar una

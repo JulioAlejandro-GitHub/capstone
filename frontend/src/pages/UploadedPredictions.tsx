@@ -282,10 +282,6 @@ export function UploadedPredictions({ datasource, onRunSelect, onExplainabilityO
             { header: 'Modelo', render: (row) => row.model_name ?? '-' },
             {
               header: 'Prediccion', render: (row) => {
-                // 1. Validar si existen los datos de la predicción
-                // if (!row.predicted_label) return '-';
-
-                // 2. Retornar la lista HTML estructurada con clases CSS o estilos en línea
                 return (
                   <ul className="mi-lista">
                     <li className="item-lista">
@@ -312,11 +308,6 @@ export function UploadedPredictions({ datasource, onRunSelect, onExplainabilityO
                 );
               }
             },
-            // { header: 'Prediccion', render: (row) => row.predicted_label ?? '-' },
-            // { header: 'Prob. parasitized', render: (row) => formatMetric(probabilityParasitized(row)) },
-            // { header: 'Prob. uninfected', render: (row) => formatMetric(row.probability_uninfected) },
-            // { header: 'Threshold', render: (row) => formatMetric(row.threshold) },
-            // { header: 'Confianza', render: (row) => row.confidence_level ?? '-' },
             { header: 'Calidad', render: (row) => qualityLabel(row) },
             { header: 'Alertas calidad', render: (row) => formatWarnings(row.quality_warnings) },
             { header: 'Calibración', render: (row) => calibrationLabel(row) },
@@ -328,10 +319,6 @@ export function UploadedPredictions({ datasource, onRunSelect, onExplainabilityO
 
             {
               header: 'Estado', render: (row) => {
-                // 1. Validar si existen los datos de la predicción
-                // if (!row.predicted_label) return '-';
-
-                // 2. Retornar la lista HTML estructurada con clases CSS o estilos en línea
                 return (
                   <ul className="mi-lista">
                     <li>
@@ -356,16 +343,6 @@ export function UploadedPredictions({ datasource, onRunSelect, onExplainabilityO
                 );
               }
             },
-            // { header: 'Estado', render: (row) => <StatusBadge status={row.run_status ?? 'unknown'} /> },
-            // { header: 'Fecha', render: (row) => formatDate(row.created_at) },
-            // {
-            //   header: 'Run',
-            //   render: (row) => (
-            //     <button className="link-button" onClick={() => onRunSelect(row.run_id)} type="button">
-            //       Ver run
-            //     </button>
-            //   ),
-            // },
           ]}
         />
       </section>

@@ -1,5 +1,10 @@
 # API para preparar una liberación desde Ejecuciones
 
+> **Estado documental: OPTIONAL_CAPABILITY.** Documenta endpoints compatibles para
+> preparar releases/deployments desde una ejecución. No sustituye ni amplía la regla
+> productiva `TRAIN completed + EVALUATE completed`; véase
+> [stage2_productive_training_card.md](stage2_productive_training_card.md).
+
 ## Propósito
 
 Esta capa conecta un `training_run_id` con la gobernanza existente. El Run ID es el
@@ -46,8 +51,9 @@ X-Request-ID: correlation-id
 ```
 
 `target_environment` es sólo información preliminar de auditoría. No crea ni activa
-un deployment. En ausencia de autenticación integrada, `X-Requester` es opcional y
-no debe considerarse una identidad confiable para producción.
+un deployment. El POST exige JWT y `models.publish`; la identidad confiable procede
+del `Principal` autenticado y se registra en `audit_events`. `X-Requester` es metadata
+opcional del proceso legacy y nunca sustituye al principal ni amplía sus permisos.
 
 ## Contrato de respuesta
 
@@ -189,7 +195,13 @@ duplica desde este endpoint.
 
 ## Auditoría
 
-Sólo el POST escribe una entrada en `execution_logs`, con:
+El POST registra dos capas complementarias:
+
+- `audit_events`, mediante `audited_permission`, con principal autenticado, acción,
+  resultado y contexto HTTP;
+- `execution_logs`, con metadata operacional de preparación del release.
+
+La entrada operacional incluye:
 
 - requester;
 - timestamp de la tabla;
@@ -199,22 +211,18 @@ Sólo el POST escribe una entrada en `execution_logs`, con:
 - request/correlation ID;
 - target environment preliminar.
 
-El GET no registra auditoría para mantener su garantía de ausencia de efectos
+El GET no registra eventos para mantener su garantía de ausencia de efectos
 secundarios. Un run inexistente no puede registrarse en `execution_logs` porque la
-tabla exige FK a `runs`; el resultado se comunica al cliente.
+tabla exige FK a `runs`; el resultado se comunica al cliente. El header
+`X-Requester`, si se recibe, queda sólo como metadata no confiable; la autorización y
+la auditoría de seguridad usan el principal JWT.
 
 ## Seguridad
 
-El repositorio todavía no posee autenticación/autorización. Antes de habilitar esta
-operación en un ambiente productivo se debe:
-
-- autenticar en FastAPI;
-- obtener requester desde el principal, no desde un header del cliente;
-- autorizar una capacidad `model_releaser`;
-- limitar datasource y target environment;
-- propagar/generar un correlation ID confiable;
-- aplicar rate limit y límites de concurrencia;
-- proteger también los POST de deployments ya existentes.
+La operación ya está protegida por autenticación FastAPI, el permiso central
+`models.publish` y auditoría transaccional. `datasource`, `target_environment`,
+correlation ID, rate limits y límites de concurrencia siguen sujetos a la política de
+despliegue del entorno; un header del cliente nunca se trata como autorización.
 
 El endpoint rechaza campos extra y no acepta checkpoint, model path, alias ni
 deployment ID en el body.
@@ -251,4 +259,3 @@ deployment ID en el body.
   "target_url": null
 }
 ```
-

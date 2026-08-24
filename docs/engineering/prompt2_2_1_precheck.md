@@ -1,5 +1,9 @@
 # Precheck Prompt 2.2.1
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; precheck fechado, no diagnóstico del entorno actual.
+> **Snapshot:** 2026-07-27 / Prompt 2.2.1.
+
 Fecha: 2026-07-27.
 
 - rama: `main`;

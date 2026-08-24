@@ -29,10 +29,16 @@ relativo quedan subordinados como detalles técnicos copiables.
 
 Una versión FROZEN no muestra edición ni configuración científica. Como actualmente no
 existe una pantalla gobernada para crear TRAIN, no se inventó un flujo paralelo de “Usar
-en entrenamiento”; se ofrece navegación a Ejecuciones filtrada sólo por
-`dataset_version_id`. Los runs históricos NULL no aparecen como v1.
+en entrenamiento”. El enlace “Ver ejecuciones” transporta `dataset_version_id` como
+contexto en la URL, pero la pantalla Ejecuciones vigente sólo implementa los filtros
+`run` y `modelo`: por ahora el parámetro no reduce esa lista. La relación autoritativa
+por versión es la tabla de ejecuciones incluida en el propio detalle del Dataset. La
+versión v1 ya presenta allí los runs que tienen ese UUID persistido; los runs históricos
+con `dataset_version_id IS NULL` no se reinterpretan como v1.
 
 La página incluye loading de lista/detalle, retry de errores, estados vacíos, tablas con
 scroll existente, accordions navegables y adaptación móvil. Las pruebas cubren contrato
 PostgreSQL, RBAC, 404/datasource, counts oficiales, ausencia visual de counts legacy,
-FROZEN/TRAINABLE, validación, READY/PASS, lineage y empty runs.
+FROZEN/TRAINABLE, validación, READY/PASS, lineage, consulta de runs vinculados y el
+texto de estado vacío. No existe todavía una prueba de filtrado de Ejecuciones por
+`dataset_version_id`, porque ese filtro aún no está implementado.

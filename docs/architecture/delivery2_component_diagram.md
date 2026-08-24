@@ -1,5 +1,9 @@
 # Diagrama de componentes — Entrega 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; diagrama objetivo de Architecture Baseline v1.1.
+> **Snapshot:** Entrega 2, previo a la implementación incremental.
+
 ```mermaid
 flowchart LR
   subgraph API[FastAPI]
@@ -45,4 +49,3 @@ Responsabilidades:
 - `Explainability` falla de forma no destructiva.
 - `Aggregator` usa denominadores explícitos y lenguaje no diagnóstico.
 - `Audit/Lineage` registra identidad, before/after, actor y correlación.
-

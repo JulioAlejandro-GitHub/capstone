@@ -81,7 +81,7 @@ export function toModelExecutionExplainabilityCase(item: ExplainabilityCase, dat
       margin: positive == null || threshold == null ? '—' : formatMetric(Math.abs(positive - threshold)),
       nearThreshold: item.case_type === 'low_confidence' ? 'Sí' : 'No registrado',
       modelName: item.model_name ?? null,
-      modelVersion: typeof item.model_version === 'string' ? item.model_version : typeof runParameters.model_version_id === 'string' ? runParameters.model_version_id : null,
+      modelVersion: item.model_version_id ?? item.model_version ?? (typeof runParameters.model_version_id === 'string' ? runParameters.model_version_id : null),
       facts: [{ label: 'Clase real', value: item.true_label ?? null }, { label: 'Tipo de caso', value: item.case_type ?? null }],
     },
     explanation: {

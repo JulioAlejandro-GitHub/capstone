@@ -1,5 +1,9 @@
 # Modelo conceptual de datos — Entrega 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; modelo conceptual, no contrato del schema actual.
+> **Snapshot:** Entrega 2 / Architecture Baseline v1.1.
+
 Estado: objetivo conceptual; no constituye migración. Campos comunes salvo catálogos inmutables: UUID `id`, `created_at`, `created_by`, `updated_at` cuando el objeto sea mutable y `correlation_id`. Históricos críticos usan `ON DELETE RESTRICT`; borrado lógico sólo donde se indica. Índices siempre incluyen PK/FK y consultas descritas.
 
 |Entidad|Propósito e identidad|Atributos principales|Relaciones/cardinalidad|Restricciones, mutabilidad, eliminación, índices y owner|
@@ -88,4 +92,3 @@ erDiagram
 Cada cierre registra: `git_commit`, `environment`, `dataset_version`, `pipeline_version`, `detector_version`, `classifier_version`, `checkpoint_sha256`, `preprocessing_version`, `threshold_policy_version`, `label_mapping_version`, `quality_policy_version`, `crop_policy_version`, `aggregation_policy_version`, seed cuando aplique, `executed_at`, `executed_by`, `correlation_id`.
 
 Cadena verificable: subject → sample → image → QC → job/pipeline → detection run/detection → crop → classification run/prediction → XAI → image result → review → report; prediction → model version → publication → default/assignment → TRAIN/EVALUATE → checkpoint → dataset/preprocessing/threshold/mapping/Git.
-

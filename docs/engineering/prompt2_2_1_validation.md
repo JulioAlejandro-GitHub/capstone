@@ -1,5 +1,9 @@
 # Validación Prompt 2.2.1
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; resultados y conteos pertenecen al corte indicado.
+> **Snapshot:** 2026-07-27 / Prompt 2.2.1, head `20260726_02`.
+
 Fecha: 2026-07-27.
 
 - PostgreSQL 17.9 Homebrew, `127.0.0.1:5432`, `malaria_experiments/public`: PASS.

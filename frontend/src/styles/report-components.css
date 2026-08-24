@@ -524,7 +524,6 @@
 
 .training-card--stage2-production {
   border-color: #8ce869;
-  /* background: var(--stage2-production-background); */
   background: var(--stage2-production-badge-background);
   box-shadow: inset 5px 0 var(--stage2-production-border), 0 10px 28px rgba(32, 104, 66, .09);
 }

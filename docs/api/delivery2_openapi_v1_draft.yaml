@@ -1,4 +1,10 @@
 openapi: 3.1.0
+x-document-status: HISTORICAL_DESIGN
+x-runtime-contract-status: NO_RUNTIME_CONTRACT
+x-operational-use: Historical architecture comparison only; do not generate clients or validate runtime traffic from this draft.
+x-superseded-by:
+  implementation: backend_api/app
+  generated-openapi: /openapi.json
 info:
   title: Capstone Etapa 2 API Draft
   version: 1.1.0-draft

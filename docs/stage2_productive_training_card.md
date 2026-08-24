@@ -1,8 +1,10 @@
 # Publicación de candidatos para Etapa 2 desde Ejecuciones
 
-## Regla única
+> **Estado documental: CURRENT_DOC / FUENTE DE VERDAD PRODUCTIVA.**
 
-Una versión puede publicarse cuando:
+## Regla mínima de elegibilidad
+
+Una versión es elegible cuando:
 
 ```text
 TRAIN.status = completed
@@ -13,6 +15,12 @@ El EVALUATE se resuelve por `run_lineage.relationship_type =
 evaluates_checkpoint_from`. Si existe más de uno, se prefiere uno completado y
 el más reciente. EXPLAIN, firmas, TensorFlow, métricas, threshold, estabilidad
 y disponibilidad de GPU no participan en la elegibilidad.
+
+Elegibilidad no equivale a habilitación técnica completa. La acción vigente
+“Publicar y desplegar en Etapa 2” también debe resolver una model version y su
+artefacto, contrato, calibración de threshold, smoke test e inferencia trazable. Esas
+condiciones pueden bloquear el despliegue aunque TRAIN y EVALUATE hagan que la versión
+sea elegible para iniciar la acción.
 
 La publicación es técnica y experimental; no constituye aprobación clínica ni
 diagnóstico automatizado.
@@ -30,8 +38,10 @@ La publicación referencia `model_version_id`, `training_run_id`,
 ni reemplaza el modelo. La FK compuesta a `model_versions` congela el par
 versión/artefacto y `ON DELETE RESTRICT` protege el linaje.
 
-Pueden existir varias versiones activas. La unicidad sólo impide dos
-publicaciones activas contradictorias para la misma `model_version`.
+El servicio operativo mantiene una sola elección Stage 2 activa por datasource. Si ya
+existe otra, exige `replace_existing=true`, desactiva la anterior y registra el evento
+antes de activar la nueva. El índice de base de datos evita además dos publicaciones
+activas contradictorias para la misma `model_version`.
 
 ## Ciclo e idempotencia
 
@@ -40,8 +50,8 @@ available → production → available
 ```
 
 Publicar una versión activa o dar de baja una versión ya inactiva devuelve el
-estado existente. Un advisory lock por versión y el índice parcial único
-protegen solicitudes concurrentes.
+estado existente. Un advisory lock por selección de datasource, locks de estado y el
+índice parcial protegen solicitudes concurrentes.
 
 La baja no elimina registros ni cambia TRAIN, EVALUATE, model version,
 artefactos o trabajos previos. La reactivación conserva el mismo registro y
@@ -73,8 +83,9 @@ dentro de la tarjeta TRAIN y conserva visible el linaje TRAIN → EVALUATE /
 EXPLAIN. El panel muestra regla, identidades, checkpoint, estado, publicación,
 actor y advertencia experimental.
 
-Las confirmaciones de publicación y baja son inline, sin modal. Tras cada
-acción sólo se actualiza la tarjeta afectada. Una publicación activa aplica
+Las confirmaciones de publicación y baja son inline, sin modal. Tras publicar se
+actualiza la tarjeta afectada y se releen las demás tarjetas visibles para reflejar un
+posible reemplazo; la baja actualiza la tarjeta afectada. Una publicación activa aplica
 estilo success tenue, badge textual e icono, sin depender únicamente del color.
 
 ## Prueba manual

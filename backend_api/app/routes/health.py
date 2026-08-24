@@ -9,7 +9,7 @@ from alembic.script import ScriptDirectory
 
 from app.config import get_settings
 from app.database_safety import assert_capstone_database
-from app.db import check_connection, get_primary_engine, list_datasources
+from app.db import get_primary_engine, list_datasources
 
 
 router = APIRouter(tags=["health"])

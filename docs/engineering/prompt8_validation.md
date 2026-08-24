@@ -1,5 +1,11 @@
 # Validación reproducible de Prompt 8
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; los bloqueos, dependencias, conteos y head son del corte de Prompt 8.
+> **Snapshot:** `main@29bf45d63a8310a87879b4939c7a979342ddf541`, head final `20260728_03`.
+> **Estado actual:** consultar el código, el head Alembic `20260812_02` y los gates vigentes;
+> este documento no declara que el runtime actual siga bloqueado.
+
 ## Recomendación con la evidencia disponible
 
 **RECHAZAR.** El código implementa un bloqueo seguro, pero el entorno observado

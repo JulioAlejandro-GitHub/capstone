@@ -91,12 +91,34 @@ class TestPostgresqlFoundation:
                 nested.rollback()
             connection.rollback()
 
-    def test_legacy_counts_are_unchanged(self):
+    def test_legacy_records_are_preserved_alongside_governed_records(self):
         with self.engine.connect() as connection:
             assert connection.execute(text("SELECT count(*) FROM datasets")).scalar_one() == 2
-            assert connection.execute(text("SELECT count(*) FROM dataset_split_images")).scalar_one() == 27558
-            assert connection.execute(text("SELECT count(*) FROM runs WHERE run_type='training'")).scalar_one() == 12
-            assert connection.execute(text("SELECT count(*) FROM runs WHERE run_type='evaluation'")).scalar_one() == 12
+            image_counts_by_root = {
+                row.dataset_root: row.image_count
+                for row in connection.execute(text("""
+                    SELECT regexp_replace(dataset_dir, '^.*/', '') AS dataset_root,
+                           count(*) AS image_count
+                    FROM dataset_split_images
+                    GROUP BY dataset_dir
+                """))
+            }
+            assert image_counts_by_root["malaria_physical_split"] == 27558
+            assert image_counts_by_root["d8c0cab5-09dd-597f-9de7-7ca01aee2ec2"] == 27558
+            run_counts = {
+                (row.run_type, row.dataset_version_id): row.run_count
+                for row in connection.execute(text("""
+                    SELECT run_type, dataset_version_id::text, count(*) AS run_count
+                    FROM runs
+                    WHERE run_type IN ('training', 'evaluation')
+                    GROUP BY run_type, dataset_version_id
+                """))
+            }
+            governed_id = "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2"
+            assert run_counts[("training", None)] >= 12
+            assert run_counts[("evaluation", None)] >= 12
+            assert run_counts[("training", governed_id)] >= 12
+            assert run_counts[("evaluation", governed_id)] >= 12
 
     def test_source_record_and_assignment_uniqueness_with_rollback(self):
         with self.engine.connect() as connection, connection.begin():

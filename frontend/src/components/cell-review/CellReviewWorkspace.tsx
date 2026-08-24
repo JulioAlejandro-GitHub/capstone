@@ -316,7 +316,6 @@ export function CellReviewWorkspace({
     useState<CanonicalCellLabel>('parasitized');
   const [classificationSaving, setClassificationSaving] = useState(false);
   const [classificationReviewError, setClassificationReviewError] = useState('');
-  const [explanationSaving, setExplanationSaving] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
   const [focusRequest, setFocusRequest] = useState(0);
   const [resultExpanded, setResultExpanded] = useState(false);
@@ -1161,7 +1160,6 @@ export function CellReviewWorkspace({
   async function generateExplanation(regenerate = false) {
     const target = predictionDetail ?? selectedPrediction;
     if (!target || !canExplain) throw new Error('Explicación no autorizada.');
-    setExplanationSaving(true);
     setClassificationError('');
     try {
       const explanation = await api.createCellExplanation(
@@ -1207,8 +1205,6 @@ export function CellReviewWorkspace({
         setClassificationError('No fue posible generar la explicación Grad-CAM.');
         throw generationError;
       }
-    } finally {
-      setExplanationSaving(false);
     }
   }
 
@@ -1498,7 +1494,6 @@ export function CellReviewWorkspace({
             classificationRun={classificationRun}
             classificationLoading={classificationLoading}
             classificationError={classificationError}
-            canExplain={canExplain}
             canClassificationReview={canClassificationReview}
             validationSessionId={validationSessionId}
             canAnnotateValidation={canAnnotateValidation}
@@ -1506,7 +1501,6 @@ export function CellReviewWorkspace({
             classificationComment={classificationComment}
             reviewedLabel={reviewedLabel}
             classificationSaving={classificationSaving}
-            explanationSaving={explanationSaving}
             classificationReviewError={classificationReviewError}
             loading={detailLoading}
             error={detailError}
@@ -1534,7 +1528,6 @@ export function CellReviewWorkspace({
               if (!selectedDetectionId) return;
               setAnnotationCountByCell((current) => ({ ...current, [selectedDetectionId]: count }));
             }}
-            onGenerateExplanation={generateExplanation}
             onAudit={() => setAuditOpen(true)}
           />
         ) : (
@@ -1732,7 +1725,6 @@ function CellDetailPanel({
   classificationRun,
   classificationLoading,
   classificationError,
-  canExplain,
   canClassificationReview,
   validationSessionId,
   canAnnotateValidation,
@@ -1740,7 +1732,6 @@ function CellDetailPanel({
   classificationComment,
   reviewedLabel,
   classificationSaving,
-  explanationSaving,
   classificationReviewError,
   loading,
   error,
@@ -1759,7 +1750,6 @@ function CellDetailPanel({
   onClassificationSave,
   onClassificationEdit,
   onAnnotationCountChange,
-  onGenerateExplanation,
   onAudit,
 }: {
   selected: CellDetectionSummary | null;
@@ -1772,7 +1762,6 @@ function CellDetailPanel({
   classificationRun: CellClassificationRunDetail | null;
   classificationLoading: boolean;
   classificationError: string;
-  canExplain: boolean;
   canClassificationReview: boolean;
   validationSessionId: string | null;
   canAnnotateValidation: boolean;
@@ -1780,7 +1769,6 @@ function CellDetailPanel({
   classificationComment: string;
   reviewedLabel: CanonicalCellLabel;
   classificationSaving: boolean;
-  explanationSaving: boolean;
   classificationReviewError: string;
   loading: boolean;
   error: string;
@@ -1799,7 +1787,6 @@ function CellDetailPanel({
   onClassificationSave: () => void;
   onClassificationEdit: () => void;
   onAnnotationCountChange: (count: number) => void;
-  onGenerateExplanation: () => void;
   onAudit: () => void;
 }) {
   const detection = detail ?? selected;

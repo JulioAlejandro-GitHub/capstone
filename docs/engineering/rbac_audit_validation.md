@@ -1,5 +1,9 @@
 # Validación RBAC y auditoría
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No como cobertura actual; conserva resultados de la fundación RBAC.
+> **Snapshot:** 2026-07-27 / Prompt 2.2.1.
+
 Estado 2026-07-27: RBAC PASS; rollback por restricción PostgreSQL real PASS para la unidad
 compartida; cobertura E2E por cada familia crítica BLOCKED. No se modificó stage2/default.
 

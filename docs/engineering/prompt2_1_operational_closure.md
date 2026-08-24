@@ -1,5 +1,9 @@
 # Cierre operativo Prompt 2.1
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; sus comandos Docker no son gates vigentes.
+> **Snapshot:** Prompt 2.1, `main@0454a2021f6d0256997dc1cc072f8e9d232ed71a`.
+
 Recomendación provisional: **RECHAZAR**.
 
 El snapshot inicial fue `main@0454a2021f6d0256997dc1cc072f8e9d232ed71a`,

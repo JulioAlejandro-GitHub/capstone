@@ -1,5 +1,9 @@
 # ADR-014: Política de explicabilidad
 
+> **Estado documental:** `LEGACY_REQUIRED` — sustituido para clasificación celular.
+> **Uso operativo:** Sólo como antecedente; no autoriza generación automática o masiva.
+> **Sustitución:** ADR-020 exige Grad-CAM manual, unitario, on-demand y retry explícito.
+
 - Estado: Aceptado
 - Contexto/problema: Grad-CAM/LIME/SHAP existen batch pero no ligados a cada prediction.
 - Decisión histórica general: Grad-CAM automático por célula/modelo salvo

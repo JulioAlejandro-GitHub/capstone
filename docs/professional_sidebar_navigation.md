@@ -37,13 +37,18 @@ La ruta activa procede siempre de React Router.
 
 ## Menú
 
-- General: Resumen.
-- Experimentación: Ejecuciones, Evaluaciones, Comparación de modelos, Explicabilidad.
-- Gobernanza: Modelos liberados, Despliegues, Trazabilidad.
-- Operación: Predicciones, Errores y logs.
-- Datos: Dataset, Datasets y modelos.
+- **Análisis de frotis**:
+  - Operación: Analizar imagen (`/frotis/analizar`) e Historial de análisis.
+- **Modelo IA**:
+  - General: Resumen.
+  - Experimentación: Ejecuciones.
+  - Datos: Dataset, Datasets y modelos.
 
-Los grupos son visuales; no añaden niveles interactivos. Modelo IA es el único grupo desplegable.
+Éstas son las opciones realmente visibles en `navigationConfig.ts`. Evaluaciones,
+Comparación, Modelos liberados, Despliegues, Trazabilidad, Explicabilidad,
+Predicciones y Errores/logs conservan rutas registradas y acceso directo como
+capacidades opcionales, pero no forman parte del menú visible actual. Los grupos son
+visuales y no añaden niveles interactivos.
 
 ## Estados desktop
 
@@ -66,11 +71,14 @@ La preferencia contraída de desktop no oculta etiquetas dentro del drawer.
 
 ## Routing y datasource
 
-Cada opción es un `NavLink` y utiliza las rutas de `router.ts`. `withAllowedQuery` conserva `datasource`. La función `sectionForPath` reconoce igualdad o prefijo, por lo que las rutas de detalle activan su sección:
+Cada opción es un `NavLink` y utiliza las rutas de `router.ts`. `withAllowedQuery`
+conserva `datasource`. La función `sectionForPath` reconoce igualdad o prefijo, por lo
+que las rutas visibles y sus detalles activan su sección:
 
+- `/frotis/analizar` → Analizar imagen;
+- `/frotis/historial/:analysisRunId` → Historial de análisis;
 - ejecución → Ejecuciones;
-- model version → Modelos liberados;
-- deployment → Despliegues.
+- dataset → Dataset.
 
 Atrás, Adelante, recarga y deep links continúan usando History API.
 

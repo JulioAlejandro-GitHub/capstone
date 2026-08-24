@@ -1,5 +1,9 @@
 # Informe de Auditoría Final: Gobernanza de Modelos MLOps (Etapa 0) y Criterio de Aprobación de Etapa 2
 
+> **Estado documental: HISTORICAL_AUDIT.** Informe de cierre fechado, conservado como
+> evidencia. Sus conteos, navegación y criterio de Etapa 2 pertenecen a ese snapshot;
+> no sustituyen los contratos vigentes.
+
 **Fecha de Auditoría:** 2026-07-22  
 **Auditor:** Arquitecto de Software, QA Senior, Ingeniero MLOps y Auditor Técnico  
 **Proyecto:** Capstone MIA — Universidad Adolfo Ibáñez  

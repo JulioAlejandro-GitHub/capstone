@@ -1,5 +1,15 @@
 # Flujo simplificado de publicación de modelos
 
+> **Estado documental: LEGACY_REQUIRED / COMPATIBILITY.** Describe un orquestador de
+> deployments anterior que se mantiene como capacidad compatible; **no es el contrato
+> de publicación de Etapa 2**. La regla mínima de elegibilidad vigente es
+> `TRAIN completed + EVALUATE completed`; la habilitación técnica conserva requisitos
+> adicionales. Consulte
+> [stage2_productive_training_card.md](stage2_productive_training_card.md).
+
+> **Lectura del cuerpo:** el flujo `production/champion` que sigue es un snapshot de
+> compatibilidad. No debe reinterpretarse como el gate vigente de publicación Stage 2.
+
 ## Arquitectura
 
 La fuente de verdad sigue siendo:
@@ -140,7 +150,7 @@ TypeScript y las validaciones existentes de artifact, hash, mapping, smoke,
 activación, inferencia y rollback. La prueba PostgreSQL real es opt-in y no usa
 datos ficticios.
 
-## Gate de Etapa 2
+## Gate legacy del snapshot
 
 Solo se muestra habilitada cuando la versión está approved, el artifact y SHA
 son válidos, el contrato está completo y existe un deployment

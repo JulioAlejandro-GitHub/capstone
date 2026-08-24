@@ -1,5 +1,10 @@
 # Navegación frontend “Modelo IA”
 
+> **Estado documental: OBSOLETE_DOC. Uso operativo: NO.** Snapshot anterior a las
+> rutas limpias y al sidebar modular actual. Consulte
+> [frontend_clean_urls_and_routing.md](frontend_clean_urls_and_routing.md) y
+> [professional_sidebar_navigation.md](professional_sidebar_navigation.md).
+
 ## Inventario anterior
 
 El frontend es React 19 + TypeScript + Vite. No utiliza React Router: la navegación

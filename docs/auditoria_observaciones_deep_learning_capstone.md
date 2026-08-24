@@ -1,5 +1,10 @@
 # Auditoría de observaciones expertas sobre los modelos de malaria
 
+> **Estado documental: HISTORICAL_AUDIT.** Snapshot del ZIP identificado abajo;
+> preservado como evidencia de la revisión realizada. Sus afirmaciones sobre el split
+> anterior no describen `Malaria Patient Split v1` (`FROZEN`, patient-disjoint) y no
+> deben usarse como estado actual del repositorio.
+
 **Proyecto revisado:** `capstone-main(3).zip`  
 **Área:** Deep Learning aplicado a imágenes microscópicas de frotis sanguíneo  
 **Tipo de revisión:** análisis estático de código, configuración, pruebas y artefactos de liberación incluidos en el ZIP.

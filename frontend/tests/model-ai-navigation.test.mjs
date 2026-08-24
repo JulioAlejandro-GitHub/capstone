@@ -5,7 +5,7 @@ const read=(path)=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const layout=read('src/components/Layout.tsx');const sidebar=read('src/components/navigation/AppSidebar.tsx');
 const config=read('src/components/navigation/navigationConfig.ts');const icons=read('src/components/navigation/NavigationIcon.tsx');
 const styles=read('src/styles.css');const app=read('src/App.tsx');const versions=read('src/pages/ModelVersions.tsx');const deployments=read('src/pages/Deployments.tsx');const api=read('src/services/api.ts');
-test('renderiza Modelo IA con sus vistas existentes',()=>{assert.equal((config.match(/label: 'Modelo IA'/g)||[]).length,1);for(const label of ['Resumen','Ejecuciones','Evaluaciones','Comparación de modelos','Modelos liberados','Despliegues','Trazabilidad','Explicabilidad','Predicciones','Dataset','Datasets y modelos','Errores y logs'])assert.match(config,new RegExp(label));});
+test('renderiza en Modelo IA sólo las entradas visibles configuradas',()=>{assert.equal((config.match(/label: 'Modelo IA'/g)||[]).length,1);for(const label of ['Resumen','Ejecuciones','Dataset','Datasets y modelos'])assert.match(config,new RegExp(label));});
 test('separa la operación en un único módulo Análisis de frotis',()=>{
   assert.equal((config.match(/label: 'Análisis de frotis'/g)||[]).length,1);
   assert.equal((config.match(/label: 'Analizar imagen'/g)||[]).length,1);
@@ -16,7 +16,7 @@ test('separa la operación en un único módulo Análisis de frotis',()=>{
   assert.ok(config.indexOf("label: 'Análisis de frotis'") < config.indexOf("label: 'Modelo IA'"));
 });
 test('soporta expansión, persistencia, teclado y ARIA',()=>{for(const token of ['aria-expanded','aria-controls','ArrowRight','ArrowLeft','localStorage','ml-dashboard.sidebar.collapsed'])assert.match(sidebar,new RegExp(token));});
-test('usa configuración tipada, grupos e iconografía SVG única',()=>{for(const group of ['General','Experimentación','Gobernanza','Operación','Datos'])assert.match(config,new RegExp(group));assert.match(config,/NavigationIconName/);assert.match(icons,/<svg/);assert.doesNotMatch(config,/emoji/i);});
+test('usa configuración tipada, grupos e iconografía SVG única',()=>{for(const group of ['General','Experimentación','Operación','Datos'])assert.match(config,new RegExp(group));assert.match(config,/NavigationIconName/);assert.match(icons,/<svg/);assert.doesNotMatch(config,/emoji/i);});
 test('desktop expandido y contraído usan tokens sin márgenes rígidos',()=>{for(const token of ['--sidebar-expanded-width','--sidebar-collapsed-width','is-collapsed','grid-template-columns: auto'])assert.match(styles,new RegExp(token));});
 test('mobile implementa drawer overlay, Escape, focus trap y retorno de foco',()=>{for(const token of ['mobileOpen','Escape','document.body.style.overflow','mobileTriggerRef.current?.focus','sidebar-overlay'])assert.match(sidebar+styles,new RegExp(token.replace('?','\\?')));assert.match(layout,/aria-label="Abrir navegación"/);});
 test('tooltips funcionan por hover y focus en modo contraído',()=>{assert.match(sidebar,/data-tooltip/);assert.match(styles,/:hover::after/);assert.match(styles,/:focus-visible::after/);});

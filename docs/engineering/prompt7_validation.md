@@ -1,5 +1,9 @@
 # Validación reproducible de Prompt 7
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; conserva evidencia reproducible del cierre de Prompt 7.
+> **Snapshot:** Prompt 7, head `20260727_05`.
+
 ## Estado de la evidencia
 
 **EJECUTADA — recomendación APROBAR.**

@@ -434,6 +434,10 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
   const [imagePredictions, setImagePredictions] = useState<RunImagePrediction[]>([]);
   const [imagePredictionTotal, setImagePredictionTotal] = useState(0);
   const [explainability, setExplainability] = useState<ExplainabilityCase[]>([]);
+  const [explainabilityTotal, setExplainabilityTotal] = useState(0);
+  const [explainabilityLoading, setExplainabilityLoading] = useState(false);
+  const [explainabilityError, setExplainabilityError] = useState<string | null>(null);
+  const [explainabilityRequestVersion, setExplainabilityRequestVersion] = useState(0);
   const [selectedExplainabilityCase, setSelectedExplainabilityCase] = useState<ExplainabilityCase | null>(null);
   const [predictionFilters, setPredictionFilters] = useState<PredictionFilters>({
     split: '',
@@ -458,7 +462,6 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
     setConfusion([]);
     setReport([]);
     setArtifacts([]);
-    setExplainability([]);
     setOptionalLoadErrors([]);
     setOptionalDataLoading(true);
     setTrainingCurvesLoadFailed(false);
@@ -472,7 +475,7 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
         if (active) setError(requestError.message);
       });
 
-    let pendingOptionalRequests = 5;
+    let pendingOptionalRequests = 4;
     const loadOptional = <T,>(label: string, request: Promise<T>, apply: (value: T) => void) => {
       request
         .then((value) => {
@@ -493,12 +496,36 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
     loadOptional('reporte de clasificación', api.getClassificationReport(datasource, runId), (response) => setReport(response.items));
     loadOptional('resumen clínico', api.getRunClinicalSummary(datasource, runId), setClinical);
     loadOptional('artefactos', api.getRunArtifactsSummary(datasource, runId), (response) => setArtifacts(response.items));
-    loadOptional('explicabilidad', api.getRunExplainability(datasource, runId, { limit: 500 }), (response) => setExplainability(response.items));
 
     return () => {
       active = false;
     };
   }, [datasource, runId]);
+
+  useEffect(() => {
+    if (!runId) return;
+    let active = true;
+    setExplainability([]);
+    setExplainabilityTotal(0);
+    setExplainabilityError(null);
+    setExplainabilityLoading(true);
+    api
+      .getRunExplainability(datasource, runId, { limit: 500, compact: true })
+      .then((response) => {
+        if (!active) return;
+        setExplainability(response.items);
+        setExplainabilityTotal(response.total);
+      })
+      .catch((requestError: Error) => {
+        if (active) setExplainabilityError(requestError.message);
+      })
+      .finally(() => {
+        if (active) setExplainabilityLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [datasource, runId, explainabilityRequestVersion]);
 
   useEffect(() => {
     if (!runId) return;
@@ -983,41 +1010,65 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
       <details className="panel run-detail-disclosure">
         <summary>
           <span>Explicabilidad por caso</span>
-          <small>{explainability.length} casos cargados · detalle opcional</small>
+          <small>
+            {explainabilityLoading
+              ? 'Cargando casos…'
+              : explainabilityError
+                ? 'No fue posible cargar · detalle opcional'
+                : explainability.length < explainabilityTotal
+                  ? `${explainability.length} de ${explainabilityTotal} resultados cargados`
+                  : `${explainabilityTotal} resultados cargados · detalle opcional`}
+          </small>
         </summary>
         <div className="run-detail-disclosure__content">
           <p className="muted-text">Explicación visual experimental para apoyar revisión de casos, no una conclusión clínica definitiva.</p>
-          <DataTable<ExplainabilityCase>
-            rows={explainability}
-            columns={[
-              {
-                header: 'Fuente',
-                render: (row) => {
-                  const path = sourceImagePath(row);
-                  const url = api.mediaUrl({ url: row.source_image_url ?? row.image_url, path, datasource });
-                  return <TableImageLink url={url} alt={`Fuente ${row.true_label ?? ''}`} label="Abrir fuente" />;
+          {explainabilityLoading ? (
+            <div className="empty-state" role="status">Cargando explicabilidad por caso…</div>
+          ) : explainabilityError ? (
+            <div className="empty-state" role="alert">
+              <p>No fue posible cargar la explicabilidad: {explainabilityError}</p>
+              <button
+                className="audit-action-button"
+                onClick={() => setExplainabilityRequestVersion((current) => current + 1)}
+                type="button"
+              >
+                Reintentar
+              </button>
+            </div>
+          ) : (
+            <DataTable<ExplainabilityCase>
+              rows={explainability}
+              columns={[
+                {
+                  header: 'Fuente',
+                  render: (row) => {
+                    const path = sourceImagePath(row);
+                    const url = api.mediaUrl({ url: row.source_image_url ?? row.image_url, path, datasource });
+                    return <TableImageLink url={url} alt={`Fuente ${row.true_label ?? ''}`} label="Abrir fuente" />;
+                  },
                 },
-              },
-              {
-                header: 'Explicación',
-                render: (row) => {
-                  const path = explanationImagePath(row);
-                  const url = api.mediaUrl({ url: row.explanation_url, path, artifactId: row.artifact_id, datasource });
-                  return <TableImageLink url={url} alt={`Explicación ${row.method ?? ''}`} label="Abrir explicación" />;
+                {
+                  header: 'Explicación',
+                  render: (row) => {
+                    const path = explanationImagePath(row);
+                    const url = api.mediaUrl({ url: row.explanation_url, path, artifactId: row.artifact_id, datasource });
+                    return <TableImageLink url={url} alt={`Explicación ${row.method ?? ''}`} label="Abrir explicación" />;
+                  },
                 },
-              },
-              { header: 'Método', render: (row) => row.method ?? '-' },
-              { header: 'Tipo de caso', render: (row) => <span className={`case-badge ${row.case_type ?? 'unknown'}`}>{caseTypeLabel(row.case_type)}</span> },
-              { header: 'Clase real', render: (row) => row.true_label ?? '-' },
-              { header: 'Predicción', render: (row) => row.predicted_label ?? '-' },
-              { header: 'P(parasitized)', render: (row) => formatMetric(scorePositive(row)) },
-              { header: 'Threshold', render: (row) => formatMetric(thresholdUsed(row)) },
-              { header: 'Correcta', render: (row) => booleanText(booleanValue(row.is_correct)) },
-              { header: 'Error', render: (row) => row.error_message ?? '-' },
-              { header: 'Auditar', render: (row) => <button className="audit-action-button" type="button" onClick={() => setSelectedExplainabilityCase(row)}>Ver detalle</button> },
-            ]}
-            getRowKey={(row) => row.explainability_id}
-          />
+                { header: 'Método', render: (row) => row.method ?? '-' },
+                { header: 'Tipo de caso', render: (row) => <span className={`case-badge ${row.case_type ?? 'unknown'}`}>{caseTypeLabel(row.case_type)}</span> },
+                { header: 'Clase real', render: (row) => row.true_label ?? '-' },
+                { header: 'Predicción', render: (row) => row.predicted_label ?? '-' },
+                { header: 'P(parasitized)', render: (row) => formatMetric(scorePositive(row)) },
+                { header: 'Threshold', render: (row) => formatMetric(thresholdUsed(row)) },
+                { header: 'Correcta', render: (row) => booleanText(booleanValue(row.is_correct)) },
+                { header: 'Error', render: (row) => row.error_message ?? '-' },
+                { header: 'Auditar', render: (row) => <button className="audit-action-button" type="button" onClick={() => setSelectedExplainabilityCase(row)}>Ver detalle</button> },
+              ]}
+              emptyText="No hay casos de explicabilidad registrados para esta ejecución."
+              getRowKey={(row) => row.explainability_id}
+            />
+          )}
         </div>
       </details>
 

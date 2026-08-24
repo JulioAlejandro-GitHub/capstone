@@ -34,6 +34,13 @@ la misma model version. La ejecución registra método, configuración, imágene
 entrada y artefactos generados mediante el tracking existente, junto con la identidad
 gobernada del modelo.
 
+El detalle `GET /runs/{run_id}/explainability` acepta la identidad del EXPLAIN, del
+TRAIN padre o de un EVALUATE asociado. Para EVALUATE sólo resuelve EXPLAIN siblings
+con la misma Dataset Version y la misma identidad gobernada de model
+version/checkpoint; no selecciona el run más reciente. `compact=true` conserva los
+campos usados por la UI y omite metadata cruda repetida. La respuesta sigue paginada
+y expone `total`, `limit` y `offset`.
+
 ## Compatibilidad legacy
 
 `--checkpoint` y `--model-path` continúan disponibles y emiten `FutureWarning`. No se

@@ -1,5 +1,9 @@
 # Auditoría de integración: Ejecuciones → despliegue
 
+> **Estado documental: HISTORICAL_AUDIT.** Snapshot de diseño e integración del
+> 2026-07-23. Se conserva como evidencia; no es un runbook ni la fuente vigente de la
+> regla de publicación de Etapa 2.
+
 ## 0. Alcance y conclusiones ejecutivas
 
 Esta auditoría se realizó sobre el backend FastAPI, el frontend React, las
@@ -704,4 +708,3 @@ migración posterior y no como duplicación de deployments.
 - Toda acción registra actor, reason cuando corresponda e idempotency key.
 - La inferencia conserva la cadena completa hasta `image_analysis_job_id`.
 - Se preserva exactamente la convención clínica indicada al inicio.
-

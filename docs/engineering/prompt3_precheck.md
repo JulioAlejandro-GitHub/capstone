@@ -1,5 +1,9 @@
 # Prompt 3 — precheck
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; precheck fechado, no inventario vigente.
+> **Snapshot:** 2026-07-27, `main@9fae68a2b29a92ede752b14d8ad12e7107f3754c`.
+
 Fecha: 2026-07-27  
 Rama: `main`  
 Commit inicial: `9fae68a2b29a92ede752b14d8ad12e7107f3754c`

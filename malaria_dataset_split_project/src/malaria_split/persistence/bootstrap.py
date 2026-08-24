@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any

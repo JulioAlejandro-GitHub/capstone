@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Callable
 from uuid import UUID
 from sqlalchemy import text
-from src.config import LABEL_MAPPING_VERSION
 from src.model_governance.releases import sha256_file
 
 EXPECTED_MAPPING={"0":"uninfected","1":"parasitized","positive_class":1,"positive_label":"parasitized"}

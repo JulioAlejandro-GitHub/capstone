@@ -1,5 +1,9 @@
 # Inventario de la base Capstone
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; no debe usarse como inventario de schema o Alembic vigente.
+> **Snapshot:** lectura de solo acceso del 2026-07-26.
+
 Inventario de solo lectura del 2026-07-26:
 
 - servicio: Homebrew `postgresql@17`, una instancia local activa;

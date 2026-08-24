@@ -50,7 +50,27 @@ Si PowerShell bloquea la activación:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-## 2. Dataset local con TensorFlow Datasets
+## 2. Dataset gobernado y fuentes locales
+
+Los nuevos entrenamientos usan una Dataset Version gobernada. La versión vigente es:
+
+```text
+Malaria Patient Split v1
+dataset_version_id = d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
+status = FROZEN
+trainable = YES
+
+201 pacientes / 27.558 imágenes
+TRAIN 22.180 / VAL 2.693 / TEST 2.685
+```
+
+PostgreSQL resuelve su materialización `READY/PASS` y el código abre el root
+versionado resultante. Un TRAIN nuevo nunca selecciona silenciosamente
+`data/malaria_physical_split/`. Si se omite `--dataset-version-id`, se elige de
+forma determinista la Dataset Version entrenable más reciente y se persiste su UUID;
+para ejecuciones reproducibles se recomienda indicarlo explícitamente.
+
+### Fuente local TensorFlow Datasets
 
 El dataset **NIH / NLM Malaria Cell Images** se gestiona con TensorFlow Datasets, pero la descarga debe quedar dentro de la raíz del repositorio `capstone/`:
 
@@ -94,36 +114,27 @@ PY
 
 La carpeta `capstone/data/tensorflow_datasets/` está ignorada por Git. No se deben versionar imágenes, shards ni archivos TFRecord del dataset.
 
-### Split físico oficial 80/10/10
+### Split físico legacy 80/10/10
 
-El flujo oficial crea copias físicas estratificadas del dataset en:
+El flujo anterior creó copias físicas estratificadas en:
 
 ```text
 data/malaria_physical_split/
 ```
 
-Esto no modifica el TFDS original. Todos los entrenamientos y evaluaciones usan por defecto este split físico con `0 = uninfected`, `1 = parasitized`.
+Este material se conserva para reproducibilidad de runs históricos y compatibilidad
+explícita con herramientas legacy. No es la fuente de un TRAIN nuevo gobernado y no
+debe eliminarse ni regenerarse como parte de una ejecución normal.
 
-Crear split:
+Inspeccionar o reproducir el proceso histórico sin escribir archivos:
 
 ```bash
 python scripts/create_physical_dataset_split.py \
   --seed 42 \
   --train-ratio 0.8 \
   --val-ratio 0.1 \
-  --test-ratio 0.1
-```
-
-Ver conteos sin escribir archivos:
-
-```bash
-python scripts/create_physical_dataset_split.py --dry-run
-```
-
-Regenerar:
-
-```bash
-python scripts/create_physical_dataset_split.py --overwrite --seed 42
+  --test-ratio 0.1 \
+  --dry-run
 ```
 
 Más detalle:
@@ -151,6 +162,7 @@ No mezcles modos entre entrenamiento e inferencia. Un checkpoint VGG16 históric
 ```bash
 python -m src.train \
   --model vgg16 \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
   --max-epochs 30 \
   --fine-tune-epochs 10 \
   --img-size 200 \
@@ -166,6 +178,11 @@ Nota: `src.ensemble` aplica un único modo de preprocesamiento a todos los model
 Los JSON de métricas y CSV de predicciones incluyen `preprocessing_mode` cuando el script genera esos artefactos.
 
 ## 3. Entrenar modelos
+
+Todos los ejemplos de esta sección fijan `dataset_version_id`. El guard previo exige
+una versión `FROZEN`, 12/12 validaciones `PASS`, materialización `READY/PASS` y
+fingerprints finales sellados; ante cualquier incumplimiento el comando falla sin
+fallback al split legacy.
 
 ### Política Max Epochs
 
@@ -189,15 +206,20 @@ con `--skip-final-test-evaluation`.
 ### Custom CNN
 
 ```bash
-python -m src.train --model custom_cnn --max-epochs 50 --img-size 200 --batch-size 64
+python -m src.train --model custom_cnn \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 50 --img-size 200 --batch-size 64
 ```
 
-Si `data/malaria_physical_split/` no existe, `src.train` falla con un mensaje indicando crear el split físico. El fallback dinámico de TFDS está disponible solo de forma explícita con `--data-source tfds`.
+`--data-source` y `--dataset-dir` permanecen aceptados por compatibilidad del CLI,
+pero no reemplazan la resolución gobernada en un TRAIN nuevo.
 
 ### VGG16 con Transfer Learning
 
 ```bash
-python -m src.train --model vgg16 --max-epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64
+python -m src.train --model vgg16 \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64
 ```
 
 ### DenseNet121 con entrenamiento combinado
@@ -205,6 +227,7 @@ python -m src.train --model vgg16 --max-epochs 30 --fine-tune-epochs 10 --img-si
 ```bash
 python -m src.train \
   --model densenet121 \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
   --max-epochs 30 \
   --fine-tune-epochs 6 \
   --img-size 200 \
@@ -260,6 +283,7 @@ Ejemplo explícito:
 ```bash
 python -m src.train \
   --model vgg16 \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
   --max-epochs 30 \
   --fine-tune-epochs 10 \
   --img-size 200 \
@@ -276,6 +300,7 @@ También se puede seleccionar por `f2`, `balanced_accuracy` o `val_auc`:
 ```bash
 python -m src.train \
   --model custom_cnn \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
   --max-epochs 30 \
   --img-size 200 \
   --batch-size 64 \
@@ -318,7 +343,18 @@ python -m src.ensemble \
 python -m src.tta --checkpoint outputs/vgg16/best_model.keras --img-size 200 --n-aug 8
 ```
 
-### Evaluación directa de un modelo guardado
+### Evaluación de un modelo guardado
+
+Para un modelo gobernado, use su Model Version inmutable; EVALUATE resuelve el TRAIN
+origen y hereda automáticamente su `dataset_version_id`:
+
+```bash
+python -m src.evaluate --model-version-id UUID_DE_MODEL_VERSION \
+  --img-size 200 --batch-size 64 --track-db --require-lineage
+```
+
+La ruta directa al checkpoint se conserva únicamente como compatibilidad explícita
+para modelos/runs históricos no gobernados:
 
 ```bash
 python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
@@ -483,6 +519,7 @@ Entrenamiento con calibración integrada:
 ```bash
 python -m src.train \
   --model custom_cnn \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
   --max-epochs 30 \
   --img-size 200 \
   --batch-size 64 \
@@ -560,10 +597,12 @@ python -m src.predict_image \
   --track-db
 ```
 
-Ejemplo rápido usando la ruta local TFDS por defecto:
+Ejemplo rápido usando la Dataset Version gobernada:
 
 ```bash
-python -m src.train --model custom_cnn --max-epochs 1 --img-size 200 --batch-size 64
+python -m src.train --model custom_cnn \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 1 --img-size 200 --batch-size 64
 ```
 
 ## Explicabilidad del modelo: LIME, SHAP y Grad-CAM
@@ -714,10 +753,18 @@ python scripts/reset_experimental_state.py \
 
 Guía completa: [docs/reset_experimental_state.md](docs/reset_experimental_state.md).
 
-## 6. Trazabilidad de dataset en PostgreSQL
+## 6. Trazabilidad gobernada en PostgreSQL
 
-Para auditar qué imágenes físicas participaron en cada ejecución con `--track-db`,
-registra el split físico en PostgreSQL:
+Los TRAIN nuevos registran `runs.dataset_version_id` y un snapshot de la
+materialización, conteos y cuatro fingerprints científicos en `run_io_records`.
+EVALUATE y las calibraciones de un TRAIN gobernado heredan esa misma versión desde el
+run padre; no permiten sustituirla por otro dataset. Threshold y temperature scaling
+usan exclusivamente `VAL`.
+
+El registro siguiente corresponde únicamente al inventario físico histórico:
+
+Para auditar runs legacy que usaron el split físico, se puede registrar su inventario
+en PostgreSQL:
 
 ```bash
 python scripts/register_physical_split_in_db.py \
@@ -729,9 +776,9 @@ python scripts/register_physical_split_in_db.py \
 
 Guía completa y consultas SQL: [docs/database_dataset_tracking.md](docs/database_dataset_tracking.md).
 
-El frontend incluye el menú **Dataset** para explicar el origen, el split físico
-y explorar imágenes por split/clase desde PostgreSQL. Guía:
-[docs/dataset_browser.md](docs/dataset_browser.md).
+La pantalla vigente **Modelo IA → Dataset** consume Dataset Versions gobernadas y
+muestra `Malaria Patient Split v1` como `FROZEN` y `TRAINABLE`; no presenta los
+conteos legacy 22.046/2.756/2.756 como dataset actual.
 
 El tracking clínico de runs con `--track-db` registra IO, métricas clínicas,
 política de checkpoint, calibración de threshold, artefactos y predicciones por
@@ -779,15 +826,15 @@ Guía integrada de entrenamiento, evaluación, inferencia, threshold clínico y 
 [docs/training_evaluation_inference_workflow.md](docs/training_evaluation_inference_workflow.md).
 
 TensorFlow Datasets entrega el dataset `malaria` como un único split llamado `train`.
-El flujo oficial del proyecto primero crea un split físico persistente con:
+El pipeline vigente ya resolvió la identidad clínica y materializó una partición
+patient-disjoint: los 201 pacientes están asignados a exactamente un split, con
+12/12 validaciones anti-leakage aprobadas. PostgreSQL es el source of truth y el
+filesystem versionado es su materialización reconciliada. El antiguo split aleatorio
+80/10/10 permanece únicamente como `LEGACY_REQUIRED` para reproducibilidad histórica.
 
-```bash
-python scripts/create_physical_dataset_split.py --seed 42
-```
-
-Ese split queda en `data/malaria_physical_split/` con 80% entrenamiento, 10% validación y 10% test, estratificado por clase. El TFDS original no se modifica.
-
-Para un Capstone más riguroso, idealmente se debe revisar la fuente NIH/NLM original y separar por paciente si se dispone del mapeo `Patient-ID`, evitando fuga de información entre entrenamiento y prueba.
+La construcción, validación, materialización y congelamiento de futuras versiones se
+mantiene en `malaria_dataset_split_project/`; la guía operativa completa está en
+`../docs/runbook_split_completo_malaria.md`.
 
 ## 9. Dataset
 

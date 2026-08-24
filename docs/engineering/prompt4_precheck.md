@@ -1,5 +1,9 @@
 # Prompt 4 — precheck
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; precheck del entorno anterior a la ingesta implementada.
+> **Snapshot:** 2026-07-27, `main@661ad9eeb7bf74b1a0c8d7c916e289cc7cda5896`.
+
 Fecha: 2026-07-27. Rama `main`; commit inicial
 `661ad9eeb7bf74b1a0c8d7c916e289cc7cda5896`; working tree limpio.
 

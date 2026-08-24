@@ -1400,10 +1400,6 @@ def main():
         snapshot_id = resolve_artifact_snapshot_id(execution_id, run_context)
         planned_snapshot_dir = output_dir / "runs" / snapshot_id
         execution_parameters["artifact_snapshot_dir"] = str(planned_snapshot_dir)
-    # if args.model == "vgg16"
-    # if args.model == "custom_cnn":
-    # validar datos de ejecucion antes de comenzar... en este caaso el nombre del modelo
-
     try:
         tf.keras.utils.set_random_seed(args.seed)
 

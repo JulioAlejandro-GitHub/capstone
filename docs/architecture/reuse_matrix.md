@@ -1,5 +1,9 @@
 # Matriz de reutilización
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; matriz de planificación anterior a la implementación de Etapa 2.
+> **Snapshot:** Prompt 0 / Architecture Baseline v1.1.
+
 |Componente|Rutas|Responsabilidad/contrato actual|Consumidores|Clase|Justificación y modificación permitida|Compatibilidad/transición|Riesgo regresión|
 |---|---|---|---|:---:|---|---|---|
 |Paquete canónico|`malaria_dl_local_project/src/malaria_dl/**`|ML, tracking y gobierno|CLIs, backend, tests|B|Extender con interfaces Etapa 2 sin cambiar contratos clínicos|Imports públicos estables|Alto|

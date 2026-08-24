@@ -1,6 +1,5 @@
 import argparse
 import os
-import shutil
 import tarfile
 from datetime import datetime
 from pathlib import Path

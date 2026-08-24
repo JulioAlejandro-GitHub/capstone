@@ -1,5 +1,11 @@
 # ADR-007: Inferencia multimodelo paralela
 
+> **Estado documental:** `LEGACY_REQUIRED` — capacidad diferida/no materializada.
+> **Uso operativo:** No; la clasificación celular productiva resuelve un único
+> `stage2/default` y no ejecuta ensemble implícito.
+> **Evolución:** una implementación multimodelo requiere revalidar este contrato frente a
+> ADR-020.
+
 - Estado: Aceptado
 - Contexto/problema: se requieren uno o varios modelos autorizados.
 - Decisión: assignments congelados con role primary/additional/comparison; una predicción por crop/model/run; resultados paralelos; no ensemble automático.

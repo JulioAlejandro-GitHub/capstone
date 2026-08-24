@@ -1,5 +1,9 @@
 # Gobierno de modelos Etapa 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; diseño objetivo anterior al resolver productivo vigente.
+> **Snapshot:** Entrega 2 / Architecture Baseline v1.1.
+
 ## Fuente de verdad
 
 - `stage2_model_publications`: catálogo de modelos autorizados. Puede contener múltiples publicaciones activas.
@@ -73,4 +77,3 @@ Incluye assignment/role, counts, threshold y score promedio. Recall, precision, 
 ## Transición
 
 `GET /api/stage2/models` actual lee publicaciones y la inferencia actual resuelve deployments. Prompt 3/10 debe introducir la relación de publicación en el slot y resolverla mediante un único servicio, conservando endpoints legacy como adapters. No se modifican las reglas actuales en Prompt 1.
-

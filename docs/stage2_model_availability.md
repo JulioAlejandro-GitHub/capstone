@@ -1,5 +1,16 @@
 # Disponibilidad técnica de modelos para Etapa 2
 
+> **Estado documental: LEGACY_REQUIRED / COMPATIBILITY.** Este flujo basado en
+> deployments permanece para compatibilidad, pero **no es la fuente de verdad de
+> publicación en Etapa 2**. La regla mínima de elegibilidad vigente requiere
+> `TRAIN completed + EVALUATE completed`; la habilitación técnica posterior conserva
+> sus propios requisitos de artefacto, contrato, threshold, smoke e inferencia. Consulte
+> [stage2_productive_training_card.md](stage2_productive_training_card.md).
+
+> **Lectura del cuerpo:** conserva el diseño del flujo de deployment validado el
+> 2026-07-23. Los endpoints siguen disponibles por compatibilidad, pero las reglas
+> operativas se contrastan abajo con la implementación vigente.
+
 ## Alcance
 
 Este flujo permite usar un modelo real en la aplicación durante la Etapa 2. No
@@ -33,19 +44,20 @@ inferencia.
 
 ## Reglas técnicas
 
-El backend sólo habilita si:
+El endpoint compatible sólo habilita actualmente si:
 
 1. el run es TRAIN, está `completed` y no es fixture técnica;
-2. existe exactamente una `model_version`;
-3. el artefacto existe, su SHA-256 coincide y puede cargarse;
-4. preprocessing, input/output signatures y class mapping son resolubles;
-5. el mapping conserva `0 = uninfected`, `1 = parasitized` y
+2. existe un EVALUATE `completed` asociado mediante linaje;
+3. existe al menos una `model_version` resoluble para el TRAIN;
+4. el artefacto existe, su SHA-256 coincide y puede cargarse;
+5. preprocessing, input/output signatures y class mapping son resolubles;
+6. el mapping conserva `0 = uninfected`, `1 = parasitized` y
    `positive_label = parasitized`;
-6. existe un threshold de entrenamiento/calibración o se registra el valor
-   operativo `0.5`, marcado explícitamente como no clínico;
-7. una imagen real completa el smoke test;
-8. la revisión queda `environment=stage2`, `alias=default`, `status=active`;
-9. una inferencia trazable final crea `inference_run_id` e
+7. existe una calibración de threshold registrada, trazable y con fuente; la
+   implementación vigente no habilita con fallback `0.5`;
+8. una imagen real completa el smoke test;
+9. la revisión queda `environment=stage2`, `alias=default`, `status=active`;
+10. una inferencia trazable final crea `inference_run_id` e
    `image_analysis_job_id`.
 
 Una copia de paquete inmutable se escribe en
@@ -62,12 +74,17 @@ ruta física no se expone en la interfaz.
 | GET | `/api/training-runs/{id}/stage2-availability` | Estado técnico y acción |
 | GET | `/api/training-runs/{id}/stage2-package-preview` | Preview del paquete |
 | POST | `/api/training-runs/{id}/enable-stage2` | Copia, contrato, smoke, activación e inferencia |
-| GET | `/api/stage2/models` | Selector exclusivo de modelos Etapa 2 activos |
+| GET | `/api/stage2/models` | Catálogo de publicaciones Stage 2 activas |
 
 El POST exige `actor`, `reason` y `confirm_stage2_enablement=true`. Es
 idempotente cuando el mismo training ya tiene una revisión activa.
 
-## Interfaz
+`enable-stage2` administra el deployment legacy, pero no crea por sí solo una fila en
+`stage2_model_publications`. El selector actual se alimenta mediante el flujo canónico
+`POST /api/model-versions/{id}/stage2-publications`, que publica y despliega en una sola
+acción de API.
+
+## Interfaz del snapshot
 
 La acción aparece únicamente en la tarjeta TRAIN:
 
@@ -80,7 +97,7 @@ El modal identifica training, model version, SHA-256, framework, advertencias y
 alcance no clínico. Al completar el proceso navega al deployment exacto. Las
 acciones EVALUATE y EXPLAIN no cambian.
 
-## Separación de producción
+## Separación de producción en el snapshot
 
 La migración `028_stage2_model_availability.sql` permite una `model_version`
 `candidate` sólo en el slot exacto `stage2/default`, con metadata

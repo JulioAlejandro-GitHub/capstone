@@ -1,5 +1,10 @@
 # Proceso de inventario y liberación de modelos
 
+> **Estado documental: OPTIONAL_CAPABILITY.** Estos scripts conservan inventario,
+> release inmutable y compatibilidad de deployments; no son requisitos adicionales
+> para la publicación productiva de Etapa 2. La regla canónica está en
+> [stage2_productive_training_card.md](stage2_productive_training_card.md).
+
 ## Inventario y evidencia
 
 `scripts/diagnose_model_releases.py` recorre `outputs/`, `models/`, `checkpoints/` y
@@ -19,8 +24,10 @@ estructura ZIP requerida o HDF5 sin su firma se rechaza como corrupto/incompatib
 `validated`, evaluación reproducible y threshold referenciado; `approved`, aprobación
 humana; `deployed`, activación explícita; `rejected`, corrupto/incompatible; y
 `retired`, fuera de uso. Para pasar de candidate a validated se requieren evaluación,
-explicabilidad, firmas de entrada/salida, preprocessing y threshold/calibración
-documentados. Estos scripts no promocionan ni despliegan.
+firmas de entrada/salida, preprocessing, mapping clínico y threshold/calibración
+documentados, además de artefacto verificable. La explicabilidad se conserva como
+evidencia informativa, pero no bloquea esta transición. Estos scripts no promocionan
+ni despliegan.
 
 ## Diagnóstico y backfill
 

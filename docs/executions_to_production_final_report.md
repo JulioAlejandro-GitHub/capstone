@@ -1,5 +1,9 @@
 # Reporte final: Ejecuciones → producción
 
+> **Estado documental: HISTORICAL_AUDIT.** Resultado de validación fechado; los
+> bloqueos, métricas y componentes descritos corresponden a ese cierre y no deben
+> interpretarse como estado operativo actual.
+
 Fecha de validación: 2026-07-23  
 Resultado global: **bloqueado para producción**
 

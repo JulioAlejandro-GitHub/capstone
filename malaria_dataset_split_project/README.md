@@ -1,64 +1,86 @@
 # Malaria Dataset Split Project
 
-## Propósito
+## Propósito y estado actual
 
 Construir y gobernar datasets experimentales reproducibles para el proyecto de malaria.
+El pipeline oficial está implementado de extremo a extremo: descubrimiento, identidad
+clínica, bootstrap científico, split agrupado por paciente, persistencia, validación,
+materialización, reconciliación, freeze y derivación de trainability.
 
-## Responsabilidades futuras
+La versión vigente es:
 
-- descubrimiento de fuentes;
-- identidad clínica;
-- versionado de datasets;
-- partición agrupada por paciente;
-- balance y validaciones anti-leakage;
-- persistencia científica;
-- materialización física, reconciliación y reportabilidad.
+```text
+Malaria Patient Split v1
+dataset_version_id = d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
+status = FROZEN
+trainable = YES
 
-## Alcance de SPLIT 1A
+201 pacientes / 27.558 imágenes
+TRAIN 22.180 / VAL 2.693 / TEST 2.685
 
-Esta etapa contiene únicamente una auditoría reproducible y de solo lectura del split
-físico histórico. PostgreSQL será el *source of truth* científico; el filesystem será
-su materialización y CSV/JSON serán derivados. El dataset original y toda versión
-`FROZEN` se tratarán como inmutables. Estos principios se documentan aquí, pero todavía
-no se implementan.
+12/12 checks = PASS
+materialization = READY
+reconciliation = PASS
+```
+
+PostgreSQL es el source of truth científico; el filesystem versionado es una
+materialización derivada. Una versión `FROZEN` es inmutable. El split físico histórico
+se audita y conserva, pero no es fallback para nuevos TRAIN gobernados.
 
 ## Fuera de alcance
 
-TRAIN, evaluación del modelo, inferencia, producción, Grad-CAM y YOLO. Tampoco se crea
-un split nuevo ni se investiga Patient-ID en esta etapa.
+Este paquete no entrena ni evalúa modelos y no implementa inferencia, producción,
+Grad-CAM o detección. `malaria_dl_local_project` consume la Dataset Version entrenable;
+este proyecto conserva la capacidad oficial de construir futuras versiones, incluida
+una eventual `Malaria Patient Split v2`.
 
 `malaria_dataset_split_project` prepara, versiona, valida y materializa datasets;
 `malaria_dl_local_project` entrena y evalúa modelos.
 
-## Uso
+## CLI
+
+Desde este directorio, con el entorno del proyecto ML:
 
 ```bash
-python -m malaria_split.cli audit-current-split
+SPLIT_PYTHON=../malaria_dl_local_project/.venv/bin/python
+PYTHONPATH=src "$SPLIT_PYTHON" -m malaria_split.cli --help
 ```
 
-El comando toma por defecto `config/current_split.yaml` y sólo inspecciona archivos.
+Los entrypoints vigentes son:
 
-Los tests no requieren dependencias externas:
+```text
+audit-current-split
+audit-patient-identity
+audit-system-contracts
+bootstrap-malaria-v1
+audit-scientific-bootstrap
+audit-patient-profiles-v1
+generate-patient-split-v1
+persist-patient-split-v1
+validate-patient-split-v1
+materialize-patient-split-v1
+freeze-patient-split-v1
+```
+
+Los tres primeros son auditorías; los comandos de persistencia/materialización/freeze
+aplican sus propios guards, transacciones e idempotencia. Use el runbook antes de una
+operación que escriba en PostgreSQL o filesystem:
+`../docs/runbook_split_completo_malaria.md`.
+
+La instalación del paquete también expone `malaria-split` mediante
+`malaria_split.cli:main`.
+
+## Pruebas
+
+La suite unitaria no modifica datasets ni artefactos:
 
 ```bash
-PYTHONPATH=src python -m unittest discover -s tests -p 'test_*.py'
+PYTHONPATH=src "$SPLIT_PYTHON" -m pytest -q tests/unit
 ```
 
-La auditoría de identidad requiere Pillow para calcular hashes de píxeles decodificados.
+Las pruebas de integración requieren un `DATABASE_URL` explícito hacia una base
+PostgreSQL de test con el schema vigente; sus fixtures escriben sólo dentro de
+transacciones con rollback. No deben apuntarse a producción.
 
-SPLIT 1B agrega una auditoría de identidad clínica:
-
-```bash
-PYTHONPATH=src python -m malaria_split.cli audit-patient-identity
-```
-
-Los dos CSV oficiales NLM indicados en `config/current_split.yaml` se mantienen como
-copias regenerables bajo `var/audit/source/`; tanto ellos como el JSON detallado son
-artefactos locales ignorados por Git. No son la persistencia científica definitiva.
-
-SPLIT 1C incorpora introspección PostgreSQL explícitamente read-only:
-
-```bash
-PYTHONPATH=src ../malaria_dl_local_project/.venv/bin/python \
-  -m malaria_split.cli audit-system-contracts
-```
+La evidencia y decisiones por etapa permanecen en `docs/`; esos documentos son
+auditorías históricas y no deben interpretarse como el estado operativo actual.

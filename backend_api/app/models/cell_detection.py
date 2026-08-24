@@ -10,14 +10,6 @@ class ComponentStatus(StrEnum):
     REJECTED_BY_FILTER = "rejected_by_filter"
 
 
-class DetectionRunStatus(StrEnum):
-    CREATED = "created"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    COMPLETED_WITH_WARNINGS = "completed_with_warnings"
-    FAILED = "failed"
-
-
 class ReviewDecision(StrEnum):
     ACCEPTED = "accepted"
     REJECTED = "rejected"
@@ -97,4 +89,3 @@ class ImageDetectionResult:
     components: tuple[ConnectedComponent, ...]
     crops: tuple[CellCrop, ...]
     warnings: tuple[str, ...]
-

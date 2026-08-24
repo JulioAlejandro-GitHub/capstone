@@ -1,5 +1,9 @@
 # Máquinas de estados — Entrega 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; estados conceptuales, no enums/constraints actuales.
+> **Snapshot:** Entrega 2 / Architecture Baseline v1.1.
+
 ## Reglas comunes
 
 Toda transición persiste `occurred_at`, actor (`user_id`, `worker_id` o `system`), `correlation_id`, estado anterior/nuevo y datos obligatorios en un evento append-only. Los estados terminales no se reabren: retry crea un nuevo attempt o una nueva revisión/ejecución. Cancelación es cooperativa y sólo afecta trabajo no consolidado.
@@ -108,4 +112,3 @@ Cada revisión es append-only con estado `pending | confirmed | corrected | unce
 - El reaper sólo requeue/failed jobs con lease expirada.
 - API cambia prioridad/cancelación, no marca stages completados.
 - Resultado parcial nunca se presenta como completo.
-

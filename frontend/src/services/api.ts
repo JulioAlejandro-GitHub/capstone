@@ -1,10 +1,8 @@
 import type {
-  ArtifactRow,
   CheckpointPolicySummary,
   ClinicalDashboard,
   ClinicalRunSummary,
   DashboardSummary,
-  DatasetBrowserSummary,
   DatasetImagePage,
   DatasetVersionDetail,
   DatasetVersionSummary,
@@ -106,10 +104,6 @@ export type ImageUploadResponse = {
   images: UploadedMicroscopyImage[];
   status: 'complete' | 'incomplete' | 'inconsistent';
   counts: { received: number; expected: number | null; ignored: number };
-};
-export type EligibleBatch = {
-  id: string; status: string; acquisition_origin: string; source_system: string | null;
-  received_image_count: number; subject_code: string; sample_code: string; slide_code: string; previous_run_code: string | null
 };
 export type QualityImage = {
   id: string; microscopy_image_id: string; sequence_number: number; input_sha256: string;
@@ -600,12 +594,6 @@ export const api = {
     return this.artifactUrl(path, { artifactId, datasource });
   },
 
-  datasetImageUrl(imageId: string, datasource: string) {
-    const url = new URL(`/api/dataset/images/${imageId}/file`, API_BASE_URL);
-    url.searchParams.set('datasource', datasource);
-    return url.toString();
-  },
-
   getDatasources() {
     return request<{ items: Datasource[] }>('/datasources');
   },
@@ -632,17 +620,9 @@ export const api = {
     });
   },
 
-  getEligibleBatches(params: Record<string, QueryValue> = {}) {
-    return request<{ items: EligibleBatch[]; total: number }>('/api/v1/analysis/eligible-batches', params);
-  },
   createAnalysisRun(ingestion_batch_id: string) {
     return request<AnalysisRun>('/api/v1/analysis/runs', {}, {
       init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ingestion_batch_id }) },
-    });
-  },
-  executeQuality(runId: string) {
-    return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}/quality-assessment`, {}, {
-      timeoutMs: 120000, init: { method: 'POST' },
     });
   },
   getAnalysisRun(runId: string) { return request<AnalysisRun>(`/api/v1/analysis/runs/${runId}`); },
@@ -1000,9 +980,6 @@ export const api = {
       init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ analysis_run_id, priority }) },
     });
   },
-  getQualityQueue(params: Record<string, QueryValue> = {}) {
-    return request<{ items: QualityQueueItem[]; total: number }>('/api/v1/analysis/queue', params);
-  },
   executeQueueItem(queueItemId: string) {
     return request<QualityQueueMutation>(`/api/v1/analysis/queue/${queueItemId}/execute`, {}, {
       timeoutMs: 120000, init: { method: 'POST' },
@@ -1184,6 +1161,8 @@ export const api = {
     return request<PagedResponse<ExplainabilityCase>>(`/runs/${runId}/explainability`, {
       datasource,
       ...params,
+    }, {
+      timeoutMs: 30000,
     });
   },
 
@@ -1291,10 +1270,6 @@ export const api = {
     return request<{ items: JsonRecord[] }>('/datasets', withDatasource(datasource));
   },
 
-  getDatasetSummary(datasource: string) {
-    return request<DatasetBrowserSummary>('/api/dataset/summary', withDatasource(datasource));
-  },
-
   getDatasetVersions(datasource: string) {
     return request<{ items: DatasetVersionSummary[] }>('/api/datasets', withDatasource(datasource));
   },
@@ -1386,5 +1361,3 @@ export const api = {
     return request<{ items: JsonRecord[] }>('/logs', withDatasource(datasource));
   },
 };
-
-export type ApiArtifact = ArtifactRow;

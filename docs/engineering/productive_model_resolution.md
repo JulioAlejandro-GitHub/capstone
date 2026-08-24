@@ -82,7 +82,7 @@ WHERE publication.scope = 'stage2'
   AND deployment.alias = 'default';
 ```
 
-## Estado observado en la corrección de Prompt 8
+## Snapshot histórico observado en la corrección de Prompt 8
 
 El precheck encontró cero filas en `deployed_model_versions` y una publicación
 Stage 2 activa de catálogo. En consecuencia no existe un slot inferible real:
@@ -90,3 +90,8 @@ la publicación y su checkpoint verificado no autorizan inferencia. El resultado
 correcto es `PRODUCTIVE_MODEL_NOT_UNIQUE` /
 `awaiting_productive_model`, sin crear datos sintéticos ni seleccionar otro
 modelo.
+
+Ese resultado pertenece exclusivamente al corte de Prompt 8. No afirma que el
+entorno actual conserve cero deployments. La disponibilidad vigente se resuelve
+en cada ejecución mediante las validaciones anteriores; nunca se infiere desde
+este documento.

@@ -1,5 +1,14 @@
 # Backlog derivado de auditoría
 
+> [!WARNING]
+> **OBSOLETE_DOC — SUPERSEDED.** Este backlog es un snapshot histórico de planificación;
+> sus estados, prioridades y tareas no deben usarse para decidir trabajo pendiente ni
+> ejecutar cambios sobre el sistema actual. Para estado y fuentes vigentes use el
+> [índice documental](../README.md) y `docs/engineering/`; para la regla actual de
+> publicación técnica de Etapa 2 use
+> [stage2_productive_training_card.md](../stage2_productive_training_card.md). Se
+> conserva únicamente como evidencia de la secuencia original de Entrega 2.
+
 Estimación relativa: XS, S, M, L, XL. No representa horas ni fechas.
 
 |Épica|Tipo|Ítem|Prioridad|Est.|Dependencias|Criterio de aceptación|Evidencia esperada|

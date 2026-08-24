@@ -1,6 +1,13 @@
 # Guía de Entrenamiento y Evaluación con Patient-Disjoint Split
 
-Esta guía detalla el flujo de trabajo para entrenar, evaluar y explicar los modelos de Deep Learning utilizando el nuevo split gobernado **`Malaria Patient Split v1`** (`d8c0cab5-09dd-597f-9de7-7ca01aee2ec2`), el cual garantiza la separación de pacientes disjuntos (patient-disjoint) para evitar fugas de datos (data leakage).
+> **Estado documental: CURRENT_DOC / GUÍA CANÓNICA.** Usa PostgreSQL 17 Homebrew,
+> la base persistente `malaria_experiments` y una `DATABASE_URL` privada provista por
+> el operador. No requiere Docker ni modifica servicios del host.
+
+Esta guía detalla el flujo para entrenar, evaluar y explicar modelos de Deep Learning
+con el split gobernado **`Malaria Patient Split v1`**
+(`d8c0cab5-09dd-597f-9de7-7ca01aee2ec2`). La versión está `FROZEN`, es entrenable y
+garantiza separación patient-disjoint. No debe rematerializarse ni modificarse.
 
 ---
 
@@ -15,22 +22,22 @@ cd malaria_dl_local_project
 # Activar el entorno virtual
 source .venv/bin/activate
 
-# Configurar las variables de entorno para que apunten al PostgreSQL de Docker
+# Usar la conexión privada al PostgreSQL 17 Homebrew canónico
 export PYTHONPATH=src
-export DATABASE_URL='postgresql+psycopg://julio:root@127.0.0.1:5432/malaria_experiments'
+: "${DATABASE_URL:?Define DATABASE_URL en tu entorno privado}"
 ```
 
 > [!IMPORTANT]
-> Para que el puerto `5432` enrute correctamente al contenedor de Docker (`capstone_db`), la instancia de Postgres local de macOS (Homebrew) debe estar apagada. Si no lo has hecho, detenla con:
-> ```bash
-> launchctl unload ~/Library/LaunchAgents/homebrew.mxcl.postgresql@17.plist
-> ```
+> Backend, ML y CLI de split deben resolver la misma base `malaria_experiments`.
+> No pegues credenciales en comandos versionados, no sustituyas `DATABASE_URL` por
+> un DSN personal y no inicies, detengas ni reemplaces PostgreSQL desde esta guía.
 
 ---
 
 ## 2. Verificar el Dataset Gobernado Activo
 
-Antes de entrenar, puedes verificar desde Python que la base de datos de Docker exponga correctamente el split que acabamos de congelar como la versión entrenable activa:
+Antes de entrenar, verifica desde Python que PostgreSQL exponga la versión gobernada
+oficial como entrenable:
 
 ```bash
 python - <<'PY'
@@ -55,7 +62,9 @@ PY
 
 ## 3. Entrenamiento de Modelos
 
-Puedes entrenar modelos individuales o ejecutar la grilla completa de experimentos en lote. Al usar `--track-db`, cada ejecución registrará sus parámetros, curvas de aprendizaje, checkpoints y métricas en la base de datos PostgreSQL de Docker.
+Puedes entrenar modelos individuales o ejecutar la grilla completa de experimentos
+en lote. Con `--track-db`, cada ejecución registra parámetros, curvas de aprendizaje,
+checkpoints, métricas y `dataset_version_id` en `malaria_experiments`.
 
 ### Opción A: Entrenar un Modelo Individual
 
@@ -68,6 +77,7 @@ Usa el script `src.train` especificando el ID del split gobernado mediante `--da
     --max-epochs 50 \
     --img-size 200 \
     --batch-size 64 \
+    --calibrate-threshold \
     --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
     --track-db
   ```
@@ -80,6 +90,7 @@ Usa el script `src.train` especificando el ID del split gobernado mediante `--da
     --fine-tune-epochs 10 \
     --img-size 200 \
     --batch-size 64 \
+    --calibrate-threshold \
     --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
     --track-db
   ```
@@ -92,12 +103,18 @@ Usa el script `src.train` especificando el ID del split gobernado mediante `--da
     --fine-tune-epochs 6 \
     --img-size 200 \
     --batch-size 64 \
+    --calibrate-threshold \
     --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
     --track-db
   ```
 
-> [!TIP]
-> Si omites la bandera `--dataset-version-id`, el sistema resolverá de forma automática la versión `FROZEN` más reciente registrada en la base de datos (que corresponderá al nuevo split de pacientes).
+> [!IMPORTANT]
+> Para máxima reproducibilidad se recomienda declarar `--dataset-version-id`. Si se
+> omite, el resolver ML v1 exige `FROZEN`, materialización `READY/PASS` y los 12 checks
+> requeridos más recientes en `PASS`; selecciona la versión elegible más reciente,
+> persiste su UUID en el TRAIN y falla si no existe ninguna. La lista de 12 checks es
+> explícita y no incorpora automáticamente checks bloqueantes futuros ajenos a ella.
+> Nunca usa `malaria_physical_split` como fallback silencioso.
 
 ### Opción B: Entrenamiento en Lote (Orquestador de Grilla)
 
@@ -108,31 +125,46 @@ python run_train_all_models.py \
   --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
 ```
 
+El orquestador activa internamente `--calibrate-threshold`; en los comandos
+individuales el flag es explícito porque la calibración no está habilitada por
+defecto.
+
 ---
 
 ## 4. Evaluación de Modelos y Linaje de Datos
 
-Una vez completados los entrenamientos, debes evaluar los modelos resultantes sobre la partición de prueba (`test`). El pipeline clínico requiere el cálculo de sensibilidad (Recall), especificidad, F2-score y la calibración del umbral.
+Una vez completados los entrenamientos, evalúa los modelos resultantes sobre la
+partición de prueba (`test`). El threshold se calibra antes, exclusivamente con
+`validation`, durante TRAIN cuando se usa `--calibrate-threshold`. EVALUATE consume
+ese threshold clínico persistido y calcula en `test` sensibilidad (Recall),
+especificidad y F2-score; no recalibra con muestras de prueba.
 
 Para evaluar de manera automática todos los entrenamientos exitosos registrados en la base de datos, ejecuta:
 
 ```bash
-python run_evaluate_all_trainings.py
+python run_evaluate_all_trainings.py \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
 ```
 
 > [!NOTE]
-> **Trazabilidad Garantizada**: El script `run_evaluate_all_trainings.py` consulta la base de datos y recupera el dataset exacto con el que fue entrenado cada modelo (`dataset_version_id`). La evaluación se realiza utilizando rigurosamente ese mismo linaje de datos de forma automática.
+> El filtro anterior limita el inventario a TRAIN vinculados a v1. Por cada run, el
+> evaluador vuelve a resolver `runs.dataset_version_id` y rechaza una identidad
+> distinta. No omitas el filtro en este runbook: sin él, el wrapper también inventariaría
+> TRAIN históricos con `dataset_version_id IS NULL`, que no acreditan linaje gobernado.
 
 ---
 
 ## 5. Generación de Explicabilidad Visual (LIME, SHAP y Grad-CAM)
 
-El último paso del flujo de modelado clínico es la generación de mapas de explicabilidad para las predicciones en los casos de prueba (Verdaderos Positivos, Falsos Positivos, Falsos Negativos y casos de baja certeza).
+El último paso del flujo experimental es generar mapas de explicabilidad para las
+predicciones en los casos de prueba (verdaderos positivos, falsos positivos, falsos
+negativos y casos de baja certeza).
 
 Para procesar y exportar las explicaciones visuales de todos los modelos completados:
 
 ```bash
-python run_explain_all_trainings.py
+python run_explain_all_trainings.py \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
 ```
 
 Las imágenes explicadas y los mapas de calor de Grad-CAM se exportarán a la estructura del sistema de archivos en:
@@ -142,20 +174,48 @@ outputs/explainability/
   lime/
   shap/
 ```
-Y el reporte consolidado se guardará en `outputs/explainability/explanation_summary.csv` con tracking en base de datos.
+
+`outputs/explainability/` es un workspace compartido de última ejecución, no un
+reporte consolidado del batch. Cada subproceso vuelve a escribir
+`explanation_summary.csv` y puede reemplazar archivos homónimos de un modelo anterior.
+No usar ese directorio como evidencia acumulativa.
+
+Cuando sea necesario conservar evidencia separada por TRAIN, ejecutar el CLI de un
+run con IDs gobernados y un output exclusivo:
+
+```bash
+TRAIN_UUID=00000000-0000-4000-8000-000000000000
+MODEL_VERSION_UUID=00000000-0000-4000-8000-000000000000
+
+python -m src.explain \
+  --model-version-id "$MODEL_VERSION_UUID" \
+  --source-training-run-id "$TRAIN_UUID" \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --method all \
+  --threshold clinical \
+  --output-dir "outputs/explainability/$TRAIN_UUID" \
+  --track-db \
+  --require-lineage
+```
+
+Sustituir ambos UUID de ejemplo por el par real del mismo TRAIN antes de ejecutar.
 
 ---
 
 ## 6. Monitoreo en el Dashboard Web
 
-Una vez que los comandos de entrenamiento, evaluación y explicabilidad hayan finalizado, abre tu navegador en:
+Una vez que los comandos de entrenamiento, evaluación y explicabilidad hayan
+finalizado, abre la URL configurada para el frontend. Con el servidor Vite local del
+repositorio, el valor por defecto es:
 
 ```text
-http://localhost/
+http://localhost:5173/
 ```
+
+No asumas el puerto 80 de Nginx/Compose para la operación local canónica.
 
 Desde el panel de administración web podrás:
 1. Comparar las curvas de entrenamiento, pérdidas y precisión de cada ejecución.
 2. Analizar el impacto de la separación de pacientes y verificar que no haya solapamiento.
-3. Auditar la matriz de confusión, el F2-score clínico calibrado, y descargar los artefactos/checkpoints inmutables (`.keras`).
-4. Visualizar los frotis explicados mediante Grad-CAM para validar las zonas celulares de atención de la IA.
+3. Auditar la matriz de confusión, el F2-score calibrado y los artefactos/checkpoints inmutables (`.keras`).
+4. Visualizar casos e imágenes explicados mediante Grad-CAM como evidencia experimental, no diagnóstica.

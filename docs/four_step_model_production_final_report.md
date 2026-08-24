@@ -1,5 +1,8 @@
 # Reporte final del flujo de producción
 
+> **Estado documental: HISTORICAL_AUDIT.** Evidencia del ejercicio realizado el
+> 2026-07-23. No define la elegibilidad vigente para publicar en Etapa 2.
+
 Fecha: 2026-07-23. Datasource: `malaria`.
 
 ## Resultado por paso

@@ -30,6 +30,6 @@ Si el framework, capa o gradientes no son compatibles, el estado es
 predicción ni el summary. Reintentar un fallo requiere `retry=true` explícito.
 Una explicación `generated` equivalente se reutiliza.
 
-`reconcile_cell_explanations.py` es dry-run por defecto y reporta registros sin
+`scripts/storage/reconcile_cell_explanations.py` es dry-run por defecto y reporta registros sin
 archivo, huérfanos, checksum/tamaño distintos, paths inseguros, symlinks y
 staging residual.

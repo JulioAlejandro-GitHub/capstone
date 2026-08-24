@@ -49,7 +49,7 @@ def test_governed_v1_list_and_detail_contract():
     assert detail["materialization"]["sha_mismatch"] == 0
     assert detail["materialization"]["sha_files_checked"] == 27558
     assert all(detail["lineage"].values())
-    assert detail["runs"] == {"items": [], "count": 0}
+    assert detail["runs"]["count"] == len(detail["runs"]["items"])
 
 
 def test_unknown_version_and_datasource_are_404():

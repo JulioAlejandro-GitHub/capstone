@@ -1,5 +1,10 @@
 # ADR-005: Quality gate terminal antes del job
 
+> **Estado documental:** `LEGACY_REQUIRED` — sustituido parcialmente.
+> **Uso operativo:** No como secuencia literal; el sistema crea el analysis run y luego
+> ejecuta su quality gate antes de detección/clasificación.
+> **Sustitución:** ADR-018 y `docs/architecture/microscopy_quality_gate.md`.
+
 - Estado: Aceptado
 - Contexto/problema: QC actual sólo advierte y no bloquea.
 - Decisión: upload crea original y assessment; rejected conserva ambos, informa motivos y no crea `analysis_job`.

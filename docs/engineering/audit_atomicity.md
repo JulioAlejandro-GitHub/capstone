@@ -1,5 +1,9 @@
 # Atomicidad de auditoría
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No como matriz de cobertura actual; la regla transaccional sí se conserva.
+> **Snapshot:** Prompt 2.2.1, con cobertura E2E todavía parcial en ese momento.
+
 Prompt 2.2.1 comprobó con PostgreSQL real que una FK inválida en `audit_events` aborta y
 revierte la mutación dentro de la conexión compartida. La aprobación plena continúa
 bloqueada hasta ejercitar cada repositorio crítico con su tabla de dominio y before/after.

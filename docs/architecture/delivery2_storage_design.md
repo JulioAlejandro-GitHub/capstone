@@ -1,5 +1,9 @@
 # Diseño de almacenamiento — Entrega 2
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; diseño objetivo previo a `LocalStorage`.
+> **Snapshot:** Entrega 2 / Architecture Baseline v1.1.
+
 ## Decisión
 
 `StorageProvider` es el único acceso nuevo a bytes. La implementación MVP es `LocalStorageProvider`; PostgreSQL conserva URI lógica, checksum, MIME, tamaño, owner y auditoría, nunca imágenes `BYTEA`. Los servicios actuales `backend_api/app/services/artifacts.py`, `malaria_dl/common/paths.py` y releases se adaptarán gradualmente detrás del provider.
@@ -67,4 +71,3 @@ La imagen original se conserva. Assessment y artefactos de QC quedan en `quality
 ## Migración futura
 
 `storage_uri`, no path, es identidad. Un futuro provider MinIO/S3 implementa la misma interfaz, mantiene artifact UUID/checksum y puede copiar bytes con estado `migrating`; una tabla de locator/provider permite dual read durante transición. Ningún contrato API cambia.
-

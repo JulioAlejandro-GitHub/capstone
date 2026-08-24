@@ -1,5 +1,9 @@
 # Prompt 5 — precheck
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; precheck fechado, no diagnóstico actual.
+> **Snapshot:** 2026-07-27, `main@9a45bbb1861cc7e6b782244a5afc1a7b9eacc3c4`.
+
 Fecha: 2026-07-27 (America/Santiago).
 
 - Rama: `main`.

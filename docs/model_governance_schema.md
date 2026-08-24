@@ -1,5 +1,10 @@
 # Esquema de gobernanza y linaje de modelos
 
+> **Estado documental: LEGACY_REQUIRED / HISTORICAL_SCHEMA_DESIGN. Uso operativo:
+> NO.** Conserva el diseño y las equivalencias del subsistema de gobernanza. No es un
+> runbook de migración ni acredita el estado de una base viva: la fuente operativa es
+> la cadena Alembic y debe verificarse con `current=head`.
+
 **Compatibilidad objetivo:** PostgreSQL 17  
 **Convención de identidad:** UUID y claves foráneas  
 **Convención clínica:** `0 = uninfected`, `1 = parasitized`  

@@ -1,251 +1,180 @@
-# Runbook simplificado: Patient Split de malaria
+# Runbook operativo: Patient Split de malaria
 
-## Objetivo
+> **Estado documental: CURRENT_DOC / RUNBOOK CANÓNICO.** Operación local sobre
+> PostgreSQL 17 Homebrew y la base persistente `malaria_experiments`. Docker puede
+> existir como capacidad opcional del repositorio, pero no es el runtime canónico de
+> este procedimiento. Este runbook no inicia, detiene ni reemplaza servicios.
 
-Construir una versión gobernada del dataset de malaria:
+## Estado protegido
 
-```text
-DRAFT → GENERATED → VALIDATED → READY/PASS → FROZEN/TRAINABLE
-```
-
-PostgreSQL es la fuente de verdad. No modificar estados con SQL ni corregir la
-materialización moviendo archivos manualmente.
-
-## 1. Confirmar la instancia PostgreSQL
-
-El CLI y el backend deben usar la misma base de datos. 
-
-> [!WARNING]
-> **Conflicto de Puertos en macOS**: Si tienes instalado PostgreSQL vía Homebrew, este podría estar escuchando en `127.0.0.1:5432` en el host, interceptando las llamadas del CLI e impidiendo que este se conecte al contenedor Docker (`capstone_db`).
-
-Para validar a qué instancia te estás conectando, ejecuta el paso de auditoría y revisa el campo `postgres_version` en la respuesta:
-- **Docker (Esperado)**: Debería contener `Debian` o `linux-gnu`.
-- **Homebrew (Incorrecto para el pipeline)**: Contendrá `Homebrew` o `apple-darwin`.
-
-Si detectas que estás conectado a la instancia local de Homebrew, detén su servicio para liberar el puerto `5432` en el host:
-```bash
-# Intenta detener el servicio de Homebrew
-brew services stop postgresql@17
-
-# Si falla con errores Ruby o launchd lo reinicia automáticamente:
-launchctl unload ~/Library/LaunchAgents/homebrew.mxcl.postgresql@17.plist
-```
-
-Una vez liberado el puerto, las conexiones a `127.0.0.1:5432` irán al contenedor de Docker.
-
-La versión oficial es:
+La versión oficial ya está materializada y congelada:
 
 ```text
-d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
-Malaria Patient Split v1
+dataset_version_id=d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
+name=Malaria Patient Split v1
+status=FROZEN
+trainable=true
+patients=201
+images=27558
+train=22180
+val=2693
+test=2685
+validation=12/12 PASS
+materialization=READY
+reconciliation=PASS
 ```
 
-Si ya está `FROZEN` en la base destino, no ejecutar nuevamente el pipeline. Conectar el backend a esa base o migrarla mediante backup/restore verificado.
+`FROZEN` significa inmutable. Para esta versión están prohibidos el bootstrap,
+la persistencia de un nuevo reparto, la rematerialización, el movimiento de su raíz,
+la eliminación de archivos y cualquier corrección manual de estados. Un cambio
+científico exige una nueva Dataset Version con otro identificador.
 
-## 2. Precondiciones
+## 1. Precondiciones canónicas
 
 Desde la raíz de `capstone`:
 
+1. PostgreSQL 17 Homebrew debe estar disponible en el host.
+2. La base operativa debe ser `malaria_experiments`.
+3. `DATABASE_URL` debe llegar desde el entorno privado del operador. Esta guía no
+   contiene usuarios, contraseñas ni DSN personales.
+4. `JWT_SECRET` también debe estar definido porque los guardrails DB reutilizan la
+   configuración validada del backend; no se imprime ni se persiste.
+5. Backend, ML y CLI de split deben resolver la misma `DATABASE_URL`.
+
+Comprobar que la variable exista sin imprimir su valor:
+
 ```bash
-docker compose up -d db backend frontend
-docker compose ps
+: "${DATABASE_URL:?Define DATABASE_URL en tu entorno privado}"
+: "${JWT_SECRET:?Define JWT_SECRET en tu entorno privado}"
+make db-status
+make db-migrate-check
 ```
 
-Verificar Alembic con las credenciales reales del volumen:
+Si el servicio, la base o el head Alembic no coinciden con la configuración vigente,
+detener el procedimiento. No liberar puertos, cambiar de instancia, iniciar Docker ni
+alterar servicios desde este runbook.
 
-```bash
-docker exec capstone_db psql -U <usuario> -d <database> -Atc \
-  'SELECT version_num FROM alembic_version;'
-```
-
-Resultado esperado:
-
-```text
-20260812_02
-```
-
-También deben existir:
-
-- las 27.558 imágenes originales;
-- los CSV oficiales de Patient-ID;
-- espacio para una nueva materialización;
-- acceso exclusivo al pipeline durante la ejecución.
-
-## 3. Preparar el CLI
+## 2. Preparar el CLI
 
 ```bash
 cd malaria_dataset_split_project
 export PYTHONPATH=src
-export DATABASE_URL='postgresql+psycopg://<usuario>:<password>@127.0.0.1:5432/<database>'
 SPLIT_PYTHON=../malaria_dl_local_project/.venv/bin/python
 
 "$SPLIT_PYTHON" -m malaria_split.cli --help
 ```
 
-Usar `127.0.0.1` solamente cuando el CLI se ejecute directamente desde macOS.
+El CLI hereda `DATABASE_URL`; no debe sustituirla por un valor por defecto ni por una
+base alternativa.
 
-## 4. Auditorías read-only
+## 3. Auditorías de baseline y gobernanza
+
+Las siguientes operaciones no cambian PostgreSQL ni la composición o
+materialización de ninguna Dataset Version. No todas son read-only respecto del
+filesystem: `audit-patient-identity` y `audit-system-contracts` regeneran artefactos
+derivados bajo `malaria_dataset_split_project/var/audit/`. No ejecutarlas si esos
+reportes deben conservarse byte a byte; copiar la evidencia existente antes de
+actualizarlos.
 
 ```bash
 "$SPLIT_PYTHON" -m malaria_split.cli audit-current-split
 "$SPLIT_PYTHON" -m malaria_split.cli audit-patient-identity
 "$SPLIT_PYTHON" -m malaria_split.cli audit-system-contracts
-```
-
-Continuar únicamente si se confirman:
-
-- 27.558 imágenes;
-- 201 pacientes;
-- 100 % de cobertura Patient-ID;
-- cero conflictos de identidad;
-- esquema Alembic `20260812_02`.
-
-El leakage del split físico legacy es esperado; este pipeline crea el reemplazo
-patient-disjoint.
-
-## 5. Crear la versión DRAFT
-
-Primero simular:
-
-```bash
-"$SPLIT_PYTHON" -m malaria_split.cli bootstrap-malaria-v1 --dry-run
-```
-
-Si devuelve `PASS`, aplicar y auditar:
-
-```bash
-"$SPLIT_PYTHON" -m malaria_split.cli bootstrap-malaria-v1
 "$SPLIT_PYTHON" -m malaria_split.cli audit-scientific-bootstrap
-```
-
-Esperado: `DRAFT`, 27.558 source records y cero assignments.
-
-## 6. Generar y persistir el split
-
-Auditar perfiles y generar el candidato reproducible:
-
-```bash
 "$SPLIT_PYTHON" -m malaria_split.cli audit-patient-profiles-v1 \
   --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
-
-"$SPLIT_PYTHON" -m malaria_split.cli generate-patient-split-v1 \
-  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
-  --dry-run
 ```
 
-El candidato debe ser válido, determinista y sin hard-constraint violations.
+`audit-current-split` y `audit-patient-identity` leen por defecto
+`malaria_dl_local_project/data/malaria_physical_split`: ese directorio es el baseline
+físico legacy, no la materialización gobernada de v1. Sus resultados sirven para
+comparación histórica y no acreditan por sí solos el estado `FROZEN`, los checks ni la
+reconciliación de la versión oficial.
 
-Ensayar la transacción:
+Antes de entrenar, completar también la verificación gobernada de la sección 4 y
+confirmar en conjunto:
 
-```bash
-"$SPLIT_PYTHON" -m malaria_split.cli persist-patient-split-v1 --rehearse
-```
+- 27.558 imágenes y 201 pacientes;
+- 100 % de cobertura Patient-ID y cero conflictos de identidad;
+- cero intersección de pacientes entre `train`, `val` y `test`;
+- 12/12 validaciones `PASS`;
+- materialización `READY` y reconciliación `PASS`;
+- versión `FROZEN` y `trainable=true`.
 
-Debe hacer rollback y conservar `DRAFT` con cero assignments. Después aplicar:
+El leakage del split físico legacy es evidencia histórica esperada; nunca habilita
+fallback para un TRAIN gobernado nuevo.
 
-```bash
-"$SPLIT_PYTHON" -m malaria_split.cli persist-patient-split-v1 --apply
-```
+## 4. Verificación en la aplicación
 
-Esperado: `GENERATED` y 27.558 assignments.
-
-| Split | Imágenes | Pacientes |
-|---|---:|---:|
-| train | 22.180 | 161 |
-| val | 2.693 | 20 |
-| test | 2.685 | 20 |
-
-## 7. Validar
-
-```bash
-"$SPLIT_PYTHON" -m malaria_split.cli validate-patient-split-v1
-```
-
-Esperado:
-
-- status `VALIDATED`;
-- 12/12 checks `PASS`;
-- cero overlap de pacientes;
-- ambas clases presentes en train, val y test.
-
-## 8. Materializar
-
-Revisar `config/current_split.yaml` y ejecutar:
-
-```bash
-"$SPLIT_PYTHON" -m malaria_split.cli materialize-patient-split-v1 \
-  --config config/current_split.yaml
-```
-
-> [!WARNING]
-> **Conflicto de Directorio Existente (`FINAL_ROOT_EXISTS_WITHOUT_READY_PASS`)**:
-> Si estás corriendo esto en una base de datos nueva/limpia pero la carpeta física de la versión ya existe en el disco (`malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2`), el comando fallará indicando que la carpeta existe en el disco pero no está registrada como `READY`/`PASS` en la base de datos.
->
-> **Solución**: Mueve la carpeta física existente antes de ejecutar el comando para permitir que el script la vuelva a crear y registrar:
-> ```bash
-> mv ../malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 ../malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2.bak
-> # Y tras una materialización exitosa, puedes borrar la copia de respaldo:
-> rm -rf ../malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2.bak
-> ```
-
-Esperado:
-
-- materialización `READY`;
-- reconciliación `PASS`;
-- 27.558 archivos encontrados;
-- cero archivos faltantes o inesperados;
-- 27.558 SHA-256 match y cero mismatch.
-
-## 9. Congelar
-
-```bash
-"$SPLIT_PYTHON" -m malaria_split.cli freeze-patient-split-v1
-```
-
-Resultado final obligatorio:
+Abrir la URL configurada para el frontend. Con Vite local, el valor por defecto es:
 
 ```text
-status=FROZEN
-trainable=true
-trainability_reasons=[]
+http://localhost:5173/modelo-ia/dataset?datasource=malaria
 ```
 
-Una versión `FROZEN` es inmutable. Los cambios futuros requieren una nueva versión.
+La UI debe mostrar la versión oficial, sus counts, integridad patient-disjoint,
+12/12 checks, materialización `READY/PASS` y las ejecuciones realmente vinculadas
+mediante `runs.dataset_version_id`. Los runs legacy con valor nulo no pertenecen a v1.
 
-## 10. Verificación final
+## 5. Entrenamiento y linaje
 
-Consultar PostgreSQL:
-
-```sql
-SELECT id,name,semantic_version,status,source_record_count,
-       generated_at,validated_at,frozen_at
-FROM dataset_versions
-ORDER BY created_at DESC;
-
-SELECT dataset_version_id,status,reconciliation_status,record_count,relative_root
-FROM dataset_materializations
-ORDER BY started_at DESC;
-```
-
-Abrir:
+Para máxima reproducibilidad se recomienda entregar explícitamente:
 
 ```text
-http://localhost/modelo-ia/dataset?datasource=malaria
+--dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
 ```
 
-La UI debe mostrar `FROZEN`, `TRAINABLE`, 201 pacientes, 27.558 imágenes, 12/12 checks
-y materialización `READY/PASS`.
+Con el flag, el TRAIN resuelve exactamente ese UUID. Si se omite, el resolver ML v1
+selecciona sólo entre Dataset Versions `FROZEN` con materialización `READY/PASS` y los
+12 checks requeridos más recientes en `PASS`; elige la más reciente y falla si no
+existe ninguna. Esa lista de 12 checks es explícita: el resolver actual no promete
+incorporar automáticamente checks bloqueantes futuros ajenos a ella. En ambos casos
+persiste el UUID resuelto y EVALUATE hereda exactamente la misma versión. Nunca existe
+fallback silencioso a `malaria_physical_split`.
+
+## 6. Incidentes de materialización
+
+Ante una raíz ausente, adicional, incompleta o no reconciliada:
+
+1. detener TRAIN y cualquier operación de escritura del pipeline;
+2. conservar sin cambios PostgreSQL, la raíz versionada y toda evidencia disponible;
+3. ejecutar sólo consultas que no muten PostgreSQL ni las raíces de datos; no
+   regenerar artefactos derivados si forman parte de la evidencia preservada;
+4. comparar el estado con backups y manifests verificados;
+5. preparar un plan de recuperación separado, revisado y autorizado.
+
+No mover, renombrar, borrar ni volver a crear la raíz de v1 para hacerla coincidir con
+una base distinta. Tampoco forzar estados SQL. Una materialización exitosa en otro
+entorno no autoriza reemplazar la evidencia oficial.
+
+## 7. Futuras Dataset Versions
+
+El ciclo científico reutilizable sigue siendo:
+
+```text
+DRAFT → GENERATED → VALIDATED → READY/PASS → FROZEN/TRAINABLE
+```
+
+Para crear v2 o una versión posterior se requiere antes:
+
+- nuevo UUID, semver, configuración y freeze contract;
+- comandos/configuración que acepten explícitamente esa nueva identidad;
+- dry-run y rehearsal transaccional;
+- materialización en una raíz nueva, nunca sobre v1;
+- 12/12 checks, reconciliación y revisión científica antes de congelar.
+
+Los comandos cuyo nombre termina en `-v1` no deben reutilizarse para una versión
+futura sin una implementación y validación específicas.
 
 ## Cuándo detenerse
 
-Detener el pipeline si:
+Detener el procedimiento si:
 
-- el CLI y el backend apuntan a bases diferentes;
-- un dry-run o auditoría no devuelve `PASS`;
-- el rehearsal no revierte todas las escrituras;
-- aparece `*_STATE_CONFLICT`;
-- validation no obtiene 12/12 checks;
-- reconciliation presenta missing, mismatch u overlap;
-- la versión oficial ya está `FROZEN`.
+- algún componente resuelve otra base;
+- `DATABASE_URL` falta o no corresponde al entorno operativo aprobado;
+- el head Alembic no coincide con el repositorio;
+- una auditoría no devuelve `PASS`;
+- aparece cualquier conflicto de estado, identidad o reconciliación;
+- se solicita mutar la versión oficial ya `FROZEN`.
 
-No borrar evidencia ni forzar estados para continuar.
+Nunca borrar evidencia ni forzar estados para continuar.

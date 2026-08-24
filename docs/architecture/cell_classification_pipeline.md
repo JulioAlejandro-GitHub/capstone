@@ -18,10 +18,13 @@ detection run terminal
 
 El resolver parte exclusivamente de un deployment activo de
 `deployed_model_versions` para `environment=stage2` y `alias=default`, y exige
-la publicación Stage 2 activa del mismo model version. El precheck real de
-Prompt 8 encontró la publicación, pero ningún deployment; por ello este
-pipeline permanece bloqueado en `awaiting_productive_model` y no ejecuta
-inferencia.
+la publicación Stage 2 activa del mismo model version. Ante ausencia o
+ambigüedad permanece en `awaiting_productive_model` y no ejecuta inferencia.
+
+> **Snapshot histórico de Prompt 8:** el precheck de ese prompt encontró una
+> publicación, pero ningún deployment. Esa observación no declara la
+> disponibilidad del entorno actual; debe verificarse en runtime sin usar
+> fallback.
 
 La ejecución HTTP usa el threadpool de FastAPI. No hay worker, broker, polling ni
 retry automático. Los errores de modelo, mapping, preprocessing o checksum son

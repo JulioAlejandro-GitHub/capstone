@@ -1,5 +1,9 @@
 # Prompt 3 — validación final
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; resultados y schema corresponden al cierre de Prompt 3.
+> **Snapshot:** 2026-07-27, head final `20260727_01`.
+
 Fecha: 2026-07-27  
 Recomendación: **APROBAR**
 

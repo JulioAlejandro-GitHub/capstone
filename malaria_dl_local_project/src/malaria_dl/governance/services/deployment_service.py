@@ -1,7 +1,6 @@
 """Controlled deployment lifecycle with auditable validation and alias cutover."""
 from __future__ import annotations
 import json
-from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID

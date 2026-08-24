@@ -14,7 +14,6 @@ from sqlalchemy import Connection, Engine, text
 from malaria_split.governance.dataset_lifecycle import transition_dataset_version
 from malaria_split.governance.trainability import get_dataset_version_trainability
 from malaria_split.splitting import load_patient_profiles
-from malaria_split.splitting.candidate import canonical_assignment_digest
 from malaria_split.splitting.optimizer import OptimizationResult, optimize_patient_split
 
 

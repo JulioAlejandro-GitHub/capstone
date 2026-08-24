@@ -1,5 +1,11 @@
 # Registro de riesgos
 
+> **Estado documental: HISTORICAL_AUDIT / SNAPSHOT 2026-07-28. Uso operativo: NO.**
+> Conserva los riesgos observados durante Prompts 1–8. Filas como split sin
+> `patient_id`, detector inexistente, menú oculto o modelo de paciente ausente fueron
+> superadas total o parcialmente y no deben tratarse como “evidencia actual”. Un
+> registro operativo futuro debe abrir una nueva versión con fecha y responsables.
+
 Escala cualitativa: probabilidad/impacto Bajo, Medio, Alto; nivel combina ambos.
 
 |ID|Categoría|Riesgo y evidencia actual|Causa|Consecuencia|Prob.|Impacto|Nivel|Mitigación|Contingencia|Componente|Prompt|Estado|

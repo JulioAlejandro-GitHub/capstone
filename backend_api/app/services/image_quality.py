@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import math
 import statistics
-from pathlib import Path
 
 from PIL import Image, ImageOps
 

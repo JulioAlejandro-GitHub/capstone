@@ -1,5 +1,9 @@
 # Aprobación final de fundación
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; la recomendación y los gates pertenecen a ese corte.
+> **Snapshot:** 2026-07-27, head `20260726_02`.
+
 Fecha: 2026-07-27. Recomendación: **RECHAZAR** hasta cerrar credenciales E2E y cobertura
 atómica por repositorio. Docker no es un gate.
 

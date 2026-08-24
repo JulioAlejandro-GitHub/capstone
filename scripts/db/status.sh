@@ -2,9 +2,9 @@
 set -euo pipefail
 : "${DATABASE_URL:?DATABASE_URL es obligatoria}"
 python_bin="${PYTHON:-backend_api/.venv/bin/python}"
-target="$("$python_bin" -c 'from app.config import get_settings; from app.database_safety import redacted_database_target; print(redacted_database_target(get_settings().database_url))' 2>/dev/null)"
+target="$(PYTHONPATH=backend_api "$python_bin" -c 'from app.config import get_settings; from app.database_safety import redacted_database_target; print(redacted_database_target(get_settings().database_url))' 2>/dev/null)"
 echo "Base configurada: $target"
-"$python_bin" - <<'PY'
+PYTHONPATH=backend_api "$python_bin" - <<'PY'
 from sqlalchemy import create_engine, text
 from alembic.config import Config
 from alembic.script import ScriptDirectory

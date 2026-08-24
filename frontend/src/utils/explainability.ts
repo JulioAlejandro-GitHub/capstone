@@ -38,13 +38,6 @@ export function thresholdUsed(item: ExplainabilityCase) {
   return item.threshold_used ?? item.threshold ?? null;
 }
 
-export function confidenceLabel(item: ExplainabilityCase) {
-  if (item.confidence_status) return item.confidence_status;
-  if (item.confidence_level) return item.confidence_level;
-  if (item.case_type === 'low_confidence') return 'Revisión prioritaria';
-  return 'No registrada';
-}
-
 export function generateCaseInterpretation(item: ExplainabilityCase) {
   if (item.interpretation?.trim()) return item.interpretation;
 

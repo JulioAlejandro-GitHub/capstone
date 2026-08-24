@@ -2,14 +2,17 @@
 
 ## Ubicación y jerarquía
 
-La ruta oficial es `/frotis/revision`, bajo:
+El workspace se integra en la ruta canónica `/frotis/analizar`, bajo:
 
 ```text
 Análisis de frotis
-  - Cargar imágenes
+  - Ingesta
   - Control de calidad
-  - Revisión celular
+  - Detección, clasificación y revisión celular
 ```
+
+`/frotis/revision` se conserva sólo como redirect de compatibilidad hacia
+`/frotis/analizar`; no debe usarse como ruta canónica en enlaces nuevos.
 
 No se agrega al grupo `Modelo IA`. El shell, sidebar, tokens, botones e iconos
 siguen siendo los existentes. La maqueta de referencia sólo informa jerarquía,

@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 
 
 @dataclass(frozen=True)
@@ -35,4 +35,3 @@ class CurrentPhysicalSplit:
 
     def to_dict(self) -> dict:
         return asdict(self) | {"total_image_files": self.total_image_files}
-

@@ -8,7 +8,7 @@ from pydantic import BaseModel,ConfigDict
 from app.db import fetch_all,fetch_one,get_engine,resolve_datasource
 from app.services.serialization import row_to_dict,rows_to_list
 from app.services.productive_model import ProductiveModelResolver
-from app.security import Permission,Principal,require_permission
+from app.security import Permission,Principal
 from app.audit import audited_permission,mutation_connection
 
 CAPSTONE_ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(CAPSTONE_ROOT/"malaria_dl_local_project"))

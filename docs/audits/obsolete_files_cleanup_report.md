@@ -1,5 +1,9 @@
 # Informe final de limpieza de archivos obsoletos
 
+> **Estado documental: HISTORICAL_AUDIT.** Resultado ligado a la rama, commit y fecha
+> indicados. Se preserva sin reinterpretar métricas o archivos retirados como estado
+> actual.
+
 Fecha: 2026-07-25  
 Rama: `chore/remove-obsolete-files`  
 Commit base: `8f3988d6`

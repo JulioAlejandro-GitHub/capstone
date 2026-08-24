@@ -1,5 +1,9 @@
 # Diagnóstico y cierre del flujo de disponibilidad de modelos
 
+> **Estado documental: HISTORICAL_AUDIT.** Diagnóstico de una transición anterior,
+> preservado para explicar decisiones y pruebas. Las rutas de compatibilidad pueden
+> seguir existiendo, pero este cierre no es fuente de verdad del flujo vigente.
+
 ## 1. Resumen ejecutivo
 
 El repositorio ya tenía las entidades gobernadas `model_versions`,
@@ -230,7 +234,7 @@ Comando reproducible E2E:
 ```bash
 createdb --template=malaria_experiments capstone_availability_e2e
 cd backend_api
-MALARIA_DATABASE_URL=postgresql://julio@localhost:5432/capstone_availability_e2e \
+MALARIA_DATABASE_URL=postgresql://USER@localhost:5432/capstone_availability_e2e \
 RUN_MODEL_AVAILABILITY_E2E=1 \
 ../malaria_dl_local_project/.venv/bin/python -m pytest \
 tests/test_model_availability_e2e_postgres.py -q -s

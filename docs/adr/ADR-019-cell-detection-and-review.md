@@ -6,6 +6,10 @@
 - Decisiones relacionadas: ADR-003, ADR-004, ADR-011, ADR-013, ADR-015 y
   ADR-018
 
+> **Evolución de navegación:** la decisión funcional del workspace permanece
+> vigente, pero `/frotis/revision` pasó a ser un redirect de compatibilidad. La
+> ruta canónica actual es `/frotis/analizar`.
+
 ## Contexto
 
 Los `microscopy_analysis_runs` ya congelan el conjunto de imágenes y el quality
@@ -46,7 +50,8 @@ filesystem ni se incorporarán workers, colas automáticas o storage remoto.
 7. La ejecución es manual y síncrona, con trabajo CPU fuera del event loop. Un
    fallo deja el run en `failed`, registra un error sanitizado y no dispara
    reintentos automáticos.
-8. La revisión se presenta en `/frotis/revision`: lista de ejecuciones y un
+8. La revisión se presenta en el workflow canónico `/frotis/analizar` (la ruta
+   histórica `/frotis/revision` redirige allí): lista de ejecuciones y un
    workspace de tres paneles en escritorio, adaptado a pestañas/segmentos en
    móvil. Galería y overlay SVG comparten `selectedDetectionId`; imagen y cajas
    comparten el mismo espacio y transformación de zoom/pan.

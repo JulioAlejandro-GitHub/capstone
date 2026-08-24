@@ -29,6 +29,9 @@ El archivo central es `frontend/src/router.ts`. Los componentes no deben constru
 | Dataset | `/modelo-ia/dataset` | — | `datasource` |
 | Datasets y modelos | `/modelo-ia/datasets-modelos` | — | `datasource` |
 | Errores y logs | `/modelo-ia/errores-logs` | — | `datasource` |
+| Analizar imagen de frotis | `/frotis/analizar` | — | `datasource` |
+| Historial de análisis | `/frotis/historial` | — | `datasource` |
+| Detalle de análisis histórico | `/frotis/historial/:analysisRunId` | UUID de analysis run | `datasource` |
 
 No se añadieron rutas de detalle para evaluación, explicabilidad o predicción: el frontend actual no dispone de una carga estable del objeto individual por el ID público correspondiente. Añadir la URL antes del endpoint produciría un deep link que no podría reconstruirse.
 
@@ -42,7 +45,14 @@ Los filtros estables de Ejecuciones (`run` y `modelo`) se leen y escriben con `u
 
 Los IDs se leen con `useParams` y se validan como UUID antes de montar páginas que consultan la API. Un ID inválido muestra una vista específica y no dispara la consulta. Run detail usa `/api/runs/:id`; model version usa `/api/model-versions/:id`; deployment se resuelve desde `/api/deployments` y consulta readiness por ID.
 
-El layout genera breadcrumbs desde la ruta, mantiene “Modelo IA” expandido y actualiza `document.title`. Al cambiar de pathname se lleva el foco al primer `h1`. Los detalles de run, model version y deployment ofrecen “Copiar enlace”; el helper usa el origin actual, conserva el datasource y no contiene un dominio de desarrollo fijo.
+El layout genera breadcrumbs desde la ruta, activa el módulo correspondiente y
+actualiza `document.title`. El menú visible ofrece **Análisis de frotis** (Analizar
+imagen e Historial) y **Modelo IA** (Resumen, Ejecuciones, Dataset y Datasets y
+modelos). Las demás rutas de Modelo IA registradas siguen disponibles como capacidades
+directas, pero no se presentan como opciones del menú vigente. Al cambiar de pathname
+se lleva el foco al primer `h1`. Los detalles de run, model version y deployment
+ofrecen “Copiar enlace”; el helper usa el origin actual, conserva el datasource y no
+contiene un dominio de desarrollo fijo.
 
 ## Panel de Despliegues
 
@@ -57,6 +67,9 @@ Se normalizan con `replace` y se conserva el query string:
 - `/model-versions` → `/modelo-ia/modelos-liberados`
 - `/deployments` → `/modelo-ia/despliegues`
 - `/modelo-ia/ejecuciones/RunId=<uuid>` → ruta canónica del run
+- `/frotis/cargar` → `/frotis/analizar`
+- `/frotis/analisis` → `/frotis/analizar`
+- `/frotis/revision` → `/frotis/analizar`
 
 La ruta `/` redirige a `/modelo-ia/resumen`.
 
@@ -68,7 +81,12 @@ Una ruta desconocida muestra “Página no encontrada” dentro del layout. Un U
 
 Vite dev y Vite preview sirven `index.html` para deep links de la SPA. `backend_api` es exclusivamente API y no sirve el frontend; por eso no se agregó un fallback que pudiera interceptar `/api`.
 
-En el servidor web de producción que publique `frontend/dist`, la regla requerida es equivalente a `try_files $uri $uri/ /index.html`, con `/api/`, health checks y assets existentes excluidos o enviados al backend. Esta regla pertenece al hosting del frontend; no existe una configuración Nginx/Docker de frontend en este repositorio que sea seguro modificar.
+El repositorio incluye `frontend/Dockerfile` y el servicio opcional `frontend` de
+Compose, que sirve `frontend/dist` mediante Nginx y configura fallback a `index.html`
+para React Router. Es una capacidad de despliegue opcional, no el gate operativo
+local canónico. Cualquier hosting alternativo requiere una regla equivalente a
+`try_files $uri $uri/ /index.html`, manteniendo `/api/`, health checks y assets fuera
+del fallback de la SPA.
 
 ## Seguridad y accesibilidad
 

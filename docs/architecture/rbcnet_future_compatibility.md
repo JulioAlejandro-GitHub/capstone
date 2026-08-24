@@ -1,5 +1,9 @@
 # Compatibilidad futura con RBCNet
 
+> **Estado documental:** `OBSOLETE_DOC` — sustituido parcialmente por la implementación.
+> **Uso operativo:** No; conserva restricciones históricas de compatibilidad futura.
+> **Sustitución:** ADR-019, `cell_detection_pipeline.md` y `cell_detection_data_model.md`.
+
 RBCNet es horizonte conceptual; Prompt 4 no descarga ni ejecuta MATLAB, modelos,
 segmentación, detección, crops o clasificación. La identidad de todo resultado
 futuro es `microscopy_images.id`.

@@ -1,5 +1,9 @@
 # Acta de aprobación — Architecture Baseline v1.1
 
+> **Estado documental:** `HISTORICAL_AUDIT`
+> **Uso operativo:** No; conserva la aprobación de la arquitectura objetivo v1.1.
+> **Snapshot:** Entrega 2, previo a la implementación incremental de Prompts 2–8.
+
 ## Identificación
 
 - Baseline: `delivery2_architecture_baseline_v1_1.md`
@@ -73,4 +77,3 @@ No quedan decisiones estructurales abiertas. Antes de mutar código/DB, Prompt 2
 5. identidad del responsable que aprueba cambios de RBAC/schema.
 
 Estos son gates de ejecución, no reapertura de arquitectura.
-
