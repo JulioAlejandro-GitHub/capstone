@@ -46,3 +46,4 @@ docs/dump-malaria_experiments-202607290730.sql
 docs/dump-malaria_experiments-202607290730.sql
 /backend_api/var/storage/cell-crops
 /backend_api/var/storage/microscopy-images
+/backend_api/var/storage/cell-explanations
