@@ -13,6 +13,8 @@ import { ApiError, api, type ScientificSample, type ScientificSubject } from '..
 const NIH_SOURCE = 'nih_nlm_thin_blood_smears_pf';
 const ACCEPTED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'tif', 'tiff'];
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/tiff'];
+const MAX_UPLOAD_BYTES = 20_971_520;
+const MAX_IMAGE_PIXELS = 100_000_000;
 
 export type SmearUploadProps = {
   files: File[];
@@ -111,6 +113,11 @@ export function SmearUpload({
       setFileError(`“${invalid.name}” no es compatible. Use JPEG, PNG o TIFF.`);
       return;
     }
+    const oversized = nextFiles.find((file) => file.size > MAX_UPLOAD_BYTES);
+    if (oversized) {
+      setFileError(`“${oversized.name}” supera el límite de 20 MiB por archivo.`);
+      return;
+    }
     setFileError('');
     onFilesChange(nextFiles);
   }
@@ -167,19 +174,33 @@ export function SmearUpload({
   const originReady = origin === 'nih'
     ? Boolean(externalPatientId.trim())
     : origin === 'external' ? Boolean(externalSystem.trim()) : true;
-  const formReady = canAnalyze && identityReady && sampleReady && originReady && files.length > 0;
+  const dimensionsReady = !dimensions || dimensions.width * dimensions.height <= MAX_IMAGE_PIXELS;
+  const formReady = canAnalyze && identityReady && sampleReady && originReady
+    && files.length > 0 && !fileError && dimensionsReady;
   const isDragging = dragDepth > 0;
-  const statusText = busy
-    ? 'Iniciando análisis.'
+  const disabledReason = busy
+    ? 'El análisis ya se está iniciando; evita repetir el envío.'
     : !canAnalyze
-      ? 'Backend conectado. Permisos insuficientes para iniciar.'
-      : files.length
-        ? 'Backend conectado. Imagen seleccionada.'
-        : 'Backend conectado. Sistema listo para recibir imágenes.';
+      ? 'Tu rol no reúne todos los permisos requeridos para ejecutar el flujo.'
+      : !identityReady
+        ? 'Busca y selecciona un paciente válido.'
+        : !sampleReady
+          ? 'Selecciona una muestra válida.'
+          : !originReady
+            ? 'Completa los datos obligatorios del origen.'
+            : !files.length
+              ? 'Selecciona al menos una imagen compatible.'
+              : fileError || (!dimensionsReady
+                ? 'La imagen supera el límite de 100 megapíxeles.'
+                : 'Listo para iniciar.');
 
   return (
     <section className="smear-setup" aria-labelledby="smear-setup-title">
-      <h2 id="smear-setup-title" className="sr-only">Nuevo análisis de frotis</h2>
+      <header className="smear-setup__intro">
+        <p>NUEVO WORKFLOW</p>
+        <h2 id="smear-setup-title">Nuevo análisis de frotis</h2>
+        <span>Identifica la muestra y carga los campos microscópicos. El sistema validará calidad, detectará células y aplicará el modelo productivo antes de la revisión experta.</span>
+      </header>
       <div className="smear-setup__grid">
         <div className="smear-setup__sample-column">
           <section className="smear-setup__glass smear-setup__sample-panel">
@@ -291,15 +312,12 @@ export function SmearUpload({
             </details>
           </section>
 
-          <section className="smear-setup__glass smear-setup__status" aria-live="polite" data-state={!canAnalyze ? 'error' : busy ? 'busy' : 'ready'}>
-            <Icon name={canAnalyze ? 'check' : 'upload'} />
-            <div><span>ESTADO DEL SISTEMA</span><strong>{statusText}</strong></div>
-          </section>
         </div>
 
         <div className="smear-setup__upload-column">
-          <div
-            className="smear-setup__glass smear-setup__dropzone"
+          <div className="smear-setup__upload-workspace">
+            <div
+              className="smear-setup__glass smear-setup__dropzone"
             data-state={busy ? 'uploading' : fileError ? 'invalid' : isDragging ? 'drag-active' : files.length ? 'selected' : 'idle'}
             role="button"
             tabIndex={busy ? -1 : 0}
@@ -319,7 +337,7 @@ export function SmearUpload({
               setDragDepth((value) => Math.max(0, value - 1));
             }}
             onDrop={handleDrop}
-          >
+            >
             <input
               ref={fileInput}
               key={inputKey}
@@ -337,10 +355,16 @@ export function SmearUpload({
                 className="smear-setup__preview"
                 src={previewUrl}
                 alt={`Vista previa de ${files[0]?.name ?? 'la imagen seleccionada'}`}
-                onLoad={(event) => setDimensions({
-                  width: event.currentTarget.naturalWidth,
-                  height: event.currentTarget.naturalHeight,
-                })}
+                onLoad={(event) => {
+                  const next = {
+                    width: event.currentTarget.naturalWidth,
+                    height: event.currentTarget.naturalHeight,
+                  };
+                  setDimensions(next);
+                  if (next.width * next.height > MAX_IMAGE_PIXELS) {
+                    setFileError('La imagen supera el límite de 100 megapíxeles admitido por el backend.');
+                  }
+                }}
               />
             ) : (
               <img className="smear-setup__microscope" src={microscopeImage} alt="Microscopio clínico para análisis de frotis" />
@@ -349,8 +373,25 @@ export function SmearUpload({
               <span className="smear-setup__upload-icon"><Icon name="upload" /></span>
               <h3>{isDragging ? 'Suelte la imagen para cargarla' : 'Cargar imagen de frotis'}</h3>
               <p id="smear-drop-help">Arrastre y suelte una imagen aquí o selecciónela desde su equipo.</p>
-              <small>JPEG, PNG o TIFF</small>
+              <small>JPEG, PNG o TIFF · máximo 20 MiB y 100 MP por archivo</small>
             </div>
+            </div>
+
+            <aside className="smear-setup__glass smear-setup__quality" aria-labelledby="smear-quality-title">
+              <header>
+                <div><p>VALIDACIÓN CLÁSICA</p><h3 id="smear-quality-title">Control de calidad</h3></div>
+                <span className="smear-setup__file-count">{files.length} archivo{files.length === 1 ? '' : 's'}</span>
+              </header>
+              <p>Los criterios se confirmarán con las métricas reales del backend antes de detectar células.</p>
+              <ul>
+                {['Enfoque', 'Iluminación', 'Resolución', 'Artefactos'].map((criterion) => (
+                  <li key={criterion} data-state="pending">
+                    <span aria-hidden="true">•</span><strong>{criterion}</strong><em>Pendiente</em>
+                  </li>
+                ))}
+              </ul>
+              <small>Sin límite fijo de cantidad por lote manual. El perfil NIH requiere 5 imágenes.</small>
+            </aside>
           </div>
 
           <div id="smear-file-feedback" className="smear-setup__feedback" aria-live="polite">
@@ -372,11 +413,13 @@ export function SmearUpload({
           </div>
 
           <footer className="smear-setup__actions">
-            <p>El control de calidad se ejecutará antes de la detección.</p>
+            <p id="smear-analyze-reason">{disabledReason}</p>
             <button
               type="button"
               disabled={busy || !formReady}
-              title={!canAnalyze ? 'Tu rol no permite ejecutar el workflow completo.' : undefined}
+              aria-describedby="smear-analyze-reason"
+              aria-busy={busy}
+              title={!formReady ? disabledReason : undefined}
               onClick={() => void submit()}
             >
               <Icon name="play" />

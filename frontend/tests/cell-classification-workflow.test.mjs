@@ -20,11 +20,11 @@ const feature = `${hook}\n${page}\n${workspace}\n${viewer}\n${modal}\n${api}\n${
 
 test('workflow incorpora Clasificación IA sin agregarla a Modelo IA', () => {
   for (const label of [
-    'Carga',
-    'Calidad de muestra',
-    'Detección',
-    'Clasificación IA',
-    'Revisión y resultado',
+    'Preparar',
+    'Cargar',
+    'Detectar',
+    'Clasificar',
+    'Revisar',
   ]) assert.match(page, new RegExp(label));
   assert.match(styles, /workflow-stage-nav[\s\S]*repeat\(5,/);
   assert.doesNotMatch(

@@ -26,7 +26,7 @@ export function Layout({ datasource, datasources, onDatasourceChange }: LayoutPr
     <AppSidebar datasource={datasource} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)}
       mobileTriggerRef={mobileTriggerRef} />
     <main className="app-content">
-      <header className="topbar">
+      <div className="content-context-row">
         <div className="mobile-navigation">
           <button ref={mobileTriggerRef} className="mobile-menu-trigger" type="button" aria-label="Abrir navegación"
             aria-expanded={mobileOpen} aria-controls="app-sidebar" onClick={() => setMobileOpen(true)}>
@@ -34,6 +34,14 @@ export function Layout({ datasource, datasources, onDatasourceChange }: LayoutPr
           </button>
           <div><strong>ML Dashboard</strong><span>{active?.label ?? 'Navegación'}</span></div>
         </div>
+        <nav className="breadcrumb" aria-label="Migas de pan">
+          {activeModule?.id === 'model-ai'
+            ? <Link to={withAllowedQuery(routes.summary, query)}>{activeModule.label}</Link>
+            : <strong>{activeModule?.label ?? 'Navegación'}</strong>}
+          <span aria-hidden="true">/</span>
+          {active ? <Link to={withAllowedQuery(active.path, query)} aria-current={location.pathname === active.path ? 'page' : undefined}>{active.label}</Link> : <strong>Página no encontrada</strong>}
+          {active && location.pathname !== active.path ? <><span aria-hidden="true">/</span><strong>Detalle</strong></> : null}
+        </nav>
         <label className="datasource-selector"><span>Datasource activo</span>
           <select value={datasource} onChange={(event) => onDatasourceChange(event.target.value)} aria-label="Datasource">
             {datasources.map((item) => <option key={item.key} value={item.key} disabled={!item.enabled}>{item.label} - {item.domain}</option>)}
@@ -42,15 +50,7 @@ export function Layout({ datasource, datasources, onDatasourceChange }: LayoutPr
         <div className="backend-status" title="Frontend conectado mediante backend_api">
           <span aria-hidden="true" />Backend conectado
         </div>
-      </header>
-      <nav className="breadcrumb" aria-label="Migas de pan">
-        {activeModule?.id === 'model-ai'
-          ? <Link to={withAllowedQuery(routes.summary, query)}>{activeModule.label}</Link>
-          : <strong>{activeModule?.label ?? 'Navegación'}</strong>}
-        <span aria-hidden="true">/</span>
-        {active ? <Link to={withAllowedQuery(active.path, query)} aria-current={location.pathname === active.path ? 'page' : undefined}>{active.label}</Link> : <strong>Página no encontrada</strong>}
-        {active && location.pathname !== active.path ? <><span aria-hidden="true">/</span><strong>Detalle</strong></> : null}
-      </nav>
+      </div>
       <Outlet />
     </main>
   </div>;

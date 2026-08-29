@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useAuth } from '../auth';
 import { SmearAnalysisImmersiveView } from '../components/cell-review/SmearAnalysisImmersiveView';
+import { routes } from '../router';
 import {
   useSmearAnalysisWorkflow,
   type SmearWorkflowController,
@@ -32,15 +33,16 @@ type WorkflowCapabilities = {
 };
 
 const contextSteps: Array<{ id: ContextStep; label: string }> = [
-  { id: 'upload', label: 'Carga' },
-  { id: 'quality', label: 'Calidad de muestra' },
-  { id: 'detection', label: 'Detección' },
-  { id: 'classification', label: 'Clasificación IA' },
-  { id: 'review', label: 'Revisión y resultado' },
+  { id: 'upload', label: 'Preparar' },
+  { id: 'quality', label: 'Cargar' },
+  { id: 'detection', label: 'Detectar' },
+  { id: 'classification', label: 'Clasificar' },
+  { id: 'review', label: 'Revisar' },
 ];
 
 const stageLabel: Record<SmearWorkflowStage, string> = {
   setup: 'Configuración pendiente',
+  validating: 'Validando datos',
   uploading: 'Recibiendo imagen',
   ingested: 'Imagen recibida',
   creating_analysis: 'Creando ejecución',
@@ -62,6 +64,7 @@ const stageLabel: Record<SmearWorkflowStage, string> = {
 
 const activityLabel: Record<SmearWorkflowStage, string> = {
   setup: 'Carga aún no iniciada',
+  validating: 'Validando archivo e identificación antes del envío',
   uploading: 'Verificando integridad del archivo recibido',
   ingested: 'Imagen persistida y lista para crear la ejecución',
   creating_analysis: 'Preparando imagen para el control técnico',
@@ -82,6 +85,7 @@ const activityLabel: Record<SmearWorkflowStage, string> = {
 };
 
 const processingStages: SmearWorkflowStage[] = [
+  'validating',
   'uploading',
   'creating_analysis',
   'quality_processing',
@@ -198,7 +202,7 @@ function contextStepState(
     ) return 'complete';
     return 'locked';
   }
-  if (['ingested', 'creating_analysis', 'quality_queued', 'quality_processing'].includes(stage)) {
+  if (['uploading', 'ingested', 'creating_analysis', 'quality_queued', 'quality_processing'].includes(stage)) {
     if (step === 'upload') return 'complete';
     return step === 'quality' ? 'active' : 'locked';
   }
@@ -326,6 +330,91 @@ function QualityMetrics({ image }: { image: QualityImage | null }) {
   );
 }
 
+type QualityCriterionState = 'pending' | 'evaluating' | 'approved' | 'warning' | 'rejected' | 'error';
+
+const qualityCriteria = [
+  {
+    label: 'Enfoque',
+    codes: ['LOW_LAPLACIAN_FOCUS', 'LOW_TENENGRAD_FOCUS'],
+    detail: (image: QualityImage) => `Laplaciano ${optionalMetric(image.laplacian_variance)}`,
+  },
+  {
+    label: 'Iluminación',
+    codes: ['EXPOSURE_DARK', 'EXPOSURE_BRIGHT', 'LOW_CONTRAST'],
+    detail: (image: QualityImage) => `Brillo ${optionalMetric(image.brightness_mean)} · contraste ${optionalMetric(image.contrast_p95_p05)}`,
+  },
+  {
+    label: 'Resolución',
+    codes: ['DIMENSIONS_BELOW_MINIMUM', 'PIXEL_COUNT_BELOW_MINIMUM', 'DIMENSIONS_MISMATCH'],
+    detail: (image: QualityImage) => `${image.input_width_px} × ${image.input_height_px} px`,
+  },
+  {
+    label: 'Artefactos',
+    codes: ['BLACK_BORDER', 'LOW_ENTROPY', 'LOW_USABLE_FIELD'],
+    detail: (image: QualityImage) => `Campo útil ${ratio(image.usable_field_ratio)}`,
+  },
+] as const;
+
+const qualityStateLabel: Record<QualityCriterionState, string> = {
+  pending: 'Pendiente',
+  evaluating: 'Evaluando',
+  approved: 'Aprobado',
+  warning: 'Advertencia',
+  rejected: 'Rechazado',
+  error: 'Error',
+};
+
+function criterionState(
+  image: QualityImage | null,
+  stage: SmearWorkflowStage,
+  codes: readonly string[],
+): QualityCriterionState {
+  if (!image?.quality_verdict) {
+    if (stage === 'quality_processing' || stage === 'quality_queued' || stage === 'creating_analysis') {
+      return 'evaluating';
+    }
+    if (stage === 'error') return 'error';
+    return 'pending';
+  }
+  const failures = image.failure_codes ?? [];
+  const warnings = image.warning_codes ?? [];
+  if (!image.integrity_verified && codes.includes('DIMENSIONS_MISMATCH')) return 'rejected';
+  if (failures.some((code) => codes.includes(code))) return 'rejected';
+  if (warnings.some((code) => codes.includes(code))) return 'warning';
+  return image.quality_verdict === 'error' ? 'error' : 'approved';
+}
+
+function QualityControlStatus({
+  image,
+  stage,
+}: {
+  image: QualityImage | null;
+  stage: SmearWorkflowStage;
+}) {
+  return (
+    <section className="workflow-quality-status" aria-labelledby="workflow-quality-title" aria-live="polite">
+      <header><p className="workflow-panel-eyebrow">Visión clásica</p><h3 id="workflow-quality-title">Control de calidad</h3></header>
+      <ul>
+        {qualityCriteria.map((criterion) => {
+          const state = criterionState(image, stage, criterion.codes);
+          const relatedCodes = [
+            ...(image?.failure_codes ?? []),
+            ...(image?.warning_codes ?? []),
+          ].filter((code) => (criterion.codes as readonly string[]).includes(code));
+          return (
+            <li key={criterion.label} data-state={state}>
+              <span aria-hidden="true">{state === 'approved' ? '✓' : state === 'warning' ? '!' : state === 'rejected' || state === 'error' ? '×' : '•'}</span>
+              <div><strong>{criterion.label}</strong><small>{image ? criterion.detail(image) : 'Sin medición confirmada'}</small></div>
+              <em>{qualityStateLabel[state]}</em>
+              {relatedCodes.length ? <code>{relatedCodes.join(', ')}</code> : null}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 function EventList({ events }: { events: AnalysisEvent[] }) {
   if (!events.length) {
     return <p className="workflow-panel-empty">Aún no hay eventos técnicos persistidos.</p>;
@@ -402,6 +491,11 @@ function WorkflowProcessing({
       event.progress_current != null
       && event.progress_total != null
     ));
+  const showScan = [
+    'detection_processing',
+    'classification_pending',
+    'classification_processing',
+  ].includes(stage);
   const canRetryFailure = failure?.step === 'analysis'
     ? capabilities.canCreateAnalysis
     : failure?.step === 'queue'
@@ -503,8 +597,10 @@ function WorkflowProcessing({
           </header>
           <div className="workflow-processing-image">
             <AuthenticatedWorkflowImage localUrl={previewUrl} imageId={imageId} name={imageName} />
+            {showScan ? <div className="workflow-image-grid" aria-hidden="true" /> : null}
+            {showScan ? <div className="workflow-scan-line" aria-hidden="true" /> : null}
             {!readOnly && processingStages.includes(stage) ? (
-              <div className="workflow-image-activity" role="status">
+              <div className="workflow-image-activity" role="status" aria-live="polite">
                 <span className="workflow-indeterminate" aria-hidden="true" />
                 <span>{activityLabel[stage]}</span>
               </div>
@@ -526,6 +622,7 @@ function WorkflowProcessing({
             <h2>{activityLabel[stage]}</h2>
           </header>
           <div className="workflow-panel-scroll workflow-activity-scroll">
+            <QualityControlStatus image={qualityImage} stage={stage} />
             <dl className="workflow-run-facts">
               <div><dt>Run</dt><dd>{run?.run_code ?? 'Pendiente'}</dd></div>
               <div><dt>Prioridad</dt><dd>{queue?.priority ?? 50} · Normal</dd></div>
@@ -890,6 +987,8 @@ export function SmearAnalysisReadOnlyView({
 
 export function SmearWorkflow() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [routeSearchParams] = useSearchParams();
   const controller = useSmearAnalysisWorkflow();
   const {
     stage,
@@ -932,6 +1031,32 @@ export function SmearWorkflow() {
     || stage === 'classification_completed'
     || stage === 'classification_warning'
   );
+  useEffect(() => {
+    if (!reviewStage || !identifiers.analysisRunId || !identifiers.microscopyImageId) return;
+    const next = new URLSearchParams(routeSearchParams);
+    [
+      'batch', 'analysis', 'queue', 'detection', 'detection_run_id',
+      'classification', 'selected',
+    ].forEach((key) => next.delete(key));
+    next.set('image', identifiers.microscopyImageId);
+    if (identifiers.selectedDetectionId) {
+      next.set('selected_detection', identifiers.selectedDetectionId);
+    }
+    if (identifiers.selectedPredictionId) {
+      next.set('selected_prediction', identifiers.selectedPredictionId);
+    }
+    navigate(`${routes.smearHistoryDetail(identifiers.analysisRunId)}?${next.toString()}`, {
+      replace: true,
+    });
+  }, [
+    identifiers.analysisRunId,
+    identifiers.microscopyImageId,
+    identifiers.selectedDetectionId,
+    identifiers.selectedPredictionId,
+    navigate,
+    reviewStage,
+    routeSearchParams,
+  ]);
   const mode = stage === 'setup' || isUploadFailure
     ? 'setup'
     : reviewStage ? 'review' : 'processing';
@@ -961,6 +1086,7 @@ export function SmearWorkflow() {
     <section
       className={`page smear-workflow${mode === 'review' ? ' smear-workflow--immersive' : ''}`}
       data-mode={mode}
+      data-flow-state={controller.phase}
     >
       <header className="workflow-context-header">
         <div className="workflow-case-context">

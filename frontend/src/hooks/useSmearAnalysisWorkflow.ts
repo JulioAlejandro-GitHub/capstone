@@ -20,6 +20,7 @@ import type {
 
 export type SmearWorkflowStage =
   | 'setup'
+  | 'validating'
   | 'uploading'
   | 'ingested'
   | 'creating_analysis'
@@ -37,6 +38,18 @@ export type SmearWorkflowStage =
   | 'classification_failed'
   | 'review_ready'
   | 'error';
+
+export type SmearFlowPhase =
+  | 'idle'
+  | 'validating'
+  | 'uploading'
+  | 'quality_check'
+  | 'detecting'
+  | 'classifying'
+  | 'loading_result'
+  | 'completed'
+  | 'quality_rejected'
+  | 'failed';
 
 export type SmearWorkflowFailureStep =
   | 'upload'
@@ -113,6 +126,7 @@ const createUploadRequestId = () => {
 
 const workflowStages = new Set<SmearWorkflowStage>([
   'setup',
+  'validating',
   'uploading',
   'ingested',
   'creating_analysis',
@@ -131,6 +145,19 @@ const workflowStages = new Set<SmearWorkflowStage>([
   'review_ready',
   'error',
 ]);
+
+const flowPhaseFromStage = (stage: SmearWorkflowStage): SmearFlowPhase => {
+  if (stage === 'setup') return 'idle';
+  if (stage === 'validating') return 'validating';
+  if (stage === 'uploading') return 'uploading';
+  if (['ingested', 'creating_analysis', 'quality_queued', 'quality_processing', 'quality_warning'].includes(stage)) return 'quality_check';
+  if (stage === 'quality_failed') return 'quality_rejected';
+  if (stage === 'ready_for_detection' || stage === 'detection_processing') return 'detecting';
+  if (['awaiting_productive_model', 'classification_pending', 'classification_processing'].includes(stage)) return 'classifying';
+  if (stage === 'classification_completed' || stage === 'classification_warning') return 'loading_result';
+  if (stage === 'review_ready') return 'completed';
+  return 'failed';
+};
 
 const queueId = (item: QualityQueueRecord | null) => {
   if (!item) return null;
@@ -156,6 +183,19 @@ const sanitizeFailure = (
     classification: 'La detección se conservó, pero la clasificación celular no pudo completarse.',
     recovery: 'No fue posible reconstruir el workflow persistido.',
   };
+  if (error instanceof ApiError) {
+    const connectionContext = error.kind === 'timeout'
+      ? 'La operación superó el tiempo de espera; verifica el estado persistido antes de reintentar.'
+      : error.kind === 'network'
+        ? 'Se perdió temporalmente la conexión con el backend.'
+        : fallback[step];
+    const diagnostics = [
+      error.message,
+      error.code ? `Código: ${error.code}.` : '',
+      error.stage ? `Etapa backend: ${error.stage}.` : '',
+    ].filter(Boolean).join(' ');
+    return { step, message: `${connectionContext} ${diagnostics}`.trim() };
+  }
   return { step, message: fallback[step] };
 };
 
@@ -793,6 +833,8 @@ export function useSmearAnalysisWorkflow() {
     if (activeAction.current) return;
     activeAction.current = true;
     setFailure(null);
+    setStage('validating');
+    await Promise.resolve();
     setStage('uploading');
     try {
       form.set('metadata_json', JSON.stringify({
@@ -1028,6 +1070,7 @@ export function useSmearAnalysisWorkflow() {
 
   return {
     stage,
+    phase: flowPhaseFromStage(stage),
     identifiers,
     snapshot,
     selectedFiles,
@@ -1035,6 +1078,7 @@ export function useSmearAnalysisWorkflow() {
     failure,
     recovering,
     busy: activeAction.current || recovering || [
+      'validating',
       'uploading',
       'creating_analysis',
       'quality_processing',

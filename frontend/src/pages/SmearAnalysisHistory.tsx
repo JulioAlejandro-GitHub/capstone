@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { useSmearAnalysisHistoryDetail } from '../hooks/useSmearAnalysisHistoryDetail';
 import { routes } from '../router';
@@ -51,6 +51,7 @@ const safeDate = (value: string | null | undefined) => {
 };
 
 function HistoryRow({ item }: { item: SmearAnalysisHistoryItem }) {
+  const location = useLocation();
   const reviewTotal = item.detection_count;
   return (
     <tr>
@@ -61,7 +62,7 @@ function HistoryRow({ item }: { item: SmearAnalysisHistoryItem }) {
       <td data-label="Detección"><strong>{label(item.detection_status)}</strong><small>{item.detection_count} detecciones</small></td>
       <td data-label="Revisión"><strong>{item.reviewed_count} / {reviewTotal}</strong><small>células revisadas</small></td>
       <td data-label="Solicitante"><span>{item.requested_by_username}</span></td>
-      <td data-label="Acción"><Link className="history-detail-link" to={routes.smearHistoryDetail(item.analysis_run_id)}>Ver detalle</Link></td>
+      <td data-label="Acción"><Link className="history-detail-link" to={`${routes.smearHistoryDetail(item.analysis_run_id)}${location.search}`}>Ver detalle</Link></td>
     </tr>
   );
 }
@@ -152,8 +153,14 @@ export function SmearAnalysisHistory() {
 
 export function SmearAnalysisHistoryDetail({ analysisRunId }: { analysisRunId: string }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data, loading, error } = useSmearAnalysisHistoryDetail(analysisRunId);
+  const backToHistory = () => {
+    const next = new URLSearchParams(location.search);
+    ['image', 'selected_detection', 'selected_prediction'].forEach((key) => next.delete(key));
+    navigate(`${routes.smearHistory}${next.size ? `?${next.toString()}` : ''}`);
+  };
   if (loading) return <section className="page smear-history-message" role="status">Recuperando análisis histórico…</section>;
-  if (error || !data) return <section className="page smear-history-error" role="alert"><h1>Análisis no disponible</h1><p>{error}</p><button type="button" onClick={() => navigate(routes.smearHistory)}>Volver al historial</button></section>;
-  return <SmearAnalysisReadOnlyView workflow={data} onBack={() => navigate(routes.smearHistory)} />;
+  if (error || !data) return <section className="page smear-history-error" role="alert"><h1>Análisis no disponible</h1><p>{error}</p><button type="button" onClick={backToHistory}>Volver al historial</button></section>;
+  return <SmearAnalysisReadOnlyView workflow={data} onBack={backToHistory} />;
 }
