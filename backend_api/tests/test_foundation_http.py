@@ -5,7 +5,7 @@ import jwt
 
 os.environ.setdefault("APP_ENV", "development")
 os.environ.setdefault("JWT_SECRET", "test-secret-with-at-least-thirty-two-characters")
-os.environ.setdefault("DATABASE_URL", "postgresql://capstone_local:local-only@localhost:55432/capstone_local")
+os.environ.setdefault("DATABASE_URL", "postgresql://unused:unused@db:5432/capstone")
 
 from fastapi.testclient import TestClient
 

@@ -22,7 +22,7 @@ from app.main import app
 from app.services.microscopy_analysis import MicroscopyAnalysisService
 
 
-pytestmark = pytest.mark.requires_local_postgres
+pytestmark = pytest.mark.requires_docker_postgres
 
 
 class TransactionEngine:
@@ -42,7 +42,7 @@ class TransactionEngine:
 @pytest.fixture()
 def scientific_client(monkeypatch, tmp_path):
     if os.getenv("TEST_EXECUTION", "").lower() != "true":
-        pytest.skip("requiere gate PostgreSQL local explícito")
+        pytest.skip("requiere gate PostgreSQL Docker explícito")
     settings = Settings.from_env()
     engine = create_engine(normalize_sqlalchemy_url(settings.database_url))
     connection = engine.connect()

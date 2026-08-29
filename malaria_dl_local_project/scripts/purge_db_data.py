@@ -1,9 +1,8 @@
+from __future__ import annotations
+
 import argparse
 import os
-import shutil
-import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -19,7 +18,7 @@ SYSTEM_SCHEMAS = {"information_schema", "pg_catalog", "pg_toast"}
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.db import get_connection, get_database_url, load_environment, test_connection  # noqa: E402
+from src.db import get_connection, get_database_url, test_connection  # noqa: E402
 
 
 def quote_identifier(identifier: str) -> str:
@@ -32,18 +31,21 @@ def validate_schema(schema: str) -> None:
 
 
 def get_connection_config() -> dict:
-    load_environment()
     database_url = get_database_url()
     parsed_url = database_url.replace("postgresql+psycopg://", "postgresql://", 1)
     parsed = urlparse(parsed_url)
+    database = parsed.path.lstrip("/")
+    user = unquote(parsed.username or "")
+    if parsed.hostname != "db" or (parsed.port is not None and parsed.port != 5432):
+        raise RuntimeError("La purga solo permite PostgreSQL Docker en db:5432")
+    if not database or not user:
+        raise RuntimeError("DATABASE_URL debe identificar usuario y base canónica")
 
     return {
-        "database_url": database_url,
-        "host": os.getenv("DB_HOST") or parsed.hostname or "localhost",
-        "port": os.getenv("DB_PORT") or str(parsed.port or 5432),
-        "database": os.getenv("DB_NAME") or parsed.path.lstrip("/") or "malaria_experiments",
-        "user": os.getenv("DB_USER") or unquote(parsed.username or "postgres"),
-        "password": os.getenv("DB_PASSWORD") or unquote(parsed.password or ""),
+        "host": parsed.hostname,
+        "port": str(parsed.port or 5432),
+        "database": database,
+        "user": user,
     }
 
 
@@ -76,40 +78,13 @@ def build_truncate_sql(tables: list[str], schema: str = "public") -> str:
 
 
 def create_db_backup(config: dict, backup_dir: Path) -> Path:
-    pg_dump = shutil.which("pg_dump")
-    if pg_dump is None:
+    del config, backup_dir
+    verified_backup = os.getenv("CAPSTONE_VERIFIED_BACKUP", "").strip()
+    if not verified_backup:
         raise RuntimeError(
-            "No se encontró pg_dump en PATH. Por seguridad no se ejecuta la purga "
-            "con --backup-before si no se puede crear backup."
+            "--backup-before requiere el wrapper Docker scripts/db/purge.sh"
         )
-
-    backup_dir = Path(backup_dir)
-    backup_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_path = backup_dir / f"backup_before_purge_{timestamp}.sql"
-
-    command = [
-        pg_dump,
-        "-h",
-        str(config["host"]),
-        "-p",
-        str(config["port"]),
-        "-U",
-        str(config["user"]),
-        "-d",
-        str(config["database"]),
-        "-f",
-        str(backup_path),
-    ]
-    env = os.environ.copy()
-    if config.get("password"):
-        env["PGPASSWORD"] = str(config["password"])
-
-    result = subprocess.run(command, check=False, capture_output=True, text=True, env=env)
-    if result.returncode != 0:
-        raise RuntimeError(f"pg_dump falló: {result.stderr.strip() or result.stdout.strip()}")
-
-    return backup_path
+    return Path(verified_backup)
 
 
 def split_sql_statements(sql: str) -> list[str]:
@@ -164,9 +139,16 @@ def purge_database_data(
         raise ValueError(
             f"Confirmación inválida. Para ejecutar use --confirm {SAFE_CONFIRMATION}."
         )
+    if execute and os.getenv("PURGE_DB_ALLOW_EXECUTION") != "1":
+        raise ValueError("PURGE_DB_ALLOW_EXECUTION=1 es obligatorio para ejecutar")
 
     config = get_connection_config()
     connection_info = test_connection()
+    if (
+        connection_info.get("database_name") != config["database"]
+        or connection_info.get("user_name") != config["user"]
+    ):
+        raise RuntimeError("La conexión no corresponde a la identidad Docker canónica")
     backup_path = None
     if execute and backup_before:
         backup_path = create_db_backup(config, backup_dir)
@@ -237,7 +219,10 @@ def print_summary(result: dict) -> None:
 
     if result["mode"] == "DRY RUN":
         print("No se eliminaron datos. Para ejecutar realmente, use:")
-        print(f"python scripts/purge_db_data.py --execute --confirm {SAFE_CONFIRMATION}")
+        print(
+            "PURGE_DB_ALLOW_EXECUTION=1 scripts/db/purge.sh --execute "
+            f"--confirm {SAFE_CONFIRMATION}"
+        )
         return
 
     print("Tablas truncadas:")

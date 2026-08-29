@@ -15,13 +15,13 @@ from app.observability import correlation_id_context
 from app.security import Principal
 
 
-pytestmark = pytest.mark.requires_local_postgres
+pytestmark = pytest.mark.requires_docker_postgres
 
 
 @pytest.fixture(autouse=True)
-def require_local_gate():
+def require_docker_gate():
     if os.getenv("TEST_EXECUTION", "").lower() != "true":
-        pytest.skip("requiere gate PostgreSQL local explícito")
+        pytest.skip("requiere gate PostgreSQL Docker explícito")
 
 
 @pytest.fixture

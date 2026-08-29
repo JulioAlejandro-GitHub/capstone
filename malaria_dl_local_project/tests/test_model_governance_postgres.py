@@ -1,20 +1,14 @@
-"""Opt-in PostgreSQL 17 integration tests for governed model lineage.
-
-This module never uses DATABASE_URL implicitly.  It only mutates a database
-whose explicit name looks disposable and when the separate write opt-in is set.
-"""
+"""Blocked legacy PostgreSQL integration tests for governed model lineage."""
 
 from __future__ import annotations
 
-import os
-import re
 import sys
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import make_url
+import pytest
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 
@@ -22,8 +16,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts import init_db  # noqa: E402
-from src.db import normalize_database_url  # noqa: E402
 from src.model_governance import repository  # noqa: E402
 from src.model_governance.errors import (  # noqa: E402
     GovernanceConflictError,
@@ -31,95 +23,14 @@ from src.model_governance.errors import (  # noqa: E402
 )
 
 
-TEST_DATABASE_URL = os.getenv("MODEL_GOVERNANCE_TEST_DATABASE_URL", "").strip()
-WRITE_OPT_IN = os.getenv("MODEL_GOVERNANCE_TEST_ALLOW_SCHEMA_CHANGES") == "1"
-DISPOSABLE_DATABASE_PATTERN = re.compile(
-    r"(?:^test(?:_|$)|(?:^|_)test(?:_|$)|^codex(?:_|$)|(?:^|_)codex(?:_|$))",
-    re.IGNORECASE,
-)
+pytestmark = pytest.mark.requires_docker_postgres
 
 
-@unittest.skipUnless(
-    TEST_DATABASE_URL and WRITE_OPT_IN,
-    "Requiere MODEL_GOVERNANCE_TEST_DATABASE_URL y "
-    "MODEL_GOVERNANCE_TEST_ALLOW_SCHEMA_CHANGES=1.",
+@unittest.skip(
+    "Bloqueada: aplica DDL legacy sin schema temporal sobre una segunda base"
 )
 class ModelGovernancePostgres17IntegrationTests(unittest.TestCase):
-    """Exercise migrations and the complete lineage in a disposable database."""
-
-    @classmethod
-    def setUpClass(cls):
-        normalized_url = normalize_database_url(TEST_DATABASE_URL)
-        parsed_url = make_url(normalized_url)
-        database_name = parsed_url.database or ""
-        if database_name in {
-            "postgres",
-            "template0",
-            "template1",
-            "malaria_experiments",
-        } or not DISPOSABLE_DATABASE_PATTERN.search(database_name):
-            raise RuntimeError(
-                "La prueba solo puede modificar una base desechable cuyo nombre "
-                "contenga 'test' o 'codex'; nunca malaria_experiments."
-            )
-
-        cls.engine = create_engine(normalized_url, future=True, pool_pre_ping=True)
-        cls.addClassCleanup(cls.engine.dispose)
-        with cls.engine.connect() as connection:
-            actual_database = connection.execute(
-                text("SELECT current_database()")
-            ).scalar_one()
-            server_version = int(
-                connection.execute(
-                    text("SELECT current_setting('server_version_num')")
-                ).scalar_one()
-            )
-        if actual_database != database_name:
-            cls.engine.dispose()
-            raise RuntimeError(
-                "La conexión no abrió la base desechable indicada en la URL."
-            )
-        if not 170000 <= server_version < 180000:
-            cls.engine.dispose()
-            raise unittest.SkipTest(
-                f"Esta integración exige PostgreSQL 17; recibió {server_version}."
-            )
-
-        # Apply every numbered migration once, then prove the checksum ledger
-        # makes a second runner pass a no-op.
-        with cls.engine.begin() as connection:
-            init_db.ensure_migration_ledger(connection)
-            init_db.baseline_legacy_migrations(connection)
-            for sql_path in init_db.SQL_FILES:
-                init_db.execute_pending_sql_file(connection, sql_path)
-
-        with cls.engine.begin() as connection:
-            second_pass = [
-                init_db.execute_pending_sql_file(connection, sql_path)
-                for sql_path in init_db.SQL_FILES
-            ]
-            recorded = connection.execute(
-                text("SELECT COUNT(*) FROM schema_migrations")
-            ).scalar_one()
-        if any(second_pass) or recorded != len(init_db.SQL_FILES):
-            cls.engine.dispose()
-            raise AssertionError(
-                "La reejecución no fue idempotente o el ledger quedó incompleto."
-            )
-
-        # This disposable fixture applies the numbered SQL baseline rather than
-        # Alembic. Mirror Prompt 8's non-destructive compatibility rename so the
-        # legacy consumer is tested against its post-migration relation name.
-        with cls.engine.begin() as connection:
-            if connection.execute(
-                text("SELECT to_regclass('public.legacy_cell_predictions')")
-            ).scalar_one_or_none() is None:
-                connection.execute(
-                    text(
-                        "ALTER VIEW cell_predictions "
-                        "RENAME TO legacy_cell_predictions"
-                    )
-                )
+    """Preserved for future redesign with a safe temporary schema."""
 
     def test_full_lineage_constraints_and_delete_restriction(self):
         checksum = "a" * 64

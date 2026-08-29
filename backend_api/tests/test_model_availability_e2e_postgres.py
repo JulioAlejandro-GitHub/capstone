@@ -1,10 +1,10 @@
 """Opt-in end-to-end proof against an isolated PostgreSQL database clone."""
 from __future__ import annotations
 
-import os
 import unittest
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
@@ -12,7 +12,12 @@ from app.db import get_engine
 from app.main import app
 
 
-@unittest.skipUnless(os.getenv("RUN_MODEL_AVAILABILITY_E2E") == "1", "opt-in PostgreSQL E2E")
+pytestmark = pytest.mark.requires_docker_postgres
+
+
+@unittest.skip(
+    "Bloqueada: el E2E escribe mediante múltiples transacciones sin rollback global"
+)
 class ModelAvailabilityE2E(unittest.TestCase):
     datasource = "malaria"
     model_version_id = "cca40382-d9f5-4f48-8d07-c2311005df1b"

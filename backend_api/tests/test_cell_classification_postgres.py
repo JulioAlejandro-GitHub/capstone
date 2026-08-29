@@ -43,7 +43,7 @@ from tests.test_cell_detection_postgres import (
 )
 
 
-pytestmark = pytest.mark.requires_local_postgres
+pytestmark = pytest.mark.requires_docker_postgres
 
 CLASSIFICATION_TABLES = {
     "cell_classification_runs",
@@ -889,7 +889,7 @@ class ClassificationPostgresContext:
 @pytest.fixture()
 def classification_postgres(monkeypatch, tmp_path):
     if os.getenv("TEST_EXECUTION", "").lower() != "true":
-        pytest.skip("requiere gate PostgreSQL local explícito")
+        pytest.skip("requiere gate PostgreSQL Docker explícito")
     settings = Settings.from_env()
     engine = create_engine(normalize_sqlalchemy_url(settings.database_url))
     connection = engine.connect()

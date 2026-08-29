@@ -16,17 +16,13 @@ from src.malaria_dl.governance.services.contract_service import ModelContractSer
 from src.malaria_dl.governance.services.deployment_service import ModelDeploymentService  # noqa: E402
 from src.malaria_dl.governance.services.lifecycle_service import ModelReleaseLifecycleService  # noqa: E402
 from src.malaria_dl.inference.traceable import TraceableInferenceService  # noqa: E402
+from src.db import get_database_url  # noqa: E402
 
 
 def main():
     if os.getenv("RUN_PRODUCTION_E2E") != "1":
         raise SystemExit("Defina RUN_PRODUCTION_E2E=1 para ejecutar escrituras reales.")
-    database_url = os.getenv("MALARIA_DATABASE_URL") or os.getenv("DATABASE_URL")
-    if not database_url:
-        raise SystemExit(
-            "Defina DATABASE_URL (o MALARIA_DATABASE_URL) para ejecutar la verificación E2E."
-        )
-    database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    database_url = get_database_url()
     model_version_id = os.environ["MODEL_VERSION_ID"]
     source_image_id = os.environ["SOURCE_IMAGE_ID"]
     actor = os.getenv("E2E_ACTOR", "operador-web-e2e")

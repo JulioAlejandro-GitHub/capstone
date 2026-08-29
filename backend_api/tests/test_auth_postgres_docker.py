@@ -13,13 +13,13 @@ from app.database_safety import assert_capstone_database
 from app.db import normalize_sqlalchemy_url
 
 
-pytestmark = pytest.mark.requires_local_postgres
+pytestmark = pytest.mark.requires_docker_postgres
 
 
 @pytest.fixture(autouse=True)
-def require_local_gate():
+def require_docker_gate():
     if os.getenv("TEST_EXECUTION", "").lower() != "true":
-        pytest.skip("requiere gate PostgreSQL local explícito")
+        pytest.skip("requiere gate PostgreSQL Docker explícito")
 
 
 class SharedConnectionEngine:

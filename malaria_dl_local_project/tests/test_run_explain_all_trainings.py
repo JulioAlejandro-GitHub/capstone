@@ -2,11 +2,17 @@
 
 import unittest
 from pathlib import Path
+from unittest import mock
 
-from run_explain_all_trainings import TrainingRun, build_explain_command
+from run_explain_all_trainings import TrainingRun, build_explain_command, load_database_url
 
 
 class RunExplainAllTrainingsTests(unittest.TestCase):
+    def test_database_url_uses_canonical_loader_without_fallback(self):
+        expected = "postgresql+psycopg://unused:unused@db:5432/capstone"
+        with mock.patch("src.db.get_database_url", return_value=expected):
+            self.assertEqual(load_database_url(Path.cwd()), expected)
+
     def test_command_uses_governed_model_version(self):
         run = TrainingRun(
             training_run_id="19b11953-561e-40ea-bd72-22033fd3c684",

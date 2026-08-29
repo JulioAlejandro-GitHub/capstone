@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -7,7 +8,7 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, text
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(os.getenv("CAPSTONE_ROOT", Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(ROOT / "backend_api"))
 from app.config import get_settings
 from app.database_safety import assert_capstone_database

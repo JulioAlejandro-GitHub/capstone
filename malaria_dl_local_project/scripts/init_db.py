@@ -11,9 +11,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.db import get_connection, test_connection
-
-
 SQL_DIR = PROJECT_ROOT / "db" / "init"
 REQUIRED_SQL_FILES = [
     SQL_DIR / "001_schema.sql",
@@ -330,48 +327,10 @@ def execute_pending_sql_file(connection, sql_path):
 
 
 def main():
-    for sql_path in REQUIRED_SQL_FILES:
-        if not sql_path.exists():
-            raise FileNotFoundError(f"No existe el archivo SQL requerido: {sql_path}")
-
-    try:
-        info = test_connection()
-    except Exception as exc:
-        print("Error conectando a PostgreSQL local.")
-        print(str(exc))
-        print(
-            "Si la base no existe, créala con: "
-            "createdb -h localhost -p 5432 -U postgres malaria_experiments"
-        )
-        raise SystemExit(1) from exc
-
-    print("Conexión OK:")
-    print(f"  database: {info['database_name']}")
-    print(f"  user: {info['user_name']}")
-    print(f"  version: {info['postgres_version'].splitlines()[0]}")
-
-    try:
-        with get_connection() as connection:
-            ensure_migration_ledger(connection)
-            baseline_legacy_migrations(connection)
-            for sql_path in SQL_FILES:
-                execute_pending_sql_file(connection, sql_path)
-    except MigrationChecksumMismatchError as exc:
-        print("Error de integridad del historial de migraciones.")
-        print(str(exc))
-        raise SystemExit(1) from exc
-    except SqlFileExecutionError as exc:
-        print("Error ejecutando migraciones SQL.")
-        print(str(exc))
-        if exc.__cause__ is not None:
-            print(f"Causa original: {exc.__cause__}")
-        raise SystemExit(1) from exc
-    except Exception as exc:
-        print("Error inicializando PostgreSQL local.")
-        print(str(exc))
-        raise SystemExit(1) from exc
-
-    print("Inicialización de base de datos completada.")
+    raise SystemExit(
+        "Comando retirado: el esquema canónico se administra exclusivamente con "
+        "Alembic dentro del backend Docker. Use make db-migrate-check."
+    )
 
 
 if __name__ == "__main__":

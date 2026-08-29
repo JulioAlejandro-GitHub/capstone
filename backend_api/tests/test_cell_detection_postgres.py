@@ -36,7 +36,7 @@ from app.services.detectors.connected_components_v1 import (
 from app.services.local_storage import LocalStorage
 
 
-pytestmark = pytest.mark.requires_local_postgres
+pytestmark = pytest.mark.requires_docker_postgres
 
 CELL_CODE = re.compile(r"^CELL-[A-F0-9]{12}$")
 CROP_KEY = re.compile(
@@ -46,9 +46,9 @@ CROP_KEY = re.compile(
 
 
 @pytest.fixture(autouse=True)
-def require_local_gate():
+def require_docker_gate():
     if os.getenv("TEST_EXECUTION", "").lower() != "true":
-        pytest.skip("requiere gate PostgreSQL local explícito")
+        pytest.skip("requiere gate PostgreSQL Docker explícito")
 
 
 class TransactionEngine:

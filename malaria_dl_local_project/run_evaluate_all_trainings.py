@@ -20,7 +20,6 @@ Opciones útiles:
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -43,23 +42,11 @@ class TrainingRun:
 
 
 def load_database_url(project_dir: Path) -> str:
-    """
-    Intenta usar src.db.get_database_url() para respetar la configuración real del proyecto.
-    Fallback: DATABASE_URL del entorno.
-    """
+    """Load the canonical Docker-only DATABASE_URL contract."""
     sys.path.insert(0, str(project_dir))
-    try:
-        from src.db import get_database_url  # type: ignore
+    from src.db import get_database_url  # type: ignore
 
-        return str(get_database_url())
-    except Exception:
-        db_url = os.environ.get("DATABASE_URL")
-        if not db_url:
-            raise RuntimeError(
-                "No se pudo obtener DATABASE_URL. Ejecuta desde malaria_dl_local_project "
-                "con .venv activo y .env configurado."
-            )
-        return db_url
+    return str(get_database_url())
 
 
 def connect(project_dir: Path):

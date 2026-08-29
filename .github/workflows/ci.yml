@@ -21,10 +21,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12", cache: pip}
       - run: pip install -r backend_api/requirements.txt
-      - run: PYTHONPATH=backend_api pytest backend_api/tests -m "not requires_local_postgres"
+      - run: PYTHONPATH=backend_api pytest backend_api/tests -m "not requires_docker_postgres"
         env:
           APP_ENV: development
-          DATABASE_URL: postgresql://unused:unused@127.0.0.1:9/capstone
+          DATABASE_URL: postgresql://unused:unused@db:5432/capstone
           JWT_SECRET: ci-only-secret-at-least-thirty-two-characters
   alembic-static:
     runs-on: ubuntu-latest

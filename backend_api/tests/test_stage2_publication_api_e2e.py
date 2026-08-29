@@ -4,16 +4,18 @@ from __future__ import annotations
 import os
 import unittest
 
+import pytest
 from sqlalchemy import text
 
 from app.db import get_engine
 from app.routes.governance import stage2_publication_service
 
 
-@unittest.skipUnless(
-    os.getenv("RUN_STAGE2_PUBLICATION_E2E") == "1"
-    and os.getenv("STAGE2_E2E_MODEL_VERSION_ID"),
-    "opt-in Stage 2 publication E2E",
+pytestmark = pytest.mark.requires_docker_postgres
+
+
+@unittest.skip(
+    "Bloqueada: el E2E Stage 2 persiste eventos sin rollback global"
 )
 class Stage2PublicationApiE2E(unittest.TestCase):
     datasource = "malaria"

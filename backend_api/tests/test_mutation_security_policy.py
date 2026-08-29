@@ -5,7 +5,7 @@ import pytest
 from fastapi.routing import APIRoute
 
 os.environ.setdefault("APP_ENV", "development")
-os.environ.setdefault("DATABASE_URL", "postgresql://capstone_local:local-only@localhost:55432/capstone_local")
+os.environ.setdefault("DATABASE_URL", "postgresql://unused:unused@db:5432/capstone")
 os.environ.setdefault("JWT_SECRET", "test-secret-with-at-least-thirty-two-characters")
 
 from app.main import app

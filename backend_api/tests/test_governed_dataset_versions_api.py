@@ -12,14 +12,14 @@ from app.services.governed_datasets import (
 )
 
 
-pytestmark = pytest.mark.requires_local_postgres
+pytestmark = pytest.mark.requires_docker_postgres
 V1 = UUID("d8c0cab5-09dd-597f-9de7-7ca01aee2ec2")
 
 
 @pytest.fixture(autouse=True)
 def require_explicit_postgres_gate():
     if os.getenv("TEST_EXECUTION", "").lower() != "true":
-        pytest.skip("requiere gate PostgreSQL local explícito")
+        pytest.skip("requiere gate PostgreSQL Docker explícito")
 
 
 def test_governed_v1_list_and_detail_contract():

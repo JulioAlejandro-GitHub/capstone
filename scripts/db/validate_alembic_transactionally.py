@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run pending Alembic upgrades on one shared PostgreSQL transaction and roll back."""
+import os
 from pathlib import Path
 import sys
 
@@ -7,7 +8,7 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, text
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(os.getenv("CAPSTONE_ROOT", Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(ROOT / "backend_api"))
 
 from app.config import get_settings
