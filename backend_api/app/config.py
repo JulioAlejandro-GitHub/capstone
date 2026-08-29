@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse
 
+from app.database_safety import validate_database_url
+
 
 TRUE_VALUES = {"1", "true", "yes", "on"}
 
@@ -104,9 +106,7 @@ class Settings:
         secret = os.getenv("JWT_SECRET")
         if auth_mode == "local_jwt" and not secret:
             raise ValueError("JWT_SECRET es obligatorio; no existe un secreto por defecto")
-        database_url = os.getenv("DATABASE_URL", "").strip()
-        if not database_url:
-            raise ValueError("DATABASE_URL es obligatorio; no existe una base por defecto")
+        database_url = validate_database_url(os.getenv("DATABASE_URL"))
         if os.getenv("TEST_DATABASE_URL"):
             raise ValueError("TEST_DATABASE_URL está prohibida: las pruebas usan la base Capstone")
         pool_min = _int("DATABASE_POOL_MIN_SIZE", 1, 1)

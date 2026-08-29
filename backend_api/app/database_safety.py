@@ -1,18 +1,55 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-from app.config import Settings
+if TYPE_CHECKING:
+    from app.config import Settings
 
 TEMPORARY_SCHEMA_RE = re.compile(r"^capstone_test_[a-z0-9_]{6,48}$")
 SYSTEM_SCHEMAS = {"public", "information_schema", "pg_catalog", "pg_toast"}
 
 
+def validate_database_url(url: str | None) -> str:
+    if url is None or not url.strip():
+        raise ValueError("DATABASE_URL es obligatoria y no puede estar vacía")
+
+    normalized = url.strip()
+    if normalized.startswith("postgresql://"):
+        normalized = normalized.replace(
+            "postgresql://", "postgresql+psycopg://", 1
+        )
+    elif not normalized.startswith("postgresql+psycopg://"):
+        raise ValueError(
+            "DATABASE_URL debe usar postgresql:// o postgresql+psycopg://"
+        )
+
+    try:
+        parsed = urlparse(
+            normalized.replace("postgresql+psycopg://", "postgresql://", 1)
+        )
+        hostname = parsed.hostname
+        port = parsed.port
+    except ValueError as exc:
+        raise ValueError("DATABASE_URL PostgreSQL inválida") from exc
+
+    if not hostname:
+        raise ValueError("DATABASE_URL debe incluir el hostname db")
+    if hostname != "db":
+        raise ValueError("DATABASE_URL solo permite el hostname db")
+    if port is not None and port != 5432:
+        raise ValueError("DATABASE_URL solo permite el puerto PostgreSQL 5432")
+    if not parsed.path.strip("/"):
+        raise ValueError("DATABASE_URL debe incluir el nombre de la base")
+    return normalized
+
+
 def database_target(url: str) -> tuple[str, int, str]:
-    parsed = urlparse(url.replace("postgresql+psycopg://", "postgresql://", 1))
-    if parsed.scheme != "postgresql" or not parsed.hostname or not parsed.path.strip("/"):
-        raise ValueError("URL PostgreSQL inválida")
+    normalized = validate_database_url(url)
+    parsed = urlparse(
+        normalized.replace("postgresql+psycopg://", "postgresql://", 1)
+    )
     return parsed.hostname, parsed.port or 5432, parsed.path.strip("/")
 
 

@@ -5,13 +5,14 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
 from app.config import get_settings
+from app.database_safety import validate_database_url
 
 
 DEFAULT_DATASOURCE = "malaria"
 
 
 def normalize_sqlalchemy_url(url: str) -> str:
-    return url.replace("postgresql://", "postgresql+psycopg://", 1) if url.startswith("postgresql://") else url
+    return validate_database_url(url)
 
 
 def _datasources() -> dict:
@@ -41,7 +42,7 @@ def resolve_datasource(datasource: str | None) -> str:
 def get_engine(datasource: str) -> Engine:
     settings = get_settings()
     config = _datasources()[datasource]
-    return create_engine(normalize_sqlalchemy_url(config["database_url"]), pool_pre_ping=True,
+    return create_engine(config["database_url"], pool_pre_ping=True,
                          pool_size=settings.database_pool_max_size,
                          connect_args={"connect_timeout": settings.database_connect_timeout},
                          echo=settings.sql_logging, future=True)

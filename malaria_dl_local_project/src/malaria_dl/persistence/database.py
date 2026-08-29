@@ -1,5 +1,6 @@
 import os
 from contextlib import contextmanager
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
@@ -7,7 +8,6 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 
 from src.malaria_dl.common.paths import PROJECT_ROOT
-DEFAULT_DATABASE_URL = "postgresql+psycopg://capstone_local:local-only@localhost:55432/capstone_local"
 
 
 def load_environment():
@@ -15,26 +15,43 @@ def load_environment():
 
 
 def normalize_database_url(database_url):
-    if database_url.startswith("postgresql://"):
-        return database_url.replace("postgresql://", "postgresql+psycopg://", 1)
-    return database_url
+    if database_url is None or not database_url.strip():
+        raise RuntimeError("DATABASE_URL es obligatoria y no puede estar vacía")
+
+    normalized = database_url.strip()
+    if normalized.startswith("postgresql://"):
+        normalized = normalized.replace(
+            "postgresql://", "postgresql+psycopg://", 1
+        )
+    elif not normalized.startswith("postgresql+psycopg://"):
+        raise RuntimeError(
+            "DATABASE_URL debe usar postgresql:// o postgresql+psycopg://"
+        )
+
+    try:
+        parsed = urlparse(
+            normalized.replace("postgresql+psycopg://", "postgresql://", 1)
+        )
+        hostname = parsed.hostname
+        port = parsed.port
+    except ValueError as exc:
+        raise RuntimeError("DATABASE_URL PostgreSQL inválida") from exc
+
+    if not hostname:
+        raise RuntimeError("DATABASE_URL debe incluir el hostname db")
+    if hostname != "db":
+        raise RuntimeError("DATABASE_URL solo permite el hostname db")
+    if port is not None and port != 5432:
+        raise RuntimeError("DATABASE_URL solo permite el puerto PostgreSQL 5432")
+    if not parsed.path.strip("/"):
+        raise RuntimeError("DATABASE_URL debe incluir el nombre de la base")
+    return normalized
 
 
 def get_database_url():
     load_environment()
 
-    database_url = os.getenv("DATABASE_URL")
-    if database_url:
-        return normalize_database_url(database_url)
-
-    if os.getenv("APP_ENV", "local") != "local":
-        raise RuntimeError("DATABASE_URL es obligatoria fuera del entorno local")
-    host = os.getenv("DATABASE_HOST", os.getenv("DB_HOST", "localhost"))
-    port = os.getenv("DATABASE_PORT", os.getenv("DB_PORT", "55432"))
-    name = os.getenv("DATABASE_NAME", os.getenv("DB_NAME", "capstone_local"))
-    user = os.getenv("DATABASE_USER", os.getenv("DB_USER", "capstone_local"))
-    password = os.getenv("DATABASE_PASSWORD", os.getenv("DB_PASSWORD", "local-only"))
-    return f"postgresql+psycopg://{user}:{password}@{host}:{port}/{name}"
+    return normalize_database_url(os.getenv("DATABASE_URL"))
 
 
 def get_engine(echo=False):
@@ -53,14 +70,12 @@ def get_connection():
         with engine.begin() as connection:
             yield connection
     except OperationalError as exc:
-        original_error = getattr(exc, "orig", exc)
         raise RuntimeError(
             "No se pudo conectar al PostgreSQL configurado. Verifica DATABASE_URL "
-            "y usa el entorno efímero documentado para pruebas. "
-            f"Detalle original: {original_error}"
+            "y el servicio Docker Compose db."
         ) from exc
     except SQLAlchemyError as exc:
-        raise RuntimeError(f"Error SQLAlchemy al acceder a PostgreSQL: {exc}") from exc
+        raise RuntimeError("Error SQLAlchemy al acceder a PostgreSQL") from exc
 
 
 def test_connection():

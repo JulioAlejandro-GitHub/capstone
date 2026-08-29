@@ -16,7 +16,7 @@ from app.security import Permission, ROLE_PERMISSIONS, hash_password, verify_pas
 
 def _development(monkeypatch):
     monkeypatch.setenv("APP_ENV", "development")
-    monkeypatch.setenv("DATABASE_URL", "postgresql://u:secret@127.0.0.1:5432/malaria_experiments")
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u:secret@db:5432/malaria_experiments")
     monkeypatch.setenv("JWT_SECRET", "test-secret-with-at-least-thirty-two-characters")
 
 
@@ -39,7 +39,7 @@ def test_database_and_secret_are_required(monkeypatch):
 
 def test_second_database_url_is_rejected(monkeypatch):
     _development(monkeypatch)
-    monkeypatch.setenv("TEST_DATABASE_URL", "postgresql://u:p@localhost/other")
+    monkeypatch.setenv("TEST_DATABASE_URL", "postgresql://u:p@db:5432/other")
     with pytest.raises(ValueError):
         Settings.from_env()
 
