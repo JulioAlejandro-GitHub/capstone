@@ -3,7 +3,7 @@
     "classification": "HISTORICAL_AUDIT",
     "operational_use": false,
     "snapshot": "main@092a237497615ac3f1e775a61c54c6d6417dd515",
-    "note": "Inventario de Prompt 0; no representa el repositorio ni el runtime actuales."
+    "note": "Inventario de Prompt 0; no representa el repositorio ni el runtime actuales. Para operación vigente consultar docs/engineering/postgresql_docker_single_instance.md."
   },
   "snapshot": {
     "branch": "main",
@@ -16,7 +16,7 @@
     "python_backend": "3.14.4",
     "node": "22.23.1",
     "npm": "10.9.8",
-    "psql_client": "17.9"
+    "postgresql_snapshot_version": "17.9"
   },
   "entrypoints": [
     "backend_api/app/main.py:app",
@@ -28,7 +28,6 @@
     "malaria_dl_local_project/src/malaria_dl/evaluation/cli.py",
     "malaria_dl_local_project/src/malaria_dl/explainability/cli.py",
     "malaria_dl_local_project/src/malaria_dl/inference/cli.py",
-    "malaria_dl_local_project/scripts/init_db.py",
     "scripts/start_backend.sh",
     "scripts/validate.sh"
   ],
@@ -171,13 +170,12 @@
     {"suite": "backend characterization in validate", "result": "PASS", "count": 7},
     {"suite": "frontend node:test", "result": "PASS", "count": 59},
     {"suite": "frontend build", "result": "PASS", "modules": 98},
-    {"suite": "PostgreSQL E2E", "result": "BLOCKED", "reason": "opt-in and no authorized ephemeral database"}
+    {"suite": "PostgreSQL E2E", "result": "BLOCKED", "reason": "opt-in and without complete safe isolation in the single database"}
   ],
+  "test_markers": ["requires_docker_postgres"],
   "configuration": [
-    "MALARIA_DATABASE_URL", "BACTERIA_DATABASE_URL", "ANEMIA_DATABASE_URL",
-    "ENABLE_MALARIA_DATASOURCE", "ENABLE_BACTERIA_DATASOURCE",
-    "ENABLE_ANEMIA_DATASOURCE", "DATABASE_URL", "DB_HOST", "DB_PORT",
-    "DB_NAME", "DB_USER", "DB_PASSWORD", "TFDS_DATA_DIR",
+    "DATABASE_URL", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD",
+    "TFDS_DATA_DIR",
     "VITE_API_BASE_URL", "VITE_DEFAULT_DATASOURCE",
     "RUN_MODEL_AVAILABILITY_E2E", "RUN_STAGE2_PUBLICATION_E2E",
     "RUN_PRODUCTION_E2E"

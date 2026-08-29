@@ -34,7 +34,7 @@ Etiquetas usadas: **hecho** = constatación directa; **inferencia** = conclusió
 | Working tree inicial | limpio |
 | Python host / ML / backend | 3.14.4 / 3.12.13 / 3.14.4 |
 | Node / npm | 22.23.1 / 10.9.8 |
-| PostgreSQL | cliente `psql` 17.9; servidor no consultado |
+| PostgreSQL | snapshot 17.9; operación vigente exclusiva en servicio Compose `db` |
 | SO | Darwin 25.5.0 arm64 |
 | Migraciones | scripts SQL numerados hasta 029; no Alembic |
 

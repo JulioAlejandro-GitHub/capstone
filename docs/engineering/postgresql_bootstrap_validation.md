@@ -2,7 +2,7 @@
 
 > **Estado documental:** `HISTORICAL_AUDIT`
 > **Uso operativo:** No; registra un intento de bootstrap efímero ya sustituido.
-> **Snapshot:** 2026-07-26, antes de adoptar PostgreSQL local con rollback.
+> **Snapshot:** 2026-07-26, anterior al contrato PostgreSQL Docker-only vigente.
 
 Fecha: 2026-07-26.
 

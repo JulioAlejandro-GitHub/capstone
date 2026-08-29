@@ -741,9 +741,7 @@ ORDER BY created_at DESC;
 
 Desde `capstone/malaria_dl_local_project`:
 
-```bash
-source .venv/bin/activate
-python scripts/init_db.py
-```
+La receta host histórica fue retirada. La habilitación de Alembic en el servicio
+`backend` queda pendiente hasta Prompt 1B.1.
 
 El script ejecuta los archivos `db/init/*.sql`, incluidos `010_clinical_inference_tracking.sql` y `017_clinical_run_tracking.sql`, de forma incremental mediante `CREATE IF NOT EXISTS`, `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` y `DROP VIEW IF EXISTS ... CASCADE; CREATE VIEW` cuando cambia la estructura de una vista.

@@ -34,8 +34,8 @@ git rev-parse HEAD
 git status --short
 git diff --stat
 git diff --check
-pg_isready
-psql "$DATABASE_URL" -c "SELECT version(), current_database(), current_schema();"
+docker compose exec -T db pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+docker compose exec -T db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT version(), current_database(), current_schema();"
 alembic current
 alembic heads
 alembic history

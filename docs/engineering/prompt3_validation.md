@@ -10,7 +10,7 @@ Recomendación: **APROBAR**
 ## Plataforma y migración
 
 - Rama/commit inicial: `main` / `9fae68a2b29a92ede752b14d8ad12e7107f3754c`.
-- PostgreSQL: 17.9 Homebrew, `127.0.0.1:5432`.
+- PostgreSQL: 17.9 en el entorno anterior retirado.
 - Base/schema: `malaria_experiments` / `public`.
 - Current inicial: `20260726_02`.
 - Nueva revisión y head final: `20260727_01`.

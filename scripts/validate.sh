@@ -15,8 +15,11 @@ export MPLCONFIGDIR="${MPLCONFIGDIR:-${TMPDIR:-/tmp}/capstone-matplotlib}"
 mkdir -p "$MPLCONFIGDIR"
 
 cd "$ROOT_DIR"
-"$PYTHON_BIN" -m unittest discover -s malaria_dl_local_project/tests
+python3 scripts/check_docker_postgres_contract.py
+cd "$ROOT_DIR/malaria_dl_local_project"
+"$PYTHON_BIN" -m unittest discover -s tests
 
+cd "$ROOT_DIR"
 if [[ -x "$BACKEND_PYTHON_BIN" ]]; then
   "$BACKEND_PYTHON_BIN" -m unittest malaria_dl_local_project.tests.test_backend_endpoints
 else

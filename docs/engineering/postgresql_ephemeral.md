@@ -1,9 +1,9 @@
-# PostgreSQL efímero — SUPERSEDED
+# Entorno PostgreSQL efímero — SUPERSEDED
 
 > **Estado documental:** `OBSOLETE_DOC` / `SUPERSEDED`
-> **Uso operativo:** No; no iniciar ni destruir PostgreSQL desde esta guía.
-> **Sustitución:** `postgresql_local_single_instance.md` y `test_environment.md`.
+> **Uso operativo:** No.
+> **Sustitución:** [instancia Docker única](postgresql_docker_single_instance.md).
 
-Esta política histórica fue reemplazada por
-[PostgreSQL local: instancia única](postgresql_local_single_instance.md). No se inicia ni
-destruye PostgreSQL mediante Docker; los tests locales se aíslan con rollback.
+La propuesta de levantar o destruir otra instancia fue retirada. Las pruebas vigentes
+usan el servicio `db` existente con rollback o schemas temporales seguros; este documento
+no contiene un procedimiento ejecutable.

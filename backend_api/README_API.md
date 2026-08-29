@@ -1,43 +1,30 @@
 # Backend API
 
-API FastAPI de solo lectura para consultar el tracking PostgreSQL del proyecto Capstone.
+API FastAPI para consultar y operar los dominios gobernados de Capstone.
 
 ## Configuracion
 
-La API de gobierno ejecuta inspección Keras, smoke test e inferencia. Por ello
-debe compartir el runtime ML Python 3.12; `backend_api/.venv` sólo sirve para
-tests HTTP/read-only y no contiene TensorFlow.
-
-Datasource activo por defecto:
-
-```text
-postgresql://julio@localhost:5432/malaria_experiments
-```
-
-Los datasources `bacteria` y `anemia` quedan configurados pero inactivos hasta habilitarlos con:
-
-```text
-ENABLE_BACTERIA_DATASOURCE=true
-ENABLE_ANEMIA_DATASOURCE=true
-```
+La API de gobierno comparte el runtime Python 3.12 y ML del servicio `backend`.
+Compose inyecta una única `DATABASE_URL`, validada para `db:5432`. El datasource
+funcional soportado es `malaria` y no selecciona una conexión alternativa.
 
 ## Ejecutar
 
 ```bash
-./scripts/start_backend_api.sh
+docker compose up -d
+make db-status
 ```
 
-No iniciar el flujo de deployments con `backend_api/.venv`: Python 3.14 no
-puede cargar el TensorFlow usado por los checkpoints del proyecto.
+El backend no se inicia desde un entorno Python del host como flujo oficial.
 
 ## Tests
 
-El entorno actual no instala `pytest` en `backend_api/.venv`. Los tests backend
-incluidos se pueden ejecutar con:
-
 ```bash
-python -m unittest discover -s tests
+make test-backend
 ```
+
+Las pruebas PostgreSQL aisladas usan el marker `requires_docker_postgres` y el mismo
+servicio `db`; las suites sin rollback completo permanecen bloqueadas.
 
 ## Endpoints
 

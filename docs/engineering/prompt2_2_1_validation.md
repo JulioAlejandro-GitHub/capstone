@@ -6,7 +6,7 @@
 
 Fecha: 2026-07-27.
 
-- PostgreSQL 17.9 Homebrew, `127.0.0.1:5432`, `malaria_experiments/public`: PASS.
+- PostgreSQL 17.9, `malaria_experiments/public`, en el entorno anterior retirado: PASS.
 - Alembic current=head=`20260726_02`: PASS.
 - migraciones 001–029, 027, test 027 y `complemento e2.txt`: diff vacío.
 - backend local completo: 89 passed, 4 skipped.

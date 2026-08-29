@@ -1,9 +1,8 @@
 # Runbook operativo: Patient Split de malaria
 
-> **Estado documental: CURRENT_DOC / RUNBOOK CANÓNICO.** Operación local sobre
-> PostgreSQL 17 Homebrew y la base persistente `malaria_experiments`. Docker puede
-> existir como capacidad opcional del repositorio, pero no es el runtime canónico de
-> este procedimiento. Este runbook no inicia, detiene ni reemplaza servicios.
+> **Estado documental: CURRENT_DOC / RUNBOOK CIENTÍFICO.** Operación exclusiva en
+> Docker Compose contra `db:5432`. El contrato operativo canónico está en
+> [PostgreSQL Docker-only](engineering/postgresql_docker_single_instance.md).
 
 ## Estado protegido
 
@@ -33,39 +32,31 @@ científico exige una nueva Dataset Version con otro identificador.
 
 Desde la raíz de `capstone`:
 
-1. PostgreSQL 17 Homebrew debe estar disponible en el host.
-2. La base operativa debe ser `malaria_experiments`.
-3. `DATABASE_URL` debe llegar desde el entorno privado del operador. Esta guía no
-   contiene usuarios, contraseñas ni DSN personales.
+1. Los servicios `db` y `backend` de Docker Compose deben estar activos.
+2. La única base operativa es la configurada mediante `POSTGRES_DB` en Compose.
+3. `DATABASE_URL` llega al CLI desde el contenedor; esta guía no contiene secretos.
 4. `JWT_SECRET` también debe estar definido porque los guardrails DB reutilizan la
    configuración validada del backend; no se imprime ni se persiste.
 5. Backend, ML y CLI de split deben resolver la misma `DATABASE_URL`.
 
-Comprobar que la variable exista sin imprimir su valor:
+Comprobar el estado mediante los wrappers vigentes:
 
 ```bash
-: "${DATABASE_URL:?Define DATABASE_URL en tu entorno privado}"
-: "${JWT_SECRET:?Define JWT_SECRET en tu entorno privado}"
 make db-status
 make db-migrate-check
 ```
 
 Si el servicio, la base o el head Alembic no coinciden con la configuración vigente,
-detener el procedimiento. No liberar puertos, cambiar de instancia, iniciar Docker ni
-alterar servicios desde este runbook.
+detener el procedimiento. No liberar puertos, cambiar de instancia ni alterar servicios
+fuera de Docker Compose desde este runbook.
 
 ## 2. Preparar el CLI
 
-```bash
-cd malaria_dataset_split_project
-export PYTHONPATH=src
-SPLIT_PYTHON=../malaria_dl_local_project/.venv/bin/python
+Los comandos científicos siguientes se ejecutan dentro del servicio `backend`; no se
+activa un virtualenv ni se utiliza Python del host. Verifique primero `make db-status`.
 
-"$SPLIT_PYTHON" -m malaria_split.cli --help
-```
-
-El CLI hereda `DATABASE_URL`; no debe sustituirla por un valor por defecto ni por una
-base alternativa.
+El CLI recibe `DATABASE_URL` desde Compose; no debe sustituirla por un valor por defecto
+ni por una base alternativa.
 
 ## 3. Auditorías de baseline y gobernanza
 
@@ -76,14 +67,10 @@ derivados bajo `malaria_dataset_split_project/var/audit/`. No ejecutarlas si eso
 reportes deben conservarse byte a byte; copiar la evidencia existente antes de
 actualizarlos.
 
-```bash
-"$SPLIT_PYTHON" -m malaria_split.cli audit-current-split
-"$SPLIT_PYTHON" -m malaria_split.cli audit-patient-identity
-"$SPLIT_PYTHON" -m malaria_split.cli audit-system-contracts
-"$SPLIT_PYTHON" -m malaria_split.cli audit-scientific-bootstrap
-"$SPLIT_PYTHON" -m malaria_split.cli audit-patient-profiles-v1 \
-  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
-```
+Dentro del servicio `backend`, el CLI científico debe ejecutar las auditorías
+`audit-current-split`, `audit-patient-identity`, `audit-system-contracts`,
+`audit-scientific-bootstrap` y `audit-patient-profiles-v1` para la Dataset Version
+`d8c0cab5-09dd-597f-9de7-7ca01aee2ec2`.
 
 `audit-current-split` y `audit-patient-identity` leen por defecto
 `malaria_dl_local_project/data/malaria_physical_split`: ese directorio es el baseline

@@ -17,10 +17,8 @@ label_mapping_version = clinical_v1_parasitized_positive
 
 Aplicar o reaplicar migraciones:
 
-```bash
-python scripts/init_db.py
-python scripts/init_db.py
-```
+La receta directa histórica fue retirada; la migración desde el contenedor `backend`
+permanece pendiente de habilitación hasta Prompt 1B.1.
 
 `scripts/init_db.py` es idempotente y ejecuta `db/init/*.sql` en orden. Si una sentencia falla, reporta archivo, indice de sentencia y un preview del SQL.
 
@@ -135,9 +133,7 @@ python -m src.evaluate \
 
 Validar conexion, inserciones basicas, tablas nuevas y vistas:
 
-```bash
-python scripts/test_db.py
-```
+Use `make db-status` para la comprobación vigente.
 
 Este script crea un run sintetico, registra metricas clinicas, politica de checkpoint, calibracion de threshold, predicciones por imagen, artefactos e IO, y luego consulta las vistas nuevas.
 

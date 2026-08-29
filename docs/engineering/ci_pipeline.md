@@ -1,6 +1,9 @@
 # Pipeline CI
 
-`.github/workflows/ci.yml` configura validación, backend sin PostgreSQL, seguridad pura,
-frontend, ML rápido y validación estática de Alembic. No crea PostgreSQL ni ejecuta Docker.
-La integración real es el gate local `requires_local_postgres`. Sin commit/push solo puede
-declararse `REMOTE_CI_CONFIGURATION=PASS`, no una ejecución remota.
+`.github/workflows/ci.yml` ejecuta guardia Docker-only, validación del diff, unitarios
+backend sin conexión, validación estática Alembic, frontend y ML rápido. CI no instala ni
+inicia PostgreSQL y no crea una base de integración.
+
+Las pruebas marcadas `requires_docker_postgres` quedan fuera de CI mientras no exista un
+servicio Docker explícitamente aislado. Localmente solo se habilitan sobre `db` con
+aislamiento demostrado.

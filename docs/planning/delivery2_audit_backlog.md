@@ -22,7 +22,7 @@ Estimación relativa: XS, S, M, L, XL. No representa horas ni fechas.
 |E1|Tarea implementada|Settings validados y perfiles local/test/demo|Alta|M|E0|Sin defaults a DB personal|Config tests|
 |E1|Historia parcial|Autenticación académica y RBAC|Crítica|XL|E0|Cinco roles, JWT y guards; auditoría completa diferida|API auth matrix|
 |E1|Tarea implementada|JSON logging + correlation propagation|Alta|M|Settings|Request correlacionable|Log fixture|
-|E1|Superada|Docker/Compose API y PostgreSQL|—|—|Decisión Prompt 2.2.1|Fuera de arquitectura operativa|No aplica|
+|E1|Superada|Docker/Compose API y PostgreSQL|—|—|Decisión histórica Prompt 2.2.1, hoy sustituida|Ver contrato Docker-only vigente|No aplica|
 |E1|Tarea implementada|CI test/build/Alembic/ML rápido|Alta|L|Alembic|PR gate sin BD del usuario|Workflow|
 |E2 Dominio|Historia|Subjects pseudonimizados, samples, slides|Crítica|L|Alembic/auth|Constraints y audit, sin PII|Migration/API tests|
 |E2|Historia|Lab, microscope, camera, capture session|Alta|M|samples|Snapshots de captura|Schema tests|

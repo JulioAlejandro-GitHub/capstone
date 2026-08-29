@@ -4,15 +4,15 @@
 > **Uso operativo:** No; la recomendación y los gates pertenecen a ese corte.
 > **Snapshot:** 2026-07-27, head `20260726_02`.
 
-Fecha: 2026-07-27. Recomendación: **RECHAZAR** hasta cerrar credenciales E2E y cobertura
-atómica por repositorio. Docker no es un gate.
+Fecha: 2026-07-27. Recomendación histórica: **RECHAZAR** hasta cerrar credenciales E2E y cobertura
+atómica por repositorio. Ese gate fue sustituido por el contrato Docker-only vigente.
 
 |Gate|Resultado|Evidencia|Comando|Fecha|Observación|
 |---|---|---|---|---|---|
-|POSTGRES_LOCAL|PASS|17.9, malaria_experiments/public|`pg_isready`, consultas read-only|2026-07-27|Una instancia usada|
+|POSTGRES_SNAPSHOT|PASS|17.9, malaria_experiments/public|comprobaciones read-only históricas|2026-07-27|Una instancia usada|
 |ALEMBIC_CURRENT_EQUALS_HEAD|PASS|20260726_02|`alembic current/heads`|2026-07-27|Sin upgrade|
-|BACKEND_LOCAL|PASS|Uvicorn local iniciado|`uvicorn app.main:app`|2026-07-27|Sin Docker|
-|FRONTEND_LOCAL|PASS|Vite HTTP 200|`npm run dev -- --port 5174`|2026-07-27|Sin Docker|
+|BACKEND_SNAPSHOT|PASS|Uvicorn iniciado en el entorno anterior|evidencia histórica|2026-07-27|Flujo retirado|
+|FRONTEND_SNAPSHOT|PASS|Vite HTTP 200|evidencia histórica|2026-07-27|Flujo retirado|
 |HEALTH_LOCAL|PASS|HTTP 200|`GET /health`|2026-07-27||
 |READY_LOCAL|PASS|DB/migrations/storage ready|`GET /ready`|2026-07-27||
 |LOGIN_AUTHORIZED_USER|BLOCKED|Variables E2E ausentes|precheck de entorno|2026-07-27|No se inventaron credenciales|
@@ -32,7 +32,7 @@ atómica por repositorio. Docker no es un gate.
 |FRONTEND_BUILD|PASS|Vite build|`npm run build`|2026-07-27||
 |ML_FAST|PASS|17 passed|pytest focalizado|2026-07-27||
 |ML_FULL|PASS|359 passed, 16 skipped, 37 subtests|pytest ML completo|2026-07-27|Sin descarga/entrenamiento|
-|REMOTE_CI_CONFIGURATION|PASS|YAML válido, sin Docker/PostgreSQL|parser YAML y revisión|2026-07-27|No ejecutado en GitHub|
+|REMOTE_CI_CONFIGURATION|PASS|YAML válido en ese snapshot|parser YAML y revisión|2026-07-27|No ejecutado en GitHub|
 |STAGE2_DEFAULT_UNCHANGED|PASS|No se ejecutó mutación; valor observado estable|consulta read-only|2026-07-27||
 
 Para continuar de forma segura:

@@ -299,8 +299,8 @@ no se eliminó ningún documento versionado bajo `docs/`.
 Acciones aplicadas:
 
 - se reescribieron `runbook_split_completo_malaria.md` y
-  `guia_entrenamiento_patient_split.md`: usan PostgreSQL 17 Homebrew,
-  `malaria_experiments` y `DATABASE_URL` privada; ya no contienen DSN personal,
+  `guia_entrenamiento_patient_split.md`: usan el servicio Compose `db`,
+  la base única y `DATABASE_URL` inyectada; ya no contienen DSN personal,
   apagado de servicios, rematerialización ni borrado de Dataset v1;
 - se corrigieron auth/RBAC, anotaciones científicas, APIs, rutas frontend,
   Alembic, Docker opcional, menú visible y asociación real de runs;
@@ -345,7 +345,7 @@ contratos y reportes científicos se retuvieron por riesgo MEDIUM/HIGH y trazabi
 
 | Validación | Resultado |
 |---|---|
-| Backend sin marker PostgreSQL local | 204 passed, 6 skipped, 38 deselected |
+| Backend sin el antiguo marker de integración | 204 passed, 6 skipped, 38 deselected |
 | Backend Dataset Versions con PostgreSQL real | 3 passed |
 | Frontend tests | 154 passed |
 | Frontend build Vite | PASS |

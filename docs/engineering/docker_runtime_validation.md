@@ -2,11 +2,10 @@
 
 > **Estado documental:** `OBSOLETE_DOC` / `SUPERSEDED`
 > **Uso operativo:** No; conserva evidencia del experimento Docker de 2026-07-26.
-> **Sustitución:** runtime local oficial; Compose/Dockerfiles se conservan sólo como
-> entrypoints opcionales, fuera de los gates oficiales.
+> **Sustitución:** [contrato PostgreSQL Docker-only vigente](postgresql_docker_single_instance.md).
 
-Documento histórico. Desde Prompt 2.2.1 Docker no forma parte de la arquitectura
-operativa, desarrollo, CI ni gates de aprobación. Backend y frontend se ejecutan localmente.
+Documento histórico: las conclusiones operativas de ese corte quedaron sustituidas por
+Docker Compose como única arquitectura PostgreSQL vigente.
 
 Fecha: 2026-07-26.
 

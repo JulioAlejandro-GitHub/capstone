@@ -159,13 +159,12 @@ fuera de este alcance y luego debe repetirse toda la validación.
 
 ```bash
 git diff --check
-pg_isready -h localhost -p 5432
-psql "$DATABASE_URL" -c "SELECT version(),current_database(),current_schema();"
+docker compose exec -T db pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+docker compose exec -T db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT version(),current_database(),current_schema();"
 backend_api/.venv/bin/alembic current
 backend_api/.venv/bin/alembic heads
 (cd backend_api && PYTHONPATH=. .venv/bin/pytest tests -q -rs)
-(cd backend_api && TEST_EXECUTION=true PYTHONPATH=. .venv/bin/pytest \
-  tests -m requires_local_postgres -q -rs)
+(docker compose exec -T backend pytest tests -m requires_docker_postgres -q -rs)
 npm --prefix frontend test
 npm --prefix frontend run build
 backend_api/.venv/bin/python -m compileall backend_api/app scripts

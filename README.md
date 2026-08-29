@@ -1,43 +1,44 @@
 # Capstone MIA — plataforma científica experimental
 
 Monolito modular con FastAPI, React/TypeScript, PostgreSQL y `malaria_dl`. No es una
-herramienta diagnóstica. La fundación de Etapa 2 se documenta en
-`docs/engineering/local_development.md` y `docs/engineering/test_environment.md`.
+herramienta diagnóstica.
 
-La API `/api/v1/scientific` registra trazabilidad pseudonimizada caso → muestra → frotis
-→ imagen (sólo metadata). Véanse `docs/architecture/scientific_data_model.md` y
-`docs/engineering/scientific_api.md`.
+## Operación soportada
 
-Comandos principales: `make validate`, `make test`, `make test-db`,
-`make db-status` y `make db-migrate-check`. PostgreSQL debe estar activo; el proyecto
-no lo inicia, reconstruye ni detiene.
-# Operación de la fundación
+Docker Compose es la única forma soportada de operar Capstone:
 
-Backend y frontend se ejecutan localmente con Python y Node/Vite contra PostgreSQL 17.9
-Homebrew y la base `malaria_experiments`. Docker no forma parte de la arquitectura
-operativa, CI ni criterios de aprobación. Consulte
-`docs/engineering/local_development.md`.
+```text
+frontend → backend → db:5432 → postgres_data
+```
 
-La ingesta protegida está integrada en el workflow canónico `/frotis/analizar`:
-resuelve identidad pseudonimizada y preserva originales en `var/storage`.
-# Control técnico de calidad
+Los servicios son `db`, `backend` y `frontend`. Las credenciales se definen en el
+`.env` no versionado mediante `POSTGRES_USER`, `POSTGRES_PASSWORD` y `POSTGRES_DB`;
+Compose inyecta `DATABASE_URL` en las aplicaciones.
 
-El dominio Análisis de frotis incluye carga inmutable, quality gate, detección,
-clasificación y revisión en `/frotis/analizar`; permanece separado del entrenamiento
-y Modelo IA. `/frotis/cargar`, `/frotis/analisis` y `/frotis/revision` son redirects
-de compatibilidad. Consulta `docs/architecture/microscopy_quality_gate.md`.
+```bash
+docker compose up -d
+docker compose ps
+make db-status
+make test-backend
+make test-ml
+make validate
+```
 
-# Clasificación celular experimental
+No ejecute herramientas de administración de bases instaladas en el host ni scripts
+históricos de inicialización. Backup, status y pruebas se operan mediante Makefile y
+los wrappers de `scripts/db/`. Los comandos Alembic permanecen pendientes de
+habilitación hasta corregir los mounts en Prompt 1B.1.
 
-La clasificación por crop consume una publicación Stage 2 activa, threshold
-registrado, predicciones automáticas inmutables, Grad-CAM manual y revisión humana
-separada. La elegibilidad mínima de publicación es `TRAIN completed + EVALUATE
-completed`; la habilitación técnica falla cerrado si artefacto, contrato, threshold,
-smoke o inferencia no son utilizables. El resultado es experimental: no constituye
-diagnóstico ni estimación de parasitemia. Consulte
-`docs/stage2_productive_training_card.md` y
-`docs/architecture/cell_classification_pipeline.md`.
+El contrato completo está en
+[PostgreSQL Docker: instancia única](docs/engineering/postgresql_docker_single_instance.md).
+El índice activo está en [docs/README.md](docs/README.md).
 
-`docs/engineering/prompt8_validation.md` es evidencia histórica, no un gate vigente.
-La operación debe comprobar `current=head`; al 2026-08-24 el head versionado es
-`20260812_02`.
+## Dominios científicos
+
+La API científica mantiene trazabilidad pseudonimizada caso → muestra → frotis → imagen.
+El flujo de análisis incluye quality gate, detección, clasificación y revisión humana.
+La elegibilidad mínima Stage 2 continúa siendo `TRAIN completed + EVALUATE completed`.
+
+Consulte `docs/architecture/scientific_data_model.md`,
+`docs/architecture/cell_classification_pipeline.md` y
+`docs/stage2_productive_training_card.md`.

@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: git diff --check
+      - run: python scripts/check_docker_postgres_contract.py
       - run: test -f .env.example && test -f docs/engineering/configuration.md
   backend-unit:
     runs-on: ubuntu-latest

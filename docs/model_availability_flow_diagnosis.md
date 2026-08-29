@@ -229,16 +229,9 @@ No se agregaron tablas, modelos ORM ni migraciones.
 - migraciones: no se agregó ninguna; se reutilizó el esquema 024–027 ya
   probado por la suite existente.
 
-Comando reproducible E2E:
-
-```bash
-createdb --template=malaria_experiments capstone_availability_e2e
-cd backend_api
-MALARIA_DATABASE_URL=postgresql://USER@localhost:5432/capstone_availability_e2e \
-RUN_MODEL_AVAILABILITY_E2E=1 \
-../malaria_dl_local_project/.venv/bin/python -m pytest \
-tests/test_model_availability_e2e_postgres.py -q -s
-```
+Procedimiento histórico E2E (no ejecutable bajo el contrato actual): el entorno
+anterior creaba una base auxiliar y configuraba una conexión directa al host.
+La validación vigente usa exclusivamente Docker Compose y `db:5432`.
 
 ## 13. Procedimiento para disponibilizar otro modelo
 

@@ -97,7 +97,7 @@ Las APIs exponen endpoints estricta y gobernadamente:
 - `scripts/backfill_run_lineage.py`: Migrador de linaje para corridas previas.
 - `scripts/diagnose_run_lineage.py`: Diagnóstico de integridad de relaciones en la base de datos.
 - `scripts/clean_training_outputs.py`: Limpiador seguro de temporales manteniendo artefactos gobernados.
-- `scripts/test_db.py`: Verificador de conexión e integridad de esquemas.
+- Verificador histórico de conexión e integridad de esquemas, hoy retirado.
 
 ---
 

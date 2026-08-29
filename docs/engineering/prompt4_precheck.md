@@ -7,7 +7,7 @@
 Fecha: 2026-07-27. Rama `main`; commit inicial
 `661ad9eeb7bf74b1a0c8d7c916e289cc7cda5896`; working tree limpio.
 
-PostgreSQL 17.9 Homebrew aceptó conexiones en localhost:5432. Base:
+PostgreSQL 17.9 aceptó conexiones en el entorno anterior retirado. Base:
 `malaria_experiments`; schema: `public`. Alembic inició en `20260727_01 (head)` y
 la historia hasta esa revisión permanecía intacta.
 

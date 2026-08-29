@@ -1,8 +1,11 @@
 # Política de seguridad de base
 
-`DROP DATABASE`, `DROP SCHEMA public`, reset completo y truncado masivo están prohibidos.
-La identidad real debe coincidir con el nombre de `DATABASE_URL`. Los nombres de schemas
-temporales deben cumplir `^capstone_test_[a-z0-9_]{6,48}$`; se rechazan schemas del sistema,
-caracteres especiales y nombres externos. Nunca se interpolan identificadores no validados.
+Eliminar bases, eliminar el schema `public`, resetear la instancia o truncar globalmente
+está prohibido. La identidad real debe coincidir con `DATABASE_URL`, cuyo destino permitido
+es exclusivamente `db:5432`.
 
-La base histórica no se reconstruye ni se usan datos reales como fixtures.
+Los schemas temporales deben cumplir `^capstone_test_[a-z0-9_]{6,48}$`; se rechazan
+schemas del sistema, caracteres especiales y nombres externos. Toda prueba de escritura
+usa rollback o cleanup garantizado. No se crea otra base para pruebas.
+
+Las operaciones se ejecutan mediante los targets y wrappers Docker versionados.

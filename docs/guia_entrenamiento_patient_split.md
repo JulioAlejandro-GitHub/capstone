@@ -1,8 +1,8 @@
 # Guía de Entrenamiento y Evaluación con Patient-Disjoint Split
 
-> **Estado documental: CURRENT_DOC / GUÍA CANÓNICA.** Usa PostgreSQL 17 Homebrew,
-> la base persistente `malaria_experiments` y una `DATABASE_URL` privada provista por
-> el operador. No requiere Docker ni modifica servicios del host.
+> **Estado documental: CURRENT_DOC / GUÍA CIENTÍFICA.** Toda ejecución ocurre dentro
+> del servicio Compose `backend`, que recibe `DATABASE_URL` hacia `db:5432`.
+> El contrato operativo canónico es [PostgreSQL Docker-only](engineering/postgresql_docker_single_instance.md).
 
 Esta guía detalla el flujo para entrenar, evaluar y explicar modelos de Deep Learning
 con el split gobernado **`Malaria Patient Split v1`**
@@ -13,24 +13,18 @@ garantiza separación patient-disjoint. No debe rematerializarse ni modificarse.
 
 ## 1. Configuración del Entorno
 
-Asegúrate de estar en el directorio correcto y con el entorno virtual activo:
+Asegúrate de que el runtime Docker-only esté disponible:
 
 ```bash
-# Cambiar al directorio del proyecto de Deep Learning
-cd malaria_dl_local_project
-
-# Activar el entorno virtual
-source .venv/bin/activate
-
-# Usar la conexión privada al PostgreSQL 17 Homebrew canónico
-export PYTHONPATH=src
-: "${DATABASE_URL:?Define DATABASE_URL en tu entorno privado}"
+docker compose up -d
+docker compose ps
+make db-status
 ```
 
 > [!IMPORTANT]
-> Backend, ML y CLI de split deben resolver la misma base `malaria_experiments`.
-> No pegues credenciales en comandos versionados, no sustituyas `DATABASE_URL` por
-> un DSN personal y no inicies, detengas ni reemplaces PostgreSQL desde esta guía.
+> Backend, ML y CLI de split reciben la misma `DATABASE_URL` desde Compose. Los
+> comandos Python mostrados más abajo describen argumentos científicos y deben
+> ejecutarse dentro del servicio `backend`, nunca con Python del host.
 
 ---
 
@@ -205,8 +199,8 @@ Sustituir ambos UUID de ejemplo por el par real del mismo TRAIN antes de ejecuta
 ## 6. Monitoreo en el Dashboard Web
 
 Una vez que los comandos de entrenamiento, evaluación y explicabilidad hayan
-finalizado, abre la URL configurada para el frontend. Con el servidor Vite local del
-repositorio, el valor por defecto es:
+finalizado dentro del servicio `backend`, abra la URL publicada por el servicio
+Compose `frontend`. El valor de desarrollo habitual es:
 
 ```text
 http://localhost:5173/

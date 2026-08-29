@@ -143,10 +143,8 @@ python scripts/reset_experimental_state.py --execute --confirm RESET_EXPERIMENTS
 
 Si necesitas reconstruir vistas, índices o seeds:
 
-```bash
-python scripts/init_db.py
-python scripts/test_db.py
-```
+La inicialización y el verificador directo históricos fueron retirados. Use únicamente
+los targets Docker-only del Makefile descritos en el contrato canónico.
 
 ## Reentrenar Después De Limpiar
 

@@ -1,9 +1,14 @@
 # Runbook de backup de Capstone
 
-Defina `DATABASE_URL` local y, opcionalmente, `CAPSTONE_BACKUP_DIR` fuera del repositorio.
-Ejecute `make db-backup`. El comando crea un dump custom timestamped, comprueba que no esté
-vacío, valida su catálogo con `pg_restore --list` e informa SHA-256 sin imprimir password.
+Defina opcionalmente `CAPSTONE_BACKUP_DIR` en una ruta controlada del host y ejecute:
 
-Emergencia: detenga escrituras de aplicación, verifique identidad y backup, y use
-`pg_restore` según el procedimiento del administrador. La restauración requiere autorización
-explícita y un destino decidido; nunca se ensaya creando automáticamente otra base.
+```bash
+make db-backup
+```
+
+El wrapper ejecuta las herramientas de backup dentro del servicio `db`, transmite el dump
+custom hacia el destino controlado, aplica permisos restrictivos, rechaza archivos vacíos,
+valida el catálogo e informa SHA-256 sin mostrar credenciales.
+
+La restauración requiere autorización, ventana de mantenimiento y destino explícito. Este
+repositorio no crea automáticamente otra base para ensayarla.

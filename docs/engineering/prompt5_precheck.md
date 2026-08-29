@@ -10,7 +10,7 @@ Fecha: 2026-07-27 (America/Santiago).
 - Commit inicial real: `9a45bbb1861cc7e6b782244a5afc1a7b9eacc3c4` (difiere del commit informado `661ad9e...`).
 - Working tree inicial: únicamente `var/` sin seguimiento; no se modificó ni eliminó.
 - `git diff --stat` y `git diff --check`: sin diferencias rastreadas ni errores.
-- PostgreSQL: 17.9 Homebrew, `localhost:5432`.
+- PostgreSQL: 17.9 en el entorno anterior retirado; dato histórico, no instrucción operativa.
 - Base y schema: `malaria_experiments`, `public`.
 - Alembic inicial: `current = head = 20260727_02`.
 - Historia intacta: `20260726_00 → 20260726_01 → 20260726_02 → 20260727_01 → 20260727_02`.

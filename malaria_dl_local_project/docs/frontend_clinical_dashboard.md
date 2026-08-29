@@ -88,10 +88,7 @@ vw_case_level_explainability
 
 Inicializar BD:
 
-```bash
-python scripts/init_db.py
-python scripts/test_db.py
-```
+La inicialización directa histórica fue retirada. Use los targets Docker-only del Makefile.
 
 Crear split fisico:
 

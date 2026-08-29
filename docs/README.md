@@ -26,7 +26,7 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 | Tema | Documento |
 |---|---|
 | Desarrollo local | [Desarrollo local](engineering/local_development.md) |
-| PostgreSQL local | [Instancia PostgreSQL única](engineering/postgresql_local_single_instance.md) |
+| PostgreSQL Docker-only | [Contrato de instancia PostgreSQL única](engineering/postgresql_docker_single_instance.md) |
 | Seguridad de base de datos | [Política de seguridad DB](engineering/database_safety_policy.md) |
 | Alembic | [Política Alembic](engineering/alembic_simple_policy.md) |
 | Autenticación y permisos | [Autenticación y RBAC](engineering/authentication_rbac.md) |

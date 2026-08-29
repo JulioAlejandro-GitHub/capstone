@@ -38,7 +38,7 @@ Configuración de conexión:
 - backend_api/app/config.py:93-110 exige esa variable.
 - backend_api/app/db.py:40-47 crea el engine.
 - alembic/env.py:6-12 usa la misma configuración.
-- El tracker ML también prioriza DATABASE_URL; conserva un fallback exclusivamente local que no se usa en Docker.
+- El tracker ML recibe exclusivamente `DATABASE_URL` dentro de Docker Compose.
 3. Escritores de TRAIN, EVALUATE y linaje
 Acción	Punto canónico
 INSERT genérico de run	persistence/run_repository.py:340-435, start_run()
@@ -57,7 +57,7 @@ Finalizar model version gobernada	training_model_version_finalizer.py:67-264
 
 
 Otros puntos:
-- scripts/test_db.py:79-98,337 crea y completa un TRAIN técnico.
+- El verificador DB histórico, hoy retirado, creaba y completaba un TRAIN técnico.
 - run_train_all_models.py y run_evaluate_all_trainings.py sólo orquestan los entrypoints canónicos.
 - No existe un endpoint backend que cree TRAIN o EVALUATE.
 - El segundo INSERT INTO runs productivo, en governance/repository.py, crea únicamente runs de inferencia.

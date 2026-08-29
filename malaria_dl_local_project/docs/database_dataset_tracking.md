@@ -139,5 +139,5 @@ db/init/012_dataset_split_image_tracking.sql
 ```
 
 Se usa `012` porque `011_label_mapping_clinical_v1.sql` ya existe. Las tablas y
-vistas son idempotentes para que `python scripts/init_db.py` pueda ejecutarse más
-de una vez.
+vistas son idempotentes; la receta directa histórica de inicialización ya no es un
+flujo operativo.

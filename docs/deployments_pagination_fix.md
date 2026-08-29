@@ -122,7 +122,7 @@ no tiene elementos.
 - frontend: request inicial con `page=1/page_size=12`, constantes permitidas,
   normalización, mensaje legible y reintento sin loop; 24 passed;
 - TypeScript y build Vite de producción: PASS;
-- integración HTTP con PostgreSQL local.
+- integración HTTP con PostgreSQL administrado por Docker Compose.
 
 ## Resultado
 

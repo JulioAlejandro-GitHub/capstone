@@ -27,7 +27,7 @@ Escala cualitativa: probabilidad/impacto Bajo, Medio, Alto; nivel combina ambos.
 |R12|Operación|Host puede tener Python 3.14; runtime soportado es 3.12|Dos venvs locales|Import/runtime incompatibles|Media|Medio|Medio|CI 3.12 y venv local|Recrear venv backend 3.12|Infra|P2|Mitigado|
 |R14|Auditoría|Correlation ID HTTP completo; persistencia futura pendiente|Jobs aún fuera de alcance|No reconstruir request→job futuro|Media|Alto|Alto|Propagar a analysis_jobs en P6|Consulta por logs|Observability|P2/P6|Mitigación parcial|
 |R15|Seguridad|Upload sin límite/MIME fuerte|Helper centrado en path|DoS/image bomb/contenido inválido|Media|Alto|Crítico|Streaming limits, decode sandbox, MIME|Quarantine y rechazo|Ingest|P4|Abierto|
-|R16|Superado|Docker/demo fuera de arquitectura operativa|Decisión Prompt 2.2.1|No aplica|Baja|Bajo|Bajo|Base local única y backups|Runbook Capstone|Infra|P2|Cerrado|
+|R16|Superado|Decisión histórica de excluir Docker, hoy sustituida|Decisión Prompt 2.2.1|No aplica|Baja|Bajo|Bajo|Instancia Docker única y backups|Runbook Capstone|Infra|P2|Cerrado|
 |R17|UX|Páginas reales ocultas del menú|Config comentada|Flujos inconsistentes|Alta|Medio|Alto|IA de navegación por roles|Deep links documentados|Frontend|P14|Abierto|
 |R18|UX|Viewer científico inexistente|Frontend experimental|No revisar boxes/contexto|Alta|Alto|Crítico|Viewer con coordinate contract|Galería estática temporal|Workbench|P14|Abierto|
 |R19|Ciencia|Agregación por imagen no definida|Sin entidad/método|Claims no comparables|Alta|Alto|Crítico|Protocolo científico/versionado|Mostrar sólo células, sin agregado|Aggregator|P11|Abierto|

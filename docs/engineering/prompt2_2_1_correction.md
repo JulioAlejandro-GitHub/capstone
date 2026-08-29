@@ -10,7 +10,7 @@ Se retiraron los archivos frontend Docker creados por los prompts, el target Doc
 Makefile y el job Docker de CI. Los archivos preexistentes se conservaron como marcadores
 históricos `SUPERSEDED`, sin servicios operativos ni gates.
 
-Se agregaron pruebas PostgreSQL locales para un usuario sintético deshabilitado y para el
+Se agregaron entonces pruebas PostgreSQL directas para un usuario sintético deshabilitado y para el
 rollback ante un fallo real de FK al persistir `audit_events`. Toda fixture usa UUID y
 prefijo `capstone_test_`, conexión compartida y rollback externo.
 

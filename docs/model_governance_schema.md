@@ -512,28 +512,20 @@ El ledger demuestra lo ejecutado o reconocido explícitamente por este runner de
 Antes de migrar una instalación existente:
 
 ```bash
-pg_dump --format=custom --file=malaria_experiments_pre_governance.dump malaria_experiments
-pg_restore --list malaria_experiments_pre_governance.dump >/dev/null
+make db-backup
 ```
 
 También se debe generar un manifiesto de artifacts con tamaño y SHA-256, registrar el commit desplegado, comprobar espacio disponible y pausar temporalmente escritores de training, evaluación, explicación e inferencia.
 
 ### Inicialización o migración
 
-Desde la raíz del repositorio:
-
-```bash
-cd malaria_dl_local_project
-DATABASE_URL='postgresql+psycopg://USER:PASSWORD@HOST:5432/DATABASE' \
-  .venv/bin/python scripts/init_db.py
-```
-
-El mismo comando sirve para una instalación nueva y para una existente: el runner aplica únicamente migraciones no registradas. No se debe ejecutar contra producción sin backup, revisión de checksums y ventana operacional.
+La receta histórica directa fue retirada. Las migraciones se habilitarán dentro del
+servicio `backend` en Prompt 1B.1; hasta entonces no deben presentarse como operativas.
 
 ### Verificación posterior
 
 ```bash
-psql 'postgresql://USER:PASSWORD@HOST:5432/DATABASE' -v ON_ERROR_STOP=1
+docker compose exec -T db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1
 ```
 
 Dentro de `psql`:
@@ -595,12 +587,9 @@ La verificación local de esta implementación reportó 25 pruebas aprobadas. Es
 La integración real está versionada como una prueba opt-in que se niega a usar
 `malaria_experiments` y exige un nombre de base que contenga `test` o `codex`:
 
-```bash
-cd malaria_dl_local_project
-MODEL_GOVERNANCE_TEST_DATABASE_URL='postgresql://USER:PASSWORD@HOST:5432/malaria_governance_test' \
-MODEL_GOVERNANCE_TEST_ALLOW_SCHEMA_CHANGES=1 \
-  .venv/bin/python -m unittest tests.test_model_governance_postgres
-```
+La receta histórica con una segunda base y una URL alternativa fue retirada.
+Las pruebas vigentes usan exclusivamente `DATABASE_URL` hacia `db:5432` dentro
+de Docker Compose.
 
 Esa prueba aplica el historial numerado, verifica una segunda pasada no-op del
 ledger, recorre el linaje completo, prueba los checks clínicos, la unicidad del

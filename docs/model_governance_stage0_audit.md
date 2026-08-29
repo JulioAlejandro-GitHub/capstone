@@ -523,7 +523,7 @@ Las referencias productivas que requieren migración son:
 - malaria_dl_local_project/src/run_tracker.py:1551.
 - malaria_dl_local_project/src/calibrate.py:34.
 - malaria_dl_local_project/scripts/backfill_run_lineage.py:176.
-- malaria_dl_local_project/scripts/test_db.py:257.
+- verificador histórico de conexión DB, hoy retirado: línea 257 del snapshot.
 
 No todas son defectos: algunas pruebas verifican explícitamente comportamiento legado y varias referencias describen snapshots. El riesgo aparece cuando la ruta se usa como identidad, entrada de evaluación/inferencia o instrucción recomendada.
 
@@ -1070,7 +1070,7 @@ No se debe iniciar por la UI ni por copiar best_model.keras a otra carpeta: prim
 
 ### Antes de migrar
 
-- pg_dump con prueba de restauración.
+- respaldo PostgreSQL mediante el comando Docker-only vigente, con prueba de restauración.
 - Copia/manifiesto de artifacts y checksums.
 - Conteos por tabla, constraints, índices y vistas.
 - Registro del commit y migration batch.
@@ -1184,7 +1184,7 @@ La lista siguiente corresponde a las 174 líneas coincidentes (184 apariciones l
 ### Código y scripts ML
 
 - malaria_dl_local_project/scripts/backfill_run_lineage.py:176.
-- malaria_dl_local_project/scripts/test_db.py:257.
+- verificador histórico de conexión DB, hoy retirado: línea 257 del snapshot.
 - malaria_dl_local_project/src/calibrate.py:34.
 - malaria_dl_local_project/src/checkpoint_policy.py:608.
 - malaria_dl_local_project/src/run_tracker.py:1551.

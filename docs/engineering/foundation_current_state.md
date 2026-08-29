@@ -17,6 +17,6 @@ Validación local: frontend 59/59, ML rápido 17/17, backend 56 passed/4 skipped
 |Observabilidad|Health dependía de DB; logging parcial|Liveness, readiness, JSON logs y correlation ID|
 |Tests|unittest/pytest mixto; varios tests PostgreSQL personales|Compose PostgreSQL 17 efímero y guards|
 |Frontend|React 19/TS/Vite, cliente fetch central|Contexto auth, login, bearer, 401 y ruta protegida|
-|Entrega|Sin Docker ni Actions|Imagen no-root, Compose y CI|
+|Entrega histórica|Snapshot sin Docker ni Actions|Imagen no-root, Compose y CI posteriores|
 
 Reutilizable: monolito FastAPI, cliente HTTP, runner SQL/checksums, paquete canónico y adaptadores. Inconsistente: requirements sin cotas superiores, dos runtimes Python, `.env` locales ignorados y errores heterogéneos. Diferido: migrar cada error legacy al envelope, audit ledger completo, OIDC, rate limiting y pipeline científico.
