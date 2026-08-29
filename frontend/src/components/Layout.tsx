@@ -16,6 +16,7 @@ export function Layout({ datasource, datasources, onDatasourceChange }: LayoutPr
   const location = useLocation();
   const active = sectionForPath(location.pathname);
   const activeModule = moduleForPath(location.pathname);
+  const isSmearWorkflow = location.pathname === routes.smearWorkflow;
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -25,8 +26,8 @@ export function Layout({ datasource, datasources, onDatasourceChange }: LayoutPr
   return <div className="app-shell">
     <AppSidebar datasource={datasource} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)}
       mobileTriggerRef={mobileTriggerRef} />
-    <main className="app-content">
-      <div className="content-context-row">
+    <main className={`app-content${isSmearWorkflow ? ' app-content--smear-workflow' : ''}`}>
+      <div className={`content-context-row${isSmearWorkflow ? ' content-context-row--smear-workflow' : ''}`}>
         <div className="mobile-navigation">
           <button ref={mobileTriggerRef} className="mobile-menu-trigger" type="button" aria-label="Abrir navegación"
             aria-expanded={mobileOpen} aria-controls="app-sidebar" onClick={() => setMobileOpen(true)}>

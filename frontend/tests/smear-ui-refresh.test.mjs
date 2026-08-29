@@ -11,11 +11,13 @@ const workflow = read('src/pages/SmearWorkflow.tsx');
 const hook = read('src/hooks/useSmearAnalysisWorkflow.ts');
 const history = read('src/pages/SmearAnalysisHistory.tsx');
 
-test('elimina la topbar global y usa una fila contextual compacta sin reservar su altura', () => {
+test('mantiene la fila contextual funcional y la compacta sólo en el workflow de frotis', () => {
   assert.doesNotMatch(layout, /className="topbar"/);
   assert.doesNotMatch(styles, /\.topbar\b/);
   assert.match(layout, /content-context-row/);
   assert.match(styles, /\.content-context-row[\s\S]*min-height:\s*44px/);
+  assert.match(layout, /content-context-row--smear-workflow/);
+  assert.match(styles, /\.content-context-row--smear-workflow\s*\{[^}]*min-height:\s*0/);
   assert.doesNotMatch(styles, /100dvh\s*-\s*113px/);
   assert.match(immersiveStyles, /grid-template-rows:\s*auto minmax\(0, 1fr\)/);
 });
@@ -23,11 +25,17 @@ test('elimina la topbar global y usa una fila contextual compacta sin reservar s
 test('preparación expone datos reales, límites, motivos de bloqueo y una única acción', () => {
   for (const token of [
     'Nuevo análisis de frotis', 'ID PACIENTE', 'ID MUESTRA',
-    'Control de calidad', 'INICIAR ANÁLISIS', 'MAX_UPLOAD_BYTES', 'MAX_IMAGE_PIXELS',
+    'Datos de imagen', 'Sin imagen seleccionada', 'INICIAR ANÁLISIS', 'MAX_UPLOAD_BYTES', 'MAX_IMAGE_PIXELS',
   ]) assert.match(upload, new RegExp(token));
+  assert.doesNotMatch(upload, /VALIDACIÓN CLÁSICA|Control de calidad|Pendiente/);
   assert.match(upload, /disabled=\{busy \|\| !formReady\}/);
   assert.match(upload, /aria-describedby="smear-analyze-reason"/);
   assert.match(upload, /disabledReason/);
+  for (const fact of ['Archivo', 'Formato', 'Dimensiones', 'Resolución', 'Tamaño', 'Relación']) {
+    assert.match(upload, new RegExp(`<dt>${fact}</dt>`));
+  }
+  assert.doesNotMatch(upload, /smear-setup__file-details/);
+  assert.match(styles, /\.app-content--smear-workflow[^}]*background:\s*var\(--color-background\)/);
   assert.match(hook, /if \(activeAction\.current\) return/);
   assert.equal((hook.match(/uploadMicroscopyImages\(form\)/g) ?? []).length, 1);
 });

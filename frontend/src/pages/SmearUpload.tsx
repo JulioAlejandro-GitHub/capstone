@@ -31,6 +31,10 @@ const fileFormat = (file: File) => {
   return extension ? extension.toUpperCase() : 'Desconocido';
 };
 
+const greatestCommonDivisor = (first: number, second: number): number => (
+  second ? greatestCommonDivisor(second, first % second) : first
+);
+
 const isAcceptedFile = (file: File) => {
   const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
   return ACCEPTED_TYPES.includes(file.type) || ACCEPTED_EXTENSIONS.includes(extension);
@@ -90,6 +94,13 @@ export function SmearUpload({
     () => files.reduce((total, file) => total + file.size, 0),
     [files],
   );
+  const activeFile = files[0];
+  const aspectRatio = dimensions
+    ? (() => {
+      const divisor = greatestCommonDivisor(dimensions.width, dimensions.height);
+      return `${dimensions.width / divisor}:${dimensions.height / divisor}`;
+    })()
+    : null;
 
   async function lookup() {
     setSubject(null);
@@ -377,55 +388,58 @@ export function SmearUpload({
             </div>
             </div>
 
-            <aside className="smear-setup__glass smear-setup__quality" aria-labelledby="smear-quality-title">
+            <aside className="smear-setup__glass smear-setup__image-data" aria-labelledby="smear-image-data-title">
               <header>
-                <div><p>VALIDACIÓN CLÁSICA</p><h3 id="smear-quality-title">Control de calidad</h3></div>
+                <h3 id="smear-image-data-title">Datos de imagen</h3>
                 <span className="smear-setup__file-count">{files.length} archivo{files.length === 1 ? '' : 's'}</span>
               </header>
-              <p>Los criterios se confirmarán con las métricas reales del backend antes de detectar células.</p>
-              <ul>
-                {['Enfoque', 'Iluminación', 'Resolución', 'Artefactos'].map((criterion) => (
-                  <li key={criterion} data-state="pending">
-                    <span aria-hidden="true">•</span><strong>{criterion}</strong><em>Pendiente</em>
-                  </li>
-                ))}
-              </ul>
-              <small>Sin límite fijo de cantidad por lote manual. El perfil NIH requiere 5 imágenes.</small>
+              {activeFile ? (
+                <dl className="smear-setup__image-facts">
+                  <div><dt>Archivo</dt><dd title={activeFile.name}>{activeFile.name}</dd></div>
+                  <div><dt>Formato</dt><dd>{fileFormat(activeFile)}</dd></div>
+                  <div><dt>Dimensiones</dt><dd>{dimensions ? `${dimensions.width} × ${dimensions.height} px` : 'Leyendo…'}</dd></div>
+                  <div><dt>Resolución</dt><dd>{dimensions ? `${(dimensions.width * dimensions.height / 1_000_000).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MP` : 'Leyendo…'}</dd></div>
+                  <div><dt>Tamaño</dt><dd>{(activeFile.size / 1024 / 1024).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MiB</dd></div>
+                  <div><dt>Relación</dt><dd>{aspectRatio ?? 'Leyendo…'}</dd></div>
+                </dl>
+              ) : (
+                <div className="smear-setup__image-empty">
+                  <strong>Sin imagen seleccionada</strong>
+                  <p>Carga una imagen para consultar sus datos técnicos.</p>
+                </div>
+              )}
+              <div className="smear-setup__image-data-footer">
+                {activeFile ? (
+                  <>
+                    {files.length > 1 ? <small>Imagen 1 de {files.length}</small> : null}
+                    <div className="smear-setup__file-actions">
+                      <button type="button" disabled={busy} onClick={openPicker}>Reemplazar</button>
+                      <button type="button" disabled={busy} onClick={clearFiles}>Quitar</button>
+                    </div>
+                  </>
+                ) : null}
+                <footer className="smear-setup__actions">
+                  <p id="smear-analyze-reason">{disabledReason}</p>
+                  <button
+                    type="button"
+                    disabled={busy || !formReady}
+                    aria-describedby="smear-analyze-reason"
+                    aria-busy={busy}
+                    title={!formReady ? disabledReason : undefined}
+                    onClick={() => void submit()}
+                  >
+                    <Icon name="play" />
+                    {busy ? 'INICIANDO ANÁLISIS…' : 'INICIAR ANÁLISIS'}
+                  </button>
+                </footer>
+              </div>
             </aside>
           </div>
 
           <div id="smear-file-feedback" className="smear-setup__feedback" aria-live="polite">
             {fileError ? <p role="alert">{fileError}</p> : null}
-            {files[0] ? (
-              <div className="smear-setup__file-details">
-                <dl>
-                  <div><dt>Archivo</dt><dd>{files[0].name}</dd></div>
-                  <div><dt>Formato</dt><dd>{fileFormat(files[0])}</dd></div>
-                  <div><dt>Dimensiones</dt><dd>{dimensions ? `${dimensions.width} × ${dimensions.height} px` : 'Leyendo…'}</dd></div>
-                  <div><dt>Tamaño</dt><dd>{(selectedBytes / 1024 / 1024).toFixed(2)} MiB</dd></div>
-                </dl>
-                <div className="smear-setup__file-actions">
-                  <button type="button" disabled={busy} onClick={openPicker}>Reemplazar</button>
-                  <button type="button" disabled={busy} onClick={clearFiles}>Quitar</button>
-                </div>
-              </div>
-            ) : null}
+            {selectedBytes > 0 && files.length > 1 ? <small>{files.length} imágenes · {(selectedBytes / 1024 / 1024).toFixed(2)} MiB en total</small> : null}
           </div>
-
-          <footer className="smear-setup__actions">
-            <p id="smear-analyze-reason">{disabledReason}</p>
-            <button
-              type="button"
-              disabled={busy || !formReady}
-              aria-describedby="smear-analyze-reason"
-              aria-busy={busy}
-              title={!formReady ? disabledReason : undefined}
-              onClick={() => void submit()}
-            >
-              <Icon name="play" />
-              {busy ? 'INICIANDO ANÁLISIS…' : 'INICIAR ANÁLISIS'}
-            </button>
-          </footer>
         </div>
       </div>
     </section>

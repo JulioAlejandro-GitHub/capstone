@@ -115,8 +115,11 @@ select {
 .is-collapsed [data-tooltip]:hover::after, .is-collapsed [data-tooltip]:focus-visible::after { display: block; }
 .sidebar-overlay { display: none; }
 .app-content { min-width: 0; background: #f6f7fb; }
+.app-content--smear-workflow { min-height: 100dvh; background: var(--color-background); }
 .mobile-navigation { display: none; }
 .content-context-row { display: flex; min-height: 44px; align-items: center; gap: 14px; border-bottom: 1px solid var(--color-outline-variant); background: var(--color-surface-low); color: var(--color-on-surface); padding: 6px 28px; }
+.content-context-row--smear-workflow { min-height: 0; gap: 12px; padding: 3px 16px; }
+.content-context-row--smear-workflow .datasource-selector select { padding: 5px 8px; }
 .breadcrumb { display: flex; min-width: 0; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--color-on-surface-variant); font-size: 13px; }
 .breadcrumb strong { color: var(--color-on-surface); }
 .breadcrumb a { color: inherit; text-decoration: none; }.breadcrumb a:hover { text-decoration: underline; }
@@ -4788,14 +4791,14 @@ a.uploaded-image-cell:hover small {
   transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
 }
 
-.smear-workflow .smear-setup__quality {
+.smear-workflow .smear-setup__image-data {
   display: grid;
-  align-content: start;
-  gap: 16px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 14px;
   padding: 18px;
 }
 
-.smear-workflow .smear-setup__quality header {
+.smear-workflow .smear-setup__image-data header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -4804,22 +4807,18 @@ a.uploaded-image-cell:hover small {
   padding-bottom: 14px;
 }
 
-.smear-workflow .smear-setup__quality h3,
-.smear-workflow .smear-setup__quality p { margin: 0; }
-
-.smear-workflow .smear-setup__quality header p {
-  color: var(--color-primary-container);
-  font: 700 9px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  letter-spacing: .1em;
-}
-
-.smear-workflow .smear-setup__quality h3 {
-  margin-top: 4px;
+.smear-workflow .smear-setup__image-data h3 {
+  margin: 0;
   font-size: 17px;
 }
 
-.smear-workflow .smear-setup__quality > p,
-.smear-workflow .smear-setup__quality > small {
+.smear-workflow .smear-setup__image-empty {
+  align-self: start;
+  padding-top: 4px;
+}
+
+.smear-workflow .smear-setup__image-empty p {
+  margin: 7px 0 0;
   color: var(--setup-muted);
   font-size: 11px;
   line-height: 1.5;
@@ -4834,35 +4833,43 @@ a.uploaded-image-cell:hover small {
   white-space: nowrap;
 }
 
-.smear-workflow .smear-setup__quality ul {
+.smear-workflow .smear-setup__image-facts {
   display: grid;
-  gap: 8px;
+  align-content: start;
+  gap: 10px;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 
-.smear-workflow .smear-setup__quality li {
-  display: grid;
-  grid-template-columns: 14px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid var(--setup-border);
-  border-radius: 8px;
-  background: var(--color-surface);
-  padding: 10px;
-  font-size: 11px;
+.smear-workflow .smear-setup__image-facts > div {
+  min-width: 0;
 }
 
-.smear-workflow .smear-setup__quality li > span,
-.smear-workflow .smear-setup__quality li > em {
-  color: var(--color-warning);
-  font-style: normal;
-}
-
-.smear-workflow .smear-setup__quality li > em {
-  font: 700 9px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+.smear-workflow .smear-setup__image-facts dt {
+  color: var(--setup-muted);
+  font-size: 9px;
   text-transform: uppercase;
+}
+
+.smear-workflow .smear-setup__image-facts dd {
+  margin: 3px 0 0;
+  overflow: hidden;
+  color: #fff;
+  font: 700 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-workflow .smear-setup__image-data-footer {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid var(--setup-border);
+  padding-top: 14px;
+}
+
+.smear-workflow .smear-setup__image-data-footer > small {
+  color: var(--setup-muted);
+  font-size: 10px;
 }
 
 .smear-workflow .smear-setup__dropzone:hover,
@@ -4980,45 +4987,6 @@ a.uploaded-image-cell:hover small {
   padding: 10px 12px;
 }
 
-.smear-workflow .smear-setup__file-details {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  border: 1px solid var(--setup-border);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, .055);
-  padding: 10px 12px;
-}
-
-.smear-workflow .smear-setup__file-details dl {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  flex: 1 1 500px;
-  gap: 8px;
-  margin: 0;
-}
-
-.smear-workflow .smear-setup__file-details dl > div {
-  min-width: 0;
-}
-
-.smear-workflow .smear-setup__file-details dt {
-  color: var(--setup-muted);
-  font-size: 10px;
-  text-transform: uppercase;
-}
-
-.smear-workflow .smear-setup__file-details dd {
-  margin: 3px 0 0;
-  overflow: hidden;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .smear-workflow .smear-setup__file-actions {
   display: flex;
   gap: 7px;
@@ -5034,11 +5002,8 @@ a.uploaded-image-cell:hover small {
 }
 
 .smear-workflow .smear-setup__actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin-top: auto;
+  display: grid;
+  gap: 9px;
 }
 
 .smear-workflow .smear-setup__actions p {
@@ -5064,6 +5029,23 @@ a.uploaded-image-cell:hover small {
   font-weight: 800;
   letter-spacing: .03em;
   transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+  width: 100%;
+}
+
+@media (min-width: 701px) and (max-height: 820px) {
+  .smear-workflow.page { gap: 10px; padding-block: 10px; }
+  .smear-workflow .workflow-context-header { padding-block: 8px; }
+  .smear-workflow .smear-setup__intro { gap: 3px; margin-bottom: 10px; }
+  .smear-workflow .smear-setup__intro h2 { font-size: 28px; }
+  .smear-workflow .smear-setup__sample-panel { padding: 18px; }
+  .smear-workflow .smear-setup__sample-panel h3 { margin-bottom: 16px; }
+  .smear-workflow .smear-setup__field { margin-top: 13px; }
+  .smear-workflow .smear-setup__origin { margin-top: 13px; padding-top: 12px; }
+  .smear-workflow .smear-setup__dropzone { min-height: 390px; padding-block: 18px; }
+  .smear-workflow .smear-setup__preview { height: clamp(210px, 30dvh, 280px); }
+  .smear-workflow .smear-setup__microscope { height: 190px; }
+  .smear-workflow .smear-setup__drop-copy { gap: 5px; margin-top: 8px; }
+  .smear-workflow .smear-setup__upload-icon { width: 48px; height: 48px; }
 }
 
 .smear-workflow .smear-setup__actions > button:not(:disabled):hover {
@@ -5953,13 +5935,15 @@ a.uploaded-image-cell:hover small {
     height: 240px;
   }
 
-  .smear-workflow .smear-setup__file-details dl {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .smear-workflow .smear-setup__actions {
+    position: sticky;
+    z-index: 5;
+    bottom: 0;
     align-items: stretch;
     flex-direction: column;
+    margin: 0 -10px -10px;
+    background: var(--setup-glass);
+    padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
   }
 
   .smear-workflow .smear-setup__actions > button {
