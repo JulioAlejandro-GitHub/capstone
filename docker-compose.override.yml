@@ -4,6 +4,8 @@ services:
       MALARIA_DL_PROJECT_ROOT: /app/malaria_dl_local_project
     volumes:
       - ./backend_api:/app
+      # El bind de desarrollo oculta estos archivos copiados en la imagen.
+      - ./alembic:/app/alembic:ro
       # El bind de /app oculta los archivos copiados en la imagen. Montamos
       # explícitamente el proyecto ML requerido por los imports `src.*`.
       - ./malaria_dl_local_project:/app/malaria_dl_local_project:ro
@@ -12,6 +14,10 @@ services:
       # habilita escritura únicamente en el directorio gobernado de releases.
       - ./malaria_dl_local_project/releases:/app/malaria_dl_local_project/releases
       - ./malaria_dataset_split_project/src:/app/malaria_dataset_split_project/src:ro
+    configs:
+      - source: alembic_ini
+        target: /app/alembic.ini
+        mode: 0444
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
@@ -22,3 +28,7 @@ services:
       - ./frontend:/app
     # Forzamos a que instale dependencias y corra en el puerto 80 para coincidir con Nginx
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 80"
+
+configs:
+  alembic_ini:
+    file: ./alembic.ini

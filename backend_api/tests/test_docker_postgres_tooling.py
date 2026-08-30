@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import stat
 import subprocess
 from pathlib import Path
@@ -12,6 +13,15 @@ DB_SCRIPTS = ROOT / "scripts" / "db"
 
 def _source(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def _compose_service(source: str, name: str) -> str:
+    match = re.search(
+        rf"(?ms)^  {re.escape(name)}:\n(?P<body>.*?)(?=^  [a-zA-Z0-9_-]+:|\Z)",
+        source,
+    )
+    assert match is not None
+    return match.group("body")
 
 
 def _fake_docker(tmp_path: Path) -> Path:
@@ -126,6 +136,28 @@ def test_makefile_and_ci_do_not_select_local_postgres():
     assert "@db:5432/" in workflow
     assert "127.0.0.1" not in workflow
     assert "createdb" not in makefile and "dropdb" not in makefile
+
+
+def test_development_compose_restores_read_only_alembic_mounts():
+    override = _source(ROOT / "docker-compose.override.yml")
+    backend = _compose_service(override, "backend")
+    base = _source(ROOT / "docker-compose.yml")
+    db = _compose_service(base, "db")
+
+    assert "- ./backend_api:/app" in backend
+    assert "- ./alembic:/app/alembic:ro" in backend
+    assert "source: alembic_ini" in backend
+    assert "target: /app/alembic.ini" in backend
+    assert "mode: 0444" in backend
+    assert re.search(r"(?ms)^configs:\n  alembic_ini:\n    file: ./alembic.ini\s*$", override)
+    assert not re.search(r"(?m)^\s*-\s+\./:/app(?::|\s|$)", backend)
+    assert not re.search(r"(?m)^\s+ports:\s*$", db)
+    assert "/var/lib/postgresql/data" in db
+    assert not (ROOT / "backend_api" / "alembic.ini").exists()
+    duplicate_tree = ROOT / "backend_api" / "alembic"
+    assert not duplicate_tree.exists() or not any(
+        path.is_file() for path in duplicate_tree.rglob("*")
+    )
 
 
 def test_obsolete_database_lifecycle_scripts_are_absent():
