@@ -242,7 +242,7 @@ def test_evaluation_finalization_rolls_back_every_postgres_write():
             ).scalar_one() == "completed"
             assert connection.execute(
                 text("SELECT version_num FROM alembic_version")
-            ).scalar_one() == "20260829_01"
+            ).scalar_one() == "20260901_01"
             assert _release_distribution(connection) == initial_release
             assert connection.execute(
                 text(
@@ -260,7 +260,7 @@ def test_evaluation_finalization_rolls_back_every_postgres_write():
     with engine.connect() as independent:
         assert independent.execute(
             text("SELECT version_num FROM alembic_version")
-        ).scalar_one() == initial_alembic == "20260829_01"
+        ).scalar_one() == initial_alembic == "20260901_01"
         assert {
             table: _fingerprint(independent, table) for table in TABLES
         } == initial_fingerprints

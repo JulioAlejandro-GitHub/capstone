@@ -1,4 +1,4 @@
-"""One transaction for strict EVALUATE lineage confirmation and completion."""
+"""One transaction for EVALUATE lineage, completion, and TRAIN release."""
 
 from __future__ import annotations
 
@@ -18,6 +18,10 @@ from src.malaria_dl.evaluation.evaluation_training_lineage_service import (
     EvaluationTrainingLineageResult,
     create_or_confirm_evaluation_training_lineage,
 )
+from src.malaria_dl.governance.services.training_release_eligibility_service import (
+    TrainingReleaseEligibilityDecision,
+    reconcile_training_release_eligibility,
+)
 from src.malaria_dl.persistence.database import get_engine
 
 
@@ -25,6 +29,7 @@ from src.malaria_dl.persistence.database import get_engine
 class EvaluationTerminalResult:
     lineage: EvaluationTrainingLineageResult
     finalization: EvaluationFinalizationResult
+    release_decision: TrainingReleaseEligibilityDecision
 
 
 @contextmanager
@@ -52,7 +57,7 @@ def finalize_evaluation_with_lineage(
     summary: Mapping[str, object] | None = None,
     connection: Connection | None = None,
 ) -> EvaluationTerminalResult:
-    """Confirm exactly one lineage and complete its EVALUATE atomically."""
+    """Confirm lineage, complete EVALUATE, and reconcile its TRAIN atomically."""
 
     with _terminal_connection(connection) as active:
         lineage = create_or_confirm_evaluation_training_lineage(
@@ -72,9 +77,14 @@ def finalize_evaluation_with_lineage(
             summary=summary,
             connection=active,
         )
+        release_decision = reconcile_training_release_eligibility(
+            lineage.training_run_id,
+            connection=active,
+        )
         return EvaluationTerminalResult(
             lineage=lineage,
             finalization=finalization,
+            release_decision=release_decision,
         )
 
 

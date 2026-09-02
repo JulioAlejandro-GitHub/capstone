@@ -296,7 +296,7 @@ def test_strict_evaluation_training_lineage_rolls_back_all_postgres_writes():
             assert outer.is_active
             assert connection.execute(
                 text("SELECT version_num FROM alembic_version")
-            ).scalar_one() == "20260829_01"
+            ).scalar_one() == "20260901_01"
             assert _release_distribution(connection) == initial_release
         finally:
             if outer.is_active:
@@ -305,7 +305,7 @@ def test_strict_evaluation_training_lineage_rolls_back_all_postgres_writes():
     with engine.connect() as independent:
         assert independent.execute(
             text("SELECT version_num FROM alembic_version")
-        ).scalar_one() == initial_alembic == "20260829_01"
+        ).scalar_one() == initial_alembic == "20260901_01"
         assert {
             table: _fingerprint(independent, table) for table in TABLES
         } == initial_fingerprints

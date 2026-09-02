@@ -154,7 +154,7 @@ def test_training_release_contract_rolls_back_every_write():
     with engine.connect() as independent:
         assert independent.execute(
             text("SELECT version_num FROM alembic_version")
-        ).scalar_one() == "20260829_01"
+        ).scalar_one() == "20260901_01"
         assert _distribution(independent) == initial_distribution
         assert _runs_fingerprint(independent) == initial_fingerprint
         assert independent.execute(text("SELECT count(*) FROM runs")).scalar_one() == initial_count
@@ -271,7 +271,7 @@ def test_training_release_eligibility_rolls_back_every_write():
     with engine.connect() as independent:
         assert independent.execute(
             text("SELECT version_num FROM alembic_version")
-        ).scalar_one() == "20260829_01"
+        ).scalar_one() == "20260901_01"
         assert _distribution(independent) == {
             "productive_stage2": 1,
             "available_to_publish": 23,

@@ -334,8 +334,10 @@ def test_service_has_no_global_loop_versions_artifacts_or_temporal_selection():
         "artifacts",
         "stage2_model_publications",
         "deployed_model_versions",
+        "checkpoint_path",
         "ORDER BY",
         "created_at",
+        "LIMIT 1",
     ):
         assert forbidden not in source
     assert "for training" not in source.lower()
