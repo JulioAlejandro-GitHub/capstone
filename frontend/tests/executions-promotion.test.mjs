@@ -20,24 +20,24 @@ test('TRAIN concentra una sola acción de liberación llamada Ver detalle',()=>{
   assert.doesNotMatch(row,/Preparar despliegue|Habilitar para Etapa 2|Ver modelo productivo/);
   assert.doesNotMatch(child,/publishTrainingStage2|stage2-release-summary/);
 });
-test('estado productivo deriva del contrato y estiliza toda la tarjeta',()=>{
-  assert.match(group,/is_stage2_production/);
+test('estado productivo deriva de release_status y estiliza toda la tarjeta',()=>{
+  assert.match(group,/release_status === 'productive_stage2'/);
   assert.match(group,/training-card--stage2-production/);
-  assert.match(row,/stage2-production-badge/);
+  assert.match(row,/training-release-badge/);
   for(const token of ['--stage2-production-background','--stage2-production-border','--stage2-production-badge-background'])assert.match(styles,new RegExp(token));
 });
 test('estado no depende solo del color',()=>{
-  for(const token of ['✓','Productivo Etapa 2','Versión activa e inmutable','Disponible como candidato'])assert.match(row,new RegExp(token));
+  for(const token of ['✓','Productivo Etapa 2','Disponible para publicar','No disponible'])assert.match(row,new RegExp(token));
   assert.match(row,/aria-hidden="true"/);assert.match(row,/role="status"/);
 });
-test('elegibilidad visible exige TRAIN y EVALUATE y no EXPLAIN',()=>{
-  assert.match(row,/TRAIN completado · ✓ EVALUATE completado/);
-  assert.match(row,/Se requiere un TRAIN completado y un EVALUATE completado asociado/);
-  assert.doesNotMatch(row,/EXPLAIN completado/);
+test('Liberación visible no vuelve a inferir elegibilidad',()=>{
+  assert.match(row,/releasePresentation\[run\.release_status\]/);
+  assert.doesNotMatch(row,/eligible|missing_conditions|is_stage2_production|production_state/);
 });
 test('Ver detalle abre el acordeón y la vista anterior permanece compatible',()=>{
   assert.match(group,/Stage2PublicationPanel/);
-  assert.match(group,/setExpanded/);
+  assert.match(group,/setStage2Expanded/);
+  assert.match(group,/onStage2Open/);
   assert.match(app,/Stage2ReleaseDetail/);
 });
 test('acordeón publica y da de baja mediante confirmación inline',()=>{

@@ -241,6 +241,113 @@ export interface RunDashboard {
   prediction_collapse_detected?: boolean | null;
 }
 
+export type TrainingReleaseStatus =
+  | 'not_available'
+  | 'available_to_publish'
+  | 'productive_stage2';
+
+export interface TrainingSummary {
+  run_id: string;
+  run_type: 'training';
+  status: string;
+  release_status: TrainingReleaseStatus | null;
+  release_updated_at: string | null;
+  release_changed_by: string | null;
+  release_reason: string | null;
+  evaluation_count: number;
+  explainability_count: number;
+  run_name: string;
+  model_name: string | null;
+  dataset_name: string | null;
+  dataset_version_id: string | null;
+  optimizer: string | null;
+  command: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  duration_seconds: number | null;
+  recall: number | null;
+  recall_parasitized: number | null;
+  specificity: number | null;
+  f2_score: number | null;
+  f2_parasitized: number | null;
+  auc: number | null;
+  roc_auc_parasitized: number | null;
+  tn: number | null;
+  fp: number | null;
+  fn: number | null;
+  tp: number | null;
+  confusion_matrix: number[][] | null;
+  prediction_collapse_detected: boolean | null;
+}
+
+export interface TrainingSummaryCollection {
+  items: TrainingSummary[];
+  count: number;
+  limit: number;
+}
+
+interface LineageChildBase {
+  run_id: string;
+  status: string;
+  run_name: string | null;
+  model_name: string | null;
+  dataset_name: string | null;
+  dataset_version_id: string | null;
+  optimizer: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  duration_seconds: number | null;
+  parent_run_id: string;
+  confidence: RunLineageConfidence;
+  model_version_id: string | null;
+  checkpoint_artifact_id: string | null;
+}
+
+export interface EvaluationLineageChild extends LineageChildBase {
+  run_type: 'evaluation';
+  relationship_type: 'evaluates_checkpoint_from';
+  accuracy: number | null;
+  precision_parasitized: number | null;
+  recall: number | null;
+  recall_parasitized: number | null;
+  sensitivity_parasitized: number | null;
+  specificity: number | null;
+  f2_score: number | null;
+  f2_parasitized: number | null;
+  auc: number | null;
+  roc_auc_parasitized: number | null;
+  pr_auc_parasitized: number | null;
+  balanced_accuracy: number | null;
+  threshold_used: number | null;
+  tn: number | null;
+  fp: number | null;
+  fn: number | null;
+  tp: number | null;
+  confusion_matrix: number[][] | null;
+  prediction_collapse_detected: boolean | null;
+}
+
+export interface ExplainabilityLineageChild extends LineageChildBase {
+  run_type: 'explainability';
+  relationship_type: 'explains_checkpoint_from';
+  method: string | null;
+  methods: string[];
+  total_explanations: number;
+  success_count: number;
+  failed_count: number;
+}
+
+export interface TrainingLineageChildren {
+  training_run_id: string;
+  evaluation_count: number;
+  explainability_count: number;
+  total_count: number;
+  evaluations: EvaluationLineageChild[];
+  explainabilities: ExplainabilityLineageChild[];
+  limit: number;
+  truncated: boolean;
+}
+
 export type RunLineageConfidence =
   | 'explicit'
   | 'inferred_exact_checkpoint'

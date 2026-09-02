@@ -1,6 +1,22 @@
-import type { RunDashboard } from '../types/api';
-
 export type RunAnalysisLevel = 'success' | 'warning' | 'danger' | 'neutral';
+
+export interface RunReportData {
+  recall?: number | null;
+  recall_parasitized?: number | null;
+  sensitivity_parasitized?: number | null;
+  specificity?: number | null;
+  f2_score?: number | null;
+  f2_parasitized?: number | null;
+  auc?: number | null;
+  roc_auc?: number | null;
+  roc_auc_parasitized?: number | null;
+  tn?: number | null;
+  fp?: number | null;
+  fn?: number | null;
+  tp?: number | null;
+  confusion_matrix?: unknown;
+  prediction_collapse_detected?: boolean | null;
+}
 
 export interface RunAutoAnalysis {
   level: RunAnalysisLevel;
@@ -165,11 +181,11 @@ export function normalizeConfusionMatrix(source: unknown): RunConfusionCounts {
   };
 }
 
-export function resolveRunConfusion(run: RunDashboard): RunConfusionCounts {
+export function resolveRunConfusion(run: RunReportData): RunConfusionCounts {
   return normalizeConfusionMatrix(run);
 }
 
-export function resolveRunReportMetrics(run: RunDashboard): RunReportMetrics {
+export function resolveRunReportMetrics(run: RunReportData): RunReportMetrics {
   const counts = resolveRunConfusion(run);
   const derivedRecall = (
     counts.tp !== null
@@ -198,7 +214,7 @@ export function resolveRunReportMetrics(run: RunDashboard): RunReportMetrics {
   };
 }
 
-export function generateRunAutoAnalysis(run: RunDashboard): RunAutoAnalysis {
+export function generateRunAutoAnalysis(run: RunReportData): RunAutoAnalysis {
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
   const countValues = [counts.tn, counts.fp, counts.fn, counts.tp];

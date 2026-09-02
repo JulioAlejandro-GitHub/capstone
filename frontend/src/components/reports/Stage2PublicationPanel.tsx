@@ -27,6 +27,10 @@ export function Stage2PublicationPanel({
     setConfirm(null);
   };
   const publishable=Boolean(status?.eligible&&!status?.technical_blockers?.length);
+  if (loading && !status) return <section aria-label="Detalle de disponibilidad para Etapa 2"
+    className="stage2-publication-panel" id={id}>
+    <p role="status">Consultando disponibilidad para Etapa 2…</p>
+  </section>;
   return <section aria-label="Detalle de disponibilidad para Etapa 2"
     className="stage2-publication-panel" id={id}>
     <header>

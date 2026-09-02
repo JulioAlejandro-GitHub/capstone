@@ -33,6 +33,8 @@ import type {
   TrainingPromotionStatus,
   Stage2Availability,
   Stage2EnablementResult,
+  TrainingLineageChildren,
+  TrainingSummaryCollection,
   UploadedPrediction,
 } from '../types/api';
 import type {
@@ -263,6 +265,7 @@ type QueryValue = string | number | boolean | undefined;
 type RequestOptions = {
   init?: RequestInit;
   timeoutMs?: number;
+  signal?: AbortSignal;
 };
 type ArtifactUrlOptions = {
   artifactId?: string | null;
@@ -287,6 +290,9 @@ async function request<T>(
   });
 
   const controller = new AbortController();
+  const abortFromCaller = () => controller.abort();
+  if (options.signal?.aborted) controller.abort();
+  options.signal?.addEventListener('abort', abortFromCaller, { once: true });
   let timedOut = false;
   activeRequests.add(controller);
   const timeout = window.setTimeout(() => {
@@ -348,6 +354,7 @@ async function request<T>(
     throw error;
   } finally {
     window.clearTimeout(timeout);
+    options.signal?.removeEventListener('abort', abortFromCaller);
     activeRequests.delete(controller);
   }
 }
@@ -1010,6 +1017,40 @@ export const api = {
     );
   },
 
+  getTrainingSummaries({
+    datasource,
+    limit = 100,
+    signal,
+  }: {
+    datasource: string;
+    limit?: number;
+    signal?: AbortSignal;
+  }) {
+    return request<TrainingSummaryCollection>(
+      '/runs/training-summaries',
+      { datasource, limit },
+      { signal },
+    );
+  },
+
+  getTrainingLineageChildren({
+    trainingRunId,
+    datasource,
+    limit = 100,
+    signal,
+  }: {
+    trainingRunId: string;
+    datasource: string;
+    limit?: number;
+    signal?: AbortSignal;
+  }) {
+    return request<TrainingLineageChildren>(
+      `/runs/${encodeURIComponent(trainingRunId)}/lineage-children`,
+      { datasource, limit },
+      { signal },
+    );
+  },
+
   getTrainingPromotionStatus(datasource: string, trainingRunId: string) {
     return request<TrainingPromotionStatus>(
       `/api/training-runs/${trainingRunId}/promotion-status`,
@@ -1038,17 +1079,17 @@ export const api = {
     );
   },
 
-  getStage2Availability(datasource: string, trainingRunId: string) {
+  getStage2Availability(datasource: string, trainingRunId: string, signal?: AbortSignal) {
     return request<Stage2Availability>(
       `/api/training-runs/${trainingRunId}/stage2-availability`,
-      withDatasource(datasource), { timeoutMs: 30000 },
+      withDatasource(datasource), { timeoutMs: 30000, signal },
     );
   },
-  getStage2ReleaseStatus(datasource: string, trainingRunId: string) {
+  getStage2ReleaseStatus(datasource: string, trainingRunId: string, signal?: AbortSignal) {
     return request<Stage2Availability>(
       `/api/training-runs/${trainingRunId}/stage2-release-status`,
       withDatasource(datasource),
-      { timeoutMs: 30000 },
+      { timeoutMs: 30000, signal },
     );
   },
   getProductiveModelAvailability(datasource: string) {

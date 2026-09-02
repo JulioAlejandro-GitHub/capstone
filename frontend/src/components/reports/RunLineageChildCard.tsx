@@ -1,6 +1,8 @@
 import { StatusBadge } from '../StatusBadge';
 import type {
+  EvaluationLineageChild,
   EvaluationLineageRun,
+  ExplainabilityLineageChild,
   ExplainabilityLineageRun,
 } from '../../types/api';
 import { normalizeConfusionMatrix } from '../../utils/runReport';
@@ -13,12 +15,12 @@ import { RunProcessBadge } from './RunProcessBadge';
 type RunLineageChildCardProps =
   | {
     kind: 'evaluation';
-    run: EvaluationLineageRun | null;
+    run: EvaluationLineageRun | EvaluationLineageChild | null;
     onRunSelect: (runId: string) => void;
   }
   | {
     kind: 'explainability';
-    run: ExplainabilityLineageRun | null;
+    run: ExplainabilityLineageRun | ExplainabilityLineageChild | null;
     onRunSelect: (runId: string) => void;
   };
 

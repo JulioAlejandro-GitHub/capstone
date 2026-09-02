@@ -4,12 +4,13 @@ import test from 'node:test';
 
 const read=(path)=>readFileSync(new URL(`../src/${path}`,import.meta.url),'utf8');
 
-test('Etapa 2 aparece sólo en TRAIN y usa publicación persistente como fuente',()=>{
+test('Etapa 2 aparece sólo en TRAIN y Liberación usa el resumen persistente',()=>{
   const row=read('components/reports/RunSummaryRow.tsx');
   const child=read('components/reports/RunLineageChildCard.tsx');
   const api=read('services/api.ts');
   assert.match(row,/processKind === 'training'/);
   assert.match(row,/stage2-release-summary/);
+  assert.match(row,/releasePresentation\[run\.release_status\]/);
   assert.doesNotMatch(child,/Stage2AvailabilityAction|enableStage2/);
   assert.match(api,/stage2-release-status/);
   assert.match(api,/stage2-publications/);
@@ -22,7 +23,8 @@ test('Ver detalle controla un acordeón accesible con confirmaciones inline',()=
   const panel=read('components/reports/Stage2PublicationPanel.tsx');
   assert.match(row,/aria-expanded=\{stage2Expanded\}/);
   assert.match(row,/aria-controls=\{stage2ControlsId\}/);
-  assert.match(card,/setExpanded\(current=>!current\)/);
+  assert.match(card,/setStage2Expanded/);
+  assert.match(card,/onStage2Open/);
   assert.match(panel,/Confirmar publicación/);
   assert.match(panel,/Ya existe un modelo elegido para Etapa 2/);
   assert.match(panel,/Continuar y reemplazar/);
@@ -31,11 +33,13 @@ test('Ver detalle controla un acordeón accesible con confirmaciones inline',()=
   assert.doesNotMatch(panel,/checkpoint_path|artifact_path|best_model\\.keras/);
 });
 
-test('la tarjeta presenta estados disponible, productivo y condición faltante',()=>{
+test('la tarjeta presenta todos los estados persistidos y null explícito',()=>{
   const row=read('components/reports/RunSummaryRow.tsx');
   assert.match(row,/Disponible para publicar/);
   assert.match(row,/Productivo Etapa 2/);
-  assert.match(row,/missing_conditions/);
+  assert.match(row,/No disponible/);
+  assert.match(row,/Estado no disponible/);
+  assert.doesNotMatch(row,/missing_conditions|is_stage2_production/);
 });
 
 test('Despliegues identifica el modelo productivo Etapa 2 y preserva producción formal',()=>{
