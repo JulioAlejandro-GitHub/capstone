@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from functools import lru_cache
 
 from fastapi import HTTPException
@@ -9,6 +10,8 @@ from app.database_safety import validate_database_url
 
 
 DEFAULT_DATASOURCE = "malaria"
+READ_ONLY_STATEMENT_TIMEOUT_MS = 10_000
+READ_ONLY_LOCK_TIMEOUT_MS = 2_000
 
 
 def normalize_sqlalchemy_url(url: str) -> str:
@@ -60,6 +63,32 @@ def fetch_all(datasource: str | None, sql: str, params: dict | None = None):
 def fetch_one(datasource: str | None, sql: str, params: dict | None = None):
     with get_engine(resolve_datasource(datasource)).connect() as connection:
         return connection.execute(text(sql), params or {}).mappings().first()
+
+
+@contextmanager
+def read_only_transaction(datasource: str | None):
+    """Yield one bounded PostgreSQL transaction that cannot write."""
+    key = resolve_datasource(datasource)
+    with get_engine(key).connect() as connection:
+        transaction = connection.begin()
+        try:
+            connection.execute(text("SET TRANSACTION READ ONLY"))
+            connection.execute(
+                text(
+                    "SET LOCAL statement_timeout = "
+                    f"'{READ_ONLY_STATEMENT_TIMEOUT_MS}ms'"
+                )
+            )
+            connection.execute(
+                text(
+                    "SET LOCAL lock_timeout = "
+                    f"'{READ_ONLY_LOCK_TIMEOUT_MS}ms'"
+                )
+            )
+            yield connection
+        finally:
+            if transaction.is_active:
+                transaction.rollback()
 
 
 def check_connection(datasource: str | None = None) -> dict:

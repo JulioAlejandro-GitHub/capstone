@@ -3,9 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query
 
 from app.db import fetch_all, fetch_one
+from app.schemas.training_summaries import TrainingSummaryCollection
 from app.services.explainability import enrich_explainability_items
 from app.services.run_lineage import grouped_run_lineage_payload
 from app.services.serialization import row_to_dict, rows_to_list
+from app.services.training_summaries import list_training_summaries
 
 
 router = APIRouter(tags=["runs"])
@@ -418,6 +420,21 @@ def list_runs(
         {"limit": limit},
     )
     return {"items": rows_to_list(rows)}
+
+
+@router.get(
+    "/runs/training-summaries",
+    response_model=TrainingSummaryCollection,
+)
+@router.get(
+    "/api/runs/training-summaries",
+    response_model=TrainingSummaryCollection,
+)
+def get_training_summaries(
+    datasource: str | None = Query(default="malaria"),
+    limit: int = Query(default=100, ge=1, le=500),
+):
+    return list_training_summaries(datasource=datasource, limit=limit)
 
 
 @router.get("/runs/grouped-lineage")
