@@ -1,6 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 
@@ -32,6 +33,7 @@ EXACT_RESOLUTION = {
     "confidence": "inferred_exact_checkpoint",
     "resolution_method": "artifact_exact_checkpoint",
     "checkpoint_artifact_id": "33333333-3333-4333-8333-333333333333",
+    "model_version_id": "66666666-6666-4666-8666-666666666666",
 }
 
 
@@ -64,7 +66,7 @@ class BackfillRunLineageTests(unittest.TestCase):
             return_value=EXACT_RESOLUTION,
         ), patch.object(
             backfill_run_lineage,
-            "create_run_lineage_with_metadata",
+            "create_or_confirm_evaluation_training_lineage",
         ) as create:
             summary = backfill_run_lineage.backfill_run_lineage(
                 child_runs=[CHILD]
@@ -82,8 +84,11 @@ class BackfillRunLineageTests(unittest.TestCase):
             return_value=EXACT_RESOLUTION,
         ), patch.object(
             backfill_run_lineage,
-            "create_run_lineage_with_metadata",
-            return_value="44444444-4444-4444-8444-444444444444",
+            "create_or_confirm_evaluation_training_lineage",
+            return_value=SimpleNamespace(
+                lineage_id="44444444-4444-4444-8444-444444444444",
+                created=True,
+            ),
         ) as create:
             summary = backfill_run_lineage.backfill_run_lineage(
                 apply=True,
@@ -93,16 +98,20 @@ class BackfillRunLineageTests(unittest.TestCase):
         self.assertEqual(summary["created"], 1)
         create.assert_called_once()
         self.assertEqual(
-            create.call_args.kwargs["relationship_type"],
-            "evaluates_checkpoint_from",
+            create.call_args.kwargs["training_run_id"],
+            EXACT_RESOLUTION["training_run_id"],
         )
         self.assertEqual(
             create.call_args.kwargs["checkpoint_artifact_id"],
             EXACT_RESOLUTION["checkpoint_artifact_id"],
         )
-        self.assertIs(
-            create.call_args.kwargs["source_training_run"],
-            EXACT_RESOLUTION,
+        self.assertEqual(
+            create.call_args.kwargs["evaluation_run_id"],
+            CHILD["child_run_id"],
+        )
+        self.assertEqual(
+            create.call_args.kwargs["model_version_id"],
+            EXACT_RESOLUTION["model_version_id"],
         )
 
     def test_exact_ambiguity_is_never_replaced_by_heuristic(self):
@@ -120,7 +129,7 @@ class BackfillRunLineageTests(unittest.TestCase):
             "find_training_candidates_by_model",
         ) as heuristic, patch.object(
             backfill_run_lineage,
-            "create_run_lineage_with_metadata",
+            "create_or_confirm_evaluation_training_lineage",
         ) as create:
             summary = backfill_run_lineage.backfill_run_lineage(
                 apply=True,
@@ -165,6 +174,43 @@ class BackfillRunLineageTests(unittest.TestCase):
             "inferred_heuristic",
         )
         candidates.assert_called_once_with("densenet121")
+
+    def test_heuristic_evaluation_is_never_persisted(self):
+        unresolved = {"status": "unresolved", "confidence": "unknown"}
+        sole_candidate = {
+            "training_run_id": "11111111-1111-4111-8111-111111111111",
+            "model_name": "densenet121",
+        }
+        with patch.object(
+            backfill_run_lineage,
+            "resolve_training_run_from_checkpoint",
+            return_value=unresolved,
+        ), patch.object(
+            backfill_run_lineage,
+            "find_training_candidates_by_model",
+            return_value=[sole_candidate],
+        ), patch.object(
+            backfill_run_lineage,
+            "create_or_confirm_evaluation_training_lineage",
+        ) as strict_create, patch.object(
+            backfill_run_lineage,
+            "create_run_lineage_with_metadata",
+        ) as legacy_create:
+            summary = backfill_run_lineage.backfill_run_lineage(
+                apply=True,
+                allow_heuristic=True,
+                child_runs=[GENERIC_CHILD],
+            )
+
+        self.assertEqual(summary["planned"], 1)
+        self.assertEqual(summary["created"], 0)
+        self.assertEqual(summary["errors"], 1)
+        self.assertIn(
+            "heuristic apply is disabled",
+            summary["relationships"][0]["message"],
+        )
+        strict_create.assert_not_called()
+        legacy_create.assert_not_called()
 
     def test_heuristic_never_applies_to_immutable_or_foreign_path(self):
         unresolved = {"status": "unresolved", "confidence": "unknown"}

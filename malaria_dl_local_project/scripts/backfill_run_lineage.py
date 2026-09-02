@@ -18,6 +18,9 @@ from src.run_lineage import (  # noqa: E402
     create_run_lineage_with_metadata,
     resolve_training_run_from_checkpoint,
 )
+from src.malaria_dl.evaluation.evaluation_training_lineage_service import (  # noqa: E402
+    create_or_confirm_evaluation_training_lineage,
+)
 
 
 RELATIONSHIP_BY_RUN_TYPE = {
@@ -269,25 +272,49 @@ def backfill_run_lineage(*, apply=False, allow_heuristic=False, child_runs=None)
 
         if apply:
             try:
-                lineage_id = create_run_lineage_with_metadata(
-                    parent_run_id=parent_id,
-                    child_run_id=child_id,
-                    relationship_type=relationship_type,
-                    source_training_run=resolution,
-                    checkpoint_path=str(checkpoint_path),
-                    checkpoint_artifact_id=resolution.get(
-                        "checkpoint_artifact_id"
+                lineage_metadata = {
+                    "source": "scripts/backfill_run_lineage.py",
+                    "backfilled": True,
+                    "resolution_method": resolution.get(
+                        "resolution_method"
                     ),
-                    model_version_id=resolution.get("model_version_id"),
-                    confidence=confidence,
-                    metadata={
-                        "source": "scripts/backfill_run_lineage.py",
-                        "backfilled": True,
-                        "resolution_method": resolution.get(
-                            "resolution_method"
+                }
+                if run_type == "evaluation":
+                    if not resolution.get("model_version_id") or not resolution.get(
+                        "checkpoint_artifact_id"
+                    ):
+                        raise RuntimeError(
+                            "EVALUATE backfill requires exact model_version_id "
+                            "and checkpoint_artifact_id; heuristic apply is disabled"
+                        )
+                    lineage_result = (
+                        create_or_confirm_evaluation_training_lineage(
+                            training_run_id=parent_id,
+                            evaluation_run_id=child_id,
+                            model_version_id=resolution["model_version_id"],
+                            checkpoint_artifact_id=resolution[
+                                "checkpoint_artifact_id"
+                            ],
+                            checkpoint_path=str(checkpoint_path),
+                            confidence=confidence,
+                            metadata=lineage_metadata,
+                        )
+                    )
+                    lineage_id = str(lineage_result.lineage_id)
+                else:
+                    lineage_id = create_run_lineage_with_metadata(
+                        parent_run_id=parent_id,
+                        child_run_id=child_id,
+                        relationship_type=relationship_type,
+                        source_training_run=resolution,
+                        checkpoint_path=str(checkpoint_path),
+                        checkpoint_artifact_id=resolution.get(
+                            "checkpoint_artifact_id"
                         ),
-                    },
-                )
+                        model_version_id=resolution.get("model_version_id"),
+                        confidence=confidence,
+                        metadata=lineage_metadata,
+                    )
                 if lineage_id is None:
                     raise RuntimeError(
                         "create_run_lineage_with_metadata no devolvió un id"

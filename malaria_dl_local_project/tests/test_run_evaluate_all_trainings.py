@@ -33,6 +33,7 @@ class RunEvaluateAllTrainingsTests(unittest.TestCase):
             threshold="clinical",
         )
 
+        self.assertEqual(command[1:3], ["-m", "src.evaluate"])
         self.assertIn("--require-lineage", command)
         self.assertEqual(command[command.index("--model-version-id") + 1], run.model_version_id)
         self.assertEqual(

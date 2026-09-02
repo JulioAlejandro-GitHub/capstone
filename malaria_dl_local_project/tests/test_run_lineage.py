@@ -35,7 +35,7 @@ class RunLineagePersistenceTests(unittest.TestCase):
             result = run_lineage.create_run_lineage(
                 parent_run_id=PARENT_ID,
                 child_run_id=CHILD_ID,
-                relationship_type="evaluates_checkpoint_from",
+                relationship_type="derived_from",
                 checkpoint_path="outputs/model/runs/parent/best_model.keras",
                 confidence="explicit",
                 metadata={"source": "unit-test"},
@@ -57,12 +57,12 @@ class RunLineagePersistenceTests(unittest.TestCase):
             first = run_lineage.create_run_lineage(
                 PARENT_ID,
                 CHILD_ID,
-                "evaluates_checkpoint_from",
+                "derived_from",
             )
             second = run_lineage.create_run_lineage(
                 PARENT_ID,
                 CHILD_ID,
-                "evaluates_checkpoint_from",
+                "derived_from",
             )
 
         self.assertEqual(first, second)
@@ -158,7 +158,7 @@ class RunLineagePersistenceTests(unittest.TestCase):
             result = run_lineage.create_run_lineage_with_metadata(
                 parent_run_id=PARENT_ID,
                 child_run_id=CHILD_ID,
-                relationship_type="evaluates_checkpoint_from",
+                relationship_type="explains_checkpoint_from",
                 source_training_run=source_run,
                 checkpoint_path="outputs/custom_cnn/best_model.keras",
             )
@@ -166,6 +166,34 @@ class RunLineagePersistenceTests(unittest.TestCase):
         self.assertEqual(result, LINEAGE_ID)
         get_db.assert_called_once_with()
         self.assertEqual(connection.execute.call_count, 2)
+
+    def test_legacy_helpers_reject_evaluation_lineage_before_opening_db(self):
+        source_run = {
+            "training_run_id": PARENT_ID,
+            "confidence": "explicit",
+        }
+        with patch("src.run_lineage.get_connection") as get_db:
+            with self.assertRaisesRegex(
+                run_lineage.LineageResolutionError,
+                "strict create_or_confirm_evaluation_training_lineage contract",
+            ):
+                run_lineage.create_run_lineage(
+                    PARENT_ID,
+                    CHILD_ID,
+                    "evaluates_checkpoint_from",
+                )
+            with self.assertRaisesRegex(
+                run_lineage.LineageResolutionError,
+                "strict create_or_confirm_evaluation_training_lineage contract",
+            ):
+                run_lineage.create_run_lineage_with_metadata(
+                    parent_run_id=PARENT_ID,
+                    child_run_id=CHILD_ID,
+                    relationship_type="evaluates_checkpoint_from",
+                    source_training_run=source_run,
+                )
+
+        get_db.assert_not_called()
 
     def test_atomic_create_propagates_metadata_failure_for_transaction_rollback(self):
         context, connection = connection_context()

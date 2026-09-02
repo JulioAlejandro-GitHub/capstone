@@ -57,8 +57,9 @@ class EvaluateLineageTrackingTests(unittest.TestCase):
             "src.run_lineage.resolve_source_training_run",
             return_value=resolution,
         ) as resolve_mock, patch(
-            "src.run_lineage.create_run_lineage_with_metadata",
-            return_value="lineage-id",
+            "src.malaria_dl.evaluation.evaluation_training_lineage_service."
+            "create_or_confirm_evaluation_training_lineage",
+            return_value=SimpleNamespace(lineage_id="lineage-id", created=True),
         ) as create_mock, patch(
             "src.run_lineage.mark_lineage_unresolved"
         ) as unresolved_mock:
@@ -76,14 +77,13 @@ class EvaluateLineageTrackingTests(unittest.TestCase):
             model_name="custom_cnn",
         )
         create_mock.assert_called_once_with(
-            parent_run_id="training-run",
-            child_run_id="evaluation-run",
-            relationship_type="evaluates_checkpoint_from",
-            source_training_run=resolution,
-            checkpoint_path="outputs/custom_cnn/best_model.keras",
-            checkpoint_artifact_id="artifact-id",
+            training_run_id="training-run",
+            evaluation_run_id="evaluation-run",
             model_version_id="version-id",
+            checkpoint_artifact_id="artifact-id",
+            checkpoint_path="outputs/custom_cnn/best_model.keras",
             confidence="explicit",
+            metadata={"phase": "evaluation_started"},
         )
         unresolved_mock.assert_not_called()
 
@@ -103,8 +103,9 @@ class EvaluateLineageTrackingTests(unittest.TestCase):
             "src.run_lineage.resolve_source_training_run",
             return_value=resolution,
         ), patch(
-            "src.run_lineage.create_run_lineage_with_metadata",
-            return_value="lineage-id",
+            "src.malaria_dl.evaluation.evaluation_training_lineage_service."
+            "create_or_confirm_evaluation_training_lineage",
+            return_value=SimpleNamespace(lineage_id="lineage-id", created=True),
         ) as create_mock, patch(
             "src.run_lineage.mark_lineage_unresolved"
         ):
@@ -135,7 +136,8 @@ class EvaluateLineageTrackingTests(unittest.TestCase):
             "src.run_lineage.resolve_source_training_run",
             return_value=resolution,
         ), patch(
-            "src.run_lineage.create_run_lineage_with_metadata"
+            "src.malaria_dl.evaluation.evaluation_training_lineage_service."
+            "create_or_confirm_evaluation_training_lineage"
         ) as create_mock, patch(
             "src.run_lineage.mark_lineage_unresolved"
         ) as unresolved_mock, warnings.catch_warnings(record=True) as caught:
@@ -171,7 +173,8 @@ class EvaluateLineageTrackingTests(unittest.TestCase):
             "src.run_lineage.resolve_source_training_run",
             return_value=resolution,
         ), patch(
-            "src.run_lineage.create_run_lineage_with_metadata"
+            "src.malaria_dl.evaluation.evaluation_training_lineage_service."
+            "create_or_confirm_evaluation_training_lineage"
         ), patch(
             "src.run_lineage.mark_lineage_unresolved"
         ) as unresolved_mock:
@@ -213,7 +216,7 @@ class EvaluateLineageTrackingTests(unittest.TestCase):
                 run_context={"run_id": None},
             )
 
-    def test_operational_persistence_failure_is_best_effort_without_strict(self):
+    def test_operational_persistence_failure_is_always_fatal(self):
         args = SimpleNamespace(
             track_db=True,
             source_training_run_id=None,
@@ -228,22 +231,21 @@ class EvaluateLineageTrackingTests(unittest.TestCase):
             "src.run_lineage.resolve_source_training_run",
             return_value=resolution,
         ), patch(
-            "src.run_lineage.create_run_lineage_with_metadata",
+            "src.malaria_dl.evaluation.evaluation_training_lineage_service."
+            "create_or_confirm_evaluation_training_lineage",
             side_effect=RuntimeError("database temporarily unavailable"),
-        ), patch(
-            "src.run_lineage.mark_lineage_unresolved",
-        ) as mark, warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            result = evaluate.track_source_training_lineage(
-                args=args,
-                checkpoint=Path("model.keras"),
-                model_name="custom_cnn",
-                run_context={"run_id": "evaluation-run"},
-            )
+        ), patch("src.run_lineage.mark_lineage_unresolved") as mark:
+            with self.assertRaisesRegex(
+                RuntimeError, "database temporarily unavailable"
+            ):
+                evaluate.track_source_training_lineage(
+                    args=args,
+                    checkpoint=Path("model.keras"),
+                    model_name="custom_cnn",
+                    run_context={"run_id": "evaluation-run"},
+                )
 
-        self.assertEqual(result["status"], "unresolved")
-        mark.assert_called_once()
-        self.assertIn("No se pudo persistir", str(caught[0].message))
+        mark.assert_not_called()
 
     def test_explicit_lineage_validation_error_is_always_fatal(self):
         from src.run_lineage import LineageResolutionError

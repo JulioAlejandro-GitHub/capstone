@@ -595,7 +595,12 @@ def create_run_lineage(
     confidence: str = "explicit",
     metadata: dict | None = None,
 ) -> str | None:
-    """Crea una relación idempotente y devuelve su UUID."""
+    """Create a legacy non-EVALUATE relationship and return its UUID."""
+    if relationship_type == "evaluates_checkpoint_from":
+        raise LineageResolutionError(
+            "evaluates_checkpoint_from requires the strict "
+            "create_or_confirm_evaluation_training_lineage contract"
+        )
     params = _prepare_lineage_insert(
         parent_run_id=parent_run_id,
         child_run_id=child_run_id,
@@ -687,7 +692,12 @@ def create_run_lineage_with_metadata(
     confidence: str = "explicit",
     metadata: dict | None = None,
 ) -> str:
-    """Inserta relación y metadata del hijo dentro de una sola transacción."""
+    """Insert legacy non-EVALUATE lineage and child metadata atomically."""
+    if relationship_type == "evaluates_checkpoint_from":
+        raise LineageResolutionError(
+            "evaluates_checkpoint_from requires the strict "
+            "create_or_confirm_evaluation_training_lineage contract"
+        )
     params = _prepare_lineage_insert(
         parent_run_id=parent_run_id,
         child_run_id=child_run_id,

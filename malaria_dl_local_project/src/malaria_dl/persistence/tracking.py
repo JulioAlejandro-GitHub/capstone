@@ -1,6 +1,7 @@
 import os
 import platform
 import sys
+import traceback
 from pathlib import Path
 
 import numpy as np
@@ -684,6 +685,32 @@ def fail_tracking_run(context, error, script_name):
         error=error,
         script_name=script_name,
     )
+
+
+def fail_evaluation_tracking_run(context, error, script_name):
+    """Fail only a started EVALUATE and preserve either terminal state."""
+    if not context or not context.get("run_id"):
+        return None
+
+    from src.malaria_dl.evaluation.evaluation_finalization_service import (
+        fail_evaluation_run,
+    )
+
+    result = fail_evaluation_run(
+        context["run_id"],
+        summary={"status_detail": "evaluation failed"},
+    )
+    if result.final_status == "failed":
+        tracker = context["tracker"]
+        tracker.safe_track(
+            tracker.log_error,
+            run_id=context["run_id"],
+            error_type=type(error).__name__,
+            error_message=str(error),
+            stack_trace=traceback.format_exc(),
+            script_name=script_name,
+        )
+    return result
 
 
 def update_execution_tracking(

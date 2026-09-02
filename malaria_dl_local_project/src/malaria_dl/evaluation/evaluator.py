@@ -14,6 +14,9 @@ from src.config import (
 )
 from src.data import add_data_source_args, dataset_tracking_metadata, load_malaria_splits
 from src.metrics import collect_predictions, evaluate_binary_predictions
+from src.malaria_dl.evaluation.evaluation_terminal_service import (
+    finalize_evaluation_with_lineage,
+)
 from src.model_metadata import resolve_threshold_for_checkpoint, verify_checkpoint_metadata
 from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
 
@@ -101,10 +104,18 @@ def track_source_training_lineage(
 
     from src.run_lineage import (
         LineageResolutionError,
-        create_run_lineage_with_metadata,
         mark_lineage_unresolved,
         resolve_source_training_run,
     )
+    from src.malaria_dl.evaluation.evaluation_training_lineage_service import (
+        EVALUATION_RELATIONSHIP_TYPE,
+        create_or_confirm_evaluation_training_lineage,
+    )
+
+    if relationship_type != EVALUATION_RELATIONSHIP_TYPE:
+        raise ValueError(
+            "EVALUATE tracking requires evaluates_checkpoint_from"
+        )
 
     checkpoint_path = str(checkpoint)
 
@@ -159,24 +170,19 @@ def track_source_training_lineage(
             if getattr(args, "source_training_run_id", None)
             else "inferred_exact_checkpoint"
         )
-        try:
-            lineage_id = create_run_lineage_with_metadata(
-                parent_run_id=parent_run_id,
-                child_run_id=child_run_id,
-                relationship_type=relationship_type,
-                source_training_run=resolution,
-                checkpoint_path=checkpoint_path,
-                checkpoint_artifact_id=resolution.get("checkpoint_artifact_id"),
-                model_version_id=resolution.get("model_version_id"),
-                confidence=confidence,
-            )
-            if not lineage_id:
-                raise RuntimeError("la operación no devolvió lineage_id")
-        except Exception as exc:
-            return unresolved_or_raise(
-                f"No se pudo persistir el linaje de la evaluación: {exc}",
-                cause=exc,
-            )
+        lineage_result = create_or_confirm_evaluation_training_lineage(
+            training_run_id=parent_run_id,
+            evaluation_run_id=child_run_id,
+            model_version_id=resolution.get("model_version_id"),
+            checkpoint_artifact_id=resolution.get(
+                "checkpoint_artifact_id"
+            ),
+            checkpoint_path=checkpoint_path,
+            confidence=confidence,
+            metadata={"phase": "evaluation_started"},
+        )
+        resolution["lineage_id"] = str(lineage_result.lineage_id)
+        resolution["lineage_created"] = lineage_result.created
         return resolution
 
     warning = resolution.get("message") or (
@@ -272,9 +278,10 @@ def main():
             ),
         )
 
+    source_training_lineage = None
     try:
         if args.track_db:
-            track_source_training_lineage(
+            source_training_lineage = track_source_training_lineage(
                 args=args,
                 checkpoint=checkpoint,
                 model_name=tracked_model_name,
@@ -327,7 +334,6 @@ def main():
             from src.tracking_integration import (
                 args_to_parameters,
                 clinical_metrics_for_tracking,
-                finish_tracking_run,
                 log_metrics_and_reports,
                 log_output_artifacts,
                 log_predictions,
@@ -399,9 +405,19 @@ def main():
                 raw_model_score_meaning=mapping_metadata["raw_model_score_meaning"],
                 metadata={"status_detail": "evaluation completed"},
             )
-            finish_tracking_run(
-                run_context,
-                metadata={
+            finalize_evaluation_with_lineage(
+                training_run_id=resolved_version.source_training_run_id,
+                evaluation_run_id=run_context["run_id"],
+                model_version_id=resolved_version.model_version_id,
+                checkpoint_artifact_id=(
+                    resolved_version.checkpoint_artifact_id
+                ),
+                checkpoint_path=str(checkpoint),
+                confidence=(source_training_lineage or {}).get(
+                    "confidence", "inferred_model_version"
+                ),
+                lineage_metadata={"phase": "evaluation_terminal"},
+                summary={
                     "status_detail": "evaluation completed",
                     **(resolved_version.lineage_metadata() if resolved_version else {}),
                     "label_mapping_version": args.label_mapping,
@@ -414,9 +430,17 @@ def main():
             )
     except Exception as exc:
         if args.track_db and run_context:
-            from src.tracking_integration import fail_tracking_run
+            from src.tracking_integration import fail_evaluation_tracking_run
 
-            fail_tracking_run(run_context, exc, script_name="src.evaluate")
+            try:
+                fail_evaluation_tracking_run(
+                    run_context, exc, script_name="src.evaluate"
+                )
+            except Exception as failure_error:
+                exc.add_note(
+                    "Could not persist the EVALUATE failure state "
+                    f"({type(failure_error).__name__})"
+                )
         raise
 
 
