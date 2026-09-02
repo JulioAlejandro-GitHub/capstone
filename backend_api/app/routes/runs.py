@@ -3,8 +3,14 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query
 
 from app.db import fetch_all, fetch_one
+from app.schemas.lineage_children import TrainingLineageChildren
 from app.schemas.training_summaries import TrainingSummaryCollection
 from app.services.explainability import enrich_explainability_items
+from app.services.lineage_children import (
+    TrainingParentTypeError,
+    TrainingRunNotFoundError,
+    get_training_lineage_children,
+)
 from app.services.run_lineage import grouped_run_lineage_payload
 from app.services.serialization import row_to_dict, rows_to_list
 from app.services.training_summaries import list_training_summaries
@@ -435,6 +441,42 @@ def get_training_summaries(
     limit: int = Query(default=100, ge=1, le=500),
 ):
     return list_training_summaries(datasource=datasource, limit=limit)
+
+
+@router.get(
+    "/runs/{training_run_id}/lineage-children",
+    response_model=TrainingLineageChildren,
+    responses={
+        404: {"description": "Run no encontrado"},
+        409: {"description": "El run no es TRAIN"},
+    },
+)
+@router.get(
+    "/api/runs/{training_run_id}/lineage-children",
+    response_model=TrainingLineageChildren,
+    responses={
+        404: {"description": "Run no encontrado"},
+        409: {"description": "El run no es TRAIN"},
+    },
+)
+def get_lineage_children(
+    training_run_id: UUID,
+    datasource: str | None = Query(default="malaria"),
+    limit: int = Query(default=100, ge=1, le=500),
+):
+    try:
+        return get_training_lineage_children(
+            training_run_id=training_run_id,
+            datasource=datasource,
+            limit=limit,
+        )
+    except TrainingRunNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Run no encontrado.") from exc
+    except TrainingParentTypeError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail="El run solicitado existe, pero no es un TRAIN.",
+        ) from exc
 
 
 @router.get("/runs/grouped-lineage")
