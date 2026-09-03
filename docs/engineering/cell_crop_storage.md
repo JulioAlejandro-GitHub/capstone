@@ -5,8 +5,11 @@
 Root configurado:
 
 ```text
-STORAGE_ROOT=./var/storage
+STORAGE_ROOT=/app/var/storage
 ```
+
+En Docker este root corresponde al named volume `scientific_storage`; no es un
+path del host.
 
 Destino:
 

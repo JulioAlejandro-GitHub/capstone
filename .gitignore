@@ -39,11 +39,19 @@ backend_api/.venv/
 .env.*
 !.env.example
 !**/.env.example
-/var/storage/cell-crops
-/var/storage/microscopy-images
+
+# Runtime científico local (los 22 binarios ya rastreados se retiran en Storage B.4)
+/var/storage/microscopy-images/
+/var/storage/cell-crops/
+/var/storage/cell-explanations/
+/var/storage/model-explanations/
+/var/storage/.staging/
+/backend_api/var/storage/microscopy-images/
+/backend_api/var/storage/cell-crops/
+/backend_api/var/storage/cell-explanations/
+/backend_api/var/storage/model-explanations/
+/backend_api/var/storage/.staging/
+
 venv/
 docs/dump-malaria_experiments-202607290730.sql
 docs/dump-malaria_experiments-202607290730.sql
-/backend_api/var/storage/cell-crops
-/backend_api/var/storage/microscopy-images
-/backend_api/var/storage/cell-explanations

@@ -30,6 +30,10 @@ services:
       - .env
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}
+      STORAGE_PROVIDER: local
+      STORAGE_ROOT: /app/var/storage
+    volumes:
+      - scientific_storage:/app/var/storage
     depends_on:
       db:
         condition: service_healthy
@@ -47,3 +51,4 @@ services:
 
 volumes:
   postgres_data:
+  scientific_storage:

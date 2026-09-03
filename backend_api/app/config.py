@@ -40,6 +40,16 @@ def _float(
     return value
 
 
+def _required_absolute_path(name: str) -> Path:
+    raw_value = os.getenv(name)
+    if raw_value is None or not raw_value.strip():
+        raise ValueError(f"{name} es obligatorio y debe ser una ruta absoluta")
+    value = Path(raw_value.strip())
+    if not value.is_absolute():
+        raise ValueError(f"{name} debe ser una ruta absoluta")
+    return value
+
+
 def _origins(value: str) -> tuple[str, ...]:
     origins = tuple(item.strip().rstrip("/") for item in value.split(",") if item.strip())
     if any(item == "*" or urlparse(item).scheme not in {"http", "https"} for item in origins):
@@ -113,10 +123,7 @@ class Settings:
         pool_max = _int("DATABASE_POOL_MAX_SIZE", 5, 1)
         if pool_min > pool_max:
             raise ValueError("DATABASE_POOL_MIN_SIZE no puede superar DATABASE_POOL_MAX_SIZE")
-        project_root = Path(__file__).resolve().parents[2]
-        storage_root = Path(os.getenv("STORAGE_ROOT", "./var/storage")).expanduser()
-        if not storage_root.is_absolute():
-            storage_root = project_root / storage_root
+        storage_root = _required_absolute_path("STORAGE_ROOT")
         artifacts_root = Path(os.getenv("ARTIFACTS_ROOT", "./var/artifacts")).expanduser()
         isolation_mode = os.getenv("TEST_ISOLATION_MODE", "transaction").strip().lower()
         if isolation_mode not in {"transaction", "temporary_schema"}:

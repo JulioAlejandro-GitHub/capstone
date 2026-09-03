@@ -8,6 +8,10 @@ data
 **/outputs
 **/backups
 **/.env
+var/storage
+var/storage/**
+backend_api/var/storage
+backend_api/var/storage/**
 *.h5
 *.keras
 *.ckpt
