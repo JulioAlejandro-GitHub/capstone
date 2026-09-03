@@ -99,6 +99,7 @@ class ArtifactFileApiTests(unittest.TestCase):
             (artifacts.MALARIA_PROJECT_ROOT / "data").resolve(),
             (artifacts.CAPSTONE_ROOT / "data").resolve(),
             (artifacts.CAPSTONE_ROOT / "data" / "prediction_uploads").resolve(),
+            artifacts.ARTIFACTS_ROOT,
         }
         self.assertTrue(expected_roots.issubset(set(artifacts.ALLOWED_ARTIFACT_ROOTS)))
 

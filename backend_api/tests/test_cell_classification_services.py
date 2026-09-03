@@ -1546,6 +1546,47 @@ def test_verified_explanation_content_returns_bytes_not_reopened_path(
     assert metadata["heatmap_sha256"] == hashlib.sha256(payload).hexdigest()
 
 
+def test_heatmap_and_overlay_availability_are_verified_independently(
+    tmp_path: Path,
+):
+    storage = _storage(tmp_path)
+    heatmap_payload = _png("L")
+    overlay_payload = _png("RGB")
+    heatmap_key = "cell-explanations/a/b/c/gradcam_heatmap.png"
+    overlay_key = "cell-explanations/a/b/c/gradcam_overlay.png"
+    heatmap_path = storage.local.resolve(heatmap_key)
+    heatmap_path.parent.mkdir(parents=True)
+    heatmap_path.write_bytes(heatmap_payload)
+    explanation = {
+        "id": uuid4(),
+        "status": "generated",
+        "heatmap_storage_key": heatmap_key,
+        "heatmap_sha256": hashlib.sha256(heatmap_payload).hexdigest(),
+        "heatmap_file_size_bytes": len(heatmap_payload),
+        "overlay_storage_key": overlay_key,
+        "overlay_sha256": hashlib.sha256(overlay_payload).hexdigest(),
+        "overlay_file_size_bytes": len(overlay_payload),
+    }
+
+    class Repository:
+        def get_explanation(self, _explanation_id):
+            return explanation
+
+    service = CellClassificationService(
+        engine=_FakeEngine(),
+        repository_factory=lambda _connection: Repository(),
+        model_resolver=SimpleNamespace(),
+        explanation_storage=storage,
+    )
+
+    _, content = service.explanation_content(str(explanation["id"]), "heatmap")
+    assert content == heatmap_payload
+    with pytest.raises(CellClassificationError) as raised:
+        service.explanation_content(str(explanation["id"]), "overlay")
+    assert raised.value.status_code == 404
+    assert raised.value.code == "CONTENT_UNAVAILABLE"
+
+
 def test_reconciler_reports_empty_staging_directories(tmp_path: Path):
     script_path = (
         Path(__file__).resolve().parents[2]

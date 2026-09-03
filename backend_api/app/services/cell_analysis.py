@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import json
 import secrets
-import stat
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -24,9 +23,13 @@ from app.services.detectors.connected_components_v1 import (
     DetectorInputError,
     detect_path,
     profile_snapshot,
-    sha256_file,
 )
-from app.services.local_storage import LocalStorage, StorageError
+from app.services.local_storage import (
+    LocalStorage,
+    StorageChecksumMismatchError,
+    StorageError,
+    StorageSizeMismatchError,
+)
 
 
 class CellAnalysisError(ValueError):
@@ -305,8 +308,10 @@ class CellAnalysisService:
             self._start(detection_run_id, principal, request)
             crop_storage = self._crops()
             for current, image in enumerate(analysis["images"], 1):
-                source_path = self._local().resolve(
-                    image["storage_key"], must_exist=True
+                source_path = self._local().resolve_verified(
+                    image["storage_key"],
+                    expected_size_bytes=image["input_file_size_bytes"],
+                    expected_sha256=image["input_sha256"],
                 )
                 result = detect_path(
                     source_path,
@@ -315,6 +320,7 @@ class CellAnalysisService:
                     expected_height_px=image["input_height_px"],
                     expected_file_size_bytes=image["input_file_size_bytes"],
                     profile=profile,
+                    integrity_preverified=True,
                 )
                 crops_by_component = {
                     crop.component_index: crop for crop in result.crops
@@ -760,22 +766,23 @@ class CellAnalysisService:
             raise CellAnalysisError(404, "Detección celular inexistente.", "NOT_FOUND")
         return result
 
-    @staticmethod
-    def _verified_regular(path: Path, expected_size: int, expected_sha256: str) -> None:
-        info = path.lstat()
-        if stat.S_ISLNK(info.st_mode) or not stat.S_ISREG(info.st_mode):
-            raise CellAnalysisError(404, "Contenido no disponible.", "CONTENT_UNAVAILABLE")
-        if info.st_size != expected_size or sha256_file(path) != expected_sha256.strip():
-            raise CellAnalysisError(409, "El contenido no supera la verificación de integridad.", "CONTENT_INTEGRITY_MISMATCH")
-
     def crop_content(self, crop_id: str) -> tuple[dict, Path]:
         with self.engine.connect() as connection:
             crop = CellAnalysisRepository(connection).crop(crop_id)
         if not crop:
             raise CellAnalysisError(404, "Crop inexistente.", "NOT_FOUND")
         try:
-            path = self._crops().resolve(crop["relative_storage_key"], must_exist=True)
-            self._verified_regular(path, crop["file_size_bytes"], crop["sha256"])
+            path = self._crops().resolve_verified(
+                crop["relative_storage_key"],
+                expected_size_bytes=crop["file_size_bytes"],
+                expected_sha256=crop["sha256"],
+            )
+        except (StorageSizeMismatchError, StorageChecksumMismatchError) as exc:
+            raise CellAnalysisError(
+                409,
+                "El contenido no supera la verificación de integridad.",
+                "CONTENT_INTEGRITY_MISMATCH",
+            ) from exc
         except (StorageError, FileNotFoundError, OSError) as exc:
             raise CellAnalysisError(404, "Contenido no disponible.", "CONTENT_UNAVAILABLE") from exc
         return crop, path
@@ -801,11 +808,24 @@ class CellAnalysisService:
                 "La imagen original ya no coincide con el conjunto congelado.",
                 "SOURCE_METADATA_MISMATCH",
             )
-        try:
-            path = self._local().resolve(image["storage_key"], must_exist=True)
-            self._verified_regular(
-                path, image["input_file_size_bytes"], image["input_sha256"]
+        if image["mime_type"] not in {"image/jpeg", "image/png", "image/tiff"}:
+            raise CellAnalysisError(
+                409,
+                "El MIME de la imagen original no es compatible.",
+                "SOURCE_MIME_MISMATCH",
             )
+        try:
+            path = self._local().resolve_verified(
+                image["storage_key"],
+                expected_size_bytes=image["input_file_size_bytes"],
+                expected_sha256=image["input_sha256"],
+            )
+        except (StorageSizeMismatchError, StorageChecksumMismatchError) as exc:
+            raise CellAnalysisError(
+                409,
+                "La imagen original no supera la verificación de integridad.",
+                "CONTENT_INTEGRITY_MISMATCH",
+            ) from exc
         except (StorageError, FileNotFoundError, OSError) as exc:
             raise CellAnalysisError(
                 404, "Imagen original no disponible.", "CONTENT_UNAVAILABLE"

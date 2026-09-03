@@ -18,8 +18,9 @@ reproducible que localice regiones candidatas, genere crops identificables y
 permita revisión humana sin presentar sus resultados como clasificación o
 diagnóstico.
 
-El sistema es local: FastAPI, PostgreSQL y React/Vite sobre macOS, con artefactos
-en `var/storage`. No existe una transacción distribuida entre PostgreSQL y el
+El sistema es local: FastAPI, PostgreSQL y React/Vite sobre macOS, con contenido
+clínico bajo el contrato `STORAGE_ROOT=/app/var/storage`. No existe una
+transacción distribuida entre PostgreSQL y el
 filesystem ni se incorporarán workers, colas automáticas o storage remoto.
 
 ## Decisión
@@ -40,7 +41,8 @@ filesystem ni se incorporarán workers, colas automáticas o storage remoto.
    cajas se guardan como metadata en `original_image_pixels`, origen `top-left`
    y formato `xywh`; nunca se dibujan sobre el original.
 5. Los crops PNG se derivan de los píxeles originales, se validan en staging y
-   se promueven mediante `os.replace` dentro del mismo filesystem. PostgreSQL
+   se promueven create-only mediante hard link dentro del mismo filesystem.
+   PostgreSQL
    conserva solamente claves POSIX relativas, checksum, tamaño y dimensiones.
    La compensación y la reconciliación cubren la frontera no transaccional entre
    base de datos y storage.

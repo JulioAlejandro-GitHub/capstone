@@ -26,10 +26,7 @@ Staging:
 
 ```text
 .staging/cell-detection/
-  {detection_run_id}/
-  {microscopy_image_id}/
-  {cell_detection_id}/
-  crop.png
+  {uuid-impredecible}.crop.png
 ```
 
 PostgreSQL guarda únicamente la key POSIX relativa desde `STORAGE_ROOT`, por
@@ -90,8 +87,8 @@ de la máscara, luminancia o imagen suavizada.
 PostgreSQL y APFS no ofrecen una transacción común. La implementación usa:
 
 - staging privado antes de publicar;
-- `os.replace` para promoción atómica de cada archivo dentro del mismo
-  filesystem;
+- hard link create-only para promoción atómica dentro del mismo filesystem,
+  seguido de la eliminación del temporal;
 - destinos determinísticos y no sobrescribibles;
 - una transacción de metadata/eventos/auditoría;
 - lista explícita de archivos promovidos para compensación.
@@ -105,8 +102,9 @@ abruptamente entre operaciones puede quedar:
 - un crop huérfano sin fila;
 - excepcionalmente una fila cuyo archivo falta.
 
-Estos estados no se ocultan: el reconciliador los informa. `os.replace` no hace
-atómico el lote completo y la documentación no afirma lo contrario.
+Estos estados no se ocultan: el reconciliador los informa. La promoción de un
+archivo no hace atómico el lote completo y la documentación no afirma lo
+contrario.
 
 La transición del run a `failed` y su evento seguro se registra en una
 transacción de recuperación separada, después de intentar la compensación. No

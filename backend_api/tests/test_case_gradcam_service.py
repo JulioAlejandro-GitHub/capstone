@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest import mock
 from uuid import UUID
 
+import pytest
 from PIL import Image
 from starlette.requests import Request
 
@@ -14,6 +15,10 @@ if str(BACKEND_ROOT) not in sys.path:
 
 from app.security import Permission, Principal  # noqa: E402
 from app.services.case_gradcam import CaseGradCamService  # noqa: E402
+from app.services.model_explanation_storage import (  # noqa: E402
+    ModelExplanationStorage,
+    ModelExplanationStorageError,
+)
 
 
 def principal():
@@ -80,7 +85,12 @@ class StubCaseGradCamService(CaseGradCamService):
     def _persist_png(self, prediction_id, explanation_id, payload):
         assert prediction_id == "22222222-2222-2222-2222-222222222222"
         assert payload.startswith(b"\x89PNG")
-        return f"var/storage/model-explanations/{prediction_id}/{explanation_id}/gradcam_overlay.png", "c" * 64, len(payload)
+        return (
+            f"var/artifacts/model-explanations/{prediction_id}/{explanation_id}/gradcam_overlay.png",
+            "c" * 64,
+            len(payload),
+            self.image_path.parent / "generated.png",
+        )
 
 
 def _engine(final_row=None):
@@ -169,6 +179,32 @@ def test_endpoint_requires_shared_explain_permission_contract():
     source = (BACKEND_ROOT / "app/routes/explainability.py").read_text()
     assert "Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN" in source
     assert "/api/v1/explainability/cases/{explainability_id}/gradcam" in source
+
+
+def test_model_explanations_use_artifacts_root_and_separate_staging(tmp_path):
+    artifacts_root = tmp_path / "artifacts"
+    clinical_root = tmp_path / "clinical"
+    storage = ModelExplanationStorage(artifacts_root)
+    assert not artifacts_root.exists()
+    prediction_id = "22222222-2222-2222-2222-222222222222"
+    explanation_id = UUID("55555555-5555-5555-5555-555555555555")
+    payload = b"\x89PNG\r\n\x1a\nmodel-explanation"
+
+    stored = storage.persist(prediction_id, explanation_id, payload)
+
+    assert stored.path.is_relative_to(artifacts_root / "model-explanations")
+    assert not stored.path.is_relative_to(clinical_root)
+    assert not (clinical_root / ".staging").exists()
+    assert stored.sha256 == __import__("hashlib").sha256(payload).hexdigest()
+    with pytest.raises(ModelExplanationStorageError, match="no se sobrescribe"):
+        storage.persist(prediction_id, explanation_id, payload)
+
+
+def test_case_gradcam_source_has_no_clinical_storage_writer():
+    source = (BACKEND_ROOT / "app/services/case_gradcam.py").read_text()
+    assert "LocalStorage" not in source
+    assert "var/storage" not in source
+    assert "ModelExplanationStorage" in source
 
 
 def test_engine_supports_nested_keras_inbound_nodes_contract():

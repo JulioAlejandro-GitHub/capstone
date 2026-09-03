@@ -4,13 +4,20 @@ from pathlib import Path
 from PIL import Image
 
 from app.services.image_quality import _border_and_field, _entropy, _focus, _percentile, assess_image
+from app.services.local_storage import verify_regular_file
 from app.services.microscopy_analysis import manifest
 from app.services.quality_profiles import select_profile, snapshot
 
 
 class Storage:
     def __init__(self, path): self.path = path
-    def resolve(self, *_args, **_kwargs): return self.path
+    def resolve_verified(self, *_args, **kwargs):
+        verify_regular_file(
+            self.path,
+            expected_size_bytes=kwargs["expected_size_bytes"],
+            expected_sha256=kwargs["expected_sha256"],
+        )
+        return self.path
 
 
 def test_profile_selection_and_snapshot_are_versioned():

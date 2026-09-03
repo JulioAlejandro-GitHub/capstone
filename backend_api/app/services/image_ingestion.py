@@ -394,6 +394,7 @@ class ImageIngestionService:
         staged: list[tuple[StagedUpload, object, UploadFile]] = []
         final_paths: list[Path] = []
         request.state.storage_compensation = final_paths
+        request.state.storage_compensation_storage = storage
         try:
             for upload in sorted(selected, key=lambda item: (item.filename or "").casefold()):
                 item = await storage.stage(upload)
@@ -418,7 +419,10 @@ class ImageIngestionService:
                 if existing:
                     if existing["sha256"] != item.sha256:
                         raise ScientificError(409, "La ruta externa ya existe con contenido diferente.")
-                    item.path.unlink(missing_ok=True)
+                    storage.cleanup(
+                        [item.path],
+                        boundaries=(storage.staging / "uploads",),
+                    )
                     images.append(existing)
                     continue
                 duplicate = _row(connection, """
@@ -457,7 +461,12 @@ class ImageIngestionService:
                     "color": technical.color_space, "orientation": technical.orientation,
                     "batch": batch["id"], "captured_at": captured_at,
                 })
-                final = storage.promote(item.path, key)
+                final = storage.promote(
+                    item.path,
+                    key,
+                    expected_size_bytes=item.size,
+                    expected_sha256=item.sha256,
+                )
                 final_paths.append(final)
                 after = {
                     "image_id": str(image_id), "subject_id": str(subject["id"]),
@@ -505,4 +514,7 @@ class ImageIngestionService:
         except (StorageError, ImageValidationError) as exc:
             raise ScientificError(422, str(exc)) from exc
         finally:
-            LocalStorage.cleanup([item.path for item, _, _ in staged])
+            storage.cleanup(
+                [item.path for item, _, _ in staged],
+                boundaries=(storage.staging / "uploads",),
+            )

@@ -28,7 +28,9 @@ def storage(tmp_path: Path, monkeypatch):
     monkeypatch.setenv("MAX_UPLOAD_SIZE_BYTES", "1024")
     monkeypatch.setenv("UPLOAD_CHUNK_SIZE_BYTES", "7")
     reset_settings_cache()
-    yield LocalStorage(get_settings())
+    local = LocalStorage(get_settings())
+    local.ensure_writable_layout()
+    yield local
     reset_settings_cache()
 
 
@@ -66,10 +68,23 @@ def test_streaming_sha_path_containment_and_no_overwrite(storage):
     ids = [uuid4() for _ in range(4)]
     key = storage.build_key(*ids, staged.sha256, "png")
     assert not key.startswith("/") and ".." not in key
-    final = storage.promote(staged.path, key)
+    final = storage.promote(
+        staged.path,
+        key,
+        expected_size_bytes=staged.size,
+        expected_sha256=staged.sha256,
+    )
     assert final.read_bytes() == payload
+    second = asyncio.run(
+        storage.stage(UploadFile(filename="patient.png", file=BytesIO(payload)))
+    )
     with pytest.raises(StorageError, match="sobrescribe"):
-        storage.promote(storage.staging / "missing", key)
+        storage.promote(
+            second.path,
+            key,
+            expected_size_bytes=second.size,
+            expected_sha256=second.sha256,
+        )
     with pytest.raises(StorageError):
         storage.resolve("../escape")
     with pytest.raises(StorageError):

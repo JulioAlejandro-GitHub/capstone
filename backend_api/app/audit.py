@@ -125,8 +125,12 @@ def transactional_permission(permission: Permission) -> Callable:
                 finally:
                     audit_transaction_connection.reset(token)
         except Exception:
-            from app.services.local_storage import LocalStorage
-            LocalStorage.cleanup(getattr(request.state, "storage_compensation", []))
+            storage = getattr(request.state, "storage_compensation_storage", None)
+            if storage is not None:
+                storage.cleanup(
+                    getattr(request.state, "storage_compensation", []),
+                    boundaries=(storage.root / "microscopy-images",),
+                )
             raise
 
     return dependency

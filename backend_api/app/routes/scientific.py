@@ -356,8 +356,16 @@ def image_content(
     image = execute(lambda: service.get("image", str(image_id)))
     if image["status"] == "archived":
         raise HTTPException(404, "Imagen archivada.")
+    if image["status"] != "available":
+        raise HTTPException(404, "Contenido no disponible.")
+    if image["mime_type"] not in {"image/jpeg", "image/png", "image/tiff"}:
+        raise HTTPException(404, "Contenido no disponible.")
     try:
-        path = LocalStorage().resolve(image["storage_key"], must_exist=True)
+        path = LocalStorage().resolve_verified(
+            image["storage_key"],
+            expected_size_bytes=image["file_size_bytes"],
+            expected_sha256=image["sha256"],
+        )
     except (StorageError, OSError) as exc:
         raise HTTPException(404, "Contenido no disponible.") from exc
     return FileResponse(

@@ -5,9 +5,7 @@ import io
 import json
 import logging
 import math
-import os
 import secrets
-import stat
 import sys
 import time
 from collections.abc import Callable, Mapping, Sequence
@@ -29,13 +27,20 @@ from app.services.cell_explanation_storage import (
     CellExplanationStorage,
     StagedCellExplanation,
 )
-from app.services.local_storage import LocalStorage, StorageError
+from app.services.cell_crop_storage import CellCropStorage
+from app.services.local_storage import (
+    LocalStorage,
+    StorageChecksumMismatchError,
+    StorageContentMissingError,
+    StorageError,
+    StorageFileTypeError,
+    StorageSizeMismatchError,
+)
 from app.services.productive_model import (
     EXPECTED_LABEL_MAPPING,
     ProductiveModelError,
     ProductiveModelResolver,
     ResolvedProductiveModel,
-    sha256_file,
 )
 
 
@@ -633,6 +638,9 @@ class CellClassificationService:
     def _explanations(self) -> CellExplanationStorage:
         return self.explanation_storage or CellExplanationStorage(self._local())
 
+    def _crops(self) -> CellCropStorage:
+        return CellCropStorage(self._local())
+
     def _repository(self, connection: Any) -> Any:
         if self.repository_factory is not None:
             return self.repository_factory(connection)
@@ -957,33 +965,26 @@ class CellClassificationService:
                 checked.append(row)
                 continue
             try:
-                path = self._local().resolve(
-                    str(row["crop_storage_key"]), must_exist=True
+                path = self._crops().resolve_verified(
+                    str(row["crop_storage_key"]),
+                    expected_size_bytes=file_size,
+                    expected_sha256=checksum,
                 )
-                info = path.lstat()
-                if stat.S_ISLNK(info.st_mode) or not stat.S_ISREG(info.st_mode):
-                    row["_exclusion_reason"] = "CROP_NOT_REGULAR"
-                elif (
-                    info.st_size != file_size
-                ):
-                    row["_exclusion_reason"] = "CROP_SIZE_MISMATCH"
-                elif sha256_file(path) != str(row.get("crop_sha256") or ""):
-                    row["_exclusion_reason"] = "CROP_CHECKSUM_MISMATCH"
-                else:
-                    try:
-                        with Image.open(path) as image:
-                            if image.size != (
-                                width,
-                                height,
-                            ):
-                                row["_exclusion_reason"] = (
-                                    "CROP_DIMENSIONS_MISMATCH"
-                                )
-                            image.verify()
-                    except (UnidentifiedImageError, OSError, SyntaxError):
-                        row["_exclusion_reason"] = "CROP_DECODE_FAILED"
-            except FileNotFoundError:
+                try:
+                    with Image.open(path) as image:
+                        if image.size != (width, height):
+                            row["_exclusion_reason"] = "CROP_DIMENSIONS_MISMATCH"
+                        image.verify()
+                except (UnidentifiedImageError, OSError, SyntaxError):
+                    row["_exclusion_reason"] = "CROP_DECODE_FAILED"
+            except StorageContentMissingError:
                 row["_exclusion_reason"] = "CROP_FILE_MISSING"
+            except StorageFileTypeError:
+                row["_exclusion_reason"] = "CROP_NOT_REGULAR"
+            except StorageSizeMismatchError:
+                row["_exclusion_reason"] = "CROP_SIZE_MISMATCH"
+            except StorageChecksumMismatchError:
+                row["_exclusion_reason"] = "CROP_CHECKSUM_MISMATCH"
             except (OSError, StorageError):
                 row["_exclusion_reason"] = "CROP_STORAGE_UNSAFE"
             checked.append(row)
@@ -1569,43 +1570,17 @@ class CellClassificationService:
             ) from exc
 
     def _verified_crop_bytes(self, item: Mapping[str, Any]) -> bytes:
-        """Read and verify one crop from the same no-follow file descriptor."""
+        """Read one crop after canonical confinement and integrity verification."""
 
-        file_descriptor: int | None = None
         try:
-            path = self._local().resolve(
-                str(item["_crop_storage_key"]), must_exist=True
+            path = self._crops().resolve_verified(
+                str(item["_crop_storage_key"]),
+                expected_size_bytes=item["crop_file_size_bytes"],
+                expected_sha256=str(item["crop_sha256"]),
             )
-            flags = os.O_RDONLY
-            if hasattr(os, "O_NOFOLLOW"):
-                flags |= os.O_NOFOLLOW
-            file_descriptor = os.open(path, flags)
-            before = os.fstat(file_descriptor)
-            if not stat.S_ISREG(before.st_mode):
-                raise StorageError("Crop no regular.")
-            expected_size = item.get("crop_file_size_bytes")
-            if expected_size is None or before.st_size != int(expected_size):
-                raise StorageError("Tamaño de crop no coincide.")
-            chunks: list[bytes] = []
-            remaining = int(expected_size) + 1
-            while remaining > 0:
-                chunk = os.read(file_descriptor, min(1024 * 1024, remaining))
-                if not chunk:
-                    break
-                chunks.append(chunk)
-                remaining -= len(chunk)
-            data = b"".join(chunks)
-            after = os.fstat(file_descriptor)
-            if (
-                len(data) != int(expected_size)
-                or before.st_dev != after.st_dev
-                or before.st_ino != after.st_ino
-                or before.st_size != after.st_size
-                or before.st_mtime_ns != after.st_mtime_ns
-            ):
-                raise StorageError("El crop cambió durante la lectura.")
-            if hashlib.sha256(data).hexdigest() != str(item["crop_sha256"]):
-                raise StorageError("Checksum de crop no coincide.")
+            data = path.read_bytes()
+            if len(data) != int(item["crop_file_size_bytes"]):
+                raise StorageError("El crop cambió después de verificarse.")
             try:
                 with Image.open(io.BytesIO(data)) as image:
                     if image.size != (
@@ -1623,9 +1598,6 @@ class CellClassificationService:
                 "Un crop no supera la verificación de integridad.",
                 "CROP_INTEGRITY_ERROR",
             ) from exc
-        finally:
-            if file_descriptor is not None:
-                os.close(file_descriptor)
 
     def _preprocess(
         self,
@@ -2730,45 +2702,19 @@ class CellClassificationService:
         key = explanation[f"{kind}_storage_key"]
         expected_sha = explanation[f"{kind}_sha256"]
         expected_size = explanation[f"{kind}_file_size_bytes"]
-        file_descriptor: int | None = None
         try:
-            path = self._explanations().resolve(key, must_exist=True)
-            flags = os.O_RDONLY
-            if hasattr(os, "O_NOFOLLOW"):
-                flags |= os.O_NOFOLLOW
-            file_descriptor = os.open(path, flags)
-            before = os.fstat(file_descriptor)
-            if (
-                not stat.S_ISREG(before.st_mode)
-                or before.st_size != int(expected_size)
-            ):
-                raise StorageError("Integridad inválida.")
-            chunks: list[bytes] = []
-            remaining = int(expected_size) + 1
-            while remaining > 0:
-                chunk = os.read(file_descriptor, min(1024 * 1024, remaining))
-                if not chunk:
-                    break
-                chunks.append(chunk)
-                remaining -= len(chunk)
-            content = b"".join(chunks)
-            after = os.fstat(file_descriptor)
-            if (
-                len(content) != int(expected_size)
-                or before.st_dev != after.st_dev
-                or before.st_ino != after.st_ino
-                or before.st_size != after.st_size
-                or before.st_mtime_ns != after.st_mtime_ns
-                or hashlib.sha256(content).hexdigest() != str(expected_sha)
-            ):
-                raise StorageError("Integridad inválida.")
+            path = self._explanations().resolve_verified(
+                key,
+                expected_size_bytes=expected_size,
+                expected_sha256=expected_sha,
+            )
+            content = path.read_bytes()
+            if len(content) != int(expected_size):
+                raise StorageError("El artefacto cambió después de verificarse.")
         except (FileNotFoundError, OSError, StorageError) as exc:
             raise CellClassificationError(
                 404, "Artefacto de explicación no disponible.", "CONTENT_UNAVAILABLE"
             ) from exc
-        finally:
-            if file_descriptor is not None:
-                os.close(file_descriptor)
         return self._public_record(dict(explanation)), content
 
     @staticmethod

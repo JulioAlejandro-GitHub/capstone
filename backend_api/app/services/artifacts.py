@@ -20,11 +20,20 @@ CAPSTONE_ROOT = (
     if _CONFIGURED_ML_ROOT
     else _SOURCE_CAPSTONE_ROOT
 )
+_CONFIGURED_ARTIFACTS_ROOT = os.getenv("ARTIFACTS_ROOT", "./var/artifacts").strip()
+_RAW_ARTIFACTS_ROOT = Path(_CONFIGURED_ARTIFACTS_ROOT).expanduser()
+ARTIFACTS_ROOT = (
+    _RAW_ARTIFACTS_ROOT.resolve()
+    if _RAW_ARTIFACTS_ROOT.is_absolute()
+    else (CAPSTONE_ROOT / _RAW_ARTIFACTS_ROOT).resolve()
+)
 ALLOWED_ARTIFACT_ROOTS = (
     (MALARIA_PROJECT_ROOT / "outputs").resolve(),
     (MALARIA_PROJECT_ROOT / "data").resolve(),
     (CAPSTONE_ROOT / "data").resolve(),
     (CAPSTONE_ROOT / "data" / "prediction_uploads").resolve(),
+    ARTIFACTS_ROOT,
+    # Read-only compatibility for references persisted before Storage B.2B.1.
     (CAPSTONE_ROOT / "var" / "storage" / "model-explanations").resolve(),
 )
 

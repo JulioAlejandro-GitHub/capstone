@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import io
 import math
 from collections import deque
@@ -125,14 +124,6 @@ def _validate_profile(profile: dict) -> None:
         raise ValueError("Minimum circularity must be in [0, 1]")
     if not 0 <= float(profile["minimum_solidity"]) <= 1:
         raise ValueError("Minimum solidity must be in [0, 1]")
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        while chunk := stream.read(1024 * 1024):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _otsu_threshold(histogram: list[int], total: int) -> int:
@@ -416,6 +407,7 @@ def detect_path(
     expected_height_px: int,
     expected_file_size_bytes: int,
     profile: dict | None = None,
+    integrity_preverified: bool = False,
 ) -> ImageDetectionResult:
     """Verify a frozen source, then detect on its EXIF-oriented full raster."""
 
@@ -423,10 +415,32 @@ def detect_path(
         info = path.stat()
         if not path.is_file() or path.is_symlink():
             raise DetectorInputError("SOURCE_NOT_REGULAR", "La imagen original no es regular.")
-        if info.st_size != expected_file_size_bytes:
-            raise DetectorInputError("FILE_SIZE_MISMATCH", "El tamaño del original cambió.")
-        if sha256_file(path) != expected_sha256.strip().lower():
-            raise DetectorInputError("CHECKSUM_MISMATCH", "El checksum del original cambió.")
+        if not integrity_preverified:
+            from app.services.local_storage import (
+                StorageChecksumMismatchError,
+                StorageError,
+                StorageSizeMismatchError,
+                verify_regular_file,
+            )
+
+            try:
+                verify_regular_file(
+                    path,
+                    expected_size_bytes=expected_file_size_bytes,
+                    expected_sha256=expected_sha256,
+                )
+            except StorageSizeMismatchError as exc:
+                raise DetectorInputError(
+                    "FILE_SIZE_MISMATCH", "El tamaño del original cambió."
+                ) from exc
+            except StorageChecksumMismatchError as exc:
+                raise DetectorInputError(
+                    "CHECKSUM_MISMATCH", "El checksum del original cambió."
+                ) from exc
+            except StorageError as exc:
+                raise DetectorInputError(
+                    "SOURCE_NOT_REGULAR", "La imagen original no es regular."
+                ) from exc
         with Image.open(path) as source:
             if source.size != (expected_width_px, expected_height_px):
                 raise DetectorInputError("DIMENSIONS_MISMATCH", "Las dimensiones del original cambiaron.")

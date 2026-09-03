@@ -16,7 +16,8 @@ cell-explanations/{analysis_run_id}/{classification_run_id}/
 ```
 
 Se usa staging bajo `.staging/cell-explanations`, promoción create-only y
-checksum independiente. El crop no se modifica.
+checksum independiente. Tanto heatmap como overlay delegan resolución,
+integridad, promoción y cleanup en `LocalStorage`. El crop no se modifica.
 
 La allowlist de persistencia admite únicamente claves relativas con UUID bajo
 `cell-explanations/` y los nombres exactos `gradcam_heatmap.png` y
@@ -33,3 +34,9 @@ Una explicación `generated` equivalente se reutiliza.
 `scripts/storage/reconcile_cell_explanations.py` es dry-run por defecto y reporta registros sin
 archivo, huérfanos, checksum/tamaño distintos, paths inseguros, symlinks y
 staging residual.
+
+Las explicaciones de casos de modelos (`model-explanations`) son artefactos no
+clínicos distintos de estas explicaciones celulares. Desde Storage B.2B.1 sus
+nuevas escrituras usan `ARTIFACTS_ROOT/model-explanations` y un staging propio;
+no comparten `STORAGE_ROOT` ni `.staging` clínico. Las referencias históricas
+siguen siendo legibles sin migrar archivos o filas.

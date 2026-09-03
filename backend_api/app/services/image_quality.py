@@ -1,13 +1,17 @@
 from __future__ import annotations
 
-import hashlib
 import math
 import statistics
 
 from PIL import Image, ImageOps
 
 from app.services.image_validation import validate_image
-from app.services.local_storage import LocalStorage, StorageError
+from app.services.local_storage import (
+    LocalStorage,
+    StorageChecksumMismatchError,
+    StorageError,
+    StorageSizeMismatchError,
+)
 
 
 def _percentile(values: list[float], fraction: float) -> float:
@@ -87,15 +91,11 @@ def assess_image(image: dict, profile: dict, storage: LocalStorage | None = None
             "analyzed_width_px": 1, "analyzed_height_px": 1, "analysis_scale": 1.0,
             "integrity_verified": False, "checksum_verified": False, "decoded_successfully": False}
     try:
-        path = storage.resolve(image["storage_key"], must_exist=True)
-        info = path.stat()
-        if info.st_size != int(image["file_size_bytes"]):
-            raise ValueError("FILE_SIZE_MISMATCH")
-        digest = hashlib.sha256()
-        with path.open("rb") as stream:
-            while chunk := stream.read(1024 * 1024): digest.update(chunk)
-        if digest.hexdigest() != image["sha256"].strip():
-            raise ValueError("CHECKSUM_MISMATCH")
+        path = storage.resolve_verified(
+            image["storage_key"],
+            expected_size_bytes=image["file_size_bytes"],
+            expected_sha256=image["sha256"],
+        )
         base["checksum_verified"] = True
         metadata = validate_image(path)
         if (metadata.width_px, metadata.height_px) != (image["width_px"], image["height_px"]):
@@ -128,6 +128,16 @@ def assess_image(image: dict, profile: dict, storage: LocalStorage | None = None
         return {**metrics, "assessment_status": "completed",
                 "quality_verdict": "fail" if failures else "warning" if warnings else "pass",
                 "warning_codes": warnings, "failure_codes": failures, "error_code": None, "error_message": None}
+    except StorageSizeMismatchError as exc:
+        code = "FILE_SIZE_MISMATCH"
+        return {**base, "assessment_status": "completed", "quality_verdict": "fail",
+                "warning_codes": [], "failure_codes": [code],
+                "metrics_json": {}, "error_code": code, "error_message": "La integridad técnica no pudo verificarse."}
+    except StorageChecksumMismatchError as exc:
+        code = "CHECKSUM_MISMATCH"
+        return {**base, "assessment_status": "completed", "quality_verdict": "fail",
+                "warning_codes": [], "failure_codes": [code],
+                "metrics_json": {}, "error_code": code, "error_message": "La integridad técnica no pudo verificarse."}
     except (StorageError, FileNotFoundError, OSError, ValueError) as exc:
         code = str(exc) if str(exc).isupper() else "INTEGRITY_CHECK_FAILED"
         return {**base, "assessment_status": "completed", "quality_verdict": "fail",

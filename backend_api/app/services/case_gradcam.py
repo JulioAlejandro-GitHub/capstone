@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import hashlib
 import json
-import os
 import sys
 import threading
 from collections.abc import Callable, Mapping
@@ -19,14 +17,13 @@ from app.audit import record_event
 from app.db import get_primary_engine
 from app.security import Principal
 from app.services.artifacts import (
-    CAPSTONE_ROOT,
     MALARIA_PROJECT_ROOT,
     resolve_artifact_path,
     resolve_artifact_reference,
 )
 from app.services.cell_explanation_storage import CellExplanationStorage
 from app.services.explainability import enrich_explainability_case
-from app.services.local_storage import LocalStorage
+from app.services.model_explanation_storage import ModelExplanationStorage
 from app.services.productive_model import sha256_file
 
 
@@ -67,7 +64,7 @@ class CaseGradCamService:
         self,
         engine: Engine | None = None,
         *,
-        storage_factory: Callable[[], LocalStorage] = LocalStorage,
+        storage_factory: Callable[[], ModelExplanationStorage] = ModelExplanationStorage,
         model_loader: Callable[[Path], Any] | None = None,
         gradcam: Callable[..., Any] | None = None,
     ):
@@ -174,21 +171,17 @@ class CaseGradCamService:
             loader = self.model_loader
         return loader, preprocess_numpy_image, self.gradcam or compute_gradcam_artifacts
 
-    def _persist_png(self, prediction_id: str, explanation_id: UUID, payload: bytes) -> tuple[str, str, int]:
+    def _persist_png(
+        self, prediction_id: str, explanation_id: UUID, payload: bytes
+    ) -> tuple[str, str, int, Path]:
         storage = self.storage_factory()
-        key = f"model-explanations/{prediction_id}/{explanation_id}/gradcam_overlay.png"
-        staged = storage.staging / f"{explanation_id}.gradcam.png"
-        try:
-            with staged.open("xb") as output:
-                os.chmod(staged, 0o600)
-                output.write(payload)
-                output.flush()
-                os.fsync(output.fileno())
-            storage.promote(staged, key)
-        except Exception:
-            staged.unlink(missing_ok=True)
-            raise
-        return f"var/storage/{key}", hashlib.sha256(payload).hexdigest(), len(payload)
+        artifact = storage.persist(prediction_id, explanation_id, payload)
+        return (
+            artifact.reference,
+            artifact.sha256,
+            artifact.file_size_bytes,
+            artifact.path,
+        )
 
     def generate(self, source_explanation_id: str, principal: Principal, request: Request) -> dict[str, Any]:
         target = self._target(source_explanation_id)
@@ -224,8 +217,9 @@ class CaseGradCamService:
                     invert_scalar_output=predicted_index == 0, preprocessing_mode=preprocessing,
                 )
                 png = CellExplanationStorage.encode_overlay_png(overlay)
-                output_path, checksum, size = self._persist_png(prediction_id, explanation_id, png)
-                promoted_path = CAPSTONE_ROOT / output_path
+                output_path, checksum, size, promoted_path = self._persist_png(
+                    prediction_id, explanation_id, png
+                )
                 explanation_parameters = {
                     "method": "gradcam", "method_version": METHOD_VERSION,
                     "execution_mode": "on_demand", "model_version_id": model_version_id,
@@ -276,7 +270,7 @@ class CaseGradCamService:
                 raise
             except Exception as exc:
                 if promoted_path is not None:
-                    promoted_path.unlink(missing_ok=True)
+                    self.storage_factory().cleanup_created(promoted_path)
                 with self.engine.begin() as connection:
                     connection.execute(text("""
                         INSERT INTO explainability_results(
