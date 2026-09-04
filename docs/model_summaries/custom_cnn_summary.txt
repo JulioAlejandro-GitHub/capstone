@@ -1,0 +1,29 @@
+====================================================================================================
+CUSTOM CNN  ·  custom_cnn  ·  input 200x200x3  ·  TF 2.17.1 / Keras 3.14.1
+====================================================================================================
+Capa (name)               Tipo                    Output shape                Params     Entren.
+----------------------------------------------------------------------------------------------------
+conv2d                    Conv2D                  (None, 200, 200, 32)           864         864
+batch_normalization       BatchNormalization      (None, 200, 200, 32)           128          64
+activation                Activation              (None, 200, 200, 32)             0           0
+max_pooling2d             MaxPooling2D            (None, 100, 100, 32)             0           0
+conv2d_1                  Conv2D                  (None, 100, 100, 64)        18,432      18,432
+batch_normalization_1     BatchNormalization      (None, 100, 100, 64)           256         128
+activation_1              Activation              (None, 100, 100, 64)             0           0
+max_pooling2d_1           MaxPooling2D            (None, 50, 50, 64)               0           0
+conv2d_2                  Conv2D                  (None, 50, 50, 128)         73,728      73,728
+batch_normalization_2     BatchNormalization      (None, 50, 50, 128)            512         256
+activation_2              Activation              (None, 50, 50, 128)              0           0
+max_pooling2d_2           MaxPooling2D            (None, 25, 25, 128)              0           0
+conv2d_3                  Conv2D                  (None, 25, 25, 256)        294,912     294,912
+batch_normalization_3     BatchNormalization      (None, 25, 25, 256)          1,024         512
+activation_3              Activation              (None, 25, 25, 256)              0           0
+global_average_pooling2d  GlobalAveragePooling2D  (None, 256)                      0           0
+dense                     Dense                   (None, 128)                 32,896      32,896
+dropout                   Dropout                 (None, 128)                      0           0
+dense_1                   Dense                   (None, 1)                      129         129
+----------------------------------------------------------------------------------------------------
+Total params: 422,881   Trainable: 421,921   Non-trainable: 960
+
+Conv 3x3, padding=same, use_bias=False, kernel_regularizer=L2(1e-4). Init glorot_uniform (sin pesos preentrenados).
+Non-trainable (960) = moving_mean+moving_variance de las 4 BatchNormalization.

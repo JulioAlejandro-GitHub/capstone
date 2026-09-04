@@ -1,0 +1,33 @@
+==========================================================================================================
+DENSENET121 TRANSFER  ·  tl_densenet121_malaria  ·  FASE BASE (backbone congelado, training=False)
+==========================================================================================================
+Capa (name)                      Tipo                    Output shape               Params     Entren.
+----------------------------------------------------------------------------------------------------------
+image                            InputLayer              (None, 200, 200, 3)             0           0
+densenet_imagenet_normalization  Normalization           (None, 200, 200, 3)             0           0
+densenet121                      Functional              (None, 6, 6, 1024)      7,037,504           0
+global_avg_pool                  GlobalAveragePooling2D  (None, 1024)                    0           0
+dropout_50                       Dropout                 (None, 1024)                    0           0
+binary_output                    Dense                   (None, 1)                   1,025       1,025
+----------------------------------------------------------------------------------------------------------
+Total params: 7,038,529   Trainable: 1,025   Non-trainable: 7,037,504
+
+Head: GlobalAveragePooling2D -> Dropout(0.5) -> Dense(1, Sigmoid)  (SIN densa intermedia).
+densenet_imagenet_normalization = capa Normalization no entrenable: (x-mean)/std de ImageNet sobre [0,1].
+
+==========================================================================================================
+DENSENET121 TRANSFER  ·  FASE FINE-TUNING (unfreeze_last_layers(base_model, 4))
+==========================================================================================================
+Capa (name)                      Tipo                    Output shape               Params     Entren.
+----------------------------------------------------------------------------------------------------------
+image                            InputLayer              (None, 200, 200, 3)             0           0
+densenet_imagenet_normalization  Normalization           (None, 200, 200, 3)             0           0
+densenet121                      Functional              (None, 6, 6, 1024)      7,037,504      38,912
+global_avg_pool                  GlobalAveragePooling2D  (None, 1024)                    0           0
+dropout_50                       Dropout                 (None, 1024)                    0           0
+binary_output                    Dense                   (None, 1)                   1,025       1,025
+----------------------------------------------------------------------------------------------------------
+Total params: 7,038,529   Trainable: 39,937   Non-trainable: 6,998,592
+
+De las ultimas 4 capas del backbone solo tienen pesos conv5_block16_2_conv (36.864) y la BN final 'bn' (4.096).
+El backbone se invoca con training=False -> sus BatchNorm no actualizan estadisticas ni en fine-tuning.

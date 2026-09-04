@@ -1,0 +1,65 @@
+===============================================================================================
+VGG16 TRANSFER  ·  tl_vgg16_malaria  ·  FASE BASE (backbone congelado)
+===============================================================================================
+Capa (name)         Tipo                    Output shape                 Params     Entren.
+-----------------------------------------------------------------------------------------------
+input_layer_1       InputLayer              (None, 200, 200, 3)               0           0
+block1_conv1        Conv2D                  (None, 200, 200, 64)          1,792           0
+block1_conv2        Conv2D                  (None, 200, 200, 64)         36,928           0
+block1_pool         MaxPooling2D            (None, 100, 100, 64)              0           0
+block2_conv1        Conv2D                  (None, 100, 100, 128)        73,856           0
+block2_conv2        Conv2D                  (None, 100, 100, 128)       147,584           0
+block2_pool         MaxPooling2D            (None, 50, 50, 128)               0           0
+block3_conv1        Conv2D                  (None, 50, 50, 256)         295,168           0
+block3_conv2        Conv2D                  (None, 50, 50, 256)         590,080           0
+block3_conv3        Conv2D                  (None, 50, 50, 256)         590,080           0
+block3_pool         MaxPooling2D            (None, 25, 25, 256)               0           0
+block4_conv1        Conv2D                  (None, 25, 25, 512)       1,180,160           0
+block4_conv2        Conv2D                  (None, 25, 25, 512)       2,359,808           0
+block4_conv3        Conv2D                  (None, 25, 25, 512)       2,359,808           0
+block4_pool         MaxPooling2D            (None, 12, 12, 512)               0           0
+block5_conv1        Conv2D                  (None, 12, 12, 512)       2,359,808           0
+block5_conv2        Conv2D                  (None, 12, 12, 512)       2,359,808           0
+block5_conv3        Conv2D                  (None, 12, 12, 512)       2,359,808           0
+block5_pool         MaxPooling2D            (None, 6, 6, 512)                 0           0
+global_avg_pool     GlobalAveragePooling2D  (None, 512)                       0           0
+feature_dense_1024  Dense                   (None, 1024)                525,312     525,312
+dropout_50          Dropout                 (None, 1024)                      0           0
+binary_output       Dense                   (None, 1)                     1,025       1,025
+-----------------------------------------------------------------------------------------------
+Total params: 15,241,025   Trainable: 526,337   Non-trainable: 14,714,688
+
+Head: GlobalAveragePooling2D -> Dense(1024, ReLU) -> Dropout(0.5) -> Dense(1, Sigmoid).
+
+===============================================================================================
+VGG16 TRANSFER  ·  FASE FINE-TUNING (unfreeze_last_layers(base_model, 4))
+===============================================================================================
+Capa (name)         Tipo                    Output shape                 Params     Entren.
+-----------------------------------------------------------------------------------------------
+input_layer_1       InputLayer              (None, 200, 200, 3)               0           0
+block1_conv1        Conv2D                  (None, 200, 200, 64)          1,792           0
+block1_conv2        Conv2D                  (None, 200, 200, 64)         36,928           0
+block1_pool         MaxPooling2D            (None, 100, 100, 64)              0           0
+block2_conv1        Conv2D                  (None, 100, 100, 128)        73,856           0
+block2_conv2        Conv2D                  (None, 100, 100, 128)       147,584           0
+block2_pool         MaxPooling2D            (None, 50, 50, 128)               0           0
+block3_conv1        Conv2D                  (None, 50, 50, 256)         295,168           0
+block3_conv2        Conv2D                  (None, 50, 50, 256)         590,080           0
+block3_conv3        Conv2D                  (None, 50, 50, 256)         590,080           0
+block3_pool         MaxPooling2D            (None, 25, 25, 256)               0           0
+block4_conv1        Conv2D                  (None, 25, 25, 512)       1,180,160           0
+block4_conv2        Conv2D                  (None, 25, 25, 512)       2,359,808           0
+block4_conv3        Conv2D                  (None, 25, 25, 512)       2,359,808           0
+block4_pool         MaxPooling2D            (None, 12, 12, 512)               0           0
+block5_conv1        Conv2D                  (None, 12, 12, 512)       2,359,808   2,359,808
+block5_conv2        Conv2D                  (None, 12, 12, 512)       2,359,808   2,359,808
+block5_conv3        Conv2D                  (None, 12, 12, 512)       2,359,808   2,359,808
+block5_pool         MaxPooling2D            (None, 6, 6, 512)                 0           0
+global_avg_pool     GlobalAveragePooling2D  (None, 512)                       0           0
+feature_dense_1024  Dense                   (None, 1024)                525,312     525,312
+dropout_50          Dropout                 (None, 1024)                      0           0
+binary_output       Dense                   (None, 1)                     1,025       1,025
+-----------------------------------------------------------------------------------------------
+Total params: 15,241,025   Trainable: 7,605,761   Non-trainable: 7,635,264
+
+Descongela block5_conv1/conv2/conv3 (block5_pool no tiene pesos).
