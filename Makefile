@@ -1,4 +1,4 @@
-.PHONY: validate test test-backend test-backend-integration test-frontend test-ml db-status db-backup db-migrate-check db-migrate test-db test-schema-clean test-db-up test-db-down test-db-reset test-db-bootstrap lint
+.PHONY: validate test test-backend test-backend-integration test-frontend test-ml db-status db-backup db-migrate-check db-migrate test-db test-schema-clean test-db-up test-db-down test-db-reset test-db-bootstrap smear-reset-plan smear-reset-execute lint
 
 validate:
 	./scripts/validate.sh
@@ -26,6 +26,13 @@ db-migrate-check:
 	docker compose exec -T backend python -m alembic heads
 db-migrate:
 	./scripts/db/migrate.sh
+smear-reset-plan:
+	docker compose exec -T backend /app/scripts/storage/reset_smear_analysis.sh
+smear-reset-execute:
+	@test -n "$(BACKUP)" || (echo "Uso: make smear-reset-execute BACKUP=/app/backups/<archivo>.dump" >&2; exit 2)
+	@printf '%s\n' 'Para autorizar escriba exactamente: RESET MALARIA SMEAR ANALYSIS'; read -r confirmation; \
+	docker compose exec -T -e SMEAR_RESET_ALLOW_EXECUTION=1 backend \
+	  /app/scripts/storage/reset_smear_analysis.sh --execute --backup "$(BACKUP)" --confirmation "$$confirmation"
 test-schema-clean:
 	./scripts/db/test_schema_clean.sh
 test-db-up test-db-down test-db-reset test-db-bootstrap:

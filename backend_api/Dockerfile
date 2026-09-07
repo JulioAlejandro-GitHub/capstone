@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
     build-essential \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy dependencies from both the ML project and the backend API
@@ -42,6 +43,8 @@ ENV PYTHONPATH="/app/malaria_dataset_split_project/src:/app/malaria_dl_local_pro
 COPY backend_api/app /app/app
 COPY alembic /app/alembic
 COPY alembic.ini /app/alembic.ini
+COPY scripts/storage/reset_smear_analysis.py /app/scripts/storage/reset_smear_analysis.py
+COPY scripts/storage/reset_smear_analysis.sh /app/scripts/storage/reset_smear_analysis.sh
 
 # Fix ownership
 RUN chown -R capstone:capstone /app

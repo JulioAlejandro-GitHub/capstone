@@ -34,6 +34,7 @@ services:
       STORAGE_ROOT: /app/var/storage
     volumes:
       - scientific_storage:/app/var/storage
+      - ./backups:/app/backups:ro
     depends_on:
       db:
         condition: service_healthy
