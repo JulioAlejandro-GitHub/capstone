@@ -30,7 +30,22 @@ La liberación se valida exclusivamente desde `runs` con `run_type='training' AN
 
 ## Storage
 
-Sólo se admiten `microscopy-images/`, `cell-crops/`, `cell-explanations/`, `.staging/uploads/`, `.staging/cell-detection/` y `.staging/cell-explanations/`. `model-explanations/` y todos los namespaces no enumerados se preservan. Cada archivo referenciado se registra con key, namespace, tabla/fila, tamaño, SHA-256, UID/GID, permisos, inode, device y mtime. Se rechazan rutas absolutas, traversal, symlinks, archivos especiales, metadata discordante y archivos compartidos. No se usan globs ni borrado recursivo.
+El único root operativo es el `STORAGE_ROOT` configurado por Compose: `scientific_storage → /app/var/storage`. El reset no descubre raíces alternativas. Los directorios históricos del repositorio `var/storage/` y `backend_api/var/storage/` no se leen, montan, copian ni eliminan desde esta herramienta; su tratamiento corresponde a Storage B.4, después de resolver separadamente la explicación de modelo preservada.
+
+Sólo se admiten `microscopy-images/`, `cell-crops/`, `cell-explanations/`, `.staging/uploads/`, `.staging/cell-detection/` y `.staging/cell-explanations/`. `model-explanations/`, `.staging/model-explanations/` y todos los namespaces no enumerados se preservan. Cada archivo objetivo existente se registra con key, namespace, tabla/fila/columna, clasificación, tamaño, SHA-256, UID/GID, permisos, inode, device y mtime. Se rechazan rutas absolutas, traversal, symlinks, archivos especiales, metadata discordante y archivos compartidos. No se usan globs ni borrado recursivo.
+
+### Clasificación de referencias B.3B.1B
+
+| Clasificación | Condición | Acción BD futura | Acción física futura |
+|---|---|---|---|
+| `canonical_present` | Key confinada, archivo regular sin symlinks, tamaño y SHA coincidentes cuando BD los aporta | Eliminar fila objetivo | Eliminar únicamente después del commit, revalidando todos los atributos |
+| `missing_before_reset` | Key y namespace válidos, sin archivo en el root canónico | Eliminar fila objetivo | Ninguna; evidencia en `storage_missing` |
+| `invalid_or_unsafe` | Key NULL/vacía/insegura, namespace incorrecto, symlink, tipo inesperado o metadata discordante | Bloquear | Bloquear |
+| `ambiguous` | Identidad compartida o pertenencia no demostrable | Bloquear | Bloquear |
+
+Una explicación aporta dos referencias: `heatmap_storage_key` y `overlay_storage_key`. No se omiten silenciosamente keys NULL. Las referencias ausentes también participan en las guardas de dependencias preservadas y auditoría; su ausencia no autoriza borrar datos preservados. Los tamaños y SHA esperados pueden ser `null` si BD no los proporciona; los archivos presentes siempre reciben tamaño y SHA reales verificados para el cleanup.
+
+Según B.3B.1A, se esperan 2.590 referencias, 40 `canonical_present` y 2.550 `missing_before_reset` respecto del volumen canónico, si el estado sigue igual. Las 165 ausencias en los tres roots son un subconjunto de esas 2.550. El reset no distingue cuáles permanecen físicamente fuera del volumen. Los dos huérfanos clínicos históricos quedan fuera del alcance. Los archivos canónicos no referenciados siguen preservados, salvo el staging clínico explícitamente permitido por el contrato anterior.
 
 Las imágenes y crops runtime están excluidos de los contextos nuevos mediante `.gitignore`/`.dockerignore`; la operación no agrega contenido científico a Git. Los binarios históricos que ya estén versionados no son alterados por esta fase.
 
@@ -42,7 +57,20 @@ Plan seguro (predeterminado):
 make smear-reset-plan
 ```
 
-El plan corre dentro del contenedor backend, abre una transacción `READ ONLY`, configura timeouts, valida identidad, Alembic y administrador, cuenta filas, construye el manifiesto y siempre hace rollback.
+El plan corre dentro del contenedor backend, abre una transacción `READ ONLY`, configura timeouts, valida identidad, Alembic y administrador, cuenta filas, construye el plan en memoria y siempre hace rollback. No necesita backup ni opt-in destructivo, no escribe manifiestos persistentes ni modifica storage. Acepta `missing_before_reset > 0` sólo cuando no existen referencias inválidas o ambiguas. Los comandos operacionales de esta sección son para una fase posterior autorizada; B.3B.1B no los ejecuta contra el runtime.
+
+| Campo del resultado JSON | Significado |
+|---|---|
+| `clinical_database_references` | Referencias físicas BD; cuenta heatmap y overlay por separado |
+| `canonical_present` | Referencias BD con archivo canónico validado |
+| `missing_before_reset` | Referencias BD sin archivo canónico |
+| `invalid_or_unsafe`, `ambiguous` | Ambos cero en un plan aprobado; el primer rechazo impide aprobar y devuelve código de salida 2 |
+| `physical_delete_targets` | Archivos canónicos concretos, incluido staging clínico permitido; no incluye ausentes |
+| `database_delete_targets` | Suma de filas de `DELETE_ORDER` y eventos de auditoría clínica seleccionados, independientemente de la existencia del archivo |
+| `preserved_storage_files` | Archivos del inventario canónico ajenos al objetivo físico |
+| `missing_references` | Evidencia sanitizada por tabla, fila, columna, key, metadata esperada, clasificación y motivo |
+
+Se mantienen `rows_by_table`, `files`, `bytes`, `audit` y `productive_train_id`. La salida no muestra rutas absolutas del host, DSN ni credenciales. Los errores de almacenamiento se reportan como `RESET_REFUSED: invalid_or_unsafe` o `ambiguous`; otras guardas devuelven `RESET_REFUSED: preflight_or_recovery_guard`, sin interpolar excepciones de drivers o filesystem que puedan contener secretos.
 
 Una ejecución futura requiere simultáneamente `--execute`, `SMEAR_RESET_ALLOW_EXECUTION=1`, la frase exacta `RESET MALARIA SMEAR ANALYSIS` y un dump PostgreSQL custom-format durable montado de sólo lectura bajo `/app/backups`. El target solicita la frase interactivamente:
 
@@ -85,10 +113,16 @@ Todos los objetos rechazan campos desconocidos o ausentes y claves JSON duplicad
 | `database_before.admin_fingerprint` | Fingerprint administrativo |
 | `database_before.release_fingerprint` | TRAIN productivo exacto y SHA-256 de Liberación |
 | `clinical_audit_events` | IDs exactos seleccionados y sus fingerprints de clasificación |
-| `storage_files` | Entradas exactas: key, namespace, tabla, fila, tamaño, SHA-256, UID/GID, modo, inode, device y mtime en nanosegundos |
+| `storage_files` | Sólo `canonical_present`: key, namespace, tabla, fila, columna, clasificación, tamaño, SHA-256, UID/GID, modo, inode, device y mtime en nanosegundos. Staging utiliza tabla técnica `clinical_staging` y columna vacía |
+| `storage_missing` | Sólo `missing_before_reset`: `table`, `row_id`, `column`, `storage_key`, `expected_size`, `expected_sha256`, `classification` y motivo estable `reason=absent_from_canonical_storage` |
+| `storage_targets_sha256` | SHA-256 del JSON canónico de `database_before`, `storage_files`, `storage_missing` y `storage_preserved`; permanece fijo en las transiciones |
 | `storage_preserved` | Inventario de archivos ajenos al objetivo, con los mismos atributos físicos; excluye el directorio técnico de operaciones |
 
-Se rechazan rutas absolutas o traversal en storage, namespaces incompatibles con la tabla, entradas duplicadas, tipos incorrectos y archivos no asociados a filas objetivo. Los registros preservados se recorren para detectar referencias exactas a keys objetivo antes de crear el manifiesto y antes del cleanup.
+Se rechazan rutas absolutas o traversal en storage, namespaces incompatibles con la tabla/columna, entradas duplicadas, tipos incorrectos y archivos no asociados a filas objetivo. Cada referencia `(tabla, fila, columna)` debe aparecer exactamente una vez entre presentes y ausentes; se exige cobertura completa de las filas de almacenamiento en `database_before.target_tables`. Ni una key ni una referencia pueden aparecer en dos categorías o en el inventario preservado. El escritor comprueba que cada objetivo físico existe y coincide con su inventario validado antes de persistirlo. La relectura valida el digest y se compara nuevamente con el documento cargado antes del cleanup; descubrir archivos adicionales nunca amplía los targets.
+
+El digest detecta cambios de contrato; no es una firma que autentique un manifiesto reescrito por un actor con permisos de escritura. Se conservan la privacidad 0600, la confinación y el contrato de custodia del manifiesto. Los documentos que carezcan de los nuevos campos requeridos se rechazan y conservan como evidencia: no se convierten ni se completa su contenido por inferencia, aunque declaren versión 2. No iniciar esta versión con una operación previa pendiente sin revisión separada.
+
+Los registros preservados se recorren para detectar referencias exactas a todas las keys objetivo, presentes y ausentes, antes de crear el manifiesto y antes del cleanup. `storage_missing` nunca almacena rutas de host, otras raíces, credenciales ni contenido de archivos. El campo existente de backup sigue describiendo exclusivamente el dump montado en el contenedor.
 
 ### Máquina de recuperación
 
@@ -113,7 +147,11 @@ La recuperación toma un advisory lock transaccional compartido con la ejecució
 
 ### Cleanup y caídas
 
-Antes del primer unlink se persiste `cleanup_pending`. Se recorren ancestros mediante descriptores y `O_NOFOLLOW`; cada archivo se abre relativo a su padre y se comparan todos los atributos registrados. Un archivo ausente se considera procesado sólo después de verificar DB en after. Una diferencia devuelve `STORAGE_FILE_CHANGED` con ruta relativa, detiene la secuencia y conserva la operación. No amplía targets. Los archivos adicionales se conservan y se informan; los archivos preservados registrados no pueden desaparecer ni cambiar.
+Antes del primer unlink de un objetivo clínico se persiste `cleanup_pending`. Se recorren ancestros mediante descriptores y `O_NOFOLLOW`; cada archivo `canonical_present` se abre relativo a su padre y se comparan todos los atributos registrados. Un objetivo antes presente y ahora ausente se considera procesado sólo después de verificar DB en after. Una diferencia devuelve `STORAGE_FILE_CHANGED` con ruta relativa, detiene la secuencia y conserva la operación. No amplía targets. Los archivos adicionales ajenos a keys ausentes se conservan y se informan; los archivos preservados registrados no pueden desaparecer ni cambiar.
+
+Para `missing_before_reset` no hay apertura del archivo, lectura de contenido, unlink, glob ni búsqueda por recorrido. Se verifica la ausencia mediante `stat(..., follow_symlinks=False)` sobre componentes exactos y descriptores de los directorios padres, sin enumerarlos para buscar alternativas. Si aparece cualquier entrada en la key —archivo, directorio o symlink— se bloquea conservando archivo y manifiesto. El inventario general también rechaza esa key antes de abrirla, por si aparece después de la comprobación inicial. La comprobación se repite al verificar el estado final y al reanudar, incluido `cleanup_completed`.
+
+Una operación que sólo contiene referencias ausentes pasa de `database_committed` a `cleanup_completed` tras verificar BD y storage, sin pasar por `cleanup_pending`. En una operación mixta, ese estado transitorio se debe exclusivamente al cleanup de archivos presentes; la ausencia previa no produce conflictos ni trabajo físico pendiente. Las filas de ambas categorías se eliminan juntas en la misma transacción y cualquier fallo DML hace rollback sin borrar archivos.
 
 Cada unlink hace fsync del padre. Al finalizar se vuelve a comprobar PostgreSQL, el inventario preservado y la ausencia de todos los targets. Sólo se retiran ancestros vacíos exactos de los archivos objetivo, conservando los roots de namespaces, `.staging` y `.staging/smear-reset`.
 
@@ -123,7 +161,25 @@ Tras persistir `cleanup_completed`, se relee y verifica el documento, se elimina
 
 ### Pruebas aisladas y límites para B.3B
 
-La suite `backend_api/tests/test_smear_reset_tool.py` usa dobles de PostgreSQL y archivos temporales; bloquea conexiones de red y creación de engines reales. Se ejecuta con el entorno existente `backend_api/.venv`, configuración ficticia `db:5432` y sin instalar dependencias. No requiere Docker ni monta almacenamiento científico.
+La suite `backend_api/tests/test_smear_reset_tool.py` usa dobles de PostgreSQL y archivos temporales; bloquea conexiones de red, creación de engines reales y `Engine.connect`. Se ejecuta con el entorno existente `backend_api/.venv`, configuración ficticia `db:5432` y sin instalar dependencias. No requiere Docker ni monta almacenamiento científico:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+  backend_api/.venv/bin/python -B -m pytest -q -p no:cacheprovider \
+  backend_api/tests/test_smear_reset_tool.py
+```
+
+| Matriz B.3B.1B | Cobertura aislada |
+|---|---|
+| Plan | Presente, ausente, mezcla, metadata esperada opcional, conteos BD/físicos y dry-run real con SELECT-only double |
+| Rechazos | Key vacía/NULL/absoluta/traversal, namespace ajeno, hash/tamaño incorrecto, symlink de archivo/padre, directorio o padre no directorio, key compartida |
+| Manifiesto | Campos estrictos, solapamiento entre categorías, duplicados, referencia omitida, expansión de targets, objetivo físico no validado, digest alterado |
+| Transacción | DML simulado incluye filas presentes y ausentes; commit precede al unlink; fallo DML revierte y deja cero borrados físicos |
+| Recuperación | Ausencia sin open/unlink, aparición tardía sin abrir el nuevo archivo, cleanup parcial/idempotencia, operación sólo ausente y los seis estados v2 |
+| Preservación | Explicaciones de modelo, staging de modelos, namespace desconocido y guarda de referencias preservadas incluso para keys ausentes |
+| Aislamiento | Sin red/engine real; salida sanitizada incluso ante errores de driver/filesystem; sin roots históricos en implementación |
+
+Las menciones de roots históricos sólo en documentación y casos de rechazo prueban su exclusión; no habilitan su consumo. Las simulaciones llaman funciones de ejecución/recuperación únicamente con dobles y temporales; no son invocaciones operacionales de `--execute` ni `--resume-cleanup`.
 
 B.3B debe verificar el comportamiento con PostgreSQL desechable y fallos de proceso reales, además de validar la durabilidad del mount del backup y la exclusión de escritores del filesystem. Los locks PostgreSQL no bloquean procesos que escriben directamente en storage: debe existir quiescencia operacional durante cleanup. POSIX no ofrece un unlink condicional por inode; la comparación inmediatamente anterior al unlink reduce la ventana pero no sustituye esa exclusión. La suite simula caídas y fsync; no demuestra resistencia física a cortes de energía. El inventario y los fingerprints completos tienen un costo proporcional al volumen de datos.
 

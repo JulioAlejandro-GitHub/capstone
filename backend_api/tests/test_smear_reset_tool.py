@@ -148,10 +148,10 @@ def test_dml_failure_rolls_back_and_never_touches_storage(tmp_path, monkeypatch)
     monkeypatch.setattr(reset, "backup_identity", lambda _: {})
     monkeypatch.setattr(reset, "database_snapshot", lambda *args: {})
     monkeypatch.setattr(reset, "validate_identity", lambda *args: None)
-    monkeypatch.setattr(reset, "plan", lambda *args: ({}, [], {"users": "same"}, {"ids": [], "counts": {}}, {"productive_train_id": "x", "fingerprint": "x"}))
+    monkeypatch.setattr(reset, "plan", lambda *args: ({}, reset.StoragePlan([], []), {"users": "same"}, {"ids": [], "counts": {}}, {"productive_train_id": "x", "fingerprint": "x"}))
     monkeypatch.setattr(reset, "admin_fingerprint", lambda *args: "same")
     monkeypatch.setattr(reset, "release_fingerprint", lambda *args: {"productive_train_id": "x", "fingerprint": "x"})
-    monkeypatch.setattr(reset, "write_operation_manifest", lambda *args: tmp_path / "manifest.json")
+    monkeypatch.setattr(reset, "write_operation_manifest", lambda *args, **kwargs: tmp_path / "manifest.json")
     touched = []
     monkeypatch.setattr(reset, "delete_manifest_files", lambda *args: touched.append(True))
     with pytest.raises(RuntimeError, match="injected"):
@@ -168,12 +168,15 @@ import uuid
 
 @pytest.fixture(autouse=True)
 def isolated(monkeypatch):
+    import sqlalchemy
     monkeypatch.setenv('DATABASE_URL', 'postgresql://unused:unused@db:5432/unit_test')
     def forbidden(*args, **kwargs):
         raise AssertionError('Network/real engine forbidden in unit suite')
     monkeypatch.setattr(socket, 'create_connection', forbidden)
     monkeypatch.setattr(socket.socket, 'connect', forbidden)
     monkeypatch.setattr(reset, 'create_engine', forbidden)
+    monkeypatch.setattr(sqlalchemy, 'create_engine', forbidden)
+    monkeypatch.setattr(sqlalchemy.engine.Engine, 'connect', forbidden)
 
 
 @pytest.fixture
@@ -546,7 +549,7 @@ def test_dry_run_read_only_and_no_manifest(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv('STORAGE_ROOT', str(tmp_path))
     monkeypatch.setattr(reset, 'create_engine', lambda *a, **k: Connection())
     monkeypatch.setattr(reset, 'validate_identity', lambda *a: None)
-    monkeypatch.setattr(reset, 'plan', lambda *a: ({}, [], {}, {'counts': {}}, {'productive_train_id': 'x'}))
+    monkeypatch.setattr(reset, 'plan', lambda *a: ({}, reset.StoragePlan([], []), {}, {'counts': {}}, {'productive_train_id': 'x'}))
     assert reset.main([]) == 0
     assert 'DRY_RUN' in capsys.readouterr().out
     assert 'READ ONLY' in calls[0] and calls[-1] == 'rollback'
@@ -578,7 +581,7 @@ def test_lost_commit_acknowledgement_resolves_prepared(recovery, monkeypatch, co
         def execute(self, sql, params=None): return Result()
     engine = Engine()
     monkeypatch.setattr(reset, 'plan', lambda *a: (
-        {}, [reset.ManifestEntry(**x) for x in p['storage_files']], before['preserved_tables'],
+        {}, reset.StoragePlan([reset.ManifestEntry(**x) for x in p['storage_files']], []), before['preserved_tables'],
         p['clinical_audit_events'], before['release_fingerprint']))
     monkeypatch.setattr(reset, 'validate_identity', lambda *a: None)
     monkeypatch.setattr(reset, 'admin_fingerprint', lambda *a: before['admin_fingerprint'])
@@ -598,3 +601,458 @@ def test_lost_commit_acknowledgement_resolves_prepared(recovery, monkeypatch, co
     result = reset.resume_cleanup(engine, root, Path(p['backup']['path']), operations[0].name)
     assert result['status'] == ('CLEANUP_COMPLETE' if committed else 'RESET_NOT_COMMITTED_NO_STORAGE_CLEANUP')
     assert (root / 'cell-crops/run/a').exists() is (not committed)
+
+
+class ReferenceConnection:
+    """SELECT-only reference source; cannot open a real database connection."""
+    def __init__(self, rows):
+        self.rows = rows
+        self.statements = []
+
+    def execute(self, statement, params=None):
+        sql = str(statement)
+        assert sql.startswith('SELECT ')
+        self.statements.append(sql)
+        table = sql.split(' FROM "')[1].split('"')[0]
+        return type('Rows', (), {'mappings': lambda _: self.rows.get(table, [])})()
+
+
+def crop_row(row_id, key, content=b'crop'):
+    return {'id': row_id, 'relative_storage_key': key, 'file_size_bytes': len(content),
+            'sha256': hashlib.sha256(content).hexdigest()}
+
+
+def real_plan_guards(monkeypatch, connection, counts):
+    """Keep real plan/storage collection, replace only PostgreSQL-specific reads."""
+    original = connection.execute
+    def execute(sql, params=None):
+        if str(sql).startswith('SELECT count(*)'):
+            table = str(sql).split(' FROM "')[1].split('"')[0]
+            return type('Count', (), {'scalar_one': lambda _: counts.get(table, 0)})()
+        return original(sql, params)
+    connection.execute = execute
+    monkeypatch.setattr(reset, 'validate_schema', lambda *a: None)
+    monkeypatch.setattr(reset, 'detect_active_work', lambda *a: None)
+    monkeypatch.setattr(reset, 'clinical_references', lambda *a: (set(), set()))
+    monkeypatch.setattr(reset, 'validate_scientific_validation', lambda *a: None)
+    monkeypatch.setattr(reset, 'validate_preserved_storage_references', lambda *a: None)
+    monkeypatch.setattr(reset, 'fingerprint', lambda *a: {})
+    monkeypatch.setattr(reset, 'audit_plan', lambda *a: {'ids': [], 'counts': {}})
+    monkeypatch.setattr(reset, 'release_fingerprint', lambda *a: {'productive_train_id': 'technical-id'})
+
+
+@pytest.mark.parametrize('present,absent', [(1, 0), (0, 1), (1, 1)])
+def test_plan_classifies_canonical_references_and_retains_dml_counts(tmp_path, monkeypatch, present, absent):
+    root = tmp_path / 'storage'; root.mkdir()
+    rows = []
+    if present:
+        file = root / 'cell-crops/present'; file.parent.mkdir(); file.write_bytes(b'crop')
+        rows.append(crop_row('present-id', 'cell-crops/present'))
+    if absent: rows.append(crop_row('absent-id', 'cell-crops/missing/absent'))
+    connection = ReferenceConnection({'cell_crops': rows})
+    real_plan_guards(monkeypatch, connection, {'cell_crops': present + absent})
+    counts, storage, _, audit, release = reset.plan(connection, root)
+    result = reset.plan_summary(root, counts, storage, audit, release)
+    assert result['canonical_present'] == present
+    assert result['missing_before_reset'] == absent
+    assert result['clinical_database_references'] == present + absent
+    assert result['database_delete_targets'] == present + absent
+    assert result['physical_delete_targets'] == present
+    assert result['invalid_or_unsafe'] == result['ambiguous'] == 0
+    assert {x.row_id for x in storage.files} == ({'present-id'} if present else set())
+    assert {x.row_id for x in storage.missing} == ({'absent-id'} if absent else set())
+    assert all('IS NOT NULL' not in sql for sql in connection.statements)
+    assert not (root / '.staging').exists()
+
+
+@pytest.mark.parametrize('key', ['', None, '../escape', '/host/private/secret', 'cell-crops/../x',
+                                 'cell-crops//x', 'cell-crops/./x', 'cell-crops',
+                                 'microscopy-images/wrong-table', 'cell-crops/host\\x',
+                                 'var/storage/cell-crops/x', 'backend_api/var/storage/cell-crops/x'])
+def test_invalid_reference_blocks_even_when_absent(tmp_path, key):
+    with pytest.raises(reset.StorageRefused, match='invalid_or_unsafe'):
+        reset.build_manifest(ReferenceConnection({'cell_crops': [crop_row('id', key)]}), tmp_path)
+
+
+@pytest.mark.parametrize('field,value', [('file_size_bytes', 99), ('sha256', '0'*64)])
+def test_present_metadata_mismatch_blocks(tmp_path, field, value):
+    file = tmp_path / 'cell-crops/file'; file.parent.mkdir(); file.write_bytes(b'crop')
+    row = crop_row('id', 'cell-crops/file'); row[field] = value
+    with pytest.raises(reset.StorageRefused, match='invalid_or_unsafe'):
+        reset.build_manifest(ReferenceConnection({'cell_crops': [row]}), tmp_path)
+
+
+@pytest.mark.parametrize('kind', ['symlink_file', 'symlink_parent', 'directory', 'parent_file'])
+def test_reference_physical_type_is_not_misclassified_as_missing(tmp_path, kind):
+    root = tmp_path / 'storage'; root.mkdir()
+    outside = tmp_path / 'outside'; outside.mkdir()
+    if kind == 'symlink_parent':
+        (root / 'cell-crops').symlink_to(outside, target_is_directory=True)
+    elif kind == 'parent_file': (root / 'cell-crops').write_bytes(b'x')
+    else:
+        (root / 'cell-crops').mkdir()
+        if kind == 'directory': (root / 'cell-crops/file').mkdir()
+        else: (root / 'cell-crops/file').symlink_to(outside / 'missing')
+    with pytest.raises(reset.StorageRefused, match='invalid_or_unsafe'):
+        reset.build_manifest(ReferenceConnection({'cell_crops': [crop_row('id', 'cell-crops/file')]}), root)
+
+
+@pytest.mark.parametrize('present', [False, True])
+def test_shared_storage_identity_is_ambiguous(tmp_path, present):
+    if present:
+        file = tmp_path / 'cell-crops/file'; file.parent.mkdir(); file.write_bytes(b'crop')
+    rows = [crop_row('one', 'cell-crops/file'), crop_row('two', 'cell-crops/file')]
+    with pytest.raises(reset.StorageRefused, match='ambiguous'):
+        reset.build_manifest(ReferenceConnection({'cell_crops': rows}), tmp_path)
+
+
+def test_optional_expected_metadata_is_auditable(tmp_path):
+    row = crop_row('absent', 'cell-crops/absent'); row.update(file_size_bytes=None, sha256=None)
+    plan = reset.build_manifest(ReferenceConnection({'cell_crops': [row]}), tmp_path)
+    assert plan.missing[0].expected_size is plan.missing[0].expected_sha256 is None
+    file = tmp_path / 'cell-crops/present'; file.parent.mkdir(); file.write_bytes(b'crop')
+    row['relative_storage_key'] = 'cell-crops/present'
+    plan = reset.build_manifest(ReferenceConnection({'cell_crops': [row]}), tmp_path)
+    assert plan.files[0].size == 4
+    assert plan.files[0].sha256 == hashlib.sha256(b'crop').hexdigest()
+
+
+@pytest.fixture
+def missing_recovery(recovery):
+    root, path, payload, engine, before, after, resume = recovery
+    missing = reset.MissingReference('cell_crops', 'missing-id', 'relative_storage_key',
+                                     'cell-crops/absent/not-created', 4, hashlib.sha256(b'crop').hexdigest())
+    before['target_tables']['cell_crops'].append({'id': 'missing-id', 'sha256': '1'*64})
+    payload['database_before'] = copy.deepcopy(before)
+    payload['storage_missing'] = [reset.asdict(missing)]
+    payload['storage_targets_sha256'] = reset.storage_targets_digest(payload)
+    reset._atomic_manifest(path, payload)
+    return recovery
+
+
+def test_recovery_never_opens_or_unlinks_missing_reference(missing_recovery, monkeypatch):
+    root, path, payload, engine, *_, resume = missing_recovery
+    original_open, original_unlink = os.open, os.unlink
+    def guarded_open(name, *a, **k):
+        assert str(name) not in ('not-created', 'absent')
+        return original_open(name, *a, **k)
+    def guarded_unlink(name, *a, **k):
+        assert str(name) not in ('not-created', 'absent')
+        return original_unlink(name, *a, **k)
+    monkeypatch.setattr(os, 'open', guarded_open); monkeypatch.setattr(os, 'unlink', guarded_unlink)
+    assert resume()['storage_files_deleted'] == 2
+    assert not path.exists()
+    assert (root / 'model-explanations/keep').read_bytes() == b'keep'
+
+
+@pytest.mark.parametrize('kind', ['file', 'directory', 'symlink'])
+def test_appeared_missing_key_blocks_without_open_or_deletion(missing_recovery, monkeypatch, kind):
+    root, path, payload, engine, *_, resume = missing_recovery
+    file = root / payload['storage_missing'][0]['storage_key']; file.parent.mkdir()
+    if kind == 'file': file.write_bytes(b'new data')
+    elif kind == 'directory': file.mkdir()
+    else: file.symlink_to(root / 'model-explanations/keep')
+    original = os.open
+    def guarded(name, *a, **k):
+        assert str(name) != 'not-created'
+        return original(name, *a, **k)
+    monkeypatch.setattr(os, 'open', guarded)
+    with pytest.raises(reset.ResetRefused, match='STORAGE_FILE_CHANGED'): resume()
+    assert os.path.lexists(file)
+    assert (root / 'cell-crops/run/a').exists()
+    assert path.exists()
+    assert reset.read_manifest(path)['state'] == 'database_committed'
+
+
+def test_missing_only_completes_without_cleanup_pending(missing_recovery, monkeypatch):
+    root, path, payload, engine, before, after, resume = missing_recovery
+    # Construct a missing-only operation before execution, using the writer's
+    # verified inventory; existing files are preserved, not cleanup targets.
+    before['target_tables']['cell_crops'] = [{'id': 'missing-id', 'sha256': '1'*64}]
+    payload['database_before'] = copy.deepcopy(before)
+    payload['storage_files'] = []
+    payload['storage_preserved'] = reset.storage_inventory(root)
+    payload['storage_targets_sha256'] = reset.storage_targets_digest(payload)
+    reset._atomic_manifest(path, payload)
+    transitions = []; original = reset.transition
+    def record(path, payload, state):
+        transitions.append(state); return original(path, payload, state)
+    monkeypatch.setattr(reset, 'transition', record)
+    result = resume()
+    assert result['status'] == 'CLEANUP_COMPLETE' and result['storage_files_deleted'] == 0
+    assert transitions == ['database_committed', 'cleanup_completed']
+    assert (root / 'cell-crops/run/a').exists()
+
+
+@pytest.mark.parametrize('mutation', [
+    lambda p: p['storage_missing'].append(dict(p['storage_missing'][0])),
+    lambda p: p['storage_missing'][0].update(storage_key=p['storage_files'][0]['storage_key']),
+    lambda p: p['storage_missing'][0].update(row_id=p['storage_files'][0]['row_id']),
+    lambda p: p['storage_missing'][0].update(column='unexpected'),
+    lambda p: p['storage_missing'][0].update(reason='try_another_root'),
+    lambda p: p['storage_missing'][0].update(expected_size=True),
+    lambda p: p['storage_missing'][0].update(expected_sha256='bad'),
+    lambda p: p['storage_missing'][0].update(unexpected='field'),
+    lambda p: p['storage_missing'][0].update(storage_key='../outside'),
+    lambda p: p['storage_missing'][0].update(classification='canonical_present'),
+    lambda p: p['storage_files'][0].update(classification='missing_before_reset'),
+    lambda p: p['storage_files'][0].update(storage_key='cell-crops/expanded'),
+    lambda p: p['storage_files'].append(dict(p['storage_files'][0], storage_key='cell-crops/new')),
+    lambda p: p['storage_missing'].clear(),
+])
+def test_missing_manifest_schema_rejects_overlap_and_expansion(missing_recovery, mutation):
+    payload = copy.deepcopy(missing_recovery[2]); mutation(payload)
+    with pytest.raises(reset.ResetRefused): reset.validate_manifest(payload)
+
+
+def test_unvalidated_physical_target_cannot_be_written(missing_recovery):
+    root, _, payload, *_ = missing_recovery
+    files = [reset.ManifestEntry(**x) for x in payload['storage_files']]
+    files[0] = reset.ManifestEntry(**dict(payload['storage_files'][0], storage_key='cell-crops/not-validated'))
+    with pytest.raises(reset.ResetRefused, match='STORAGE_FILE_CHANGED'):
+        reset.write_operation_manifest(root, files, payload['clinical_audit_events'],
+                                       payload['database_before'], payload['backup'],
+                                       [reset.MissingReference(**x) for x in payload['storage_missing']])
+
+
+def test_missing_preserved_reference_guard_is_not_lost(tmp_path, monkeypatch):
+    connection = ReferenceConnection({'cell_crops': [crop_row('id', 'cell-crops/absent')]})
+    real_plan_guards(monkeypatch, connection, {'cell_crops': 1})
+    observed = []
+    monkeypatch.setattr(reset, 'validate_preserved_storage_references', lambda _, keys: observed.append(keys))
+    reset.plan(connection, tmp_path)
+    assert observed == [{'cell-crops/absent'}]
+
+
+def test_implementation_has_no_alternate_roots_or_destructive_patterns():
+    source = SCRIPT.read_text()
+    for forbidden in ('var/storage', 'backend_api/var/storage', 'rm -rf', 'TRUNCATE CASCADE',
+                      '.glob(', '.rglob(', 'shutil.rmtree', 'fallback'):
+        assert forbidden not in source
+
+
+@pytest.mark.parametrize('failure', [
+    OSError('password=secret /host/private/path'),
+    reset.SQLAlchemyError('postgresql://user:secret@db:5432/database'),
+    reset.StorageRefused('invalid_or_unsafe'),
+])
+def test_cli_error_output_is_sanitized(tmp_path, monkeypatch, capsys, failure):
+    monkeypatch.setenv('STORAGE_ROOT', str(tmp_path))
+    def fail(*a, **k): raise failure
+    monkeypatch.setattr(reset, 'create_engine', fail)
+    assert reset.main([]) == 2
+    output = capsys.readouterr()
+    assert 'RESET_REFUSED' in output.err
+    assert all(s not in output.err + output.out for s in ['secret', '/host', 'postgresql://', str(tmp_path)])
+
+
+def test_full_dry_run_accepts_missing_without_dml_or_manifest(tmp_path, monkeypatch, capsys):
+    connection = ReferenceConnection({'cell_crops': [crop_row('missing-id', 'cell-crops/absent')]})
+    real_plan_guards(monkeypatch, connection, {'cell_crops': 1})
+    original = connection.execute
+    controls = []
+    class Tx:
+        def rollback(self): controls.append('ROLLBACK')
+    class Engine:
+        def connect(self): return self
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+        def begin(self): return Tx()
+        def execute(self, statement, params=None):
+            if str(statement).startswith('SET '):
+                controls.append(str(statement)); return None
+            assert str(statement).startswith('SELECT '), 'DML/DDL forbidden in dry-run'
+            return original(statement, params)
+    monkeypatch.setenv('STORAGE_ROOT', str(tmp_path))
+    monkeypatch.setattr(reset, 'create_engine', lambda *a, **k: Engine())
+    monkeypatch.setattr(reset, 'validate_identity', lambda *a: None)
+    def no_write(*a, **k): pytest.fail('dry-run attempted a manifest write')
+    monkeypatch.setattr(reset, 'write_operation_manifest', no_write)
+    monkeypatch.setattr(reset, '_atomic_manifest', no_write)
+    assert reset.main([]) == 0
+    output = capsys.readouterr()
+    result = json.loads(output.out)
+    assert result['status'] == 'DRY_RUN'
+    assert result['clinical_database_references'] == result['missing_before_reset'] == 1
+    assert result['physical_delete_targets'] == result['canonical_present'] == 0
+    assert result['database_delete_targets'] == 1
+    assert result['missing_references'][0]['row_id'] == 'missing-id'
+    assert 'READ ONLY' in controls[0] and controls[-1] == 'ROLLBACK'
+    assert all(s not in output.out + output.err for s in [str(tmp_path), 'unused:unused', 'postgresql://'])
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize('fail_dml', [False, True])
+def test_execute_mixed_references_commits_all_rows_before_physical_cleanup(missing_recovery, monkeypatch, fail_dml):
+    root, path, payload, _, before, after, _ = missing_recovery
+    # Remove only the temporary fixture operation to exercise the actual writer.
+    path.unlink(); path.parent.rmdir()
+    committed = []; rolled_back = []; deleted_ids = []
+    class Result:
+        def __init__(self, count=0): self.rowcount = count
+        def scalar_one(self): return 0
+    class Tx:
+        is_active = True
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+        def commit(self):
+            committed.append(True); engine.state = copy.deepcopy(after); self.is_active = False
+        def rollback(self):
+            rolled_back.append(True); self.is_active = False
+    class Engine:
+        state = copy.deepcopy(before)
+        def connect(self): return self
+        def begin(self): return Tx()
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+        def execute(self, statement, params=None):
+            sql = str(statement)
+            if sql.startswith('DELETE FROM "'):
+                table = sql.split('"')[1]
+                rows = before['target_tables'][table]
+                if table == 'cell_crops':
+                    deleted_ids.extend(r['id'] for r in rows)
+                    if fail_dml: raise RuntimeError('injected mixed DML failure')
+                return Result(len(rows))
+            if sql.startswith('DELETE FROM audit_events'): return Result(len(params['ids']))
+            return Result()
+    engine = Engine()
+    storage = reset.StoragePlan([reset.ManifestEntry(**x) for x in payload['storage_files']],
+                                [reset.MissingReference(**x) for x in payload['storage_missing']])
+    monkeypatch.setattr(reset, 'plan', lambda *a: (
+        {t: len(rows) for t, rows in before['target_tables'].items()}, storage,
+        before['preserved_tables'], payload['clinical_audit_events'], before['release_fingerprint']))
+    monkeypatch.setattr(reset, 'validate_identity', lambda *a: None)
+    monkeypatch.setattr(reset, 'admin_fingerprint', lambda *a: before['admin_fingerprint'])
+    monkeypatch.setattr(reset, 'release_fingerprint', lambda *a: before['release_fingerprint'])
+    monkeypatch.setattr(reset, 'fingerprint', lambda *a: before['preserved_tables'])
+    monkeypatch.setattr(reset, 'revalidate_audit_plan', lambda *a: None)
+    monkeypatch.setattr(reset, 'database_snapshot', lambda *a: copy.deepcopy(engine.state))
+    original_delete = reset.delete_manifest_files
+    physical = []
+    def guarded_delete(root, files):
+        assert committed and not rolled_back
+        physical.extend(x.storage_key for x in files)
+        assert all(x.classification == 'canonical_present' for x in files)
+        return original_delete(root, files)
+    monkeypatch.setattr(reset, 'delete_manifest_files', guarded_delete)
+    if fail_dml:
+        with pytest.raises(RuntimeError, match='injected mixed'): reset.execute_reset(engine, root, Path(payload['backup']['path']))
+        assert rolled_back and not committed and not physical
+        assert (root / 'cell-crops/run/a').exists()
+    else:
+        result = reset.execute_reset(engine, root, Path(payload['backup']['path']))
+        assert result['status'] == 'CLEANUP_COMPLETE'
+        assert result['database_rows_deleted'] == 4  # two present, one absent, one clinical audit
+        assert result['storage_files_deleted'] == 2
+        assert len(physical) == 2
+    assert set(deleted_ids) == {'a', 'b', 'missing-id'}
+    assert (root / 'model-explanations/keep').read_bytes() == b'keep'
+
+
+@pytest.mark.parametrize('state', sorted(reset.STATES))
+def test_missing_references_respect_every_recovery_state(missing_recovery, state):
+    root, path, payload, engine, *_, resume = missing_recovery
+    payload = dict(payload, state=state)
+    if state == 'cleanup_completed':
+        for file in payload['storage_files']: (root / file['storage_key']).unlink()
+    reset._atomic_manifest(path, payload)
+    if state in {'blocked', 'aborted_before_commit'}:
+        with pytest.raises(reset.ResetRefused, match='terminal'): resume()
+        assert path.exists() and (root / 'cell-crops/run/a').exists()
+    else:
+        assert resume()['status'] == 'CLEANUP_COMPLETE'
+        assert not path.exists()
+
+
+def test_missing_partial_cleanup_is_idempotent(missing_recovery, monkeypatch):
+    root, path, payload, engine, *_, resume = missing_recovery
+    original = os.unlink
+    def partial(name, *a, **k):
+        if name == 'b': raise PermissionError('temporary failure')
+        return original(name, *a, **k)
+    monkeypatch.setattr(os, 'unlink', partial)
+    assert resume()['storage_files_deleted'] == 1
+    assert reset.read_manifest(path)['state'] == 'cleanup_pending'
+    assert resume()['storage_files_deleted'] == 0
+    monkeypatch.setattr(os, 'unlink', original)
+    assert resume()['storage_files_deleted'] == 1
+    assert not path.exists()
+
+
+def test_appearance_during_cleanup_blocks_final_completion(missing_recovery, monkeypatch):
+    root, path, payload, engine, *_, resume = missing_recovery
+    original = reset.delete_manifest_files
+    extra = root / payload['storage_missing'][0]['storage_key']
+    def appear(root, files):
+        result = original(root, files)
+        extra.parent.mkdir(); extra.write_bytes(b'new data')
+        return result
+    monkeypatch.setattr(reset, 'delete_manifest_files', appear)
+    with pytest.raises(reset.ResetRefused, match='missing_before_reset apareció'): resume()
+    assert extra.read_bytes() == b'new data'
+    assert reset.read_manifest(path)['state'] == 'cleanup_pending'
+    with pytest.raises(reset.ResetRefused, match='missing_before_reset apareció'): resume()
+    assert extra.read_bytes() == b'new data'
+
+
+def test_recovery_does_not_accept_targets_changed_after_validation(missing_recovery, monkeypatch):
+    root, path, payload, engine, *_, resume = missing_recovery
+    original = reset.check_preserved_storage
+    def tamper(root, payload, baseline=None):
+        inventory = original(root, payload, baseline)
+        current = reset.read_manifest(path)
+        current['storage_files'][0]['storage_key'] = 'cell-crops/new-target'
+        path.write_text(json.dumps(current))
+        return inventory
+    monkeypatch.setattr(reset, 'check_preserved_storage', tamper)
+    with pytest.raises(reset.ResetRefused, match='targets modificados'): resume()
+    assert (root / 'cell-crops/run/a').exists()
+    assert path.exists()
+
+
+def test_existing_staging_and_unknown_namespaces_keep_their_contract(tmp_path):
+    staged = tmp_path / '.staging/uploads/item'; staged.parent.mkdir(parents=True); staged.write_bytes(b'staged')
+    model = tmp_path / '.staging/model-explanations/keep'; model.parent.mkdir(); model.write_bytes(b'keep')
+    unknown = tmp_path / 'unknown/keep'; unknown.parent.mkdir(); unknown.write_bytes(b'keep')
+    storage = reset.build_manifest(ReferenceConnection({}), tmp_path)
+    assert [x.storage_key for x in storage.files] == ['.staging/uploads/item']
+    summary = reset.plan_summary(tmp_path, {}, storage, {'ids': [], 'counts': {}}, {'productive_train_id': 'x'})
+    assert summary['canonical_present'] == summary['clinical_database_references'] == 0
+    assert summary['physical_delete_targets'] == 1
+    assert summary['preserved_storage_files'] == 2
+
+
+def test_completed_operation_still_rejects_a_later_missing_file(missing_recovery, monkeypatch):
+    root, path, payload, engine, *_, resume = missing_recovery
+    original = reset.remove_completed_manifest
+    def crash(*a): raise RuntimeError('crash before retirement')
+    monkeypatch.setattr(reset, 'remove_completed_manifest', crash)
+    with pytest.raises(RuntimeError, match='retirement'): resume()
+    assert reset.read_manifest(path)['state'] == 'cleanup_completed'
+    extra = root / payload['storage_missing'][0]['storage_key']
+    extra.parent.mkdir(); extra.write_bytes(b'new')
+    monkeypatch.setattr(reset, 'remove_completed_manifest', original)
+    with pytest.raises(reset.ResetRefused, match='missing_before_reset apareció'): resume()
+    assert path.exists() and extra.read_bytes() == b'new'
+    assert reset.read_manifest(path)['state'] == 'cleanup_completed'
+
+
+def test_missing_root_is_not_classified_as_missing_file(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        reset.build_manifest(ReferenceConnection({'cell_crops': [crop_row('id', 'cell-crops/absent')]}),
+                             tmp_path / 'nonexistent-root')
+
+
+@pytest.mark.parametrize('mutation', [
+    lambda p: p['storage_missing'].append(dict(p['storage_missing'][0])),
+    lambda p: p['storage_missing'][0].update(row_id=p['storage_files'][0]['row_id']),
+    lambda p: p['storage_missing'][0].update(storage_key=p['storage_files'][0]['storage_key']),
+    lambda p: p['storage_missing'].clear(),
+    lambda p: p['storage_files'].append(dict(p['storage_files'][0], storage_key='cell-crops/new')),
+])
+def test_schema_coverage_and_disjointness_are_independent_of_digest(missing_recovery, mutation):
+    payload = copy.deepcopy(missing_recovery[2]); mutation(payload)
+    payload['storage_targets_sha256'] = reset.storage_targets_digest(payload)
+    with pytest.raises(reset.ResetRefused, match='duplicad|incompletas|ampliados'):
+        reset.validate_manifest(payload)

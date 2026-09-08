@@ -21,6 +21,7 @@ from typing import Any, Iterable, Mapping
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Connection, make_url
+from sqlalchemy.exc import SQLAlchemyError
 
 CONFIRMATION = "RESET MALARIA SMEAR ANALYSIS"
 EXPECTED_HEAD = "20260901_01"
@@ -73,6 +74,11 @@ STORAGE_COLUMNS = (
 class ResetRefused(RuntimeError):
     pass
 
+class StorageRefused(ResetRefused):
+    def __init__(self, classification: str):
+        self.classification = classification
+        super().__init__(classification)
+
 @dataclass(frozen=True)
 class ManifestEntry:
     storage_key: str
@@ -87,6 +93,28 @@ class ManifestEntry:
     inode: int
     device: int
     mtime_ns: int
+    column: str = ""
+    classification: str = "canonical_present"
+
+@dataclass(frozen=True)
+class MissingReference:
+    table: str
+    row_id: str
+    column: str
+    storage_key: str
+    expected_size: int | None
+    expected_sha256: str | None
+    classification: str = "missing_before_reset"
+    reason: str = "absent_from_canonical_storage"
+
+@dataclass(frozen=True)
+class StoragePlan:
+    files: list[ManifestEntry]
+    missing: list[MissingReference]
+
+    @property
+    def keys(self) -> set[str]:
+        return {x.storage_key for x in [*self.files, *self.missing]}
 
 @dataclass(frozen=True)
 class AuditClassification:
@@ -144,18 +172,19 @@ def classify_audit_event(row: Mapping[str, Any], clinical_ids: set[str], storage
     return AuditClassification("PRESERVE_UNRELATED_AUDIT", event_id, digest)
 
 def namespace_for(key: str) -> str:
+    safe_key(key)
     if not isinstance(key, str) or not key or "\x00" in key:
         raise ResetRefused("storage key vacío o inválido")
     path = PurePosixPath(key)
     if not path.parts or path.is_absolute() or ".." in path.parts or str(path) != key:
-        raise ResetRefused(f"storage key inseguro: {key!r}")
+        raise ResetRefused("storage key inseguro")
     namespace = "/".join(path.parts[:2]) if path.parts[0] == ".staging" else path.parts[0]
     if namespace not in ALLOWED_NAMESPACES:
-        raise ResetRefused(f"namespace clínico no autorizado: {namespace}")
+        raise ResetRefused("namespace clínico no autorizado")
     return namespace
 
 def inspect_file(root: Path, *, key: str, table: str, row_id: Any,
-                 expected_size: Any, expected_sha256: Any) -> ManifestEntry:
+                 expected_size: Any, expected_sha256: Any, column: str = "") -> ManifestEntry:
     namespace = namespace_for(key)
     parts = safe_key(key)
     try:
@@ -163,32 +192,62 @@ def inspect_file(root: Path, *, key: str, table: str, row_id: Any,
             info = os.stat(parts[-1], dir_fd=parent, follow_symlinks=False)
             if stat.S_ISLNK(info.st_mode): raise ResetRefused(f"symlink rechazado: {key}")
             if not stat.S_ISREG(info.st_mode): raise ResetRefused(f"archivo especial rechazado: {key}")
-            fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW, dir_fd=parent)
+            try: fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW, dir_fd=parent)
+            except FileNotFoundError as exc:
+                raise ResetRefused('STORAGE_FILE_CHANGED: archivo desapareció durante inspección') from exc
             try: metadata = file_metadata(fd)
             finally: os.close(fd)
     except OSError as exc:
         if exc.errno in (errno.ELOOP, errno.ENOTDIR):
             raise ResetRefused(f"symlink o directorio inseguro: {key}") from exc
         raise
-    if int(expected_size) != metadata['size'] or str(expected_sha256).lower() != metadata['sha256']:
+    validate_expected_metadata(expected_size, expected_sha256)
+    if ((expected_size is not None and expected_size != metadata['size']) or
+            (expected_sha256 is not None and expected_sha256 != metadata['sha256'])):
         raise ResetRefused(f"metadata ambigua para archivo: {key}")
-    return ManifestEntry(key, namespace, table, str(row_id), **metadata)
+    if not column and table != 'clinical_staging':
+        candidates = [c for t, _, c, _, _ in STORAGE_COLUMNS if t == table]
+        if len(candidates) == 1: column = candidates[0]
+    return ManifestEntry(key, namespace, table, str(row_id), **metadata, column=column)
 
-def build_manifest(connection: Connection, root: Path) -> list[ManifestEntry]:
+def validate_expected_metadata(size, sha256):
+    if size is not None and (type(size) is not int or size < 0):
+        raise ResetRefused('tamaño esperado inválido')
+    if sha256 is not None: _digest(sha256)
+
+def build_manifest(connection: Connection, root: Path) -> StoragePlan:
     entries: dict[str, ManifestEntry] = {}
+    missing: list[MissingReference] = []
+    seen = set()
+    with directory_fd(root):
+        pass  # A missing or unsafe root is not a missing clinical file.
     for table, id_col, key_col, size_col, sha_col in STORAGE_COLUMNS:
         rows = connection.execute(text(
-            f'SELECT "{id_col}", "{key_col}", "{size_col}", "{sha_col}" FROM "{table}" WHERE "{key_col}" IS NOT NULL ORDER BY "{key_col}", "{id_col}"'
+            f'SELECT "{id_col}", "{key_col}", "{size_col}", "{sha_col}" FROM "{table}" ORDER BY "{key_col}", "{id_col}"'
         )).mappings()
         for row in rows:
-            item = inspect_file(root, key=row[key_col], table=table, row_id=row[id_col],
-                                expected_size=row[size_col], expected_sha256=row[sha_col])
-            previous = entries.get(item.storage_key)
-            if previous and (previous.sha256, previous.size) != (item.sha256, item.size):
-                raise ResetRefused(f"storage key duplicada incompatible: {item.storage_key}")
-            if previous:
-                raise ResetRefused(f"archivo compartido por más de un registro: {item.storage_key}")
-            entries[item.storage_key] = item
+            key = row[key_col]
+            try:
+                validate_reference(table, str(row[id_col]), key_col, key)
+                validate_expected_metadata(row[size_col], row[sha_col])
+                if key in seen: raise StorageRefused('ambiguous')
+                seen.add(key)
+                item = inspect_file(root, key=key, table=table, row_id=row[id_col],
+                                    expected_size=row[size_col], expected_sha256=row[sha_col],
+                                    column=key_col)
+            except FileNotFoundError:
+                # Confirm absence with no-follow metadata only; never infer it from
+                # a vanished file descriptor or a missing/unsafe STORAGE_ROOT.
+                absent = MissingReference(table, str(row[id_col]), key_col, key,
+                                          row[size_col], row[sha_col])
+                require_missing(root, [asdict(absent)])
+                missing.append(absent)
+            except StorageRefused:
+                raise
+            except (OSError, ResetRefused, TypeError, ValueError) as exc:
+                raise StorageRefused('invalid_or_unsafe') from exc
+            else:
+                entries[item.storage_key] = item
     # Staging has no database row by design. Enumerate only the three exact roots;
     # never infer deletable namespaces from names or patterns.
     for namespace in sorted(x for x in ALLOWED_NAMESPACES if x.startswith(".staging/")):
@@ -215,7 +274,8 @@ def build_manifest(connection: Connection, root: Path) -> list[ManifestEntry]:
                 if key in entries:
                     raise ResetRefused(f"storage key duplicada incompatible: {key}")
                 entries[key] = item
-    return [entries[key] for key in sorted(entries)]
+    return StoragePlan([entries[key] for key in sorted(entries)],
+                       sorted(missing, key=lambda x: (x.table, x.row_id, x.column)))
 
 def fingerprint(connection: Connection, tables: Iterable[str] = PRESERVED_TABLES) -> dict[str, str]:
     result = {}
@@ -305,12 +365,48 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 def safe_key(key):
-    if type(key) is not str or not key or '\x00' in key:
+    if (type(key) is not str or not key or '\\' in key or ':' in key or
+            any(ord(c) < 32 or ord(c) == 127 for c in key)):
         raise ResetRefused('ruta relativa inválida')
     p = PurePosixPath(key)
     if p.is_absolute() or '..' in p.parts or str(p) != key or key == '.':
         raise ResetRefused('ruta relativa insegura')
     return p.parts
+
+def validate_reference(table, row_id, column, key):
+    if type(row_id) is not str or not row_id:
+        raise ResetRefused('identidad de referencia inválida')
+    if (table, column) not in {(t, c) for t, _, c, _, _ in STORAGE_COLUMNS}:
+        raise ResetRefused('tabla o columna de referencia inválida')
+    namespace = namespace_for(key)
+    if key == namespace or namespace != {
+        'microscopy_images': 'microscopy-images', 'cell_crops': 'cell-crops',
+        'cell_explanations': 'cell-explanations',
+    }[table]:
+        raise ResetRefused('namespace incompatible con tabla')
+
+def require_missing(root, references):
+    """Probe exact components with no-follow stat; never open a missing target.
+
+    Parent descriptors are pinned for confinement. There is no enumeration,
+    content read, alternate root, or deletion for these references.
+    """
+    with directory_fd(root) as root_fd:
+        for reference in references:
+            parts = safe_key(reference['storage_key'])
+            fd = os.dup(root_fd)
+            try:
+                for index, part in enumerate(parts):
+                    try: info = os.stat(part, dir_fd=fd, follow_symlinks=False)
+                    except FileNotFoundError: break
+                    if index == len(parts) - 1:
+                        raise ResetRefused('STORAGE_FILE_CHANGED: missing_before_reset apareció')
+                    if not stat.S_ISDIR(info.st_mode):
+                        raise ResetRefused('STORAGE_FILE_CHANGED: ancestro inseguro')
+                    child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+                    os.close(fd); fd = child
+            finally:
+                os.close(fd)
 
 @contextmanager
 def directory_fd(path, create=False):
@@ -392,12 +488,16 @@ def file_metadata(fd):
                 gid=after.st_gid, mode=stat.S_IMODE(after.st_mode), inode=after.st_ino,
                 device=after.st_dev, mtime_ns=after.st_mtime_ns)
 
-def storage_inventory(root):
+def storage_inventory(root, missing=()):
+    require_missing(root, missing)
+    forbidden = {x['storage_key'] for x in missing}
     result = {}
     def walk(fd, prefix=''):
         for name in sorted(os.listdir(fd)):
             key = prefix + name
             if key == '.staging/smear-reset': continue
+            if key in forbidden:
+                raise ResetRefused('STORAGE_FILE_CHANGED: missing_before_reset apareció')
             info = os.stat(name, dir_fd=fd, follow_symlinks=False)
             if stat.S_ISDIR(info.st_mode):
                 child = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
@@ -437,7 +537,8 @@ def _metadata(value):
 
 def validate_manifest(p):
     _fields(p, ('manifest_version', 'operation_id', 'state', 'created_at', 'updated_at',
-                'backup', 'database_before', 'clinical_audit_events', 'storage_files', 'storage_preserved'))
+                'backup', 'database_before', 'clinical_audit_events', 'storage_files',
+                'storage_missing', 'storage_targets_sha256', 'storage_preserved'))
     if type(p['manifest_version']) is not int or p['manifest_version'] != MANIFEST_VERSION:
         raise ResetRefused('versión no soportada')
     canonical_uuid(p['operation_id'])
@@ -482,23 +583,53 @@ def validate_manifest(p):
         if k not in all_audit: raise ResetRefused('auditoría fuera de targets')
     if type(p['storage_files']) is not list: raise ResetRefused('archivos inválidos')
     seen = set()
+    references = set()
     for value in p['storage_files']:
         _fields(value, ManifestEntry.__dataclass_fields__)
         key = value['storage_key']; namespace = namespace_for(key)
         if key == namespace or value['namespace'] != namespace or key in seen: raise ResetRefused('archivo duplicado o namespace inválido')
         seen.add(key)
+        if value['classification'] != 'canonical_present': raise ResetRefused('clasificación inválida')
         _metadata({k: value[k] for k in ('size', 'sha256', 'uid', 'gid', 'mode', 'inode', 'device', 'mtime_ns')})
         if value['table'] == 'clinical_staging':
-            if not namespace.startswith('.staging/') or value['row_id'] != key: raise ResetRefused('staging inválido')
+            if not namespace.startswith('.staging/') or value['row_id'] != key or value['column'] != '': raise ResetRefused('staging inválido')
         elif type(value['table']) is not str or value['table'] not in {x[0] for x in STORAGE_COLUMNS} or value['row_id'] not in {r['id'] for r in db['target_tables'][value['table']]}:
             raise ResetRefused('archivo fuera de targets')
         elif namespace != {'microscopy_images': 'microscopy-images', 'cell_crops': 'cell-crops', 'cell_explanations': 'cell-explanations'}[value['table']]:
             raise ResetRefused('namespace incompatible con tabla')
+        else:
+            validate_reference(value['table'], value['row_id'], value['column'], key)
+            reference = (value['table'], value['row_id'], value['column'])
+            if reference in references: raise ResetRefused('referencia duplicada')
+            references.add(reference)
+    if type(p['storage_missing']) is not list: raise ResetRefused('referencias ausentes inválidas')
+    for value in p['storage_missing']:
+        _fields(value, MissingReference.__dataclass_fields__)
+        validate_reference(value['table'], value['row_id'], value['column'], value['storage_key'])
+        validate_expected_metadata(value['expected_size'], value['expected_sha256'])
+        if value['classification'] != 'missing_before_reset' or value['reason'] != 'absent_from_canonical_storage':
+            raise ResetRefused('clasificación o motivo inválido')
+        reference = (value['table'], value['row_id'], value['column'])
+        if value['storage_key'] in seen or reference in references:
+            raise ResetRefused('referencia duplicada entre categorías')
+        seen.add(value['storage_key']); references.add(reference)
+        if value['row_id'] not in {r['id'] for r in db['target_tables'][value['table']]}:
+            raise ResetRefused('referencia ausente fuera de targets')
+    expected_references = {(t, r['id'], c) for t, _, c, _, _ in STORAGE_COLUMNS
+                           for r in db['target_tables'][t]}
+    if references != expected_references: raise ResetRefused('referencias incompletas o targets ampliados')
     if type(p['storage_preserved']) is not dict: raise ResetRefused('inventario inválido')
     for key, value in p['storage_preserved'].items():
         safe_key(key); _metadata(value)
         if key in seen or key.startswith('.staging/smear-reset/'): raise ResetRefused('inventario incompatible')
+    _digest(p['storage_targets_sha256'])
+    if p['storage_targets_sha256'] != storage_targets_digest(p):
+        raise ResetRefused('targets modificados')
     return p
+
+def storage_targets_digest(payload):
+    return digest_row({k: payload[k] for k in
+                       ('database_before', 'storage_files', 'storage_missing', 'storage_preserved')})
 
 def read_manifest(path):
     def pairs(items):
@@ -550,23 +681,30 @@ def backup_identity(path):
         finally: os.close(fd)
     return {'path': str(path), 'size': metadata['size'], 'sha256': metadata['sha256']}
 
-def write_operation_manifest(root, manifest, audit, before, backup):
+def write_operation_manifest(root, manifest, audit, before, backup, missing=()):
     reject_unsupported(root)
-    inventory = storage_inventory(root)
+    missing = [asdict(x) for x in missing]
     files = [asdict(x) for x in manifest]
-    for item in files:
-        expected = {k: item[k] for k in inventory.get(item['storage_key'], {})}
-        if inventory.get(item['storage_key']) != expected or not expected: raise ResetRefused('STORAGE_FILE_CHANGED')
+    inventory = validated_inventory(root, files, missing)
     now = utc_now(); operation_id = str(uuid.uuid4())
     payload = {'manifest_version': MANIFEST_VERSION, 'operation_id': operation_id,
                'state': 'prepared', 'created_at': now, 'updated_at': now,
                'backup': backup, 'database_before': before,
                'clinical_audit_events': {k: audit[k] for k in ('ids', 'fingerprints')},
                'storage_files': files,
+               'storage_missing': missing,
                'storage_preserved': {k: v for k, v in inventory.items() if k not in {x.storage_key for x in manifest}}}
+    payload['storage_targets_sha256'] = storage_targets_digest(payload)
     path = operation_path(root, operation_id)
     _atomic_manifest(path, payload)
     return path
+
+def validated_inventory(root, files, missing):
+    inventory = storage_inventory(root, missing)
+    for item in files:
+        expected = {k: item[k] for k in inventory.get(item['storage_key'], {})}
+        if inventory.get(item['storage_key']) != expected or not expected: raise ResetRefused('STORAGE_FILE_CHANGED')
+    return inventory
 
 def delete_manifest_files(root, manifest):
     deleted = 0
@@ -590,7 +728,7 @@ def delete_manifest_files(root, manifest):
     return deleted, []
 
 def check_preserved_storage(root, payload, baseline=None):
-    current = storage_inventory(root)
+    current = storage_inventory(root, payload['storage_missing'])
     expected = payload['storage_preserved'] if baseline is None else baseline
     if any(current.get(k) != v for k, v in expected.items()):
         raise ResetRefused('STORAGE_FILE_CHANGED: archivo preservado')
@@ -645,7 +783,7 @@ def resume_cleanup(engine, root, backup, operation_id):
             if payload['state'] == 'prepared':
                 state = database_state(payload, current)
                 if state == 'before':
-                    inventory = storage_inventory(root)
+                    inventory = storage_inventory(root, payload['storage_missing'])
                     expected = dict(payload['storage_preserved'])
                     for item in payload['storage_files']:
                         expected[item['storage_key']] = {k: item[k] for k in ('size', 'sha256', 'uid', 'gid', 'mode', 'inode', 'device', 'mtime_ns')}
@@ -657,22 +795,24 @@ def resume_cleanup(engine, root, backup, operation_id):
                     raise ResetRefused('DATABASE_STATE_MIXED')
                 payload = transition(path, payload, 'database_committed')
             require_after(payload, current)
-            validate_preserved_storage_references(connection, {x['storage_key'] for x in payload['storage_files']})
-            if payload['state'] != 'cleanup_completed':
-                payload = transition(path, payload, 'cleanup_pending')
+            validate_preserved_storage_references(connection, {x['storage_key'] for x in
+                                                  [*payload['storage_files'], *payload['storage_missing']]})
             baseline = check_preserved_storage(root, payload)
+            if payload['state'] != 'cleanup_completed' and payload['storage_files']:
+                payload = transition(path, payload, 'cleanup_pending')
             if payload['state'] == 'cleanup_completed':
-                if any(x['storage_key'] in storage_inventory(root) for x in payload['storage_files']):
+                if any(x['storage_key'] in storage_inventory(root, payload['storage_missing']) for x in payload['storage_files']):
                     raise ResetRefused('STORAGE_FILE_CHANGED: operación completada')
                 remove_completed_manifest(path, payload)
                 return {'status': 'CLEANUP_COMPLETE', 'storage_files_deleted': 0}
+            if read_manifest(path) != payload: raise ResetRefused('manifiesto cambió')
             deleted, conflicts = delete_manifest_files(root, [ManifestEntry(**x) for x in payload['storage_files']])
             if conflicts:
                 return {'status': 'DATABASE_RESET_STORAGE_CLEANUP_PENDING', 'operation_id': operation_id,
                         'storage_files_deleted': deleted, 'conflicts': conflicts}
             require_after(payload, database_snapshot(connection, url))
             check_preserved_storage(root, payload, baseline)
-            inventory = storage_inventory(root)
+            inventory = storage_inventory(root, payload['storage_missing'])
             if any(x['storage_key'] in inventory for x in payload['storage_files']): raise ResetRefused('STORAGE_FILE_CHANGED')
             remove_empty_directories(root, payload['storage_files'])
             payload = transition(path, payload, 'cleanup_completed')
@@ -773,14 +913,31 @@ def validate_preserved_storage_references(connection, storage_keys):
             if _json_scalars(dict(row), nested=True) & storage_keys:
                 raise ResetRefused('registro preservado requiere archivo objetivo')
 
-def plan(connection: Connection, root: Path) -> tuple[dict[str, int], list[ManifestEntry], dict[str, str], dict[str, Any], dict[str, Any]]:
+def plan(connection: Connection, root: Path) -> tuple[dict[str, int], StoragePlan, dict[str, str], dict[str, Any], dict[str, Any]]:
     validate_schema(connection); detect_active_work(connection)
     clinical_ids, storage_keys = clinical_references(connection)
     validate_scientific_validation(connection, clinical_ids, storage_keys)
     counts = {table: connection.execute(text(f'SELECT count(*) FROM "{table}"')).scalar_one() for table in DELETE_ORDER}
     files = build_manifest(connection, root)
-    validate_preserved_storage_references(connection, {x.storage_key for x in files})
+    validate_preserved_storage_references(connection, files.keys)
     return counts, files, fingerprint(connection), audit_plan(connection, clinical_ids, storage_keys), release_fingerprint(connection)
+
+def plan_summary(root, counts, storage, audit, release):
+    inventory = validated_inventory(root, [asdict(x) for x in storage.files],
+                                    [asdict(x) for x in storage.missing])
+    present = sum(x.table != 'clinical_staging' for x in storage.files)
+    return {
+        'status': 'DRY_RUN', 'changed': False, 'rows_by_table': counts,
+        'clinical_database_references': present + len(storage.missing),
+        'canonical_present': present, 'missing_before_reset': len(storage.missing),
+        'invalid_or_unsafe': 0, 'ambiguous': 0,
+        'physical_delete_targets': len(storage.files),
+        'database_delete_targets': sum(counts.values()) + len(audit.get('ids', [])),
+        'preserved_storage_files': len(set(inventory) - {x.storage_key for x in storage.files}),
+        'missing_references': [asdict(x) for x in storage.missing],
+        'files': len(storage.files), 'bytes': sum(x.size for x in storage.files),
+        'audit': audit['counts'], 'productive_train_id': release['productive_train_id'],
+    }
 
 def execute_reset(engine, root: Path, backup: Path) -> dict[str, Any]:
     backup_record = backup_identity(backup)
@@ -801,7 +958,8 @@ def execute_reset(engine, root: Path, backup: Path) -> dict[str, Any]:
             counts, manifest, before, audit, release = plan(connection, root)
             admin_before = admin_fingerprint(connection)
             snapshot = database_snapshot(connection, url)
-            operation = write_operation_manifest(root, manifest, audit, snapshot, backup_record)
+            operation = write_operation_manifest(root, manifest.files, audit, snapshot, backup_record,
+                                                 missing=manifest.missing)
             for table in reversed(DELETE_ORDER):
                 connection.execute(text(f'LOCK TABLE "{table}" IN SHARE ROW EXCLUSIVE MODE'))
             for table in DELETE_ORDER:
@@ -873,12 +1031,14 @@ def main(argv=None) -> int:
                     connection.execute(text("SET TRANSACTION READ ONLY; SET LOCAL statement_timeout='10s'; SET LOCAL lock_timeout='2s'"))
                     validate_identity(connection, url)
                     counts, manifest, _, audit, release = plan(connection, root)
-                    result = {"status": "DRY_RUN", "changed": False, "rows_by_table": counts, "files": len(manifest), "bytes": sum(x.size for x in manifest), "audit": audit["counts"], "productive_train_id": release["productive_train_id"]}
+                    result = plan_summary(root, counts, manifest, audit, release)
                 finally:
                     tx.rollback()
         print(json.dumps(result, sort_keys=True, indent=2)); return 0
-    except (KeyError, TypeError, OSError, ValueError, ResetRefused) as exc:
-        print(f"RESET_REFUSED: {exc}", file=sys.stderr); return 2
+    except (KeyError, TypeError, OSError, ValueError, ResetRefused, SQLAlchemyError) as exc:
+        # Exception messages may contain a DSN, SQL parameters or absolute paths.
+        category = exc.classification if isinstance(exc, StorageRefused) else 'preflight_or_recovery_guard'
+        print('RESET_REFUSED: ' + category, file=sys.stderr); return 2
 
 if __name__ == "__main__":
     raise SystemExit(main())
