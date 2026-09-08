@@ -11,8 +11,9 @@ La cadena lineal de Prompt 8 es:
 
 Por tanto, el contrato de Prompt 8 quedó completo por primera vez en
 `20260728_03`; no basta con aplicar solamente `20260728_01`. Esa revisión es un
-mínimo histórico, no el head operativo vigente. El head versionado actual es
-`20260812_02` y operación debe comprobar siempre `current=head`.
+mínimo histórico, no el head operativo vigente. El head versionado vigente se
+deriva del repositorio (`make check-alembic-linearity` o `alembic heads`), no de
+un valor fijado en esta doc; operación debe comprobar siempre `current=head`.
 
 La revisión base introduce:
 

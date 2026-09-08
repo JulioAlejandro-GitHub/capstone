@@ -1,4 +1,4 @@
-.PHONY: validate test test-backend test-backend-integration test-frontend test-ml db-status db-backup db-migrate-check db-migrate db-purge-plan db-purge-execute test-db test-schema-clean test-db-up test-db-down test-db-reset test-db-bootstrap smear-reset-plan smear-reset-execute lint
+.PHONY: validate test test-backend test-backend-integration test-frontend test-ml db-status db-backup db-migrate-check db-migrate check-alembic-linearity db-purge-plan db-purge-execute test-db test-schema-clean test-db-up test-db-down test-db-reset test-db-bootstrap smear-reset-plan smear-reset-execute lint
 
 validate:
 	./scripts/validate.sh
@@ -26,6 +26,13 @@ db-migrate-check:
 	docker compose exec -T backend python -m alembic heads
 db-migrate:
 	./scripts/db/migrate.sh
+check-alembic-linearity:
+	@# Gate estático de CI reproducible en local antes de hacer push: deriva el head del
+	@# ScriptDirectory del repo y exige una única línea recta (un head, sin branch/merge
+	@# points). No hay ningún head hardcodeado. Usa el intérprete de backend_api/.venv si
+	@# existe (trae alembic); si no, `python` del PATH.
+	@PY="$(CURDIR)/backend_api/.venv/bin/python"; [ -x "$$PY" ] || PY=python; \
+	  "$$PY" scripts/db/check_alembic_linearity.py
 db-purge-plan:
 	@test -n "$(FLAGS)" || (echo 'Uso: make db-purge-plan FLAGS="--dataset --run --cell"' >&2; exit 2)
 	./scripts/db/purge.sh $(FLAGS)

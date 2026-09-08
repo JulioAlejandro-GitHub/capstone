@@ -40,5 +40,12 @@ make validate
 pero permanecen pendientes de habilitación hasta Prompt 1B.1 porque el override actual
 oculta los mounts de Alembic.
 
+`make check-alembic-linearity` reproduce en local el gate estático de CI (job
+`alembic-static`): deriva el head del `ScriptDirectory` del repo y exige una única línea
+recta (un head, sin branch points ni merge points). No hay ningún head hardcodeado; si el
+historial se bifurca, falla identificando la revisión exacta. Ejecútalo antes de hacer
+push cuando agregues una migración. Script: `scripts/db/check_alembic_linearity.py`
+(tests: `backend_api/tests/test_check_alembic_linearity.py`).
+
 La guardia `scripts/check_docker_postgres_contract.py`, ejecutada por `make validate` y
 CI, impide reintroducir conexiones o herramientas operativas hacia el host.

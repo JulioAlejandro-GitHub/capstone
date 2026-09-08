@@ -24,7 +24,34 @@ from sqlalchemy.engine import Connection, make_url
 from sqlalchemy.exc import SQLAlchemyError
 
 CONFIRMATION = "RESET MALARIA SMEAR ANALYSIS"
-EXPECTED_HEAD = "20260901_01"
+
+
+def _repo_linear_head() -> str:
+    """Head Alembic derivado del ScriptDirectory del repo en runtime, nunca hardcodeado.
+
+    Exige una única línea recta (un head, sin branch/merge points), la misma garantía que
+    el gate de CI (scripts/db/check_alembic_linearity.py). Si el historial no es lineal el
+    módulo no importa: un reset de datos clínicos no debe operar sobre un repo con el
+    historial de migraciones roto.
+    """
+    from alembic.config import Config
+    from alembic.script import ScriptDirectory
+
+    root = Path(__file__).resolve().parents[2]
+    scripts = ScriptDirectory.from_config(Config(str(root / "alembic.ini")))
+    heads = scripts.get_heads()
+    if len(heads) != 1 or any(
+        revision.is_branch_point or revision.is_merge_point
+        for revision in scripts.walk_revisions()
+    ):
+        raise RuntimeError(
+            f"Historial Alembic no lineal (heads={sorted(heads)}); "
+            "reconcilie las migraciones a una sola línea antes de operar."
+        )
+    return heads[0]
+
+
+EXPECTED_HEAD = _repo_linear_head()
 ALLOWED_SCHEMA = "public"
 ALLOWED_NAMESPACES = frozenset({
     "microscopy-images", "cell-crops", "cell-explanations",

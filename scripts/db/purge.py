@@ -45,7 +45,31 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
 
-EXPECTED_HEAD = "20260901_01"
+
+def _repo_linear_head() -> str:
+    """Head Alembic derivado en runtime del ScriptDirectory del repo, nunca hardcodeado.
+
+    Exige una única línea recta (un head, sin branch/merge points), igual que el gate de
+    CI (scripts/db/check_alembic_linearity.py). Si el historial no es lineal, aborta: un
+    purgador de datos no debe operar sobre un repo con el historial de migraciones roto.
+    """
+    from alembic.config import Config
+    from alembic.script import ScriptDirectory
+
+    root = Path(__file__).resolve().parents[2]
+    scripts = ScriptDirectory.from_config(Config(str(root / "alembic.ini")))
+    heads = scripts.get_heads()
+    if len(heads) != 1 or any(
+        revision.is_branch_point or revision.is_merge_point
+        for revision in scripts.walk_revisions()
+    ):
+        raise PurgeRefused(
+            f"Historial Alembic no lineal (heads={sorted(heads)}); "
+            "reconcilie las migraciones a una sola línea antes de purgar."
+        )
+    return heads[0]
+
+
 ALLOWED_SCHEMA = "public"
 EXECUTION_ENV_FLAG = "PURGE_DB_ALLOW_EXECUTION"
 VERIFIED_BACKUP_ENV = "CAPSTONE_VERIFIED_BACKUP"
@@ -344,9 +368,10 @@ def validate_identity(connection, url) -> None:
     revision = connection.execute(
         text("SELECT version_num FROM alembic_version")
     ).scalar_one_or_none()
-    if revision != EXPECTED_HEAD:
+    expected_head = _repo_linear_head()
+    if revision != expected_head:
         raise PurgeRefused(
-            f"Alembic current ({revision}) != head esperado ({EXPECTED_HEAD}); "
+            f"Alembic current ({revision}) != head esperado ({expected_head}); "
             "ejecute las migraciones antes de purgar."
         )
 

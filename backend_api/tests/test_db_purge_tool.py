@@ -280,7 +280,7 @@ class _FakeConnection:
         if "current_database" in sql:
             return _Result(("malaria_experiments", "julio", "public"))
         if "alembic_version" in sql:
-            return _Result(purge.EXPECTED_HEAD)
+            return _Result(purge._repo_linear_head())
         if sql.startswith("DELETE FROM"):
             table = sql.split('"')[1]
             remaining = self.engine.counts.get(table, 0)

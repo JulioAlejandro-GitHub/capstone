@@ -37,20 +37,8 @@ jobs:
       - run: pip install -r backend_api/requirements.txt
       - run: PYTHONPATH=backend_api python -m compileall -q alembic backend_api scripts/db
       - name: Validate linear Alembic history
-        run: |
-          PYTHONPATH=backend_api python - <<'PY'
-          from alembic.config import Config
-          from alembic.script import ScriptDirectory
-
-          scripts = ScriptDirectory.from_config(Config('alembic.ini'))
-          heads = scripts.get_heads()
-          revisions = list(scripts.walk_revisions())
-          assert heads == ['20260812_02'], f'expected head 20260812_02, found {heads}'
-          assert not any(
-              revision.is_branch_point or revision.is_merge_point
-              for revision in revisions
-          ), 'expected a linear Alembic history'
-          PY
+        run: python scripts/db/check_alembic_linearity.py
+      - run: PYTHONPATH=backend_api pytest backend_api/tests/test_check_alembic_linearity.py
   frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 15

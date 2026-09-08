@@ -88,8 +88,10 @@ Estados: `draft → annotation_in_progress → ready_for_analysis → completed`
 1. La fundación de sesiones se introdujo en `20260810_01` sobre
    `20260728_03`; anotaciones y sus extensiones están en la cadena lineal
    `20260810_02 → 20260810_03 → 20260810_04 → 20260810_05`.
-2. El head versionado actual es `20260812_02`. Operación y despliegue deben
-   validar `current=head`; `20260810_01` no es el head operativo actual.
+2. El head versionado vigente se deriva del repositorio
+   (`make check-alembic-linearity` o `alembic heads`), no de un valor fijado en
+   esta doc. Operación y despliegue deben validar `current=head`; `20260810_01`
+   no es el head operativo actual.
 3. Verificar tablas, FK, checks, índices y triggers; estas revisiones no
    requieren backfill de resultados científicos históricos.
 4. Los roles reciben permisos mediante el mapa de aplicación, sin mutar roles
