@@ -97,6 +97,8 @@ RULES = (
 ALLOWLIST: dict[str, dict[str, int]] = {
     "backend_api/tests/test_database_url_contract.py": {"PG_DSN_HOST": 4},
     "malaria_dl_local_project/tests/test_database_url_contract.py": {"PG_DSN_HOST": 4},
+    "backend_api/tests/test_db_purge_tool.py": {"PG_DSN_HOST": 1},
+    "backend_api/tests/test_smear_reset_tool.py": {"PG_DSN_HOST": 1},
     "backend_api/tests/test_foundation_config.py": {"RETIRED_DATABASE_URL": 1},
     "backend_api/tests/test_docker_postgres_tooling.py": {
         "HOST_ADMIN_COMMAND": 2,
