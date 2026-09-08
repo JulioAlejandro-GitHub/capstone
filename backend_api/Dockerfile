@@ -45,6 +45,7 @@ COPY alembic /app/alembic
 COPY alembic.ini /app/alembic.ini
 COPY scripts/storage/reset_smear_analysis.py /app/scripts/storage/reset_smear_analysis.py
 COPY scripts/storage/reset_smear_analysis.sh /app/scripts/storage/reset_smear_analysis.sh
+COPY scripts/db/purge.py /app/scripts/db/purge.py
 
 # Fix ownership
 RUN chown -R capstone:capstone /app

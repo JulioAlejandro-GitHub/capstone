@@ -28,6 +28,8 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 | Desarrollo local | [Desarrollo local](engineering/local_development.md) |
 | PostgreSQL Docker-only | [Contrato de instancia PostgreSQL única](engineering/postgresql_docker_single_instance.md) |
 | Seguridad de base de datos | [Política de seguridad DB](engineering/database_safety_policy.md) |
+| Reset de análisis de frotis | [Reset controlado](operations/smear_analysis_reset.md) |
+| Purga de datos por subsistema | [Purga por subsistema](operations/subsystem_data_purge.md) |
 | Alembic | [Política Alembic](engineering/alembic_simple_policy.md) |
 | Autenticación y permisos | [Autenticación y RBAC](engineering/authentication_rbac.md) |
 | API científica | [API científica](engineering/scientific_api.md) |

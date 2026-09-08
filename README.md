@@ -29,6 +29,11 @@ históricos de inicialización. Backup, status y pruebas se operan mediante Make
 los wrappers de `scripts/db/`. Los comandos Alembic permanecen pendientes de
 habilitación hasta corregir los mounts en Prompt 1B.1.
 
+La purga de datos por subsistema científico (`--dataset` / `--run` / `--cell`, nunca
+`users`) se opera con `scripts/db/purge.sh` o `make db-purge-plan` / `db-purge-execute`;
+el modo por defecto es dry-run. Contrato en
+[operations/subsystem_data_purge.md](docs/operations/subsystem_data_purge.md).
+
 El contrato completo está en
 [PostgreSQL Docker: instancia única](docs/engineering/postgresql_docker_single_instance.md).
 El índice activo está en [docs/README.md](docs/README.md).

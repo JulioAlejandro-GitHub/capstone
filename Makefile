@@ -1,4 +1,4 @@
-.PHONY: validate test test-backend test-backend-integration test-frontend test-ml db-status db-backup db-migrate-check db-migrate test-db test-schema-clean test-db-up test-db-down test-db-reset test-db-bootstrap smear-reset-plan smear-reset-execute lint
+.PHONY: validate test test-backend test-backend-integration test-frontend test-ml db-status db-backup db-migrate-check db-migrate db-purge-plan db-purge-execute test-db test-schema-clean test-db-up test-db-down test-db-reset test-db-bootstrap smear-reset-plan smear-reset-execute lint
 
 validate:
 	./scripts/validate.sh
@@ -26,6 +26,14 @@ db-migrate-check:
 	docker compose exec -T backend python -m alembic heads
 db-migrate:
 	./scripts/db/migrate.sh
+db-purge-plan:
+	@test -n "$(FLAGS)" || (echo 'Uso: make db-purge-plan FLAGS="--dataset --run --cell"' >&2; exit 2)
+	./scripts/db/purge.sh $(FLAGS)
+db-purge-execute:
+	@test -n "$(FLAGS)" || (echo 'Uso: make db-purge-execute FLAGS="--cell"' >&2; exit 2)
+	@printf '%s\n' 'Purga REAL de datos. Escriba exactamente: PURGE'; read -r confirmation; \
+	test "$$confirmation" = "PURGE" || (echo "Confirmación incorrecta." >&2; exit 2); \
+	PURGE_DB_ALLOW_EXECUTION=1 ./scripts/db/purge.sh $(FLAGS) --yes
 smear-reset-plan:
 	docker compose exec -T backend /app/scripts/storage/reset_smear_analysis.sh
 smear-reset-execute:

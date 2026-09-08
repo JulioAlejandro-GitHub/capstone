@@ -1,0 +1,26 @@
+delete_order,table_name,primary_key_column,target_count,selection_reason
+1,cell_explanations,id,13,JOIN cell_prediction_id al conjunto cell_predictions
+2,cell_classification_reviews,id,4,JOIN cell_prediction_id al conjunto cell_predictions
+3,cell_classification_events,id,2191,JOIN classification_run_id al conjunto cell_classification_runs
+4,smear_analysis_summaries,id,34,JOIN classification_run_id al conjunto cell_classification_runs
+5,cell_predictions,id,1901,JOIN classification_input_id al conjunto cell_classification_inputs
+6,cell_classification_inputs,id,2291,JOIN classification_run_id al conjunto cell_classification_runs
+7,cell_classification_runs,id,41,JOIN detection_run_id al conjunto cell_detection_runs
+8,scientific_reviews,id,11,JOIN entity_id al conjunto cell_detections
+9,cell_crops,id,2505,JOIN cell_detection_id al conjunto cell_detections
+10,cell_detection_events,id,182,JOIN detection_run_id al conjunto cell_detection_runs
+11,cell_detections,id,2505,JOIN detection_run_id al conjunto cell_detection_runs
+12,image_connected_components,id,3718,JOIN detection_run_id al conjunto cell_detection_runs
+13,cell_detection_runs,id,45,JOIN analysis_run_id al conjunto microscopy_analysis_runs
+14,quality_gate_decisions,id,4,JOIN analysis_run_id al conjunto microscopy_analysis_runs
+15,quality_assessment_queue_items,id,50,JOIN analysis_run_id al conjunto microscopy_analysis_runs
+16,microscopy_analysis_events,id,258,JOIN analysis_run_id al conjunto microscopy_analysis_runs
+17,image_quality_assessments,id,52,JOIN analysis_run_id al conjunto microscopy_analysis_runs
+18,microscopy_analysis_run_images,id,52,JOIN analysis_run_id al conjunto microscopy_analysis_runs
+19,microscopy_analysis_runs,id,50,Raíz del flujo de ingesta o análisis
+20,microscopy_images,id,59,Linaje exacto de análisis o ingesta; hijos fuera del alcance bloquean purga
+21,image_ingestion_batches,id,53,Raíz del flujo de ingesta o análisis
+22,smear_slides,id,53,Linaje exacto de análisis o ingesta; hijos fuera del alcance bloquean purga
+23,blood_samples,id,53,Linaje exacto de análisis o ingesta; hijos fuera del alcance bloquean purga
+24,scientific_cases,id,53,Linaje exacto de análisis o ingesta; hijos fuera del alcance bloquean purga
+25,research_subjects,id,53,Linaje exacto de análisis o ingesta; hijos fuera del alcance bloquean purga
