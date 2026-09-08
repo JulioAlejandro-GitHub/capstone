@@ -158,17 +158,27 @@ reconciliation_status='PASS'` ✅ · `NOT EXISTS` check requerido sin `PASS` má
 `completed` contra este `dataset_version_id` el 2026-08-18 (commit `92e36c72`), que es
 exactamente una corrida completa de `run_train_all_models.py` (3 modelos × 4 optimizers).
 
-> ⚠️ **Fricción de entorno no documentada (Hallazgo H6).** El `.env` versionado tiene
-> `DATABASE_URL=postgresql://julio:root@localhost:5432/…`, pero
-> `src/malaria_dl/persistence/database.py:42` **rechaza** cualquier hostname distinto de
-> `db` (`"DATABASE_URL solo permite el hostname db"`). Verificado en vivo:
-> `resolve_governed_dataset('d8c0cab5-…')` con el `.env` actual falla con ese error antes
-> de llegar a PostgreSQL. Las corridas del 2026-08-18 se ejecutaron en el **host macOS**
-> (`runs.host_name = MacBook-Pro-de-Julio.local`, `machine=arm64`, GPU Metal
-> `/physical_device:GPU:0`, Python 3.12.13, TF 2.17.1) — es decir, con un `.env` que
-> apuntaba a `@db:5432` y un alias `db → 127.0.0.1` en `/etc/hosts` (hoy ausente). Ningún
-> documento describe ese requisito; `guia_entrenamiento_patient_split.md:24-27` dice lo
-> contrario ("ejecutarse dentro del servicio `backend`, nunca con Python del host").
+> ⚠️ **Fricción de entorno no documentada (Hallazgo H6).** **No existe ningún `.env`
+> versionado** (`.gitignore:38-40` ignora `.env` y `.env.*`, solo `!.env.example`;
+> `git ls-files` no lista ninguno — misma constatación que
+> [`architecture_audit_2026-09-08.md`](../audits/architecture_audit_2026-09-08.md) §6
+> punto 5). Los `.env.example` versionados **no** definen `DATABASE_URL`: declaran que lo
+> inyecta Docker Compose hacia `db:5432`. Pero el pipeline ML carga `PROJECT_ROOT/.env`
+> (`persistence/database.py:14,52`) y `normalize_database_url` **exige** hostname `db`
+> (`database.py:42`) y puerto `5432` (`:44`). Consecuencia: correr `python -m src.train` /
+> `run_train_all_models.py` **en el host** requiere, o bien ejecutar dentro del contenedor
+> `backend` (donde `db` resuelve por la red de Compose), o bien una configuración local
+> **no versionada** cuyo `DATABASE_URL` use host `db` resoluble (p. ej. una entrada
+> `db` en `/etc/hosts`). Un `DATABASE_URL` local con host `localhost` —la elección natural
+> al copiar parámetros de conexión— es **rechazado** por `database.py:42` **antes** de
+> cualquier llamada a PostgreSQL: verificado en vivo, `resolve_governed_dataset('d8c0cab5-…')`
+> con esa configuración lanza `RuntimeError: "DATABASE_URL solo permite el hostname db"`.
+>
+> Nada de este requisito de host está documentado, y sin embargo **todas** las corridas
+> gobernadas de TRAIN corrieron en el host: `runs.host_name = MacBook-Pro-de-Julio.local`,
+> `machine=arm64`, GPU Metal `/physical_device:GPU:0`, Python 3.12.13, TF 2.17.1.
+> `guia_entrenamiento_patient_split.md:24-27` dice lo contrario ("ejecutarse dentro del
+> servicio `backend`, nunca con Python del host").
 
 ### 1.5 Ciclo de vida de una corrida — filas creadas, orden, tablas
 
@@ -480,7 +490,7 @@ Ver sección Hallazgos.
 | **H3** | Medio | **El orquestador no valida `--dataset-version-id` antes de lanzar.** `main()` solo comprueba que exista `src/train.py` (`run_train_all_models.py:165`). Un ID inválido/no-entrenable se descubre recién en el primer subproceso; con `--continue-on-error` intenta y falla las 12. Un pre-check de 1 query (`resolve_governed_dataset` / `list_trainable_dataset_versions`) evitaría 12 arranques inútiles de TensorFlow. |
 | **H4** | Medio | **Sin transacción ni bookmark de lote.** Fallo a mitad de grilla (default) → corridas previas confirmadas, `runs.status='failed'` con hijos parciales, resto abortado, sin reanudación. No hay reconciliador que barra TRAINs `completed` con tracking incompleto (a diferencia de la ruta EVALUATE, que re-inventaría desde BD). |
 | **H5** | Bajo | **Doble identidad `vgg16`.** `models` tiene `vgg16_transfer_learning` (12 versiones, en uso) y una fila huérfana `vgg16` (`model_type='unknown'`, creada 2026-07-25 antes del mapeo). `model_name_from_train_arg` (`tracking.py:433`) tapa el síntoma pero la fila muerta persiste. |
-| **H6** | Medio | **Documentación vs. realidad — host vs. contenedor.** Toda corrida gobernada de TRAIN (`runs.host_name`) se ejecutó en el host macOS con GPU Metal; `guia_entrenamiento_patient_split.md:24-27` afirma "nunca con Python del host". Además el `.env` versionado (`…@localhost:5432…`) es **rechazado** por `database.py:42` (exige hostname `db`); correr en el host requiere un alias `db → 127.0.0.1` que ningún documento menciona. Reproducir el comando del enunciado hoy, tal cual, **falla** con `DATABASE_URL solo permite el hostname db`. |
+| **H6** | Medio | **Documentación vs. realidad — host vs. contenedor + requisito de entorno no documentado.** Toda corrida gobernada de TRAIN (`runs.host_name`) se ejecutó en el host macOS con GPU Metal; `guia_entrenamiento_patient_split.md:24-27` afirma "nunca con Python del host". **No hay `.env` versionado** (`.gitignore:38-40`; ver [`architecture_audit_2026-09-08.md`](../audits/architecture_audit_2026-09-08.md) §6 punto 5) y los `.env.example` no definen `DATABASE_URL`. Correr TRAIN en el host exige un `DATABASE_URL` local (no versionado) con host `db` resoluble o ejecutar dentro del contenedor `backend`: `database.py:42` rechaza cualquier otro hostname (incl. `localhost`) antes de conectar. Nada de esto está documentado. |
 | **H7** | Bajo | **Documentación vs. código — fine-tune epochs.** `guia_entrenamiento_patient_split.md` §3 Opción A usa `--fine-tune-epochs 10` (vgg16) y `6` (densenet); el orquestador hardcodea `20` para ambos (`run_train_all_models.py:66-68`). Los resultados de la grilla y los de los comandos individuales de la guía no son comparables. |
 | **H8** | Medio | **"Entrenado" no implica "disponible".** `runs.release_status` queda `NULL` tras TRAIN; solo pasa a `available_to_publish` tras una `evaluation` `completed` enlazada por `run_lineage` (`training_release_eligibility_service.py` invocado desde `evaluation_terminal_service.py:80`). Paso manual siguiente obligatorio y no evidente: `run_evaluate_all_trainings.py`. |
 | **H9** | Bajo | **`src/model_governance/reconcile_training_versions.py`** (CLI standalone, sin documentar) duplica `finalize_training_model_version`, que `trainer.py:2444` ya invoca inline al cerrar cada TRAIN exitoso. Ya señalado en [`architecture_audit_2026-09-08.md`](../audits/architecture_audit_2026-09-08.md) §5.3; sigue huérfano y puede alterar `model_versions`. |
