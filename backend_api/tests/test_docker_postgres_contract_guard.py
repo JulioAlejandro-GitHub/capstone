@@ -34,6 +34,13 @@ RETIRED_RULE = "RETIRED_DATABASE_URL"
         ("brew services start postgresql", "HOST_ADMIN_COMMAND"),
         ("createdb -h localhost app", "HOST_ADMIN_COMMAND"),
         ("psql postgresql://user:secret@localhost/app", "HOST_POSTGRES_BINARY"),
+        # A real connection written as a subprocess argv list stays a violation
+        # whenever it targets a host other than the canonical "db".
+        ('subprocess.run(["pg_restore", "-h", "localhost", str(path)])', "HOST_POSTGRES_BINARY"),
+        ('subprocess.run(["psql", "--host", "127.0.0.1", "-c", "SELECT 1"])', "HOST_POSTGRES_BINARY"),
+        ('subprocess.run(["pg_restore", "--username", "u", "--dbname", "app", "b.dump"])', "HOST_POSTGRES_BINARY"),
+        # Offline "--list" plus an explicit host is still a connection attempt.
+        ("pg_restore --list --host replica.internal backup.dump", "HOST_POSTGRES_BINARY"),
     ],
 )
 def test_forbidden_patterns_fail(text, rule):
@@ -49,10 +56,32 @@ def test_forbidden_patterns_fail(text, rule):
         "http://localhost:5173",
         "http://localhost:8000",
         "malaria_dl_local_project",
+        # Naming a client binary without opening a connection is allowed: a
+        # PATH lookup, or an offline read of a dump *file*.
+        '    pg_restore = shutil.which("pg_restore")',
+        'if shutil.which("psql") is None:',
+        'subprocess.run([pg_restore, "--list", str(path)], check=False)',
+        'subprocess.run(["pg_restore", "--list", "backup.dump"])',
+        "pg_restore -l backup.dump",
     ],
 )
 def test_allowed_patterns_pass(text):
     violations, _ = guard.scan_text("notes.md", text)
+    assert violations == []
+
+
+def test_which_lookup_of_pg_binary_is_not_a_host_invocation():
+    """``shutil.which("pg_restore")`` resolves a path; it never connects, so the
+    Docker contract must not flag it -- nor the offline ``pg_restore --list`` of a
+    dump *file* that follows it. This is exactly
+    ``scripts/storage/reset_smear_analysis.py``'s backup preflight; see
+    docs/audits/ci_f3_docker_postgres_contract_fix_2026-09-08.md."""
+    source = (
+        "import shutil, subprocess\n"
+        'pg_restore = shutil.which("pg_restore")\n'
+        'subprocess.run([pg_restore, "--list", str(path)], check=False)\n'
+    )
+    violations, _ = guard.scan_text("scripts/storage/reset_smear_analysis.py", source)
     assert violations == []
 
 

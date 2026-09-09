@@ -106,6 +106,7 @@ ALLOWLIST: dict[str, dict[str, int]] = {
     },
     "backend_api/tests/test_docker_postgres_contract_guard.py": {
         "HOST_ADMIN_COMMAND": 2,
+        "HOST_POSTGRES_BINARY": 3,
         "PG_DSN_HOST": 5,
         "PG_HOST_ENV": 1,
         "RETIRED_DATABASE_URL": 1,
@@ -160,6 +161,34 @@ def _docker_governed_native_command(text: str, line: str) -> bool:
     return bool(
         re.search(r"(?:^|\n)\s*(?:docker\s+)?compose\s+exec\s+-T\s+db\b", text)
         and re.search(r"\b(?:pg_dump|pg_restore|pg_isready)\b", line)
+    )
+
+
+# A PostgreSQL client binary that is only *named* -- resolved on ``PATH`` or used
+# to read a dump *file* -- never opens a connection, so it cannot bypass the
+# ``db:5432`` contract. These two shapes are exempt; anything that carries a
+# connection target (``-h``/``--host``/``--dbname``/conninfo) stays a violation.
+_BINARY_AVAILABILITY_PROBE = re.compile(
+    r"\bwhich\s*\(\s*['\"](?:psql|pg_dump|pg_restore|pg_isready)['\"]",
+    re.IGNORECASE,
+)
+_OFFLINE_ARCHIVE_INSPECTION = re.compile(
+    r"\bpg_restore\b[^\n]*?(?<![\w-])(?:--list|-l)(?![\w-])",
+    re.IGNORECASE,
+)
+_EXPLICIT_CONNECTION_TARGET = re.compile(
+    r"(?<![\w-])(?:-h|--host|-d|--dbname|-U|--username)(?![\w-])"
+    r"|postgresql(?:\+[a-z0-9]+)?://",
+    re.IGNORECASE,
+)
+
+
+def _binary_named_but_not_connecting(line: str) -> bool:
+    if _BINARY_AVAILABILITY_PROBE.search(line):
+        return True
+    return bool(
+        _OFFLINE_ARCHIVE_INSPECTION.search(line)
+        and not _EXPLICIT_CONNECTION_TARGET.search(line)
     )
 
 
@@ -249,7 +278,10 @@ def _eligible_rule_matches(path: str, text: str, rule: Rule) -> list[int]:
     for line_number, line in enumerate(text.splitlines(), start=1):
         if not rule.pattern.search(line):
             continue
-        if rule.identifier == "HOST_POSTGRES_BINARY" and _docker_governed_native_command(text, line):
+        if rule.identifier == "HOST_POSTGRES_BINARY" and (
+            _docker_governed_native_command(text, line)
+            or _binary_named_but_not_connecting(line)
+        ):
             continue
         if rule.identifier == "RETIRED_DATABASE_URL" and line_number in explicit_lines:
             continue
@@ -312,9 +344,9 @@ def scan_text(
         for rule in RULES:
             if not rule.pattern.search(line):
                 continue
-            if (
-                rule.identifier == "HOST_POSTGRES_BINARY"
-                and _docker_governed_native_command(text, line)
+            if rule.identifier == "HOST_POSTGRES_BINARY" and (
+                _docker_governed_native_command(text, line)
+                or _binary_named_but_not_connecting(line)
             ):
                 continue
             if (
