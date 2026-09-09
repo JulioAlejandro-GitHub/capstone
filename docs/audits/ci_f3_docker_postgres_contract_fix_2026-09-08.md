@@ -249,8 +249,25 @@ queda simplemente fuera del alcance de la regla.
 ## Fase 4 — CI
 
 - `git diff --check` → limpio.
-- Commit único para este fix: `scripts/check_docker_postgres_contract.py`,
+- Commit único para este fix (`792f1230`): `scripts/check_docker_postgres_contract.py`,
   `backend_api/tests/test_docker_postgres_contract_guard.py`, este documento.
-- Run de CI en verde para `docs-config`: _(pendiente de push — se completa abajo)_
+- **Run de CI en verde** (`main` @ `792f1230`):
+  <https://github.com/JulioAlejandro-GitHub/capstone/actions/runs/34350765088>
 
-<!-- CI_RUN_LINK -->
+  | Job | Resultado |
+  |---|---|
+  | `docs-config` | ✅ success — la infracción #4 desaparece |
+  | `backend-unit` | ✅ success — corre `test_docker_postgres_contract_guard.py` (tests nuevos) |
+  | `alembic-static` | ✅ success |
+  | `frontend` / `ml-fast` | ✅ success |
+
+  Primer run con **los 5 jobs en verde** sobre `main` (ver hallazgo de proceso F5 del
+  diagnóstico: activar branch protection para que esto no vuelva a regresar sin bloquear).
+
+### Nota de entorno
+
+La suite completa de `backend_api/tests` requiere Python 3.12 + `requirements.txt` (como en
+CI); el entorno local sólo tiene 3.9/3.14 sin venv del proyecto (`app.security` usa
+`enum.StrEnum`, 3.11+). Se ejecutaron localmente los tests self-contained relevantes
+(`test_docker_postgres_contract_guard.py`, `test_docker_postgres_tooling.py` → 48 passed) y
+el checker; el resto lo valida el job `backend-unit` del run enlazado arriba.
