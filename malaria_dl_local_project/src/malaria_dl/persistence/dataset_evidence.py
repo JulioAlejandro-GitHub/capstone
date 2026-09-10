@@ -31,7 +31,7 @@ def read_dataset_evidence(evidence_id):
             connection.execute(
                 text("""
             SELECT after_state,success,error_code FROM audit_events
-            WHERE id=:id AND event_type=:event
+            WHERE id=CAST(:id AS uuid) AND event_type=:event
         """),
                 {"id": evidence_id, "event": EVENT_TYPE},
             )
@@ -54,11 +54,12 @@ def persist_dataset_evidence(payload, *, success, error_code=None, evidence_id=N
                 INSERT INTO audit_events
                   (id,event_type,action,resource_type,resource_id,request_method,
                    request_path,correlation_id,after_state,metadata,success,error_code)
-                VALUES (:id,:event,'verify','dataset_version',:version,'CLI',:source,
-                        :id,CAST(:payload AS jsonb),'{}'::jsonb,:success,:error)
+                VALUES (CAST(:id AS uuid),:event,'verify','dataset_version',:version,'CLI',:source,
+                        CAST(:correlation_id AS text),CAST(:payload AS jsonb),'{}'::jsonb,:success,:error)
             """),
                 {
                     "id": evidence_id,
+                    "correlation_id": str(evidence_id),
                     "event": EVENT_TYPE,
                     "version": payload.get("dataset_version_id"),
                     "source": payload["consumer"],

@@ -390,6 +390,9 @@ def test_evidence_round_trip_without_sidecars(tmp_path, monkeypatch):
         def execute(self, sql, params):
             q = str(sql)
             if "INSERT INTO audit_events" in q:
+                assert "CAST(:id AS uuid)" in q
+                assert "CAST(:correlation_id AS text)" in q
+                assert params["correlation_id"] == str(params["id"])
                 store[params["id"]] = dict(
                     after_state=json.loads(params["payload"]),
                     success=params["success"],
