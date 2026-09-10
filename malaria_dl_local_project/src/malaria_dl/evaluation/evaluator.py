@@ -1,3 +1,5 @@
+from src.malaria_dl.data.governed_dataset import dataset_uuid_arg, GovernedDatasetError
+from src.malaria_dl.persistence.dataset_evidence import verify_dataset_for_execution, bind_dataset_evidence_to_run
 import argparse
 import warnings
 from pathlib import Path
@@ -50,9 +52,9 @@ def parse_args(argv=None):
         default="auto",
         help="Modo de preprocesamiento usado por el checkpoint.",
     )
-    add_data_source_args(parser)
+    add_data_source_args(parser, governed=True)
     parser.add_argument(
-        "--dataset-version-id",
+        "--dataset-version-id", type=dataset_uuid_arg,
         help="UUID gobernado; debe coincidir con el dataset heredado del TRAIN.",
     )
     parser.add_argument(
@@ -74,6 +76,7 @@ def parse_args(argv=None):
             "entrenamiento origen."
         ),
     )
+    parser.add_argument("--expected-dataset-evidence-id", type=dataset_uuid_arg, default=None)
     args = parser.parse_args(argv)
     if not (args.model_version_id or args.checkpoint or args.source_training_run_id):
         parser.error("indique --model-version-id, --source-training-run-id o --checkpoint")
@@ -204,21 +207,17 @@ def main():
         checkpoint = Path(args.checkpoint)
         if args.track_db:
             raise RuntimeError("No se guardará evaluación legacy sin una model_version resuelta.")
-    governed_dataset = None
-    if args.source_training_run_id:
-        from src.malaria_dl.data.governed_dataset import resolve_training_run_dataset
-        governed_dataset = resolve_training_run_dataset(args.source_training_run_id)
-        if governed_dataset is not None:
-            if (
-                args.dataset_version_id
-                and args.dataset_version_id != str(governed_dataset.dataset_version_id)
-            ):
-                raise ValueError(
-                    "--dataset-version-id no coincide con el dataset del TRAIN origen."
-                )
-            args.dataset_version_id = str(governed_dataset.dataset_version_id)
-            args.dataset_dir = str(governed_dataset.dataset_root)
-            args.data_source = "physical"
+    if not args.source_training_run_id:
+        raise GovernedDatasetError("TRAIN_DATASET_NOT_ACCREDITED")
+    governed_dataset = verify_dataset_for_execution(
+        args.dataset_version_id, training_run_id=args.source_training_run_id,
+        expected_evidence_id=getattr(args, "expected_dataset_evidence_id", None),
+        dataset_dir=args.dataset_dir, data_source=args.data_source,
+        consumer="src.evaluate",
+    )
+    args.dataset_version_id = str(governed_dataset.dataset_version_id)
+    args.dataset_dir = str(governed_dataset.dataset_root)
+    args.data_source = "physical"
     run_context = None
 
     if not checkpoint.exists():
@@ -277,6 +276,9 @@ def main():
                 },
             ),
         )
+
+    if args.track_db:
+        bind_dataset_evidence_to_run(governed_dataset, run_context)
 
     source_training_lineage = None
     try:

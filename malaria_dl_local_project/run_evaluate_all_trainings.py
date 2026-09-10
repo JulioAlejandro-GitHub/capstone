@@ -10,11 +10,13 @@ Ejecuta src.evaluate para todos los training runs completados, usando:
 Uso recomendado:
   cd ".../capstone/malaria_dl_local_project"
   source .venv/bin/activate
-  python run_evaluate_all_trainings.py
+  python run_evaluate_all_trainings.py --dataset-version-id "$DATASET_VERSION_ID"
+
+DATASET_VERSION_ID debe ser un UUID elegido explícitamente.
 
 Opciones útiles:
-  python run_evaluate_all_trainings.py --dry-run
-  python run_evaluate_all_trainings.py --models custom_cnn densenet121 --optimizers adam adamw
+  python run_evaluate_all_trainings.py --dataset-version-id "$DATASET_VERSION_ID" --dry-run
+  python run_evaluate_all_trainings.py --dataset-version-id "$DATASET_VERSION_ID" --models custom_cnn densenet121 --optimizers adam adamw
 """
 
 from __future__ import annotations
@@ -24,6 +26,11 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from src.malaria_dl.data.governed_dataset import (
+    dataset_uuid_arg, normalize_dataset_version_id, GovernedDatasetError,
+    training_dataset_metadata, assert_run_dataset_snapshot_unchanged,
+)
+from src.malaria_dl.persistence.dataset_evidence import verify_dataset_for_execution
 
 
 @dataclass
@@ -69,6 +76,7 @@ def fetch_training_inventory(
     project_dir: Path,
     dataset_version_id: str | None = None,
 ) -> list[TrainingRun]:
+    dataset_version_id = normalize_dataset_version_id(dataset_version_id)
     query = """
         SELECT DISTINCT ON (r.id)
             r.id::text AS training_run_id,
@@ -106,20 +114,20 @@ def fetch_training_inventory(
         JOIN model_versions mv ON mv.training_run_id = r.id
         WHERE r.run_type = 'training'
           AND r.status = 'completed'
-          AND (
-              CAST(%(dataset_version_id)s AS uuid) IS NULL
-              OR r.dataset_version_id=CAST(%(dataset_version_id)s AS uuid)
-          )
+          AND r.dataset_version_id=CAST(%(dataset_version_id)s AS uuid)
         ORDER BY r.id, mv.created_at DESC;
     """
 
     with connect(project_dir) as conn:
         with conn.cursor() as cur:
+            cur.execute("BEGIN READ ONLY")
             cur.execute(query, {"dataset_version_id": dataset_version_id})
             rows = cur.fetchall()
 
     inventory = []
     for row in rows:
+        if normalize_dataset_version_id(row[9]) != dataset_version_id:
+            raise GovernedDatasetError("BATCH_TRAIN_DATASET_MISMATCH")
         reasons = []
         if row[10] not in {"candidate", "validated", "approved", "deployed"}:
             reasons.append(f"model_version status={row[10]}")
@@ -147,8 +155,8 @@ def fetch_training_inventory(
     return inventory
 
 
-def fetch_training_runs(project_dir: Path) -> list[TrainingRun]:
-    return [run for run in fetch_training_inventory(project_dir) if not run.exclusion_reasons]
+def fetch_training_runs(project_dir: Path, dataset_version_id: str) -> list[TrainingRun]:
+    return [run for run in fetch_training_inventory(project_dir, dataset_version_id) if not run.exclusion_reasons]
 
 
 def filter_runs(
@@ -186,21 +194,20 @@ def run_command(cmd: list[str], cwd: Path, dry_run: bool = False) -> int:
     return result.returncode
 
 
-def build_evaluate_command(run: TrainingRun, dataset_dir: str, threshold: str) -> list[str]:
+def build_evaluate_command(run: TrainingRun, dataset_dir: str | None, threshold: str, expected_evidence_id=None) -> list[str]:
+    version = normalize_dataset_version_id(run.dataset_version_id)
     return [
         sys.executable,
         "-m", "src.evaluate",
         "--model-version-id", run.model_version_id,
         "--source-training-run-id", run.training_run_id,
-        *(
-            ["--dataset-version-id", run.dataset_version_id]
-            if run.dataset_version_id else []
-        ),
+        "--dataset-version-id", version,
+        *(["--expected-dataset-evidence-id", expected_evidence_id] if expected_evidence_id else []),
         "--img-size", run.img_size,
         "--batch-size", run.batch_size,
         "--threshold", threshold,
         "--data-source", "physical",
-        "--dataset-dir", dataset_dir,
+        *(["--dataset-dir", dataset_dir] if dataset_dir is not None else []),
         "--preprocessing", run.preprocessing,
         "--positive-label", "parasitized",
         "--track-db",
@@ -208,20 +215,20 @@ def build_evaluate_command(run: TrainingRun, dataset_dir: str, threshold: str) -
     ]
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Ejecuta evaluate para todos los trainings completados con linaje explícito."
     )
     parser.add_argument("--project-dir", default=".")
     parser.add_argument("--models", nargs="+", default=None)
     parser.add_argument("--optimizers", nargs="+", default=None)
-    parser.add_argument("--dataset-dir", default="data/malaria_physical_split")
-    parser.add_argument("--dataset-version-id", default=None)
+    parser.add_argument("--dataset-dir", default=None, help="Sólo se acepta la raíz gobernada exacta.")
+    parser.add_argument("--dataset-version-id", required=True, type=dataset_uuid_arg)
     parser.add_argument("--threshold", default="clinical")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--continue-on-error", action="store_true")
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main() -> int:
@@ -236,6 +243,14 @@ def main() -> int:
         )
         return 2
 
+    snapshot = None
+    if args.dry_run:
+        print("PLAN ONLY: inventario de BD; integridad operativa NO VERIFICADA, sin subprocesos.")
+    else:
+        snapshot = verify_dataset_for_execution(
+            args.dataset_version_id, dataset_dir=getattr(args, "dataset_dir", None),
+            consumer="run_evaluate_all_trainings",
+        )
     inventory = fetch_training_inventory(project_dir, args.dataset_version_id)
     excluded = [run for run in inventory if run.exclusion_reasons]
     runs = [run for run in inventory if not run.exclusion_reasons]
@@ -259,12 +274,17 @@ def main() -> int:
 
     failures: list[tuple[str, str]] = []
     for run in runs:
+        if normalize_dataset_version_id(run.dataset_version_id) != args.dataset_version_id:
+            raise GovernedDatasetError("BATCH_TRAIN_DATASET_MISMATCH")
+        if snapshot is not None:
+            assert_run_dataset_snapshot_unchanged(snapshot, training_dataset_metadata(run.training_run_id))
         print(
             f"\nTraining: {run.training_run_id} | "
             f"model_version={run.model_version_id} | model={run.model_name} | "
             f"optimizer={run.optimizer} | checkpoint={run.checkpoint_path}"
         )
-        cmd = build_evaluate_command(run, dataset_dir=args.dataset_dir, threshold=args.threshold)
+        cmd = build_evaluate_command(run, dataset_dir=args.dataset_dir, threshold=args.threshold,
+                                     expected_evidence_id=snapshot.evidence_id if snapshot else None)
         rc = run_command(cmd, cwd=project_dir, dry_run=args.dry_run)
         if rc != 0:
             failures.append((run.training_run_id, run.checkpoint_path))
@@ -273,7 +293,7 @@ def main() -> int:
 
     print("\nResumen evaluate")
     if not failures:
-        print("OK: todas las evaluaciones finalizaron sin error.")
+        print("PLAN generado; integridad NO VERIFICADA." if args.dry_run else "OK: todas las evaluaciones finalizaron sin error.")
         return 0
 
     for training_run_id, checkpoint in failures:

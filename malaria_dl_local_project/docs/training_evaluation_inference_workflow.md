@@ -1,3 +1,9 @@
+> Etapa 1: defina `DATASET_VERSION_ID` con un UUID designado explícitamente.
+> TRAIN verifica la materialización sellada y registra evidencia en PostgreSQL,
+> incluso sin `--track-db`. Consulte [el contrato vigente](dataset_explicit_contract.md).
+> Las salidas CSV/JSON enumeradas abajo son escritores legacy, pendientes de las
+> etapas posteriores; no se utilizan para la nueva evidencia de integridad.
+
 # Workflow Integrado de Entrenamiento, Evaluación e Inferencia
 
 Este flujo integra métricas clínicas, política de checkpoint, calibración de threshold y tracking PostgreSQL.
@@ -36,7 +42,7 @@ python scripts/register_physical_split_in_db.py \
 ## 2. Entrenar Con Política Clínica
 
 ```bash
-python -m src.train \
+python -m src.train --dataset-version-id "$DATASET_VERSION_ID" \
   --model custom_cnn \
   --epochs 30 \
   --img-size 200 \

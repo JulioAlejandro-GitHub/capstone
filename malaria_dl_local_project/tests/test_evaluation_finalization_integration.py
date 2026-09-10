@@ -74,10 +74,12 @@ def _runtime(checkpoint, *, finalizer_side_effect=None):
     )
     stack.enter_context(
         patch(
-            "src.malaria_dl.data.governed_dataset.resolve_training_run_dataset",
-            return_value=None,
+            "src.malaria_dl.evaluation.evaluator.verify_dataset_for_execution",
+            return_value=SimpleNamespace(dataset_version_id=str(uuid4()), dataset_root=checkpoint.parent,
+                                         metadata=lambda: {}, evidence_id=str(uuid4())),
         )
     )
+    stack.enter_context(patch.object(evaluator, "bind_dataset_evidence_to_run"))
     stack.enter_context(patch.object(evaluator, "verify_checkpoint_metadata"))
     stack.enter_context(
         patch.object(evaluator, "dataset_tracking_metadata", return_value={})

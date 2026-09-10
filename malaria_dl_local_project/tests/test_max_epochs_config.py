@@ -18,6 +18,7 @@ class MaxEpochsConfigTests(unittest.TestCase):
     def test_max_epochs_overrides_legacy_epochs(self):
         args = parse_args(
             [
+                "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                 "--model",
                 "custom_cnn",
                 "--epochs",
@@ -33,22 +34,22 @@ class MaxEpochsConfigTests(unittest.TestCase):
         self.assertEqual(args.epochs_source, "max_epochs")
 
     def test_epochs_is_used_as_legacy_alias(self):
-        args = parse_args(["--model", "custom_cnn", "--epochs", "17"])
+        args = parse_args(["--dataset-version-id", "12345678-abcd-4234-8234-123456789abc", "--model", "custom_cnn", "--epochs", "17"])
 
         self.assertEqual(args.max_epochs, 17)
         self.assertEqual(args.epochs, 17)
         self.assertEqual(args.epochs_source, "epochs_legacy")
 
     def test_model_default_is_used_when_epoch_flags_are_omitted(self):
-        custom = parse_args(["--model", "custom_cnn"])
-        transfer = parse_args(["--model", "vgg16"])
+        custom = parse_args(["--dataset-version-id", "12345678-abcd-4234-8234-123456789abc", "--model", "custom_cnn"])
+        transfer = parse_args(["--dataset-version-id", "12345678-abcd-4234-8234-123456789abc", "--model", "vgg16"])
 
         self.assertEqual(custom.max_epochs, 50)
         self.assertEqual(transfer.max_epochs, 30)
         self.assertEqual(custom.epochs_source, "model_default")
 
     def test_training_controls_are_enabled_by_default(self):
-        args = parse_args(["--model", "custom_cnn"])
+        args = parse_args(["--dataset-version-id", "12345678-abcd-4234-8234-123456789abc", "--model", "custom_cnn"])
 
         self.assertTrue(args.early_stopping)
         self.assertTrue(args.restore_best_weights)
@@ -58,6 +59,7 @@ class MaxEpochsConfigTests(unittest.TestCase):
     def test_training_controls_support_explicit_opt_out(self):
         args = parse_args(
             [
+                "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                 "--model",
                 "custom_cnn",
                 "--no-early-stopping",
@@ -73,6 +75,7 @@ class MaxEpochsConfigTests(unittest.TestCase):
     def test_skip_final_test_has_priority(self):
         args = parse_args(
             [
+                "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                 "--model",
                 "custom_cnn",
                 "--evaluate-best-on-test",

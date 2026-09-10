@@ -20,6 +20,7 @@ class TrainIntegrationTests(unittest.TestCase):
     def test_train_accepts_densenet_combined_execution_parameters(self):
         args = parse_args(
             [
+                "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                 "--model",
                 "densenet121",
                 "--epochs",
@@ -47,6 +48,7 @@ class TrainIntegrationTests(unittest.TestCase):
     def test_train_accepts_checkpoint_policy_and_calibration_args(self):
         args = parse_args(
             [
+                "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                 "--model",
                 "custom_cnn",
                 "--epochs",
@@ -80,6 +82,7 @@ class TrainIntegrationTests(unittest.TestCase):
         with redirect_stderr(StringIO()), self.assertRaises(SystemExit):
             parse_args(
                 [
+                    "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                     "--model",
                     "densenet121",
                     "--preprocessing",

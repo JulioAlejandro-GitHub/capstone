@@ -12,7 +12,7 @@ from src.train import parse_args
 
 class TrainCheckpointPolicyArgsTests(unittest.TestCase):
     def test_train_cli_defaults_to_auc_with_min_recall(self):
-        args = parse_args(["--model", "custom_cnn"])
+        args = parse_args(["--dataset-version-id", "12345678-abcd-4234-8234-123456789abc", "--model", "custom_cnn"])
 
         self.assertEqual(args.checkpoint_policy, "auc_with_min_recall")
         self.assertAlmostEqual(args.min_recall, 0.98)
@@ -24,6 +24,7 @@ class TrainCheckpointPolicyArgsTests(unittest.TestCase):
     def test_train_cli_accepts_f2_policy(self):
         args = parse_args(
             [
+                "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                 "--model",
                 "custom_cnn",
                 "--checkpoint-policy",
@@ -39,6 +40,7 @@ class TrainCheckpointPolicyArgsTests(unittest.TestCase):
     def test_allow_collapsed_checkpoint_disables_rejection(self):
         args = parse_args(
             [
+                "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                 "--model",
                 "custom_cnn",
                 "--allow-collapsed-checkpoint",

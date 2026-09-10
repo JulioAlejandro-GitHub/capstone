@@ -52,7 +52,9 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ## 2. Dataset gobernado y fuentes locales
 
-Los nuevos entrenamientos usan una Dataset Version gobernada. La versión vigente es:
+Los nuevos entrenamientos exigen una Dataset Version gobernada explícita. El siguiente
+inventario es documental; compruebe su estado actual antes de ejecutar (Etapa 1 no
+lo ha verificado operativamente):
 
 ```text
 Malaria Patient Split v1
@@ -66,9 +68,18 @@ TRAIN 22.180 / VAL 2.693 / TEST 2.685
 
 PostgreSQL resuelve su materialización `READY/PASS` y el código abre el root
 versionado resultante. Un TRAIN nuevo nunca selecciona silenciosamente
-`data/malaria_physical_split/`. Si se omite `--dataset-version-id`, se elige de
-forma determinista la Dataset Version entrenable más reciente y se persiste su UUID;
-para ejecuciones reproducibles se recomienda indicarlo explícitamente.
+`data/malaria_physical_split/`. Omitir, vaciar o malformar `--dataset-version-id` produce error temprano,
+también en el ejecutor masivo. Se verifica la materialización exacta del sello,
+los cuatro fingerprints y los bytes contra las referencias acreditadas upstream.
+
+La evidencia nueva de esta verificación se persiste exclusivamente en PostgreSQL
+(`audit_events`, evento `ml.dataset_verification`), incluso sin `--track-db`.
+No hay fallback CSV/JSON: un fallo de persistencia bloquea el consumo. El lote TRAIN
+fija una evidencia y propaga su UUID a todos los subprocesos; cada uno revalida y
+rechaza cambios de versión, materialización o fingerprints. `--dry-run` de TRAIN
+sólo genera comandos, exige UUID y no acredita integridad operativa.
+
+Consulte [el contrato de uso de Etapa 1](docs/dataset_explicit_contract.md).
 
 ### Fuente local TensorFlow Datasets
 
@@ -212,7 +223,9 @@ python -m src.train --model custom_cnn \
 ```
 
 `--data-source` y `--dataset-dir` permanecen aceptados por compatibilidad del CLI,
-pero no reemplazan la resolución gobernada en un TRAIN nuevo.
+pero `--dataset-dir` sólo acepta la raíz gobernada exacta y `--data-source` sólo
+acepta `physical` en TRAIN/EVALUATE/EXPLAIN gobernados. Si no se especifica la
+ruta, se hereda la de la materialización; una ruta legacy distinta se rechaza.
 
 ### VGG16 con Transfer Learning
 

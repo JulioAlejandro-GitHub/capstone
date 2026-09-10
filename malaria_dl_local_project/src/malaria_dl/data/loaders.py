@@ -235,7 +235,7 @@ def dataset_tracking_metadata(data_source=DATA_SOURCE_PHYSICAL, dataset_dir=None
     return build_dataset_info(data_source, dataset_dir, governed=governed)
 
 
-def add_data_source_args(parser):
+def add_data_source_args(parser, *, governed=False):
     parser.add_argument(
         "--data-source",
         "--dataset-source",
@@ -248,8 +248,9 @@ def add_data_source_args(parser):
     )
     parser.add_argument(
         "--dataset-dir",
-        default=str(PHYSICAL_DATASET_DIR.relative_to(PHYSICAL_DATASET_DIR.parents[1])),
-        help="Ruta del split físico. Default: data/malaria_physical_split.",
+        default=None if governed else str(PHYSICAL_DATASET_DIR.relative_to(PHYSICAL_DATASET_DIR.parents[1])),
+        help=("Comprobación opcional: debe coincidir con la raíz gobernada heredada."
+              if governed else "Ruta del split físico. Default: data/malaria_physical_split."),
     )
     return parser
 

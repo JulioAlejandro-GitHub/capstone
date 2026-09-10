@@ -9,11 +9,13 @@ Ejecuta entrenamientos para todas las combinaciones:
 Uso recomendado:
   cd ".../capstone/malaria_dl_local_project"
   source .venv/bin/activate
-  python run_train_all_models.py
+  python run_train_all_models.py --dataset-version-id "$DATASET_VERSION_ID"
+
+DATASET_VERSION_ID debe ser un UUID elegido explícitamente.
 
 Opciones útiles:
-  python run_train_all_models.py --dry-run
-  python run_train_all_models.py --models custom_cnn densenet121 --optimizers adam adamw
+  python run_train_all_models.py --dataset-version-id "$DATASET_VERSION_ID" --dry-run
+  python run_train_all_models.py --dataset-version-id "$DATASET_VERSION_ID" --models custom_cnn densenet121 --optimizers adam adamw
 """
 
 from __future__ import annotations
@@ -22,6 +24,8 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
+from src.malaria_dl.data.governed_dataset import dataset_uuid_arg, normalize_dataset_version_id
+from src.malaria_dl.persistence.dataset_evidence import verify_dataset_for_execution
 
 
 DEFAULT_MODELS = ["custom_cnn", "vgg16", "densenet121"]
@@ -78,7 +82,9 @@ def build_train_command(
     dataset_version_id: str | None,
     target_recall: float,
     early_stopping_patience: int,
+    expected_evidence_id: str | None = None,
 ) -> list[str]:
+    dataset_version_id = normalize_dataset_version_id(dataset_version_id)
     learning_rate, fine_tune_learning_rate = optimizer_learning_rates(optimizer)
     fine_tune_epochs, pretrained_weights = model_training_params(model)
 
@@ -108,14 +114,15 @@ def build_train_command(
         "--calibrate-threshold",
         "--target-recall", str(target_recall),
         "--evaluate-best-on-test",
-        *(["--dataset-version-id", dataset_version_id] if dataset_version_id else []),
+        "--dataset-version-id", dataset_version_id,
+        *(["--expected-dataset-evidence-id", expected_evidence_id] if expected_evidence_id else []),
         "--preprocessing", "auto",
         "--positive-label", "parasitized",
         "--track-db",
     ]
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Ejecuta entrenamientos modelo x optimizer con tracking en PostgreSQL."
     )
@@ -144,7 +151,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--target-recall", type=float, default=0.98)
     parser.add_argument("--early-stopping-patience", type=int, default=12)
-    parser.add_argument("--dataset-version-id", default=None)
+    parser.add_argument("--dataset-version-id", required=True, type=dataset_uuid_arg)
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -155,7 +162,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Continúa con la siguiente combinación si una ejecución falla.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main() -> int:
@@ -174,6 +181,11 @@ def main() -> int:
     print(f"Modelos: {', '.join(args.models)}")
     print(f"Optimizers: {', '.join(args.optimizers)}")
 
+    snapshot = None
+    if args.dry_run:
+        print("PLAN ONLY: integridad operativa NO VERIFICADA; no se consulta ni escribe BD.")
+    else:
+        snapshot = verify_dataset_for_execution(args.dataset_version_id, consumer="run_train_all_models")
     failures: list[tuple[str, str, int]] = []
 
     for model in args.models:
@@ -188,6 +200,7 @@ def main() -> int:
                 dataset_version_id=args.dataset_version_id,
                 target_recall=args.target_recall,
                 early_stopping_patience=args.early_stopping_patience,
+                expected_evidence_id=snapshot.evidence_id if snapshot else None,
             )
             rc = run_command(cmd, cwd=project_dir, dry_run=args.dry_run)
             if rc != 0:
@@ -199,7 +212,7 @@ def main() -> int:
 
     print("\nResumen train")
     if not failures:
-        print("OK: todas las combinaciones finalizaron sin error.")
+        print("PLAN generado (no ejecutado ni verificado)." if args.dry_run else "OK: todas las combinaciones finalizaron sin error.")
         return 0
 
     for model, optimizer, rc in failures:

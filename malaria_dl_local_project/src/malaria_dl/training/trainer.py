@@ -51,7 +51,10 @@ from src.threshold_calibration import (
     find_threshold_for_target_recall,
     write_threshold_calibration,
 )
-from src.malaria_dl.data.governed_dataset import resolve_governed_dataset
+from src.malaria_dl.data.governed_dataset import dataset_uuid_arg
+from src.malaria_dl.persistence.dataset_evidence import (
+    verify_dataset_for_execution, bind_dataset_evidence_to_run,
+)
 
 
 CHECKPOINT_METRIC_CHOICES = [
@@ -273,16 +276,17 @@ def parse_args(argv=None):
         default="parasitized",
         help="Clase clínica positiva fija del proyecto (1 = parasitized).",
     )
-    add_data_source_args(parser)
+    add_data_source_args(parser, governed=True)
     parser.add_argument(
-        "--dataset-version-id", default=None,
-        help="UUID gobernado; si se omite se usa el trainable más reciente.",
+        "--dataset-version-id", required=True, type=dataset_uuid_arg,
+        help="UUID explícito de la versión gobernada (obligatorio; sin fallback).",
     )
     parser.add_argument(
         "--track-db",
         action="store_true",
         help="Registrar esta ejecución y sus resultados en PostgreSQL.",
     )
+    parser.add_argument("--expected-dataset-evidence-id", type=dataset_uuid_arg, default=None)
     args = parser.parse_args(argv)
     legacy_epochs = args.epochs
     explicit_max_epochs = args.max_epochs
@@ -1196,7 +1200,11 @@ def evaluate_selected_checkpoint_if_enabled(enabled, **evaluation_kwargs):
 
 def main():
     args = parse_args()
-    governed_dataset = resolve_governed_dataset(args.dataset_version_id)
+    governed_dataset = verify_dataset_for_execution(
+        args.dataset_version_id,
+        expected_evidence_id=getattr(args, "expected_dataset_evidence_id", None),
+        dataset_dir=args.dataset_dir, data_source=args.data_source, consumer="src.train",
+    )
     args.dataset_version_id = str(governed_dataset.dataset_version_id)
     args.dataset_dir = str(governed_dataset.dataset_root)
     args.data_source = "physical"
@@ -1393,6 +1401,8 @@ def main():
             restore_best_weights=args.restore_best_weights,
             random_seed=args.seed,
         )
+
+        bind_dataset_evidence_to_run(governed_dataset, run_context)
 
         # The database UUID is the stable lineage key.  Keep execution_id as the
         # legacy local identifier, but materialize tracked snapshots under run_id

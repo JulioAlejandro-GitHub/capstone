@@ -78,6 +78,7 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
 
     def _run(self, output_dir, skip_test):
         argv = [
+            "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
             "--model",
             "custom_cnn",
             "--max-epochs",
@@ -96,7 +97,7 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
             },
         }
         with patch("src.train.parse_args", return_value=args), patch(
-            "src.train.resolve_governed_dataset", return_value=self._governed(output_dir),
+            "src.train.verify_dataset_for_execution", return_value=self._governed(output_dir),
         ), patch(
             "src.train.dataset_tracking_metadata",
             return_value={"data_source": "physical", "dataset_name": "smoke"},
@@ -178,6 +179,7 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
             previous_metrics.write_text("previous metrics", encoding="utf-8")
             args = parse_args(
                 [
+                    "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                     "--model",
                     "custom_cnn",
                     "--max-epochs",
@@ -188,7 +190,7 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
             )
 
             with patch("src.train.parse_args", return_value=args), patch(
-                "src.train.resolve_governed_dataset", return_value=self._governed(output_dir),
+                "src.train.verify_dataset_for_execution", return_value=self._governed(output_dir),
             ), patch(
                 "src.train.dataset_tracking_metadata",
                 return_value={"data_source": "physical", "dataset_name": "smoke"},
@@ -217,6 +219,7 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
             previous_best.write_text("previous best", encoding="utf-8")
             args = parse_args(
                 [
+                    "--dataset-version-id", "12345678-abcd-4234-8234-123456789abc",
                     "--model",
                     "custom_cnn",
                     "--max-epochs",
@@ -227,7 +230,7 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
             )
 
             with patch("src.train.parse_args", return_value=args), patch(
-                "src.train.resolve_governed_dataset", return_value=self._governed(output_dir),
+                "src.train.verify_dataset_for_execution", return_value=self._governed(output_dir),
             ), patch(
                 "src.train.dataset_tracking_metadata",
                 return_value={"data_source": "physical", "dataset_name": "smoke"},
