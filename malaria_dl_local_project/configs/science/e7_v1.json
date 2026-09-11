@@ -1,0 +1,1825 @@
+{
+  "version": "capstone_science_e7_v1",
+  "question": "¿Cómo se comparan Custom CNN, VGG16 y DenseNet121 para clasificar células parasitized y uninfected bajo un protocolo común?",
+  "positive_class": {
+    "0": "uninfected",
+    "1": "parasitized",
+    "positive_class": 1,
+    "positive_label": "parasitized"
+  },
+  "objective": {
+    "metric": "sensitivity",
+    "operator": ">",
+    "value": 0.98
+  },
+  "prediction_unit": "cell_image",
+  "resampling_unit": "verified_patient",
+  "architectures": [
+    "custom_cnn",
+    "vgg16",
+    "densenet121"
+  ],
+  "seeds": [
+    11,
+    29,
+    47
+  ],
+  "conditions": {
+    "original": {
+      "synthetic_ratio": 0,
+      "technique": null,
+      "provenance": "sealed_original_dataset"
+    },
+    "original_plus_synthetic": {
+      "synthetic_ratio": null,
+      "technique": null,
+      "provenance": null,
+      "status": "planned_unavailable"
+    }
+  },
+  "configurations": {
+    "8186ad70d6d0426cbdeca79ed2f2ba440c7a1bae77fe80381b9d1cc4037a51df": {
+      "schema_version": "model_config_v1",
+      "model_id": "custom_cnn",
+      "adapter_version": "1.0",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "weights": "none",
+          "dropout": 0.4,
+          "l2": 0.0001,
+          "head_units": 128,
+          "batch_normalization": "train",
+          "fine_tune_layers": 0
+        },
+        "optimizer": {
+          "name": "adam",
+          "parameters": {
+            "weight_decay": null,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 0.0001,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-07,
+            "amsgrad": false
+          },
+          "fine_tune_learning_rate": 1e-05
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 0,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "custom_cnn",
+          "adapter_version": "1.0",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "ee248704e9bcd7fe011c5cdba0cf46044e68480740f06fbb70f49ac2add6947f": {
+      "schema_version": "model_config_v1",
+      "model_id": "custom_cnn",
+      "adapter_version": "1.0",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "weights": "none",
+          "dropout": 0.4,
+          "l2": 0.0001,
+          "head_units": 128,
+          "batch_normalization": "train",
+          "fine_tune_layers": 0
+        },
+        "optimizer": {
+          "name": "adamw",
+          "parameters": {
+            "weight_decay": 0.004,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 0.0001,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-07,
+            "amsgrad": false
+          },
+          "fine_tune_learning_rate": 1e-05
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 0,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "custom_cnn",
+          "adapter_version": "1.0",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "f9341377ddd1dc334f6a307e131c9df3784d7a621b9a24a11d61770b27a8aa8e": {
+      "schema_version": "model_config_v1",
+      "model_id": "custom_cnn",
+      "adapter_version": "1.0",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "weights": "none",
+          "dropout": 0.4,
+          "l2": 0.0001,
+          "head_units": 128,
+          "batch_normalization": "train",
+          "fine_tune_layers": 0
+        },
+        "optimizer": {
+          "name": "sgd",
+          "parameters": {
+            "weight_decay": null,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 0.001,
+            "momentum": 0.9,
+            "nesterov": false
+          },
+          "fine_tune_learning_rate": 0.0001
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 0,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "custom_cnn",
+          "adapter_version": "1.0",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "9caaac5ec278e315c7af400729920b93e348af752ae24eedff40cb72893bb2b0": {
+      "schema_version": "model_config_v1",
+      "model_id": "custom_cnn",
+      "adapter_version": "1.0",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "weights": "none",
+          "dropout": 0.4,
+          "l2": 0.0001,
+          "head_units": 128,
+          "batch_normalization": "train",
+          "fine_tune_layers": 0
+        },
+        "optimizer": {
+          "name": "adadelta",
+          "parameters": {
+            "weight_decay": null,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 1.0,
+            "rho": 0.95,
+            "epsilon": 1e-07
+          },
+          "fine_tune_learning_rate": 1.0
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 0,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "custom_cnn",
+          "adapter_version": "1.0",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "7c4b969b0b2a45c6b5fa71e2901ac5347cc4d5a44b43c222dd29efc7f6ac5a1c": {
+      "schema_version": "model_config_v1",
+      "model_id": "vgg16",
+      "adapter_version": "1.1",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "vgg16_imagenet",
+          "weights": "imagenet",
+          "dropout": 0.5,
+          "l2": 0.0,
+          "head_units": 1024,
+          "batch_normalization": "absent",
+          "fine_tune_layers": 4
+        },
+        "optimizer": {
+          "name": "adam",
+          "parameters": {
+            "weight_decay": null,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 0.0001,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-07,
+            "amsgrad": false
+          },
+          "fine_tune_learning_rate": 1e-05
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 20,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "vgg16",
+          "adapter_version": "1.1",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "vgg16_imagenet",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "BGR"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "a74f108be74b2c151678f9801782489099f51cf7445b9f1c7ae5ea16b6a370f9": {
+      "schema_version": "model_config_v1",
+      "model_id": "vgg16",
+      "adapter_version": "1.1",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "vgg16_imagenet",
+          "weights": "imagenet",
+          "dropout": 0.5,
+          "l2": 0.0,
+          "head_units": 1024,
+          "batch_normalization": "absent",
+          "fine_tune_layers": 4
+        },
+        "optimizer": {
+          "name": "adamw",
+          "parameters": {
+            "weight_decay": 0.004,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 0.0001,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-07,
+            "amsgrad": false
+          },
+          "fine_tune_learning_rate": 1e-05
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 20,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "vgg16",
+          "adapter_version": "1.1",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "vgg16_imagenet",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "BGR"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "cbb96f7ac059cf71953c87d7234471394afa829ee0c5289adfee6a77f6e20d87": {
+      "schema_version": "model_config_v1",
+      "model_id": "vgg16",
+      "adapter_version": "1.1",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "vgg16_imagenet",
+          "weights": "imagenet",
+          "dropout": 0.5,
+          "l2": 0.0,
+          "head_units": 1024,
+          "batch_normalization": "absent",
+          "fine_tune_layers": 4
+        },
+        "optimizer": {
+          "name": "sgd",
+          "parameters": {
+            "weight_decay": null,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 0.001,
+            "momentum": 0.9,
+            "nesterov": false
+          },
+          "fine_tune_learning_rate": 0.0001
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 20,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "vgg16",
+          "adapter_version": "1.1",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "vgg16_imagenet",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "BGR"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "7d982b2ee53e8868955660c20fcc942ecf80201f6e5b608b215b4ee55575103b": {
+      "schema_version": "model_config_v1",
+      "model_id": "vgg16",
+      "adapter_version": "1.1",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "vgg16_imagenet",
+          "weights": "imagenet",
+          "dropout": 0.5,
+          "l2": 0.0,
+          "head_units": 1024,
+          "batch_normalization": "absent",
+          "fine_tune_layers": 4
+        },
+        "optimizer": {
+          "name": "adadelta",
+          "parameters": {
+            "weight_decay": null,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 1.0,
+            "rho": 0.95,
+            "epsilon": 1e-07
+          },
+          "fine_tune_learning_rate": 1.0
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 20,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "vgg16",
+          "adapter_version": "1.1",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "vgg16_imagenet",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "BGR"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "eec0b6c18a17904eb089f761850805fdf8a70fb723f995cd5c572c2feb6fd8eb": {
+      "schema_version": "model_config_v1",
+      "model_id": "densenet121",
+      "adapter_version": "1.0",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "weights": "imagenet",
+          "dropout": 0.5,
+          "l2": 0.0,
+          "head_units": 0,
+          "batch_normalization": "inference",
+          "fine_tune_layers": 4
+        },
+        "optimizer": {
+          "name": "adam",
+          "parameters": {
+            "weight_decay": null,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 0.0001,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-07,
+            "amsgrad": false
+          },
+          "fine_tune_learning_rate": 1e-05
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 20,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "densenet121",
+          "adapter_version": "1.0",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": "densenet_imagenet_channel_mean_std",
+            "location": "model"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "f40beedcd9496e20b13bdcb2669e188bced8d57e974c15e2afd2911aea4a4d34": {
+      "schema_version": "model_config_v1",
+      "model_id": "densenet121",
+      "adapter_version": "1.0",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "weights": "imagenet",
+          "dropout": 0.5,
+          "l2": 0.0,
+          "head_units": 0,
+          "batch_normalization": "inference",
+          "fine_tune_layers": 4
+        },
+        "optimizer": {
+          "name": "adamw",
+          "parameters": {
+            "weight_decay": 0.004,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 0.0001,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-07,
+            "amsgrad": false
+          },
+          "fine_tune_learning_rate": 1e-05
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 20,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "densenet121",
+          "adapter_version": "1.0",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": "densenet_imagenet_channel_mean_std",
+            "location": "model"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "f52eb6b3ad40b1f571e02cfa4adf6874aae67560d26430ce0f23bc7c3d815219": {
+      "schema_version": "model_config_v1",
+      "model_id": "densenet121",
+      "adapter_version": "1.0",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "weights": "imagenet",
+          "dropout": 0.5,
+          "l2": 0.0,
+          "head_units": 0,
+          "batch_normalization": "inference",
+          "fine_tune_layers": 4
+        },
+        "optimizer": {
+          "name": "sgd",
+          "parameters": {
+            "weight_decay": null,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 0.001,
+            "momentum": 0.9,
+            "nesterov": false
+          },
+          "fine_tune_learning_rate": 0.0001
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 20,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "densenet121",
+          "adapter_version": "1.0",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": "densenet_imagenet_channel_mean_std",
+            "location": "model"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    },
+    "dd022b0b646fb88d6271c31e685bfabf3dfac41464140255c64f9460edb0c3c3": {
+      "schema_version": "model_config_v1",
+      "model_id": "densenet121",
+      "adapter_version": "1.0",
+      "resolved": {
+        "model": {
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "weights": "imagenet",
+          "dropout": 0.5,
+          "l2": 0.0,
+          "head_units": 0,
+          "batch_normalization": "inference",
+          "fine_tune_layers": 4
+        },
+        "optimizer": {
+          "name": "adadelta",
+          "parameters": {
+            "weight_decay": null,
+            "clipnorm": null,
+            "global_clipnorm": null,
+            "clipvalue": null,
+            "use_ema": false,
+            "ema_momentum": 0.99,
+            "ema_overwrite_frequency": null,
+            "loss_scale_factor": null,
+            "gradient_accumulation_steps": null,
+            "learning_rate": 1.0,
+            "rho": 0.95,
+            "epsilon": 1e-07
+          },
+          "fine_tune_learning_rate": 1.0
+        },
+        "execution": {
+          "max_epochs": 50,
+          "fine_tune_epochs": 20,
+          "batch_size": 64,
+          "deterministic_ops": true,
+          "no_augment": false,
+          "checkpoint_policy": "auc_with_min_recall",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "min_recall": 0.98,
+          "beta": 2.0,
+          "reject_prediction_collapse": true,
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "target_recall": 0.98,
+          "min_specificity": 0.0,
+          "early_stopping": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "rotation": 0.07,
+            "translation": 0.2,
+            "zoom": 0.2,
+            "contrast": 0.3
+          },
+          "reduce_lr": {
+            "monitor": "val_loss",
+            "factor": 0.5,
+            "patience": 4,
+            "min_lr": 1e-06
+          },
+          "selection_threshold": 0.5,
+          "fallback": "existing_clinical_policy_v1",
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "selection": {
+          "monitor": "val_f2_parasitized",
+          "mode": "max",
+          "explicit": true,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "threshold": 0.5,
+          "beta": 2.0,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "fallback": "retain existing policy warning and collapse status"
+        },
+        "input_contract": {
+          "schema_version": "malaria_input_v1",
+          "architecture": "densenet121",
+          "adapter_version": "1.0",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "dtype": "float32",
+          "channels": 3,
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "decode": "tf_decode_image_rgb_v1",
+          "resize": {
+            "method": "bilinear",
+            "antialias": false,
+            "location": "loader"
+          },
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": "densenet_imagenet_channel_mean_std",
+            "location": "model"
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "output": {
+            "shape": [
+              null,
+              1
+            ],
+            "dtype": "float32",
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          }
+        }
+      }
+    }
+  },
+  "budget": {
+    "configurations_per_architecture": 4,
+    "shared_repetitions": 3,
+    "base_epochs_max": 50,
+    "transfer_fine_tune_epochs_max": 20,
+    "custom_fine_tune_epochs_max": 0,
+    "equal_configuration_count_not_compute": true,
+    "retry": "E5 bounded retries; explicit verified attempt per member"
+  },
+  "roles": {
+    "train": "weights and augmentation only",
+    "val": "checkpoint, threshold and exploratory comparison",
+    "test": "previously frozen final candidate only"
+  },
+  "validation_design": {
+    "current": "shared_val_exploratory",
+    "future": "patient-disjoint calibration/comparison subsets or nested patient out-of-fold predictions",
+    "automatic_resplit": false,
+    "independent_calibration": false
+  },
+  "calibration": {
+    "probability": "none_raw_probability",
+    "fit_during_comparison": false
+  },
+  "threshold": {
+    "rule": "strict_sensitivity_then_specificity_f2_highest_threshold_v1",
+    "target": 0.98,
+    "operator": ">",
+    "grid": "unique VAL scores plus 0 and 1",
+    "comparison": ">=",
+    "fallback": "maximum sensitivity, specificity, F2, highest threshold; objective unmet"
+  },
+  "selection": {
+    "rule": "all shared seeds pass, then mean specificity, mean F2, stable configuration hash",
+    "fallback": "max minimum sensitivity, mean specificity, mean F2, stable hash; exploratory objective unmet",
+    "representative_seed": 11,
+    "requires_complete_original_matrix": true,
+    "final_permission": "prior persisted exact candidate/checkpoint/decision lock"
+  },
+  "uncertainty": {
+    "method": "patient_cluster_percentile_bootstrap",
+    "replicates": 1000,
+    "seed": 7301,
+    "confidence": 0.95,
+    "minimum_patients": 20,
+    "minimum_valid_fraction": 0.95,
+    "between_seed_sd_ddof": 1,
+    "paired_metrics": [
+      "sensitivity",
+      "specificity",
+      "f2",
+      "roc_auc",
+      "average_precision"
+    ],
+    "hypothesis_tests": false,
+    "intervals": "pointwise_not_simultaneous"
+  },
+  "contrasts": [
+    [
+      "custom_cnn",
+      "vgg16"
+    ],
+    [
+      "custom_cnn",
+      "densenet121"
+    ],
+    [
+      "vgg16",
+      "densenet121"
+    ]
+  ],
+  "methodology": [
+    "## Población, hipótesis y alcance\n\nLa unidad de predicción es una imagen de célula; el paciente acreditado es la unidad de remuestreo. La población es exclusivamente la versión explícita FROZEN que pase E1: identidad clínica, pertenencia, READY/PASS, checks, archivos y fingerprints sellados. El alcance demográfico y de adquisición debe extraerse de su documentación, nunca inferirse. La matriz inicial no acredita un dataset accesible. No se presuponen independencia por célula, generalización a otros centros ni validación clínica.",
+    "La hipótesis descriptiva es que las arquitecturas pueden diferir en especificidad al orientar el umbral hacia sensibilidad estrictamente > 0,98. Se distinguen objetivo predefinido, estimación puntual e intervalo. Un punto > 0,98 no demuestra que el límite inferior lo supere ni acredita desempeño clínico. No se realizan pruebas de hipótesis ni declaraciones de significancia.",
+    "## Particiones\n\nTRAIN ajusta pesos y aumentación. VALIDATION selecciona checkpoint, umbral y configuración. TEST sólo evalúa decisiones previamente congeladas. E1 verifica separación por paciente, muestras y hashes; no se regenera el split. Preprocesamiento de E3 determinista por arquitectura y aumentación sólo TRAIN. No se ajustan normalización, probabilidades, umbral ni exclusiones con TEST. No se eliminan outliers según desempeño.",
+    "El uso compartido de VALIDATION introduce optimismo por selección. Toda comparación VAL se rotula exploratoria. Una futura revisión prospectiva deberá acreditar subconjuntos disjuntos por paciente para calibración/comparación o predicciones fuera de pliegue con selección anidada. No se ejecuta esa partición aquí. No hay calibración aprendida de probabilidades: se usan scores raw. Historial TEST desconocido hasta consulta acreditada; ausencia de eventos no prueba que sea intacto.",
+    "## Matriz y presupuesto\n\nTres arquitecturas, cuatro optimizadores implementados (Adam, AdamW, SGD, Adadelta), semillas compartidas 11, 29, 47: 36 miembros originales. Se congelan las configuraciones E2 completas sin semilla en el JSON, incluidas inicialización, learning rates y políticas; los valores no se vuelven a tomar de defaults. El presupuesto iguala número de configuraciones y repeticiones, no FLOPs. Máximo 50 épocas base; hasta 20 de fine-tuning en modelos preentrenados y cero en Custom CNN. Early stopping y checkpoint monitorizan val_f2_parasitized a umbral 0,5. Pesos ImageNet y normalización específica se mantienen según E3.",
+    "La ablación originales + sintéticos tiene otros 36 miembros planificados no disponibles. No se encontró un generador conectado. Técnica, proporción y procedencia permanecen ausentes: una nueva versión de protocolo será necesaria antes de ejecutarla. Deberá derivar sólo de TRAIN, sin imágenes sintéticas en VAL/TEST. No se confunde aumentación con generación sintética.",
+    "## Tres decisiones separadas\n\n1. Checkpoint: política E2/E5 congelada, basada en VALIDATION. 2. Umbral: entre scores VAL únicos más extremos 0 y 1, predicción positiva score >= umbral; exigir sensibilidad > 0,98, maximizar especificidad, luego F2, luego umbral más alto. Sin ambos soportes no se selecciona. Sin alternativa factible, maximizar sensibilidad y los mismos desempates, rotulando objetivo no alcanzado. No se reescriben predicciones E6; la propuesta es distinta de la decisión realmente evaluada. 3. Candidato: exigir matriz original completa y semillas comunes; priorizar configuraciones que cumplan en todas las semillas, media de especificidad, media F2, hash estable. Si ninguna cumple, máximo mínimo de sensibilidad y mismos desempates, explícitamente exploratorio. El checkpoint representativo usa semilla 11 predefinida, nunca la mejor semilla. Congelar referencia de reporte, checkpoint y decisión antes de TEST; no promover Producción.",
+    "Con probabilidades en [0,1] y el extremo 0 incluido, siempre-parasitized alcanza sensibilidad 1 si hay positivos; el objetivo aislado puede cumplirse de forma trivial y no basta para utilidad clínica. Por eso se informa siempre especificidad y baseline, sin inventar un umbral mínimo clínico. El fallback de candidato cubre resultados observados que no cumplen; sin ambas clases el umbral no es estimable.",
+    "## Métricas e incertidumbre\n\nMatriz de confusión: filas reales [uninfected=0, parasitized=1], columnas predichas [0,1]: [[TN,FP],[FN,TP]]. Se reportan sensibilidad, especificidad, precisión, F1, F2, balanced accuracy, ROC-AUC y PR-AUC definida como average precision no interpolada, además de soportes y prevalencia. Denominador cero implica null y motivo. Baseline siempre parasitized muestra sensibilidad 1 con especificidad 0 cuando existen ambas clases; no sustituye expertos clínicos.",
+    "Por semilla se preservan las predicciones. Media y desviación estándar muestral (ddof=1) entre semillas no son incertidumbre poblacional. IC95% percentiles con 1000 remuestreos de pacientes completos, semilla 7301, mínimo operativo predefinido de 20 pacientes y 95% de réplicas válidas por métrica; el mínimo es una salvaguarda, no garantía asintótica. Se informan réplicas válidas y limitaciones. Sin grupos acreditados no se sustituye por bootstrap de células. No se concatenan semillas como nuevas observaciones.",
+    "Contrastes descriptivos pareados entre las tres parejas de arquitecturas con mismo optimizador, condición, semilla y población exacta. Se remuestrean los mismos pacientes para ambos modelos y se informa diferencia izquierda menos derecha e IC95% por semilla. Intervalos puntuales, no simultáneos; no hay inferencia de significancia ni corrección multiplicidad porque no se realizan pruebas. Las curvas ROC y precisión-recall se exportan sólo con ambas clases.",
+    "## Linaje, exclusiones y reporte\n\nEl comparador recibe IDs explícitos de intentos EVALUATE de E6; no inventa un Run ID de evaluación separado donde E6 usa assessment_attempts. Conserva TRAIN, versión, artefacto/hash exactos, snapshot, configuración, semilla, decisión, identidad y hash de predicciones PostgreSQL. EXPLAIN se referencia explícitamente y se valida contra su evaluación; puede documentar errores mediante orden estable de sample_id, nunca causalidad ni precisión clínica. No se seleccionan versiones por fecha.",
+    "Partición, dataset o población incompatibles, integridad rota y resultados incompletos se excluyen con motivo. Metadatos históricos insuficientes no se completan. Fuera de matriz, protocolo o umbral E7 los resultados íntegros sólo son exploratorios, sin candidato. TEST histórico es descriptivo final con exposición registrada, nunca una fuente para ajuste o selección. Reportes y decisiones se persisten append-only en PostgreSQL y se releen antes de exportar JSON/Markdown. El documento de preparación no contiene resultados científicos ni sustituye a PostgreSQL."
+  ],
+  "references": [
+    "[Average precision, definición no interpolada (scikit-learn)](https://scikit-learn.org/1.5/modules/generated/sklearn.metrics.average_precision_score.html)",
+    "[Bootstrap con datos agrupados por paciente](https://pubmed.ncbi.nlm.nih.gov/10845400/)",
+    "[Obuchowski: análisis ROC con datos agrupados](https://pubmed.ncbi.nlm.nih.gov/9192452/)"
+  ]
+}

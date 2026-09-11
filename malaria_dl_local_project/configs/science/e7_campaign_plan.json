@@ -1,0 +1,286 @@
+{
+  "kind": "preparation_not_results",
+  "protocol_hash": "7db076d71c2143934f0b3bae47ff253f18d3f65c5c3f8efb2634586acbadbdf2",
+  "request": {
+    "models": [
+      "custom_cnn",
+      "vgg16",
+      "densenet121"
+    ],
+    "optimizers": [
+      "adadelta",
+      "adam",
+      "adamw",
+      "sgd"
+    ],
+    "seeds": [
+      11,
+      29,
+      47
+    ],
+    "variants": [
+      {
+        "name": "capstone_science_e7_v1",
+        "selected": {},
+        "by_model": {
+          "custom_cnn": {
+            "model": {
+              "input_shape": [
+                200,
+                200,
+                3
+              ],
+              "preprocessing": "rescale_0_1",
+              "weights": "none",
+              "dropout": 0.4,
+              "l2": 0.0001,
+              "head_units": 128,
+              "batch_normalization": "train",
+              "fine_tune_layers": 0
+            },
+            "execution": {
+              "max_epochs": 50,
+              "fine_tune_epochs": 0,
+              "batch_size": 64,
+              "deterministic_ops": true,
+              "no_augment": false,
+              "checkpoint_policy": "auc_with_min_recall",
+              "checkpoint_monitor": "val_f2_parasitized",
+              "checkpoint_mode": "max",
+              "min_recall": 0.98,
+              "beta": 2.0,
+              "reject_prediction_collapse": true,
+              "min_class_fraction": 0.05,
+              "calibrate_threshold": false,
+              "target_recall": 0.98,
+              "min_specificity": 0.0,
+              "early_stopping": true,
+              "early_stopping_monitor": "val_f2_parasitized",
+              "early_stopping_mode": "max",
+              "early_stopping_patience": 12,
+              "early_stopping_min_delta": 0.0001,
+              "restore_best_weights": true,
+              "evaluate_best_on_test": false
+            },
+            "recipe": {
+              "loss": "binary_crossentropy",
+              "metrics": "binary_clinical_v1",
+              "augmentation": {
+                "flip": "horizontal_and_vertical",
+                "rotation": 0.07,
+                "translation": 0.2,
+                "zoom": 0.2,
+                "contrast": 0.3
+              },
+              "reduce_lr": {
+                "monitor": "val_loss",
+                "factor": 0.5,
+                "patience": 4,
+                "min_lr": 1e-06
+              },
+              "selection_threshold": 0.5,
+              "fallback": "existing_clinical_policy_v1",
+              "clinical_success_independent_of_technical_completion": true
+            }
+          },
+          "vgg16": {
+            "model": {
+              "input_shape": [
+                200,
+                200,
+                3
+              ],
+              "preprocessing": "vgg16_imagenet",
+              "weights": "imagenet",
+              "dropout": 0.5,
+              "l2": 0.0,
+              "head_units": 1024,
+              "batch_normalization": "absent",
+              "fine_tune_layers": 4
+            },
+            "execution": {
+              "max_epochs": 50,
+              "fine_tune_epochs": 20,
+              "batch_size": 64,
+              "deterministic_ops": true,
+              "no_augment": false,
+              "checkpoint_policy": "auc_with_min_recall",
+              "checkpoint_monitor": "val_f2_parasitized",
+              "checkpoint_mode": "max",
+              "min_recall": 0.98,
+              "beta": 2.0,
+              "reject_prediction_collapse": true,
+              "min_class_fraction": 0.05,
+              "calibrate_threshold": false,
+              "target_recall": 0.98,
+              "min_specificity": 0.0,
+              "early_stopping": true,
+              "early_stopping_monitor": "val_f2_parasitized",
+              "early_stopping_mode": "max",
+              "early_stopping_patience": 12,
+              "early_stopping_min_delta": 0.0001,
+              "restore_best_weights": true,
+              "evaluate_best_on_test": false
+            },
+            "recipe": {
+              "loss": "binary_crossentropy",
+              "metrics": "binary_clinical_v1",
+              "augmentation": {
+                "flip": "horizontal_and_vertical",
+                "rotation": 0.07,
+                "translation": 0.2,
+                "zoom": 0.2,
+                "contrast": 0.3
+              },
+              "reduce_lr": {
+                "monitor": "val_loss",
+                "factor": 0.5,
+                "patience": 4,
+                "min_lr": 1e-06
+              },
+              "selection_threshold": 0.5,
+              "fallback": "existing_clinical_policy_v1",
+              "clinical_success_independent_of_technical_completion": true
+            }
+          },
+          "densenet121": {
+            "model": {
+              "input_shape": [
+                200,
+                200,
+                3
+              ],
+              "preprocessing": "rescale_0_1",
+              "weights": "imagenet",
+              "dropout": 0.5,
+              "l2": 0.0,
+              "head_units": 0,
+              "batch_normalization": "inference",
+              "fine_tune_layers": 4
+            },
+            "execution": {
+              "max_epochs": 50,
+              "fine_tune_epochs": 20,
+              "batch_size": 64,
+              "deterministic_ops": true,
+              "no_augment": false,
+              "checkpoint_policy": "auc_with_min_recall",
+              "checkpoint_monitor": "val_f2_parasitized",
+              "checkpoint_mode": "max",
+              "min_recall": 0.98,
+              "beta": 2.0,
+              "reject_prediction_collapse": true,
+              "min_class_fraction": 0.05,
+              "calibrate_threshold": false,
+              "target_recall": 0.98,
+              "min_specificity": 0.0,
+              "early_stopping": true,
+              "early_stopping_monitor": "val_f2_parasitized",
+              "early_stopping_mode": "max",
+              "early_stopping_patience": 12,
+              "early_stopping_min_delta": 0.0001,
+              "restore_best_weights": true,
+              "evaluate_best_on_test": false
+            },
+            "recipe": {
+              "loss": "binary_crossentropy",
+              "metrics": "binary_clinical_v1",
+              "augmentation": {
+                "flip": "horizontal_and_vertical",
+                "rotation": 0.07,
+                "translation": 0.2,
+                "zoom": 0.2,
+                "contrast": 0.3
+              },
+              "reduce_lr": {
+                "monitor": "val_loss",
+                "factor": 0.5,
+                "patience": 4,
+                "min_lr": 1e-06
+              },
+              "selection_threshold": 0.5,
+              "fallback": "existing_clinical_policy_v1",
+              "clinical_success_independent_of_technical_completion": true
+            }
+          }
+        }
+      }
+    ],
+    "exclusions": []
+  },
+  "campaign_protocol": {
+    "version": "capstone_science_e7_v1:7db076d71c2143934f0b3bae47ff253f18d3f65c5c3f8efb2634586acbadbdf2",
+    "objective": "Sensitivity strictly > 0.98, then specificity; exploratory VAL",
+    "metrics": {
+      "primary": [
+        "sensitivity",
+        "specificity"
+      ],
+      "secondary": [
+        "f2",
+        "roc_auc",
+        "average_precision"
+      ],
+      "definitions_version": "capstone_science_e7_v1",
+      "compliance": "point_estimate"
+    },
+    "sensitivity_target": 0.98,
+    "specificity_minimum": 0,
+    "roles": {
+      "train": "train",
+      "selection": "val",
+      "calibration": "val",
+      "final_test": "test"
+    },
+    "ranking": {
+      "partition": "val",
+      "criteria": [
+        "all shared seeds pass, then mean specificity, mean F2, stable configuration hash"
+      ],
+      "tie_breaks": [
+        "configuration_hash asc"
+      ]
+    },
+    "checkpoint": {
+      "policy": "auc_with_min_recall",
+      "monitor": "val_f2_parasitized",
+      "mode": "max",
+      "threshold": 0.5
+    },
+    "early_stopping": {
+      "enabled": true,
+      "monitor": "val_f2_parasitized",
+      "mode": "max",
+      "patience": 12,
+      "min_delta": 0.0001,
+      "restore_best_weights": true
+    },
+    "calibration": {
+      "algorithm": "none",
+      "population": "val",
+      "version": "E7 threshold selected later from exact VAL scores; no probability calibration"
+    },
+    "budget": {
+      "max_members": 36,
+      "max_attempts_per_member": 3
+    },
+    "missing": "report_all_members",
+    "retries": "first_verified_attempt",
+    "fallback": "diagnostic_only",
+    "test_access": "final_only_after_candidate_lock",
+    "aggregation": {
+      "version": "capstone_science_e7_v1",
+      "specification": "sample mean and ddof=1 SD between shared seeds; never pool predictions"
+    },
+    "uncertainty": {
+      "version": "capstone_science_e7_v1",
+      "specification": "patient bootstrap, 1000 replicates, 95% pointwise intervals"
+    },
+    "limitations": {
+      "shared_val": "checkpoint and threshold selection and exploratory comparison reuse VAL",
+      "independent_calibration": false,
+      "test_exposure": "unknown"
+    },
+    "pending": []
+  }
+}
