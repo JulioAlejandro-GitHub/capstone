@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Discover and validate the enabled registry matrix; no campaign persistence."""
+"""Execute persisted campaigns. Historical pure planning helpers remain import-compatible."""
 
 import argparse
 import json
@@ -144,34 +144,8 @@ def build_matrix(args):
 
 
 def main():
-    args = parse_args()
-    project_dir = Path(args.project_dir).expanduser().resolve()
-    if not (project_dir / "src/train.py").is_file():
-        raise ValueError("src/train.py not found")
-    # Validate every combination before dataset auditing or the first subprocess.
-    matrix = build_matrix(args)
-    print(
-        "Model selection:",
-        "explicit subset" if args.models_explicit else "enabled trainable registry",
-    )
-    print("Combinations:", len(matrix))
-    if args.dry_run:
-        print("PLAN ONLY: integridad operativa NO VERIFICADA; no BD ni entrenamiento.")
-        snapshot = None
-    else:
-        snapshot = verify_dataset_for_execution(
-            args.dataset_version_id, consumer="run_train_all_models"
-        )
-    failures = []
-    for model, optimizer, cmd in matrix:
-        if snapshot:
-            cmd.extend(["--expected-dataset-evidence-id", snapshot.evidence_id])
-        rc = run_command(cmd, project_dir, args.dry_run)
-        if rc:
-            failures.append((model, optimizer, rc))
-            if not args.continue_on_error:
-                break
-    return 1 if failures else 0
+    from src.malaria_dl.execution.campaign import main as execute_campaign
+    return execute_campaign()
 
 
 if __name__ == "__main__":

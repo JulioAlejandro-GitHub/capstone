@@ -29,12 +29,13 @@ class RunEvaluateAllTrainingsTests(unittest.TestCase):
 
         command = build_evaluate_command(
             run,
-            dataset_dir="data/malaria_physical_split",
-            threshold="clinical",
+            threshold="clinical", split="val", purpose="development",
+            protocol={"version":"synthetic"}, seed=42,
         )
 
         self.assertEqual(command[1:3], ["-m", "src.evaluate"])
-        self.assertIn("--require-lineage", command)
+        self.assertIn("--protocol", command)
+        self.assertNotIn("--track-db", command)
         self.assertEqual(command[command.index("--model-version-id") + 1], run.model_version_id)
         self.assertEqual(
             command[command.index("--source-training-run-id") + 1],

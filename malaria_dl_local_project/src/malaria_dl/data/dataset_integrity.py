@@ -136,20 +136,7 @@ def verify_integrity(connection, version_id, root, contract):
     expected = {}
     counts = Counter()
     for row in rows:
-        filename = row["source_filename"]
-        require(
-            isinstance(filename, str)
-            and Path(filename).name == filename
-            and filename not in {".", "..", ""},
-            "DATASET_FILENAME_INVALID",
-        )
-        require(
-            row["class_name"] in {"parasitized", "uninfected"}, "DATASET_CLASS_INVALID"
-        )
-        key = (row["split_name"], row["class_name"], filename)
-        if collisions[key] > 1:
-            filename = f"{row['source_record_id']}__{filename}"
-        relative = Path(row["split_name"]) / row["class_name"] / filename
+        relative = materialized_relative_path(row, collisions)
         checksum = row["source_file_sha256"]
         require(
             isinstance(checksum, str) and len(checksum) == 64,
@@ -175,3 +162,27 @@ def verify_integrity(connection, version_id, root, contract):
         )
     require(all(counts[s] > 0 for s in ("train", "val", "test")), "DATASET_SPLIT_EMPTY")
     return dict(counts)
+
+
+def materialized_relative_path(row, collisions):
+    from .governed_dataset import GovernedDatasetError
+
+    def require(condition, code):
+        if not condition:
+            raise GovernedDatasetError(code)
+
+    filename = row["source_filename"]
+    require(
+        isinstance(filename, str)
+        and Path(filename).name == filename
+        and filename not in {".", "..", ""},
+        "DATASET_FILENAME_INVALID",
+    )
+    require(
+        row["class_name"] in {"parasitized", "uninfected"}, "DATASET_CLASS_INVALID"
+    )
+    key = (row["split_name"], row["class_name"], filename)
+    if collisions[key] > 1:
+        filename = f"{row['source_record_id']}__{filename}"
+    relative = Path(row["split_name"]) / row["class_name"] / filename
+    return relative

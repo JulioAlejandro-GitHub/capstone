@@ -4,4 +4,4 @@ _implementation = import_module("src.malaria_dl.explainability.pipeline")
 __all__ = [name for name in vars(_implementation) if not name.startswith("__")]
 globals().update({name: getattr(_implementation, name) for name in __all__})
 if __name__ == "__main__":
-    _implementation.main()
+    raise SystemExit(_implementation.main())

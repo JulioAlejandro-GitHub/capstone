@@ -47,7 +47,7 @@ class ModelVersionResolver:
             raise ModelVersionResolutionError("--require-lineage exige --model-version-id.")
         if not model_version_id and source_training_run_id and not checkpoint:
             with self.connection_factory() as c:
-                rows=c.execute(text("SELECT id::text id FROM model_versions WHERE training_run_id=:run AND status NOT IN ('rejected','retired') ORDER BY version_number DESC NULLS LAST"),{"run":source_training_run_id}).mappings().all()
+                rows=c.execute(text("SELECT id::text id FROM model_versions WHERE training_run_id=:run AND status NOT IN ('rejected','retired')"),{"run":source_training_run_id}).mappings().all()
             if len(rows)!=1:
                 raise ModelVersionResolutionError("--source-training-run-id debe resolver exactamente una model version utilizable")
             model_version_id=rows[0]["id"]

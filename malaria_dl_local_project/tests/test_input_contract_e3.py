@@ -339,48 +339,21 @@ def test_consumer_main_blocks_before_load_or_predict(
     consumer, failure, tmp_path, monkeypatch
 ):
     from unittest.mock import Mock
+    from src.malaria_dl.assessment import service
+    from src.malaria_dl.assessment.contracts import AssessmentError
+    from test_assessment_e6 import value
 
-    from src.malaria_dl.evaluation import evaluator
-    from src.malaria_dl.explainability import pipeline
-    from src.model_version_resolver import ModelVersionResolver
-
-    module = evaluator if consumer == "evaluate" else pipeline
-    argv = ["--model-version-id", str(uuid4())]
-    if consumer == "explain":
-        argv += ["--method", "all"]
-    if failure == "override":
-        argv += ["--preprocessing", "vgg16_imagenet"]
-    args = module.parse_args(argv)
-    monkeypatch.setattr(module, "parse_args", lambda: args)
+    v = value(tmp_path)
     c = contract("rescale_0_1")
-    pp, ins, outs, mapping = stored(c)
-    if failure == "missing":
-        pp = {"mode": "rescale_0_1"}
-    checkpoint = tmp_path / "historical.keras"
-    checkpoint.write_bytes(b"synthetic bytes never loaded")
-    monkeypatch.setattr(
-        ModelVersionResolver,
-        "resolve",
-        lambda *a, **kw: SimpleNamespace(
-            checkpoint_path=checkpoint,
-            source_training_run_id=str(uuid4()),
-            preprocessing=pp,
-            input_signature=ins,
-            output_signature=outs,
-            class_mapping=mapping,
-            model_name="vgg16",
-        ),
-    )
-    monkeypatch.setattr(
-        module,
-        "verify_dataset_for_execution",
-        lambda *a, **kw: SimpleNamespace(
-            dataset_version_id=str(uuid4()), dataset_root=tmp_path
-        ),
-    )
+    v["model"]["input_contract"] = None if failure == "missing" else c
+    monkeypatch.setattr(service, "resolve", lambda *a: (v["model"], v["dataset"], None))
+    monkeypatch.setattr(service, "dataset_samples", lambda *a, **kw: v["samples"])
+    monkeypatch.setattr(service, "inference_environment", lambda *a: {"source":"synthetic"})
     loader = Mock(side_effect=AssertionError("must reject before model load"))
     monkeypatch.setattr(tf.keras.models, "load_model", loader)
-    with pytest.raises(InputContractError):
-        module.main()
+    with pytest.raises((InputContractError, AssessmentError)):
+        service.prepare(None, split="val", purpose="development", protocol=v["protocol"], requested_threshold=".5", seed=42, batch_size=2,
+            input_override=contract("vgg16_imagenet") if failure=="override" else None,
+            explanation={"method":"gradcam"} if consumer=="explain" else None)
     loader.assert_not_called()
     assert not list(tmp_path.rglob("*.csv"))

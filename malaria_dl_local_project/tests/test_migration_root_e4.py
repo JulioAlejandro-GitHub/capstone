@@ -75,7 +75,7 @@ def test_precheck_accepts_known_parent_revisions(monkeypatch, tmp_path):
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    assert module._linear_head() == "20260911_02"
+    assert module._linear_head() == "20260912_02"
     assert {"20260901_01", "20260911_01", "20260911_02"} <= {
         r.revision for r in module._scripts().walk_revisions()
     }

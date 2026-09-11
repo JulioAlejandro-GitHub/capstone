@@ -29,12 +29,14 @@ class RunExplainAllTrainingsTests(unittest.TestCase):
 
         command = build_explain_command(
             run,
-            method="all",
-            num_samples=50,
-            threshold="clinical",
+            method="gradcam", layer="conv",
+            num_samples=None,
+            threshold="clinical", split="val", purpose="development",
+            protocol={"version":"synthetic"}, seed=42,
         )
 
-        self.assertIn("--require-lineage", command)
+        self.assertIn("--protocol", command)
+        self.assertNotIn("--track-db", command)
         self.assertEqual(command[command.index("--model-version-id") + 1], run.model_version_id)
         self.assertEqual(
             command[command.index("--source-training-run-id") + 1],
@@ -50,11 +52,11 @@ class RunExplainAllTrainingsTests(unittest.TestCase):
             run.dataset_version_id,
         )
 
-    def test_pipeline_loads_inherited_dataset_as_governed(self):
-        pipeline = Path("src/malaria_dl/explainability/pipeline.py").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("governed=governed_dataset is not None", pipeline)
+    def test_pipeline_delegates_to_governed_contract(self):
+        from src.malaria_dl.explainability import pipeline
+        with mock.patch("src.malaria_dl.assessment.cli.main", return_value=0) as governed:
+            self.assertEqual(pipeline.main(), 0)
+        governed.assert_called_once_with("explain")
 
 
 if __name__ == "__main__":

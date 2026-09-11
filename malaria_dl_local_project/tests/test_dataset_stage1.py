@@ -333,48 +333,22 @@ def test_batch_cli_requires_uuid(module, value):
         module.parse_args(argv)
 
 
-def test_batch_resolves_once_propagates_pin_to_twelve(fixture, monkeypatch):
+def test_legacy_command_builder_propagates_explicit_pin_to_twelve(fixture):
     snap = replace(gd.resolve_governed_dataset(VERSION), evidence_id=str(uuid4()))
-    verify = Mock(return_value=snap)
-    launch = Mock(return_value=0)
-    monkeypatch.setattr(batch, "verify_dataset_for_execution", verify)
-    monkeypatch.setattr(batch, "run_command", launch)
-    monkeypatch.setattr(
-        batch,
-        "parse_args",
-        lambda: SimpleNamespace(
-            project_dir=str(Path.cwd()),
-            models=list(batch.enabled_models()),
-            models_explicit=False,
-            model_config=None,
-            optimizers=list(batch.OPTIMIZER_DEFAULTS),
-            max_epochs=1,
-            img_size=32,
-            batch_size=2,
-            seed=42,
-            target_recall=0.98,
-            early_stopping_patience=2,
-            dataset_version_id=VERSION,
-            dry_run=False,
-            continue_on_error=False,
-        ),
-    )
-    assert batch.main() == 0
-    assert verify.call_count == 1 and launch.call_count == 12
-    for call in launch.call_args_list:
-        cmd = call.args[0]
+    commands = [batch.build_train_command(model, optimizer, 1, 32, 2, 42, VERSION, .98, 2,
+                expected_evidence_id=snap.evidence_id)
+                for model in batch.enabled_models() for optimizer in batch.OPTIMIZER_DEFAULTS]
+    assert len(commands) == 12
+    for cmd in commands:
         assert cmd[cmd.index("--dataset-version-id") + 1] == VERSION
         assert cmd[cmd.index("--expected-dataset-evidence-id") + 1] == snap.evidence_id
 
 
-def test_dry_run_does_not_accredit_or_connect(monkeypatch, capsys):
-    args = batch.parse_args(["--dataset-version-id", VERSION, "--dry-run"])
-    monkeypatch.setattr(batch, "parse_args", lambda: args)
-    verify = Mock(side_effect=AssertionError("no DB"))
-    monkeypatch.setattr(batch, "verify_dataset_for_execution", verify)
-    assert batch.main() == 0
-    verify.assert_not_called()
-    assert "NO VERIFICADA" in capsys.readouterr().out
+def test_dataset_only_legacy_training_invocation_rejected(monkeypatch):
+    # E5 requires persisted campaign ownership; no legacy dry-run accreditation.
+    from src.malaria_dl.execution import campaign
+    with pytest.raises(SystemExit):
+        campaign.parse_args(["--dataset-version-id", VERSION, "--dry-run"])
 
 
 def test_failed_persistence_never_returns_verified(fixture, monkeypatch):
@@ -476,35 +450,20 @@ def test_train_public_entry_rejects_before_model_or_images(value, monkeypatch):
 def test_consumers_reject_before_inference(
     fixture, evidence_store, monkeypatch, kind, historic
 ):
-    from src.malaria_dl.evaluation import evaluator
-    from src.malaria_dl.explainability import pipeline
-    from src.model_version_resolver import ModelVersionResolver
-
+    from src.malaria_dl.assessment import service
+    from src.malaria_dl.assessment.contracts import AssessmentError
     parent_fixture(fixture)
     if historic:
         fixture.training["dataset_version_id"] = None
-    module = evaluator if kind == "evaluate" else pipeline
-    argv = ["--model-version-id", str(uuid4()), "--dataset-version-id", str(uuid4())]
-    if kind == "explain":
-        argv += ["--method", "all"]
-    args = module.parse_args(argv)
-    monkeypatch.setattr(module, "parse_args", lambda: args)
-    monkeypatch.setattr(
-        ModelVersionResolver,
-        "resolve",
-        lambda *a, **k: SimpleNamespace(
-            checkpoint_path=fixture.root / "unused.keras", source_training_run_id=TRAIN
-        ),
-    )
+    def inherited(*a):
+        return {}, gd.training_dataset_metadata(TRAIN), None
+    monkeypatch.setattr(service, "resolve", inherited)
     inference = Mock(side_effect=AssertionError("inference must not run"))
-    if kind == "evaluate":
-        monkeypatch.setattr(module, "collect_predictions", inference)
-    else:
-        monkeypatch.setattr(module, "collect_prediction_candidates", inference)
-    with pytest.raises(
-        gd.GovernedDatasetError, match="NOT_ACCREDITED|VERSION_MISMATCH"
-    ):
-        module.main()
+    monkeypatch.setattr(service, "KerasRuntime", inference)
+    with pytest.raises((gd.GovernedDatasetError, AssessmentError), match="NOT_ACCREDITED|OVERRIDE_CONFLICT"):
+        service.prepare(None, training_run_id=TRAIN, dataset_version_id=str(uuid4()), split="val", purpose="development",
+            protocol={"version":"synthetic", "allowed_numeric_thresholds":[.5]}, requested_threshold=".5", seed=42, batch_size=2,
+            explanation={"method":"gradcam"} if kind=="explain" else None)
     inference.assert_not_called()
     assert not list(fixture.root.rglob("*.csv"))
 

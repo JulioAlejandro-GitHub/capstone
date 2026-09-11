@@ -1,23 +1,5 @@
 #!/usr/bin/env python3
-"""
-run_explain_all_trainings.py
-
-Ejecuta src.explain para todos los training runs completados, usando:
-- checkpoint inmutable registrado en model_versions
-- --source-training-run-id
-- --require-lineage
-
-Uso recomendado:
-  cd ".../capstone/malaria_dl_local_project"
-  source .venv/bin/activate
-  python run_explain_all_trainings.py --dataset-version-id "$DATASET_VERSION_ID"
-
-DATASET_VERSION_ID debe ser un UUID elegido explícitamente.
-
-Opciones útiles:
-  python run_explain_all_trainings.py --dataset-version-id "$DATASET_VERSION_ID" --dry-run
-  python run_explain_all_trainings.py --dataset-version-id "$DATASET_VERSION_ID" --models custom_cnn densenet121 --optimizers adam adamw
-"""
+"""E6 campaign explain entrypoint; legacy inventory is read-only and exposes ambiguity."""
 
 from __future__ import annotations
 
@@ -78,7 +60,7 @@ def fetch_training_inventory(
 ) -> list[TrainingRun]:
     dataset_version_id = normalize_dataset_version_id(dataset_version_id)
     query = """
-        SELECT DISTINCT ON (r.id)
+        SELECT
             r.id::text AS training_run_id,
             mv.id::text AS model_version_id,
             r.run_name,
@@ -88,7 +70,7 @@ def fetch_training_inventory(
                 r.parameters ->> 'optimizer',
                 ''
             ) AS optimizer,
-            COALESCE(mv.best_model_path, mv.checkpoint_path) AS checkpoint_path,
+            mv.checkpoint_path AS checkpoint_path,
             COALESCE(
                 r.execution_parameters ->> 'img_size',
                 r.parameters ->> 'img_size',
@@ -115,7 +97,7 @@ def fetch_training_inventory(
         WHERE r.run_type = 'training'
           AND r.status = 'completed'
           AND r.dataset_version_id=CAST(%(dataset_version_id)s AS uuid)
-        ORDER BY r.id, mv.created_at DESC;
+        ORDER BY r.id, mv.id;
     """
 
     with connect(project_dir) as conn:
@@ -124,11 +106,13 @@ def fetch_training_inventory(
             cur.execute(query, {"dataset_version_id": dataset_version_id})
             rows = cur.fetchall()
 
+    from collections import Counter
+    multiplicity = Counter(row[0] for row in rows)
     inventory = []
     for row in rows:
         if normalize_dataset_version_id(row[9]) != dataset_version_id:
             raise GovernedDatasetError("BATCH_TRAIN_DATASET_MISMATCH")
-        reasons = []
+        reasons = ["ambiguous model versions"] if multiplicity[row[0]] != 1 else []
         if row[10] not in {"candidate", "validated", "approved", "deployed"}:
             reasons.append(f"model_version status={row[10]}")
         if row[11] != "resolved":
@@ -194,29 +178,19 @@ def run_command(cmd: list[str], cwd: Path, dry_run: bool = False) -> int:
     return result.returncode
 
 
-def build_explain_command(
-    run: TrainingRun,
-    method: str,
-    num_samples: int,
-    threshold: str,
-    expected_evidence_id=None,
-) -> list[str]:
-    version = normalize_dataset_version_id(run.dataset_version_id)
-    return [
-        sys.executable,
-        "-m", "src.explain",
-        "--model-version-id", run.model_version_id,
-        "--source-training-run-id", run.training_run_id,
-        "--dataset-version-id", version,
-        *(["--expected-dataset-evidence-id", expected_evidence_id] if expected_evidence_id else []),
-        "--method", method,
-        "--batch-size", run.batch_size,
-        "--num-samples", str(num_samples),
-        "--threshold", threshold,
-        "--positive-label", "parasitized",
-        "--track-db",
-        "--require-lineage",
-    ]
+def build_explain_command(run: TrainingRun, *, method, num_samples, threshold, split, purpose, protocol, seed, layer=None):
+    import json
+    command = [sys.executable, "-m", "src.explain",
+        "--model-version-id", run.model_version_id, "--source-training-run-id", run.training_run_id,
+        "--dataset-version-id", normalize_dataset_version_id(run.dataset_version_id),
+        "--threshold", str(threshold), "--split", split, "--purpose", purpose,
+        "--protocol", json.dumps(protocol), "--seed", str(seed), "--batch-size", str(run.batch_size)]
+    command += ["--method", method]
+    if num_samples is not None:
+        command += ["--num-samples", str(num_samples)]
+    if layer is not None:
+        command += ["--layer", layer]
+    return command
 
 
 def parse_args(argv=None) -> argparse.Namespace:
@@ -237,78 +211,8 @@ def parse_args(argv=None) -> argparse.Namespace:
 
 
 def main() -> int:
-    args = parse_args()
-    project_dir = Path(args.project_dir).expanduser().resolve()
-
-    if not (project_dir / "src" / "explain.py").exists():
-        print(
-            f"ERROR: no se encontró src/explain.py en {project_dir}. "
-            "Ejecuta desde malaria_dl_local_project o usa --project-dir.",
-            file=sys.stderr,
-        )
-        return 2
-
-    snapshot = None
-    if args.dry_run:
-        print("PLAN ONLY: inventario de BD; integridad operativa NO VERIFICADA, sin subprocesos.")
-    else:
-        snapshot = verify_dataset_for_execution(
-            args.dataset_version_id, dataset_dir=getattr(args, "dataset_dir", None),
-            consumer="run_explain_all_trainings",
-        )
-    inventory = fetch_training_inventory(project_dir, args.dataset_version_id)
-    excluded = [run for run in inventory if run.exclusion_reasons]
-    runs = [run for run in inventory if not run.exclusion_reasons]
-    runs = filter_runs(runs, args.models, args.optimizers, args.limit)
-
-    print(
-        f"TRAIN encontrados: {len(inventory)} | elegibles: {len(inventory) - len(excluded)} "
-        f"| excluidos: {len(excluded)}"
-    )
-    for run in excluded:
-        print(
-            f"EXCLUIDO: training_run_id={run.training_run_id} | "
-            + " | ".join(run.exclusion_reasons)
-        )
-
-    if not runs:
-        print("No hay training runs completados que coincidan con los filtros.")
-        return 0
-
-    print(f"Training runs a explicar: {len(runs)}")
-
-    failures: list[tuple[str, str]] = []
-    for run in runs:
-        if normalize_dataset_version_id(run.dataset_version_id) != args.dataset_version_id:
-            raise GovernedDatasetError("BATCH_TRAIN_DATASET_MISMATCH")
-        if snapshot is not None:
-            assert_run_dataset_snapshot_unchanged(snapshot, training_dataset_metadata(run.training_run_id))
-        print(
-            f"\nTraining: {run.training_run_id} | "
-            f"model_version={run.model_version_id} | model={run.model_name} | "
-            f"optimizer={run.optimizer} | checkpoint={run.checkpoint_path}"
-        )
-        cmd = build_explain_command(
-            run,
-            method=args.method,
-            num_samples=args.num_samples,
-            threshold=args.threshold,
-            expected_evidence_id=snapshot.evidence_id if snapshot else None,
-        )
-        rc = run_command(cmd, cwd=project_dir, dry_run=args.dry_run)
-        if rc != 0:
-            failures.append((run.training_run_id, run.checkpoint_path))
-            if not args.continue_on_error:
-                break
-
-    print("\nResumen explain")
-    if not failures:
-        print("PLAN generado; integridad NO VERIFICADA." if args.dry_run else "OK: todas las explicaciones finalizaron sin error.")
-        return 0
-
-    for training_run_id, checkpoint in failures:
-        print(f"FALLÓ: training_run_id={training_run_id}, checkpoint={checkpoint}")
-    return 1
+    from src.malaria_dl.assessment.cli import main as governed_main
+    return governed_main("explain", batch=True)
 
 
 if __name__ == "__main__":

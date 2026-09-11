@@ -380,7 +380,7 @@ def main():
         print(json.dumps(args.model_configuration, sort_keys=True))
         print("PLAN ONLY: integridad operativa NO VERIFICADA")
         return
-    from .trainer import main as train
+    from ..execution.train import standalone as train
 
     return train(args)
 

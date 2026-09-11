@@ -1,0 +1,380 @@
+{
+  "stage": "E6",
+  "base_commit": "cd5c64d703358797570f5183dd598d93314dc0eb",
+  "branch": "main",
+  "effective_revision": "Unchanged E6 implementation; operational migration evidence recorded",
+  "parent_manifest": "docs/audits/etapa_6_manifiesto_instalacion_pendiente_2026-09-11.json",
+  "parent_manifest_sha256": "743a6372a98a1600131b26b9ae38f64563f80148e98b47c091cbf987d5d77ed3",
+  "e5_entries_verified_initially": 23,
+  "e5_entries_unchanged_finally": 22,
+  "e5_files_intentionally_changed": [
+    "malaria_dl_local_project/tests/test_migration_root_e4.py"
+  ],
+  "migration_head": "20260912_02",
+  "operational_revision": "20260912_02 (user wrapper output; current=head)",
+  "decision": "NO APROBADA",
+  "validation": {
+    "local_passed": 39,
+    "postgres_skipped": 17,
+    "duration_seconds": 12.31,
+    "warnings": 7,
+    "user_previous_postgres": {
+      "passed": 15,
+      "failed": 1,
+      "deselected": 1,
+      "duration_seconds": 2.25
+    },
+    "corrected_postgres": {
+      "scope": "single concurrent synthetic test",
+      "source": "user Compose output",
+      "passed": 1,
+      "duration_seconds": 0.55
+    },
+    "original_cause": {
+      "confirmed": true,
+      "phase": "original:INSERT",
+      "type": "UniqueViolation",
+      "sqlstate": "23505",
+      "constraint": "assessment_identities_structural_hash_key"
+    },
+    "full_corrected_postgres_suite": {
+      "scope": "synthetic schema; public test excluded",
+      "source": "user Compose output",
+      "passed": 16,
+      "deselected": 1,
+      "duration_seconds": 2.29
+    },
+    "operational_migration": {
+      "status": "VERIFIED_FROM_USER_OUTPUT",
+      "from": "20260912_01",
+      "to": "20260912_02",
+      "wrapper": "make db-migrate",
+      "backup": "capstone_20260911T183223Z.dump",
+      "backup_sha256": "adbf49417bd66700ae9d6a10551e36ad47d6382ffd302cdfaa3441b1370ca1bd",
+      "backup_contents_checked": true,
+      "preflight_rollback_confirmed": true
+    },
+    "readiness": {
+      "status": "POST_UPGRADE_PENDING",
+      "previous_pre_upgrade_http_status": 503
+    },
+    "public_schema_test": {
+      "status": "POST_UPGRADE_PENDING",
+      "previous_pre_upgrade_result": "revision 20260912_01; missing 6 tables; 0/8 enabled triggers"
+    },
+    "latest_full_suite": {
+      "source": "user output",
+      "passed": 16,
+      "failed": 1,
+      "duration_seconds": 2.28
+    }
+  },
+  "files": [
+    {
+      "path": "alembic/versions/20260912_01_train_execution.py",
+      "sha256": "388bf8828c23d7547190a7a4b2dbac7990d629b59da0152de62164531ed0fd9e",
+      "bytes": 10320
+    },
+    {
+      "path": "alembic/versions/20260912_02_assessments.py",
+      "sha256": "7ed278cf79b301103cffb30384a1652436a7edd86588e37011c569b39ddfaaa5",
+      "bytes": 13374
+    },
+    {
+      "path": "backend_api/app/main.py",
+      "sha256": "d90ed5eceb6fa30c1ece170353c2d3c2d024c8db6bacef915df6fa0d4f30468b",
+      "bytes": 3060
+    },
+    {
+      "path": "backend_api/app/routes/assessments.py",
+      "sha256": "bbaf94be2f575dd330514d7748913738285c4025fd766b7aa8303804a7cd9d23",
+      "bytes": 3361
+    },
+    {
+      "path": "docs/audits/etapa_4_cierre_operativo_2026-09-11.md",
+      "sha256": "2ae50b00601e9998e2d4fffd8b358de5443d4925775493367cebef097340fdb3",
+      "bytes": 1325
+    },
+    {
+      "path": "docs/audits/etapa_5_cierre_operativo_2026-09-11.md",
+      "sha256": "effcd2ad3cb0acd761bd906c6acf423e2d41d751f9d61aada1538dd57526da0f",
+      "bytes": 3572
+    },
+    {
+      "path": "docs/audits/etapa_5_diagnostico_instalacion_2026-09-11.md",
+      "sha256": "040564843d7bb1544436fc3def431bb02961fbf3c22b53e89d24d65a45955237",
+      "bytes": 1683
+    },
+    {
+      "path": "docs/audits/etapa_5_ejecutor_2026-09-11.md",
+      "sha256": "6bf1282d83e4dc2a7ea9c50d37603920555990f23178d117b5b99607721720be",
+      "bytes": 6413
+    },
+    {
+      "path": "docs/audits/etapa_5_instalacion_pendiente_confirmada_2026-09-11.md",
+      "sha256": "6372edcbfbe168513a583793789af2094653d17fce05213438b1dfa13d8a5323",
+      "bytes": 1359
+    },
+    {
+      "path": "docs/audits/etapa_5_integracion_sintetica_2026-09-11.md",
+      "sha256": "316b30354e278958fb93cf033a708968c4c29552b4fdde4f8c94b609ad32c047",
+      "bytes": 2483
+    },
+    {
+      "path": "docs/audits/etapa_5_linea_base_2026-09-11.md",
+      "sha256": "800fc24a4c201ab1d383cdc133af91ee001303b90b99f9050b3a9d9241a205eb",
+      "bytes": 3792
+    },
+    {
+      "path": "docs/audits/etapa_5_manifiesto_2026-09-11.json",
+      "sha256": "000238522c58926d0ced923620e0e5241d7722b8a26c0ee5685a6edea1eb502e",
+      "bytes": 3462
+    },
+    {
+      "path": "docs/audits/etapa_5_manifiesto_diagnostico_instalacion_2026-09-11.json",
+      "sha256": "54d2aba273767b6ab0d68d6d15d2dc56e9d5376ba946bd6873c58cdb20ebfd21",
+      "bytes": 4044
+    },
+    {
+      "path": "docs/audits/etapa_5_manifiesto_final_2026-09-11.json",
+      "sha256": "5d725443832d1c013ad84c70f5a9de11dd334a8b9df47f5ba21a1ceeceda7fb9",
+      "bytes": 4850
+    },
+    {
+      "path": "docs/audits/etapa_5_migracion_operativa_2026-09-11.md",
+      "sha256": "7a533630a78bbcf146d3eafc6ce4532944e0bd118367be13d778f487d3210c4a",
+      "bytes": 1743
+    },
+    {
+      "path": "docs/audits/etapa_6_concurrencia_2026-09-11.md",
+      "sha256": "ebf80e65a9c81b2ec558305c0104f3f10a23fc0d345f1f0cf1080d03845c20b4",
+      "bytes": 4971
+    },
+    {
+      "path": "docs/audits/etapa_6_concurrencia_verificada_2026-09-11.md",
+      "sha256": "ec09eb492b6d3c7f3d2d198dea99c7c1834ac50659572647d995438249080ae0",
+      "bytes": 2643
+    },
+    {
+      "path": "docs/audits/etapa_6_instalacion_pendiente_2026-09-11.md",
+      "sha256": "1f5970cb7f427690e2ee41218664e985abde34a2e3490c7d47bc59f1fbdb2212",
+      "bytes": 2412
+    },
+    {
+      "path": "docs/audits/etapa_6_integracion_sintetica_2026-09-11.md",
+      "sha256": "3acf9a8b4c154216bc3cf37669630aaa1c0fc0ae3f9207d7097b76d9cbe44561",
+      "bytes": 2930
+    },
+    {
+      "path": "docs/audits/etapa_6_linaje_exacto_2026-09-11.md",
+      "sha256": "42701abe84c7bbddfa8c90f581c92107b016ada582861002c586267e6d371e78",
+      "bytes": 13208
+    },
+    {
+      "path": "docs/audits/etapa_6_manifiesto_2026-09-11.json",
+      "sha256": "561b5a130e45f938e06b0fcc10ac54b1c6bb208d48caca356247458b543ebe98",
+      "bytes": 14989
+    },
+    {
+      "path": "docs/audits/etapa_6_manifiesto_concurrencia_2026-09-11.json",
+      "sha256": "ae78ee5db2d745b6d46266ac1403baa35acbecfd25fc0cb09066ca660ac6c087",
+      "bytes": 11407
+    },
+    {
+      "path": "docs/audits/etapa_6_manifiesto_concurrencia_verificada_2026-09-11.json",
+      "sha256": "0a7e38b94099728a15460127105818abd6e75eb4770671a119d5cc377ece886d",
+      "bytes": 12018
+    },
+    {
+      "path": "docs/audits/etapa_6_manifiesto_instalacion_pendiente_2026-09-11.json",
+      "sha256": "743a6372a98a1600131b26b9ae38f64563f80148e98b47c091cbf987d5d77ed3",
+      "bytes": 13324
+    },
+    {
+      "path": "docs/audits/etapa_6_manifiesto_integracion_sintetica_2026-09-11.json",
+      "sha256": "57ee342b36b2f003bb14df97db2650c2811793038fdaa8e60e4ebf7ba6608da1",
+      "bytes": 12621
+    },
+    {
+      "path": "docs/audits/etapa_6_migracion_operativa_2026-09-11.md",
+      "sha256": "d9c0986822053ae3da7e14bf86cacd524fa917a738785e9fe0bc98cca9c39914",
+      "bytes": 2567
+    },
+    {
+      "path": "docs/engineering/etapa_5_ejecutor_2026-09-11.md",
+      "sha256": "a9dc27286adfbd12af6243334a5a57634c8404c5ecf1b89f2cb9b56ef78dc424",
+      "bytes": 6807
+    },
+    {
+      "path": "docs/engineering/etapa_6_evaluate_explain_2026-09-11.md",
+      "sha256": "9e58c055449a218bb3dc5831a4637c0a2f1f90f12a3f01971883a21fa4817ecb",
+      "bytes": 11195
+    },
+    {
+      "path": "malaria_dl_local_project/run_evaluate_all_trainings.py",
+      "sha256": "5b681cb812f5d73baa9bfc3a61d72bce6cebd8e4d03fa9a342a7c0da82b7f9a0",
+      "bytes": 7481
+    },
+    {
+      "path": "malaria_dl_local_project/run_explain_all_trainings.py",
+      "sha256": "2604fa81be7b48cf60b4e9a05c1c5762eaa48fa7e5c0a5d6f8f511bd3b7c341d",
+      "bytes": 7748
+    },
+    {
+      "path": "malaria_dl_local_project/run_train_all_models.py",
+      "sha256": "eacfe45f17a5fc9924f92da4a8f1485421eab942d5088fe741dd335d295b9a6c",
+      "bytes": 4797
+    },
+    {
+      "path": "malaria_dl_local_project/src/evaluate.py",
+      "sha256": "c329bec9851615e10143b01536905f0112ed1f597c8cb25a16179da4c3a799f7",
+      "bytes": 398
+    },
+    {
+      "path": "malaria_dl_local_project/src/explain.py",
+      "sha256": "1776d59a7e9d8d4e6e87b180ec8dfb1ece926878dac6708f702de157ed19b27c",
+      "bytes": 405
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/assessment/__init__.py",
+      "sha256": "37dc4a3137b65ac086f67d5a7b291acf7e3ed65cb2a5fb651bb42ce7c40940b9",
+      "bytes": 83
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/assessment/cli.py",
+      "sha256": "30b93cba080abc979c3049c21db37d9b939ece13f42e8736208c09615db15944",
+      "bytes": 5396
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/assessment/contracts.py",
+      "sha256": "be8423541f063f26b0d9014efe76864ba8857012ef153e5c20a7d2aa0a70dd97",
+      "bytes": 6004
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/assessment/lineage.py",
+      "sha256": "5cede9d3fc41088a91c206ae410b56b4834454a6475a3f2f8f34686884671092",
+      "bytes": 8808
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/assessment/repository.py",
+      "sha256": "65745140650472e94c2a57c361eb710a550dabe8e76e19e25a64d2c8c55f3735",
+      "bytes": 8429
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/assessment/runtime.py",
+      "sha256": "7f244f8f532e14df0ca73f0a0e9cac0f010bd6607e25aae761e3cb25523d569b",
+      "bytes": 6589
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/assessment/service.py",
+      "sha256": "d7d8c88c25a3754709bce8cb39b2525322e9ab5b3c03dd2633713bb870b07e88",
+      "bytes": 10025
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/data/dataset_integrity.py",
+      "sha256": "7d02a67a7f52249d08faef77c860d655f84fd13eb564a57a156cabefc38bd23b",
+      "bytes": 6788
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/evaluation/evaluator.py",
+      "sha256": "cfdba2a3a6f7a968bc0df63f83f52d2c62ff8dbf512bab6904e3d2ca1068a9b0",
+      "bytes": 7466
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/__init__.py",
+      "sha256": "d0238a2e513c380e8d4606bfce2939509dd7456d43eebb43401cf9a5d70151c7",
+      "bytes": 62
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/artifacts.py",
+      "sha256": "62693e43c33e9a6ed56ee9eba6283ef8a57f37cb2cd6235f5356fca5650d56cc",
+      "bytes": 4385
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/campaign.py",
+      "sha256": "d073f7b25d9d078f7d6efe9ba3af1311d93159127ac8c39f58ce474f88d05b23",
+      "bytes": 8683
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/repository.py",
+      "sha256": "99f657c8f431dac88a2a2f22a5cfe17eb271bb11c6879519606eda1095512ddd",
+      "bytes": 15407
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/train.py",
+      "sha256": "3f37499a52489d27fe2b89fd32c99a59d6fa0f750abd3577bad6fa0156b37788",
+      "bytes": 11176
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/worker.py",
+      "sha256": "5dc1aadd272a99ab3a62fbd504ae7dce063bd30878bd8c9e83bd900bdf829764",
+      "bytes": 2575
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/explainability/pipeline.py",
+      "sha256": "9c11eea16eb469d6648800fceb4ef1d7472bc19a1365b3a027de1ba8f32f4e87",
+      "bytes": 39656
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/governance/services/model_version_resolver.py",
+      "sha256": "a77c2840d1b3b3f66f041bb12f79a6f789042384e525350eb7386637f0f38ca9",
+      "bytes": 6477
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/training/cli.py",
+      "sha256": "216aea0ea4e05931a1639b7580c3d720dfc1cc5d4826bf22247d60cade29c946",
+      "bytes": 14934
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_assessment_api_e6.py",
+      "sha256": "445ffbaf50d63731380d0f128316a663a4618928a926e1b624d6a429b9a140b1",
+      "bytes": 1392
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_assessment_e6.py",
+      "sha256": "8c9a64013714b65f734f311b01403a475a238e20c2e62136d9117b5dd90daafd",
+      "bytes": 23239
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_assessment_postgres.py",
+      "sha256": "40fbe45465e7fe23be973fcf16c1c879b7edf8c743708e5e90e11319f98f5015",
+      "bytes": 14782
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_campaign_executor_e5.py",
+      "sha256": "f3f399c30b086bdbfbdb41449a249b261ba95dce90f5664ebf452777599f4615",
+      "bytes": 7946
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_campaign_executor_postgres.py",
+      "sha256": "0b1b5053fa5c0ab686b2637584a0c5dd7060ab5d72897ebcf0d870146ff224dc",
+      "bytes": 11549
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_dataset_stage1.py",
+      "sha256": "d836821069ba4ee74b8b7d944d57c2a29c31e6ddbfae74420d256aee7972c499",
+      "bytes": 21856
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_input_contract_e3.py",
+      "sha256": "66ef845270863f897c0bf643638fd8f8035c0c9e0cfd4a78fca80150f668c8ec",
+      "bytes": 14308
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_migration_root_e4.py",
+      "sha256": "298dadf566984f02f985abbf44dc00d63495ca5c661109adece45fec936e47a8",
+      "bytes": 6889
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_run_evaluate_all_trainings.py",
+      "sha256": "0278b0791c070e9ca2472287a2f5bdf82735dd5d22eff4f5f3a33c26e4ddbe22",
+      "bytes": 2043
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_run_explain_all_trainings.py",
+      "sha256": "7d8f1f16e7acc8f0299fc395e5b553a0d2ecf31f5eca339e42c47f67c3549242",
+      "bytes": 2518
+    }
+  ],
+  "changed_in_this_correction": []
+}
