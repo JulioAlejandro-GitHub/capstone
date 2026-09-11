@@ -147,31 +147,21 @@ class BalancedAccuracy(tf.keras.metrics.Metric):
         return config
 
 
-def build_optimizer(optimizer_name: str = "adam", learning_rate: float = 1e-4):
-    optimizer_name = str(optimizer_name).lower()
-    if optimizer_name == "adam":
-        return tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    if optimizer_name == "adamw":
-        adamw = getattr(tf.keras.optimizers, "AdamW", None)
-        if adamw is None:
-            raise ValueError("AdamW no está disponible en esta versión de TensorFlow/Keras.")
-        return adamw(learning_rate=learning_rate)
-    if optimizer_name == "sgd":
-        return tf.keras.optimizers.SGD(learning_rate=learning_rate, momentum=0.9)
-    if optimizer_name == "adadelta":
-        return tf.keras.optimizers.Adadelta(learning_rate=learning_rate)
-    raise ValueError(f"Optimizador no soportado: {optimizer_name}")
+from .optimizers import build_optimizer
 
 
-def compile_binary_model(model, learning_rate: float = 1e-4, optimizer_name: str = "adam"):
+def compile_binary_model(model, learning_rate: float = 1e-4, optimizer_name: str = "adam", *, optimizer_config=None):
     """
     Compila un modelo binario con métricas útiles para salud/diagnóstico.
     """
-    optimizer = build_optimizer(optimizer_name=optimizer_name, learning_rate=learning_rate)
+    optimizer = build_optimizer(optimizer_name=optimizer_name, learning_rate=learning_rate, config=optimizer_config)
 
     model.compile(
         optimizer=optimizer,
-        loss="binary_crossentropy",
+        loss=tf.keras.losses.BinaryCrossentropy(
+            from_logits=False, label_smoothing=0.0, axis=-1,
+            reduction="sum_over_batch_size", name="binary_crossentropy",
+        ),
         metrics=[
             "accuracy",
             tf.keras.metrics.Precision(name="precision"),
@@ -205,6 +195,8 @@ def build_custom_cnn(
     learning_rate: float = 1e-4,
     optimizer_name: str = "adam",
     l2_weight: float = 1e-4,
+    dropout_rate: float = 0.4,
+    compile_model: bool = True,
 ):
     """
     CNN propia inspirada en el paper:
@@ -230,12 +222,14 @@ def build_custom_cnn(
                 activation="relu",
                 kernel_regularizer=regularizers.l2(l2_weight) if l2_weight else None,
             ),
-            layers.Dropout(0.4),
+            layers.Dropout(dropout_rate),
             layers.Dense(1, activation="sigmoid"),
         ],
         name="custom_cnn",
     )
 
+    if not compile_model:
+        return model
     return compile_binary_model(
         model,
         learning_rate=learning_rate,
@@ -249,6 +243,8 @@ def build_vgg16_transfer(
     optimizer_name: str = "adam",
     trainable_backbone: bool = False,
     weights: str | None = "imagenet",
+    dropout_rate: float = 0.5,
+    compile_model: bool = True,
 ):
     """
     Transfer Learning con VGG16 preentrenada en ImageNet.
@@ -267,7 +263,7 @@ def build_vgg16_transfer(
     x = base_model.output
     x = layers.GlobalAveragePooling2D(name="global_avg_pool")(x)
     x = layers.Dense(1024, activation="relu", name="feature_dense_1024")(x)
-    x = layers.Dropout(0.5, name="dropout_50")(x)
+    x = layers.Dropout(dropout_rate, name="dropout_50")(x)
     output = layers.Dense(1, activation="sigmoid", name="binary_output")(x)
 
     model = models.Model(
@@ -276,6 +272,8 @@ def build_vgg16_transfer(
         name="tl_vgg16_malaria",
     )
 
+    if not compile_model:
+        return model, base_model
     model = compile_binary_model(
         model,
         learning_rate=learning_rate,
@@ -292,6 +290,7 @@ def build_densenet121_transfer(
     trainable_backbone: bool = False,
     weights: str | None = "imagenet",
     dropout_rate: float = 0.5,
+    compile_model: bool = True,
 ):
     """Build a binary DenseNet121 transfer-learning model.
 
@@ -328,6 +327,8 @@ def build_densenet121_transfer(
         outputs=outputs,
         name="tl_densenet121_malaria",
     )
+    if not compile_model:
+        return model, base_model
     model = compile_binary_model(
         model,
         learning_rate=learning_rate,

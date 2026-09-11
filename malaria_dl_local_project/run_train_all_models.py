@@ -1,223 +1,177 @@
 #!/usr/bin/env python3
-"""
-run_train_all_models.py
-
-Ejecuta entrenamientos para todas las combinaciones:
-- modelos: custom_cnn, vgg16, densenet121
-- optimizers: adam, adamw, sgd, adadelta
-
-Uso recomendado:
-  cd ".../capstone/malaria_dl_local_project"
-  source .venv/bin/activate
-  python run_train_all_models.py --dataset-version-id "$DATASET_VERSION_ID"
-
-DATASET_VERSION_ID debe ser un UUID elegido explícitamente.
-
-Opciones útiles:
-  python run_train_all_models.py --dataset-version-id "$DATASET_VERSION_ID" --dry-run
-  python run_train_all_models.py --dataset-version-id "$DATASET_VERSION_ID" --models custom_cnn densenet121 --optimizers adam adamw
-"""
-
-from __future__ import annotations
+"""Discover and validate the enabled registry matrix; no campaign persistence."""
 
 import argparse
+import json
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
-from src.malaria_dl.data.governed_dataset import dataset_uuid_arg, normalize_dataset_version_id
+
+from src.malaria_dl.data.governed_dataset import (
+    dataset_uuid_arg,
+    normalize_dataset_version_id,
+)
 from src.malaria_dl.persistence.dataset_evidence import verify_dataset_for_execution
+from src.malaria_dl.models.registry import enabled_models, model_arg, resolve_descriptor
+from src.malaria_dl.models.optimizers import OPTIMIZER_DEFAULTS
+from src.malaria_dl.models.configuration import (
+    resolve_config,
+    load_selected,
+    config_digest,
+)
 
 
-DEFAULT_MODELS = ["custom_cnn", "vgg16", "densenet121"]
-DEFAULT_OPTIMIZERS = ["adam", "adamw", "sgd", "adadelta"]
-
-
-def run_command(cmd: list[str], cwd: Path, dry_run: bool = False) -> int:
-    print("\n" + "=" * 100)
-    print("Ejecutando:")
+def run_command(cmd, cwd, dry_run=False):
     print(" ".join(cmd))
-    print("=" * 100)
-
     if dry_run:
         return 0
-
-    result = subprocess.run(cmd, cwd=str(cwd))
-    if result.returncode != 0:
-        print(f"\nERROR: comando falló con código {result.returncode}", file=sys.stderr)
-    return result.returncode
-
-
-def optimizer_learning_rates(optimizer: str) -> tuple[str, str]:
-    """
-    Learning rates recomendados por optimizer.
-    - Adam/AdamW: conservador y estable para el pipeline clínico.
-    - SGD: requiere LR mayor para evitar underfitting.
-    - Adadelta: suele trabajar con LR cercano a 1.0.
-    """
-    if optimizer == "sgd":
-        return "1e-3", "1e-4"
-    if optimizer == "adadelta":
-        return "1.0", "1.0"
-    return "1e-4", "1e-5"
-
-
-def model_training_params(model: str) -> tuple[str, str]:
-    """
-    Devuelve:
-    - fine_tune_epochs
-    - pretrained_weights
-    """
-    if model in {"vgg16", "densenet121"}:
-        return "20", "imagenet"
-    return "0", "none"
+    return subprocess.run(cmd, cwd=str(cwd)).returncode
 
 
 def build_train_command(
-    model: str,
-    optimizer: str,
-    max_epochs: int,
-    img_size: int,
-    batch_size: int,
-    seed: int,
-    dataset_version_id: str | None,
-    target_recall: float,
-    early_stopping_patience: int,
-    expected_evidence_id: str | None = None,
-) -> list[str]:
+    model,
+    optimizer,
+    max_epochs,
+    img_size,
+    batch_size,
+    seed,
+    dataset_version_id,
+    target_recall,
+    early_stopping_patience,
+    expected_evidence_id=None,
+    selected=None,
+):
     dataset_version_id = normalize_dataset_version_id(dataset_version_id)
-    learning_rate, fine_tune_learning_rate = optimizer_learning_rates(optimizer)
-    fine_tune_epochs, pretrained_weights = model_training_params(model)
-
+    overrides = {"execution": {}, "optimizer": {"name": optimizer}, "model": {}}
+    for key, value in dict(
+        max_epochs=max_epochs,
+        batch_size=batch_size,
+        seed=seed,
+        target_recall=target_recall,
+        early_stopping_patience=early_stopping_patience,
+    ).items():
+        if value is not None:
+            overrides["execution"][key] = value
+    if img_size is not None:
+        overrides["model"]["input_shape"] = [img_size, img_size, 3]
+    config = resolve_config(model, selected, overrides, batch=True)
+    r = config["resolved"]
+    selected_for_child = dict(
+        schema_version=config["schema_version"],
+        **{k: v for k, v in r.items() if k != "selection"},
+    )
     return [
         sys.executable,
-        "-m", "src.train",
-        "--model", model,
-        "--max-epochs", str(max_epochs),
-        "--fine-tune-epochs", fine_tune_epochs,
-        "--img-size", str(img_size),
-        "--batch-size", str(batch_size),
-        "--seed", str(seed),
-        "--learning-rate", learning_rate,
-        "--fine-tune-learning-rate", fine_tune_learning_rate,
-        "--pretrained-weights", pretrained_weights,
-        "--optimizer", optimizer,
-        "--checkpoint-monitor", "val_f2_parasitized",
-        "--checkpoint-mode", "max",
-        "--early-stopping",
-        "--early-stopping-monitor", "val_f2_parasitized",
-        "--early-stopping-mode", "max",
-        "--early-stopping-patience", str(early_stopping_patience),
-        "--early-stopping-min-delta", "0.0001",
-        "--restore-best-weights",
-        "--reject-prediction-collapse",
-        "--min-class-fraction", "0.05",
-        "--calibrate-threshold",
-        "--target-recall", str(target_recall),
-        "--evaluate-best-on-test",
-        "--dataset-version-id", dataset_version_id,
-        *(["--expected-dataset-evidence-id", expected_evidence_id] if expected_evidence_id else []),
-        "--preprocessing", "auto",
-        "--positive-label", "parasitized",
+        "-m",
+        "src.train",
+        "--model",
+        config["model_id"],
+        "--optimizer",
+        optimizer,
+        "--configuration-json",
+        json.dumps(selected_for_child, sort_keys=True),
+        "--configuration-origin-json",
+        json.dumps({k:config[k] for k in ('requested','provenance')}, sort_keys=True),
+        "--config-digest",
+        config_digest(r),
+        "--dataset-version-id",
+        dataset_version_id,
+        *(
+            ["--expected-dataset-evidence-id", expected_evidence_id]
+            if expected_evidence_id
+            else []
+        ),
         "--track-db",
     ]
 
 
-def parse_args(argv=None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Ejecuta entrenamientos modelo x optimizer con tracking en PostgreSQL."
+def parse_args(argv=None):
+    p = argparse.ArgumentParser(
+        description="Registry model × optimizer matrix; PostgreSQL tracking required"
     )
-    parser.add_argument(
-        "--project-dir",
-        default=".",
-        help="Ruta a malaria_dl_local_project. Por defecto: directorio actual.",
+    p.add_argument("--project-dir", default=".")
+    p.add_argument("--models", nargs="+", type=model_arg, default=None)
+    p.add_argument(
+        "--optimizers", nargs="+", choices=tuple(OPTIMIZER_DEFAULTS), default=None
     )
-    parser.add_argument(
-        "--models",
-        nargs="+",
-        default=DEFAULT_MODELS,
-        choices=DEFAULT_MODELS,
-        help="Modelos a ejecutar.",
-    )
-    parser.add_argument(
-        "--optimizers",
-        nargs="+",
-        default=DEFAULT_OPTIMIZERS,
-        choices=DEFAULT_OPTIMIZERS,
-        help="Optimizers a ejecutar.",
-    )
-    parser.add_argument("--max-epochs", type=int, default=100)
-    parser.add_argument("--img-size", type=int, default=200)
-    parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--target-recall", type=float, default=0.98)
-    parser.add_argument("--early-stopping-patience", type=int, default=12)
-    parser.add_argument("--dataset-version-id", required=True, type=dataset_uuid_arg)
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Solo imprime comandos, no ejecuta.",
-    )
-    parser.add_argument(
-        "--continue-on-error",
-        action="store_true",
-        help="Continúa con la siguiente combinación si una ejecución falla.",
-    )
-    return parser.parse_args(argv)
+    for name in (
+        "max-epochs",
+        "img-size",
+        "batch-size",
+        "seed",
+        "early-stopping-patience",
+    ):
+        p.add_argument("--" + name, type=int, default=None)
+    p.add_argument("--target-recall", type=float, default=None)
+    p.add_argument("--model-config")
+    p.add_argument("--dataset-version-id", required=True, type=dataset_uuid_arg)
+    p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--continue-on-error", action="store_true")
+    args = p.parse_args(argv)
+    args.models_explicit = args.models is not None
+    args.models = args.models if args.models is not None else list(enabled_models())
+    if not args.models or len(set(args.models)) != len(args.models):
+        p.error("Empty or duplicate model selection")
+    if args.optimizers is not None and len(set(args.optimizers)) != len(
+        args.optimizers
+    ):
+        p.error("Duplicate optimizer selection")
+    return args
 
 
-def main() -> int:
+def build_matrix(args):
+    selected = load_selected(args.model_config)
+    matrix = []
+    for model in args.models:
+        descriptor = resolve_descriptor(model)
+        for optimizer in (
+            args.optimizers if args.optimizers is not None else descriptor.optimizers
+        ):
+            cmd = build_train_command(
+                model,
+                optimizer,
+                args.max_epochs,
+                args.img_size,
+                args.batch_size,
+                args.seed,
+                args.dataset_version_id,
+                args.target_recall,
+                args.early_stopping_patience,
+                selected=selected,
+            )
+            matrix.append((descriptor.id, optimizer, cmd))
+    return matrix
+
+
+def main():
     args = parse_args()
     project_dir = Path(args.project_dir).expanduser().resolve()
-
-    if not (project_dir / "src" / "train.py").exists():
-        print(
-            f"ERROR: no se encontró src/train.py en {project_dir}. "
-            "Ejecuta desde malaria_dl_local_project o usa --project-dir.",
-            file=sys.stderr,
-        )
-        return 2
-
-    print(f"Proyecto: {project_dir}")
-    print(f"Modelos: {', '.join(args.models)}")
-    print(f"Optimizers: {', '.join(args.optimizers)}")
-
-    snapshot = None
+    if not (project_dir / "src/train.py").is_file():
+        raise ValueError("src/train.py not found")
+    # Validate every combination before dataset auditing or the first subprocess.
+    matrix = build_matrix(args)
+    print(
+        "Model selection:",
+        "explicit subset" if args.models_explicit else "enabled trainable registry",
+    )
+    print("Combinations:", len(matrix))
     if args.dry_run:
-        print("PLAN ONLY: integridad operativa NO VERIFICADA; no se consulta ni escribe BD.")
+        print("PLAN ONLY: integridad operativa NO VERIFICADA; no BD ni entrenamiento.")
+        snapshot = None
     else:
-        snapshot = verify_dataset_for_execution(args.dataset_version_id, consumer="run_train_all_models")
-    failures: list[tuple[str, str, int]] = []
-
-    for model in args.models:
-        for optimizer in args.optimizers:
-            cmd = build_train_command(
-                model=model,
-                optimizer=optimizer,
-                max_epochs=args.max_epochs,
-                img_size=args.img_size,
-                batch_size=args.batch_size,
-                seed=args.seed,
-                dataset_version_id=args.dataset_version_id,
-                target_recall=args.target_recall,
-                early_stopping_patience=args.early_stopping_patience,
-                expected_evidence_id=snapshot.evidence_id if snapshot else None,
-            )
-            rc = run_command(cmd, cwd=project_dir, dry_run=args.dry_run)
-            if rc != 0:
-                failures.append((model, optimizer, rc))
-                if not args.continue_on_error:
-                    break
-        if failures and not args.continue_on_error:
-            break
-
-    print("\nResumen train")
-    if not failures:
-        print("PLAN generado (no ejecutado ni verificado)." if args.dry_run else "OK: todas las combinaciones finalizaron sin error.")
-        return 0
-
-    for model, optimizer, rc in failures:
-        print(f"FALLÓ: model={model}, optimizer={optimizer}, returncode={rc}")
-    return 1
+        snapshot = verify_dataset_for_execution(
+            args.dataset_version_id, consumer="run_train_all_models"
+        )
+    failures = []
+    for model, optimizer, cmd in matrix:
+        if snapshot:
+            cmd.extend(["--expected-dataset-evidence-id", snapshot.evidence_id])
+        rc = run_command(cmd, project_dir, args.dry_run)
+        if rc:
+            failures.append((model, optimizer, rc))
+            if not args.continue_on_error:
+                break
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":

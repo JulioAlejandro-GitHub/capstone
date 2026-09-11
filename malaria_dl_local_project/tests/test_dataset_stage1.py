@@ -344,8 +344,10 @@ def test_batch_resolves_once_propagates_pin_to_twelve(fixture, monkeypatch):
         "parse_args",
         lambda: SimpleNamespace(
             project_dir=str(Path.cwd()),
-            models=batch.DEFAULT_MODELS,
-            optimizers=batch.DEFAULT_OPTIMIZERS,
+            models=list(batch.enabled_models()),
+            models_explicit=False,
+            model_config=None,
+            optimizers=list(batch.OPTIMIZER_DEFAULTS),
             max_epochs=1,
             img_size=32,
             batch_size=2,
@@ -459,7 +461,7 @@ def test_train_public_entry_rejects_before_model_or_images(value, monkeypatch):
     model = Mock(side_effect=AssertionError("no model"))
     images = Mock(side_effect=AssertionError("no images"))
     verifier = Mock(side_effect=AssertionError("no preflight"))
-    monkeypatch.setattr(trainer, "build_custom_cnn", model)
+    monkeypatch.setattr(trainer, "resolve_descriptor", model)
     monkeypatch.setattr(trainer, "load_malaria_splits", images)
     monkeypatch.setattr(trainer, "verify_dataset_for_execution", verifier)
     with pytest.raises(SystemExit):

@@ -858,3 +858,10 @@ https://www.tensorflow.org/datasets/catalog/malaria
 Fuente NIH/NLM:
 
 https://lhncbc.nlm.nih.gov/publication/pub9932
+
+### Registro y configuración E2
+
+TRAIN y el ejecutor masivo usan el registro único de modelos habilitados. Los nuevos
+TRAIN requieren persistencia PostgreSQL incluso sin `--track-db`; para inspección sin
+BD use `--dry-run`. Consulte [Cómo agregar y habilitar un modelo](docs/model_registry_e2.md)
+para configuración, adaptadores, matriz predeterminada y límites E3–E9.

@@ -50,6 +50,8 @@ class CheckpointPolicyConfig:
             raise ValueError(f"Política de checkpoint no soportada: {self.policy}")
         self.min_recall = float(self.min_recall)
         self.beta = float(self.beta)
+        if self.beta != 2.0:
+            raise ValueError("F2_REQUIRES_BETA_2")
         self.threshold = float(self.threshold)
         self.reject_prediction_collapse = bool(self.reject_prediction_collapse)
         self.min_class_fraction = float(self.min_class_fraction)

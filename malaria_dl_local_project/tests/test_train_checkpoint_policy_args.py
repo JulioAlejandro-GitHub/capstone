@@ -30,12 +30,12 @@ class TrainCheckpointPolicyArgsTests(unittest.TestCase):
                 "--checkpoint-policy",
                 "f2",
                 "--beta",
-                "2.5",
+                "2.0",
             ]
         )
 
         self.assertEqual(args.checkpoint_policy, "f2")
-        self.assertAlmostEqual(args.beta, 2.5)
+        self.assertAlmostEqual(args.beta, 2.0)
 
     def test_allow_collapsed_checkpoint_disables_rejection(self):
         args = parse_args(

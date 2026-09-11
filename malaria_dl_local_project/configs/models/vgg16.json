@@ -1,0 +1,77 @@
+{
+  "schema_version": "model_config_v1",
+  "model": {
+    "input_shape": [
+      200,
+      200,
+      3
+    ],
+    "preprocessing": "rescale_0_1",
+    "weights": "imagenet",
+    "dropout": 0.5,
+    "l2": 0.0,
+    "head_units": 1024,
+    "batch_normalization": "absent",
+    "fine_tune_layers": 4
+  },
+  "optimizer": {
+    "name": "adam",
+    "parameters": {},
+    "fine_tune_learning_rate": 1e-05
+  },
+  "execution": {
+    "max_epochs": 30,
+    "fine_tune_epochs": 0,
+    "batch_size": 64,
+    "seed": 42,
+    "deterministic_ops": false,
+    "no_augment": false,
+    "checkpoint_policy": "auc_with_min_recall",
+    "checkpoint_monitor": null,
+    "checkpoint_mode": "auto",
+    "min_recall": 0.98,
+    "beta": 2.0,
+    "reject_prediction_collapse": true,
+    "min_class_fraction": 0.05,
+    "calibrate_threshold": false,
+    "target_recall": 0.98,
+    "min_specificity": null,
+    "early_stopping": true,
+    "early_stopping_monitor": null,
+    "early_stopping_mode": "auto",
+    "early_stopping_patience": 10,
+    "early_stopping_min_delta": 0.0001,
+    "restore_best_weights": true,
+    "evaluate_best_on_test": true
+  },
+  "batch": {
+    "max_epochs": 100,
+    "fine_tune_epochs": 20,
+    "early_stopping_patience": 12,
+    "checkpoint_monitor": "val_f2_parasitized",
+    "checkpoint_mode": "max",
+    "early_stopping_monitor": "val_f2_parasitized",
+    "early_stopping_mode": "max",
+    "calibrate_threshold": true
+  },
+  "recipe": {
+    "loss": "binary_crossentropy",
+    "metrics": "binary_clinical_v1",
+    "augmentation": {
+      "flip": "horizontal_and_vertical",
+      "rotation": 0.07,
+      "translation": 0.2,
+      "zoom": 0.2,
+      "contrast": 0.3
+    },
+    "reduce_lr": {
+      "monitor": "val_loss",
+      "factor": 0.5,
+      "patience": 4,
+      "min_lr": 1e-06
+    },
+    "selection_threshold": 0.5,
+    "fallback": "existing_clinical_policy_v1",
+    "clinical_success_independent_of_technical_completion": true
+  }
+}

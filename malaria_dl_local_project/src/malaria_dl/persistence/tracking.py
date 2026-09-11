@@ -431,9 +431,8 @@ def runtime_io_metadata():
 
 
 def model_name_from_train_arg(model_name):
-    if model_name == "vgg16":
-        return "vgg16_transfer_learning"
-    return model_name
+    from ..models.registry import resolve_descriptor
+    return resolve_descriptor(model_name).id
 
 
 def model_name_from_checkpoint(checkpoint):
@@ -455,26 +454,17 @@ def model_name_from_checkpoint(checkpoint):
 
 
 def model_defaults(model_name):
+    from ..models.registry import resolve_descriptor
+    try:
+        descriptor = resolve_descriptor(model_name, executable=False)
+    except ValueError:
+        descriptor = None
+    if descriptor is not None:
+        return dict(model_type='transfer_learning' if 'fine_tuning' in descriptor.strategies else 'cnn',
+                    framework='tensorflow/keras', architecture=descriptor.id,
+                    pretrained='fine_tuning' in descriptor.strategies,
+                    pretrained_source='imagenet' if 'fine_tuning' in descriptor.strategies else None)
     defaults = {
-        "custom_cnn": {
-            "model_type": "cnn",
-            "framework": "tensorflow/keras",
-            "architecture": "custom sequential CNN",
-        },
-        "vgg16_transfer_learning": {
-            "model_type": "transfer_learning",
-            "framework": "tensorflow/keras",
-            "architecture": "VGG16 + custom binary head",
-            "pretrained": True,
-            "pretrained_source": "imagenet",
-        },
-        "densenet121": {
-            "model_type": "transfer_learning",
-            "framework": "tensorflow/keras",
-            "architecture": "DenseNet121 + global average pooling + binary head",
-            "pretrained": True,
-            "pretrained_source": "imagenet",
-        },
         "cnn_features_svm": {
             "model_type": "svm",
             "framework": "scikit-learn",

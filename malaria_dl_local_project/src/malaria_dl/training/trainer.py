@@ -1,4 +1,3 @@
-import argparse
 import csv
 import fcntl
 import json
@@ -10,12 +9,10 @@ from uuid import uuid4
 import tensorflow as tf
 
 from src.checkpoint_policy import (
-    CHECKPOINT_POLICY_CHOICES,
     CheckpointPolicyConfig,
     ClinicalCheckpointCallback,
     ClinicalValidationMetricsCallback,
     checkpoint_policy_config_dict,
-    get_monitor_for_policy,
     write_checkpoint_policy_summary,
 )
 from src.config import (
@@ -26,7 +23,7 @@ from src.config import (
     OUTPUT_DIR,
 )
 from src.data import (
-    add_data_source_args, dataset_tracking_metadata, load_governed_test_split,
+    dataset_tracking_metadata, load_governed_test_split,
     load_malaria_splits,
 )
 from src.execution_types import FINE_TUNING, TRAIN_BASE, TRAIN_COMBINED
@@ -38,309 +35,21 @@ from src.model_metadata import (
     disabled_clinical_threshold_metadata,
     write_model_metadata,
 )
-from src.models import (
-    build_custom_cnn,
-    build_densenet121_transfer,
-    build_vgg16_transfer,
-    compile_binary_model,
-    unfreeze_last_layers,
-)
-from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
+from src.malaria_dl.models.registry import resolve_descriptor
+from src.malaria_dl.models.adapters import compile_phase
+from src.malaria_dl.persistence.model_configuration import persist_model_configuration
+from src.preprocessing import resolve_preprocessing_mode
 from src.threshold_calibration import (
     default_threshold_calibration_path,
     find_threshold_for_target_recall,
     write_threshold_calibration,
 )
-from src.malaria_dl.data.governed_dataset import dataset_uuid_arg
 from src.malaria_dl.persistence.dataset_evidence import (
     verify_dataset_for_execution, bind_dataset_evidence_to_run,
 )
 
 
-CHECKPOINT_METRIC_CHOICES = [
-    "val_auc",
-    "val_roc_auc_parasitized",
-    "val_pr_auc",
-    "val_pr_auc_parasitized",
-    "val_f2_parasitized",
-    "val_balanced_accuracy",
-    "val_recall_parasitized",
-    "val_sensitivity_parasitized",
-    "val_specificity",
-    "val_precision",
-    "val_recall",
-    "val_accuracy",
-    "val_loss",
-]
-
-DEFAULT_MAX_EPOCHS_BY_MODEL = {
-    "custom_cnn": 50,
-    "vgg16": 30,
-    "densenet121": 30,
-}
-
-
-def parse_args(argv=None):
-    parser = argparse.ArgumentParser(description="Entrenamiento local para NIH/NLM Malaria Dataset.")
-    parser.add_argument(
-        "--model",
-        choices=["custom_cnn", "vgg16", "densenet121"],
-        required=True,
-    )
-    parser.add_argument(
-        "--max-epochs",
-        type=int,
-        default=None,
-        help=(
-            "Máximo de épocas de la fase base. Tiene prioridad sobre --epochs. "
-            "La cantidad real la determina EarlyStopping usando validation."
-        ),
-    )
-    parser.add_argument(
-        "--epochs",
-        type=int,
-        default=None,
-        help="Alias legacy de --max-epochs; se mantiene por compatibilidad.",
-    )
-    parser.add_argument("--fine-tune-epochs", type=int, default=0)
-    parser.add_argument("--img-size", type=int, default=200)
-    parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--learning-rate", type=float, default=None)
-    parser.add_argument("--fine-tune-learning-rate", type=float, default=None)
-    parser.add_argument(
-        "--pretrained-weights",
-        choices=["imagenet", "none"],
-        default="imagenet",
-        help=(
-            "Pesos iniciales de backbones transfer-learning. Use 'none' para "
-            "evitar descarga y entrenar desde inicialización aleatoria."
-        ),
-    )
-    parser.add_argument(
-        "--optimizer",
-        choices=["adam", "adamw", "sgd", "adadelta"],
-        default="adam",
-        help="Optimizador para entrenamiento. Default recomendado: adam.",
-    )
-    parser.add_argument("--no-augment", action="store_true")
-    parser.add_argument(
-        "--checkpoint-monitor",
-        "--checkpoint-metric",
-        dest="checkpoint_monitor",
-        choices=CHECKPOINT_METRIC_CHOICES,
-        default=None,
-        help=(
-            "Métrica de validation para seleccionar best_model.keras. Si no se "
-            "indica, se usa la política clínica de --checkpoint-policy."
-        ),
-    )
-    parser.add_argument(
-        "--checkpoint-policy",
-        choices=CHECKPOINT_POLICY_CHOICES,
-        default="auc_with_min_recall",
-        help=(
-            "Política clínica para seleccionar best_model.keras. "
-            "Default recomendado: auc_with_min_recall."
-        ),
-    )
-    parser.add_argument(
-        "--min-recall",
-        type=float,
-        default=0.98,
-        help="Sensibilidad mínima requerida para auc_with_min_recall.",
-    )
-    parser.add_argument(
-        "--beta",
-        type=float,
-        default=2.0,
-        help="Beta del F-score usado por la política f2.",
-    )
-    parser.add_argument(
-        "--reject-prediction-collapse",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Excluir epochs con colapso de predicción al seleccionar checkpoint.",
-    )
-    parser.add_argument(
-        "--allow-collapsed-checkpoint",
-        action="store_true",
-        help="Permite seleccionar checkpoints colapsados si se solicita explícitamente.",
-    )
-    parser.add_argument(
-        "--min-class-fraction",
-        type=float,
-        default=0.05,
-        help="Fracción mínima por clase predicha para no marcar colapso.",
-    )
-    parser.add_argument(
-        "--calibrate-threshold",
-        action="store_true",
-        help="Calibrar threshold clínico con validation al terminar entrenamiento.",
-    )
-    parser.add_argument(
-        "--target-recall",
-        type=float,
-        default=0.98,
-        help="Sensibilidad objetivo para calibración de threshold clínico.",
-    )
-    parser.add_argument(
-        "--min-specificity",
-        type=float,
-        default=None,
-        help="Especificidad mínima opcional durante calibración de threshold.",
-    )
-    parser.add_argument(
-        "--threshold-output-json",
-        default=None,
-        help="Ruta opcional para threshold_calibration.json.",
-    )
-    parser.add_argument(
-        "--checkpoint-mode",
-        "--monitor-mode",
-        dest="checkpoint_mode",
-        choices=["auto", "max", "min"],
-        default="auto",
-        help="Modo de comparación del checkpoint. 'auto' usa min para loss y max para el resto.",
-    )
-    parser.add_argument(
-        "--early-stopping",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Activar EarlyStopping basado exclusivamente en validation.",
-    )
-    parser.add_argument(
-        "--early-stopping-monitor",
-        choices=CHECKPOINT_METRIC_CHOICES,
-        default=None,
-        help=(
-            "Override opcional de la métrica de EarlyStopping. Por defecto usa "
-            "--checkpoint-monitor o la métrica resuelta por la política clínica."
-        ),
-    )
-    parser.add_argument(
-        "--early-stopping-mode",
-        choices=["auto", "max", "min"],
-        default="auto",
-        help="Modo de comparación de EarlyStopping.",
-    )
-    parser.add_argument(
-        "--early-stopping-patience",
-        type=int,
-        default=10,
-        help="Paciencia de EarlyStopping.",
-    )
-    parser.add_argument(
-        "--early-stopping-min-delta",
-        type=float,
-        default=0.0001,
-        help="Mejora mínima requerida en validation para reiniciar la paciencia.",
-    )
-    parser.add_argument(
-        "--restore-best-weights",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Restaurar los mejores pesos observados por EarlyStopping.",
-    )
-    parser.add_argument(
-        "--evaluate-best-on-test",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Evaluar una sola vez en test el checkpoint seleccionado en validation.",
-    )
-    parser.add_argument(
-        "--skip-final-test-evaluation",
-        action="store_true",
-        help="Omitir test final para smoke tests; tiene prioridad sobre la evaluación.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        default=None,
-        help=(
-            "Directorio de salida opcional. Si no se informa, usa "
-            "outputs/<model> como antes."
-        ),
-    )
-    parser.add_argument(
-        "--preprocessing",
-        choices=PREPROCESSING_CHOICES,
-        default="auto",
-        help=(
-            "Modo de preprocesamiento. 'auto' mantiene compatibilidad con "
-            "checkpoints existentes; usa vgg16_imagenet solo al reentrenar VGG16."
-        ),
-    )
-    parser.add_argument(
-        "--positive-label",
-        choices=["parasitized"],
-        default="parasitized",
-        help="Clase clínica positiva fija del proyecto (1 = parasitized).",
-    )
-    add_data_source_args(parser, governed=True)
-    parser.add_argument(
-        "--dataset-version-id", required=True, type=dataset_uuid_arg,
-        help="UUID explícito de la versión gobernada (obligatorio; sin fallback).",
-    )
-    parser.add_argument(
-        "--track-db",
-        action="store_true",
-        help="Registrar esta ejecución y sus resultados en PostgreSQL.",
-    )
-    parser.add_argument("--expected-dataset-evidence-id", type=dataset_uuid_arg, default=None)
-    args = parser.parse_args(argv)
-    legacy_epochs = args.epochs
-    explicit_max_epochs = args.max_epochs
-    if explicit_max_epochs is not None:
-        resolved_max_epochs = explicit_max_epochs
-        epochs_source = "max_epochs"
-    elif legacy_epochs is not None:
-        resolved_max_epochs = legacy_epochs
-        epochs_source = "epochs_legacy"
-    else:
-        resolved_max_epochs = DEFAULT_MAX_EPOCHS_BY_MODEL[args.model]
-        epochs_source = "model_default"
-    args.max_epochs = resolved_max_epochs
-    # El resto del pipeline histórico consume args.epochs. Mantener ambos valores
-    # resueltos evita bifurcar el flujo y deja explícita la prioridad de max_epochs.
-    args.epochs = resolved_max_epochs
-    args.epochs_source = epochs_source
-    args.epochs_legacy_requested = legacy_epochs
-    args.max_epochs_requested = explicit_max_epochs
-    # Compatibilidad con consumidores que aún esperan el nombre monitor_mode.
-    args.monitor_mode = args.checkpoint_mode
-    if args.skip_final_test_evaluation:
-        args.evaluate_best_on_test = False
-    if args.allow_collapsed_checkpoint:
-        args.reject_prediction_collapse = False
-    if args.max_epochs <= 0:
-        parser.error("--max-epochs/--epochs debe ser mayor que cero.")
-    if args.fine_tune_epochs < 0:
-        parser.error("--fine-tune-epochs no puede ser negativo.")
-    if args.img_size <= 0 or args.batch_size <= 0:
-        parser.error("--img-size y --batch-size deben ser mayores que cero.")
-    if args.early_stopping_patience < 0:
-        parser.error("--early-stopping-patience no puede ser negativo.")
-    if args.early_stopping_min_delta < 0:
-        parser.error("--early-stopping-min-delta no puede ser negativo.")
-    if args.learning_rate is not None and args.learning_rate <= 0:
-        parser.error("--learning-rate debe ser mayor que cero.")
-    if (
-        args.fine_tune_learning_rate is not None
-        and args.fine_tune_learning_rate <= 0
-    ):
-        parser.error("--fine-tune-learning-rate debe ser mayor que cero.")
-    if args.model == "custom_cnn" and args.fine_tune_epochs > 0:
-        parser.error(
-            "--fine-tune-epochs requiere un backbone transfer-learning "
-            "(vgg16 o densenet121)."
-        )
-    if args.model == "densenet121" and args.preprocessing == "vgg16_imagenet":
-        parser.error(
-            "densenet121 no es compatible con --preprocessing vgg16_imagenet; "
-            "use auto o rescale_0_1."
-        )
-    return args
-
+from .cli import parse_args
 
 def resolve_monitor_mode(monitor, requested_mode="auto"):
     if requested_mode != "auto":
@@ -424,6 +133,22 @@ def build_phase_callbacks(
         ]
     )
     return callbacks
+
+
+def clinical_objective_status(summary, required_recall):
+    metrics = summary.get('selected_metrics') or {}
+    recall = metrics.get('val_recall_parasitized', metrics.get('val_sensitivity_parasitized'))
+    collapsed = bool(summary.get('prediction_collapse_detected') or summary.get('all_epochs_collapsed'))
+    return dict(required_recall=required_recall, observed_recall=recall,
+                attained=None if recall is None else bool(recall >= required_recall and not collapsed),
+                collapsed=collapsed, warning=summary.get('warning'))
+
+
+def callback_configuration(callbacks):
+    keys = ('monitor','mode','patience','min_delta','restore_best_weights','baseline',
+            'start_from_epoch','factor','cooldown','min_lr','threshold','min_class_fraction')
+    return [dict(class_name=type(cb).__name__, parameters={key: getattr(cb,key)
+                 for key in keys if hasattr(cb,key)}) for cb in callbacks]
 
 
 def find_early_stopping_callback(callbacks):
@@ -1198,8 +923,20 @@ def evaluate_selected_checkpoint_if_enabled(enabled, **evaluation_kwargs):
     return evaluate_selected_checkpoint_once(**evaluation_kwargs)
 
 
-def main():
-    args = parse_args()
+def main(args=None):
+    args = args if args is not None else parse_args()
+    if args.dry_run:
+        print(json.dumps(args.model_configuration, sort_keys=True))
+        print("PLAN ONLY: integridad operativa NO VERIFICADA")
+        return
+    descriptor = resolve_descriptor(args.model)
+    resolved_model_config = args.model_configuration["resolved"]
+    for key, value in resolved_model_config['execution'].items():
+        if getattr(args, key) != value:
+            raise ValueError('RESOLVED_EXECUTION_CHANGED:' + key)
+    if args.model != args.model_configuration['model_id']:
+        raise ValueError('RESOLVED_MODEL_CHANGED')
+    args.track_db = True
     governed_dataset = verify_dataset_for_execution(
         args.dataset_version_id,
         expected_evidence_id=getattr(args, "expected_dataset_evidence_id", None),
@@ -1227,34 +964,12 @@ def main():
         reject_prediction_collapse=args.reject_prediction_collapse,
         min_class_fraction=args.min_class_fraction,
     )
-    policy_monitor, policy_mode = get_monitor_for_policy(checkpoint_policy_config)
-    explicit_checkpoint_monitor = args.checkpoint_monitor is not None
-    explicit_checkpoint_selection = uses_explicit_metric_checkpoint(
-        args.checkpoint_monitor,
-        args.checkpoint_mode,
-    )
-    checkpoint_monitor = args.checkpoint_monitor or policy_monitor
-    checkpoint_mode = resolve_monitor_mode(
-        checkpoint_monitor,
-        args.checkpoint_mode if explicit_checkpoint_monitor else (
-            policy_mode if args.checkpoint_mode == "auto" else args.checkpoint_mode
-        ),
-    )
-    if args.early_stopping_monitor is not None:
-        early_stopping_monitor = args.early_stopping_monitor
-    elif explicit_checkpoint_selection:
-        early_stopping_monitor = checkpoint_monitor
-    else:
-        early_stopping_monitor = "val_checkpoint_policy_score"
-    early_stopping_mode = (
-        checkpoint_mode
-        if args.early_stopping_monitor is None and explicit_checkpoint_selection
-        and args.early_stopping_mode == "auto"
-        else resolve_monitor_mode(
-            early_stopping_monitor,
-            args.early_stopping_mode,
-        )
-    )
+    selection = resolved_model_config['selection']
+    explicit_checkpoint_selection = selection['explicit']
+    checkpoint_monitor = selection['monitor']
+    checkpoint_mode = selection['mode']
+    early_stopping_monitor = selection['early_stopping_monitor']
+    early_stopping_mode = selection['early_stopping_mode']
     dataset_info = {
         **dataset_tracking_metadata(args.data_source, args.dataset_dir, governed=True),
         **governed_dataset.metadata(),
@@ -1288,7 +1003,8 @@ def main():
     execution_parameters = {
         **execution_config.to_dict(),
         "execution_id": execution_id,
-        "cli_arguments": vars(args).copy(),
+        "cli_arguments": {k:v for k,v in vars(args).items()
+                          if k not in ('model_configuration','configuration_json','configuration_origin_json')},
         "optimizer": args.optimizer,
         "augment": not args.no_augment,
         "pretrained_weights": args.pretrained_weights,
@@ -1315,11 +1031,7 @@ def main():
         "evaluate_best_on_test": bool(args.evaluate_best_on_test),
         "skip_final_test_evaluation": bool(args.skip_final_test_evaluation),
         "calibrate_threshold": bool(args.calibrate_threshold),
-        "model_internal_preprocessing": (
-            "densenet_imagenet_channel_mean_std"
-            if args.model == "densenet121"
-            else None
-        ),
+        "model_internal_preprocessing": descriptor.internal_preprocessing,
         **dataset_info,
     }
     snapshot_id = resolve_artifact_snapshot_id(execution_id)
@@ -1412,6 +1124,8 @@ def main():
         execution_parameters["artifact_snapshot_dir"] = str(planned_snapshot_dir)
     try:
         tf.keras.utils.set_random_seed(args.seed)
+        if args.deterministic_ops:
+            tf.config.experimental.enable_op_determinism()
 
         output_dir.mkdir(parents=True, exist_ok=True)
         training_output_lock = acquire_training_output_lock(output_dir)
@@ -1474,32 +1188,11 @@ def main():
             "enabled" if args.evaluate_best_on_test else "skipped",
         )
 
-        input_shape = (args.img_size, args.img_size, 3)
-        pretrained_weights = (
-            None if args.pretrained_weights == "none" else args.pretrained_weights
-        )
-
-        if args.model == "custom_cnn":
-            model = build_custom_cnn(
-                input_shape=input_shape,
-                learning_rate=learning_rate,
-                optimizer_name=args.optimizer,
-            )
-            base_model = None
-        elif args.model == "vgg16":
-            model, base_model = build_vgg16_transfer(
-                input_shape=input_shape,
-                learning_rate=learning_rate,
-                optimizer_name=args.optimizer,
-                weights=pretrained_weights,
-            )
-        else:
-            model, base_model = build_densenet121_transfer(
-                input_shape=input_shape,
-                learning_rate=learning_rate,
-                optimizer_name=args.optimizer,
-                weights=pretrained_weights,
-            )
+        adapter = descriptor.create_adapter()
+        built = adapter.build(resolved_model_config)
+        model, base_model = built.model, built.backbone
+        phase_runtime = compile_phase(adapter, built, resolved_model_config, 'base')
+        runtime_phases = {'base': phase_runtime}
 
         model.summary()
 
@@ -1535,6 +1228,11 @@ def main():
             restore_best_weights=args.restore_best_weights,
             early_stopping_value_monitor=early_stopping_monitor,
         )
+        from src.malaria_dl.data.loaders import build_augmentation
+        runtime_phases['base']['augmentation'] = build_augmentation().get_config() if not args.no_augment else None
+        runtime_phases['base']['callbacks'] = callback_configuration(base_callbacks)
+        persist_model_configuration(run_context['run_id'], args.model_configuration,
+                                    runtime_phases, dataset_info, execution_parameters)
         history = model.fit(
             ds_train,
             validation_data=ds_val,
@@ -1546,12 +1244,8 @@ def main():
         fine_tune_callbacks = []
         if base_model is not None and args.fine_tune_epochs > 0:
             print(f"Iniciando fine-tuning parcial de {args.model}...")
-            unfreeze_last_layers(base_model, n_layers=4)
-            model = compile_binary_model(
-                model,
-                learning_rate=fine_tune_learning_rate,
-                optimizer_name=args.optimizer,
-            )
+            phase_runtime = compile_phase(adapter, built, resolved_model_config, 'fine_tuning')
+            runtime_phases['fine_tuning'] = phase_runtime
 
             checkpoint_callback.set_phase(
                 "fine_tuning",
@@ -1570,6 +1264,9 @@ def main():
                 restore_best_weights=args.restore_best_weights,
                 early_stopping_value_monitor=early_stopping_monitor,
             )
+            runtime_phases['fine_tuning']['callbacks'] = callback_configuration(fine_tune_callbacks)
+            persist_model_configuration(run_context['run_id'], args.model_configuration,
+                                        runtime_phases, dataset_info, execution_parameters)
             fine_tune_history = model.fit(
                 ds_train,
                 validation_data=ds_val,
@@ -2456,6 +2153,17 @@ def main():
                 "Model version gobernada finalizada: "
                 f"{finalized_version.model_version_id} ({finalized_version.action})"
             )
+            if not finalized_version.model_version_id:
+                raise RuntimeError('CHECKPOINT_IDENTITY_NOT_VERIFIED')
+            runtime_phases['selection_result'] = {
+                'model_version_id': str(finalized_version.model_version_id),
+                'checkpoint_selection': checkpoint_selection,
+                'policy_summary': policy_summary,
+                'technical_completion': True,
+                'clinical_objective': clinical_objective_status(policy_summary, args.min_recall),
+            }
+            persist_model_configuration(run_context['run_id'], args.model_configuration,
+                                        runtime_phases, dataset_info, execution_parameters)
             finish_tracking_run(
                 run_context,
                 completed_epochs=len(combined_history_rows),

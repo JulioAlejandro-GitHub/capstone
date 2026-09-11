@@ -1,0 +1,15 @@
+CHECKPOINT_METRIC_CHOICES = [
+    "val_auc",
+    "val_roc_auc_parasitized",
+    "val_pr_auc",
+    "val_pr_auc_parasitized",
+    "val_f2_parasitized",
+    "val_balanced_accuracy",
+    "val_recall_parasitized",
+    "val_sensitivity_parasitized",
+    "val_specificity",
+    "val_precision",
+    "val_recall",
+    "val_accuracy",
+    "val_loss",
+]

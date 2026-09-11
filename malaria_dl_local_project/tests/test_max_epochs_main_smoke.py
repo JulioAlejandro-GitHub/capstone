@@ -69,6 +69,28 @@ def fake_plots(*, output_dir, **_kwargs):
 
 
 class MaxEpochsMainSmokeTests(unittest.TestCase):
+    def setUp(self):
+        # E2 requires tracking. All persistence in these legacy writer fixtures
+        # remains synthetic; never let this suite contact operational PostgreSQL.
+        from uuid import uuid4
+        context = {'run_id': str(uuid4()), 'model_name': 'custom_cnn'}
+        patches = [
+            patch('src.tracking_integration.start_tracking_run', return_value=context),
+            patch('src.train.bind_dataset_evidence_to_run'),
+            patch('src.train.persist_model_configuration'),
+            patch('src.train.compile_phase', return_value={'phase': 'base'}),
+            patch('src.malaria_dl.governance.services.training_model_version_finalizer.finalize_training_model_version',
+                  return_value=SimpleNamespace(model_version_id=str(uuid4()), action='synthetic')),
+        ]
+        for name in ('log_training_history','update_execution_tracking','finish_tracking_run',
+                     'fail_tracking_run','log_metrics_and_reports','log_model_version',
+                     'log_output_artifacts','record_checkpoint_policy','record_run_dataset_images',
+                     'record_run_io','record_threshold_calibration'):
+            patches.append(patch('src.tracking_integration.'+name))
+        for replacement in patches:
+            replacement.start()
+            self.addCleanup(replacement.stop)
+
     def _governed(self, output_dir):
         return SimpleNamespace(
             dataset_version_id="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
@@ -107,8 +129,10 @@ class MaxEpochsMainSmokeTests(unittest.TestCase):
         ), patch(
             "src.train.load_governed_test_split", return_value=object(),
         ), patch(
-            "src.train.build_custom_cnn",
-            return_value=FakeTrainModel(),
+            "src.train.resolve_descriptor",
+            return_value=SimpleNamespace(internal_preprocessing=None,
+                create_adapter=lambda: SimpleNamespace(build=lambda config:
+                    SimpleNamespace(model=FakeTrainModel(), backbone=None))),
         ), patch(
             "src.train.tf.keras.models.load_model",
             return_value=FakeTrainModel(),
