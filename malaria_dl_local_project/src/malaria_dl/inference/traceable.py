@@ -35,18 +35,12 @@ class TraceableInferenceService:
         return tf.keras.models.load_model(path,compile=False)
     @staticmethod
     def _predict(model,image_path,preprocessing,input_signature):
-        import numpy as np
-        from PIL import Image
-        shape=input_signature.get("shape") or input_signature.get("input_shape") or [None,200,200,3]
-        height,width=int(shape[-3]),int(shape[-2])
-        image=np.asarray(Image.open(image_path).convert("RGB").resize((width,height)),dtype="float32")
-        mode=preprocessing.get("mode") or preprocessing.get("preprocessing")
-        if mode in {"rescale_0_1","rescale"}:image=image/255.0
-        elif mode=="vgg16_imagenet":
-            from tensorflow.keras.applications.vgg16 import preprocess_input
-            image=preprocess_input(image)
-        score=float(model.predict(image[None,...],verbose=0).reshape(-1)[0])
-        return score
+        from src.malaria_dl.data.input_contract import resolve_checkpoint_input, validate_model_input, transform_bytes
+        from pathlib import Path
+        contract = resolve_checkpoint_input(preprocessing, input_signature)
+        validate_model_input(model, contract)
+        image = transform_bytes(Path(image_path).read_bytes(), contract).numpy()
+        return float(model.predict(image[None,...], verbose=0).reshape(-1)[0])
     def _deployment(self,c,deployment_id):
         row=c.execute(text("""SELECT d.*,mv.model_name,mv.version_number,mv.status model_version_status,mv.lineage_status,
           mv.training_run_id,mv.checkpoint_path,mv.artifact_sha256 model_sha256,mv.framework,mv.input_signature,mv.output_signature,

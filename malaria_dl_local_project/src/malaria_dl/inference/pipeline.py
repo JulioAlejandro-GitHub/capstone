@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
 
 from src.calibration import calibrate_probability
 from src.config import CLASS_NAMES, LABEL_MAPPING_VERSION, RAW_MODEL_SCORE_MEANING, label_mapping_metadata
@@ -17,7 +16,6 @@ from src.preprocessing import (
     PREPROCESSING_VGG16_IMAGENET,
     apply_model_preprocessing,
     preprocessing_description,
-    preprocess_numpy_image,
     resize_image_tensor,
     resolve_preprocessing_mode,
 )
@@ -30,10 +28,11 @@ def preprocess_external_image(
     return_raw=False,
 ):
     preprocessing_mode = resolve_preprocessing_mode(requested=preprocessing_mode)
-    image = Image.open(image_path).convert("RGB")
-    raw_image = resize_image_tensor(np.asarray(image, dtype=np.float32), img_size)
+    from src.malaria_dl.data.input_contract import decode_rgb
+    image = decode_rgb(Path(image_path).read_bytes())
+    raw_image = resize_image_tensor(image, img_size)
     raw_image = raw_image.numpy().astype(np.float32)
-    image = preprocess_numpy_image(raw_image, img_size, preprocessing_mode)
+    image = apply_model_preprocessing(raw_image, preprocessing_mode).numpy().astype(np.float32)
     image_batch = np.expand_dims(image, axis=0).astype(np.float32)
     if return_raw:
         return image_batch, image, raw_image

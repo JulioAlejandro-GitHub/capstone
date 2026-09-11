@@ -39,11 +39,7 @@ class BaseAdapter:
         return AdapterResult(
             model,
             backbone,
-            dict(
-                shape=config["model"]["input_shape"],
-                preprocessing=config["model"]["preprocessing"],
-                dtype="float32",
-            ),
+            config['input_contract'],
             dict(
                 shape=[None, 1], activation="sigmoid", meaning="probability_parasitized"
             ),
@@ -97,6 +93,8 @@ def compile_phase(adapter, built, resolved, phase):
     from .architectures import compile_binary_model
     from copy import deepcopy
 
+    from ..data.input_contract import validate_model_input
+    validate_model_input(built.model, resolved["input_contract"])
     expected_shape = (None, *resolved["model"]["input_shape"])
     if built.model.input_shape != expected_shape or built.model.output_shape != (
         None,

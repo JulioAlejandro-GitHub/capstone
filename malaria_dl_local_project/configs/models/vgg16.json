@@ -6,7 +6,7 @@
       200,
       3
     ],
-    "preprocessing": "rescale_0_1",
+    "preprocessing": "vgg16_imagenet",
     "weights": "imagenet",
     "dropout": 0.5,
     "l2": 0.0,

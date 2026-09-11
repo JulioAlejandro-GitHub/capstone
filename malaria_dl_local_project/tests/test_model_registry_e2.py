@@ -181,7 +181,7 @@ def test_precedence_requested_resolved_and_tracking(tmp_path):
     )
     assert args.model_configuration["resolved"]["execution"]["max_epochs"] == 9
     assert (
-        resolve_config("vgg16")["resolved"]["model"]["preprocessing"] == "rescale_0_1"
+        resolve_config("vgg16")["resolved"]["model"]["preprocessing"] == "vgg16_imagenet"
     )
 
 

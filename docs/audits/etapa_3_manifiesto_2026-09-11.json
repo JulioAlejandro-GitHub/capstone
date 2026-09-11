@@ -1,0 +1,141 @@
+{
+  "stage": "E3",
+  "date": "2026-09-11",
+  "base_commit": "9250a33a6d4472b1b97e02e416ac47345c11c264",
+  "branch": "main",
+  "initial_tree": "clean",
+  "e2_manifest_entries_verified": 25,
+  "scope": "Uncommitted E3 files including guide and audit; manifest itself excluded",
+  "files": [
+    {
+      "path": "backend_api/app/services/cell_classification.py",
+      "sha256": "9800bcb7514c73624dbf9406206542eee6954e0f40e005d841dbf479455a8e52",
+      "bytes": 122143
+    },
+    {
+      "path": "docs/audits/etapa_3_contratos_entrada_2026-09-11.md",
+      "sha256": "79d3442bc9fca15d690cdb154b82558075ba5518f18da34a5926aae0f5515c06",
+      "bytes": 13391
+    },
+    {
+      "path": "docs/engineering/etapa_3_contratos_entrada_2026-09-11.md",
+      "sha256": "18bd8e63c152996f71452e96f48fba3a0c8492587936ee2f70c3e36ff81d380f",
+      "bytes": 4613
+    },
+    {
+      "path": "malaria_dl_local_project/configs/models/vgg16.json",
+      "sha256": "d6f1dcc06c687c96d2b4a305a16b8be25919cd1f37ec4fd63a7b00fc8b08c2ee",
+      "bytes": 1944
+    },
+    {
+      "path": "malaria_dl_local_project/run_evaluate_all_trainings.py",
+      "sha256": "b4b3cee16ef10da98c47e138ee7940e8329eb62aabe7b6e1adf05974923cce87",
+      "bytes": 10987
+    },
+    {
+      "path": "malaria_dl_local_project/run_explain_all_trainings.py",
+      "sha256": "2c86e74f894bc5ab976d7c66602047ac60069201f013437a81c291a1c85d1462",
+      "bytes": 11067
+    },
+    {
+      "path": "malaria_dl_local_project/run_train_all_models.py",
+      "sha256": "6d442fcec977f2d3407ed52295dd99ff8e677a34b75f17f6aaa7d4cfca8c7b8c",
+      "bytes": 5809
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/data/input_contract.py",
+      "sha256": "33bd36dccd4f744d2eb53bed7ea2e5295267514c36964331b13031eefccf4662",
+      "bytes": 9343
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/data/loaders.py",
+      "sha256": "7efd5ff94c04116ac6569a68538080f4cc07357c567f1609b3f62f96a55af06f",
+      "bytes": 18793
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/data/preprocessing.py",
+      "sha256": "c1d4d3b1d56ef1ff9ad320defb838831da3d00aa567189a23eb0ea4779b226c3",
+      "bytes": 3662
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/evaluation/evaluator.py",
+      "sha256": "4ec73ff32bf3a469617a17ae130f937d63368f009f6a64fe96b99483c016541a",
+      "bytes": 18695
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/explainability/pipeline.py",
+      "sha256": "e96f4287d9853873602cd73656d1eff53879e272e6c1226cf96ea7e2c9fd9abc",
+      "bytes": 56477
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/governance/services/training_model_version_finalizer.py",
+      "sha256": "2a977a92d815b9832d261c81207f4e89e3fb01ef89b2b56163af199946265cda",
+      "bytes": 10378
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/inference/pipeline.py",
+      "sha256": "13bd155915193c9c0dfd2e019caef7363689e92ea073fb90c839849aa44e9675",
+      "bytes": 10362
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/inference/predictor.py",
+      "sha256": "a2508c431851ef9b920db08421163caeff58493102ac8e898793d4e5bc776e0e",
+      "bytes": 61292
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/inference/traceable.py",
+      "sha256": "49f9a3ee9f92c7f7cdeda18a699bf6463608f8b41b5818e6c62badd893a94b95",
+      "bytes": 9848
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/models/adapters.py",
+      "sha256": "bdf3c3473f296c6fd50004eaf91015f90f2b1147210448dd74d899d5a8ddc8bf",
+      "bytes": 5008
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/models/configuration.py",
+      "sha256": "dfce0649057c591bb0d98778ae1d15cd94f60af98488f83d633ba9bfc706b1c6",
+      "bytes": 9260
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/models/registry.py",
+      "sha256": "93c75496538f1efe3fb6eaff99398e0671da75a4866e5a90d762ee1767ca5d63",
+      "bytes": 4051
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_evaluation_finalization_integration.py",
+      "sha256": "382d64dd11094ecab774bc5b37bc160c2fea5d3def60a1e6839f94006f14a024",
+      "bytes": 6745
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_input_contract_e3.py",
+      "sha256": "f8441a568ce23a0432fdc10b107ff55804385b700f0b3fd24ad90de322c73baf",
+      "bytes": 14820
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_input_contract_postgres.py",
+      "sha256": "1f1cba25c6d1dffb0d2808eff6c3b52390b79639632bdc1d1976adaa7b5846ca",
+      "bytes": 928
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_model_configuration_postgres.py",
+      "sha256": "2b54e9f85951ae68d032ea7bfba5a308ca601d5edf1d057cfcd5bbb4f0fca1d2",
+      "bytes": 6065
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_model_registry_e2.py",
+      "sha256": "63e931535823a1fabdba2a15a4f397d53b67df637b04ba7917a1611ad7e397f6",
+      "bytes": 16505
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_run_explain_all_trainings.py",
+      "sha256": "5111c46074582e8af14b894d4fd68609e439026c80ed1df2d80c183e184b3750",
+      "bytes": 2312
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_training_model_version_finalizer.py",
+      "sha256": "cd8a1cbe57b604ded1d114e23582201598aa4362db9d7cd1615c4feedbcab3ea",
+      "bytes": 1395
+    }
+  ]
+}

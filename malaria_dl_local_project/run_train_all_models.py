@@ -58,7 +58,7 @@ def build_train_command(
     r = config["resolved"]
     selected_for_child = dict(
         schema_version=config["schema_version"],
-        **{k: v for k, v in r.items() if k != "selection"},
+        **{k: v for k, v in r.items() if k not in ("selection", "input_contract")},
     )
     return [
         sys.executable,

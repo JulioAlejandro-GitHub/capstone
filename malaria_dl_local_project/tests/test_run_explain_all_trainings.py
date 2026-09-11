@@ -40,10 +40,9 @@ class RunExplainAllTrainingsTests(unittest.TestCase):
             command[command.index("--source-training-run-id") + 1],
             run.training_run_id,
         )
-        self.assertEqual(
-            command[command.index("--preprocessing") + 1],
-            "rescale_0_1",
-        )
+        # The consumer inherits its exact immutable checkpoint contract.
+        self.assertNotIn("--preprocessing", command)
+        self.assertNotIn("--img-size", command)
         self.assertNotIn("--checkpoint", command)
         self.assertNotIn(run.checkpoint_path, command)
         self.assertEqual(

@@ -83,3 +83,29 @@ def preprocessing_metadata(preprocessing_mode):
         "mode": mode,
         "description": PREPROCESSING_DESCRIPTIONS[mode],
     }
+
+
+def model_image_to_display(image, preprocessing_mode=PREPROCESSING_RESCALE_0_1):
+    mode = resolve_preprocessing_mode(requested=preprocessing_mode)
+    image = np.asarray(image, dtype=np.float32)
+
+    if mode == PREPROCESSING_VGG16_IMAGENET:
+        bgr_image = image.copy()
+        bgr_image[..., 0] += 103.939
+        bgr_image[..., 1] += 116.779
+        bgr_image[..., 2] += 123.68
+        rgb_image = bgr_image[..., ::-1]
+        return np.clip(rgb_image / 255.0, 0.0, 1.0).astype(np.float32)
+
+    return np.clip(image, 0.0, 1.0).astype(np.float32)
+
+
+def display_images_to_model_inputs(images, preprocessing_mode=PREPROCESSING_RESCALE_0_1):
+    mode = resolve_preprocessing_mode(requested=preprocessing_mode)
+    images = np.asarray(images, dtype=np.float32)
+    images = np.clip(images, 0.0, 1.0)
+
+    if mode == PREPROCESSING_VGG16_IMAGENET:
+        return apply_model_preprocessing(images * 255.0, mode).numpy().astype(np.float32)
+
+    return images.astype(np.float32)

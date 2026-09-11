@@ -25,8 +25,6 @@ from src.model_metadata import resolve_threshold_for_checkpoint
 from src.preprocessing import (
     PREPROCESSING_CHOICES,
     PREPROCESSING_RESCALE_0_1,
-    PREPROCESSING_VGG16_IMAGENET,
-    apply_model_preprocessing,
     resolve_preprocessing_mode,
 )
 
@@ -97,7 +95,7 @@ def parse_args(argv=None):
         required=True,
         help="'both' ejecuta LIME + SHAP; 'all' ejecuta LIME + SHAP + Grad-CAM.",
     )
-    parser.add_argument("--img-size", type=int, default=200)
+    parser.add_argument("--img-size", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--num-samples", type=int, default=20)
     parser.add_argument(
@@ -340,30 +338,7 @@ def predict_positive_scores(
     )
 
 
-def model_image_to_display(image, preprocessing_mode=PREPROCESSING_RESCALE_0_1):
-    mode = resolve_preprocessing_mode(requested=preprocessing_mode)
-    image = np.asarray(image, dtype=np.float32)
-
-    if mode == PREPROCESSING_VGG16_IMAGENET:
-        bgr_image = image.copy()
-        bgr_image[..., 0] += 103.939
-        bgr_image[..., 1] += 116.779
-        bgr_image[..., 2] += 123.68
-        rgb_image = bgr_image[..., ::-1]
-        return np.clip(rgb_image / 255.0, 0.0, 1.0).astype(np.float32)
-
-    return np.clip(image, 0.0, 1.0).astype(np.float32)
-
-
-def display_images_to_model_inputs(images, preprocessing_mode=PREPROCESSING_RESCALE_0_1):
-    mode = resolve_preprocessing_mode(requested=preprocessing_mode)
-    images = np.asarray(images, dtype=np.float32)
-    images = np.clip(images, 0.0, 1.0)
-
-    if mode == PREPROCESSING_VGG16_IMAGENET:
-        return apply_model_preprocessing(images * 255.0, mode).numpy().astype(np.float32)
-
-    return images.astype(np.float32)
+from src.malaria_dl.data.preprocessing import model_image_to_display, display_images_to_model_inputs
 
 
 def binary_predict_proba(
@@ -1273,10 +1248,19 @@ def main():
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
 
-    governed_preprocessing=(resolved_version.preprocessing.get("mode") or resolved_version.preprocessing.get("preprocessing")) if resolved_version else None
-    if args.require_lineage and governed_preprocessing and args.preprocessing not in {"auto",governed_preprocessing}:
-        raise ValueError("El preprocessing solicitado no coincide con la model version.")
-    preprocessing_mode = governed_preprocessing or resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
+    from src.malaria_dl.data.input_contract import resolve_checkpoint_input, validate_model_input, InputContractError
+    if resolved_version is None:
+        raise InputContractError('INPUT_CONTRACT_NOT_ACCREDITED')
+    input_contract = resolve_checkpoint_input(
+        resolved_version.preprocessing, resolved_version.input_signature,
+        resolved_version.output_signature, resolved_version.class_mapping,
+        architecture=resolved_version.model_name, img_size=args.img_size,
+        mode=args.preprocessing, label_mapping=args.label_mapping,
+    )
+    if input_contract['shape'][1] != input_contract['shape'][2]:
+        raise InputContractError('CONSUMER_REQUIRES_SQUARE_INPUT')
+    args.img_size = input_contract['shape'][1]
+    preprocessing_mode = input_contract['external']['mode']
     mapping_metadata = label_mapping_metadata(args.label_mapping)
     if args.label_mapping == LEGACY_TFDS_LABEL_MAPPING_VERSION:
         print("Advertencia: explicabilidad usando checkpoint legacy_tfds_parasitized_zero.")
@@ -1341,6 +1325,7 @@ def main():
 
         print(f"Cargando modelo: {checkpoint}")
         model = tf.keras.models.load_model(checkpoint, compile=False)
+        validate_model_input(model, input_contract)
 
         print("Cargando splits de malaria...")
         ds_train, _, ds_test, _ = load_malaria_splits(

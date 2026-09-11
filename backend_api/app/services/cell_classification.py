@@ -1528,6 +1528,14 @@ class CellClassificationService:
     ) -> None:
         """Validate exposed Keras shapes while allowing shape-less test doubles."""
 
+        if hasattr(model, 'inputs'):
+            ml_root = Path(__file__).resolve().parents[3] / 'malaria_dl_local_project'
+            if str(ml_root) not in sys.path:
+                sys.path.insert(0, str(ml_root))
+            from src.malaria_dl.data.input_contract import resolve_checkpoint_input, validate_model_input
+            contract = resolve_checkpoint_input(resolved.preprocessing, resolved.input_signature,
+                resolved.output_signature, resolved.label_mapping, architecture=resolved.model_name)
+            validate_model_input(model, contract)
         raw_input = getattr(model, "input_shape", None)
         raw_output = getattr(model, "output_shape", None)
         input_shape = cls._model_shape(raw_input)
@@ -1606,26 +1614,16 @@ class CellClassificationService:
     ) -> Any:
         if self.preprocessor is not None:
             return self.preprocessor(item, resolved)
-        import numpy as np
-        import tensorflow as tf
-
         capstone_root = Path(__file__).resolve().parents[3]
         ml_root = capstone_root / "malaria_dl_local_project"
         if str(ml_root) not in sys.path:
             sys.path.insert(0, str(ml_root))
-        from src.malaria_dl.data.preprocessing import apply_model_preprocessing
-
-        crop_bytes = self._verified_crop_bytes(item)
-        mode = resolved.preprocessing["mode"]
-        with Image.open(io.BytesIO(crop_bytes)) as image:
-            image = image.convert("L" if resolved.input_channels == 1 else "RGB")
-            values = np.asarray(image, dtype=np.float32)
-        if resolved.input_channels == 1:
-            values = values[..., None]
-        resized = tf.image.resize(
-            values, (resolved.input_height, resolved.input_width), method="bilinear"
-        )
-        return apply_model_preprocessing(resized, mode).numpy().astype("float32")
+        from src.malaria_dl.data.input_contract import resolve_checkpoint_input, transform_bytes
+        contract = resolve_checkpoint_input(resolved.preprocessing, resolved.input_signature,
+            resolved.output_signature, resolved.label_mapping, architecture=resolved.model_name)
+        if contract['shape'][1:] != [resolved.input_height, resolved.input_width, resolved.input_channels]:
+            raise ValueError('PRODUCTIVE_INPUT_DIMENSIONS_CONFLICT')
+        return transform_bytes(self._verified_crop_bytes(item), contract).numpy()
 
     def _predict(self, model: Any, batch: Any) -> Any:
         if self.predictor is not None:

@@ -89,7 +89,7 @@ def resolve_config(model_name, selected=None, overrides=None, *, batch=False):
         raise ValueError("INCOMPATIBLE_WEIGHTS")
     allowed_preprocessing = descriptor.preprocessing_modes
     if m["preprocessing"] == "auto":
-        m["preprocessing"] = "rescale_0_1"
+        m["preprocessing"] = descriptor.default_preprocessing
     if m["preprocessing"] not in allowed_preprocessing:
         raise ValueError("INCOMPATIBLE_PREPROCESSING")
     if defaults["model"]["l2"] == 0 and m["l2"] != 0:
@@ -161,6 +161,8 @@ def resolve_config(model_name, selected=None, overrides=None, *, batch=False):
         or o["fine_tune_learning_rate"] <= 0
     ):
         raise ValueError("INVALID_FINE_TUNE_LEARNING_RATE")
+    from ..data.input_contract import make_input_contract
+    input_contract = make_input_contract(descriptor.id, descriptor.version, m['input_shape'], m['preprocessing'], descriptor.internal_preprocessing)
     return dict(
         schema_version=config["schema_version"],
         model_id=descriptor.id,
@@ -175,6 +177,7 @@ def resolve_config(model_name, selected=None, overrides=None, *, batch=False):
         resolved={
             **{k: config[k] for k in ("model", "optimizer", "execution", "recipe")},
             "selection": selection_semantics(e),
+            "input_contract": input_contract,
         },
     )
 

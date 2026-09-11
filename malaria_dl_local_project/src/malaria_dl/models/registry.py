@@ -21,6 +21,7 @@ class ModelDescriptor:
     optimizers: tuple[str, ...]
     internal_preprocessing: str | None = None
     preprocessing_modes: tuple[str, ...] = ("rescale_0_1",)
+    default_preprocessing: str = "rescale_0_1"
 
     def create_adapter(self):
         module, symbol = self.adapter.split(":")
@@ -112,7 +113,7 @@ for _id, _aliases, _adapter, _strategies, _internal in (
             _aliases,
             True,
             True,
-            "1.0",
+            "1.1" if _id == "vgg16" else "1.0",
             "src.malaria_dl.models.adapters:" + _adapter,
             str(_CONFIG / (_id + ".json")),
             "float32 RGB NHWC; explicit external preprocessing",
@@ -120,6 +121,7 @@ for _id, _aliases, _adapter, _strategies, _internal in (
             _strategies,
             tuple(OPTIMIZER_DEFAULTS),
             _internal,
-            ("rescale_0_1", "vgg16_imagenet") if _id == "vgg16" else ("rescale_0_1",),
+            ("vgg16_imagenet",) if _id == "vgg16" else ("rescale_0_1",),
+            "vgg16_imagenet" if _id == "vgg16" else "rescale_0_1",
         )
     )

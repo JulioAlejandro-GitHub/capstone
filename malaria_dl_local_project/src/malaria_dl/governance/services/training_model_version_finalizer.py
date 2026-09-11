@@ -10,7 +10,6 @@ from uuid import UUID
 
 from sqlalchemy import text
 
-from src.config import LABEL_MAPPING_METADATA
 
 
 class TrainingModelVersionFinalizationError(RuntimeError):
@@ -42,25 +41,20 @@ def _contract(row: dict[str, Any]) -> dict[str, Any]:
     model_metadata = _object(metadata.get("model_metadata"))
     execution = _object(row.get("execution_parameters"))
     parameters = _object(row.get("parameters"))
-    preprocessing = (
-        model_metadata.get("preprocessing")
-        or execution.get("preprocessing")
-        or parameters.get("preprocessing")
-        or metadata.get("preprocessing_mode")
-    )
-    img_size = int(
-        model_metadata.get("img_size")
-        or execution.get("img_size")
-        or parameters.get("img_size")
-        or 200
-    )
-    mapping = dict(LABEL_MAPPING_METADATA)
-    mapping.update({"positive_class": 1, "positive_label": "parasitized"})
+    from src.malaria_dl.data.input_contract import validate_input_contract, InputContractError
+    evidence = _object(execution.get('model_configuration_e2'))
+    config = _object(_object(evidence.get('configuration')).get('resolved'))
+    c = validate_input_contract(config.get('input_contract') or model_metadata.get('input_contract'))
+    preprocessing = model_metadata.get('preprocessing') or execution.get('preprocessing') or parameters.get('preprocessing')
+    if isinstance(preprocessing, dict):
+        preprocessing = preprocessing.get('mode')
+    if preprocessing and preprocessing != c['external']['mode']:
+        raise InputContractError('TRAIN_INPUT_SNAPSHOT_CONFLICT')
     return {
-        "preprocessing": {"mode": preprocessing or "rescale_0_1"},
-        "mapping": mapping,
-        "input": {"shape": [None, img_size, img_size, 3], "dtype": "float32"},
-        "output": {"shape": [None, 1], "dtype": "float32"},
+        'preprocessing': {'mode': c['external']['mode'], 'input_contract': c},
+        'mapping': c['label_mapping'],
+        'input': {'shape': c['shape'], 'dtype': c['dtype']},
+        'output': {'shape': c['output']['shape'], 'dtype': c['output']['dtype']},
     }
 
 

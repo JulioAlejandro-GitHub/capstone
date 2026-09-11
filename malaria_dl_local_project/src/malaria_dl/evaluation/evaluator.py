@@ -20,7 +20,7 @@ from src.malaria_dl.evaluation.evaluation_terminal_service import (
     finalize_evaluation_with_lineage,
 )
 from src.model_metadata import resolve_threshold_for_checkpoint, verify_checkpoint_metadata
-from src.preprocessing import PREPROCESSING_CHOICES, resolve_preprocessing_mode
+from src.preprocessing import PREPROCESSING_CHOICES
 
 
 def parse_args(argv=None):
@@ -28,7 +28,7 @@ def parse_args(argv=None):
     source=parser.add_mutually_exclusive_group()
     source.add_argument("--model-version-id", help="UUID de la model version inmutable.")
     source.add_argument("--checkpoint", "--model-path", dest="checkpoint", help="LEGACY: ruta a .keras")
-    parser.add_argument("--img-size", type=int, default=200)
+    parser.add_argument("--img-size", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument(
         "--threshold",
@@ -222,10 +222,19 @@ def main():
 
     if not checkpoint.exists():
         raise FileNotFoundError(f"No existe el checkpoint: {checkpoint}")
-    governed_preprocessing=(resolved_version.preprocessing.get("mode") or resolved_version.preprocessing.get("preprocessing")) if resolved_version else None
-    if args.require_lineage and governed_preprocessing and args.preprocessing not in {"auto",governed_preprocessing}:
-        raise ValueError("El preprocessing solicitado no coincide con la model version.")
-    preprocessing_mode = governed_preprocessing or resolve_preprocessing_mode(checkpoint.parent.name, args.preprocessing)
+    from src.malaria_dl.data.input_contract import resolve_checkpoint_input, validate_model_input, InputContractError
+    if resolved_version is None:
+        raise InputContractError('INPUT_CONTRACT_NOT_ACCREDITED')
+    input_contract = resolve_checkpoint_input(
+        resolved_version.preprocessing, resolved_version.input_signature,
+        resolved_version.output_signature, resolved_version.class_mapping,
+        architecture=resolved_version.model_name, img_size=args.img_size,
+        mode=args.preprocessing, label_mapping=args.label_mapping,
+    )
+    if input_contract['shape'][1] != input_contract['shape'][2]:
+        raise InputContractError('CONSUMER_REQUIRES_SQUARE_INPUT')
+    args.img_size = input_contract['shape'][1]
+    preprocessing_mode = input_contract['external']['mode']
     mapping_metadata = label_mapping_metadata(args.label_mapping)
     if args.positive_label != POSITIVE_LABEL:
         raise ValueError(
@@ -303,6 +312,7 @@ def main():
         class_names = CLASS_NAMES
 
         model = tf.keras.models.load_model(checkpoint, compile=False)
+        validate_model_input(model, input_contract)
         output_dir = checkpoint.parent / "evaluation"
 
         y_true, y_pred, y_score = collect_predictions(

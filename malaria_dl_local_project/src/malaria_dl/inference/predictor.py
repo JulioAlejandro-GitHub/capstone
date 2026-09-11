@@ -47,7 +47,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Evalua una imagen individual con un modelo Keras.")
     parser.add_argument("--checkpoint", default=None, help="Ruta al modelo .keras entrenado.")
     parser.add_argument("--image-path", required=True, help="Ruta a la imagen a evaluar.")
-    parser.add_argument("--img-size", type=int, default=200)
+    parser.add_argument("--img-size", type=int, default=None)
     parser.add_argument(
         "--threshold",
         default="0.5",
@@ -1180,7 +1180,7 @@ def quality_failure_response(args, image_path, quality_result):
 def build_inference_args(
     checkpoint=None,
     image_path=None,
-    img_size=200,
+    img_size=None,
     threshold=0.5,
     label_mapping=LABEL_MAPPING_VERSION,
     preprocessing="auto",
@@ -1228,7 +1228,7 @@ def build_inference_args(
 def run_clinical_inference(
     checkpoint=None,
     image_path=None,
-    img_size=200,
+    img_size=None,
     threshold=0.5,
     label_mapping=LABEL_MAPPING_VERSION,
     preprocessing="auto",
@@ -1293,14 +1293,29 @@ def run_clinical_inference(
     threshold_info = resolve_threshold_for_checkpoint(args.threshold, primary_checkpoint)
     args.threshold_info = threshold_info
     args.threshold = threshold_info["threshold_used"]
-    preprocessing_mode = resolve_preprocessing_mode(
-        "ensemble" if args.ensemble else primary_checkpoint.parent.name,
-        args.preprocessing,
-    )
+    contract = None
+    if not args.ensemble:
+        from src.model_version_resolver import ModelVersionResolver
+        from src.malaria_dl.data.input_contract import resolve_checkpoint_input, validate_model_input, InputContractError
+        version = ModelVersionResolver().resolve(checkpoint=primary_checkpoint)
+        if version is None:
+            raise InputContractError('INPUT_CONTRACT_NOT_ACCREDITED')
+        contract = resolve_checkpoint_input(version.preprocessing, version.input_signature,
+            version.output_signature, version.class_mapping, architecture=version.model_name,
+            img_size=args.img_size, mode=args.preprocessing, label_mapping=args.label_mapping)
+        if contract['shape'][1] != contract['shape'][2]:
+            raise InputContractError('CONSUMER_REQUIRES_SQUARE_INPUT')
+        args.img_size = contract['shape'][1]
+        preprocessing_mode = contract['external']['mode']
+    else:
+        args.img_size = args.img_size or 200
+        preprocessing_mode = resolve_preprocessing_mode(requested=args.preprocessing)
     loaded_models = [
-        (path, tf.keras.models.load_model(path, compile=False))
-        for path in model_paths
+        (path, tf.keras.models.load_model(path, compile=False)) for path in model_paths
     ]
+    if contract:
+        for _,model in loaded_models:
+            validate_model_input(model, contract)
     explain_model = (
         load_explain_model(explain_model_path, loaded_models)
         if args.explain and args.explain != "none"

@@ -389,6 +389,8 @@ def make_image_dataset_from_directory(
         directory=directory,
         labels="inferred",
         label_mode="binary",
+        color_mode="rgb",
+        interpolation="bilinear",
         class_names=CLASS_NAMES,
         image_size=(img_size, img_size),
         batch_size=batch_size,

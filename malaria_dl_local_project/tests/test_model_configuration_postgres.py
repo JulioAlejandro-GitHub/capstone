@@ -20,7 +20,7 @@ pytestmark = [
 ]
 
 
-def test_configuration_roundtrip_and_rollback(monkeypatch):
+def configuration_roundtrip_and_rollback(monkeypatch, model_name="custom_cnn"):
     engine = None
     errors = []
     run_id, dataset_id = str(uuid4()), str(uuid4())
@@ -74,7 +74,7 @@ def test_configuration_roundtrip_and_rollback(monkeypatch):
                 monkeypatch.setattr(
                     target, "environment_identity", lambda: {"synthetic": True}
                 )
-                config = resolve_config("custom_cnn")
+                config = resolve_config(model_name)
                 phase = "roundtrip"
                 snapshot = target.persist_model_configuration(
                     run_id,
@@ -141,3 +141,8 @@ def test_configuration_roundtrip_and_rollback(monkeypatch):
                     errors.append(sanitized_failure(exc, "dispose"))
     if errors:
         pytest.fail(f"Synthetic configuration failure: {errors}", pytrace=False)
+    return snapshot
+
+
+def test_configuration_roundtrip_and_rollback(monkeypatch):
+    configuration_roundtrip_and_rollback(monkeypatch)

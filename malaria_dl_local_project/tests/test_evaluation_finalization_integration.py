@@ -34,6 +34,8 @@ def _args(model_version_id):
 
 
 def _resolved(checkpoint, model_version_id, training_run_id):
+    from src.malaria_dl.models.configuration import resolve_config
+    c = resolve_config("custom_cnn")["resolved"]["input_contract"]
     return ResolvedModelVersion(
         model_version_id=str(model_version_id),
         source_training_run_id=str(training_run_id),
@@ -42,15 +44,15 @@ def _resolved(checkpoint, model_version_id, training_run_id):
         checkpoint_sha256="0" * 64,
         model_name="custom_cnn",
         status="candidate",
-        preprocessing={"mode": "rescale_0_1"},
+        preprocessing={"mode": "rescale_0_1", "input_contract": c},
         class_mapping={
             "0": "uninfected",
             "1": "parasitized",
             "positive_class": 1,
             "positive_label": "parasitized",
         },
-        input_signature={},
-        output_signature={},
+        input_signature={"shape": c["shape"], "dtype": "float32"},
+        output_signature={"shape": [None,1], "dtype": "float32"},
     )
 
 
@@ -95,6 +97,8 @@ def _runtime(checkpoint, *, finalizer_side_effect=None):
         patch.object(evaluator, "load_malaria_splits", return_value=(None, None, object(), None))
     )
     stack.enter_context(patch.object(evaluator.tf.keras.models, "load_model", return_value=object()))
+    # Finalization-only double; real graph validation is covered by E3 tests.
+    stack.enter_context(patch("src.malaria_dl.data.input_contract.validate_model_input"))
     stack.enter_context(
         patch.object(evaluator, "collect_predictions", return_value=([0], [0], [0.1]))
     )
