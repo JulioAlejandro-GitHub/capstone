@@ -1,0 +1,47 @@
+{
+  "stage": "E4 initial implementation",
+  "base_commit": "6b24d50ad24ea641e70e7c8b758cc93c79729d7e",
+  "note": "Captured before the requested correction; manifest was absent at correction start. No earlier hash validation is claimed.",
+  "files": [
+    {
+      "path": "alembic/versions/20260911_01_experimental_campaigns.py",
+      "sha256": "1f92d940ec40d5267535618ee2e95a77096c0270f9e26f2c317e4db3cf4c4f38"
+    },
+    {
+      "path": "docs/audits/etapa_4_campanas_2026-09-11.md",
+      "sha256": "a84e7153a933517b5d6b7f88b84b06bc28a2df660a2a0a9ea3029f923c8e3b9e"
+    },
+    {
+      "path": "docs/engineering/etapa_4_campanas_2026-09-11.md",
+      "sha256": "4a299c5e5bc56d5f7b57abcb2fe8f454200b80eac3a32a71532ed622ff3759f2"
+    },
+    {
+      "path": "malaria_dl_local_project/src/campaign.py",
+      "sha256": "1a33a3288367adc2faa7a63aff7dec3e2b6ec1de5783fb151096fa7b0b35a7b1"
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/__init__.py",
+      "sha256": "f440ff74c5a874a8d3d73540a4273d018182789dff46c245f0c0a3e1b6792928"
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/contracts.py",
+      "sha256": "a25cf7dd1483aa560203ddda1c246713163c5bf2b4fbdd9bcfee110ad41be9a8"
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/repository.py",
+      "sha256": "9614f49280c89b45d720e537376ca463d8ac4d2124078d8ab565d65cd1f1f42c"
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/service.py",
+      "sha256": "459bae83fc0b18298cfc1761bc1dd3a790c40c8ab57a9c6c1f5293da9903110a"
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_campaigns_e4.py",
+      "sha256": "226fcee73b8a6f5fb822dce2924f77267d9f96f58dc5173c5cc41c44cab14cec"
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_campaigns_postgres.py",
+      "sha256": "352a53d37b978a85c1d44d6fe16f342f86fee9c01d9fbf88a577ef26a204507f"
+    }
+  ]
+}

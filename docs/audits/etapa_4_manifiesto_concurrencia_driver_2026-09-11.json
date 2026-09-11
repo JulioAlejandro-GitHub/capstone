@@ -1,0 +1,140 @@
+{
+  "stage": "E4 subprocess driver guard",
+  "date": "2026-09-11",
+  "base_commit": "6b24d50ad24ea641e70e7c8b758cc93c79729d7e",
+  "effective_revision": "Uncommitted working tree identified by these file hashes; manifest itself excluded",
+  "migration_head": "20260911_02",
+  "installed_revision": "NO VERIFICADA: Docker access denied",
+  "decision": "NO APROBADA",
+  "local_tests": {
+    "affected_passed": 61,
+    "postgres_skipped": 50
+  },
+  "files": [
+    {
+      "path": "alembic/versions/20260911_01_experimental_campaigns.py",
+      "sha256": "1f92d940ec40d5267535618ee2e95a77096c0270f9e26f2c317e4db3cf4c4f38",
+      "bytes": 20202
+    },
+    {
+      "path": "alembic/versions/20260911_02_campaign_integrity.py",
+      "sha256": "ade191ed474639ccb9d7a07ddc5a755ac9bf3aad777d55f8dc70d325fb4d36e6",
+      "bytes": 25444
+    },
+    {
+      "path": "docs/audits/etapa_4_campanas_2026-09-11.md",
+      "sha256": "a84e7153a933517b5d6b7f88b84b06bc28a2df660a2a0a9ea3029f923c8e3b9e",
+      "bytes": 15893
+    },
+    {
+      "path": "docs/audits/etapa_4_concurrencia_driver_2026-09-11.md",
+      "sha256": "0f054ca9545ed020832de6b3aaf3be61e61079bff416afddc907063f90335258",
+      "bytes": 1867
+    },
+    {
+      "path": "docs/audits/etapa_4_correccion_integridad_2026-09-11.md",
+      "sha256": "5f5daa2c4a43f4a4eabaf3f4df489bb6f7e21405424f5595d5ea867f2e551c00",
+      "bytes": 10732
+    },
+    {
+      "path": "docs/audits/etapa_4_head_units_2026-09-11.md",
+      "sha256": "a0f4c553a3ced736bc5310eba8d4b8320b4d69355282cb88817598c1083653ca",
+      "bytes": 2483
+    },
+    {
+      "path": "docs/audits/etapa_4_manifiesto_2026-09-11.json",
+      "sha256": "12d8b12f4aae1141fa1c9a20cb6da1ed4e565fa1155a77a7529a20773dd8d0d7",
+      "bytes": 1933
+    },
+    {
+      "path": "docs/audits/etapa_4_manifiesto_correccion_2026-09-11.json",
+      "sha256": "b22a3f71227b18d156ebb458d3aa25ee23651d1be99ee9a96a60c1b3d7768d47",
+      "bytes": 3433
+    },
+    {
+      "path": "docs/audits/etapa_4_manifiesto_head_units_2026-09-11.json",
+      "sha256": "47822b58da5d7909f13cf660acd8440c4ec27f66e9b440d5b20559cb56f39bcd",
+      "bytes": 4580
+    },
+    {
+      "path": "docs/audits/etapa_4_manifiesto_parametros_sql_2026-09-11.json",
+      "sha256": "0d0f6b1ed36886f259faf16dd4bab6316bf1a321ba0943e248454dc2bc8096c8",
+      "bytes": 3822
+    },
+    {
+      "path": "docs/audits/etapa_4_manifiesto_precedencia_json_2026-09-11.json",
+      "sha256": "36579a36e9e49fed12f173fbc5634f87528af8770cc9dc52a91ffb7f03b5478d",
+      "bytes": 4214
+    },
+    {
+      "path": "docs/audits/etapa_4_parametros_sql_2026-09-11.md",
+      "sha256": "2ca86c6526084d3956493cd11d38b3bffa6475e7030cbe4c33b81d98491a2a40",
+      "bytes": 3780
+    },
+    {
+      "path": "docs/audits/etapa_4_precedencia_json_2026-09-11.md",
+      "sha256": "8ad4c52d1df12fa655355628f68a0a3cd2a00a0c468d0529d12b4a826baa7adb",
+      "bytes": 3110
+    },
+    {
+      "path": "docs/audits/etapa_4_validacion_acotada_postgres_2026-09-11.md",
+      "sha256": "a0115ffa54fd05e0267a67c8399ef35c36dcaff7890a49a8bdc707de2065dc24",
+      "bytes": 1602
+    },
+    {
+      "path": "docs/engineering/etapa_4_campanas_2026-09-11.md",
+      "sha256": "4a299c5e5bc56d5f7b57abcb2fe8f454200b80eac3a32a71532ed622ff3759f2",
+      "bytes": 13735
+    },
+    {
+      "path": "malaria_dl_local_project/src/campaign.py",
+      "sha256": "1a33a3288367adc2faa7a63aff7dec3e2b6ec1de5783fb151096fa7b0b35a7b1",
+      "bytes": 3058
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/__init__.py",
+      "sha256": "f440ff74c5a874a8d3d73540a4273d018182789dff46c245f0c0a3e1b6792928",
+      "bytes": 59
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/contracts.py",
+      "sha256": "a25cf7dd1483aa560203ddda1c246713163c5bf2b4fbdd9bcfee110ad41be9a8",
+      "bytes": 20273
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/repository.py",
+      "sha256": "9614f49280c89b45d720e537376ca463d8ac4d2124078d8ab565d65cd1f1f42c",
+      "bytes": 13655
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/service.py",
+      "sha256": "459bae83fc0b18298cfc1761bc1dd3a790c40c8ab57a9c6c1f5293da9903110a",
+      "bytes": 5237
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_campaigns_e4.py",
+      "sha256": "226fcee73b8a6f5fb822dce2924f77267d9f96f58dc5173c5cc41c44cab14cec",
+      "bytes": 14757
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_campaigns_postgres.py",
+      "sha256": "955194b64246ec9616934fe1aa7c09487397f42e02058e742d0922181fd40bb9",
+      "bytes": 35779
+    },
+    {
+      "path": "malaria_dl_local_project/tests/test_migration_root_e4.py",
+      "sha256": "44ffc202579d40b60bbe33878929b048d8693540170cbd5dcceafcff72bb4971",
+      "bytes": 6889
+    },
+    {
+      "path": "scripts/db/validate_alembic_transactionally.py",
+      "sha256": "e6afae44e758df2b19af2a72752c4fe3e4f70ff29bf7cfab1399e28a0274b184",
+      "bytes": 3089
+    },
+    {
+      "path": "scripts/db/verify_alembic_adoption.py",
+      "sha256": "d32a94479e4e1bf230410102e4d52441d22c7878fb018c08bf347eefba3b28b5",
+      "bytes": 4036
+    }
+  ]
+}
