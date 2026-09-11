@@ -55,6 +55,13 @@ def validate_report(report):
 
 
 class ScienceRepository(AssessmentRepository):
+    report_success = True
+    report_error_code = staticmethod(lambda payload: None)
+    report_event = EVENT
+    report_resource_type = "scientific_report"
+    report_source = "science.e7"
+    report_validator = staticmethod(validate_report)
+
     def campaign_inventory(self, campaign_id):
         from ..campaigns.repository import CampaignRepository
 
@@ -108,7 +115,7 @@ class ScienceRepository(AssessmentRepository):
             ]
 
     def persist_report(self, report):
-        validate_report(report)
+        self.report_validator(report)
         fingerprint = digest(report)
         event_id = str(uuid5(NAMESPACE, fingerprint))
         with self.transaction() as c:
@@ -116,13 +123,17 @@ class ScienceRepository(AssessmentRepository):
                 c,
                 """INSERT INTO audit_events
               (id,event_type,action,resource_type,resource_id,request_method,request_path,correlation_id,after_state,metadata,success,error_code)
-              VALUES(CAST(:id AS uuid),:event,'compare','scientific_report',:hash,'CLI','science.e7',CAST(:correlation AS text),CAST(:payload AS jsonb),'{}'::jsonb,true,NULL)
+              VALUES(CAST(:id AS uuid),:event,'compare',:resource,:hash,'CLI',:source,CAST(:correlation AS text),CAST(:payload AS jsonb),'{}'::jsonb,:success,:error)
               ON CONFLICT (id) DO NOTHING""",
                 id=event_id,
-                event=EVENT,
+                event=self.report_event,
+                resource=self.report_resource_type,
+                source=self.report_source,
                 hash=fingerprint,
                 correlation=event_id,
                 payload=canonical(report),
+                success=self.report_success,
+                error=self.report_error_code(report),
             )
         require(self.read_report(event_id) == report, "REPORT_ROUND_TRIP_CONFLICT")
         return event_id
@@ -134,18 +145,18 @@ class ScienceRepository(AssessmentRepository):
                     c,
                     "SELECT after_state,resource_id,success,error_code FROM audit_events WHERE id=CAST(:id AS uuid) AND event_type=:event",
                     id=identifier(report_id),
-                    event=EVENT,
+                    event=self.report_event,
                 )
                 .mappings()
                 .one()
             )
             require(
-                row["success"] is True
-                and row["error_code"] is None
+                row["success"] is self.report_success
+                and row["error_code"] == self.report_error_code(row["after_state"])
                 and digest(row["after_state"]) == row["resource_id"],
                 "REPORT_PERSISTENCE_CONFLICT",
             )
-            validate_report(row["after_state"])
+            self.report_validator(row["after_state"])
             return row["after_state"]
 
     def freeze_final(self, report_id, value):

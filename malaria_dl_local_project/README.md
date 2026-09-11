@@ -11,7 +11,7 @@ Incluye:
 - Custom CNN
 - Transfer Learning con VGG16
 - Extracción de características CNN + SVM
-- Ensemble simple
+- Ensembles E8 sobre probabilidades verificadas de E6
 - Test Time Augmentation
 - Evaluación con accuracy, precision, recall, F1, AUC y matriz de confusión
 - Explicabilidad visual post hoc con LIME, SHAP y Grad-CAM
@@ -184,7 +184,7 @@ python -m src.train \
 
 Luego usa `--preprocessing vgg16_imagenet` en `src.evaluate`, `src.explain`, `src.tta`, `src.svm_features` y `src.predict_image` para ese checkpoint.
 
-Nota: `src.ensemble` aplica un único modo de preprocesamiento a todos los modelos. No mezcles en el mismo ensemble checkpoints entrenados con modos distintos.
+`src.ensemble` (E8) combina predicciones E6 ya verificadas. Cada miembro conserva su preprocesamiento E3; se valida el mismo conjunto de muestras y el mapeo de clases.
 
 Los JSON de métricas y CSV de predicciones incluyen `preprocessing_mode` cuando el script genera esos artefactos.
 
@@ -339,16 +339,16 @@ Primero entrena VGG16. Luego:
 python -m src.svm_features --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
 ```
 
-### Ensemble entre Custom CNN y VGG16
+### Ensembles experimentales E8
+
+Promedio uniforme (por defecto) o ponderado explícito de Custom CNN, VGG16 y DenseNet121, con el mismo grupo de semilla y optimizador. Usa referencias EVALUATE E6 y PostgreSQL; no carga checkpoints para inferencia ni ejecuta TEST. Los pesos no se normalizan silenciosamente.
 
 ```bash
-python -m src.ensemble \
-  --models outputs/custom_cnn/best_model.keras outputs/vgg16/best_model.keras \
-  --weights 0.4 0.6 \
-  --img-size 200 \
-  --batch-size 64 \
-  --track-db
+docker compose exec -T -w /app/malaria_dl_local_project \
+  backend python -B -m src.ensemble --help
 ```
+
+Subcomandos: `prepare`, `validate`, `combine`, `compare`. Las fuentes son probabilidades por muestra en PostgreSQL. El comparador E7 incorpora `compare-ensembles`; los reportes se exportan después de persistir y releer evidencia. Véanse [contrato, comandos y fixture E8](../docs/science/ensembles_e8_v1.md).
 
 ### Test Time Augmentation
 
@@ -399,7 +399,7 @@ TensorFlow Datasets entrega originalmente `0 = parasitized` y `1 = uninfected`, 
 --label-mapping legacy_tfds_parasitized_zero
 ```
 
-Este flag está disponible en `src.predict_image`, `src.evaluate`, `src.explain`, `src.calibrate`, `src.tta` y `src.ensemble`.
+Este flag está disponible en `src.predict_image`, `src.evaluate`, `src.explain`, `src.calibrate` y `src.tta`. E8 exige el mapeo E3 acreditado por cada fuente E6.
 
 `src.predict_image` reporta explícitamente:
 
@@ -413,7 +413,9 @@ Este flag está disponible en `src.predict_image`, `src.evaluate`, `src.explain`
 
 ### Métricas clínicas estándar
 
-Los flujos `src.train`, `src.evaluate`, `src.tta`, `src.ensemble` y `src.svm_features` reutilizan `compute_clinical_metrics`. Las métricas se calculan con `parasitized` como clase positiva (`pos_label=1`) y el score usado por ROC-AUC/PR-AUC es siempre `probability_parasitized`.
+E8 reutiliza las definiciones de E7, incluyendo average precision, ausencias con motivo e incertidumbre por paciente. No genera CSV.
+
+Los flujos `src.train`, `src.evaluate`, `src.tta` y `src.svm_features` reutilizan `compute_clinical_metrics`. Las métricas se calculan con `parasitized` como clase positiva (`pos_label=1`) y el score usado por ROC-AUC/PR-AUC es siempre `probability_parasitized`.
 
 Métricas reportadas:
 

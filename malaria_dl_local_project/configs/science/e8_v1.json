@@ -1,0 +1,42 @@
+{
+  "version": "probability_ensemble_e8_v1",
+  "parent_protocol": {
+    "version": "capstone_science_e7_v1",
+    "sha256": "7db076d71c2143934f0b3bae47ff253f18d3f65c5c3f8efb2634586acbadbdf2"
+  },
+  "default_strategy": "uniform",
+  "strategies": [
+    "uniform",
+    "weighted"
+  ],
+  "architectures": [
+    "custom_cnn",
+    "densenet121",
+    "vgg16"
+  ],
+  "weights": {
+    "tolerance": 1e-12,
+    "minimum_positive": 2,
+    "normalization": "forbidden",
+    "weighted_provenance": "predeclared",
+    "search": "not_implemented"
+  },
+  "probability_roundoff": "retain combination_sum; clip only out-of-range sum within weight tolerance; do not normalize weights",
+  "calibration": "none; reject unknown or double calibration",
+  "threshold": {
+    "rule": "strict_sensitivity_then_specificity_f2_highest_threshold_v1",
+    "target": 0.98,
+    "operator": ">",
+    "grid": "unique VAL scores plus 0 and 1",
+    "comparison": ">=",
+    "fallback": "maximum sensitivity, specificity, F2, highest threshold; objective unmet"
+  },
+  "permitted_splits": [
+    "val"
+  ],
+  "test": "disabled_pending_future_frozen_authorization",
+  "repetition": "one checkpoint per architecture, same TRAIN seed and optimizer; no cross-seed ensembles",
+  "matrix_rows": 96,
+  "optional_pairs": "not_enabled",
+  "superiority": "unproven"
+}

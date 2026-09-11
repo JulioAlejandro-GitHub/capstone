@@ -68,8 +68,17 @@ def main(argv=None):
     freeze = sub.add_parser("freeze-final")
     freeze.add_argument("--report-id", required=True)
     freeze.add_argument("--identity-file", required=True)
+    ensemble = sub.add_parser(
+        "compare-ensembles", help="E8 extension over persisted ensemble evaluation IDs"
+    )
+    ensemble.add_argument("--evaluation-id", action="append", default=[])
+    ensemble.add_argument("--export-dir")
     args = p.parse_args(argv)
     try:
+        if args.command == "compare-ensembles":
+            from .ensemble_cli import compare_command
+
+            return compare_command(args.evaluation_id, args.export_dir)
         if args.command == "check-protocol":
             protocol = load_protocol(args.protocol)
             campaign_plan(protocol)
