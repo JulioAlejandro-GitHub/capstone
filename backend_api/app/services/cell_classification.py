@@ -5,6 +5,7 @@ import io
 import json
 import logging
 import math
+import os
 import secrets
 import sys
 import time
@@ -1520,6 +1521,75 @@ class CellClassificationService:
             return None
         return tuple(value)
 
+    @staticmethod
+    def _ml_project_root() -> Path:
+        """Resolve the ML project root and make ``src.*`` importable."""
+
+        configured = os.getenv("MALARIA_DL_PROJECT_ROOT")
+        root = (
+            Path(configured)
+            if configured
+            else Path(__file__).resolve().parents[3] / "malaria_dl_local_project"
+        ).resolve()
+        if str(root) not in sys.path:
+            sys.path.insert(0, str(root))
+        return root
+
+    @classmethod
+    def _resolved_input_contract(
+        cls,
+        resolved: ResolvedProductiveModel,
+    ) -> dict[str, Any]:
+        """Resolve the frozen input contract of the published model.
+
+        Publications created before the E2/E3 contract work froze only the
+        preprocessing mode.  For those, the contract is derived from the
+        immutable signature already stored in the snapshot; it is never taken
+        from current defaults, and the loaded checkpoint is still verified
+        against it by ``validate_model_input``.
+        """
+
+        cls._ml_project_root()
+        from src.malaria_dl.data.input_contract import (
+            INTERNAL_DENSENET,
+            InputContractError,
+            make_input_contract,
+            resolve_checkpoint_input,
+        )
+
+        preprocessing = dict(resolved.preprocessing or {})
+        architecture = {"vgg16_transfer_learning": "vgg16"}.get(
+            resolved.architecture, resolved.architecture
+        )
+        try:
+            if not preprocessing.get("input_contract"):
+                preprocessing["input_contract"] = make_input_contract(
+                    architecture=architecture,
+                    adapter_version="legacy_publication_v1",
+                    shape=(
+                        resolved.input_height,
+                        resolved.input_width,
+                        resolved.input_channels,
+                    ),
+                    mode=preprocessing.get("mode"),
+                    internal=(
+                        INTERNAL_DENSENET if architecture == "densenet121" else None
+                    ),
+                )
+            return resolve_checkpoint_input(
+                preprocessing,
+                resolved.input_signature,
+                resolved.output_signature,
+                resolved.label_mapping,
+                architecture=architecture,
+            )
+        except InputContractError as exc:
+            raise CellClassificationError(
+                409,
+                "El contrato de entrada del modelo publicado no es resoluble.",
+                f"MODEL_{exc}",
+            ) from exc
+
     @classmethod
     def _validate_loaded_model_contract(
         cls,
@@ -1528,14 +1598,23 @@ class CellClassificationService:
     ) -> None:
         """Validate exposed Keras shapes while allowing shape-less test doubles."""
 
-        if hasattr(model, 'inputs'):
-            ml_root = Path(__file__).resolve().parents[3] / 'malaria_dl_local_project'
-            if str(ml_root) not in sys.path:
-                sys.path.insert(0, str(ml_root))
-            from src.malaria_dl.data.input_contract import resolve_checkpoint_input, validate_model_input
-            contract = resolve_checkpoint_input(resolved.preprocessing, resolved.input_signature,
-                resolved.output_signature, resolved.label_mapping, architecture=resolved.model_name)
-            validate_model_input(model, contract)
+        if hasattr(model, "inputs"):
+            cls._ml_project_root()
+            from src.malaria_dl.data.input_contract import (
+                InputContractError,
+                validate_model_input,
+            )
+
+            contract = cls._resolved_input_contract(resolved)
+            try:
+                validate_model_input(model, contract)
+            except InputContractError as exc:
+                raise CellClassificationError(
+                    409,
+                    "El modelo cargado no satisface el contrato de entrada "
+                    "publicado.",
+                    f"MODEL_{exc}",
+                ) from exc
         raw_input = getattr(model, "input_shape", None)
         raw_output = getattr(model, "output_shape", None)
         input_shape = cls._model_shape(raw_input)
@@ -1614,15 +1693,16 @@ class CellClassificationService:
     ) -> Any:
         if self.preprocessor is not None:
             return self.preprocessor(item, resolved)
-        capstone_root = Path(__file__).resolve().parents[3]
-        ml_root = capstone_root / "malaria_dl_local_project"
-        if str(ml_root) not in sys.path:
-            sys.path.insert(0, str(ml_root))
-        from src.malaria_dl.data.input_contract import resolve_checkpoint_input, transform_bytes
-        contract = resolve_checkpoint_input(resolved.preprocessing, resolved.input_signature,
-            resolved.output_signature, resolved.label_mapping, architecture=resolved.model_name)
-        if contract['shape'][1:] != [resolved.input_height, resolved.input_width, resolved.input_channels]:
-            raise ValueError('PRODUCTIVE_INPUT_DIMENSIONS_CONFLICT')
+        self._ml_project_root()
+        from src.malaria_dl.data.input_contract import transform_bytes
+
+        contract = self._resolved_input_contract(resolved)
+        if contract["shape"][1:] != [
+            resolved.input_height,
+            resolved.input_width,
+            resolved.input_channels,
+        ]:
+            raise ValueError("PRODUCTIVE_INPUT_DIMENSIONS_CONFLICT")
         return transform_bytes(self._verified_crop_bytes(item), contract).numpy()
 
     def _predict(self, model: Any, batch: Any) -> Any:
