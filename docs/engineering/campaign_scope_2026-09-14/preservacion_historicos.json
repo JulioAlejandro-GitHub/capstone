@@ -1,0 +1,98 @@
+{
+  "observations": [
+    {
+      "observation": "initial",
+      "utc": "2026-09-14 16:22:38.013086+00:00",
+      "tables": {
+        "runs": {
+          "count": 88,
+          "sha256": "ce867039a201b7c497ea3812775c828b4b8796447ed2ae28a2291bcce740257b"
+        },
+        "artifacts": {
+          "count": 4007,
+          "sha256": "11b58003e8c90db69f4e1ce2fd131377cd54bd792d8102dc504a19886ff6f358"
+        },
+        "run_metrics": {
+          "count": 2796,
+          "sha256": "b0f26d3cceed74d00acd8aaa28e7c3a7dabdcf48480d8a9b8a5c3bad3f7d73c6"
+        },
+        "training_history": {
+          "count": 926,
+          "sha256": "8489289011fbdc743441adb7a8c14495911e00f6d98cead453c68ebce39bdcf8"
+        },
+        "classification_reports": {
+          "count": 120,
+          "sha256": "0ceb944e9cecc1b65fd33a10979497a9b52cfa97eb10622d8d736d396c8c8b05"
+        },
+        "confusion_matrices": {
+          "count": 60,
+          "sha256": "f4a6ea07e144e17a16bee1bed391c58112d13efef5b4214026523ebae43c9700"
+        },
+        "run_image_predictions": {
+          "count": 98364,
+          "sha256": "c5bae38d532bfc55e08c89a52e0c7f07f2bbcd4db6c4012f9a7404e8bec8b567"
+        },
+        "explainability_results": {
+          "count": 3600,
+          "sha256": "49f8942a894108e910dc051afcee08415bf74830bc866821d1787413f48b7315"
+        },
+        "model_versions": {
+          "count": 36,
+          "sha256": "5585576189034582ab8a3b9f297b94ace37f3e6229db7cbd8ea6e3d0ae79aab2"
+        },
+        "run_lineage": {
+          "count": 61,
+          "sha256": "7bb1d75d0edc7cd6f223fb66bd68e024adf29a31be36c22c4d231f711d37caaf"
+        }
+      }
+    },
+    {
+      "observation": "closing",
+      "utc": "2026-09-14 16:22:39.703129+00:00",
+      "tables": {
+        "runs": {
+          "count": 88,
+          "sha256": "ce867039a201b7c497ea3812775c828b4b8796447ed2ae28a2291bcce740257b"
+        },
+        "artifacts": {
+          "count": 4007,
+          "sha256": "11b58003e8c90db69f4e1ce2fd131377cd54bd792d8102dc504a19886ff6f358"
+        },
+        "run_metrics": {
+          "count": 2796,
+          "sha256": "b0f26d3cceed74d00acd8aaa28e7c3a7dabdcf48480d8a9b8a5c3bad3f7d73c6"
+        },
+        "training_history": {
+          "count": 926,
+          "sha256": "8489289011fbdc743441adb7a8c14495911e00f6d98cead453c68ebce39bdcf8"
+        },
+        "classification_reports": {
+          "count": 120,
+          "sha256": "0ceb944e9cecc1b65fd33a10979497a9b52cfa97eb10622d8d736d396c8c8b05"
+        },
+        "confusion_matrices": {
+          "count": 60,
+          "sha256": "f4a6ea07e144e17a16bee1bed391c58112d13efef5b4214026523ebae43c9700"
+        },
+        "run_image_predictions": {
+          "count": 98364,
+          "sha256": "c5bae38d532bfc55e08c89a52e0c7f07f2bbcd4db6c4012f9a7404e8bec8b567"
+        },
+        "explainability_results": {
+          "count": 3600,
+          "sha256": "49f8942a894108e910dc051afcee08415bf74830bc866821d1787413f48b7315"
+        },
+        "model_versions": {
+          "count": 36,
+          "sha256": "5585576189034582ab8a3b9f297b94ace37f3e6229db7cbd8ea6e3d0ae79aab2"
+        },
+        "run_lineage": {
+          "count": 61,
+          "sha256": "7bb1d75d0edc7cd6f223fb66bd68e024adf29a31be36c22c4d231f711d37caaf"
+        }
+      }
+    }
+  ],
+  "unchanged": true,
+  "scope": "database rows only; opaque fingerprints, no scientific values fetched; binary files not rehashed"
+}

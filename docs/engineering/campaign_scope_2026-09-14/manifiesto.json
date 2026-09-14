@@ -1,0 +1,53 @@
+{
+  "date_utc": "2026-09-14T16:24:50.635685+00:00",
+  "head": "c83ea299331149a0b184fc8c001231aeb2900b46",
+  "status": "scope documented; direct runs.campaign_id migration and writers pending",
+  "operational_mutation": false,
+  "coordinator_modified": false,
+  "historical_row_fingerprints_unchanged": true,
+  "deliverables": [
+    {
+      "path": "docs/engineering/campaign_scope_2026-09-14/consulta_huellas.py",
+      "bytes": 1352,
+      "sha256": "e4f9db6baebc1c2894b30f37a8841cb1d0987ab6f5211d25cd787f331bf6d3dd"
+    },
+    {
+      "path": "docs/engineering/campaign_scope_2026-09-14/consulta_referencias.py",
+      "bytes": 3968,
+      "sha256": "bd8ab24c6d672f9661d034c77e6e9945da58eadec65fad027dee6cbf5c4781e1"
+    },
+    {
+      "path": "docs/engineering/campaign_scope_2026-09-14/decision_y_procedimiento.md",
+      "bytes": 10855,
+      "sha256": "68058041c69c79303829432f71765b1a3f3e25f9ed0c2b4ee5a5fa25e977047c"
+    },
+    {
+      "path": "docs/engineering/campaign_scope_2026-09-14/preservacion_historicos.json",
+      "bytes": 3415,
+      "sha256": "955533b050f7003f05d547de174167faedf09632ebc44d82091644f0fe9c0d1c"
+    },
+    {
+      "path": "docs/engineering/campaign_scope_2026-09-14/referencias.json",
+      "bytes": 19930,
+      "sha256": "c8082288b4968978fd04d070f23abee526fbc1b0f044c759c31e70a3d022ae02"
+    }
+  ],
+  "references": [
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/repository.py",
+      "bytes": 15407,
+      "sha256": "99f657c8f431dac88a2a2f22a5cfe17eb271bb11c6879519606eda1095512ddd"
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/repository.py",
+      "bytes": 13655,
+      "sha256": "9614f49280c89b45d720e537376ca463d8ac4d2124078d8ab565d65cd1f1f42c"
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/campaign.py",
+      "bytes": 8683,
+      "sha256": "d073f7b25d9d078f7d6efe9ba3af1311d93159127ac8c39f58ce474f88d05b23"
+    }
+  ],
+  "excludes_self": true
+}

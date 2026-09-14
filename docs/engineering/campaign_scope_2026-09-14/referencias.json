@@ -1,0 +1,794 @@
+{
+  "utc": "2026-09-14T16:20:43.434226+00:00",
+  "columns": [
+    {
+      "table_name": "artifacts",
+      "column_name": "id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "run_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "artifact_type",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "name",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "path",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "mime_type",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "file_size_bytes",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "checksum",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "created_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "metadata",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "artifact_uri",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "artifact_status",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "artifacts",
+      "column_name": "archived_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "assessment_campaign_consumers",
+      "column_name": "campaign_id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "campaign_configurations",
+      "column_name": "campaign_id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "campaign_execution_events",
+      "column_name": "campaign_id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "campaign_members",
+      "column_name": "campaign_id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "model_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "version_name",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "checkpoint_path",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "final_model_path",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "best_model_path",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "training_run_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "created_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "metadata",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "model_name",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "version_number",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "checkpoint_artifact_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "artifact_uri",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "artifact_sha256",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "artifact_size_bytes",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "artifact_hash_reuse_justification",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "framework",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "framework_version",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "preprocessing_profile_snapshot",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "class_mapping",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "input_signature",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "output_signature",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "status",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "lineage_status",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "validated_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "approved_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "model_versions",
+      "column_name": "retired_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "parent_run_id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "child_run_id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "relationship_type",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "checkpoint_path",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "checkpoint_artifact_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "model_version_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "confidence",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "metadata",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "run_lineage",
+      "column_name": "created_at",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "id",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "experiment_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "model_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "dataset_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "run_name",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "run_type",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "status",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "command",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "script_name",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "started_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "finished_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "duration_seconds",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "user_name",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "host_name",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "working_directory",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "git_commit",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "git_branch",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "python_version",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "tensorflow_version",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "keras_version",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "platform",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "machine",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "processor",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "gpu_available",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "gpu_devices",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "random_seed",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "parameters",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "notes",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "created_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "updated_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "metadata",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "execution_type",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "execution_parameters",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "fine_tuning_start_epoch",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "total_epochs",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "completed_epochs",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "max_epochs",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "stopped_epoch",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "best_epoch",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "checkpoint_monitor",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "checkpoint_mode",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "best_validation_value",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "early_stopping_enabled",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "early_stopping_patience",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "early_stopping_min_delta",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "restore_best_weights",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "backend_version",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "pipeline_version",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "configuration",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "error_message",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "dataset_version_id",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "release_status",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "release_updated_at",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "release_changed_by",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "runs",
+      "column_name": "release_reason",
+      "is_nullable": "YES"
+    }
+  ],
+  "foreign_keys": [
+    {
+      "source": "model_versions",
+      "target": "artifacts",
+      "conname": "fk_model_versions_checkpoint_artifact_owner",
+      "definition": "FOREIGN KEY (checkpoint_artifact_id, training_run_id) REFERENCES artifacts(id, run_id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "run_lineage",
+      "target": "artifacts",
+      "conname": "fk_run_lineage_checkpoint_artifact_owner",
+      "definition": "FOREIGN KEY (checkpoint_artifact_id, parent_run_id) REFERENCES artifacts(id, run_id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "run_lineage",
+      "target": "model_versions",
+      "conname": "fk_run_lineage_model_version_owner",
+      "definition": "FOREIGN KEY (model_version_id, parent_run_id) REFERENCES model_versions(id, training_run_id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "run_lineage",
+      "target": "model_versions",
+      "conname": "fk_run_lineage_version_artifact",
+      "definition": "FOREIGN KEY (model_version_id, checkpoint_artifact_id) REFERENCES model_versions(id, checkpoint_artifact_id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "model_versions",
+      "target": "models",
+      "conname": "model_versions_model_id_fkey",
+      "definition": "FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "model_versions",
+      "target": "runs",
+      "conname": "model_versions_training_run_id_fkey",
+      "definition": "FOREIGN KEY (training_run_id) REFERENCES runs(id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "run_lineage",
+      "target": "runs",
+      "conname": "run_lineage_child_run_id_fkey",
+      "definition": "FOREIGN KEY (child_run_id) REFERENCES runs(id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "run_lineage",
+      "target": "runs",
+      "conname": "run_lineage_parent_run_id_fkey",
+      "definition": "FOREIGN KEY (parent_run_id) REFERENCES runs(id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "runs",
+      "target": "datasets",
+      "conname": "runs_dataset_id_fkey",
+      "definition": "FOREIGN KEY (dataset_id) REFERENCES datasets(id) ON DELETE SET NULL",
+      "convalidated": true
+    },
+    {
+      "source": "runs",
+      "target": "experiments",
+      "conname": "runs_experiment_id_fkey",
+      "definition": "FOREIGN KEY (experiment_id) REFERENCES experiments(id) ON DELETE SET NULL",
+      "convalidated": true
+    },
+    {
+      "source": "runs",
+      "target": "models",
+      "conname": "runs_model_id_fkey",
+      "definition": "FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE SET NULL",
+      "convalidated": true
+    },
+    {
+      "source": "runs",
+      "target": "dataset_versions",
+      "conname": "runs_dataset_version_id_fkey",
+      "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "train_execution_sessions",
+      "target": "runs",
+      "conname": "train_execution_sessions_run_id_fkey",
+      "definition": "FOREIGN KEY (run_id) REFERENCES runs(id)",
+      "convalidated": true
+    },
+    {
+      "source": "train_execution_sessions",
+      "target": "campaign_attempts",
+      "conname": "train_execution_sessions_attempt_id_fkey",
+      "definition": "FOREIGN KEY (attempt_id) REFERENCES campaign_attempts(id)",
+      "convalidated": true
+    },
+    {
+      "source": "campaign_execution_events",
+      "target": "experimental_campaigns",
+      "conname": "campaign_execution_events_campaign_id_fkey",
+      "definition": "FOREIGN KEY (campaign_id) REFERENCES experimental_campaigns(id)",
+      "convalidated": true
+    },
+    {
+      "source": "campaign_configurations",
+      "target": "experimental_campaigns",
+      "conname": "campaign_configurations_campaign_id_fkey",
+      "definition": "FOREIGN KEY (campaign_id) REFERENCES experimental_campaigns(id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "campaign_members",
+      "target": "experimental_campaigns",
+      "conname": "campaign_members_campaign_id_fkey",
+      "definition": "FOREIGN KEY (campaign_id) REFERENCES experimental_campaigns(id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "campaign_members",
+      "target": "campaign_configurations",
+      "conname": "campaign_members_campaign_id_configuration_hash_fkey",
+      "definition": "FOREIGN KEY (campaign_id, configuration_hash) REFERENCES campaign_configurations(campaign_id, configuration_hash) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "campaign_attempts",
+      "target": "campaign_members",
+      "conname": "campaign_attempts_member_id_fkey",
+      "definition": "FOREIGN KEY (member_id) REFERENCES campaign_members(id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "campaign_attempts",
+      "target": "runs",
+      "conname": "campaign_attempts_training_run_id_fkey",
+      "definition": "FOREIGN KEY (training_run_id) REFERENCES runs(id) ON DELETE RESTRICT",
+      "convalidated": true
+    },
+    {
+      "source": "campaign_members",
+      "target": "campaign_attempts",
+      "conname": "fk_member_accepted_attempt",
+      "definition": "FOREIGN KEY (id, accepted_attempt_id) REFERENCES campaign_attempts(member_id, id) DEFERRABLE INITIALLY DEFERRED",
+      "convalidated": true
+    },
+    {
+      "source": "assessment_campaign_consumers",
+      "target": "experimental_campaigns",
+      "conname": "assessment_campaign_consumers_campaign_id_fkey",
+      "definition": "FOREIGN KEY (campaign_id) REFERENCES experimental_campaigns(id)",
+      "convalidated": true
+    }
+  ],
+  "campaign_counts": [
+    {
+      "id": "ec442763-7eea-499d-a94f-9a3ddfb7c0f0",
+      "state": "paused",
+      "member_state": "interrupted",
+      "count": 1
+    },
+    {
+      "id": "ec442763-7eea-499d-a94f-9a3ddfb7c0f0",
+      "state": "paused",
+      "member_state": "pending",
+      "count": 32
+    },
+    {
+      "id": "ec442763-7eea-499d-a94f-9a3ddfb7c0f0",
+      "state": "paused",
+      "member_state": "failed",
+      "count": 3
+    },
+    {
+      "id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+      "state": "active",
+      "member_state": "pending",
+      "count": 32
+    },
+    {
+      "id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+      "state": "active",
+      "member_state": "active",
+      "count": 1
+    },
+    {
+      "id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+      "state": "active",
+      "member_state": "failed",
+      "count": 3
+    }
+  ],
+  "checks": {
+    "members_without_campaign": 0,
+    "attempts_without_member": 0,
+    "attempts_missing_train": 0,
+    "session_without_run": 0,
+    "session_attempt_mismatch": 0,
+    "versions_without_train": 0,
+    "versions_without_checkpoint": 0,
+    "lineage_missing_parent_or_child": 0,
+    "train_multiple_campaigns": 0
+  },
+  "unassociated_runs": [
+    {
+      "run_type": "evaluation",
+      "status": "completed",
+      "count": 36
+    },
+    {
+      "run_type": "explainability",
+      "status": "completed",
+      "count": 24
+    },
+    {
+      "run_type": "explainability",
+      "status": "failed",
+      "count": 1
+    },
+    {
+      "run_type": "inference",
+      "status": "completed",
+      "count": 3
+    },
+    {
+      "run_type": "training",
+      "status": "completed",
+      "count": 24
+    }
+  ],
+  "unassociated_fingerprint": [
+    {
+      "count": 88,
+      "sha256": "d738abd17a30e085aae2430e098808f8fd99f24ef2bafbf82e9210cdcd174576"
+    }
+  ],
+  "campaign_columns_orphans": {
+    "assessment_campaign_consumers": 0,
+    "campaign_configurations": 0,
+    "campaign_execution_events": 0,
+    "campaign_members": 0
+  }
+}

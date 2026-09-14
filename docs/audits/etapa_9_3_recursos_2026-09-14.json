@@ -1,0 +1,29 @@
+{
+  "observation_utc": "2026-09-14T15:47:51.189744+00:00",
+  "memory_events": {
+    "low": 0,
+    "high": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 3,
+    "oom_group_kill": 0
+  },
+  "memory_current_bytes": 6564876288,
+  "memory_max": "max",
+  "parent": {
+    "pid": 3475,
+    "start_ticks": 20672733,
+    "utime": 2204,
+    "stime": 490
+  },
+  "worker": {
+    "pid": 64462,
+    "start_ticks": 21995365,
+    "utime": 781018,
+    "stime": 342403,
+    "VmHWM_kB": 6889960,
+    "VmRSS_kB": 6071412,
+    "threads": 103
+  },
+  "scope": "aggregate container cgroup counters; no per-run OOM attribution"
+}

@@ -1,0 +1,52 @@
+{
+  "created_utc": "2026-09-14T15:51:14.462123+00:00",
+  "stage_e9_2": "PARCIAL; proposal v2 pending approval",
+  "stage_e9_3": "IN_PROGRESS; no completed or verified TRAIN at observation",
+  "base_commit": "c83ea299331149a0b184fc8c001231aeb2900b46",
+  "functional_code_changed": false,
+  "new_coordinator_or_resume": false,
+  "learning_executed": false,
+  "test_opened": false,
+  "publication_changed": false,
+  "validation": "JSON and rational grid cardinality/constraints checked without predictions or candidate scoring; frozen ML source/config reference hashes unchanged",
+  "files": [
+    {
+      "path": "docs/science/e9_2/enmienda_aprendizaje_propuesta_v2.md",
+      "bytes": 6249,
+      "sha256": "fa3474550fa920327a406bbbe5650d5cbd61b1ba7ac2b4a6bff9a9b62038f5d6"
+    },
+    {
+      "path": "docs/science/e9_2/enmienda_aprendizaje_propuesta_v2.json",
+      "bytes": 3922,
+      "sha256": "518be15fb175ed2b36d078b42626ae7bf387d0e01c05ca22171e610db77aff22"
+    },
+    {
+      "path": "docs/audits/etapa_9_2_decision_usuario_2026-09-14.md",
+      "bytes": 2005,
+      "sha256": "a009370f012d02bf374cf66c087ab5931a8ef5adae68af05130fdab5029d77f2"
+    },
+    {
+      "path": "docs/audits/etapa_9_3_seguimiento_2026-09-14.md",
+      "bytes": 4688,
+      "sha256": "287b7e3f6d1da7ac08059a765da80c10b80c6b06c0f81079ddce45d587680538"
+    },
+    {
+      "path": "docs/audits/etapa_9_3_snapshot_2026-09-14.json",
+      "bytes": 307679,
+      "sha256": "88d7617529f7c6452a919061c4d64a844280d60ddea7767f9e7de1229b55dac1"
+    },
+    {
+      "path": "docs/audits/etapa_9_3_recursos_2026-09-14.json",
+      "bytes": 603,
+      "sha256": "671c977c6f24003db4e9cb0e42c9990ab6f6b6629c291200ad8314a41baeb339"
+    }
+  ],
+  "references": [
+    {
+      "path": "docs/audits/etapa_9_2_manifiesto_2026-09-14.json",
+      "bytes": 2901,
+      "sha256": "220782d6c2587b578187324e8b697827bd9a5ccdcdc1003341a57fa4cdc0157b"
+    }
+  ],
+  "excludes_self": true
+}

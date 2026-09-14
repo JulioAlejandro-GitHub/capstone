@@ -1,0 +1,81 @@
+{
+  "stage": "E9.2",
+  "decision": "PARCIAL",
+  "created_utc": "2026-09-14T15:14:14.018412+00:00",
+  "timezone": "America/Santiago",
+  "head": "c83ea299331149a0b184fc8c001231aeb2900b46",
+  "pending": [
+    "Fixed nonuniform weights and prior-to-combination justification",
+    "Approval of proposed individual principal and secondary ensemble contrasts"
+  ],
+  "activated": false,
+  "test_metrics_or_predictions_read": false,
+  "functional_code_changed": false,
+  "stage_e9_3_started": false,
+  "validation": "JSON parsed, proposal inactive, class mapping, seeds/architectures, decision fields, E9.1 deliverable hashes and ML reference hashes verified; weights absent and not approved",
+  "files": [
+    {
+      "path": "docs/audits/etapa_9_2_auditoria_2026-09-14.md",
+      "sha256": "258688065231093046bbe1c6462666787ff54fced8b95e2211d8c527885cbded",
+      "bytes": 8036
+    },
+    {
+      "path": "docs/science/e9_2/congelamiento_e9_5_v1.md",
+      "sha256": "dac616138c8b9590dfd4be659ad53d7bf3491cdec9b0d1faf021c888eea46938",
+      "bytes": 2500
+    },
+    {
+      "path": "docs/science/e9_2/enmienda_ponderado_propuesta_v1.json",
+      "sha256": "08dd537cc91ceac2449912bd4e6da528d8a83fdc873b1327bf70f08ed2cbabe8",
+      "bytes": 1459
+    },
+    {
+      "path": "docs/science/e9_2/historial_test_2026-09-14.md",
+      "sha256": "efba2b3c46a8a6874a6f33c0889fb5301768fde4734044c53fafe062703744bb",
+      "bytes": 3087
+    },
+    {
+      "path": "docs/science/e9_2/matriz_decisiones_v1.json",
+      "sha256": "1411b2ce2e21df991eec94fcbd4c9fdf455f7568dda360c5feaebb4f65d692b0",
+      "bytes": 4884
+    },
+    {
+      "path": "docs/science/e9_2/matriz_decisiones_v1.md",
+      "sha256": "1c3ad751b36d121d1d6070b9fae8763d0fa3dd0489263fd95e8b85f28c78c0cd",
+      "bytes": 3531
+    },
+    {
+      "path": "docs/science/e9_2/metadatos_2026-09-14.json",
+      "sha256": "3015905578fb76f49c649c97a56edd52a2dc4539da97af6619f52b4a14572d62",
+      "bytes": 36383
+    }
+  ],
+  "references": [
+    {
+      "path": "docs/audits/etapa_9_1_manifiesto_2026-09-14.json",
+      "sha256": "e28b16487405e887c8f738d99662458b06d285001611a936d00edeca40e2cb66",
+      "bytes": 4689
+    },
+    {
+      "path": "malaria_dl_local_project/configs/science/e7_v1.json",
+      "sha256": "f87405b4ac697b9e9f8068de9395e01cd8a9e3138217a6632c1e0a6048a606ab",
+      "bytes": 63033
+    },
+    {
+      "path": "malaria_dl_local_project/configs/science/e8_v1.json",
+      "sha256": "1fc8a77fe2cce659c6c564acf2e34853f18f3c4154aafb688b5adee548c26c0e",
+      "bytes": 1317
+    },
+    {
+      "path": "docs/science/protocolo_e7_v1.md",
+      "sha256": "0e3f57329844e7129c15ee549b1dc2f79985d5563211698d8c02157f29c927a1",
+      "bytes": 7835
+    },
+    {
+      "path": "docs/science/ensembles_e8_v1.md",
+      "sha256": "664efc24af6790f5f2de40392da18961a7e6e1854bb340faf538736ff9ecf412",
+      "bytes": 12180
+    }
+  ],
+  "excludes_self": true
+}

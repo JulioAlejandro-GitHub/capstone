@@ -1,0 +1,101 @@
+{
+  "version": "e9_2_validation_weight_learning_proposal_v2",
+  "created_utc": "2026-09-14T15:49:21.252393+00:00",
+  "status": "PROPOSED_NOT_APPROVED",
+  "active": false,
+  "supersedes_proposal": "docs/science/e9_2/enmienda_ponderado_propuesta_v1.json",
+  "approved_decisions": {
+    "principal": "individual selected by E7",
+    "ensembles": "secondary contrasts",
+    "uniform_weights": {
+      "custom_cnn": {
+        "numerator": 1,
+        "denominator": 3
+      },
+      "vgg16": {
+        "numerator": 1,
+        "denominator": 3
+      },
+      "densenet121": {
+        "numerator": 1,
+        "denominator": 3
+      }
+    }
+  },
+  "architectures": [
+    "custom_cnn",
+    "vgg16",
+    "densenet121"
+  ],
+  "optimizers": [
+    "adam",
+    "adamw",
+    "sgd",
+    "adadelta"
+  ],
+  "seeds": [
+    11,
+    29,
+    47
+  ],
+  "data": "VALIDATION only; existing sealed split unchanged",
+  "patient_partition": {
+    "version": "e9_2_val_roles_v1",
+    "seed": 7302,
+    "unit": "sealed clinical patient ID",
+    "strata": "patient label presence signature: 0, 1, or 0+1",
+    "ordering": "within stratum sort SHA256(UTF8(\"e9_2_val_roles_v1|7302|\" + canonical_patient_uuid)); tie patient UUID",
+    "allocation": "alternating sorted indices: even=fit, odd=comparison; same assignment for every optimizer and seed",
+    "proportion_target": "1:1",
+    "requirements": [
+      "no overlapping patient IDs",
+      "both labels present in each role",
+      "at least two patients per role",
+      "exact same samples for three members within each role"
+    ],
+    "on_failure": "BLOCK; no seed search or patient reassignment based on performance"
+  },
+  "weight_search": {
+    "per_optimizer_seed": true,
+    "grid": "(i/20,j/20,k/20), i,j,k nonnegative integers summing20; at least2 positive; add exact uniform(1/3,1/3,1/3)",
+    "candidate_count": 229,
+    "groups": 12,
+    "maximum_candidate_scores": 2748,
+    "objective": "minimize mean over fit patients of within-patient mean binary log loss",
+    "probability_clip_for_loss_only": 1e-07,
+    "loss_tie_absolute_tolerance": 1e-12,
+    "ties": [
+      "distance_squared_to_uniform smallest",
+      "lexicographic (custom_cnn,vgg16,densenet121) smallest"
+    ],
+    "random_search": false,
+    "restarts": 0,
+    "additional_candidates": 0,
+    "on_uniform_win": "report identical weights to uniform; do not force unequal solution"
+  },
+  "calibration": "none for members or ensemble",
+  "threshold": {
+    "role": "fit only",
+    "rule": "E7: sensitivity >0.98 then specificity then F2 then largest threshold; nonfeasible fallback and missing support as E7",
+    "search": "unique fit scores plus0,1 for selected weights only",
+    "baseline_fairness": "derive comparison-specific E7 thresholds on same fit patients for uniform and each member; preserve original E7 principal selection unchanged"
+  },
+  "comparison": {
+    "role": "comparison only",
+    "once_per_group": true,
+    "adaptive_selection": false,
+    "principal_selection": "never influenced by these secondary comparisons",
+    "uncertainty": "E7 patient bootstrap,1000 draws seed7301,minimum20 patients,95% valid; if insufficient report unavailable, never lower minimum"
+  },
+  "final_weights": "freeze selected fit weights and fit threshold; no refit on all VAL or comparison",
+  "test": "closed; proposal does not authorize TEST",
+  "existing_train_impact": "no changes/no repetition solely for output-weight learning; full VAL already used in checkpoint selection means comparison remains exploratory",
+  "activation_conditions": [
+    "explicit approval of this enmienda",
+    "versioned E8 learned-weight support and validators tested in authorized later stage",
+    "patient-role membership manifest and hashes frozen before prediction access for search",
+    "validated complete member evidence",
+    "prospective-to-weight-learning exposure record persisted"
+  ],
+  "chosen_weights": null
+}

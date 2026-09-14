@@ -1,0 +1,1137 @@
+{
+  "observed_utc": "2026-09-14T15:10:17.695893+00:00",
+  "snapshot": "2026-09-14 15:10:17.872640+00:00",
+  "campaign": {
+    "id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+    "state": "active",
+    "contract_hash": "02a63b0c76dc600bcb17c7163699abf7dd4e5579643b6adbc783f50d30fcf1ba",
+    "environment": {
+      "python": "3.12.14",
+      "packages": {
+        "keras": "3.15.1",
+        "numpy": "1.26.4",
+        "psycopg": "3.3.5",
+        "SQLAlchemy": "2.0.52"
+      },
+      "git_commit": null,
+      "tensorflow": "2.17.1",
+      "source_sha256": "d8569d8faaa80eca42b130e6096203d851e2c663b4cdb8cd599dda950fbe6430",
+      "determinism_environment": {
+        "PYTHONHASHSEED": "42",
+        "TF_DETERMINISTIC_OPS": null
+      }
+    }
+  },
+  "contract_hash_matches": true,
+  "e7_configuration_hashes_match": true,
+  "seeds": [
+    11,
+    29,
+    47
+  ],
+  "members": [
+    {
+      "id": "ae6cc2bb-c48d-4c76-b9c5-90502afac7fe",
+      "configuration_hash": "9caaac5ec278e315c7af400729920b93e348af752ae24eedff40cb72893bb2b0",
+      "seed": 47,
+      "state": "active"
+    },
+    {
+      "id": "2fbd5862-b68b-4845-9445-a30d7ec61382",
+      "configuration_hash": "9caaac5ec278e315c7af400729920b93e348af752ae24eedff40cb72893bb2b0",
+      "seed": 11,
+      "state": "failed"
+    },
+    {
+      "id": "effa8851-52ce-419f-8c72-59aa8ac739f4",
+      "configuration_hash": "8186ad70d6d0426cbdeca79ed2f2ba440c7a1bae77fe80381b9d1cc4037a51df",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "6be69e51-c956-4a2a-97b8-0293e4780dbe",
+      "configuration_hash": "8186ad70d6d0426cbdeca79ed2f2ba440c7a1bae77fe80381b9d1cc4037a51df",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "e1ceb448-195a-4b80-9c96-a4e67734e16a",
+      "configuration_hash": "8186ad70d6d0426cbdeca79ed2f2ba440c7a1bae77fe80381b9d1cc4037a51df",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "da652973-fb5c-4cfe-92a7-393c92010bff",
+      "configuration_hash": "ee248704e9bcd7fe011c5cdba0cf46044e68480740f06fbb70f49ac2add6947f",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "48f036da-ad4e-47e1-af82-c1624ee042d6",
+      "configuration_hash": "9caaac5ec278e315c7af400729920b93e348af752ae24eedff40cb72893bb2b0",
+      "seed": 29,
+      "state": "failed"
+    },
+    {
+      "id": "481c1b88-83d2-40c0-9209-c10c226d36f4",
+      "configuration_hash": "ee248704e9bcd7fe011c5cdba0cf46044e68480740f06fbb70f49ac2add6947f",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "46bcb7fa-ee2f-457f-95fa-3d71c5d1de92",
+      "configuration_hash": "ee248704e9bcd7fe011c5cdba0cf46044e68480740f06fbb70f49ac2add6947f",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "332d0f6d-cd5c-46a4-be01-e1b9aab6c116",
+      "configuration_hash": "f9341377ddd1dc334f6a307e131c9df3784d7a621b9a24a11d61770b27a8aa8e",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "2adccda7-a9ee-40f7-8704-67a202e0a80c",
+      "configuration_hash": "f9341377ddd1dc334f6a307e131c9df3784d7a621b9a24a11d61770b27a8aa8e",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "111f7197-e4f7-49bb-a5da-58cd1461cbd2",
+      "configuration_hash": "f9341377ddd1dc334f6a307e131c9df3784d7a621b9a24a11d61770b27a8aa8e",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "555d58d4-4821-4cb6-b43a-1d9f66e36c6c",
+      "configuration_hash": "dd022b0b646fb88d6271c31e685bfabf3dfac41464140255c64f9460edb0c3c3",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "3898b92d-f3d7-4863-93b2-4fb054c542b7",
+      "configuration_hash": "dd022b0b646fb88d6271c31e685bfabf3dfac41464140255c64f9460edb0c3c3",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "305c153b-821d-4c31-a6aa-cc4c0bd1ec94",
+      "configuration_hash": "dd022b0b646fb88d6271c31e685bfabf3dfac41464140255c64f9460edb0c3c3",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "cfe368f3-3adc-4def-b893-0ac23cfd4c82",
+      "configuration_hash": "eec0b6c18a17904eb089f761850805fdf8a70fb723f995cd5c572c2feb6fd8eb",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "b0ffb6fe-53e2-4420-9759-870eb8e2fa77",
+      "configuration_hash": "eec0b6c18a17904eb089f761850805fdf8a70fb723f995cd5c572c2feb6fd8eb",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "1587e852-dff5-4c64-a6e2-c57f86457d33",
+      "configuration_hash": "eec0b6c18a17904eb089f761850805fdf8a70fb723f995cd5c572c2feb6fd8eb",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "0cd9cfc3-d5f4-44aa-9036-b9f7c549fba6",
+      "configuration_hash": "f40beedcd9496e20b13bdcb2669e188bced8d57e974c15e2afd2911aea4a4d34",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "6ef48d0e-40df-496b-a19b-da45ea19a7f4",
+      "configuration_hash": "f40beedcd9496e20b13bdcb2669e188bced8d57e974c15e2afd2911aea4a4d34",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "a591fbc3-bd32-421b-bb2f-b3dc5217e99c",
+      "configuration_hash": "f40beedcd9496e20b13bdcb2669e188bced8d57e974c15e2afd2911aea4a4d34",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "1799d954-1042-4096-8208-c18e6ba5f06c",
+      "configuration_hash": "f52eb6b3ad40b1f571e02cfa4adf6874aae67560d26430ce0f23bc7c3d815219",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "ac84826f-0d5b-48f3-a511-192ac4e1da50",
+      "configuration_hash": "f52eb6b3ad40b1f571e02cfa4adf6874aae67560d26430ce0f23bc7c3d815219",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "1477c7f5-884d-45ad-8ac5-ca694125eb41",
+      "configuration_hash": "f52eb6b3ad40b1f571e02cfa4adf6874aae67560d26430ce0f23bc7c3d815219",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "cda79eea-7313-44b9-9a20-07188f6cf603",
+      "configuration_hash": "7d982b2ee53e8868955660c20fcc942ecf80201f6e5b608b215b4ee55575103b",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "33921d5b-53f5-4899-8246-0efae7573f82",
+      "configuration_hash": "7d982b2ee53e8868955660c20fcc942ecf80201f6e5b608b215b4ee55575103b",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "e6d0d9a6-96cc-43bd-a0fe-c50a285febc6",
+      "configuration_hash": "7d982b2ee53e8868955660c20fcc942ecf80201f6e5b608b215b4ee55575103b",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "2e5bada2-a3df-41ef-ad0f-724f22ae2f38",
+      "configuration_hash": "7c4b969b0b2a45c6b5fa71e2901ac5347cc4d5a44b43c222dd29efc7f6ac5a1c",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "af6c53e1-fd81-4b6e-bc33-a218f3419b46",
+      "configuration_hash": "7c4b969b0b2a45c6b5fa71e2901ac5347cc4d5a44b43c222dd29efc7f6ac5a1c",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "c4741856-79f8-414a-9262-f632ef578b73",
+      "configuration_hash": "7c4b969b0b2a45c6b5fa71e2901ac5347cc4d5a44b43c222dd29efc7f6ac5a1c",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "3021aa82-713d-4c67-a37a-f127623e6c4f",
+      "configuration_hash": "a74f108be74b2c151678f9801782489099f51cf7445b9f1c7ae5ea16b6a370f9",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "eb8ba6dc-00bf-4f4d-8b9c-9d1665019ccc",
+      "configuration_hash": "a74f108be74b2c151678f9801782489099f51cf7445b9f1c7ae5ea16b6a370f9",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "3ce3b53d-6f24-4976-9c75-09674d581325",
+      "configuration_hash": "a74f108be74b2c151678f9801782489099f51cf7445b9f1c7ae5ea16b6a370f9",
+      "seed": 47,
+      "state": "pending"
+    },
+    {
+      "id": "4905eb35-085c-4fbc-870d-f23b149e167d",
+      "configuration_hash": "cbb96f7ac059cf71953c87d7234471394afa829ee0c5289adfee6a77f6e20d87",
+      "seed": 11,
+      "state": "pending"
+    },
+    {
+      "id": "9bf0572c-ff6c-42f7-9cad-88de4339c65d",
+      "configuration_hash": "cbb96f7ac059cf71953c87d7234471394afa829ee0c5289adfee6a77f6e20d87",
+      "seed": 29,
+      "state": "pending"
+    },
+    {
+      "id": "229d6d38-1ce5-406f-b99c-46dc1d9e6ae8",
+      "configuration_hash": "cbb96f7ac059cf71953c87d7234471394afa829ee0c5289adfee6a77f6e20d87",
+      "seed": 47,
+      "state": "pending"
+    }
+  ],
+  "test_metadata": [
+    {
+      "id": "6668037e-fb33-4074-ba2a-acaf8fb26ec6",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:38:52.424508+00:00",
+      "finished_at": "2026-07-25 10:40:01.024566+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "19b11953-561e-40ea-bd72-22033fd3c684"
+    },
+    {
+      "id": "e8906571-9053-4007-91b7-df407aef7009",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:40:04.093904+00:00",
+      "finished_at": "2026-07-25 10:41:12.575542+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "291d3e64-a9bf-4bff-8b0a-88f31cdb7cc2"
+    },
+    {
+      "id": "6e123c38-ebc6-4efa-923e-91444ae44f5d",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:41:15.488415+00:00",
+      "finished_at": "2026-07-25 10:42:20.723867+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "3c24335a-ef54-4edc-a7fa-a967407471cc"
+    },
+    {
+      "id": "26017e5e-737a-4ebe-84f7-de5eaf04f5f8",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:42:23.648050+00:00",
+      "finished_at": "2026-07-25 10:43:33.401344+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "48746621-b427-4bfa-9598-949fb565aa51"
+    },
+    {
+      "id": "f6e128ae-17b9-4183-92fc-28822797d3ee",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:43:36.292898+00:00",
+      "finished_at": "2026-07-25 10:44:51.546924+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "493ff423-8091-478b-8776-fba3cb24fc6d"
+    },
+    {
+      "id": "da0e92e8-51b5-4ffe-a487-5f62fbfa9293",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:44:54.862915+00:00",
+      "finished_at": "2026-07-25 10:46:09.217409+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "4cc4b3d8-0703-4cde-8e32-81cfff44f8f3"
+    },
+    {
+      "id": "d4b8762b-28b0-44ec-9230-5a86c8431154",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:46:12.614057+00:00",
+      "finished_at": "2026-07-25 10:47:14.374498+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "7359721a-1b9a-4f48-a3cd-855825bfffdf"
+    },
+    {
+      "id": "0799c884-e7a4-4ddd-b3a8-0ba103dbde1c",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:49:27.064013+00:00",
+      "finished_at": "2026-07-25 10:50:31.119882+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "b98fd4c3-b68a-4765-8eac-2af432d9ee71"
+    },
+    {
+      "id": "083734a8-8aba-4311-9c7f-e5ad081ed203",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:47:17.354356+00:00",
+      "finished_at": "2026-07-25 10:48:23.903529+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "b2f1741b-7bcb-4e57-b0c5-53ef9b291254"
+    },
+    {
+      "id": "9d4bc4a3-e53b-4ab1-808a-8dde43392ce4",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:50:34.115167+00:00",
+      "finished_at": "2026-07-25 10:51:52.018139+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "bbf6e9e8-d571-4121-8c32-71d84fa68ac7"
+    },
+    {
+      "id": "b52ae699-7bc1-4696-b0e6-a3c63b3fd2fa",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:51:55.339927+00:00",
+      "finished_at": "2026-07-25 10:53:09.581210+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "bd4a930e-bea7-4e4d-b367-2c5a241498e3"
+    },
+    {
+      "id": "95de0841-0c42-4da2-b43c-46a31dc89bb9",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-07-25 10:48:26.862548+00:00",
+      "finished_at": "2026-07-25 10:49:24.095454+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "b6c1e2b9-9518-4d7c-9772-5827e2499bcb"
+    },
+    {
+      "id": "3459bfc9-78db-40c7-ae27-fc96ca688ade",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:02:30.027805+00:00",
+      "finished_at": "2026-08-19 10:03:40.354606+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "01671e58-3015-4a69-9e10-20ae219d4c6e"
+    },
+    {
+      "id": "9359d339-0dc7-4aeb-a705-30ace8f869b0",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:03:44.400819+00:00",
+      "finished_at": "2026-08-19 10:04:56.645898+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "054ecfb2-981a-4b65-b30a-5ac12c348f4c"
+    },
+    {
+      "id": "afdc9073-ca86-428e-8cba-fb3715b34e66",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:05:00.372668+00:00",
+      "finished_at": "2026-08-19 10:06:03.112315+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "4aae05df-9615-4e61-b721-83f647913985"
+    },
+    {
+      "id": "c67e2867-950e-48b8-bf12-a8dda19f441a",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:07:08.043599+00:00",
+      "finished_at": "2026-08-19 10:08:11.241485+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "53d70536-e9a8-4964-a8bf-67ac53a07550"
+    },
+    {
+      "id": "7f58e25c-e92c-4975-883d-c51c01ee9380",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:06:06.286159+00:00",
+      "finished_at": "2026-08-19 10:07:04.803639+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "4e4e6731-6e93-4f1f-938b-ecbbb783f454"
+    },
+    {
+      "id": "85b9888f-8053-46b0-8909-1de2e1478c82",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:08:14.484557+00:00",
+      "finished_at": "2026-08-19 10:09:24.905427+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "57e852a5-b01a-4347-a529-377deaa1392b"
+    },
+    {
+      "id": "243b1d73-8bae-4a23-a92d-ae2d4b15de31",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:09:28.787372+00:00",
+      "finished_at": "2026-08-19 10:10:26.646245+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "623ad00c-0b03-4cf0-8f2c-bb9496efb496"
+    },
+    {
+      "id": "d3a15d96-ff1f-4350-bcb8-f68fd8ed2abb",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:10:29.891566+00:00",
+      "finished_at": "2026-08-19 10:11:40.350378+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "681b7b0a-05c1-446a-b8ad-1e1484583703"
+    },
+    {
+      "id": "ed7515da-964b-458b-aaa9-156f167ff41a",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:11:44.317474+00:00",
+      "finished_at": "2026-08-19 10:12:41.520767+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "a67a6210-7e65-455a-82f4-3dd73c128443"
+    },
+    {
+      "id": "07aafc46-dbce-4c04-9d40-1d704d3f597d",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:12:44.931278+00:00",
+      "finished_at": "2026-08-19 10:13:43.572517+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "c72afbaf-5c99-4952-8fe7-579e72f15e7e"
+    },
+    {
+      "id": "3274ef25-ed17-4fd2-9651-f04388a4f638",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:13:46.881870+00:00",
+      "finished_at": "2026-08-19 10:14:48.748852+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "ede474d8-23c5-4592-98be-bee8d7555988"
+    },
+    {
+      "id": "aacc869f-4f7e-4bd2-90e9-045c6a987f65",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 10:14:52.096110+00:00",
+      "finished_at": "2026-08-19 10:15:55.383233+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_training_run_id": "f19ca708-8fb2-47f8-b4aa-64d8c842f91d"
+    },
+    {
+      "id": "f8fe271c-13d3-4559-a071-35b83c89c07b",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:23:11.522283+00:00",
+      "finished_at": "2026-08-19 00:24:08.882976+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "3c24335a-ef54-4edc-a7fa-a967407471cc"
+    },
+    {
+      "id": "d8a212c7-a087-4353-9e26-0dda68cbf266",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:29:28.909282+00:00",
+      "finished_at": "2026-08-19 00:30:27.934071+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "b6c1e2b9-9518-4d7c-9772-5827e2499bcb"
+    },
+    {
+      "id": "cc030d50-cb3a-48d4-a998-e3e2756cd514",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:26:21.682787+00:00",
+      "finished_at": "2026-08-19 00:27:27.019466+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "4cc4b3d8-0703-4cde-8e32-81cfff44f8f3"
+    },
+    {
+      "id": "1b58fc36-fc34-41c3-8ee8-6bd3c7a22955",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:21:20.462992+00:00",
+      "finished_at": "2026-08-19 00:22:08.015552+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "19b11953-561e-40ea-bd72-22033fd3c684"
+    },
+    {
+      "id": "59d97bfa-d8e4-4817-9b01-ad06ac0d475e",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:22:11.421010+00:00",
+      "finished_at": "2026-08-19 00:23:08.262953+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "291d3e64-a9bf-4bff-8b0a-88f31cdb7cc2"
+    },
+    {
+      "id": "5ac5a105-6b9b-4387-8647-1d725eecf28e",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:24:12.033025+00:00",
+      "finished_at": "2026-08-19 00:25:10.811219+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "48746621-b427-4bfa-9598-949fb565aa51"
+    },
+    {
+      "id": "20dee1c2-a825-4acc-866d-903852957b86",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:25:13.953533+00:00",
+      "finished_at": "2026-08-19 00:26:18.116802+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "493ff423-8091-478b-8776-fba3cb24fc6d"
+    },
+    {
+      "id": "3d9b598f-27fc-4439-9002-b2c74e22ea60",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:27:30.594302+00:00",
+      "finished_at": "2026-08-19 00:28:27.425653+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "7359721a-1b9a-4f48-a3cd-855825bfffdf"
+    },
+    {
+      "id": "addcc6c7-9caf-4f41-b9e7-5d272737991a",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:28:30.548648+00:00",
+      "finished_at": "2026-08-19 00:29:25.777083+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "b2f1741b-7bcb-4e57-b0c5-53ef9b291254"
+    },
+    {
+      "id": "c4db0383-5b06-4d65-9c61-c8a7900e4e6b",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:32:40.954882+00:00",
+      "finished_at": "2026-08-19 00:33:47.401564+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "bd4a930e-bea7-4e4d-b367-2c5a241498e3"
+    },
+    {
+      "id": "9b39ba5e-be0d-4f82-a06b-7939427698c5",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:30:31.021838+00:00",
+      "finished_at": "2026-08-19 00:31:28.270816+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "b98fd4c3-b68a-4765-8eac-2af432d9ee71"
+    },
+    {
+      "id": "74f7060f-b770-4243-b350-ab8cc19f2275",
+      "run_type": "evaluation",
+      "status": "completed",
+      "created_at": "2026-08-19 00:31:31.372827+00:00",
+      "finished_at": "2026-08-19 00:32:37.202364+00:00",
+      "split": null,
+      "dataset_split": null,
+      "purpose": null,
+      "dataset_version_id": null,
+      "source_training_run_id": "bbf6e9e8-d571-4121-8c32-71d84fa68ac7"
+    }
+  ],
+  "assessment_metadata": [],
+  "ensemble_configuration_events": [],
+  "final_locks": [],
+  "artifact_metadata": [
+    {
+      "run_id": "6668037e-fb33-4074-ba2a-acaf8fb26ec6",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "6668037e-fb33-4074-ba2a-acaf8fb26ec6",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "6668037e-fb33-4074-ba2a-acaf8fb26ec6",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "e8906571-9053-4007-91b7-df407aef7009",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "e8906571-9053-4007-91b7-df407aef7009",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "e8906571-9053-4007-91b7-df407aef7009",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "6e123c38-ebc6-4efa-923e-91444ae44f5d",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "6e123c38-ebc6-4efa-923e-91444ae44f5d",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "6e123c38-ebc6-4efa-923e-91444ae44f5d",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "26017e5e-737a-4ebe-84f7-de5eaf04f5f8",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "26017e5e-737a-4ebe-84f7-de5eaf04f5f8",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "26017e5e-737a-4ebe-84f7-de5eaf04f5f8",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "f6e128ae-17b9-4183-92fc-28822797d3ee",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "f6e128ae-17b9-4183-92fc-28822797d3ee",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "f6e128ae-17b9-4183-92fc-28822797d3ee",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "da0e92e8-51b5-4ffe-a487-5f62fbfa9293",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "da0e92e8-51b5-4ffe-a487-5f62fbfa9293",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "da0e92e8-51b5-4ffe-a487-5f62fbfa9293",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "d4b8762b-28b0-44ec-9230-5a86c8431154",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "d4b8762b-28b0-44ec-9230-5a86c8431154",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "d4b8762b-28b0-44ec-9230-5a86c8431154",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "083734a8-8aba-4311-9c7f-e5ad081ed203",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "083734a8-8aba-4311-9c7f-e5ad081ed203",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "083734a8-8aba-4311-9c7f-e5ad081ed203",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "95de0841-0c42-4da2-b43c-46a31dc89bb9",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "95de0841-0c42-4da2-b43c-46a31dc89bb9",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "95de0841-0c42-4da2-b43c-46a31dc89bb9",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "0799c884-e7a4-4ddd-b3a8-0ba103dbde1c",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "0799c884-e7a4-4ddd-b3a8-0ba103dbde1c",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "0799c884-e7a4-4ddd-b3a8-0ba103dbde1c",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "9d4bc4a3-e53b-4ab1-808a-8dde43392ce4",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "9d4bc4a3-e53b-4ab1-808a-8dde43392ce4",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "9d4bc4a3-e53b-4ab1-808a-8dde43392ce4",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "b52ae699-7bc1-4696-b0e6-a3c63b3fd2fa",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "b52ae699-7bc1-4696-b0e6-a3c63b3fd2fa",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "b52ae699-7bc1-4696-b0e6-a3c63b3fd2fa",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "1b58fc36-fc34-41c3-8ee8-6bd3c7a22955",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "1b58fc36-fc34-41c3-8ee8-6bd3c7a22955",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "1b58fc36-fc34-41c3-8ee8-6bd3c7a22955",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "59d97bfa-d8e4-4817-9b01-ad06ac0d475e",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "59d97bfa-d8e4-4817-9b01-ad06ac0d475e",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "59d97bfa-d8e4-4817-9b01-ad06ac0d475e",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "f8fe271c-13d3-4559-a071-35b83c89c07b",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "f8fe271c-13d3-4559-a071-35b83c89c07b",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "f8fe271c-13d3-4559-a071-35b83c89c07b",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "5ac5a105-6b9b-4387-8647-1d725eecf28e",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "5ac5a105-6b9b-4387-8647-1d725eecf28e",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "5ac5a105-6b9b-4387-8647-1d725eecf28e",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "20dee1c2-a825-4acc-866d-903852957b86",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "20dee1c2-a825-4acc-866d-903852957b86",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "20dee1c2-a825-4acc-866d-903852957b86",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "cc030d50-cb3a-48d4-a998-e3e2756cd514",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "cc030d50-cb3a-48d4-a998-e3e2756cd514",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "cc030d50-cb3a-48d4-a998-e3e2756cd514",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "3d9b598f-27fc-4439-9002-b2c74e22ea60",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "3d9b598f-27fc-4439-9002-b2c74e22ea60",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "3d9b598f-27fc-4439-9002-b2c74e22ea60",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "addcc6c7-9caf-4f41-b9e7-5d272737991a",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "addcc6c7-9caf-4f41-b9e7-5d272737991a",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "addcc6c7-9caf-4f41-b9e7-5d272737991a",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "d8a212c7-a087-4353-9e26-0dda68cbf266",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "d8a212c7-a087-4353-9e26-0dda68cbf266",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "d8a212c7-a087-4353-9e26-0dda68cbf266",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "9b39ba5e-be0d-4f82-a06b-7939427698c5",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "9b39ba5e-be0d-4f82-a06b-7939427698c5",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "9b39ba5e-be0d-4f82-a06b-7939427698c5",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "74f7060f-b770-4243-b350-ab8cc19f2275",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "74f7060f-b770-4243-b350-ab8cc19f2275",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "74f7060f-b770-4243-b350-ab8cc19f2275",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "c4db0383-5b06-4d65-9c61-c8a7900e4e6b",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "c4db0383-5b06-4d65-9c61-c8a7900e4e6b",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "c4db0383-5b06-4d65-9c61-c8a7900e4e6b",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "3459bfc9-78db-40c7-ae27-fc96ca688ade",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "3459bfc9-78db-40c7-ae27-fc96ca688ade",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "3459bfc9-78db-40c7-ae27-fc96ca688ade",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "9359d339-0dc7-4aeb-a705-30ace8f869b0",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "9359d339-0dc7-4aeb-a705-30ace8f869b0",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "9359d339-0dc7-4aeb-a705-30ace8f869b0",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "afdc9073-ca86-428e-8cba-fb3715b34e66",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "afdc9073-ca86-428e-8cba-fb3715b34e66",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "afdc9073-ca86-428e-8cba-fb3715b34e66",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "7f58e25c-e92c-4975-883d-c51c01ee9380",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "7f58e25c-e92c-4975-883d-c51c01ee9380",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "7f58e25c-e92c-4975-883d-c51c01ee9380",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "c67e2867-950e-48b8-bf12-a8dda19f441a",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "c67e2867-950e-48b8-bf12-a8dda19f441a",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "c67e2867-950e-48b8-bf12-a8dda19f441a",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "85b9888f-8053-46b0-8909-1de2e1478c82",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "85b9888f-8053-46b0-8909-1de2e1478c82",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "85b9888f-8053-46b0-8909-1de2e1478c82",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "243b1d73-8bae-4a23-a92d-ae2d4b15de31",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "243b1d73-8bae-4a23-a92d-ae2d4b15de31",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "243b1d73-8bae-4a23-a92d-ae2d4b15de31",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "d3a15d96-ff1f-4350-bcb8-f68fd8ed2abb",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "d3a15d96-ff1f-4350-bcb8-f68fd8ed2abb",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "d3a15d96-ff1f-4350-bcb8-f68fd8ed2abb",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "ed7515da-964b-458b-aaa9-156f167ff41a",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "ed7515da-964b-458b-aaa9-156f167ff41a",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "ed7515da-964b-458b-aaa9-156f167ff41a",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "07aafc46-dbce-4c04-9d40-1d704d3f597d",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "07aafc46-dbce-4c04-9d40-1d704d3f597d",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "07aafc46-dbce-4c04-9d40-1d704d3f597d",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "3274ef25-ed17-4fd2-9651-f04388a4f638",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "3274ef25-ed17-4fd2-9651-f04388a4f638",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "3274ef25-ed17-4fd2-9651-f04388a4f638",
+      "name": "best_model_predictions.csv"
+    },
+    {
+      "run_id": "aacc869f-4f7e-4bd2-90e9-045c6a987f65",
+      "name": "best_model_confusion_matrix.csv"
+    },
+    {
+      "run_id": "aacc869f-4f7e-4bd2-90e9-045c6a987f65",
+      "name": "best_model_metrics.json"
+    },
+    {
+      "run_id": "aacc869f-4f7e-4bd2-90e9-045c6a987f65",
+      "name": "best_model_predictions.csv"
+    }
+  ],
+  "current_environment": {
+    "git_commit": null,
+    "source_sha256": "d8569d8faaa80eca42b130e6096203d851e2c663b4cdb8cd599dda950fbe6430",
+    "python": "3.12.14",
+    "tensorflow": "2.17.1",
+    "determinism_environment": {
+      "TF_DETERMINISTIC_OPS": null,
+      "PYTHONHASHSEED": "42"
+    },
+    "packages": {
+      "keras": "3.15.1",
+      "numpy": "1.26.4",
+      "SQLAlchemy": "2.0.52",
+      "psycopg": "3.3.5"
+    }
+  }
+}
