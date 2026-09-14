@@ -1,0 +1,90 @@
+{
+  "created_utc": "2026-09-14T16:46:29.823139+00:00",
+  "stage": "E9.3",
+  "status": "EN SEGUIMIENTO; not approved",
+  "snapshot_utc": "2026-09-14 16:44:18.662913+00:00",
+  "head": "44ccb536eaab52f940c4fd9e672479457aa5d7cb",
+  "members": {
+    "failed": 3,
+    "active": 1,
+    "pending": 32
+  },
+  "expected": 36,
+  "attempts": 4,
+  "verified": 0,
+  "source_changed": false,
+  "patch_applied": false,
+  "coordinators_started": 0,
+  "retries_started_by_assistant": 0,
+  "completed_train_verifications": 0,
+  "failed_checkpoint_hashes_verified": 17,
+  "candidate_patch_synthetic_tests": 3,
+  "publication_unchanged": true,
+  "test_opened": false,
+  "stage_e9_4_started": false,
+  "files": [
+    {
+      "path": "docs/audits/e9_3_diagnostico_2026-09-14/auditoria_entrenamiento.md",
+      "sha256": "6eb67b41bc9652bb1f14b61163ae7293ed98067ce8a9d4fe1b71214d9f565a99",
+      "bytes": 10029
+    },
+    {
+      "path": "docs/audits/e9_3_diagnostico_2026-09-14/checkpoints_fallidos.json",
+      "sha256": "a8721e048b0ed7353a2dd431b106ad8d7fef81def91682f351652dc97e065aac",
+      "bytes": 3704
+    },
+    {
+      "path": "docs/audits/e9_3_diagnostico_2026-09-14/prueba_parche_preparado.py",
+      "sha256": "aeb955fc2bbc39887b03d9b9cb4602f35f2a886e7d4099659af0903bdd5b904e",
+      "bytes": 10204
+    },
+    {
+      "path": "docs/audits/e9_3_diagnostico_2026-09-14/recursos_y_eventos.json",
+      "sha256": "0c46958d2a6d1730239431128677e99289cc16af0b443f528e7f0f31c79721e8",
+      "bytes": 527
+    },
+    {
+      "path": "docs/audits/e9_3_diagnostico_2026-09-14/retener_exit_code.patch",
+      "sha256": "ea6c1577dafa493ce0471ea1067c3cc81173bdc5d094755a670cfa424c642a0c",
+      "bytes": 564
+    },
+    {
+      "path": "docs/audits/e9_3_diagnostico_2026-09-14/snapshot_final_sesion.json",
+      "sha256": "201ede9f31cc77225156fe69f63cc4338197f0cb78aced3d14e19169449892b2",
+      "bytes": 310814
+    },
+    {
+      "path": "docs/audits/e9_3_diagnostico_2026-09-14/snapshot_inicial.json",
+      "sha256": "4fe2bc2e5c38716fae4c57480dae45957abdeae514a794f22661ed6e7ef713f0",
+      "bytes": 310814
+    }
+  ],
+  "references": [
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/campaign.py",
+      "sha256": "d073f7b25d9d078f7d6efe9ba3af1311d93159127ac8c39f58ce474f88d05b23",
+      "bytes": 8683
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/train.py",
+      "sha256": "3f37499a52489d27fe2b89fd32c99a59d6fa0f750abd3577bad6fa0156b37788",
+      "bytes": 11176
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/worker.py",
+      "sha256": "5dc1aadd272a99ab3a62fbd504ae7dce063bd30878bd8c9e83bd900bdf829764",
+      "bytes": 2575
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/repository.py",
+      "sha256": "99f657c8f431dac88a2a2f22a5cfe17eb271bb11c6879519606eda1095512ddd",
+      "bytes": 15407
+    },
+    {
+      "path": "malaria_dl_local_project/configs/science/e7_v1.json",
+      "sha256": "f87405b4ac697b9e9f8068de9395e01cd8a9e3138217a6632c1e0a6048a606ab",
+      "bytes": 63033
+    }
+  ],
+  "excludes_self": true
+}

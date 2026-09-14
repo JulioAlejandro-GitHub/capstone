@@ -1,0 +1,19 @@
+{
+  "utc": "2026-09-14T16:41:31.330216+00:00",
+  "cgroup_memory_current_bytes": 6492561408,
+  "oom_kill": 3,
+  "oom": 0,
+  "worker_pid": 64462,
+  "worker_VmRSS_kB": 6165600,
+  "worker_VmHWM_kB": 6889960,
+  "worker_VmSwap_kB": 652756,
+  "threads": 103,
+  "kernel_log_access": false,
+  "docker_oom_events": {
+    "since": "2026-09-14T11:40:00Z",
+    "until": "2026-09-14T16:41:00Z",
+    "returned": 0,
+    "scope": "retained Docker events; empty result is not proof of no OOM"
+  },
+  "per_run_oom_attribution_confirmed": false
+}

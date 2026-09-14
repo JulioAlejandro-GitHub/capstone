@@ -1,0 +1,11 @@
+--- a/malaria_dl_local_project/src/malaria_dl/execution/campaign.py
++++ b/malaria_dl_local_project/src/malaria_dl/execution/campaign.py
+@@ -192,7 +192,7 @@
+                         session["run_id"],
+                         owner,
+                         "failed",
+-                        cause="CHILD_EXIT_OR_INCOMPLETE_RESULTS",
++                        cause=(f"CHILD_EXIT_{code}" if code != 0 else "CHILD_EXIT_0_INCOMPLETE_RESULTS"),
+                     )
+                     continue
+                 check(repository, repository.get(campaign_id), root)
