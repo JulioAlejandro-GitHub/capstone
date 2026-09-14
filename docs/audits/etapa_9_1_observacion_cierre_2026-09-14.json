@@ -1,0 +1,51 @@
+{
+  "process_utc": "2026-09-14T12:25:34.067417+00:00",
+  "host": "3dba8e7dcf1b",
+  "processes": [
+    {
+      "pid": 3475,
+      "exists": true,
+      "state": "S",
+      "utime": "884",
+      "stime": "168",
+      "start_ticks": "20672733",
+      "campaign_id_in_cmdline": true,
+      "run_id_in_cmdline": false
+    },
+    {
+      "pid": 3483,
+      "exists": true,
+      "state": "S",
+      "utime": "1111260",
+      "stime": "1902305",
+      "start_ticks": "20674229",
+      "campaign_id_in_cmdline": false,
+      "run_id_in_cmdline": true
+    }
+  ],
+  "publication_utc": "2026-09-14 12:25:34.323171+00:00",
+  "publications": [
+    {
+      "id": "81d69942-17eb-4999-a6bd-2b05779a65a4",
+      "datasource": "malaria",
+      "scope": "stage2",
+      "training_run_id": "623ad00c-0b03-4cf0-8f2c-bb9496efb496",
+      "evaluation_run_id": "243b1d73-8bae-4a23-a92d-ae2d4b15de31",
+      "model_version_id": "172b7031-9f79-44e3-a7ad-2dc10a9ffd08",
+      "checkpoint_artifact_id": "44577ce0-1a80-4971-9f3d-bd78d2a63bf4",
+      "status": "active",
+      "is_active": true
+    }
+  ],
+  "deployments": [
+    {
+      "id": "cf2f20d3-a1e0-499c-b5ab-501b7c1ae198",
+      "model_version_id": "172b7031-9f79-44e3-a7ad-2dc10a9ffd08",
+      "status": "active",
+      "environment": "stage2",
+      "alias": "default",
+      "training_run_id": "623ad00c-0b03-4cf0-8f2c-bb9496efb496",
+      "checkpoint_artifact_id": "44577ce0-1a80-4971-9f3d-bd78d2a63bf4"
+    }
+  ]
+}

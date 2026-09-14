@@ -102,5 +102,8 @@ def build_optimizer(optimizer_name="adam", learning_rate=1e-4, *, config=None):
         optimizer_name,
         config if config is not None else {"learning_rate": learning_rate},
     )
+    # PostgreSQL JSONB reads integral JSON numbers (e.g. 1.0) as int.
+    # Keras requires a float here; preserve the frozen numeric value.
+    values["learning_rate"] = float(values["learning_rate"])
     classes = dict(adam="Adam", adamw="AdamW", sgd="SGD", adadelta="Adadelta")
     return getattr(tf.keras.optimizers, classes[optimizer_name])(**values)

@@ -25,15 +25,21 @@ def planning_environment():
                 ).hexdigest()
     for p in sorted(root.glob("run_*.py")):
         files[p.name] = hashlib.sha256(p.read_bytes()).hexdigest()
-    result = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    # Runtime images may omit git. The file digest remains the execution
+    # identity; an unavailable Git revision must never be invented.
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        git_commit = result.stdout.strip() if result.returncode == 0 else None
+    except FileNotFoundError:
+        git_commit = None
     return {
-        "git_commit": result.stdout.strip() if result.returncode == 0 else None,
+        "git_commit": git_commit,
         "source_sha256": hashlib.sha256(
             json.dumps(files, sort_keys=True).encode()
         ).hexdigest(),

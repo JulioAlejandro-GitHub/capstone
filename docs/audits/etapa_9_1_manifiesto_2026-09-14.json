@@ -1,0 +1,133 @@
+{
+  "stage": "E9.1",
+  "decision": "APROBADA: conciliación y plan condicionado; no reanudación ejecutada",
+  "created_utc": "2026-09-14T12:29:20.561672+00:00",
+  "timezone": "America/Santiago",
+  "git_head": "c782c4b8092a6c3cfbe7c9fb399939952b6ac554",
+  "campaign": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+  "snapshot_utc": "2026-09-14T12:24:39.910709+00:00",
+  "counts": {
+    "planned": 36,
+    "pending": 35,
+    "active": 1,
+    "completed": 0,
+    "verified": 0
+  },
+  "activity": "confirmed in two timestamped observations",
+  "functional_code_modified": false,
+  "jobs_launched_resumed_cancelled": false,
+  "test_opened": false,
+  "publication_modified": false,
+  "stage_e9_approved": false,
+  "stage_e9_2_started": false,
+  "deliverables": [
+    {
+      "path": "docs/audits/etapa_9_1_auditoria_2026-09-14.md",
+      "sha256": "03eadc4e2f32176f602fbf1cc6e57ba3216612a4922b9bbe455d2618cb783577",
+      "bytes": 10205
+    },
+    {
+      "path": "docs/audits/etapa_9_1_consulta_2026-09-14.py",
+      "sha256": "1c87c1c501a4bbdfeaa51401b64bffe203efaa92181c66e9b2ade99bd770354a",
+      "bytes": 6631
+    },
+    {
+      "path": "docs/audits/etapa_9_1_consulta_cierre_2026-09-14.py",
+      "sha256": "a82d873126eafc10fe4a6c875a91f9acf01057b2e9e39b9c540a6b6230d928d4",
+      "bytes": 1440
+    },
+    {
+      "path": "docs/audits/etapa_9_1_inventario_2026-09-14.json",
+      "sha256": "746e649a84334c7c819f59785642ee321344bbb903029be2623944b1b4b7625f",
+      "bytes": 298023
+    },
+    {
+      "path": "docs/audits/etapa_9_1_observacion_cierre_2026-09-14.json",
+      "sha256": "5ca7a32212a4b94acfdba5fa9ea89a0d3666bdbf156744f56dbac02e895c710b",
+      "bytes": 1450
+    },
+    {
+      "path": "docs/science/plan_reanudacion_e9_1_2026-09-14.md",
+      "sha256": "94cf0c7540b67fb8b399fd0598f50ab9bc65299b917617088af06f3e5731ea56",
+      "bytes": 5656
+    }
+  ],
+  "references": [
+    {
+      "path": "docs/audits/etapa_9_seguimiento_2026-09-14.md",
+      "sha256": "e2b1049a56a1ef42ac8e0863cb39d91e040821d0f43485fea43381cc1e76ee6d",
+      "bytes": 8989
+    },
+    {
+      "path": "docs/audits/etapa_9_publicacion_2026-09-14.md",
+      "sha256": "8d161491dfe4d6f88e9d7ecc18bd903594784f02996b6fc692a823ba302e7e09",
+      "bytes": 5460
+    },
+    {
+      "path": "docs/audits/etapa_9_manifiesto_seguimiento_2026-09-14.json",
+      "sha256": "5dbc6933ca6fe60b04753c1ac52a01cd55d7bc759ef15bbb5ea27dcb04ce226e",
+      "bytes": 21213
+    },
+    {
+      "path": "docs/science/operacion_e9.md",
+      "sha256": "f2043e831e048d2a397231920394187adeaa8dfb5cbf75e80d8eba3b7e625a31",
+      "bytes": 3326
+    },
+    {
+      "path": "malaria_dl_local_project/configs/science/e7_v1.json",
+      "sha256": "f87405b4ac697b9e9f8068de9395e01cd8a9e3138217a6632c1e0a6048a606ab",
+      "bytes": 63033
+    },
+    {
+      "path": "malaria_dl_local_project/configs/science/e8_v1.json",
+      "sha256": "1fc8a77fe2cce659c6c564acf2e34853f18f3c4154aafb688b5adee548c26c0e",
+      "bytes": 1317
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/service.py",
+      "sha256": "4761693e2e132d99a3b7b09712e5e09980d1a2631e7a57bf446c5872d073abd1",
+      "bytes": 5503
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/models/optimizers.py",
+      "sha256": "eadd320bae759b746bb494f8e0f3408cafc70bf4e20917e76cbc1a06414d4708",
+      "bytes": 3741
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/campaign.py",
+      "sha256": "d073f7b25d9d078f7d6efe9ba3af1311d93159127ac8c39f58ce474f88d05b23",
+      "bytes": 8683
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/repository.py",
+      "sha256": "99f657c8f431dac88a2a2f22a5cfe17eb271bb11c6879519606eda1095512ddd",
+      "bytes": 15407
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/worker.py",
+      "sha256": "5dc1aadd272a99ab3a62fbd504ae7dce063bd30878bd8c9e83bd900bdf829764",
+      "bytes": 2575
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/execution/artifacts.py",
+      "sha256": "62693e43c33e9a6ed56ee9eba6283ef8a57f37cb2cd6235f5356fca5650d56cc",
+      "bytes": 4385
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/campaigns/repository.py",
+      "sha256": "9614f49280c89b45d720e537376ca463d8ac4d2124078d8ab565d65cd1f1f42c",
+      "bytes": 13655
+    },
+    {
+      "path": "docker-compose.yml",
+      "sha256": "1350f28fdf7fb47cc517a52cad49fa7f644b449c1aecf107c1edb270a046016b",
+      "bytes": 1436
+    },
+    {
+      "path": "docker-compose.override.yml",
+      "sha256": "9c4aa22efa55d7a93b008bfaad2d587fa29e79c995bbca3d8c5e01653274cecc",
+      "bytes": 1288
+    }
+  ],
+  "excludes_self": true
+}
