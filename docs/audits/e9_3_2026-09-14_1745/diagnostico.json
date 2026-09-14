@@ -1,0 +1,256 @@
+{
+  "utc": "2026-09-14T20:49:35.277925+00:00",
+  "resources": {
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 4\noom_group_kill 0\n",
+    "memory.current": "6434373632\n",
+    "memory.max": "max\n",
+    "memory.swap.current": "812257280\n"
+  },
+  "attempts": [
+    {
+      "run_id": "a5f36df1-3341-43fd-94b9-ee1cedb834c5",
+      "state": "failed",
+      "checkpoints": [
+        {
+          "path": "/app/var/artifacts/campaign_runs/a5f36df1-3341-43fd-94b9-ee1cedb834c5/epoch_1.keras",
+          "epoch": 1,
+          "sha256": "231675fd96a823b48ea6380f44d4eab2c58b1c6c52b6bbf75e3fe01d247dc482",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/a5f36df1-3341-43fd-94b9-ee1cedb834c5/epoch_2.keras",
+          "epoch": 2,
+          "sha256": "2a253249ab71b02eb228fa26135d5f53c427bfa54e8fa2af5ee328d0b569d5e7",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/a5f36df1-3341-43fd-94b9-ee1cedb834c5/epoch_3.keras",
+          "epoch": 3,
+          "sha256": "8d4398290522d307aa28d00cb618aebe4a833ca4b57c225785c9cb19bba018b6",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/a5f36df1-3341-43fd-94b9-ee1cedb834c5/epoch_4.keras",
+          "epoch": 4,
+          "sha256": "9879edb08d534f1a92bd3c19a23c1f4505442840d6c25dd3d8d60a8b973da868",
+          "bytes": 5150212,
+          "matches": true
+        }
+      ],
+      "full_train_verified": false
+    },
+    {
+      "run_id": "8ebbd308-2cec-4275-93b7-ad56fa9e6931",
+      "state": "failed",
+      "checkpoints": [
+        {
+          "path": "/app/var/artifacts/campaign_runs/8ebbd308-2cec-4275-93b7-ad56fa9e6931/epoch_1.keras",
+          "epoch": 1,
+          "sha256": "3720ede9337b06a56f60caf6d4ab20f93e8a9a3354dbd4e87f84208a912d63f8",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/8ebbd308-2cec-4275-93b7-ad56fa9e6931/epoch_2.keras",
+          "epoch": 2,
+          "sha256": "2e4b3e3b5c6ec307f00098d3385e5d20c94bdd81e12188d9256cd8effd45a307",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/8ebbd308-2cec-4275-93b7-ad56fa9e6931/epoch_3.keras",
+          "epoch": 3,
+          "sha256": "489bb42c96fc27679d15158b8a938028cb50b0a4e80e85d769a3d9a27ff9e70b",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/8ebbd308-2cec-4275-93b7-ad56fa9e6931/epoch_4.keras",
+          "epoch": 4,
+          "sha256": "139ec6beb6d243c6fa2e94d3017a90dee9406e4d7bc8715c9f80126c4e1b8815",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/8ebbd308-2cec-4275-93b7-ad56fa9e6931/epoch_5.keras",
+          "epoch": 5,
+          "sha256": "9d0ab5ca625a3fb44f02c58f9e40419464e9bdd8d1bd6d33d84debbbccfb26e4",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/8ebbd308-2cec-4275-93b7-ad56fa9e6931/epoch_6.keras",
+          "epoch": 6,
+          "sha256": "7ec49b7503d2a350b4b5a693891ff4dfd9f31070259d52e78c37b5853f6f9221",
+          "bytes": 5150212,
+          "matches": true
+        }
+      ],
+      "full_train_verified": false
+    },
+    {
+      "run_id": "3894deef-252f-424e-a4ad-d6cd555e063e",
+      "state": "failed",
+      "checkpoints": [
+        {
+          "path": "/app/var/artifacts/campaign_runs/3894deef-252f-424e-a4ad-d6cd555e063e/epoch_1.keras",
+          "epoch": 1,
+          "sha256": "10fc72f75acd6e61b02afad91d41408bf86c0a7d41fca07ba85645ad5e6403a5",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/3894deef-252f-424e-a4ad-d6cd555e063e/epoch_2.keras",
+          "epoch": 2,
+          "sha256": "92b44fa5759459debb8997b40679dab579415968cf10d7749bd72532363e5ff3",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/3894deef-252f-424e-a4ad-d6cd555e063e/epoch_3.keras",
+          "epoch": 3,
+          "sha256": "9063e42ade977c5fe38a50fc76a1ed14a3cde3f45eca921c1f7fef6068a2522c",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/3894deef-252f-424e-a4ad-d6cd555e063e/epoch_4.keras",
+          "epoch": 4,
+          "sha256": "1d7766107497b501cffd07af821baa1579ad06295f664d07b217891ecda3e010",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/3894deef-252f-424e-a4ad-d6cd555e063e/epoch_5.keras",
+          "epoch": 5,
+          "sha256": "c23cbdf07c8b72bde530866b29e30cc1108500f936993402e0f475375b22f5cd",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/3894deef-252f-424e-a4ad-d6cd555e063e/epoch_6.keras",
+          "epoch": 6,
+          "sha256": "cd9eec004adc839317c06f0169e3b0beffdd92a640939e394753f5add9fa62d2",
+          "bytes": 5150212,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/3894deef-252f-424e-a4ad-d6cd555e063e/epoch_7.keras",
+          "epoch": 7,
+          "sha256": "4d38bffb3b352572d85b15bbaaad3bbc333e019aa25b28ef54dc0692e826895f",
+          "bytes": 5150212,
+          "matches": true
+        }
+      ],
+      "full_train_verified": false
+    },
+    {
+      "run_id": "61bf6d6d-9db9-498e-a9ee-c26e94e46f2d",
+      "state": "failed",
+      "checkpoints": [
+        {
+          "path": "/app/var/artifacts/campaign_runs/61bf6d6d-9db9-498e-a9ee-c26e94e46f2d/epoch_1.keras",
+          "epoch": 1,
+          "sha256": "13be950b9fd0c4471262ebe630ff6146caccf89efe7d10a3ec7bdaa5511b0c6f",
+          "bytes": 5150259,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/61bf6d6d-9db9-498e-a9ee-c26e94e46f2d/epoch_2.keras",
+          "epoch": 2,
+          "sha256": "27733523217f975b562afb084b0f73025a52801ac83f0ec3efe0137e8d9e14e8",
+          "bytes": 5150259,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/61bf6d6d-9db9-498e-a9ee-c26e94e46f2d/epoch_3.keras",
+          "epoch": 3,
+          "sha256": "6312e38325f5109745adadd0a121538b18d704f65ed308f5e3aff211c076c5ea",
+          "bytes": 5150259,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/61bf6d6d-9db9-498e-a9ee-c26e94e46f2d/epoch_4.keras",
+          "epoch": 4,
+          "sha256": "dfb08aa23f3455c6eba7c5ce750871c02f6159d396327ad42752d0f05e9fd5dc",
+          "bytes": 5150259,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/61bf6d6d-9db9-498e-a9ee-c26e94e46f2d/epoch_5.keras",
+          "epoch": 5,
+          "sha256": "3716bc09fe6b5cd01dc7e0e9de7752e4ed10bd5ee669837da3c6fe73a5978498",
+          "bytes": 5150259,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/61bf6d6d-9db9-498e-a9ee-c26e94e46f2d/epoch_6.keras",
+          "epoch": 6,
+          "sha256": "2afeeb83e750c7ee3a82edb3414bfaa79f7496f72e1137fd9f2a111ae501a040",
+          "bytes": 5150259,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/61bf6d6d-9db9-498e-a9ee-c26e94e46f2d/epoch_7.keras",
+          "epoch": 7,
+          "sha256": "d694456658ee5d84ae1d15889068493bd2ed77caf8d088a892d781968f80fb2d",
+          "bytes": 5150259,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/61bf6d6d-9db9-498e-a9ee-c26e94e46f2d/epoch_8.keras",
+          "epoch": 8,
+          "sha256": "3933bf5b90c80093368eb5623d454f4c770ee8eb0ec3012eac87b2f2a0669497",
+          "bytes": 5150259,
+          "matches": true
+        },
+        {
+          "path": "/app/var/artifacts/campaign_runs/61bf6d6d-9db9-498e-a9ee-c26e94e46f2d/epoch_9.keras",
+          "epoch": 9,
+          "sha256": "105af59a4b099ea8f92fc8931f88c825c9a6070a3e128ae93b9780b04fb90e26",
+          "bytes": 5150259,
+          "matches": true
+        }
+      ],
+      "full_train_verified": false
+    },
+    {
+      "run_id": "ec0975b2-b355-4d5c-a4ec-beac31da72dd",
+      "state": "active",
+      "checkpoints": "deferred: active writer",
+      "processes": [
+        {
+          "role": "parent_pid",
+          "pid": 3475,
+          "state": "S",
+          "utime": "2652",
+          "stime": "595",
+          "start_ticks": "20672733",
+          "memory": [
+            "VmHWM:\t  168544 kB",
+            "VmRSS:\t    4892 kB",
+            "VmSwap:\t  122248 kB",
+            "Threads:\t1"
+          ]
+        },
+        {
+          "role": "child_pid",
+          "pid": 96740,
+          "state": "S",
+          "utime": "2490121",
+          "stime": "1137675",
+          "start_ticks": "22533557",
+          "memory": [
+            "VmHWM:\t 6718980 kB",
+            "VmRSS:\t 4755736 kB",
+            "VmSwap:\t  592352 kB",
+            "Threads:\t103"
+          ]
+        }
+      ]
+    }
+  ]
+}

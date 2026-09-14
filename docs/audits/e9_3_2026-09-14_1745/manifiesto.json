@@ -1,0 +1,20 @@
+{
+  "head": "59c980521183ac2d00c167868b8abba76fbc1470",
+  "snapshot_utc": "2026-09-14 20:49:58.374133+00:00",
+  "campaign_id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+  "state": "EN SEGUIMIENTO",
+  "counts": {
+    "failed": 4,
+    "active": 1,
+    "pending": 31
+  },
+  "attempts": 5,
+  "verified": 0,
+  "files": {
+    "docs/audits/e9_3_2026-09-14_1745/auditoria.md": "45b98e1956ee70e8c6cd0cfab9cfbdb4070119fb8a3efc511ab4234c2ba29075",
+    "docs/audits/e9_3_2026-09-14_1745/diagnostico.json": "2544e7f8030706391d8d9f57ab8f3b4a5dcf7d09debd14dc4c5419c0cc59f1e4",
+    "docs/audits/e9_3_2026-09-14_1745/diagnostico.py": "e8685f96a5e83c6a0fa4aeb9a2db0fd211c1ea5e39ecc5d577e4249a0deea19c",
+    "docs/audits/e9_3_2026-09-14_1745/snapshot_final.json": "54be219a5cee795ed5fa16742fc9945cfb27e83e13b8aead0a245088d6e10d8a",
+    "docs/audits/e9_3_2026-09-14_1745/snapshot_inicial.json": "708d9f4647d9ef3f3d7748096b78391215a91c20b65945cab1c6902ed0f6f2c2"
+  }
+}
