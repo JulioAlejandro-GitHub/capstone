@@ -1,0 +1,8 @@
+{
+  "id": "3dba8e7dcf1bfa9af3a1be5767502117dfa80e3ad26df35fa0e2d93cd4c05523",
+  "started_at": "2026-09-08T16:27:29.669703587Z",
+  "restart_count": 0,
+  "oom_killed": true,
+  "boot_id": "20f8def3-9666-499d-8d01-4cfb5819ed90",
+  "source": "docker inspect and /proc; same identity as process_started event"
+}

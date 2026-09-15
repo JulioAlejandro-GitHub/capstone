@@ -1,0 +1,77 @@
+{
+  "fecha": "2026-09-15",
+  "alcance": "E9.3 - ejecutor local Python (Mac) para TRAIN, backend/PostgreSQL en Docker",
+  "referencias": {
+    "campana_real": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+    "dataset_real": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "run_fallido_previo": "79f39931-ac71-4bc1-a317-149a975d1f74"
+  },
+  "estado_base_real_antes": {
+    "alembic_current": "20260914_02",
+    "campaign_state": "paused",
+    "run_status": "failed",
+    "train_execution_session_state": "failed",
+    "gate_owner": null,
+    "gate_blocked_reason": "NEW_CONTAINER_OOM_PAUSE",
+    "local_execution_jobs_table_exists": false
+  },
+  "estado_base_real_despues": {
+    "alembic_current": "20260914_02",
+    "campaign_state": "paused",
+    "run_status": "failed",
+    "train_execution_session_state": "failed",
+    "gate_owner": null,
+    "gate_blocked_reason": "NEW_CONTAINER_OOM_PAUSE",
+    "local_execution_jobs_table_exists": false,
+    "verificado": "identico al estado 'antes'; cero reservas nuevas contra la campana real"
+  },
+  "archivos": [
+    {"path": "backend_api/app/main.py", "sha256": "a47cbdbdfe44851c1434137ef5c4178efc1bdc7cf790dcde7e0232175e47c03e", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "backend_api/app/routes/local_execution.py", "sha256": "2ad974d41bcb8ccb9593fe3ead5457456e3e64cbf0801b08c4da8a15e1c806c0", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "malaria_dl_local_project/src/malaria_dl/execution/controlled.py", "sha256": "6b4f2575e0ebf1e33ee9d408cd038c14486775a23f2de91b5efc3162e7be9cf7", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "malaria_dl_local_project/src/malaria_dl/local_execution/backend.py", "sha256": "173842da8f6439c595c2c1844ae5b78b3c312566d1ea81249355865e86b85fde", "origen": "MODIFICADO en esta sesion: fix canonical(session) con uuid/datetime crudos; fix parent_pid=0 en modo sequential"},
+    {"path": "malaria_dl_local_project/src/malaria_dl/local_execution/agent.py", "sha256": "6376c79c3b89d27c6987a3ab89799abaac7ff92858013d044e0edf4243e5091d", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "malaria_dl_local_project/src/malaria_dl/local_execution/worker.py", "sha256": "25d1707400088899a75b114608fb19799594e4ce13c852ca7f1bd19fd5a7881e", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "malaria_dl_local_project/src/malaria_dl/local_execution/transport.py", "sha256": "2917e657e1c1bd45b66c9fa121e3481f44088a459d79f340f4b3e54e6a724771", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "malaria_dl_local_project/src/malaria_dl/local_execution/processes.py", "sha256": "3bccf6b9e3262ca36bfbc19948f7b940825c9f5d7d67f5007d7a25873b745662", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "malaria_dl_local_project/src/malaria_dl/local_execution/storage.py", "sha256": "5ef6886e32db6a9574a0d8b5f89804752aa89b5b72869e7c526be78bf30a78e1", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "malaria_dl_local_project/src/malaria_dl/local_execution/revision.py", "sha256": "b7278e2baa68581f7be0fbbaac03677b8dff54169e4634873fcb1b4205b815b0", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "malaria_dl_local_project/src/malaria_dl/local_execution/__init__.py", "sha256": "b0d0077da7c67a5146845cabd7d27ce2b0e0f507cc9fb42fb29c494abf12999a", "origen": "sesion previa (2026-09-15), no modificado en esta sesion"},
+    {"path": "alembic/versions/20260915_01_local_execution.py", "sha256": "2917d4ffe5de435019b93eb2a57e3df41072618ca975059f4af69509703544a9", "origen": "sesion previa (2026-09-15), no modificado; NO aplicada sobre la base persistente"},
+    {"path": "malaria_dl_local_project/tests/test_local_execution_postgres.py", "sha256": "e9204edee8f0a39dac201155aac102046f0f80b955d4d08aa8b92570bc776e7c", "origen": "NUEVO en esta sesion: 21 pruebas, esquema PostgreSQL desechable"},
+    {"path": "malaria_dl_local_project/requirements-local-train.txt", "sha256": "db07377ef210282652baa34545e35b46c6449ae76f4ce505d35d76b9a1d013df", "origen": "NUEVO en esta sesion: pines exactos del venv local verificado"},
+    {"path": "malaria_dl_local_project/README.md", "sha256": "1c0d8f2bf1c3d8ceefd46b3a0d5cfcff5227e81d3852236a4fde47822dd40b6c", "origen": "MODIFICADO en esta sesion: seccion 10, runbook del agente local"}
+  ],
+  "pruebas": {
+    "archivo": "malaria_dl_local_project/tests/test_local_execution_postgres.py",
+    "opt_in_env": "RUN_LOCAL_EXECUTION_POSTGRES_TESTS=1",
+    "total_casos": 21,
+    "verificados_en_docker_linux": 20,
+    "verificados_en_macos_nativo": 1,
+    "resultado": "21/21 pasan",
+    "esquema": "PostgreSQL real, esquema desechable capstone_test_e4_<uuid>, eliminado al finalizar cada caso",
+    "campana_real_tocada": false
+  },
+  "defectos_reales_corregidos": [
+    {
+      "archivo": "malaria_dl_local_project/src/malaria_dl/local_execution/backend.py",
+      "descripcion": "claim() llamaba canonical(s) sobre la sesion leida de PostgreSQL, que trae uuid.UUID y datetime crudos para run_id/attempt_id/owner/started_at/updated_at; canonical() los rechaza deliberadamente (NON_CANONICAL_JSON), por lo que TODA reserva local fallaba antes de esta correccion.",
+      "fix": "construir una copia 'safe' de la sesion con esos campos convertidos a str() antes de canonical(), reutilizada tanto para la fila persistida como para la respuesta al agente."
+    },
+    {
+      "archivo": "malaria_dl_local_project/src/malaria_dl/local_execution/backend.py",
+      "descripcion": "El modo 'sequential' llamaba a ExecutionRepository.claim(...) con parent_pid=0 literal; la tabla train_execution_sessions exige parent_pid>0, por lo que TODA reserva secuencial fallaba antes de esta correccion.",
+      "fix": "usar os.getpid() como parent_pid, igual que ControlledRepository.reserve ya hace para el modo controlado."
+    }
+  ],
+  "entorno_local_verificado": {
+    "python": "3.12.13",
+    "plataforma": "macOS-26.5.2-arm64-arm-64bit",
+    "maquina": "arm64",
+    "dispositivo_tensorflow": "CPU unicamente, sin GPU/Metal",
+    "tensorflow": "2.17.1",
+    "numpy": "1.26.4",
+    "venv": "malaria_dl_local_project/.venv-local-train (gitignored)",
+    "requirements": "malaria_dl_local_project/requirements-local-train.txt"
+  }
+}

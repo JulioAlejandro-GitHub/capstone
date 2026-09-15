@@ -256,7 +256,7 @@ export interface TrainingSummary {
   release_reason: string | null;
   evaluation_count: number;
   explainability_count: number;
-  run_name: string;
+  run_name: string | null;
   model_name: string | null;
   dataset_name: string | null;
   dataset_version_id: string | null;

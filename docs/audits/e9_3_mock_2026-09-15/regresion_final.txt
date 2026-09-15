@@ -1,0 +1,29 @@
+{'contrast': 'calculation-success/persistence-failure', 'stage': 'epoch', 'sqlstate': ['23514'], 'false_success': False}
+.{'contrast': 'calculation-success/persistence-failure', 'stage': 'artifact', 'sqlstate': ['23514'], 'false_success': False}
+.{'contrast': 'calculation-success/persistence-failure', 'stage': 'final', 'sqlstate': ['23514'], 'false_success': False}
+.committed readback; repeated finalization rejected without duplicate; request idempotent
+.process killed during synthetic calculation; no completion; SIGKILL does not prove OOM
+..2026-09-15 09:10:11.282884: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:485] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2026-09-15 09:10:11.325527: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:8454] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2026-09-15 09:10:11.340346: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1452] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2026-09-15 09:10:12.173919: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+Found 2 files belonging to 2 classes.
+Found 2 files belonging to 2 classes.
+[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 874ms/step - accuracy: 1.0000 - auc: 1.0000 - balanced_accuracy: 0.5000 - loss: 0.4613 - pr_auc: 1.0000 - precision: 1.0000 - recall: 1.0000 - recall_parasitized: 1.0000 - specificity: 0.0000e+00[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m1s[0m 1s/step - accuracy: 1.0000 - auc: 1.0000 - balanced_accuracy: 0.5000 - loss: 0.4613 - pr_auc: 1.0000 - precision: 1.0000 - recall: 1.0000 - recall_parasitized: 1.0000 - specificity: 0.0000e+00 - val_accuracy: 1.0000 - val_auc: 1.0000 - val_balanced_accuracy: 1.0000 - val_loss: 0.4612 - val_pr_auc: 1.0000 - val_precision: 1.0000 - val_recall: 1.0000 - val_recall_parasitized: 1.0000 - val_specificity: 1.0000 - val_f2_parasitized: 1.0000 - val_pr_auc_parasitized: 1.0000 - val_roc_auc_parasitized: 1.0000 - val_sensitivity_parasitized: 1.0000 - val_prediction_collapse_detected: 0.0000e+00 - val_prediction_collapse: 0.0000e+00 - val_n_pred_uninfected: 1.0000 - val_n_pred_parasitized: 1.0000 - val_percent_pred_uninfected: 0.5000 - val_percent_pred_parasitized: 0.5000 - val_checkpoint_policy_score: 1.0000 - val_early_stopping_score: 1.0000 - learning_rate: 1.0000e-04
+REAL tiny fit -> internal VAL -> serialized checkpoint -> committed completion -> safe load -> verified; TEST directory not used by TRAIN
+.VAL SQL rejection leaves TRAIN verified and VAL failed; zero partial predictions
+.VAL SQL rejection leaves TRAIN verified and VAL failed; zero partial predictions
+.
+=============================== warnings summary ===============================
+malaria_dl_local_project/tests/test_pipeline_faults_postgres.py::test_minimal_real_train_serialization_and_committed_readback
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_pipeline_faults_postgres.py::test_minimal_real_train_serialization_and_committed_readback
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_pipeline_faults_postgres.py::test_minimal_real_train_serialization_and_committed_readback
+  /usr/local/lib/python3.12/site-packages/keras/src/trainers/epoch_iterator.py:74: UserWarning: `shuffle=True` was passed, but will be ignored since the data `x` was provided as a tf.data.Dataset. The Dataset is expected to already be shuffled (via `.shuffle(buffer_size)`).
+    self.data_adapter = data_adapters.get_data_adapter(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+9 passed, 3 warnings in 8.12s

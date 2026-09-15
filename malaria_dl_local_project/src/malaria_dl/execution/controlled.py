@@ -30,7 +30,8 @@ def validate_revision(row, payload):
     env = payload['environment']
     if not isinstance(env,dict) or not re.fullmatch('[a-f0-9]{64}',str(env.get('source_sha256',''))):
         raise CampaignError('TECHNICAL_SOURCE_INVALID')
-    if {k:v for k,v in env.items() if k not in ('source_sha256','git_commit')} != {k:v for k,v in row['environment'].items() if k not in ('source_sha256','git_commit')}:
+    from ..local_execution.revision import valid_environment
+    if not valid_environment(env) and {k:v for k,v in env.items() if k not in ('source_sha256','git_commit')} != {k:v for k,v in row['environment'].items() if k not in ('source_sha256','git_commit')}:
         raise CampaignError('TECHNICAL_ENVIRONMENT_CONFLICT')
     return payload
 

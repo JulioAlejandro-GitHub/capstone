@@ -1,0 +1,23 @@
+{
+  "utc": "2026-09-15T09:12:40.275260+00:00",
+  "git_head": "144da5cbd6ce34647a3e109daa3542af75c0606c",
+  "status": "AUDITORIA_PARCIAL_RECORRIDO_INTEGRAL_PENDIENTE",
+  "new_tests": "9 passed, 3 warnings in 8.12s",
+  "regression_before_final_test_addition": "46 passed, 1 deselected, 3 warnings in 25.77s",
+  "production_changed": false,
+  "hypothesis_real_run": "process failure demonstrated; no database finalization failure demonstrated",
+  "files": {
+    "docs/audits/e9_3_mock_2026-09-15/regresion_final.txt": "4835555769f02366c619718bcff0c9576335d2763c3385a54d699e8a91b80e71",
+    "docs/audits/e9_3_mock_2026-09-15/auditoria.md": "5672643c938c4d3980b7debbefbf71e299d30a0053d1cebe66f55a38a7be2918",
+    "docs/audits/e9_3_mock_2026-09-15/pruebas.txt": "a850d492b601a7eea43b1427a6e2f022be492d27eb8a4e33f166b29a68a11336",
+    "docs/audits/e9_3_mock_2026-09-15/real_inicial.json": "2a7302b7ab1410f86297e011842232a0072d1ad538f285dfa8a2bb116823ff5a",
+    "docs/audits/e9_3_mock_2026-09-15/real_final.json": "d57d63ff8a1b393783a7fefdebf9ded181c4a20a760b37dcb8fa06abeb3e57af",
+    "docs/audits/e9_3_mock_2026-09-15/comandos.md": "a8de84ce7ff376006ef5871ff0483a0521d91238434a633295d6f889954b5580",
+    "docs/audits/e9_3_mock_2026-09-15/limpieza.json": "a869cd7f5015b02188abbcb2d577811dd232304a178c8ebcbf6a729608c52bf1",
+    "docs/audits/e9_3_mock_2026-09-15/calculo_real.txt": "2abab463c478d5e45419e47e5423211372b660f3d93f96f4792ea922bbf488c4",
+    "docs/audits/e9_3_mock_2026-09-15/proteccion_entorno.json": "e8ae25a6d415c6fa80f6b2d69e3e5040b724d395ec65ea13df8a02448ec47729",
+    "docs/audits/e9_3_mock_2026-09-15/snapshot_final.json": "c1fad8d2d57a0bb57bb878b63c8601d369830968b356767fed2382ed09c22954",
+    "docs/audits/e9_3_mock_2026-09-15/fallos.txt": "3daa0ad038b1e324c78549445497bf28536801b81cc192923b60cf6934ffa480",
+    "malaria_dl_local_project/tests/test_pipeline_faults_postgres.py": "8a2c8bb8fcff9eed5689fecf0c990584446508fa2ac47d7748c39abaf5782844"
+  }
+}

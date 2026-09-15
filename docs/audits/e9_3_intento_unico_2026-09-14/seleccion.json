@@ -1,0 +1,355 @@
+{
+  "utc": "2026-09-15T01:08:40.306584+00:00",
+  "authorization_attachment": "f84cc89d-9038-44db-a2f7-48bb1a1d5b21",
+  "request_id": "7d4cacb1-3d85-53f6-9828-8a7b1e0164c5",
+  "campaign_id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+  "dataset_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "technical_revision_id": "3ec6fa57-be3f-5433-8557-8c12c3eea740",
+  "git_head": "144da5cbd6ce34647a3e109daa3542af75c0606c",
+  "source_sha256": "70d9ac1861a003a6ebba82d58ceebef757598588ffe7a4735b0c1a1f141ae5c0",
+  "member": {
+    "planned_id": "2fbd5862-b68b-4845-9445-a30d7ec61382",
+    "position": 0,
+    "architecture": "custom_cnn",
+    "condition": "original",
+    "seed": 11,
+    "configuration_hash": "9caaac5ec278e315c7af400729920b93e348af752ae24eedff40cb72893bb2b0",
+    "persisted_state": "failed",
+    "attempts": [
+      {
+        "attempt": {
+          "id": "8279db36-7bfe-4e22-8bf3-872ac215eae2",
+          "member_id": "2fbd5862-b68b-4845-9445-a30d7ec61382",
+          "ordinal": 1,
+          "state": "failed",
+          "training_run_id": "a5f36df1-3341-43fd-94b9-ee1cedb834c5",
+          "cause": "CHILD_EXIT_OR_INCOMPLETE_RESULTS",
+          "started_at": "2026-09-14 11:47:21.974005+00:00",
+          "finished_at": "2026-09-14 13:01:39.655583+00:00"
+        },
+        "session": {
+          "run_id": "a5f36df1-3341-43fd-94b9-ee1cedb834c5",
+          "attempt_id": "8279db36-7bfe-4e22-8bf3-872ac215eae2",
+          "state": "failed",
+          "owner": "7ddafae5-a1d0-42a7-93e6-bd0835f55787",
+          "host": "3dba8e7dcf1b",
+          "parent_pid": 3475,
+          "child_pid": 3483,
+          "artifact_root": "/app/var/artifacts/campaign_runs/a5f36df1-3341-43fd-94b9-ee1cedb834c5",
+          "cause": "CHILD_EXIT_OR_INCOMPLETE_RESULTS",
+          "started_at": "2026-09-14 11:47:21.982186+00:00",
+          "updated_at": "2026-09-14 13:01:39.652646+00:00",
+          "environment": {
+            "python": "3.12.14",
+            "packages": {
+              "keras": "3.15.1",
+              "numpy": "1.26.4",
+              "psycopg": "3.3.5",
+              "SQLAlchemy": "2.0.52"
+            },
+            "git_commit": null,
+            "tensorflow": "2.17.1",
+            "source_sha256": "d8569d8faaa80eca42b130e6096203d851e2c663b4cdb8cd599dda950fbe6430",
+            "determinism_environment": {
+              "PYTHONHASHSEED": "42",
+              "TF_DETERMINISTIC_OPS": null
+            }
+          },
+          "completion": null,
+          "verification": null
+        },
+        "identity_matches": {
+          "configuration": true,
+          "dataset": true,
+          "environment": true
+        },
+        "records_by_kind": {
+          "artifact": 4,
+          "artifact_prepared": 4,
+          "epoch": 4,
+          "predictions": 4,
+          "runtime": 1,
+          "selection": 4
+        },
+        "last_record": [
+          {
+            "last_record": "2026-09-14 13:00:45.793650+00:00",
+            "count": 21
+          }
+        ],
+        "artifacts": [
+          {
+            "path": "/app/var/artifacts/campaign_runs/a5f36df1-3341-43fd-94b9-ee1cedb834c5/epoch_1.keras",
+            "bytes": 5150212,
+            "epoch": 1,
+            "phase": "base",
+            "run_id": "a5f36df1-3341-43fd-94b9-ee1cedb834c5",
+            "sha256": "231675fd96a823b48ea6380f44d4eab2c58b1c6c52b6bbf75e3fe01d247dc482",
+            "version_id": "6b3d8f88-47b7-4fcd-8b8d-ebfd2fe676a3",
+            "phase_epoch": 1
+          },
+          {
+            "path": "/app/var/artifacts/campaign_runs/a5f36df1-3341-43fd-94b9-ee1cedb834c5/epoch_2.keras",
+            "bytes": 5150212,
+            "epoch": 2,
+            "phase": "base",
+            "run_id": "a5f36df1-3341-43fd-94b9-ee1cedb834c5",
+            "sha256": "2a253249ab71b02eb228fa26135d5f53c427bfa54e8fa2af5ee328d0b569d5e7",
+            "version_id": "66157f8f-20ae-40bc-9b91-46768e7f1dca",
+            "phase_epoch": 2
+          },
+          {
+            "path": "/app/var/artifacts/campaign_runs/a5f36df1-3341-43fd-94b9-ee1cedb834c5/epoch_3.keras",
+            "bytes": 5150212,
+            "epoch": 3,
+            "phase": "base",
+            "run_id": "a5f36df1-3341-43fd-94b9-ee1cedb834c5",
+            "sha256": "8d4398290522d307aa28d00cb618aebe4a833ca4b57c225785c9cb19bba018b6",
+            "version_id": "683698da-0ffd-425e-a3a6-52030033aac8",
+            "phase_epoch": 3
+          },
+          {
+            "path": "/app/var/artifacts/campaign_runs/a5f36df1-3341-43fd-94b9-ee1cedb834c5/epoch_4.keras",
+            "bytes": 5150212,
+            "epoch": 4,
+            "phase": "base",
+            "run_id": "a5f36df1-3341-43fd-94b9-ee1cedb834c5",
+            "sha256": "9879edb08d534f1a92bd3c19a23c1f4505442840d6c25dd3d8d60a8b973da868",
+            "version_id": "e3096c3e-1ebb-403b-8578-5df783a820b5",
+            "phase_epoch": 4
+          }
+        ],
+        "versions": [],
+        "observed_verification": "not completed; no finalized checkpoint claimed"
+      }
+    ],
+    "proposed_action": "wait; no new execution in E9.1"
+  },
+  "configuration": {
+    "requests": [
+      {
+        "variant": "capstone_science_e7_v1",
+        "requested": {
+          "batch": true,
+          "selected": {},
+          "overrides": {
+            "model": {
+              "l2": 0.0001,
+              "dropout": 0.4,
+              "weights": "none",
+              "head_units": 128,
+              "input_shape": [
+                200,
+                200,
+                3
+              ],
+              "preprocessing": "rescale_0_1",
+              "fine_tune_layers": 0,
+              "batch_normalization": "train"
+            },
+            "recipe": {
+              "loss": "binary_crossentropy",
+              "metrics": "binary_clinical_v1",
+              "fallback": "existing_clinical_policy_v1",
+              "reduce_lr": {
+                "factor": 0.5,
+                "min_lr": 1e-06,
+                "monitor": "val_loss",
+                "patience": 4
+              },
+              "augmentation": {
+                "flip": "horizontal_and_vertical",
+                "zoom": 0.2,
+                "contrast": 0.3,
+                "rotation": 0.07,
+                "translation": 0.2
+              },
+              "selection_threshold": 0.5,
+              "clinical_success_independent_of_technical_completion": true
+            },
+            "execution": {
+              "beta": 2,
+              "batch_size": 64,
+              "max_epochs": 50,
+              "min_recall": 0.98,
+              "no_augment": false,
+              "target_recall": 0.98,
+              "early_stopping": true,
+              "checkpoint_mode": "max",
+              "min_specificity": 0,
+              "fine_tune_epochs": 0,
+              "checkpoint_policy": "auc_with_min_recall",
+              "deterministic_ops": true,
+              "checkpoint_monitor": "val_f2_parasitized",
+              "min_class_fraction": 0.05,
+              "calibrate_threshold": false,
+              "early_stopping_mode": "max",
+              "restore_best_weights": true,
+              "evaluate_best_on_test": false,
+              "early_stopping_monitor": "val_f2_parasitized",
+              "early_stopping_patience": 12,
+              "early_stopping_min_delta": 0.0001,
+              "reject_prediction_collapse": true
+            },
+            "optimizer": {
+              "name": "adadelta"
+            }
+          },
+          "model_name": "custom_cnn"
+        },
+        "provenance": {
+          "precedence": [
+            "versioned_defaults",
+            "selected",
+            "explicit_overrides"
+          ],
+          "defaults_sha256": "b219adae19aa2d54cc43c2bc2fcfa0cd92d8cc622d4e3df5e7d1ced58b1c07df"
+        }
+      }
+    ],
+    "configuration": {
+      "model_id": "custom_cnn",
+      "resolved": {
+        "model": {
+          "l2": 0.0001,
+          "dropout": 0.4,
+          "weights": "none",
+          "head_units": 128,
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "fine_tune_layers": 0,
+          "batch_normalization": "train"
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "fallback": "existing_clinical_policy_v1",
+          "reduce_lr": {
+            "factor": 0.5,
+            "min_lr": 1e-06,
+            "monitor": "val_loss",
+            "patience": 4
+          },
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "zoom": 0.2,
+            "contrast": 0.3,
+            "rotation": 0.07,
+            "translation": 0.2
+          },
+          "selection_threshold": 0.5,
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "execution": {
+          "beta": 2,
+          "batch_size": 64,
+          "max_epochs": 50,
+          "min_recall": 0.98,
+          "no_augment": false,
+          "target_recall": 0.98,
+          "early_stopping": true,
+          "checkpoint_mode": "max",
+          "min_specificity": 0,
+          "fine_tune_epochs": 0,
+          "checkpoint_policy": "auc_with_min_recall",
+          "deterministic_ops": true,
+          "checkpoint_monitor": "val_f2_parasitized",
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "early_stopping_mode": "max",
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "reject_prediction_collapse": true
+        },
+        "optimizer": {
+          "name": "adadelta",
+          "parameters": {
+            "rho": 0.95,
+            "epsilon": 1e-07,
+            "use_ema": false,
+            "clipnorm": null,
+            "clipvalue": null,
+            "ema_momentum": 0.99,
+            "weight_decay": null,
+            "learning_rate": 1,
+            "global_clipnorm": null,
+            "loss_scale_factor": null,
+            "ema_overwrite_frequency": null,
+            "gradient_accumulation_steps": null
+          },
+          "fine_tune_learning_rate": 1
+        },
+        "selection": {
+          "beta": 2,
+          "mode": "max",
+          "monitor": "val_f2_parasitized",
+          "explicit": true,
+          "fallback": "retain existing policy warning and collapse status",
+          "threshold": 0.5,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "early_stopping_mode": "max",
+          "early_stopping_monitor": "val_f2_parasitized"
+        },
+        "input_contract": {
+          "dtype": "float32",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "decode": "tf_decode_image_rgb_v1",
+          "output": {
+            "dtype": "float32",
+            "shape": [
+              null,
+              1
+            ],
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          },
+          "resize": {
+            "method": "bilinear",
+            "location": "loader",
+            "antialias": false
+          },
+          "channels": 3,
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "architecture": "custom_cnn",
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "schema_version": "malaria_input_v1",
+          "adapter_version": "1.0"
+        }
+      },
+      "schema_version": "model_config_v1",
+      "adapter_version": "1.0"
+    }
+  },
+  "criterion": "Explicit controlled member in procedure; first failed member by frozen position. Position 5 is pending and ineligible for controlled retry requiring previous failed attempt.",
+  "restart": "from zero, no checkpoint resume",
+  "reason": "User f84cc89d authorized one controlled TRAIN from zero; campaign remains paused; no further attempt",
+  "disk_available_kib": 835241608
+}

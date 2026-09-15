@@ -26,7 +26,7 @@ class TrainingSummary(BaseModel):
     release_reason: str | None
     evaluation_count: int = Field(ge=0)
     explainability_count: int = Field(ge=0)
-    run_name: str
+    run_name: str | None
     model_name: str | None
     dataset_name: str | None
     dataset_version_id: UUID | None

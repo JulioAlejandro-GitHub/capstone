@@ -2,6 +2,13 @@ services:
   backend:
     environment:
       MALARIA_DL_PROJECT_ROOT: /app/malaria_dl_local_project
+      # TEMPORAL: sólo para el intento controlado local_python autorizado el 2026-09-15
+      # contra la campaña 3acf89b7. Revertir (quitar estas 2 líneas + el volumen de abajo)
+      # cuando ese intento termine -- `git diff docker-compose.override.yml` muestra el bloque exacto.
+      CAPSTONE_LOCAL_EXECUTION_ENABLED: "1"
+      CAPSTONE_LOCAL_STORAGE_ROOTS: >-
+        {"dataset":"/app/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "artifacts":"/app/var/local_artifacts"}
     volumes:
       - ./backend_api/app:/app/app
       - ./backend_api/tests:/app/tests
@@ -15,6 +22,9 @@ services:
       # habilita escritura únicamente en el directorio gobernado de releases.
       - ./malaria_dl_local_project/releases:/app/malaria_dl_local_project/releases
       - ./malaria_dataset_split_project/src:/app/malaria_dataset_split_project/src:ro
+      # TEMPORAL: raíz de artefactos compartida Mac<->backend para el intento local_python
+      # (el backend necesita leer el checkpoint real para verify_session/load_checkpoint).
+      - ./malaria_dl_local_project/local_execution_artifacts:/app/var/local_artifacts
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:

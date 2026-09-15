@@ -1,0 +1,35 @@
+{
+  "interval_seconds": 73.628569,
+  "process_cpu_percent_one_core_100": {
+    "42342": 0.0,
+    "42346": 1003.9
+  },
+  "container_cpu_percent_one_core_100": 1006.6,
+  "rss_bytes": {
+    "42342": 103841792,
+    "42346": 4069691392
+  },
+  "resources": {
+    "available_bytes": 3201843200,
+    "cgroup_current_bytes": 5118169088,
+    "cgroup_max": "max",
+    "oom_kill": 5
+  },
+  "latest_utc": "2026-09-15T01:11:13.989021+00:00",
+  "batch_markers": [
+    "53/347",
+    "54/347",
+    "55/347",
+    "56/347"
+  ],
+  "epoch_markers": [],
+  "state": "active",
+  "records": [
+    {
+      "kind": "runtime",
+      "count": 1,
+      "last_at": "2026-09-15 01:09:29.994912+00:00"
+    }
+  ],
+  "cli_exit": []
+}

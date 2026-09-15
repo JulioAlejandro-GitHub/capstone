@@ -1,0 +1,12 @@
+{
+  "request_unchanged": true,
+  "session_unchanged": true,
+  "gate_unchanged": true,
+  "attempts_unchanged": true,
+  "paused": true,
+  "publication_deployment_unchanged": true,
+  "synthetic_schemas_removed": true,
+  "no_managed_processes": true,
+  "oom_unchanged": true,
+  "registered_source_unchanged": true
+}

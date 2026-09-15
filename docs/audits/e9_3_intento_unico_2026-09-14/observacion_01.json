@@ -1,0 +1,334 @@
+{
+  "utc": "2026-09-15T01:10:00.360452+00:00",
+  "request_id": "7d4cacb1-3d85-53f6-9828-8a7b1e0164c5",
+  "resources": {
+    "available_bytes": 4698230784,
+    "cgroup_current_bytes": 3661938688,
+    "cgroup_max": "max",
+    "oom_kill": 5
+  },
+  "request": {
+    "id": "7d4cacb1-3d85-53f6-9828-8a7b1e0164c5",
+    "campaign_id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+    "member_id": "2fbd5862-b68b-4845-9445-a30d7ec61382",
+    "revision_id": "3ec6fa57-be3f-5433-8557-8c12c3eea740",
+    "previous_attempt_id": "8279db36-7bfe-4e22-8bf3-872ac215eae2",
+    "attempt_id": "4cd0cf3f-37df-4490-9f26-eb2763f3b4e6",
+    "run_id": "79f39931-ac71-4bc1-a317-149a975d1f74",
+    "reason": "User f84cc89d authorized one controlled TRAIN from zero; campaign remains paused; no further attempt",
+    "created_at": "2026-09-15 01:09:17.288597+00:00"
+  },
+  "campaign_state": "paused",
+  "member_counts": {
+    "active": 1,
+    "failed": 4,
+    "pending": 31
+  },
+  "attempt_count": 6,
+  "gate": {
+    "singleton": true,
+    "owner": "9bd3e506-08d0-4fc1-86f3-9776adb1c991",
+    "db_pid": 70986,
+    "process_evidence": {
+      "sessions": [
+        42346
+      ],
+      "identities": [
+        {
+          "pid": 42342,
+          "host": "3dba8e7dcf1b",
+          "boot_id": "20f8def3-9666-499d-8d01-4cfb5819ed90",
+          "start_ticks": "24436838"
+        },
+        {
+          "pid": 42346,
+          "host": "3dba8e7dcf1b",
+          "boot_id": "20f8def3-9666-499d-8d01-4cfb5819ed90",
+          "start_ticks": "24437945"
+        }
+      ],
+      "release_confirmed": false
+    },
+    "blocked_reason": null,
+    "updated_at": "2026-09-15 01:09:17.314980+00:00"
+  },
+  "events": [
+    {
+      "event": "process_started",
+      "payload": {
+        "policy": {
+          "version": "e93_sequential_v1",
+          "pause_on_new_oom_kill": true,
+          "minimum_available_bytes": 1073741824,
+          "pause_after_consecutive_failures": 2
+        },
+        "run_id": "79f39931-ac71-4bc1-a317-149a975d1f74",
+        "process": {
+          "pid": 42346,
+          "host": "3dba8e7dcf1b",
+          "boot_id": "20f8def3-9666-499d-8d01-4cfb5819ed90",
+          "start_ticks": "24437945"
+        }
+      },
+      "created_at": "2026-09-15 01:09:17.315416+00:00"
+    },
+    {
+      "event": "acquired",
+      "payload": {
+        "kind": "controlled",
+        "policy": {
+          "version": "e93_sequential_v1",
+          "pause_on_new_oom_kill": true,
+          "minimum_available_bytes": 1073741824,
+          "pause_after_consecutive_failures": 2
+        },
+        "process": {
+          "pid": 42342,
+          "host": "3dba8e7dcf1b",
+          "boot_id": "20f8def3-9666-499d-8d01-4cfb5819ed90",
+          "start_ticks": "24436838"
+        },
+        "resources": {
+          "oom_kill": 5,
+          "cgroup_max": "max",
+          "available_bytes": 6971207680,
+          "cgroup_current_bytes": 1416093696
+        },
+        "acknowledgement": false
+      },
+      "created_at": "2026-09-15 01:09:06.875131+00:00"
+    }
+  ],
+  "session": {
+    "run_id": "79f39931-ac71-4bc1-a317-149a975d1f74",
+    "attempt_id": "4cd0cf3f-37df-4490-9f26-eb2763f3b4e6",
+    "owner": "b501c314-af34-4abe-b1f7-5f1549c089e3",
+    "host": "3dba8e7dcf1b",
+    "parent_pid": 42342,
+    "child_pid": 42346,
+    "state": "active",
+    "configuration": {
+      "model_id": "custom_cnn",
+      "resolved": {
+        "model": {
+          "l2": 0.0001,
+          "dropout": 0.4,
+          "weights": "none",
+          "head_units": 128,
+          "input_shape": [
+            200,
+            200,
+            3
+          ],
+          "preprocessing": "rescale_0_1",
+          "fine_tune_layers": 0,
+          "batch_normalization": "train"
+        },
+        "recipe": {
+          "loss": "binary_crossentropy",
+          "metrics": "binary_clinical_v1",
+          "fallback": "existing_clinical_policy_v1",
+          "reduce_lr": {
+            "factor": 0.5,
+            "min_lr": 1e-06,
+            "monitor": "val_loss",
+            "patience": 4
+          },
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "zoom": 0.2,
+            "contrast": 0.3,
+            "rotation": 0.07,
+            "translation": 0.2
+          },
+          "selection_threshold": 0.5,
+          "clinical_success_independent_of_technical_completion": true
+        },
+        "execution": {
+          "beta": 2,
+          "seed": 11,
+          "batch_size": 64,
+          "max_epochs": 50,
+          "min_recall": 0.98,
+          "no_augment": false,
+          "target_recall": 0.98,
+          "early_stopping": true,
+          "checkpoint_mode": "max",
+          "min_specificity": 0,
+          "fine_tune_epochs": 0,
+          "checkpoint_policy": "auc_with_min_recall",
+          "deterministic_ops": true,
+          "checkpoint_monitor": "val_f2_parasitized",
+          "min_class_fraction": 0.05,
+          "calibrate_threshold": false,
+          "early_stopping_mode": "max",
+          "restore_best_weights": true,
+          "evaluate_best_on_test": false,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_patience": 12,
+          "early_stopping_min_delta": 0.0001,
+          "reject_prediction_collapse": true
+        },
+        "optimizer": {
+          "name": "adadelta",
+          "parameters": {
+            "rho": 0.95,
+            "epsilon": 1e-07,
+            "use_ema": false,
+            "clipnorm": null,
+            "clipvalue": null,
+            "ema_momentum": 0.99,
+            "weight_decay": null,
+            "learning_rate": 1,
+            "global_clipnorm": null,
+            "loss_scale_factor": null,
+            "ema_overwrite_frequency": null,
+            "gradient_accumulation_steps": null
+          },
+          "fine_tune_learning_rate": 1
+        },
+        "selection": {
+          "beta": 2,
+          "mode": "max",
+          "monitor": "val_f2_parasitized",
+          "explicit": true,
+          "fallback": "retain existing policy warning and collapse status",
+          "threshold": 0.5,
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "early_stopping_mode": "max",
+          "early_stopping_monitor": "val_f2_parasitized"
+        },
+        "input_contract": {
+          "dtype": "float32",
+          "shape": [
+            null,
+            200,
+            200,
+            3
+          ],
+          "decode": "tf_decode_image_rgb_v1",
+          "output": {
+            "dtype": "float32",
+            "shape": [
+              null,
+              1
+            ],
+            "meaning": "probability_parasitized",
+            "activation": "sigmoid"
+          },
+          "resize": {
+            "method": "bilinear",
+            "location": "loader",
+            "antialias": false
+          },
+          "channels": 3,
+          "external": {
+            "mode": "rescale_0_1",
+            "version": "tf_preprocessing_v1",
+            "location": "loader",
+            "output_order": "RGB"
+          },
+          "internal": {
+            "mode": null,
+            "location": "none"
+          },
+          "architecture": "custom_cnn",
+          "source_order": "RGB",
+          "source_scale": "0_255",
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "positive_class": 1,
+            "positive_label": "parasitized"
+          },
+          "schema_version": "malaria_input_v1",
+          "adapter_version": "1.0"
+        }
+      },
+      "schema_version": "model_config_v1",
+      "adapter_version": "1.0"
+    },
+    "dataset": {
+      "counts": {
+        "val": 2693,
+        "test": 2685,
+        "train": 22180
+      },
+      "dataset_root": "/app/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "selection_unit": "dataset_version_id",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "dataset_materialization_id": "e15dc166-1c4b-558e-b77b-727b1783430c",
+      "clinical_identity_fingerprint": "d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59",
+      "record_assignment_fingerprint": "9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2",
+      "source_population_fingerprint": "eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0",
+      "patient_assignment_fingerprint": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+    },
+    "environment": {
+      "python": "3.12.14",
+      "packages": {
+        "keras": "3.15.1",
+        "numpy": "1.26.4",
+        "psycopg": "3.3.5",
+        "SQLAlchemy": "2.0.52"
+      },
+      "git_commit": null,
+      "tensorflow": "2.17.1",
+      "source_sha256": "70d9ac1861a003a6ebba82d58ceebef757598588ffe7a4735b0c1a1f141ae5c0",
+      "determinism_environment": {
+        "PYTHONHASHSEED": "42",
+        "TF_DETERMINISTIC_OPS": null
+      }
+    },
+    "artifact_root": "/app/var/artifacts/campaign_runs/79f39931-ac71-4bc1-a317-149a975d1f74",
+    "cause": null,
+    "started_at": "2026-09-15 01:09:17.297231+00:00",
+    "updated_at": "2026-09-15 01:09:17.945040+00:00",
+    "completion": null,
+    "verification": null
+  },
+  "records": [
+    {
+      "kind": "runtime",
+      "count": 1,
+      "last_at": "2026-09-15 01:09:29.994912+00:00"
+    }
+  ],
+  "artifacts": [],
+  "processes": [
+    {
+      "pid": 42342,
+      "ppid": 42337,
+      "session": 42337,
+      "start_ticks": "24436838",
+      "state": "S",
+      "cpu_ticks": 613,
+      "rss_bytes": 103841792,
+      "managed": true
+    },
+    {
+      "pid": 42346,
+      "ppid": 42342,
+      "session": 42346,
+      "start_ticks": "24437945",
+      "state": "S",
+      "cpu_ticks": 27702,
+      "rss_bytes": 2514010112,
+      "managed": true
+    }
+  ],
+  "clock_ticks_per_second": 100,
+  "cpu.stat": "usage_usec 276674084031\nuser_usec 182766946829\nsystem_usec 93907137201\nnice_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0",
+  "memory.swap.current": "27840512",
+  "memory.swap.max": "max",
+  "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 5\noom_group_kill 0",
+  "log_bytes": 10060,
+  "epoch_markers": [],
+  "batch_markers": [
+    "14/347",
+    "15/347",
+    "16/347",
+    "17/347"
+  ],
+  "cli_exit": [],
+  "sanitized_error_markers": []
+}

@@ -1,0 +1,22 @@
+{
+  "created_utc": "2026-09-15T08:44:46.385085+00:00",
+  "git_head": "144da5cbd6ce34647a3e109daa3542af75c0606c",
+  "status": "INTENTO_FALLIDO",
+  "run_id": "79f39931-ac71-4bc1-a317-149a975d1f74",
+  "campaign_paused": true,
+  "publication_deployment_unchanged": true,
+  "new_attempts": 0,
+  "worker_exit": -9,
+  "cli_exit": 1,
+  "oom_delta": 1,
+  "oom_individual_attribution": "probable, not established",
+  "files": {
+    "docs/audits/e9_3_verificacion_2026-09-15/auditoria.md": "f5c48ae8415c3e182570ff0b8c19501c8fff264b760fe916ab0fae500d40183f",
+    "docs/audits/e9_3_verificacion_2026-09-15/comprobar.py": "5c58d804f7ccb4515e79147cd144dc596d48eb95812846f9a3055213561835c4",
+    "docs/audits/e9_3_verificacion_2026-09-15/contenedor.json": "bfe40a6f293f6f035849f66ac43a66cd6dbf43941b269ea9457b7af3186cb54c",
+    "docs/audits/e9_3_verificacion_2026-09-15/evidencia_final.json": "4925b5d83c39434e3bc114a862b6b9ef8cb71b3f2d00efe0e6226fd9a0d2c760",
+    "docs/audits/e9_3_verificacion_2026-09-15/observacion.json": "0c15faf36fd1dedb7c8a671a0326445f446d75c2ea4683a77e8cbf5c34d84b78",
+    "docs/audits/e9_3_verificacion_2026-09-15/operacion.md": "0a48d3a1ca9c13b50b4db1b50c8359780b1bdd98816edd03ef3a8e2f13d7a02e",
+    "docs/audits/e9_3_verificacion_2026-09-15/snapshot_final.json": "b6342d86ddcfc628ff8025893a640bc4ea5f6a6cebeab07997db2fef747a0c15"
+  }
+}

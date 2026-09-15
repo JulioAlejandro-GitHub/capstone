@@ -12,6 +12,7 @@ __pycache__/
 
 # Proyecto malaria
 malaria_dl_local_project/.venv/
+malaria_dl_local_project/.venv-local-train/
 malaria_dl_local_project/outputs/
 malaria_dl_local_project/tensorflow_datasets/
 

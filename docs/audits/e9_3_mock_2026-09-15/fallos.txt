@@ -1,0 +1,7 @@
+{'contrast': 'calculation-success/persistence-failure', 'stage': 'epoch', 'sqlstate': ['23514'], 'false_success': False}
+.{'contrast': 'calculation-success/persistence-failure', 'stage': 'artifact', 'sqlstate': ['23514'], 'false_success': False}
+.{'contrast': 'calculation-success/persistence-failure', 'stage': 'final', 'sqlstate': ['23514'], 'false_success': False}
+.committed readback; repeated finalization rejected without duplicate; request idempotent
+.process killed during synthetic calculation; no completion; SIGKILL does not prove OOM
+..
+6 passed in 2.39s

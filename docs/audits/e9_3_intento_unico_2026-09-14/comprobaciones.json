@@ -1,0 +1,19 @@
+{
+  "source_hashes_match": true,
+  "session_environment_matches_registered": true,
+  "publication_deployment_unchanged": true,
+  "campaign_paused": true,
+  "one_new_attempt": true,
+  "request": {
+    "id": "7d4cacb1-3d85-53f6-9828-8a7b1e0164c5",
+    "campaign_id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+    "member_id": "2fbd5862-b68b-4845-9445-a30d7ec61382",
+    "revision_id": "3ec6fa57-be3f-5433-8557-8c12c3eea740",
+    "previous_attempt_id": "8279db36-7bfe-4e22-8bf3-872ac215eae2",
+    "attempt_id": "4cd0cf3f-37df-4490-9f26-eb2763f3b4e6",
+    "run_id": "79f39931-ac71-4bc1-a317-149a975d1f74",
+    "reason": "User f84cc89d authorized one controlled TRAIN from zero; campaign remains paused; no further attempt",
+    "created_at": "2026-09-15 01:09:17.288597+00:00"
+  },
+  "state": "EN_EJECUCION"
+}

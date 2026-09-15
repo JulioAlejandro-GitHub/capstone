@@ -1,0 +1,29 @@
+{
+  "created_utc": "2026-09-15T01:13:54.873726+00:00",
+  "status": "EN_EJECUCION",
+  "campaign_id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+  "dataset_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "technical_revision_id": "3ec6fa57-be3f-5433-8557-8c12c3eea740",
+  "request_id": "7d4cacb1-3d85-53f6-9828-8a7b1e0164c5",
+  "run_id": "79f39931-ac71-4bc1-a317-149a975d1f74",
+  "git_head": "144da5cbd6ce34647a3e109daa3542af75c0606c",
+  "code_modified": false,
+  "source_sha256": "70d9ac1861a003a6ebba82d58ceebef757598588ffe7a4735b0c1a1f141ae5c0",
+  "files": {
+    "docs/audits/e9_3_intento_unico_2026-09-14/auditoria.md": "156a8a3dfce87c638ba6e6eafb967d2e835253eabf5d61acf3f03a0af7127e5b",
+    "docs/audits/e9_3_intento_unico_2026-09-14/comprobaciones.json": "7ed65e764bd6be951e13b354884f2865ce5e83b89ea889a318f3e9f627aee67d",
+    "docs/audits/e9_3_intento_unico_2026-09-14/consultar.py": "5f7d64da4c3c1aaddcb68f5219d3ec91aa755b025ff77ddf1a4594e371a2216e",
+    "docs/audits/e9_3_intento_unico_2026-09-14/control_inicial.json": "79c65ae1ddea0b74b6443753e9ddcc9294721c822ed3df673702b71297b5bfb1",
+    "docs/audits/e9_3_intento_unico_2026-09-14/dry_run.json": "a4c57b9c52ce66a356cdda5524b6f186bc25e68ce3a6a73285b93603f438615c",
+    "docs/audits/e9_3_intento_unico_2026-09-14/lanzamiento.sh": "551201d97a7b46151dd676381d1aaacaad81bd590ed419c29ea6baabb994b8d2",
+    "docs/audits/e9_3_intento_unico_2026-09-14/observacion_01.json": "5e74090eef1f03647cce88db5d47fe8f0d783c79cfa4740d888af8eb291d7998",
+    "docs/audits/e9_3_intento_unico_2026-09-14/observacion_02.json": "7da9c2754b087aa6e15ae3b5009e1b8f429f3de3e1782aec6ac1f9249e57f480",
+    "docs/audits/e9_3_intento_unico_2026-09-14/observacion_03.json": "4069319272dbeba7e9e76ffb1f240da916d1d321f0bb675f3ab715444de0c786",
+    "docs/audits/e9_3_intento_unico_2026-09-14/operacion.md": "8e8242bdcf3547517d1ad27e797189df4e83018964851b1bf71147280df90c2b",
+    "docs/audits/e9_3_intento_unico_2026-09-14/preflight.json": "254904eb8cfec19b241ab85b8324cf4a99c25459f11f4778c94590cc63f0a972",
+    "docs/audits/e9_3_intento_unico_2026-09-14/recursos_resumen.json": "f6d412dacd5aee14542b411ea6337363c496c077430fbecf8f8a4045cab7f930",
+    "docs/audits/e9_3_intento_unico_2026-09-14/seleccion.json": "d48b1b002d99a4bbb7c12768a847022d9fe9c295498131e193766596d51de971",
+    "docs/audits/e9_3_intento_unico_2026-09-14/snapshot_inicial.json": "fb6734ad25cdc4db6c06717efa8aa08c04ade35ecde1a9caf6407aaa6363350c",
+    "docs/audits/e9_3_intento_unico_2026-09-14/snapshot_seguimiento.json": "35cfd0bd6b85ecbb94a77d5a6f7f41bd4d9b4e03866821d7c47614e1726d618a"
+  }
+}

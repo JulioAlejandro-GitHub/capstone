@@ -1,0 +1,41 @@
+{
+  "url": "http://localhost:8000",
+  "roots": {
+    "dataset": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "artifacts": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/local_execution_artifacts"
+  },
+  "request": {
+    "campaign_id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+    "dataset_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "member_id": "2fbd5862-b68b-4845-9445-a30d7ec61382",
+    "previous_attempt_id": "4cd0cf3f-37df-4490-9f26-eb2763f3b4e6",
+    "revision_id": "ce8ba23c-fff5-4f41-8c88-5f8ba8659d2f",
+    "request_id": "7ec42a65-e5f1-42b0-8a33-60ca9e4e0f08",
+    "reason": "Intento controlado real via ejecutor local (Mac), miembro posicion 0, autorizado explicitamente por el usuario 2026-09-15 tras reconciliacion administrativa del gate.",
+    "dataset_root_id": "dataset",
+    "artifact_root_id": "artifacts",
+    "mode": "controlled",
+    "environment": {
+      "git_commit": "144da5cbd6ce34647a3e109daa3542af75c0606c",
+      "source_sha256": "b1ba215c4d615e82780ec4d69985beda15c2c6e35d6ad13b1ca276e3f5c307de",
+      "python": "3.12.13",
+      "tensorflow": "2.17.1",
+      "determinism_environment": {
+        "TF_DETERMINISTIC_OPS": null,
+        "PYTHONHASHSEED": "42"
+      },
+      "packages": {
+        "keras": "3.15.1",
+        "numpy": "1.26.4",
+        "SQLAlchemy": "2.0.53",
+        "psycopg": "3.3.5"
+      },
+      "execution_mode": "local_python",
+      "platform": "Darwin",
+      "machine": "arm64",
+      "device": "CPU",
+      "precision": "float32"
+    },
+    "agent_id": "f7db37dc-4e4d-4fb2-9888-a9d0d604dcff"
+  }
+}

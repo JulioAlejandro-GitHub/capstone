@@ -867,3 +867,134 @@ TRAIN y el ejecutor masivo usan el registro único de modelos habilitados. Los n
 TRAIN requieren persistencia PostgreSQL incluso sin `--track-db`; para inspección sin
 BD use `--dry-run`. Consulte [Cómo agregar y habilitar un modelo](docs/model_registry_e2.md)
 para configuración, adaptadores, matriz predeterminada y límites E3–E9.
+
+## 10. Ejecución local con agente (Mac) + backend/PostgreSQL en Docker
+
+`src/malaria_dl/local_execution/` implementa un modo de ejecución `local_python`: el
+backend y PostgreSQL permanecen en Docker (administración de campañas, reservas,
+exclusividad, persistencia); sólo el subproceso TRAIN corre nativamente en el Mac, fuera
+del límite de memoria del contenedor. El agente nunca se conecta a PostgreSQL
+directamente — reporta todo vía la API del backend (`/execution/local/*`). El arranque
+automático está **deshabilitado por defecto**: la ruta HTTP exige
+`CAPSTONE_LOCAL_EXECUTION_ENABLED=1` explícito en el backend, y el agente sólo actúa
+cuando se invoca a mano.
+
+Detalle completo de diseño, contrato agente-backend y estado Implementado / Verificado
+en `docs/audits/e9_3_local_agent_2026-09-15/auditoria.md`.
+
+### 10.1 Preparar el entorno local
+
+Entorno virtual dedicado (Python 3.12, nunca el Python global), con pines exactos y
+reproducibles en `requirements-local-train.txt`:
+
+```bash
+cd malaria_dl_local_project
+python3.12 -m venv .venv-local-train
+.venv-local-train/bin/pip install --upgrade pip
+.venv-local-train/bin/pip install -r requirements-local-train.txt
+```
+
+Verificación de plataforma/dispositivo (debe mostrar `arm64`/`Darwin` y sin GPU/Metal):
+
+```bash
+.venv-local-train/bin/python -c "
+import platform, tensorflow as tf, numpy as np
+print(platform.platform(), platform.machine())
+print('tensorflow', tf.__version__, 'numpy', np.__version__)
+print('devices', tf.config.list_physical_devices())"
+```
+
+### 10.2 Validar conectividad y almacenamiento (dry-run, sin escrituras)
+
+El agente nunca elige modelos ni crea experimentos: el backend entrega la sesión exacta
+(campaña, miembro, revisión técnica) en un archivo de configuración JSON que el
+operador prepara a partir de los identificadores de la reserva ya autorizada:
+
+```json
+{
+  "url": "https://<host-del-backend>",
+  "roots": {"dataset": "/ruta/local/al/dataset", "artifacts": "/ruta/local/a/artifacts"},
+  "request": {
+    "campaign_id": "...", "dataset_id": "...", "member_id": "...",
+    "previous_attempt_id": "...", "revision_id": "...", "request_id": "...",
+    "reason": "...", "dataset_root_id": "dataset", "artifact_root_id": "artifacts",
+    "mode": "controlled", "environment": {"...": "..."}, "agent_id": "..."
+  }
+}
+```
+
+```bash
+export CAPSTONE_AGENT_BEARER=<token>
+.venv-local-train/bin/python -m src.malaria_dl.local_execution.agent dry-run \
+  --config agent_config.json --state agent_state.json
+```
+
+Esto sólo hace `prepare()` + estado del gate global — cero reservas, cero escrituras.
+
+### 10.3 Iniciar el agente (una única reserva, un único TRAIN)
+
+```bash
+.venv-local-train/bin/python -m src.malaria_dl.local_execution.agent start \
+  --config agent_config.json --state agent_state.json
+```
+
+Reclama la reserva (idempotente por `request_id`), verifica el manifiesto del dataset,
+lanza el subproceso TRAIN, mantiene heartbeat cada 15 s (vencimiento 60 s) en un hilo
+independiente del cálculo, y reporta épocas/artefactos/checkpoint vía la API a medida
+que ocurren. Con `mode: "controlled"` termina tras un único intento, sin encadenar.
+
+### 10.4 Consultar estado
+
+```bash
+.venv-local-train/bin/python -m src.malaria_dl.local_execution.agent status \
+  --config agent_config.json --state agent_state.json
+```
+
+Reporta `state`, `communication` (`connected`/`uncertain` tras 60 s sin heartbeat) y si
+la reserva ya fue liberada. Nunca libera nada por sí mismo.
+
+### 10.5 Pausar nuevas asignaciones
+
+No hay un flag de pausa separado: el agente sólo actúa cuando se invoca. Para impedir
+nuevas asignaciones, no relance `agent start` (y, del lado backend, mantenga
+`CAPSTONE_LOCAL_EXECUTION_ENABLED` sin definir o en `0`). Un intento controlado ya
+reservado no se puede pausar a medias: el contrato exige terminar y verificar ese
+intento antes de que la exclusividad se libere.
+
+### 10.6 Recuperar una desconexión
+
+```bash
+.venv-local-train/bin/python -m src.malaria_dl.local_execution.agent reconcile \
+  --config agent_config.json --state agent_state.json
+```
+
+Si el estado local (`agent_state.json`) tiene un `exit_proof` pendiente de confirmar,
+lo reenvía; si no, sólo consulta estado. El vencimiento de heartbeat nunca se trata como
+evidencia de que el TRAIN terminó — la exclusividad permanece retenida hasta una salida
+con ausencia de proceso probada.
+
+### 10.7 Preparar un único intento controlado
+
+Requiere una revisión técnica `local_python` ya registrada por el backend
+(`ControlledRepository.register_revision`, campaña `paused`) y un `request_id` nuevo.
+El agente sólo consume la sesión que el backend arma — no reasigna intentos históricos
+ni cambia hashes de revisiones previas.
+
+### 10.8 Detener el agente sin interrumpir un TRAIN activo
+
+`SIGINT`/`SIGTERM` sólo detienen el bucle de solicitud del *siguiente* trabajo; nunca
+señalan al subproceso TRAIN en curso, que se deja terminar y reportar normalmente:
+
+```bash
+kill -TERM <pid-del-agente>
+```
+
+### Requisitos pendientes de instalación
+
+- El venv y `requirements-local-train.txt` fueron creados y verificados en este Mac
+  (import + plataforma/dispositivo reales); no se instaló nada en el Python global.
+- La migración `alembic/versions/20260915_01_local_execution.py` **no** está aplicada
+  sobre la base persistente real (`alembic current` sigue en `20260914_02`); aplicarla
+  requiere una decisión explícita separada de este fix, fuera de este alcance.
+- `CAPSTONE_LOCAL_EXECUTION_ENABLED`/`CAPSTONE_LOCAL_STORAGE_ROOTS` no están definidas
+  en ningún compose/env real — la ruta HTTP permanece deshabilitada por defecto.
