@@ -1,0 +1,32 @@
+{
+  "head": "1fc5201474bb158a8f84d12b543b255abb1d3d7e",
+  "campaign_id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+  "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "A": "PARCIAL",
+  "B": "APROBADO_DESARROLLO_AISLADO_INSTALACION_PENDIENTE",
+  "operational_attempt_executed": false,
+  "operational_reservation_created": false,
+  "source_original": "d8569d8faaa80eca42b130e6096203d851e2c663b4cdb8cd599dda950fbe6430",
+  "source_proposal": "75d0b162d4cd13daaee24b8fe745c7108a91e6c6b1fb3e9beef222602e510865",
+  "files": {
+    "docs/audits/e9_3_desarrollo_2026-09-14/migracion_offline.sql": "81e731a880ead16105f7261eaf4854b9286449397a95efa4ab2aed854e421b2b",
+    "docs/audits/e9_3_desarrollo_2026-09-14/operacion.md": "01747c99a199b39d24d16aaa5e91ca490f4fd11cb2ef2e99df335e710e451ef2",
+    "docs/audits/e9_3_desarrollo_2026-09-14/memoria.jsonl": "21a54138733a79033ef80616b1b0840437431fc669778d7bcc047d1c2e217a32",
+    "docs/audits/e9_3_desarrollo_2026-09-14/auditoria.md": "5a7dd767e1ac6e8dd5e0280318132fd80c2038e606a640ea6aaf56499ebd3d26",
+    "docs/audits/e9_3_desarrollo_2026-09-14/pruebas.txt": "9ef13db381f6fd1dd5df6461ee8a71423ac950c351f49adef8ca5740ed26f258",
+    "docs/audits/e9_3_desarrollo_2026-09-14/dataset_train.json": "ab2c352e7304decaef8d5574f1cd6e3f5783d2a1703ad185751dd9774a1e0c17",
+    "docs/audits/e9_3_desarrollo_2026-09-14/cierre_recursos.json": "10330c774c17bfcaf973e0c3b786b40e016f3054b01e1b91ad5aaf77c8395dd1",
+    "docs/audits/e9_3_desarrollo_2026-09-14/snapshot_inicial.json": "7d772f38d6a59be3271a0fdc1badd50edaf277a2ccf55ad648fe3b28187a9bf1",
+    "docs/audits/e9_3_desarrollo_2026-09-14/verificar_train.py": "285ccc9bd5203086e159c5c9af7a57620fd6955f29560874260b90cc6ca89af8",
+    "docs/audits/e9_3_desarrollo_2026-09-14/revision_propuesta.json": "bcedc1ae8c0ab888bde34cedfac1352bcb054b0e9bea5e8d5ff69bff1da9bdb6",
+    "docs/audits/e9_3_desarrollo_2026-09-14/snapshot_final.json": "ed0f642881a0215bf3b7110d4ec928466cd4c7e6c5eefb12a17a4c385f388dd3",
+    "docs/audits/e9_3_desarrollo_2026-09-14/dry_run.json": "62d84b67afa01470f849e98a2435d6c16ca1dc07fe6fb1867ff46617ac31675d",
+    "docs/audits/e9_3_desarrollo_2026-09-14/diagnostico_memoria.py": "2170038c733972ebf2b37db7a807a4c4ae08904a4365059453517a3d866c4de0",
+    "alembic/versions/20260914_01_controlled_train.py": "56a0581d66d15c3e4bfb8d17872f67b201d2ae1c79fe6a9089d9d1993b0d9ab9",
+    "malaria_dl_local_project/tests/test_controlled_train_postgres.py": "a6c3b63836bf2109e00757fa55f7616c2c6a6c305d89970692be8ec567c83fc6",
+    "malaria_dl_local_project/src/malaria_dl/execution/campaign.py": "f993834096823b29bac7c5c8d9ee16ff28477cc2bc1abef790620a5111d3ee2c",
+    "malaria_dl_local_project/src/malaria_dl/execution/controlled.py": "ec3c6fdfc94cb38f434d12463d8c007ab3962518cf8050c889cf442ba4d662f9",
+    "malaria_dl_local_project/src/malaria_dl/execution/repository.py": "3e4567a02e6f6d4d54b9c683c1034132728f674a416e72da47cd73dddcb7e90a",
+    "malaria_dl_local_project/src/malaria_dl/execution/worker.py": "c024b5bbbb49971825547970fcfb3a74d8faa67a191b7a103d1789f4638c7253"
+  }
+}

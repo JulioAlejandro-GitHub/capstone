@@ -1,0 +1,24 @@
+./scripts/db/migrate.sh
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+20260912_02
+20260914_02 (head)
+Adopción Alembic válida en malaria_experiments: 20260912_02
+Identidad canónica verificada: usuario=julio base=malaria_experiments
+Contenido requerido verificado con pg_restore --list
+Backup: /var/folders/r0/ncxcq14d05x1gsmgxfrj16f00000gn/T//capstone-backups/capstone_20260915T004508Z.dump
+SHA-256: 79150899cc86d5fd4c235fddae70037ed0a239fecf95fe861b9f143c04c3d578
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 20260912_02 -> 20260914_01, E9.3 explicit technical revisions and one paused controlled attempt.
+INFO  [alembic.runtime.migration] Running upgrade 20260914_01 -> 20260914_02, Global experimental exclusivity and sequential technical revision binding.
+Preflight transaccional válido: 20260912_02 -> 20260914_02; se ejecutará rollback
+Rollback confirmado; revisión persistente: 20260912_02
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 20260912_02 -> 20260914_01, E9.3 explicit technical revisions and one paused controlled attempt.
+INFO  [alembic.runtime.migration] Running upgrade 20260914_01 -> 20260914_02, Global experimental exclusivity and sequential technical revision binding.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+20260914_02 (head)
+20260914_02 (head)

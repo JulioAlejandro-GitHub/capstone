@@ -1,0 +1,20 @@
+{
+  "historical_content_unchanged": true,
+  "publication_deployment_unchanged": true,
+  "campaigns_unchanged": true,
+  "head_installed": true,
+  "e5_e6_ancestors": true,
+  "ready": true,
+  "no_processes": true,
+  "no_active": true,
+  "no_synthetic_schemas": true,
+  "dataset_exact": true,
+  "nullable_historical_campaign": true,
+  "no_orphan_campaign": true,
+  "dry_run": true,
+  "required_triggers_enabled": true,
+  "global_indexes": true,
+  "backup_checksum": true,
+  "e5_e6_e93_tables_present": true,
+  "prepared_hashes_still_match": true
+}

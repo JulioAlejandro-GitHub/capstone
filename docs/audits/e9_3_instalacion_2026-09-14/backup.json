@@ -1,0 +1,7 @@
+{
+  "path": "/var/folders/r0/ncxcq14d05x1gsmgxfrj16f00000gn/T//capstone-backups/capstone_20260915T004508Z.dump",
+  "bytes": 81824343,
+  "sha256": "79150899cc86d5fd4c235fddae70037ed0a239fecf95fe861b9f143c04c3d578",
+  "checksum_matches_wrapper": true,
+  "verification": "pg_restore --list: required schema/data/index entries; no restore performed"
+}

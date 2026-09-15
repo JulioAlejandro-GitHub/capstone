@@ -1,0 +1,14 @@
+{
+  "utc": "2026-09-14T23:26:27.342474+00:00",
+  "train_processes": [],
+  "oom_kill": 5,
+  "installed_revision": "20260912_02",
+  "new_tables_installed": false,
+  "remaining_test_schemas": 0,
+  "ready_http": 503,
+  "ready_components": {
+    "database": "ready",
+    "migrations": "not_ready",
+    "storage": "ready"
+  }
+}

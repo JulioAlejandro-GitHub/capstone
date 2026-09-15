@@ -38,6 +38,12 @@ def parser(kind, batch=False):
 
 
 def main(kind="evaluate", batch=False, argv=None):
+    from ..execution.global_gate import GlobalGate
+    with GlobalGate("assessment-" + kind):
+        return _main(kind, batch, argv)
+
+
+def _main(kind="evaluate", batch=False, argv=None):
     args = parser(kind, batch).parse_args(argv)
     repository = AssessmentRepository()
     try:

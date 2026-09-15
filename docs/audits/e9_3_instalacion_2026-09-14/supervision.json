@@ -1,0 +1,4 @@
+{
+  "matching_launch_agents": [],
+  "service_policies": "Compose restart always: backend uvicorn --reload, db postgres, frontend npm dev. No coordinator entrypoint. Container process inspection showed uvicorn/reloader and read-only probe; no cron/supervisor paths."
+}

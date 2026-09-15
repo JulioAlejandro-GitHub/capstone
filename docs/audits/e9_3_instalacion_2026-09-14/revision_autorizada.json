@@ -1,0 +1,58 @@
+{
+  "original_environment": {
+    "python": "3.12.14",
+    "packages": {
+      "keras": "3.15.1",
+      "numpy": "1.26.4",
+      "psycopg": "3.3.5",
+      "SQLAlchemy": "2.0.52"
+    },
+    "git_commit": null,
+    "tensorflow": "2.17.1",
+    "source_sha256": "d8569d8faaa80eca42b130e6096203d851e2c663b4cdb8cd599dda950fbe6430",
+    "determinism_environment": {
+      "PYTHONHASHSEED": "42",
+      "TF_DETERMINISTIC_OPS": null
+    }
+  },
+  "environment": {
+    "git_commit": null,
+    "source_sha256": "70d9ac1861a003a6ebba82d58ceebef757598588ffe7a4735b0c1a1f141ae5c0",
+    "python": "3.12.14",
+    "tensorflow": "2.17.1",
+    "determinism_environment": {
+      "TF_DETERMINISTIC_OPS": null,
+      "PYTHONHASHSEED": "42"
+    },
+    "packages": {
+      "keras": "3.15.1",
+      "numpy": "1.26.4",
+      "SQLAlchemy": "2.0.52",
+      "psycopg": "3.3.5"
+    }
+  },
+  "contract_hash": "02a63b0c76dc600bcb17c7163699abf7dd4e5579643b6adbc783f50d30fcf1ba",
+  "reason": "E9.3: exclusividad global, cola secuencial, barrera de procesos y verificaci\u00f3n de artefactos; optimizaci\u00f3n de memoria no es requisito previo.",
+  "files": {
+    "malaria_dl_local_project/src/malaria_dl/execution/worker.py": "2bdaa3f2d7198d098f34ac65663d33de0b57d7087c6b0809c73eb082ae11bc13",
+    "malaria_dl_local_project/src/malaria_dl/execution/process_verification.py": "589ec94858f491dcc78ccb5cc5015d2c5c5efe6d0c77d5a6a42a5dadfef1a264",
+    "malaria_dl_local_project/src/malaria_dl/execution/global_gate.py": "9a33e89f0b8e4b50d28a69d61c4d2f7e5070e24036c978d057785b2dceb6c686",
+    "malaria_dl_local_project/src/malaria_dl/execution/__init__.py": "d0238a2e513c380e8d4606bfce2939509dd7456d43eebb43401cf9a5d70151c7",
+    "malaria_dl_local_project/src/malaria_dl/execution/controlled.py": "54df9577ccb99857cbe3c9211bf269f378ee0af8c5b00d95b49b6c42157271c6",
+    "malaria_dl_local_project/src/malaria_dl/execution/campaign.py": "c3cdf1441a9c9151621c5df8358a1eb7d8058c259da69d3fdf8cc9fa1abd14d2",
+    "malaria_dl_local_project/src/malaria_dl/execution/train.py": "8442b1c90d793a2a0cb980b4be833eae28e3f89a9bc7791f1bb270c02ba32526",
+    "malaria_dl_local_project/src/malaria_dl/execution/artifacts.py": "62693e43c33e9a6ed56ee9eba6283ef8a57f37cb2cd6235f5356fca5650d56cc",
+    "malaria_dl_local_project/src/malaria_dl/execution/repository.py": "504d46200cc7bd8684dbb231173b7fdf17e9b539655f4dc8ff87f0491b8c92ed",
+    "alembic/versions/20260914_02_global_execution.py": "5e60da2905e50041a8937240472dd2767825d517e900daa17b122298a3e90dfa",
+    "malaria_dl_local_project/src/malaria_dl/campaigns/repository.py": "52a5bf37c9ed23320d54728c70f9c1902f8d8ef856277455a37b89394d31f060",
+    "malaria_dl_local_project/src/malaria_dl/assessment/cli.py": "aa88f4a50c3764be12dc05371943e43d89d08e7e7897ef6fb6d449fc80e6bf3b"
+  },
+  "tests": [
+    {
+      "result": "128 passed, 2 deselected, 7 warnings in 27.79s",
+      "evidence": "docs/audits/e9_3_secuencial_global_2026-09-14/pruebas_final.txt",
+      "sha256": "9506124ac97f9321fba3198bf8ebd537ff55901ed659f8ed36c7ac235be91f06"
+    }
+  ],
+  "authorization": "Usuario autoriza instalaci\u00f3n y registro t\u00e9cnico E9.3 en solicitud fe3333c5-c78a-40d3-aa7a-06ac3ed480f2 del 14/09/2026. Campa\u00f1a debe permanecer pausada. No autoriza reservas, TRAIN, EVALUATE, EXPLAIN, TEST ni reanudaci\u00f3n."
+}

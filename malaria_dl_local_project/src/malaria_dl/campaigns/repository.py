@@ -41,6 +41,11 @@ class CampaignRepository:
     def transaction(self, readonly=False):
         try:
             with self.scope(readonly=readonly) as c:
+                from ..execution.global_gate import token
+                execution_token = token()
+                if execution_token:
+                    c.execute(text("SELECT set_config('capstone.execution_token',:token,true)"),
+                              {'token': execution_token})
                 yield c
         except CampaignError:
             raise

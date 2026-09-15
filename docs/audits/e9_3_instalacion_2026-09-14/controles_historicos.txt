@@ -1,0 +1,7 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_______________________ test_public_e5_revision_readonly _______________________
+E5 public READ ONLY: phase=revision expected=['20260912_01'] obtained=['20260912_02']
+=========================== short test summary info ============================
+FAILED tests/test_campaign_executor_postgres.py::test_public_e5_revision_readonly
+1 failed, 1 passed in 0.48s

@@ -1,0 +1,50 @@
+{
+  "original_environment": {
+    "python": "3.12.14",
+    "packages": {
+      "keras": "3.15.1",
+      "numpy": "1.26.4",
+      "psycopg": "3.3.5",
+      "SQLAlchemy": "2.0.52"
+    },
+    "git_commit": null,
+    "tensorflow": "2.17.1",
+    "source_sha256": "d8569d8faaa80eca42b130e6096203d851e2c663b4cdb8cd599dda950fbe6430",
+    "determinism_environment": {
+      "PYTHONHASHSEED": "42",
+      "TF_DETERMINISTIC_OPS": null
+    }
+  },
+  "environment": {
+    "git_commit": null,
+    "source_sha256": "75d0b162d4cd13daaee24b8fe745c7108a91e6c6b1fb3e9beef222602e510865",
+    "python": "3.12.14",
+    "tensorflow": "2.17.1",
+    "determinism_environment": {
+      "TF_DETERMINISTIC_OPS": null,
+      "PYTHONHASHSEED": "42"
+    },
+    "packages": {
+      "keras": "3.15.1",
+      "numpy": "1.26.4",
+      "SQLAlchemy": "2.0.52",
+      "psycopg": "3.3.5"
+    }
+  },
+  "contract_hash": "02a63b0c76dc600bcb17c7163699abf7dd4e5579643b6adbc783f50d30fcf1ba",
+  "reason": "Explicit technical revision and a single paused attempt; memory fix not yet accepted. Proposal only.",
+  "files": {
+    "src/malaria_dl/execution/campaign.py": "f993834096823b29bac7c5c8d9ee16ff28477cc2bc1abef790620a5111d3ee2c",
+    "src/malaria_dl/execution/controlled.py": "ec3c6fdfc94cb38f434d12463d8c007ab3962518cf8050c889cf442ba4d662f9",
+    "src/malaria_dl/execution/repository.py": "3e4567a02e6f6d4d54b9c683c1034132728f674a416e72da47cd73dddcb7e90a",
+    "src/malaria_dl/execution/worker.py": "c024b5bbbb49971825547970fcfb3a74d8faa67a191b7a103d1789f4638c7253"
+  },
+  "tests": [
+    {
+      "path": "docs/audits/e9_3_desarrollo_2026-09-14/pruebas.txt",
+      "sha256": "9ef13db381f6fd1dd5df6461ee8a71423ac950c351f49adef8ca5740ed26f258",
+      "result": "55 passed; 1 operational revision test deselected"
+    }
+  ],
+  "authorization": "Development and isolated tests authorized by user attachment 9d3a8129; operational registration/reservation NOT authorized in this task."
+}

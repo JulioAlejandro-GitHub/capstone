@@ -1,0 +1,10 @@
+{
+  "head": "1fc5201474bb158a8f84d12b543b255abb1d3d7e",
+  "campaign_id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+  "state": "paused",
+  "observed_until_utc": "2026-09-14T21:07:53.491419+00:00",
+  "sha256": {
+    "docs/audits/e9_3_pausa_2026-09-14/evidencia.jsonl": "4c1d23851617449c04f9c61d934abf5dd40138567a46b37d6a05f917160ec97b",
+    "docs/audits/e9_3_pausa_2026-09-14/auditoria.md": "22cfd7abebc6496ea00dac2c5151551ac513185da10a9184775b1ce0ef25152f"
+  }
+}

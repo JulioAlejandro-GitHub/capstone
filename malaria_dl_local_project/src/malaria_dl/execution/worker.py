@@ -11,6 +11,8 @@ from .repository import ExecutionRepository
 
 
 def main():
+    from .global_gate import attach_worker
+    attach_worker()
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", required=True, type=identifier)
     p.add_argument("--owner", required=True, type=identifier)
@@ -31,6 +33,8 @@ def main():
                 run=args.run_id,
             ).scalar_one()
         row = repo.get(cid)
+        from .controlled import effective_row
+        row = effective_row(repo, row, session)
         attempt = next(
             a for a in row["attempts"] if str(a["id"]) == str(session["attempt_id"])
         )

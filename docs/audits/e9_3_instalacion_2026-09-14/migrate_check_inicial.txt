@@ -1,0 +1,8 @@
+docker compose exec -T -e CAPSTONE_ROOT=/app backend python - < scripts/db/verify_alembic_adoption.py
+Adopción Alembic válida en malaria_experiments: 20260912_02
+docker compose exec -T backend python -m alembic current
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+20260912_02
+docker compose exec -T backend python -m alembic heads
+20260914_02 (head)

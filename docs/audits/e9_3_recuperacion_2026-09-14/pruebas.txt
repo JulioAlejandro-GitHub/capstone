@@ -1,0 +1,10 @@
+.....................                                                    [100%]
+=============================== warnings summary ===============================
+malaria_dl_local_project/tests/test_campaign_executor_e5.py::test_train_uses_only_train_and_val_without_csv
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_campaign_executor_e5.py::test_train_uses_only_train_and_val_without_csv
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+21 passed, 2 warnings in 5.61s

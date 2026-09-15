@@ -1,0 +1,17 @@
+{
+  "state": "BLOCKED_CONTROLLED_ATTEMPT_NOT_EXECUTED",
+  "head": "1fc5201474bb158a8f84d12b543b255abb1d3d7e",
+  "snapshot_utc": "2026-09-14 22:24:02.366267+00:00",
+  "old_source_sha256": "d8569d8faaa80eca42b130e6096203d851e2c663b4cdb8cd599dda950fbe6430",
+  "local_source_sha256": "5486ecaaa0e3db6a78eae17c208d22e2879d5f1aad2d4360616c1ef8d8785523",
+  "files": {
+    "docs/audits/e9_3_recuperacion_2026-09-14/auditoria.md": "50449163cd0083f7c0b9e3d6da8e0dcf41f6e1e734b93f89749b515e5e7abe40",
+    "docs/audits/e9_3_recuperacion_2026-09-14/pruebas.txt": "69f5bac669cbb7a10d7d50621ddd71c5f7f8a6267bc5600a35e04c86d6c509d8",
+    "docs/audits/e9_3_recuperacion_2026-09-14/snapshot_inicial.json": "f06cc88b4e6ad80aa6f617b3d028f19c9939bd367d83e122918344cdebabb316",
+    "docs/audits/e9_3_recuperacion_2026-09-14/campaign_original.py.txt": "d073f7b25d9d078f7d6efe9ba3af1311d93159127ac8c39f58ce474f88d05b23",
+    "docs/audits/e9_3_recuperacion_2026-09-14/transicion_y_unico_intento.md": "329d166d333ea055f3444aacb3bd084b6b08c2c0c2ad488716ede5d8bbbc5fa4",
+    "docs/audits/e9_3_recuperacion_2026-09-14/snapshot_final.json": "641aac5826c726134bfd2fc6895c74ab88d68a3160e00b45caee4f6ee50ed503",
+    "malaria_dl_local_project/src/malaria_dl/execution/campaign.py": "f993834096823b29bac7c5c8d9ee16ff28477cc2bc1abef790620a5111d3ee2c",
+    "malaria_dl_local_project/tests/test_campaign_exit_diagnostics.py": "111edecb9af632d8923c91ff3e1fb1378940ceed1de5b9770be63cd0a40afa01"
+  }
+}

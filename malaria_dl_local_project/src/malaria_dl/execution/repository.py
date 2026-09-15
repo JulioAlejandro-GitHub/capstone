@@ -40,7 +40,7 @@ class ExecutionRepository(CampaignRepository):
                 ).mappings()
             ]
 
-    def claim(self, campaign_id, owner, host, parent_pid, artifact_root):
+    def claim(self, campaign_id, owner, host, parent_pid, artifact_root, revision_id=None):
         with self.transaction() as c:
             campaign = self._campaign(c, campaign_id, True)
             if campaign["state"] not in ("frozen", "active"):
@@ -65,6 +65,15 @@ class ExecutionRepository(CampaignRepository):
             ]
             config = member_configuration(item["configuration"], member["seed"])
             attempt, run = str(uuid4()), str(uuid4())
+            runtime_environment = campaign['environment']
+            if revision_id is not None:
+                from .controlled import ControlledRepository, validate_revision
+                payload = ControlledRepository(self.scope).revision(c, campaign_id, revision_id)
+                validate_revision(campaign, payload)
+                runtime_environment = payload['environment']
+                execute(c, 'INSERT INTO train_execution_revisions(attempt_id,campaign_id,revision_id) '
+                        'VALUES(CAST(:attempt AS uuid),CAST(:campaign AS uuid),CAST(:revision AS uuid))',
+                        attempt=attempt, campaign=identifier(campaign_id), revision=identifier(revision_id))
             ordinal = execute(
                 c,
                 "SELECT coalesce(max(ordinal),0)+1 FROM campaign_attempts WHERE member_id=CAST(:id AS uuid)",
@@ -82,9 +91,12 @@ class ExecutionRepository(CampaignRepository):
                 run,
                 config,
                 campaign["dataset_snapshot"],
-                campaign["environment"],
+                runtime_environment,
                 campaign["experiment_id"],
                 evidence_id=str(campaign["dataset_evidence_id"]),
+                campaign_id=(campaign_id if execute(
+                    c, "SELECT to_regclass('campaign_technical_revisions') IS NOT NULL"
+                ).scalar_one() else None),
             )
             execute(
                 c,
@@ -104,7 +116,7 @@ class ExecutionRepository(CampaignRepository):
                 pid=parent_pid,
                 config=canonical(config),
                 dataset=canonical(campaign["dataset_snapshot"]),
-                environment=canonical(campaign["environment"]),
+                environment=canonical(runtime_environment),
                 root=root,
             )
             execute(
@@ -116,7 +128,8 @@ class ExecutionRepository(CampaignRepository):
 
     @staticmethod
     def _create_run(
-        c, run, config, dataset, environment, experiment=None, evidence_id=None
+        c, run, config, dataset, environment, experiment=None, evidence_id=None,
+        campaign_id=None,
     ):
         # Relational identity must be unambiguous; never infer from folders/dates.
         models = (
@@ -137,13 +150,16 @@ class ExecutionRepository(CampaignRepository):
         }
         execute(
             c,
-            """INSERT INTO runs(id,model_id,experiment_id,run_type,status,random_seed,dataset_version_id,execution_parameters)
-          VALUES(CAST(:id AS uuid),CAST(:model AS uuid),CAST(:experiment AS uuid),'training','running',:seed,CAST(:dataset AS uuid),CAST(:parameters AS jsonb))""",
+            "INSERT INTO runs(id,model_id,experiment_id,run_type,status,random_seed,dataset_version_id,execution_parameters"
+            + (",campaign_id" if campaign_id is not None else "")
+            + ") VALUES(CAST(:id AS uuid),CAST(:model AS uuid),CAST(:experiment AS uuid),'training','running',:seed,CAST(:dataset AS uuid),CAST(:parameters AS jsonb)"
+            + (",CAST(:campaign AS uuid)" if campaign_id is not None else "") + ")",
             id=run,
             model=str(models[0]),
             experiment=str(experiment) if experiment else None,
             seed=config["resolved"]["execution"]["seed"],
             dataset=dataset["dataset_version_id"],
+            campaign=identifier(campaign_id) if campaign_id is not None else None,
             parameters=canonical(
                 {
                     "model_configuration_e2": snapshot,

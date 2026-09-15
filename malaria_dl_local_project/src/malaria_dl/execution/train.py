@@ -258,6 +258,12 @@ def train(repository, session, descriptor):
 
 
 def standalone(args):
+    from .global_gate import GlobalGate
+    with GlobalGate('standalone-train'):
+        return _standalone(args)
+
+
+def _standalone(args):
     """Individual TRAIN keeps an explicit dataset; no artificial campaign."""
     import socket
 

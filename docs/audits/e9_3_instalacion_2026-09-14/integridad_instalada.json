@@ -1,0 +1,221 @@
+{
+  "utc": "2026-09-15T00:45:46.775942+00:00",
+  "environment": {
+    "git_commit": null,
+    "source_sha256": "70d9ac1861a003a6ebba82d58ceebef757598588ffe7a4735b0c1a1f141ae5c0",
+    "python": "3.12.14",
+    "tensorflow": "2.17.1",
+    "determinism_environment": {
+      "TF_DETERMINISTIC_OPS": null,
+      "PYTHONHASHSEED": "42"
+    },
+    "packages": {
+      "keras": "3.15.1",
+      "numpy": "1.26.4",
+      "SQLAlchemy": "2.0.52",
+      "psycopg": "3.3.5"
+    }
+  },
+  "revision": "20260914_02",
+  "head": "20260914_02",
+  "ancestry": [
+    "20260914_02",
+    "20260914_01",
+    "20260912_02",
+    "20260912_01",
+    "20260911_02",
+    "20260911_01",
+    "20260901_01",
+    "20260829_01",
+    "20260812_02",
+    "20260812_01",
+    "20260811_01",
+    "20260810_05",
+    "20260810_04",
+    "20260810_03",
+    "20260810_02",
+    "20260810_01",
+    "20260728_03",
+    "20260728_02",
+    "20260728_01",
+    "20260727_05",
+    "20260727_04",
+    "20260727_03",
+    "20260727_02",
+    "20260727_01",
+    "20260726_02",
+    "20260726_01",
+    "20260726_00"
+  ],
+  "legacy_integrity": {
+    "runs": {
+      "count": 97,
+      "content_hash": "3d685f64b8cb0259dbb81692a61536bf"
+    },
+    "run_lineage": {
+      "count": 61,
+      "content_hash": "a5ab05137e85c7f6447e3fea93382446"
+    },
+    "model_versions": {
+      "count": 36,
+      "content_hash": "e470f4c8f754d1a113fb8b0fa8bf28d4"
+    },
+    "stage2_model_publications": {
+      "count": 4,
+      "content_hash": "95bdb27db6c44a0831f61299ca457a8d"
+    },
+    "deployed_model_versions": {
+      "count": 3,
+      "content_hash": "f937afbf43faa15da55d858695e2b1f8"
+    },
+    "campaign_attempts": {
+      "count": 9,
+      "content_hash": "5820d9ba1c165c88f38d07b796b7d87b"
+    }
+  },
+  "tables": [
+    "assessment_artifacts",
+    "assessment_attempts",
+    "assessment_campaign_consumers",
+    "assessment_final_locks",
+    "assessment_identities",
+    "assessment_results",
+    "campaign_controlled_requests",
+    "campaign_execution_events",
+    "campaign_technical_revisions",
+    "execution_logs",
+    "experiment_execution_events",
+    "experiment_execution_gate",
+    "train_execution_records",
+    "train_execution_revisions",
+    "train_execution_sessions"
+  ],
+  "triggers": [
+    {
+      "relname": "assessment_artifacts",
+      "tgname": "assessment_artifact_guard",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "assessment_attempts",
+      "tgname": "assessment_attempt_guard",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "assessment_campaign_consumers",
+      "tgname": "assessment_consumer_guard",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "assessment_campaign_consumers",
+      "tgname": "assessment_consumer_immutable",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "assessment_identities",
+      "tgname": "assessment_identity_guard",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "assessment_identities",
+      "tgname": "assessment_identity_immutable",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "assessment_final_locks",
+      "tgname": "assessment_lock_immutable",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "assessment_results",
+      "tgname": "assessment_result_guard",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "campaign_controlled_requests",
+      "tgname": "controlled_binding_guard",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "assessment_attempts",
+      "tgname": "global_assessment_reservation",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "campaign_attempts",
+      "tgname": "global_attempt_reservation",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "experiment_execution_events",
+      "tgname": "global_execution_event_immutable",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "train_execution_sessions",
+      "tgname": "global_train_reservation",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "campaign_technical_revisions",
+      "tgname": "technical_revision_guard",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "train_execution_records",
+      "tgname": "train_record_guard",
+      "tgenabled": "O"
+    },
+    {
+      "relname": "train_execution_revisions",
+      "tgname": "train_revision_binding_guard",
+      "tgenabled": "O"
+    }
+  ],
+  "indexes": [
+    {
+      "relname": "uq_global_train_active",
+      "indisvalid": true,
+      "indisunique": true
+    },
+    {
+      "relname": "uq_global_assessment_active",
+      "indisvalid": true,
+      "indisunique": true
+    }
+  ],
+  "campaign_column": [
+    {
+      "is_nullable": "YES"
+    }
+  ],
+  "campaign_references": {
+    "null_campaigns": 97,
+    "orphans": 0
+  },
+  "global_status": {
+    "installed": true,
+    "available": true,
+    "reason": null,
+    "active_records": 0,
+    "policy": {
+      "version": "e93_sequential_v1",
+      "minimum_available_bytes": 1073741824,
+      "pause_after_consecutive_failures": 2,
+      "pause_on_new_oom_kill": true
+    }
+  },
+  "ready": {
+    "http": 200,
+    "body": {
+      "status": "ready",
+      "components": {
+        "database": "ready",
+        "migrations": "ready",
+        "storage": "ready"
+      },
+      "version": "0.3.0",
+      "environment": "development"
+    }
+  }
+}

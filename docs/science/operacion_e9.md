@@ -1,3 +1,5 @@
+> Actualización E9.3 (14/09/2026): [operación secuencial global preparada](e9_3_operacion_secuencial_2026-09-14.md). La campaña permanece pausada; los comandos de activación requieren autorización posterior.
+
 # E9 — Seguimiento y reanudación
 
 Campaña vigente: `3acf89b7-dc42-4b7a-8e2a-ca6ea024c344`. PostgreSQL es la autoridad. La campaña anterior `ec442763-7eea-499d-a94f-9a3ddfb7c0f0` queda pausada con sus fallos; no ejecutar ambas. No editar fuentes/configuraciones congeladas mientras se ejecuta sin gestionar explícitamente una nueva revisión/campaña.

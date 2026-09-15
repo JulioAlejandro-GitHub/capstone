@@ -1,0 +1,55 @@
+{
+  "created_utc": "2026-09-15T00:21:05.764591+00:00",
+  "git_head": "1fc5201474bb158a8f84d12b543b255abb1d3d7e",
+  "campaign_id": "3acf89b7-dc42-4b7a-8e2a-ca6ea024c344",
+  "dataset_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "status": "PREPARED_NOT_INSTALLED_NOT_ACTIVATED",
+  "publication_deployment_unchanged": true,
+  "runtime_environment": {
+    "git_commit": null,
+    "source_sha256": "70d9ac1861a003a6ebba82d58ceebef757598588ffe7a4735b0c1a1f141ae5c0",
+    "python": "3.12.14",
+    "tensorflow": "2.17.1",
+    "determinism_environment": {
+      "TF_DETERMINISTIC_OPS": null,
+      "PYTHONHASHSEED": "42"
+    },
+    "packages": {
+      "keras": "3.15.1",
+      "numpy": "1.26.4",
+      "SQLAlchemy": "2.0.52",
+      "psycopg": "3.3.5"
+    }
+  },
+  "files": {
+    "alembic/versions/20260914_01_controlled_train.py": "56a0581d66d15c3e4bfb8d17872f67b201d2ae1c79fe6a9089d9d1993b0d9ab9",
+    "alembic/versions/20260914_02_global_execution.py": "5e60da2905e50041a8937240472dd2767825d517e900daa17b122298a3e90dfa",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/auditoria.md": "85871c6a7c10015971338b47fb3f03b2f3f12e32d5b1aef0442eb782f4bf029b",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/comprobar_solo_lectura.py": "03898dcc78a3ab09b8a2ac5311565996b83f59cbd4ab1b9bc06b461db51b7864",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/control_final.json": "dbdcdf088634deac2185c0a996449e434eefd1671bc2e92143a69417aae5e8c0",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/dry_run.json": "c9b6edf29c6a4bf6a04f560c2729d90ef8f633c1e9629e37c5cb220a05caebb9",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/migracion_offline.sql": "d986b9fd4daae5ceb1444c4689d345e9620867b7d54adf7ecc30f444b49593fe",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/pruebas.txt": "4d6a884125d6e1f85f7c095e2a52198bc41bb83b307a3f0aa8c667d1dbd2a66c",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/pruebas_final.txt": "9506124ac97f9321fba3198bf8ebd537ff55901ed659f8ed36c7ac235be91f06",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/pruebas_global_final.txt": "96cf7518c2d1726fb30a8c523235c0a9c706c03041b5fa1327a306c8c8f422ea",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/revision_propuesta.json": "b1e445c76e435c74663c435b395ef793d202125a17b997fffd538d3dfbe4604a",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/snapshot_final.json": "7f1efe0a7d8d2ad3671198a3bbec2a33a17dcf64268589ca8f7b77ff7d63137a",
+    "docs/audits/e9_3_secuencial_global_2026-09-14/snapshot_inicial.json": "6831c735ea0397cc0b057bef7a34ffcdcc8a1df70a54e47beb455c09fb30a193",
+    "docs/science/e9_3_operacion_secuencial_2026-09-14.md": "fedd6a3fc1126afb0877b8c3fc962b5833105a1a04e8d3b488bee4873cef6a74",
+    "docs/science/operacion_e9.md": "f8637414b2d96c571c6128b6135fa03ddcf15b71a9927b48aab47c1fb806c12f",
+    "malaria_dl_local_project/src/malaria_dl/assessment/cli.py": "aa88f4a50c3764be12dc05371943e43d89d08e7e7897ef6fb6d449fc80e6bf3b",
+    "malaria_dl_local_project/src/malaria_dl/campaigns/repository.py": "52a5bf37c9ed23320d54728c70f9c1902f8d8ef856277455a37b89394d31f060",
+    "malaria_dl_local_project/src/malaria_dl/execution/__init__.py": "d0238a2e513c380e8d4606bfce2939509dd7456d43eebb43401cf9a5d70151c7",
+    "malaria_dl_local_project/src/malaria_dl/execution/artifacts.py": "62693e43c33e9a6ed56ee9eba6283ef8a57f37cb2cd6235f5356fca5650d56cc",
+    "malaria_dl_local_project/src/malaria_dl/execution/campaign.py": "c3cdf1441a9c9151621c5df8358a1eb7d8058c259da69d3fdf8cc9fa1abd14d2",
+    "malaria_dl_local_project/src/malaria_dl/execution/controlled.py": "54df9577ccb99857cbe3c9211bf269f378ee0af8c5b00d95b49b6c42157271c6",
+    "malaria_dl_local_project/src/malaria_dl/execution/global_gate.py": "9a33e89f0b8e4b50d28a69d61c4d2f7e5070e24036c978d057785b2dceb6c686",
+    "malaria_dl_local_project/src/malaria_dl/execution/process_verification.py": "589ec94858f491dcc78ccb5cc5015d2c5c5efe6d0c77d5a6a42a5dadfef1a264",
+    "malaria_dl_local_project/src/malaria_dl/execution/repository.py": "504d46200cc7bd8684dbb231173b7fdf17e9b539655f4dc8ff87f0491b8c92ed",
+    "malaria_dl_local_project/src/malaria_dl/execution/train.py": "8442b1c90d793a2a0cb980b4be833eae28e3f89a9bc7791f1bb270c02ba32526",
+    "malaria_dl_local_project/src/malaria_dl/execution/worker.py": "2bdaa3f2d7198d098f34ac65663d33de0b57d7087c6b0809c73eb082ae11bc13",
+    "malaria_dl_local_project/tests/test_campaign_exit_diagnostics.py": "111edecb9af632d8923c91ff3e1fb1378940ceed1de5b9770be63cd0a40afa01",
+    "malaria_dl_local_project/tests/test_controlled_train_postgres.py": "a39ce906dfceec092edd2d65f3fb3428cb1c3520fb180752019c62615d6a7a64",
+    "malaria_dl_local_project/tests/test_global_execution_postgres.py": "f5e74d47070d08741970f24aa1a7b2f35a56cb42e8be399ecff7d3d4f1e2aa2b"
+  }
+}

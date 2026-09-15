@@ -1,0 +1,26 @@
+# Propuesta mínima — NO INSTALADA ni ejecutada
+
+No se puede ejecutar la recuperación con el contrato actual. Preflight compara source_sha256 con experimental_campaigns.environment, el worker compara toda session.environment y el trigger E5 compara runs.environment con la campaña. Modificar sólo Python o reemplazar el hash sería eludir identidad. La campaña/contrato original se conserva.
+
+## Extensión requerida
+
+1. Nueva migración correctiva, sin reescribir 20260912_01: tabla append-only campaign_execution_revisions con UUID, campaign_id FK, parent_revision_id, original_contract_hash, environment completo, patch_manifest_hash, justificación, pruebas y autorización referenciadas. Unicidad campaign_id/revision_id y validación de hash/JSON. Nunca actualizar environment de la campaña ni de sesiones históricas.
+2. Referencia nullable execution_revision_id en nuevas sesiones y runs de campaña, con FK compuesta que impida usar revisión ajena. NULL conserva la comparación original; no backfill de históricos. Para una revisión explícita, validar fuente contra esa revisión, manteniendo dataset/configuración/semilla contra el contrato original. Proteger esa referencia de mutaciones. Alinear preflight, worker, triggers de identidad, verificador y lectores de linaje; no permitir excepciones de hash sin referencia persistida.
+3. Permiso de ejecución único persistido: campaign_id, member_id, previous_attempt_id, revision_id, presupuesto=1, estado pending/consumed/finished. Mantener campaña paused. Método oficial claim_controlled bloquea campaña+permiso+miembro, exige ausencia de intento activo, confirma fallo anterior y ordinal/presupuesto, crea intento/run/sesión y consume permiso en la misma transacción. El trigger sólo permite esa inserción cuando existe permiso exacto, sin abrir la campaña a claim normal.
+4. Coordinador de una ejecución consume ese permiso, ejecuta un hijo, persiste salida/verificación y termina conservando paused aun si el hijo falla. No llama al bucle normal ni resume; no consume otro permiso. Frente a interrupción conserva estado consumido y requiere reconciliación, nunca otro intento automático.
+
+Selección determinista propuesta: menor position entre miembros fallidos, luego menor ordinal/id para identificar el intento anterior. Resultado actual: miembro 2fbd5862-b68b-4845-9445-a30d7ec61382, CustomCNN/Adadelta/11; intento anterior 8279db36-7bfe-4e22-8bf3-872ac215eae2, Run a5f36df1-3341-43fd-94b9-ee1cedb834c5. Nuevo intento desde cero, misma configuración y campaña; no se acredita reanudación completa desde checkpoint parcial. No se reservó UUID ni permiso operativo.
+
+## Pruebas e instalación necesarias
+
+Pruebas sintéticas Compose: rechazo de revisión no autorizada/otra campaña/hash incorrecto; igualdad científica; conservación de históricos; dos conexiones disputan un permiso (un único ganador); claim normal rechaza campaña paused; rollback sin permiso consumido ni intento parcial; fallo/salida no cero dejan paused; lectura de revisión/linaje desde otra conexión; rechazo de mutaciones de identidad. No probar creando TRAIN ficticios operativos.
+
+Instalar sólo con migración nueva por wrapper preflight/backup del repositorio, después de revisar SQL e integración aislada. El impacto es esquema+validadores de identidad y nueva ruta de coordinación, no protocolo científico. No se aplicó migración, no se reinició servicio y no existe aún comando ejecutable para esta ruta. Mantener bloqueado --resume en la fuente corregida.
+
+## Memoria: siguiente comprobación acotada
+
+No hay causa exacta de fuga demostrada. Los cuatro snapshots previos más el quinto fallo acreditan presión RAM y oom_kill de cgroup, sin víctima/timestamp del kernel. No es evidencia de GPU OOM. Cada TRAIN ya usa proceso separado; no hay modelos de intentos previos retenidos en el worker nuevo. En la misma época se ejecuta collect_predictions en ClinicalValidationMetricsCallback y otra vez en PersistEpoch; collect_predictions llama model.predict por lote. El pipeline físico encadena mapas y prefetch AUTOTUNE, sin cache explícita. El modelo seleccionado se carga después de terminar fit; estos intentos no llegaron a phase/completion, por lo que esa carga final no explica por sí sola sus fallos.
+
+Preparar un microbenchmark sintético acotado, sin fit/dataset/TEST: comparar número de adaptadores/iteradores y RSS de model.predict por lote contra inferencia directa training=False; y medir buffers del pipeline. Antes de cambiar la ruta exigir igualdad de scores/orden y ausencia de cambio en RNG de augmentación. No cambiar batching interno de predict sin comprobar equivalencia numérica. Una hipótesis o reducción de RSS aislada no acredita eliminar OOM del entrenamiento completo. No se conoce un mínimo de RAM suficiente: los picos observados ~6,5GiB por worker son una cota observada, no dimensionamiento seguro. No aumentar límites ni inventar una cifra suficiente.
+
+Tras una corrección de memoria respaldada por esas pruebas, registrar revisión y autorizar su único permiso. Si no se puede garantizar semántica o recursos, proponer enmienda científica separada; no tocar batch64/resolución/precisión/semillas/épocas. E9.2 parcial no bloquea estos desarrollos, pero no se activa su enmienda.

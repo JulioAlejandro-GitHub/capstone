@@ -1,0 +1,35 @@
+........................................................................ [ 56%]
+........................................................                 [100%]
+=============================== warnings summary ===============================
+malaria_dl_local_project/tests/test_campaign_executor_e5.py::test_train_uses_only_train_and_val_without_csv
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_campaign_executor_e5.py::test_train_uses_only_train_and_val_without_csv
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+  /usr/local/lib/python3.12/site-packages/shap/plots/colors/_colors.py:47: PendingDeprecationWarning: The set_bad function will be deprecated in a future version. Use cmap.with_extremes(bad=...) or Colormap(bad=...) instead.
+    red_blue.set_bad(gray_rgb.tolist(), 1.0)
+
+malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+  /usr/local/lib/python3.12/site-packages/shap/plots/colors/_colors.py:48: PendingDeprecationWarning: The set_over function will be deprecated in a future version. Use cmap.with_extremes(over=...) or Colormap(over=...) instead.
+    red_blue.set_over(gray_rgb.tolist(), 1.0)
+
+malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+  /usr/local/lib/python3.12/site-packages/shap/plots/colors/_colors.py:49: PendingDeprecationWarning: The set_under function will be deprecated in a future version. Use cmap.with_extremes(under=...) or Colormap(under=...) instead.
+    red_blue.set_under(gray_rgb.tolist(), 1.0)  # "under" is incorrectly used instead of "bad" in the scatter plot
+
+malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+  /usr/local/lib/python3.12/site-packages/keras/src/models/functional.py:259: UserWarning: The structure of `inputs` doesn't match the expected structure.
+  Expected: input_layer_5
+  Received: inputs=['Tensor(shape=(1, 8, 8, 3))']
+    warnings.warn(msg)
+
+malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+  /usr/local/lib/python3.12/site-packages/keras/src/models/functional.py:259: UserWarning: The structure of `inputs` doesn't match the expected structure.
+  Expected: input_layer_5
+  Received: inputs=['Tensor(shape=(8, 8, 8, 3))']
+    warnings.warn(msg)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+128 passed, 2 deselected, 7 warnings in 27.79s
