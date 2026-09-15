@@ -278,6 +278,7 @@ export interface TrainingSummary {
   tp: number | null;
   confusion_matrix: number[][] | null;
   prediction_collapse_detected: boolean | null;
+  metrics_split?: string | null;
 }
 
 export interface TrainingSummaryCollection {

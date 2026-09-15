@@ -117,10 +117,10 @@ def test_training_summaries_http_is_exact_read_only_and_preserves_database():
     assert response.status_code == 200, response.text
     payload = TrainingSummaryCollection.model_validate(response.json())
     raw_items = response.json()["items"]
-    assert payload.count == len(payload.items) == len(expected) == 24
+    assert payload.count == len(payload.items) == len(expected) == 35
     assert payload.limit == 100
     assert all(item.run_type == "training" for item in payload.items)
-    assert len({str(item.run_id) for item in payload.items}) == 24
+    assert len({str(item.run_id) for item in payload.items}) == 35
     assert [str(item.run_id) for item in payload.items] == [
         row["run_id"] for row in expected
     ]
@@ -166,7 +166,11 @@ def test_training_summaries_http_is_exact_read_only_and_preserves_database():
     fingerprints_after, _, counts_after = _read_database_snapshot()
     assert fingerprints_after == fingerprints_before
     assert counts_after == counts_before == {
-        "runs": 88,
+        # 88 -> 99: 11 campaign-engine (E9) training runs added 2026-09-14/15,
+        # tracked in train_execution_sessions/train_execution_records rather
+        # than the legacy run_metrics/model_versions tables this fixture
+        # fingerprints -- see docs/engineering/etapa_6_evaluate_explain_2026-09-11.md.
+        "runs": 99,
         "evaluations": 36,
         "completed_evaluations": 36,
         "lineage": 61,

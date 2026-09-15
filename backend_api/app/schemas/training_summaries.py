@@ -48,6 +48,7 @@ class TrainingSummary(BaseModel):
     tp: int | None
     confusion_matrix: list[list[int | float]] | None
     prediction_collapse_detected: bool | None
+    metrics_split: str | None = None
 
 
 class TrainingSummaryCollection(BaseModel):

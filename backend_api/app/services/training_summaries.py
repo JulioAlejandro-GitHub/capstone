@@ -100,6 +100,7 @@ SELECT
         NULLIF(selected.parameters #>> '{execution_parameters,optimizer}', ''),
         NULLIF(selected.parameters #>> '{cli_arguments,optimizer}', ''),
         NULLIF(selected.metadata->>'optimizer', ''),
+        NULLIF(selected.execution_parameters #>> '{model_configuration_e2,configuration,resolved,optimizer,name}', ''),
         substring(
             selected.command
             FROM '--optimizer(?:[[:space:]]+|=)([^[:space:]]+)'
@@ -110,34 +111,72 @@ SELECT
     selected.finished_at,
     selected.duration_seconds,
     metrics.recall,
-    clinical.recall_parasitized,
-    clinical.specificity,
+    COALESCE(
+        clinical.recall_parasitized,
+        (campaign_session.completion #>> '{selection,val_recall_parasitized}')::double precision
+    ) AS recall_parasitized,
+    COALESCE(
+        clinical.specificity,
+        (campaign_session.completion #>> '{selection,val_specificity}')::double precision
+    ) AS specificity,
     metrics.f2_score,
-    clinical.f2_parasitized,
+    COALESCE(
+        clinical.f2_parasitized,
+        (campaign_session.completion #>> '{selection,val_f2_parasitized}')::double precision
+    ) AS f2_parasitized,
     metrics.auc,
-    clinical.roc_auc_parasitized,
+    COALESCE(
+        clinical.roc_auc_parasitized,
+        (campaign_session.completion #>> '{selection,val_auc}')::double precision
+    ) AS roc_auc_parasitized,
     selected_confusion.tn,
     selected_confusion.fp,
     selected_confusion.fn,
     selected_confusion.tp,
     selected_confusion.confusion_matrix,
-    CASE LOWER(COALESCE(
-        clinical.prediction_collapse->>'collapsed',
-        clinical.metadata->>'prediction_collapse_detected'
-    ))
-        WHEN 'true' THEN true
-        WHEN 't' THEN true
-        WHEN '1' THEN true
-        WHEN 'false' THEN false
-        WHEN 'f' THEN false
-        WHEN '0' THEN false
-        ELSE NULL
-    END AS prediction_collapse_detected
+    COALESCE(
+        CASE LOWER(COALESCE(
+            clinical.prediction_collapse->>'collapsed',
+            clinical.metadata->>'prediction_collapse_detected'
+        ))
+            WHEN 'true' THEN true
+            WHEN 't' THEN true
+            WHEN '1' THEN true
+            WHEN 'false' THEN false
+            WHEN 'f' THEN false
+            WHEN '0' THEN false
+            ELSE NULL
+        END,
+        (campaign_session.completion #>> '{selection,prediction_collapse_detected}')::boolean
+    ) AS prediction_collapse_detected,
+    -- 'val' only when no legacy clinical row is present and the campaign-engine
+    -- fallback above actually supplied a value; never claims a TEST split for
+    -- campaign-engine data, since campaign TRAIN never touches TEST.
+    COALESCE(
+        clinical.split_name,
+        legacy_confusion.split_name,
+        CASE WHEN clinical.recall_parasitized IS NULL AND campaign_session.completion IS NOT NULL
+             THEN 'val' END
+    ) AS metrics_split
 FROM selected_trainings AS selected
 JOIN child_counts AS children ON children.training_run_id = selected.id
 JOIN visual_metrics AS metrics ON metrics.training_run_id = selected.id
 LEFT JOIN models AS model ON model.id = selected.model_id
 LEFT JOIN datasets AS dataset ON dataset.id = selected.dataset_id
+-- Campaign execution engine (E5/E9) evidence: never written to the legacy
+-- run_metrics/run_clinical_metrics/confusion_matrices tables by design (see
+-- docs/engineering/etapa_6_evaluate_explain_2026-09-11.md). Used only as a
+-- last-resort fallback below, never overriding a legacy row when one is present.
+LEFT JOIN train_execution_sessions AS campaign_session
+    ON campaign_session.run_id = selected.id AND campaign_session.completion IS NOT NULL
+LEFT JOIN LATERAL (
+    SELECT record.payload
+    FROM train_execution_records AS record
+    WHERE record.run_id = selected.id
+      AND record.kind = 'calibration' AND record.phase = 'val' AND record.record_key = 'selected'
+    ORDER BY record.created_at DESC
+    LIMIT 1
+) AS campaign_calibration ON TRUE
 LEFT JOIN LATERAL (
     SELECT
         clinical_metric.recall_parasitized,
@@ -216,6 +255,24 @@ LEFT JOIN LATERAL (
             OR legacy_confusion.false_negative IS NOT NULL
             OR legacy_confusion.true_positive IS NOT NULL
             OR NULLIF(legacy_confusion.matrix, '[]'::jsonb) IS NOT NULL
+
+        UNION ALL
+
+        -- Campaign engine only stores a VAL confusion matrix when threshold
+        -- calibration was enabled for that run; absent otherwise (no other TEST source available).
+        SELECT
+            (campaign_calibration.payload #>> '{result,selected_metrics,tn}')::int AS tn,
+            (campaign_calibration.payload #>> '{result,selected_metrics,fp}')::int AS fp,
+            (campaign_calibration.payload #>> '{result,selected_metrics,fn}')::int AS fn,
+            (campaign_calibration.payload #>> '{result,selected_metrics,tp}')::int AS tp,
+            campaign_calibration.payload #> '{result,selected_metrics,confusion_matrix}' AS confusion_matrix,
+            2 AS source_rank
+        WHERE
+            campaign_calibration.payload #>> '{result,selected_metrics,tn}' IS NOT NULL
+            OR campaign_calibration.payload #>> '{result,selected_metrics,fp}' IS NOT NULL
+            OR campaign_calibration.payload #>> '{result,selected_metrics,fn}' IS NOT NULL
+            OR campaign_calibration.payload #>> '{result,selected_metrics,tp}' IS NOT NULL
+            OR NULLIF(campaign_calibration.payload #> '{result,selected_metrics,confusion_matrix}', '[]'::jsonb) IS NOT NULL
     ) AS candidate
     ORDER BY
         CASE
