@@ -63,7 +63,11 @@ CLI exclusivo: `python -m src.campaign <operación>`
 (`malaria_dl_local_project/src/campaign.py`), siempre dentro del contenedor backend. No
 hay endpoint HTTP ni pantalla de frontend para crear/editar campañas.
 
+Ejecutar desde la **raíz del repo** (donde vive `docker-compose.yml`); la ruta relativa
+desde `docs/engineering/` es `cd ../..`:
+
 ```sh
+cd ../..   # docs/engineering/ → raíz del repo (capstone/)
 docker compose exec -T -w /app/malaria_dl_local_project backend \
   python -B -m src.campaign inspect  --request matrix-request.json --protocol protocol-draft.json
 docker compose exec -T -w /app/malaria_dl_local_project backend \
@@ -223,6 +227,9 @@ Tres caminos, mismo motor interno (`ExecutionRepository`/`ControlledRepository` 
 
 ### A) Cola secuencial — coordinador Docker
 
+Ejecutar desde la raíz del repo (`cd ../..` desde `docs/engineering/`; ya en la raíz, sin
+`cd` adicional):
+
 ```sh
 docker compose exec backend python -m run_train_all_models \
   --campaign-id "$CAMPAIGN_ID" --dataset-version-id "$DATASET_VERSION_ID" \
@@ -239,6 +246,8 @@ ciegas.
 
 ### B) Intento único controlado
 
+Ejecutar desde la raíz del repo (mismo `cd ../..` que en A):
+
 ```sh
 docker compose exec backend python -m src.malaria_dl.execution.controlled execute \
   --campaign-id "$CAMPAIGN_ID" --dataset-version-id "$DATASET_VERSION_ID" \
@@ -253,8 +262,12 @@ una `campaign_technical_revisions` ya registrada, y es **idempotente por
 
 ### C) Ejecución local (Mac) + backend/PostgreSQL en Docker
 
+Requiere el backend y PostgreSQL ya levantados en Docker (`docker compose up -d db
+backend`, desde la raíz del repo) y el venv local ya creado (ver sección 6.1). El agente
+corre **fuera** de Docker, nativo en el Mac:
+
 ```sh
-cd malaria_dl_local_project
+cd ../../malaria_dl_local_project   # docs/engineering/ → malaria_dl_local_project/
 .venv-local-train/bin/python -m src.malaria_dl.local_execution.agent start \
   --config agent_config.json --state agent_state.json
 ```
@@ -339,6 +352,57 @@ se reporta el progreso**.
    hasheado y recargado): ~600–660 ms/lote nativo vs. ~4 s/lote observado en el
    contenedor Docker el 14/09 — evidencia a favor de que el límite de memoria del
    contenedor influía, **no** un diagnóstico de causa raíz.
+
+### 6.1 Requisitos y componentes locales para ejecutar (checklist)
+
+**Para los caminos A y B (todo dentro de Docker, sección 5):**
+
+- Docker Desktop (o Docker Engine + Compose plugin) corriendo — probado con Docker
+  29.6.2 / Compose v5.3.1. Comando `docker compose` (plugin v2), no el binario legacy
+  `docker-compose`.
+- Archivo `.env` en la raíz del repo con `POSTGRES_USER`/`POSTGRES_PASSWORD`/
+  `POSTGRES_DB`, `JWT_SECRET`, etc. (ver `.env.example`) — sin esto `docker compose up`
+  no levanta `db`/`backend`.
+- Servicios `db` y `backend` levantados: `docker compose up -d db backend` (raíz del
+  repo). El CLI de campañas y los coordinadores corren **dentro** del contenedor
+  `backend`, nunca en el host.
+- Migraciones aplicadas: `make db-migrate` (raíz del repo; wrapper de
+  `scripts/db/migrate.sh`) — nunca un `alembic upgrade` manual fuera del wrapper.
+
+**Adicional para el camino C (ejecutor local, Mac):**
+
+- Contenedores `db` y `backend` de Docker ya arriba (ver arriba) — el agente local
+  habla con el backend por HTTP (`http://localhost:8000`), nunca con PostgreSQL
+  directo.
+- Python 3.12 nativo en el Mac (probado: 3.12.13, arm64, sin GPU/Metal) y un venv
+  dedicado, **nunca** el Python global:
+  ```sh
+  cd ../../malaria_dl_local_project
+  python3.12 -m venv .venv-local-train
+  .venv-local-train/bin/pip install -r requirements-local-train.txt
+  ```
+  (`requirements-local-train.txt` fija versiones exactas — incluye TensorFlow 2.17.1,
+  Keras 3.15.1, psycopg 3.3.5 aunque el agente no lo use para SQL directo, y `psutil`
+  para el heartbeat multiplataforma.)
+- Variables de entorno habilitantes en el `backend` Docker (en `.env` de la raíz o
+  inyectadas al contenedor): `CAPSTONE_LOCAL_EXECUTION_ENABLED=1` y
+  `CAPSTONE_LOCAL_STORAGE_ROOTS` (mapeo de `dataset_root_id`/`artifact_root_id` lógicos
+  a rutas del contenedor) — el camino local está deshabilitado por defecto sin esto.
+- Bind mount de artefactos compartido entre Mac y contenedor
+  (`./malaria_dl_local_project/local_execution_artifacts:/app/var/local_artifacts` en
+  `docker-compose.override.yml`, raíz del repo) — sin él, `verify_session` no puede leer
+  el checkpoint que el agente escribió en el Mac.
+- `agent_config.json` y `agent_state.json` (dentro de `malaria_dl_local_project/`):
+  `agent_config.json` define `url` (backend), `roots.dataset`/`roots.artifacts` (rutas
+  **absolutas reales** del Mac) y el `request` del intento (campaña, miembro, revisión,
+  entorno declarado — ver sección 6, fila "Identidad de entorno"); `agent_state.json` es
+  el estado runtime del agente (heartbeat, progreso) y se regenera solo.
+- Dataset gobernado ya materializado en el Mac en la ruta que apunta
+  `roots.dataset` de `agent_config.json` (p. ej.
+  `malaria_dl_local_project/data/malaria_dataset_versions/<dataset_version_id>`) — el
+  agente no lo descarga ni lo verifica contra red, sólo lee del filesystem local.
+- JWT válido: el agente se autentica contra el backend con `AUTH_MODE=local_jwt` y
+  `Permission.SYSTEM_ADMIN`.
 
 ## 7. Archivos clave (referencia rápida)
 
