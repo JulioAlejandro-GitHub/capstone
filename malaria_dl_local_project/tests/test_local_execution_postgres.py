@@ -140,6 +140,8 @@ def local_ready(global_fixture, tmp_path):
     req = matrix_request()
     req['models'] = ['custom_cnn']
     req['optimizers'] = ['adam']
+    req['variants'][0]['selected'] = {'model': {'input_shape': [32,32,3]},
+        'execution': {'max_epochs': 1, 'batch_size': 2, 'no_augment': True}}
     row = x.s.service.create(name='Local execution fixture', purpose='synthetic local_python test',
                               dataset_version_id=x.s.dataset['dataset_version_id'], request=req,
                               protocol=protocol(), actor='synthetic')
@@ -400,6 +402,8 @@ def local_sequential(global_fixture, tmp_path):
     req = matrix_request(seeds=[11, 12])
     req['models'] = ['custom_cnn']
     req['optimizers'] = ['adam']
+    req['variants'][0]['selected'] = {'model': {'input_shape': [32,32,3]},
+        'execution': {'max_epochs': 1, 'batch_size': 2, 'no_augment': True}}
     row = x.s.service.create(name='Local sequential fixture', purpose='synthetic local_python test',
                               dataset_version_id=x.s.dataset['dataset_version_id'], request=req,
                               protocol=protocol(), actor='synthetic')
@@ -614,6 +618,10 @@ def test_minimal_real_calculation_through_http_agent_and_subprocess(local_ready,
         sys.path.remove(str(backend_dir))
 
     r = local_ready
+    from test_result_repository_postgres import apply, REVISION
+    from src.malaria_dl.local_execution.event_backend import build_local_event_backend
+    with r.x.repo.transaction() as c:
+        apply(c, REVISION)
     data = dict(r.data, request_id=str(uuid4()))  # controlled mode, matching local_ready's paused campaign
     # local_ready's own backend uses a no-op loader (for the mock-style tests above); this
     # closing test needs the REAL default loader, so its checkpoint verification is genuine.
@@ -623,6 +631,7 @@ def test_minimal_real_calculation_through_http_agent_and_subprocess(local_ready,
     app.dependency_overrides[current_principal] = lambda: Principal(
         'agent-test', 'agent', ('administrator',), frozenset({Permission.SYSTEM_ADMIN}))
     app.dependency_overrides[route_module.service] = lambda: real_backend
+    app.dependency_overrides[route_module.event_service] = lambda: build_local_event_backend(engine_factory=r.x.factory)
 
     port = free_port()
     config = uvicorn.Config(app, host='127.0.0.1', port=port, log_level='warning')
@@ -642,7 +651,8 @@ def test_minimal_real_calculation_through_http_agent_and_subprocess(local_ready,
             'roots': {k: str(v) for k, v in r.roots.items()},
         }))
         state_path = r.tmp_path / 'agent_state.json'
-        env = {**os.environ, 'CAPSTONE_AGENT_BEARER': 'synthetic-token'}
+        env = {**os.environ, 'CAPSTONE_AGENT_BEARER': 'synthetic-token',
+               'KERAS_HOME': str(r.tmp_path / 'keras-cache')}
         import subprocess
         result = subprocess.run(
             [sys.executable, '-B', '-m', 'src.malaria_dl.local_execution.agent', 'start',

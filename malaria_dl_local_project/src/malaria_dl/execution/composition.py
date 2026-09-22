@@ -1,4 +1,4 @@
-"""Explicit result-chain composition, currently used only by controlled tests."""
+"""Explicit result-chain composition at the Docker boundary."""
 from collections.abc import Callable
 from uuid import UUID
 

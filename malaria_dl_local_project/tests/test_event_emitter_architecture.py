@@ -13,7 +13,7 @@ def test_emitter_import_allowlist_and_no_dynamic_imports():
         assert not isinstance(node, ast.Import)
         if isinstance(node, ast.ImportFrom):
             assert (node.level, node.module) in {
-                (0, 'dataclasses'), (0, 'datetime'), (0, 'threading'), (0, 'uuid'), (1, 'contracts')}
+                (0, 'dataclasses'), (0, 'datetime'), (0, 'threading'), (0, 'uuid'), (1, 'contracts'), (1, 'journal')}
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
             assert node.func.id not in {'__import__', 'exec', 'eval', 'open'}
 
@@ -24,7 +24,7 @@ import sys
 sys.path.insert(0, sys.argv[1])
 import importlib.abc
 parents = {'src', 'src.malaria_dl', 'src.malaria_dl.execution'}
-allowed = ('src.malaria_dl.execution.emitter', 'src.malaria_dl.execution.contracts')
+allowed = ('src.malaria_dl.execution.journal', 'src.malaria_dl.execution.emitter', 'src.malaria_dl.execution.contracts')
 class Guard(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
         if fullname in parents or any(fullname == p or fullname.startswith(p+'.') for p in allowed): return None
@@ -52,7 +52,7 @@ def test_hash_service_and_reporters_keep_separate_responsibilities():
         for node in ast.walk(ast.parse(path.read_text())):
             if isinstance(node, ast.ImportFrom):
                 assert 'reporter' not in (node.module or '') and 'emitter' not in (node.module or '')
-    for name in ('execution/train.py', 'execution/worker.py', 'local_execution/worker.py',
+    for name in ('local_execution/worker.py',
                  'local_execution/agent.py', 'local_execution/transport.py'):
         for node in ast.walk(ast.parse((SOURCE / name).read_text())):
             if isinstance(node, ast.ImportFrom): assert 'emitter' not in (node.module or '')

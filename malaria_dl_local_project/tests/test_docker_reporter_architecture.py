@@ -27,7 +27,7 @@ def test_concrete_adapter_is_composed_only_at_external_edge():
                 if isinstance(node, ast.ImportFrom):
                     assert all(alias.name not in {'DockerRunReporter', 'PostgresResultRepository'} for alias in node.names)
                     assert not any(word in (node.module or '') for word in ('reporters', 'composition', 'persistence'))
-    for name in ('train.py', 'worker.py', 'campaign.py'):
+    for name in ('train.py', 'campaign.py'):
         tree = ast.parse((SOURCE / 'execution' / name).read_text())
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom):

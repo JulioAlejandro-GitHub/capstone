@@ -6,8 +6,6 @@ from uuid import uuid4
 
 from ..campaigns.contracts import CampaignError, digest
 from .artifacts import file_identity
-from .contracts import RunEventType
-from .emitter import RunEventEmitter
 
 
 def clean(value):
@@ -24,12 +22,7 @@ def clean(value):
     return value
 
 
-def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | None = None):
-    """Transitional E10.7 dual reporting; remove the legacy dependency in E10.11.
-
-    No emitter preserves the Local/standalone legacy path. Delivery errors are
-    fatal: completion must never succeed with an unconfirmed scientific stream.
-    """
+def train(repository, session, descriptor):
     import tensorflow as tf
 
     from src.metrics import collect_predictions
@@ -95,34 +88,7 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
     epoch_offset = 0
 
     def put(kind, phase, key, payload):
-        payload = clean(payload)
-        repository.put(run, owner, kind, phase, key, payload)
-        if event_emitter is None:
-            return
-        # The E10.6 mapping follows committed legacy evidence, never recomputes it.
-        types = {
-            "runtime": RunEventType.PHASE_STARTED,
-            "epoch": RunEventType.EPOCH_COMPLETED,
-            "artifact_prepared": RunEventType.ARTIFACT_PREPARED,
-            "artifact": RunEventType.ARTIFACT_CREATED,
-            "selection": RunEventType.SELECTION_COMPLETED,
-            "predictions": RunEventType.PREDICTIONS_COMPLETED,
-            "phase": RunEventType.PHASE_COMPLETED,
-            "calibration": RunEventType.CALIBRATION_COMPLETED,
-        }
-        if kind == "calibration" and not e["calibrate_threshold"]:
-            return  # The legacy disabled marker does not assert calibration ran.
-        reference = {"kind": kind, "phase": phase, "record_key": str(key)}
-        if kind == "predictions":
-            result = {"role": payload["role"], "epoch": payload["epoch"]}
-        elif kind == "calibration":
-            result = {"split": "val", "checkpoint_epoch": payload["checkpoint_epoch"],
-                      "result": payload["result"]}
-        elif kind == "runtime":
-            result = {"phase": phase, "callbacks": payload["callbacks"]}
-        else:
-            result = payload
-        event_emitter.emit(types[kind], {"legacy_record": reference, "result": result})
+        repository.put(run, owner, kind, phase, key, clean(payload))
 
     class PersistEpoch(tf.keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs=None):
@@ -288,66 +254,6 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
             )
         ),
     }
-    if event_emitter is not None:
-        event_emitter.emit(RunEventType.TRAINING_COMPLETED, clean(completion))
     repository.finish(run, owner, "completed", completion)
 
 
-def standalone(args):
-    from .global_gate import GlobalGate
-    with GlobalGate('standalone-train'):
-        return _standalone(args)
-
-
-def _standalone(args):
-    """Individual TRAIN keeps an explicit dataset; no artificial campaign."""
-    import socket
-
-    from ..campaigns.service import planning_environment
-    from ..models.registry import resolve_descriptor
-    from ..persistence.dataset_evidence import verify_dataset_for_execution
-    from .artifacts import keras_loader, verify_session
-    from .repository import ExecutionRepository
-
-    if args.evaluate_best_on_test or args.threshold_output_json:
-        raise CampaignError("E5_TRAIN_TEST_OR_SIDECAR_FORBIDDEN")
-    repo = ExecutionRepository()
-    repo.preflight()
-    snapshot = verify_dataset_for_execution(
-        args.dataset_version_id,
-        consumer="train.e5",
-        dataset_dir=args.dataset_dir,
-        data_source=args.data_source,
-        expected_evidence_id=getattr(args, "expected_dataset_evidence_id", None),
-    )
-    session = repo.standalone(
-        args.model_configuration,
-        snapshot.metadata(),
-        planning_environment(),
-        args.output_dir or "outputs/train_runs",
-        socket.gethostname(),
-        os.getpid(),
-        snapshot.evidence_id,
-    )
-    try:
-        train(repo, session, resolve_descriptor(args.model))
-        verified_snapshot = verify_dataset_for_execution(
-            args.dataset_version_id,
-            consumer="train.e5.finalize",
-            expected_evidence_id=snapshot.evidence_id,
-        )
-        if verified_snapshot.metadata() != snapshot.metadata():
-            raise CampaignError("DATASET_CHANGED_DURING_TRAIN")
-        current = repo.session(session["run_id"])
-        verification = verify_session(repo, current, keras_loader)
-        repo.finish(session["run_id"], session["owner"], "verified", verification)
-    except BaseException:
-        current = repo.session(session["run_id"])
-        if current["state"] == "active":
-            repo.finish(
-                session["run_id"],
-                session["owner"],
-                "failed",
-                cause="INDIVIDUAL_TRAIN_FAILED",
-            )
-        raise

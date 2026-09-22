@@ -37,6 +37,6 @@ def test_resolver_is_read_only_and_route_has_no_sql():
 def test_domain_and_runtime_stay_disconnected():
     for path in (SOURCE / 'results').glob('*.py'):
         assert not any(word in name for name in imports(path) for word in ('fastapi', 'HttpRunReporter'))
-    for name in ('execution/train.py', 'local_execution/worker.py', 'local_execution/agent.py'):
+    for name in ('execution/train.py',):
         assert not any(word in name for name in imports(SOURCE / name)
                        for word in ('reporters', 'event_client', 'event_backend', 'event_transport'))

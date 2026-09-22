@@ -37,6 +37,37 @@ class LocalEventBackend:
         repository = _LocalResultRepository(self.resolver, request.identity, principal, resolved)
         return ResultService(repository).accept_event(resolved.context, request.event)
 
+    def stream_state(self, identity, principal):
+        """Authenticated observation only; never allocates a sequence or writer."""
+        from sqlalchemy import text
+        from sqlalchemy.exc import SQLAlchemyError
+        from ..persistence.execution_record_readers import read_result_events
+        from ..results.errors import ResultPersistenceError
+        engine = self.resolver.engine_factory()
+        try:
+            with engine.connect().execution_options(isolation_level='REPEATABLE READ') as c, c.begin():
+                c.execute(text('SET TRANSACTION READ ONLY'))
+                resolved = self.resolver.resolve_on_connection(c, identity, principal)
+                # Also fail before scientific work when E10.3 is not installed.
+                c.execute(text('SELECT event_id,event_sequence FROM train_execution_records LIMIT 0'))
+                events = read_result_events(c, resolved.context.run_id)
+                terminals = [e for e in events if e.event_type.value in ('training_completed','training_failed')]
+                if (any(e.sequence != i for i,e in enumerate(events,1))
+                        or len(terminals)>1 or (terminals and terminals[-1] != events[-1])):
+                    raise ResultPersistenceError()
+                legacy = c.execute(text('SELECT EXISTS(SELECT 1 FROM train_execution_records WHERE run_id=:run AND event_id IS NULL)'),
+                                   {'run':resolved.context.run_id}).scalar_one()
+                return {'run_id':str(resolved.context.run_id),
+                        'attempt_id':str(resolved.context.attempt_id) if resolved.context.attempt_id else None,
+                        'last_sequence':events[-1].sequence if events else 0,
+                        'last_event_id':str(events[-1].event_id) if events else None,
+                        'terminal_type':terminals[-1].event_type.value if terminals else None,
+                        'legacy_exists':legacy}
+        except SQLAlchemyError:
+            raise ResultPersistenceError() from None
+        finally:
+            engine.dispose()
+
 
 def build_local_event_backend(*, engine_factory=get_engine):
     return LocalEventBackend(LocalExecutionContextResolver(engine_factory))

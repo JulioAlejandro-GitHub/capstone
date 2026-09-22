@@ -1,4 +1,4 @@
-"""Client composition, intentionally not called by the production worker."""
+"""Client composition shared by Local TRAIN and explicit transport recovery."""
 from ..execution.reporters.http import HttpRunReporter
 from .event_transport import RemoteExecutionIdentity
 from .transport import Api

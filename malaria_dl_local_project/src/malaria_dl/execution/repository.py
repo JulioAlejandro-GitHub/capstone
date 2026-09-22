@@ -43,6 +43,39 @@ class ExecutionRepository(CampaignRepository):
         with self.transaction(readonly=True) as c:
             return read_result_events(c, run_id)
 
+    def preflight_result_events(self, run_id):
+        """Docker-only E10.3 schema capability/restart guard; never runs Alembic.
+
+        Like controlled/global preflight, inspect installed schema objects rather
+        than changing or stamping a database. Legacy and Local need not call this.
+        """
+        with self.transaction(readonly=True) as c:
+            installed = execute(c, """
+                SELECT
+                  (SELECT count(*) FROM pg_attribute
+                   WHERE attrelid=to_regclass('train_execution_records')
+                     AND NOT attisdropped AND
+                     ((attname='event_id' AND atttypid='uuid'::regtype) OR
+                      (attname='event_sequence' AND atttypid='numeric'::regtype)))=2
+                  AND EXISTS(SELECT 1 FROM pg_constraint
+                    WHERE conrelid=to_regclass('train_execution_records')
+                      AND conname='train_event_metadata' AND convalidated)
+                  AND (SELECT count(*) FROM pg_index
+                    WHERE indrelid=to_regclass('train_execution_records')
+                      AND indexrelid IN (to_regclass('train_event_id_unique'),
+                                         to_regclass('train_event_sequence_unique'))
+                      AND indisunique AND indisvalid)=2
+                  AND EXISTS(SELECT 1 FROM pg_trigger
+                    WHERE tgrelid=to_regclass('train_execution_records')
+                      AND tgname='a_train_event_guard' AND tgenabled IN ('O','A'))
+                """).scalar_one()
+            if not installed:
+                raise CampaignError('E10_RESULT_EVENTS_MIGRATION_REQUIRED_20260922_01')
+            if execute(c, """SELECT EXISTS(SELECT 1 FROM train_execution_records
+                    WHERE run_id=CAST(:run AS uuid) AND event_id IS NOT NULL)""",
+                    run=identifier(run_id)).scalar_one():
+                raise CampaignError('E10_ACTIVE_STREAM_RECOVERY_UNSUPPORTED')
+
     def claim(self, campaign_id, owner, host, parent_pid, artifact_root, revision_id=None):
         with self.transaction() as c:
             campaign = self._campaign(c, campaign_id, True)

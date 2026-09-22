@@ -46,6 +46,28 @@ def local_event(data:dict, principal:Principal=Depends(require_permission(Permis
         raise HTTPException(500,'LOCAL_EVENT_INTERNAL_ERROR') from None
 
 
+@router.post('/event-state')
+def local_event_state(data:dict, principal:Principal=Depends(require_permission(Permission.SYSTEM_ADMIN)),
+                      backend=Depends(event_service)):
+    from uuid import UUID
+    from src.malaria_dl.local_execution.event_transport import RemoteExecutionIdentity
+    from src.malaria_dl.results.errors import WriterNotAuthorized, ResultPersistenceError
+    try:
+        if data.keys() != {'job_id','agent_id'} or any(type(v) is not str for v in data.values()):
+            raise ValueError()
+        identity=RemoteExecutionIdentity(job_id=UUID(data['job_id']),agent_id=UUID(data['agent_id']))
+    except (KeyError,ValueError,TypeError):
+        raise HTTPException(422,'LOCAL_EVENT_CONTRACT_INVALID') from None
+    try:
+        return backend.stream_state(identity,principal.user_id)
+    except WriterNotAuthorized:
+        raise HTTPException(403,'WRITER_NOT_AUTHORIZED') from None
+    except ResultPersistenceError:
+        raise HTTPException(503,'RESULT_PERSISTENCE_ERROR') from None
+    except Exception:
+        raise HTTPException(500,'LOCAL_EVENT_INTERNAL_ERROR') from None
+
+
 def service():
     if os.getenv('CAPSTONE_LOCAL_EXECUTION_ENABLED')!='1':
         raise HTTPException(503,'LOCAL_EXECUTION_DISABLED')
