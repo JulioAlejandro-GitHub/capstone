@@ -1,10 +1,12 @@
 """Bounded synchronous API reporting; failure stops calculation, never file fallback."""
 from copy import deepcopy
+from http.client import HTTPException as HTTPTransportError
 import json
 import time
 from urllib.request import Request,urlopen
 from urllib.error import HTTPError,URLError
 from .storage import resolve
+from .event_transport import EventRejected, EventServerFailure, EventTransportFailure, EventProtocolError
 
 
 class Api:
@@ -12,6 +14,29 @@ class Api:
         if not url.startswith(('https://','http://127.0.0.1:','http://localhost:')):
             raise ValueError('TLS_OR_LOOPBACK_REQUIRED')
         self.url=url.rstrip('/')+'/execution/local';self.bearer=bearer;self.timeout=timeout
+
+    def call_event(self, payload):
+        """One E10 delivery attempt. The caller may retry the exact same event.
+
+        Legacy call()/Reports keep their existing retry policy. Do not expose
+        remote error bodies, URLs or bearer credentials in delivery exceptions.
+        """
+        data=json.dumps(payload,allow_nan=False).encode()
+        if len(data)>8*1024*1024:raise ValueError('REPORT_TOO_LARGE')
+        req=Request(self.url+'/events',data=data,headers={
+            'Authorization':'Bearer '+self.bearer,'Content-Type':'application/json'})
+        try:
+            with urlopen(req,timeout=self.timeout) as response:
+                return json.load(response)
+        except HTTPError as exc:
+            status=exc.code
+            exc.close()
+            if status<500:raise EventRejected(status) from None
+            raise EventServerFailure(status) from None
+        except (URLError,OSError,HTTPTransportError):
+            raise EventTransportFailure('EVENT_DELIVERY_UNCONFIRMED') from None
+        except (ValueError,UnicodeError):
+            raise EventProtocolError('EVENT_RESPONSE_INVALID') from None
 
     def call(self,operation,payload):
         data=json.dumps(payload,allow_nan=False).encode()
