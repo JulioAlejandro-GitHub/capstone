@@ -4,6 +4,7 @@ from contextlib import AbstractContextManager
 
 from ..execution.contracts import ExecutionContext, RunEvent
 from .models import AcceptanceState
+from .training import TrainingResultsV1
 
 
 class EventAcceptanceScope(ABC):
@@ -19,6 +20,16 @@ class EventAcceptanceScope(ABC):
     def append(self) -> None:
         """Stage the bound event unchanged, once; confirmation occurs on scope exit."""
         raise NotImplementedError
+
+    def project_training_result(self, result: TrainingResultsV1) -> None:
+        """Stage the unique final result atomically with the bound new event.
+
+        Preserve unrelated output. A preexisting final result is a conflict,
+        including identical science under another event identity. Legacy ports
+        remain usable for other events; unsupported projection fails closed.
+        """
+        from .errors import ResultPersistenceError
+        raise ResultPersistenceError()
 
 
 class ResultRepository(ABC):

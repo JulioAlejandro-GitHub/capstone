@@ -9,7 +9,7 @@ RESULTS = PROJECT / "src/malaria_dl/results"
 
 
 def test_results_import_only_stdlib_siblings_and_approved_contracts():
-    allowed = {"abc", "contextlib", "dataclasses", "enum", "json", "uuid"}
+    allowed = {"abc", "contextlib", "dataclasses", "enum", "json", "uuid", "math", "collections.abc"}
     siblings = {path.stem for path in RESULTS.glob("*.py")}
     for path in RESULTS.rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text(), filename=str(path))):
@@ -19,7 +19,7 @@ def test_results_import_only_stdlib_siblings_and_approved_contracts():
                 assert (
                     (node.level == 0 and node.module in allowed)
                     or (node.level == 1 and node.module in siblings)
-                    or (node.level == 2 and node.module == "execution.contracts")
+                    or (node.level == 2 and node.module in ("execution.contracts", "evaluation.binary_counts"))
                 ), (path, node.lineno)
             elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
                 assert node.func.id not in {"__import__", "exec", "eval"}, (path, node.lineno)
@@ -36,8 +36,8 @@ def test_results_import_without_site_packages_or_infrastructure():
 import sys
 sys.path.insert(0, sys.argv[1])
 import importlib.abc
-parents = {"src", "src.malaria_dl", "src.malaria_dl.execution"}
-prefixes = ("src.malaria_dl.results", "src.malaria_dl.execution.contracts")
+parents = {"src", "src.malaria_dl", "src.malaria_dl.execution", "src.malaria_dl.evaluation"}
+prefixes = ("src.malaria_dl.results", "src.malaria_dl.execution.contracts", "src.malaria_dl.evaluation.binary_counts")
 class Guard(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
         if fullname in parents or any(fullname == p or fullname.startswith(p + ".") for p in prefixes):

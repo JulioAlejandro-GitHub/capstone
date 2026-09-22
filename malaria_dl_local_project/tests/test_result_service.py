@@ -41,7 +41,7 @@ def setup():
 
 
 @pytest.mark.parametrize("mode", list(ExecutionMode))
-@pytest.mark.parametrize("kind", list(RunEventType))
+@pytest.mark.parametrize("kind", [kind for kind in RunEventType if kind is not RunEventType.EVALUATION_COMPLETED])
 def test_new_event_accepted_once_without_interpreting_payload(mode, kind):
     ctx = context(execution_mode=mode)
     repo = FakeResultRepository()

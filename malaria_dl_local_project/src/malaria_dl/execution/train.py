@@ -275,6 +275,18 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
             ],
         },
     )
+    if event_emitter is not None:
+        from ..evaluation.validation import evaluate_validation_predictions
+        from ..results.training import ThresholdResult
+
+        effective_validation_threshold = ThresholdResult(
+            calibration['threshold_used'] if e['calibrate_threshold'] else calibration['threshold'],
+            calibration['threshold_source'] if e['calibrate_threshold'] else 'default',
+        )
+        evaluation = evaluate_validation_predictions(labels, scores, effective_validation_threshold)
+        if evaluation.n_samples != len(sample_paths):
+            raise CampaignError("VALIDATION_POPULATION_CONFLICT")
+        event_emitter.emit(RunEventType.EVALUATION_COMPLETED, evaluation.to_dict())
     records = repository.records(run)
     completion = {
         "epochs": len(history),

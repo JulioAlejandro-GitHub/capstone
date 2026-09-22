@@ -74,6 +74,7 @@ WITH selected_trainings AS MATERIALIZED (
 )
 SELECT
     selected.id AS run_id,
+    selected.parameters->'training_results' AS scientific_result,
     selected.run_type,
     selected.status,
     selected.release_status,
@@ -300,6 +301,23 @@ class TrainingSummaryContractError(RuntimeError):
     """Persisted data does not satisfy the public summary contract."""
 
 
+def _summary_row(row):
+    from src.malaria_dl.results.training import TrainingResultsV1
+
+    result = dict(row)
+    scientific = result.pop('scientific_result', None)
+    if isinstance(scientific, dict) and scientific.get('schema_version') == 'training_results_v1':
+        evaluation = TrainingResultsV1.from_dict(scientific).validation
+        m, cm = evaluation.metrics, evaluation.confusion_matrix
+        result.update(recall=m.recall, recall_parasitized=m.recall, specificity=m.specificity,
+                      f2_score=m.f2, f2_parasitized=m.f2, auc=m.roc_auc,
+                      roc_auc_parasitized=m.roc_auc, tn=cm.tn, fp=cm.fp, fn=cm.fn, tp=cm.tp,
+                      confusion_matrix=[[cm.tn, cm.fp], [cm.fn, cm.tp]], metrics_split='val')
+        # Avoid mixing the final checkpoint matrix with an epoch's collapse flag.
+        result['prediction_collapse_detected'] = None
+    return result
+
+
 def list_training_summaries(
     datasource: str | None,
     limit: int,
@@ -315,8 +333,8 @@ def list_training_summaries(
         ).mappings().all()
 
     try:
-        items = [TrainingSummary.model_validate(dict(row)) for row in rows]
-    except ValidationError as exc:
+        items = [TrainingSummary.model_validate(_summary_row(row)) for row in rows]
+    except (ValidationError, ValueError, TypeError) as exc:
         raise TrainingSummaryContractError(
             "Los datos persistidos de TRAIN no cumplen el contrato de resumen."
         ) from exc

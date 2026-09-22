@@ -113,7 +113,7 @@ def wire(remote, event):
     return EventRequest(identity=remote.identity, event=event).to_dict()
 
 
-@pytest.mark.parametrize('kind', [RunEventType.EVALUATION_COMPLETED, RunEventType.TRAINING_COMPLETED])
+@pytest.mark.parametrize('kind', [RunEventType.PHASE_COMPLETED, RunEventType.TRAINING_COMPLETED])
 def test_real_http_sequences_recreation_and_no_side_effects(pg, remote, kind):
     before = snapshot(pg)
     with pg.sql() as c:

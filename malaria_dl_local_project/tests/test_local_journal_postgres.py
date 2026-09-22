@@ -161,8 +161,9 @@ def run_agent(http,mode,state,config_path):
                           env=environment,capture_output=True,timeout=180)
 
 
+@pytest.mark.parametrize('local_ready',[False,True],indirect=True)
 @pytest.mark.parametrize('failure',['none','completion','verify'])
-def test_native_agent_worker_train_journal_release(native_http,tmp_path,monkeypatch,failure):
+def test_native_agent_worker_train_journal_release(native_http,tmp_path,monkeypatch,failure,local_ready):
     if platform.system()!='Darwin':pytest.skip('This evidence must run on the actual Mac host')
     h=native_http;r=h.ready
     if failure=='completion':
@@ -188,13 +189,22 @@ def test_native_agent_worker_train_journal_release(native_http,tmp_path,monkeypa
     assert proof['absence_proven'] and not proof['remaining']
     current=r.x.repo.session(job['run_id']);events=r.x.repo.result_events(job['run_id'])
     expected=[E.PHASE_STARTED,E.EPOCH_COMPLETED,E.ARTIFACT_PREPARED,E.ARTIFACT_CREATED,
-              E.SELECTION_COMPLETED,E.PREDICTIONS_COMPLETED,E.PHASE_COMPLETED,E.CALIBRATION_COMPLETED,E.TRAINING_COMPLETED]
-    assert [e.event_type for e in events]==expected and [e.sequence for e in events]==list(range(1,10))
+              E.SELECTION_COMPLETED,E.PREDICTIONS_COMPLETED,E.PHASE_COMPLETED]
+    calibrated=current['configuration']['resolved']['execution']['calibrate_threshold']
+    expected+=([E.CALIBRATION_COMPLETED] if calibrated else [])+[E.EVALUATION_COMPLETED,E.TRAINING_COMPLETED]
+    assert [e.event_type for e in events]==expected and [e.sequence for e in events]==list(range(1,len(expected)+1))
     assert not any(str(tmp_path) in json.dumps(e.to_dict()) for e in events)
     with r.x.repo.transaction(readonly=True) as c:
         params=c.execute(text('SELECT parameters FROM runs WHERE id=CAST(:id AS uuid)'),{'id':job['run_id']}).scalar_one()
         dbjob=c.execute(text('SELECT * FROM local_execution_jobs WHERE id=CAST(:id AS uuid)'),{'id':job['job_id']}).mappings().one()
-    assert params=={}
+    assert params=={'training_results':{'schema_version':'training_results_v1','validation':events[-2].to_dict()['payload']}}
+    from src.malaria_dl.results.training import TrainingResultsV1,ThresholdResult
+    from src.malaria_dl.evaluation.validation import evaluate_validation_predictions
+    scientific=TrainingResultsV1.from_dict(params['training_results']).validation
+    evidence=next(row['payload'] for row in r.x.repo.records(job['run_id']) if row['kind']=='calibration')
+    samples=evidence['samples']
+    threshold=ThresholdResult(evidence['result']['threshold_used'],'validation_calibration') if calibrated else ThresholdResult(.5,'default')
+    assert scientific==evaluate_validation_predictions([x['label'] for x in samples],[x['score'] for x in samples],threshold)
     assert events[-1].payload['records_hash']==digest(r.x.repo.records(job['run_id']))
     if failure=='none':
         assert result.returncode==0,result.stderr.decode()

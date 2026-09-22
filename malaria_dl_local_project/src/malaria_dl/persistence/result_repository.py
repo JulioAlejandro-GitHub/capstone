@@ -9,7 +9,8 @@ from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 
 from ..execution.contracts import ExecutionContext, RunEvent
-from ..results.errors import ResultError, ResultPersistenceError, WriterNotAuthorized
+from ..results.errors import ResultError, ResultPersistenceError, WriterNotAuthorized, FinalEvaluationConflict
+from ..results.training import TrainingResultsV1
 from ..results.identity import canonical_event
 from ..results.models import AcceptanceState
 from ..results.repository import EventAcceptanceScope, ResultRepository
@@ -61,6 +62,21 @@ class _PostgresScope(EventAcceptanceScope):
             payload=json.dumps({'canonical_event': canonical_event(event)}, ensure_ascii=True),
             id=event.event_id, sequence=event.sequence)
         self.appended = True
+
+    def project_training_result(self, result: TrainingResultsV1) -> None:
+        if not self.active or not self.appended or type(result) is not TrainingResultsV1:
+            raise ResultPersistenceError()
+        # Same connection/root transaction as append; the authorized session row
+        # remains exclusively locked. Guard namespace as well as run identity.
+        result = TrainingResultsV1.from_dict(result.to_dict())
+        updated = _query(self._connection, """UPDATE runs
+            SET parameters = parameters || jsonb_build_object('training_results', CAST(:result AS jsonb))
+            WHERE id=:run AND jsonb_typeof(parameters)='object'
+              AND NOT (parameters ? 'training_results')
+            RETURNING id""", run=self._event.run_id,
+            result=json.dumps(result.to_dict(), allow_nan=False, sort_keys=True)).first()
+        if updated is None:
+            raise FinalEvaluationConflict()
 
 
 class PostgresResultRepository(ResultRepository):

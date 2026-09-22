@@ -41,7 +41,7 @@ def setup(tmp_path, monkeypatch):
 def expected_types(phases=2, calibrated=False):
     epoch = [E.EPOCH_COMPLETED, E.ARTIFACT_PREPARED, E.ARTIFACT_CREATED, E.SELECTION_COMPLETED, E.PREDICTIONS_COMPLETED]
     return ([E.PHASE_STARTED, *epoch, *epoch, E.PHASE_COMPLETED] * phases
-            + ([E.CALIBRATION_COMPLETED] if calibrated else []) + [E.TRAINING_COMPLETED])
+            + ([E.CALIBRATION_COMPLETED] if calibrated else []) + [E.EVALUATION_COMPLETED, E.TRAINING_COMPLETED])
 
 
 @pytest.mark.parametrize('calibrated', [False, True])
@@ -54,10 +54,10 @@ def test_success_mapping_order_and_verification(setup, calibrated):
     assert [e.sequence for e in events] == list(range(1, len(events)+1))
     assert all(e.run_id == UUID(s['run_id']) and e.attempt_id == UUID(s['attempt_id']) for e in events)
     for index, entry in enumerate(trace):
-        if entry[0] == 'event' and entry[1] != 'training_completed':
+        if entry[0] == 'event' and entry[1] not in ('training_completed', 'evaluation_completed'):
             assert trace[index-1][0] == 'legacy'
     rows = {(r['kind'], r['phase'], r['record_key']): r['payload'] for r in repo.rows}
-    for ev in events[:-1]:
+    for ev in events[:-2]:
         wire = ev.to_dict()['payload']
         ref = wire['legacy_record']
         payload = rows[(ref['kind'], ref['phase'], ref['record_key'])]
@@ -75,7 +75,7 @@ def test_success_mapping_order_and_verification(setup, calibrated):
     assert events[-1].to_dict()['payload'] == s['completion']
     assert verify_session(repo, s, lambda *a: None)['records_hash'] == s['completion']['records_hash']
     assert not list(Path(s['artifact_root']).glob('*.partial.keras'))
-    assert E.EVALUATION_COMPLETED not in [e.event_type for e in events]
+    assert events[-2].event_type is E.EVALUATION_COMPLETED
 
 
 @pytest.mark.parametrize('mode', ['legacy', 'e10'])
@@ -117,7 +117,7 @@ def test_legacy_failure_does_not_emit_corresponding_success(setup, kind):
 
 @pytest.mark.parametrize('kind', [E.PHASE_STARTED, E.EPOCH_COMPLETED, E.ARTIFACT_PREPARED,
     E.ARTIFACT_CREATED, E.SELECTION_COMPLETED, E.PREDICTIONS_COMPLETED, E.PHASE_COMPLETED,
-    E.CALIBRATION_COMPLETED, E.TRAINING_COMPLETED])
+    E.CALIBRATION_COMPLETED, E.EVALUATION_COMPLETED, E.TRAINING_COMPLETED])
 def test_report_failure_stops_and_keeps_pending(setup, kind):
     s, desc, trace, repo, reporter, emitter = setup
     s['configuration']['resolved']['execution']['calibrate_threshold'] = True

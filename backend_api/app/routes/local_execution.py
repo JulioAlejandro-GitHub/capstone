@@ -24,7 +24,7 @@ def local_event(data:dict, principal:Principal=Depends(require_permission(Permis
     from src.malaria_dl.local_execution.event_transport import EventRequest
     from src.malaria_dl.results.errors import (
         ResultError, ResultPersistenceError, WriterNotAuthorized,
-        UnsupportedEventSchema, InvalidEventType,
+        UnsupportedEventSchema, InvalidEventType, InvalidScientificResult,
     )
     try:
         request=EventRequest.from_dict(data)
@@ -38,7 +38,7 @@ def local_event(data:dict, principal:Principal=Depends(require_permission(Permis
         raise HTTPException(403,'WRITER_NOT_AUTHORIZED') from None
     except ResultPersistenceError:
         raise HTTPException(503,'RESULT_PERSISTENCE_ERROR') from None
-    except (UnsupportedEventSchema,InvalidEventType) as exc:
+    except (UnsupportedEventSchema,InvalidEventType,InvalidScientificResult) as exc:
         raise HTTPException(422,exc.code) from None
     except ResultError as exc:
         raise HTTPException(409,exc.code) from None

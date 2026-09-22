@@ -28,7 +28,7 @@ def test_shared_scientific_path_has_identical_ordered_event_types(setup,tmp_path
     monkeypatch.setattr(threshold_calibration,'datetime',Clock)
     original,descriptor,_,_,_,_=setup
     original['configuration']['resolved']['execution']['calibrate_threshold']=calibration
-    streams=[];legacy=[]
+    streams=[];legacy=[];outputs=[]
     for mode in ('docker','local'):
         session=deepcopy(original);session['artifact_root']=str(tmp_path/mode)
         repo=MemoryRepository(session,[])
@@ -53,9 +53,13 @@ def test_shared_scientific_path_has_identical_ordered_event_types(setup,tmp_path
             assert stream.closed
             assert verify_session(repo,session,lambda *a:None)['records_hash']==session['completion']['records_hash']
             streams.append(storage.events)
+            outputs.append(storage.parameters[ctx.run_id])
             legacy.append([r for r in repo.records(session['run_id']) if r['kind'] not in ('artifact','artifact_prepared')])
         finally:
             if journal:journal.close()
     assert [e.event_type for e in streams[0]]==[e.event_type for e in streams[1]]
     assert [e.sequence for e in streams[0]]==[e.sequence for e in streams[1]]==list(range(1,len(streams[0])+1))
     assert legacy[0]==legacy[1]
+    assert outputs[0]==outputs[1]
+    assert streams[0][-2].to_dict()['payload']==streams[1][-2].to_dict()['payload']
+    assert outputs[0]['training_results']['validation']==streams[0][-2].to_dict()['payload']

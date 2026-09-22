@@ -113,7 +113,7 @@ def register_local_revision(x, row):
 
 
 @pytest.fixture
-def local_ready(global_fixture, tmp_path):
+def local_ready(global_fixture, tmp_path, request):
     """A paused, single-member campaign with a real populated dataset root and a
     registered local_python technical revision, ready for LocalBackend.claim()."""
     x = global_fixture
@@ -141,10 +141,14 @@ def local_ready(global_fixture, tmp_path):
     req['models'] = ['custom_cnn']
     req['optimizers'] = ['adam']
     req['variants'][0]['selected'] = {'model': {'input_shape': [32,32,3]},
-        'execution': {'max_epochs': 1, 'batch_size': 2, 'no_augment': True}}
+        'execution': {'max_epochs': 1, 'batch_size': 2, 'no_augment': True,
+                      'calibrate_threshold': getattr(request, 'param', True)}}
+    scientific_protocol = protocol()
+    if not getattr(request, 'param', True):
+        scientific_protocol['calibration']['algorithm'] = 'none'
     row = x.s.service.create(name='Local execution fixture', purpose='synthetic local_python test',
                               dataset_version_id=x.s.dataset['dataset_version_id'], request=req,
-                              protocol=protocol(), actor='synthetic')
+                              protocol=scientific_protocol, actor='synthetic')
     row = x.s.service.freeze(str(row['id']))
     x.s.c.commit()  # visible to x.repo's own (fresh-connection) writes below
     first = simulate_prior_failure(x, row['id'], tmp_path / 'old')

@@ -4,11 +4,12 @@ from ..execution.contracts import (
 )
 from .errors import (
     AttemptIdentityMismatch, EventIdConflict, InvalidEventType, RunIdentityMismatch,
-    SequenceConflict, SequenceGap, StaleSequence, UnsupportedEventSchema,
+    SequenceConflict, SequenceGap, StaleSequence, UnsupportedEventSchema, InvalidScientificResult,
 )
 from .identity import canonical_event
 from .models import EventAcceptance, EventAcceptanceStatus
 from .repository import ResultRepository
+from .training import TrainingResultsV1, ValidationEvaluationV1
 
 
 class ResultService:
@@ -42,7 +43,15 @@ class ResultService:
                     raise SequenceGap()
                 if event.sequence < expected:
                     raise StaleSequence()
+                result = None
+                if event.event_type is RunEventType.EVALUATION_COMPLETED:
+                    try:
+                        result = TrainingResultsV1(ValidationEvaluationV1.from_dict(event.payload))
+                    except (ValueError, TypeError, KeyError, OverflowError):
+                        raise InvalidScientificResult() from None
                 scope.append()
+                if result is not None:
+                    scope.project_training_result(result)
                 status = EventAcceptanceStatus.ACCEPTED
             acceptance = EventAcceptance(
                 status=status, run_id=event.run_id,

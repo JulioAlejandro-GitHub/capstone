@@ -50,7 +50,7 @@ def snapshot(pg):
 @pytest.mark.parametrize('kind', [
     RunEventType.EPOCH_COMPLETED, RunEventType.ARTIFACT_PREPARED, RunEventType.ARTIFACT_CREATED,
     RunEventType.SELECTION_COMPLETED, RunEventType.CALIBRATION_COMPLETED,
-    RunEventType.EVALUATION_COMPLETED, RunEventType.TRAINING_COMPLETED,
+    RunEventType.PHASE_COMPLETED, RunEventType.TRAINING_COMPLETED,
 ])
 def test_real_composition_durable_retry_and_no_state_side_effects(pg, kind):
     before = snapshot(pg)

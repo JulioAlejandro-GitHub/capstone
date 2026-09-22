@@ -48,3 +48,11 @@ class ResultPersistenceError(ResultError):
     """Write/commit unconfirmed; never implies that a retry needs a new identity."""
 
     code = "RESULT_PERSISTENCE_ERROR"
+
+
+class InvalidScientificResult(ResultError):
+    code = "INVALID_SCIENTIFIC_RESULT"
+
+
+class FinalEvaluationConflict(ResultError):
+    code = "FINAL_EVALUATION_CONFLICT"

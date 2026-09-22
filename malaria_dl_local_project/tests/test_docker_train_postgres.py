@@ -48,7 +48,7 @@ def docker(pg, monkeypatch, tmp_path):
             def report(self, event):
                 before = digest(repo.records(event.run_id))
                 assert repo.session(event.run_id)['state'] == 'active'
-                if event.event_type not in (E.TRAINING_COMPLETED, E.TRAINING_FAILED):
+                if event.event_type not in (E.TRAINING_COMPLETED, E.TRAINING_FAILED, E.EVALUATION_COMPLETED):
                     ref = event.payload['legacy_record']
                     assert any(all(r[k] == ref[k] for k in ('kind','phase','record_key')) for r in repo.records(event.run_id))
                 real.report(event)
@@ -97,7 +97,7 @@ def test_real_worker_train_completed_then_verified(docker):
     x.repo.finish(s['run_id'], s['owner'], 'verified', proof)
     assert x.repo.session(s['run_id'])['state'] == 'verified'
     with x.pg.sql() as c:
-        assert c.execute(text('SELECT parameters FROM runs WHERE id=:id'), {'id': s['run_id']}).scalar_one() == parameters
+        assert c.execute(text('SELECT parameters FROM runs WHERE id=:id'), {'id': s['run_id']}).scalar_one() == parameters | {'training_results': {'schema_version': 'training_results_v1', 'validation': events[-2].to_dict()['payload']}}
     assert x.repo.result_events(s['run_id']) == events
 
 
@@ -177,7 +177,7 @@ def test_failures_never_falsely_verified(docker, monkeypatch, case):
             assert events[-1].event_type is E.TRAINING_FAILED
         else:
             assert x.emitters[0].pending is not None and not x.emitters[0].closed
-            assert not any(e.event_type in (E.TRAINING_COMPLETED, E.TRAINING_FAILED) for e in events)
+            assert not any(e.event_type in (E.TRAINING_COMPLETED, E.TRAINING_FAILED, E.EVALUATION_COMPLETED) for e in events)
         # Existing coordinator failure path can close the active legacy session.
         x.repo.finish(s['run_id'], s['owner'], 'failed', cause='SYNTHETIC_CHILD_EXIT')
         assert x.repo.session(s['run_id'])['state'] == 'failed'

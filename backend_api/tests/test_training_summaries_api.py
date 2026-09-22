@@ -322,3 +322,30 @@ def test_uuid_and_timestamp_serialization_is_standard():
     dumped = item.model_dump(mode="json")
     assert UUID(dumped["run_id"]) == UUID(TRAINING_ID)
     assert dumped["release_updated_at"].endswith("Z")
+
+
+def scientific_result():
+    return {'schema_version':'training_results_v1','validation':{
+        'schema_version':'validation_evaluation_v1','evaluation_role':'training_validation_final',
+        'split':'val','n_samples':4,'threshold':{'value':.5,'source':'default'},
+        'confusion_matrix':{'tn':1,'fp':1,'fn':0,'tp':2},
+        'metrics':{'recall':1.,'specificity':.5,'precision':2/3,'f1':.8,'f2':10/11,
+                   'balanced_accuracy':.75,'roc_auc':.75,'pr_auc':5/6}}}
+
+
+def test_scientific_reader_prefers_valid_final_val_contract():
+    result=service._summary_row(summary_row(scientific_result=scientific_result()))
+    assert result['confusion_matrix']==[[1,1],[0,2]] and result['metrics_split']=='val'
+    assert result['recall_parasitized']==1 and result['f2_parasitized']==10/11
+    assert result['auc']==.75 and result['prediction_collapse_detected'] is None
+    TrainingSummary.model_validate(result)
+
+
+@pytest.mark.parametrize('value',[None,{'schema_version':'unknown'}])
+def test_scientific_reader_preserves_legacy_fallback(value):
+    assert service._summary_row(summary_row(scientific_result=value))==summary_row()
+
+
+def test_scientific_reader_rejects_malformed_known_contract():
+    value=scientific_result();value['validation']['confusion_matrix']['tp']=999
+    with pytest.raises(ValueError):service._summary_row(summary_row(scientific_result=value))

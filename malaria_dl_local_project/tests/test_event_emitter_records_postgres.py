@@ -118,7 +118,9 @@ def test_mixed_verification_and_future_terminal_before_finish_order(pg):
     expected = verify_session(repo, session, lambda *_: None)
     before = snapshot(pg)
     stream = RunEventEmitter(reporter(pg), run_id=pg.ctx.run_id, attempt_id=pg.ctx.attempt_id)
-    stream.emit(Kind.EVALUATION_COMPLETED, {'scope': 'synthetic'})
+    from test_training_results import payload
+    stream.emit(Kind.EVALUATION_COMPLETED, payload())
+    before['runs'][0]['parameters']['training_results'] = {'schema_version': 'training_results_v1', 'validation': payload()}
     terminal = stream.emit(Kind.TRAINING_COMPLETED, {'records_hash': completion['records_hash']})
     assert snapshot(pg) == before
     assert verify_session(repo, session, lambda *_: None) == expected

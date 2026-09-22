@@ -5,7 +5,7 @@ from typing import Iterator
 from uuid import UUID
 
 from src.malaria_dl.execution.contracts import ExecutionContext, RunEvent
-from src.malaria_dl.results.errors import ResultPersistenceError, WriterNotAuthorized
+from src.malaria_dl.results.errors import ResultPersistenceError, WriterNotAuthorized, FinalEvaluationConflict
 from src.malaria_dl.results.models import AcceptanceState
 from src.malaria_dl.results.repository import EventAcceptanceScope, ResultRepository
 
@@ -16,6 +16,14 @@ class _Scope(EventAcceptanceScope):
         self._repository = repository
         self.active = True
         self.staged = False
+        self.result = None
+
+    def project_training_result(self, result):
+        assert self.active and self.staged
+        self._repository.fail_at('projection')
+        if 'training_results' in self._repository.parameters.get(self.run_id, {}):
+            raise FinalEvaluationConflict()
+        self.result = result.to_dict()
 
     @property
     def state(self) -> AcceptanceState:
@@ -39,6 +47,7 @@ class FakeResultRepository(ResultRepository):
         self.failure: str | None = None
         self.scope_calls = 0
         self.append_count = 0
+        self.parameters = {}
 
     @property
     def events(self) -> tuple[RunEvent, ...]:
@@ -86,12 +95,15 @@ class FakeResultRepository(ResultRepository):
                 sequence_event=self._sequences.get((event.run_id, event.sequence)),
                 last_sequence=self._last.get(event.run_id, 0),
             ), self)
+            scope.run_id = context.run_id
             try:
                 yield scope
                 self.fail_at("commit")
                 if scope.staged:
                     self._store(event)
                     self.append_count += 1
+                    if scope.result is not None:
+                        self.parameters.setdefault(context.run_id, {})['training_results'] = scope.result
                 self.fail_at("ack")
             finally:
                 scope.active = False

@@ -102,7 +102,7 @@ def pg(isolated, tmp_path):
                            records=records, pids=pids, schema=x.schema, token=token)
 
 
-@pytest.mark.parametrize('kind', list(RunEventType))
+@pytest.mark.parametrize('kind', [kind for kind in RunEventType if kind is not RunEventType.EVALUATION_COMPLETED])
 def test_durable_roundtrip_all_types_without_state_mutation(pg, kind):
     event = item(pg.ctx, event_type=kind)
     with pg.sql() as c:

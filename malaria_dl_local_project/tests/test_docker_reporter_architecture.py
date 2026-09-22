@@ -39,8 +39,8 @@ def test_reporter_import_without_infrastructure_installed():
 import sys
 sys.path.insert(0, sys.argv[1])
 import importlib.abc
-parents = {'src', 'src.malaria_dl', 'src.malaria_dl.execution'}
-prefixes = ('src.malaria_dl.execution.contracts', 'src.malaria_dl.execution.reporters', 'src.malaria_dl.results')
+parents = {'src', 'src.malaria_dl', 'src.malaria_dl.execution', 'src.malaria_dl.evaluation'}
+prefixes = ('src.malaria_dl.execution.contracts', 'src.malaria_dl.execution.reporters', 'src.malaria_dl.results', 'src.malaria_dl.evaluation.binary_counts')
 class Guard(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path=None, target=None):
         if fullname in parents or any(fullname == p or fullname.startswith(p + '.') for p in prefixes):
