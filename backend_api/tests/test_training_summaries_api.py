@@ -163,6 +163,7 @@ def test_service_limit_is_bounded_without_opening_a_connection(monkeypatch):
 def test_sql_is_scoped_deterministic_distinct_and_release_is_not_recomputed():
     sql = service.TRAINING_SUMMARIES_SQL
     normalized = " ".join(sql.lower().split())
+    assert "(to_jsonb(record)->>'event_id') is null" in normalized
     assert "where training.run_type = 'training'" in normalized
     assert (
         "training.started_at desc nulls last, training.created_at desc, training.id"

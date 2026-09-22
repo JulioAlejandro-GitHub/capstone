@@ -292,15 +292,16 @@ def test_http_commit_failure_rolls_back_and_exact_retry_succeeds(pg, remote, mon
     assert len(pg.records()) == 2
 
 
-def test_http_records_change_legacy_digest_without_consolidation(pg, remote):
+def test_http_records_preserve_legacy_digest_without_consolidation(pg, remote):
     from src.malaria_dl.campaigns.contracts import digest
     repo = legacy_repository(pg)
     before = repo.records(pg.ctx.run_id)
     state = snapshot(pg)
     remote.reporter().report(item(pg.ctx, event_type=RunEventType.TRAINING_COMPLETED))
     after = repo.records(pg.ctx.run_id)
-    assert digest(before) != digest(after)
-    assert [r for r in after if r['kind'] != 'e10_event'] == before
+    assert digest(before) == digest(after)
+    assert after == before
+    assert len(repo.result_events(pg.ctx.run_id)) == 1
     assert snapshot(pg) == state
 
 

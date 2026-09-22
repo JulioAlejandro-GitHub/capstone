@@ -8,7 +8,7 @@ import pytest
 from sqlalchemy import event as sa_event, text
 from sqlalchemy.exc import OperationalError
 
-from src.malaria_dl.campaigns.contracts import CampaignError, digest
+from src.malaria_dl.campaigns.contracts import digest
 from src.malaria_dl.execution.artifacts import verify_session
 from src.malaria_dl.execution.composition import build_docker_run_reporter
 from src.malaria_dl.execution.contracts import RunEventType
@@ -107,7 +107,7 @@ def test_commit_failure_is_not_success_and_retry_is_durable(pg):
     assert len(pg.records()) == 2
 
 
-def test_pure_readers_coexist_and_records_hash_integration_blocker(pg, tmp_path):
+def test_pure_readers_coexist_with_stable_legacy_records_hash(pg, tmp_path):
     from test_campaign_executor_e5 import evidence
     session, evidence_rows = evidence(tmp_path)
     session['run_id'] = str(pg.ctx.run_id)
@@ -124,16 +124,11 @@ def test_pure_readers_coexist_and_records_hash_integration_blocker(pg, tmp_path)
     before = snapshot(pg)
     reporter(pg).report(item(pg.ctx, event_type=RunEventType.TRAINING_COMPLETED))
     stored = pg.records()
-    mixed = repo.records(pg.ctx.run_id)
-    assert len(mixed) == len(legacy) + 1
-    assert all(set(row) == {'kind','phase','record_key','payload'} for row in mixed)
-    assert [row for row in mixed if row['kind'] != 'e10_event'] == legacy
-    assert digest(mixed) != session['completion']['records_hash']
-    with pytest.raises(CampaignError, match='TRAIN_RESULTS_INCOMPLETE'):
-        verify_session(repo, session, lambda *_: None)
-    # Only the local synthetic completion is updated, never the persisted session.
-    session['completion']['records_hash'] = digest(mixed)
-    assert verify_session(repo, session, lambda *_: None)['records_hash'] == digest(mixed)
+    assert repo.records(pg.ctx.run_id) == repo.legacy_records(pg.ctx.run_id) == legacy
+    assert all(set(row) == {'kind','phase','record_key','payload'} for row in legacy)
+    assert len(repo.result_events(pg.ctx.run_id)) == 1
+    assert digest(legacy) == session['completion']['records_hash']
+    assert verify_session(repo, session, lambda *_: None)['records_hash'] == digest(legacy)
     with pg.sql() as c:
         c.execute(text('SET TRANSACTION READ ONLY'))
         calibration = c.execute(text("""SELECT payload FROM train_execution_records

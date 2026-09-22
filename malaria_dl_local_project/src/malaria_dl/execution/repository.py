@@ -30,15 +30,18 @@ class ExecutionRepository(CampaignRepository):
             return dict(row)
 
     def records(self, run_id):
+        """Historical TRAIN API: legacy evidence only, with unchanged hash bytes."""
+        return self.legacy_records(run_id)
+
+    def legacy_records(self, run_id):
+        from ..persistence.execution_record_readers import read_legacy_execution_records
         with self.transaction(readonly=True) as c:
-            return [
-                dict(r)
-                for r in execute(
-                    c,
-                    "SELECT kind,phase,record_key,payload FROM train_execution_records WHERE run_id=CAST(:id AS uuid) ORDER BY kind,phase,record_key",
-                    id=identifier(run_id),
-                ).mappings()
-            ]
+            return read_legacy_execution_records(c, run_id)
+
+    def result_events(self, run_id):
+        from ..persistence.execution_record_readers import read_result_events
+        with self.transaction(readonly=True) as c:
+            return read_result_events(c, run_id)
 
     def claim(self, campaign_id, owner, host, parent_pid, artifact_root, revision_id=None):
         with self.transaction() as c:
@@ -187,7 +190,7 @@ class ExecutionRepository(CampaignRepository):
                 raise CampaignError("TRAIN_OWNER_FENCED")
             old = execute(
                 c,
-                "SELECT payload FROM train_execution_records WHERE run_id=CAST(:id AS uuid) AND kind=:kind AND phase=:phase AND record_key=:key",
+                "SELECT payload FROM train_execution_records AS record WHERE run_id=CAST(:id AS uuid) AND kind=:kind AND phase=:phase AND record_key=:key AND (to_jsonb(record)->>'event_id') IS NULL",
                 id=identifier(run_id),
                 kind=kind,
                 phase=phase,

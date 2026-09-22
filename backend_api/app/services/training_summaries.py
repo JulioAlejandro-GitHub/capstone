@@ -173,6 +173,7 @@ LEFT JOIN LATERAL (
     SELECT record.payload
     FROM train_execution_records AS record
     WHERE record.run_id = selected.id
+      AND (to_jsonb(record)->>'event_id') IS NULL
       AND record.kind = 'calibration' AND record.phase = 'val' AND record.record_key = 'selected'
     ORDER BY record.created_at DESC
     LIMIT 1
