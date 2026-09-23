@@ -18,7 +18,7 @@
   overflow: hidden;
   gap: 0;
   padding: 0;
-  background: #0b1326;
+  background: var(--color-background);
 }
 
 .smear-workflow--immersive > .workflow-context-header {
@@ -34,21 +34,21 @@
 }
 
 .smear-analysis-immersive {
-  --smear-background: #0b1326;
-  --smear-surface-lowest: #060e20;
-  --smear-surface-low: #131b2e;
-  --smear-surface: #171f33;
-  --smear-surface-high: #222a3d;
-  --smear-surface-highest: #2d3449;
-  --smear-primary: #a4e6ff;
-  --smear-primary-bright: #4cd6ff;
-  --smear-secondary: #4edea3;
-  --smear-tertiary: #ffd5a5;
-  --smear-error: #ffb4ab;
-  --smear-text: #dae2fd;
-  --smear-muted: #bbc9cf;
-  --smear-outline: #859399;
-  --smear-outline-variant: #3c494e;
+  --smear-background: var(--color-background);
+  --smear-surface-lowest: var(--color-surface-lowest);
+  --smear-surface-low: var(--color-surface-low);
+  --smear-surface: var(--color-surface);
+  --smear-surface-high: var(--color-surface-high);
+  --smear-surface-highest: var(--color-surface-highest);
+  --smear-primary: var(--color-primary);
+  --smear-primary-bright: var(--color-primary-container);
+  --smear-secondary: var(--color-quality-success);
+  --smear-tertiary: var(--color-warning);
+  --smear-error: var(--color-error);
+  --smear-text: var(--color-on-surface);
+  --smear-muted: var(--color-on-surface-variant);
+  --smear-outline: var(--color-outline);
+  --smear-outline-variant: var(--color-outline-variant);
   --smear-glass: rgba(11, 19, 38, .74);
   --smear-glass-border: rgba(164, 230, 255, .17);
   --smear-panel-left: 24px;
