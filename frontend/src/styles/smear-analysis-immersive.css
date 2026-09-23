@@ -8,8 +8,13 @@
   overflow: hidden;
 }
 
+.page.smear-workflow[data-flow-state] {
+  transition: background-color 220ms ease-out, padding 220ms ease-out;
+}
+
 .page.smear-workflow.smear-workflow--immersive {
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: none;
   height: 100%;
@@ -18,11 +23,30 @@
   overflow: hidden;
   gap: 0;
   padding: 0;
-  background: var(--color-background);
+  background-color: var(--color-background);
 }
 
-.smear-workflow--immersive > .workflow-context-header {
-  display: none;
+@media (min-width: 701px) {
+  .smear-workflow .workflow-context-header {
+    height: 80px;
+    overflow: hidden;
+    transition: height 220ms ease-out, padding 220ms ease-out;
+  }
+
+  .smear-workflow .workflow-context-header[data-compact="true"] {
+    height: 48px;
+    padding: 6px 14px;
+  }
+
+  .smear-workflow .workflow-context-header[data-compact="true"] .workflow-kicker,
+  .smear-workflow .workflow-context-header[data-compact="true"] .workflow-stage-label {
+    display: none;
+  }
+
+  .smear-workflow .workflow-context-header[data-compact="true"] .workflow-stage-item {
+    min-height: 22px;
+    padding: 3px;
+  }
 }
 
 .smear-workflow--immersive .workflow-review-frame,
@@ -31,6 +55,11 @@
   height: 100%;
   min-width: 0;
   min-height: 0;
+}
+
+.smear-workflow--immersive .workflow-review-frame {
+  flex: 1 1 auto;
+  height: auto;
 }
 
 .smear-analysis-immersive {

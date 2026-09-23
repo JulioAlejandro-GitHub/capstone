@@ -62,16 +62,9 @@ export type SmearAnalysisImmersiveViewProps =
 /** @deprecated Use SmearAnalysisImmersiveViewProps. */
 export type SmearAnalysisResultsViewProps = SmearAnalysisImmersiveViewProps;
 
-const safeDate = (value?: string | null) => {
-  if (!value) return 'Fecha no disponible';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? 'Fecha no disponible' : date.toLocaleString();
-};
-
 export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProps) {
   const { mode, workflow, actions } = props;
-  const isHistory = mode === 'history';
-  const modeLabel = isHistory ? 'Histórico' : 'En vivo';
+  const modeLabel = mode === 'history' ? 'Histórico' : 'En vivo';
   const { permissions } = props;
 
   return (
@@ -80,51 +73,6 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
       data-view-mode={mode}
       aria-label={`Análisis de frotis · ${modeLabel}`}
     >
-      <header className="smear-results-header">
-        <section
-          className="smear-results-identity smear-results-case-panel smear-glass-panel"
-          aria-label="Paciente, muestra y ejecución"
-        >
-          <div>
-            <p>Análisis de frotis · {modeLabel}</p>
-            <h1 className="smear-results-title">{workflow.analysisRunCode}</h1>
-            <dl className="smear-results-case-data">
-              <div><dt>Paciente</dt><dd>{workflow.subjectCode}</dd></div>
-              <div><dt>Muestra</dt><dd>{workflow.sampleCode}</dd></div>
-              <div><dt>Run</dt><dd>{workflow.analysisRunCode}</dd></div>
-            </dl>
-          </div>
-        </section>
-
-        <div className="smear-results-actions smear-glass-panel">
-          {isHistory ? (
-            <strong className="smear-status-badge" role="status">
-              Vista histórica · Pipeline en solo lectura
-            </strong>
-          ) : null}
-          <dl className="smear-results-run-data">
-            <div><dt>Estado</dt><dd>{workflow.status}</dd></div>
-            <div>
-              <dt>Modelo</dt>
-              <dd>{workflow.modelName ?? 'Sin clasificación'} {workflow.modelVersion ?? ''}</dd>
-            </div>
-            <div><dt>Fecha</dt><dd>{safeDate(workflow.createdAt)}</dd></div>
-          </dl>
-          {actions.onRefresh ? (
-            <button type="button" className="smear-glass-button" onClick={actions.onRefresh}>
-              Actualizar
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className="smear-glass-button smear-results-context-action"
-            onClick={actions.onBack}
-          >
-            {actions.backLabel}
-          </button>
-        </div>
-      </header>
-
       <ScientificAnnotations
         title="ANOTACIONES DE LA MUESTRA"
         sessionId={null}

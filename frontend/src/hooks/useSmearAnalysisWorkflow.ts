@@ -146,7 +146,7 @@ const workflowStages = new Set<SmearWorkflowStage>([
   'error',
 ]);
 
-const flowPhaseFromStage = (stage: SmearWorkflowStage): SmearFlowPhase => {
+export const flowPhaseFromStage = (stage: SmearWorkflowStage): SmearFlowPhase => {
   if (stage === 'setup') return 'idle';
   if (stage === 'validating') return 'validating';
   if (stage === 'uploading') return 'uploading';

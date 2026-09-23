@@ -4449,6 +4449,7 @@ a.uploaded-image-cell:hover small {
 
 .smear-workflow .workflow-header-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
@@ -4475,6 +4476,36 @@ a.uploaded-image-cell:hover small {
   border-color: var(--workflow-primary);
   background: var(--workflow-primary);
   color: #003543;
+}
+
+.smear-workflow .workflow-header-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  color: var(--workflow-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.smear-workflow .workflow-header-meta dt {
+  display: inline;
+  font-weight: 720;
+}
+
+.smear-workflow .workflow-header-meta dd {
+  display: inline;
+  margin: 0 0 0 4px;
+}
+
+.smear-workflow .workflow-history-badge {
+  border: 1px solid var(--workflow-primary);
+  border-radius: 999px;
+  color: var(--workflow-primary);
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 720;
+  white-space: nowrap;
 }
 
 .smear-workflow button:focus-visible,
@@ -6103,22 +6134,6 @@ a.uploaded-image-cell:hover small {
   }
 }
 /* Shared Liquid Glass results view, structurally derived from the second prototype. */
-.smear-workflow[data-mode="review"] {
-  padding: 0;
-  background:
-    radial-gradient(circle at 92% 105%, rgba(126, 132, 255, .18), transparent 31%),
-    radial-gradient(circle at 8% 18%, rgba(84, 226, 62, .04), transparent 25%),
-    #111317;
-}
-
-.smear-workflow[data-mode="review"] > .workflow-context-header {
-  display: none;
-}
-
-.smear-workflow[data-mode="review"] .workflow-review-frame {
-  height: 100%;
-}
-
 .smear-results-view {
   --smear-glass-primary: #c0c1ff;
   --smear-glass-text: #e2e2e8;

@@ -3,8 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useAuth } from '../auth';
 import { SmearAnalysisImmersiveView } from '../components/cell-review/SmearAnalysisImmersiveView';
+import { SmearCaseHeader } from '../components/cell-review/SmearCaseHeader';
 import { routes } from '../router';
 import {
+  flowPhaseFromStage,
   useSmearAnalysisWorkflow,
   type SmearWorkflowController,
   type SmearWorkflowFailureStep,
@@ -906,30 +908,42 @@ export function SmearAnalysisReadOnlyView({
     <section
       className={`page smear-workflow smear-workflow-history${hasResults ? ' smear-workflow--immersive' : ''}`}
       data-mode="history"
+      data-flow-state={flowPhaseFromStage(stage)}
     >
-      {!hasResults ? <header className="workflow-context-header">
-        <div className="workflow-case-context">
-          <p className="workflow-kicker">Análisis de frotis</p>
-          <strong>{workflow.subject.subject_code}</strong>
-          <span>{workflow.sample.sample_code} · {stageLabel[stage]}</span>
-        </div>
-        <nav className="workflow-stage-nav" aria-label="Etapas persistidas del análisis">
-          {contextSteps.map((step) => {
-            const state = contextStates.get(step.id) ?? 'locked';
-            return (
-              <span key={step.id} className="workflow-stage-item" data-state={state}>
-                <span aria-hidden="true">
-                  {state === 'complete' ? '✓' : state === 'warning' ? '!' : state === 'failed' ? '×' : '•'}
-                </span>
-                {step.label}
-              </span>
-            );
-          })}
-        </nav>
-        <div className="workflow-header-actions">
-          <button type="button" onClick={onBack}>Volver al historial</button>
-        </div>
-      </header> : null}
+      <SmearCaseHeader
+        subjectCode={workflow.subject.subject_code}
+        sampleCode={workflow.sample.sample_code}
+        analysisRunCode={run?.run_code ?? null}
+        status={stageLabel[stage]}
+        steps={contextSteps.map((step) => ({
+          id: step.id,
+          label: step.label,
+          state: contextStates.get(step.id) ?? 'locked',
+        }))}
+        compact={hasResults}
+        actions={
+          <>
+            {hasResults ? (
+              <>
+                <strong className="workflow-history-badge" role="status">
+                  Vista histórica · Pipeline en solo lectura
+                </strong>
+                <dl className="workflow-header-meta">
+                  <div>
+                    <dt>Modelo</dt>
+                    <dd>
+                      {workflow.classification_run?.model_name ?? 'Sin clasificación'}{' '}
+                      {workflow.classification_run?.model_version ?? ''}
+                    </dd>
+                  </div>
+                  <div><dt>Fecha</dt><dd>{safeDate(run?.created_at)}</dd></div>
+                </dl>
+              </>
+            ) : null}
+            <button type="button" onClick={onBack}>Volver al historial</button>
+          </>
+        }
+      />
       {!hasResults ? <section className="workflow-history-banner" aria-label="Modo de consulta">
         <strong>Vista histórica · Solo lectura</strong>
         <span>{run?.run_code ?? 'Análisis persistido'}</span>
@@ -1088,39 +1102,40 @@ export function SmearWorkflow() {
       data-mode={mode}
       data-flow-state={controller.phase}
     >
-      <header className="workflow-context-header">
-        <div className="workflow-case-context">
-          <p className="workflow-kicker">Análisis de frotis</p>
-          <strong>{patientCode}</strong>
-          <span>{sampleCode} · {headerState}</span>
-        </div>
-        <nav className="workflow-stage-nav" aria-label="Etapas del análisis">
-          {contextSteps.map((step) => {
-            const state = contextStates.get(step.id) ?? 'locked';
-            return (
-              <span
-                key={step.id}
-                className="workflow-stage-item"
-                data-state={state}
-                aria-current={state === 'active' ? 'step' : undefined}
-              >
-                <span aria-hidden="true">
-                  {state === 'complete' ? '✓' : state === 'warning' ? '!' : state === 'failed' ? '×' : '•'}
-                </span>
-                {step.label}
-              </span>
-            );
-          })}
-        </nav>
-        {mode !== 'setup' ? (
-          <div className="workflow-header-actions">
-            <button type="button" disabled={recovering} onClick={() => void controller.refresh()}>
-              Actualizar estado
-            </button>
-            <button type="button" onClick={controller.newAnalysis}>Nuevo análisis</button>
-          </div>
-        ) : <span className="workflow-context-status">{headerState}</span>}
-      </header>
+      <SmearCaseHeader
+        subjectCode={patientCode}
+        sampleCode={sampleCode}
+        analysisRunCode={snapshot.analysisRun?.run_code ?? null}
+        status={headerState}
+        steps={contextSteps.map((step) => ({
+          id: step.id,
+          label: step.label,
+          state: contextStates.get(step.id) ?? 'locked',
+        }))}
+        compact={mode === 'review'}
+        actions={
+          mode !== 'setup' ? (
+            <>
+              {mode === 'review' ? (
+                <dl className="workflow-header-meta">
+                  <div>
+                    <dt>Modelo</dt>
+                    <dd>
+                      {snapshot.classificationRun?.model_name ?? 'Sin clasificación'}{' '}
+                      {snapshot.classificationRun?.model_version ?? ''}
+                    </dd>
+                  </div>
+                  <div><dt>Fecha</dt><dd>{safeDate(snapshot.analysisRun?.created_at)}</dd></div>
+                </dl>
+              ) : null}
+              <button type="button" disabled={recovering} onClick={() => void controller.refresh()}>
+                Actualizar estado
+              </button>
+              <button type="button" onClick={controller.newAnalysis}>Nuevo análisis</button>
+            </>
+          ) : <span className="workflow-context-status">{headerState}</span>
+        }
+      />
 
       {recovering ? (
         <section className="workflow-recovering" aria-live="polite">
