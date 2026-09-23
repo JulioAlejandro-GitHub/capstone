@@ -36,11 +36,36 @@ type WorkflowCapabilities = {
 
 const contextSteps: Array<{ id: ContextStep; label: string }> = [
   { id: 'upload', label: 'Preparar' },
-  { id: 'quality', label: 'Cargar' },
+  { id: 'quality', label: 'Validar' },
   { id: 'detection', label: 'Detectar' },
   { id: 'classification', label: 'Clasificar' },
   { id: 'review', label: 'Revisar' },
 ];
+
+/**
+ * Sub-milestones nested under each contextStep in the left processing panel.
+ * timeIndex indexes into milestoneTimes, which keeps the original 7-entry
+ * order and timestamp-sourcing logic from the retired milestones array.
+ */
+const contextSubSteps: Record<ContextStep, Array<{ title: string; detail: string; timeIndex: number }>> = {
+  upload: [
+    { title: 'Imagen recibida', detail: 'Original persistido sin modificaciones', timeIndex: 0 },
+  ],
+  quality: [
+    { title: 'Integridad verificada', detail: 'Checksum y decodificación técnica', timeIndex: 1 },
+    { title: 'Control de calidad', detail: 'Nitidez, exposición y campo útil', timeIndex: 2 },
+    { title: 'Lista para análisis', detail: 'Quality gate autorizado', timeIndex: 3 },
+  ],
+  detection: [
+    { title: 'Detección celular', detail: 'Regiones candidatas y crops', timeIndex: 4 },
+  ],
+  classification: [
+    { title: 'Clasificación IA', detail: 'Predicción reproducible con el modelo productivo', timeIndex: 5 },
+  ],
+  review: [
+    { title: 'Revisión y resultado', detail: 'Resumen experimental y workspace interactivo', timeIndex: 6 },
+  ],
+};
 
 const stageLabel: Record<SmearWorkflowStage, string> = {
   setup: 'Configuración pendiente',
@@ -144,17 +169,34 @@ const optionalMetric = (value: number | null | undefined, digits = 3) =>
 const ratio = (value: number | null | undefined) =>
   value == null ? '—' : `${(value * 100).toFixed(1)} %`;
 
+/** Detections vs. reviewed count for the 'review' step. Omit when unavailable. */
+type ReviewProgress = { total: number; reviewed: number };
+
+const reviewProgressOf = (
+  detectionRun: { detection_count: number; reviewed_count: number } | null | undefined,
+): ReviewProgress | null => (
+  detectionRun
+    ? { total: detectionRun.detection_count, reviewed: detectionRun.reviewed_count }
+    : null
+);
+
 function contextStepState(
   step: ContextStep,
   stage: SmearWorkflowStage,
   failureStep: SmearWorkflowFailureStep | undefined,
+  reviewProgress?: ReviewProgress | null,
 ): StepState {
   if (
     stage === 'review_ready'
     || stage === 'classification_completed'
     || stage === 'classification_warning'
   ) {
-    if (step === 'review') return 'active';
+    if (step === 'review') {
+      if (!reviewProgress) return 'active';
+      if (reviewProgress.reviewed <= 0) return 'pending';
+      if (reviewProgress.reviewed >= reviewProgress.total) return 'complete';
+      return 'active';
+    }
     if (step === 'classification' && stage === 'classification_warning') return 'warning';
     return 'complete';
   }
@@ -204,7 +246,11 @@ function contextStepState(
     ) return 'complete';
     return 'locked';
   }
-  if (['uploading', 'ingested', 'creating_analysis', 'quality_queued', 'quality_processing'].includes(stage)) {
+  if (stage === 'ingested') {
+    if (step === 'upload') return 'complete';
+    return 'locked';
+  }
+  if (['creating_analysis', 'quality_queued', 'quality_processing'].includes(stage)) {
     if (step === 'upload') return 'complete';
     return step === 'quality' ? 'active' : 'locked';
   }
@@ -259,63 +305,6 @@ function AuthenticatedWorkflowImage({
       <strong>{failed ? 'Imagen no disponible' : 'Cargando imagen autenticada'}</strong>
     </div>
   );
-}
-
-function milestoneState(
-  milestone: number,
-  controller: SmearWorkflowController,
-): StepState {
-  const { stage, identifiers, snapshot, failure } = controller;
-  const run = snapshot.analysisRun;
-  const detection = snapshot.detectionRun;
-  const classification = snapshot.classificationRun;
-  if (milestone === 0) {
-    if (stage === 'error' && failure?.step === 'upload') return 'failed';
-    return identifiers.ingestionBatchId ? 'complete' : stage === 'uploading' ? 'active' : 'pending';
-  }
-  if (milestone === 1) {
-    if (run?.images.length && run.images.every((image) => image.integrity_verified === true)) return 'complete';
-    if (stage === 'quality_processing') return 'active';
-    if (stage === 'quality_failed') return 'failed';
-    return identifiers.ingestionBatchId ? 'pending' : 'locked';
-  }
-  if (milestone === 2) {
-    if (stage === 'quality_warning') return 'warning';
-    if (stage === 'quality_failed' || (stage === 'error' && failure?.step === 'quality')) return 'failed';
-    if (run?.ready_for_analysis) return 'complete';
-    if (['creating_analysis', 'quality_queued', 'quality_processing'].includes(stage)) return 'active';
-    return identifiers.analysisRunId ? 'pending' : 'locked';
-  }
-  if (milestone === 3) {
-    if (run?.ready_for_analysis) return 'complete';
-    if (stage === 'quality_warning') return 'warning';
-    if (stage === 'quality_failed') return 'failed';
-    return identifiers.analysisRunId ? 'pending' : 'locked';
-  }
-  if (milestone === 4) {
-    if (detection?.status === 'completed' || detection?.status === 'completed_with_warnings') return 'complete';
-    if (detection?.status === 'failed' || (stage === 'error' && failure?.step === 'detection')) return 'failed';
-    if (stage === 'detection_processing' || stage === 'ready_for_detection') return 'active';
-    return run?.ready_for_analysis ? 'pending' : 'locked';
-  }
-  if (milestone === 5) {
-    if (classification?.status === 'completed') return 'complete';
-    if (classification?.status === 'completed_with_warnings') return 'warning';
-    if (classification?.status === 'failed' || stage === 'classification_failed') return 'failed';
-    if (
-      stage === 'classification_pending'
-      || stage === 'classification_processing'
-      || stage === 'awaiting_productive_model'
-    ) return stage === 'awaiting_productive_model' ? 'warning' : 'active';
-    return detection ? 'pending' : 'locked';
-  }
-  if (
-    stage === 'review_ready'
-    || stage === 'classification_completed'
-    || stage === 'classification_warning'
-  ) return 'complete';
-  if (classification?.status === 'failed') return 'failed';
-  return classification ? 'pending' : 'locked';
 }
 
 function QualityMetrics({ image }: { image: QualityImage | null }) {
@@ -449,6 +438,13 @@ function WorkflowProcessing({
   const [comment, setComment] = useState('');
   const [mobilePane, setMobilePane] = useState<MobilePane>('progress');
   const { stage, identifiers, snapshot, previewUrl, failure } = controller;
+  const contextStates = useMemo(
+    () => new Map(contextSteps.map(({ id }) => [
+      id,
+      contextStepState(id, stage, failure?.step, reviewProgressOf(snapshot.detectionRun)),
+    ])),
+    [failure?.step, snapshot.detectionRun, stage],
+  );
   const run = snapshot.analysisRun;
   const qualityImage = run?.images[0] ?? null;
   const uploadedImage = snapshot.upload?.images[0] ?? null;
@@ -523,16 +519,6 @@ function WorkflowProcessing({
     snapshot.classificationRun?.started_at,
     snapshot.classificationRun?.completed_at,
   ];
-  const milestones = [
-    ['Imagen recibida', 'Original persistido sin modificaciones'],
-    ['Integridad verificada', 'Checksum y decodificación técnica'],
-    ['Control de calidad', 'Nitidez, exposición y campo útil'],
-    ['Lista para análisis', 'Quality gate autorizado'],
-    ['Detección celular', 'Regiones candidatas y crops'],
-    ['Clasificación IA', 'Predicción reproducible con el modelo productivo'],
-    ['Revisión y resultado', 'Resumen experimental y workspace interactivo'],
-  ] as const;
-
   async function decide(decision: 'approve_with_warnings' | 'reject') {
     if (!comment.trim()) return;
     if (decision === 'reject' && !window.confirm('¿Confirmas el bloqueo técnico de este análisis?')) return;
@@ -569,19 +555,36 @@ function WorkflowProcessing({
           </header>
           <div className="workflow-panel-scroll">
             <ol className="workflow-milestones">
-              {milestones.map(([title, detail], index) => {
-                const state = milestoneState(index, controller);
-                const milestoneTime = safeTime(milestoneTimes[index]);
+              {contextSteps.map((step) => {
+                const stepState = contextStates.get(step.id) ?? 'locked';
                 return (
-                  <li key={title} data-state={state}>
+                  <li key={step.id} data-state={stepState}>
                     <span className="workflow-milestone-mark" aria-hidden="true">
-                      {state === 'complete' ? '✓' : state === 'warning' ? '!' : state === 'failed' ? '×' : index + 1}
+                      {stepState === 'complete' ? '✓' : stepState === 'warning' ? '!' : stepState === 'failed' ? '×' : '•'}
                     </span>
-                    <div><strong>{title}</strong><span>{detail}</span></div>
-                    <small>
-                      <span>{state === 'active' ? 'En curso' : state}</span>
-                      {milestoneTime ? <time>{milestoneTime}</time> : null}
-                    </small>
+                    <div><strong>{step.label}</strong></div>
+                    <small><span>{stepState === 'active' ? 'En curso' : stepState}</span></small>
+                    <ol className="workflow-milestones">
+                      {contextSubSteps[step.id].map((sub) => {
+                        const subTime = safeTime(milestoneTimes[sub.timeIndex]);
+                        // No separate state machine per sub-step: it is
+                        // 'complete' once it has its own timestamp, or
+                        // otherwise mirrors the parent step's state.
+                        const subState = subTime ? 'complete' : stepState;
+                        return (
+                          <li key={sub.title} data-state={subState}>
+                            <span className="workflow-milestone-mark" aria-hidden="true">
+                              {subState === 'complete' ? '✓' : subState === 'warning' ? '!' : subState === 'failed' ? '×' : '•'}
+                            </span>
+                            <div><strong>{sub.title}</strong><span>{sub.detail}</span></div>
+                            <small>
+                              <span>{subState === 'active' ? 'En curso' : subState}</span>
+                              {subTime ? <time>{subTime}</time> : null}
+                            </small>
+                          </li>
+                        );
+                      })}
+                    </ol>
                   </li>
                 );
               })}
@@ -869,7 +872,7 @@ export function SmearAnalysisReadOnlyView({
   } as unknown as SmearWorkflowController;
   const contextStates = new Map(contextSteps.map(({ id }) => [
     id,
-    contextStepState(id, stage, failure?.step),
+    contextStepState(id, stage, failure?.step, reviewProgressOf(workflow.detection_run)),
   ]));
   const run = workflow.analysis_run;
   const hasResults = (
@@ -1089,9 +1092,9 @@ export function SmearWorkflow() {
   const contextStates = useMemo(
     () => new Map(contextSteps.map(({ id }) => [
       id,
-      contextStepState(id, stage, failure?.step),
+      contextStepState(id, stage, failure?.step, reviewProgressOf(snapshot.detectionRun)),
     ])),
-    [failure?.step, stage],
+    [failure?.step, snapshot.detectionRun, stage],
   );
 
   return (

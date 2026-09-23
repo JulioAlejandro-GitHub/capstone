@@ -5388,6 +5388,13 @@ a.uploaded-image-cell:hover small {
   list-style: none;
 }
 
+/* A step's sub-milestones nest as another .workflow-milestones inside its
+   li, which otherwise only reserves the 25px mark column for it. */
+.smear-workflow .workflow-milestones .workflow-milestones {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
 .smear-workflow .workflow-milestones li {
   display: grid;
   grid-template-columns: 25px minmax(0, 1fr);
