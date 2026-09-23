@@ -1045,30 +1045,25 @@ export function SmearWorkflow() {
     || stage === 'classification_completed'
     || stage === 'classification_warning'
   );
-  useEffect(() => {
-    if (!reviewStage || !identifiers.analysisRunId || !identifiers.microscopyImageId) return;
-    const next = new URLSearchParams(routeSearchParams);
-    [
-      'batch', 'analysis', 'queue', 'detection', 'detection_run_id',
-      'classification', 'selected',
-    ].forEach((key) => next.delete(key));
-    next.set('image', identifiers.microscopyImageId);
+  const goToHistory = useCallback(() => {
+    if (!identifiers.analysisRunId) return;
+    const next = new URLSearchParams();
+    const datasourceParam = routeSearchParams.get('datasource');
+    if (datasourceParam) next.set('datasource', datasourceParam);
+    if (identifiers.microscopyImageId) next.set('image', identifiers.microscopyImageId);
     if (identifiers.selectedDetectionId) {
       next.set('selected_detection', identifiers.selectedDetectionId);
     }
     if (identifiers.selectedPredictionId) {
       next.set('selected_prediction', identifiers.selectedPredictionId);
     }
-    navigate(`${routes.smearHistoryDetail(identifiers.analysisRunId)}?${next.toString()}`, {
-      replace: true,
-    });
+    navigate(`${routes.smearHistoryDetail(identifiers.analysisRunId)}?${next.toString()}`);
   }, [
     identifiers.analysisRunId,
     identifiers.microscopyImageId,
     identifiers.selectedDetectionId,
     identifiers.selectedPredictionId,
     navigate,
-    reviewStage,
     routeSearchParams,
   ]);
   const mode = stage === 'setup' || isUploadFailure
@@ -1131,6 +1126,15 @@ export function SmearWorkflow() {
               <button type="button" disabled={recovering} onClick={() => void controller.refresh()}>
                 Actualizar estado
               </button>
+              {mode === 'review' ? (
+                <button
+                  type="button"
+                  disabled={!identifiers.analysisRunId}
+                  onClick={goToHistory}
+                >
+                  Ver en historial
+                </button>
+              ) : null}
               <button type="button" onClick={controller.newAnalysis}>Nuevo análisis</button>
             </>
           ) : <span className="workflow-context-status">{headerState}</span>
