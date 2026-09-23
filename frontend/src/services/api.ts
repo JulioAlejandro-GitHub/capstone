@@ -76,6 +76,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000
 export const DEFAULT_DATASOURCE = import.meta.env.VITE_DEFAULT_DATASOURCE ?? 'malaria';
 const ACCESS_TOKEN_KEY = 'capstone.access_token';
 const activeRequests = new Set<AbortController>();
+// In-flight GET deduplication, not a cache: an entry lives only for the
+// duration of its request and is removed as soon as it settles, so two
+// requests separated in time always both hit the network. This is what
+// absorbs React.StrictMode's dev-only double invocation of effects.
+const inFlightGetRequests = new Map<string, Promise<unknown>>();
 let authenticationFailureHandler: (() => void) | null = null;
 
 export type ScientificSubject = { id: string; subject_code: string; status: string };
@@ -281,7 +286,7 @@ async function request<T>(
   path: string,
   params: Record<string, QueryValue> = {},
   options: RequestOptions = {},
-) {
+): Promise<T> {
   const url = new URL(path, API_BASE_URL);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined) {
@@ -289,6 +294,34 @@ async function request<T>(
     }
   });
 
+  // Dedupe only plain, signal-less GETs: the key is method + full URL
+  // (query string included), so a different query never collapses together.
+  // A caller-supplied signal is excluded on purpose - one caller aborting
+  // must never cancel another caller's request for the same resource.
+  const method = (options.init?.method ?? 'GET').toUpperCase();
+  const dedupeKey = method === 'GET' && !options.signal
+    ? `GET ${url.toString()}`
+    : null;
+  if (dedupeKey) {
+    const inFlight = inFlightGetRequests.get(dedupeKey);
+    if (inFlight) return inFlight as Promise<T>;
+  }
+
+  const requestPromise = performRequest<T>(url, options);
+  if (dedupeKey) {
+    inFlightGetRequests.set(dedupeKey, requestPromise);
+    // Not chained onto the promise we return: a rejection here must not
+    // surface as a second, separately-unhandled rejection alongside the
+    // one the actual caller already handles on requestPromise itself.
+    requestPromise.then(
+      () => inFlightGetRequests.delete(dedupeKey),
+      () => inFlightGetRequests.delete(dedupeKey),
+    );
+  }
+  return requestPromise;
+}
+
+async function performRequest<T>(url: URL, options: RequestOptions): Promise<T> {
   const controller = new AbortController();
   const abortFromCaller = () => controller.abort();
   if (options.signal?.aborted) controller.abort();

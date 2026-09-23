@@ -1,4 +1,5 @@
-import type { SmearAnalysisSummary } from '../../types/cellClassification';
+import type { CellClassificationRunDetail, SmearAnalysisSummary } from '../../types/cellClassification';
+import type { CellDetectionImage, CellDetectionRunDetail } from '../../types/cellReview';
 import { CellReviewWorkspace } from './CellReviewWorkspace';
 import { ScientificAnnotations } from './ScientificAnnotations';
 
@@ -20,6 +21,10 @@ export type SmearAnalysisViewModel = {
   microscopyImageId?: string | null;
   selectedDetectionId?: string | null;
   selectedPredictionId?: string | null;
+  /** Seeds for CellReviewWorkspace, already in memory in the caller. Optional. */
+  detectionRun?: CellDetectionRunDetail | null;
+  images?: CellDetectionImage[] | null;
+  classificationRun?: CellClassificationRunDetail | null;
 };
 
 export type SmearAnalysisPermissions = {
@@ -86,6 +91,9 @@ export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProp
         detectionRunId={workflow.detectionRunId}
         classificationRunId={workflow.classificationRunId}
         initialClassificationSummary={workflow.classificationSummary}
+        initialDetectionRun={workflow.detectionRun}
+        initialImages={workflow.images}
+        initialClassificationRun={workflow.classificationRun}
         initialMicroscopyImageId={workflow.microscopyImageId}
         initialSelectedDetectionId={workflow.selectedDetectionId}
         initialSelectedPredictionId={workflow.selectedPredictionId}

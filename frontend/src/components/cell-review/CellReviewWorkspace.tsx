@@ -242,6 +242,12 @@ type CellReviewWorkspaceProps = {
   onSelectedDetectionChange?: (detectionId: string | null) => void;
   classificationRunId?: string | null;
   initialClassificationSummary?: SmearAnalysisSummary | null;
+  /** Seed for `run`, already fetched by the caller. Skips the first blocking load. */
+  initialDetectionRun?: CellDetectionRunDetail | null;
+  /** Seed for `images`, paired with initialDetectionRun. Both are required to seed. */
+  initialImages?: CellDetectionImage[] | null;
+  /** Seed for `classificationRun`. Skips the first getCellClassificationRun/summary fetch. */
+  initialClassificationRun?: CellClassificationRunDetail | null;
   canExplain?: boolean;
   canClassificationReview?: boolean;
   initialSelectedPredictionId?: string | null;
@@ -262,6 +268,9 @@ export function CellReviewWorkspace({
   onSelectedDetectionChange,
   classificationRunId = null,
   initialClassificationSummary = null,
+  initialDetectionRun = null,
+  initialImages = null,
+  initialClassificationRun = null,
   canExplain = false,
   canClassificationReview = false,
   initialSelectedPredictionId = null,
@@ -270,9 +279,19 @@ export function CellReviewWorkspace({
   canAnnotateValidation = false,
   canReadValidationAnnotations = false,
 }: CellReviewWorkspaceProps) {
-  const [run, setRun] = useState<CellDetectionRunDetail | null>(null);
-  const [images, setImages] = useState<CellDetectionImage[]>([]);
-  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const hasWorkspaceSeed = Boolean(initialDetectionRun && initialImages);
+  const [run, setRun] = useState<CellDetectionRunDetail | null>(initialDetectionRun);
+  const [images, setImages] = useState<CellDetectionImage[]>(initialImages ?? []);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(() => {
+    if (!initialImages || initialImages.length === 0) return null;
+    if (
+      initialMicroscopyImageId
+      && initialImages.some((item) => item.microscopy_image_id === initialMicroscopyImageId)
+    ) {
+      return initialMicroscopyImageId;
+    }
+    return initialImages[0]?.microscopy_image_id ?? null;
+  });
   const [filter, setFilter] = useState<CellReviewFilter>('all');
   const [classificationFilter, setClassificationFilter] =
     useState<ClassificationFilter>('all');
@@ -283,7 +302,7 @@ export function CellReviewWorkspace({
   const [selectedDetectionId, setSelectedDetectionId] = useState<string | null>(null);
   const [selectedDetail, setSelectedDetail] = useState<CellDetectionDetail | null>(null);
   const [reviewHistory, setReviewHistory] = useState<ScientificCellReview[]>([]);
-  const [workspaceLoading, setWorkspaceLoading] = useState(true);
+  const [workspaceLoading, setWorkspaceLoading] = useState(!hasWorkspaceSeed);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [workspaceError, setWorkspaceError] = useState('');
@@ -294,7 +313,7 @@ export function CellReviewWorkspace({
   const [reviewSaving, setReviewSaving] = useState(false);
   const [liveMessage, setLiveMessage] = useState('');
   const [classificationRun, setClassificationRun] =
-    useState<CellClassificationRunDetail | null>(null);
+    useState<CellClassificationRunDetail | null>(initialClassificationRun);
   const [classificationSummary, setClassificationSummary] =
     useState<SmearAnalysisSummary | null>(initialClassificationSummary);
   const [predictions, setPredictions] = useState<CellPredictionSummary[]>([]);
@@ -596,8 +615,9 @@ export function CellReviewWorkspace({
     onSelectedPredictionChange(predictionId);
   }, [onSelectedPredictionChange, selectedPrediction?.id, selectionResolved]);
 
-  const loadWorkspace = useCallback(async () => {
-    setWorkspaceLoading(true);
+  const loadWorkspace = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    if (!silent) setWorkspaceLoading(true);
     setWorkspaceError('');
     try {
       const requestedPredictionId = pendingInitialPrediction.current;
@@ -624,20 +644,28 @@ export function CellReviewWorkspace({
             : imagePage.items[0]?.microscopy_image_id ?? null
       ));
     } catch {
-      setWorkspaceError('No fue posible cargar esta ejecución de detección.');
+      if (!silent) setWorkspaceError('No fue posible cargar esta ejecución de detección.');
     } finally {
-      setWorkspaceLoading(false);
+      if (!silent) setWorkspaceLoading(false);
     }
   }, [detectionRunId]);
 
+  // Seeded mounts skip the blocking first load and instead revalidate quietly,
+  // so the already-visible workspace (from initialDetectionRun/initialImages)
+  // is never replaced by the loading placeholder. hasWorkspaceSeed is derived
+  // straight from props (not a ref), so React.StrictMode's synthetic double
+  // invocation of this effect takes the same branch both times.
   useEffect(() => {
-    void loadWorkspace();
-  }, [loadWorkspace]);
+    void loadWorkspace({ silent: hasWorkspaceSeed });
+  }, [loadWorkspace, hasWorkspaceSeed]);
 
   useEffect(() => {
     setClassificationSummary(initialClassificationSummary);
   }, [initialClassificationSummary]);
 
+  // Seeded classification runs skip the first fetch entirely (not just
+  // silently): initialClassificationSummary must not be clobbered by it.
+  // Gated on the prop itself (not a ref) for the same StrictMode reason above.
   useEffect(() => {
     if (!classificationRunId) {
       setClassificationRun(null);
@@ -648,6 +676,7 @@ export function CellReviewWorkspace({
       setClassificationError('');
       return;
     }
+    if (initialClassificationRun) return;
     let active = true;
     setClassificationLoading(true);
     setClassificationError('');
