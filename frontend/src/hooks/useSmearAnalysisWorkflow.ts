@@ -164,6 +164,19 @@ const queueId = (item: QualityQueueRecord | null) => {
   return 'queue_item_id' in item ? item.queue_item_id : item.id;
 };
 
+/**
+ * Key the hydration effect uses to recognize a set of query identifiers it
+ * already authored, so it does not call recover() a second time for writes
+ * writeIdentifiers just made itself. Used both to read the current URL and
+ * to record what writeIdentifiers wrote, from the exact same four fields.
+ */
+const hydrationKeyOf = (values: {
+  batch: string | null;
+  analysis: string | null;
+  detection: string | null;
+  classification: string | null;
+}) => [values.batch, values.analysis, values.detection, values.classification].join('|');
+
 const sanitizeFailure = (
   error: unknown,
   step: SmearWorkflowFailureStep,
@@ -321,6 +334,14 @@ export function useSmearAnalysisWorkflow() {
     });
     next.delete('detection_run_id');
     next.delete('selected');
+    // The hydration effect must recognize these as its own writes, not as an
+    // externally-changed URL it still needs to recover() from.
+    hydratedKey.current = hydrationKeyOf({
+      batch: next.get('batch'),
+      analysis: next.get('analysis'),
+      detection: next.get('detection'),
+      classification: next.get('classification'),
+    });
     workflowQueryRef.current = next;
     setSearchParams(next, { replace: true });
   }, [setSearchParams]);
@@ -448,12 +469,7 @@ export function useSmearAnalysisWorkflow() {
   }, [searchParams, writeIdentifiers]);
 
   useEffect(() => {
-    const key = [
-      queryIdentifiers.batch,
-      queryIdentifiers.analysis,
-      queryIdentifiers.detection,
-      queryIdentifiers.classification,
-    ].join('|');
+    const key = hydrationKeyOf(queryIdentifiers);
     if (!key.replaceAll('|', '') || activeAction.current || hydratedKey.current === key) return;
     hydratedKey.current = key;
     void recover(queryIdentifiers);
@@ -1040,7 +1056,10 @@ export function useSmearAnalysisWorkflow() {
     writeIdentifiers({ microscopyImageId: id });
   }, [writeIdentifiers]);
 
-  const newAnalysis = useCallback(() => {
+  // Shared by newAnalysis() and the external-navigation reset effect below.
+  // Resets in-memory state only - never touches the URL, so calling it does
+  // not itself re-trigger any effect keyed on search params.
+  const resetWorkflowState = useCallback(() => {
     activeAction.current = false;
     hydratedKey.current = '';
     setStage('setup');
@@ -1050,6 +1069,43 @@ export function useSmearAnalysisWorkflow() {
     setUploadRequestId(createUploadRequestId());
     setFailure(null);
     setRecovering(false);
+  }, []);
+
+  // An external navigation (e.g. the "Analizar imagen" sidebar link, which
+  // points at the same route with no workflow params) does not unmount this
+  // hook: it only clears the query string. Detect that - none of the
+  // workflow identifiers left in the URL, while state still holds an
+  // in-progress or finished analysis - and reset, instead of leaving stage
+  // stuck on whatever it was mid-review. activeAction.current guards the
+  // legitimate window in start() where the URL is briefly empty too.
+  useEffect(() => {
+    const urlHasNoIdentifiers = (
+      !queryIdentifiers.batch
+      && !queryIdentifiers.image
+      && !queryIdentifiers.analysis
+      && !queryIdentifiers.queue
+      && !queryIdentifiers.detection
+      && !queryIdentifiers.classification
+      && !queryIdentifiers.selectedDetection
+      && !queryIdentifiers.selectedPrediction
+    );
+    if (!urlHasNoIdentifiers || !identifiers.ingestionBatchId || activeAction.current) return;
+    resetWorkflowState();
+  }, [
+    identifiers.ingestionBatchId,
+    queryIdentifiers.analysis,
+    queryIdentifiers.batch,
+    queryIdentifiers.classification,
+    queryIdentifiers.detection,
+    queryIdentifiers.image,
+    queryIdentifiers.queue,
+    queryIdentifiers.selectedDetection,
+    queryIdentifiers.selectedPrediction,
+    resetWorkflowState,
+  ]);
+
+  const newAnalysis = useCallback(() => {
+    resetWorkflowState();
     const next = new URLSearchParams(workflowQueryRef.current);
     [
       'batch',
@@ -1066,7 +1122,7 @@ export function useSmearAnalysisWorkflow() {
       .forEach((key) => next.delete(key));
     workflowQueryRef.current = next;
     setSearchParams(next, { replace: true });
-  }, [setSearchParams]);
+  }, [resetWorkflowState, setSearchParams]);
 
   return {
     stage,
