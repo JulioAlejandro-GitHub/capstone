@@ -5649,7 +5649,7 @@ a.uploaded-image-cell:hover small {
 
 .smear-workflow .workflow-stage-item {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(max-content, 1fr);
   align-items: center;
   justify-content: center;
   gap: 6px;
@@ -5672,7 +5672,7 @@ a.uploaded-image-cell:hover small {
     box-shadow 160ms ease;
 }
 
-.smear-workflow .workflow-stage-item>span {
+.smear-workflow .workflow-stage-item>span:not(.workflow-stage-label) {
   display: grid;
   place-items: center;
   width: 18px;
@@ -7160,6 +7160,11 @@ a.uploaded-image-cell:hover small {
     grid-row: 2;
   }
 
+  .smear-workflow .workflow-stage-item {
+    gap: 4px;
+    padding: 6px 8px;
+  }
+
   .smear-workflow .smear-setup-layout {
     grid-template-columns: 1fr;
   }
@@ -7297,6 +7302,7 @@ a.uploaded-image-cell:hover small {
   }
 
   .smear-workflow .workflow-stage-item {
+    grid-template-columns: auto minmax(0, 1fr);
     min-height: 40px;
     border-radius: 8px;
     white-space: normal;
