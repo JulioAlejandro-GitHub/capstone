@@ -4498,6 +4498,33 @@ a.uploaded-image-cell:hover small {
   margin: 0 0 0 4px;
 }
 
+.smear-workflow .workflow-header-facts {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 4px 14px;
+  margin: 8px 0 0;
+  border-top: 1px solid var(--workflow-border);
+  padding-top: 8px;
+}
+
+.smear-workflow .workflow-header-facts dt {
+  color: var(--workflow-muted);
+  font-size: 9px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.smear-workflow .workflow-header-facts dd {
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--workflow-text);
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .smear-workflow .workflow-history-badge {
   border: 1px solid var(--workflow-primary);
   border-radius: 999px;

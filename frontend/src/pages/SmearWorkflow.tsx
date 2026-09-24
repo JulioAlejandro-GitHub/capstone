@@ -3,7 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useAuth } from '../auth';
 import { SmearAnalysisImmersiveView } from '../components/cell-review/SmearAnalysisImmersiveView';
-import { SmearCaseHeader } from '../components/cell-review/SmearCaseHeader';
+import {
+  SmearCaseHeader,
+  type SmearCaseHeaderFact,
+} from '../components/cell-review/SmearCaseHeader';
 import { routes } from '../router';
 import {
   flowPhaseFromStage,
@@ -179,6 +182,36 @@ const reviewProgressOf = (
     ? { total: detectionRun.detection_count, reviewed: detectionRun.reviewed_count }
     : null
 );
+
+/**
+ * The "Lote/Dimensiones/Formato/Estado" fact strip absorbed into
+ * SmearCaseHeader from the former .workflow-image-facts. Missing values are
+ * omitted rather than shown as '—': during upload there is no image size or
+ * format yet, and that is expected, not an error state.
+ */
+const workflowFacts = (
+  controller: SmearWorkflowController,
+  stage: SmearWorkflowStage,
+): SmearCaseHeaderFact[] => {
+  const { identifiers, snapshot } = controller;
+  const run = snapshot.analysisRun;
+  const uploadedImage = snapshot.upload?.images[0] ?? null;
+  const persistedImage = snapshot.persisted?.images[0] ?? null;
+  const qualityImage = run?.images[0] ?? null;
+  const width = uploadedImage?.width_px ?? persistedImage?.width_px ?? qualityImage?.input_width_px;
+  const height = uploadedImage?.height_px ?? persistedImage?.height_px ?? qualityImage?.input_height_px;
+  const format = (
+    persistedImage?.detected_format
+    ?? persistedImage?.mime_type
+    ?? controller.selectedFiles[0]?.type
+  );
+  const facts: SmearCaseHeaderFact[] = [];
+  if (identifiers.ingestionBatchId) facts.push({ label: 'Lote', value: identifiers.ingestionBatchId });
+  if (width && height) facts.push({ label: 'Dimensiones', value: `${width} × ${height} px` });
+  if (format) facts.push({ label: 'Formato', value: format });
+  facts.push({ label: 'Estado', value: stageLabel[stage] });
+  return facts;
+};
 
 function contextStepState(
   step: ContextStep,
@@ -456,14 +489,6 @@ function WorkflowProcessing({
     ?? qualityImage?.original_filename
     ?? 'Imagen persistida'
   );
-  const imageWidth = uploadedImage?.width_px ?? persistedImage?.width_px ?? qualityImage?.input_width_px;
-  const imageHeight = uploadedImage?.height_px ?? persistedImage?.height_px ?? qualityImage?.input_height_px;
-  const imageFormat = (
-    persistedImage?.detected_format
-    ?? persistedImage?.mime_type
-    ?? controller.selectedFiles[0]?.type
-    ?? '—'
-  );
   const batch = snapshot.upload?.ingestion_batch ?? snapshot.persisted?.batch;
   const queue = snapshot.queueItem;
   const queueStatus = queue?.status;
@@ -489,11 +514,7 @@ function WorkflowProcessing({
       event.progress_current != null
       && event.progress_total != null
     ));
-  const showScan = [
-    'detection_processing',
-    'classification_pending',
-    'classification_processing',
-  ].includes(stage);
+  const showScan = processingStages.includes(stage);
   const canRetryFailure = failure?.step === 'analysis'
     ? capabilities.canCreateAnalysis
     : failure?.step === 'queue'
@@ -508,6 +529,23 @@ function WorkflowProcessing({
     : stage === 'classification_pending' || stage === 'awaiting_productive_model'
       ? capabilities.canExecuteClassification
       : run ? capabilities.canCreateQueue : capabilities.canCreateAnalysis;
+  // Union of every condition that renders a card below: the solid right
+  // panel only exists when there is something for it to show. This mirrors
+  // the panel's own render conditions instead of a second, separate list.
+  const hasActivityContent = (
+    Boolean(run?.ready_for_analysis)
+    || stage === 'awaiting_productive_model'
+    || stage === 'quality_warning'
+    || stage === 'quality_failed'
+    || ((stage === 'error' || stage === 'classification_failed') && Boolean(failure))
+    || (stage === 'quality_queued' && queueStatus === 'queued')
+    || (!readOnly && (
+      (stage === 'ingested' && !queue)
+      || (stage === 'creating_analysis' && Boolean(run) && !queue)
+      || (stage === 'ready_for_detection' && Boolean(run?.ready_for_analysis))
+      || (stage === 'classification_pending' && Boolean(snapshot.detectionRun))
+    ))
+  );
   const eventAt = (eventType: string) =>
     events.find((event) => event.event_type === eventType)?.created_at;
   const milestoneTimes = [
@@ -593,13 +631,6 @@ function WorkflowProcessing({
         </aside>
 
         <section className="workflow-console-panel workflow-image-panel">
-          <header className="workflow-panel-heading workflow-image-heading">
-            <div>
-              <p className="workflow-panel-eyebrow">Imagen principal</p>
-              <h2>{imageName}</h2>
-            </div>
-            <span className={`workflow-stage-badge status-${stage}`}>{stageLabel[stage]}</span>
-          </header>
           <div className="workflow-processing-image">
             <AuthenticatedWorkflowImage localUrl={previewUrl} imageId={imageId} name={imageName} />
             {showScan ? <div className="workflow-image-grid" aria-hidden="true" /> : null}
@@ -611,16 +642,9 @@ function WorkflowProcessing({
               </div>
             ) : null}
           </div>
-          <dl className="workflow-image-facts">
-            <div><dt>Paciente</dt><dd>{run?.subject_code ?? snapshot.persisted?.subject.subject_code ?? snapshot.upload?.subject.subject_code ?? '—'}</dd></div>
-            <div><dt>Muestra</dt><dd>{run?.sample_code ?? snapshot.persisted?.sample.sample_code ?? snapshot.upload?.sample.sample_code ?? '—'}</dd></div>
-            <div><dt>Lote</dt><dd>{identifiers.ingestionBatchId ?? '—'}</dd></div>
-            <div><dt>Dimensiones</dt><dd>{imageWidth && imageHeight ? `${imageWidth} × ${imageHeight} px` : '—'}</dd></div>
-            <div><dt>Formato</dt><dd>{imageFormat}</dd></div>
-            <div><dt>Estado</dt><dd>{stageLabel[stage]}</dd></div>
-          </dl>
         </section>
 
+        {hasActivityContent ? (
         <aside className="workflow-console-panel workflow-activity-panel">
           <header className="workflow-panel-heading">
             <p className="workflow-panel-eyebrow">Actividad</p>
@@ -806,6 +830,7 @@ function WorkflowProcessing({
             ) : null}
           </div>
         </aside>
+        ) : null}
       </div>
     </>
   );
@@ -909,7 +934,7 @@ export function SmearAnalysisReadOnlyView({
 
   return (
     <section
-      className={`page smear-workflow smear-workflow-history${hasResults ? ' smear-workflow--immersive' : ''}`}
+      className="page smear-workflow smear-workflow-history smear-workflow--immersive"
       data-mode="history"
       data-flow-state={flowPhaseFromStage(stage)}
     >
@@ -918,34 +943,16 @@ export function SmearAnalysisReadOnlyView({
         sampleCode={workflow.sample.sample_code}
         analysisRunCode={run?.run_code ?? null}
         status={stageLabel[stage]}
+        modeLabel="Histórico"
+        createdAt={run?.created_at ? safeDate(run.created_at) : null}
+        facts={workflowFacts(controller, stage)}
         steps={contextSteps.map((step) => ({
           id: step.id,
           label: step.label,
           state: contextStates.get(step.id) ?? 'locked',
         }))}
         compact={hasResults}
-        actions={
-          <>
-            {hasResults ? (
-              <>
-                <strong className="workflow-history-badge" role="status">
-                  Vista histórica · Pipeline en solo lectura
-                </strong>
-                <dl className="workflow-header-meta">
-                  <div>
-                    <dt>Modelo</dt>
-                    <dd>
-                      {workflow.classification_run?.model_name ?? 'Sin clasificación'}{' '}
-                      {workflow.classification_run?.model_version ?? ''}
-                    </dd>
-                  </div>
-                  <div><dt>Fecha</dt><dd>{safeDate(run?.created_at)}</dd></div>
-                </dl>
-              </>
-            ) : null}
-            <button type="button" onClick={onBack}>Volver al historial</button>
-          </>
-        }
+        actions={<button type="button" onClick={onBack}>Volver al historial</button>}
       />
       {!hasResults ? <section className="workflow-history-banner" aria-label="Modo de consulta">
         <strong>Vista histórica · Solo lectura</strong>
@@ -1099,7 +1106,7 @@ export function SmearWorkflow() {
 
   return (
     <section
-      className={`page smear-workflow${mode === 'review' ? ' smear-workflow--immersive' : ''}`}
+      className={`page smear-workflow${mode !== 'setup' ? ' smear-workflow--immersive' : ''}`}
       data-mode={mode}
       data-flow-state={controller.phase}
     >
@@ -1108,43 +1115,16 @@ export function SmearWorkflow() {
         sampleCode={sampleCode}
         analysisRunCode={snapshot.analysisRun?.run_code ?? null}
         status={headerState}
+        modeLabel="En vivo"
+        createdAt={snapshot.analysisRun?.created_at ? safeDate(snapshot.analysisRun.created_at) : null}
+        facts={mode === 'setup' ? [] : workflowFacts(controller, stage)}
         steps={contextSteps.map((step) => ({
           id: step.id,
           label: step.label,
           state: contextStates.get(step.id) ?? 'locked',
         }))}
         compact={mode === 'review'}
-        actions={
-          mode !== 'setup' ? (
-            <>
-              {mode === 'review' ? (
-                <dl className="workflow-header-meta">
-                  <div>
-                    <dt>Modelo</dt>
-                    <dd>
-                      {snapshot.classificationRun?.model_name ?? 'Sin clasificación'}{' '}
-                      {snapshot.classificationRun?.model_version ?? ''}
-                    </dd>
-                  </div>
-                  <div><dt>Fecha</dt><dd>{safeDate(snapshot.analysisRun?.created_at)}</dd></div>
-                </dl>
-              ) : null}
-              <button type="button" disabled={recovering} onClick={() => void controller.refresh()}>
-                Actualizar estado
-              </button>
-              {mode === 'review' ? (
-                <button
-                  type="button"
-                  disabled={!identifiers.analysisRunId}
-                  onClick={goToHistory}
-                >
-                  Ver en historial
-                </button>
-              ) : null}
-              <button type="button" onClick={controller.newAnalysis}>Nuevo análisis</button>
-            </>
-          ) : <span className="workflow-context-status">{headerState}</span>
-        }
+        actions={mode === 'setup' ? <span className="workflow-context-status">{headerState}</span> : undefined}
       />
 
       {recovering ? (
@@ -1207,8 +1187,8 @@ export function SmearWorkflow() {
                 canAnnotateValidation,
               }}
               actions={{
-                onBack: controller.newAnalysis,
-                backLabel: 'Nuevo análisis',
+                onBack: goToHistory,
+                backLabel: 'Ver en historial',
                 onRefresh: () => void controller.refresh(),
                 onImageChange: controller.selectImage,
                 onDetectionChange: controller.selectDetection,
