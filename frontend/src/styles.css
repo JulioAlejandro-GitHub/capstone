@@ -5440,7 +5440,7 @@ a.uploaded-image-cell:hover small {
   gap: 8px;
   grid-column: 2;
   color: var(--workflow-console-muted);
-  font-size: 10px;
+  font-size: 8px;
   text-transform: capitalize;
 }
 
@@ -5457,12 +5457,12 @@ a.uploaded-image-cell:hover small {
 }
 
 .smear-workflow .workflow-milestones li > div > strong {
-  font-size: 12px;
+  font-size: 9px;
 }
 
 .smear-workflow .workflow-milestones li > div > span {
   color: var(--workflow-console-muted);
-  font-size: 10px;
+  font-size: 8px;
   line-height: 1.35;
 }
 

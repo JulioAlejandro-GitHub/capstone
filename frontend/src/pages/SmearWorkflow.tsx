@@ -70,6 +70,36 @@ const contextSubSteps: Record<ContextStep, Array<{ title: string; detail: string
   ],
 };
 
+/**
+ * Sub-step states for one contextStep, computed together (not one at a time)
+ * because 'warning'/'failed' and 'active' both depend on comparing every
+ * sub-step's timestamp, not just the current one's. A sub-step is never more
+ * advanced than its parent step.
+ */
+function subStepStates(stepState: StepState, hasTimestamp: boolean[]): StepState[] {
+  if (stepState === 'complete') {
+    return hasTimestamp.map(() => 'complete');
+  }
+  if (stepState === 'warning' || stepState === 'failed') {
+    const lastTimedIndex = hasTimestamp.lastIndexOf(true);
+    return hasTimestamp.map((_, index) => {
+      if (index === lastTimedIndex) return stepState;
+      if (index < lastTimedIndex) return 'complete';
+      return 'pending';
+    });
+  }
+  if (stepState === 'active') {
+    const firstUntimedIndex = hasTimestamp.indexOf(false);
+    return hasTimestamp.map((timed, index) => {
+      if (timed) return 'complete';
+      return index === firstUntimedIndex ? 'active' : 'pending';
+    });
+  }
+  // 'pending' / 'locked': nothing has started yet, so every sub-step mirrors
+  // the parent rather than reading ahead on a timestamp that may be stale.
+  return hasTimestamp.map(() => stepState);
+}
+
 const stageLabel: Record<SmearWorkflowStage, string> = {
   setup: 'Configuración pendiente',
   validating: 'Validando datos',
@@ -587,14 +617,16 @@ function WorkflowProcessing({
 
       <div className="workflow-processing-grid" data-mobile-pane={mobilePane}>
         <aside className="workflow-console-panel workflow-progress-panel">
-          <header className="workflow-panel-heading">
-            <p className="workflow-panel-eyebrow">Progreso persistido</p>
-            <h2>Etapas del análisis</h2>
+          <header className="cell-panel-heading">
+            <div><h2>Etapas del análisis</h2><p>Progreso persistido</p></div>
           </header>
           <div className="workflow-panel-scroll">
             <ol className="workflow-milestones">
               {contextSteps.map((step) => {
                 const stepState = contextStates.get(step.id) ?? 'locked';
+                const subs = contextSubSteps[step.id];
+                const subTimes = subs.map((sub) => safeTime(milestoneTimes[sub.timeIndex]));
+                const subStates = subStepStates(stepState, subTimes.map(Boolean));
                 return (
                   <li key={step.id} data-state={stepState}>
                     <span className="workflow-milestone-mark" aria-hidden="true">
@@ -603,12 +635,9 @@ function WorkflowProcessing({
                     <div><strong>{step.label}</strong></div>
                     <small><span>{stepState === 'active' ? 'En curso' : stepState}</span></small>
                     <ol className="workflow-milestones">
-                      {contextSubSteps[step.id].map((sub) => {
-                        const subTime = safeTime(milestoneTimes[sub.timeIndex]);
-                        // No separate state machine per sub-step: it is
-                        // 'complete' once it has its own timestamp, or
-                        // otherwise mirrors the parent step's state.
-                        const subState = subTime ? 'complete' : stepState;
+                      {subs.map((sub, index) => {
+                        const subTime = subTimes[index];
+                        const subState = subStates[index];
                         return (
                           <li key={sub.title} data-state={subState}>
                             <span className="workflow-milestone-mark" aria-hidden="true">
@@ -646,9 +675,8 @@ function WorkflowProcessing({
 
         {hasActivityContent ? (
         <aside className="workflow-console-panel workflow-activity-panel">
-          <header className="workflow-panel-heading">
-            <p className="workflow-panel-eyebrow">Actividad</p>
-            <h2>{activityLabel[stage]}</h2>
+          <header className="cell-panel-heading">
+            <div><h2>Actividad</h2><p>{activityLabel[stage]}</p></div>
           </header>
           <div className="workflow-panel-scroll workflow-activity-scroll">
             <QualityControlStatus image={qualityImage} stage={stage} />
@@ -951,7 +979,8 @@ export function SmearAnalysisReadOnlyView({
           label: step.label,
           state: contextStates.get(step.id) ?? 'locked',
         }))}
-        compact={hasResults}
+        compact
+        showStageBand={!hasResults}
         actions={<button type="button" onClick={onBack}>Volver al historial</button>}
       />
       {!hasResults ? <section className="workflow-history-banner" aria-label="Modo de consulta">
@@ -1123,7 +1152,8 @@ export function SmearWorkflow() {
           label: step.label,
           state: contextStates.get(step.id) ?? 'locked',
         }))}
-        compact={mode === 'review'}
+        compact={mode !== 'setup'}
+        showStageBand={mode === 'processing'}
         actions={mode === 'setup' ? <span className="workflow-context-status">{headerState}</span> : undefined}
       />
 

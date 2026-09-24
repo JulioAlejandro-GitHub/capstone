@@ -23,7 +23,13 @@ export type SmearCaseHeaderProps = {
   /** Lote/Dimensiones/Formato/Estado-style facts. Empty entries are skipped. */
   facts: SmearCaseHeaderFact[];
   steps: SmearCaseHeaderStep[];
+  /** false only in mode 'setup': the fixed banner instead of the floating card. */
   compact: boolean;
+  /**
+   * Render the top-center stage band (compact mode only). False in 'review',
+   * where the viewer's own toolbar occupies that band instead.
+   */
+  showStageBand?: boolean;
   actions?: ReactNode;
 };
 
@@ -32,7 +38,7 @@ const stepGlyph = (state: string) => (
 );
 
 const StepNav = ({ steps }: { steps: SmearCaseHeaderStep[] }) => (
-  <nav className="workflow-stage-nav" aria-label="Etapas del análisis">
+  <nav className="workflow-stage-band workflow-stage-nav" aria-label="Etapas del análisis">
     {steps.map((step) => (
       <span
         key={step.id}
@@ -60,12 +66,14 @@ const FactStrip = ({ facts }: { facts: SmearCaseHeaderFact[] }) => (
 /**
  * Single case header shared by the process panel and the immersive detail
  * view. The caller resolves every value (step states, status label, facts,
- * actions); this component only lays them out, in full or compact form.
+ * actions); this component only lays them out.
  *
- * compact=false renders the fixed banner used while mode is 'processing'.
- * compact=true renders a folded floating glass card used while mode is
- * 'review'; expanding it reveals the same fact strip and stepper. The fold
- * choice is local UI state, reset to folded whenever compact turns on again.
+ * compact=false renders the fixed banner used only in mode 'setup'.
+ * compact=true renders a folded floating glass card, identical in
+ * 'processing' and 'review'. Folded, it shows only a generic "Muestra"
+ * heading; expanded, it shows every identity/fact field in one dense grid
+ * (the .cell-detail-facts scale), never truncated. The stepper moves out of
+ * the card entirely into the top-center stage band (showStageBand).
  */
 export function SmearCaseHeader({
   subjectCode,
@@ -77,6 +85,7 @@ export function SmearCaseHeader({
   facts,
   steps,
   compact,
+  showStageBand = false,
   actions,
 }: SmearCaseHeaderProps) {
   const [expanded, setExpanded] = useState(false);
@@ -102,33 +111,39 @@ export function SmearCaseHeader({
     );
   }
 
+  const identityFacts: SmearCaseHeaderFact[] = [
+    subjectCode ? { label: 'Paciente', value: subjectCode } : null,
+    sampleCode ? { label: 'Muestra', value: sampleCode } : null,
+    analysisRunCode ? { label: 'Run', value: analysisRunCode } : null,
+    createdAt ? { label: 'Fecha', value: createdAt } : null,
+  ].filter((fact): fact is SmearCaseHeaderFact => fact !== null);
+
   return (
-    <section
-      className="workflow-case-card smear-glass-panel"
-      data-expanded={expanded ? 'true' : 'false'}
-    >
-      <button
-        type="button"
-        className="workflow-case-card-toggle"
-        aria-expanded={expanded}
-        onClick={() => setExpanded((current) => !current)}
-      >
-        <p className="workflow-kicker">Análisis de frotis · {modeLabel}</p>
-        {analysisRunCode ? <strong className="workflow-case-card-code">{analysisRunCode}</strong> : null}
-        <dl className="workflow-case-card-summary">
-          {subjectCode ? <div><dt>Paciente</dt><dd>{subjectCode}</dd></div> : null}
-          {sampleCode ? <div><dt>Muestra</dt><dd>{sampleCode}</dd></div> : null}
-          {analysisRunCode ? <div><dt>Run</dt><dd>{analysisRunCode}</dd></div> : null}
-        </dl>
-        {createdAt ? <span className="workflow-case-card-date">{createdAt}</span> : null}
-      </button>
-      {expanded ? (
-        <div className="workflow-case-card-expanded">
-          <FactStrip facts={facts} />
-          <StepNav steps={steps} />
-        </div>
-      ) : null}
-      {actions ? <div className="workflow-header-actions">{actions}</div> : null}
-    </section>
+    <>
+      {showStageBand ? <StepNav steps={steps} /> : null}
+      <section className="workflow-case-card" data-expanded={expanded ? 'true' : 'false'}>
+        <header className="cell-panel-heading">
+          <h2>Muestra</h2>
+          <button
+            type="button"
+            aria-expanded={expanded}
+            aria-label={expanded ? 'Plegar datos de la muestra' : 'Expandir datos de la muestra'}
+            onClick={() => setExpanded((current) => !current)}
+          >
+            {expanded ? '−' : '+'}
+          </button>
+        </header>
+        {expanded ? (
+          <div className="workflow-case-card-expanded">
+            <dl className="cell-detail-facts">
+              {[...identityFacts, ...facts].map((fact) => (
+                <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>
+              ))}
+            </dl>
+          </div>
+        ) : null}
+        {actions ? <div className="workflow-header-actions">{actions}</div> : null}
+      </section>
+    </>
   );
 }

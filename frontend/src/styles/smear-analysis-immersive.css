@@ -39,11 +39,23 @@
   /* The processing-mode decision panel needs more room for its comment
      textarea and buttons than the review-mode gallery rail. */
   --smear-decision-width: 340px;
-  /* Same glass tokens .smear-analysis-immersive defines for itself, hoisted
-     here so the compact case card - a sibling of that element, not a
-     descendant of it - can use the same values. */
+  /*
+   * The rest of the --smear-* palette .smear-analysis-immersive defines for
+   * itself, hoisted here so every processing-mode panel - siblings of that
+   * element, not descendants of it - can share its exact tokens instead of
+   * a second set of values with the same colors.
+   */
   --smear-glass: rgba(11, 19, 38, .74);
   --smear-glass-border: rgba(164, 230, 255, .17);
+  --smear-primary: var(--color-primary);
+  --smear-primary-bright: var(--color-primary-container);
+  --smear-secondary: var(--color-quality-success);
+  --smear-tertiary: var(--color-warning);
+  --smear-error: var(--color-error);
+  --smear-text: var(--color-on-surface);
+  --smear-muted: var(--color-on-surface-variant);
+  --smear-outline: var(--color-outline);
+  --smear-outline-variant: var(--color-outline-variant);
 }
 
 .smear-workflow--immersive .workflow-case-card {
@@ -53,82 +65,18 @@
   left: var(--smear-panel-left);
   width: 300px;
   max-width: calc(100% - var(--smear-panel-left) - var(--smear-panel-right));
-  border: 1px solid var(--smear-glass-border);
   border-radius: 10px;
-  background: var(--smear-glass);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
   color: var(--color-on-surface);
 }
 
-.smear-workflow--immersive .workflow-case-card-toggle {
-  display: block;
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  padding: 12px 16px;
-  text-align: left;
-  font: inherit;
-}
-
-.smear-workflow--immersive .workflow-case-card-code {
-  display: block;
-  overflow: hidden;
-  margin: 0 0 8px;
-  color: #fff;
-  font-size: 15px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.smear-workflow--immersive .workflow-case-card-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px 12px;
-  margin: 0;
-}
-
-.smear-workflow--immersive .workflow-case-card-summary dt {
-  color: var(--color-primary);
-  font-size: 8px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
-
-.smear-workflow--immersive .workflow-case-card-summary dd {
-  margin: 2px 0 0;
-  overflow: hidden;
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.smear-workflow--immersive .workflow-case-card-summary div:last-child {
-  grid-column: 1 / -1;
-}
-
-.smear-workflow--immersive .workflow-case-card-date {
-  display: block;
-  margin-top: 8px;
-  color: var(--color-on-surface-variant);
-  font-size: 10px;
-}
-
 .smear-workflow--immersive .workflow-case-card-expanded {
-  border-top: 1px solid var(--smear-glass-border);
-  padding: 10px 16px 14px;
-}
-
-.smear-workflow--immersive .workflow-case-card .workflow-header-facts {
-  margin: 0 0 10px;
+  padding: 10px 12px 12px;
 }
 
 .smear-workflow--immersive .workflow-case-card .workflow-header-actions {
   border-top: 1px solid var(--smear-glass-border);
-  padding: 10px 16px;
+  padding: 10px 12px;
 }
 
 @media (min-width: 701px) {
@@ -203,6 +151,8 @@
   width: var(--smear-detail-width);
   min-height: 0;
   overflow: hidden;
+  border-radius: 8px;
+  color: var(--smear-text);
 }
 
 .smear-workflow--immersive .workflow-activity-panel {
@@ -214,6 +164,8 @@
   width: var(--smear-decision-width);
   min-height: 0;
   overflow: hidden;
+  border-radius: 8px;
+  color: var(--smear-text);
   transition: width 220ms ease-out;
 }
 
@@ -284,7 +236,11 @@
 .smear-analysis-immersive .cell-review-progress-ring,
 .smear-analysis-immersive .cell-viewer-minimap,
 .smear-analysis-immersive .cell-experimental-summary,
-.smear-analysis-immersive .cell-panel-restore {
+.smear-analysis-immersive .cell-panel-restore,
+.smear-workflow--immersive .workflow-case-card,
+.smear-workflow--immersive .workflow-progress-panel,
+.smear-workflow--immersive .workflow-activity-panel,
+.smear-workflow--immersive .workflow-stage-band {
   border: 1px solid var(--smear-glass-border);
   background: var(--smear-glass);
   box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
@@ -664,7 +620,8 @@
   font-size: 8px;
 }
 
-.smear-analysis-immersive .cell-immersive-top-controls {
+.smear-analysis-immersive .cell-immersive-top-controls,
+.smear-workflow--immersive .workflow-stage-band {
   position: absolute;
   z-index: 58;
   top: 24px;
@@ -820,7 +777,10 @@
 
 .smear-analysis-immersive .cell-detail-panel > .cell-panel-heading,
 .smear-analysis-immersive .cell-detail-content > .cell-panel-heading,
-.smear-analysis-immersive .cell-gallery-panel > .cell-panel-heading {
+.smear-analysis-immersive .cell-gallery-panel > .cell-panel-heading,
+.smear-workflow--immersive .workflow-case-card > .cell-panel-heading,
+.smear-workflow--immersive .workflow-progress-panel > .cell-panel-heading,
+.smear-workflow--immersive .workflow-activity-panel > .cell-panel-heading {
   position: sticky;
   z-index: 5;
   top: 0;
@@ -834,7 +794,8 @@
   backdrop-filter: blur(12px);
 }
 
-.smear-analysis-immersive .cell-panel-heading h2 {
+.smear-analysis-immersive .cell-panel-heading h2,
+.smear-workflow--immersive .cell-panel-heading h2 {
   margin: 0;
   color: #fff;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -842,7 +803,8 @@
   line-height: 1.25;
 }
 
-.smear-analysis-immersive .cell-panel-heading p {
+.smear-analysis-immersive .cell-panel-heading p,
+.smear-workflow--immersive .cell-panel-heading p {
   margin: 3px 0 0;
   color: var(--smear-secondary);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -850,7 +812,8 @@
 }
 
 .smear-analysis-immersive .cell-panel-heading > button,
-.smear-analysis-immersive .cell-panel-heading-actions > button {
+.smear-analysis-immersive .cell-panel-heading-actions > button,
+.smear-workflow--immersive .cell-panel-heading > button {
   display: grid;
   flex: 0 0 26px;
   width: 26px;
@@ -907,7 +870,11 @@
 }
 
 .smear-analysis-immersive .cell-detail-facts,
-.smear-analysis-immersive .classification-facts {
+.smear-analysis-immersive .classification-facts,
+.smear-workflow--immersive .cell-detail-facts,
+.smear-workflow--immersive .workflow-run-facts,
+.smear-workflow--immersive .workflow-quality-metrics,
+.smear-workflow--immersive .workflow-header-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
@@ -918,7 +885,11 @@
   background: rgba(164, 230, 255, .1);
 }
 
-.smear-analysis-immersive .cell-detail-facts > div {
+.smear-analysis-immersive .cell-detail-facts > div,
+.smear-workflow--immersive .cell-detail-facts > div,
+.smear-workflow--immersive .workflow-run-facts > div,
+.smear-workflow--immersive .workflow-quality-metrics > div,
+.smear-workflow--immersive .workflow-header-facts > div {
   min-width: 0;
   border: 0;
   border-radius: 0;
@@ -926,12 +897,20 @@
   padding: 7px 8px;
 }
 
-.smear-analysis-immersive .cell-detail-facts dt {
+.smear-analysis-immersive .cell-detail-facts dt,
+.smear-workflow--immersive .cell-detail-facts dt,
+.smear-workflow--immersive .workflow-run-facts dt,
+.smear-workflow--immersive .workflow-quality-metrics dt,
+.smear-workflow--immersive .workflow-header-facts dt {
   color: var(--smear-muted);
   font-size: 8px;
 }
 
-.smear-analysis-immersive .cell-detail-facts dd {
+.smear-analysis-immersive .cell-detail-facts dd,
+.smear-workflow--immersive .cell-detail-facts dd,
+.smear-workflow--immersive .workflow-run-facts dd,
+.smear-workflow--immersive .workflow-quality-metrics dd,
+.smear-workflow--immersive .workflow-header-facts dd {
   margin: 2px 0 0;
   color: #fff;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
