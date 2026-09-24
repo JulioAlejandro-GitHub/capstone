@@ -21,7 +21,7 @@ const feature = `${hook}\n${page}\n${workspace}\n${viewer}\n${modal}\n${api}\n${
 test('workflow incorpora Clasificación IA sin agregarla a Modelo IA', () => {
   for (const label of [
     'Preparar',
-    'Cargar',
+    'Validar',
     'Detectar',
     'Clasificar',
     'Revisar',
@@ -195,7 +195,7 @@ test('un POST Grad-CAM rechazado no consulta una explicación inexistente', () =
   assert.match(workspace, /if \(!hasPersistedExplanation\)/);
   assert.ok(
     workspace.indexOf('if (!hasPersistedExplanation)')
-      < workspace.indexOf('api.getCellExplanation(target.id)'),
+    < workspace.indexOf('api.getCellExplanation(target.id)'),
   );
 });
 
