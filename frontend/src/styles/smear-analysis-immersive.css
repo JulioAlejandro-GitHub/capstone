@@ -635,10 +635,22 @@
   transform: none;
 }
 
+/* The filter nav that used to share this row is gone (it moved into the
+   gallery rail's dropdown, see .cell-gallery-filter-*), so the row now only
+   holds the search form. Narrow its footprint and push it further right so
+   it stops crowding .cell-viewer-controls (the toolbar, left: 316px). Scoped
+   past the shared rule above so .workflow-stage-band (processing mode) keeps
+   its original coordinates. */
+.smear-analysis-immersive .cell-immersive-top-controls {
+  left: clamp(760px, 46%, 900px);
+  width: min(360px, calc(100% - 960px));
+  min-width: 300px;
+}
+
 .smear-analysis-immersive .cell-gallery-search {
   position: relative;
   display: grid;
-  flex: 0 0 260px;
+  flex: 1 1 auto;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 7px;
@@ -689,72 +701,144 @@
   text-transform: uppercase;
 }
 
-.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  gap: 2px;
+/* Gallery filter dropdown: replaces the old .cell-status-filters nav. The
+   trigger lives in the (~120px-wide) rail heading; the listbox itself is
+   portaled to document.body and positioned with `position: fixed` so it can
+   open leftward over the canvas without being clipped by the rail's
+   `overflow: hidden` or contained by an ancestor's backdrop-filter. Because
+   the portal escapes .smear-analysis-immersive, its rules below are
+   intentionally unscoped and repeat the glass/mono tokens as literals. */
+.smear-analysis-immersive .cell-gallery-filter-dropdown {
+  position: relative;
+  display: grid;
   min-width: 0;
-  min-height: 42px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  border: 1px solid var(--smear-glass-border);
-  border-radius: 999px;
-  background: var(--smear-glass);
-  padding: 4px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
-  scrollbar-width: none;
-  backdrop-filter: blur(12px);
+  gap: 2px;
 }
 
-.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters::-webkit-scrollbar {
-  display: none;
-}
-
-.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters button {
-  display: inline-flex;
-  flex: 0 0 auto;
-  width: auto;
-  min-height: 32px;
+.smear-analysis-immersive .cell-gallery-filter-trigger {
+  display: flex;
   align-items: center;
   gap: 5px;
+  width: 100%;
+  min-width: 0;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 5px;
   background: transparent;
-  color: rgba(187, 201, 207, .58);
+  color: var(--smear-secondary);
   cursor: pointer;
-  padding: 5px 9px;
+  padding: 2px 4px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 8px;
-  letter-spacing: .025em;
+  font-size: 13px;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.smear-analysis-immersive .cell-gallery-filter-trigger > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters button > strong {
-  opacity: .7;
+.smear-analysis-immersive .cell-gallery-filter-trigger::after {
+  content: "▾";
+  margin-left: auto;
+  color: var(--smear-muted);
   font-size: 8px;
 }
 
-.smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters button[aria-pressed="true"] {
+.smear-analysis-immersive .cell-gallery-filter-trigger:hover,
+.smear-analysis-immersive .cell-gallery-filter-trigger[aria-expanded="true"] {
+  border-color: rgba(164, 230, 255, .3);
+  background: rgba(164, 230, 255, .1);
+}
+
+.cell-gallery-filter-menu {
+  position: fixed;
+  z-index: 200;
+  width: 280px;
+  max-width: calc(100vw - 24px);
+}
+
+.cell-gallery-filter-listbox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  max-height: min(420px, calc(100vh - 48px));
+  overflow-y: auto;
+  border: 1px solid rgba(164, 230, 255, .17);
+  border-radius: 10px;
+  background: rgba(11, 19, 38, .96);
+  padding: 6px;
+  list-style: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  scrollbar-color: rgba(164, 230, 255, .32) transparent;
+  scrollbar-width: thin;
+}
+
+.cell-gallery-filter-listbox li {
+  display: block;
+}
+
+.cell-gallery-filter-listbox button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(187, 201, 207, .78);
+  cursor: pointer;
+  padding: 8px 10px;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: .025em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.cell-gallery-filter-listbox button:focus-visible {
+  outline: 2px solid var(--smear-primary, #4cd6ff);
+  outline-offset: -2px;
+}
+
+.cell-gallery-filter-listbox button > span:last-of-type {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-gallery-filter-listbox button > strong {
+  margin-left: auto;
+  opacity: .7;
+  font-size: 10px;
+}
+
+.cell-gallery-filter-listbox button:hover,
+.cell-gallery-filter-listbox button[aria-selected="true"] {
   border-color: rgba(78, 222, 163, .4);
   background: rgba(78, 222, 163, .15);
-  color: var(--smear-secondary) !important;
+  color: #8ff0c4 !important;
   box-shadow: 0 0 12px rgba(78, 222, 163, .14);
 }
 
-.smear-analysis-immersive .cell-immersive-top-controls .classification-status-parasitized[aria-pressed="true"],
-.smear-analysis-immersive .cell-immersive-top-controls .classification-status-near_threshold[aria-pressed="true"],
-.smear-analysis-immersive .cell-immersive-top-controls .classification-status-needs_attention[aria-pressed="true"] {
+.cell-gallery-filter-listbox .classification-status-parasitized[aria-selected="true"],
+.cell-gallery-filter-listbox .classification-status-near_threshold[aria-selected="true"],
+.cell-gallery-filter-listbox .classification-status-needs_attention[aria-selected="true"] {
   border-color: rgba(255, 213, 165, .43);
   background: rgba(255, 176, 68, .13);
-  color: var(--smear-tertiary) !important;
+  color: #ffd489 !important;
 }
 
-.smear-analysis-immersive .cell-immersive-top-controls .classification-status-failed[aria-pressed="true"],
-.smear-analysis-immersive .cell-immersive-top-controls .classification-status-corrected[aria-pressed="true"] {
+.cell-gallery-filter-listbox .classification-status-failed[aria-selected="true"],
+.cell-gallery-filter-listbox .classification-status-corrected[aria-selected="true"] {
   border-color: rgba(255, 180, 171, .4);
   background: rgba(147, 0, 10, .18);
-  color: var(--smear-error) !important;
+  color: #ffadad !important;
 }
 
 .smear-analysis-immersive .cell-detail-panel {
@@ -1081,8 +1165,12 @@
   padding: 8px;
 }
 
-.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading h2 {
-  color: var(--smear-secondary);
+.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading .cell-gallery-filter-dropdown {
+  min-width: 0;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-gallery-filter-trigger {
+  padding: 3px 4px;
   font-size: 8px;
   letter-spacing: .04em;
   text-transform: uppercase;
@@ -1860,7 +1948,7 @@
   }
 
   .smear-analysis-immersive .cell-gallery-search {
-    flex-basis: 50%;
+    flex-basis: 100%;
     min-width: 0;
     min-height: 44px;
     border-radius: 6px;
@@ -1868,16 +1956,6 @@
 
   .smear-analysis-immersive .cell-gallery-search button {
     min-height: 44px;
-  }
-
-  .smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters {
-    min-height: 44px;
-    border-radius: 6px;
-  }
-
-  .smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters button {
-    min-height: 44px;
-    padding: 4px 7px;
   }
 
   .smear-analysis-immersive .cell-gallery-panel .cell-panel-heading,
@@ -2037,12 +2115,7 @@
 }
 
 @media (max-width: 440px) {
-  .smear-analysis-immersive .cell-immersive-top-controls {
-    flex-direction: column;
-  }
-
-  .smear-analysis-immersive .cell-gallery-search,
-  .smear-analysis-immersive .cell-immersive-top-controls .cell-status-filters {
+  .smear-analysis-immersive .cell-gallery-search {
     width: 100%;
     flex-basis: auto;
   }

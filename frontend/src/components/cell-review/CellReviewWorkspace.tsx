@@ -1,12 +1,14 @@
 import {
   memo,
   type FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 import { ApiError, api } from '../../services/api';
 import type {
@@ -349,6 +351,12 @@ export function CellReviewWorkspace({
   const [visibleGalleryLimit, setVisibleGalleryLimit] = useState(RAIL_RENDER_BATCH);
   const [selectionResolved, setSelectionResolved] = useState(false);
   const [selectionRefreshToken, setSelectionRefreshToken] = useState(0);
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const [filterMenuPosition, setFilterMenuPosition] =
+    useState<{ top: number; right: number } | null>(null);
+  const filterTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const filterMenuRef = useRef<HTMLDivElement | null>(null);
+  const filterOptionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const cardRefs = useRef(new Map<string, HTMLButtonElement>());
   const mobileTabRefs = useRef(new Map<MobileTab, HTMLButtonElement>());
   const galleryRequest = useRef(0);
@@ -928,6 +936,42 @@ export function CellReviewWorkspace({
   }, [cellSearch, classificationFilter, selectedImageId]);
 
   useEffect(() => {
+    setFilterMenuOpen(false);
+  }, [railCollapsed]);
+
+  useEffect(() => {
+    if (!filterMenuOpen) return;
+    const reposition = () => {
+      const rect = filterTriggerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setFilterMenuPosition({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+    };
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (filterTriggerRef.current?.contains(target)) return;
+      if (filterMenuRef.current?.contains(target)) return;
+      setFilterMenuOpen(false);
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.stopPropagation();
+      setFilterMenuOpen(false);
+      filterTriggerRef.current?.focus();
+    };
+    reposition();
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, true);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', reposition);
+      window.removeEventListener('scroll', reposition, true);
+    };
+  }, [filterMenuOpen]);
+
+  useEffect(() => {
     if (!selectedDetectionId) return;
     const selectedIndex = galleryDetections.findIndex(
       (detection) => detection.id === selectedDetectionId,
@@ -985,6 +1029,56 @@ export function CellReviewWorkspace({
     setDetailCollapsed(false);
     setRailCollapsed(false);
     setLiveMessage(`${target.cell_code} seleccionada y centrada en la imagen.`);
+  }
+
+  function openFilterMenu() {
+    const rect = filterTriggerRef.current?.getBoundingClientRect();
+    if (rect) {
+      setFilterMenuPosition({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+    }
+    setFilterMenuOpen(true);
+  }
+
+  function selectFilterOption(key: string) {
+    if (classificationRun) setClassificationFilter(key as ClassificationFilter);
+    else setFilter(key as CellReviewFilter);
+    setFilterMenuOpen(false);
+    window.requestAnimationFrame(() => filterTriggerRef.current?.focus());
+  }
+
+  function handleFilterTriggerKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>) {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const activeKey = classificationRun ? classificationFilter : filter;
+      openFilterMenu();
+      window.requestAnimationFrame(() => {
+        const activeIndex = filterOptions.findIndex((option) => option.key === activeKey);
+        filterOptionRefs.current[activeIndex >= 0 ? activeIndex : 0]?.focus();
+      });
+    }
+  }
+
+  function handleFilterListboxKeyDown(event: ReactKeyboardEvent<HTMLUListElement>) {
+    const optionsCount = filterOptions.length;
+    if (!optionsCount) return;
+    const currentIndex = filterOptionRefs.current.findIndex(
+      (node) => node === document.activeElement,
+    );
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      const next = currentIndex < 0 ? 0 : (currentIndex + 1) % optionsCount;
+      filterOptionRefs.current[next]?.focus();
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      const next = currentIndex < 0 ? optionsCount - 1 : (currentIndex - 1 + optionsCount) % optionsCount;
+      filterOptionRefs.current[next]?.focus();
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      filterOptionRefs.current[0]?.focus();
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      filterOptionRefs.current[optionsCount - 1]?.focus();
+    }
   }
 
   async function loadMore(selectFirstNew = false) {
@@ -1296,6 +1390,40 @@ export function CellReviewWorkspace({
     );
   }
 
+  const filterOptions = classificationRun
+    ? (Object.keys(classificationFilterLabel) as ClassificationFilter[]).map((status) => {
+      const reviewCounts = classificationRun.review_counts ?? {};
+      const count = status === 'all'
+        ? Math.max(classificationRun.input_count, overlayDetections.length)
+        : status === 'parasitized'
+          ? classificationRun.parasitized_count
+          : status === 'uninfected'
+            ? classificationRun.uninfected_count
+            : status === 'near_threshold'
+              ? classificationRun.near_threshold_count
+              : status === 'failed'
+                ? classificationRun.failed_count + unclassifiedDetectionCount
+                : reviewCounts[status] ?? 0;
+      return {
+        key: status as string,
+        label: classificationFilterLabel[status],
+        symbol: classificationFilterSymbol[status],
+        count,
+        className: `classification-status-${status}`,
+      };
+    })
+    : (['all', 'unreviewed', 'accepted', 'rejected', 'needs_attention'] as CellReviewFilter[]).map((status) => ({
+      key: status as string,
+      label: filterLabel[status],
+      symbol: status === 'all' ? '∑' : reviewStatusSymbol[status],
+      count: status === 'all' ? run.detection_count : counts[status],
+      className: `status-${status}`,
+    }));
+  const activeFilterKey = classificationRun ? classificationFilter : filter;
+  const activeFilterHeading = classificationRun
+    ? `${classificationFilterLabel[classificationFilter]} (${galleryDetections.length})`
+    : `Células (${detectionTotal})`;
+
   return (
     <AuthenticatedImageCacheProvider>
       <section
@@ -1387,70 +1515,65 @@ export function CellReviewWorkspace({
             />
             <button type="submit">Ubicar</button>
           </form>
-
-          {classificationRun ? (
-            <nav className="cell-status-filters classification-filters" aria-label="Filtrar clasificación celular">
-              {(Object.keys(classificationFilterLabel) as ClassificationFilter[]).map((status) => {
-                const reviewCounts = classificationRun.review_counts ?? {};
-                const count = status === 'all'
-                  ? Math.max(classificationRun.input_count, overlayDetections.length)
-                  : status === 'parasitized'
-                    ? classificationRun.parasitized_count
-                    : status === 'uninfected'
-                      ? classificationRun.uninfected_count
-                      : status === 'near_threshold'
-                        ? classificationRun.near_threshold_count
-                        : status === 'failed'
-                          ? classificationRun.failed_count + unclassifiedDetectionCount
-                          : reviewCounts[status] ?? 0;
-                return (
-                  <button
-                    key={status}
-                    type="button"
-                    className={`classification-status-${status}`}
-                    aria-pressed={classificationFilter === status}
-                    title={`${classificationFilterLabel[status]}: ${count}`}
-                    onClick={() => setClassificationFilter(status)}
-                  >
-                    <span aria-hidden="true">{classificationFilterSymbol[status]}</span>
-                    <span>{classificationFilterLabel[status]}</span>
-                    <strong>{count}</strong>
-                  </button>
-                );
-              })}
-            </nav>
-          ) : (
-            <nav className="cell-status-filters" aria-label="Filtrar por estado de revisión">
-              {(['all', 'unreviewed', 'accepted', 'rejected', 'needs_attention'] as CellReviewFilter[]).map((status) => {
-                const count = status === 'all' ? run.detection_count : counts[status];
-                return (
-                  <button
-                    key={status}
-                    type="button"
-                    className={`status-${status}`}
-                    aria-pressed={filter === status}
-                    title={`${filterLabel[status]}: ${count}`}
-                    onClick={() => setFilter(status)}
-                  >
-                    <span aria-hidden="true">{status === 'all' ? '∑' : reviewStatusSymbol[status]}</span>
-                    <span>{filterLabel[status]}</span>
-                    <strong>{count}</strong>
-                  </button>
-                );
-              })}
-            </nav>
-          )}
         </div>
 
         {!railCollapsed ? (
           <section id="cell-gallery-panel" className="cell-gallery-panel" role="tabpanel" aria-labelledby="cell-gallery-heading">
             <header className="cell-panel-heading">
-              <div>
-                <h2 id="cell-gallery-heading">
-                  {classificationRun
-                    ? `${classificationFilterLabel[classificationFilter]} (${galleryDetections.length})`
-                    : `Células (${detectionTotal})`}
-                </h2>
+              <div className="cell-gallery-filter-dropdown">
+                <button
+                  type="button"
+                  id="cell-gallery-heading"
+                  ref={filterTriggerRef}
+                  className="cell-gallery-filter-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded={filterMenuOpen}
+                  aria-controls="cell-gallery-filter-listbox"
+                  onClick={() => (filterMenuOpen ? setFilterMenuOpen(false) : openFilterMenu())}
+                  onKeyDown={handleFilterTriggerKeyDown}
+                >
+                  <span aria-hidden="true">
+                    {filterOptions.find((option) => option.key === activeFilterKey)?.symbol ?? '∑'}
+                  </span>
+                  <span>{activeFilterHeading}</span>
+                </button>
+                {filterMenuOpen && filterMenuPosition
+                  ? createPortal(
+                    <div
+                      ref={filterMenuRef}
+                      className="cell-gallery-filter-menu"
+                      style={{ top: filterMenuPosition.top, right: filterMenuPosition.right }}
+                    >
+                      <ul
+                        id="cell-gallery-filter-listbox"
+                        className="cell-gallery-filter-listbox"
+                        role="listbox"
+                        aria-label={classificationRun ? 'Filtrar clasificación celular' : 'Filtrar por estado de revisión'}
+                        onKeyDown={handleFilterListboxKeyDown}
+                      >
+                        {filterOptions.map((option, index) => (
+                          <li key={option.key} role="presentation">
+                            <button
+                              type="button"
+                              role="option"
+                              aria-selected={activeFilterKey === option.key}
+                              className={option.className}
+                              ref={(node) => {
+                                filterOptionRefs.current[index] = node;
+                              }}
+                              onClick={() => selectFilterOption(option.key)}
+                            >
+                              <span aria-hidden="true">{option.symbol}</span>
+                              <span>{option.label}</span>
+                              <strong>{option.count}</strong>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>,
+                    document.body,
+                  )
+                  : null}
                 <p>{selectedImage?.safe_name ?? 'Sin imagen seleccionada'}</p>
               </div>
               <button type="button" onClick={collapseRail} aria-label="Ocultar carrusel de células">×</button>

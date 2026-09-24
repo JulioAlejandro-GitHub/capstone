@@ -4317,34 +4317,6 @@ a.uploaded-image-cell:hover small {
   overflow-wrap: anywhere;
 }
 
-.cell-status-filters {
-  display: grid;
-  gap: 7px;
-  border-bottom: 1px solid var(--cell-border);
-  padding: 13px;
-}
-
-.cell-status-filters button {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 7px 10px;
-  width: 100%;
-  border: 1px solid #3c4b65;
-  border-radius: 9px;
-  background: #1b263a;
-  color: var(--cell-text);
-  cursor: pointer;
-  padding: 9px 10px;
-  text-align: left;
-}
-
-.cell-status-filters button:hover,
-.cell-status-filters button[aria-pressed="true"] {
-  border-color: #81a9f6;
-  background: #263754;
-}
-
 .cell-filter-name {
   display: flex;
   min-width: 0;
@@ -4360,10 +4332,6 @@ a.uploaded-image-cell:hover small {
   height: 22px;
   border: 1px solid currentColor;
   border-radius: 50%;
-}
-
-.cell-status-filters small {
-  color: var(--cell-muted);
 }
 
 .cell-filter-progress {
@@ -5054,10 +5022,6 @@ a.uploaded-image-cell:hover small {
   color: #ffd2d2;
   padding: 9px 16px;
   font-size: 12px;
-}
-
-.classification-filters button {
-  padding-block: 7px;
 }
 
 .classification-status-parasitized,
