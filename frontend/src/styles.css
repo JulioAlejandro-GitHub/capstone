@@ -5939,7 +5939,7 @@ a.uploaded-image-cell:hover small {
 }
 
 .smear-workflow .smear-setup__intro span {
-  max-width: 850px;
+  /* max-width: 850px; */
   color: var(--setup-muted);
   line-height: 1.5;
 }
