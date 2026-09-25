@@ -25,9 +25,13 @@ test('composición y CSS reproducen el workspace inmersivo aprobado sin alterar 
   for (const value of [
     'smear-analysis-immersive', 'smear-results-header', 'smear-results-case-panel',
     'smear-results-actions', 'cell-immersive-canvas', 'cell-gallery-search',
-    'cell-status-filters', 'cell-detail-panel', 'cell-gallery-panel',
+    'cell-detail-panel', 'cell-gallery-panel',
     'cell-viewer-minimap', 'cell-review-progress-ring',
   ]) {
+    // 'cell-status-filters' fue retirado de esta lista: la nav homónima fue
+    // reemplazada por un listbox desplegable y hoy sólo sobrevive como
+    // comentario histórico en smear-analysis-immersive.css, sin className ni
+    // selector CSS reales en ningún archivo.
     assert.match(`${immersive}\n${workspace}\n${immersiveStyles}`, new RegExp(value));
   }
   assert.match(immersiveStyles, /\.page\.smear-workflow\.smear-workflow--immersive/);
@@ -36,11 +40,26 @@ test('composición y CSS reproducen el workspace inmersivo aprobado sin alterar 
   assert.match(immersiveStyles, /backdrop-filter: blur\(12px\)/);
   assert.match(main, /import '\.\/styles\/smear-analysis-immersive\.css'/);
 
+  // La paleta se unificó (commit c65da12): los 13 literales hex viven ahora
+  // en :root de styles.css, y el archivo inmersivo sólo los referencia via
+  // var(--color-*). Esto guarda la paleta única como fuente de verdad.
+  const rootBlock = styles.slice(styles.indexOf(':root {'), styles.indexOf('\n}\n', styles.indexOf(':root {')));
   for (const token of [
     '#0b1326', '#060e20', '#131b2e', '#171f33', '#222a3d',
     '#a4e6ff', '#4cd6ff', '#4edea3', '#ffd5a5', '#ffb4ab',
     '#dae2fd', '#bbc9cf', '#3c494e',
-  ]) assert.match(immersiveStyles, new RegExp(token, 'i'));
+  ]) {
+    assert.match(rootBlock, new RegExp(token.replace('#', '#'), 'i'));
+    // No deben repetirse como literales directos en el archivo inmersivo,
+    // salvo como fallback de var() (p. ej. var(--smear-primary, #4cd6ff)).
+    assert.doesNotMatch(immersiveStyles, new RegExp(`(?<!, )${token}`, 'i'));
+  }
+  for (const smearVar of [
+    '--smear-primary', '--smear-secondary', '--smear-tertiary', '--smear-error',
+    '--smear-text', '--smear-muted', '--smear-background', '--smear-surface',
+  ]) {
+    assert.match(immersiveStyles, new RegExp(`${smearVar}:\\s*var\\(--color-`));
+  }
 
   const globalPage = styles.slice(styles.indexOf('.page {'), styles.indexOf('.page-title {'));
   assert.match(globalPage, /gap: 22px/);

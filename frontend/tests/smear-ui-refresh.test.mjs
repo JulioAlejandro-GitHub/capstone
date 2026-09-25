@@ -63,10 +63,22 @@ test('calidad visual se deriva de métricas y códigos persistidos sin temporiza
   assert.match(hook, /quality_gate_status === 'fail'[\s\S]*setStage\('quality_failed'\)/);
 });
 
-test('escaneo usa la imagen real, sólo acompaña detección o clasificación y respeta reduced motion', () => {
+test('escaneo usa la imagen real, acompaña cualquier etapa de procesamiento y respeta reduced motion', () => {
   assert.match(workflow, /AuthenticatedWorkflowImage/);
-  assert.match(workflow, /const showScan = \[[\s\S]*'detection_processing'[\s\S]*'classification_pending'[\s\S]*'classification_processing'/);
+  assert.match(
+    workflow,
+    /const processingStages: SmearWorkflowStage\[\] = \[[\s\S]*'validating'[\s\S]*'uploading'[\s\S]*'creating_analysis'[\s\S]*'quality_processing'[\s\S]*'detection_processing'[\s\S]*'classification_pending'[\s\S]*'classification_processing'[\s\S]*\];/,
+  );
+  assert.match(workflow, /const showScan = processingStages\.includes\(stage\);/);
   assert.match(workflow, /showScan \? <div className="workflow-scan-line"/);
+  // La línea de escaneo no debe acompañar la advertencia de calidad ni los
+  // estados terminales: ahí el sistema espera una decisión humana, no trabaja.
+  for (const terminalOrWaitingStage of ['quality_warning', 'quality_failed', 'classification_failed', 'review_ready', 'error']) {
+    assert.doesNotMatch(
+      workflow,
+      new RegExp(`processingStages: SmearWorkflowStage\\[\\] = \\[[^\\]]*'${terminalOrWaitingStage}'`),
+    );
+  }
   assert.match(styles, /@keyframes smear-scan/);
   assert.match(styles, /translateY\(calc\(100cqh - 2px\)\)/);
   assert.match(styles, /prefers-reduced-motion:\s*reduce[\s\S]*workflow-scan-line/);

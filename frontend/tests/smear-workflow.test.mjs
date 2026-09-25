@@ -168,7 +168,7 @@ test('errores conservan recursos y ofrecen retry desde la etapa fallida', () => 
 test('detección completada reutiliza SmearAnalysisImmersiveView y persiste selección', () => {
   assert.match(page, /<SmearAnalysisImmersiveView/);
   assert.match(page, /mode="live"/);
-  assert.match(page, /mode === 'review' \? ' smear-workflow--immersive' : ''/);
+  assert.match(page, /mode !== 'setup' \? ' smear-workflow--immersive' : ''/);
   assert.match(page, /microscopyImageId: identifiers\.microscopyImageId/);
   assert.match(page, /onImageChange: controller\.selectImage/);
   assert.match(page, /selectedDetectionId: identifiers\.selectedDetectionId/);
@@ -192,14 +192,20 @@ test('ruta canónica y aliases legacy comparten el workflow sin tocar Modelo IA'
   assert.equal((navigation.match(/label: 'Modelo IA'/g) ?? []).length, 1);
 });
 
-test('muestra imagen, etapas y actividad real sin porcentajes de proceso inventados', () => {
+test('muestra imagen, etapas y sub-hitos con actividad real sin porcentajes de proceso inventados', () => {
   for (const text of [
     'Imagen recibida', 'Integridad verificada', 'Control de calidad',
-    'Lista para análisis', 'Detección celular', 'Revisión disponible',
+    'Lista para análisis', 'Detección celular', 'Clasificación IA',
+    'Revisión y resultado',
   ]) assert.match(page, new RegExp(text));
+  // Las 5 etapas (contextSteps) contienen sub-hitos (contextSubSteps); el
+  // sistema de 7 hitos planos se plegó en esta estructura de dos niveles.
+  assert.match(page, /const contextSteps: Array<\{ id: ContextStep; label: string \}>/);
+  assert.match(page, /const contextSubSteps: Record<ContextStep, Array<\{ title: string; detail: string; timeIndex: number \}>>/);
   assert.match(page, /run\?\.events/);
   assert.match(page, /milestoneTimes/);
-  assert.match(page, /<time>\{milestoneTime\}<\/time>/);
+  assert.match(page, /const subTimes = subs\.map\(\(sub\) => safeTime\(milestoneTimes\[sub\.timeIndex\]\)\);/);
+  assert.match(page, /\{subTime \? <time>\{subTime\}<\/time> : null\}/);
   assert.doesNotMatch(page, /Math\.random|fakeProgress|simulatedProgress/);
 });
 

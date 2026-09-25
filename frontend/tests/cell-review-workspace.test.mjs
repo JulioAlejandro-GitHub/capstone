@@ -111,8 +111,9 @@ test('filtros de detección consultan estados reales y conservan términos no cl
     /\(\['all', 'unreviewed', 'accepted', 'rejected', 'needs_attention'\] as CellReviewFilter\[\]\)\.map/,
   );
   assert.match(workspace, /status === 'all' \? run\.detection_count : counts\[status\]/);
-  assert.match(workspace, /aria-pressed=\{filter === status\}/);
-  assert.match(workspace, /onClick=\{\(\) => setFilter\(status\)\}/);
+  assert.match(workspace, /role="option"/);
+  assert.match(workspace, /aria-selected=\{activeFilterKey === option\.key\}/);
+  assert.match(workspace, /onClick=\{\(\) => selectFilterOption\(option\.key\)\}/);
   assert.match(
     workspace,
     /review_status:\s*classificationRunId \|\| filter === 'all' \? undefined : filter/,

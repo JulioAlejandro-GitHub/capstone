@@ -41,11 +41,11 @@ test('detalle es deep link validado y reutiliza la presentación del workflow', 
   assert.match(workflow, /SmearAnalysisImmersiveView[\s\S]*mode="history"/);
   assert.match(compatibility, /SmearAnalysisImmersiveView as SmearAnalysisResultsView/);
   assert.doesNotMatch(immersive, /readOnly=\{isHistory\}|livePermissions/);
-  assert.match(immersive, /Vista histórica · Pipeline en solo lectura/);
+  assert.match(workflow, /Vista histórica · Solo lectura/);
   assert.match(workflow, /Volver al historial/);
   assert.match(
     workflow,
-    /smear-workflow-history\$\{hasResults \? ' smear-workflow--immersive' : ''\}/,
+    /className="page smear-workflow smear-workflow-history smear-workflow--immersive"/,
   );
 });
 

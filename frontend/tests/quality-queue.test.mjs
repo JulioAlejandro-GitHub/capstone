@@ -15,7 +15,8 @@ test('cola forma parte del workflow y usa prioridad normal 50', () => {
 
 test('ejecución, actualización y reintento permanecen manuales', () => {
   assert.match(page, /Ejecutar control/);
-  assert.match(page, /Actualizar estado/);
+  assert.match(hook, /const refresh = useCallback/);
+  assert.match(hook, /\brefresh,/);
   assert.match(page, /Reingresar a cola/);
   assert.match(page, /requiere una segunda acción manual/);
   assert.doesNotMatch(page + hook, /setInterval|WebSocket|EventSource/);

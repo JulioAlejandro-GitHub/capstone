@@ -51,6 +51,6 @@ test('la lista está ordenada y separada sin duplicar registros',()=>{
   assert.match(page,/priority\(a\)-priority\(b\)/);
 });
 test('la revisión funciona como tarjeta contextual en mobile y no expone paths',()=>{
-  assert.match(styles,/deployment-table thead \{ display: none/);assert.match(styles,/deployment-row--selected/);
+  assert.match(styles,/deployment-table thead \{\s*display: none/);assert.match(styles,/deployment-row--selected/);
   for(const source of [page,panel,modal])assert.doesNotMatch(source,/checkpoint_path|best_model\.keras|outputs\//);
 });
