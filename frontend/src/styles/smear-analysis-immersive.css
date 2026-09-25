@@ -230,7 +230,7 @@
 
 .smear-analysis-immersive .smear-glass-panel,
 .smear-analysis-immersive .cell-viewer-controls,
-.smear-analysis-immersive .cell-immersive-top-controls > *,
+.smear-analysis-immersive .cell-immersive-controlbar,
 .smear-analysis-immersive .cell-detail-panel,
 .smear-analysis-immersive .cell-gallery-panel,
 .smear-analysis-immersive .cell-review-progress-ring,
@@ -635,16 +635,24 @@
   transform: none;
 }
 
-/* The filter nav that used to share this row is gone (it moved into the
-   gallery rail's dropdown, see .cell-gallery-filter-*), so the row now only
-   holds the search form. Narrow its footprint and push it further right so
-   it stops crowding .cell-viewer-controls (the toolbar, left: 316px). Scoped
-   past the shared rule above so .workflow-stage-band (processing mode) keeps
-   its original coordinates. */
+/* This row is now the single unified control bar: the case card, the viewer
+   toolbar, the image selector, the detection-status filter, the cell search and
+   the experimental-result readout, in six groups. It is sized by its content
+   (width: max-content) and anchored to the left gutter, so it no longer claims
+   a full-width band and the canvas keeps the rest of the surface. Scoped past
+   the shared rule above so .workflow-stage-band (processing mode) keeps its
+   original coordinates. */
 .smear-analysis-immersive .cell-immersive-top-controls {
-  left: clamp(760px, 46%, 900px);
-  width: min(360px, calc(100% - 960px));
-  min-width: 300px;
+  top: 24px;
+  left: var(--smear-panel-left);
+  width: max-content;
+  max-width: calc(100% - var(--smear-panel-left) - var(--smear-panel-right));
+  min-width: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 4px;
+  border-radius: 999px;
+  padding: 4px;
 }
 
 .smear-analysis-immersive .cell-gallery-search {
@@ -1707,17 +1715,13 @@
   }
 
   .smear-analysis-immersive .cell-immersive-top-controls {
-    top: 76px;
-    right: 16px;
-    left: 620px;
-    width: auto;
-    min-width: 0;
+    top: 16px;
+    right: auto;
   }
 
-  .smear-analysis-immersive .cell-detail-panel {
-    top: 132px;
-  }
-
+  /* The old second row (search) is gone: both panels now start right under the
+     single control bar instead of under two stacked bands. */
+  .smear-analysis-immersive .cell-detail-panel,
   .smear-analysis-immersive .cell-gallery-panel {
     top: 86px;
   }
@@ -1743,12 +1747,13 @@
   }
 
   .smear-analysis-immersive .cell-immersive-top-controls {
-    top: 76px;
-    right: 16px;
-    left: 280px;
-    width: auto;
-    min-width: 0;
-    transform: none;
+    top: 16px;
+    right: auto;
+    left: var(--smear-panel-left);
+    max-width: calc(100% - var(--smear-panel-left) - var(--smear-panel-right));
+    /* Wrap rather than scroll: a scroll container would clip the popovers and
+       the case-card drawer that hang below the bar. */
+    flex-wrap: wrap;
   }
 
   .smear-analysis-immersive .cell-viewer-controls {
@@ -1763,7 +1768,7 @@
 
   .smear-analysis-immersive .cell-detail-panel {
     z-index: 70;
-    top: 134px;
+    top: 86px;
     bottom: 64px;
     left: 12px;
     width: min(340px, calc(100% - 24px));
@@ -1771,7 +1776,7 @@
 
   .smear-analysis-immersive .cell-gallery-panel {
     z-index: 70;
-    top: 134px;
+    top: 86px;
     right: 12px;
     bottom: 64px;
     width: min(300px, calc(100% - 24px));
@@ -1937,13 +1942,18 @@
     height: 44px;
   }
 
+  /* Phone: the six groups wrap inside the same band. Wrapping (not scrolling)
+     keeps the bar from becoming a clipping container for its popovers. */
   .smear-analysis-immersive .cell-immersive-top-controls {
     z-index: 61;
-    top: 170px;
+    top: 62px;
     right: 8px;
     left: 8px;
     width: auto;
+    max-width: none;
     min-width: 0;
+    flex-wrap: wrap;
+    border-radius: 6px;
     transform: none;
   }
 
@@ -2058,7 +2068,7 @@
 
   .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-gallery-panel {
     position: absolute;
-    inset: 194px 8px 60px;
+    inset: 124px 8px 60px;
     display: grid;
     width: auto;
     height: auto;
@@ -2121,7 +2131,7 @@
   }
 
   .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-gallery-panel {
-    top: 190px;
+    top: 124px;
   }
 
   .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-crop-gallery {
@@ -2199,4 +2209,388 @@
 
 @media (max-width: 720px) {
   .smear-analysis-immersive > .scientific-annotations { margin-inline: .5rem; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Unified control bar (six groups)
+
+   Layout only: every control keeps the markup, state, handlers and visual
+   treatment it already had. Two kinds of group:
+
+   - informational (Muestra, Resultado experimental): label + value, never
+     pressable;
+   - functional (Controles de imagen, Imagen, Estado de detección): label +
+     active value on a trigger that folds a popover, plus Buscar célula, whose
+     single input sits inline because a popover would add nothing.
+
+   The bar itself carries the glass treatment (see the shared rule near the top
+   of this file); its groups are transparent so the row reads as one object.
+   ───────────────────────────────────────────────────────────────────────── */
+.smear-analysis-immersive .cell-controlbar-group,
+.smear-analysis-immersive .cell-controlbar-viewer-slot {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.smear-analysis-immersive .cell-controlbar-trigger,
+.smear-analysis-immersive .cell-controlbar-group--readout {
+  display: grid;
+  min-width: 0;
+  max-width: 190px;
+  align-content: center;
+  gap: 1px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  padding: 4px 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-align: left;
+}
+
+.smear-analysis-immersive .cell-controlbar-trigger {
+  cursor: pointer;
+}
+
+/* Before the viewer's portal lands (or with no image at all) the slot adds no
+   group, so it must not contribute a separator either. */
+.smear-analysis-immersive .cell-controlbar-viewer-slot:empty {
+  display: none;
+}
+
+/* Informational: no pointer, no button hover. */
+.smear-analysis-immersive .cell-controlbar-group--readout {
+  cursor: default;
+}
+
+.smear-analysis-immersive .cell-controlbar-label {
+  color: var(--smear-muted);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-controlbar-value {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  color: var(--smear-primary);
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-controlbar-value > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-controlbar-group--readout .cell-controlbar-value {
+  color: var(--smear-text);
+}
+
+.smear-analysis-immersive .cell-controlbar-trigger:hover,
+.smear-analysis-immersive .cell-controlbar-trigger[aria-expanded="true"] {
+  border-color: rgba(164, 230, 255, .3);
+  background: rgba(164, 230, 255, .1);
+}
+
+/* Separators between groups, drawn by the bar itself. */
+.smear-analysis-immersive .cell-immersive-controlbar > * + * {
+  border-left: 1px solid var(--smear-glass-border);
+  padding-left: 4px;
+}
+
+/* Group D keeps its own trigger classes; inside the bar it drops the full-width
+   grid and the trailing caret the rail heading used. */
+.smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-filter-dropdown {
+  display: flex;
+  position: static;
+}
+
+.smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-filter-trigger {
+  width: auto;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-filter-trigger::after {
+  content: none;
+}
+
+/* Group E: the same form, shrunk to a bar-sized inline field. */
+.smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-search {
+  flex: 0 0 auto;
+  width: 196px;
+  min-height: 34px;
+  border: 1px solid var(--smear-glass-border);
+  border-radius: 999px;
+  background: rgba(164, 230, 255, .05);
+  padding: 3px 5px 3px 11px;
+}
+
+/* Group A: the case card stops floating and becomes the bar's first group; the
+   drawer the "+" reveals hangs under it as a single absolute layer. */
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card {
+  position: relative;
+  z-index: auto;
+  top: auto;
+  left: auto;
+  width: auto;
+  max-width: 220px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card > .cell-panel-heading {
+  display: grid;
+  position: static;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 6px;
+  border: 0;
+  background: transparent;
+  padding: 4px 6px 4px 11px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card h2 {
+  margin: 0;
+  color: var(--smear-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card-code {
+  grid-column: 1;
+  overflow: hidden;
+  color: var(--smear-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar
+  .workflow-case-card > .cell-panel-heading > button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card-drawer {
+  display: grid;
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 290px;
+  max-width: calc(100vw - 32px);
+  max-height: min(60vh, 460px);
+  overflow-y: auto;
+  border: 1px solid var(--smear-glass-border);
+  border-radius: 10px;
+  background: var(--smear-glass);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar
+  .workflow-case-card[data-expanded="false"] .workflow-case-card-drawer {
+  display: none;
+}
+
+/* The gallery rail heading keeps only its image label: the status filter is
+   group D of the bar now. */
+.smear-analysis-immersive .cell-gallery-panel-label {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+/* ── Portaled popovers ────────────────────────────────────────────────────
+   Like .cell-gallery-filter-menu, these mount on document.body so no overflow
+   or backdrop-filter can clip them, which also puts them outside
+   .smear-analysis-immersive: the --smear-* tokens are therefore redeclared here
+   from the same --color-* source of truth, and the viewer toolbar's own rules
+   are repeated for this one context.
+   ───────────────────────────────────────────────────────────────────────── */
+.cell-controlbar-menu {
+  --smear-primary: var(--color-primary);
+  --smear-muted: var(--color-on-surface-variant);
+  --smear-glass-border: rgba(164, 230, 255, .17);
+  position: fixed;
+  z-index: 200;
+  max-width: calc(100vw - 24px);
+}
+
+.cell-controlbar-menu--tools,
+.cell-controlbar-menu--image {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(164, 230, 255, .17);
+  border-radius: 10px;
+  background: rgba(11, 19, 38, .96);
+  padding: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.cell-controlbar-menu--tools { width: 320px; }
+.cell-controlbar-menu--image { width: 280px; }
+
+.cell-controlbar-menu .cell-viewer-controls {
+  display: grid;
+  position: static;
+  width: auto;
+  min-height: 0;
+  gap: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.cell-controlbar-menu .cell-viewer-tool-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+}
+
+.cell-controlbar-menu .cell-viewer-icon-button {
+  display: grid;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(164, 230, 255, .7);
+  cursor: pointer;
+  padding: 7px;
+}
+
+.cell-controlbar-menu .cell-viewer-icon-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.cell-controlbar-menu .cell-viewer-icon-button:hover,
+.cell-controlbar-menu .cell-viewer-icon-button[aria-pressed="true"] {
+  border-color: rgba(164, 230, 255, .32);
+  background: rgba(164, 230, 255, .11);
+  color: var(--smear-primary);
+  box-shadow: 0 0 12px rgba(76, 214, 255, .1);
+}
+
+.cell-controlbar-menu .cell-viewer-icon-button:focus-visible,
+.cell-controlbar-menu select:focus-visible {
+  outline: 2px solid var(--smear-primary);
+  outline-offset: 2px;
+}
+
+.cell-controlbar-menu .cell-viewer-tool-separator {
+  width: 1px;
+  height: 22px;
+  margin: 0 2px;
+  background: rgba(164, 230, 255, .18);
+}
+
+.cell-controlbar-menu .cell-viewer-selectors {
+  display: grid;
+  position: static;
+  top: auto;
+  left: auto;
+  gap: 5px;
+}
+
+.cell-controlbar-menu .cell-viewer-selector {
+  display: grid;
+  align-items: center;
+  gap: 3px;
+}
+
+.cell-controlbar-menu .cell-viewer-selector > span {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  color: var(--smear-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.cell-controlbar-menu .cell-viewer-selector select {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  border: 1px solid rgba(164, 230, 255, .16);
+  border-radius: 5px;
+  background: rgba(6, 14, 32, .84);
+  color: var(--smear-muted);
+  padding: 3px 21px 3px 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+}
+
+.cell-controlbar-menu .cell-controlbar-readout {
+  color: var(--smear-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-search {
+    width: 210px;
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-controlbar-trigger,
+  .smear-analysis-immersive .cell-controlbar-group--readout,
+  .smear-workflow--immersive .cell-immersive-controlbar
+    .workflow-case-card > .cell-panel-heading {
+    min-height: 44px;
+  }
+
+  .cell-controlbar-menu .cell-viewer-icon-button {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .cell-controlbar-menu .cell-viewer-selector select {
+    height: 44px;
+  }
 }

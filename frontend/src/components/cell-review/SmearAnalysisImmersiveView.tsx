@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { CellClassificationRunDetail, SmearAnalysisSummary } from '../../types/cellClassification';
 import type { CellDetectionImage, CellDetectionRunDetail } from '../../types/cellReview';
 import { CellReviewWorkspace } from './CellReviewWorkspace';
@@ -48,6 +50,11 @@ export type SmearAnalysisActions = {
 type SharedSmearAnalysisProps = {
   workflow: SmearAnalysisViewModel;
   actions: SmearAnalysisActions;
+  /**
+   * The page's SmearCaseHeader. Forwarded untouched to CellReviewWorkspace,
+   * which paints it as the "Muestra" group of the unified control bar.
+   */
+  caseHeaderSlot?: ReactNode;
 };
 
 export type SmearAnalysisLiveViewProps = SharedSmearAnalysisProps & {
@@ -68,7 +75,7 @@ export type SmearAnalysisImmersiveViewProps =
 export type SmearAnalysisResultsViewProps = SmearAnalysisImmersiveViewProps;
 
 export function SmearAnalysisImmersiveView(props: SmearAnalysisImmersiveViewProps) {
-  const { mode, workflow, actions } = props;
+  const { mode, workflow, actions, caseHeaderSlot } = props;
   const modeLabel = mode === 'history' ? 'Histórico' : 'En vivo';
   const { permissions } = props;
 

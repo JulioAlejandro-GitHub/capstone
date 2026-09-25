@@ -2,6 +2,7 @@ import {
   memo,
   type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -27,7 +28,8 @@ import {
   AuthenticatedImageCacheProvider,
 } from './AuthenticatedCellImage';
 import { CellGradCamPreview } from './CellGradCamPreview';
-import { CellImageViewer } from './CellImageViewer';
+import { CellImageViewer, VIEWER_IMAGE_MENU, VIEWER_TOOLS_MENU } from './CellImageViewer';
+import { useControlBarMenu } from './useControlBarMenu';
 import { CellClassificationAuditModal } from './CellClassificationAuditModal';
 import { ScientificAnnotations } from './ScientificAnnotations';
 import type {
@@ -257,6 +259,13 @@ type CellReviewWorkspaceProps = {
   validationSessionId?: string | null;
   canAnnotateValidation?: boolean;
   canReadValidationAnnotations?: boolean;
+  /**
+   * Case identity card (SmearCaseHeader), rendered by the page. It is painted
+   * as the informational "Muestra" group of the unified control bar instead of
+   * floating on its own over the canvas. Its `expanded` state stays local to
+   * SmearCaseHeader; it is never folded into `openMenu`.
+   */
+  caseHeaderSlot?: ReactNode;
 };
 
 export function CellReviewWorkspace({
@@ -280,6 +289,7 @@ export function CellReviewWorkspace({
   validationSessionId = null,
   canAnnotateValidation = false,
   canReadValidationAnnotations = false,
+  caseHeaderSlot,
 }: CellReviewWorkspaceProps) {
   const hasWorkspaceSeed = Boolean(initialDetectionRun && initialImages);
   const [run, setRun] = useState<CellDetectionRunDetail | null>(initialDetectionRun);
@@ -351,12 +361,29 @@ export function CellReviewWorkspace({
   const [visibleGalleryLimit, setVisibleGalleryLimit] = useState(RAIL_RENDER_BATCH);
   const [selectionResolved, setSelectionResolved] = useState(false);
   const [selectionRefreshToken, setSelectionRefreshToken] = useState(0);
-  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
-  const [filterMenuPosition, setFilterMenuPosition] =
-    useState<{ top: number; right: number } | null>(null);
+  /**
+   * Single source of truth for "only one control-bar popover open at a time".
+   * The functional groups share it: 'filter' (this component) plus
+   * VIEWER_TOOLS_MENU / VIEWER_IMAGE_MENU (owned by CellImageViewer, which keeps
+   * its own zoom/tool/overlay state and only reads this id).
+   */
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [controlBarSlot, setControlBarSlot] = useState<HTMLDivElement | null>(null);
+  const filterMenuOpen = openMenu === 'filter';
+  const setFilterMenuOpen = useCallback((next: boolean) => {
+    setOpenMenu((current) => (next ? 'filter' : current === 'filter' ? null : current));
+  }, []);
   const filterTriggerRef = useRef<HTMLButtonElement | null>(null);
   const filterMenuRef = useRef<HTMLDivElement | null>(null);
   const filterOptionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const closeFilterMenu = useCallback(() => setFilterMenuOpen(false), [setFilterMenuOpen]);
+  const filterMenuPosition = useControlBarMenu({
+    open: filterMenuOpen,
+    triggerRef: filterTriggerRef,
+    menuRef: filterMenuRef,
+    onClose: closeFilterMenu,
+    width: 280,
+  });
   const cardRefs = useRef(new Map<string, HTMLButtonElement>());
   const mobileTabRefs = useRef(new Map<MobileTab, HTMLButtonElement>());
   const galleryRequest = useRef(0);
@@ -936,42 +963,6 @@ export function CellReviewWorkspace({
   }, [cellSearch, classificationFilter, selectedImageId]);
 
   useEffect(() => {
-    setFilterMenuOpen(false);
-  }, [railCollapsed]);
-
-  useEffect(() => {
-    if (!filterMenuOpen) return;
-    const reposition = () => {
-      const rect = filterTriggerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      setFilterMenuPosition({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
-    };
-    const handlePointerDown = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (filterTriggerRef.current?.contains(target)) return;
-      if (filterMenuRef.current?.contains(target)) return;
-      setFilterMenuOpen(false);
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      event.stopPropagation();
-      setFilterMenuOpen(false);
-      filterTriggerRef.current?.focus();
-    };
-    reposition();
-    document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('resize', reposition);
-    window.addEventListener('scroll', reposition, true);
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('resize', reposition);
-      window.removeEventListener('scroll', reposition, true);
-    };
-  }, [filterMenuOpen]);
-
-  useEffect(() => {
     if (!selectedDetectionId) return;
     const selectedIndex = galleryDetections.findIndex(
       (detection) => detection.id === selectedDetectionId,
@@ -1032,10 +1023,6 @@ export function CellReviewWorkspace({
   }
 
   function openFilterMenu() {
-    const rect = filterTriggerRef.current?.getBoundingClientRect();
-    if (rect) {
-      setFilterMenuPosition({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
-    }
     setFilterMenuOpen(true);
   }
 
@@ -1493,6 +1480,9 @@ export function CellReviewWorkspace({
               onPrevious={() => selectRelative(-1)}
               onNext={() => selectRelative(1)}
               onNextUnreviewed={nextUnreviewed}
+              controlBarSlot={controlBarSlot}
+              openMenu={openMenu}
+              onMenuChange={setOpenMenu}
             />
           ) : (
             <section className="cell-viewer-section cell-empty-state">
@@ -1502,7 +1492,88 @@ export function CellReviewWorkspace({
           )}
         </div>
 
-        <div className="cell-immersive-top-controls">
+        {/*
+          * Unified control bar: the six groups of the immersive view in one row
+          * sized by its content, so the canvas keeps the rest of the surface.
+          * Informational groups (Muestra, Resultado experimental) are not
+          * pressable; functional ones (Controles de imagen, Imagen, Estado de
+          * detección) fold into popovers coordinated by `openMenu`, and
+          * Buscar célula stays inline because a single input needs no popover.
+          */}
+        <div
+          className="cell-immersive-top-controls cell-immersive-controlbar"
+          role="group"
+          aria-label="Controles de la vista inmersiva"
+        >
+          {caseHeaderSlot ? (
+            <div className="cell-controlbar-group cell-controlbar-group--case">
+              {caseHeaderSlot}
+            </div>
+          ) : null}
+
+          {/* Portal target for "Controles de imagen" and "Imagen", whose state
+              stays inside CellImageViewer. */}
+          <div className="cell-controlbar-viewer-slot" ref={setControlBarSlot} />
+
+          <div className="cell-controlbar-group cell-gallery-filter-dropdown">
+            <button
+              type="button"
+              id="cell-gallery-heading"
+              ref={filterTriggerRef}
+              className="cell-gallery-filter-trigger cell-controlbar-trigger"
+              aria-haspopup="listbox"
+              aria-expanded={filterMenuOpen}
+              aria-controls="cell-gallery-filter-listbox"
+              onClick={() => (filterMenuOpen ? setFilterMenuOpen(false) : openFilterMenu())}
+              onKeyDown={handleFilterTriggerKeyDown}
+            >
+              <span className="cell-controlbar-label">Estado de detección</span>
+              <span className="cell-controlbar-value">
+                <span aria-hidden="true">
+                  {filterOptions.find((option) => option.key === activeFilterKey)?.symbol ?? '∑'}
+                </span>
+                <span>{activeFilterHeading}</span>
+              </span>
+            </button>
+            {filterMenuOpen && filterMenuPosition
+              ? createPortal(
+                <div
+                  ref={filterMenuRef}
+                  className="cell-gallery-filter-menu cell-controlbar-menu"
+                  style={{ top: filterMenuPosition.top, right: filterMenuPosition.right }}
+                >
+                  <ul
+                    id="cell-gallery-filter-listbox"
+                    className="cell-gallery-filter-listbox"
+                    role="listbox"
+                    aria-label={classificationRun ? 'Filtrar clasificación celular' : 'Filtrar por estado de revisión'}
+                    onKeyDown={handleFilterListboxKeyDown}
+                  >
+                    {filterOptions.map((option, index) => (
+                      <li key={option.key} role="presentation">
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={activeFilterKey === option.key}
+                          className={option.className}
+                          ref={(node) => {
+                            filterOptionRefs.current[index] = node;
+                          }}
+                          onClick={() => selectFilterOption(option.key)}
+                        >
+                          <span aria-hidden="true">{option.symbol}</span>
+                          <span>{option.label}</span>
+                          <strong>{option.count}</strong>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>,
+                document.body,
+              )
+              : null}
+          </div>
+
           <form className="cell-gallery-search" role="search" onSubmit={submitCellSearch}>
             <label htmlFor="cell-immersive-search">Buscar célula</label>
             <span aria-hidden="true">⌕</span>
@@ -1515,65 +1586,24 @@ export function CellReviewWorkspace({
             />
             <button type="submit">Ubicar</button>
           </form>
+
+          <div className="cell-controlbar-group cell-controlbar-group--readout">
+            <span className="cell-controlbar-label">Resultado experimental</span>
+            <strong className="cell-controlbar-value">
+              {classificationSummary
+                ? `${classificationSummary.classified_cell_count} / ${classificationSummary.eligible_cell_count}`
+                : `${run.detection_count} detecciones`}
+            </strong>
+          </div>
         </div>
 
         {!railCollapsed ? (
           <section id="cell-gallery-panel" className="cell-gallery-panel" role="tabpanel" aria-labelledby="cell-gallery-heading">
             <header className="cell-panel-heading">
-              <div className="cell-gallery-filter-dropdown">
-                <button
-                  type="button"
-                  id="cell-gallery-heading"
-                  ref={filterTriggerRef}
-                  className="cell-gallery-filter-trigger"
-                  aria-haspopup="listbox"
-                  aria-expanded={filterMenuOpen}
-                  aria-controls="cell-gallery-filter-listbox"
-                  onClick={() => (filterMenuOpen ? setFilterMenuOpen(false) : openFilterMenu())}
-                  onKeyDown={handleFilterTriggerKeyDown}
-                >
-                  <span aria-hidden="true">
-                    {filterOptions.find((option) => option.key === activeFilterKey)?.symbol ?? '∑'}
-                  </span>
-                  <span>{activeFilterHeading}</span>
-                </button>
-                {filterMenuOpen && filterMenuPosition
-                  ? createPortal(
-                    <div
-                      ref={filterMenuRef}
-                      className="cell-gallery-filter-menu"
-                      style={{ top: filterMenuPosition.top, right: filterMenuPosition.right }}
-                    >
-                      <ul
-                        id="cell-gallery-filter-listbox"
-                        className="cell-gallery-filter-listbox"
-                        role="listbox"
-                        aria-label={classificationRun ? 'Filtrar clasificación celular' : 'Filtrar por estado de revisión'}
-                        onKeyDown={handleFilterListboxKeyDown}
-                      >
-                        {filterOptions.map((option, index) => (
-                          <li key={option.key} role="presentation">
-                            <button
-                              type="button"
-                              role="option"
-                              aria-selected={activeFilterKey === option.key}
-                              className={option.className}
-                              ref={(node) => {
-                                filterOptionRefs.current[index] = node;
-                              }}
-                              onClick={() => selectFilterOption(option.key)}
-                            >
-                              <span aria-hidden="true">{option.symbol}</span>
-                              <span>{option.label}</span>
-                              <strong>{option.count}</strong>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>,
-                    document.body,
-                  )
-                  : null}
+              {/* The status filter itself is group D of the unified control bar
+                  (aria-labelledby still points at its trigger); only the
+                  gallery's own image label stays here. */}
+              <div className="cell-gallery-panel-label">
                 <p>{selectedImage?.safe_name ?? 'Sin imagen seleccionada'}</p>
               </div>
               <button type="button" onClick={collapseRail} aria-label="Ocultar carrusel de células">×</button>

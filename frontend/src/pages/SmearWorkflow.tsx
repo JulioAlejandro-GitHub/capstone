@@ -960,12 +960,12 @@ export function SmearAnalysisReadOnlyView({
     [updateSelectionQuery],
   );
 
-  return (
-    <section
-      className="page smear-workflow smear-workflow-history smear-workflow--immersive"
-      data-mode="history"
-      data-flow-state={flowPhaseFromStage(stage)}
-    >
+  /**
+   * One instance, two possible hosts: while the immersive results are on
+   * screen it becomes the "Muestra" group of the unified control bar; without
+   * them it keeps floating over the canvas as before.
+   */
+  const caseHeader = (
       <SmearCaseHeader
         subjectCode={workflow.subject.subject_code}
         sampleCode={workflow.sample.sample_code}
@@ -983,6 +983,16 @@ export function SmearAnalysisReadOnlyView({
         showStageBand={!hasResults}
         actions={<button type="button" onClick={onBack}>Volver al historial</button>}
       />
+  );
+  const immersiveResults = hasResults && workflow.detection_run;
+
+  return (
+    <section
+      className="page smear-workflow smear-workflow-history smear-workflow--immersive"
+      data-mode="history"
+      data-flow-state={flowPhaseFromStage(stage)}
+    >
+      {immersiveResults ? null : caseHeader}
       {!hasResults ? <section className="workflow-history-banner" aria-label="Modo de consulta">
         <strong>Vista histórica · Solo lectura</strong>
         <span>{run?.run_code ?? 'Análisis persistido'}</span>
@@ -1028,6 +1038,7 @@ export function SmearAnalysisReadOnlyView({
               onDetectionChange: selectHistoryDetection,
               onPredictionChange: selectHistoryPrediction,
             }}
+            caseHeaderSlot={caseHeader}
           />
         </section>
       ) : (
@@ -1133,12 +1144,11 @@ export function SmearWorkflow() {
     [failure?.step, snapshot.detectionRun, stage],
   );
 
-  return (
-    <section
-      className={`page smear-workflow${mode !== 'setup' ? ' smear-workflow--immersive' : ''}`}
-      data-mode={mode}
-      data-flow-state={controller.phase}
-    >
+  const immersiveReview = mode === 'review' && !recovering
+    && Boolean(identifiers.detectionRunId) && canReadCells
+    && (!identifiers.classificationRunId || canReadClassification);
+  /** Same single instance; in review mode it becomes the bar's "Muestra" group. */
+  const caseHeader = (
       <SmearCaseHeader
         subjectCode={patientCode}
         sampleCode={sampleCode}
@@ -1156,6 +1166,15 @@ export function SmearWorkflow() {
         showStageBand={mode === 'processing'}
         actions={mode === 'setup' ? <span className="workflow-context-status">{headerState}</span> : undefined}
       />
+  );
+
+  return (
+    <section
+      className={`page smear-workflow${mode !== 'setup' ? ' smear-workflow--immersive' : ''}`}
+      data-mode={mode}
+      data-flow-state={controller.phase}
+    >
+      {immersiveReview ? null : caseHeader}
 
       {recovering ? (
         <section className="workflow-recovering" aria-live="polite">
@@ -1224,6 +1243,7 @@ export function SmearWorkflow() {
                 onDetectionChange: controller.selectDetection,
                 onPredictionChange: controller.selectPrediction,
               }}
+              caseHeaderSlot={caseHeader}
             />
           ) : (
             <section className="workflow-review-unavailable" role="alert">

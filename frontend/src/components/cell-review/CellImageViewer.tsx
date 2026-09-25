@@ -6,8 +6,10 @@ import {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 import { api } from '../../services/api';
+import { useControlBarMenu } from './useControlBarMenu';
 import type {
   CellDetectionImage,
   CellDetectionSummary,
@@ -212,7 +214,22 @@ type CellImageViewerProps = {
   onPrevious: () => void;
   onNext: () => void;
   onNextUnreviewed: () => void;
+  /**
+   * Container of the unified control bar owned by CellReviewWorkspace. When it
+   * is set, the viewer keeps owning every piece of its state (zoom, viewCenter,
+   * showBoxes, showLabels, showGrid, overlayMode, activeTool, dragging) and only
+   * paints its toolbar and its image selector through a portal, as two folded
+   * groups of that bar. When it is null the viewer renders them inline exactly
+   * as before (legacy /revision page).
+   */
+  controlBarSlot?: HTMLElement | null;
+  /** Id of the single control-bar popover currently open, or null. */
+  openMenu?: string | null;
+  onMenuChange?: (id: string | null) => void;
 };
+
+export const VIEWER_TOOLS_MENU = 'viewer-tools';
+export const VIEWER_IMAGE_MENU = 'viewer-image';
 
 export const CellImageViewer = memo(function CellImageViewer({
   detectionRunId,
@@ -227,6 +244,9 @@ export const CellImageViewer = memo(function CellImageViewer({
   onPrevious,
   onNext,
   onNextUnreviewed,
+  controlBarSlot = null,
+  openMenu = null,
+  onMenuChange,
 }: CellImageViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [viewCenter, setViewCenter] = useState({
@@ -240,6 +260,29 @@ export const CellImageViewer = memo(function CellImageViewer({
   const [activeTool, setActiveTool] = useState<ViewerTool>('select');
   const [dragging, setDragging] = useState(false);
   const dragPoint = useRef<{ x: number; y: number } | null>(null);
+
+  const hoisted = Boolean(controlBarSlot);
+  const toolsTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const toolsMenuRef = useRef<HTMLDivElement | null>(null);
+  const imageTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const imageMenuRef = useRef<HTMLDivElement | null>(null);
+  const toolsMenuOpen = hoisted && openMenu === VIEWER_TOOLS_MENU;
+  const imageMenuOpen = hoisted && openMenu === VIEWER_IMAGE_MENU;
+  const closeMenu = useCallback(() => onMenuChange?.(null), [onMenuChange]);
+  const toolsAnchor = useControlBarMenu({
+    open: toolsMenuOpen,
+    triggerRef: toolsTriggerRef,
+    menuRef: toolsMenuRef,
+    onClose: closeMenu,
+    width: 320,
+  });
+  const imageAnchor = useControlBarMenu({
+    open: imageMenuOpen,
+    triggerRef: imageTriggerRef,
+    menuRef: imageMenuRef,
+    onClose: closeMenu,
+    width: 280,
+  });
 
   const loadOriginal = useCallback(
     (signal: AbortSignal) => api.getCellOriginalImageBlob(
@@ -375,6 +418,149 @@ export const CellImageViewer = memo(function CellImageViewer({
     onDetectionSelect(detection, false);
   }
 
+  /* Group C: the image <select>, unchanged (same value, same onImageChange). */
+  const imageSelector = (
+    <label className="cell-viewer-selector">
+      <span>Imagen</span>
+      <select
+        aria-label="Seleccionar imagen del frotis"
+        value={image.microscopy_image_id}
+        onChange={(event) => onImageChange(event.target.value)}
+      >
+        {images.map((item) => (
+          <option key={item.microscopy_image_id} value={item.microscopy_image_id}>
+            {item.sequence_number}. {item.safe_name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  /* Out of scope for the bar: stays inside the viewer's own toolbar node. */
+  const overlaySelector = classificationAnnotations.size ? (
+    <label className="cell-viewer-selector">
+      <span>Color de cajas</span>
+      <select
+        aria-label="Colorear bounding boxes por"
+        value={overlayMode}
+        onChange={(event) => setOverlayMode(event.target.value as OverlayColorMode)}
+      >
+        {(Object.keys(overlayModeLabel) as OverlayColorMode[]).map((mode) => (
+          <option key={mode} value={mode}>{overlayModeLabel[mode]}</option>
+        ))}
+      </select>
+    </label>
+  ) : null;
+
+  /* Group B: the toolbar itself. Identical markup and handlers; when hoisted it
+     only loses the image <select> (which becomes its own group) and is painted
+     inside the bar's popover instead of floating over the canvas. */
+  const toolbarNode = (
+    <div
+      className="cell-viewer-toolbar cell-viewer-controls"
+      role="toolbar"
+      aria-label="Controles del visor"
+    >
+      {hoisted && !overlaySelector ? null : (
+        <div className="cell-viewer-selectors">
+          {hoisted ? null : imageSelector}
+          {overlaySelector}
+        </div>
+      )}
+
+      <div className="cell-viewer-tool-group" role="group" aria-label="Herramienta activa">
+        <button
+          type="button"
+          className="cell-viewer-icon-button"
+          aria-label="Seleccionar bounding boxes"
+          title="Seleccionar bounding boxes"
+          aria-pressed={activeTool === 'select'}
+          onClick={() => chooseTool('select')}
+        >
+          <ViewerIcon name="select" />
+        </button>
+        <button
+          type="button"
+          className="cell-viewer-icon-button"
+          aria-label="Desplazar imagen (pan)"
+          title="Desplazar imagen (pan)"
+          aria-pressed={activeTool === 'pan'}
+          onClick={() => chooseTool('pan')}
+        >
+          <ViewerIcon name="pan" />
+        </button>
+        <span className="cell-viewer-tool-separator" aria-hidden="true" />
+        <button
+          type="button"
+          className="cell-viewer-icon-button"
+          aria-label="Acercar"
+          title="Acercar"
+          onClick={() => changeZoom(1)}
+        >
+          <ViewerIcon name="zoom-in" />
+        </button>
+        <button
+          type="button"
+          className="cell-viewer-icon-button"
+          aria-label="Alejar"
+          title="Alejar"
+          onClick={() => changeZoom(-1)}
+        >
+          <ViewerIcon name="zoom-out" />
+        </button>
+        <button
+          type="button"
+          className="cell-viewer-icon-button"
+          aria-label="Ajustar a pantalla"
+          title="Ajustar a pantalla"
+          onClick={fit}
+        >
+          <ViewerIcon name="fit" />
+        </button>
+        <button
+          type="button"
+          className="cell-viewer-icon-button"
+          aria-label="Restablecer vista"
+          title="Restablecer vista"
+          onClick={fit}
+        >
+          <ViewerIcon name="reset" />
+        </button>
+        <span className="cell-viewer-tool-separator" aria-hidden="true" />
+        <button
+          type="button"
+          className="cell-viewer-icon-button"
+          aria-label="Mostrar u ocultar bounding boxes"
+          title="Mostrar u ocultar bounding boxes"
+          aria-pressed={showBoxes}
+          onClick={() => setShowBoxes((value) => !value)}
+        >
+          <ViewerIcon name="boxes" />
+        </button>
+        <button
+          type="button"
+          className="cell-viewer-icon-button"
+          aria-label="Mostrar u ocultar etiquetas"
+          title="Mostrar u ocultar etiquetas"
+          aria-pressed={showLabels}
+          onClick={() => setShowLabels((value) => !value)}
+        >
+          <ViewerIcon name="labels" />
+        </button>
+        <button
+          type="button"
+          className="cell-viewer-icon-button"
+          aria-label="Mostrar u ocultar rejilla"
+          title="Mostrar u ocultar rejilla"
+          aria-pressed={showGrid}
+          onClick={() => setShowGrid((value) => !value)}
+        >
+          <ViewerIcon name="grid" />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <section
       className="cell-viewer-section"
@@ -391,133 +577,86 @@ export const CellImageViewer = memo(function CellImageViewer({
         </output>
       </header>
 
-      <div
-        className="cell-viewer-toolbar cell-viewer-controls"
-        role="toolbar"
-        aria-label="Controles del visor"
-      >
-        <div className="cell-viewer-selectors">
-          <label className="cell-viewer-selector">
-            <span>Imagen</span>
-            <select
-              aria-label="Seleccionar imagen del frotis"
-              value={image.microscopy_image_id}
-              onChange={(event) => onImageChange(event.target.value)}
-            >
-              {images.map((item) => (
-                <option key={item.microscopy_image_id} value={item.microscopy_image_id}>
-                  {item.sequence_number}. {item.safe_name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {classificationAnnotations.size ? (
-            <label className="cell-viewer-selector">
-              <span>Color de cajas</span>
-              <select
-                aria-label="Colorear bounding boxes por"
-                value={overlayMode}
-                onChange={(event) => setOverlayMode(event.target.value as OverlayColorMode)}
-              >
-                {(Object.keys(overlayModeLabel) as OverlayColorMode[]).map((mode) => (
-                  <option key={mode} value={mode}>{overlayModeLabel[mode]}</option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-        </div>
+      {hoisted ? null : toolbarNode}
 
-        <div className="cell-viewer-tool-group" role="group" aria-label="Herramienta activa">
-          <button
-            type="button"
-            className="cell-viewer-icon-button"
-            aria-label="Seleccionar bounding boxes"
-            title="Seleccionar bounding boxes"
-            aria-pressed={activeTool === 'select'}
-            onClick={() => chooseTool('select')}
+      {controlBarSlot ? createPortal(
+        <>
+          {/* Group "Controles de imagen": folded trigger, popover holds the toolbar. */}
+          <div className="cell-controlbar-group">
+            <button
+              type="button"
+              ref={toolsTriggerRef}
+              className="cell-controlbar-trigger"
+              aria-haspopup="dialog"
+              aria-expanded={toolsMenuOpen}
+              aria-controls="cell-viewer-tools-popover"
+              onClick={() => onMenuChange?.(toolsMenuOpen ? null : VIEWER_TOOLS_MENU)}
+            >
+              <span className="cell-controlbar-label">Controles de imagen</span>
+              <span className="cell-controlbar-value">
+                {activeTool === 'select' ? 'Selección' : 'Pan'} · {Math.round(zoom * 100)}%
+              </span>
+            </button>
+          </div>
+
+          {/* Group "Imagen NNN": folded trigger, popover holds the same select. */}
+          <div className="cell-controlbar-group">
+            <button
+              type="button"
+              ref={imageTriggerRef}
+              className="cell-controlbar-trigger"
+              aria-haspopup="dialog"
+              aria-expanded={imageMenuOpen}
+              aria-controls="cell-viewer-image-popover"
+              onClick={() => onMenuChange?.(imageMenuOpen ? null : VIEWER_IMAGE_MENU)}
+            >
+              <span className="cell-controlbar-label">Imagen</span>
+              <span className="cell-controlbar-value">
+                {image.sequence_number}. {image.safe_name}
+              </span>
+            </button>
+          </div>
+        </>,
+        controlBarSlot,
+      ) : null}
+
+      {toolsMenuOpen && toolsAnchor
+        ? createPortal(
+          <div
+            ref={toolsMenuRef}
+            id="cell-viewer-tools-popover"
+            className="cell-controlbar-menu cell-controlbar-menu--tools"
+            role="dialog"
+            aria-modal="false"
+            aria-label="Controles de imagen"
+            style={{ top: toolsAnchor.top, right: toolsAnchor.right }}
           >
-            <ViewerIcon name="select" />
-          </button>
-          <button
-            type="button"
-            className="cell-viewer-icon-button"
-            aria-label="Desplazar imagen (pan)"
-            title="Desplazar imagen (pan)"
-            aria-pressed={activeTool === 'pan'}
-            onClick={() => chooseTool('pan')}
+            {toolbarNode}
+            <output className="cell-controlbar-readout" aria-live="polite">
+              Zoom digital: {Math.round(zoom * 100)}%
+            </output>
+          </div>,
+          document.body,
+        )
+        : null}
+
+      {imageMenuOpen && imageAnchor
+        ? createPortal(
+          <div
+            ref={imageMenuRef}
+            id="cell-viewer-image-popover"
+            className="cell-controlbar-menu cell-controlbar-menu--image"
+            role="dialog"
+            aria-modal="false"
+            aria-label="Imagen del frotis"
+            style={{ top: imageAnchor.top, right: imageAnchor.right }}
           >
-            <ViewerIcon name="pan" />
-          </button>
-          <span className="cell-viewer-tool-separator" aria-hidden="true" />
-          <button
-            type="button"
-            className="cell-viewer-icon-button"
-            aria-label="Acercar"
-            title="Acercar"
-            onClick={() => changeZoom(1)}
-          >
-            <ViewerIcon name="zoom-in" />
-          </button>
-          <button
-            type="button"
-            className="cell-viewer-icon-button"
-            aria-label="Alejar"
-            title="Alejar"
-            onClick={() => changeZoom(-1)}
-          >
-            <ViewerIcon name="zoom-out" />
-          </button>
-          <button
-            type="button"
-            className="cell-viewer-icon-button"
-            aria-label="Ajustar a pantalla"
-            title="Ajustar a pantalla"
-            onClick={fit}
-          >
-            <ViewerIcon name="fit" />
-          </button>
-          <button
-            type="button"
-            className="cell-viewer-icon-button"
-            aria-label="Restablecer vista"
-            title="Restablecer vista"
-            onClick={fit}
-          >
-            <ViewerIcon name="reset" />
-          </button>
-          <span className="cell-viewer-tool-separator" aria-hidden="true" />
-          <button
-            type="button"
-            className="cell-viewer-icon-button"
-            aria-label="Mostrar u ocultar bounding boxes"
-            title="Mostrar u ocultar bounding boxes"
-            aria-pressed={showBoxes}
-            onClick={() => setShowBoxes((value) => !value)}
-          >
-            <ViewerIcon name="boxes" />
-          </button>
-          <button
-            type="button"
-            className="cell-viewer-icon-button"
-            aria-label="Mostrar u ocultar etiquetas"
-            title="Mostrar u ocultar etiquetas"
-            aria-pressed={showLabels}
-            onClick={() => setShowLabels((value) => !value)}
-          >
-            <ViewerIcon name="labels" />
-          </button>
-          <button
-            type="button"
-            className="cell-viewer-icon-button"
-            aria-label="Mostrar u ocultar rejilla"
-            title="Mostrar u ocultar rejilla"
-            aria-pressed={showGrid}
-            onClick={() => setShowGrid((value) => !value)}
-          >
-            <ViewerIcon name="grid" />
-          </button>
-        </div>
-      </div>
+            <div className="cell-viewer-selectors">{imageSelector}</div>
+          </div>,
+          document.body,
+        )
+        : null}
+
 
       <div
         className={`cell-image-viewport cell-image-tool-${activeTool}${dragging ? ' is-dragging' : ''}${activeTool === 'pan' && zoom > 1 ? ' can-pan' : ''}`}

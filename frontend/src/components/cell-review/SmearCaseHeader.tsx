@@ -124,6 +124,7 @@ export function SmearCaseHeader({
       <section className="workflow-case-card" data-expanded={expanded ? 'true' : 'false'}>
         <header className="cell-panel-heading">
           <h2>Muestra</h2>
+          {sampleCode ? <span className="workflow-case-card-code">{sampleCode}</span> : null}
           <button
             type="button"
             aria-expanded={expanded}
@@ -133,16 +134,25 @@ export function SmearCaseHeader({
             {expanded ? '−' : '+'}
           </button>
         </header>
-        {expanded ? (
-          <div className="workflow-case-card-expanded">
-            <dl className="cell-detail-facts">
-              {[...identityFacts, ...facts].map((fact) => (
-                <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>
-              ))}
-            </dl>
-          </div>
-        ) : null}
-        {actions ? <div className="workflow-header-actions">{actions}</div> : null}
+        {/*
+          * One wrapper for everything the "+" reveals. It is `display: contents`
+          * by default, so the floating card keeps the exact flow it always had;
+          * inside the unified control bar it becomes a single absolute drawer
+          * hanging under the "Muestra" group, so identity and "Volver al
+          * historial" cannot land on two overlapping layers.
+          */}
+        <div className="workflow-case-card-drawer">
+          {expanded ? (
+            <div className="workflow-case-card-expanded">
+              <dl className="cell-detail-facts">
+                {[...identityFacts, ...facts].map((fact) => (
+                  <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>
+                ))}
+              </dl>
+            </div>
+          ) : null}
+          {actions ? <div className="workflow-header-actions">{actions}</div> : null}
+        </div>
       </section>
     </>
   );
