@@ -1178,10 +1178,24 @@
 }
 
 .smear-analysis-immersive .cell-gallery-panel .cell-gallery-filter-trigger {
+  max-width: none;
   padding: 3px 4px;
   font-size: 8px;
   letter-spacing: .04em;
   text-transform: uppercase;
+}
+
+/* Only the active symbol and count fit at rail width; the full "Estado de
+   detección: <label>" text stays reachable via the trigger's `title` and via
+   this span for assistive tech (visually hidden, not display:none). */
+.smear-analysis-immersive .cell-gallery-panel .cell-gallery-filter-trigger .cell-controlbar-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .smear-analysis-immersive .cell-gallery-panel .cell-panel-heading p {
@@ -1560,61 +1574,18 @@
   text-shadow: 0 0 8px rgba(164, 230, 255, .45);
 }
 
+/* Desktop reaches this content through the "Resultado experimental" popover
+   (.cell-controlbar-menu--result) instead: the section stays mounted only for
+   the mobile "Resultado" tab, which shows it via the
+   [data-mobile-tab="result"] rules below (own position/display, independent
+   of this default). */
 .smear-analysis-immersive .cell-experimental-summary {
-  position: absolute;
-  z-index: 32;
-  top: auto;
-  right: auto;
-  bottom: 24px;
-  left: 216px;
-  display: block;
-  width: 230px;
-  height: auto;
-  max-height: calc(100% - 150px);
-  overflow: hidden;
-  border-radius: 6px;
-  padding: 0;
-}
-
-.smear-analysis-immersive .cell-result-toggle {
-  display: flex;
-  width: 100%;
-  min-height: 36px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  border: 0;
-  background: transparent;
-  color: var(--smear-primary);
-  cursor: pointer;
-  padding: 7px 10px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 8px;
-  text-align: left;
-  text-transform: uppercase;
-}
-
-.smear-analysis-immersive .cell-result-toggle strong {
-  color: #fff;
-  white-space: nowrap;
+  display: none;
 }
 
 .smear-analysis-immersive .cell-result-content {
-  display: none;
   overflow-y: auto;
   padding: 12px;
-}
-
-.smear-analysis-immersive .cell-experimental-summary.is-expanded {
-  width: min(720px, calc(100% - 520px));
-  min-width: 520px;
-}
-
-.smear-analysis-immersive .cell-experimental-summary.is-expanded .cell-result-content {
-  display: grid;
-  grid-template-columns: minmax(190px, .9fr) minmax(300px, 1.4fr);
-  gap: 12px;
-  max-height: min(420px, calc(100dvh - 290px));
 }
 
 .smear-analysis-immersive .cell-result-content h2 {
@@ -2030,8 +2001,7 @@
   .smear-analysis-immersive .cell-viewer-minimap,
   .smear-analysis-immersive .cell-viewer-overlay-footer,
   .smear-analysis-immersive .cell-panel-restore,
-  .smear-analysis-immersive .cell-review-progress,
-  .smear-analysis-immersive .cell-result-toggle {
+  .smear-analysis-immersive .cell-review-progress {
     display: none;
   }
 
@@ -2308,25 +2278,7 @@
   padding-left: 4px;
 }
 
-/* Group D keeps its own trigger classes; inside the bar it drops the full-width
-   grid and the trailing caret the rail heading used. */
-.smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-filter-dropdown {
-  display: flex;
-  position: static;
-}
-
-.smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-filter-trigger {
-  width: auto;
-  color: inherit;
-  font-size: inherit;
-  line-height: inherit;
-}
-
-.smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-filter-trigger::after {
-  content: none;
-}
-
-/* Group E: the same form, shrunk to a bar-sized inline field. */
+/* Cell search: the same form, shrunk to a bar-sized inline field. */
 .smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-search {
   flex: 0 0 auto;
   width: 196px;
@@ -2418,8 +2370,8 @@
   display: none;
 }
 
-/* The gallery rail heading keeps only its image label: the status filter is
-   group D of the bar now. */
+/* The gallery rail heading's image label, next to the detection-status filter
+   dropdown and the collapse button. */
 .smear-analysis-immersive .cell-gallery-panel-label {
   display: grid;
   min-width: 0;
@@ -2457,6 +2409,89 @@
 
 .cell-controlbar-menu--tools { width: 320px; }
 .cell-controlbar-menu--image { width: 280px; }
+
+/* Group "Resultado experimental": the popover holds the same markup that used
+   to live in the standalone `#cell-result-panel` section (metrics grid +
+   automatic/reviewed comparison), so its rules are repeated here for the
+   portaled context exactly like the tools/image popovers above. */
+.cell-controlbar-menu--result {
+  display: grid;
+  width: min(720px, calc(100vw - 24px));
+  max-height: min(560px, calc(100vh - 48px));
+  overflow-y: auto;
+  border: 1px solid rgba(164, 230, 255, .17);
+  border-radius: 10px;
+  background: rgba(11, 19, 38, .96);
+  padding: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.cell-controlbar-menu--result .cell-result-content {
+  display: grid;
+  grid-template-columns: minmax(190px, .9fr) minmax(300px, 1.4fr);
+  gap: 12px;
+}
+
+.cell-controlbar-menu--result .cell-result-content h2 {
+  margin: 3px 0 7px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.cell-controlbar-menu--result .cell-result-content p {
+  margin: 0;
+  color: var(--smear-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.cell-controlbar-menu--result .cell-result-content dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+}
+
+.cell-controlbar-menu--result .cell-result-content dl > div {
+  min-width: 0;
+  border: 1px solid rgba(164, 230, 255, .1);
+  border-radius: 4px;
+  background: rgba(6, 14, 32, .52);
+  padding: 6px;
+}
+
+.cell-controlbar-menu--result .cell-result-content dt {
+  color: var(--smear-muted);
+  font-size: 7px;
+}
+
+.cell-controlbar-menu--result .cell-result-content dd {
+  margin: 2px 0 0;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.cell-controlbar-menu--result .cell-result-content .cell-summary-comparison {
+  grid-column: 1 / -1;
+  border-top: 1px solid rgba(164, 230, 255, .12);
+  color: var(--smear-muted);
+  padding-top: 8px;
+  font-size: 8px;
+}
+
+@media (max-width: 440px) {
+  .cell-controlbar-menu--result .cell-result-content {
+    grid-template-columns: 1fr;
+  }
+
+  .cell-controlbar-menu--result .cell-result-content dl {
+    grid-template-columns: 1fr 1fr;
+  }
+}
 
 .cell-controlbar-menu .cell-viewer-controls {
   display: grid;

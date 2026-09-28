@@ -349,7 +349,6 @@ export function CellReviewWorkspace({
   const [classificationReviewError, setClassificationReviewError] = useState('');
   const [auditOpen, setAuditOpen] = useState(false);
   const [focusRequest, setFocusRequest] = useState(0);
-  const [resultExpanded, setResultExpanded] = useState(false);
   const [detailCollapsed, setDetailCollapsed] = useState(() => (
     typeof window !== 'undefined' && window.matchMedia('(max-width: 1200px)').matches
   ));
@@ -383,6 +382,20 @@ export function CellReviewWorkspace({
     menuRef: filterMenuRef,
     onClose: closeFilterMenu,
     width: 280,
+  });
+  const resultMenuOpen = openMenu === 'result';
+  const setResultMenuOpen = useCallback((next: boolean) => {
+    setOpenMenu((current) => (next ? 'result' : current === 'result' ? null : current));
+  }, []);
+  const resultTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const resultMenuRef = useRef<HTMLDivElement | null>(null);
+  const closeResultMenu = useCallback(() => setResultMenuOpen(false), [setResultMenuOpen]);
+  const resultMenuPosition = useControlBarMenu({
+    open: resultMenuOpen,
+    triggerRef: resultTriggerRef,
+    menuRef: resultMenuRef,
+    onClose: closeResultMenu,
+    width: 720,
   });
   const cardRefs = useRef(new Map<string, HTMLButtonElement>());
   const mobileTabRefs = useRef(new Map<MobileTab, HTMLButtonElement>());
@@ -1026,6 +1039,10 @@ export function CellReviewWorkspace({
     setFilterMenuOpen(true);
   }
 
+  function openResultMenu() {
+    setResultMenuOpen(true);
+  }
+
   function selectFilterOption(key: string) {
     if (classificationRun) setClassificationFilter(key as ClassificationFilter);
     else setFilter(key as CellReviewFilter);
@@ -1410,6 +1427,75 @@ export function CellReviewWorkspace({
   const activeFilterHeading = classificationRun
     ? `${classificationFilterLabel[classificationFilter]} (${galleryDetections.length})`
     : `Células (${detectionTotal})`;
+  const activeFilterOption = filterOptions.find((option) => option.key === activeFilterKey);
+
+  // Shared body of the experimental-result summary: rendered inside the
+  // desktop popover (Change 1) and, unconditionally, inside the mobile
+  // "Resultado" tabpanel, which keeps depending on this exact markup via
+  // `data-mobile-tab="result"` CSS. `headingId` is parameterized so both
+  // instances can coexist in the DOM without id collisions.
+  function renderResultBody(headingId: string) {
+    if (!run) return null;
+    return (
+      <div className="cell-result-content">
+        <div>
+          <p className="cell-workspace-kicker">Resultado experimental del análisis</p>
+          <h2 id={headingId}>
+            {classificationSummary
+              ? classificationSummary.outcome === 'suspicious_cells_detected'
+                ? 'Células candidatas sospechosas detectadas'
+                : classificationSummary.outcome === 'no_suspicious_cells_detected'
+                  ? 'Sin candidatos clasificados como parasitized'
+                  : 'Resultado experimental inconcluso'
+              : 'Detección completada sin clasificación'}
+          </h2>
+          <p>
+            {classificationSummary
+              ? classificationSummary.outcome === 'suspicious_cells_detected'
+                ? 'Se identificaron células candidatas clasificadas como parasitized. El resultado requiere revisión experta y no constituye un diagnóstico clínico.'
+                : classificationSummary.outcome === 'no_suspicious_cells_detected'
+                  ? 'No se identificaron células candidatas clasificadas como parasitized dentro del conjunto procesado. Esto no descarta malaria ni reemplaza la revisión experta.'
+                  : 'El procesamiento no permite establecer un resultado experimental completo. Revise los fallos, advertencias y células próximas al threshold.'
+              : 'Las bounding boxes y crops están disponibles; esta ejecución no contiene una clasificación IA persistida.'}
+          </p>
+        </div>
+        <dl>
+          <div><dt>Imágenes</dt><dd>{run.image_count}</dd></div>
+          <div><dt>Detecciones</dt><dd>{run.detection_count}</dd></div>
+          <div><dt>Revisadas</dt><dd>{run.reviewed_count}</dd></div>
+          <div><dt>Pendientes</dt><dd>{counts.unreviewed}</dd></div>
+          {classificationSummary ? (
+            <>
+              <div><dt>Elegibles</dt><dd>{classificationSummary.eligible_cell_count}</dd></div>
+              <div><dt>Clasificadas</dt><dd>{classificationSummary.classified_cell_count}</dd></div>
+              <div><dt>Candidatos parasitized</dt><dd>{classificationSummary.parasitized_candidate_count}</dd></div>
+              <div><dt>Candidatos uninfected</dt><dd>{classificationSummary.uninfected_candidate_count}</dd></div>
+              <div><dt>Próximas al threshold</dt><dd>{classificationSummary.near_threshold_count}</dd></div>
+              <div><dt>Fallidas</dt><dd>{classificationSummary.failed_prediction_count}</dd></div>
+              <div><dt>Fracción experimental</dt><dd>{classificationSummary.parasitized_candidate_fraction == null ? '—' : `${(classificationSummary.parasitized_candidate_fraction * 100).toFixed(1)} %`}</dd></div>
+              <div><dt>Probabilidad máxima</dt><dd>{optionalMetric(classificationSummary.maximum_probability_parasitized)}</dd></div>
+            </>
+          ) : null}
+          {classificationRun ? (
+            <>
+              <div><dt>Modelo</dt><dd>{classificationRun.model_name} {classificationRun.model_version ?? ''}</dd></div>
+              <div><dt>Threshold publicado</dt><dd>{optionalMetric(classificationRun.model_snapshot.threshold)} · {classificationRun.model_snapshot.threshold_source}</dd></div>
+            </>
+          ) : null}
+        </dl>
+        {classificationSummary ? (
+          <div className="cell-summary-comparison">
+            <strong>Resumen automático ≠ Resumen revisado</strong>
+            <span>
+              Automático: {classificationSummary.outcome.replaceAll('_', ' ')}
+              {' · '}
+              Revisado: {classificationSummary.reviewed_summary?.outcome?.replaceAll('_', ' ') ?? 'sin revisión suficiente'}
+            </span>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <AuthenticatedImageCacheProvider>
@@ -1447,7 +1533,6 @@ export function CellReviewWorkspace({
               setMobileTab(id);
               if (id === 'detail') setDetailCollapsed(false);
               if (id === 'cells') setRailCollapsed(false);
-              if (id === 'result') setResultExpanded(true);
             }}
           >
             {label}
@@ -1493,12 +1578,16 @@ export function CellReviewWorkspace({
         </div>
 
         {/*
-          * Unified control bar: the six groups of the immersive view in one row
-          * sized by its content, so the canvas keeps the rest of the surface.
-          * Informational groups (Muestra, Resultado experimental) are not
-          * pressable; functional ones (Controles de imagen, Imagen, Estado de
-          * detección) fold into popovers coordinated by `openMenu`, and
-          * Buscar célula stays inline because a single input needs no popover.
+          * Unified control bar: five groups in one row sized by its content, so
+          * the canvas keeps the rest of the surface. "Muestra" is informational;
+          * "Controles de imagen" and "Imagen" fold into popovers coordinated by
+          * `openMenu` (state owned here, read/written by CellImageViewer);
+          * "Buscar célula" stays inline because a single input needs no
+          * popover; "Resultado experimental" shows its N/N readout inline and
+          * additionally opens the full summary in a popover on the same
+          * `openMenu`. The detection-status filter (formerly a sixth group
+          * here) now lives in the gallery rail's own heading, next to its
+          * collapse button, since that is what it filters.
           */}
         <div
           className="cell-immersive-top-controls cell-immersive-controlbar"
@@ -1515,65 +1604,6 @@ export function CellReviewWorkspace({
               stays inside CellImageViewer. */}
           <div className="cell-controlbar-viewer-slot" ref={setControlBarSlot} />
 
-          <div className="cell-controlbar-group cell-gallery-filter-dropdown">
-            <button
-              type="button"
-              id="cell-gallery-heading"
-              ref={filterTriggerRef}
-              className="cell-gallery-filter-trigger cell-controlbar-trigger"
-              aria-haspopup="listbox"
-              aria-expanded={filterMenuOpen}
-              aria-controls="cell-gallery-filter-listbox"
-              onClick={() => (filterMenuOpen ? setFilterMenuOpen(false) : openFilterMenu())}
-              onKeyDown={handleFilterTriggerKeyDown}
-            >
-              <span className="cell-controlbar-label">Estado de detección</span>
-              <span className="cell-controlbar-value">
-                <span aria-hidden="true">
-                  {filterOptions.find((option) => option.key === activeFilterKey)?.symbol ?? '∑'}
-                </span>
-                <span>{activeFilterHeading}</span>
-              </span>
-            </button>
-            {filterMenuOpen && filterMenuPosition
-              ? createPortal(
-                <div
-                  ref={filterMenuRef}
-                  className="cell-gallery-filter-menu cell-controlbar-menu"
-                  style={{ top: filterMenuPosition.top, right: filterMenuPosition.right }}
-                >
-                  <ul
-                    id="cell-gallery-filter-listbox"
-                    className="cell-gallery-filter-listbox"
-                    role="listbox"
-                    aria-label={classificationRun ? 'Filtrar clasificación celular' : 'Filtrar por estado de revisión'}
-                    onKeyDown={handleFilterListboxKeyDown}
-                  >
-                    {filterOptions.map((option, index) => (
-                      <li key={option.key} role="presentation">
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={activeFilterKey === option.key}
-                          className={option.className}
-                          ref={(node) => {
-                            filterOptionRefs.current[index] = node;
-                          }}
-                          onClick={() => selectFilterOption(option.key)}
-                        >
-                          <span aria-hidden="true">{option.symbol}</span>
-                          <span>{option.label}</span>
-                          <strong>{option.count}</strong>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>,
-                document.body,
-              )
-              : null}
-          </div>
-
           <form className="cell-gallery-search" role="search" onSubmit={submitCellSearch}>
             <label htmlFor="cell-immersive-search">Buscar célula</label>
             <span aria-hidden="true">⌕</span>
@@ -1587,24 +1617,108 @@ export function CellReviewWorkspace({
             <button type="submit">Ubicar</button>
           </form>
 
-          <div className="cell-controlbar-group cell-controlbar-group--readout">
-            <span className="cell-controlbar-label">Resultado experimental</span>
-            <strong className="cell-controlbar-value">
-              {classificationSummary
-                ? `${classificationSummary.classified_cell_count} / ${classificationSummary.eligible_cell_count}`
-                : `${run.detection_count} detecciones`}
-            </strong>
+          <div className="cell-controlbar-group">
+            <button
+              type="button"
+              ref={resultTriggerRef}
+              className="cell-controlbar-trigger cell-controlbar-group--readout"
+              aria-haspopup="dialog"
+              aria-expanded={resultMenuOpen}
+              aria-controls="cell-result-popover"
+              onClick={() => (resultMenuOpen ? setResultMenuOpen(false) : openResultMenu())}
+            >
+              <span className="cell-controlbar-label">Resultado experimental</span>
+              <strong className="cell-controlbar-value">
+                {classificationSummary
+                  ? `${classificationSummary.classified_cell_count} / ${classificationSummary.eligible_cell_count}`
+                  : `${run.detection_count} detecciones`}
+              </strong>
+            </button>
+            {resultMenuOpen && resultMenuPosition
+              ? createPortal(
+                <div
+                  ref={resultMenuRef}
+                  id="cell-result-popover"
+                  className="cell-controlbar-menu cell-controlbar-menu--result"
+                  role="dialog"
+                  aria-modal="false"
+                  aria-label="Resultado experimental"
+                  style={{ top: resultMenuPosition.top, right: resultMenuPosition.right }}
+                >
+                  {renderResultBody('cell-experimental-summary-heading-popover')}
+                </div>,
+                document.body,
+              )
+              : null}
           </div>
         </div>
 
         {!railCollapsed ? (
           <section id="cell-gallery-panel" className="cell-gallery-panel" role="tabpanel" aria-labelledby="cell-gallery-heading">
             <header className="cell-panel-heading">
-              {/* The status filter itself is group D of the unified control bar
-                  (aria-labelledby still points at its trigger); only the
-                  gallery's own image label stays here. */}
               <div className="cell-gallery-panel-label">
                 <p>{selectedImage?.safe_name ?? 'Sin imagen seleccionada'}</p>
+              </div>
+              {/* Detection-status filter: moved here from the top control bar
+                  since it filters this gallery. The rail is ~120px wide, so the
+                  trigger shows only the active symbol and count; the full label
+                  lives in the popover options and in `title` for mouse hover. */}
+              <div className="cell-controlbar-group cell-gallery-filter-dropdown">
+                <button
+                  type="button"
+                  id="cell-gallery-heading"
+                  ref={filterTriggerRef}
+                  className="cell-gallery-filter-trigger cell-controlbar-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded={filterMenuOpen}
+                  aria-controls="cell-gallery-filter-listbox"
+                  title={`Estado de detección: ${activeFilterHeading}`}
+                  onClick={() => (filterMenuOpen ? setFilterMenuOpen(false) : openFilterMenu())}
+                  onKeyDown={handleFilterTriggerKeyDown}
+                >
+                  <span className="cell-controlbar-label">Estado de detección</span>
+                  <span className="cell-controlbar-value">
+                    <span aria-hidden="true">{activeFilterOption?.symbol ?? '∑'}</span>
+                    <span>{activeFilterOption?.count ?? 0}</span>
+                  </span>
+                </button>
+                {filterMenuOpen && filterMenuPosition
+                  ? createPortal(
+                    <div
+                      ref={filterMenuRef}
+                      className="cell-gallery-filter-menu cell-controlbar-menu"
+                      style={{ top: filterMenuPosition.top, right: filterMenuPosition.right }}
+                    >
+                      <ul
+                        id="cell-gallery-filter-listbox"
+                        className="cell-gallery-filter-listbox"
+                        role="listbox"
+                        aria-label={classificationRun ? 'Filtrar clasificación celular' : 'Filtrar por estado de revisión'}
+                        onKeyDown={handleFilterListboxKeyDown}
+                      >
+                        {filterOptions.map((option, index) => (
+                          <li key={option.key} role="presentation">
+                            <button
+                              type="button"
+                              role="option"
+                              aria-selected={activeFilterKey === option.key}
+                              className={option.className}
+                              ref={(node) => {
+                                filterOptionRefs.current[index] = node;
+                              }}
+                              onClick={() => selectFilterOption(option.key)}
+                            >
+                              <span aria-hidden="true">{option.symbol}</span>
+                              <span>{option.label}</span>
+                              <strong>{option.count}</strong>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>,
+                    document.body,
+                  )
+                  : null}
               </div>
               <button type="button" onClick={collapseRail} aria-label="Ocultar carrusel de células">×</button>
             </header>
@@ -1723,83 +1837,19 @@ export function CellReviewWorkspace({
           </button>
         )}
 
+        {/* Desktop no longer shows this section (it is hidden by CSS above the
+            mobile breakpoint): the full result is now reached through the
+            "Resultado experimental" popover in the top control bar. It stays
+            mounted, unexpandable, purely so the mobile "Resultado" tab (which
+            targets it by id and shows it via `data-mobile-tab="result"` CSS,
+            independent of any popover state) keeps working. */}
         <section
           id="cell-result-panel"
-          className={`cell-experimental-summary cell-summary-panel${resultExpanded ? ' is-expanded' : ''}`}
+          className="cell-experimental-summary cell-summary-panel"
           role="tabpanel"
           aria-labelledby="cell-experimental-summary-heading"
         >
-          <button
-            type="button"
-            className="cell-result-toggle"
-            aria-expanded={resultExpanded}
-            aria-controls="cell-result-content"
-            onClick={() => setResultExpanded((value) => !value)}
-          >
-            <span>Resultado experimental</span>
-            <strong>
-              {classificationSummary
-                ? `${classificationSummary.classified_cell_count} / ${classificationSummary.eligible_cell_count}`
-                : `${run.detection_count} detecciones`}
-            </strong>
-          </button>
-          <div id="cell-result-content" className="cell-result-content">
-            <div>
-              <p className="cell-workspace-kicker">Resultado experimental del análisis</p>
-              <h2 id="cell-experimental-summary-heading">
-                {classificationSummary
-                  ? classificationSummary.outcome === 'suspicious_cells_detected'
-                    ? 'Células candidatas sospechosas detectadas'
-                    : classificationSummary.outcome === 'no_suspicious_cells_detected'
-                      ? 'Sin candidatos clasificados como parasitized'
-                      : 'Resultado experimental inconcluso'
-                  : 'Detección completada sin clasificación'}
-              </h2>
-              <p>
-                {classificationSummary
-                  ? classificationSummary.outcome === 'suspicious_cells_detected'
-                    ? 'Se identificaron células candidatas clasificadas como parasitized. El resultado requiere revisión experta y no constituye un diagnóstico clínico.'
-                    : classificationSummary.outcome === 'no_suspicious_cells_detected'
-                      ? 'No se identificaron células candidatas clasificadas como parasitized dentro del conjunto procesado. Esto no descarta malaria ni reemplaza la revisión experta.'
-                      : 'El procesamiento no permite establecer un resultado experimental completo. Revise los fallos, advertencias y células próximas al threshold.'
-                  : 'Las bounding boxes y crops están disponibles; esta ejecución no contiene una clasificación IA persistida.'}
-              </p>
-            </div>
-            <dl>
-              <div><dt>Imágenes</dt><dd>{run.image_count}</dd></div>
-              <div><dt>Detecciones</dt><dd>{run.detection_count}</dd></div>
-              <div><dt>Revisadas</dt><dd>{run.reviewed_count}</dd></div>
-              <div><dt>Pendientes</dt><dd>{counts.unreviewed}</dd></div>
-              {classificationSummary ? (
-                <>
-                  <div><dt>Elegibles</dt><dd>{classificationSummary.eligible_cell_count}</dd></div>
-                  <div><dt>Clasificadas</dt><dd>{classificationSummary.classified_cell_count}</dd></div>
-                  <div><dt>Candidatos parasitized</dt><dd>{classificationSummary.parasitized_candidate_count}</dd></div>
-                  <div><dt>Candidatos uninfected</dt><dd>{classificationSummary.uninfected_candidate_count}</dd></div>
-                  <div><dt>Próximas al threshold</dt><dd>{classificationSummary.near_threshold_count}</dd></div>
-                  <div><dt>Fallidas</dt><dd>{classificationSummary.failed_prediction_count}</dd></div>
-                  <div><dt>Fracción experimental</dt><dd>{classificationSummary.parasitized_candidate_fraction == null ? '—' : `${(classificationSummary.parasitized_candidate_fraction * 100).toFixed(1)} %`}</dd></div>
-                  <div><dt>Probabilidad máxima</dt><dd>{optionalMetric(classificationSummary.maximum_probability_parasitized)}</dd></div>
-                </>
-              ) : null}
-              {classificationRun ? (
-                <>
-                  <div><dt>Modelo</dt><dd>{classificationRun.model_name} {classificationRun.model_version ?? ''}</dd></div>
-                  <div><dt>Threshold publicado</dt><dd>{optionalMetric(classificationRun.model_snapshot.threshold)} · {classificationRun.model_snapshot.threshold_source}</dd></div>
-                </>
-              ) : null}
-            </dl>
-            {classificationSummary ? (
-              <div className="cell-summary-comparison">
-                <strong>Resumen automático ≠ Resumen revisado</strong>
-                <span>
-                  Automático: {classificationSummary.outcome.replaceAll('_', ' ')}
-                  {' · '}
-                  Revisado: {classificationSummary.reviewed_summary?.outcome?.replaceAll('_', ' ') ?? 'sin revisión suficiente'}
-                </span>
-              </div>
-            ) : null}
-          </div>
+          {renderResultBody('cell-experimental-summary-heading')}
         </section>
 
         <ReviewProgressRing run={run} classificationRun={classificationRun} />
