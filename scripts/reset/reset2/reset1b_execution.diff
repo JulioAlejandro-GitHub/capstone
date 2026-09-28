@@ -1,0 +1,50 @@
+--- retained_execution_copy/rehearsal.py
++++ scripts/reset/reset1b/rehearsal.py
+@@ -236,10 +236,18 @@
+  cache=ModelCache(maxsize=100)
+  for r in m['tables']['model_versions']['ids']:cache._items[(r['id'],'rehearsal')]=object()
+  with engine.connect() as c:
+-  tx=c.begin()
+-  try:
+-   assert_clone(c,cfg);deferred,success=reset(c,baseline,keep);fs.quarantine();assert_clone(c,cfg);tx.commit()
+-  except BaseException:tx.rollback();fs.restore();raise
++  tx=c.begin();commit_requested=False
++  try:
++   assert_clone(c,cfg);deferred,success=reset(c,baseline,keep);fs.quarantine();assert_clone(c,cfg)
++   commit_requested=True;tx.commit()
++  except BaseException:
++   if commit_requested:
++    # A lost commit acknowledgement is not proof of rollback. Keep copies
++    # quarantined for reconciliation against a fresh database connection.
++    fs.write_journal('COMMIT_UNCERTAIN')
++   else:
++    tx.rollback();fs.restore()
++   raise
+  for mid in deferred.pending:cache.invalidate_model_version(mid)
+  require(not cache._items,'STALE_MODEL_CACHE');fs.write_journal('SQL_COMMITTED')
+  report['committed_reset']=success;report['cache']={'versions_invalidated':len(deferred.pending),'remaining_entries':len(cache._items),'only_disposable_cache_used':True}
+--- retained_execution_copy/run.py
++++ scripts/reset/reset1b/run.py
+@@ -38,6 +38,11 @@
+  with destination.open('wb') as out:
+   run(['docker','exec','--user','root','-e','PYTHONPATH='+cfg['backend_work']+':/app/malaria_dl_local_project:/app','capstone_backend','python',cfg['backend_work']+'/'+script],stdout=out)
+  destination.chmod(0o600)
++
++def production_guard(cfg,work):
++ result=subprocess.run(['docker','exec','-i',cfg['container'],'psql','-X','-v','ON_ERROR_STOP=1','-U',cfg['user'],'-d',cfg['database']],input=(SCRIPTS/'production_blocked.sql').read_text(),text=True,capture_output=True)
++ check(result.returncode==3 and 'RESET1B_PRODUCTION_NOT_AUTHORIZED' in result.stderr,'PRODUCTION_BARRIER_FAILED')
++ write_json(work/'production_guard.json',{'exit':result.returncode,'before_dml_rejection':True,'message':result.stderr.strip(),'target':'isolated clone'})
+ 
+ def restore(cfg,work,manifest):
+  dump=Path(manifest['backup']['dump'])
+@@ -89,8 +94,10 @@
+   cfg=json.loads((work/'target.json').read_text());info=verify(cfg)
+   if a.stage=='classify':backend(cfg,'files.py',work/'files.json')
+   elif a.stage=='rehearse':
++   run([sys.executable,str(SCRIPTS/'verify_commit_boundary.py'),'--output',str(work/'commit_boundary.json')])
+    backend(cfg,'rehearsal.py',work/'rehearsal.json')
+    backend(cfg,'verify_final.py',work/'verify_final.json')
++   production_guard(cfg,work)
+   elif a.stage=='finish':
+    backend(cfg,'source_snapshot.py',work/'source_after.json')
+    before=json.loads((work/'source_before.json').read_text());after=json.loads((work/'source_after.json').read_text())
