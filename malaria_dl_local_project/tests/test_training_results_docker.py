@@ -68,7 +68,11 @@ def test_real_epoch_final_result_and_verification(real_docker):
     assert result.n_samples==2 and result.to_dict()==events[-2].to_dict()['payload']
     assert all(s['sample'].startswith('val/') for s in samples)
     current=repo.session(ctx.run_id)
+    seal=current['completion']['training_completion']
+    assert seal['schema_version']=='training_completion_v1' and seal['run_id']==str(ctx.run_id)
+    assert seal['evaluation_event_id']==str(events[-2].event_id)
     proof=verify_session(repo,current,keras_loader)
+    assert proof['training_completion_hash']==digest(seal)
     assert proof['records_hash']==events[-1].payload['records_hash']==digest(repo.records(ctx.run_id))
     repo.finish(ctx.run_id,ctx.owner,'verified',proof)
     assert repo.session(ctx.run_id)['state']=='verified'

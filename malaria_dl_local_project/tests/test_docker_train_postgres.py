@@ -91,7 +91,8 @@ def test_real_worker_train_completed_then_verified(docker):
     assert ctx.dataset_version_id == x.pg.ctx.dataset_version_id
     assert ctx.contract_hash == x.pg.ctx.contract_hash
     assert x.emitters[0].closed
-    assert current['completion'] == events[-1].to_dict()['payload']
+    assert {k:v for k,v in current['completion'].items() if k != 'training_completion'} == events[-1].to_dict()['payload']
+    assert current['completion']['training_completion']['run_id'] == str(s['run_id'])
     assert current['completion']['records_hash'] == x.hashes[-1] == digest(x.repo.records(s['run_id']))
     proof = verify_session(x.repo, current, lambda *a: None)
     x.repo.finish(s['run_id'], s['owner'], 'verified', proof)
@@ -215,7 +216,10 @@ def test_resume_reconciles_old_stream_and_new_run_starts_one(docker, monkeypatch
                                        check=lambda *a: None, launch=launch, loader=lambda *a: None)
     assert code == 0 and len(launches) == 1
     assert x.repo.result_events(launches[0]['run_id'])[0].sequence == 1
-    assert x.repo.session(launches[0]['run_id'])['state'] == 'verified'
+    resumed = x.repo.session(launches[0]['run_id'])
+    assert resumed['state'] == 'verified'
+    assert resumed['completion']['training_completion']['run_id'] == str(launches[0]['run_id'])
+    assert resumed['completion']['training_completion']['run_id'] != str(s['run_id'])
     assert x.repo.result_events(s['run_id']) == previous_events
 
 
@@ -237,6 +241,7 @@ def test_controlled_uses_same_worker_and_recover_does_not_restart(docker, monkey
     result = controlled.execute_one(repo, **args, check=lambda *a: None, launch=x.launch, loader=lambda *a: None)
     assert result['state'] == 'verified' and result['launched']
     assert result['run_id'] != str(x.session['run_id'])
+    assert repo.session(result['run_id'])['completion']['training_completion']['run_id'] == result['run_id']
     events = repo.result_events(result['run_id'])
     assert events[0].sequence == 1 and events[-1].event_type is E.TRAINING_COMPLETED
     again = controlled.execute_one(repo, **args, launch=lambda *a: pytest.fail('relaunch'))

@@ -209,6 +209,10 @@ def test_native_agent_worker_train_journal_release(native_http,tmp_path,monkeypa
     if failure=='none':
         assert result.returncode==0,result.stderr.decode()
         assert current['state']=='verified' and dbjob['state']=='released'
+        seal=current['completion']['training_completion']
+        assert seal['schema_version']=='training_completion_v1' and seal['run_id']==str(job['run_id'])
+        assert seal['evaluation_event_id']==str(events[-2].event_id)
+        assert current['verification']['training_completion_hash']==digest(seal)
         assert h.stages==[('calculation-ended','held','training_completed'),('exit','calculation_reported','training_completed')]
         assert current['verification']['records_hash']==events[-1].payload['records_hash']
     elif failure=='completion':

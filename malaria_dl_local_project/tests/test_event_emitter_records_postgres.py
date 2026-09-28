@@ -111,11 +111,11 @@ def valid_legacy_session(pg):
     return repo, actual
 
 
-def test_mixed_verification_and_future_terminal_before_finish_order(pg):
-    from src.malaria_dl.assessment.lineage import resolve
+def test_incomplete_scientific_stream_rejected_without_legacy_hash_change(pg):
+    from src.malaria_dl.execution.completion import CompletionError
     repo, session = valid_legacy_session(pg)
     completion = dict(session['completion'])
-    expected = verify_session(repo, session, lambda *_: None)
+    assert verify_session(repo, session, lambda *_: None)['status'] == 'verified'
     before = snapshot(pg)
     stream = RunEventEmitter(reporter(pg), run_id=pg.ctx.run_id, attempt_id=pg.ctx.attempt_id)
     from test_training_results import payload
@@ -123,16 +123,13 @@ def test_mixed_verification_and_future_terminal_before_finish_order(pg):
     before['runs'][0]['parameters']['training_results'] = {'schema_version': 'training_results_v1', 'validation': payload()}
     terminal = stream.emit(Kind.TRAINING_COMPLETED, {'records_hash': completion['records_hash']})
     assert snapshot(pg) == before
-    assert verify_session(repo, session, lambda *_: None) == expected
-    assert session['completion'] == completion
-    # Explicit existing lifecycle operations, not side effects of any event.
-    repo.finish(pg.ctx.run_id, pg.ctx.owner, 'completed', completion)
-    verification = verify_session(repo, repo.session(pg.ctx.run_id), lambda *_: None)
-    repo.finish(pg.ctx.run_id, pg.ctx.owner, 'verified', verification)
-    binding, _, calibration = resolve(repo, training_run_id=pg.ctx.run_id)
-    assert binding['source']['records_hash'] == completion['records_hash']
-    assert calibration['checkpoint_epoch'] == 1
-    assert repo.result_events(pg.ctx.run_id)[-1] == terminal  # reading remains allowed
+    with pytest.raises(CompletionError): verify_session(repo, session, lambda *_: None)
+    with pytest.raises(CompletionError): repo.finish(pg.ctx.run_id, pg.ctx.owner, 'completed', completion)
+    assert snapshot(pg) == before
+    assert digest(repo.records(pg.ctx.run_id)) == completion['records_hash']
+    assert repo.session(pg.ctx.run_id)['state'] == 'active'
+    repo.finish(pg.ctx.run_id, pg.ctx.owner, 'failed', cause='INCOMPLETE_SCIENCE')
+    assert repo.result_events(pg.ctx.run_id)[-1] == terminal
     with pytest.raises(WriterNotAuthorized): reporter(pg).report(terminal)
 
 

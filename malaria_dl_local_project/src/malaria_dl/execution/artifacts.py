@@ -18,6 +18,12 @@ def file_identity(path):
 
 
 def verify_session(repository, session, loader):
+    check = getattr(repository, 'scientific_completion', None)
+    scientific = check(session['run_id']) if check is not None else None
+    if scientific is not None:
+        from .completion import CompletionError, TrainingCompletionContractV1
+        if TrainingCompletionContractV1.from_dict((session.get('completion') or {}).get('training_completion')) != scientific:
+            raise CompletionError()
     records = repository.records(session["run_id"])
     completion = session["completion"]
     if not completion or completion.get("records_hash") != digest(records):
@@ -68,6 +74,27 @@ def verify_session(repository, session, loader):
     if len(selected) != 1:
         raise CampaignError("EXACT_CHECKPOINT_REQUIRED")
     artifact = selected[0]
+    path = verify_checkpoint_file(session, artifact)
+    try:
+        loader(path, session["configuration"]["resolved"]["input_contract"])
+    except CampaignError:
+        raise
+    except Exception:  # noqa: BLE001 -- sanitized artifact validation boundary
+        raise CampaignError("CHECKPOINT_NOT_LOADABLE") from None
+    result = {
+        "status": "verified",
+        "records_hash": digest(records),
+        "artifact": artifact,
+        "selection": completion["selection"],
+    }
+    if scientific is not None:
+        verify_checkpoint_file(session, artifact)
+        result['training_completion_hash'] = digest(scientific.to_dict())
+    return result
+
+
+def verify_checkpoint_file(session, artifact):
+    """Physical identity, checked after loading and at the E10 verified transition."""
     path = Path(artifact["path"])
     if not path.resolve().is_relative_to(
         Path(session["artifact_root"]).resolve()
@@ -75,18 +102,7 @@ def verify_session(repository, session, loader):
         raise CampaignError("CHECKPOINT_OWNERSHIP_CONFLICT")
     if file_identity(path) != {k: artifact[k] for k in ("sha256", "bytes")}:
         raise CampaignError("CHECKPOINT_CONTENT_CHANGED")
-    try:
-        loader(path, session["configuration"]["resolved"]["input_contract"])
-    except CampaignError:
-        raise
-    except Exception:  # noqa: BLE001 -- sanitized artifact validation boundary
-        raise CampaignError("CHECKPOINT_NOT_LOADABLE") from None
-    return {
-        "status": "verified",
-        "records_hash": digest(records),
-        "artifact": artifact,
-        "selection": completion["selection"],
-    }
+    return path
 
 
 def keras_loader(path, contract):

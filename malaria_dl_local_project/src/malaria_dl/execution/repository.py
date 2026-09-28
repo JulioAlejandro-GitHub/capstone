@@ -276,6 +276,36 @@ class ExecutionRepository(CampaignRepository):
                     "SELECT id FROM campaign_members WHERE id=CAST(:id AS uuid) FOR UPDATE",
                     id=str(member["id"]),
                 )
+            if state in ('completed', 'verified'):
+                if initial['attempt_id']:
+                    execute(c, 'SELECT id FROM campaign_attempts WHERE id=CAST(:id AS uuid) FOR UPDATE',
+                            id=str(initial['attempt_id'])).one()
+                current = dict(execute(c, 'SELECT * FROM train_execution_sessions WHERE run_id=CAST(:id AS uuid) FOR UPDATE',
+                                       id=identifier(run)).mappings().one())
+                execute(c, 'SELECT id FROM runs WHERE id=CAST(:id AS uuid) FOR UPDATE', id=identifier(run)).one()
+                if str(current['owner']) != identifier(owner) or current['attempt_id'] != initial['attempt_id']:
+                    raise CampaignError('TRAIN_OWNER_FENCED')
+                from .completion import TrainingCompletionValidator, is_e10_governed, CompletionError
+                sources = self._completion_sources(c, run)
+                if is_e10_governed(sources):
+                    if current['state'] != ('active' if state == 'completed' else 'completed'):
+                        raise CampaignError('TRAIN_TRANSITION_INVALID')
+                    contract = TrainingCompletionValidator().validate(
+                        sources, evidence if state == 'completed' else current['completion'], sealed=state == 'verified')
+                    if state == 'completed':
+                        if 'training_completion' in evidence:
+                            raise CompletionError()
+                        evidence = {**evidence, 'training_completion': contract.to_dict()}
+                    else:
+                        from ..campaigns.contracts import digest
+                        from .artifacts import verify_checkpoint_file
+                        if (not isinstance(evidence, dict) or evidence.get('status') != 'verified'
+                                or evidence.get('training_completion_hash') != digest(contract.to_dict())
+                                or evidence.get('records_hash') != contract.records_hash
+                                or digest(evidence.get('artifact')) != contract.checkpoint_identity_hash
+                                or canonical(evidence.get('selection')) != canonical(current['completion']['selection'])):
+                            raise CompletionError()
+                        verify_checkpoint_file(current, evidence['artifact'])
             col = "verification" if state == "verified" else "completion"
             execute(
                 c,
@@ -299,6 +329,37 @@ class ExecutionRepository(CampaignRepository):
                 state="completed" if state in ("completed", "verified") else state,
                 id=identifier(run),
             )
+
+    @staticmethod
+    def _completion_sources(c, run_id):
+        from ..persistence.execution_record_readers import read_legacy_execution_records, read_result_events
+        from ..results.errors import ResultPersistenceError
+        from .completion import CompletionEvidence, InvalidEventStream
+        params = {'id': identifier(run_id)}
+        session = dict(execute(c, 'SELECT * FROM train_execution_sessions WHERE run_id=CAST(:id AS uuid)', **params).mappings().one())
+        run = dict(execute(c, 'SELECT * FROM runs WHERE id=CAST(:id AS uuid)', **params).mappings().one())
+        try:
+            events = read_result_events(c, run_id)
+        except ResultPersistenceError:
+            raise InvalidEventStream() from None
+        campaign_dataset = None
+        if session['attempt_id']:
+            campaign_dataset = execute(c, '''SELECT ec.dataset_snapshot FROM experimental_campaigns ec
+                JOIN campaign_members m ON m.campaign_id=ec.id
+                JOIN campaign_attempts a ON a.member_id=m.id WHERE a.id=CAST(:attempt AS uuid)''',
+                attempt=str(session['attempt_id'])).scalar_one()
+        return CompletionEvidence(session, run, read_legacy_execution_records(c, run_id), events, campaign_dataset)
+
+    def scientific_completion(self, run_id):
+        """Revalidate sealed E10 evidence; finish rechecks under transition locks."""
+        from .completion import TrainingCompletionValidator, is_e10_governed, CompletionError
+        with self.transaction(readonly=True) as c:
+            sources = self._completion_sources(c, run_id)
+            if not is_e10_governed(sources):
+                return None
+            if sources.session['state'] not in ('completed', 'verified'):
+                raise CompletionError()
+            return TrainingCompletionValidator().validate(sources, sources.session['completion'], sealed=True)
 
     def pause(self, campaign, code):
         with self.transaction() as c:

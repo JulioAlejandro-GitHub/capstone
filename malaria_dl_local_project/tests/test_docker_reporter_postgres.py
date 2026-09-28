@@ -128,7 +128,8 @@ def test_pure_readers_coexist_with_stable_legacy_records_hash(pg, tmp_path):
     assert all(set(row) == {'kind','phase','record_key','payload'} for row in legacy)
     assert len(repo.result_events(pg.ctx.run_id)) == 1
     assert digest(legacy) == session['completion']['records_hash']
-    assert verify_session(repo, session, lambda *_: None)['records_hash'] == digest(legacy)
+    from src.malaria_dl.execution.completion import CompletionError
+    with pytest.raises(CompletionError): verify_session(repo, session, lambda *_: None)
     with pg.sql() as c:
         c.execute(text('SET TRANSACTION READ ONLY'))
         calibration = c.execute(text("""SELECT payload FROM train_execution_records
