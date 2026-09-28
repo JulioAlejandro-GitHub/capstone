@@ -18,6 +18,7 @@ from ..data.governed_dataset import (
 from ..persistence.dataset_evidence import verify_dataset_for_execution
 from .artifacts import keras_loader, verify_session
 from .repository import ExecutionRepository
+from .schema import E10SchemaNotReady
 
 IDENTITY_KEYS = (
     "source_sha256",
@@ -191,6 +192,9 @@ def execute_campaign(
     if gate is not None and loader is keras_loader:
         from .process_verification import isolated_keras_loader
         loader = isolated_keras_loader
+    # Outside the systemic-failure handler: incompatibility must not pause or
+    # reconcile an existing campaign, nor consume a reservation.
+    repository.preflight_e10_schema()
     owner = str(uuid4())
     try:
         row = runtime_row()
@@ -265,6 +269,8 @@ def execute_campaign(
         repository.finalize_terminal(campaign_id)
         summary = repository.summary(campaign_id)
         return (0 if summary["matrix_complete"] else 2), summary
+    except E10SchemaNotReady:
+        raise
     except (Exception, KeyboardInterrupt) as exc:  # noqa: BLE001 -- unknown failures are systemic, never success
         repository.pause(campaign_id, "SYSTEMIC_" + type(exc).__name__.upper())
         return 3, repository.summary(campaign_id)
@@ -313,6 +319,7 @@ def main(argv=None):
     if args.revision_proposal is not None:
         raise CampaignError('PROPOSAL_ALLOWED_ONLY_IN_DRY_RUN')
     from .global_gate import GlobalGate
+    repo.preflight_e10_schema()
     with GlobalGate('campaign'):
         code, summary = execute_campaign(
             repo, args.campaign_id, args.artifact_root,

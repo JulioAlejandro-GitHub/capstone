@@ -25,6 +25,8 @@ def execution(isolated):  # noqa: F811 -- imported pytest fixture
     mod = migration("20260912_01_train_execution")
     mod.op = Operations(MigrationContext.configure(isolated.c))
     mod.upgrade()
+    from e10_schema_fixture import install_e10
+    install_e10(isolated.c)
     return SimpleNamespace(s=isolated, repo=ExecutionRepository(isolated.repo.scope))
 
 

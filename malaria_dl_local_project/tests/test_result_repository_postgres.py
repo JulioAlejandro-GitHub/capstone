@@ -49,6 +49,8 @@ def pg(isolated, tmp_path):
                  '20260914_01_controlled_train', '20260914_02_global_execution',
                  '20260915_01_local_execution'):
         apply(x.c, name)
+    from e10_schema_fixture import install_e10
+    install_e10(x.c)
     row = x.freeze()
     token = uuid4()
     # A synthetic retained job satisfies the REAL global fencing function. No
@@ -62,7 +64,6 @@ def pg(isolated, tmp_path):
     legacy = ExecutionRepository(x.repo.scope)
     session = legacy.claim(str(row['id']), str(uuid4()), 'synthetic', 1, tmp_path)
     legacy.put(session['run_id'], session['owner'], 'runtime', 'base', 'configuration', {'legacy': True})
-    apply(x.c, REVISION)
     member = next(m for m in row['members'] if m['id'] == next(
         a['member_id'] for a in legacy.get(row['id'])['attempts'] if a['id'] == session['attempt_id']))
     ctx = ExecutionContext(run_id=session['run_id'], owner=session['owner'], attempt_id=session['attempt_id'],

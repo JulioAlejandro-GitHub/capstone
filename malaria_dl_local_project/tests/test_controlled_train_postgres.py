@@ -20,6 +20,8 @@ pytestmark=pytest.mark.skipif(os.getenv('RUN_STAGE93_CONTROLLED_POSTGRES_TESTS')
 def control(isolated,tmp_path):
     for name in ['20260912_01_train_execution','20260914_01_controlled_train']:
         mod=migration(name);mod.op=Operations(MigrationContext.configure(isolated.c));mod.upgrade()
+    from e10_schema_fixture import install_e10
+    install_e10(isolated.c)
     row=isolated.freeze();repo=ControlledRepository(isolated.repo.scope)
     first=repo.claim(str(row['id']),str(uuid4()),'synthetic',1,tmp_path/'old')
     repo.finish(first['run_id'],first['owner'],'failed',cause='SYNTHETIC_FAILURE')

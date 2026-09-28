@@ -97,6 +97,8 @@ class ControlledRepository(ExecutionRepository):
                     raise CampaignError('CONTROLLED_IDEMPOTENCY_CONFLICT')
                 run=str(old['run_id']); created=False
             else:
+                from .schema import require_e10_schema
+                require_e10_schema(c)
                 payload=self.revision(c,campaign,revision_id)
                 m,n=self.eligibility(c,row,member,previous,dataset,payload,current)
                 if not isinstance(reason,str) or not reason.strip():raise CampaignError('CONTROLLED_REASON_REQUIRED')
@@ -211,6 +213,7 @@ def execute_one(repo, *, campaign,member,previous,dataset,revision_id,request_id
         if row['state']!='paused':raise CampaignError('PAUSED_CAMPAIGN_REQUIRED')
         s=repo.session(old['run_id'])
         return {'launched':False,'run_id':str(s['run_id']),'state':s['state']}
+    repo.preflight_e10_schema()
     # All checks that can fail without reserving happen first.
     repo.dry_run(campaign,member,previous,dataset,revision_id)
     row=repo.get(campaign,dataset)
@@ -265,6 +268,7 @@ def main():
     else:
         if not a.revision_id or not a.request_id or not a.reason:p.error('revision-id, request-id and reason required')
         from .global_gate import GlobalGate
+        repo.preflight_e10_schema()
         with GlobalGate('controlled'):
             result=execute_one(repo,campaign=a.campaign_id,member=a.member_id,previous=a.previous_attempt_id,dataset=a.dataset_version_id,revision_id=a.revision_id,request_id=a.request_id,reason=a.reason,root=a.artifact_root)
     print(json.dumps(result))

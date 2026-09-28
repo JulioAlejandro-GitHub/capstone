@@ -19,7 +19,7 @@ from src.malaria_dl.local_execution.event_journal import SQLiteEventJournal, Str
 from src.malaria_dl.local_execution.event_runtime import stream_identity
 from src.malaria_dl.local_execution.transport import Api
 from test_campaigns_postgres import isolated  # noqa: F401
-from test_result_repository_postgres import pg, apply, REVISION  # noqa: F401
+from test_result_repository_postgres import pg  # noqa: F401
 from test_http_reporter_postgres import remote, serve  # noqa: F401
 from test_docker_reporter_postgres import legacy_repository
 from test_controlled_train_postgres import control  # noqa: F401
@@ -106,7 +106,6 @@ def native_ready(monkeypatch,request):
         return value
     monkeypatch.setattr(legacy_tests,'matrix_request',tiny_request)
     ready=request.getfixturevalue('local_ready')
-    with ready.x.repo.transaction() as c:apply(c,REVISION)
     return ready
 
 

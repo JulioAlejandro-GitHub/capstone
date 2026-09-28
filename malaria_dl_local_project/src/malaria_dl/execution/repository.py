@@ -76,8 +76,16 @@ class ExecutionRepository(CampaignRepository):
                     run=identifier(run_id)).scalar_one():
                 raise CampaignError('E10_ACTIVE_STREAM_RECOVERY_UNSUPPORTED')
 
+    def preflight_e10_schema(self):
+        """Read-only readiness check before any campaign reservation."""
+        from .schema import require_e10_schema
+        with self.transaction(readonly=True) as c:
+            return require_e10_schema(c)
+
     def claim(self, campaign_id, owner, host, parent_pid, artifact_root, revision_id=None):
+        from .schema import require_e10_schema
         with self.transaction() as c:
+            require_e10_schema(c)
             campaign = self._campaign(c, campaign_id, True)
             if campaign["state"] not in ("frozen", "active"):
                 raise CampaignError("CAMPAIGN_NOT_EXECUTABLE")

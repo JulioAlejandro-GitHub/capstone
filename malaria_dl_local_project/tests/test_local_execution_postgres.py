@@ -622,10 +622,7 @@ def test_minimal_real_calculation_through_http_agent_and_subprocess(local_ready,
         sys.path.remove(str(backend_dir))
 
     r = local_ready
-    from test_result_repository_postgres import apply, REVISION
     from src.malaria_dl.local_execution.event_backend import build_local_event_backend
-    with r.x.repo.transaction() as c:
-        apply(c, REVISION)
     data = dict(r.data, request_id=str(uuid4()))  # controlled mode, matching local_ready's paused campaign
     # local_ready's own backend uses a no-op loader (for the mock-style tests above); this
     # closing test needs the REAL default loader, so its checkpoint verification is genuine.
