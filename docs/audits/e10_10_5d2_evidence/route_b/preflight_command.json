@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "malaria_dl_local_project/.venv/bin/python",
+    "scripts/db/preflight_v2_d03_adoption.py"
+  ],
+  "PYTHONPATH": "/private/tmp/e10_10_5d_parser312:.",
+  "exit_code": 2,
+  "stdout": "LEGACY_FUNCTION_OWNER_MISMATCH",
+  "source_database_access": false
+}

@@ -65,6 +65,9 @@ def migrate():
                 for e in manifest["statements"]
                 if e["kind"] in ("table", "view", "sequence")
             }
+            expected.update(
+                s["sequence"] for s in manifest.get("identity_sequences", [])
+            )
             if relations:
                 require(
                     relations == expected | {"alembic_version"},

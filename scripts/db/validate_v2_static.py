@@ -100,6 +100,14 @@ def catalogue(statements):
             assert len(tables[t]) == len(s.tableElts)
             assert all(isinstance(c, ast.ColumnDef) for c in s.tableElts)
             for column in s.tableElts:
+                for co in column.constraints or ():
+                    if co.contype == CT.CONSTR_IDENTITY:
+                        assert (t, column.colname, co.generated_when) == (
+                            "experiment_execution_events",
+                            "id",
+                            "a",
+                        )
+                        sequence.add("experiment_execution_events_id_seq")
                 assert all(
                     co.contype
                     in (
@@ -339,9 +347,11 @@ def validate():
         )
         if isinstance(s.stmt, ast.CreateStmt)
     }
+    from scripts.db.build_v2_baseline import d03_column
+
     for t in protected:
         assert [norm(col) for col in c["tables"][t].values()] == [
-            norm(col) for col in source_tables[t].tableElts
+            norm(d03_column(t, col)) for col in source_tables[t].tableElts
         ], ("Protected shape changed", t)
 
     return {

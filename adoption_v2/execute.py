@@ -47,6 +47,9 @@ def private_write(path, value):
 
 def capture(c):
     spec = contract()
+    # PostgreSQL renders the frozen legacy schema with core names taking precedence.
+    # No expression text is stripped or aliased; bindings are checked below.
+    c.execute("SET LOCAL search_path=pg_catalog,public")
     catalog = {}
     for kind, query in spec["queries"].items():
         catalog[kind] = c.execute(query).fetchall()
@@ -68,15 +71,38 @@ def capture(c):
             )
     native = catalog_snapshot(c)
     certified = certified_catalog()
+    decision = json.loads((ROOT / "alembic_v2/d03_contract.json").read_text())
+    approved = {tuple(k) for k in decision["uuid_core_defaults"]}
+    for group in ("default_functions", "default_dependencies"):
+        observed = [
+            r for r in native[group] if (r["relation"], r["column_name"]) in approved
+        ]
+        expected = [
+            r for r in certified[group] if (r["relation"], r["column_name"]) in approved
+        ]
+        require(observed == expected, "LEGACY_DEFAULT_BINDING_DRIFT", group)
+    identity = [
+        r
+        for r in native["columns"]
+        if r["relation"] == "experiment_execution_events" and r["name"] == "id"
+    ]
+    require(
+        len(identity) == 1 and identity[0]["attidentity"] == "a",
+        "LEGACY_IDENTITY_DRIFT",
+    )
     require(native["extensions"] == certified["extensions"], "LEGACY_EXTENSION_DRIFT")
     require(native["sequences"] == certified["sequences"], "LEGACY_SEQUENCE_DRIFT")
     require(
         all(r["owner"] == "capstone_v2_migrator" for r in native["relations"]),
         "LEGACY_OWNER_MISMATCH",
     )
-    require(
-        all(r["owner"] == "capstone_v2_migrator" for r in native["functions"]),
-        "LEGACY_FUNCTION_OWNER_MISMATCH",
+    from .function_guard import DEPENDENCY_SQL, check_functions, dependency_reference
+
+    check_functions(
+        native["functions"],
+        certified["functions"],
+        c.execute(DEPENDENCY_SQL).fetchall(),
+        dependency_reference(),
     )
     namespaces = c.execute(
         "SELECT nspname FROM pg_namespace WHERE nspname NOT LIKE 'pg_%' AND nspname NOT IN ('public','information_schema')"
@@ -103,7 +129,7 @@ def catalog_snapshot(c):
 
 
 def certified_catalog():
-    path = ROOT / "docs/audits/e10_10_5b_evidence/run_b01/installed_catalog.json"
+    path = ROOT / "docs/audits/e10_10_5d2_evidence/route_a/installed_catalog.json"
     value = json.loads(path.read_text())
     import hashlib
 

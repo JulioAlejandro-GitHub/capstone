@@ -1,0 +1,11 @@
+{
+  "D01": "PASS",
+  "D02": "PASS",
+  "sequence_equal": true,
+  "default_checks": {
+    "default_functions": true,
+    "default_dependencies": true
+  },
+  "columns": 39,
+  "no_normalization_of_different_bindings": true
+}

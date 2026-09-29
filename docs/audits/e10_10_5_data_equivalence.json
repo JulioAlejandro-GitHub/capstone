@@ -1,11 +1,19 @@
 {
-  "stage": "E10.10.5D",
+  "stage": "E10.10.5D.3",
   "status": "NOT_CERTIFIED",
-  "adapter_applied": false,
+  "reason": "Final catalog mismatch: D-05 generated column and D-06 CHECK representations",
+  "adapter_applied": true,
   "source_backup_sha256": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6",
-  "isolated_backup_sha256": "c197888c05358e2c28e8b5c80c7a7ec01751b8548eb9b2c56918d5af3cd6e281",
-  "reference": "restored legacy copy; per-table canonical SHA-256 using adoption_v2.core.table_digest",
-  "tables": {
+  "preservation": {
+    "tables": 97,
+    "counts_and_hashes_equal_to_original_D": true,
+    "sequence": {
+      "last_value": 1,
+      "is_called": false
+    },
+    "source_backup_sha256": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6"
+  },
+  "reference_tables": {
     "alembic_version": {
       "count": 1,
       "sha256": "0f92e7096fe0420cc25af9d81d7eaf245045ae231599010d3ce9e777d881d977"
@@ -395,29 +403,177 @@
       "sha256": "3a320a0930233abc58aec1f9bf25ab80d4842d8953ba23af45061282c8ece2f3"
     }
   },
-  "source_to_restore_row_hash_comparison_executed": false,
-  "adopted_data_comparison_executed": false,
-  "scientific_files_read_or_modified": false,
+  "route_a_restore": {
+    "passed": true,
+    "backup_sha256": "219b651a4ed9d9ec6c27f5bc26d998ad33893b7bd00dbb39ed8b42e3cb72465c",
+    "source_catalog": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+    "restored_catalog": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+    "source_data": "edda1543b349d9c34bfdc12c0c4af12718d774075d09422b59184794d9cc078d",
+    "restored_data": "edda1543b349d9c34bfdc12c0c4af12718d774075d09422b59184794d9cc078d",
+    "tables_compared": 103,
+    "source_sequence": {
+      "last_value": 2,
+      "is_called": true
+    },
+    "restored_sequence": {
+      "last_value": 2,
+      "is_called": true
+    }
+  },
+  "route_a_restore_scope": "new baseline plus synthetic fixtures; not legacy adoption",
+  "adopted_data_comparison_executed": true,
+  "previous_evidence": "e10_10_5d2_evidence/pre_d2_e10_10_5_data_equivalence.json",
   "limits": [
-    "Source aggregate counts and restored counts agree; source row hashes were not acquired in the dump snapshot.",
-    "Empty E10/runs/campaign tables do not prove preservation of populated historical records.",
-    "No adopted target exists."
+    "Reference hashes are from isolated restores of preserved source backup, not a new live operational snapshot.",
+    "No adopted database exists; preservation of restored source is not adoption equivalence.",
+    "Legacy runs/events/campaign tables are empty; no claim of populated historical coverage."
   ],
-  "preservation_d1": {
-    "tables": 97,
-    "all_hashes_and_counts_equal": true,
-    "sequence_unchanged": [
+  "adoption_committed": false,
+  "precommit_reconciliation": {
+    "successful_logged_statements": 838,
+    "failed_sql_statements": 0,
+    "ddl_statements": 316,
+    "application_tables_reconciled_before_catalog_check": 102,
+    "final_catalog_guard": "FINAL_CATALOG_MISMATCH",
+    "head_transition_executed": false,
+    "committed": false,
+    "data_checks_scope": "Precommit only; final catalog failed and transaction rolled back",
+    "reconciled_table_counts": {
+      "artifacts": 0,
+      "assessment_artifacts": 0,
+      "assessment_attempts": 0,
+      "assessment_campaign_consumers": 0,
+      "assessment_final_locks": 0,
+      "assessment_identities": 0,
+      "assessment_results": 0,
+      "audit_events": 2,
+      "blood_samples": 0,
+      "campaign_attempts": 0,
+      "campaign_configurations": 0,
+      "campaign_controlled_requests": 0,
+      "campaign_execution_events": 0,
+      "campaign_members": 0,
+      "campaign_technical_revisions": 0,
+      "cell_classification_events": 0,
+      "cell_classification_inputs": 0,
+      "cell_classification_reviews": 0,
+      "cell_classification_runs": 0,
+      "cell_crops": 0,
+      "cell_detection_events": 0,
+      "cell_detection_runs": 0,
+      "cell_detections": 0,
+      "cell_explanations": 0,
+      "cell_predictions": 0,
+      "clinical_identities": 201,
+      "dataset_materialization_activations": 0,
+      "dataset_materializations": 1,
+      "dataset_source_records": 27558,
+      "dataset_split_assignments": 27558,
+      "dataset_split_images": 55116,
+      "dataset_split_statistics": 1,
+      "dataset_split_validation_checks": 12,
+      "dataset_splits": 0,
+      "dataset_version_sources": 1,
+      "dataset_versions": 1,
+      "datasets": 2,
+      "deployed_model_versions": 0,
+      "environment_packages": 0,
+      "errors": 0,
+      "evaluation_ensemble_members": 0,
+      "evaluations": 0,
+      "execution_logs": 0,
+      "experiment_execution_events": 0,
+      "experiment_execution_gate": 1,
+      "experimental_campaigns": 0,
+      "experiments": 0,
+      "explainability_results": 0,
+      "identity_evidence": 27558,
+      "image_analysis_jobs": 0,
+      "image_connected_components": 0,
+      "image_ingestion_batches": 0,
+      "image_quality_assessments": 0,
+      "local_execution_jobs": 0,
+      "microscopy_analysis_events": 0,
+      "microscopy_analysis_run_images": 0,
+      "microscopy_analysis_runs": 0,
+      "microscopy_images": 0,
+      "model_governance_backfill_audit": 0,
+      "model_versions": 0,
+      "models": 3,
+      "predictions": 0,
+      "quality_assessment_queue_items": 0,
+      "quality_gate_decisions": 0,
+      "research_subjects": 0,
+      "roles": 5,
+      "run_checkpoint_policy": 0,
+      "run_clinical_metrics": 0,
+      "run_configurations": 0,
+      "run_dataset_images": 0,
+      "run_image_predictions": 0,
+      "run_io_records": 0,
+      "run_lineage": 0,
+      "run_metrics": 0,
+      "run_model_deployments": 0,
+      "run_threshold_calibration": 0,
+      "runs": 0,
+      "schema_migrations": 22,
+      "scientific_cases": 0,
+      "scientific_reviews": 0,
+      "scientific_validation_annotation_events": 0,
+      "scientific_validation_annotations": 0,
+      "scientific_validation_classification_runs": 0,
+      "scientific_validation_detection_runs": 0,
+      "scientific_validation_images": 0,
+      "scientific_validation_sessions": 0,
+      "smear_analysis_summaries": 0,
+      "smear_slides": 0,
+      "stage2_model_publication_events": 0,
+      "stage2_model_publications": 0,
+      "synthetic_data_runs": 0,
+      "train_execution_records": 0,
+      "train_execution_revisions": 0,
+      "train_execution_sessions": 0,
+      "training_history": 0,
+      "user_roles": 1,
+      "users": 1,
+      "xai_artifacts": 0,
+      "xai_evidence": 0,
+      "xai_interpretations": 0,
+      "xai_quantitative_evaluations": 0,
+      "xai_specialist_reviews": 0
+    }
+  },
+  "rollback_verification": {
+    "catalog_unchanged": true,
+    "all_97_tables_unchanged": true,
+    "head": [
       {
-        "last_value": 1,
-        "is_called": false
+        "version_num": "20260922_01"
       }
     ],
-    "backups": {
-      "source.dump": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6",
-      "isolated.dump": "c197888c05358e2c28e8b5c80c7a7ec01751b8548eb9b2c56918d5af3cd6e281"
-    },
-    "operational_connections": 0,
-    "original_copy_writes": 0
+    "sequence": {
+      "last_value": 1,
+      "is_called": false
+    }
   },
-  "preservation_d1_scope": "Original isolated D legacy copy before vs after D.1; NOT adopted equivalence"
+  "diagnostic_rollback": {
+    "passed": true,
+    "catalog_unchanged": true,
+    "all_tables_unchanged": true,
+    "tables": 97,
+    "before_sha256": "44bba39ec22880616e4398169cc405dfa7d3e209eb6a322b5aa66ee7029dbcb0",
+    "after_sha256": "44bba39ec22880616e4398169cc405dfa7d3e209eb6a322b5aa66ee7029dbcb0",
+    "head": [
+      {
+        "version_num": "20260922_01"
+      }
+    ],
+    "sequence": {
+      "last_value": 1,
+      "is_called": false
+    },
+    "purpose": "diagnostic only; not adoption certification"
+  },
+  "certified_adopted_database_exists": false,
+  "comparison_scope": "102 application tables reconciled transiently before failed final catalog guard; transaction rolled back. Not a durable adopted result."
 }

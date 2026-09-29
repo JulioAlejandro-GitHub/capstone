@@ -51,6 +51,36 @@ def ordered(items, dependencies):
     return result
 
 
+def d03_columns():
+    decision = json.loads((ROOT / "alembic_v2/d03_contract.json").read_text())
+    columns = {tuple(x) for x in decision["uuid_core_defaults"]}
+    assert len(columns) == 39
+    assert not any(
+        t in {"classification_reports", "confusion_matrices"} for t, _ in columns
+    )
+    return columns
+
+
+def d03_column(table, col):
+    """Exact approved AST changes only; no global function-name replacement."""
+    if (table, col.colname) in d03_columns():
+        defaults = [
+            co for co in col.constraints or () if co.contype == CT.CONSTR_DEFAULT
+        ]
+        assert (
+            len(defaults) == 1 and render(defaults[0].raw_expr) == "gen_random_uuid()"
+        )
+        defaults[0].raw_expr = (
+            parse_sql("SELECT pg_catalog.gen_random_uuid()")[0].stmt.targetList[0].val
+        )
+    if (table, col.colname) == ("experiment_execution_events", "id"):
+        assert render(col) == "id bigint NOT NULL"
+        return parse_sql(
+            "CREATE TABLE x (id bigint GENERATED ALWAYS AS IDENTITY NOT NULL)"
+        )[0].stmt.tableElts[0]
+    return col
+
+
 def compile_spec(source):
     tables, functions, views = {}, {}, {}
     constraints, indexes, triggers, sequence = [], [], [], []
@@ -112,6 +142,21 @@ def compile_spec(source):
         else:
             raise TypeError(f"Unreviewed statement: {type(s).__name__}")
 
+    # D-03 restores the native legacy identity. PostgreSQL alone creates its sequence.
+    assert len(sequence) == len(ownership) == 1
+    assert (
+        sequence[0].sequence.relname
+        == ownership[0].sequence.relname
+        == "experiment_execution_events_id_seq"
+    )
+    sequence.clear()
+    ownership.clear()
+    for name, column in d03_columns():
+        assert name in tables and any(
+            isinstance(c, ast.ColumnDef) and c.colname == column
+            for c in tables[name].tableElts
+        )
+
     for t, table in tables.items():
         columns = []
         for elt in table.tableElts:
@@ -119,6 +164,7 @@ def compile_spec(source):
                 constraints.append((t, elt))
                 continue
             assert isinstance(elt, ast.ColumnDef)
+            elt = d03_column(t, elt)
             retained = []
             previous = None
             for c in elt.constraints or ():
@@ -236,6 +282,14 @@ def compile_spec(source):
             )
             column_manifest[col.colname] = {
                 "declaration": render(col),
+                "identity": next(
+                    (
+                        co.generated_when
+                        for co in cs
+                        if co.contype == CT.CONSTR_IDENTITY
+                    ),
+                    "",
+                ),
                 "type": render(col.typeName),
                 "nullable": not (
                     col.colname in pk
@@ -448,6 +502,12 @@ def artifacts():
         "format_version": 1,
         "revision": REVISION,
         "source_sha256": digest(source.encode()),
+        "d03_contract_sha256": digest(
+            (ROOT / "alembic_v2/d03_contract.json").read_bytes()
+        ),
+        "identity_sequences": [
+            json.loads((ROOT / "alembic_v2/d03_contract.json").read_text())["identity"]
+        ],
         "managed_by_alembic": {
             "table": "alembic_version",
             "column": "version_num varchar(32) NOT NULL",

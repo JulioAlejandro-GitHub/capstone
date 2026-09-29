@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "docker",
+    "--host",
+    "unix:///Users/julio/.docker/run/docker.sock",
+    "exec",
+    "-i",
+    "09aeb81b36210177134e73c1d735967f2d053e6d4fb8723e3783a14a43787cc3",
+    "pg_restore",
+    "-U",
+    "postgres",
+    "-d",
+    "capstone_v2_isolated_8c5114865703_d2_adoption",
+    "--role=capstone_v2_migrator",
+    "--no-owner",
+    "--no-acl",
+    "--single-transaction",
+    "--exit-on-error"
+  ],
+  "exit_code": 0,
+  "source_backup_sha256": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6"
+}

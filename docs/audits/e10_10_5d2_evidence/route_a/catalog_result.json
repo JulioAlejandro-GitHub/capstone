@@ -1,0 +1,31 @@
+{
+  "stage": "E10.10.5D.2",
+  "comparison_executed": true,
+  "method": "PostgreSQL 17 canonical rendering of verified manifest statements in a separate empty isolated database, plus direct manifest metadata checks",
+  "manifest_sha256": "6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be",
+  "installed_sha256": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "expected_sha256": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "counts": {
+    "default_functions": 186,
+    "default_dependencies": 353,
+    "relations": 137,
+    "columns": 2271,
+    "constraints": 957,
+    "indexes": 407,
+    "views": 33,
+    "functions": 111,
+    "triggers": 95,
+    "sequences": 1,
+    "types": 272,
+    "extensions": 2,
+    "schema_acl": 1,
+    "database_acl": 1,
+    "default_acl": 0,
+    "roles": 2,
+    "runtime_privileges": 952,
+    "runtime_database": 1
+  },
+  "differences": {},
+  "direct_manifest_differences": [],
+  "status": "passed"
+}

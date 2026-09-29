@@ -1,6 +1,4 @@
 -- E10.10.5A frozen Alembic resource. Execute only through the guarded v2 environment.
-ALTER SEQUENCE public.experiment_execution_events_id_seq OWNED BY public.experiment_execution_events.id;
-
 DO $v2_acl$ BEGIN
  EXECUTE format('REVOKE ALL ON DATABASE %I FROM PUBLIC', current_database());
  EXECUTE format('REVOKE ALL ON DATABASE %I FROM capstone_v2_runtime', current_database());

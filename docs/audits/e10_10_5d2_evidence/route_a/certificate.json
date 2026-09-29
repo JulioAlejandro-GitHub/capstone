@@ -1,0 +1,16 @@
+{
+  "stage": "E10.10.5D.2",
+  "decision": "D-03",
+  "status": "ROUTE_A_RECERTIFIED",
+  "manifest_sha256": "6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be",
+  "catalog_sha256": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "previous_manifest_sha256": "c1063136941e9429373d91d666fbea5d25afd0dc39f111fdf2b9779aa1f51eb0",
+  "previous_catalog_sha256": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+  "server_version_num": 170009,
+  "static_tests_passed": 76,
+  "server_checks_passed": 91,
+  "rollback": true,
+  "idempotence": true,
+  "backup_restore": true,
+  "source_operational_access": false
+}

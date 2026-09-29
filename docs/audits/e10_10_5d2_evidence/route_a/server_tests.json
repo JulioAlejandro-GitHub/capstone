@@ -1,0 +1,346 @@
+[
+  {
+    "name": "positive_synthetic_training_configuration",
+    "passed": true
+  },
+  {
+    "name": "A01_external_complementary_cross_dataset_positive_and_view_separation",
+    "passed": true
+  },
+  {
+    "name": "A01_external_rejects_development",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"\nDETAIL:  Failing row contains (e030c412-71f4-4e0a-87d8-b7dfd3b8872b, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, development, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, 6ac8c3c7-9250-47d0-b161-255a614841da, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_external_rejects_final_test",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"\nDETAIL:  Failing row contains (658aac92-b848-4f04-9a24-46d2d20c7084, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, final_test, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, 52fe6420-9d57-4b83-a860-0487e462cecb, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_external_rejects_training_validation_final",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"\nDETAIL:  Failing row contains (78ffcce0-c701-437a-b510-297b2f0b4d00, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, training_validation_final, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, 68a80404-d02e-4f29-a8cf-fa59c535e402, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_external_rejects_calibration_default",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"\nDETAIL:  Failing row contains (418780f6-c544-49e9-a0b6-2ada85178624, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, calibration_default, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, f9d911f2-f020-41c7-a815-9e3aa0c8f54c, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_external_rejects_calibration_selected",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"\nDETAIL:  Failing row contains (7d7bbbf1-6e3f-4a3d-8138-83be0075a5c0, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, calibration_selected, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, d9806a17-d6c8-4e2a-a4b0-827684776fd7, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_missing_dataset_origin_id",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"\nDETAIL:  Failing row contains (f90238b6-ea47-4de6-b16f-2995e3af012a, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, external_complementary, complementary, null, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, 8f38c8ec-f1b9-449e-8259-e3877d31a163, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_missing_dataset_origin_role",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"\nDETAIL:  Failing row contains (09f8be7e-fc91-48da-8734-8a5759cd3837, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, external_complementary, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, null, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, 6f4ee291-e799-4a0b-96fd-754e8f0e57b8, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_missing_population_manifest_uri",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"\nDETAIL:  Failing row contains (97208025-a01a-4cee-9585-d83e1cde1c55, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, external_complementary, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, null, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, 5d8fa1ac-a1b7-4367-86a1-64f055fee79c, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_missing_population_manifest_sha256",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"\nDETAIL:  Failing row contains (3a065d02-46b5-4955-b002-ca3aaa304b96, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, external_complementary, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, null, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, c12dcd33-9f75-4e6a-a602-5f2709c475e2, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_missing_dataset_provenance_uri",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"\nDETAIL:  Failing row contains (7d33a41e-6a83-473e-a8b5-d1d00f6fb788, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, external_complementary, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, null, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, 7eccc5a4-6d2e-4948-b0cb-93cc90549234, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_missing_dataset_provenance_sha256",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"\nDETAIL:  Failing row contains (d02d38fc-1ade-4c75-94d3-4f5507d6eae9, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, external_complementary, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, null, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, e69a4fb5-23be-47bd-a193-748b7cb9cfbc, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_invalid_provenance_hash",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"\nDETAIL:  Failing row contains (284c7057-3358-4e33-a7cd-08501698bab8, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external, external_complementary, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bad, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, 82c6a512-2d6a-4a3c-b36f-a66f0f696916, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "A01_origin_FK",
+    "passed": true,
+    "expected_sqlstate": "23503",
+    "expected_marker": "fk_v2_evaluation_dataset_origin",
+    "sqlstate": "23503",
+    "error": "insert or update on table \"evaluations\" violates foreign key constraint \"fk_v2_evaluation_dataset_origin\"\nDETAIL:  Key (dataset_version_id, dataset_origin_id, dataset_origin_role)=(93ae3bc7-3d84-4ec9-9878-58af04c47772, 4820ef2f-c22d-40fe-b89c-f5675cbe1e7d, EXTERNAL_VALIDATION) is not present in table \"dataset_version_sources\"."
+  },
+  {
+    "name": "A01_no_external_validation_alias",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"\nDETAIL:  Failing row contains (2b9f717b-c570-43ff-96ae-5ffef27b8343, eaa83721-4fe7-45d9-9b73-bde075d36d4a, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 93ae3bc7-3d84-4ec9-9878-58af04c47772, external_validation, external_complementary, complementary, 2f5fa79f-f67d-42da-901f-9bab40707f99, EXTERNAL_VALIDATION, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, external_record, 3a3dee72-659c-4e46-9beb-96182a21759d, route_a, null, null, null, null, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "evaluation_immutable",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "V2_SCIENTIFIC_EVIDENCE_IMMUTABLE",
+    "sqlstate": "P0001",
+    "error": "V2_SCIENTIFIC_EVIDENCE_IMMUTABLE\nCONTEXT:  PL/pgSQL function v2_immutable() line 1 at RAISE"
+  },
+  {
+    "name": "training_requires_configuration",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "TRAIN_CONFIGURATION_REQUIRED",
+    "sqlstate": "P0001",
+    "error": "TRAIN_CONFIGURATION_REQUIRED\nCONTEXT:  PL/pgSQL function v2_run_configuration_required() line 2 at RAISE"
+  },
+  {
+    "name": "evaluation_requires_metrics_at_transaction_end",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "EVALUATION_METRICS_MISSING",
+    "sqlstate": "P0001",
+    "error": "EVALUATION_METRICS_MISSING\nCONTEXT:  PL/pgSQL function v2_evaluation_complete() line 7 at RAISE"
+  },
+  {
+    "name": "evaluation_checkpoint_training_mismatch",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "CHECKPOINT_TRAIN_MISMATCH",
+    "sqlstate": "P0001",
+    "error": "CHECKPOINT_TRAIN_MISMATCH\nCONTEXT:  PL/pgSQL function v2_evaluation_complete() line 8 at RAISE"
+  },
+  {
+    "name": "E10_missing_record_FK",
+    "passed": true,
+    "expected_sqlstate": "23503",
+    "expected_marker": "fk_evaluation_e10_record",
+    "sqlstate": "23503",
+    "error": "insert or update on table \"evaluations\" violates foreign key constraint \"fk_evaluation_e10_record\"\nDETAIL:  Key (run_id, event_kind, event_phase, event_key)=(9e47486b-2ebe-4c59-961a-b67c39d6ff00, e10_event, run_event_v1, 7c004a83-5e30-40a4-9357-e4ed0c76cd0e) is not present in table \"train_execution_records\"."
+  },
+  {
+    "name": "E10_event_key_identity",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "v2_evaluations_check_3b1acb9be108",
+    "sqlstate": "23514",
+    "error": "new row for relation \"evaluations\" violates check constraint \"v2_evaluations_check_3b1acb9be108\"\nDETAIL:  Failing row contains (bb849192-4cb6-4087-8458-24253db90ca2, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, 72748ada-ab3e-4266-b730-e4dc7fb619c6, ceb376c7-f1d2-40d7-827e-db307cc0b981, 21264974-5528-449b-a083-13c02c05fecb, val, training_validation_final, development, null, null, synthetic://population, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, synthetic://provenance, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, single, fixture-v1, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd, eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee, ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, {\"synthetic\": true}, e10, cee11712-b0d1-4854-9530-4e3936828f87, route_a, 7c004a83-5e30-40a4-9357-e4ed0c76cd0e, e10_event, run_event_v1, 16fd48e7-5d85-4c41-9689-3c688e82f4ff, null, 0.5, default, null, binary_nullable_v2, 2026-09-29 21:34:13.795203+00)."
+  },
+  {
+    "name": "E10_positive_record_projection",
+    "passed": true
+  },
+  {
+    "name": "E10_sequence_gap",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "RESULT_EVENT_SEQUENCE_INVALID",
+    "sqlstate": "P0001",
+    "error": "RESULT_EVENT_SEQUENCE_INVALID\nCONTEXT:  PL/pgSQL function train_event_guard() line 13 at RAISE"
+  },
+  {
+    "name": "E10_record_append_only",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "TRAIN_RECORD_IMMUTABLE",
+    "sqlstate": "P0001",
+    "error": "TRAIN_RECORD_IMMUTABLE\nCONTEXT:  PL/pgSQL function train_record_guard() line 4 at RAISE"
+  },
+  {
+    "name": "E10_record_delete_forbidden",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "TRAIN_RECORD_IMMUTABLE",
+    "sqlstate": "P0001",
+    "error": "TRAIN_RECORD_IMMUTABLE\nCONTEXT:  PL/pgSQL function train_record_guard() line 4 at RAISE"
+  },
+  {
+    "name": "E10_owner_fencing",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "TRAIN_OWNER_FENCED",
+    "sqlstate": "P0001",
+    "error": "TRAIN_OWNER_FENCED\nCONTEXT:  PL/pgSQL function train_event_guard() line 10 at RAISE"
+  },
+  {
+    "name": "calibration_VAL_pair_positive",
+    "passed": true
+  },
+  {
+    "name": "calibration_rejects_test",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "chk_run_threshold_calibration_split",
+    "sqlstate": "23514",
+    "error": "new row for relation \"run_threshold_calibration\" violates check constraint \"chk_run_threshold_calibration_split\"\nDETAIL:  Failing row contains (c876cf1e-442c-445c-8f7a-416eb5372ac4, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, null, target_recall, validation_calibration, 0.6, 0.5, 0.98, null, null, null, null, null, null, null, null, null, null, {}, {}, null, null, test, null, null, 2026-09-29 21:34:13.795203+00, {}, null, null, probability_parasitized, clinical_v1_parasitized_positive, parasitized, recorded, da1e5df6-4660-470f-ab6a-7132c3e3f5d6, 61af24ce-287d-45b7-9923-48ea1253dc14)."
+  },
+  {
+    "name": "calibration_rejects_external",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "chk_run_threshold_calibration_split",
+    "sqlstate": "23514",
+    "error": "new row for relation \"run_threshold_calibration\" violates check constraint \"chk_run_threshold_calibration_split\"\nDETAIL:  Failing row contains (4bf83693-4739-402e-9264-5eaccae6c746, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, null, target_recall, validation_calibration, 0.6, 0.5, 0.98, null, null, null, null, null, null, null, null, null, null, {}, {}, null, null, external, null, null, 2026-09-29 21:34:13.795203+00, {}, null, null, probability_parasitized, clinical_v1_parasitized_positive, parasitized, recorded, da1e5df6-4660-470f-ab6a-7132c3e3f5d6, 61af24ce-287d-45b7-9923-48ea1253dc14)."
+  },
+  {
+    "name": "calibration_rejects_train",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "chk_run_threshold_calibration_split",
+    "sqlstate": "23514",
+    "error": "new row for relation \"run_threshold_calibration\" violates check constraint \"chk_run_threshold_calibration_split\"\nDETAIL:  Failing row contains (33f1f236-5499-4697-acdb-8060b7eb5817, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, null, target_recall, validation_calibration, 0.6, 0.5, 0.98, null, null, null, null, null, null, null, null, null, null, {}, {}, null, null, train, null, null, 2026-09-29 21:34:13.795203+00, {}, null, null, probability_parasitized, clinical_v1_parasitized_positive, parasitized, recorded, da1e5df6-4660-470f-ab6a-7132c3e3f5d6, 61af24ce-287d-45b7-9923-48ea1253dc14)."
+  },
+  {
+    "name": "calibration_rejects_validation",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "ck_v2_calibration_val",
+    "sqlstate": "23514",
+    "error": "new row for relation \"run_threshold_calibration\" violates check constraint \"ck_v2_calibration_val\"\nDETAIL:  Failing row contains (064dee12-0852-4724-9483-36b547b615d2, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, null, target_recall, validation_calibration, 0.6, 0.5, 0.98, null, null, null, null, null, null, null, null, null, null, {}, {}, null, null, validation, null, null, 2026-09-29 21:34:13.795203+00, {}, null, null, probability_parasitized, clinical_v1_parasitized_positive, parasitized, recorded, da1e5df6-4660-470f-ab6a-7132c3e3f5d6, 61af24ce-287d-45b7-9923-48ea1253dc14)."
+  },
+  {
+    "name": "calibration_pair_cannot_be_same",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "CALIBRATION_PAIR_INVALID",
+    "sqlstate": "P0001",
+    "error": "CALIBRATION_PAIR_INVALID\nCONTEXT:  PL/pgSQL function v2_calibration_pair_guard() line 11 at RAISE"
+  },
+  {
+    "name": "calibration_pair_excludes_external",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "CALIBRATION_PAIR_INVALID",
+    "sqlstate": "P0001",
+    "error": "CALIBRATION_PAIR_INVALID\nCONTEXT:  PL/pgSQL function v2_calibration_pair_guard() line 11 at RAISE"
+  },
+  {
+    "name": "publication_model_training_FK",
+    "passed": true,
+    "expected_sqlstate": "23503",
+    "expected_marker": "fk_stage2_publication_model_training",
+    "sqlstate": "23503",
+    "error": "insert or update on table \"stage2_model_publications\" violates foreign key constraint \"fk_stage2_publication_model_training\"\nDETAIL:  Key (model_version_id, training_run_id)=(72748ada-ab3e-4266-b730-e4dc7fb619c6, 91d8f1a2-1970-4dca-80d1-45a60844651e) is not present in table \"model_versions\"."
+  },
+  {
+    "name": "publication_checkpoint_FK",
+    "passed": true,
+    "expected_sqlstate": "23503",
+    "expected_marker": "fk_stage2_publication_version_artifact",
+    "sqlstate": "23503",
+    "error": "insert or update on table \"stage2_model_publications\" violates foreign key constraint \"fk_stage2_publication_version_artifact\"\nDETAIL:  Key (model_version_id, checkpoint_artifact_id)=(72748ada-ab3e-4266-b730-e4dc7fb619c6, 8e712b22-fcd2-4409-9e7f-a1c3845d7988) is not present in table \"model_versions\"."
+  },
+  {
+    "name": "publication_invalid_state",
+    "passed": true,
+    "expected_sqlstate": "23514",
+    "expected_marker": "chk_stage2_publication_state",
+    "sqlstate": "23514",
+    "error": "new row for relation \"stage2_model_publications\" violates check constraint \"chk_stage2_publication_state\"\nDETAIL:  Failing row contains (04b65270-52f7-47ed-a2de-09a75fa4e354, B-synthetic, 72748ada-ab3e-4266-b730-e4dc7fb619c6, 9e47486b-2ebe-4c59-961a-b67c39d6ff00, eaa83721-4fe7-45d9-9b73-bde075d36d4a, ceb376c7-f1d2-40d7-827e-db307cc0b981, stage2, active, f, 2026-09-29 21:34:13.795203+00, null, null, null, 2026-09-29 21:34:13.795203+00, 2026-09-29 21:34:13.795203+00, {})."
+  },
+  {
+    "name": "publication_valid_lineage_positive",
+    "passed": true
+  },
+  {
+    "name": "publication_one_active_per_model_version",
+    "passed": true,
+    "expected_sqlstate": "23505",
+    "expected_marker": "uq_stage2_publication_active_version",
+    "sqlstate": "23505",
+    "error": "duplicate key value violates unique constraint \"uq_stage2_publication_active_version\"\nDETAIL:  Key (model_version_id, scope)=(72748ada-ab3e-4266-b730-e4dc7fb619c6, stage2) already exists."
+  },
+  {
+    "name": "publication_event_append_only",
+    "passed": true,
+    "expected_sqlstate": "P0001",
+    "expected_marker": "append-only",
+    "sqlstate": "P0001",
+    "error": "stage2_model_publication_events es append-only\nCONTEXT:  PL/pgSQL function prevent_stage2_publication_event_mutation() line 3 at RAISE"
+  },
+  {
+    "name": "no_DDL",
+    "passed": true,
+    "expected_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "sqlstate": "42501",
+    "error": "permission denied for schema public\nLINE 1: CREATE TABLE public.runtime_forbidden(id int)\n                     ^"
+  },
+  {
+    "name": "no_TEMP",
+    "passed": true,
+    "expected_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "sqlstate": "42501",
+    "error": "permission denied to create temporary tables in database \"capstone_v2_isolated_e09f641a23c5\"\nLINE 1: CREATE TEMP TABLE runtime_temp_forbidden(id int)\n                          ^"
+  },
+  {
+    "name": "no_TRUNCATE",
+    "passed": true,
+    "expected_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "sqlstate": "42501",
+    "error": "permission denied for table datasets"
+  },
+  {
+    "name": "no_alembic_write",
+    "passed": true,
+    "expected_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "sqlstate": "42501",
+    "error": "permission denied for table alembic_version"
+  },
+  {
+    "name": "no_ledger_write",
+    "passed": true,
+    "expected_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "sqlstate": "42501",
+    "error": "permission denied for table schema_migrations"
+  },
+  {
+    "name": "all_valid_fixtures_pass_deferred_constraints",
+    "passed": true
+  }
+]

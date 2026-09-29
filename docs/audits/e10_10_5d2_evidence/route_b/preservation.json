@@ -1,0 +1,9 @@
+{
+  "tables": 97,
+  "counts_and_hashes_equal_to_original_D": true,
+  "sequence": {
+    "last_value": 1,
+    "is_called": false
+  },
+  "source_backup_sha256": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6"
+}

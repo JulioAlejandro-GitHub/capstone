@@ -1,0 +1,68 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "ruff",
+        "check",
+        "adoption_v2/function_guard.py",
+        "adoption_v2/execute.py",
+        "tests/adoption_v2/test_function_guard.py",
+        "scripts/db/capture_v2_d04_dependencies.py",
+        "scripts/db/certify_v2_d04_adoption.py",
+        "scripts/db/test_v2_d04_operations.py",
+        "scripts/db/diagnose_v2_d04_catalog.py"
+      ],
+      "exit_code": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ruff",
+        "format",
+        "--check",
+        "adoption_v2/function_guard.py",
+        "adoption_v2/execute.py",
+        "tests/adoption_v2/test_function_guard.py",
+        "scripts/db/capture_v2_d04_dependencies.py",
+        "scripts/db/certify_v2_d04_adoption.py",
+        "scripts/db/test_v2_d04_operations.py",
+        "scripts/db/diagnose_v2_d04_catalog.py"
+      ],
+      "exit_code": 0,
+      "stdout": "7 files already formatted\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "malaria_dl_local_project/.venv/bin/python",
+        "scripts/db/build_v2_baseline.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "11 resources verified; no database access\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "malaria_dl_local_project/.venv/bin/python",
+        "scripts/db/validate_v2_static.py",
+        "--report",
+        "docs/audits/e10_10_5d3_evidence/baseline_static_results.json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"stage\": \"E10.10.5A\",\n  \"status\": \"STATIC_CHECKS_PASSED_PENDING_REVIEW\",\n  \"parser_postgresql_version\": [\n    18,\n    4\n  ],\n  \"postgresql_17_executed\": false,\n  \"database_connections\": 0,\n  \"revision\": \"pg_v2_baseline\",\n  \"application_tables\": 102,\n  \"physical_tables_including_alembic\": 103,\n  \"views\": 33,\n  \"functions\": 75,\n  \"triggers\": 95,\n  \"constraints\": 950,\n  \"constraint_types\": {\n    \"CONSTR_PRIMARY\": 102,\n    \"CONSTR_UNIQUE\": 75,\n    \"CONSTR_CHECK\": 524,\n    \"CONSTR_FOREIGN\": 249\n  },\n  \"independent_indexes\": 229,\n  \"sequences\": 1,\n  \"plpgsql_bodies_parsed\": 72,\n  \"statements\": 1781,\n  \"legacy_functions_preserved\": 65,\n  \"legacy_triggers_preserved\": 77,\n  \"legacy_constraints_preserved\": 780,\n  \"legacy_independent_indexes_preserved\": 225,\n  \"legacy_views_preserved\": 27,\n  \"protected_tables_checked\": 17,\n  \"historical_files_unchanged\": 54,\n  \"accredited_legacy_checksums\": 22,\n  \"limits\": [\n    \"No PostgreSQL 17 catalogue resolution or execution\",\n    \"No runtime trigger/concurrency tests\",\n    \"No installation, adoption, backup/restore or application contract certification\"\n  ]\n}\n",
+      "stderr": ""
+    }
+  ],
+  "compiled_files": 7,
+  "baseline_manifest_unchanged": "6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be",
+  "catalog_certificate_unchanged": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "historical_files_unchanged": 54,
+  "backups_unchanged": {
+    "source.dump": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6",
+    "isolated.dump": "c197888c05358e2c28e8b5c80c7a7ec01751b8548eb9b2c56918d5af3cd6e281",
+    "d2_isolated.dump": "d61e160fe633b1ab40d6a97e5ec4ca2cb53b6263c6f2006eb2883accc25ac668"
+  },
+  "json_valid": true
+}

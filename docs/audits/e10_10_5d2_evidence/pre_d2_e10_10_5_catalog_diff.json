@@ -1,0 +1,160 @@
+{
+  "stage": "E10.10.5B",
+  "comparison_executed": true,
+  "method": "PostgreSQL 17 canonical rendering of verified manifest statements in a separate empty isolated database, plus direct manifest metadata checks",
+  "manifest_sha256": "c1063136941e9429373d91d666fbea5d25afd0dc39f111fdf2b9779aa1f51eb0",
+  "installed_sha256": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+  "expected_sha256": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+  "counts": {
+    "relations": 137,
+    "columns": 2271,
+    "constraints": 957,
+    "indexes": 407,
+    "views": 33,
+    "functions": 111,
+    "triggers": 95,
+    "sequences": 1,
+    "types": 272,
+    "extensions": 2,
+    "schema_acl": 1,
+    "database_acl": 1,
+    "default_acl": 0,
+    "roles": 2,
+    "runtime_privileges": 952,
+    "runtime_database": 1
+  },
+  "differences": {},
+  "direct_manifest_differences": [],
+  "status": "passed",
+  "gate_b": "pending_review",
+  "certified_categories": [
+    "tables",
+    "columns",
+    "types",
+    "constraints",
+    "indexes",
+    "views",
+    "functions",
+    "triggers",
+    "sequences",
+    "extensions",
+    "privileges"
+  ],
+  "manifest_column_metadata_rendered_on_postgresql_17": true,
+  "constraint_counts_explained": {
+    "application": 950,
+    "alembic_primary_key": 1,
+    "constraint_triggers": 6
+  },
+  "application_function_count": 75,
+  "extension_function_count": 36,
+  "route_b_stage_d": {
+    "status": "BLOCKED",
+    "adopted_catalog_comparison_executed": false,
+    "blocker": "LEGACY_SEQUENCE_DRIFT",
+    "sequence_difference": {
+      "observed": [
+        {
+          "name": "experiment_execution_events_id_seq",
+          "type": "bigint",
+          "seqstart": 1,
+          "seqincrement": 1,
+          "seqmax": 9223372036854775807,
+          "seqmin": 1,
+          "seqcache": 1,
+          "seqcycle": false,
+          "owned_table": "experiment_execution_events",
+          "owned_column": "id",
+          "deptype": "i"
+        }
+      ],
+      "route_a": [
+        {
+          "name": "experiment_execution_events_id_seq",
+          "type": "bigint",
+          "seqstart": 1,
+          "seqincrement": 1,
+          "seqmax": 9223372036854775807,
+          "seqmin": 1,
+          "seqcache": 1,
+          "seqcycle": false,
+          "owned_table": "experiment_execution_events",
+          "owned_column": "id",
+          "deptype": "a"
+        }
+      ],
+      "values": {
+        "experiment_execution_events_id_seq": {
+          "last_value": 1,
+          "is_called": false
+        }
+      }
+    },
+    "additional_observation": "restored_schema_diff.json: textual default qualification differs; not normalized or certified equivalent",
+    "route_a_certificate_unchanged": true
+  },
+  "structural_review_d1": {
+    "status": "BLOCKED_PENDING_DEFAULT_BINDING_DECISION",
+    "baseline_changed": false,
+    "previous_route_a_certificate": "pre-D.1 proposed revision; not recertified",
+    "identity_behavior": {
+      "legacy": {
+        "omitted_id": {
+          "sqlstate": "00000",
+          "value": {
+            "id": 1
+          }
+        },
+        "explicit_id": {
+          "sqlstate": "428C9"
+        },
+        "override_id": {
+          "sqlstate": "00000",
+          "value": {
+            "id": 9000001
+          }
+        },
+        "revoked_wrapper_execute": {
+          "sqlstate": "00000"
+        },
+        "aux_sequence_after_probes": [
+          {
+            "last_value": 1,
+            "is_called": true
+          }
+        ]
+      },
+      "baseline": {
+        "omitted_id": {
+          "sqlstate": "23502"
+        },
+        "explicit_id": {
+          "sqlstate": "00000",
+          "value": {
+            "id": 9000000
+          }
+        },
+        "override_id": {
+          "sqlstate": "00000",
+          "value": {
+            "id": 9000001
+          }
+        },
+        "revoked_wrapper_execute": {
+          "sqlstate": "42501"
+        },
+        "aux_sequence_after_probes": [
+          {
+            "last_value": 1,
+            "is_called": false
+          }
+        ]
+      }
+    },
+    "default_source_representations": 41,
+    "retained_default_binding_differences": 39,
+    "merged_tables_without_destination_default": 2,
+    "diagnostic": "e10_10_5d1_evidence/default_inventory.json",
+    "normalization_applied": false
+  }
+}

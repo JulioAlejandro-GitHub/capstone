@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "revision": "20260922_01",
+  "checksums": 22,
+  "tables": 97,
+  "models": 3,
+  "users": 1,
+  "gate": "free",
+  "source_row_hash_reference": "D restored legacy reference, not a live operational query"
+}

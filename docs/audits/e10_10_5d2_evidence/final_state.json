@@ -1,0 +1,13 @@
+{
+  "stop_exit_code": 0,
+  "stopped_containers": [
+    "31a156221505e7bca249072281dd793833dbb91a5bd03de50114748463c2a194",
+    "09aeb81b36210177134e73c1d735967f2d053e6d4fb8723e3783a14a43787cc3"
+  ],
+  "volumes_retained": true,
+  "backups_retained": true,
+  "operational_connections_in_D2": 0,
+  "adapter_applied": false,
+  "stage_e": false,
+  "cutover": false
+}

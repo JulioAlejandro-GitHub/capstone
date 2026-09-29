@@ -1,0 +1,23 @@
+{
+  "D04": "RESOLVED",
+  "D05": {
+    "status": "ARCHITECTURAL_BLOCKER",
+    "table": "assessment_identities",
+    "column": "structural_hash",
+    "actual_generation": "STORED",
+    "actual_expression": "assessment_structural_hash(identity)",
+    "expected_generation": null,
+    "expected_expression": null,
+    "proposal": "Preserve legacy GENERATED ALWAYS AS (assessment_structural_hash(identity)) STORED in baseline; order assessment_canonical then assessment_structural_hash before table creation; requires explicit decision and new Route A certification."
+  },
+  "D06": {
+    "status": "UNRESOLVED_REPRESENTATION_DIFFERENCES",
+    "constraints": [
+      "campaign_controlled_requests.campaign_controlled_requests_reason_check",
+      "cell_predictions.ck_cell_prediction_label_index",
+      "smear_analysis_summaries.ck_smear_summary_fraction",
+      "smear_analysis_summaries.ck_smear_summary_probabilities"
+    ],
+    "proposal": "Investigate native operator/function bindings and boolean semantics; no text normalization or equivalence assumed."
+  }
+}

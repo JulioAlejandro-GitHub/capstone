@@ -129,7 +129,7 @@ def catalog():
             )
             cols = c.execute(
                 """SELECT a.attname AS name,format_type(a.atttypid,a.atttypmod) AS type,
-                a.attgenerated,pg_get_expr(d.adbin,d.adrelid) AS expression,
+                a.attgenerated,a.attidentity,pg_get_expr(d.adbin,d.adrelid) AS expression,
                 CASE WHEN a.attcollation=0 THEN NULL ELSE a.attcollation::regcollation::text END AS collation
                 FROM pg_attribute a LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum
                 WHERE a.attrelid=%s::regclass AND a.attnum>0 ORDER BY a.attnum""",
@@ -163,6 +163,14 @@ def catalog():
                 direct.append({"table": name, "error": "column order/names mismatch"})
             for a in cols:
                 e = entry["columns"][a["name"]]
+                if a["attidentity"] != e.get("identity", ""):
+                    direct.append(
+                        {
+                            "table": name,
+                            "column": a["name"],
+                            "error": "identity mismatch",
+                        }
+                    )
                 if a["attnotnull"] == e["nullable"]:
                     direct.append(
                         {
@@ -179,8 +187,33 @@ def catalog():
             ]
             if len(matches) != 1:
                 direct.append({"function": name, "error": "missing or ambiguous"})
+    for contract in manifest.get("identity_sequences", []):
+        sequences = [
+            r for r in actual["sequences"] if r["name"] == contract["sequence"]
+        ]
+        expected_sequence = {
+            "name": contract["sequence"],
+            "type": "bigint",
+            "seqstart": contract["start"],
+            "seqincrement": contract["increment"],
+            "seqmin": contract["min"],
+            "seqmax": contract["max"],
+            "seqcache": contract["cache"],
+            "seqcycle": contract["cycle"],
+            "owned_table": contract["table"],
+            "owned_column": contract["column"],
+            "deptype": "i",
+        }
+        if sequences != [expected_sequence]:
+            direct.append(
+                {
+                    "identity_sequence": contract["sequence"],
+                    "expected": expected_sequence,
+                    "actual": sequences,
+                }
+            )
     result = {
-        "stage": "E10.10.5B",
+        "stage": "E10.10.5D.2" if t.get("decision") == "D-03" else "E10.10.5B",
         "comparison_executed": True,
         "method": "PostgreSQL 17 canonical rendering of verified manifest statements in a separate empty isolated database, plus direct manifest metadata checks",
         "manifest_sha256": hashlib.sha256(

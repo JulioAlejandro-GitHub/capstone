@@ -1,6 +1,22 @@
 """Read PostgreSQL catalog properties without database-local OIDs in comparisons."""
 
 QUERIES = {
+    "default_functions": """SELECT c.relname AS relation,a.attname AS column_name,
+        n.nspname AS function_schema,p.proname AS function_name,
+        pg_get_function_identity_arguments(p.oid) AS arguments,
+        pg_get_function_result(p.oid) AS result
+        FROM pg_attrdef d JOIN pg_class c ON c.oid=d.adrelid
+        JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum=d.adnum
+        CROSS JOIN LATERAL regexp_matches(d.adbin::text, ':funcid ([0-9]+)', 'g') f(id)
+        JOIN pg_proc p ON p.oid=f.id[1]::oid JOIN pg_namespace n ON n.oid=p.pronamespace
+        WHERE c.relnamespace='public'::regnamespace ORDER BY 1,2,3,4,5""",
+    "default_dependencies": """SELECT c.relname AS relation,a.attname AS column_name,
+        x.deptype,x.refclassid::regclass::text AS referenced_catalog,
+        pg_describe_object(x.refclassid,x.refobjid,x.refobjsubid) AS referenced_object
+        FROM pg_attrdef d JOIN pg_class c ON c.oid=d.adrelid
+        JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum=d.adnum
+        JOIN pg_depend x ON x.classid='pg_attrdef'::regclass AND x.objid=d.oid
+        WHERE c.relnamespace='public'::regnamespace ORDER BY 1,2,3,4,5""",
     "relations": """SELECT c.relname AS name,c.relkind,c.relpersistence,
         pg_get_userbyid(c.relowner) AS owner,c.relrowsecurity,c.relforcerowsecurity,
         c.relreplident,c.reloptions,c.relacl::text

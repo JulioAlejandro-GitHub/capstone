@@ -1,0 +1,1771 @@
+{
+  "manifest_sha256": "6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be",
+  "catalog_sha256": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "identity": {
+    "database": "capstone_v2_isolated_e09f641a23c5",
+    "role": "capstone_v2_migrator",
+    "session_role": "capstone_v2_migrator",
+    "database_oid": 16386,
+    "database_owner": "capstone_v2_migrator",
+    "server_version_num": 170009,
+    "system_identifier": "7691073295770107948",
+    "recovery": false,
+    "read_only": "off"
+  },
+  "query": "SELECT p.proname AS name,\n    pg_get_function_identity_arguments(p.oid) AS arguments,\n    d.deptype,d.objsubid,d.refclassid::regclass::text AS referenced_catalog,\n    pg_describe_object(d.refclassid,d.refobjid,d.refobjsubid) AS referenced_object\n    FROM pg_proc p JOIN pg_depend d ON d.classid='pg_proc'::regclass AND d.objid=p.oid\n    WHERE p.pronamespace='public'::regnamespace\n    ORDER BY 1,2,3,4,5,6",
+  "dependencies": [
+    {
+      "name": "armor",
+      "arguments": "bytea",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "armor",
+      "arguments": "bytea",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "armor",
+      "arguments": "bytea, text[], text[]",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "armor",
+      "arguments": "bytea, text[], text[]",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "assessment_attempt_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "assessment_attempt_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "assessment_canonical",
+      "arguments": "v jsonb",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "assessment_canonical",
+      "arguments": "v jsonb",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "assessment_consumer_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "assessment_consumer_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "assessment_identity_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "assessment_identity_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "assessment_immutable",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "assessment_immutable",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "assessment_result_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "assessment_result_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "assessment_structural_hash",
+      "arguments": "v jsonb",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_attempt_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_attempt_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_attempt_state",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_attempt_state",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_audit",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_audit",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_catalog_identity_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_catalog_identity_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_configuration_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_configuration_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_configuration_valid",
+      "arguments": "v jsonb",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_configuration_valid",
+      "arguments": "v jsonb",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_contract_valid",
+      "arguments": "v jsonb",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_contract_valid",
+      "arguments": "v jsonb",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_environment_identity",
+      "arguments": "v jsonb",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_json_integer",
+      "arguments": "v jsonb, minimum_value numeric",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_json_integer",
+      "arguments": "v jsonb, minimum_value numeric",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_json_object",
+      "arguments": "v jsonb, required_keys text[]",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_json_object",
+      "arguments": "v jsonb, required_keys text[]",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_json_string",
+      "arguments": "v jsonb",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_member_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_member_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_model_matches",
+      "arguments": "run_id uuid, member uuid",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_model_matches",
+      "arguments": "run_id uuid, member uuid",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_run_identity_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_run_identity_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "campaign_technical_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "campaign_technical_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "controlled_binding_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "controlled_binding_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "controlled_pause_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "controlled_pause_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "controlled_run_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "controlled_run_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "crypt",
+      "arguments": "text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "crypt",
+      "arguments": "text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "dearmor",
+      "arguments": "text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "dearmor",
+      "arguments": "text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "decrypt",
+      "arguments": "bytea, bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "decrypt",
+      "arguments": "bytea, bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "decrypt_iv",
+      "arguments": "bytea, bytea, bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "decrypt_iv",
+      "arguments": "bytea, bytea, bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "digest",
+      "arguments": "bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "digest",
+      "arguments": "bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "digest",
+      "arguments": "text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "digest",
+      "arguments": "text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "encrypt",
+      "arguments": "bytea, bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "encrypt",
+      "arguments": "bytea, bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "encrypt_iv",
+      "arguments": "bytea, bytea, bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "encrypt_iv",
+      "arguments": "bytea, bytea, bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "enforce_activation_materialization_consistency",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "enforce_activation_materialization_consistency",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "enforce_dataset_assignment_consistency",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "enforce_dataset_assignment_consistency",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "enforce_dataset_version_lifecycle",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "enforce_dataset_version_lifecycle",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "enforce_model_version_governance",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "enforce_model_version_governance",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "enforce_run_lineage_governance",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "enforce_run_lineage_governance",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "execution_event_immutable",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "execution_event_immutable",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "experiment_require_owner",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "experiment_require_owner",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "experiment_reservation_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "experiment_reservation_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "gen_random_bytes",
+      "arguments": "integer",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "gen_random_bytes",
+      "arguments": "integer",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "gen_random_uuid",
+      "arguments": "",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "gen_random_uuid",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "gen_salt",
+      "arguments": "text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "gen_salt",
+      "arguments": "text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "gen_salt",
+      "arguments": "text, integer",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "gen_salt",
+      "arguments": "text, integer",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "hmac",
+      "arguments": "bytea, bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "hmac",
+      "arguments": "bytea, bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "hmac",
+      "arguments": "text, text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "hmac",
+      "arguments": "text, text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_armor_headers",
+      "arguments": "text, OUT key text, OUT value text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_armor_headers",
+      "arguments": "text, OUT key text, OUT value text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_key_id",
+      "arguments": "bytea",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_key_id",
+      "arguments": "bytea",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_decrypt",
+      "arguments": "bytea, bytea",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_decrypt",
+      "arguments": "bytea, bytea",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_decrypt",
+      "arguments": "bytea, bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_decrypt",
+      "arguments": "bytea, bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_decrypt",
+      "arguments": "bytea, bytea, text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_decrypt",
+      "arguments": "bytea, bytea, text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_decrypt_bytea",
+      "arguments": "bytea, bytea",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_decrypt_bytea",
+      "arguments": "bytea, bytea",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_decrypt_bytea",
+      "arguments": "bytea, bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_decrypt_bytea",
+      "arguments": "bytea, bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_decrypt_bytea",
+      "arguments": "bytea, bytea, text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_decrypt_bytea",
+      "arguments": "bytea, bytea, text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_encrypt",
+      "arguments": "text, bytea",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_encrypt",
+      "arguments": "text, bytea",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_encrypt",
+      "arguments": "text, bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_encrypt",
+      "arguments": "text, bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_encrypt_bytea",
+      "arguments": "bytea, bytea",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_encrypt_bytea",
+      "arguments": "bytea, bytea",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_pub_encrypt_bytea",
+      "arguments": "bytea, bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_pub_encrypt_bytea",
+      "arguments": "bytea, bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_sym_decrypt",
+      "arguments": "bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_sym_decrypt",
+      "arguments": "bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_sym_decrypt",
+      "arguments": "bytea, text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_sym_decrypt",
+      "arguments": "bytea, text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_sym_decrypt_bytea",
+      "arguments": "bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_sym_decrypt_bytea",
+      "arguments": "bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_sym_decrypt_bytea",
+      "arguments": "bytea, text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_sym_decrypt_bytea",
+      "arguments": "bytea, text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_sym_encrypt",
+      "arguments": "text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_sym_encrypt",
+      "arguments": "text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_sym_encrypt",
+      "arguments": "text, text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_sym_encrypt",
+      "arguments": "text, text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_sym_encrypt_bytea",
+      "arguments": "bytea, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_sym_encrypt_bytea",
+      "arguments": "bytea, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "pgp_sym_encrypt_bytea",
+      "arguments": "bytea, text, text",
+      "deptype": "e",
+      "objsubid": 0,
+      "referenced_catalog": "pg_extension",
+      "referenced_object": "extension pgcrypto"
+    },
+    {
+      "name": "pgp_sym_encrypt_bytea",
+      "arguments": "bytea, text, text",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "prevent_audit_event_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "prevent_audit_event_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "prevent_model_governance_audit_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "prevent_model_governance_audit_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "prevent_stage2_publication_event_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "prevent_stage2_publication_event_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "prevent_validation_annotation_event_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "prevent_validation_annotation_event_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "prevent_validation_membership_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "prevent_validation_membership_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_cell_classification_run",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_cell_classification_run",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_cell_detection_run_identity",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_cell_detection_run_identity",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_cell_explanation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_cell_explanation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_deployed_model_version_payload",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_deployed_model_version_payload",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_frozen_dataset_assignment_updates",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_frozen_dataset_assignment_updates",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_frozen_dataset_assignments",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_frozen_dataset_assignments",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_frozen_dataset_version_sources",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_frozen_dataset_version_sources",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_governed_artifact_identity",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_governed_artifact_identity",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_validation_annotation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_validation_annotation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "protect_validation_snapshot",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "protect_validation_snapshot",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "reject_cell_analysis_row_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "reject_cell_analysis_row_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "reject_cell_classification_row_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "reject_cell_classification_row_mutation",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "train_event_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "train_event_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "train_record_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "train_record_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "train_revision_binding_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "train_revision_binding_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "train_session_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "train_session_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_binary_metric_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_binary_metric_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_calibration_pair_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_calibration_pair_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_configuration_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_configuration_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_evaluation_complete",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_evaluation_complete",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_immutable",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_immutable",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_run_configuration_required",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_run_configuration_required",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_xai_artifact_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_xai_artifact_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_xai_artifact_source_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_xai_artifact_source_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_xai_comparison_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_xai_comparison_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "v2_xai_lineage_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "v2_xai_lineage_guard",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_cell_classification_input_snapshot",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_cell_classification_input_snapshot",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_cell_classification_insert_state",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_cell_classification_insert_state",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_cell_classification_review",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_cell_classification_review",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_cell_classification_run_snapshot",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_cell_classification_run_snapshot",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_cell_explanation_contract",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_cell_explanation_contract",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_cell_prediction_input",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_cell_prediction_input",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_deployed_model_version",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_deployed_model_version",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_image_analysis_job",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_image_analysis_job",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_run_model_deployment",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_run_model_deployment",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    },
+    {
+      "name": "validate_smear_analysis_summary",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_language",
+      "referenced_object": "language plpgsql"
+    },
+    {
+      "name": "validate_smear_analysis_summary",
+      "arguments": "",
+      "deptype": "n",
+      "objsubid": 0,
+      "referenced_catalog": "pg_namespace",
+      "referenced_object": "schema public"
+    }
+  ],
+  "scope": "Read-only supplement; D-03 certificate unchanged"
+}

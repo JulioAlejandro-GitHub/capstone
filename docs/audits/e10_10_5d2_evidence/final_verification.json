@@ -1,0 +1,52 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "ruff",
+        "check",
+        "alembic_v2",
+        "adoption_v2",
+        "scripts/db/build_v2_baseline.py",
+        "scripts/db/validate_v2_static.py",
+        "scripts/db/v2_catalog_probe.py",
+        "scripts/db/verify_v2_route_a.py",
+        "scripts/db/recertify_v2_d03.py",
+        "scripts/db/test_v2_d03_server.py",
+        "scripts/db/preflight_v2_d03_adoption.py",
+        "tests/db_v2",
+        "tests/adoption_v2"
+      ],
+      "returncode": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ruff",
+        "format",
+        "--check",
+        "alembic_v2",
+        "adoption_v2",
+        "scripts/db/build_v2_baseline.py",
+        "scripts/db/validate_v2_static.py",
+        "scripts/db/v2_catalog_probe.py",
+        "scripts/db/verify_v2_route_a.py",
+        "scripts/db/recertify_v2_d03.py",
+        "scripts/db/test_v2_d03_server.py",
+        "scripts/db/preflight_v2_d03_adoption.py",
+        "tests/db_v2",
+        "tests/adoption_v2"
+      ],
+      "returncode": 0,
+      "stdout": "28 files already formatted\n",
+      "stderr": ""
+    }
+  ],
+  "compiled_modules": 26,
+  "historical_files_unchanged": 54,
+  "source_backups_unchanged": {
+    "source.dump": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6",
+    "isolated.dump": "c197888c05358e2c28e8b5c80c7a7ec01751b8548eb9b2c56918d5af3cd6e281"
+  },
+  "json_valid": true
+}

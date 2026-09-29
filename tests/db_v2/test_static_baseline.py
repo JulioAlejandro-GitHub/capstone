@@ -98,6 +98,54 @@ class StaticBaselineTests(unittest.TestCase):
         cls.manifest, cls.statements = load_baseline()
         cls.catalogue = catalogue(cls.statements)
 
+    def test_d03_identity_and_exact_default_scope(self):
+        root = Path(__file__).resolve().parents[2]
+        previous = json.loads(
+            (
+                root
+                / "docs/audits/e10_10_5d2_evidence/previous_baseline/catalog_manifest.json"
+            ).read_text()
+        )
+        inventory = json.loads(
+            (
+                root / "docs/audits/e10_10_5d1_evidence/default_inventory.json"
+            ).read_text()
+        )
+        approved = {
+            (r["table"], r["column"])
+            for r in inventory["rows"]
+            if r["v2_resolved_function"]
+        }
+        old = {
+            (e["name"], k): v
+            for e in previous["statements"]
+            if e["kind"] == "table"
+            for k, v in e["columns"].items()
+        }
+        new = {
+            (e["name"], k): v
+            for e in self.manifest["statements"]
+            if e["kind"] == "table"
+            for k, v in e["columns"].items()
+        }
+        changed = {k for k in old if old[k]["default"] != new[k]["default"]}
+        self.assertEqual(changed, approved)
+        self.assertEqual(len(changed), 39)
+        for k in changed:
+            self.assertEqual(new[k]["default"], "pg_catalog.gen_random_uuid()")
+        identities = {k: v["identity"] for k, v in new.items() if v["identity"]}
+        self.assertEqual(identities, {("experiment_execution_events", "id"): "a"})
+        self.assertFalse(
+            any(
+                e["kind"] in ("sequence", "sequence_ownership")
+                for e in self.manifest["statements"]
+            )
+        )
+        self.assertEqual(
+            self.manifest["identity_sequences"][0]["sequence"],
+            "experiment_execution_events_id_seq",
+        )
+
     def test_integral_catalogue_and_historical_contracts(self):
         result = validate()
         self.assertEqual(result["physical_tables_including_alembic"], 103)

@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "before": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "after": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "all_data_before": "8a71ef9b4cfca5427a40e01b5570728fe2868cb18678744c7c9e12d565b7871d",
+  "all_data_after": "8a71ef9b4cfca5427a40e01b5570728fe2868cb18678744c7c9e12d565b7871d",
+  "tables_checked": 103,
+  "head_before": [
+    {
+      "xmin": "742",
+      "ctid": "(0,1)",
+      "version_num": "pg_v2_baseline"
+    }
+  ],
+  "head_after": [
+    {
+      "xmin": "742",
+      "ctid": "(0,1)",
+      "version_num": "pg_v2_baseline"
+    }
+  ],
+  "gate_before": [
+    {
+      "row": "{\"singleton\":true,\"owner\":null,\"db_pid\":null,\"process_evidence\":{},\"blocked_reason\":null,\"updated_at\":\"2026-09-29T21:33:24.262356+00:00\"}",
+      "xmin": "742",
+      "ctid": "(0,1)"
+    }
+  ],
+  "gate_after": [
+    {
+      "row": "{\"singleton\":true,\"owner\":null,\"db_pid\":null,\"process_evidence\":{},\"blocked_reason\":null,\"updated_at\":\"2026-09-29T21:33:24.262356+00:00\"}",
+      "xmin": "742",
+      "ctid": "(0,1)"
+    }
+  ]
+}

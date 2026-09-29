@@ -1,0 +1,13 @@
+{
+  "catalog_unchanged": true,
+  "all_97_tables_unchanged": true,
+  "head": [
+    {
+      "version_num": "20260922_01"
+    }
+  ],
+  "sequence": {
+    "last_value": 1,
+    "is_called": false
+  }
+}

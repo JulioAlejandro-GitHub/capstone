@@ -1,0 +1,8 @@
+{
+  "action": "apply",
+  "type": "Blocked",
+  "code": "FINAL_CATALOG_MISMATCH",
+  "location": "",
+  "sqlstate": null,
+  "adapter_result": "not certified"
+}

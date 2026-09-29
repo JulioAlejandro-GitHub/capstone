@@ -1,0 +1,157 @@
+{
+  "default_functions": {
+    "actual_only": [
+      {
+        "relation": "assessment_identities",
+        "column_name": "structural_hash",
+        "function_schema": "public",
+        "function_name": "assessment_structural_hash",
+        "arguments": "v jsonb",
+        "result": "text"
+      }
+    ],
+    "expected_only": []
+  },
+  "default_dependencies": {
+    "actual_only": [
+      {
+        "relation": "assessment_identities",
+        "column_name": "structural_hash",
+        "deptype": "i",
+        "referenced_catalog": "pg_class",
+        "referenced_object": "column structural_hash of table assessment_identities"
+      },
+      {
+        "relation": "assessment_identities",
+        "column_name": "structural_hash",
+        "deptype": "n",
+        "referenced_catalog": "pg_class",
+        "referenced_object": "column identity of table assessment_identities"
+      },
+      {
+        "relation": "assessment_identities",
+        "column_name": "structural_hash",
+        "deptype": "n",
+        "referenced_catalog": "pg_proc",
+        "referenced_object": "function assessment_structural_hash(jsonb)"
+      }
+    ],
+    "expected_only": []
+  },
+  "columns": {
+    "actual_only": [
+      {
+        "relation": "assessment_identities",
+        "attnum": 7,
+        "name": "structural_hash",
+        "type": "text",
+        "attnotnull": false,
+        "attidentity": "",
+        "attgenerated": "s",
+        "expression": "assessment_structural_hash(identity)",
+        "collation": "\"default\"",
+        "attacl": null
+      }
+    ],
+    "expected_only": [
+      {
+        "relation": "assessment_identities",
+        "attnum": 7,
+        "name": "structural_hash",
+        "type": "text",
+        "attnotnull": false,
+        "attidentity": "",
+        "attgenerated": "",
+        "expression": null,
+        "collation": "\"default\"",
+        "attacl": null
+      }
+    ]
+  },
+  "constraints": {
+    "actual_only": [
+      {
+        "relation": "campaign_controlled_requests",
+        "name": "campaign_controlled_requests_reason_check",
+        "contype": "c",
+        "definition": "CHECK ((length(TRIM(BOTH FROM reason)) > 0))",
+        "condeferrable": false,
+        "condeferred": false,
+        "convalidated": true,
+        "connoinherit": false
+      },
+      {
+        "relation": "cell_predictions",
+        "name": "ck_cell_prediction_label_index",
+        "contype": "c",
+        "definition": "CHECK ((((prediction_status)::text <> 'completed'::text) OR (((predicted_class_index = 1) AND ((predicted_label)::text = 'parasitized'::text) AND (probability_parasitized >= threshold_used)) OR ((predicted_class_index = 0) AND ((predicted_label)::text = 'uninfected'::text) AND (probability_parasitized < threshold_used)))))",
+        "condeferrable": false,
+        "condeferred": false,
+        "convalidated": true,
+        "connoinherit": false
+      },
+      {
+        "relation": "smear_analysis_summaries",
+        "name": "ck_smear_summary_fraction",
+        "contype": "c",
+        "definition": "CHECK ((((classified_cell_count = 0) AND (parasitized_candidate_fraction IS NULL)) OR ((classified_cell_count > 0) AND ((parasitized_candidate_fraction >= (0)::double precision) AND (parasitized_candidate_fraction <= (1)::double precision)) AND (abs((parasitized_candidate_fraction - ((parasitized_candidate_count)::double precision / (classified_cell_count)::double precision))) <= (0.000000001)::double precision))))",
+        "condeferrable": false,
+        "condeferred": false,
+        "convalidated": true,
+        "connoinherit": false
+      },
+      {
+        "relation": "smear_analysis_summaries",
+        "name": "ck_smear_summary_probabilities",
+        "contype": "c",
+        "definition": "CHECK ((((classified_cell_count = 0) AND (maximum_probability_parasitized IS NULL) AND (mean_probability_parasitized IS NULL) AND (median_probability_parasitized IS NULL)) OR ((classified_cell_count > 0) AND ((maximum_probability_parasitized >= (0)::double precision) AND (maximum_probability_parasitized <= (1)::double precision)) AND ((mean_probability_parasitized >= (0)::double precision) AND (mean_probability_parasitized <= (1)::double precision)) AND ((median_probability_parasitized >= (0)::double precision) AND (median_probability_parasitized <= (1)::double precision)))))",
+        "condeferrable": false,
+        "condeferred": false,
+        "convalidated": true,
+        "connoinherit": false
+      }
+    ],
+    "expected_only": [
+      {
+        "relation": "campaign_controlled_requests",
+        "name": "campaign_controlled_requests_reason_check",
+        "contype": "c",
+        "definition": "CHECK ((length(btrim(reason)) > 0))",
+        "condeferrable": false,
+        "condeferred": false,
+        "convalidated": true,
+        "connoinherit": false
+      },
+      {
+        "relation": "cell_predictions",
+        "name": "ck_cell_prediction_label_index",
+        "contype": "c",
+        "definition": "CHECK ((((prediction_status)::text <> 'completed'::text) OR ((predicted_class_index = 1) AND ((predicted_label)::text = 'parasitized'::text) AND (probability_parasitized >= threshold_used)) OR ((predicted_class_index = 0) AND ((predicted_label)::text = 'uninfected'::text) AND (probability_parasitized < threshold_used))))",
+        "condeferrable": false,
+        "condeferred": false,
+        "convalidated": true,
+        "connoinherit": false
+      },
+      {
+        "relation": "smear_analysis_summaries",
+        "name": "ck_smear_summary_fraction",
+        "contype": "c",
+        "definition": "CHECK ((((classified_cell_count = 0) AND (parasitized_candidate_fraction IS NULL)) OR ((classified_cell_count > 0) AND (parasitized_candidate_fraction >= (0)::double precision) AND (parasitized_candidate_fraction <= (1)::double precision) AND (abs((parasitized_candidate_fraction - ((parasitized_candidate_count)::double precision / (classified_cell_count)::double precision))) <= (0.000000001)::double precision))))",
+        "condeferrable": false,
+        "condeferred": false,
+        "convalidated": true,
+        "connoinherit": false
+      },
+      {
+        "relation": "smear_analysis_summaries",
+        "name": "ck_smear_summary_probabilities",
+        "contype": "c",
+        "definition": "CHECK ((((classified_cell_count = 0) AND (maximum_probability_parasitized IS NULL) AND (mean_probability_parasitized IS NULL) AND (median_probability_parasitized IS NULL)) OR ((classified_cell_count > 0) AND (maximum_probability_parasitized >= (0)::double precision) AND (maximum_probability_parasitized <= (1)::double precision) AND (mean_probability_parasitized >= (0)::double precision) AND (mean_probability_parasitized <= (1)::double precision) AND (median_probability_parasitized >= (0)::double precision) AND (median_probability_parasitized <= (1)::double precision))))",
+        "condeferrable": false,
+        "condeferred": false,
+        "convalidated": true,
+        "connoinherit": false
+      }
+    ]
+  }
+}

@@ -1,3 +1,13 @@
+> Estado D.3: D-04 resuelta y preflight aprobado. La aplicación se revirtió por FINAL_CATALOG_MISMATCH: D-05 (columna structural_hash generada ausente del contrato objetivo) y D-06 (cuatro CHECK pendientes de equivalencia). Baseline/certificado D-03 no modificados en D.3. Véase docs/audits/e10_10_5_route_b_results.md. Los estados anteriores de este documento son históricos.
+
+# Estado tras D-03 (E10.10.5D.2)
+
+D-01 y D-02 resueltos; el adaptador fija el nuevo manifiesto y catálogo recertificado de Ruta A. La captura usa representación nativa PostgreSQL con `pg_catalog,public` para el esquema legacy, y coteja los 39 bindings/dependencias UUID y la identidad contra el certificado, sin retirar prefijos de expresiones. La comparación final conserva todas las categorías de catálogo, ownership y ACL.
+
+**D continúa bloqueada por `LEGACY_FUNCTION_OWNER_MISMATCH`.** La guarda anterior exige propietario migrador incluso para 36 funciones de pgcrypto que pertenecen a postgres, igual que en Ruta A. No se corrigió esa guarda ni se ejecutó el delta: se requiere decisión D-04. [Informe vigente](../docs/audits/e10_10_5_route_b_results.md).
+
+## Contrato original de C (histórico)
+
 # Adaptador de adopción legacy → PostgreSQL v2
 
 Entrega E10.10.5C: implementación y validación **offline**. Gate B aprobado; Gate C pendiente. El ejecutor existe para el ensayo D y no se ha conectado a ninguna base en C. No es una migración de la baseline vacía ni carga los SQL históricos.

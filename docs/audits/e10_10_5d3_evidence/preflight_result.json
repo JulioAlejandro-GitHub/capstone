@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "identity": {
+    "database": "capstone_v2_isolated_8c5114865703_d2_adoption",
+    "role": "capstone_v2_migrator",
+    "session_role": "capstone_v2_migrator",
+    "database_oid": 26241,
+    "database_owner": "capstone_v2_migrator",
+    "server_version_num": 170009,
+    "system_identifier": "7691066755790737451",
+    "recovery": false,
+    "read_only": "off"
+  },
+  "tables": 97,
+  "source_inventory_sha256": "71163d6dd4ff414117492d5ad4c28be2727d8a6f5fa32ae344ebf9bd089f729e",
+  "plan_sha256": "6f75e4be3ab64bfd991ae06ef39c717f688c2acebb8d08b4ada2ccd6fee7e1e1",
+  "functions": 101,
+  "pgcrypto_functions_exact": 36,
+  "own_functions": 65,
+  "source_revision": "20260922_01",
+  "sequence_values": {
+    "experiment_execution_events_id_seq": {
+      "last_value": 1,
+      "is_called": false
+    }
+  }
+}

@@ -1,47 +1,62 @@
-## Actualización E10.10.5D.1 — decisión estructural pendiente
-
-**E10.10.5D — BLOQUEADA. GATE D NO APROBABLE.** D-01 demostrado: legacy es GENERATED ALWAYS AS IDENTITY; baseline omite generación (INSERT sin id falla 23502) y acepta IDs explícitos que legacy rechaza (428C9). D-02 comprende 41 representaciones divergentes: 39 columnas retenidas resuelven a otra función; dos tablas son MERGE aprobado. Legacy usa pg_catalog.gen_random_uuid y baseline el wrapper de pgcrypto, con dependencias y permisos distintos. Prueba auxiliar: revocar EXECUTE del wrapper mantiene INSERT legacy y rechaza baseline con 42501.
-
-La Parte 2 exige detenerse ante falta de equivalencia. No se modificaron baseline/manifiesto/adaptador/comparador. Se propone conservar IDENTITY y fijar explícitamente el binding pg_catalog de las 39 columnas; requiere decisión antes de cambiar esquema. La certificación B es anterior a esta propuesta y no acredita una corrección. Preservación de la copia D original: 97/97 conteos/hashes y secuencia intactos; cero conexiones operativas. Solo probes en auxiliares aisladas. Preflight/adopción/recertificación/rollback/repetición/restore siguen pendientes. No E ni cutover.
-
-[Diagnóstico, decisión, pruebas y comandos](e10_10_5d_structural_resolution.md), [inventario exacto de defaults](e10_10_5d1_evidence/default_inventory.json), [preservación](e10_10_5d1_evidence/preservation.json).
-
----
-
-# E10.10.5D — Informe de etapa
+# E10.10.5D.3 — D-04 resuelta; catálogo final bloqueado
 
 **E10.10.5D — BLOQUEADA. GATE D NO APROBABLE.**
 
-## 1. Objetivo y autorización
-Gate C aprobado expresamente por el usuario. Se inició exclusivamente D para certificar adopción sobre copia aislada. No se inició E ni cutover. No se eludió ninguna guarda.
+## 1. Objetivo alcanzado
+D-04 aplicada exclusivamente a la guarda de funciones. El preflight completo pasó y se ejecutó el adaptador sobre la copia PostgreSQL 17.9 aislada acreditada. Todas las sentencias SQL terminaron correctamente y las 102 tablas de aplicación se reconciliaron antes del cotejo final. La comparación íntegra de catálogo bloqueó el commit con FINAL_CATALOG_MISMATCH. No se cambió el head. El rollback dejó íntegros catálogo, 97 tablas legacy y secuencia.
+No se declara adopción certificada ni se ejecutan pruebas posteriores que presuponen un destino adoptado.
 
-## 2. Origen y copia consistente
-PostgreSQL operativo 17.9, base `malaria_experiments`, OID 1600436, system identifier `7668020338728398886`, revisión observada `20260922_01`. Acceso SQL mediante SELECT y transacciones READ ONLY; pg_dump custom 17.9 con `default_transaction_read_only=on` y lock timeout 5 s. Sin DDL/DML/Alembic/stamp, cambios de roles ni detención de procesos operativos.
-Backup de 12518509 bytes, SHA-256 `fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6`. Ubicación privada en [recibo](e10_10_5d_evidence/source_backup.json); permisos 0600/directorio 0700 fuera del repositorio. pg_dump obtiene su propio snapshot consistente; las consultas preliminares son snapshots separados y no se presentan como el mismo snapshot.
+## 2. Archivos modificados
+`adoption_v2/function_guard.py` nuevo y sustitución de la única guarda de ownership en `adoption_v2/execute.py`. `tests/adoption_v2/test_function_guard.py` añade 14 tests. Runners aislados de captura de dependencias, ejecución trazada, diagnóstico con rollback y preparación de operaciones futuras. Informes y evidencia actualizados.
+**Sin cambios a baseline, manifiesto, propietarios reales, ACL de pgcrypto ni certificados D-03.** Se conservaron los cambios D.2 preexistentes; no se presentan como modificaciones nuevas de D.3. Los runners de repetición/restore/inyección están preparados pero no ejecutados.
 
-## 3. Aislamiento e identidad del destino
-Contenedor `09aeb81b36210177134e73c1d735967f2d053e6d4fb8723e3783a14a43787cc3`, volumen/base `capstone_v2_isolated_8c5114865703`, puerto `127.0.0.1:55479`, cluster `7691066755790737451`, OID 16386, PostgreSQL 170009. Credenciales aleatorias independientes; roles v2 sin privilegios administrativos. Identidad y guardas Docker comprobadas antes de provisión/restauración. Se restauró con `--no-owner --no-acl --role=capstone_v2_migrator --single-transaction --exit-on-error`; esa preparación de ownership/ACL es explícita, no una equivalencia con el origen. Ningún recurso operativo se montó en el destino.
-Backup adicional de la copia legacy restaurada: SHA-256 `c197888c05358e2c28e8b5c80c7a7ec01751b8548eb9b2c56918d5af3cd6e281`. Destino detenido al cierre; volumen y backups conservados. [Identidad](e10_10_5d_evidence/isolated_identity.json), [estado final](e10_10_5d_evidence/final_state.json).
+La guarda exige inventario exacto de 65 funciones propias legacy + 36 funciones pgcrypto. Para propias: owner migrador, firma/definición/propiedades exactas y ausencia de extensión; ACL exactamente NULL, correspondiente al restore autorizado `--no-acl`. Este es el contrato **previo** a adopción, no una equivalencia silenciosa con el ACL v2. El delta existente instala luego los ACL v2 y la comparación final los exige. Para pgcrypto: entrada completa idéntica a Ruta A, sin excepción para owner postgres. `pg_depend`/`pg_extension` acreditan pertenencia; un suplemento de dependencias leído de Ruta A se fija por checksum. Las dependencias de todas las funciones deben coincidir con el subconjunto contractual.
 
-## 4. Preflight obligatorio
-Origen: revisión correcta; 22 checksums iguales al contrato y a los archivos históricos; inventario exacto de 97 tablas; siete grupos de esquema iguales al contrato. Gate libre y evidencia vacía; cero filas de campañas/sesiones/intentos/jobs/runs. Dos conexiones cliente ajenas inactivas observadas, ninguna detenida. Tres modelos, un usuario, dos datasets y una versión de dataset. Se preservó la evidencia registrada sin leer ni modificar archivos científicos.
-Copia: 97 conteos coinciden con la observación de origen; hashes canónicos de cada tabla registrados en [inventario](e10_10_5d_evidence/reference_inventory.json). Esto no acredita equivalencia de hashes origen/restore bajo un snapshot compartido. Revisión legacy conservada. El preflight de captura falló en secuencia; preflight completo, integridad referencial y contratos científicos finales **no certificados**.
+## 3. Comandos ejecutados
+Entornos: solo contenedores aislados D y Ruta A D-03. Nunca PostgreSQL operativo.
 
-## 5. Transformaciones y bloqueo
-**D-01: `LEGACY_SEQUENCE_DRIFT`.** La secuencia `experiment_execution_events_id_seq` usa dependencia interna `i` de IDENTITY; Ruta A exige dependencia automática `a`. Nombre, parámetros, tabla y columna enlazada coinciden; estado `last_value=1`, `is_called=false`. No es un OID variable ni se eliminó de la comparación. [Diff exacto](e10_10_5d_evidence/sequence_difference.json).
-No se invocó `apply`, no se ejecutó delta ni transición de head. No se cambió la secuencia para satisfacer la guarda. Resolver compatibilidad entre identidad legacy, baseline y preparación requiere revisión explícita antes de reanudar D.
-Diagnóstico secundario: `LEGACY_SCHEMA_DRIFT` por defaults cualificados, incluidos `pg_catalog.gen_random_uuid()`. [Diff sin normalizar](e10_10_5d_evidence/restored_schema_diff.json). La representación puede depender del search_path y de la resolución de funciones; no se certificó equivalencia ni se clasificó como corrupción científica.
+```
+PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python /private/tmp/d04_dependency_reference.py
+PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python -m unittest discover -s tests/adoption_v2 -v
+PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python -m unittest discover -s tests/db_v2 -v
+PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/certify_v2_d04_adoption.py preflight
+PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/certify_v2_d04_adoption.py apply
+PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/certify_v2_d04_adoption.py diagnose
+PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/diagnose_v2_d04_catalog.py
+```
+Todos salida 0 salvo `apply`, salida **2** (`FINAL_CATALOG_MISMATCH`). El script temporal de dependencias se conserva como `scripts/db/capture_v2_d04_dependencies.py` (formato/imports ordenados). Comandos Docker de auxiliares en operation_commands.jsonl. Los nombres/directorios privados se usan una sola vez; los runners rechazan reutilizar archivos o bases existentes. No reejecutar estos nombres conservados a ciegas.
 
-## 6. Certificación y pruebas aisladas
-Backup consistente: ejecutado, salida 0. Restore legacy: ejecutado, salida 0. Guardas: bloqueo real antes de adopción. Conteos legacy: 97/97 coinciden; hashes destino registrados. Adopción completa, comparación final con Ruta A, rollback intermedio, repetición, backup/restore adoptado y reconciliación post-restore: **NO EJECUTADOS por bloqueo**. No existe estado parcialmente adoptado porque no comenzó la transformación; esto no sustituye un ensayo de rollback.
-Usuarios/modelos/dataset tienen conteos de referencia, no certificado final. E10, evaluaciones externas, calibración y publicación están vacíos: no se inventaron fixtures como evidencia histórica ni se declara probada preservación de historial poblado.
+## 4. Pruebas aprobadas, fallidas y pendientes
+- **90 tests offline aprobados:** 64 adopción (50 anteriores + 14 D-04), 26 baseline/Alembic.
+- Nueve categorías negativas requeridas cubiertas: owner propio, owner extensión, ACL, definición, firma, pertenencia, función inesperada, función ausente y reclasificación. Además: dependencias alteradas/ausentes, firma duplicada y propiedad de seguridad cambiada. Son fixtures nativas en memoria; no se alteró pgcrypto en PostgreSQL para probar rechazos.
+- Preflight real completo aprobado, incluidas 97 tablas, revisión legacy, 22 checksums, gate libre/estados, tres modelos, usuario, referencias/hash de datos y D-01/D-02/D-04.
+- Ejecución real: **838 sentencias registradas correctas**, incluidas **316 DDL**; cero errores SQL. Falló exclusivamente la guarda final del catálogo. Reconciliación precommit de 102 tablas y secuencia alcanzada; no certificado duradero.
+- Rollback real del fallo final: PASS, catálogo y 97 tablas exactos; head `20260922_01`, secuencia `1,false`.
+- Diagnóstico en una base auxiliar nueva: mismo delta; catálogo final capturado y rollback obligatorio antes del commit. Comparación completa antes/después exacta.
+- **Pendientes/no ejecutados:** adopción comprometida, inyección del fallo intermedio en la sentencia 50, repetición segura sobre adoptado, backup/restore adoptado y verificación posterior. El rollback real observado no se presenta como el ensayo de inyección intermedia aún pendiente.
 
-## 7. Evidencia y reproducción
-[Comandos Docker y códigos](e10_10_5d_evidence/commands.jsonl), SQL de solo lectura `source_readonly_precheck.sql`, `source_inventory.sql`, `source_schema.sql`, [bloqueo](e10_10_5d_evidence/blocker.json), [equivalencia](e10_10_5_data_equivalence.json). Runner `scripts/db/certify_v2_route_b.py`; diagnóstico `scripts/db/inspect_v2_route_b_block.py`. El runner rechaza reutilizar evidencia existente; no reejecutar mientras D esté bloqueada.
-Comando efectivo: `PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/certify_v2_route_b.py` → 1 (`LEGACY_SEQUENCE_DRIFT`). Diagnóstico readonly → 0, tras un primer diagnóstico → 1 (`LEGACY_SCHEMA_DRIFT`). Dependencias: pglast 8.4 instalado únicamente en /private/tmp para Python 3.12. Dos intentos iniciales de importación fallaron antes del backup (pglast ausente / ABI de Python incompatible); no fueron ensayos PostgreSQL. El primer parser del resultado JSON también falló por salida multilínea y se corrigió sin repetir escrituras. Sin credenciales ni filas privadas en informes.
+## 5. Evidencia reproducible
+[Preflight](e10_10_5d3_evidence/preflight_result.json), [inventario](e10_10_5d3_evidence/preflight_inventory.json), [suplemento de dependencias](e10_10_5d3_evidence/route_a_function_dependencies.json), [tests](e10_10_5d3_evidence/adoption_tests.out), [sentencias de adopción](e10_10_5d3_evidence/apply_statements.jsonl), [resumen](e10_10_5d3_evidence/execution_summary.json), [diff exacto](e10_10_5d3_evidence/attempted_catalog_diff.json), [rollback](e10_10_5d3_evidence/after_failure.json), [rollback auxiliar](e10_10_5d3_evidence/diagnostic_rollback.json).
+Plan, snapshots y archivos reversibles se conservan privados fuera del repositorio, modo 0600/directorios 0700; sin credenciales ni filas privadas en informes. Plan preflight SHA-256 `6f75e4be3ab64bfd991ae06ef39c717f688c2acebb8d08b4ada2ccd6fee7e1e1`. Los parámetros DML no se registran en los logs públicos. El plan de cada ejecución conserva su propio origen/base en archivo privado; no se sustituyen entre copias.
+Certificado utilizado exclusivamente D-03: manifiesto `6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be`, catálogo `a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2`. Ambos intactos.
 
-## 8. Riesgos y recuperación
-D-01 impide certificar adopción; diferencias de defaults requieren diagnóstico. No se modifica baseline ni adaptador automáticamente. Backups contienen información privada y permanecen fuera de Git; /private/tmp requiere conservación para continuidad del ensayo. Recuperación disponible: restaurar source.dump en **otro** clúster/volumen/puerto aislado con identidad comprobada, roles v2 propios y el pg_restore registrado; nunca sobre origen. El restore legacy ya se ensayó; no existe un backup adoptado. No afirmar pérdida de datos por esta diferencia estructural.
+## 6. Diferencias frente al contrato
+**D-05 — incompatibilidad arquitectónica real:** `assessment_identities.structural_hash` es en legacy una columna GENERATED ALWAYS AS (assessment_structural_hash(identity)) STORED (`attgenerated=s`), y permanece así durante adopción. Ruta A certificada espera `text` ordinario, sin expresión ni generación. Son distintos contratos de escritura/cálculo, aunque esta tabla esté vacía. La comparación también muestra la función y tres dependencias del atributo generado, ausentes en Ruta A. No se eliminó la generación ni se inventaron hashes para hacer pasar el cotejo.
 
-## 9. Cierre y Gate D
-**E10.10.5D — BLOQUEADA. GATE D NO APROBABLE.** Se solicita revisión explícita de los bloqueos. La aprobación de Gate D debe quedar pendiente hasta resolverlos y completar todas las pruebas obligatorias; no corresponde solicitar aprobación de una adopción no certificada. No se inicia E automáticamente y no se ejecuta cutover.
+**D-06 — cuatro CHECK con representación divergente**, sin equivalencia certificada:
+1. campaign_controlled_requests.campaign_controlled_requests_reason_check: TRIM(BOTH FROM reason) frente a btrim(reason).
+2. cell_predictions.ck_cell_prediction_label_index: agrupación OR.
+3. smear_analysis_summaries.ck_smear_summary_fraction: agrupación AND.
+4. smear_analysis_summaries.ck_smear_summary_probabilities: agrupación AND.
+No se descartan como formato ni se normalizan. Requieren comprobar operadores/funciones realmente resueltos y semántica de tres valores, no solo similitud textual. Las demás categorías del catálogo coinciden; owners/ACL, funciones completas, extensiones y secuencias no presentan diferencias finales.
+
+## 7. Riesgos pendientes
+D-05 impide certificar; D-06 permanece sin resolver. La futura corrección de baseline requiere conservar la generación y ordenar sus dependencias: assessment_canonical, luego assessment_structural_hash, antes de crear la columna, o una instalación equivalente acreditada; no cambiar la secuencia científica ni datos para adaptarse a un objetivo incorrecto. Se necesita una nueva recertificación si cambia el manifiesto; el certificado D-03 seguiría histórico.
+No se ha probado repetición/restore adoptado porque no existe destino adoptado. El dataset real permanece protegido por los hashes y rollback; los eventos/runs/campañas legacy están vacíos, por lo que no se afirma cobertura de historial poblado. Archivos privados y backups deben conservarse para reanudar.
+
+## 8. Confirmación del estado operativo
+**Cero conexiones al PostgreSQL operativo durante D.3.** No se modificaron archivos científicos, usuarios/credenciales operativos, asignaciones, modelos/checkpoints, eventos/hashes originales, historial ni backups fuente. Ningún ALTER OWNER ni GRANT/REVOKE sobre pgcrypto. Las escrituras del adaptador ocurrieron exclusivamente en copias aisladas y se revirtieron. Los dos contenedores aislados quedaron detenidos, con volúmenes/backups/evidencia conservados. Sin E ni cutover.
+
+## 9. Decisión solicitada
+**Autorizar D-05 para conservar la columna generada legacy en la baseline, con orden de dependencias correcto y nueva recertificación de Ruta A; autorizar el diagnóstico de D-06 y su tratamiento como representación solo si se demuestra equivalencia nativa de funciones/operadores/dependencias y comportamiento.** No se solicita permiso para eliminar la generación ni para omitir constraints.
+Gate D no se solicita: adopción, catálogo final y pruebas restantes no están certificados. La pausa cumple la instrucción expresa de detenerse ante una nueva incompatibilidad arquitectónica.

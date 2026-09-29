@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "catalog_unchanged": true,
+  "all_tables_unchanged": true,
+  "tables": 97,
+  "before_sha256": "44bba39ec22880616e4398169cc405dfa7d3e209eb6a322b5aa66ee7029dbcb0",
+  "after_sha256": "44bba39ec22880616e4398169cc405dfa7d3e209eb6a322b5aa66ee7029dbcb0",
+  "head": [
+    {
+      "version_num": "20260922_01"
+    }
+  ],
+  "sequence": {
+    "last_value": 1,
+    "is_called": false
+  },
+  "purpose": "diagnostic only; not adoption certification"
+}

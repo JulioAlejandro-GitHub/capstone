@@ -1,11 +1,13 @@
 {
-  "stage": "E10.10.5B",
+  "stage": "E10.10.5D.2",
   "comparison_executed": true,
   "method": "PostgreSQL 17 canonical rendering of verified manifest statements in a separate empty isolated database, plus direct manifest metadata checks",
-  "manifest_sha256": "c1063136941e9429373d91d666fbea5d25afd0dc39f111fdf2b9779aa1f51eb0",
-  "installed_sha256": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
-  "expected_sha256": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+  "manifest_sha256": "6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be",
+  "installed_sha256": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "expected_sha256": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
   "counts": {
+    "default_functions": 186,
+    "default_dependencies": 353,
     "relations": 137,
     "columns": 2271,
     "constraints": 957,
@@ -26,135 +28,226 @@
   "differences": {},
   "direct_manifest_differences": [],
   "status": "passed",
-  "gate_b": "pending_review",
-  "certified_categories": [
-    "tables",
-    "columns",
-    "types",
-    "constraints",
-    "indexes",
-    "views",
-    "functions",
-    "triggers",
-    "sequences",
-    "extensions",
-    "privileges"
-  ],
-  "manifest_column_metadata_rendered_on_postgresql_17": true,
-  "constraint_counts_explained": {
-    "application": 950,
-    "alembic_primary_key": 1,
-    "constraint_triggers": 6
-  },
-  "application_function_count": 75,
-  "extension_function_count": 36,
-  "route_b_stage_d": {
+  "route_b_stage_d2": {
     "status": "BLOCKED",
-    "adopted_catalog_comparison_executed": false,
-    "blocker": "LEGACY_SEQUENCE_DRIFT",
-    "sequence_difference": {
-      "observed": [
-        {
-          "name": "experiment_execution_events_id_seq",
-          "type": "bigint",
-          "seqstart": 1,
-          "seqincrement": 1,
-          "seqmax": 9223372036854775807,
-          "seqmin": 1,
-          "seqcache": 1,
-          "seqcycle": false,
-          "owned_table": "experiment_execution_events",
-          "owned_column": "id",
-          "deptype": "i"
-        }
-      ],
-      "route_a": [
-        {
-          "name": "experiment_execution_events_id_seq",
-          "type": "bigint",
-          "seqstart": 1,
-          "seqincrement": 1,
-          "seqmax": 9223372036854775807,
-          "seqmin": 1,
-          "seqcache": 1,
-          "seqcycle": false,
-          "owned_table": "experiment_execution_events",
-          "owned_column": "id",
-          "deptype": "a"
-        }
-      ],
-      "values": {
-        "experiment_execution_events_id_seq": {
-          "last_value": 1,
-          "is_called": false
-        }
-      }
+    "code": "LEGACY_FUNCTION_OWNER_MISMATCH",
+    "decision_required": "D-04",
+    "d01_d02": {
+      "D01": "PASS",
+      "D02": "PASS",
+      "sequence_equal": true,
+      "default_checks": {
+        "default_functions": true,
+        "default_dependencies": true
+      },
+      "columns": 39,
+      "no_normalization_of_different_bindings": true
     },
-    "additional_observation": "restored_schema_diff.json: textual default qualification differs; not normalized or certified equivalent",
-    "route_a_certificate_unchanged": true
+    "adopted_catalog_comparison_executed": false,
+    "owner_diagnosis": "e10_10_5d2_evidence/route_b/owner_block_diagnosis.json"
   },
-  "structural_review_d1": {
-    "status": "BLOCKED_PENDING_DEFAULT_BINDING_DECISION",
-    "baseline_changed": false,
-    "previous_route_a_certificate": "pre-D.1 proposed revision; not recertified",
-    "identity_behavior": {
-      "legacy": {
-        "omitted_id": {
-          "sqlstate": "00000",
-          "value": {
-            "id": 1
-          }
-        },
-        "explicit_id": {
-          "sqlstate": "428C9"
-        },
-        "override_id": {
-          "sqlstate": "00000",
-          "value": {
-            "id": 9000001
-          }
-        },
-        "revoked_wrapper_execute": {
-          "sqlstate": "00000"
-        },
-        "aux_sequence_after_probes": [
+  "previous_certification": {
+    "manifest_sha256": "c1063136941e9429373d91d666fbea5d25afd0dc39f111fdf2b9779aa1f51eb0",
+    "catalog_sha256": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+    "evidence": "e10_10_5b_evidence/run_b01/",
+    "scope": "historical, before D-03; does not certify revised baseline"
+  },
+  "route_b_stage_d3": {
+    "status": "BLOCKED",
+    "d04": "RESOLVED",
+    "preflight": "PASS",
+    "final_comparison_executed": true,
+    "committed": false,
+    "new_blocker": "D-05: generated column missing in target specification",
+    "additional_pending": "D-06: four CHECK representation differences",
+    "differences": {
+      "default_functions": {
+        "actual_only": [
           {
-            "last_value": 1,
-            "is_called": true
+            "relation": "assessment_identities",
+            "column_name": "structural_hash",
+            "function_schema": "public",
+            "function_name": "assessment_structural_hash",
+            "arguments": "v jsonb",
+            "result": "text"
+          }
+        ],
+        "expected_only": []
+      },
+      "default_dependencies": {
+        "actual_only": [
+          {
+            "relation": "assessment_identities",
+            "column_name": "structural_hash",
+            "deptype": "i",
+            "referenced_catalog": "pg_class",
+            "referenced_object": "column structural_hash of table assessment_identities"
+          },
+          {
+            "relation": "assessment_identities",
+            "column_name": "structural_hash",
+            "deptype": "n",
+            "referenced_catalog": "pg_class",
+            "referenced_object": "column identity of table assessment_identities"
+          },
+          {
+            "relation": "assessment_identities",
+            "column_name": "structural_hash",
+            "deptype": "n",
+            "referenced_catalog": "pg_proc",
+            "referenced_object": "function assessment_structural_hash(jsonb)"
+          }
+        ],
+        "expected_only": []
+      },
+      "columns": {
+        "actual_only": [
+          {
+            "relation": "assessment_identities",
+            "attnum": 7,
+            "name": "structural_hash",
+            "type": "text",
+            "attnotnull": false,
+            "attidentity": "",
+            "attgenerated": "s",
+            "expression": "assessment_structural_hash(identity)",
+            "collation": "\"default\"",
+            "attacl": null
+          }
+        ],
+        "expected_only": [
+          {
+            "relation": "assessment_identities",
+            "attnum": 7,
+            "name": "structural_hash",
+            "type": "text",
+            "attnotnull": false,
+            "attidentity": "",
+            "attgenerated": "",
+            "expression": null,
+            "collation": "\"default\"",
+            "attacl": null
           }
         ]
       },
-      "baseline": {
-        "omitted_id": {
-          "sqlstate": "23502"
-        },
-        "explicit_id": {
-          "sqlstate": "00000",
-          "value": {
-            "id": 9000000
-          }
-        },
-        "override_id": {
-          "sqlstate": "00000",
-          "value": {
-            "id": 9000001
-          }
-        },
-        "revoked_wrapper_execute": {
-          "sqlstate": "42501"
-        },
-        "aux_sequence_after_probes": [
+      "constraints": {
+        "actual_only": [
           {
-            "last_value": 1,
-            "is_called": false
+            "relation": "campaign_controlled_requests",
+            "name": "campaign_controlled_requests_reason_check",
+            "contype": "c",
+            "definition": "CHECK ((length(TRIM(BOTH FROM reason)) > 0))",
+            "condeferrable": false,
+            "condeferred": false,
+            "convalidated": true,
+            "connoinherit": false
+          },
+          {
+            "relation": "cell_predictions",
+            "name": "ck_cell_prediction_label_index",
+            "contype": "c",
+            "definition": "CHECK ((((prediction_status)::text <> 'completed'::text) OR (((predicted_class_index = 1) AND ((predicted_label)::text = 'parasitized'::text) AND (probability_parasitized >= threshold_used)) OR ((predicted_class_index = 0) AND ((predicted_label)::text = 'uninfected'::text) AND (probability_parasitized < threshold_used)))))",
+            "condeferrable": false,
+            "condeferred": false,
+            "convalidated": true,
+            "connoinherit": false
+          },
+          {
+            "relation": "smear_analysis_summaries",
+            "name": "ck_smear_summary_fraction",
+            "contype": "c",
+            "definition": "CHECK ((((classified_cell_count = 0) AND (parasitized_candidate_fraction IS NULL)) OR ((classified_cell_count > 0) AND ((parasitized_candidate_fraction >= (0)::double precision) AND (parasitized_candidate_fraction <= (1)::double precision)) AND (abs((parasitized_candidate_fraction - ((parasitized_candidate_count)::double precision / (classified_cell_count)::double precision))) <= (0.000000001)::double precision))))",
+            "condeferrable": false,
+            "condeferred": false,
+            "convalidated": true,
+            "connoinherit": false
+          },
+          {
+            "relation": "smear_analysis_summaries",
+            "name": "ck_smear_summary_probabilities",
+            "contype": "c",
+            "definition": "CHECK ((((classified_cell_count = 0) AND (maximum_probability_parasitized IS NULL) AND (mean_probability_parasitized IS NULL) AND (median_probability_parasitized IS NULL)) OR ((classified_cell_count > 0) AND ((maximum_probability_parasitized >= (0)::double precision) AND (maximum_probability_parasitized <= (1)::double precision)) AND ((mean_probability_parasitized >= (0)::double precision) AND (mean_probability_parasitized <= (1)::double precision)) AND ((median_probability_parasitized >= (0)::double precision) AND (median_probability_parasitized <= (1)::double precision)))))",
+            "condeferrable": false,
+            "condeferred": false,
+            "convalidated": true,
+            "connoinherit": false
+          }
+        ],
+        "expected_only": [
+          {
+            "relation": "campaign_controlled_requests",
+            "name": "campaign_controlled_requests_reason_check",
+            "contype": "c",
+            "definition": "CHECK ((length(btrim(reason)) > 0))",
+            "condeferrable": false,
+            "condeferred": false,
+            "convalidated": true,
+            "connoinherit": false
+          },
+          {
+            "relation": "cell_predictions",
+            "name": "ck_cell_prediction_label_index",
+            "contype": "c",
+            "definition": "CHECK ((((prediction_status)::text <> 'completed'::text) OR ((predicted_class_index = 1) AND ((predicted_label)::text = 'parasitized'::text) AND (probability_parasitized >= threshold_used)) OR ((predicted_class_index = 0) AND ((predicted_label)::text = 'uninfected'::text) AND (probability_parasitized < threshold_used))))",
+            "condeferrable": false,
+            "condeferred": false,
+            "convalidated": true,
+            "connoinherit": false
+          },
+          {
+            "relation": "smear_analysis_summaries",
+            "name": "ck_smear_summary_fraction",
+            "contype": "c",
+            "definition": "CHECK ((((classified_cell_count = 0) AND (parasitized_candidate_fraction IS NULL)) OR ((classified_cell_count > 0) AND (parasitized_candidate_fraction >= (0)::double precision) AND (parasitized_candidate_fraction <= (1)::double precision) AND (abs((parasitized_candidate_fraction - ((parasitized_candidate_count)::double precision / (classified_cell_count)::double precision))) <= (0.000000001)::double precision))))",
+            "condeferrable": false,
+            "condeferred": false,
+            "convalidated": true,
+            "connoinherit": false
+          },
+          {
+            "relation": "smear_analysis_summaries",
+            "name": "ck_smear_summary_probabilities",
+            "contype": "c",
+            "definition": "CHECK ((((classified_cell_count = 0) AND (maximum_probability_parasitized IS NULL) AND (mean_probability_parasitized IS NULL) AND (median_probability_parasitized IS NULL)) OR ((classified_cell_count > 0) AND (maximum_probability_parasitized >= (0)::double precision) AND (maximum_probability_parasitized <= (1)::double precision) AND (mean_probability_parasitized >= (0)::double precision) AND (mean_probability_parasitized <= (1)::double precision) AND (median_probability_parasitized >= (0)::double precision) AND (median_probability_parasitized <= (1)::double precision))))",
+            "condeferrable": false,
+            "condeferred": false,
+            "convalidated": true,
+            "connoinherit": false
           }
         ]
       }
     },
-    "default_source_representations": 41,
-    "retained_default_binding_differences": 39,
-    "merged_tables_without_destination_default": 2,
-    "diagnostic": "e10_10_5d1_evidence/default_inventory.json",
-    "normalization_applied": false
+    "rollback": {
+      "catalog_unchanged": true,
+      "all_97_tables_unchanged": true,
+      "head": [
+        {
+          "version_num": "20260922_01"
+        }
+      ],
+      "sequence": {
+        "last_value": 1,
+        "is_called": false
+      }
+    },
+    "diagnostic_replay_rollback": {
+      "passed": true,
+      "catalog_unchanged": true,
+      "all_tables_unchanged": true,
+      "tables": 97,
+      "before_sha256": "44bba39ec22880616e4398169cc405dfa7d3e209eb6a322b5aa66ee7029dbcb0",
+      "after_sha256": "44bba39ec22880616e4398169cc405dfa7d3e209eb6a322b5aa66ee7029dbcb0",
+      "head": [
+        {
+          "version_num": "20260922_01"
+        }
+      ],
+      "sequence": {
+        "last_value": 1,
+        "is_called": false
+      },
+      "purpose": "diagnostic only; not adoption certification"
+    },
+    "catalog_reference_sha256": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2"
   }
 }

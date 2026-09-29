@@ -1,0 +1,11 @@
+{
+  "status": "BLOCKED",
+  "code": "LEGACY_FUNCTION_OWNER_MISMATCH",
+  "location": "",
+  "adapter_applied": false,
+  "d01_sequence_equal": true,
+  "d01_attidentity": [
+    "a"
+  ],
+  "d02_legacy_schema_signature_equal": true
+}

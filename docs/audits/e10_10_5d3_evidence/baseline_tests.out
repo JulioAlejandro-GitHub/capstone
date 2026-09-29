@@ -1,0 +1,31 @@
+test_independent_root_and_only_head (test_alembic_envelope.AlembicEnvelopeTests.test_independent_root_and_only_head) ... ok
+test_missing_authorization_stops_before_engine_or_docker (test_alembic_envelope.AlembicEnvelopeTests.test_missing_authorization_stops_before_engine_or_docker) ... ok
+test_no_legacy_settings_import_or_bootstrap (test_alembic_envelope.AlembicEnvelopeTests.test_no_legacy_settings_import_or_bootstrap) ... ok
+test_offline_upgrade_cannot_export_an_unguarded_installer (test_alembic_envelope.AlembicEnvelopeTests.test_offline_upgrade_cannot_export_an_unguarded_installer) ... ok
+test_revision_refuses_unverified_connection_and_downgrade (test_alembic_envelope.AlembicEnvelopeTests.test_revision_refuses_unverified_connection_and_downgrade) ... ok
+test_external_cannot_be_validation_test_or_calibration (test_static_baseline.ExternalAmendmentTests.test_external_cannot_be_validation_test_or_calibration) ... ok
+test_external_requires_actual_population_and_provenance_fields (test_static_baseline.ExternalAmendmentTests.test_external_requires_actual_population_and_provenance_fields) ... ok
+test_external_validation_is_not_an_evaluation_alias (test_static_baseline.ExternalAmendmentTests.test_external_validation_is_not_an_evaluation_alias) ... ok
+test_metric_projection_preserves_external_and_calibration_requires_val (test_static_baseline.ExternalAmendmentTests.test_metric_projection_preserves_external_and_calibration_requires_val) ... ok
+test_official_and_complementary_views_are_separate (test_static_baseline.ExternalAmendmentTests.test_official_and_complementary_views_are_separate) ... ok
+test_provenance_fk_targets_existing_protected_key (test_static_baseline.ExternalAmendmentTests.test_provenance_fk_targets_existing_protected_key) ... ok
+test_scope_truth_table_keeps_official_splits (test_static_baseline.ExternalAmendmentTests.test_scope_truth_table_keeps_official_splits) ... ok
+test_b01_roles_are_nonreserved_and_executable_references_are_consistent (test_static_baseline.SafetyTests.test_b01_roles_are_nonreserved_and_executable_references_are_consistent) ... ok
+test_cluster_database_version_and_owner_must_all_match (test_static_baseline.SafetyTests.test_cluster_database_version_and_owner_must_all_match) ... ok
+test_explicit_authorization_required (test_static_baseline.SafetyTests.test_explicit_authorization_required) ... ok
+test_privileged_or_inherited_runtime_role_rejected (test_static_baseline.SafetyTests.test_privileged_or_inherited_runtime_role_rejected) ... ok
+test_volume_mount_and_container_identity_not_just_database_name (test_static_baseline.SafetyTests.test_volume_mount_and_container_identity_not_just_database_name) ... ok
+test_calibration_cycle_preserves_deferred_foreign_keys (test_static_baseline.StaticBaselineTests.test_calibration_cycle_preserves_deferred_foreign_keys) ... ok
+test_d03_identity_and_exact_default_scope (test_static_baseline.StaticBaselineTests.test_d03_identity_and_exact_default_scope) ... ok
+test_frozen_generation_is_reproducible (test_static_baseline.StaticBaselineTests.test_frozen_generation_is_reproducible) ... ok
+test_integral_catalogue_and_historical_contracts (test_static_baseline.StaticBaselineTests.test_integral_catalogue_and_historical_contracts) ... ok
+test_missing_fk_target_rejected (test_static_baseline.StaticBaselineTests.test_missing_fk_target_rejected) ... ok
+test_scientific_types_and_nullable_auc (test_static_baseline.StaticBaselineTests.test_scientific_types_and_nullable_auc) ... ok
+test_single_technical_seed_and_no_transaction_escape (test_static_baseline.StaticBaselineTests.test_single_technical_seed_and_no_transaction_escape) ... ok
+test_tampered_resource_rejected_before_execution (test_static_baseline.StaticBaselineTests.test_tampered_resource_rejected_before_execution) ... ok
+test_trigger_with_missing_function_rejected (test_static_baseline.StaticBaselineTests.test_trigger_with_missing_function_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 26 tests in 2.007s
+
+OK

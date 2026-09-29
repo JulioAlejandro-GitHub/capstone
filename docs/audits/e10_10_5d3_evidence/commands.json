@@ -1,0 +1,40 @@
+{
+  "commands": [
+    {
+      "action": "capture dependency supplement",
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python /private/tmp/d04_dependency_reference.py",
+      "exit_code": 0
+    },
+    {
+      "action": "adoption tests",
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python -m unittest discover -s tests/adoption_v2 -v",
+      "exit_code": 0
+    },
+    {
+      "action": "baseline tests",
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python -m unittest discover -s tests/db_v2 -v",
+      "exit_code": 0
+    },
+    {
+      "action": "preflight",
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/certify_v2_d04_adoption.py preflight",
+      "exit_code": 0
+    },
+    {
+      "action": "apply",
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/certify_v2_d04_adoption.py apply",
+      "exit_code": 2
+    },
+    {
+      "action": "diagnose",
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/certify_v2_d04_adoption.py diagnose",
+      "exit_code": 0
+    },
+    {
+      "action": "diagnostic replay",
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/diagnose_v2_d04_catalog.py",
+      "exit_code": 0
+    }
+  ],
+  "sensitive_parameters_logged": false
+}

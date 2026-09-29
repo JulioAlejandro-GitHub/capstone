@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "backup_sha256": "219b651a4ed9d9ec6c27f5bc26d998ad33893b7bd00dbb39ed8b42e3cb72465c",
+  "source_catalog": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "restored_catalog": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
+  "source_data": "edda1543b349d9c34bfdc12c0c4af12718d774075d09422b59184794d9cc078d",
+  "restored_data": "edda1543b349d9c34bfdc12c0c4af12718d774075d09422b59184794d9cc078d",
+  "tables_compared": 103,
+  "source_sequence": {
+    "last_value": 2,
+    "is_called": true
+  },
+  "restored_sequence": {
+    "last_value": 2,
+    "is_called": true
+  }
+}
