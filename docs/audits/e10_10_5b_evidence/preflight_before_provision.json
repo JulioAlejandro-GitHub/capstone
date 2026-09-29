@@ -1,0 +1,20 @@
+{
+  "target": {
+    "authorized_stage": "E10.10.5B",
+    "gate_a_approved": true,
+    "isolation_id": "a1501165-95db-4461-8aa5-b45ec3bc8c89",
+    "container_name": "capstone_v2_isolated_a150116595db",
+    "volume": "capstone_v2_isolated_a150116595db",
+    "host_port": 55475,
+    "database": "capstone_v2_isolated_a150116595db",
+    "container_id": "ed496415af1c14a6e0f713e95b8d15eda4708c4453261048e63bce7a92bcec53",
+    "postgres_system_identifier": "7691009688503029805"
+  },
+  "identity": {
+    "system_identifier": "7691009688503029805",
+    "version": "170009",
+    "database": "postgres",
+    "recovery": false
+  },
+  "docker_isolation_verified": true
+}

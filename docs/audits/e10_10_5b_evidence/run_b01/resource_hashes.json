@@ -1,0 +1,17 @@
+{
+  "manifest_sha256": "c1063136941e9429373d91d666fbea5d25afd0dc39f111fdf2b9779aa1f51eb0",
+  "files": {
+    "01_prerequisites.sql": "7bc46c27eb8b822bb7d0d9f12326fdb53a41837ec3620a4533f2009e96cc1ae5",
+    "02_sequences.sql": "cecb6feb07d3c6b163cf7e2bd2856945b534a5b1fb94a95ce968e3fefc719f74",
+    "03_tables.sql": "465c8d2576759fec45e18d2d06c90566ad8c0cde3140fe35748d4fe52b910681",
+    "04_functions.sql": "22da7db9295e8194c282dac6bf85d288d3ac4ef53073b0c8cec1fcf6fe2e29f5",
+    "05_keys.sql": "b59c1011dd20fa2ccb03e4ca26ed436d6b444c3076446f5478c97c462aabe3ce",
+    "06_constraints.sql": "fd3ef4bd75b8fe369f6d2dd7484730583fa84b26bd9f0fdbd9d7fce82ccd64a6",
+    "07_indexes.sql": "076571de7fa30e967d59b77bbe5c4cc9821b78a604897376d6afc7cfa4d0d99b",
+    "08_views.sql": "8e08f69ef33f435eb6f50c0b3239e0b97ccf82fc63b758ab55a908b91bf6609d",
+    "09_triggers.sql": "913f1dfee85d1a0b3bb8b7b00eef3e309aed2f413a3cc091c7d4efe6e4bfee8a",
+    "10_privileges.sql": "18cd451def5d863397da7072d18efd91ea08220b27c6148374634c937ba26fad",
+    "11_technical_state.sql": "677be879ea69cc5c7b80aa9f9315544a4dabcad0a92043d988a591bc77c6b181"
+  },
+  "source_sha256": "6aee9b58a9daf32385ec107b604382c19586f850fcca6accbf79c720e9e1c8b9"
+}

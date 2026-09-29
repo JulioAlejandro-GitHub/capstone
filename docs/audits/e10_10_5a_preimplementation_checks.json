@@ -1,0 +1,38 @@
+{
+  "stage": "E10.10.5A",
+  "status": "BLOCKED_DESIGN_DECISION",
+  "verification": "static_text_only_not_PostgreSQL_execution",
+  "checks": {
+    "legacy_metrics_admit_external": true,
+    "protected_assignments_admit_external_validation": true,
+    "v2_evaluation_split_only_train_val_test": true,
+    "v2_metric_requires_evaluation": true,
+    "v2_metric_split_derived_from_evaluation": true,
+    "current_reader_explicitly_reads_external": true
+  },
+  "existing_external_rows": "unknown_no_database_connection",
+  "baseline_implemented": false,
+  "postgresql_connections_opened": 0,
+  "sources": [
+    {
+      "path": "docs/audits/e10_10_4_target_schema.sql",
+      "sha256": "17d564ad58d3f5084f7aab8381262ebaa9135fb31116bb988f544b44d680ed45"
+    },
+    {
+      "path": "docs/audits/e10_10_4_jsonb_normalization.md",
+      "sha256": "433e65c12b93a8d90d25c67825e76e51ed9527ce0224efc408cde948d7b9719e"
+    },
+    {
+      "path": "docs/audits/e10_10_4_postgresql_v2_architecture.md",
+      "sha256": "e76994d69373e9e6b572d6368f9a336063380721a9a44f09c6b7bdd1e8a16b7b"
+    },
+    {
+      "path": "backend_api/app/routes/runs.py",
+      "sha256": "9c174dd93b70f6e8a07aeec85d1ef252df8475d986ed68b40a21fb3b6f1a4f78"
+    },
+    {
+      "path": "malaria_dl_local_project/src/malaria_dl/persistence/run_repository.py",
+      "sha256": "9e0c8720db8acaaf5c0cb9b5478aa9e726952cd703dd67fbca530df1fa7cc1b0"
+    }
+  ]
+}

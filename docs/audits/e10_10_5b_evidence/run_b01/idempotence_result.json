@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "before": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+  "after": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+  "all_data_before": "9282bb2cbde57c3b45668221ba6404a56bb97572782ebc6076a0a101b5cc0625",
+  "all_data_after": "9282bb2cbde57c3b45668221ba6404a56bb97572782ebc6076a0a101b5cc0625",
+  "tables_checked": 103,
+  "head_before": [
+    {
+      "xmin": "743",
+      "ctid": "(0,1)",
+      "version_num": "pg_v2_baseline"
+    }
+  ],
+  "head_after": [
+    {
+      "xmin": "743",
+      "ctid": "(0,1)",
+      "version_num": "pg_v2_baseline"
+    }
+  ],
+  "gate_before": [
+    {
+      "row": "{\"singleton\":true,\"owner\":null,\"db_pid\":null,\"process_evidence\":{},\"blocked_reason\":null,\"updated_at\":\"2026-09-29T17:40:41.62562+00:00\"}",
+      "xmin": "743",
+      "ctid": "(0,1)"
+    }
+  ],
+  "gate_after": [
+    {
+      "row": "{\"singleton\":true,\"owner\":null,\"db_pid\":null,\"process_evidence\":{},\"blocked_reason\":null,\"updated_at\":\"2026-09-29T17:40:41.62562+00:00\"}",
+      "xmin": "743",
+      "ctid": "(0,1)"
+    }
+  ]
+}

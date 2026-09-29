@@ -1,0 +1,2 @@
+# Pure static review. pglast 8.4 embeds a PostgreSQL 18.4 parser, not a server.
+pglast==8.4

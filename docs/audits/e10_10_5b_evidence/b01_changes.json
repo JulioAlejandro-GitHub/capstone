@@ -1,0 +1,32 @@
+[
+  {
+    "path": "alembic_v2/safety.py",
+    "before": "b3e0de160ac1dc581e66a71d3df47ce73d4536981ed7667b14ad633ab6c6c71d",
+    "after": "47d3c7ae3342695f9715cf42cdf4c1f4f4a336269876a930b9488764d63e1c55"
+  },
+  {
+    "path": "alembic_v2/README.md",
+    "before": "693678c147e7eaaecee7e15807a91b4b46baa765dd7a7761c557318f144ba6cc",
+    "after": "74ca5c7dbb12badd04e6152c25a0e92df5608c9f27268cc7515e271c4e7e0ec5"
+  },
+  {
+    "path": "scripts/db/build_v2_baseline.py",
+    "before": "0c2992e8016302852fb0f6e44cdcf22cdfcf5f2eb327b9fea1d252584abe6aea",
+    "after": "cf58f32d892cb5f39d2d0f8afd7db7d5b6938ab90d497b4b5bc2fee29322616a"
+  },
+  {
+    "path": "scripts/db/certify_v2_route_a.py",
+    "before": "b7fb75ee4baa682e525b3a1b151d43b054510f28472b76ac44e9fdf88b5bffa5",
+    "after": "80f1e60c66317ee9bef8fc49eb1de973f9ce24d6cab1ceade25fe5404aaa54f0"
+  },
+  {
+    "path": "tests/db_v2/test_static_baseline.py",
+    "before": "8e995958923186307249ba868376b5fbe21a5d063848e1f7c765ae7de70ac692",
+    "after": "edf64e62c9ef906e9cd36f10fb6ec4cc87d84a1f6ce9200e2a50ecf633d82729"
+  },
+  {
+    "path": "docs/audits/e10_10_5a_object_inventory.md",
+    "before": "03ae11cba3e8b76d1eb302f7faa800b50e3a8fe074a786c8125dafbc2f6c7af9",
+    "after": "eb3ffe7b929703c086cce70a819043e8534f9bb676b949da4218c7de2acb1c14"
+  }
+]

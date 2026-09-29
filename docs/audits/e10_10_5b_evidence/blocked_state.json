@@ -1,0 +1,8 @@
+{
+  "version": "PostgreSQL 17.9 (Debian 17.9-1.pgdg13+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "system_identifier": "7691009688503029805",
+  "roles": [],
+  "target_database_exists": false,
+  "public_relations": 0,
+  "alembic_version": null
+}

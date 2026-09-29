@@ -1,0 +1,13 @@
+{
+  "dataset": "0c3f5101-36df-4bc0-809c-ea616be6e0b6",
+  "version": "81284c98-e6e6-482f-a98b-0583fcb4e7a1",
+  "external_version": "b708421c-f042-4094-bbbc-3e7a9fcfa290",
+  "model": "86f5258d-233d-4c77-840f-f98a25cb5eeb",
+  "train": "350e2ffe-fabf-43ad-8151-0d6e29d4d3ea",
+  "train2": "938d7c03-efef-4e62-b0a5-18898fa47a40",
+  "evaluation_run": "1fbc6f59-f3e4-4643-b5d5-a6fe989af42b",
+  "artifact": "54af9bdc-5f7b-43df-9f95-d398a2709989",
+  "artifact2": "c5cb5339-c7eb-4bb5-b223-15650a6fbbb6",
+  "model_version": "3e85cd6e-6afb-4919-a3d2-9c230fd1e7ff",
+  "owner": "311ba8c4-4bb0-473e-8567-c9932c1a574a"
+}

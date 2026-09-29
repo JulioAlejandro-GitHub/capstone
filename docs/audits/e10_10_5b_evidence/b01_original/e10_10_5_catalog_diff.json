@@ -1,0 +1,27 @@
+{
+  "stage": "E10.10.5B",
+  "status": "blocked_not_evaluated",
+  "gate_b": "blocked",
+  "reason": "PostgreSQL rejects contract role pg_v2_migrator: pg_ prefix reserved",
+  "manifest": "alembic_v2/baseline/catalog_manifest.json",
+  "manifest_sha256": "6da076c5fd6349dc245ad1fb1083dcdbfe05ff2f4fe8af6289a835be92879686",
+  "comparison_executed": false,
+  "baseline_executed": false,
+  "observed_catalog": null,
+  "differences": null,
+  "certified_categories": [],
+  "pending_categories": [
+    "tables",
+    "columns",
+    "types",
+    "constraints",
+    "indexes",
+    "views",
+    "functions",
+    "triggers",
+    "sequences",
+    "extensions",
+    "privileges"
+  ],
+  "evidence": "e10_10_5b_evidence/commands.jsonl"
+}

@@ -1,0 +1,127 @@
+{
+  "stage": "E10.10.5A",
+  "started_at_utc": "2026-09-29T17:07:32.465644+00:00",
+  "scope": "offline static validation only; no PostgreSQL/Docker execution",
+  "commands": [
+    {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/db/build_v2_baseline.py",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "12 resources verified; no database access\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/db/validate_v2_static.py",
+        "--report",
+        "docs/audits/e10_10_5a_static_results.json"
+      ],
+      "returncode": 0,
+      "stdout": "{\n  \"stage\": \"E10.10.5A\",\n  \"status\": \"STATIC_CHECKS_PASSED_PENDING_REVIEW\",\n  \"parser_postgresql_version\": [\n    18,\n    4\n  ],\n  \"postgresql_17_executed\": false,\n  \"database_connections\": 0,\n  \"revision\": \"pg_v2_baseline\",\n  \"application_tables\": 102,\n  \"physical_tables_including_alembic\": 103,\n  \"views\": 33,\n  \"functions\": 75,\n  \"triggers\": 95,\n  \"constraints\": 950,\n  \"constraint_types\": {\n    \"CONSTR_PRIMARY\": 102,\n    \"CONSTR_UNIQUE\": 75,\n    \"CONSTR_CHECK\": 524,\n    \"CONSTR_FOREIGN\": 249\n  },\n  \"independent_indexes\": 229,\n  \"sequences\": 1,\n  \"plpgsql_bodies_parsed\": 72,\n  \"statements\": 1783,\n  \"legacy_functions_preserved\": 65,\n  \"legacy_triggers_preserved\": 77,\n  \"legacy_constraints_preserved\": 780,\n  \"legacy_independent_indexes_preserved\": 225,\n  \"legacy_views_preserved\": 27,\n  \"protected_tables_checked\": 17,\n  \"historical_files_unchanged\": 54,\n  \"accredited_legacy_checksums\": 22,\n  \"limits\": [\n    \"No PostgreSQL 17 catalogue resolution or execution\",\n    \"No runtime trigger/concurrency tests\",\n    \"No installation, adoption, backup/restore or application contract certification\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/db_v2",
+        "-p",
+        "test_static_baseline.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "test_external_cannot_be_validation_test_or_calibration (test_static_baseline.ExternalAmendmentTests.test_external_cannot_be_validation_test_or_calibration) ... ok\ntest_external_requires_actual_population_and_provenance_fields (test_static_baseline.ExternalAmendmentTests.test_external_requires_actual_population_and_provenance_fields) ... ok\ntest_external_validation_is_not_an_evaluation_alias (test_static_baseline.ExternalAmendmentTests.test_external_validation_is_not_an_evaluation_alias) ... ok\ntest_metric_projection_preserves_external_and_calibration_requires_val (test_static_baseline.ExternalAmendmentTests.test_metric_projection_preserves_external_and_calibration_requires_val) ... ok\ntest_official_and_complementary_views_are_separate (test_static_baseline.ExternalAmendmentTests.test_official_and_complementary_views_are_separate) ... ok\ntest_provenance_fk_targets_existing_protected_key (test_static_baseline.ExternalAmendmentTests.test_provenance_fk_targets_existing_protected_key) ... ok\ntest_scope_truth_table_keeps_official_splits (test_static_baseline.ExternalAmendmentTests.test_scope_truth_table_keeps_official_splits) ... ok\ntest_cluster_database_version_and_owner_must_all_match (test_static_baseline.SafetyTests.test_cluster_database_version_and_owner_must_all_match) ... ok\ntest_explicit_authorization_required (test_static_baseline.SafetyTests.test_explicit_authorization_required) ... ok\ntest_privileged_or_inherited_runtime_role_rejected (test_static_baseline.SafetyTests.test_privileged_or_inherited_runtime_role_rejected) ... ok\ntest_volume_mount_and_container_identity_not_just_database_name (test_static_baseline.SafetyTests.test_volume_mount_and_container_identity_not_just_database_name) ... ok\ntest_calibration_cycle_preserves_deferred_foreign_keys (test_static_baseline.StaticBaselineTests.test_calibration_cycle_preserves_deferred_foreign_keys) ... ok\ntest_frozen_generation_is_reproducible (test_static_baseline.StaticBaselineTests.test_frozen_generation_is_reproducible) ... ok\ntest_integral_catalogue_and_historical_contracts (test_static_baseline.StaticBaselineTests.test_integral_catalogue_and_historical_contracts) ... ok\ntest_missing_fk_target_rejected (test_static_baseline.StaticBaselineTests.test_missing_fk_target_rejected) ... ok\ntest_scientific_types_and_nullable_auc (test_static_baseline.StaticBaselineTests.test_scientific_types_and_nullable_auc) ... ok\ntest_single_technical_seed_and_no_transaction_escape (test_static_baseline.StaticBaselineTests.test_single_technical_seed_and_no_transaction_escape) ... ok\ntest_tampered_resource_rejected_before_execution (test_static_baseline.StaticBaselineTests.test_tampered_resource_rejected_before_execution) ... ok\ntest_trigger_with_missing_function_rejected (test_static_baseline.StaticBaselineTests.test_trigger_with_missing_function_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 19 tests in 1.791s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "malaria_dl_local_project/.venv/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/db_v2",
+        "-p",
+        "test_alembic_envelope.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "test_independent_root_and_only_head (test_alembic_envelope.AlembicEnvelopeTests.test_independent_root_and_only_head) ... ok\ntest_missing_authorization_stops_before_engine_or_docker (test_alembic_envelope.AlembicEnvelopeTests.test_missing_authorization_stops_before_engine_or_docker) ... ok\ntest_no_legacy_settings_import_or_bootstrap (test_alembic_envelope.AlembicEnvelopeTests.test_no_legacy_settings_import_or_bootstrap) ... ok\ntest_offline_upgrade_cannot_export_an_unguarded_installer (test_alembic_envelope.AlembicEnvelopeTests.test_offline_upgrade_cannot_export_an_unguarded_installer) ... ok\ntest_revision_refuses_unverified_connection_and_downgrade (test_alembic_envelope.AlembicEnvelopeTests.test_revision_refuses_unverified_connection_and_downgrade) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.014s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "malaria_dl_local_project/.venv/bin/python",
+        "-m",
+        "alembic",
+        "-c",
+        "alembic_v2.ini",
+        "heads"
+      ],
+      "returncode": 0,
+      "stdout": "pg_v2_baseline (head)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "malaria_dl_local_project/.venv/bin/python",
+        "-m",
+        "alembic",
+        "-c",
+        "alembic_v2.ini",
+        "history"
+      ],
+      "returncode": 0,
+      "stdout": "<base> -> pg_v2_baseline (head), Complete independent PostgreSQL v2 root, including approved amendment A-01.\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ruff",
+        "check",
+        "alembic_v2",
+        "scripts/db/build_v2_baseline.py",
+        "scripts/db/validate_v2_static.py",
+        "scripts/db/check_v2_stage_a.py",
+        "tests/db_v2"
+      ],
+      "returncode": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ruff",
+        "format",
+        "--check",
+        "alembic_v2",
+        "scripts/db/build_v2_baseline.py",
+        "scripts/db/validate_v2_static.py",
+        "scripts/db/check_v2_stage_a.py",
+        "tests/db_v2"
+      ],
+      "returncode": 0,
+      "stdout": "11 files already formatted\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-c",
+        "from pathlib import Path; paths=list(Path('alembic_v2').rglob('*.py'))+list(Path('tests/db_v2').glob('*.py'))+[Path('scripts/db/'+n) for n in ('build_v2_baseline.py','validate_v2_static.py','check_v2_stage_a.py')]; [compile(p.read_text(),str(p),'exec') for p in paths]; print(str(len(paths))+' Python modules compiled in memory')"
+      ],
+      "returncode": 0,
+      "stdout": "10 Python modules compiled in memory\n",
+      "stderr": ""
+    }
+  ],
+  "status": "PASSED_PENDING_REVIEW",
+  "finished_at_utc": "2026-09-29T17:07:36.411496+00:00"
+}

@@ -1,0 +1,4 @@
+# Versions inspected locally during E10.10.5A. No application/TensorFlow imports.
+alembic==1.18.5
+SQLAlchemy==2.0.51
+psycopg[binary]==3.3.4

@@ -1,0 +1,10 @@
+{
+  "all_local_links_valid": true,
+  "evidence_json_valid": true,
+  "resource_hashes_valid": true,
+  "all_mandatory_results_passed": true,
+  "old_executable_role_names_absent": true,
+  "historical_sql_files_unchanged": 54,
+  "gate_b": "pending_review",
+  "container_stopped": true
+}
