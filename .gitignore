@@ -66,3 +66,8 @@ docs/dump-malaria_experiments-202607290730.sql
 /backend_api/var
 /var/storage
 /var/storage
+
+# Private maintenance inventories and runtime journals (never source artifacts).
+/var/maintenance/
+
+/var/maintenance-tests/

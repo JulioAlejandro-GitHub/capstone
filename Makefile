@@ -54,3 +54,12 @@ test-db-up test-db-down test-db-reset test-db-bootstrap:
 	@echo "Comando retirado: las pruebas usan el servicio Docker db con rollback; no se crea, elimina ni reinicia otra base."; exit 2
 lint:
 	git diff --check
+
+.PHONY: limpiar-experimentos-bd limpiar-artefactos limpiar-experimentos
+# Host Python orchestrates Docker only; SQL/dependencies run in the backend image.
+limpiar-experimentos-bd:
+	python3 -m scripts.maintenance.clean_experiments_db
+limpiar-artefactos:
+	python3 -m scripts.maintenance.clean_experiment_artifacts
+limpiar-experimentos:
+	python3 -m scripts.maintenance.clean_all_experiments
