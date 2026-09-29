@@ -16,8 +16,20 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
+backup_identity_python() {
+  if [[ "${CAPSTONE_BACKUP_STOPPED_BACKEND:-0}" == "1" ]]; then
+    if [[ -n "$(compose ps --status running -q backend)" ]]; then
+      echo "ERROR: el modo mantenimiento requiere backend detenido." >&2
+      return 2
+    fi
+    compose run --rm --no-deps -T --entrypoint python backend -
+  else
+    compose exec -T backend python -
+  fi
+}
+
 database_identity="$(
-  compose exec -T backend python - <<'PY'
+  backup_identity_python <<'PY'
 import re
 import sys
 
@@ -41,7 +53,7 @@ try:
     safe_value = re.compile(r"^[A-Za-z0-9_.-]+$")
     if not safe_value.fullmatch(configured_user) or not safe_value.fullmatch(configured_database):
         raise RuntimeError
-    with get_primary_engine().connect() as connection:
+    with get_primary_engine().connect().execution_options(postgresql_readonly=True) as connection:
         actual_user, actual_database = connection.execute(
             text("SELECT current_user, current_database()")
         ).one()

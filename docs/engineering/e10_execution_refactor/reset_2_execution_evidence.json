@@ -1,0 +1,108 @@
+{
+  "task": "RESET.2 operational execution",
+  "result": "RESET.2 — DETENIDO",
+  "phase": "1. BARRERA INICIAL",
+  "stop_code": "RESET2_NOT_READY",
+  "at": "2026-09-28T22:54:56.015984+00:00",
+  "authorization": {
+    "path": "/Users/julio/.codex/attachments/c0ba4cbb-8aef-473a-95e6-aec59fa295c7/pasted-text.txt",
+    "sha256": "64543d5dba0cc4498d0e7c895e4a21269996aac20c6ecdab71085ff87809078f",
+    "conditional_real_reset_authorized": true,
+    "condition_not_satisfied": "RESET.2B must formally finish RESET.2 PREPARACIÓN — LISTO PARA GO/NO-GO.",
+    "missing_requirements_must_not_be_automatically_corrected": true
+  },
+  "HEAD": "acd7ea3ec50bffa07478beefca751bb2dd66d790",
+  "git_status_before": "clean",
+  "review": {
+    "reset1b_result": "RESET.1B APROBADO",
+    "reset2_result": "RESET.2 PREPARACIÓN — NO LISTO.",
+    "reset2a_result": "RESET.2A — APROBADO PARA RETOMAR PREPARACIÓN.",
+    "reset2b_found": false,
+    "search_scope": [
+      "repository paths including hidden files, excluding .git internals",
+      "docs/engineering and scripts/reset content, excluding diff artifacts and large baseline JSON"
+    ],
+    "ready_declaration_found": false,
+    "documents_read_in_full": [
+      "reset_1b_maintenance_design.md",
+      "reset_2a_reconciliation.md"
+    ],
+    "evidence_json_parsed": [
+      "reset_1b_rehearsal_evidence.json",
+      "reset_2_preparation_evidence.json",
+      "reset_2a_evidence.json"
+    ]
+  },
+  "missing_verified_requirements": [
+    "RESET.2B formally approved readiness evidence",
+    "new operational backup with SHA-256 and full restoration matched to definitive inventory",
+    "approved operational executor and recovery plan for operational quarantine"
+  ],
+  "backup": {
+    "new_operational_backup_verified": false,
+    "sha256": null,
+    "historical_backup_used_as_substitute": false,
+    "backup_created_this_turn": false
+  },
+  "code_hashes": {
+    "scripts/reset/reset2/operational.py": "304c01f09e91ed5d556e464106534b3c2acf513519765a86c474e740d09632c5",
+    "scripts/reset/reset1b/rehearsal.py": "5c132b2475b25066d3610e3f7ebde46951197ed2120bfc66ef79798aa6b9a49d",
+    "scripts/reset/reset1b/run.py": "a59061381fb496859561116f0ccb3be1318ff1acadb87406ec0b634150a45af6",
+    "scripts/reset/reset2a/recovery.py": "afd643fb6c9a036ebcea2863d8710ac7254771e7325bb3c02b1b782da2dff1df"
+  },
+  "operational_executor_invoked": false,
+  "writers_frozen": false,
+  "prechecks": {
+    "initial_gate": "FAIL",
+    "diagnostic_identity": "MATCHES_CANONICAL_AND_EXPECTED_REVISION",
+    "full_inventory_files_fk_catalog_checks": "NOT_RUN_AFTER_INITIAL_STOP"
+  },
+  "postgresql_observed": {
+    "at": "2026-09-28T22:53:50.921938+00:00",
+    "database": "malaria_experiments",
+    "schema": "public",
+    "role": "julio",
+    "readonly": "on",
+    "cluster": "7668020338728398886",
+    "revision": "20260915_01",
+    "runs": 99,
+    "campaigns": 2,
+    "members": 72,
+    "attempts": 11,
+    "sessions": 11,
+    "local_jobs": 1,
+    "publications": 4,
+    "active_publications": 1,
+    "deployments": 3,
+    "active_deployments": 1,
+    "historical_schemas": 9
+  },
+  "reset_transaction": {
+    "begun": false,
+    "commit_requested": false,
+    "state": "NOT_STARTED",
+    "readonly_diagnostic_transaction_closed": true
+  },
+  "deletions": {
+    "total": 0,
+    "by_table": {},
+    "delete_statements_executed": 0
+  },
+  "quarantine": {
+    "state": "NOT_STARTED",
+    "operational_files_moved": 0
+  },
+  "postchecks": {
+    "reset_postconditions": "NOT_APPLICABLE_RESET_NOT_STARTED",
+    "protected_data_mutations_by_this_intervention": 0,
+    "historical_schema_mutations_by_this_intervention": 0,
+    "new_full_integrity_proof": "NOT_PERFORMED"
+  },
+  "recovery": {
+    "needed": false,
+    "reason": "No operational mutation was started",
+    "automatic_destructive_restore": false,
+    "available_prior_evidence": "RESET.2A isolated rehearsal only; does not replace missing RESET.2B operational recovery validation"
+  },
+  "no_migration_no_train_no_evaluate_no_explain_no_test": true
+}

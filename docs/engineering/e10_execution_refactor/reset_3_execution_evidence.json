@@ -1,0 +1,4771 @@
+{
+  "task": "RESET.3",
+  "result": "RESET.3 \u2014 EJECUTADO Y VERIFICADO.",
+  "recorded_at_utc": "2026-09-29T00:35:47.540531+00:00",
+  "git_head": "acd7ea3ec50bffa07478beefca751bb2dd66d790",
+  "scope": "Latest definitive RESET.3 replaces the selective prototype; all auth/dataset rows and columns preserved.",
+  "backup": {
+    "backup": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/backups/reset3_final/capstone_20260929T001919Z.dump",
+    "bytes": 86829877,
+    "sha256": "0feff4ca6b54ba04bf1ba6a45c59fee50678bef3ebc24541e9f7f754e2133e5c",
+    "restore_database": "reset3_definitive_restore",
+    "cluster": "7690743288911712299",
+    "source_frozen_equals_import_source": true,
+    "result": "PASS_DEFINITIVE_BACKUP_RESTORED_AND_VERIFIED"
+  },
+  "source": {
+    "at": "2026-09-29 00:19:48.467200+00:00",
+    "schemas": {
+      "capstone_test_e4_0a2fd6508e854263b072e87a2bb4c91a": {
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 66,
+          "sha256": "cb67ee73e146bc8766e3974d3aef0c953bb4c8225aaaf390314fc45761abee83"
+        },
+        "campaign_attempts": {
+          "count": 1,
+          "sha256": "907f3a11858b7de34d6b832c9eafda920998de8728500a64cd6bb2841feb4bf3"
+        },
+        "campaign_configurations": {
+          "count": 25,
+          "sha256": "0e1a17c210cd45014e88ca0d12d98c5401ae124fb206fd0dbe0a4fbc3a1099b1"
+        },
+        "campaign_controlled_requests": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "campaign_execution_events": {
+          "count": 1,
+          "sha256": "0ac05d2ee31baa9867c99ed0c8c06fe0807d0a4d5ef0cced126588b28250c27c"
+        },
+        "campaign_members": {
+          "count": 25,
+          "sha256": "21d21468f34b3a1d1ad7861b3f751431000814f56a92828e1392cfc2582af3a5"
+        },
+        "campaign_technical_revisions": {
+          "count": 1,
+          "sha256": "f7829e6563907cc1820ab15e3ce98df49c59110da7fd42291bc597fb43c4e6da"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "41ef70a64254cf1195651e93f59dc28b8df5095f75df7eccce0ed7736c3a281b"
+        },
+        "experiment_execution_events": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "7a4dbde3f0138fa91bc275c16fb2ae86537aec1af92f92e1acdd319298a83fb5"
+        },
+        "experimental_campaigns": {
+          "count": 3,
+          "sha256": "74462d5d3cf9cf88fa4842c102fd420b57d577881ad9db8c6d170feba99cbdef"
+        },
+        "experiments": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "local_execution_jobs": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "models": {
+          "count": 5,
+          "sha256": "a78fa7f4b636c63e4d09c87eb77edb35377d9104c7d8d7e979f804bc68c9e4e3"
+        },
+        "runs": {
+          "count": 1,
+          "sha256": "b2e59434a2379224747ec160fb180010b1d881dad3569436c40a515e6424184c"
+        },
+        "train_execution_records": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 1,
+          "sha256": "8b01972612cfa882912ce290aafd17b6712d0145e9a3a33a76a7fca0fd5cd515"
+        }
+      },
+      "capstone_test_e4_1e7a6874d5444d29ac6cb416a6c90b0b": {
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 74,
+          "sha256": "c5ccfd5393589360a08ccb5bcb04df3a4d01c6cd82111a49b3b2f96d5da52bf5"
+        },
+        "campaign_attempts": {
+          "count": 2,
+          "sha256": "7a4813d974c17c6be28bfcbd68c74d7f5085685855ee4f2fada00019a6f133ec"
+        },
+        "campaign_configurations": {
+          "count": 25,
+          "sha256": "49e327f615e82f2b1dcf936c25f28c598fb9c9cc58522ccf2df5bc610cd274ba"
+        },
+        "campaign_controlled_requests": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "campaign_execution_events": {
+          "count": 2,
+          "sha256": "ef2065ebd7b8f41b8098984bdc035c88cb1d640c7257282f456e8e61984092f1"
+        },
+        "campaign_members": {
+          "count": 25,
+          "sha256": "b16435090f65006eb9273f17646744ce20d0b5daf1fbfe5b199a692efbe3d31a"
+        },
+        "campaign_technical_revisions": {
+          "count": 2,
+          "sha256": "bf0c056b26415106dec576f5e0f4cfbd9c92fd8d59810311586d06c2ccef217d"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "ad8a33082b0b0d8967568aa9b3044e57994b88194f881512c3cc9285204f0c0d"
+        },
+        "experiment_execution_events": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "076f6d5066eacc58fce108a7ee1402580c212b7f3c3aa501a759dfc9f009ab40"
+        },
+        "experimental_campaigns": {
+          "count": 3,
+          "sha256": "ac05a4703b46390133e949b6c7dd65dceb55f301dcb74cf2ac4c83b241e1acbe"
+        },
+        "experiments": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "local_execution_jobs": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "models": {
+          "count": 5,
+          "sha256": "43d7ba5699c92bb4d75636ce1ee5ce69563458a54d5fdb282a5096a12bcb1c8e"
+        },
+        "runs": {
+          "count": 2,
+          "sha256": "1733d67e05392165c0f382e7526c9240e5406f16afd111c8e70e7fd4d75b0ea9"
+        },
+        "train_execution_records": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 2,
+          "sha256": "0c3093d690e95f6a107ab8fc15fa639a11b56a2ccdb1c96c71acb99f2e47cbc3"
+        }
+      },
+      "capstone_test_e4_2e43f6123d5e47d992ad7f722424b6c2": {
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 61,
+          "sha256": "cf9efa97234f7c170b732fd8156d331e8e97902421a17410d9c0651f5f359a85"
+        },
+        "campaign_attempts": {
+          "count": 1,
+          "sha256": "c1002ee6f47891dde9cbda230b252a62ee4cdbc1c4c8fea2c5dfb40d44bbb96e"
+        },
+        "campaign_configurations": {
+          "count": 24,
+          "sha256": "c607a3fca94e9ea2c5b2564618fc9d8b4e3c7ecc51c0a94a9a14bf1128dfb9b6"
+        },
+        "campaign_controlled_requests": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "campaign_execution_events": {
+          "count": 1,
+          "sha256": "6226f5f32241382a670a56858361027f0ae1ccadc92b515a63f6a6aeab77fe18"
+        },
+        "campaign_members": {
+          "count": 24,
+          "sha256": "5a855bfd2d66affb28c14111eccb8e0c291f79291cd676a008ba233347fac150"
+        },
+        "campaign_technical_revisions": {
+          "count": 1,
+          "sha256": "fb5b4c4740a67854b669ca3ae7ea36b5391869c82e413db03301cb40889c2f9f"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "542c95611ca6faa088d5248b64991924818abd6b4d86021e2e3c20cfc61a5c17"
+        },
+        "experiment_execution_events": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "2d5286d5abae7dab8377eb232f43ab8219fd30ba197eb13a14b67ba93738a43a"
+        },
+        "experimental_campaigns": {
+          "count": 2,
+          "sha256": "f00ed0bba61629397117a034880db6a4661eebcee965ff6f969b9f5e2f3a0984"
+        },
+        "experiments": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "models": {
+          "count": 5,
+          "sha256": "12caeced96dd49d6c7424e8dda89c13058e7e4747e8ab1f4ba1d1e7105ce8f9f"
+        },
+        "runs": {
+          "count": 1,
+          "sha256": "db6381cf5abdc48516e555042125c6710ec1d4eb084b7acbea0e2424a030e25f"
+        },
+        "train_execution_records": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 1,
+          "sha256": "9315118ada5eb597b8d5e33709586a5fac4f9b968965931027e2cd9b052250d5"
+        }
+      },
+      "capstone_test_e4_5063389011b247dcac5c7fdd19195406": {
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 61,
+          "sha256": "cf62ed591d0e01df2fd1fe79b8dc70f02a57097c93942f1eb2c1f661362fb1fd"
+        },
+        "campaign_attempts": {
+          "count": 1,
+          "sha256": "4b2388f6c00af6edcc07781a08472b2078ac526b56b64b0c3386e76409b52cd6"
+        },
+        "campaign_configurations": {
+          "count": 24,
+          "sha256": "b9d23ecd4bfe453225314879ee5e129e5457666a08b22cd5327a1b45c68ec5d7"
+        },
+        "campaign_controlled_requests": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "campaign_execution_events": {
+          "count": 1,
+          "sha256": "2555c6027101f1c0fe28cc5f00d6a88bed8b5eabbc0d1979499528f4392cf5f5"
+        },
+        "campaign_members": {
+          "count": 24,
+          "sha256": "01c3bbbdfaee59157d381bf134578fecb87e00e41807257574583ab786514243"
+        },
+        "campaign_technical_revisions": {
+          "count": 1,
+          "sha256": "460a0f30be289fdf229ea23ffb7b92288020ab6a57acf99b1c16a8d94bc77f72"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "a61c45f7013e32b1d0ce47374e93527753edef4c6338cfd3e7f05afd3055e850"
+        },
+        "experiment_execution_events": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "6ceac9a1dc31faaa5fd0059848346a5e2b9ba5b124dd5a0fe3998f891f53471e"
+        },
+        "experimental_campaigns": {
+          "count": 2,
+          "sha256": "962852654ddcab27d77acce67f96057ca8d7e01ae444e294bb5f692a0ec98a31"
+        },
+        "experiments": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "models": {
+          "count": 5,
+          "sha256": "cdb684bbad39b8008383a31405efa75b0c836b9412704e61d963f8853f9b7489"
+        },
+        "runs": {
+          "count": 1,
+          "sha256": "60e5bafa52b74eb3f41311f73db41f660d6831b37008074b799f5002c217dbc3"
+        },
+        "train_execution_records": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 1,
+          "sha256": "f539777fb46ad4a411431c8fb484d859dadfbc33ebeb32cbb561734fe98b7d44"
+        }
+      },
+      "capstone_test_e4_59067b2319e84fa0ac4cd749fcd637ad": {
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 74,
+          "sha256": "66456e73bcaeae91693585bd15d878eb33d18ec7282ab63b5be67ad55f4a79cd"
+        },
+        "campaign_attempts": {
+          "count": 2,
+          "sha256": "910e2b11030d1d4a96985b7164c94833f104518cef209ecacc8f3e6020e5e1c6"
+        },
+        "campaign_configurations": {
+          "count": 25,
+          "sha256": "6f038e4523064f7d3d936addcd44bd20ff3a364d9782c67338eb69c6baf0978e"
+        },
+        "campaign_controlled_requests": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "campaign_execution_events": {
+          "count": 2,
+          "sha256": "601860d32aefcfadbcb3b77e3ae682f5589e078c0922c4234dbece6fe3ffcda5"
+        },
+        "campaign_members": {
+          "count": 25,
+          "sha256": "23a61be3c1f95d177f159d08f705177a37851468c69bbfdf529b87492f886ea6"
+        },
+        "campaign_technical_revisions": {
+          "count": 2,
+          "sha256": "28ee2b521e1420e8c7da1d7f2aed3c7c804e1e8da7858c4fcd7ac856656ebf53"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "c57238aecdabafb70d245295cf700bb1d84fa1d437e8e6bbd19e075376bb9d91"
+        },
+        "experiment_execution_events": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "67ea479fdfabab4b6af73dc3635372871db1d7aaca6b363810a43f9660843415"
+        },
+        "experimental_campaigns": {
+          "count": 3,
+          "sha256": "5c24887fb0b3f7f14fd790829dda4c06032180e598d0c4128bc96e6d2c33a215"
+        },
+        "experiments": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "local_execution_jobs": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "models": {
+          "count": 5,
+          "sha256": "5d25f205944cc15ddad7794829ee0d1e7c4c23d6035461f8d9ae70036162fb29"
+        },
+        "runs": {
+          "count": 2,
+          "sha256": "d84f0ef059c676f2db99ad9610e3ae9bf31605cd2f11e6dcf3a905696c30cf1e"
+        },
+        "train_execution_records": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 2,
+          "sha256": "d2f858aa5f1135a88dc1ba16af4b0a1ea7c48924a083d69d693f90aab69c727a"
+        }
+      },
+      "capstone_test_e4_69d24fcf06ff432798fd646687be91a0": {
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 80,
+          "sha256": "78c4e2ac371f6274ff766d014bc925686c9c4eb6170c440be4c484f92f7fcbfa"
+        },
+        "campaign_attempts": {
+          "count": 3,
+          "sha256": "b751b947d53b536b802a0e88e46a03673657d6e8fcb3757442b008bc38f6b39b"
+        },
+        "campaign_configurations": {
+          "count": 25,
+          "sha256": "440fe352809a40faa6944e163fde7b2a5fd1fec5f47b320c13babb33646a9c5e"
+        },
+        "campaign_controlled_requests": {
+          "count": 1,
+          "sha256": "286e209236e20e9633d77751f886237a6caa63469f16663a65806746b0b3e7ee"
+        },
+        "campaign_execution_events": {
+          "count": 3,
+          "sha256": "02892fd725fb887ff977b23f5ef90d616b8a4eb374ba0651c128ef7350ca8694"
+        },
+        "campaign_members": {
+          "count": 25,
+          "sha256": "9a6ea8267ac1a41738c08964043e1a293d977ff44470b5eb9bf7f334b9cf0b37"
+        },
+        "campaign_technical_revisions": {
+          "count": 2,
+          "sha256": "067d4c81d8501eaf1a56707304d57897fc7307470794f49ca0ac6880d3498a77"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "103cb668ee3fdd79de9421bb72982cd43fc70b5dd22d6dec7580d23ebb65354f"
+        },
+        "experiment_execution_events": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "7ab270a7ed91b1d2b398dfdf70c9ef1914b337f014c70a44fcf344455fbab80c"
+        },
+        "experimental_campaigns": {
+          "count": 3,
+          "sha256": "6cd4b2e32ed49845a1d46c66cd12f8187bdf213f64e17f09c5a87813e9427f9a"
+        },
+        "experiments": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "local_execution_jobs": {
+          "count": 1,
+          "sha256": "960670ae86d246adf52acbe8d7ddd32173bddcf8f7e0ac49c730626f07e51f55"
+        },
+        "models": {
+          "count": 5,
+          "sha256": "7233efe28681a4c8bb6e6015d5548e80fd751ac131b4af5b6784cf7c7fa20876"
+        },
+        "runs": {
+          "count": 3,
+          "sha256": "47962a4ed7375b28aa04ec679e6338db1f2669599ca4c750c42c6a09b6d34f1d"
+        },
+        "train_execution_records": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 3,
+          "sha256": "34e2c6d580b6c85405aaa1699020a898fd98f1a860cdb2b9b4054fe07d02f3e2"
+        }
+      },
+      "capstone_test_e4_afee0d49091745978a95c8cb74fa7822": {
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 74,
+          "sha256": "6c510bc713c7250f0c235edf3a248fb8d16fa2ade6c5736a90284e59e027e4cd"
+        },
+        "campaign_attempts": {
+          "count": 2,
+          "sha256": "cbda306b03c946487ab38453ef48b9935223caefa81ee02d8cb62bdf7cc6fc35"
+        },
+        "campaign_configurations": {
+          "count": 25,
+          "sha256": "c0e9477da1a6e53c3ca9ea5c7e235c75272ff5a446f4e887670590db922e3971"
+        },
+        "campaign_controlled_requests": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "campaign_execution_events": {
+          "count": 2,
+          "sha256": "7b30fc1a73b7721f7e56e147dd4e6f71fa67c6f887d29f8b9d60a51fb22d19fc"
+        },
+        "campaign_members": {
+          "count": 25,
+          "sha256": "cc57474be19109410533bce78fd5b0b9fbe9bc2e19566650ab51a34c04fa3206"
+        },
+        "campaign_technical_revisions": {
+          "count": 1,
+          "sha256": "df8eee5911329ee184ff9afbed3d9ee36cf22d78a43c8905368942ea938bb071"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "ef7c39738a8f9c27ced6f94daca7aaedbb2c150f9eebca0c20674c83bf78f79a"
+        },
+        "experiment_execution_events": {
+          "count": 1,
+          "sha256": "223de0d8046326f5116aebd132d5172ed46f2affbf2b75ef1f743b0829d51c2e"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "33419635fae118db650f6fc6e6a11179f90d7fee7ce6dcf1426138561db02aa8"
+        },
+        "experimental_campaigns": {
+          "count": 3,
+          "sha256": "391eee4ae2d450b15b271a48b435ebecb5b08b98a899282406dc4a8c528a7a92"
+        },
+        "experiments": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "local_execution_jobs": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "models": {
+          "count": 5,
+          "sha256": "a907dd16a8dd7a6241a936ab8a0c61b777fd144897f310db6f28dcff1a4282f3"
+        },
+        "runs": {
+          "count": 2,
+          "sha256": "2b31329b7130f69b18933ccdbb34620c4588409dbfd5816d127c0f2b73e215f3"
+        },
+        "train_execution_records": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 2,
+          "sha256": "a42bb47b1aeaaa5f1c4042f68e3b28affe5d23223783eb3cb897c6f100ee0099"
+        }
+      },
+      "capstone_test_e4_db01183603d44bc0a048c29e1bcb399d": {
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 78,
+          "sha256": "0cb7f6b0e737618304857498172ffd002c74d5464e4f322a5647a85ec3bcb2f6"
+        },
+        "campaign_attempts": {
+          "count": 3,
+          "sha256": "9a91a9bacd731cdf3f96a5f4e0033e2b024c7f285e45d3125621006692edae5f"
+        },
+        "campaign_configurations": {
+          "count": 25,
+          "sha256": "0f378fbcc421ed854c8dffd6a380d0fd35c13a315ae4a523a05e656677f31baf"
+        },
+        "campaign_controlled_requests": {
+          "count": 1,
+          "sha256": "6bdb0398a1d2233edfe237cc25944f0b8cced0b6722b36adc434dd634d7442e0"
+        },
+        "campaign_execution_events": {
+          "count": 2,
+          "sha256": "7a1975a9791268f285ad43927623a53eb0ba0445db1e11948fb6a57d38add385"
+        },
+        "campaign_members": {
+          "count": 25,
+          "sha256": "83545b2c6e2a90cd3dd2d0cf3e75e536c28aecdd4475d505677302d6e0750e7e"
+        },
+        "campaign_technical_revisions": {
+          "count": 2,
+          "sha256": "2e3b87b21ee61c46fd2bade4cd8d2e2681e7f6f7fe63dd0dc87e0594903c7455"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "7f14675ed3e227604e6f19abfdde463ba2e99e77a14184767de47dc73f711ef0"
+        },
+        "experiment_execution_events": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "5d844460987bbc4acea6dade0a1865bb5c407b840bf85a81b5f1131cc2fda52a"
+        },
+        "experimental_campaigns": {
+          "count": 3,
+          "sha256": "8b268613c8edb17ea19bb2d4604968bda33464530b6d6a0a55f45744a80b6f0d"
+        },
+        "experiments": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "local_execution_jobs": {
+          "count": 1,
+          "sha256": "5decd55343e996b1f3e9134b47cb67978e2eb3773f2654495236f810a7edffa4"
+        },
+        "models": {
+          "count": 5,
+          "sha256": "eec533545719a252e37f01bccae3da86edc114bb3ea914659b6f69b72e1b45d5"
+        },
+        "runs": {
+          "count": 3,
+          "sha256": "4d7b16f30b85ecf7558ca6ff6f7556f246bc506da39ba51c22ce1e40b6f70e72"
+        },
+        "train_execution_records": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 3,
+          "sha256": "7d477713e9f26216b050d1a28268f833c9c7b559e56a45fb1e257b9af55ef017"
+        }
+      },
+      "capstone_test_e4_eb844a33b7f744fba0e010d3cfb23772": {
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 75,
+          "sha256": "be13a827fbeb2978255717d3e09b3b0ac1085a57a9fed39eb8a93c2e5adf8f09"
+        },
+        "campaign_attempts": {
+          "count": 2,
+          "sha256": "9447023acd343fba45cdbcae266756d0d4be84404f9732f767ff5efa37f333cf"
+        },
+        "campaign_configurations": {
+          "count": 25,
+          "sha256": "1e84680d907282050e2d09f3935764d45ad117bea67dc86a71c062fa3503766e"
+        },
+        "campaign_controlled_requests": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "campaign_execution_events": {
+          "count": 2,
+          "sha256": "61458a5b6e8759aa1be16086afa6bfd3810a792d1fb94ec252120461dfe04ce3"
+        },
+        "campaign_members": {
+          "count": 25,
+          "sha256": "0531a00c4748e9ce48c31978c501aae291891be8d66c00879ea29a7755a08131"
+        },
+        "campaign_technical_revisions": {
+          "count": 2,
+          "sha256": "55b74466c7e6d55bc91e70bef1f16afa18d0db617115274014281337d8e524f4"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "49e1f0d3c3a48e79bae8a2648dafca17d0ee227ab95443598698f3e1165476ab"
+        },
+        "experiment_execution_events": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "7852803b548408b86be4447eb50f3e118fa4fa7569cc39fd8fac8f3cd82e31cd"
+        },
+        "experimental_campaigns": {
+          "count": 3,
+          "sha256": "ca6eb48ef2ded1ea5d0ccabb9d604e9da72f67d8f3f50f8fa8205a69a865f268"
+        },
+        "experiments": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "local_execution_jobs": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "models": {
+          "count": 5,
+          "sha256": "597943d12cad2133471c85389f67323851ce0735a2b7b878b68671b9f3f1c76d"
+        },
+        "runs": {
+          "count": 2,
+          "sha256": "380c7a2b3e8baf5e1b0a82c4ef8420b1d1dc9e3f8078410e71b855ba3b505f26"
+        },
+        "train_execution_records": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 2,
+          "sha256": "d5bf5a26618cd03f8fe276ac87a6322ee426a480dc2e440fb7185424c3b711ef"
+        }
+      },
+      "public": {
+        "alembic_version": {
+          "count": 1,
+          "sha256": "c2002996732bb659de8dea4d6d1baaa21c1b2aa7ca75d39def1f90e653884e34"
+        },
+        "artifacts": {
+          "count": 4007,
+          "sha256": "0a9689c9fb83b3a3da07462319972ce1b355b75293e56d8f606959fcf0d10af8"
+        },
+        "assessment_artifacts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_attempts": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_campaign_consumers": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_final_locks": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_identities": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "assessment_results": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "audit_events": {
+          "count": 2632,
+          "sha256": "71c12420dc203ff3f03fe520c2e6c2b2fbe1dc283b2d136755eb75affb019200"
+        },
+        "blood_samples": {
+          "count": 73,
+          "sha256": "1d731819ef24c877a5dfd3040e6ea0a518f0b05f0bae072146948a1551ccb94b"
+        },
+        "campaign_attempts": {
+          "count": 11,
+          "sha256": "182a1f33a174453b664f08311a0b27b7aec8e683110bd8a255cf4674a79f6810"
+        },
+        "campaign_configurations": {
+          "count": 24,
+          "sha256": "103f90ba8f6b126817a8d06878f8cd7cc42e654e4fd714a8b0f833e9542e0c0b"
+        },
+        "campaign_controlled_requests": {
+          "count": 2,
+          "sha256": "22c240503397c822becdcad82fb747fdc5e453f0ba8a2d420311403c0bd782ff"
+        },
+        "campaign_execution_events": {
+          "count": 4,
+          "sha256": "838fa8b07feecf61bf03fb14d87b485aa961e3cbff68aa6084931d22dac1d861"
+        },
+        "campaign_members": {
+          "count": 72,
+          "sha256": "00d6ffdc649da2a8881740e93c64585d3a5056ad607754b4a5cf6cd0bfb74071"
+        },
+        "campaign_technical_revisions": {
+          "count": 2,
+          "sha256": "7fd1a94ed2bc3c129c1e2d0988d4b2ed8dd6505fa5a28a628c00796566dfc3c3"
+        },
+        "cell_classification_events": {
+          "count": 2473,
+          "sha256": "894c3fc687c0e5fea5d1065d350067f803fa520c6e8631605c0ad7d30a5671f0"
+        },
+        "cell_classification_inputs": {
+          "count": 2290,
+          "sha256": "b21017ab118c28d51a8ff308a135f1d6fbda1cf54a4a9238296b007e91d523a4"
+        },
+        "cell_classification_reviews": {
+          "count": 6,
+          "sha256": "24cb7f40d499f9b85fe556286f63e2c61d9ab1ad7ec3c271a11093d07e62b648"
+        },
+        "cell_classification_runs": {
+          "count": 46,
+          "sha256": "0965331243f65b5d736b2140bec047711ce5aeb8a2b008dc4aed9063249e981f"
+        },
+        "cell_crops": {
+          "count": 2241,
+          "sha256": "35f2fd22f0df2b64a76b95b154033e3aaceb226a91eaeb6fb41da5854876eac5"
+        },
+        "cell_detection_events": {
+          "count": 181,
+          "sha256": "8a5f9000b8071254a97e594c97395417a5f23b89081aca45b2db05075ec701d0"
+        },
+        "cell_detection_runs": {
+          "count": 45,
+          "sha256": "7228a71a2f1b2258f463b13aa7f6a9efd5711188d8a1d4117437e8b08238e16a"
+        },
+        "cell_detections": {
+          "count": 2241,
+          "sha256": "1db0af8f10afc8e7c4d354803d60cc9a25f8486e98853cf2cfef93366ed47c92"
+        },
+        "cell_explanations": {
+          "count": 1,
+          "sha256": "ee7984cad74a70ae4333fac1ba36bbb49a0bfccb409d472c2611cab3b1405117"
+        },
+        "cell_predictions": {
+          "count": 2152,
+          "sha256": "08e4e6c54510953a9d6581cc11e38896b17964bb2882e5d85fd7f7604a5a7221"
+        },
+        "classification_reports": {
+          "count": 120,
+          "sha256": "6b2c88bbfa4337c120dfc1f35d6c9fe970795585afabe143f74b1af345395acf"
+        },
+        "clinical_identities": {
+          "count": 201,
+          "sha256": "e41426a8500e3fbb9f8b70b2119501ce20f3853a5750194cd0a00cf6315a38e4"
+        },
+        "confusion_matrices": {
+          "count": 60,
+          "sha256": "533101e66f348ba9c9e2ec7aae2cae4ce9d0cb6fe2cd5cf3c73f43d9b4ac18d4"
+        },
+        "dataset_materialization_activations": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "dataset_materializations": {
+          "count": 1,
+          "sha256": "6026c9bd22c5c3b7b916b7f6e2e3464cc8cf0050fe5ba4fc6083537e71450458"
+        },
+        "dataset_source_records": {
+          "count": 27558,
+          "sha256": "d3c6386726b93a435823e8a1a2bc0245a4b892b0b89887f3747a8189425145c3"
+        },
+        "dataset_split_assignments": {
+          "count": 27558,
+          "sha256": "edda8be9e1e4060caf1d1afc8f34bba161ebe139e24bbb3091f9899eb930f210"
+        },
+        "dataset_split_images": {
+          "count": 55116,
+          "sha256": "59528856bd3d413059fbab5c5a02434c71a176883c25af762c2fc5d79ad496e5"
+        },
+        "dataset_split_statistics": {
+          "count": 1,
+          "sha256": "1e509f3dc0cc50c3ea20a99207e04e66b617c642fcce49510c64ef8326f63c0d"
+        },
+        "dataset_split_validation_checks": {
+          "count": 12,
+          "sha256": "29b643727194eb4264de61ad2e93ef0e271b898be4a09ef28ec4fefac0aff4a6"
+        },
+        "dataset_splits": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "dataset_version_sources": {
+          "count": 1,
+          "sha256": "bcdd40cbf14cfba8dd5df9c76f76fa6b571d06d294f249dc2284f7e31503ff59"
+        },
+        "dataset_versions": {
+          "count": 1,
+          "sha256": "c9a99a6f03d324318fe2b1fef2f9566fa8fbef748889dba3f2faf7ba836f82ff"
+        },
+        "datasets": {
+          "count": 2,
+          "sha256": "7ed1f66ac9ffb3e27d88fc2bd52eea9088791beaa636cc828b37344629342c59"
+        },
+        "deployed_model_versions": {
+          "count": 3,
+          "sha256": "8fa36c313a05501e5fe6493d2854291afddac6221fd1d4a06b553e72bf7d163c"
+        },
+        "environment_packages": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "errors": {
+          "count": 1,
+          "sha256": "ade00d73eb146c53419ab8b03bdcaede1b26b9d8dd2fa1f5e0a8622f27001b69"
+        },
+        "execution_logs": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "experiment_execution_events": {
+          "count": 4,
+          "sha256": "ecf48e65139dee82bb9d88b16a3f6dcfc047ac50f65dd448ea2faac7ad1173f4"
+        },
+        "experiment_execution_gate": {
+          "count": 1,
+          "sha256": "f42d8830820bbac71205f4d26300f3711b3fa3fc390b2cc3e45198511853dd67"
+        },
+        "experimental_campaigns": {
+          "count": 2,
+          "sha256": "429ff4bac9d1d5ef3ec1eed43020b5104851e6bb91370c3b21f07d18a1074413"
+        },
+        "experiments": {
+          "count": 1,
+          "sha256": "727b05203e0db35dc1051c16a1954c293fb6e629171e83ab5c486071ecd90056"
+        },
+        "explainability_results": {
+          "count": 3600,
+          "sha256": "807f0b44393ca730e26ed5b64f110c7d65a275e50fdb2c974598fa96c28aa2e9"
+        },
+        "identity_evidence": {
+          "count": 27558,
+          "sha256": "f49c50ae77ea0aba924116a985bd011691abe6c8815e75b1fbd67e3d4878f396"
+        },
+        "image_analysis_jobs": {
+          "count": 3,
+          "sha256": "abe6b063fa6a8b82ba7a6e9c84564cde8ac333e2046762aa379129b9d25f54ed"
+        },
+        "image_connected_components": {
+          "count": 3734,
+          "sha256": "8ccd455152b9b4f4be27b3ce57e0a36e59e3c837b24741490f177c910f1156fa"
+        },
+        "image_ingestion_batches": {
+          "count": 73,
+          "sha256": "9716bb881b4f4e93f05924ee534d5a30ee67ed7f526dc4a7b11d69df67231912"
+        },
+        "image_quality_assessments": {
+          "count": 74,
+          "sha256": "0a722142b7a01b8e3b083d7b755201f415290c4fe2e147fcb2e1f4e68c933703"
+        },
+        "local_execution_jobs": {
+          "count": 1,
+          "sha256": "86872fd9b349296660f825675645e5ed546cf588eaacc2ddf1e21cd725f5e6dd"
+        },
+        "microscopy_analysis_events": {
+          "count": 383,
+          "sha256": "9ff55e797a3062e44d823bfb96debb112e991bda834eec63c7a2068560392601"
+        },
+        "microscopy_analysis_run_images": {
+          "count": 74,
+          "sha256": "2ec0307af13f4b5070db5e4fe0d7c81881b58c3642e55bad303488aa5f79505d"
+        },
+        "microscopy_analysis_runs": {
+          "count": 73,
+          "sha256": "8e41a6094c59eda6a0bff16db7b6f037c426774815b4614c2bef9dbf10261c0d"
+        },
+        "microscopy_images": {
+          "count": 74,
+          "sha256": "362eaef09fce46da2df3d0326d7ea692e2cc639f9a325bde22cf0cc8a9b28049"
+        },
+        "model_governance_backfill_audit": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "model_versions": {
+          "count": 36,
+          "sha256": "3a0286e112e4229bee03c99ba009a337f3236d7a505359e1c6c93b9b980bb0b2"
+        },
+        "models": {
+          "count": 4,
+          "sha256": "6494e0ab530b6d6fec6c8c17742c978456d8f389f7df3f38be8d60b56d3934b6"
+        },
+        "predictions": {
+          "count": 99567,
+          "sha256": "b8314f35e1cf26967202eb2b0be5d8321b2a745a6643b83f9812af8357470265"
+        },
+        "quality_assessment_queue_items": {
+          "count": 73,
+          "sha256": "74c86b11724463d16424c9afcce8fd51d7c822de6638f87846c97cfaf3b7817d"
+        },
+        "quality_gate_decisions": {
+          "count": 16,
+          "sha256": "f9711702ee6674af6625ee812c17753fce7aa4284385c52749ebdfa8009bfe85"
+        },
+        "research_subjects": {
+          "count": 73,
+          "sha256": "5ceddafbd9f076e852cdf8b66211c95faba6fea34513489b3b34acaa1c51d6a8"
+        },
+        "roles": {
+          "count": 5,
+          "sha256": "9963e9d52a13de49af23598244cdb8dd2819edd2459255ff70b58e099153c091"
+        },
+        "run_checkpoint_policy": {
+          "count": 24,
+          "sha256": "b17a5bd42641e7b6ba3633faa8e9ec21a38d635ed4251501eb20797b86be6b7c"
+        },
+        "run_clinical_metrics": {
+          "count": 60,
+          "sha256": "e6f2e07aa137589559d1f7eb7695fa1e45925960ad4566ed2af890e4fd9dab4e"
+        },
+        "run_dataset_images": {
+          "count": 825048,
+          "sha256": "7a0a8f20d3d99f92d15e8b5231b887b927a9fdbe52b5f878352cb9ea33e92156"
+        },
+        "run_image_predictions": {
+          "count": 98364,
+          "sha256": "160df64e7edc2c9281d0d1ae67f879f36a71bbea759ac9f479e4b2c265e37ef4"
+        },
+        "run_io_records": {
+          "count": 84,
+          "sha256": "df07d25a97e1535a765d3f3054ec515465b6bcb583c34cb4125c26f2d8f0508e"
+        },
+        "run_lineage": {
+          "count": 61,
+          "sha256": "3fc74db125188e38813a23ac7d4779f692281ec7951791a8188631512b446849"
+        },
+        "run_metrics": {
+          "count": 2796,
+          "sha256": "934ac7c6b3393846d097fd8b1fd6f3adac8c23fb956159604081ee002421d70e"
+        },
+        "run_model_deployments": {
+          "count": 3,
+          "sha256": "f7fb9c9bf4591bdf7bdb843bcd1b76dbc63b302c844935214f85a86881cb8a50"
+        },
+        "run_threshold_calibration": {
+          "count": 24,
+          "sha256": "0b79dc8645c740bb926be7bc719799d35746b7f9ddf11321ed2a4416ae2d0551"
+        },
+        "runs": {
+          "count": 99,
+          "sha256": "addf2096049fcb20b8c28350e04b953be2cafb74870854842945db409d5884c5"
+        },
+        "schema_migrations": {
+          "count": 23,
+          "sha256": "fb427ece1bcb38b89e483460f86f75d9f3c88ef0d994c01279489d1b41066f17"
+        },
+        "scientific_cases": {
+          "count": 73,
+          "sha256": "d3d27a8cac942084408d4b2cb7ef6204e142e272eb343a0d8c4780680f773850"
+        },
+        "scientific_reviews": {
+          "count": 15,
+          "sha256": "a4582eadaa4cb64bf2d0a7f33a3015cbd0a0146185564542d9dfb109a1c0c769"
+        },
+        "scientific_validation_annotation_events": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "scientific_validation_annotations": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "scientific_validation_classification_runs": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "scientific_validation_detection_runs": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "scientific_validation_images": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "scientific_validation_sessions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "smear_analysis_summaries": {
+          "count": 43,
+          "sha256": "d26f5ef6023b9bbd2d7e5823cd884f94e229874ea6d91414c99f83b4d11fc674"
+        },
+        "smear_slides": {
+          "count": 73,
+          "sha256": "111341a9d0d7891f94d21da8c02a3a1e2c45aaebe8844582e24c3cd5f6aa44bc"
+        },
+        "stage2_model_publication_events": {
+          "count": 9,
+          "sha256": "6b43995e8bf37e479d0b725d7078c7ca54c194f367221991fff76ffab357d4d8"
+        },
+        "stage2_model_publications": {
+          "count": 4,
+          "sha256": "a9e200e4ea82657c00d41592ab863d2f48b1ac52d16cd10748b986adaf6ef556"
+        },
+        "synthetic_data_runs": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_records": {
+          "count": 360,
+          "sha256": "519950880e0ad0a9b333befd986aeb1bc90e55cd24764a4577173697b928301c"
+        },
+        "train_execution_revisions": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "train_execution_sessions": {
+          "count": 11,
+          "sha256": "9c617f5dcfe8b17ea5f370899c960e7f79674e2cdb360be20b6ed45bce0dd649"
+        },
+        "training_history": {
+          "count": 926,
+          "sha256": "c926c8edcb3a850f97605fae20d7b61e772b25f90355b30697918096a6db314a"
+        },
+        "user_roles": {
+          "count": 1,
+          "sha256": "fbfa8d635fe1d196fe4883645e8f7666011c8357d0124d98b4a28e3c9dd5589b"
+        },
+        "users": {
+          "count": 1,
+          "sha256": "4cc134db74d9f416141e0fdd91b094a0eec5d362a2c01f7c53622bc6f7e18a18"
+        }
+      }
+    },
+    "public_tables": 97,
+    "public_rows": 1192670
+  },
+  "restore": {
+    "result": "PASS_FULL_BACKUP_RESTORE",
+    "public_catalog_equivalent": true,
+    "normalizations": [
+      "generated internal RI trigger names/OIDs",
+      "literal varchar array to text array casts"
+    ],
+    "historical_schemas": [
+      "capstone_test_e4_0a2fd6508e854263b072e87a2bb4c91a",
+      "capstone_test_e4_1e7a6874d5444d29ac6cb416a6c90b0b",
+      "capstone_test_e4_2e43f6123d5e47d992ad7f722424b6c2",
+      "capstone_test_e4_5063389011b247dcac5c7fdd19195406",
+      "capstone_test_e4_59067b2319e84fa0ac4cd749fcd637ad",
+      "capstone_test_e4_69d24fcf06ff432798fd646687be91a0",
+      "capstone_test_e4_afee0d49091745978a95c8cb74fa7822",
+      "capstone_test_e4_db01183603d44bc0a048c29e1bcb399d",
+      "capstone_test_e4_eb844a33b7f744fba0e010d3cfb23772"
+    ]
+  },
+  "bootstrap": {
+    "target": {
+      "container": "capstone-reset3-93408ac6edab",
+      "database": "reset3_candidate",
+      "user": "julio",
+      "backend_work": "/tmp/reset3_final",
+      "system_identifier": "7690743288911712299"
+    },
+    "legacy_files": [
+      {
+        "name": "001_schema.sql",
+        "sha256": "2d52cc3fcdfb5fe442d57378380e1e5b697df648c7278e8d8268d7b93c87d03f"
+      },
+      {
+        "name": "002_indexes.sql",
+        "sha256": "1ae5690d68e72340210cb0e0ca9674434719340f4eeb70be802a5fc7a6290183"
+      },
+      {
+        "name": "003_views.sql",
+        "sha256": "40bbca36fd0c46358bb728afde1095e4225d08d6f8c035c37d601ad658265001"
+      },
+      {
+        "name": "007_case_level_explainability_views.sql",
+        "sha256": "f8c29e5df11e724edf78bd02a2345094208b70c013880c66730f31bc22d983f6"
+      },
+      {
+        "name": "008_case_level_explainability_indexes.sql",
+        "sha256": "2a997a84c53d48b6e0e3e5658763919482c3eb6de323fbd14914a4d065af0a5b"
+      },
+      {
+        "name": "009_uploaded_predictions_views.sql",
+        "sha256": "8c9e9416d1c5c2714ea95165576e5db6e045fd35bb964589d65d09386a7ad8b4"
+      },
+      {
+        "name": "010_clinical_inference_tracking.sql",
+        "sha256": "72b02190106dce1e7e72ba54f1d1484c4e545e7cccb59b7e2fd8d116a58d1ebc"
+      },
+      {
+        "name": "011_label_mapping_clinical_v1.sql",
+        "sha256": "8d75f67fe482365a18eade664f726370be72e657444777eae63ddb09f16231b7"
+      },
+      {
+        "name": "012_dataset_split_image_tracking.sql",
+        "sha256": "4f613052384303244f42c2682102f76a5a647a16e3aeb6557b2cd74667705f04"
+      },
+      {
+        "name": "013_dataset_browser_views.sql",
+        "sha256": "308fdfc488ca558dce5d2062acfeeee2eee387be70502e647f0ae9fd7ade7e74"
+      },
+      {
+        "name": "017_clinical_run_tracking.sql",
+        "sha256": "d7a07fcc964b32bef71b0d522158f9dfde1b24ff96a6f84662dec90966dfd815"
+      },
+      {
+        "name": "018_visual_audit_views.sql",
+        "sha256": "2232a7de096545c31c5b33d730c2a1dd401b4645de8a64e185051b2f4fd62e69"
+      },
+      {
+        "name": "019_model_execution_parameters.sql",
+        "sha256": "ab84e372eaade902399ca8c5250e97e5025c434db316720d5e1a4a66aa04e747"
+      },
+      {
+        "name": "020_max_epochs_release.sql",
+        "sha256": "974a76ae66508b5f48995edeea82e08dbdbf5379b6c605bae283e4b151c56875"
+      },
+      {
+        "name": "022_run_lineage.sql",
+        "sha256": "af9fc6608dc5967317d070e1848ddf940302a3dc7a2730db4c75c6f2bd5bdff9"
+      },
+      {
+        "name": "023_schema_migrations_baseline.sql",
+        "sha256": "a907d48f0f035860b6e16a3115fea53cd01ec4fc544ea353ac21278a3b6df387"
+      },
+      {
+        "name": "024_model_version_artifact_governance.sql",
+        "sha256": "ff77c14c9560b5d9fefad2abd3ff11ba0afc7f507bb506f5a0bef3c61009bcbc"
+      },
+      {
+        "name": "025_deployed_model_versions.sql",
+        "sha256": "a1d9b4e463a18b227558e9766a2b6932da9f0936905319816359c194620326d3"
+      },
+      {
+        "name": "026_inference_jobs.sql",
+        "sha256": "a322d72b684bf33dbf7428a92c4cbf6ff41ccb6e2c34bbf792fcab725c852957"
+      },
+      {
+        "name": "027_model_governance_backfill_constraints.sql",
+        "sha256": "17ec757d0928f27ef96d9ad933c9a3fe03c7be84e5d462d5799a3ee129f491bc"
+      },
+      {
+        "name": "028_stage2_model_availability.sql",
+        "sha256": "b16a6bcb536d4f63253986d291f26e4198b9916a3294762b1353a06a82349486"
+      },
+      {
+        "name": "029_stage2_model_publications.sql",
+        "sha256": "2ae200604ae71dafa5a079a7e1fd330f2eb0f0e3ac06eff302590043ff4ed889"
+      }
+    ],
+    "seed_004_excluded": "sample experiment and split are forbidden; source allowlist not imported in this probe",
+    "operational_database_connected": false,
+    "target_revision": "20260922_01",
+    "stage": "alembic upgrade 20260922_01",
+    "revision": "20260922_01",
+    "tables": [
+      "alembic_version",
+      "artifacts",
+      "assessment_artifacts",
+      "assessment_attempts",
+      "assessment_campaign_consumers",
+      "assessment_final_locks",
+      "assessment_identities",
+      "assessment_results",
+      "audit_events",
+      "blood_samples",
+      "campaign_attempts",
+      "campaign_configurations",
+      "campaign_controlled_requests",
+      "campaign_execution_events",
+      "campaign_members",
+      "campaign_technical_revisions",
+      "cell_classification_events",
+      "cell_classification_inputs",
+      "cell_classification_reviews",
+      "cell_classification_runs",
+      "cell_crops",
+      "cell_detection_events",
+      "cell_detection_runs",
+      "cell_detections",
+      "cell_explanations",
+      "cell_predictions",
+      "classification_reports",
+      "clinical_identities",
+      "confusion_matrices",
+      "dataset_materialization_activations",
+      "dataset_materializations",
+      "dataset_source_records",
+      "dataset_split_assignments",
+      "dataset_split_images",
+      "dataset_split_statistics",
+      "dataset_split_validation_checks",
+      "dataset_splits",
+      "dataset_version_sources",
+      "dataset_versions",
+      "datasets",
+      "deployed_model_versions",
+      "environment_packages",
+      "errors",
+      "execution_logs",
+      "experiment_execution_events",
+      "experiment_execution_gate",
+      "experimental_campaigns",
+      "experiments",
+      "explainability_results",
+      "identity_evidence",
+      "image_analysis_jobs",
+      "image_connected_components",
+      "image_ingestion_batches",
+      "image_quality_assessments",
+      "local_execution_jobs",
+      "microscopy_analysis_events",
+      "microscopy_analysis_run_images",
+      "microscopy_analysis_runs",
+      "microscopy_images",
+      "model_governance_backfill_audit",
+      "model_versions",
+      "models",
+      "predictions",
+      "quality_assessment_queue_items",
+      "quality_gate_decisions",
+      "research_subjects",
+      "roles",
+      "run_checkpoint_policy",
+      "run_clinical_metrics",
+      "run_dataset_images",
+      "run_image_predictions",
+      "run_io_records",
+      "run_lineage",
+      "run_metrics",
+      "run_model_deployments",
+      "run_threshold_calibration",
+      "runs",
+      "schema_migrations",
+      "scientific_cases",
+      "scientific_reviews",
+      "scientific_validation_annotation_events",
+      "scientific_validation_annotations",
+      "scientific_validation_classification_runs",
+      "scientific_validation_detection_runs",
+      "scientific_validation_images",
+      "scientific_validation_sessions",
+      "smear_analysis_summaries",
+      "smear_slides",
+      "stage2_model_publication_events",
+      "stage2_model_publications",
+      "synthetic_data_runs",
+      "train_execution_records",
+      "train_execution_revisions",
+      "train_execution_sessions",
+      "training_history",
+      "user_roles",
+      "users"
+    ],
+    "result": "PASS_SCHEMA_ONLY",
+    "tables_after": 97
+  },
+  "import": {
+    "target": {
+      "container": "capstone-reset3-93408ac6edab",
+      "database": "reset3_candidate",
+      "user": "julio",
+      "backend_work": "/tmp/reset3_final",
+      "system_identifier": "7690743288911712299"
+    },
+    "source_access": "READ ONLY",
+    "selections": {
+      "roles": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 5,
+          "sha256": "9963e9d52a13de49af23598244cdb8dd2819edd2459255ff70b58e099153c091"
+        }
+      },
+      "users": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 1,
+          "sha256": "4cc134db74d9f416141e0fdd91b094a0eec5d362a2c01f7c53622bc6f7e18a18"
+        }
+      },
+      "user_roles": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 1,
+          "sha256": "fbfa8d635fe1d196fe4883645e8f7666011c8357d0124d98b4a28e3c9dd5589b"
+        }
+      },
+      "datasets": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 2,
+          "sha256": "7ed1f66ac9ffb3e27d88fc2bd52eea9088791beaa636cc828b37344629342c59"
+        }
+      },
+      "dataset_versions": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 1,
+          "sha256": "c9a99a6f03d324318fe2b1fef2f9566fa8fbef748889dba3f2faf7ba836f82ff"
+        }
+      },
+      "dataset_version_sources": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 1,
+          "sha256": "bcdd40cbf14cfba8dd5df9c76f76fa6b571d06d294f249dc2284f7e31503ff59"
+        }
+      },
+      "clinical_identities": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 201,
+          "sha256": "e41426a8500e3fbb9f8b70b2119501ce20f3853a5750194cd0a00cf6315a38e4"
+        }
+      },
+      "dataset_source_records": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 27558,
+          "sha256": "d3c6386726b93a435823e8a1a2bc0245a4b892b0b89887f3747a8189425145c3"
+        }
+      },
+      "identity_evidence": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 27558,
+          "sha256": "f49c50ae77ea0aba924116a985bd011691abe6c8815e75b1fbd67e3d4878f396"
+        }
+      },
+      "dataset_materializations": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 1,
+          "sha256": "6026c9bd22c5c3b7b916b7f6e2e3464cc8cf0050fe5ba4fc6083537e71450458"
+        }
+      },
+      "dataset_split_assignments": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 27558,
+          "sha256": "edda8be9e1e4060caf1d1afc8f34bba161ebe139e24bbb3091f9899eb930f210"
+        }
+      },
+      "dataset_split_images": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 55116,
+          "sha256": "59528856bd3d413059fbab5c5a02434c71a176883c25af762c2fc5d79ad496e5"
+        }
+      },
+      "dataset_split_statistics": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 1,
+          "sha256": "1e509f3dc0cc50c3ea20a99207e04e66b617c642fcce49510c64ef8326f63c0d"
+        }
+      },
+      "dataset_split_validation_checks": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 12,
+          "sha256": "29b643727194eb4264de61ad2e93ef0e271b898be4a09ef28ec4fefac0aff4a6"
+        }
+      },
+      "dataset_materialization_activations": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      "dataset_splits": {
+        "predicate": "TRUE",
+        "source": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      "models": {
+        "predicate": "name IN ('custom_cnn','vgg16','densenet121')",
+        "source": {
+          "count": 3,
+          "sha256": "e1d169f311a11ef716a178e88554b0ee01e3f016e963ec38e4992815b1133fef"
+        }
+      }
+    },
+    "no_history_imported": true,
+    "result": "PASS_ISOLATED_IMPORT",
+    "stage": "models",
+    "authentication": {
+      "all_rows_and_columns_equal": true,
+      "password_hashes_preserved": true,
+      "last_login_at_preserved": true
+    },
+    "table_counts": {
+      "alembic_version": 1,
+      "artifacts": 0,
+      "assessment_artifacts": 0,
+      "assessment_attempts": 0,
+      "assessment_campaign_consumers": 0,
+      "assessment_final_locks": 0,
+      "assessment_identities": 0,
+      "assessment_results": 0,
+      "audit_events": 0,
+      "blood_samples": 0,
+      "campaign_attempts": 0,
+      "campaign_configurations": 0,
+      "campaign_controlled_requests": 0,
+      "campaign_execution_events": 0,
+      "campaign_members": 0,
+      "campaign_technical_revisions": 0,
+      "cell_classification_events": 0,
+      "cell_classification_inputs": 0,
+      "cell_classification_reviews": 0,
+      "cell_classification_runs": 0,
+      "cell_crops": 0,
+      "cell_detection_events": 0,
+      "cell_detection_runs": 0,
+      "cell_detections": 0,
+      "cell_explanations": 0,
+      "cell_predictions": 0,
+      "classification_reports": 0,
+      "clinical_identities": 201,
+      "confusion_matrices": 0,
+      "dataset_materialization_activations": 0,
+      "dataset_materializations": 1,
+      "dataset_source_records": 27558,
+      "dataset_split_assignments": 27558,
+      "dataset_split_images": 55116,
+      "dataset_split_statistics": 1,
+      "dataset_split_validation_checks": 12,
+      "dataset_splits": 0,
+      "dataset_version_sources": 1,
+      "dataset_versions": 1,
+      "datasets": 2,
+      "deployed_model_versions": 0,
+      "environment_packages": 0,
+      "errors": 0,
+      "execution_logs": 0,
+      "experiment_execution_events": 0,
+      "experiment_execution_gate": 1,
+      "experimental_campaigns": 0,
+      "experiments": 0,
+      "explainability_results": 0,
+      "identity_evidence": 27558,
+      "image_analysis_jobs": 0,
+      "image_connected_components": 0,
+      "image_ingestion_batches": 0,
+      "image_quality_assessments": 0,
+      "local_execution_jobs": 0,
+      "microscopy_analysis_events": 0,
+      "microscopy_analysis_run_images": 0,
+      "microscopy_analysis_runs": 0,
+      "microscopy_images": 0,
+      "model_governance_backfill_audit": 0,
+      "model_versions": 0,
+      "models": 3,
+      "predictions": 0,
+      "quality_assessment_queue_items": 0,
+      "quality_gate_decisions": 0,
+      "research_subjects": 0,
+      "roles": 5,
+      "run_checkpoint_policy": 0,
+      "run_clinical_metrics": 0,
+      "run_dataset_images": 0,
+      "run_image_predictions": 0,
+      "run_io_records": 0,
+      "run_lineage": 0,
+      "run_metrics": 0,
+      "run_model_deployments": 0,
+      "run_threshold_calibration": 0,
+      "runs": 0,
+      "schema_migrations": 22,
+      "scientific_cases": 0,
+      "scientific_reviews": 0,
+      "scientific_validation_annotation_events": 0,
+      "scientific_validation_annotations": 0,
+      "scientific_validation_classification_runs": 0,
+      "scientific_validation_detection_runs": 0,
+      "scientific_validation_images": 0,
+      "scientific_validation_sessions": 0,
+      "smear_analysis_summaries": 0,
+      "smear_slides": 0,
+      "stage2_model_publication_events": 0,
+      "stage2_model_publications": 0,
+      "synthetic_data_runs": 0,
+      "train_execution_records": 0,
+      "train_execution_revisions": 0,
+      "train_execution_sessions": 0,
+      "training_history": 0,
+      "user_roles": 1,
+      "users": 1
+    },
+    "assignments": {
+      "test": 2685,
+      "train": 22180,
+      "val": 2693
+    },
+    "split_images": {
+      "test": 2685,
+      "train": 22180,
+      "val": 2693
+    },
+    "patient_leakage": 0,
+    "version_sha256": {
+      "count": 1,
+      "sha256": "c9a99a6f03d324318fe2b1fef2f9566fa8fbef748889dba3f2faf7ba836f82ff"
+    },
+    "materialization_sha256": {
+      "count": 1,
+      "sha256": "6026c9bd22c5c3b7b916b7f6e2e3464cc8cf0050fe5ba4fc6083537e71450458"
+    }
+  },
+  "preflight": {
+    "docker_op1": "E10_SCHEMA_READY",
+    "local_op1": "E10_SCHEMA_READY; stopped before get/claim",
+    "ResultService": "instantiated without publishing events or reserving runs",
+    "registry": {
+      "custom_cnn": true,
+      "vgg16": true,
+      "densenet121": true
+    },
+    "capabilities": {
+      "revision": "20260922_01",
+      "event_columns": true,
+      "event_metadata_constraint": true,
+      "event_unique_indexes": true,
+      "event_trigger_guard": true
+    },
+    "gate_free": true,
+    "disabled_triggers": 0,
+    "unvalidated_constraints": 0,
+    "foreign_keys": [
+      {
+        "constraint": "artifacts_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "assessment_artifacts_attempt_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "assessment_attempts_identity_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "assessment_campaign_consumers_campaign_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "assessment_campaign_consumers_identity_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "assessment_campaign_consumers_member_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "assessment_identities_training_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "assessment_results_attempt_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "audit_events_actor_user_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "blood_samples_archived_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "blood_samples_case_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "blood_samples_created_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "blood_samples_updated_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_attempts_member_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_attempts_training_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_configurations_campaign_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_controlled_requests_attempt_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_controlled_requests_campaign_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_controlled_requests_campaign_id_revision_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_controlled_requests_member_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_controlled_requests_previous_attempt_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_controlled_requests_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_execution_events_campaign_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_members_campaign_id_configuration_hash_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_members_campaign_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_member_accepted_attempt",
+        "orphans": 0
+      },
+      {
+        "constraint": "campaign_technical_revisions_campaign_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_classification_events_cell_detection_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_classification_events_classification_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_classification_event_prediction",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_classification_input_crop",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_classification_input_detection",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_classification_input_run_detection",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_classification_reviews_actor_user_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_classification_reviews_cell_prediction_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_classification_runs_requested_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_classification_runs_retry_of_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_classification_run_deployment_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_classification_run_detection_analysis",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_classification_run_publication_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_crops_detection",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_detection_events_detection_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_detection_events_microscopy_image_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_detection_runs_analysis_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_detection_runs_requested_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_detections_component",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_detections_run_analysis",
+        "orphans": 0
+      },
+      {
+        "constraint": "cell_explanations_cell_prediction_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_cell_prediction_input_owner",
+        "orphans": 0
+      },
+      {
+        "constraint": "classification_reports_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "clinical_identities_dataset_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "confusion_matrices_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_materialization_activations_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_materialization_activations_materialization_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_materializations_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_source_records_clinical_identity_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_source_records_dataset_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_split_assignments_clinical_identity_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_split_assignments_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_split_assignments_source_record_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_split_images_dataset_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_split_images_dataset_materialization_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_split_images_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_split_statistics_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_split_validation_checks_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_splits_dataset_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_version_sources_dataset_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "dataset_version_sources_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_deployed_model_versions_rollback",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_deployed_model_versions_supersedes",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_deployed_model_versions_threshold_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_deployed_model_versions_version_artifact",
+        "orphans": 0
+      },
+      {
+        "constraint": "environment_packages_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "errors_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "execution_logs_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "experimental_campaigns_dataset_evidence_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "experimental_campaigns_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "experimental_campaigns_experiment_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "explainability_results_prediction_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "explainability_results_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "identity_evidence_clinical_identity_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "identity_evidence_source_record_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_image_analysis_jobs_input_artifact",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_image_analysis_jobs_run_deployment_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_image_analysis_jobs_source_image",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_components_detection_analysis",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_components_frozen_image",
+        "orphans": 0
+      },
+      {
+        "constraint": "image_ingestion_batches_case_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "image_ingestion_batches_created_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "image_ingestion_batches_sample_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "image_ingestion_batches_slide_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "image_ingestion_batches_subject_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "image_quality_assessments_analysis_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "image_quality_assessments_analysis_run_image_id_analysis_r_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "image_quality_assessments_microscopy_image_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "local_execution_jobs_campaign_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "local_execution_jobs_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_events_analysis_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_events_microscopy_image_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_run_images_analysis_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_run_images_microscopy_image_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_runs_case_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_runs_ingestion_batch_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_runs_requested_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_runs_sample_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_runs_slide_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_analysis_runs_subject_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_images_archived_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_images_created_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_images_ingestion_batch_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_images_slide_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "microscopy_images_updated_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_model_governance_audit_reversal",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_model_versions_checkpoint_artifact_owner",
+        "orphans": 0
+      },
+      {
+        "constraint": "model_versions_model_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "model_versions_training_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_analysis_job",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_classifier_model_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_crop_artifact",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_deployed_model_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_detector_model_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_explanation_artifact",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_inference_run",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_job_provenance",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_model_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_predictions_source_image",
+        "orphans": 0
+      },
+      {
+        "constraint": "predictions_dataset_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "predictions_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "quality_assessment_queue_items_analysis_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "quality_assessment_queue_items_requested_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "quality_gate_decisions_actor_user_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "quality_gate_decisions_analysis_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "research_subjects_archived_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "research_subjects_created_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "research_subjects_updated_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_checkpoint_policy_artifact_owner",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_checkpoint_policy_model_version_owner",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_checkpoint_policy_version_artifact",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_checkpoint_policy_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_clinical_metrics_model_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_clinical_metrics_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_dataset_images_image_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_dataset_images_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_image_predictions_image_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_image_predictions_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_io_records_dataset_materialization_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_io_records_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_io_records_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_lineage_checkpoint_artifact_owner",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_lineage_model_version_owner",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_lineage_version_artifact",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_lineage_child_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_lineage_parent_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_metrics_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_model_deployments_deployment_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_model_deployments_run",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_threshold_calibration_artifact_owner",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_run_threshold_calibration_model_version",
+        "orphans": 0
+      },
+      {
+        "constraint": "run_threshold_calibration_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "runs_campaign_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "runs_dataset_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "runs_dataset_version_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "runs_experiment_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "runs_model_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_cases_archived_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_cases_created_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_cases_subject_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_cases_updated_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_reviews_actor_user_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_reviews_entity_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_annotation_eve_validation_session_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_annotation_events_actor_user_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_annotation_events_annotation_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_annotations_analysis_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_annotations_cell_detection_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_annotations_created_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_annotations_sample_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_annotations_updated_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_annotations_validation_session_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_classification_classification_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_classification_runs_session_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_detection_runs_detection_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_detection_runs_session_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_images_microscopy_image_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_images_session_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_sessions_archived_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_sessions_created_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "scientific_validation_sessions_updated_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_smear_summary_classification_lineage",
+        "orphans": 0
+      },
+      {
+        "constraint": "smear_slides_archived_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "smear_slides_created_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "smear_slides_sample_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "smear_slides_updated_by_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "stage2_model_publication_events_publication_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_stage2_publication_evaluation",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_stage2_publication_training",
+        "orphans": 0
+      },
+      {
+        "constraint": "fk_stage2_publication_version_artifact",
+        "orphans": 0
+      },
+      {
+        "constraint": "synthetic_data_runs_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "synthetic_data_runs_source_dataset_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "train_execution_records_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "train_execution_revisions_attempt_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "train_execution_revisions_campaign_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "train_execution_revisions_campaign_id_revision_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "train_execution_sessions_attempt_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "train_execution_sessions_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "training_history_run_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "user_roles_role_id_fkey",
+        "orphans": 0
+      },
+      {
+        "constraint": "user_roles_user_id_fkey",
+        "orphans": 0
+      }
+    ],
+    "availability": "SIN_MODELO_PRODUCTIVO",
+    "history": {
+      "runs": 0,
+      "experimental_campaigns": 0,
+      "experiments": 0,
+      "train_execution_sessions": 0,
+      "local_execution_jobs": 0,
+      "train_execution_records": 0,
+      "model_versions": 0,
+      "microscopy_analysis_runs": 0,
+      "cell_detection_runs": 0,
+      "cell_classification_runs": 0,
+      "predictions": 0,
+      "explainability_results": 0,
+      "stage2_model_publications": 0,
+      "deployed_model_versions": 0
+    },
+    "result": "PASS_FUNCTIONAL_CONTRACTS_LOGIN_PENDING"
+  },
+  "authentication": {
+    "method": "Official JWT issued in memory using preserved DB identity/roles; real authenticated GET /auth/me; 401 without token. Password login not performed.",
+    "password_login_performed": false,
+    "password_credentials_changed": false,
+    "all_auth_columns_unchanged": true,
+    "http": {
+      "status": 200,
+      "identity_equal": true,
+      "roles_equal": true,
+      "permissions_count": 54
+    }
+  },
+  "operational_api": {
+    "mode": "official JWT generated in memory; password login NOT exercised",
+    "credentials_modified": false,
+    "roles": [
+      "administrator"
+    ],
+    "/health": {
+      "status": "ok",
+      "version": "0.3.0",
+      "environment": "development"
+    },
+    "/ready": {
+      "status": "ready",
+      "components": {
+        "database": "ready",
+        "migrations": "ready",
+        "storage": "ready"
+      },
+      "version": "0.3.0",
+      "environment": "development"
+    },
+    "authenticated_me": {
+      "status": 200,
+      "identity_equal": true,
+      "roles_equal": true,
+      "permissions_count": 54
+    },
+    "unauthenticated_status": 401,
+    "available_read_routes": [
+      "/datasets",
+      "/api/dataset",
+      "/api/dataset/summary",
+      "/api/dataset/split",
+      "/api/dataset/images",
+      "/api/dataset/images/{image_id}",
+      "/api/dataset/images/{image_id}/file",
+      "/api/datasets",
+      "/api/datasets/{dataset_version_id}",
+      "/api/deployments",
+      "/api/deployments/active",
+      "/api/deployments/{deployment_id}",
+      "/api/deployments/{deployment_id}/readiness"
+    ],
+    "read_endpoints": {
+      "/api/datasets": {
+        "status": 200,
+        "body": {
+          "items": [
+            {
+              "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+              "name": "Malaria Patient Split v1",
+              "semantic_version": "1.0.0",
+              "status": "FROZEN",
+              "trainable": true,
+              "trainability_reasons": [],
+              "source_record_count": 27558,
+              "patient_count": 201,
+              "train_records": 22180,
+              "val_records": 2693,
+              "test_records": 2685,
+              "train_patients": 161,
+              "val_patients": 20,
+              "test_patients": 20,
+              "validation_pass_count": 12,
+              "validation_required_count": 12,
+              "materialization_status": "READY",
+              "reconciliation_status": "PASS",
+              "created_at": "2026-08-18T18:00:58.517655+00:00",
+              "generated_at": "2026-08-18T18:05:18.981692+00:00",
+              "validated_at": "2026-08-18T18:05:37.122662+00:00",
+              "frozen_at": "2026-08-18T18:06:25.263208+00:00"
+            }
+          ]
+        }
+      },
+      "/api/datasets/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2": {
+        "status": 200,
+        "body": {
+          "dataset": {
+            "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+            "name": "Malaria Patient Split v1",
+            "semantic_version": "1.0.0",
+            "status": "FROZEN",
+            "trainable": true,
+            "trainability_reasons": [],
+            "source_record_count": 27558,
+            "patient_count": 201,
+            "train_records": 22180,
+            "val_records": 2693,
+            "test_records": 2685,
+            "train_patients": 161,
+            "val_patients": 20,
+            "test_patients": 20,
+            "validation_pass_count": 12,
+            "validation_required_count": 12,
+            "materialization_status": "READY",
+            "reconciliation_status": "PASS",
+            "created_at": "2026-08-18T18:00:58.517655+00:00",
+            "generated_at": "2026-08-18T18:05:18.981692+00:00",
+            "validated_at": "2026-08-18T18:05:37.122662+00:00",
+            "frozen_at": "2026-08-18T18:06:25.263208+00:00",
+            "grouping_strategy": "patient_group",
+            "grouping_field": "patient_id",
+            "split_algorithm": "patient_group_stratified_v1",
+            "split_algorithm_version": "1.0.0",
+            "random_seed": 42,
+            "positive_class": "parasitized",
+            "class_mapping": {
+              "0": "uninfected",
+              "1": "parasitized"
+            }
+          },
+          "distribution": {
+            "records": {
+              "val": 2693,
+              "test": 2685,
+              "train": 22180
+            },
+            "patients": {
+              "val": 20,
+              "test": 20,
+              "train": 161
+            },
+            "class_counts": {
+              "val": {
+                "uninfected": 1368,
+                "parasitized": 1325
+              },
+              "test": {
+                "uninfected": 1368,
+                "parasitized": 1317
+              },
+              "train": {
+                "uninfected": 11043,
+                "parasitized": 11137
+              }
+            },
+            "total_patients": 201,
+            "total_records": 27558
+          },
+          "integrity": {
+            "patient_disjoint": true,
+            "patient_train_val_overlap": 0,
+            "patient_train_test_overlap": 0,
+            "patient_val_test_overlap": 0,
+            "duplicate_cross_split_overlap": 0
+          },
+          "validation": {
+            "required_count": 12,
+            "pass_count": 12,
+            "fail_count": 0,
+            "checks": [
+              {
+                "check_name": "assignment_count",
+                "status": "PASS",
+                "observed_value": "27558",
+                "expected_value": "27558",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "class_presence_test",
+                "status": "PASS",
+                "observed_value": "both",
+                "expected_value": "both",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "class_presence_train",
+                "status": "PASS",
+                "observed_value": "both",
+                "expected_value": "both",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "class_presence_val",
+                "status": "PASS",
+                "observed_value": "both",
+                "expected_value": "both",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "duplicate_cross_split_overlap",
+                "status": "PASS",
+                "observed_value": "0",
+                "expected_value": "0",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "identity_conflicts",
+                "status": "PASS",
+                "observed_value": "0",
+                "expected_value": "0",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "identity_coverage",
+                "status": "PASS",
+                "observed_value": "27558",
+                "expected_value": "27558",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "patient_train_test_overlap",
+                "status": "PASS",
+                "observed_value": "0",
+                "expected_value": "0",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "patient_train_val_overlap",
+                "status": "PASS",
+                "observed_value": "0",
+                "expected_value": "0",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "patient_val_test_overlap",
+                "status": "PASS",
+                "observed_value": "0",
+                "expected_value": "0",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "source_record_count",
+                "status": "PASS",
+                "observed_value": "27558",
+                "expected_value": "27558",
+                "details_json": {},
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              },
+              {
+                "check_name": "split_completeness",
+                "status": "PASS",
+                "observed_value": "complete",
+                "expected_value": "complete",
+                "details_json": {
+                  "invalid_splits": 0,
+                  "unassigned_patients": 0,
+                  "multi_split_patients": 0,
+                  "unassigned_source_records": 0,
+                  "multiassigned_source_records": 0
+                },
+                "blocking_for_validation": true,
+                "blocking_for_freeze": true,
+                "executed_at": "2026-08-18T18:05:37.122662+00:00"
+              }
+            ]
+          },
+          "materialization": {
+            "dataset_materialization_id": "e15dc166-1c4b-558e-b77b-727b1783430c",
+            "status": "READY",
+            "reconciliation_status": "PASS",
+            "record_count": 27558,
+            "sha_files_checked": 27558,
+            "sha_match": 27558,
+            "sha_mismatch": 0,
+            "attempt_number": 1,
+            "relative_root": "malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+            "started_at": "2026-08-18T18:06:10.448254+00:00",
+            "completed_at": "2026-08-18T18:06:18.746383+00:00"
+          },
+          "lineage": {
+            "contract_version": "malaria_patient_split_freeze_v1",
+            "source_population_fingerprint": "eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0",
+            "clinical_identity_fingerprint": "d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59",
+            "patient_assignment_fingerprint": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f",
+            "record_assignment_fingerprint": "9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2"
+          },
+          "lifecycle": [
+            "DRAFT",
+            "GENERATED",
+            "VALIDATED",
+            "FROZEN"
+          ],
+          "runs": {
+            "items": [],
+            "count": 0
+          }
+        }
+      },
+      "/api/dataset/summary": {
+        "status": 200,
+        "body": {
+          "dataset": {
+            "name": "malaria_physical_split",
+            "source": "tensorflow_datasets/malaria",
+            "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+            "nih_nlm_url": "https://lhncbc.nlm.nih.gov/publication/pub9932",
+            "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+            "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_physical_split",
+            "original_dataset_modified": false
+          },
+          "label_mapping": {
+            "0": "uninfected",
+            "1": "parasitized",
+            "negative_class": "uninfected",
+            "negative_class_index": 0,
+            "positive_class": "parasitized",
+            "positive_class_index": 1,
+            "version": "clinical_v1_parasitized_positive",
+            "raw_model_score_meaning": "probability_parasitized"
+          },
+          "split_process": {
+            "type": "physical_stratified_split",
+            "train_ratio": 0.8,
+            "val_ratio": 0.1,
+            "test_ratio": 0.1,
+            "seed": 42,
+            "description": "El dataset original se divide f\u00edsicamente en carpetas locales para asegurar reproducibilidad y comparaci\u00f3n justa entre modelos."
+          },
+          "counts": {
+            "train": {
+              "uninfected": 11043,
+              "parasitized": 11137,
+              "total": 44226
+            },
+            "val": {
+              "uninfected": 1378,
+              "parasitized": 1325,
+              "total": 5449
+            },
+            "test": {
+              "uninfected": 1378,
+              "parasitized": 1317,
+              "total": 5441
+            },
+            "total": 55116
+          },
+          "split_table": [
+            {
+              "split_name": "train",
+              "display_name": "Entrenamiento",
+              "uninfected": 11043,
+              "parasitized": 11137,
+              "total": 44226
+            },
+            {
+              "split_name": "val",
+              "display_name": "Validaci\u00f3n",
+              "uninfected": 1378,
+              "parasitized": 1325,
+              "total": 5449
+            },
+            {
+              "split_name": "test",
+              "display_name": "Prueba",
+              "uninfected": 1378,
+              "parasitized": 1317,
+              "total": 5441
+            },
+            {
+              "split_name": "total",
+              "display_name": "Total",
+              "uninfected": 13799,
+              "parasitized": 13779,
+              "total": 55116
+            }
+          ],
+          "summary_rows": [
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_physical_split",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "train",
+              "display_split_name": "train",
+              "class_name": "uninfected",
+              "class_index": 0,
+              "image_count": 11023,
+              "first_registered_at": "2026-07-24T22:19:46.947793+00:00",
+              "last_updated_at": "2026-08-19T00:33:39.806412+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "train",
+              "display_split_name": "train",
+              "class_name": "uninfected",
+              "class_index": 0,
+              "image_count": 11043,
+              "first_registered_at": "2026-08-18T18:27:08.235194+00:00",
+              "last_updated_at": "2026-08-19T19:57:59.946278+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_physical_split",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "train",
+              "display_split_name": "train",
+              "class_name": "parasitized",
+              "class_index": 1,
+              "image_count": 11023,
+              "first_registered_at": "2026-07-24T22:19:46.947793+00:00",
+              "last_updated_at": "2026-08-19T00:33:39.806412+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "train",
+              "display_split_name": "train",
+              "class_name": "parasitized",
+              "class_index": 1,
+              "image_count": 11137,
+              "first_registered_at": "2026-08-18T18:27:08.235194+00:00",
+              "last_updated_at": "2026-08-19T19:57:59.946278+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "val",
+              "display_split_name": "validation",
+              "class_name": "uninfected",
+              "class_index": 0,
+              "image_count": 1368,
+              "first_registered_at": "2026-08-18T18:27:08.235194+00:00",
+              "last_updated_at": "2026-08-19T19:57:59.946278+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_physical_split",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "val",
+              "display_split_name": "validation",
+              "class_name": "uninfected",
+              "class_index": 0,
+              "image_count": 1378,
+              "first_registered_at": "2026-07-24T22:19:46.947793+00:00",
+              "last_updated_at": "2026-08-19T00:33:39.806412+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_physical_split",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "val",
+              "display_split_name": "validation",
+              "class_name": "parasitized",
+              "class_index": 1,
+              "image_count": 1378,
+              "first_registered_at": "2026-07-24T22:19:46.947793+00:00",
+              "last_updated_at": "2026-08-19T00:33:39.806412+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "val",
+              "display_split_name": "validation",
+              "class_name": "parasitized",
+              "class_index": 1,
+              "image_count": 1325,
+              "first_registered_at": "2026-08-18T18:27:08.235194+00:00",
+              "last_updated_at": "2026-08-19T19:57:59.946278+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "test",
+              "display_split_name": "test",
+              "class_name": "uninfected",
+              "class_index": 0,
+              "image_count": 1368,
+              "first_registered_at": "2026-08-18T18:27:08.235194+00:00",
+              "last_updated_at": "2026-08-19T19:57:59.946278+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_physical_split",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "test",
+              "display_split_name": "test",
+              "class_name": "uninfected",
+              "class_index": 0,
+              "image_count": 1378,
+              "first_registered_at": "2026-07-24T22:19:46.947793+00:00",
+              "last_updated_at": "2026-08-19T00:33:39.806412+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_physical_split",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "test",
+              "display_split_name": "test",
+              "class_name": "parasitized",
+              "class_index": 1,
+              "image_count": 1378,
+              "first_registered_at": "2026-07-24T22:19:46.947793+00:00",
+              "last_updated_at": "2026-08-19T00:33:39.806412+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            },
+            {
+              "dataset_id": "29d11b40-e082-4158-ac12-9b5e290276dd",
+              "dataset_name": "malaria_physical_split",
+              "dataset_source": "tensorflow_datasets/malaria",
+              "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+              "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+              "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+              "split_type": "physical_stratified_split",
+              "train_ratio": 0.8,
+              "val_ratio": 0.1,
+              "test_ratio": 0.1,
+              "seed": 42,
+              "label_mapping_version": "clinical_v1_parasitized_positive",
+              "split_name": "test",
+              "display_split_name": "test",
+              "class_name": "parasitized",
+              "class_index": 1,
+              "image_count": 1317,
+              "first_registered_at": "2026-08-18T18:27:08.235194+00:00",
+              "last_updated_at": "2026-08-19T19:57:59.946278+00:00",
+              "dataset_metadata": {
+                "seed": 42,
+                "source": "src.dataset_registry",
+                "val_ratio": 0.1,
+                "source_url": "https://www.tensorflow.org/datasets/catalog/malaria",
+                "split_type": "physical_stratified_split",
+                "test_ratio": 0.1,
+                "description": "Dataset de im\u00e1genes microsc\u00f3picas de c\u00e9lulas sangu\u00edneas clasificadas como uninfected o parasitized.",
+                "train_ratio": 0.8,
+                "split_counts": {
+                  "val": {
+                    "total": 2693,
+                    "uninfected": 1368,
+                    "parasitized": 1325
+                  },
+                  "test": {
+                    "total": 2685,
+                    "uninfected": 1368,
+                    "parasitized": 1317
+                  },
+                  "total": 27558,
+                  "train": {
+                    "total": 22180,
+                    "uninfected": 11043,
+                    "parasitized": 11137
+                  }
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "version": "clinical_v1_parasitized_positive",
+                  "negative_class_name": "uninfected",
+                  "positive_class_name": "parasitized",
+                  "negative_class_index": 0,
+                  "positive_class_index": 1,
+                  "raw_model_score_meaning": "probability_parasitized"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "raw_model_score_meaning": "probability_parasitized",
+                "physical_split_structure": {
+                  "splits": [
+                    "train",
+                    "val",
+                    "test"
+                  ],
+                  "classes": [
+                    "uninfected",
+                    "parasitized"
+                  ],
+                  "summary": "split_summary.csv",
+                  "manifest": "files_manifest.csv",
+                  "metadata": "metadata.json"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "/api/dataset/split": {
+        "status": 200,
+        "body": {
+          "split_process": {
+            "type": "physical_stratified_split",
+            "train_ratio": 0.8,
+            "val_ratio": 0.1,
+            "test_ratio": 0.1,
+            "seed": 42,
+            "description": "El dataset original se divide f\u00edsicamente en carpetas locales para asegurar reproducibilidad y comparaci\u00f3n justa entre modelos."
+          },
+          "counts": {
+            "train": {
+              "uninfected": 11043,
+              "parasitized": 11137,
+              "total": 44226
+            },
+            "val": {
+              "uninfected": 1378,
+              "parasitized": 1325,
+              "total": 5449
+            },
+            "test": {
+              "uninfected": 1378,
+              "parasitized": 1317,
+              "total": 5441
+            },
+            "total": 55116
+          },
+          "split_table": [
+            {
+              "split_name": "train",
+              "display_name": "Entrenamiento",
+              "uninfected": 11043,
+              "parasitized": 11137,
+              "total": 44226
+            },
+            {
+              "split_name": "val",
+              "display_name": "Validaci\u00f3n",
+              "uninfected": 1378,
+              "parasitized": 1325,
+              "total": 5449
+            },
+            {
+              "split_name": "test",
+              "display_name": "Prueba",
+              "uninfected": 1378,
+              "parasitized": 1317,
+              "total": 5441
+            },
+            {
+              "split_name": "total",
+              "display_name": "Total",
+              "uninfected": 13799,
+              "parasitized": 13779,
+              "total": 55116
+            }
+          ]
+        }
+      },
+      "/api/deployments": {
+        "status": 200,
+        "body": {
+          "items": []
+        }
+      }
+    },
+    "result": "PASS_AUTHENTICATED_READ_ONLY_API"
+  },
+  "operational_http": {
+    "http://127.0.0.1/": {
+      "status": 200,
+      "bytes": 564,
+      "sha256": "8265f672a62b84be892b8ff815d7b9fb1fa5cf6ebb1e9259452d5c31fa0b5a81",
+      "content_type": "text/html"
+    },
+    "http://127.0.0.1:8000/health": {
+      "status": 200,
+      "bytes": 61,
+      "sha256": "ef971fea3403abe2ccac56892c38d78d4e471ee254b8a04119587259b72a9d74",
+      "content_type": "application/json",
+      "body": {
+        "status": "ok",
+        "version": "0.3.0",
+        "environment": "development"
+      }
+    },
+    "http://127.0.0.1:8000/ready": {
+      "status": 200,
+      "bytes": 137,
+      "sha256": "732891b5be9f1cc2b85b480ee0a6d71f23687460a75bdfacc2f33d851c07b6e0",
+      "content_type": "application/json",
+      "body": {
+        "status": "ready",
+        "components": {
+          "database": "ready",
+          "migrations": "ready",
+          "storage": "ready"
+        },
+        "version": "0.3.0",
+        "environment": "development"
+      }
+    }
+  },
+  "cutover": {
+    "result": "COMMIT_CONFIRMED_BY_FRESH_CONNECTION",
+    "before": {
+      "malaria_experiments": {
+        "oid": 16384,
+        "allow_connections": true
+      },
+      "malaria_reset3_ready_20260929": {
+        "oid": 1600436,
+        "allow_connections": true
+      }
+    },
+    "source_all_schemas_unchanged": true,
+    "commit_response_received": true,
+    "after": {
+      "malaria_pre_reset3_20260929": {
+        "oid": 16384,
+        "allow_connections": false
+      },
+      "malaria_experiments": {
+        "oid": 1600436,
+        "allow_connections": true
+      }
+    }
+  },
+  "final_database": {
+    "result": "PASS_DATABASE_READY",
+    "database": "malaria_experiments",
+    "revision": "20260922_01",
+    "capabilities": {
+      "revision": "20260922_01",
+      "event_columns": true,
+      "event_metadata_constraint": true,
+      "event_unique_indexes": true,
+      "event_trigger_guard": true
+    },
+    "table_fingerprints": {
+      "alembic_version": {
+        "count": 1,
+        "sha256": "d6cbd8eeba10c4e39dfc56086c5c38f718f5db3a46d1a1a3c2463eb18e9ee723"
+      },
+      "artifacts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "assessment_artifacts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "assessment_attempts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "assessment_campaign_consumers": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "assessment_final_locks": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "assessment_identities": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "assessment_results": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "audit_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "blood_samples": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "campaign_attempts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "campaign_configurations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "campaign_controlled_requests": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "campaign_execution_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "campaign_members": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "campaign_technical_revisions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_classification_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_classification_inputs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_classification_reviews": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_classification_runs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_crops": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_detection_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_detection_runs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_detections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_explanations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "cell_predictions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "classification_reports": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "clinical_identities": {
+        "count": 201,
+        "sha256": "e41426a8500e3fbb9f8b70b2119501ce20f3853a5750194cd0a00cf6315a38e4"
+      },
+      "confusion_matrices": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "dataset_materialization_activations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "dataset_materializations": {
+        "count": 1,
+        "sha256": "6026c9bd22c5c3b7b916b7f6e2e3464cc8cf0050fe5ba4fc6083537e71450458"
+      },
+      "dataset_source_records": {
+        "count": 27558,
+        "sha256": "d3c6386726b93a435823e8a1a2bc0245a4b892b0b89887f3747a8189425145c3"
+      },
+      "dataset_split_assignments": {
+        "count": 27558,
+        "sha256": "edda8be9e1e4060caf1d1afc8f34bba161ebe139e24bbb3091f9899eb930f210"
+      },
+      "dataset_split_images": {
+        "count": 55116,
+        "sha256": "59528856bd3d413059fbab5c5a02434c71a176883c25af762c2fc5d79ad496e5"
+      },
+      "dataset_split_statistics": {
+        "count": 1,
+        "sha256": "1e509f3dc0cc50c3ea20a99207e04e66b617c642fcce49510c64ef8326f63c0d"
+      },
+      "dataset_split_validation_checks": {
+        "count": 12,
+        "sha256": "29b643727194eb4264de61ad2e93ef0e271b898be4a09ef28ec4fefac0aff4a6"
+      },
+      "dataset_splits": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "dataset_version_sources": {
+        "count": 1,
+        "sha256": "bcdd40cbf14cfba8dd5df9c76f76fa6b571d06d294f249dc2284f7e31503ff59"
+      },
+      "dataset_versions": {
+        "count": 1,
+        "sha256": "c9a99a6f03d324318fe2b1fef2f9566fa8fbef748889dba3f2faf7ba836f82ff"
+      },
+      "datasets": {
+        "count": 2,
+        "sha256": "7ed1f66ac9ffb3e27d88fc2bd52eea9088791beaa636cc828b37344629342c59"
+      },
+      "deployed_model_versions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "environment_packages": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "errors": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "execution_logs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "experiment_execution_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "experiment_execution_gate": {
+        "count": 1,
+        "sha256": "2cd90eb86d0bfa11f03934b5888caedffe5418a213a4f6e820f355878bf76afe"
+      },
+      "experimental_campaigns": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "experiments": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "explainability_results": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "identity_evidence": {
+        "count": 27558,
+        "sha256": "f49c50ae77ea0aba924116a985bd011691abe6c8815e75b1fbd67e3d4878f396"
+      },
+      "image_analysis_jobs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "image_connected_components": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "image_ingestion_batches": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "image_quality_assessments": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "local_execution_jobs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "microscopy_analysis_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "microscopy_analysis_run_images": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "microscopy_analysis_runs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "microscopy_images": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "model_governance_backfill_audit": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "model_versions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "models": {
+        "count": 3,
+        "sha256": "e1d169f311a11ef716a178e88554b0ee01e3f016e963ec38e4992815b1133fef"
+      },
+      "predictions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "quality_assessment_queue_items": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "quality_gate_decisions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "research_subjects": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "roles": {
+        "count": 5,
+        "sha256": "9963e9d52a13de49af23598244cdb8dd2819edd2459255ff70b58e099153c091"
+      },
+      "run_checkpoint_policy": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "run_clinical_metrics": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "run_dataset_images": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "run_image_predictions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "run_io_records": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "run_lineage": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "run_metrics": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "run_model_deployments": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "run_threshold_calibration": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "runs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "schema_migrations": {
+        "count": 22,
+        "sha256": "db6ae4839b484a5c688737971f625466e0fbfa36f2b98b209dbc5347fc2d2639"
+      },
+      "scientific_cases": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "scientific_reviews": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "scientific_validation_annotation_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "scientific_validation_annotations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "scientific_validation_classification_runs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "scientific_validation_detection_runs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "scientific_validation_images": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "scientific_validation_sessions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "smear_analysis_summaries": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "smear_slides": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "stage2_model_publication_events": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "stage2_model_publications": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "synthetic_data_runs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "train_execution_records": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "train_execution_revisions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "train_execution_sessions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "training_history": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "user_roles": {
+        "count": 1,
+        "sha256": "fbfa8d635fe1d196fe4883645e8f7666011c8357d0124d98b4a28e3c9dd5589b"
+      },
+      "users": {
+        "count": 1,
+        "sha256": "4cc134db74d9f416141e0fdd91b094a0eec5d362a2c01f7c53622bc6f7e18a18"
+      }
+    },
+    "protected_full_tables_equal": [
+      "users",
+      "roles",
+      "user_roles",
+      "datasets",
+      "dataset_versions",
+      "dataset_version_sources",
+      "clinical_identities",
+      "dataset_source_records",
+      "identity_evidence",
+      "dataset_materializations",
+      "dataset_split_assignments",
+      "dataset_split_images",
+      "dataset_split_statistics",
+      "dataset_split_validation_checks",
+      "dataset_materialization_activations",
+      "dataset_splits"
+    ],
+    "history_empty_tables": [
+      "artifacts",
+      "assessment_artifacts",
+      "assessment_attempts",
+      "assessment_campaign_consumers",
+      "assessment_final_locks",
+      "assessment_identities",
+      "assessment_results",
+      "audit_events",
+      "blood_samples",
+      "campaign_attempts",
+      "campaign_configurations",
+      "campaign_controlled_requests",
+      "campaign_execution_events",
+      "campaign_members",
+      "campaign_technical_revisions",
+      "cell_classification_events",
+      "cell_classification_inputs",
+      "cell_classification_reviews",
+      "cell_classification_runs",
+      "cell_crops",
+      "cell_detection_events",
+      "cell_detection_runs",
+      "cell_detections",
+      "cell_explanations",
+      "cell_predictions",
+      "classification_reports",
+      "confusion_matrices",
+      "deployed_model_versions",
+      "environment_packages",
+      "errors",
+      "execution_logs",
+      "experiment_execution_events",
+      "experimental_campaigns",
+      "experiments",
+      "explainability_results",
+      "image_analysis_jobs",
+      "image_connected_components",
+      "image_ingestion_batches",
+      "image_quality_assessments",
+      "local_execution_jobs",
+      "microscopy_analysis_events",
+      "microscopy_analysis_run_images",
+      "microscopy_analysis_runs",
+      "microscopy_images",
+      "model_governance_backfill_audit",
+      "model_versions",
+      "predictions",
+      "quality_assessment_queue_items",
+      "quality_gate_decisions",
+      "research_subjects",
+      "run_checkpoint_policy",
+      "run_clinical_metrics",
+      "run_dataset_images",
+      "run_image_predictions",
+      "run_io_records",
+      "run_lineage",
+      "run_metrics",
+      "run_model_deployments",
+      "run_threshold_calibration",
+      "runs",
+      "scientific_cases",
+      "scientific_reviews",
+      "scientific_validation_annotation_events",
+      "scientific_validation_annotations",
+      "scientific_validation_classification_runs",
+      "scientific_validation_detection_runs",
+      "scientific_validation_images",
+      "scientific_validation_sessions",
+      "smear_analysis_summaries",
+      "smear_slides",
+      "stage2_model_publication_events",
+      "stage2_model_publications",
+      "synthetic_data_runs",
+      "train_execution_records",
+      "train_execution_revisions",
+      "train_execution_sessions",
+      "training_history"
+    ],
+    "foreign_keys_checked": 208,
+    "disabled_triggers": 0,
+    "invalid_constraints": 0
+  },
+  "protected_assets": {
+    "malaria_dl_local_project/data": {
+      "entries": 82696,
+      "bytes": 1702913012,
+      "sha256": "da78138c520e827eb1ff0afd6044701935508aa177054045880cf784fb2979f3"
+    },
+    "malaria_dataset_split_project/var": {
+      "entries": 4,
+      "bytes": 22268781,
+      "sha256": "0f3e3ff0c27fd76d76fc258e33d590ad91b55c1e8dd93077304edb81ca65ab57"
+    },
+    "malaria_dataset_split_project/config": {
+      "entries": 2,
+      "bytes": 1219,
+      "sha256": "9eb72138fffbd94fc718142bf86a1aa4e8d5881a641c07f4a2b7d4efd36264e5"
+    },
+    "malaria_dl_local_project/configs": {
+      "entries": 6,
+      "bytes": 79312,
+      "sha256": "ceecb0c7e38f94af23a438be44ca078250e44a445dc31baa7e2783cdfee84862"
+    },
+    "malaria_dl_local_project/src/malaria_dl/models": {
+      "entries": 7,
+      "bytes": 34183,
+      "sha256": "9edec3707c38f94855852284a7685c3bbb84b133d84ce85b62af853860cdf4c9"
+    },
+    "alembic/versions": {
+      "entries": 29,
+      "bytes": 267208,
+      "sha256": "d6474bf14195ba182e87422f7be40c54ddd40c99b864237e2b0dfdfedc54eef5"
+    }
+  },
+  "original_source_images": {
+    "result": "PASS_ORIGINAL_SOURCE_FILES_UNCHANGED",
+    "files": 74,
+    "bytes": 24079742
+  },
+  "artifact_quarantine": {
+    "root": "backups/reset3_final/artifact_quarantine",
+    "count": 6369,
+    "bytes": 5025368027,
+    "manifest": "backups/reset3_final/evidence/artifact_plan.json",
+    "manifest_sha256": "c84d72a012cce1ccfdda230d3e85a8669e8fc47634dbf456f250860fc2f101dc",
+    "copy": {
+      "result": "PASS_ARTIFACT_COPY",
+      "files": 6369,
+      "bytes": 5025368027
+    },
+    "withdraw": {
+      "result": "PASS_ARTIFACT_WITHDRAW",
+      "files": 6369,
+      "bytes": 5025368027
+    },
+    "verification": {
+      "result": "PASS_ARTIFACT_VERIFY",
+      "files": 6369,
+      "bytes": 5025368027
+    },
+    "markers_preserved": [
+      "/app/malaria_dl_local_project/outputs/.DS_Store",
+      "/app/malaria_dl_local_project/outputs/cnn_features_svm/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/custom_cnn/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/custom_cnn/.training.lock",
+      "/app/malaria_dl_local_project/outputs/densenet121/.training.lock",
+      "/app/malaria_dl_local_project/outputs/ensemble/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/explainability/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/explainability/external_predictions/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/explainability/external_predictions/gradcam/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/explainability/gradcam/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/explainability/lime/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/explainability/shap/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/predictions/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/vgg16/.gitkeep",
+      "/app/malaria_dl_local_project/outputs/vgg16/.training.lock"
+    ]
+  },
+  "cleanup": {
+    "result": "PASS_ISOLATED_RESOURCES_REMOVED",
+    "removed_containers": [
+      "capstone-reset3-93408ac6edab-api",
+      "capstone-reset3-tools",
+      "capstone-reset3-93408ac6edab"
+    ],
+    "removed_network": "capstone-reset3-93408ac6edab-validation",
+    "operational_services": {
+      "capstone_db": {
+        "running": true,
+        "image": "sha256:2a0d0fe14825b0939f78a8cad5cd4e6aa68bf94d0e5dd96e24b6d23af4315545"
+      },
+      "capstone_backend": {
+        "running": true,
+        "image": "sha256:96401f7a4a97d667a27be8d17f60b845ce844045929a5e0249824695680b80a5"
+      },
+      "capstone_frontend": {
+        "running": true,
+        "image": "sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5"
+      }
+    },
+    "operational_volume_removed": false
+  },
+  "prohibitions_observed": {
+    "train_test_executed": false,
+    "campaigns_started": false,
+    "credentials_changed": false,
+    "split_recomputed": false,
+    "historical_migrations_edited": false,
+    "truncate_cascade_used": false,
+    "original_database_dropped": false,
+    "last_good_backup_destroyed": false
+  },
+  "code_sha256": {
+    "scripts/reset/reset3/api_probe.py": "9a9f926b51c8074130f8c0f23f9754ec4c2b05263c3ebb974395e9d462eb4c99",
+    "scripts/reset/reset3/artifact_plan.py": "f33eaa2f35992a04b5a9c6588422c992dcdd1e2a3c480da9a48cf3d1901b5dcf",
+    "scripts/reset/reset3/artifact_quarantine.py": "bdc00dc1385b053f7a1c195148bb01db691ddf975bd4ac28baa351ff0da5c619",
+    "scripts/reset/reset3/bootstrap_probe.py": "d4f670b0253cd95ad2ebcd223732ca58b69a031822e93e03ffa3dd0f1a8f7efc",
+    "scripts/reset/reset3/candidate_snapshot.py": "0cb4f93d266a105bc5f48d268fc3183190aa8fb438a8ead0fddc851c888009c3",
+    "scripts/reset/reset3/cutover.py": "5b2e6dca623e054f6f8cab88f28475aa2e9d42fdd562686f6faf0281adfcc943",
+    "scripts/reset/reset3/freeze_backup_window.py": "87b3c3397764354aa256ed260ee57ed4825ebac886436e337851ce4eed8b2220",
+    "scripts/reset/reset3/functional_probe.py": "8261b70b5135e2ed57c4881aa357277e43c57689eee12be18027835ad7327deb",
+    "scripts/reset/reset3/import_probe.py": "5332b0c0ddc2360a1de21e0fee3e5a51961740628aff48da7b72bbcc418eea96",
+    "scripts/reset/reset3/rename_rehearsal.py": "539737c4dbab8eefd7880d699d15516ef0ce08897e72699a6173444c7a3e2300",
+    "scripts/reset/reset3/validate_login.py": "3c5d768d836a7943e1371519af76974a7e994b8b8786d7f6e632e101d5425a82",
+    "scripts/reset/reset3/verify_operational.py": "58b68d435ed04e81d0011e6841270e0245c989a4d35a633309593608c477c63e",
+    "scripts/reset/reset3/verify_restore.py": "c8a38b52bd64b43b58c565df1472909ee9a0d865ec297de3489ce07db2956e27",
+    "scripts/db/backup.sh": "65dbcf61d45b95f1c7cc35a7c2c6c7f9729c94e287c90d300baa0862e32dff4b"
+  },
+  "evidence_files": {
+    "backups/reset3_final/evidence/api_probe.json": "1b683f76b65bbd5d2f7a307eb4e718fb758448ae1393d252785f1da0aec63aec",
+    "backups/reset3_final/evidence/artifact_plan.json": "c84d72a012cce1ccfdda230d3e85a8669e8fc47634dbf456f250860fc2f101dc",
+    "backups/reset3_final/evidence/artifacts_copy.json": "9784c38a0ef80471061eefab8afe23a81fd044ae4298c79437564f5586f52107",
+    "backups/reset3_final/evidence/artifacts_verify.json": "150745c633421c567a0eabd5b7c1c8fcc4fd056519e447e87d368a55c9e529da",
+    "backups/reset3_final/evidence/artifacts_withdraw.json": "53e786f2ce88cc0f7f4a7a6c6de4c0c8075706b8ccc4d71c9ba0d40661b31257",
+    "backups/reset3_final/evidence/backup.log": "9f40b6a4b2367c0fc99bb3e065a51a6370c86d149507e28cc5699e66003305cc",
+    "backups/reset3_final/evidence/backup_definitive.log": "323d478c5662d0656f3b8a21aa7a26a3cd6eb249bc8dc7aa3218e8ca909fac45",
+    "backups/reset3_final/evidence/backup_restore.json": "0f87f896063d34cc0e99a020fac8141a0050118de796c979ccb87ca27b7ef4d0",
+    "backups/reset3_final/evidence/bootstrap.json": "89ecdf20b17352f95c5fb3b9a66edfa0948f790a71201a4136a7261db16cabc9",
+    "backups/reset3_final/evidence/candidate_snapshot.json": "8680eed98e294197e494dc9f4a23fa268c9fd5c1d5944142175befdca3b24752",
+    "backups/reset3_final/evidence/cleanup.json": "700a4d4f32a986c7ed792758f6b3c0cb47c7851b8956062e26e4b2881ff9cc4c",
+    "backups/reset3_final/evidence/cutover.json": "f63891c5a5012a00c46801fb40fdc82ec8b7cad137bb58cbf83c98142870f6f5",
+    "backups/reset3_final/evidence/cutover_prerequisites.json": "bb088676f2e516725516f7a904573747421fef1a12e26ce0c02ef534b9faa201",
+    "backups/reset3_final/evidence/definitive_backup.json": "19e5d6db95200b7c3c3ce737207a3e3e73d8b7068009f5cd099a135850aa4327",
+    "backups/reset3_final/evidence/executed_code/api_probe.py": "9a9f926b51c8074130f8c0f23f9754ec4c2b05263c3ebb974395e9d462eb4c99",
+    "backups/reset3_final/evidence/executed_code/artifact_plan.py": "f33eaa2f35992a04b5a9c6588422c992dcdd1e2a3c480da9a48cf3d1901b5dcf",
+    "backups/reset3_final/evidence/executed_code/artifact_quarantine.py": "bdc00dc1385b053f7a1c195148bb01db691ddf975bd4ac28baa351ff0da5c619",
+    "backups/reset3_final/evidence/executed_code/backup.sh": "65dbcf61d45b95f1c7cc35a7c2c6c7f9729c94e287c90d300baa0862e32dff4b",
+    "backups/reset3_final/evidence/executed_code/bootstrap_probe.py": "d4f670b0253cd95ad2ebcd223732ca58b69a031822e93e03ffa3dd0f1a8f7efc",
+    "backups/reset3_final/evidence/executed_code/candidate_snapshot.py": "0cb4f93d266a105bc5f48d268fc3183190aa8fb438a8ead0fddc851c888009c3",
+    "backups/reset3_final/evidence/executed_code/common.py": "011b1d14b507d23f90aa27ab81f6730f94dd2e415047883633e0f2662adebee1",
+    "backups/reset3_final/evidence/executed_code/cutover.py": "5b2e6dca623e054f6f8cab88f28475aa2e9d42fdd562686f6faf0281adfcc943",
+    "backups/reset3_final/evidence/executed_code/freeze_backup_window.py": "87b3c3397764354aa256ed260ee57ed4825ebac886436e337851ce4eed8b2220",
+    "backups/reset3_final/evidence/executed_code/functional_probe.py": "8261b70b5135e2ed57c4881aa357277e43c57689eee12be18027835ad7327deb",
+    "backups/reset3_final/evidence/executed_code/host_apply_cutover.py": "47aa85acea2967da24e6697de9ee799749124e727700825494b3d73046e9095c",
+    "backups/reset3_final/evidence/executed_code/host_cleanup.py": "6b5ba3c2ad0a82911bb70e68d760ac2ef59f75493c381d73d50015d093be8845",
+    "backups/reset3_final/evidence/executed_code/host_document.py": "c99818fe7bc258afc0f3f0e1f22a5ab85e0d402ae29bd02cb0ab42d163ff6c9f",
+    "backups/reset3_final/evidence/executed_code/host_prepare_staging.py": "122da3743d0a843e1fb2bbdfb96c177ada8cf7bbd08d34852d99761d9e198889",
+    "backups/reset3_final/evidence/executed_code/host_restore_backup.py": "9607ac7970873079e8e0efcba11170d2cc99ff763ef2ac1d0955c83efad25794",
+    "backups/reset3_final/evidence/executed_code/host_restore_definitive.py": "9e62caf0bd0b76f5aae6b4f68a4b7913b4bf14ebf75fe59640c11427fa4cbb49",
+    "backups/reset3_final/evidence/executed_code/host_run_artifacts.py": "4a6bdd88637728c5d0697078c953d97822b48e8607494fcb3992ab46c5036070",
+    "backups/reset3_final/evidence/executed_code/host_setup_tools.py": "ed7a4790e86ae60389d7e26e73964d9ca05a18339b3eb4387fb205cbe572d0c9",
+    "backups/reset3_final/evidence/executed_code/host_start_api.py": "8b1568bda89b37ce8e29d7c96b901f630cc898f3c34ec130b85f479dbcab08d5",
+    "backups/reset3_final/evidence/executed_code/host_verify_source_images.py": "410b2373cbd2d59c65e1c418d2a91d6af34726fbfc96d296a542303e8d35c4fd",
+    "backups/reset3_final/evidence/executed_code/import_probe.py": "5332b0c0ddc2360a1de21e0fee3e5a51961740628aff48da7b72bbcc418eea96",
+    "backups/reset3_final/evidence/executed_code/protected_assets.py": "cceefe61d2f516e2826bf95bf7b65f6fc54416128b21d927c2fd4b6132eb237e",
+    "backups/reset3_final/evidence/executed_code/rename_rehearsal.py": "539737c4dbab8eefd7880d699d15516ef0ce08897e72699a6173444c7a3e2300",
+    "backups/reset3_final/evidence/executed_code/source_snapshot.py": "2963a506897a34882889c109de254aff0834266be6325c8b123734cea43a7a8e",
+    "backups/reset3_final/evidence/executed_code/validate_login.py": "3c5d768d836a7943e1371519af76974a7e994b8b8786d7f6e632e101d5425a82",
+    "backups/reset3_final/evidence/executed_code/verify_operational.py": "58b68d435ed04e81d0011e6841270e0245c989a4d35a633309593608c477c63e",
+    "backups/reset3_final/evidence/executed_code/verify_restore.py": "c8a38b52bd64b43b58c565df1472909ee9a0d865ec297de3489ce07db2956e27",
+    "backups/reset3_final/evidence/final_after_startup.json": "c71df3af614744cefe8a74ba005218ed8ac255d150412fa8d8089874b64ca23f",
+    "backups/reset3_final/evidence/final_database_verification.json": "c71df3af614744cefe8a74ba005218ed8ac255d150412fa8d8089874b64ca23f",
+    "backups/reset3_final/evidence/functional.json": "e962a84f2d53484b170b8857222c2c129d0aa07bd0a59fd20481bede307ba999",
+    "backups/reset3_final/evidence/import.json": "f63d06031a01761062a57a528378738afed64090cd4d59d4589e4e99115d8a27",
+    "backups/reset3_final/evidence/operational_api.json": "c1d770150db4ce632a013ce7f0fbd306700ea9b094453dc58410b7de5b9b78f2",
+    "backups/reset3_final/evidence/operational_http.json": "7de3cc0b9af24d4fa81c4878de98fa0d2365a6e8a3ae590db05fdae1ffca8942",
+    "backups/reset3_final/evidence/protected_assets_after_quarantine.json": "3947af9a75ab87fe85c033cfbdd55618f9454c98cd97695766dd10a033cbc71f",
+    "backups/reset3_final/evidence/protected_assets_before.json": "3947af9a75ab87fe85c033cfbdd55618f9454c98cd97695766dd10a033cbc71f",
+    "backups/reset3_final/evidence/rename_rehearsal.json": "495a5cc25a7428d4d4706f0b600e70cfc71ba4297859498b3035244517aeed6c",
+    "backups/reset3_final/evidence/restore.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backups/reset3_final/evidence/restore_definitive.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backups/reset3_final/evidence/restore_definitive_verification.json": "fee73aee352a75791f28eb8085dff13654c44467360d507693fd1ec3ae8873f1",
+    "backups/reset3_final/evidence/restore_verification.json": "fee73aee352a75791f28eb8085dff13654c44467360d507693fd1ec3ae8873f1",
+    "backups/reset3_final/evidence/source_before.json": "ad247b9e17c3da5332aa5adeaaff2fda2a7f1ed22affd9ff6dba3f1632836db3",
+    "backups/reset3_final/evidence/source_frozen.json": "2b06f019dc42bfa096a662ed68725a3b39d8618b49ec6279d1c57b031f64bac6",
+    "backups/reset3_final/evidence/source_images.json": "527cb53ebe9087e22b6f84851e09c533b25da94df57df12fcaa2fde9a3c5c5b2",
+    "backups/reset3_final/evidence/staging.json": "d41d4982d3761c8be7614a6a992a00e9f3e87fcd72d35ac6cc578f2cb974e321",
+    "backups/reset3_final/evidence/staging_restore.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backups/reset3_final/evidence/staging_verification.json": "31083d99f19e260b8fb5f56d13ccc2cb7cc8db7376a5d673257698d94f94abfe"
+  },
+  "historical_prototype_preserved": [
+    "reset_3_prototype_20260928.md",
+    "reset_3_prototype_evidence_20260928.json",
+    "reset_3_prototype_allowlist_20260928.json"
+  ]
+}

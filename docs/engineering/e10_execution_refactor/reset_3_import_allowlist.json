@@ -1,0 +1,273 @@
+{
+  "task": "RESET.3 definitive",
+  "policy": "ALL rows and ALL columns for protected tables; scientific split unchanged",
+  "protected_tables": {
+    "users": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 1,
+        "sha256": "4cc134db74d9f416141e0fdd91b094a0eec5d362a2c01f7c53622bc6f7e18a18"
+      },
+      "final": {
+        "count": 1,
+        "sha256": "4cc134db74d9f416141e0fdd91b094a0eec5d362a2c01f7c53622bc6f7e18a18"
+      }
+    },
+    "roles": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 5,
+        "sha256": "9963e9d52a13de49af23598244cdb8dd2819edd2459255ff70b58e099153c091"
+      },
+      "final": {
+        "count": 5,
+        "sha256": "9963e9d52a13de49af23598244cdb8dd2819edd2459255ff70b58e099153c091"
+      }
+    },
+    "user_roles": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 1,
+        "sha256": "fbfa8d635fe1d196fe4883645e8f7666011c8357d0124d98b4a28e3c9dd5589b"
+      },
+      "final": {
+        "count": 1,
+        "sha256": "fbfa8d635fe1d196fe4883645e8f7666011c8357d0124d98b4a28e3c9dd5589b"
+      }
+    },
+    "datasets": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 2,
+        "sha256": "7ed1f66ac9ffb3e27d88fc2bd52eea9088791beaa636cc828b37344629342c59"
+      },
+      "final": {
+        "count": 2,
+        "sha256": "7ed1f66ac9ffb3e27d88fc2bd52eea9088791beaa636cc828b37344629342c59"
+      }
+    },
+    "dataset_versions": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 1,
+        "sha256": "c9a99a6f03d324318fe2b1fef2f9566fa8fbef748889dba3f2faf7ba836f82ff"
+      },
+      "final": {
+        "count": 1,
+        "sha256": "c9a99a6f03d324318fe2b1fef2f9566fa8fbef748889dba3f2faf7ba836f82ff"
+      }
+    },
+    "dataset_version_sources": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 1,
+        "sha256": "bcdd40cbf14cfba8dd5df9c76f76fa6b571d06d294f249dc2284f7e31503ff59"
+      },
+      "final": {
+        "count": 1,
+        "sha256": "bcdd40cbf14cfba8dd5df9c76f76fa6b571d06d294f249dc2284f7e31503ff59"
+      }
+    },
+    "clinical_identities": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 201,
+        "sha256": "e41426a8500e3fbb9f8b70b2119501ce20f3853a5750194cd0a00cf6315a38e4"
+      },
+      "final": {
+        "count": 201,
+        "sha256": "e41426a8500e3fbb9f8b70b2119501ce20f3853a5750194cd0a00cf6315a38e4"
+      }
+    },
+    "dataset_source_records": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 27558,
+        "sha256": "d3c6386726b93a435823e8a1a2bc0245a4b892b0b89887f3747a8189425145c3"
+      },
+      "final": {
+        "count": 27558,
+        "sha256": "d3c6386726b93a435823e8a1a2bc0245a4b892b0b89887f3747a8189425145c3"
+      }
+    },
+    "identity_evidence": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 27558,
+        "sha256": "f49c50ae77ea0aba924116a985bd011691abe6c8815e75b1fbd67e3d4878f396"
+      },
+      "final": {
+        "count": 27558,
+        "sha256": "f49c50ae77ea0aba924116a985bd011691abe6c8815e75b1fbd67e3d4878f396"
+      }
+    },
+    "dataset_materializations": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 1,
+        "sha256": "6026c9bd22c5c3b7b916b7f6e2e3464cc8cf0050fe5ba4fc6083537e71450458"
+      },
+      "final": {
+        "count": 1,
+        "sha256": "6026c9bd22c5c3b7b916b7f6e2e3464cc8cf0050fe5ba4fc6083537e71450458"
+      }
+    },
+    "dataset_split_assignments": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 27558,
+        "sha256": "edda8be9e1e4060caf1d1afc8f34bba161ebe139e24bbb3091f9899eb930f210"
+      },
+      "final": {
+        "count": 27558,
+        "sha256": "edda8be9e1e4060caf1d1afc8f34bba161ebe139e24bbb3091f9899eb930f210"
+      }
+    },
+    "dataset_split_images": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 55116,
+        "sha256": "59528856bd3d413059fbab5c5a02434c71a176883c25af762c2fc5d79ad496e5"
+      },
+      "final": {
+        "count": 55116,
+        "sha256": "59528856bd3d413059fbab5c5a02434c71a176883c25af762c2fc5d79ad496e5"
+      }
+    },
+    "dataset_split_statistics": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 1,
+        "sha256": "1e509f3dc0cc50c3ea20a99207e04e66b617c642fcce49510c64ef8326f63c0d"
+      },
+      "final": {
+        "count": 1,
+        "sha256": "1e509f3dc0cc50c3ea20a99207e04e66b617c642fcce49510c64ef8326f63c0d"
+      }
+    },
+    "dataset_split_validation_checks": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 12,
+        "sha256": "29b643727194eb4264de61ad2e93ef0e271b898be4a09ef28ec4fefac0aff4a6"
+      },
+      "final": {
+        "count": 12,
+        "sha256": "29b643727194eb4264de61ad2e93ef0e271b898be4a09ef28ec4fefac0aff4a6"
+      }
+    },
+    "dataset_materialization_activations": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "final": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    },
+    "dataset_splits": {
+      "predicate": "TRUE",
+      "source": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "final": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    }
+  },
+  "technical_dependencies": {
+    "models": {
+      "predicate": "name IN ('custom_cnn','vgg16','densenet121')",
+      "source": {
+        "count": 3,
+        "sha256": "e1d169f311a11ef716a178e88554b0ee01e3f016e963ec38e4992815b1133fef"
+      }
+    },
+    "schema_migrations": "22 original DDL files, excluding illustrative seed 004",
+    "alembic_version": "official head 20260922_01",
+    "experiment_execution_gate": "official freshly seeded free gate"
+  },
+  "history_empty_tables": [
+    "artifacts",
+    "assessment_artifacts",
+    "assessment_attempts",
+    "assessment_campaign_consumers",
+    "assessment_final_locks",
+    "assessment_identities",
+    "assessment_results",
+    "audit_events",
+    "blood_samples",
+    "campaign_attempts",
+    "campaign_configurations",
+    "campaign_controlled_requests",
+    "campaign_execution_events",
+    "campaign_members",
+    "campaign_technical_revisions",
+    "cell_classification_events",
+    "cell_classification_inputs",
+    "cell_classification_reviews",
+    "cell_classification_runs",
+    "cell_crops",
+    "cell_detection_events",
+    "cell_detection_runs",
+    "cell_detections",
+    "cell_explanations",
+    "cell_predictions",
+    "classification_reports",
+    "confusion_matrices",
+    "deployed_model_versions",
+    "environment_packages",
+    "errors",
+    "execution_logs",
+    "experiment_execution_events",
+    "experimental_campaigns",
+    "experiments",
+    "explainability_results",
+    "image_analysis_jobs",
+    "image_connected_components",
+    "image_ingestion_batches",
+    "image_quality_assessments",
+    "local_execution_jobs",
+    "microscopy_analysis_events",
+    "microscopy_analysis_run_images",
+    "microscopy_analysis_runs",
+    "microscopy_images",
+    "model_governance_backfill_audit",
+    "model_versions",
+    "predictions",
+    "quality_assessment_queue_items",
+    "quality_gate_decisions",
+    "research_subjects",
+    "run_checkpoint_policy",
+    "run_clinical_metrics",
+    "run_dataset_images",
+    "run_image_predictions",
+    "run_io_records",
+    "run_lineage",
+    "run_metrics",
+    "run_model_deployments",
+    "run_threshold_calibration",
+    "runs",
+    "scientific_cases",
+    "scientific_reviews",
+    "scientific_validation_annotation_events",
+    "scientific_validation_annotations",
+    "scientific_validation_classification_runs",
+    "scientific_validation_detection_runs",
+    "scientific_validation_images",
+    "scientific_validation_sessions",
+    "smear_analysis_summaries",
+    "smear_slides",
+    "stage2_model_publication_events",
+    "stage2_model_publications",
+    "synthetic_data_runs",
+    "train_execution_records",
+    "train_execution_revisions",
+    "train_execution_sessions",
+    "training_history"
+  ]
+}
