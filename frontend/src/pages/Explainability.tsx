@@ -160,25 +160,27 @@ export function CaseDetail({
   onClose,
   onRunSelect,
   onGenerated,
+  siblings = [],
 }: {
   item: ExplainabilityCase;
   datasource: string;
   onClose: () => void;
   onRunSelect?: (runId: string) => void;
   onGenerated?: (item: ExplainabilityCase) => void;
+  siblings?: ExplainabilityCase[];
 }) {
   const { user } = useAuth();
   const canGenerate = Boolean(user?.permissions.includes('scientific.cell_classification.explain'));
   return (
     <CaseExplainabilityView
-      case={toModelExecutionExplainabilityCase(item, datasource)}
+      case={toModelExecutionExplainabilityCase(item, datasource, siblings)}
       onClose={onClose}
       onRunSelect={onRunSelect}
       canGenerate={canGenerate}
       onGenerate={async () => {
         const generated = await api.generateCaseGradCam(item.explainability_id);
         onGenerated?.(generated);
-        return toModelExecutionExplainabilityCase(generated, datasource);
+        return toModelExecutionExplainabilityCase(generated, datasource, siblings);
       }}
     />
   );
@@ -471,7 +473,7 @@ export function Explainability({ datasource, initialCase = null, initialRunId = 
       ) : null}
 
       {selectedCase ? (
-        <CaseDetail item={selectedCase} datasource={datasource} onClose={() => setSelectedCase(null)} onRunSelect={onRunSelect} />
+        <CaseDetail item={selectedCase} datasource={datasource} onClose={() => setSelectedCase(null)} onRunSelect={onRunSelect} siblings={cases?.items ?? []} />
       ) : null}
     </section>
   );

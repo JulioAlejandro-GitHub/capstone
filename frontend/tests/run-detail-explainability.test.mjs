@@ -53,11 +53,11 @@ test('cambiar el run cierra el detalle antes de cargar sus datos', () => {
 test('Modelo IA y frotis reutilizan la vista canónica de explicabilidad', () => {
   assert.match(explainability, /export function CaseDetail\(/);
   assert.match(explainability, /<CaseExplainabilityView/);
-  assert.match(explainability, /toModelExecutionExplainabilityCase\(item, datasource\)/);
+  assert.match(explainability, /toModelExecutionExplainabilityCase\(item, datasource, siblings\)/);
   assert.match(smearAudit, /<CaseExplainabilityView/);
   assert.match(smearAudit, /toSmearCellExplainabilityCase\(prediction, run\)/);
-  assert.equal((canonical.match(/className="audit-detail-grid"/g) ?? []).length, 1);
-  for (const section of ['01', 'Crop fuente', '02', 'Predicción', '03', 'Explicación Grad-CAM']) {
+  assert.equal((canonical.match(/className="production-steps"/g) ?? []).length, 1);
+  for (const section of ['01', 'Crop fuente', '02', 'Grad-CAM', '03', 'LIME', '04', 'SHAP', 'Predicción', 'Explicación Grad-CAM']) {
     assert.match(canonical, new RegExp(section));
   }
   assert.match(adapters, /ExplainabilityCaseViewModel/);
@@ -67,6 +67,18 @@ test('Modelo IA y frotis reutilizan la vista canónica de explicabilidad', () =>
   assert.match(explainability, /item=\{selectedCase\}/);
   assert.match(canonical, /event\.key === 'Escape'/);
   assert.match(canonical, /aria-label="Cerrar auditoría"/);
+});
+
+test('la tríada XAI arma paneles LIME/SHAP a partir de casos hermanos y expone controles por columna', () => {
+  assert.match(adapters, /function toComparisonPanel/);
+  assert.match(adapters, /candidate\.prediction_id === item\.prediction_id/);
+  assert.match(adapters, /candidate\.run_id === item\.run_id/);
+  assert.match(runDetail, /siblings=\{explainability\}/);
+  assert.match(explainability, /siblings=\{cases\?\.items \?\? \[\]\}/);
+  for (const label of ['Isolíneas Grad-CAM', 'Alpha Grad-CAM', 'Superpíxeles K LIME', 'Alpha SHAP']) {
+    assert.match(canonical, new RegExp(`aria-label="${label}"`));
+  }
+  assert.match(canonical, /Métricas de concordancia XAI/);
 });
 
 test('la ruta de detalle ya no navega a Explainability desde la fila', () => {

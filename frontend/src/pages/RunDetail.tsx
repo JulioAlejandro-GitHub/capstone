@@ -1144,6 +1144,7 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
             setSelectedExplainabilityCase(generated);
             setExplainability((items) => [generated, ...items.filter((item) => item.explainability_id !== generated.explainability_id)]);
           }}
+          siblings={explainability}
         />
       ) : null}
     </section>

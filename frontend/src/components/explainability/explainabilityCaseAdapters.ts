@@ -3,7 +3,7 @@ import type { ExplainabilityCase } from '../../types/api';
 import type { CellClassificationRunDetail, CellPredictionDetail, CellPredictionSummary } from '../../types/cellClassification';
 import { evaluatedImagePath, explanationImagePath, scorePositive, thresholdUsed } from '../../utils/explainability';
 import { formatDate, formatMetric } from '../../utils/format';
-import type { ExplainabilityCaseViewModel } from './CaseExplainabilityView';
+import type { ExplainabilityCaseViewModel, ExplainabilityMedia, ExplainabilityMethodPanel } from './CaseExplainabilityView';
 
 const six = (value: number | null | undefined) => value == null ? '—' : value.toFixed(6);
 const jsonRecord = (value: unknown): Record<string, unknown> => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -41,7 +41,26 @@ export function resolveExplanationArtifact({
   return { status: 'not_requested', media: [], method: 'Grad-CAM' };
 }
 
-export function toModelExecutionExplainabilityCase(item: ExplainabilityCase, datasource: string): ExplainabilityCaseViewModel {
+function toComparisonPanel(method: 'lime' | 'shap', item: ExplainabilityCase, siblings: ExplainabilityCase[], datasource: string): ExplainabilityMethodPanel {
+  const sibling = siblings.find((candidate) => (
+    canonicalMethod(candidate.method) === method
+    && candidate.prediction_id === item.prediction_id
+    && candidate.run_id === item.run_id
+  ));
+  if (!sibling) return { status: 'not_requested', media: [], createdAt: null, error: null };
+  if (sibling.success === false) return { status: 'failed', media: [], createdAt: formatDate(sibling.created_at ?? sibling.started_at ?? null), error: sibling.error_message ?? null };
+  const path = explanationImagePath(sibling);
+  if (sibling.success === true) {
+    if (!path || sibling.explanation_artifact_availability !== 'available') {
+      return { status: 'artifact_missing', media: [], createdAt: formatDate(sibling.created_at ?? sibling.started_at ?? null), error: null };
+    }
+    const media: ExplainabilityMedia[] = [{ kind: 'url', url: api.mediaUrl({ url: sibling.explanation_url, path, artifactId: sibling.artifact_id, datasource }), path, alt: `Explicación ${method.toUpperCase()} del caso` }];
+    return { status: 'generated', media, createdAt: formatDate(sibling.created_at ?? sibling.started_at ?? null), error: null };
+  }
+  return { status: 'not_requested', media: [], createdAt: null, error: null };
+}
+
+export function toModelExecutionExplainabilityCase(item: ExplainabilityCase, datasource: string, siblings: ExplainabilityCase[] = []): ExplainabilityCaseViewModel {
   const cropPath = evaluatedImagePath(item);
   const explanationPath = explanationImagePath(item);
   const explanationParameters = jsonRecord(item.explanation_parameters);
@@ -64,6 +83,10 @@ export function toModelExecutionExplainabilityCase(item: ExplainabilityCase, dat
   return {
     sourceContext: 'model_execution',
     caseCode: item.source_image_id ?? item.image_id ?? item.prediction_id ?? item.explainability_id,
+    comparison: {
+      lime: toComparisonPanel('lime', item, siblings, datasource),
+      shap: toComparisonPanel('shap', item, siblings, datasource),
+    },
     input: {
       media: { kind: 'url', url: sourceUrl, path: cropPath, alt: 'Crop fuente del caso' },
       displayCode: item.original_filename ?? item.source_image_id ?? item.image_id ?? 'Caso de ejecución',
@@ -101,9 +124,11 @@ export function toSmearCellExplainabilityCase(prediction: CellPredictionSummary 
   const crop = prediction.detection?.crop ?? prediction.crop ?? null;
   const explanationMedia: ExplainabilityCaseViewModel['explanation']['media'] = explanation?.status === 'generated' ? [{ kind: 'cell_explanation', explanation, variant: 'heatmap', alt: 'Heatmap Grad-CAM de la célula' }, { kind: 'cell_explanation', explanation, variant: 'overlay', alt: 'Overlay Grad-CAM de la célula' }] : [];
   const resolvedExplanation = resolveExplanationArtifact({ method: explanation?.method, status: explanation?.status, availability: explanation?.status === 'generated' ? 'available' : undefined, media: explanationMedia });
+  const unsupportedPanel: ExplainabilityMethodPanel = { status: 'unsupported', media: [], createdAt: null, error: null };
   return {
     sourceContext: 'smear_analysis',
     caseCode: prediction.cell_code,
+    comparison: { lime: unsupportedPanel, shap: unsupportedPanel },
     input: { media: { kind: 'cell_crop', crop, alt: `Crop fuente ${prediction.cell_code}` }, displayCode: prediction.cell_code, id: prediction.cell_detection_id, checksum: crop ? `${crop.sha256.slice(0, 12)}…` : null },
     prediction: { id: prediction.id, predictedLabel: prediction.predicted_label, probabilityParasitized: six(prediction.probability_parasitized), probabilityUninfected: six(prediction.probability_uninfected), threshold: six(prediction.threshold_used), thresholdSource: prediction.threshold_source, margin: six(prediction.decision_margin), nearThreshold: prediction.near_threshold ? 'Sí' : 'No', modelName: run?.model_name ?? ('model_name' in prediction ? prediction.model_name ?? null : null), modelVersion: run?.model_version ?? ('model_version' in prediction ? prediction.model_version ?? null : null) },
     explanation: { ...resolvedExplanation, methodVersion: explanation?.method_version ?? null, lastConvLayer: explanation?.last_conv_layer ?? null, parameters: explanation?.parameters_json ?? {}, createdAt: explanation?.completed_at ?? explanation?.created_at ?? null, error: explanation?.error_message ?? null },
