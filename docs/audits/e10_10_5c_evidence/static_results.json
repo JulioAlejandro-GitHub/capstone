@@ -1,0 +1,26 @@
+{
+  "actions": {
+    "KEEP": 67,
+    "MERGE": 2,
+    "PROTECTED": 17,
+    "REFACTOR": 11
+  },
+  "ddl_statements": {
+    "acl": 294,
+    "finalize": 218,
+    "prepare": 66,
+    "triggers": 18,
+    "validate": 21
+  },
+  "historical_files_unchanged": 54,
+  "historical_sql_checksums": 22,
+  "legacy_contract_sha256": "297a5d54f4dd1c9d6f16150a33eda200059eca7c91a96087d33a68a24077d54a",
+  "mapping_rows": 105,
+  "passed": true,
+  "route_a_catalog_canonical_sha256": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+  "server_execution": "NOT EXECUTED \u2014 requires Gate C and stage D",
+  "source_tables": 97,
+  "stage": "E10.10.5C",
+  "target_manifest_sha256": "c1063136941e9429373d91d666fbea5d25afd0dc39f111fdf2b9779aa1f51eb0",
+  "target_tables": 103
+}

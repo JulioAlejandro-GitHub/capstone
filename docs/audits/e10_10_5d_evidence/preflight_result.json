@@ -1,0 +1,13 @@
+{
+  "legacy_data_preflight": "BLOCKED: LEGACY_SCHEMA_DRIFT",
+  "legacy_schema_diff": "restored_schema_diff.json",
+  "inventory_sha256": "71163d6dd4ff414117492d5ad4c28be2727d8a6f5fa32ae344ebf9bd089f729e",
+  "adoption_guard": "BLOCKED: LEGACY_SEQUENCE_DRIFT",
+  "adapter_applied": false,
+  "revision": [
+    {
+      "version_num": "20260922_01"
+    }
+  ],
+  "other_requirements": "not certified"
+}

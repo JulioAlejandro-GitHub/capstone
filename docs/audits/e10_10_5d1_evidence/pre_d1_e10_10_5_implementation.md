@@ -1,13 +1,3 @@
-## Actualización E10.10.5D.1 — decisión estructural pendiente
-
-**E10.10.5D — BLOQUEADA. GATE D NO APROBABLE.** D-01 demostrado: legacy es GENERATED ALWAYS AS IDENTITY; baseline omite generación (INSERT sin id falla 23502) y acepta IDs explícitos que legacy rechaza (428C9). D-02 comprende 41 representaciones divergentes: 39 columnas retenidas resuelven a otra función; dos tablas son MERGE aprobado. Legacy usa pg_catalog.gen_random_uuid y baseline el wrapper de pgcrypto, con dependencias y permisos distintos. Prueba auxiliar: revocar EXECUTE del wrapper mantiene INSERT legacy y rechaza baseline con 42501.
-
-La Parte 2 exige detenerse ante falta de equivalencia. No se modificaron baseline/manifiesto/adaptador/comparador. Se propone conservar IDENTITY y fijar explícitamente el binding pg_catalog de las 39 columnas; requiere decisión antes de cambiar esquema. La certificación B es anterior a esta propuesta y no acredita una corrección. Preservación de la copia D original: 97/97 conteos/hashes y secuencia intactos; cero conexiones operativas. Solo probes en auxiliares aisladas. Preflight/adopción/recertificación/rollback/repetición/restore siguen pendientes. No E ni cutover.
-
-[Diagnóstico, decisión, pruebas y comandos](e10_10_5d_structural_resolution.md), [inventario exacto de defaults](e10_10_5d1_evidence/default_inventory.json), [preservación](e10_10_5d1_evidence/preservation.json).
-
----
-
 # Ejecución D tras Gate C aprobado
 
 **E10.10.5D — BLOQUEADA. GATE D NO APROBABLE.**

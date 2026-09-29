@@ -1,0 +1,54 @@
+{
+  "legacy": {
+    "omitted_id": {
+      "sqlstate": "00000",
+      "value": {
+        "id": 1
+      }
+    },
+    "explicit_id": {
+      "sqlstate": "428C9"
+    },
+    "override_id": {
+      "sqlstate": "00000",
+      "value": {
+        "id": 9000001
+      }
+    },
+    "revoked_wrapper_execute": {
+      "sqlstate": "00000"
+    },
+    "aux_sequence_after_probes": [
+      {
+        "last_value": 1,
+        "is_called": true
+      }
+    ]
+  },
+  "baseline": {
+    "omitted_id": {
+      "sqlstate": "23502"
+    },
+    "explicit_id": {
+      "sqlstate": "00000",
+      "value": {
+        "id": 9000000
+      }
+    },
+    "override_id": {
+      "sqlstate": "00000",
+      "value": {
+        "id": 9000001
+      }
+    },
+    "revoked_wrapper_execute": {
+      "sqlstate": "42501"
+    },
+    "aux_sequence_after_probes": [
+      {
+        "last_value": 1,
+        "is_called": false
+      }
+    ]
+  }
+}

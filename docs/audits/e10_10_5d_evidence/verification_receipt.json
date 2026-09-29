@@ -1,0 +1,30 @@
+{
+  "source_readonly_precheck": {
+    "exit_code": 0,
+    "database": "malaria_experiments",
+    "database_oid": 1600436,
+    "system_identifier": "7668020338728398886",
+    "server_version_num": 170009,
+    "transaction_read_only": "on",
+    "revision": [
+      "20260922_01"
+    ],
+    "gate_free": true,
+    "process_evidence_empty": true,
+    "active_state_query_rows": 0
+  },
+  "source_inventory": {
+    "exit_code": 0,
+    "table_count": 97,
+    "historical_checksums_verified": 22
+  },
+  "source_schema": {
+    "exit_code": 0,
+    "comparison_exit_code": 0,
+    "differences": {},
+    "canonical_sha256": "8f4d379e75f6c1d35c6d58f0c96312759be3722d7dc85b47d11e1c856d32ff9f"
+  },
+  "runner_exit_code": 1,
+  "diagnostic_exit_code": 0,
+  "py_compile_exit_code": 0
+}

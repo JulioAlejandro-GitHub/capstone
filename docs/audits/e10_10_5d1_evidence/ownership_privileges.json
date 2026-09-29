@@ -1,0 +1,41 @@
+{
+  "query": "SELECT c.relname,pg_get_userbyid(c.relowner) owner,c.relacl::text,has_sequence_privilege('capstone_v2_migrator','public.experiment_execution_events_id_seq','USAGE') migrator_usage,has_sequence_privilege('capstone_v2_runtime','public.experiment_execution_events_id_seq','USAGE') runtime_usage,has_table_privilege('capstone_v2_runtime','public.experiment_execution_events','INSERT') runtime_insert FROM pg_class c WHERE c.oid IN ('public.experiment_execution_events'::regclass,'public.experiment_execution_events_id_seq'::regclass) ORDER BY c.relname",
+  "observations": {
+    "legacy": [
+      {
+        "relname": "experiment_execution_events",
+        "owner": "capstone_v2_migrator",
+        "relacl": null,
+        "migrator_usage": true,
+        "runtime_usage": false,
+        "runtime_insert": false
+      },
+      {
+        "relname": "experiment_execution_events_id_seq",
+        "owner": "capstone_v2_migrator",
+        "relacl": null,
+        "migrator_usage": true,
+        "runtime_usage": false,
+        "runtime_insert": false
+      }
+    ],
+    "baseline": [
+      {
+        "relname": "experiment_execution_events",
+        "owner": "capstone_v2_migrator",
+        "relacl": "{capstone_v2_migrator=arwdDxtm/capstone_v2_migrator,capstone_v2_runtime=arwd/capstone_v2_migrator}",
+        "migrator_usage": true,
+        "runtime_usage": true,
+        "runtime_insert": true
+      },
+      {
+        "relname": "experiment_execution_events_id_seq",
+        "owner": "capstone_v2_migrator",
+        "relacl": "{capstone_v2_migrator=rwU/capstone_v2_migrator,capstone_v2_runtime=rU/capstone_v2_migrator}",
+        "migrator_usage": true,
+        "runtime_usage": true,
+        "runtime_insert": true
+      }
+    ]
+  }
+}

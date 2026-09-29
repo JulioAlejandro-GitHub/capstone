@@ -1,0 +1,50 @@
+{
+  "docs/audits/e10_10_4_target_schema.sql": {
+    "sha256": "6aee9b58a9daf32385ec107b604382c19586f850fcca6accbf79c720e9e1c8b9",
+    "bytes": 462409
+  },
+  "docs/audits/e10_10_4_er_diagram.md": {
+    "sha256": "89f5ed8a1488e15644e1ce9b44514ad474dc9d9bd58db199991def3ea0ca3202",
+    "bytes": 14500
+  },
+  "docs/audits/e10_10_4_jsonb_normalization.md": {
+    "sha256": "0dc038bee5a84bb389ab873429de943a90291511018f4e1a045b6537b3460ee8",
+    "bytes": 49931
+  },
+  "docs/audits/e10_10_4_postgresql_v2_architecture.md": {
+    "sha256": "d4c70083cb6593d5e3db96d8c7020ae18e81f8237a617d7445af774971c3aceb",
+    "bytes": 39815
+  },
+  "docs/audits/e10_10_4_alembic_strategy.md": {
+    "sha256": "57676c153dc72e70c7cf1882b4955ee24c553f581a9405b4b1168d3e76dbfd53",
+    "bytes": 17788
+  },
+  "docs/audits/e10_10_4_schema_matrix.csv": {
+    "sha256": "a2a3b952df736a7d6b8f5cfeee8b687ca36087546d318f6ff3afb6032c82a0e8",
+    "bytes": 456614
+  },
+  "docs/audits/e10_10_4_dependency_matrix.md": {
+    "sha256": "fc34e577432f4bbd9be9a804319499f83c9ebc83a8c38224ac45b459c74bb111",
+    "bytes": 19418
+  },
+  "docs/audits/e10_10_4_implementation_plan.md": {
+    "sha256": "608b126a49618c763b0a1c04fd1aa8592c2a0abbdc1f4c64bb47fc36f31279bb",
+    "bytes": 17512
+  },
+  "docs/audits/e10_10_5_route_a_results.md": {
+    "sha256": "388f97862c5a4d83aff39530777407820b75b8b909b06fd1996138197a661292",
+    "bytes": 13298
+  },
+  "docs/audits/e10_10_5_catalog_diff.json": {
+    "sha256": "6f113a1789d0e4fc4e93d9c1dd5d1c962041cd92350cac7908bbcc3727ace44a",
+    "bytes": 1418
+  },
+  "alembic_v2/baseline/catalog_manifest.json": {
+    "sha256": "c1063136941e9429373d91d666fbea5d25afd0dc39f111fdf2b9779aa1f51eb0",
+    "bytes": 1103667
+  },
+  "docs/audits/e10_10_5b_evidence/run_b01/installed_catalog.json": {
+    "sha256": "27a8816656a1d5ffc5231038d91bcad7d98253c640cd6c69db1c2caf43285ba6",
+    "bytes": 1753856
+  }
+}

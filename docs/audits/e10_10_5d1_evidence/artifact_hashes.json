@@ -1,0 +1,22 @@
+{
+  "docs/audits/e10_10_5d1_evidence/behavior_tests.json": "e9e289af9239f40bf8ad0995b8674cffe77c3d024aa6d7240a7002753a259d65",
+  "docs/audits/e10_10_5d1_evidence/pre_d1_e10_10_5_test_results.md": "88c7b36781e7f3ce10d26041c7e43bd662728c40260d2074ee87f38d90c2aa23",
+  "docs/audits/e10_10_5d1_evidence/pre_d1_e10_10_5_implementation.md": "5ea2e516bb3bfed5497ce7a0378a287f4339fc99930d76b52164c139d5dcf446",
+  "docs/audits/e10_10_5d1_evidence/pre_d1_e10_10_5_route_b_results.md": "6bb032b2e6beafcca1897643add8be34ba8c76adcf9ce0621dee5afda1a940c8",
+  "docs/audits/e10_10_5d1_evidence/preservation.json": "1ddf193e42543678b38fe9b10de042c191c1f870e295d951e86888845def108b",
+  "docs/audits/e10_10_5d1_evidence/auxiliary_identities.json": "192d50541b0d10ce4d349681793e7bd5b2f9a69fc9bc41429be3d15ae9fb9152",
+  "docs/audits/e10_10_5d1_evidence/auxiliary_catalogs.json": "3602481c88123c8572d87488730ad053bf65a23af6484dfaea973a77ef071a53",
+  "docs/audits/e10_10_5d1_evidence/ownership_privileges.json": "3b3f84f373e89fc7adcaf40b62131b21aca2358a0a440241d90592ff62d94314",
+  "docs/audits/e10_10_5d1_evidence/commands.json": "c42ad091905ec034925bd6ad440835c8560a69b8e097963d2cebfd0288b68073",
+  "docs/audits/e10_10_5d1_evidence/aux_restore.json": "706c1b283d6a53a10eb404f75f239eae8549de49080ed7d7cd45bb18b2de4ec3",
+  "docs/audits/e10_10_5d1_evidence/pre_d1_e10_10_5_catalog_diff.json": "bccdd267a4244e12e1765b01f9f2217c70bea8a63f46387cb95cfa8f3852227b",
+  "docs/audits/e10_10_5d1_evidence/diagnostic.json": "19d9b6d9a770cc9498d9ec87887c23de1264b4936fb69ccbe98109a71ae31ddc",
+  "docs/audits/e10_10_5d1_evidence/baseline_unchanged.json": "02d426fb092be2a4f8442818b0380683a32bf4c71f93a1dd99169a3e22aca528",
+  "docs/audits/e10_10_5d1_evidence/pre_d1_e10_10_5_data_equivalence.json": "a4ea9672bf1e14e80a3dbcf0f423ef3d6a9c7e17a9f4973c839340a034947d56",
+  "docs/audits/e10_10_5d1_evidence/pre_d1_e10_10_5_open_risks.md": "a40097f18d2b6238e74a2c54bccdb61d92a660e105b98cc8cd4c05000fefc734",
+  "docs/audits/e10_10_5d1_evidence/default_divergences.json": "aac30000f7cf8eae4a23d45c12af972e4150c527906e3b4b778099ce7ff056e2",
+  "docs/audits/e10_10_5d1_evidence/default_inventory.json": "7d5d55d985d0aca839f976d5f59cb493a4c4365fbf8e97422d6613ac4f5fd8ef",
+  "scripts/db/diagnose_v2_structure.py": "8fe33cd8233bda92a9796de2ef5e8defc36894d4fa05a9b9e86259c1d4f90289",
+  "scripts/db/probe_v2_structural_behavior.py": "d803e26eadfbc1248b9342761b29165f74c1569e5660286ad3f8d7df3f836a4a",
+  "scripts/db/probe_v2_structural_privileges.py": "2e599b923ea17abbd164313e00af7891886dc0c1bc18ed4cf6bf98c8745241cf"
+}

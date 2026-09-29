@@ -1,3 +1,5 @@
+> Revisión D.1: esta certificación corresponde a la baseline anterior a la corrección propuesta de IDENTITY y defaults. D.1 no ha modificado ni recertificado la baseline. Véase [resolución estructural](e10_10_5d_structural_resolution.md).
+
 # E10.10.5B — Certificación Ruta A
 
 Fecha: 2026-09-29. Gate A aprobado por el usuario; B-01 aprobada por decisión arquitectónica. Alcance ejecutado: exclusivamente B.

@@ -1,0 +1,110 @@
+{
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/db/build_v2_baseline.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "12 resources verified; no database access\n"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/db/validate_v2_static.py",
+        "--report",
+        "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/docs/audits/e10_10_5c_evidence/baseline_static.json"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\n  \"stage\": \"E10.10.5A\",\n  \"status\": \"STATIC_CHECKS_PASSED_PENDING_REVIEW\",\n  \"parser_postgresql_version\": [\n    18,\n    4\n  ],\n  \"postgresql_17_executed\": false,\n  \"database_connections\": 0,\n  \"revision\": \"pg_v2_baseline\",\n  \"application_tables\": 102,\n  \"physical_tables_including_alembic\": 103,\n  \"views\": 33,\n  \"functions\": 75,\n  \"triggers\": 95,\n  \"constraints\": 950,\n  \"constraint_types\": {\n    \"CONSTR_PRIMARY\": 102,\n    \"CONSTR_UNIQUE\": 75,\n    \"CONSTR_CHECK\": 524,\n    \"CONSTR_FOREIGN\": 249\n  },\n  \"independent_indexes\": 229,\n  \"sequences\": 1,\n  \"plpgsql_bodies_parsed\": 72,\n  \"statements\": 1783,\n  \"legacy_functions_preserved\": 65,\n  \"legacy_triggers_preserved\": 77,\n  \"legacy_constraints_preserved\": 780,\n  \"legacy_independent_indexes_preserved\": 225,\n  \"legacy_views_preserved\": 27,\n  \"protected_tables_checked\": 17,\n  \"historical_files_unchanged\": 54,\n  \"accredited_legacy_checksums\": 22,\n  \"limits\": [\n    \"No PostgreSQL 17 catalogue resolution or execution\",\n    \"No runtime trigger/concurrency tests\",\n    \"No installation, adoption, backup/restore or application contract certification\"\n  ]\n}\n"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/adoption_v2",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stderr": "test_C_cannot_open_any_database (test_adoption.AdoptionTests.test_C_cannot_open_any_database) ... ok\ntest_E10_exact_bytes_sequence_and_identity (test_adoption.AdoptionTests.test_E10_exact_bytes_sequence_and_identity) ... ok\ntest_active_states_and_gate_rejected (test_adoption.AdoptionTests.test_active_states_and_gate_rejected) ... ok\ntest_all_22_historical_hashes_fail_closed (test_adoption.AdoptionTests.test_all_22_historical_hashes_fail_closed) ... ok\ntest_auc_not_invented_from_matrix (test_adoption.AdoptionTests.test_auc_not_invented_from_matrix) ... ok\ntest_canonical_configuration_hash_conflict (test_adoption.AdoptionTests.test_canonical_configuration_hash_conflict) ... ok\ntest_ddl_parse_and_order_no_stamp_or_guard_disable (test_adoption.AdoptionTests.test_ddl_parse_and_order_no_stamp_or_guard_disable) ... ok\ntest_disabled_E10_trigger_rejected (test_adoption.AdoptionTests.test_disabled_E10_trigger_rejected) ... ok\ntest_document_hash_conflict (test_adoption.AdoptionTests.test_document_hash_conflict) ... ok\ntest_duplicate_identifiers (test_adoption.AdoptionTests.test_duplicate_identifiers) ... ok\ntest_duplicate_measurement_mapping (test_adoption.AdoptionTests.test_duplicate_measurement_mapping) ... ok\ntest_empty_scientific_copy_maps_all_tables (test_adoption.AdoptionTests.test_empty_scientific_copy_maps_all_tables) ... ok\ntest_external_missing_provenance (test_adoption.AdoptionTests.test_external_missing_provenance) ... ok\ntest_external_not_mapped_to_val_or_test (test_adoption.AdoptionTests.test_external_not_mapped_to_val_or_test) ... ok\ntest_history_alias_conflict (test_adoption.AdoptionTests.test_history_alias_conflict) ... ok\ntest_history_cardinality_conflict (test_adoption.AdoptionTests.test_history_cardinality_conflict) ... ok\ntest_legacy_revision_mismatch (test_adoption.AdoptionTests.test_legacy_revision_mismatch) ... ok\ntest_matrix_consolidation_keeps_original_id_in_archive (test_adoption.AdoptionTests.test_matrix_consolidation_keeps_original_id_in_archive) ... ok\ntest_metric_contradiction (test_adoption.AdoptionTests.test_metric_contradiction) ... ok\ntest_metric_counts_reject_bool_float_negative (test_adoption.AdoptionTests.test_metric_counts_reject_bool_float_negative) ... ok\ntest_missing_and_duplicate_ledger (test_adoption.AdoptionTests.test_missing_and_duplicate_ledger) ... ok\ntest_missing_configuration_blocks_not_defaulted (test_adoption.AdoptionTests.test_missing_configuration_blocks_not_defaulted) ... ok\ntest_missing_measurement_mapping (test_adoption.AdoptionTests.test_missing_measurement_mapping) ... ok\ntest_nullable_projection_preserves_original_zero (test_adoption.AdoptionTests.test_nullable_projection_preserves_original_zero) ... ok\ntest_planning_is_deterministic_and_does_not_mutate_inputs (test_adoption.AdoptionTests.test_planning_is_deterministic_and_does_not_mutate_inputs) ... ok\ntest_private_archive_is_exclusive_and_mode_600 (test_adoption.AdoptionTests.test_private_archive_is_exclusive_and_mode_600) ... ok\ntest_rich_mapping_preserves_ids_raw_hashes_and_credentials (test_adoption.AdoptionTests.test_rich_mapping_preserves_ids_raw_hashes_and_credentials) ... ok\ntest_schema_drift_even_if_head_matches (test_adoption.AdoptionTests.test_schema_drift_even_if_head_matches) ... ok\ntest_three_original_models_required (test_adoption.AdoptionTests.test_three_original_models_required) ... ok\ntest_typed_archive_round_trip_no_json_tag_collision (test_adoption.AdoptionTests.test_typed_archive_round_trip_no_json_tag_collision) ... ok\ntest_unmapped_matrix_blocks (test_adoption.AdoptionTests.test_unmapped_matrix_blocks) ... ok\ntest_xai_incomplete_requires_explicit_disposition (test_adoption.AdoptionTests.test_xai_incomplete_requires_explicit_disposition) ... ok\ntest_E10_evaluation_projection_matches_canonical_payload (test_extended.ExtendedTests.test_E10_evaluation_projection_matches_canonical_payload) ... ok\ntest_calibration_VAL_pair_preserves_original (test_extended.ExtendedTests.test_calibration_VAL_pair_preserves_original) ... ok\ntest_calibration_population_and_threshold_conflicts (test_extended.ExtendedTests.test_calibration_population_and_threshold_conflicts) ... ok\ntest_calibration_test_and_external_forbidden (test_extended.ExtendedTests.test_calibration_test_and_external_forbidden) ... ok\ntest_delta_preserves_physical_column_order (test_extended.ExtendedTests.test_delta_preserves_physical_column_order) ... ok\ntest_duplicate_new_evaluation_identifier (test_extended.ExtendedTests.test_duplicate_new_evaluation_identifier) ... ok\ntest_epoch_projection_and_E10_original_payload (test_extended.ExtendedTests.test_epoch_projection_and_E10_original_payload) ... ok\ntest_identity_rejects_operational_url_role_cluster_and_stage (test_extended.ExtendedTests.test_identity_rejects_operational_url_role_cluster_and_stage) ... ok\ntest_incomplete_context_is_explicit_block (test_extended.ExtendedTests.test_incomplete_context_is_explicit_block) ... ok\ntest_reconciliation_detects_catalog_and_protected_drift (test_extended.ExtendedTests.test_reconciliation_detects_catalog_and_protected_drift) ... ok\ntest_report_consolidation_and_conflict (test_extended.ExtendedTests.test_report_consolidation_and_conflict) ... ok\ntest_verified_legacy_records_hash_conflict (test_extended.ExtendedTests.test_verified_legacy_records_hash_conflict) ... ok\ntest_xai_complete_lineage (test_extended.ExtendedTests.test_xai_complete_lineage) ... ok\ntest_xai_input_and_checkpoint_conflicts (test_extended.ExtendedTests.test_xai_input_and_checkpoint_conflicts) ... ok\ntest_completed_plan_replay_is_noop (test_transaction.TransactionTests.test_completed_plan_replay_is_noop) ... ok\ntest_failed_catalog_reconciliation_cannot_promote_head (test_transaction.TransactionTests.test_failed_catalog_reconciliation_cannot_promote_head) ... ok\ntest_intermediate_failure_rolls_back_without_head_promotion (test_transaction.TransactionTests.test_intermediate_failure_rolls_back_without_head_promotion) ... ok\ntest_success_promotes_only_after_constraints (test_transaction.TransactionTests.test_success_promotes_only_after_constraints) ... ok\n\n----------------------------------------------------------------------\nRan 50 tests in 7.490s\n\nOK\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/db_v2",
+        "-p",
+        "test_static_baseline.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stderr": "test_external_cannot_be_validation_test_or_calibration (test_static_baseline.ExternalAmendmentTests.test_external_cannot_be_validation_test_or_calibration) ... ok\ntest_external_requires_actual_population_and_provenance_fields (test_static_baseline.ExternalAmendmentTests.test_external_requires_actual_population_and_provenance_fields) ... ok\ntest_external_validation_is_not_an_evaluation_alias (test_static_baseline.ExternalAmendmentTests.test_external_validation_is_not_an_evaluation_alias) ... ok\ntest_metric_projection_preserves_external_and_calibration_requires_val (test_static_baseline.ExternalAmendmentTests.test_metric_projection_preserves_external_and_calibration_requires_val) ... ok\ntest_official_and_complementary_views_are_separate (test_static_baseline.ExternalAmendmentTests.test_official_and_complementary_views_are_separate) ... ok\ntest_provenance_fk_targets_existing_protected_key (test_static_baseline.ExternalAmendmentTests.test_provenance_fk_targets_existing_protected_key) ... ok\ntest_scope_truth_table_keeps_official_splits (test_static_baseline.ExternalAmendmentTests.test_scope_truth_table_keeps_official_splits) ... ok\ntest_b01_roles_are_nonreserved_and_executable_references_are_consistent (test_static_baseline.SafetyTests.test_b01_roles_are_nonreserved_and_executable_references_are_consistent) ... ok\ntest_cluster_database_version_and_owner_must_all_match (test_static_baseline.SafetyTests.test_cluster_database_version_and_owner_must_all_match) ... ok\ntest_explicit_authorization_required (test_static_baseline.SafetyTests.test_explicit_authorization_required) ... ok\ntest_privileged_or_inherited_runtime_role_rejected (test_static_baseline.SafetyTests.test_privileged_or_inherited_runtime_role_rejected) ... ok\ntest_volume_mount_and_container_identity_not_just_database_name (test_static_baseline.SafetyTests.test_volume_mount_and_container_identity_not_just_database_name) ... ok\ntest_calibration_cycle_preserves_deferred_foreign_keys (test_static_baseline.StaticBaselineTests.test_calibration_cycle_preserves_deferred_foreign_keys) ... ok\ntest_frozen_generation_is_reproducible (test_static_baseline.StaticBaselineTests.test_frozen_generation_is_reproducible) ... ok\ntest_integral_catalogue_and_historical_contracts (test_static_baseline.StaticBaselineTests.test_integral_catalogue_and_historical_contracts) ... ok\ntest_missing_fk_target_rejected (test_static_baseline.StaticBaselineTests.test_missing_fk_target_rejected) ... ok\ntest_scientific_types_and_nullable_auc (test_static_baseline.StaticBaselineTests.test_scientific_types_and_nullable_auc) ... ok\ntest_single_technical_seed_and_no_transaction_escape (test_static_baseline.StaticBaselineTests.test_single_technical_seed_and_no_transaction_escape) ... ok\ntest_tampered_resource_rejected_before_execution (test_static_baseline.StaticBaselineTests.test_tampered_resource_rejected_before_execution) ... ok\ntest_trigger_with_missing_function_rejected (test_static_baseline.StaticBaselineTests.test_trigger_with_missing_function_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 20 tests in 1.869s\n\nOK\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "malaria_dl_local_project/.venv/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/db_v2",
+        "-p",
+        "test_alembic_envelope.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stderr": "test_independent_root_and_only_head (test_alembic_envelope.AlembicEnvelopeTests.test_independent_root_and_only_head) ... ok\ntest_missing_authorization_stops_before_engine_or_docker (test_alembic_envelope.AlembicEnvelopeTests.test_missing_authorization_stops_before_engine_or_docker) ... ok\ntest_no_legacy_settings_import_or_bootstrap (test_alembic_envelope.AlembicEnvelopeTests.test_no_legacy_settings_import_or_bootstrap) ... ok\ntest_offline_upgrade_cannot_export_an_unguarded_installer (test_alembic_envelope.AlembicEnvelopeTests.test_offline_upgrade_cannot_export_an_unguarded_installer) ... ok\ntest_revision_refuses_unverified_connection_and_downgrade (test_alembic_envelope.AlembicEnvelopeTests.test_revision_refuses_unverified_connection_and_downgrade) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.013s\n\nOK\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "/Users/julio/Library/Python/3.9/bin/ruff",
+        "check",
+        "adoption_v2",
+        "tests/adoption_v2",
+        "scripts/db/check_v2_stage_c.py"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "All checks passed!\n"
+    },
+    {
+      "command": [
+        "/Users/julio/Library/Python/3.9/bin/ruff",
+        "format",
+        "--check",
+        "adoption_v2",
+        "tests/adoption_v2",
+        "scripts/db/check_v2_stage_c.py"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "14 files already formatted\n"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-c",
+        "from pathlib import Path; paths=list(Path('adoption_v2').glob('*.py'))+list(Path('tests/adoption_v2').glob('*.py'))+[Path('scripts/db/check_v2_stage_c.py')]; [compile(p.read_text(),str(p),'exec') for p in paths]; print(len(paths),'modules compiled in memory')"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "13 modules compiled in memory\n"
+    }
+  ],
+  "passed": true,
+  "scope": "offline only; synthetic fixtures; no PostgreSQL/Docker/network",
+  "stage": "E10.10.5C",
+  "started_at_utc": "2026-09-29T18:42:26.516067+00:00"
+}

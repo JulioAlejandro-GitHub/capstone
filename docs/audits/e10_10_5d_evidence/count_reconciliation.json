@@ -1,0 +1,6 @@
+{
+  "tables": 97,
+  "equal": true,
+  "same_snapshot_as_dump": false,
+  "scope": "aggregate source observations vs restored legacy; not adopted equivalence"
+}

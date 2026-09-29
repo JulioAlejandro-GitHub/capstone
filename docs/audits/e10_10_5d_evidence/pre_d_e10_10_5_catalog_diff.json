@@ -1,0 +1,51 @@
+{
+  "stage": "E10.10.5B",
+  "comparison_executed": true,
+  "method": "PostgreSQL 17 canonical rendering of verified manifest statements in a separate empty isolated database, plus direct manifest metadata checks",
+  "manifest_sha256": "c1063136941e9429373d91d666fbea5d25afd0dc39f111fdf2b9779aa1f51eb0",
+  "installed_sha256": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+  "expected_sha256": "df07e6bfc58c21f8290ffb63324a8f3e57b4561e4fe12be74ce576be993fc58b",
+  "counts": {
+    "relations": 137,
+    "columns": 2271,
+    "constraints": 957,
+    "indexes": 407,
+    "views": 33,
+    "functions": 111,
+    "triggers": 95,
+    "sequences": 1,
+    "types": 272,
+    "extensions": 2,
+    "schema_acl": 1,
+    "database_acl": 1,
+    "default_acl": 0,
+    "roles": 2,
+    "runtime_privileges": 952,
+    "runtime_database": 1
+  },
+  "differences": {},
+  "direct_manifest_differences": [],
+  "status": "passed",
+  "gate_b": "pending_review",
+  "certified_categories": [
+    "tables",
+    "columns",
+    "types",
+    "constraints",
+    "indexes",
+    "views",
+    "functions",
+    "triggers",
+    "sequences",
+    "extensions",
+    "privileges"
+  ],
+  "manifest_column_metadata_rendered_on_postgresql_17": true,
+  "constraint_counts_explained": {
+    "application": 950,
+    "alembic_primary_key": 1,
+    "constraint_triggers": 6
+  },
+  "application_function_count": 75,
+  "extension_function_count": 36
+}

@@ -1,0 +1,16 @@
+{
+  "tables": 97,
+  "all_hashes_and_counts_equal": true,
+  "sequence_unchanged": [
+    {
+      "last_value": 1,
+      "is_called": false
+    }
+  ],
+  "backups": {
+    "source.dump": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6",
+    "isolated.dump": "c197888c05358e2c28e8b5c80c7a7ec01751b8548eb9b2c56918d5af3cd6e281"
+  },
+  "operational_connections": 0,
+  "original_copy_writes": 0
+}

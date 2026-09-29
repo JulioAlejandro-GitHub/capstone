@@ -1,0 +1,136 @@
+{
+  "stage": "E10.10.5C",
+  "baseline_resources_modified": false,
+  "operational_connections": 0,
+  "scope": "C files only; hashes exclude this self-referential index",
+  "files": {
+    "adoption_v2/README.md": {
+      "sha256": "a51f341e166cf847e3da8ec9f0ff3623181c8188504455e52e263762dd6f9d20",
+      "bytes": 5987
+    },
+    "adoption_v2/__init__.py": {
+      "sha256": "8e2149974ceb57912912bc847595991d13eb8a93d6c454f5f3612a35401a7f27",
+      "bytes": 83
+    },
+    "adoption_v2/__main__.py": {
+      "sha256": "5801c493eeb75c74cb3c0b76efdd3a090185ec54986f4a1ffba1ef71e55ad5e7",
+      "bytes": 2016
+    },
+    "adoption_v2/core.py": {
+      "sha256": "56b3e323ced8d349a7673cd68797a344dd2d9d3f12505684ca268140a6298ce1",
+      "bytes": 5570
+    },
+    "adoption_v2/ddl.py": {
+      "sha256": "cf0ad45140b6fe2068c22a57460f64411b92bdd159cb3306eab8f446fedec05d",
+      "bytes": 7036
+    },
+    "adoption_v2/execute.py": {
+      "sha256": "9f05d6b6a211b4f45cb5477c6e3070fbe9fb0ce88735c3d13cc3d3e715d8c2a0",
+      "bytes": 16008
+    },
+    "adoption_v2/legacy_contract.json": {
+      "sha256": "297a5d54f4dd1c9d6f16150a33eda200059eca7c91a96087d33a68a24077d54a",
+      "bytes": 1567094
+    },
+    "adoption_v2/planner.py": {
+      "sha256": "249fbe1c827799228132a241d809fcfee8f3b7cf829229bb1f09b7ef73c0c472",
+      "bytes": 29359
+    },
+    "adoption_v2/preflight.py": {
+      "sha256": "9e3de1514fa9f89575cc2ed385c8ba30abd3010ec4e8071b1f06cd1322f69ee4",
+      "bytes": 10781
+    },
+    "adoption_v2/requirements.txt": {
+      "sha256": "c00465cc920760fce5482c34aa0aac4f55ebdb0cd4a9824c2ccdc43ead1c7866",
+      "bytes": 132
+    },
+    "adoption_v2/transforms.py": {
+      "sha256": "265231a518c967dbb8cb10930759426d7a2be09aa0e559712d92bbff0460a9c2",
+      "bytes": 15870
+    },
+    "docs/audits/e10_10_5_adoption_preflight.md": {
+      "sha256": "1f5e825a2a89347a98448044fe35a52b23e8edd10fd9397b476868248740164d",
+      "bytes": 4966
+    },
+    "docs/audits/e10_10_5_adoption_tests.md": {
+      "sha256": "756cde830299d470130f0d1cea6b9fccdefb697420cfc857b8baee9c475f7705",
+      "bytes": 5849
+    },
+    "docs/audits/e10_10_5_implementation.md": {
+      "sha256": "fc0034e30918c19980538093f0ec1a2188390c6e9c3c8292b4ee4fd004fdf530",
+      "bytes": 3705
+    },
+    "docs/audits/e10_10_5_legacy_mapping.csv": {
+      "sha256": "9dd21da61e9348cbd21deb515dee17632b69e9c84e02f39173a82d701b41fa44",
+      "bytes": 38527
+    },
+    "docs/audits/e10_10_5_open_risks.md": {
+      "sha256": "86a894c6b5c24f2f83357d176338dee8125dbeb02fdf6d548961a6e5030c5e59",
+      "bytes": 3100
+    },
+    "docs/audits/e10_10_5_route_b_adoption_plan.md": {
+      "sha256": "4bb0488da75ebaf3708d12abf498c5a37f22d522a234c3df659dc9cba9888a7a",
+      "bytes": 8691
+    },
+    "docs/audits/e10_10_5c_evidence/baseline_static.json": {
+      "sha256": "6415635016bda2b5fec7ee100952dce4e79fdec0a61d25192b17ee6eaabdacb6",
+      "bytes": 1109
+    },
+    "docs/audits/e10_10_5c_evidence/column_mapping.json": {
+      "sha256": "0f8cdca3a5b56ca487b17d878175f6130af574c132c0071582c9b70bd6ec7091",
+      "bytes": 79764
+    },
+    "docs/audits/e10_10_5c_evidence/commands.json": {
+      "sha256": "0b97060d071ede4d0403d6342f00b256f778cc9719be8730ce91a6f016d11901",
+      "bytes": 14280
+    },
+    "docs/audits/e10_10_5c_evidence/ddl_plan.json": {
+      "sha256": "38c33907a9e1cff954b2116c42178db2b24cf08f5425d69dee3ed7122913f1b3",
+      "bytes": 163580
+    },
+    "docs/audits/e10_10_5c_evidence/inputs.json": {
+      "sha256": "81115bd954e91e7361e52514e7aff4373e710521ba80207e38baa53b7b921745",
+      "bytes": 1882
+    },
+    "docs/audits/e10_10_5c_evidence/pre_c_e10_10_5_implementation.md": {
+      "sha256": "ec81a65dcfdba18831a31773fe2c008fa79c769f4b1898defc77add2496814b7",
+      "bytes": 4392
+    },
+    "docs/audits/e10_10_5c_evidence/pre_c_e10_10_5_open_risks.md": {
+      "sha256": "37540f953302cd3887e6f52335211adf731fd9b6bea91e6c33d08544265f01a0",
+      "bytes": 2855
+    },
+    "docs/audits/e10_10_5c_evidence/pre_c_hashes.json": {
+      "sha256": "5ac5b34823507c2aa28e3e85cbcf7fb6008591add5425ab6d128521572b58f88",
+      "bytes": 577
+    },
+    "docs/audits/e10_10_5c_evidence/static_results.json": {
+      "sha256": "b2d74ae972c82d4b0fa3c2392eb967634f5c2b7702bc6b6ad22840e5c4508b1f",
+      "bytes": 770
+    },
+    "docs/audits/e10_10_5c_evidence/synthetic_reconciliation.json": {
+      "sha256": "4795aa9eabfd1d0f361ac36ec2ee1fb320643242894d7d5312b2469116dc6998",
+      "bytes": 18990
+    },
+    "scripts/db/check_v2_stage_c.py": {
+      "sha256": "9101e4b06c9a5dc561e909c081066bd09effc12e5a3cefbb2d4320d8902d37bf",
+      "bytes": 10026
+    },
+    "tests/adoption_v2/fixtures.py": {
+      "sha256": "2c7911080d71a36f72f649f968c601c473bc55c95de79af3025b818825d97111",
+      "bytes": 12140
+    },
+    "tests/adoption_v2/test_adoption.py": {
+      "sha256": "a9a4a8d3100a1478833d9386db760ac8fbae2e2146c27c211be8489b057f0be4",
+      "bytes": 12243
+    },
+    "tests/adoption_v2/test_extended.py": {
+      "sha256": "3f98a244b8458634975f25953c902a788877519efd4ca086a85605f072883ed6",
+      "bytes": 13034
+    },
+    "tests/adoption_v2/test_transaction.py": {
+      "sha256": "49c3f385bce35ad0ec2bbb1b0e1a3a3dbac119f60919a3c9c4785e8151aff2fc",
+      "bytes": 6336
+    }
+  }
+}

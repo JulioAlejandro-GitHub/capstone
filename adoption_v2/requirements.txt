@@ -1,0 +1,3 @@
+# C validation needs pglast only; D also needs the certified connection dependencies.
+pglast==8.4
+-r ../alembic_v2/requirements.txt

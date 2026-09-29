@@ -1,0 +1,1484 @@
+[
+  {
+    "table": "artifacts",
+    "column": "id",
+    "legacy": {
+      "table_name": "artifacts",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 19637,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table artifacts"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "artifacts",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22690,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table artifacts"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "campaign_execution_events",
+    "column": "id",
+    "legacy": {
+      "table_name": "campaign_execution_events",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 19770,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table campaign_execution_events"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "campaign_execution_events",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22766,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table campaign_execution_events"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "clinical_identities",
+    "column": "id",
+    "legacy": {
+      "table_name": "clinical_identities",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 19977,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table clinical_identities"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "clinical_identities",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22856,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table clinical_identities"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "dataset_materialization_activations",
+    "column": "id",
+    "legacy": {
+      "table_name": "dataset_materialization_activations",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 19997,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_materialization_activations"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "dataset_materialization_activations",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22865,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_materialization_activations"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "dataset_materializations",
+    "column": "id",
+    "legacy": {
+      "table_name": "dataset_materializations",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20007,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_materializations"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "dataset_materializations",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22873,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_materializations"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "dataset_source_records",
+    "column": "id",
+    "legacy": {
+      "table_name": "dataset_source_records",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20026,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_source_records"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "dataset_source_records",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22885,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_source_records"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "dataset_split_assignments",
+    "column": "id",
+    "legacy": {
+      "table_name": "dataset_split_assignments",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20040,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_split_assignments"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "dataset_split_assignments",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22894,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_split_assignments"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "dataset_split_images",
+    "column": "image_id",
+    "legacy": {
+      "table_name": "dataset_split_images",
+      "column_name": "image_id",
+      "type": "uuid",
+      "default_oid": 20050,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column image_id of table dataset_split_images"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "dataset_split_images",
+      "column_name": "image_id",
+      "type": "uuid",
+      "default_oid": 22902,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column image_id of table dataset_split_images"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "dataset_split_statistics",
+    "column": "id",
+    "legacy": {
+      "table_name": "dataset_split_statistics",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20062,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_split_statistics"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "dataset_split_statistics",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22911,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_split_statistics"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "dataset_split_validation_checks",
+    "column": "id",
+    "legacy": {
+      "table_name": "dataset_split_validation_checks",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20071,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_split_validation_checks"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "dataset_split_validation_checks",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22918,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_split_validation_checks"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "dataset_splits",
+    "column": "id",
+    "legacy": {
+      "table_name": "dataset_splits",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20083,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_splits"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "dataset_splits",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22928,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_splits"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "dataset_versions",
+    "column": "id",
+    "legacy": {
+      "table_name": "dataset_versions",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20099,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_versions"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "dataset_versions",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22943,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table dataset_versions"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "datasets",
+    "column": "id",
+    "legacy": {
+      "table_name": "datasets",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20118,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table datasets"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "datasets",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22954,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table datasets"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "deployed_model_versions",
+    "column": "id",
+    "legacy": {
+      "table_name": "deployed_model_versions",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20127,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table deployed_model_versions"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "deployed_model_versions",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22963,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table deployed_model_versions"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "environment_packages",
+    "column": "id",
+    "legacy": {
+      "table_name": "environment_packages",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20154,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table environment_packages"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "environment_packages",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22978,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table environment_packages"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "errors",
+    "column": "id",
+    "legacy": {
+      "table_name": "errors",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20161,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table errors"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "errors",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 22985,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table errors"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "execution_logs",
+    "column": "id",
+    "legacy": {
+      "table_name": "execution_logs",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20169,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table execution_logs"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "execution_logs",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23006,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table execution_logs"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "experiments",
+    "column": "id",
+    "legacy": {
+      "table_name": "experiments",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20214,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table experiments"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "experiments",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23037,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table experiments"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "explainability_results",
+    "column": "id",
+    "legacy": {
+      "table_name": "explainability_results",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20223,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table explainability_results"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "explainability_results",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23046,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table explainability_results"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "identity_evidence",
+    "column": "id",
+    "legacy": {
+      "table_name": "identity_evidence",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20233,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table identity_evidence"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "identity_evidence",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23056,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table identity_evidence"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "image_analysis_jobs",
+    "column": "id",
+    "legacy": {
+      "table_name": "image_analysis_jobs",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20242,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table image_analysis_jobs"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "image_analysis_jobs",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23064,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table image_analysis_jobs"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "model_governance_backfill_audit",
+    "column": "id",
+    "legacy": {
+      "table_name": "model_governance_backfill_audit",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20454,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table model_governance_backfill_audit"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "model_governance_backfill_audit",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23143,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table model_governance_backfill_audit"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "model_versions",
+    "column": "id",
+    "legacy": {
+      "table_name": "model_versions",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20472,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table model_versions"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "model_versions",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23155,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table model_versions"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "models",
+    "column": "id",
+    "legacy": {
+      "table_name": "models",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20495,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table models"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "models",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23169,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table models"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "predictions",
+    "column": "id",
+    "legacy": {
+      "table_name": "predictions",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20362,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table predictions"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "predictions",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23178,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table predictions"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "run_checkpoint_policy",
+    "column": "run_checkpoint_policy_id",
+    "legacy": {
+      "table_name": "run_checkpoint_policy",
+      "column_name": "run_checkpoint_policy_id",
+      "type": "uuid",
+      "default_oid": 20545,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_checkpoint_policy_id of table run_checkpoint_policy"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "run_checkpoint_policy",
+      "column_name": "run_checkpoint_policy_id",
+      "type": "uuid",
+      "default_oid": 23220,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_checkpoint_policy_id of table run_checkpoint_policy"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "run_clinical_metrics",
+    "column": "run_clinical_metric_id",
+    "legacy": {
+      "table_name": "run_clinical_metrics",
+      "column_name": "run_clinical_metric_id",
+      "type": "uuid",
+      "default_oid": 20554,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_clinical_metric_id of table run_clinical_metrics"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "run_clinical_metrics",
+      "column_name": "run_clinical_metric_id",
+      "type": "uuid",
+      "default_oid": 23229,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_clinical_metric_id of table run_clinical_metrics"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "run_dataset_images",
+    "column": "run_dataset_image_id",
+    "legacy": {
+      "table_name": "run_dataset_images",
+      "column_name": "run_dataset_image_id",
+      "type": "uuid",
+      "default_oid": 20569,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_dataset_image_id of table run_dataset_images"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "run_dataset_images",
+      "column_name": "run_dataset_image_id",
+      "type": "uuid",
+      "default_oid": 23255,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_dataset_image_id of table run_dataset_images"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "run_image_predictions",
+    "column": "run_image_prediction_id",
+    "legacy": {
+      "table_name": "run_image_predictions",
+      "column_name": "run_image_prediction_id",
+      "type": "uuid",
+      "default_oid": 20584,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_image_prediction_id of table run_image_predictions"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "run_image_predictions",
+      "column_name": "run_image_prediction_id",
+      "type": "uuid",
+      "default_oid": 23266,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_image_prediction_id of table run_image_predictions"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "run_io_records",
+    "column": "run_io_id",
+    "legacy": {
+      "table_name": "run_io_records",
+      "column_name": "run_io_id",
+      "type": "uuid",
+      "default_oid": 20596,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_io_id of table run_io_records"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "run_io_records",
+      "column_name": "run_io_id",
+      "type": "uuid",
+      "default_oid": 23275,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_io_id of table run_io_records"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "run_lineage",
+    "column": "id",
+    "legacy": {
+      "table_name": "run_lineage",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20612,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table run_lineage"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "run_lineage",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23291,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table run_lineage"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "run_metrics",
+    "column": "id",
+    "legacy": {
+      "table_name": "run_metrics",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20624,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table run_metrics"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "run_metrics",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23300,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table run_metrics"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "run_model_deployments",
+    "column": "id",
+    "legacy": {
+      "table_name": "run_model_deployments",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20327,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table run_model_deployments"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "run_model_deployments",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23308,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table run_model_deployments"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "run_threshold_calibration",
+    "column": "run_threshold_calibration_id",
+    "legacy": {
+      "table_name": "run_threshold_calibration",
+      "column_name": "run_threshold_calibration_id",
+      "type": "uuid",
+      "default_oid": 20632,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_threshold_calibration_id of table run_threshold_calibration"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "run_threshold_calibration",
+      "column_name": "run_threshold_calibration_id",
+      "type": "uuid",
+      "default_oid": 23318,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column run_threshold_calibration_id of table run_threshold_calibration"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "runs",
+    "column": "id",
+    "legacy": {
+      "table_name": "runs",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20341,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table runs"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "runs",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23336,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table runs"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "stage2_model_publication_events",
+    "column": "id",
+    "legacy": {
+      "table_name": "stage2_model_publication_events",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20773,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table stage2_model_publication_events"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "stage2_model_publication_events",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23421,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table stage2_model_publication_events"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "stage2_model_publications",
+    "column": "id",
+    "legacy": {
+      "table_name": "stage2_model_publications",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20784,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table stage2_model_publications"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "stage2_model_publications",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23429,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table stage2_model_publications"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "synthetic_data_runs",
+    "column": "id",
+    "legacy": {
+      "table_name": "synthetic_data_runs",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20801,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table synthetic_data_runs"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "synthetic_data_runs",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23442,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table synthetic_data_runs"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  },
+  {
+    "table": "training_history",
+    "column": "id",
+    "legacy": {
+      "table_name": "training_history",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 20835,
+      "expression_tree": "{FUNCEXPR :funcid 3432 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table training_history"
+        }
+      ]
+    },
+    "v2": {
+      "table_name": "training_history",
+      "column_name": "id",
+      "type": "uuid",
+      "default_oid": 23470,
+      "expression_tree": "{FUNCEXPR :funcid 22662 :funcresulttype 2950 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args <> :location -1}",
+      "expression": "public.gen_random_uuid()",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "object": "column id of table training_history"
+        },
+        {
+          "deptype": "n",
+          "object": "function public.gen_random_uuid()"
+        }
+      ]
+    },
+    "classification": "distinct_resolved_object_and_dependency; execution privilege behavior differs",
+    "proposed_resolution": "Retain legacy pg_catalog.gen_random_uuid in baseline through explicit qualification; architectural decision required before schema changes"
+  }
+]

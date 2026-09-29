@@ -1,23 +1,3 @@
-## Actualización E10.10.5D.1 — decisión estructural pendiente
-
-**E10.10.5D — BLOQUEADA. GATE D NO APROBABLE.** D-01 demostrado: legacy es GENERATED ALWAYS AS IDENTITY; baseline omite generación (INSERT sin id falla 23502) y acepta IDs explícitos que legacy rechaza (428C9). D-02 comprende 41 representaciones divergentes: 39 columnas retenidas resuelven a otra función; dos tablas son MERGE aprobado. Legacy usa pg_catalog.gen_random_uuid y baseline el wrapper de pgcrypto, con dependencias y permisos distintos. Prueba auxiliar: revocar EXECUTE del wrapper mantiene INSERT legacy y rechaza baseline con 42501.
-
-La Parte 2 exige detenerse ante falta de equivalencia. No se modificaron baseline/manifiesto/adaptador/comparador. Se propone conservar IDENTITY y fijar explícitamente el binding pg_catalog de las 39 columnas; requiere decisión antes de cambiar esquema. La certificación B es anterior a esta propuesta y no acredita una corrección. Preservación de la copia D original: 97/97 conteos/hashes y secuencia intactos; cero conexiones operativas. Solo probes en auxiliares aisladas. Preflight/adopción/recertificación/rollback/repetición/restore siguen pendientes. No E ni cutover.
-
-[Diagnóstico, decisión, pruebas y comandos](e10_10_5d_structural_resolution.md), [inventario exacto de defaults](e10_10_5d1_evidence/default_inventory.json), [preservación](e10_10_5d1_evidence/preservation.json).
-
----
-
-# Bloqueos D
-
-**E10.10.5D — BLOQUEADA. GATE D NO APROBABLE.**
-
-Se obtuvo backup consistente y restore legacy en PostgreSQL 17.9 aislado. El preflight rechazó `LEGACY_SEQUENCE_DRIFT`: dependencia IDENTITY `i` frente a `a` en Ruta A. Diagnóstico adicional: defaults cualificados producen `LEGACY_SCHEMA_DRIFT`. No hubo apply, delta, transición de revisión ni reparación de datos. Catálogo final, integridad/equivalencia adoptada, rollback, repetición y backup/restore adoptado siguen pendientes. No se inició E ni cutover.
-
-[Informe de nueve puntos y comandos](e10_10_5_route_b_results.md), [diff de secuencia](e10_10_5d_evidence/sequence_difference.json), [hashes y límites](e10_10_5_data_equivalence.json). La certificación B y la implementación C previas se conservan; sus resultados no acreditan D. Riesgo adicional: backups privados en /private/tmp requieren conservación; no contienen credenciales en informes públicos.
-
----
-
 # E10.10.5 — Riesgos al entregar C
 
 Gate B aprobado expresamente por el usuario. B-01 cerrada; roles vigentes `capstone_v2_migrator` y `capstone_v2_runtime`. **Gate C pendiente de revisión y aprobación.**

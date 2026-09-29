@@ -1,0 +1,828 @@
+{
+  "columns": {
+    "observed_only": [
+      {
+        "table_schema": "public",
+        "table_name": "artifacts",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "campaign_execution_events",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "classification_reports",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "clinical_identities",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "confusion_matrices",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_materialization_activations",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_materializations",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_source_records",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_split_assignments",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_split_statistics",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_split_validation_checks",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_splits",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_versions",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "datasets",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "deployed_model_versions",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "environment_packages",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "errors",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "execution_logs",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "experiments",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "explainability_results",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "identity_evidence",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "image_analysis_jobs",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "model_governance_backfill_audit",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "model_versions",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "models",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "predictions",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_lineage",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_metrics",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_model_deployments",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "runs",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "stage2_model_publication_events",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "stage2_model_publications",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "synthetic_data_runs",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "training_history",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_split_images",
+        "column_name": "image_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_checkpoint_policy",
+        "column_name": "run_checkpoint_policy_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_clinical_metrics",
+        "column_name": "run_clinical_metric_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_dataset_images",
+        "column_name": "run_dataset_image_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_image_predictions",
+        "column_name": "run_image_prediction_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_io_records",
+        "column_name": "run_io_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_threshold_calibration",
+        "column_name": "run_threshold_calibration_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "pg_catalog.gen_random_uuid()"
+      }
+    ],
+    "expected_only": [
+      {
+        "table_schema": "public",
+        "table_name": "artifacts",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "campaign_execution_events",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "classification_reports",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "clinical_identities",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "confusion_matrices",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_materialization_activations",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_materializations",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_source_records",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_split_assignments",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_split_statistics",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_split_validation_checks",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_splits",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_versions",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "datasets",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "deployed_model_versions",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "environment_packages",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "errors",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "execution_logs",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "experiments",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "explainability_results",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "identity_evidence",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "image_analysis_jobs",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "model_governance_backfill_audit",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "model_versions",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "models",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "predictions",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_lineage",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_metrics",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_model_deployments",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "runs",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "stage2_model_publication_events",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "stage2_model_publications",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "synthetic_data_runs",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "training_history",
+        "column_name": "id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "dataset_split_images",
+        "column_name": "image_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_checkpoint_policy",
+        "column_name": "run_checkpoint_policy_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_clinical_metrics",
+        "column_name": "run_clinical_metric_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_dataset_images",
+        "column_name": "run_dataset_image_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_image_predictions",
+        "column_name": "run_image_prediction_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_io_records",
+        "column_name": "run_io_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      },
+      {
+        "table_schema": "public",
+        "table_name": "run_threshold_calibration",
+        "column_name": "run_threshold_calibration_id",
+        "ordinal_position": 1,
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "docs/audits/e10_10_5c_evidence/pre_c_e10_10_5_implementation.md": {
+    "sha256": "ec81a65dcfdba18831a31773fe2c008fa79c769f4b1898defc77add2496814b7",
+    "source": "docs/audits/e10_10_5_implementation.md",
+    "meaning": "Historical B delivery; Gate B subsequently approved by user"
+  },
+  "docs/audits/e10_10_5c_evidence/pre_c_e10_10_5_open_risks.md": {
+    "sha256": "37540f953302cd3887e6f52335211adf731fd9b6bea91e6c33d08544265f01a0",
+    "source": "docs/audits/e10_10_5_open_risks.md",
+    "meaning": "Historical B delivery; Gate B subsequently approved by user"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "type": "Blocked",
+  "code": "LEGACY_SEQUENCE_DRIFT",
+  "location": "",
+  "sqlstate": null,
+  "message": "LEGACY_SEQUENCE_DRIFT: "
+}

@@ -1,0 +1,11 @@
+{
+  "container_id": "2604ff9884655b3b78ffc85997cbe30d6392afca7b904b5df2b37dacedb30d89",
+  "database": "malaria_experiments",
+  "system_identifier": "7668020338728398886",
+  "revision_observed_before_dump": "20260922_01",
+  "version": "17.9",
+  "sha256": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6",
+  "bytes": 12518509,
+  "path": "/private/tmp/e10_10_5d_31g4o9jk/source.dump",
+  "consistency": "pg_dump single consistent snapshot; no source writes"
+}

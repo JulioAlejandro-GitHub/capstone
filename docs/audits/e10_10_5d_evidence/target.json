@@ -1,0 +1,17 @@
+{
+  "authorized_stage": "E10.10.5D",
+  "gate_c_approved": true,
+  "copy_only": true,
+  "writers_fenced": true,
+  "isolation_id": "8c511486-5703-4d12-88d9-930d388aadce",
+  "container_name": "capstone_v2_isolated_8c5114865703",
+  "volume": "capstone_v2_isolated_8c5114865703",
+  "database": "capstone_v2_isolated_8c5114865703",
+  "host_port": 55479,
+  "origin_system_identifier": "7668020338728398886",
+  "migration_role": "capstone_v2_migrator",
+  "runtime_role": "capstone_v2_runtime",
+  "container_id": "09aeb81b36210177134e73c1d735967f2d053e6d4fb8723e3783a14a43787cc3",
+  "postgres_system_identifier": "7691066755790737451",
+  "database_oid": 16386
+}

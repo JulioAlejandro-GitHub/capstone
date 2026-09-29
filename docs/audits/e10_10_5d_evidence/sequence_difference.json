@@ -1,0 +1,38 @@
+{
+  "observed": [
+    {
+      "name": "experiment_execution_events_id_seq",
+      "type": "bigint",
+      "seqstart": 1,
+      "seqincrement": 1,
+      "seqmax": 9223372036854775807,
+      "seqmin": 1,
+      "seqcache": 1,
+      "seqcycle": false,
+      "owned_table": "experiment_execution_events",
+      "owned_column": "id",
+      "deptype": "i"
+    }
+  ],
+  "route_a": [
+    {
+      "name": "experiment_execution_events_id_seq",
+      "type": "bigint",
+      "seqstart": 1,
+      "seqincrement": 1,
+      "seqmax": 9223372036854775807,
+      "seqmin": 1,
+      "seqcache": 1,
+      "seqcycle": false,
+      "owned_table": "experiment_execution_events",
+      "owned_column": "id",
+      "deptype": "a"
+    }
+  ],
+  "values": {
+    "experiment_execution_events_id_seq": {
+      "last_value": 1,
+      "is_called": false
+    }
+  }
+}

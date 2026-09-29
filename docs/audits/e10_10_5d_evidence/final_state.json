@@ -1,0 +1,11 @@
+{
+  "container_id": "09aeb81b36210177134e73c1d735967f2d053e6d4fb8723e3783a14a43787cc3",
+  "stop_exit_code": 0,
+  "state": "stopped",
+  "volume_retained": true,
+  "backups_retained": true,
+  "adapter_applied": false,
+  "source_mutations": false,
+  "stage_e_started": false,
+  "cutover": false
+}

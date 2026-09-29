@@ -1,0 +1,25 @@
+{
+  "commands": [
+    {
+      "command": "docker --host unix:///Users/julio/.docker/run/docker.sock start 09aeb81b36210177134e73c1d735967f2d053e6d4fb8723e3783a14a43787cc3",
+      "exit_code": 0
+    },
+    {
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/diagnose_v2_structure.py",
+      "exit_code": 0
+    },
+    {
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/probe_v2_structural_behavior.py",
+      "exit_code": 0
+    },
+    {
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python /private/tmp/d1_extra.py",
+      "exit_code": 0
+    },
+    {
+      "command": "docker --host unix:///Users/julio/.docker/run/docker.sock stop 09aeb81b36210177134e73c1d735967f2d053e6d4fb8723e3783a14a43787cc3",
+      "exit_code": 0
+    }
+  ],
+  "probe_sqlstates_are_expected_results": true
+}
