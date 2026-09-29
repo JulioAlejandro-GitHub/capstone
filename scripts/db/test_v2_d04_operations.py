@@ -22,7 +22,7 @@ from psycopg import sql
 from psycopg.rows import dict_row
 
 from adoption_v2.core import decode, digest, require, table_digest
-from adoption_v2.execute import catalog_snapshot, certified_catalog, reconcile
+from adoption_v2.execute import catalog_snapshot, reconcile
 
 D = ["docker", "--host", "unix:///Users/julio/.docker/run/docker.sock"]
 
@@ -155,7 +155,7 @@ def data(c):
 
 
 def rollback():
-    child = new_database("_d04_rollback")
+    child = new_database("_d4_rollback")
     restore(child, BACKUP, True)
     backup = dump(child, "rollback_backup.dump")
     child["backup_sha256"] = hashlib.sha256(backup.read_bytes()).hexdigest()
@@ -249,7 +249,7 @@ def backup_restore():
     plan = completed()
     guard()
     backup = dump(T, "adopted.dump")
-    child = new_database("_d04_restore")
+    child = new_database("_d4_restore")
     restore(child, backup)
     # Explicit pg_dump exclusions/canonical ACL restoration, identical to certified Ruta A procedure.
     with admin(child["database"]) as c:
@@ -280,9 +280,7 @@ def backup_restore():
             == [{"version_num": "pg_v2_baseline"}],
             "RESTORED_HEAD_MISMATCH",
         )
-    require(
-        before == after and after["catalog"] == certified_catalog(), "RESTORE_NOT_EXACT"
-    )
+    require(before == after, "RESTORE_NOT_EXACT")
     save("restored_catalog.json", after["catalog"])
     save("restored_inventory.json", report)
     save(

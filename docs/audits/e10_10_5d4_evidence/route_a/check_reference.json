@@ -1,0 +1,2061 @@
+{
+  "constraints": {
+    "campaign_controlled_requests_reason_check": {
+      "definition": "CHECK ((length(btrim(reason)) > 0))",
+      "tree": "{OPEXPR :opno 521 :opfuncid 147 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({FUNCEXPR :funcid 1317 :funcresulttype 23 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 100 :args ({FUNCEXPR :funcid 885 :funcresulttype 25 :funcretset false :funcvariadic false :funcformat 0 :funccollid 100 :inputcollid 100 :args ({VAR :varno 1 :varattno 8 :vartype 25 :vartypmod -1 :varcollid 100 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 8 :location -1}) :location -1}) :location -1} {CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1}",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column reason of table campaign_controlled_requests"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column reason of table campaign_controlled_requests"
+        }
+      ],
+      "canonical": {
+        "@": "OPEXPR",
+        ":opno": "521",
+        ":opfuncid": "147",
+        ":opresulttype": "16",
+        ":opretset": "false",
+        ":opcollid": "0",
+        ":inputcollid": "0",
+        ":args": [
+          {
+            "@": "FUNCEXPR",
+            ":funcid": "1317",
+            ":funcresulttype": "23",
+            ":funcretset": "false",
+            ":funcvariadic": "false",
+            ":funcformat": "0",
+            ":funccollid": "0",
+            ":inputcollid": "100",
+            ":args": [
+              {
+                "@": "FUNCEXPR",
+                ":funcid": "885",
+                ":funcresulttype": "25",
+                ":funcretset": "false",
+                ":funcvariadic": "false",
+                ":funcformat": "0",
+                ":funccollid": "100",
+                ":inputcollid": "100",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "8",
+                    ":vartype": "25",
+                    ":vartypmod": "-1",
+                    ":varcollid": "100",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "8"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "@": "CONST",
+            ":consttype": "23",
+            ":consttypmod": "-1",
+            ":constcollid": "0",
+            ":constlen": "4",
+            ":constbyval": "true",
+            ":constisnull": "false",
+            ":constvalue": {
+              "values": [
+                "4",
+                {
+                  "bytes": [
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "bindings": {
+        "funcid": [
+          {
+            "oid": 885,
+            "object": "btrim(text)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.btrim(text)\n RETURNS text\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT\nAS $function$btrim1$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": false,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 1317,
+            "object": "length(text)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.length(text)\n RETURNS integer\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT\nAS $function$textlen$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": false,
+            "proparallel": "s",
+            "proacl": null
+          }
+        ],
+        "opno": [
+          {
+            "oid": 521,
+            "object": ">(integer,integer)"
+          }
+        ],
+        "opfuncid": [
+          {
+            "oid": 147,
+            "object": "int4gt(integer,integer)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.int4gt(integer, integer)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$int4gt$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          }
+        ],
+        "consttype": [
+          {
+            "oid": 23,
+            "object": "integer"
+          }
+        ],
+        "vartype": [
+          {
+            "oid": 25,
+            "object": "text"
+          }
+        ],
+        "resulttype": [],
+        "funcresulttype": [
+          {
+            "oid": 23,
+            "object": "integer"
+          },
+          {
+            "oid": 25,
+            "object": "text"
+          }
+        ],
+        "opresulttype": [
+          {
+            "oid": 16,
+            "object": "boolean"
+          }
+        ]
+      }
+    },
+    "ck_cell_prediction_label_index": {
+      "definition": "CHECK ((((prediction_status)::text <> 'completed'::text) OR ((predicted_class_index = 1) AND ((predicted_label)::text = 'parasitized'::text) AND (probability_parasitized >= threshold_used)) OR ((predicted_class_index = 0) AND ((predicted_label)::text = 'uninfected'::text) AND (probability_parasitized < threshold_used))))",
+      "tree": "{BOOLEXPR :boolop or :args ({OPEXPR :opno 531 :opfuncid 157 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 100 :args ({RELABELTYPE :arg {VAR :varno 1 :varattno 6 :vartype 1043 :vartypmod 24 :varcollid 100 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 6 :location -1} :resulttype 25 :resulttypmod -1 :resultcollid 100 :relabelformat 1 :location -1} {CONST :consttype 25 :consttypmod -1 :constcollid 100 :constlen -1 :constbyval false :constisnull false :location -1 :constvalue 13 [ 52 0 0 0 99 111 109 112 108 101 116 101 100 ]}) :location -1} {BOOLEXPR :boolop and :args ({OPEXPR :opno 532 :opfuncid 158 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 11 :vartype 21 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 11 :location -1} {CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 1 0 0 0 0 0 0 0 ]}) :location -1} {OPEXPR :opno 98 :opfuncid 67 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 100 :args ({RELABELTYPE :arg {VAR :varno 1 :varattno 10 :vartype 1043 :vartypmod 24 :varcollid 100 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 10 :location -1} :resulttype 25 :resulttypmod -1 :resultcollid 100 :relabelformat 1 :location -1} {CONST :consttype 25 :consttypmod -1 :constcollid 100 :constlen -1 :constbyval false :constisnull false :location -1 :constvalue 15 [ 60 0 0 0 112 97 114 97 115 105 116 105 122 101 100 ]}) :location -1} {OPEXPR :opno 675 :opfuncid 298 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 8 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 8 :location -1} {VAR :varno 1 :varattno 14 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 14 :location -1}) :location -1}) :location -1} {BOOLEXPR :boolop and :args ({OPEXPR :opno 532 :opfuncid 158 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 11 :vartype 21 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 11 :location -1} {CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1} {OPEXPR :opno 98 :opfuncid 67 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 100 :args ({RELABELTYPE :arg {VAR :varno 1 :varattno 10 :vartype 1043 :vartypmod 24 :varcollid 100 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 10 :location -1} :resulttype 25 :resulttypmod -1 :resultcollid 100 :relabelformat 1 :location -1} {CONST :consttype 25 :consttypmod -1 :constcollid 100 :constlen -1 :constbyval false :constisnull false :location -1 :constvalue 14 [ 56 0 0 0 117 110 105 110 102 101 99 116 101 100 ]}) :location -1} {OPEXPR :opno 672 :opfuncid 295 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 8 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 8 :location -1} {VAR :varno 1 :varattno 14 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 14 :location -1}) :location -1}) :location -1}) :location -1}",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column predicted_class_index of table cell_predictions"
+        },
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column predicted_label of table cell_predictions"
+        },
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column prediction_status of table cell_predictions"
+        },
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column probability_parasitized of table cell_predictions"
+        },
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column threshold_used of table cell_predictions"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column predicted_class_index of table cell_predictions"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column predicted_label of table cell_predictions"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column prediction_status of table cell_predictions"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column probability_parasitized of table cell_predictions"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column threshold_used of table cell_predictions"
+        }
+      ],
+      "canonical": {
+        "@": "BOOLEXPR",
+        ":boolop": "or",
+        ":args": [
+          {
+            "@": "OPEXPR",
+            ":opno": "531",
+            ":opfuncid": "157",
+            ":opresulttype": "16",
+            ":opretset": "false",
+            ":opcollid": "0",
+            ":inputcollid": "100",
+            ":args": [
+              {
+                "@": "RELABELTYPE",
+                ":arg": {
+                  "@": "VAR",
+                  ":varno": "1",
+                  ":varattno": "6",
+                  ":vartype": "1043",
+                  ":vartypmod": "24",
+                  ":varcollid": "100",
+                  ":varnullingrels": [
+                    "b"
+                  ],
+                  ":varlevelsup": "0",
+                  ":varnosyn": "1",
+                  ":varattnosyn": "6"
+                },
+                ":resulttype": "25",
+                ":resulttypmod": "-1",
+                ":resultcollid": "100",
+                ":relabelformat": "1"
+              },
+              {
+                "@": "CONST",
+                ":consttype": "25",
+                ":consttypmod": "-1",
+                ":constcollid": "100",
+                ":constlen": "-1",
+                ":constbyval": "false",
+                ":constisnull": "false",
+                ":constvalue": {
+                  "values": [
+                    "13",
+                    {
+                      "bytes": [
+                        "52",
+                        "0",
+                        "0",
+                        "0",
+                        "99",
+                        "111",
+                        "109",
+                        "112",
+                        "108",
+                        "101",
+                        "116",
+                        "101",
+                        "100"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "@": "BOOLEXPR",
+            ":boolop": "and",
+            ":args": [
+              {
+                "@": "OPEXPR",
+                ":opno": "532",
+                ":opfuncid": "158",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "11",
+                    ":vartype": "21",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "11"
+                  },
+                  {
+                    "@": "CONST",
+                    ":consttype": "23",
+                    ":consttypmod": "-1",
+                    ":constcollid": "0",
+                    ":constlen": "4",
+                    ":constbyval": "true",
+                    ":constisnull": "false",
+                    ":constvalue": {
+                      "values": [
+                        "4",
+                        {
+                          "bytes": [
+                            "1",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "98",
+                ":opfuncid": "67",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "100",
+                ":args": [
+                  {
+                    "@": "RELABELTYPE",
+                    ":arg": {
+                      "@": "VAR",
+                      ":varno": "1",
+                      ":varattno": "10",
+                      ":vartype": "1043",
+                      ":vartypmod": "24",
+                      ":varcollid": "100",
+                      ":varnullingrels": [
+                        "b"
+                      ],
+                      ":varlevelsup": "0",
+                      ":varnosyn": "1",
+                      ":varattnosyn": "10"
+                    },
+                    ":resulttype": "25",
+                    ":resulttypmod": "-1",
+                    ":resultcollid": "100",
+                    ":relabelformat": "1"
+                  },
+                  {
+                    "@": "CONST",
+                    ":consttype": "25",
+                    ":consttypmod": "-1",
+                    ":constcollid": "100",
+                    ":constlen": "-1",
+                    ":constbyval": "false",
+                    ":constisnull": "false",
+                    ":constvalue": {
+                      "values": [
+                        "15",
+                        {
+                          "bytes": [
+                            "60",
+                            "0",
+                            "0",
+                            "0",
+                            "112",
+                            "97",
+                            "114",
+                            "97",
+                            "115",
+                            "105",
+                            "116",
+                            "105",
+                            "122",
+                            "101",
+                            "100"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "675",
+                ":opfuncid": "298",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "8",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "8"
+                  },
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "14",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "14"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "@": "BOOLEXPR",
+            ":boolop": "and",
+            ":args": [
+              {
+                "@": "OPEXPR",
+                ":opno": "532",
+                ":opfuncid": "158",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "11",
+                    ":vartype": "21",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "11"
+                  },
+                  {
+                    "@": "CONST",
+                    ":consttype": "23",
+                    ":consttypmod": "-1",
+                    ":constcollid": "0",
+                    ":constlen": "4",
+                    ":constbyval": "true",
+                    ":constisnull": "false",
+                    ":constvalue": {
+                      "values": [
+                        "4",
+                        {
+                          "bytes": [
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "98",
+                ":opfuncid": "67",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "100",
+                ":args": [
+                  {
+                    "@": "RELABELTYPE",
+                    ":arg": {
+                      "@": "VAR",
+                      ":varno": "1",
+                      ":varattno": "10",
+                      ":vartype": "1043",
+                      ":vartypmod": "24",
+                      ":varcollid": "100",
+                      ":varnullingrels": [
+                        "b"
+                      ],
+                      ":varlevelsup": "0",
+                      ":varnosyn": "1",
+                      ":varattnosyn": "10"
+                    },
+                    ":resulttype": "25",
+                    ":resulttypmod": "-1",
+                    ":resultcollid": "100",
+                    ":relabelformat": "1"
+                  },
+                  {
+                    "@": "CONST",
+                    ":consttype": "25",
+                    ":consttypmod": "-1",
+                    ":constcollid": "100",
+                    ":constlen": "-1",
+                    ":constbyval": "false",
+                    ":constisnull": "false",
+                    ":constvalue": {
+                      "values": [
+                        "14",
+                        {
+                          "bytes": [
+                            "56",
+                            "0",
+                            "0",
+                            "0",
+                            "117",
+                            "110",
+                            "105",
+                            "110",
+                            "102",
+                            "101",
+                            "99",
+                            "116",
+                            "101",
+                            "100"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "672",
+                ":opfuncid": "295",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "8",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "8"
+                  },
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "14",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "14"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "bindings": {
+        "funcid": [],
+        "opno": [
+          {
+            "oid": 98,
+            "object": "=(text,text)"
+          },
+          {
+            "oid": 531,
+            "object": "<>(text,text)"
+          },
+          {
+            "oid": 532,
+            "object": "=(smallint,integer)"
+          },
+          {
+            "oid": 672,
+            "object": "<(double precision,double precision)"
+          },
+          {
+            "oid": 675,
+            "object": ">=(double precision,double precision)"
+          }
+        ],
+        "opfuncid": [
+          {
+            "oid": 67,
+            "object": "texteq(text,text)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.texteq(text, text)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$texteq$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 157,
+            "object": "textne(text,text)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.textne(text, text)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$textne$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 158,
+            "object": "int24eq(smallint,integer)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.int24eq(smallint, integer)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$int24eq$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 295,
+            "object": "float8lt(double precision,double precision)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8lt(double precision, double precision)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$float8lt$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 298,
+            "object": "float8ge(double precision,double precision)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8ge(double precision, double precision)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$float8ge$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          }
+        ],
+        "consttype": [
+          {
+            "oid": 23,
+            "object": "integer"
+          },
+          {
+            "oid": 25,
+            "object": "text"
+          }
+        ],
+        "vartype": [
+          {
+            "oid": 21,
+            "object": "smallint"
+          },
+          {
+            "oid": 701,
+            "object": "double precision"
+          },
+          {
+            "oid": 1043,
+            "object": "character varying"
+          }
+        ],
+        "resulttype": [
+          {
+            "oid": 25,
+            "object": "text"
+          }
+        ],
+        "funcresulttype": [],
+        "opresulttype": [
+          {
+            "oid": 16,
+            "object": "boolean"
+          }
+        ]
+      }
+    },
+    "ck_smear_summary_fraction": {
+      "definition": "CHECK ((((classified_cell_count = 0) AND (parasitized_candidate_fraction IS NULL)) OR ((classified_cell_count > 0) AND (parasitized_candidate_fraction >= (0)::double precision) AND (parasitized_candidate_fraction <= (1)::double precision) AND (abs((parasitized_candidate_fraction - ((parasitized_candidate_count)::double precision / (classified_cell_count)::double precision))) <= (0.000000001)::double precision))))",
+      "tree": "{BOOLEXPR :boolop or :args ({BOOLEXPR :boolop and :args ({OPEXPR :opno 96 :opfuncid 65 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 7 :vartype 23 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 7 :location -1} {CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1} {NULLTEST :arg {VAR :varno 1 :varattno 12 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 12 :location -1} :nulltesttype 0 :argisrow false :location -1}) :location -1} {BOOLEXPR :boolop and :args ({OPEXPR :opno 521 :opfuncid 147 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 7 :vartype 23 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 7 :location -1} {CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1} {OPEXPR :opno 675 :opfuncid 298 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 12 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 12 :location -1} {FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1}) :location -1} {OPEXPR :opno 673 :opfuncid 296 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 12 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 12 :location -1} {FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 1 0 0 0 0 0 0 0 ]}) :location -1}) :location -1} {OPEXPR :opno 673 :opfuncid 296 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({FUNCEXPR :funcid 1395 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 0 :funccollid 0 :inputcollid 0 :args ({OPEXPR :opno 592 :opfuncid 219 :opresulttype 701 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 12 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 12 :location -1} {OPEXPR :opno 593 :opfuncid 217 :opresulttype 701 :opretset false :opcollid 0 :inputcollid 0 :args ({FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 8 :vartype 23 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 8 :location -1}) :location -1} {FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 7 :vartype 23 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 7 :location -1}) :location -1}) :location -1}) :location -1}) :location -1} {FUNCEXPR :funcid 1746 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({CONST :consttype 1700 :consttypmod -1 :constcollid 0 :constlen -1 :constbyval false :constisnull false :location -1 :constvalue 8 [ 32 0 0 0 253 132 232 3 ]}) :location -1}) :location -1}) :location -1}) :location -1}",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column classified_cell_count of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column parasitized_candidate_count of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column parasitized_candidate_fraction of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column classified_cell_count of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column parasitized_candidate_count of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column parasitized_candidate_fraction of table smear_analysis_summaries"
+        }
+      ],
+      "canonical": {
+        "@": "BOOLEXPR",
+        ":boolop": "or",
+        ":args": [
+          {
+            "@": "BOOLEXPR",
+            ":boolop": "and",
+            ":args": [
+              {
+                "@": "OPEXPR",
+                ":opno": "96",
+                ":opfuncid": "65",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "7",
+                    ":vartype": "23",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "7"
+                  },
+                  {
+                    "@": "CONST",
+                    ":consttype": "23",
+                    ":consttypmod": "-1",
+                    ":constcollid": "0",
+                    ":constlen": "4",
+                    ":constbyval": "true",
+                    ":constisnull": "false",
+                    ":constvalue": {
+                      "values": [
+                        "4",
+                        {
+                          "bytes": [
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "@": "NULLTEST",
+                ":arg": {
+                  "@": "VAR",
+                  ":varno": "1",
+                  ":varattno": "12",
+                  ":vartype": "701",
+                  ":vartypmod": "-1",
+                  ":varcollid": "0",
+                  ":varnullingrels": [
+                    "b"
+                  ],
+                  ":varlevelsup": "0",
+                  ":varnosyn": "1",
+                  ":varattnosyn": "12"
+                },
+                ":nulltesttype": "0",
+                ":argisrow": "false"
+              }
+            ]
+          },
+          {
+            "@": "BOOLEXPR",
+            ":boolop": "and",
+            ":args": [
+              {
+                "@": "OPEXPR",
+                ":opno": "521",
+                ":opfuncid": "147",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "7",
+                    ":vartype": "23",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "7"
+                  },
+                  {
+                    "@": "CONST",
+                    ":consttype": "23",
+                    ":consttypmod": "-1",
+                    ":constcollid": "0",
+                    ":constlen": "4",
+                    ":constbyval": "true",
+                    ":constisnull": "false",
+                    ":constvalue": {
+                      "values": [
+                        "4",
+                        {
+                          "bytes": [
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "675",
+                ":opfuncid": "298",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "12",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "12"
+                  },
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "316",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "1",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "CONST",
+                        ":consttype": "23",
+                        ":consttypmod": "-1",
+                        ":constcollid": "0",
+                        ":constlen": "4",
+                        ":constbyval": "true",
+                        ":constisnull": "false",
+                        ":constvalue": {
+                          "values": [
+                            "4",
+                            {
+                              "bytes": [
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "673",
+                ":opfuncid": "296",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "12",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "12"
+                  },
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "316",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "1",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "CONST",
+                        ":consttype": "23",
+                        ":consttypmod": "-1",
+                        ":constcollid": "0",
+                        ":constlen": "4",
+                        ":constbyval": "true",
+                        ":constisnull": "false",
+                        ":constvalue": {
+                          "values": [
+                            "4",
+                            {
+                              "bytes": [
+                                "1",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "673",
+                ":opfuncid": "296",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "1395",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "0",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "OPEXPR",
+                        ":opno": "592",
+                        ":opfuncid": "219",
+                        ":opresulttype": "701",
+                        ":opretset": "false",
+                        ":opcollid": "0",
+                        ":inputcollid": "0",
+                        ":args": [
+                          {
+                            "@": "VAR",
+                            ":varno": "1",
+                            ":varattno": "12",
+                            ":vartype": "701",
+                            ":vartypmod": "-1",
+                            ":varcollid": "0",
+                            ":varnullingrels": [
+                              "b"
+                            ],
+                            ":varlevelsup": "0",
+                            ":varnosyn": "1",
+                            ":varattnosyn": "12"
+                          },
+                          {
+                            "@": "OPEXPR",
+                            ":opno": "593",
+                            ":opfuncid": "217",
+                            ":opresulttype": "701",
+                            ":opretset": "false",
+                            ":opcollid": "0",
+                            ":inputcollid": "0",
+                            ":args": [
+                              {
+                                "@": "FUNCEXPR",
+                                ":funcid": "316",
+                                ":funcresulttype": "701",
+                                ":funcretset": "false",
+                                ":funcvariadic": "false",
+                                ":funcformat": "1",
+                                ":funccollid": "0",
+                                ":inputcollid": "0",
+                                ":args": [
+                                  {
+                                    "@": "VAR",
+                                    ":varno": "1",
+                                    ":varattno": "8",
+                                    ":vartype": "23",
+                                    ":vartypmod": "-1",
+                                    ":varcollid": "0",
+                                    ":varnullingrels": [
+                                      "b"
+                                    ],
+                                    ":varlevelsup": "0",
+                                    ":varnosyn": "1",
+                                    ":varattnosyn": "8"
+                                  }
+                                ]
+                              },
+                              {
+                                "@": "FUNCEXPR",
+                                ":funcid": "316",
+                                ":funcresulttype": "701",
+                                ":funcretset": "false",
+                                ":funcvariadic": "false",
+                                ":funcformat": "1",
+                                ":funccollid": "0",
+                                ":inputcollid": "0",
+                                ":args": [
+                                  {
+                                    "@": "VAR",
+                                    ":varno": "1",
+                                    ":varattno": "7",
+                                    ":vartype": "23",
+                                    ":vartypmod": "-1",
+                                    ":varcollid": "0",
+                                    ":varnullingrels": [
+                                      "b"
+                                    ],
+                                    ":varlevelsup": "0",
+                                    ":varnosyn": "1",
+                                    ":varattnosyn": "7"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "1746",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "1",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "CONST",
+                        ":consttype": "1700",
+                        ":consttypmod": "-1",
+                        ":constcollid": "0",
+                        ":constlen": "-1",
+                        ":constbyval": "false",
+                        ":constisnull": "false",
+                        ":constvalue": {
+                          "values": [
+                            "8",
+                            {
+                              "bytes": [
+                                "32",
+                                "0",
+                                "0",
+                                "0",
+                                "253",
+                                "132",
+                                "232",
+                                "3"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "bindings": {
+        "funcid": [
+          {
+            "oid": 316,
+            "object": "float8(integer)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8(integer)\n RETURNS double precision\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$i4tod$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 1395,
+            "object": "abs(double precision)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.abs(double precision)\n RETURNS double precision\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT\nAS $function$float8abs$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": false,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 1746,
+            "object": "float8(numeric)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8(numeric)\n RETURNS double precision\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT\nAS $function$numeric_float8$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": false,
+            "proparallel": "s",
+            "proacl": null
+          }
+        ],
+        "opno": [
+          {
+            "oid": 96,
+            "object": "=(integer,integer)"
+          },
+          {
+            "oid": 521,
+            "object": ">(integer,integer)"
+          },
+          {
+            "oid": 592,
+            "object": "-(double precision,double precision)"
+          },
+          {
+            "oid": 593,
+            "object": "/(double precision,double precision)"
+          },
+          {
+            "oid": 673,
+            "object": "<=(double precision,double precision)"
+          },
+          {
+            "oid": 675,
+            "object": ">=(double precision,double precision)"
+          }
+        ],
+        "opfuncid": [
+          {
+            "oid": 65,
+            "object": "int4eq(integer,integer)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.int4eq(integer, integer)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$int4eq$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 147,
+            "object": "int4gt(integer,integer)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.int4gt(integer, integer)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$int4gt$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 217,
+            "object": "float8div(double precision,double precision)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8div(double precision, double precision)\n RETURNS double precision\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT\nAS $function$float8div$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": false,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 219,
+            "object": "float8mi(double precision,double precision)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8mi(double precision, double precision)\n RETURNS double precision\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT\nAS $function$float8mi$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": false,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 296,
+            "object": "float8le(double precision,double precision)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8le(double precision, double precision)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$float8le$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 298,
+            "object": "float8ge(double precision,double precision)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8ge(double precision, double precision)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$float8ge$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          }
+        ],
+        "consttype": [
+          {
+            "oid": 23,
+            "object": "integer"
+          },
+          {
+            "oid": 1700,
+            "object": "numeric"
+          }
+        ],
+        "vartype": [
+          {
+            "oid": 23,
+            "object": "integer"
+          },
+          {
+            "oid": 701,
+            "object": "double precision"
+          }
+        ],
+        "resulttype": [],
+        "funcresulttype": [
+          {
+            "oid": 701,
+            "object": "double precision"
+          }
+        ],
+        "opresulttype": [
+          {
+            "oid": 16,
+            "object": "boolean"
+          },
+          {
+            "oid": 701,
+            "object": "double precision"
+          }
+        ]
+      }
+    },
+    "ck_smear_summary_probabilities": {
+      "definition": "CHECK ((((classified_cell_count = 0) AND (maximum_probability_parasitized IS NULL) AND (mean_probability_parasitized IS NULL) AND (median_probability_parasitized IS NULL)) OR ((classified_cell_count > 0) AND (maximum_probability_parasitized >= (0)::double precision) AND (maximum_probability_parasitized <= (1)::double precision) AND (mean_probability_parasitized >= (0)::double precision) AND (mean_probability_parasitized <= (1)::double precision) AND (median_probability_parasitized >= (0)::double precision) AND (median_probability_parasitized <= (1)::double precision))))",
+      "tree": "{BOOLEXPR :boolop or :args ({BOOLEXPR :boolop and :args ({OPEXPR :opno 96 :opfuncid 65 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 7 :vartype 23 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 7 :location -1} {CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1} {NULLTEST :arg {VAR :varno 1 :varattno 13 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 13 :location -1} :nulltesttype 0 :argisrow false :location -1} {NULLTEST :arg {VAR :varno 1 :varattno 14 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 14 :location -1} :nulltesttype 0 :argisrow false :location -1} {NULLTEST :arg {VAR :varno 1 :varattno 15 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 15 :location -1} :nulltesttype 0 :argisrow false :location -1}) :location -1} {BOOLEXPR :boolop and :args ({OPEXPR :opno 521 :opfuncid 147 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 7 :vartype 23 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 7 :location -1} {CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1} {OPEXPR :opno 675 :opfuncid 298 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 13 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 13 :location -1} {FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1}) :location -1} {OPEXPR :opno 673 :opfuncid 296 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 13 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 13 :location -1} {FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 1 0 0 0 0 0 0 0 ]}) :location -1}) :location -1} {OPEXPR :opno 675 :opfuncid 298 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 14 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 14 :location -1} {FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1}) :location -1} {OPEXPR :opno 673 :opfuncid 296 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 14 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 14 :location -1} {FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 1 0 0 0 0 0 0 0 ]}) :location -1}) :location -1} {OPEXPR :opno 675 :opfuncid 298 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 15 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 15 :location -1} {FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 0 0 0 0 0 0 0 0 ]}) :location -1}) :location -1} {OPEXPR :opno 673 :opfuncid 296 :opresulttype 16 :opretset false :opcollid 0 :inputcollid 0 :args ({VAR :varno 1 :varattno 15 :vartype 701 :vartypmod -1 :varcollid 0 :varnullingrels (b) :varlevelsup 0 :varnosyn 1 :varattnosyn 15 :location -1} {FUNCEXPR :funcid 316 :funcresulttype 701 :funcretset false :funcvariadic false :funcformat 1 :funccollid 0 :inputcollid 0 :args ({CONST :consttype 23 :consttypmod -1 :constcollid 0 :constlen 4 :constbyval true :constisnull false :location -1 :constvalue 4 [ 1 0 0 0 0 0 0 0 ]}) :location -1}) :location -1}) :location -1}) :location -1}",
+      "dependencies": [
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column classified_cell_count of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column maximum_probability_parasitized of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column mean_probability_parasitized of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "a",
+          "catalog": "pg_class",
+          "object": "column median_probability_parasitized of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column classified_cell_count of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column maximum_probability_parasitized of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column mean_probability_parasitized of table smear_analysis_summaries"
+        },
+        {
+          "deptype": "n",
+          "catalog": "pg_class",
+          "object": "column median_probability_parasitized of table smear_analysis_summaries"
+        }
+      ],
+      "canonical": {
+        "@": "BOOLEXPR",
+        ":boolop": "or",
+        ":args": [
+          {
+            "@": "BOOLEXPR",
+            ":boolop": "and",
+            ":args": [
+              {
+                "@": "OPEXPR",
+                ":opno": "96",
+                ":opfuncid": "65",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "7",
+                    ":vartype": "23",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "7"
+                  },
+                  {
+                    "@": "CONST",
+                    ":consttype": "23",
+                    ":consttypmod": "-1",
+                    ":constcollid": "0",
+                    ":constlen": "4",
+                    ":constbyval": "true",
+                    ":constisnull": "false",
+                    ":constvalue": {
+                      "values": [
+                        "4",
+                        {
+                          "bytes": [
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "@": "NULLTEST",
+                ":arg": {
+                  "@": "VAR",
+                  ":varno": "1",
+                  ":varattno": "13",
+                  ":vartype": "701",
+                  ":vartypmod": "-1",
+                  ":varcollid": "0",
+                  ":varnullingrels": [
+                    "b"
+                  ],
+                  ":varlevelsup": "0",
+                  ":varnosyn": "1",
+                  ":varattnosyn": "13"
+                },
+                ":nulltesttype": "0",
+                ":argisrow": "false"
+              },
+              {
+                "@": "NULLTEST",
+                ":arg": {
+                  "@": "VAR",
+                  ":varno": "1",
+                  ":varattno": "14",
+                  ":vartype": "701",
+                  ":vartypmod": "-1",
+                  ":varcollid": "0",
+                  ":varnullingrels": [
+                    "b"
+                  ],
+                  ":varlevelsup": "0",
+                  ":varnosyn": "1",
+                  ":varattnosyn": "14"
+                },
+                ":nulltesttype": "0",
+                ":argisrow": "false"
+              },
+              {
+                "@": "NULLTEST",
+                ":arg": {
+                  "@": "VAR",
+                  ":varno": "1",
+                  ":varattno": "15",
+                  ":vartype": "701",
+                  ":vartypmod": "-1",
+                  ":varcollid": "0",
+                  ":varnullingrels": [
+                    "b"
+                  ],
+                  ":varlevelsup": "0",
+                  ":varnosyn": "1",
+                  ":varattnosyn": "15"
+                },
+                ":nulltesttype": "0",
+                ":argisrow": "false"
+              }
+            ]
+          },
+          {
+            "@": "BOOLEXPR",
+            ":boolop": "and",
+            ":args": [
+              {
+                "@": "OPEXPR",
+                ":opno": "521",
+                ":opfuncid": "147",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "7",
+                    ":vartype": "23",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "7"
+                  },
+                  {
+                    "@": "CONST",
+                    ":consttype": "23",
+                    ":consttypmod": "-1",
+                    ":constcollid": "0",
+                    ":constlen": "4",
+                    ":constbyval": "true",
+                    ":constisnull": "false",
+                    ":constvalue": {
+                      "values": [
+                        "4",
+                        {
+                          "bytes": [
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0",
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "675",
+                ":opfuncid": "298",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "13",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "13"
+                  },
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "316",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "1",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "CONST",
+                        ":consttype": "23",
+                        ":consttypmod": "-1",
+                        ":constcollid": "0",
+                        ":constlen": "4",
+                        ":constbyval": "true",
+                        ":constisnull": "false",
+                        ":constvalue": {
+                          "values": [
+                            "4",
+                            {
+                              "bytes": [
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "673",
+                ":opfuncid": "296",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "13",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "13"
+                  },
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "316",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "1",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "CONST",
+                        ":consttype": "23",
+                        ":consttypmod": "-1",
+                        ":constcollid": "0",
+                        ":constlen": "4",
+                        ":constbyval": "true",
+                        ":constisnull": "false",
+                        ":constvalue": {
+                          "values": [
+                            "4",
+                            {
+                              "bytes": [
+                                "1",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "675",
+                ":opfuncid": "298",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "14",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "14"
+                  },
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "316",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "1",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "CONST",
+                        ":consttype": "23",
+                        ":consttypmod": "-1",
+                        ":constcollid": "0",
+                        ":constlen": "4",
+                        ":constbyval": "true",
+                        ":constisnull": "false",
+                        ":constvalue": {
+                          "values": [
+                            "4",
+                            {
+                              "bytes": [
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "673",
+                ":opfuncid": "296",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "14",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "14"
+                  },
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "316",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "1",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "CONST",
+                        ":consttype": "23",
+                        ":consttypmod": "-1",
+                        ":constcollid": "0",
+                        ":constlen": "4",
+                        ":constbyval": "true",
+                        ":constisnull": "false",
+                        ":constvalue": {
+                          "values": [
+                            "4",
+                            {
+                              "bytes": [
+                                "1",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "675",
+                ":opfuncid": "298",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "15",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "15"
+                  },
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "316",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "1",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "CONST",
+                        ":consttype": "23",
+                        ":consttypmod": "-1",
+                        ":constcollid": "0",
+                        ":constlen": "4",
+                        ":constbyval": "true",
+                        ":constisnull": "false",
+                        ":constvalue": {
+                          "values": [
+                            "4",
+                            {
+                              "bytes": [
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "@": "OPEXPR",
+                ":opno": "673",
+                ":opfuncid": "296",
+                ":opresulttype": "16",
+                ":opretset": "false",
+                ":opcollid": "0",
+                ":inputcollid": "0",
+                ":args": [
+                  {
+                    "@": "VAR",
+                    ":varno": "1",
+                    ":varattno": "15",
+                    ":vartype": "701",
+                    ":vartypmod": "-1",
+                    ":varcollid": "0",
+                    ":varnullingrels": [
+                      "b"
+                    ],
+                    ":varlevelsup": "0",
+                    ":varnosyn": "1",
+                    ":varattnosyn": "15"
+                  },
+                  {
+                    "@": "FUNCEXPR",
+                    ":funcid": "316",
+                    ":funcresulttype": "701",
+                    ":funcretset": "false",
+                    ":funcvariadic": "false",
+                    ":funcformat": "1",
+                    ":funccollid": "0",
+                    ":inputcollid": "0",
+                    ":args": [
+                      {
+                        "@": "CONST",
+                        ":consttype": "23",
+                        ":consttypmod": "-1",
+                        ":constcollid": "0",
+                        ":constlen": "4",
+                        ":constbyval": "true",
+                        ":constisnull": "false",
+                        ":constvalue": {
+                          "values": [
+                            "4",
+                            {
+                              "bytes": [
+                                "1",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0",
+                                "0"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "bindings": {
+        "funcid": [
+          {
+            "oid": 316,
+            "object": "float8(integer)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8(integer)\n RETURNS double precision\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$i4tod$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          }
+        ],
+        "opno": [
+          {
+            "oid": 96,
+            "object": "=(integer,integer)"
+          },
+          {
+            "oid": 521,
+            "object": ">(integer,integer)"
+          },
+          {
+            "oid": 673,
+            "object": "<=(double precision,double precision)"
+          },
+          {
+            "oid": 675,
+            "object": ">=(double precision,double precision)"
+          }
+        ],
+        "opfuncid": [
+          {
+            "oid": 65,
+            "object": "int4eq(integer,integer)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.int4eq(integer, integer)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$int4eq$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 147,
+            "object": "int4gt(integer,integer)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.int4gt(integer, integer)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$int4gt$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 296,
+            "object": "float8le(double precision,double precision)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8le(double precision, double precision)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$float8le$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          },
+          {
+            "oid": 298,
+            "object": "float8ge(double precision,double precision)",
+            "definition": "CREATE OR REPLACE FUNCTION pg_catalog.float8ge(double precision, double precision)\n RETURNS boolean\n LANGUAGE internal\n IMMUTABLE PARALLEL SAFE STRICT LEAKPROOF\nAS $function$float8ge$function$\n",
+            "provolatile": "i",
+            "proisstrict": true,
+            "prosecdef": false,
+            "proleakproof": true,
+            "proparallel": "s",
+            "proacl": null
+          }
+        ],
+        "consttype": [
+          {
+            "oid": 23,
+            "object": "integer"
+          }
+        ],
+        "vartype": [
+          {
+            "oid": 23,
+            "object": "integer"
+          },
+          {
+            "oid": 701,
+            "object": "double precision"
+          }
+        ],
+        "resulttype": [],
+        "funcresulttype": [
+          {
+            "oid": 701,
+            "object": "double precision"
+          }
+        ],
+        "opresulttype": [
+          {
+            "oid": 16,
+            "object": "boolean"
+          }
+        ]
+      }
+    }
+  }
+}

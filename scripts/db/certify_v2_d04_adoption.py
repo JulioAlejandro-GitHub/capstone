@@ -35,7 +35,12 @@ from alembic_v2.safety import (
     validate_server_snapshot,
 )
 
-E = ROOT / "docs/audits/e10_10_5d3_evidence"
+E = Path(
+    os.environ.get(
+        "PGV2_ADOPTION_EVIDENCE_DIR", ROOT / "docs/audits/e10_10_5d3_evidence"
+    )
+).resolve()
+E.mkdir(parents=True, exist_ok=True)
 PREVIOUS = ROOT / "docs/audits/e10_10_5d2_evidence/route_b"
 T = json.loads((PREVIOUS / "target.json").read_text())
 OLD = ROOT / "docs/audits/e10_10_5d_evidence"

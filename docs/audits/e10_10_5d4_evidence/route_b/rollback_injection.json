@@ -1,0 +1,9 @@
+{
+  "ddl_completed": 50,
+  "sqlstate_expected": "22012",
+  "head": [
+    {
+      "version_num": "20260922_01"
+    }
+  ]
+}

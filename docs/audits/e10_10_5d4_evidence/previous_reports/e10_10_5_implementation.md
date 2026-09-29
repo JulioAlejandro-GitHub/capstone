@@ -1,0 +1,8 @@
+# E10.10.5D.3 — Implementación D-04
+
+**D-04 aplicada; preflight aprobado; D bloqueada en catálogo final por D-05/D-06.**
+
+Único cambio al ejecutor: sustituir all(owner==migrator) por `function_guard.check_functions`. La guarda deriva el conjunto requerido de funciones propias del contrato legacy y las de extensión del certificado D-03. Exige inventario exacto, propiedades completas y dependencias nativas. Para propias valida el ACL exacto de la copia restaurada (--no-acl, NULL); para extensión compara la entrada entera contra Ruta A, sin excepción de propietario. La clasificación no depende de nombres ni admite funciones adicionales/reclasificadas.
+El certificado suplementario de dependencias se capturó solo en Ruta A aislada, después de verificar el hash nativo aprobado. 14 tests adicionales cubren las nueve categorías negativas y más casos. El manifiesto `6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be` y catálogo `a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2` siguen intactos.
+Runners nuevos registran sentencias sin parámetros DML, guardan snapshots/planes privados y permiten diagnóstico con rollback forzado sobre auxiliar. Los harness de inyección/repetición/restore están preparados pero no ejecutados tras el bloqueo.
+La aplicación real alcanzó reconciliación de 102 tablas y falló al cotejar catálogo. No hubo promoción Alembic ni commit. Rollback exacto verificado en la copia y en una auxiliar diagnóstica. No se corrigieron D-05/D-06 ni se cambió baseline. [Nueve puntos](e10_10_5_route_b_results.md), [resolución](e10_10_5d_structural_resolution.md), [implementación anterior](e10_10_5d3_evidence/pre_d3_e10_10_5_implementation.md).

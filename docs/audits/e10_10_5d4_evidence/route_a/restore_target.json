@@ -1,0 +1,14 @@
+{
+  "authorized_stage": "E10.10.5B",
+  "gate_a_approved": true,
+  "recertification_stage": "E10.10.5D.4",
+  "decision": "D-05/D-06",
+  "isolation_id": "e662bcac-b2fb-4f14-8344-84f50a23811c",
+  "container_name": "capstone_v2_isolated_e662bcacb2fb",
+  "volume": "capstone_v2_isolated_e662bcacb2fb",
+  "database": "capstone_v2_isolated_e662bcacb2fb_restore",
+  "host_port": 55481,
+  "container_id": "1b64b1d1fea30c9c1d00dcf144672d011418bbd16bd5444532e2cc2507ca7b5b",
+  "postgres_system_identifier": "7691087240586227755",
+  "database_oid": 25848
+}

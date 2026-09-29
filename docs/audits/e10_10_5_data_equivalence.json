@@ -1,19 +1,422 @@
 {
-  "stage": "E10.10.5D.3",
-  "status": "NOT_CERTIFIED",
-  "reason": "Final catalog mismatch: D-05 generated column and D-06 CHECK representations",
-  "adapter_applied": true,
-  "source_backup_sha256": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6",
-  "preservation": {
-    "tables": 97,
-    "counts_and_hashes_equal_to_original_D": true,
-    "sequence": {
-      "last_value": 1,
-      "is_called": false
+  "stage": "E10.10.5D.4",
+  "status": "CERTIFIED_ON_ISOLATED_COPY",
+  "source_tables": 97,
+  "destination_application_tables": 102,
+  "restore_tables_including_alembic": 103,
+  "preserved_tables_exact": {
+    "artifacts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
-    "source_backup_sha256": "fa50d1dedb10e2a04aa99125143f2b74c213eceb679db1e69ffc1d9a882b71f6"
+    "assessment_artifacts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "assessment_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "assessment_campaign_consumers": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "assessment_final_locks": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "assessment_identities": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "audit_events": {
+      "count": 2,
+      "sha256": "e0acc4d50b2d69e78d40636671ff6b813a9fdfef80b645dd4a97e15d0f8f3ba9"
+    },
+    "blood_samples": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "campaign_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "campaign_controlled_requests": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "campaign_execution_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "campaign_members": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "campaign_technical_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_classification_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_classification_inputs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_classification_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_classification_runs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_crops": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_detection_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_detection_runs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_detections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_predictions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "clinical_identities": {
+      "count": 201,
+      "sha256": "2ebdc82b4a484074f0ddaf665033f687fa5c61c5d665fb1fb7e2109a8f0272f7"
+    },
+    "dataset_materialization_activations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "dataset_materializations": {
+      "count": 1,
+      "sha256": "ca3357120e23709a1f91662d18b7933e6500d744912156a3b610fd431d3fc53e"
+    },
+    "dataset_source_records": {
+      "count": 27558,
+      "sha256": "57f77d0feab5fea9f0411f8bedc057db54ad97d2c9407d42324e4d4ae7082af4"
+    },
+    "dataset_split_assignments": {
+      "count": 27558,
+      "sha256": "53adf2c62bc806b10c2b9c4930238d015b328ba98fc0c4bc795d647d10852b58"
+    },
+    "dataset_split_images": {
+      "count": 55116,
+      "sha256": "5bc01759b351cc39f7bca6fa405debdc566e598370170d928f9ad130b1f7b8bd"
+    },
+    "dataset_split_statistics": {
+      "count": 1,
+      "sha256": "27b43dea0cea2bff7d222901384ccf96c2e187dbb3e23a6cb7a3c9540c95539b"
+    },
+    "dataset_split_validation_checks": {
+      "count": 12,
+      "sha256": "124a5a3704d9e8bd5e338281337577820cb6573ed8cfc61c48bc9d5b503872f4"
+    },
+    "dataset_splits": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "dataset_version_sources": {
+      "count": 1,
+      "sha256": "2db2f389a4a487a311b09ed2ab058ce11f33d070da1630bf4517dd6756ee5935"
+    },
+    "dataset_versions": {
+      "count": 1,
+      "sha256": "9984c9efa3137cb74445d1e63a33d757d86375a1635b2d46aaa04f06f049e901"
+    },
+    "datasets": {
+      "count": 2,
+      "sha256": "4dc64c90fe21fc2ed725f9dd2b2ae893b2abce6bcaa4cb5654c285c92a1cc700"
+    },
+    "deployed_model_versions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "environment_packages": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "errors": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "execution_logs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "experiment_execution_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "experiment_execution_gate": {
+      "count": 1,
+      "sha256": "de8ef5c23dd4bbff0d8bbb2452212585d27d7a33ba28d343aaec70af7a9452c0"
+    },
+    "experimental_campaigns": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "experiments": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "identity_evidence": {
+      "count": 27558,
+      "sha256": "bedf835b80b7fd8259edc24b7e74f776bb40477ab5d6036e1e68577ad12b0bcd"
+    },
+    "image_analysis_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "image_connected_components": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "image_ingestion_batches": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "image_quality_assessments": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "local_execution_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "microscopy_analysis_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "microscopy_analysis_run_images": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "microscopy_analysis_runs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "microscopy_images": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "model_governance_backfill_audit": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "model_versions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "models": {
+      "count": 3,
+      "sha256": "a19bb74c06084c27d0cb864d0d2044799608314fdfbf4ae3ea62331dd937c72b"
+    },
+    "quality_assessment_queue_items": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "quality_gate_decisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "research_subjects": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "roles": {
+      "count": 5,
+      "sha256": "7b2eb91778b871f95b005daaabcba78b4cf4c7af1e1f779ee9949fd0ca35248d"
+    },
+    "run_checkpoint_policy": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "run_dataset_images": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "run_image_predictions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "run_io_records": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "run_lineage": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "run_model_deployments": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "schema_migrations": {
+      "count": 22,
+      "sha256": "13e2e633d8d2aeee1444a0cd60303a8e8171a5f7e58352193daae3de04510119"
+    },
+    "scientific_cases": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "scientific_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "scientific_validation_annotation_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "scientific_validation_annotations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "scientific_validation_classification_runs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "scientific_validation_detection_runs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "scientific_validation_images": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "scientific_validation_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "smear_analysis_summaries": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "smear_slides": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "stage2_model_publication_events": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "synthetic_data_runs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "train_execution_records": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "train_execution_revisions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "train_execution_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_roles": {
+      "count": 1,
+      "sha256": "833aaaacc7a7993a2192cbb157a8b21e55e8b424431909c13293bdd7d681bfef"
+    },
+    "users": {
+      "count": 1,
+      "sha256": "3a320a0930233abc58aec1f9bf25ab80d4842d8953ba23af45061282c8ece2f3"
+    }
   },
-  "reference_tables": {
+  "projected_tables_reconciled": {
+    "assessment_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "campaign_configurations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "cell_explanations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "evaluation_ensemble_members": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "explainability_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "predictions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "run_clinical_metrics": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "run_configurations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "run_metrics": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "run_threshold_calibration": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "runs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "stage2_model_publications": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "training_history": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xai_artifacts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xai_evidence": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xai_interpretations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xai_quantitative_evaluations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xai_specialist_reviews": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "source_inventory": {
     "alembic_version": {
       "count": 1,
       "sha256": "0f92e7096fe0420cc25af9d81d7eaf245045ae231599010d3ce9e777d881d977"
@@ -403,177 +806,41 @@
       "sha256": "3a320a0930233abc58aec1f9bf25ab80d4842d8953ba23af45061282c8ece2f3"
     }
   },
-  "route_a_restore": {
-    "passed": true,
-    "backup_sha256": "219b651a4ed9d9ec6c27f5bc26d998ad33893b7bd00dbb39ed8b42e3cb72465c",
-    "source_catalog": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
-    "restored_catalog": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2",
-    "source_data": "edda1543b349d9c34bfdc12c0c4af12718d774075d09422b59184794d9cc078d",
-    "restored_data": "edda1543b349d9c34bfdc12c0c4af12718d774075d09422b59184794d9cc078d",
-    "tables_compared": 103,
-    "source_sequence": {
-      "last_value": 2,
-      "is_called": true
-    },
-    "restored_sequence": {
-      "last_value": 2,
-      "is_called": true
-    }
+  "reference": {
+    "stage": "E10.10.5D.4",
+    "manifest_sha256": "f276f819aa8512492ed89a52f12d192c1ace6cde24eee967287d17cd5f05dd57",
+    "catalog_sha256": "6df01a4d0e8fbcfd3e65a23e1394902097e565adad6b1b99de56a90f342cfa68",
+    "previous_manifest": "6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be",
+    "previous_catalog": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2"
   },
-  "route_a_restore_scope": "new baseline plus synthetic fixtures; not legacy adoption",
-  "adopted_data_comparison_executed": true,
-  "previous_evidence": "e10_10_5d2_evidence/pre_d2_e10_10_5_data_equivalence.json",
-  "limits": [
-    "Reference hashes are from isolated restores of preserved source backup, not a new live operational snapshot.",
-    "No adopted database exists; preservation of restored source is not adoption equivalence.",
-    "Legacy runs/events/campaign tables are empty; no claim of populated historical coverage."
+  "head": [
+    {
+      "version_num": "pg_v2_baseline"
+    }
   ],
-  "adoption_committed": false,
-  "precommit_reconciliation": {
-    "successful_logged_statements": 838,
-    "failed_sql_statements": 0,
-    "ddl_statements": 316,
-    "application_tables_reconciled_before_catalog_check": 102,
-    "final_catalog_guard": "FINAL_CATALOG_MISMATCH",
-    "head_transition_executed": false,
-    "committed": false,
-    "data_checks_scope": "Precommit only; final catalog failed and transaction rolled back",
-    "reconciled_table_counts": {
-      "artifacts": 0,
-      "assessment_artifacts": 0,
-      "assessment_attempts": 0,
-      "assessment_campaign_consumers": 0,
-      "assessment_final_locks": 0,
-      "assessment_identities": 0,
-      "assessment_results": 0,
-      "audit_events": 2,
-      "blood_samples": 0,
-      "campaign_attempts": 0,
-      "campaign_configurations": 0,
-      "campaign_controlled_requests": 0,
-      "campaign_execution_events": 0,
-      "campaign_members": 0,
-      "campaign_technical_revisions": 0,
-      "cell_classification_events": 0,
-      "cell_classification_inputs": 0,
-      "cell_classification_reviews": 0,
-      "cell_classification_runs": 0,
-      "cell_crops": 0,
-      "cell_detection_events": 0,
-      "cell_detection_runs": 0,
-      "cell_detections": 0,
-      "cell_explanations": 0,
-      "cell_predictions": 0,
-      "clinical_identities": 201,
-      "dataset_materialization_activations": 0,
-      "dataset_materializations": 1,
-      "dataset_source_records": 27558,
-      "dataset_split_assignments": 27558,
-      "dataset_split_images": 55116,
-      "dataset_split_statistics": 1,
-      "dataset_split_validation_checks": 12,
-      "dataset_splits": 0,
-      "dataset_version_sources": 1,
-      "dataset_versions": 1,
-      "datasets": 2,
-      "deployed_model_versions": 0,
-      "environment_packages": 0,
-      "errors": 0,
-      "evaluation_ensemble_members": 0,
-      "evaluations": 0,
-      "execution_logs": 0,
-      "experiment_execution_events": 0,
-      "experiment_execution_gate": 1,
-      "experimental_campaigns": 0,
-      "experiments": 0,
-      "explainability_results": 0,
-      "identity_evidence": 27558,
-      "image_analysis_jobs": 0,
-      "image_connected_components": 0,
-      "image_ingestion_batches": 0,
-      "image_quality_assessments": 0,
-      "local_execution_jobs": 0,
-      "microscopy_analysis_events": 0,
-      "microscopy_analysis_run_images": 0,
-      "microscopy_analysis_runs": 0,
-      "microscopy_images": 0,
-      "model_governance_backfill_audit": 0,
-      "model_versions": 0,
-      "models": 3,
-      "predictions": 0,
-      "quality_assessment_queue_items": 0,
-      "quality_gate_decisions": 0,
-      "research_subjects": 0,
-      "roles": 5,
-      "run_checkpoint_policy": 0,
-      "run_clinical_metrics": 0,
-      "run_configurations": 0,
-      "run_dataset_images": 0,
-      "run_image_predictions": 0,
-      "run_io_records": 0,
-      "run_lineage": 0,
-      "run_metrics": 0,
-      "run_model_deployments": 0,
-      "run_threshold_calibration": 0,
-      "runs": 0,
-      "schema_migrations": 22,
-      "scientific_cases": 0,
-      "scientific_reviews": 0,
-      "scientific_validation_annotation_events": 0,
-      "scientific_validation_annotations": 0,
-      "scientific_validation_classification_runs": 0,
-      "scientific_validation_detection_runs": 0,
-      "scientific_validation_images": 0,
-      "scientific_validation_sessions": 0,
-      "smear_analysis_summaries": 0,
-      "smear_slides": 0,
-      "stage2_model_publication_events": 0,
-      "stage2_model_publications": 0,
-      "synthetic_data_runs": 0,
-      "train_execution_records": 0,
-      "train_execution_revisions": 0,
-      "train_execution_sessions": 0,
-      "training_history": 0,
-      "user_roles": 1,
-      "users": 1,
-      "xai_artifacts": 0,
-      "xai_evidence": 0,
-      "xai_interpretations": 0,
-      "xai_quantitative_evaluations": 0,
-      "xai_specialist_reviews": 0
-    }
+  "sequence": {
+    "last_value": 1,
+    "is_called": false
   },
-  "rollback_verification": {
-    "catalog_unchanged": true,
-    "all_97_tables_unchanged": true,
-    "head": [
-      {
-        "version_num": "20260922_01"
-      }
-    ],
-    "sequence": {
-      "last_value": 1,
-      "is_called": false
-    }
-  },
-  "diagnostic_rollback": {
+  "plan_sha256": "57b3b5fb9d58d12339913b2f62f3921a3d34b1ea94cbe05f6901d9c0b4504112",
+  "private_mapping_file_sha256": "c5190b70b94401500425387c15afca3f0f2e6e58feb32e7dae85937eb6387bd9",
+  "restored": {
     "passed": true,
-    "catalog_unchanged": true,
-    "all_tables_unchanged": true,
-    "tables": 97,
-    "before_sha256": "44bba39ec22880616e4398169cc405dfa7d3e209eb6a322b5aa66ee7029dbcb0",
-    "after_sha256": "44bba39ec22880616e4398169cc405dfa7d3e209eb6a322b5aa66ee7029dbcb0",
-    "head": [
-      {
-        "version_num": "20260922_01"
-      }
-    ],
+    "backup_sha256": "e296e94bafad1c4e6a36430943bdd3ca9be3343d58a9d2172ed8338d1c5102df",
+    "private_backup": "/private/tmp/e10_d04_lf3daa3f/adopted.dump",
+    "catalog": "1c9f924dc7394a4c691a0a23b61d23e1a4debbc41cc34a7cbbc0b1a8ecc35ae9",
+    "data": "4b7012cae130aa21dd07b1a66453cf3244e58e95862dc035d864185e539d66c1",
+    "tables": 103,
     "sequence": {
       "last_value": 1,
       "is_called": false
     },
-    "purpose": "diagnostic only; not adoption certification"
+    "owners_acl_equal": true,
+    "head": "pg_v2_baseline"
   },
-  "certified_adopted_database_exists": false,
-  "comparison_scope": "102 application tables reconciled transiently before failed final catalog guard; transaction rolled back. Not a durable adopted result."
+  "limits": [
+    "Legacy E10 events, campaigns, assessments and external evaluations are empty; preservation here is vacuous for those rows. Synthetic and negative tests cover contracts.",
+    "Scientific files and operational PostgreSQL not accessed or changed. Private source rows and mappings are retained outside repository."
+  ],
+  "reconciliation_rules": "adoption_v2.execute.reconcile: exact protected row hashes; projected values/types per approved plan; existing metric decimal tolerance 1e-12 unchanged; no new rounding, data repair or regenerated history."
 }

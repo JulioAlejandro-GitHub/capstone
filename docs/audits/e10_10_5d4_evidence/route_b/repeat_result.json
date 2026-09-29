@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "status": "already_adopted",
+  "catalog": "1c9f924dc7394a4c691a0a23b61d23e1a4debbc41cc34a7cbbc0b1a8ecc35ae9",
+  "data": "4b7012cae130aa21dd07b1a66453cf3244e58e95862dc035d864185e539d66c1",
+  "physical_rows_equal": true,
+  "tables": 103,
+  "sequence": {
+    "last_value": 1,
+    "is_called": false
+  }
+}

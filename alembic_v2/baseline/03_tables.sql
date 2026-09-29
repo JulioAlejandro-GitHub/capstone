@@ -9,7 +9,7 @@ CREATE TABLE public.assessment_campaign_consumers (campaign_id uuid NOT NULL, me
 
 CREATE TABLE public.assessment_final_locks (id uuid NOT NULL, identity_hash text NOT NULL, evidence jsonb NOT NULL, created_at timestamp with time zone DEFAULT clock_timestamp() NOT NULL);
 
-CREATE TABLE public.assessment_identities (id uuid NOT NULL, identity_hash text NOT NULL, training_run_id uuid NOT NULL, kind text NOT NULL, identity jsonb NOT NULL, canonical_identity text NOT NULL, structural_hash text, created_at timestamp with time zone DEFAULT clock_timestamp() NOT NULL);
+CREATE TABLE public.assessment_identities (id uuid NOT NULL, identity_hash text NOT NULL, training_run_id uuid NOT NULL, kind text NOT NULL, identity jsonb NOT NULL, canonical_identity text NOT NULL, structural_hash text GENERATED ALWAYS AS (assessment_structural_hash(identity)) STORED, created_at timestamp with time zone DEFAULT clock_timestamp() NOT NULL);
 
 CREATE TABLE public.assessment_results (attempt_id uuid NOT NULL, sample_id uuid NOT NULL, payload jsonb NOT NULL);
 

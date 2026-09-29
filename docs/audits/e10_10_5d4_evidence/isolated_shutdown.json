@@ -1,0 +1,26 @@
+[
+  {
+    "container_id": "09aeb81b36210177134e73c1d735967f2d053e6d4fb8723e3783a14a43787cc3",
+    "name": "/capstone_v2_isolated_8c5114865703",
+    "system_identifier": "7691066755790737451",
+    "exit_code": 0,
+    "running": false,
+    "volumes_retained": true
+  },
+  {
+    "container_id": "31a156221505e7bca249072281dd793833dbb91a5bd03de50114748463c2a194",
+    "name": "/capstone_v2_isolated_e09f641a23c5",
+    "system_identifier": "7691073295770107948",
+    "exit_code": 0,
+    "running": false,
+    "volumes_retained": true
+  },
+  {
+    "container_id": "1b64b1d1fea30c9c1d00dcf144672d011418bbd16bd5444532e2cc2507ca7b5b",
+    "name": "/capstone_v2_isolated_e662bcacb2fb",
+    "system_identifier": "7691087240586227755",
+    "exit_code": 0,
+    "running": false,
+    "volumes_retained": true
+  }
+]

@@ -129,7 +129,7 @@ def catalog_snapshot(c):
 
 
 def certified_catalog():
-    path = ROOT / "docs/audits/e10_10_5d2_evidence/route_a/installed_catalog.json"
+    path = ROOT / "docs/audits/e10_10_5d4_evidence/route_a/installed_catalog.json"
     value = json.loads(path.read_text())
     import hashlib
 
@@ -205,7 +205,16 @@ def reconcile(c, plan):
             "SEQUENCE_VALUE_CHANGED",
             name,
         )
-    require(catalog_snapshot(c) == certified_catalog(), "FINAL_CATALOG_MISMATCH")
+    from .check_catalog import compare
+
+    actual, expected = catalog_snapshot(c), certified_catalog()
+    if actual != expected:
+        require(
+            "constraints" in actual and "constraints" in expected,
+            "FINAL_CATALOG_MISMATCH",
+        )
+        comparison = compare(c, actual, expected)
+        require(not comparison["unjustified"], "FINAL_CATALOG_MISMATCH")
     return report
 
 

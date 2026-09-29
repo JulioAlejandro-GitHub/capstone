@@ -1,3 +1,17 @@
+# Resolución estructural vigente — E10.10.5D.4
+
+**E10.10.5D — ADOPCIÓN CERTIFICADA SOBRE COPIA AISLADA. PENDIENTE DE REVISIÓN Y APROBACIÓN.**
+
+D-05 aplicada: columna text nullable, GENERATED ALWAYS AS (assessment_structural_hash(identity)) STORED, attgenerated=s. Funciones emitidas antes de tablas en orden de dependencias; cuerpo y resolución preservados. No se recalcularon datos históricos. INSERT omitiendo el campo calcula hash; escritura explícita rechazada 428C9; UPDATE del identity regenera en fixture TEMP que copia la columna real. Tipo, expresión, función y tres dependencias son exactamente legacy; véase contract_continuity.json.
+
+D-06: equivalencia individual demostrada de los cuatro CHECK. **[Matriz completa: expresiones legacy/Ruta A, dependencias, objetos resueltos, pruebas y decisión](e10_10_5d4_evidence/d06_matrix.md).** La conclusión combina árboles nativos y lógica ternaria con 6.420 comprobaciones CHECK efectivas. No se modificaron los CHECK; comparador limitado y tests negativos impiden ocultar cambios de operadores, casts, collation, función, dependencia o restricciones ajenas.
+
+Ruta A nueva recertificada y Ruta B adoptada/reconciliada, con rollback, repetición y restore. Manifest y catálogo vigentes en `e10_10_5d4_evidence/route_a/certificate.json`; certificado D-03 conserva carácter histórico. Contrato D-04 de pgcrypto y dependencias intacto. [Nueve puntos, comandos, incidencias y resultados](e10_10_5_route_b_results.md).
+
+---
+
+# Historial previo (no describe el estado vigente)
+
 # E10.10.5D.3 — D-04 resuelta; D-05/D-06 pendientes
 
 **E10.10.5D — BLOQUEADA. GATE D NO APROBABLE.**

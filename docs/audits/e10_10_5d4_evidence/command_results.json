@@ -1,0 +1,104 @@
+[
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py setup",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py preflight",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py upgrade",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py catalog",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py d03",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py d05",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py server",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py rollback",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py idempotence",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "malaria_dl_local_project/.venv/bin/python scripts/db/recertify_v2_d05.py backup_restore",
+    "exit_code": 0,
+    "detail": "Executed; expanded subprocess commands in route_a/orchestration.jsonl"
+  },
+  {
+    "command": "PGV2_ADOPTION_EVIDENCE_DIR=docs/audits/e10_10_5d4_evidence/route_b PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/certify_v2_d04_adoption.py preflight",
+    "exit_code": 0
+  },
+  {
+    "command": "PGV2_ADOPTION_EVIDENCE_DIR=docs/audits/e10_10_5d4_evidence/route_b PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/certify_v2_d04_adoption.py apply",
+    "exit_code": 0
+  },
+  {
+    "command": "PGV2_ADOPTION_EVIDENCE_DIR=docs/audits/e10_10_5d4_evidence/route_b PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/test_v2_d04_operations.py rollback",
+    "exit_code": 0
+  },
+  {
+    "command": "PGV2_ADOPTION_EVIDENCE_DIR=docs/audits/e10_10_5d4_evidence/route_b PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/test_v2_d04_operations.py repeat",
+    "exit_code": 0
+  },
+  {
+    "command": "PGV2_ADOPTION_EVIDENCE_DIR=docs/audits/e10_10_5d4_evidence/route_b PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/test_v2_d04_operations.py backup_restore",
+    "exit_code": 0
+  },
+  {
+    "command": "PGV2_ADOPTION_EVIDENCE_DIR=docs/audits/e10_10_5d4_evidence/route_b PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/report_v2_d05_adoption.py ",
+    "exit_code": 0
+  },
+  {
+    "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/diagnose_v2_d06.py",
+    "exit_code": 0
+  },
+  {
+    "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/capture_v2_d05_certificate.py",
+    "exit_code": 0
+  },
+  {
+    "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/build_v2_baseline.py --write",
+    "exit_code": 0
+  },
+  {
+    "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/build_v2_baseline.py --check",
+    "exit_code": 0
+  },
+  {
+    "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python scripts/db/validate_v2_static.py --report docs/audits/e10_10_5d4_evidence/static_results.json",
+    "exit_code": 0
+  },
+  {
+    "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python -m unittest discover -s tests/adoption_v2",
+    "exit_code": 0
+  },
+  {
+    "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python -m unittest discover -s tests/db_v2",
+    "exit_code": 0
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "injected_after_ddl": 50,
+  "catalog_before": "9cb85908f380a4bd6490c73646bc3b921c17a18a778eb25d356d33d44958ea94",
+  "catalog_after": "9cb85908f380a4bd6490c73646bc3b921c17a18a778eb25d356d33d44958ea94",
+  "tables_compared": 97,
+  "data_before": "71163d6dd4ff414117492d5ad4c28be2727d8a6f5fa32ae344ebf9bd089f729e",
+  "data_after": "71163d6dd4ff414117492d5ad4c28be2727d8a6f5fa32ae344ebf9bd089f729e",
+  "sequence": {
+    "last_value": 1,
+    "is_called": false
+  },
+  "head": [
+    {
+      "version_num": "20260922_01"
+    }
+  ]
+}

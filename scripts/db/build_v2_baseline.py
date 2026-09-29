@@ -78,6 +78,11 @@ def d03_column(table, col):
         return parse_sql(
             "CREATE TABLE x (id bigint GENERATED ALWAYS AS IDENTITY NOT NULL)"
         )[0].stmt.tableElts[0]
+    if (table, col.colname) == ("assessment_identities", "structural_hash"):
+        assert render(col) == "structural_hash text"
+        return parse_sql(
+            "CREATE TABLE x (structural_hash text GENERATED ALWAYS AS (assessment_structural_hash(identity)) STORED)"
+        )[0].stmt.tableElts[0]
     return col
 
 
@@ -259,6 +264,36 @@ def compile_spec(source):
         "public_schema",
         "REVOKE ALL ON SCHEMA public FROM PUBLIC",
     )
+    deps = {}
+    for name, function in functions.items():
+        body = next(o.arg[0].sval for o in function.options if o.defname == "as")
+        deps[name] = {
+            n
+            for n in functions
+            if n != name
+            and re.search(r"\b" + re.escape(n.split(".")[-1]) + r"\s*\(", body)
+        }
+
+    def emit_function(name, f, phase):
+        options = {o.defname: o for o in f.options}
+        body = options["as"].arg[0].sval
+        emit(
+            phase,
+            "function",
+            name,
+            function_sql[name],
+            arguments=[render(p) for p in f.parameters or ()],
+            body_sha256=digest(body.encode()),
+            dependencies=sorted(deps[name]),
+        )
+
+    early_functions = json.loads((ROOT / "alembic_v2/d05_contract.json").read_text())[
+        "functions_before_tables"
+    ]
+    for name in early_functions:
+        assert deps[name] <= set(early_functions[: early_functions.index(name)])
+        emit_function(name, functions[name], "02_generated_functions")
+
     for seq in sequence:
         emit("02_sequences", "sequence", seq.sequence.relname, render(seq))
     for t in sorted(tables):
@@ -297,31 +332,14 @@ def compile_spec(source):
                 ),
                 "default": default,
                 "generated": generated,
+                "attgenerated": "s" if generated is not None else "",
                 "collation": render(col.collClause) if col.collClause else None,
             }
         emit("03_tables", "table", t, render(table), columns=column_manifest)
 
-    deps = {}
-    for name, function in functions.items():
-        body = next(o.arg[0].sval for o in function.options if o.defname == "as")
-        deps[name] = {
-            n
-            for n in functions
-            if n != name
-            and re.search(r"\b" + re.escape(n.split(".")[-1]) + r"\s*\(", body)
-        }
     for name, f in ordered(functions, deps):
-        options = {o.defname: o for o in f.options}
-        body = options["as"].arg[0].sval
-        emit(
-            "04_functions",
-            "function",
-            name,
-            function_sql[name],
-            arguments=[render(p) for p in f.parameters or ()],
-            body_sha256=digest(body.encode()),
-            dependencies=sorted(deps[name]),
-        )
+        if name not in early_functions:
+            emit_function(name, f, "04_functions")
 
     for t, c in constraints:
         if c.contype in (CT.CONSTR_PRIMARY, CT.CONSTR_UNIQUE):
@@ -505,6 +523,12 @@ def artifacts():
         "d03_contract_sha256": digest(
             (ROOT / "alembic_v2/d03_contract.json").read_bytes()
         ),
+        "d05_contract_sha256": digest(
+            (ROOT / "alembic_v2/d05_contract.json").read_bytes()
+        ),
+        "generated_column_contracts": [
+            json.loads((ROOT / "alembic_v2/d05_contract.json").read_text())
+        ],
         "identity_sequences": [
             json.loads((ROOT / "alembic_v2/d03_contract.json").read_text())["identity"]
         ],

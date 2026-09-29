@@ -1,0 +1,30 @@
+{
+  "campaign_controlled_requests_reason_check": {
+    "equivalent": true,
+    "tests_each": 10,
+    "canonical_sha256": "de4f8a950942dbc4b95520a40938c47673764712c2068209640ebb3dc2037236",
+    "same_resolved_objects": true,
+    "same_dependencies": true
+  },
+  "ck_cell_prediction_label_index": {
+    "equivalent": true,
+    "tests_each": 1920,
+    "canonical_sha256": "83f4eecb2c93d45397e705841d46915da5ded448611bb1eba5591da43fb2de91",
+    "same_resolved_objects": true,
+    "same_dependencies": true
+  },
+  "ck_smear_summary_fraction": {
+    "equivalent": true,
+    "tests_each": 200,
+    "canonical_sha256": "362b5fe0d8837a52953fb2cb1400bc405f0066d0e987722bf731e59c8ca68dbd",
+    "same_resolved_objects": true,
+    "same_dependencies": true
+  },
+  "ck_smear_summary_probabilities": {
+    "equivalent": true,
+    "tests_each": 1080,
+    "canonical_sha256": "0a45118f7255a593bd7416d063e1730d2c23f0a55cc5096ea7fa06948b0ca8dc",
+    "same_resolved_objects": true,
+    "same_dependencies": true
+  }
+}

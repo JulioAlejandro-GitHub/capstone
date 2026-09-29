@@ -212,8 +212,42 @@ def catalog():
                     "actual": sequences,
                 }
             )
+    for generated in manifest.get("generated_column_contracts", []):
+        cols = [
+            r
+            for r in actual["columns"]
+            if r["relation"] == generated["table"] and r["name"] == generated["column"]
+        ]
+        if (
+            len(cols) != 1
+            or any(
+                cols[0][k] != generated[v]
+                for k, v in [
+                    ("type", "type"),
+                    ("attgenerated", "attgenerated"),
+                    ("expression", "expression"),
+                ]
+            )
+            or cols[0]["attnotnull"] == generated["nullable"]
+        ):
+            direct.append(
+                {
+                    "generated_column": generated["table"] + "." + generated["column"],
+                    "actual": cols,
+                }
+            )
+        deps = [
+            {k: r[k] for k in ("deptype", "referenced_catalog", "referenced_object")}
+            for r in actual["default_dependencies"]
+            if r["relation"] == generated["table"]
+            and r["column_name"] == generated["column"]
+        ]
+        if deps != generated["dependencies"]:
+            direct.append(
+                {"generated_dependencies": generated["table"], "actual": deps}
+            )
     result = {
-        "stage": "E10.10.5D.2" if t.get("decision") == "D-03" else "E10.10.5B",
+        "stage": t.get("recertification_stage", "E10.10.5B"),
         "comparison_executed": True,
         "method": "PostgreSQL 17 canonical rendering of verified manifest statements in a separate empty isolated database, plus direct manifest metadata checks",
         "manifest_sha256": hashlib.sha256(

@@ -1,0 +1,58 @@
+{
+  "passed": true,
+  "manifest_sha256": "f276f819aa8512492ed89a52f12d192c1ace6cde24eee967287d17cd5f05dd57",
+  "catalog_sha256": "6df01a4d0e8fbcfd3e65a23e1394902097e565adad6b1b99de56a90f342cfa68",
+  "d04_function_dependencies_unchanged": true,
+  "generated_columns_exact_legacy": true,
+  "four_check_references_reproduced": true,
+  "d06_diagnosed_contract_identical_in_new_route_a": true,
+  "generated_native_entries": {
+    "columns": [
+      {
+        "relation": "assessment_identities",
+        "attnum": 7,
+        "name": "structural_hash",
+        "type": "text",
+        "attnotnull": false,
+        "attidentity": "",
+        "attgenerated": "s",
+        "expression": "assessment_structural_hash(identity)",
+        "collation": "\"default\"",
+        "attacl": null
+      }
+    ],
+    "default_functions": [
+      {
+        "relation": "assessment_identities",
+        "column_name": "structural_hash",
+        "function_schema": "public",
+        "function_name": "assessment_structural_hash",
+        "arguments": "v jsonb",
+        "result": "text"
+      }
+    ],
+    "default_dependencies": [
+      {
+        "relation": "assessment_identities",
+        "column_name": "structural_hash",
+        "deptype": "i",
+        "referenced_catalog": "pg_class",
+        "referenced_object": "column structural_hash of table assessment_identities"
+      },
+      {
+        "relation": "assessment_identities",
+        "column_name": "structural_hash",
+        "deptype": "n",
+        "referenced_catalog": "pg_class",
+        "referenced_object": "column identity of table assessment_identities"
+      },
+      {
+        "relation": "assessment_identities",
+        "column_name": "structural_hash",
+        "deptype": "n",
+        "referenced_catalog": "pg_proc",
+        "referenced_object": "function assessment_structural_hash(jsonb)"
+      }
+    ]
+  }
+}

@@ -16,6 +16,10 @@ def load_baseline(directory=BASELINE):
         decision = (Path(__file__).parent / "d03_contract.json").read_bytes()
         if hashlib.sha256(decision).hexdigest() != manifest["d03_contract_sha256"]:
             raise RuntimeError("V2_D03_CONTRACT_CHECKSUM_MISMATCH")
+    if "d05_contract_sha256" in manifest:
+        decision = (Path(__file__).parent / "d05_contract.json").read_bytes()
+        if hashlib.sha256(decision).hexdigest() != manifest["d05_contract_sha256"]:
+            raise RuntimeError("V2_D05_CONTRACT_CHECKSUM_MISMATCH")
     resources = {}
     for name, expected in manifest["files"].items():
         if Path(name).name != name or not name.endswith(".sql"):

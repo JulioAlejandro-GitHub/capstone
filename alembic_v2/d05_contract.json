@@ -1,0 +1,30 @@
+{
+  "decision": "E10.10.5D.4 / D-05",
+  "table": "assessment_identities",
+  "column": "structural_hash",
+  "type": "text",
+  "nullable": true,
+  "attgenerated": "s",
+  "expression": "assessment_structural_hash(identity)",
+  "functions_before_tables": [
+    "public.assessment_canonical",
+    "public.assessment_structural_hash"
+  ],
+  "dependencies": [
+    {
+      "deptype": "i",
+      "referenced_catalog": "pg_class",
+      "referenced_object": "column structural_hash of table assessment_identities"
+    },
+    {
+      "deptype": "n",
+      "referenced_catalog": "pg_class",
+      "referenced_object": "column identity of table assessment_identities"
+    },
+    {
+      "deptype": "n",
+      "referenced_catalog": "pg_proc",
+      "referenced_object": "function assessment_structural_hash(jsonb)"
+    }
+  ]
+}
