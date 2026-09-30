@@ -1,0 +1,18 @@
+{
+  "database": [
+    {
+      "datacl": "{capstone_v2_migrator=CTc/capstone_v2_migrator,capstone_v2_runtime=c/capstone_v2_migrator}",
+      "datname": "malaria_experiments",
+      "oid": 16386
+    }
+  ],
+  "julio": [],
+  "julio_authid": 0,
+  "roles": [
+    "capstone_v2_migrator",
+    "capstone_v2_runtime",
+    "postgres"
+  ],
+  "server_version": "17.9 (Debian 17.9-1.pgdg13+1)",
+  "sysid": "7691366089693499436"
+}

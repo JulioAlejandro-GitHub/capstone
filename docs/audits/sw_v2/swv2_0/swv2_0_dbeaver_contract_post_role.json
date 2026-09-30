@@ -1,0 +1,56 @@
+{
+  "alembic_version": [
+    "pg_v2_baseline"
+  ],
+  "application_tables": 104,
+  "authenticated": true,
+  "contract": {
+    "credential": "Compose .env POSTGRES_PASSWORD (not stored)",
+    "database": "malaria_experiments",
+    "host": "127.0.0.1",
+    "jdbc": "jdbc:postgresql://127.0.0.1:5432/malaria_experiments",
+    "port": 5432,
+    "role": "julio"
+  },
+  "dataset": {
+    "equals_dbv2_5": true,
+    "overlaps": {
+      "train/test": 0,
+      "train/val": 0,
+      "val/test": 0
+    },
+    "patients": 201,
+    "status": "FROZEN",
+    "test": 2685,
+    "total": 27558,
+    "train": 22180,
+    "validation": 2693
+  },
+  "role_flags": {
+    "rolcanlogin": true,
+    "rolname": "julio",
+    "rolsuper": true
+  },
+  "session": {
+    "database": "malaria_experiments",
+    "database_oid": 16386,
+    "role": "julio",
+    "server_version": "17.9 (Debian 17.9-1.pgdg13+1)",
+    "system_identifier": "7691366089693499436"
+  },
+  "split_assignments_readable": 27558,
+  "views": 33,
+  "visible_base_tables": 105,
+  "xai_explanations_present": false,
+  "xai_tables": [
+    "xai_artifacts",
+    "xai_evaluation_members",
+    "xai_evaluation_protocols",
+    "xai_evidence",
+    "xai_interpretations",
+    "xai_method_configurations",
+    "xai_quantitative_evaluations",
+    "xai_region_attributions",
+    "xai_specialist_reviews"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "executed_as": "postgres, database postgres, 127.0.0.1:5432 (Compose capstone_db); session log_statement=none, log_min_error_statement=panic",
+  "nature": "cluster-level login role; not part of pg_v2_baseline; no GRANT, no ACL/ownership change",
+  "rolbypassrls": false,
+  "rolcanlogin": true,
+  "rolcreatedb": false,
+  "rolcreaterole": false,
+  "roles_after": [
+    "capstone_v2_migrator",
+    "capstone_v2_runtime",
+    "julio",
+    "postgres"
+  ],
+  "rolinherit": true,
+  "rolname": "julio",
+  "rolreplication": false,
+  "rolsuper": true,
+  "scram": true,
+  "statement": "CREATE ROLE julio WITH LOGIN SUPERUSER PASSWORD <client-side SCRAM-SHA-256 verifier of existing Compose .env POSTGRES_PASSWORD; plaintext never sent, verifier not stored>"
+}

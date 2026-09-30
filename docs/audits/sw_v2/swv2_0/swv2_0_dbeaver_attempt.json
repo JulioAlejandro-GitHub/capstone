@@ -1,0 +1,10 @@
+{
+  "authenticated": false,
+  "database": "malaria_experiments",
+  "host": "127.0.0.1",
+  "port": 5432,
+  "reason": "role julio not present in PostgreSQL v2 cluster (creation pending authorization)",
+  "role": "julio",
+  "role_julio_exists": false,
+  "sqlstate": null
+}

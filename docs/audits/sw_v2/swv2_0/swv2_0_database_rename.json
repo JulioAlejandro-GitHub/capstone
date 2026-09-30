@@ -1,0 +1,29 @@
+{
+  "after": [
+    {
+      "datacl": "{capstone_v2_migrator=CTc/capstone_v2_migrator,capstone_v2_runtime=c/capstone_v2_migrator}",
+      "datcollate": "en_US.utf8",
+      "datctype": "en_US.utf8",
+      "datname": "malaria_experiments",
+      "encoding": 6,
+      "oid": 16386,
+      "owner": "capstone_v2_migrator"
+    }
+  ],
+  "before": [
+    {
+      "datacl": "{capstone_v2_migrator=CTc/capstone_v2_migrator,capstone_v2_runtime=c/capstone_v2_migrator}",
+      "datcollate": "en_US.utf8",
+      "datctype": "en_US.utf8",
+      "datname": "capstone_v2_isolated_persistent",
+      "encoding": 6,
+      "oid": 16386,
+      "owner": "capstone_v2_migrator"
+    }
+  ],
+  "connections_to_target_before": 0,
+  "executed_as": "postgres (cluster superuser), connected to maintenance database postgres, via capstone_db_v2 127.0.0.1:56440",
+  "nature": "integration change (catalog name only); OID, owner, ACL, encoding, collation unchanged; not a schema change",
+  "statement": "ALTER DATABASE capstone_v2_isolated_persistent RENAME TO malaria_experiments",
+  "sysid": "7691366089693499436"
+}

@@ -1,0 +1,463 @@
+{
+  "captured": "before SWV2.0 changes",
+  "compose": {
+    "db_service": "db",
+    "db_volume_key": "postgres_data -> capstone-malaria_postgres_data",
+    "files": [
+      "docker-compose.yml",
+      "docker-compose.override.yml"
+    ],
+    "project": "capstone-malaria"
+  },
+  "containers": {
+    "capstone_backend": {
+      "compose_project": "capstone-malaria",
+      "compose_service": "backend",
+      "env_keys": [
+        "ALLOWED_MICROSCOPY_FORMATS",
+        "ALLOW_DATABASE_DROP",
+        "ALLOW_INSECURE_LOCAL_AUTH",
+        "ALLOW_PUBLIC_SCHEMA_DROP",
+        "ALLOW_TEMPORARY_TEST_SCHEMA",
+        "API_PREFIX",
+        "APP_ENV",
+        "APP_NAME",
+        "APP_VERSION",
+        "ARTIFACTS_ROOT",
+        "AUTH_MODE",
+        "CAPSTONE_LOCAL_EXECUTION_ENABLED",
+        "CAPSTONE_LOCAL_STORAGE_ROOTS",
+        "CELL_CLASSIFICATION_BATCH_SIZE",
+        "CELL_CLASSIFICATION_PAGE_MAX",
+        "CELL_CLASSIFICATION_REVIEW_MARGIN",
+        "CELL_DETECTION_PAGE_MAX",
+        "CORRELATION_ID_HEADER",
+        "CORS_ORIGINS",
+        "DATABASE_CONNECT_TIMEOUT",
+        "DATABASE_POOL_MAX_SIZE",
+        "DATABASE_POOL_MIN_SIZE",
+        "DATABASE_URL",
+        "DEBIAN_FRONTEND",
+        "DEBUG",
+        "FRONTEND_ORIGIN",
+        "GPG_KEY",
+        "INCLUDE_STACKTRACE",
+        "JWT_ACCESS_TOKEN_EXPIRE_MINUTES",
+        "JWT_ALGORITHM",
+        "JWT_SECRET",
+        "LANG",
+        "LOG_FORMAT",
+        "LOG_LEVEL",
+        "MALARIA_DL_PROJECT_ROOT",
+        "MAX_IMAGE_PIXELS",
+        "MAX_UPLOAD_SIZE_BYTES",
+        "PASSWORD_HASH_SCHEME",
+        "PATH",
+        "POSTGRES_DB",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_USER",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "PYTHONUNBUFFERED",
+        "PYTHON_SHA256",
+        "PYTHON_VERSION",
+        "QUALITY_ANALYSIS_MAX_DIMENSION",
+        "REQUEST_LOGGING",
+        "SQL_LOGGING",
+        "STAGING_RETENTION_HOURS",
+        "STORAGE_PROVIDER",
+        "STORAGE_ROOT",
+        "TEST_EXECUTION",
+        "TEST_ISOLATION_MODE",
+        "TEST_SCHEMA_PREFIX",
+        "UPLOAD_CHUNK_SIZE_BYTES"
+      ],
+      "health": null,
+      "id": "6283301a7b5e374d01e3eddd405c02b000fa9fccff70673ff9cc187811e87777",
+      "image": "capstone-malaria-backend",
+      "image_id": "sha256:96401f7a4a97d667a27be8d17f60b845ce844045929a5e0249824695680b80a5",
+      "labels": {},
+      "mounts": [
+        {
+          "destination": "/app/malaria_dl_local_project/releases",
+          "name": null,
+          "rw": true,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/releases",
+          "type": "bind"
+        },
+        {
+          "destination": "/app/var/local_artifacts",
+          "name": null,
+          "rw": true,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/local_execution_artifacts",
+          "type": "bind"
+        },
+        {
+          "destination": "/app/malaria_dataset_split_project/src",
+          "name": null,
+          "rw": false,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dataset_split_project/src",
+          "type": "bind"
+        },
+        {
+          "destination": "/app/var/storage",
+          "name": "capstone-malaria_scientific_storage",
+          "rw": true,
+          "source": null,
+          "type": "volume"
+        },
+        {
+          "destination": "/app/backups",
+          "name": null,
+          "rw": false,
+          "source": "/host_mnt/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/backups",
+          "type": "bind"
+        },
+        {
+          "destination": "/app/app",
+          "name": null,
+          "rw": true,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/backend_api/app",
+          "type": "bind"
+        },
+        {
+          "destination": "/app/tests",
+          "name": null,
+          "rw": true,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/backend_api/tests",
+          "type": "bind"
+        },
+        {
+          "destination": "/app/alembic.ini",
+          "name": null,
+          "rw": false,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/alembic.ini",
+          "type": "bind"
+        },
+        {
+          "destination": "/app/pytest.ini",
+          "name": null,
+          "rw": false,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/pytest.ini",
+          "type": "bind"
+        },
+        {
+          "destination": "/app/alembic",
+          "name": null,
+          "rw": false,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/alembic",
+          "type": "bind"
+        },
+        {
+          "destination": "/app/malaria_dl_local_project",
+          "name": null,
+          "rw": false,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project",
+          "type": "bind"
+        }
+      ],
+      "networks": [
+        "capstone-malaria_default"
+      ],
+      "ports": {
+        "8000/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "8000"
+          }
+        ]
+      },
+      "restart": "always",
+      "running": true,
+      "status": "running"
+    },
+    "capstone_db": {
+      "compose_project": "capstone-malaria",
+      "compose_service": "db",
+      "env_keys": [
+        "GOSU_VERSION",
+        "LANG",
+        "PATH",
+        "PGDATA",
+        "PG_MAJOR",
+        "PG_VERSION",
+        "POSTGRES_DB",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_USER"
+      ],
+      "health": "healthy",
+      "id": "2604ff9884655b3b78ffc85997cbe30d6392afca7b904b5df2b37dacedb30d89",
+      "image": "postgres:17.9",
+      "image_id": "sha256:2a0d0fe14825b0939f78a8cad5cd4e6aa68bf94d0e5dd96e24b6d23af4315545",
+      "labels": {},
+      "mounts": [
+        {
+          "destination": "/var/lib/postgresql/data",
+          "name": "capstone-malaria_postgres_data",
+          "rw": true,
+          "source": null,
+          "type": "volume"
+        }
+      ],
+      "networks": [
+        "capstone-malaria_default"
+      ],
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "5432"
+          }
+        ]
+      },
+      "restart": "always",
+      "running": true,
+      "status": "running"
+    },
+    "capstone_db_v2": {
+      "compose_project": null,
+      "compose_service": null,
+      "env_keys": [
+        "GOSU_VERSION",
+        "LANG",
+        "PATH",
+        "PGDATA",
+        "PG_MAJOR",
+        "PG_VERSION",
+        "POSTGRES_HOST_AUTH_METHOD",
+        "POSTGRES_PASSWORD"
+      ],
+      "health": null,
+      "id": "1dc48428c6b938da6525754cc4f26d535814f1f8c101928487f7c0d630ce4971",
+      "image": "postgres:17.9",
+      "image_id": "sha256:2a0d0fe14825b0939f78a8cad5cd4e6aa68bf94d0e5dd96e24b6d23af4315545",
+      "labels": {
+        "org.capstone.pgv2.isolation": "1a590188-5f24-4068-ab38-b77bb8c61e65",
+        "org.capstone.pgv2.lifecycle": "persistent"
+      },
+      "mounts": [
+        {
+          "destination": "/var/lib/postgresql/data",
+          "name": "capstone_v2_isolated_persistent_data",
+          "rw": true,
+          "source": null,
+          "type": "volume"
+        }
+      ],
+      "networks": [
+        "bridge"
+      ],
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "56440"
+          }
+        ]
+      },
+      "restart": "unless-stopped",
+      "running": true,
+      "status": "running"
+    },
+    "capstone_frontend": {
+      "compose_project": "capstone-malaria",
+      "compose_service": "frontend",
+      "env_keys": [
+        "NODE_VERSION",
+        "PATH",
+        "YARN_VERSION"
+      ],
+      "health": null,
+      "id": "49437fb200f366dc2e96398b4eda2045d731459bb30a591cc29966efefd6632c",
+      "image": "node:20",
+      "image_id": "sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5",
+      "labels": {},
+      "mounts": [
+        {
+          "destination": "/app",
+          "name": null,
+          "rw": true,
+          "source": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/frontend",
+          "type": "bind"
+        }
+      ],
+      "networks": [
+        "capstone-malaria_default"
+      ],
+      "ports": {
+        "80/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "80"
+          }
+        ]
+      },
+      "restart": "always",
+      "running": true,
+      "status": "running"
+    },
+    "capstone_v2_isolated_1621252d7ab4": {
+      "compose_project": null,
+      "compose_service": null,
+      "env_keys": [
+        "GOSU_VERSION",
+        "LANG",
+        "PATH",
+        "PGDATA",
+        "PG_MAJOR",
+        "PG_VERSION",
+        "POSTGRES_HOST_AUTH_METHOD"
+      ],
+      "health": null,
+      "id": "7a08b4f041017f118018c6dbfee301b1d17823a45f5433216c16d0fb388f997e",
+      "image": "postgres:17.9",
+      "image_id": "sha256:2a0d0fe14825b0939f78a8cad5cd4e6aa68bf94d0e5dd96e24b6d23af4315545",
+      "labels": {
+        "org.capstone.pgv2.isolation": "1621252d-7ab4-4a98-8b6a-4bcd2631d177"
+      },
+      "mounts": [
+        {
+          "destination": "/var/lib/postgresql/data",
+          "name": "capstone_v2_isolated_1621252d7ab4",
+          "rw": true,
+          "source": null,
+          "type": "volume"
+        }
+      ],
+      "networks": [
+        "bridge"
+      ],
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "56441"
+          }
+        ]
+      },
+      "restart": "no",
+      "running": false,
+      "status": "exited"
+    },
+    "capstone_v2_isolated_fafc32d0d3a3": {
+      "compose_project": null,
+      "compose_service": null,
+      "env_keys": [
+        "GOSU_VERSION",
+        "LANG",
+        "PATH",
+        "PGDATA",
+        "PG_MAJOR",
+        "PG_VERSION",
+        "POSTGRES_HOST_AUTH_METHOD"
+      ],
+      "health": null,
+      "id": "c9efa7a0808cefb2d8e6a7b814192c5fbb911ff55666bb6913975ebf990b482b",
+      "image": "postgres:17.9",
+      "image_id": "sha256:2a0d0fe14825b0939f78a8cad5cd4e6aa68bf94d0e5dd96e24b6d23af4315545",
+      "labels": {
+        "org.capstone.pgv2.isolation": "fafc32d0-d3a3-41a9-936b-9f415618c664"
+      },
+      "mounts": [
+        {
+          "destination": "/var/lib/postgresql/data",
+          "name": "capstone_v2_isolated_fafc32d0d3a3",
+          "rw": true,
+          "source": null,
+          "type": "volume"
+        }
+      ],
+      "networks": [
+        "bridge"
+      ],
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "56441"
+          }
+        ]
+      },
+      "restart": "no",
+      "running": false,
+      "status": "exited"
+    }
+  },
+  "legacy_cluster": {
+    "databases": [
+      "malaria_pre_reset3_20260929 (16384)",
+      "malaria_experiments (1600436)"
+    ],
+    "role_julio": "SUPERUSER LOGIN (all attributes)",
+    "system_identifier": "7668020338728398886"
+  },
+  "port_5432_listeners": [
+    "com.docker.backend (capstone_db legacy, 0.0.0.0:5432)"
+  ],
+  "volume_users": {
+    "capstone-malaria_postgres_data": [
+      "capstone_db"
+    ],
+    "capstone-malaria_scientific_storage": [
+      "capstone_backend"
+    ],
+    "capstone_v2_isolated_1621252d7ab4": [
+      "capstone_v2_isolated_1621252d7ab4"
+    ],
+    "capstone_v2_isolated_fafc32d0d3a3": [
+      "capstone_v2_isolated_fafc32d0d3a3"
+    ],
+    "capstone_v2_isolated_persistent_data": [
+      "capstone_db_v2"
+    ]
+  },
+  "volumes": {
+    "capstone-malaria_postgres_data": {
+      "created": "2026-07-29T18:35:10Z",
+      "driver": "local",
+      "labels": {
+        "com.docker.compose.config-hash": "a6558c951f0d158582bb2249e5508ff54aead64f8112fe77d583e77bcb2218c8",
+        "com.docker.compose.project": "capstone-malaria",
+        "com.docker.compose.version": "5.3.1",
+        "com.docker.compose.volume": "postgres_data"
+      },
+      "mountpoint": "/var/lib/docker/volumes/capstone-malaria_postgres_data/_data"
+    },
+    "capstone-malaria_scientific_storage": {
+      "created": "2026-09-03T03:31:29Z",
+      "driver": "local",
+      "labels": {
+        "com.docker.compose.config-hash": "1f3cb98a0316650e0dec2e3bbd707d000957b3b9b97313cedfeeed1b4df41e3a",
+        "com.docker.compose.project": "capstone-malaria",
+        "com.docker.compose.version": "5.3.1",
+        "com.docker.compose.volume": "scientific_storage"
+      },
+      "mountpoint": "/var/lib/docker/volumes/capstone-malaria_scientific_storage/_data"
+    },
+    "capstone_v2_isolated_1621252d7ab4": {
+      "created": "2026-09-30T17:48:42Z",
+      "driver": "local",
+      "labels": {
+        "org.capstone.pgv2.isolation": "1621252d-7ab4-4a98-8b6a-4bcd2631d177"
+      },
+      "mountpoint": "/var/lib/docker/volumes/capstone_v2_isolated_1621252d7ab4/_data"
+    },
+    "capstone_v2_isolated_fafc32d0d3a3": {
+      "created": "2026-09-30T17:50:12Z",
+      "driver": "local",
+      "labels": {
+        "org.capstone.pgv2.isolation": "fafc32d0-d3a3-41a9-936b-9f415618c664"
+      },
+      "mountpoint": "/var/lib/docker/volumes/capstone_v2_isolated_fafc32d0d3a3/_data"
+    },
+    "capstone_v2_isolated_persistent_data": {
+      "created": "2026-09-30T16:28:37Z",
+      "driver": "local",
+      "labels": {
+        "org.capstone.pgv2.isolation": "1a590188-5f24-4068-ab38-b77bb8c61e65",
+        "org.capstone.pgv2.lifecycle": "persistent"
+      },
+      "mountpoint": "/var/lib/docker/volumes/capstone_v2_isolated_persistent_data/_data"
+    }
+  }
+}

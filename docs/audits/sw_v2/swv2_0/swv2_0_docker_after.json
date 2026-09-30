@@ -1,0 +1,109 @@
+{
+  "captured": "after SWV2.0 final compose down/up restart (role julio present)",
+  "certified_volume_users": [
+    "capstone_db"
+  ],
+  "containers": {
+    "capstone_backend": {
+      "compose_project": "capstone-malaria",
+      "compose_service": "backend",
+      "health": null,
+      "id": "832b1ce4bf647be97afe30559bfc452811653667627ba289330e54cc9f932e4c",
+      "image": "capstone-malaria-backend",
+      "mounts": [
+        {
+          "destination": "/app/var/storage",
+          "name": "capstone-malaria_scientific_storage",
+          "rw": true,
+          "type": "volume"
+        }
+      ],
+      "networks": [
+        "capstone-malaria_default"
+      ],
+      "ports": {
+        "8000/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "8000"
+          }
+        ]
+      },
+      "restart": "always",
+      "running": true
+    },
+    "capstone_db": {
+      "compose_project": "capstone-malaria",
+      "compose_service": "db",
+      "health": "healthy",
+      "id": "e83626be1b85f5fe9e6d964fc7ceddda98b9e9655864ead8ee3f5ab2468a8191",
+      "image": "postgres:17.9",
+      "mounts": [
+        {
+          "destination": "/var/lib/postgresql/data",
+          "name": "capstone_v2_isolated_persistent_data",
+          "rw": true,
+          "type": "volume"
+        }
+      ],
+      "networks": [
+        "capstone-malaria_default"
+      ],
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "5432"
+          }
+        ]
+      },
+      "restart": "always",
+      "running": true
+    },
+    "capstone_frontend": {
+      "compose_project": "capstone-malaria",
+      "compose_service": "frontend",
+      "health": null,
+      "id": "613d2bea76855c491000eaea5b6b603c27a85f582115ce87109f9cbb3444de54",
+      "image": "node:20",
+      "mounts": [],
+      "networks": [
+        "capstone-malaria_default"
+      ],
+      "ports": {
+        "80/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "80"
+          }
+        ]
+      },
+      "restart": "always",
+      "running": true
+    }
+  },
+  "other_stopped_isolated_containers_untouched": [
+    "capstone_v2_isolated_117ac0683125 exited",
+    "capstone_v2_isolated_15ea056917ee exited",
+    "capstone_v2_isolated_588c68fd40f9 exited",
+    "capstone_v2_isolated_61b1c3401133 exited",
+    "capstone_v2_isolated_8c5114865703 exited",
+    "capstone_v2_isolated_a150116595db exited",
+    "capstone_v2_isolated_c91e78474e3a exited",
+    "capstone_v2_isolated_d0ffe22fab83 exited",
+    "capstone_v2_isolated_e09f641a23c5 exited",
+    "capstone_v2_isolated_e662bcacb2fb exited"
+  ],
+  "removed_containers": {
+    "capstone_db_v2": true,
+    "capstone_v2_isolated_1621252d7ab4": true,
+    "capstone_v2_isolated_fafc32d0d3a3": true
+  },
+  "volumes_present": {
+    "capstone-malaria_postgres_data": true,
+    "capstone-malaria_scientific_storage": true,
+    "capstone_v2_isolated_1621252d7ab4": false,
+    "capstone_v2_isolated_fafc32d0d3a3": false,
+    "capstone_v2_isolated_persistent_data": true
+  }
+}

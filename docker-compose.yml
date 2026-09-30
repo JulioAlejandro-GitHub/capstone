@@ -51,5 +51,9 @@ services:
       - backend
 
 volumes:
+  # SWV2.0: PostgreSQL v2 certified cluster (sysid 7691366089693499436, GATE DB-V2).
+  # Pre-existing volume, never created, initialized or removed by Compose.
   postgres_data:
+    external: true
+    name: capstone_v2_isolated_persistent_data
   scientific_storage:

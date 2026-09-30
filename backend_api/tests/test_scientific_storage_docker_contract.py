@@ -69,8 +69,13 @@ def test_compose_declares_one_private_read_write_scientific_volume_for_backend()
 
     assert declared_volumes.count("  postgres_data:") == 1
     assert declared_volumes.count("  scientific_storage:") == 1
-    assert "external:" not in declared_volumes
-    assert "name:" not in declared_volumes
+    # SWV2.0: db reuses the certified PostgreSQL v2 volume; only it may be external/named.
+    postgres_volume = [line.strip() for line in declared_volumes.split("  scientific_storage:")[0].splitlines()]
+    assert "external: true" in postgres_volume
+    assert "name: capstone_v2_isolated_persistent_data" in postgres_volume
+    scientific_volume = declared_volumes.split("  scientific_storage:")[1]
+    assert "external:" not in scientific_volume
+    assert "name:" not in scientific_volume
     assert "capstone-development_storage" not in base + override
 
     backend_base = _service_block(base, "backend")
