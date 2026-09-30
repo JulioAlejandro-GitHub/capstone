@@ -1,0 +1,28 @@
+{"time": "2026-09-30T17:48:28.897142+00:00", "step": "SOURCE_READ_ONLY_SNAPSHOT", "identity": {"database": "malaria_experiments", "version": "170009", "system_identifier": "7668020338728398886", "transaction_read_only": "on", "default_transaction_read_only": "on", "snapshot": "127884:127884:"}, "source_write_statements": 0}
+{"time": "2026-09-30T17:48:30.977508+00:00", "step": "PREFLIGHT_PASS"}
+{"time": "2026-09-30T17:48:45.869807+00:00", "step": "PREFLIGHT_disposable_failure"}
+{"time": "2026-09-30T17:48:46.060084+00:00", "step": "SOURCE_READ_ONLY_SNAPSHOT", "identity": {"database": "malaria_experiments", "version": "170009", "system_identifier": "7668020338728398886", "transaction_read_only": "on", "default_transaction_read_only": "on", "snapshot": "127884:127884:"}, "source_write_statements": 0}
+{"time": "2026-09-30T17:48:48.912814+00:00", "step": "STAGING_LOADED_disposable_failure"}
+{"time": "2026-09-30T17:48:48.936327+00:00", "step": "INSERT_disposable_failure", "table": "dataset_versions"}
+{"time": "2026-09-30T17:48:48.937162+00:00", "step": "INSERT_disposable_failure", "table": "datasets"}
+{"time": "2026-09-30T17:48:48.947845+00:00", "step": "ROLLED_BACK_disposable_failure", "error_type": "DivisionByZero", "sqlstate": "22012"}
+{"time": "2026-09-30T17:48:49.052662+00:00", "step": "PREFLIGHT_disposable_recovery"}
+{"time": "2026-09-30T17:48:49.262868+00:00", "step": "SOURCE_READ_ONLY_SNAPSHOT", "identity": {"database": "malaria_experiments", "version": "170009", "system_identifier": "7668020338728398886", "transaction_read_only": "on", "default_transaction_read_only": "on", "snapshot": "127884:127884:"}, "source_write_statements": 0}
+{"time": "2026-09-30T17:48:52.141580+00:00", "step": "STAGING_LOADED_disposable_recovery"}
+{"time": "2026-09-30T17:48:52.163779+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_versions"}
+{"time": "2026-09-30T17:48:52.164352+00:00", "step": "INSERT_disposable_recovery", "table": "datasets"}
+{"time": "2026-09-30T17:48:52.164924+00:00", "step": "INSERT_disposable_recovery", "table": "roles"}
+{"time": "2026-09-30T17:48:52.165465+00:00", "step": "INSERT_disposable_recovery", "table": "users"}
+{"time": "2026-09-30T17:48:52.166898+00:00", "step": "INSERT_disposable_recovery", "table": "clinical_identities"}
+{"time": "2026-09-30T17:48:52.167598+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_materializations"}
+{"time": "2026-09-30T17:48:52.168081+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_split_statistics"}
+{"time": "2026-09-30T17:48:52.168560+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_split_validation_checks"}
+{"time": "2026-09-30T17:48:52.168852+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_splits"}
+{"time": "2026-09-30T17:48:52.169346+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_version_sources"}
+{"time": "2026-09-30T17:48:52.169904+00:00", "step": "INSERT_disposable_recovery", "table": "user_roles"}
+{"time": "2026-09-30T17:48:52.170327+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_materialization_activations"}
+{"time": "2026-09-30T17:48:52.943661+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_source_records"}
+{"time": "2026-09-30T17:48:54.172441+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_split_images"}
+{"time": "2026-09-30T17:49:25.186856+00:00", "step": "INSERT_disposable_recovery", "table": "dataset_split_assignments"}
+{"time": "2026-09-30T17:49:25.407528+00:00", "step": "INSERT_disposable_recovery", "table": "identity_evidence"}
+{"time": "2026-09-30T17:49:33.158356+00:00", "step": "ROLLED_BACK_disposable_recovery", "error_type": "SyntaxError", "sqlstate": "42601"}

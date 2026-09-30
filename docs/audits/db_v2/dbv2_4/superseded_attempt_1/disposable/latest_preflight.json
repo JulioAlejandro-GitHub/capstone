@@ -1,0 +1,45 @@
+{
+  "identity": {
+    "database": "capstone_v2_isolated_1621252d7ab4",
+    "database_oid": 16386,
+    "database_owner": "capstone_v2_migrator",
+    "read_only": "off",
+    "recovery": false,
+    "role": "capstone_v2_migrator",
+    "server_version_num": 170009,
+    "session_role": "capstone_v2_migrator",
+    "system_identifier": "7691386730062536749"
+  },
+  "roles": [
+    {
+      "has_membership": false,
+      "rolbypassrls": false,
+      "rolcreatedb": false,
+      "rolcreaterole": false,
+      "rolname": "capstone_v2_migrator",
+      "rolreplication": false,
+      "rolsuper": false
+    },
+    {
+      "has_membership": false,
+      "rolbypassrls": false,
+      "rolcreatedb": false,
+      "rolcreaterole": false,
+      "rolname": "capstone_v2_runtime",
+      "rolreplication": false,
+      "rolsuper": false
+    }
+  ],
+  "target": {
+    "authorized_stage": "DBV2.2",
+    "container_id": "7a08b4f041017f118018c6dbfee301b1d17823a45f5433216c16d0fb388f997e",
+    "container_name": "capstone_v2_isolated_1621252d7ab4",
+    "database": "capstone_v2_isolated_1621252d7ab4",
+    "database_oid": 16386,
+    "gate_dbv21_approved": true,
+    "host_port": 56441,
+    "isolation_id": "1621252d-7ab4-4a98-8b6a-4bcd2631d177",
+    "postgres_system_identifier": "7691386730062536749",
+    "volume": "capstone_v2_isolated_1621252d7ab4"
+  }
+}

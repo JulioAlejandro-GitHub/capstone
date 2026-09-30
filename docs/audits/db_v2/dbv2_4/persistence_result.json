@@ -1,0 +1,22 @@
+{
+  "identical_before_after": true,
+  "persistent": true,
+  "same_container": true,
+  "same_database_oid": true,
+  "same_system_identifier": true,
+  "same_volume": true,
+  "status": "PASS",
+  "target": {
+    "authorized_stage": "DBV2.3",
+    "container_id": "1dc48428c6b938da6525754cc4f26d535814f1f8c101928487f7c0d630ce4971",
+    "container_name": "capstone_db_v2",
+    "database": "capstone_v2_isolated_persistent",
+    "database_oid": 16386,
+    "gate_dbv22_approved": true,
+    "host_port": 56440,
+    "isolation_id": "1a590188-5f24-4068-ab38-b77bb8c61e65",
+    "persistent": true,
+    "postgres_system_identifier": "7691366089693499436",
+    "volume": "capstone_v2_isolated_persistent_data"
+  }
+}

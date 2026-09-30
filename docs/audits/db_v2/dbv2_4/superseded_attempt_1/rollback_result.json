@@ -1,0 +1,25 @@
+{
+  "authorized_counts_after_rollback": {
+    "clinical_identities": 0,
+    "dataset_materialization_activations": 0,
+    "dataset_materializations": 0,
+    "dataset_source_records": 0,
+    "dataset_split_assignments": 0,
+    "dataset_split_images": 0,
+    "dataset_split_statistics": 0,
+    "dataset_split_validation_checks": 0,
+    "dataset_splits": 0,
+    "dataset_version_sources": 0,
+    "dataset_versions": 0,
+    "datasets": 0,
+    "identity_evidence": 0,
+    "roles": 0,
+    "user_roles": 0,
+    "users": 0
+  },
+  "deterministic_error": "division_by_zero",
+  "partial_insert_proven": true,
+  "source_writes": 0,
+  "sqlstate": "22012",
+  "status": "PASS"
+}

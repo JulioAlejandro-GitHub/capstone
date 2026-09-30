@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "subsequent_complete_transfer": true,
+  "target": {
+    "authorized_stage": "DBV2.2",
+    "container_id": "c9efa7a0808cefb2d8e6a7b814192c5fbb911ff55666bb6913975ebf990b482b",
+    "container_name": "capstone_v2_isolated_fafc32d0d3a3",
+    "database": "capstone_v2_isolated_fafc32d0d3a3",
+    "database_oid": 16386,
+    "gate_dbv21_approved": true,
+    "host_port": 56441,
+    "isolation_id": "fafc32d0-d3a3-41a9-936b-9f415618c664",
+    "postgres_system_identifier": "7691387117366177837",
+    "volume": "capstone_v2_isolated_fafc32d0d3a3"
+  }
+}

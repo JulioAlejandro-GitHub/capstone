@@ -1,0 +1,10 @@
+{
+  "authorized_stage": "DBV2.2",
+  "container_id": "7a08b4f041017f118018c6dbfee301b1d17823a45f5433216c16d0fb388f997e",
+  "container_name": "capstone_v2_isolated_1621252d7ab4",
+  "database": "capstone_v2_isolated_1621252d7ab4",
+  "gate_dbv21_approved": true,
+  "host_port": 56441,
+  "isolation_id": "1621252d-7ab4-4a98-8b6a-4bcd2631d177",
+  "volume": "capstone_v2_isolated_1621252d7ab4"
+}

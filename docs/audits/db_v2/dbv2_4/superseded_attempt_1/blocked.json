@@ -1,0 +1,6 @@
+{
+  "error_type": "SyntaxError",
+  "sqlstate": "42601",
+  "status": "BLOCKED",
+  "step": "ROLLED_BACK_disposable_recovery"
+}

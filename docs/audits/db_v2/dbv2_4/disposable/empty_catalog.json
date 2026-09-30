@@ -1,0 +1,73 @@
+{
+  "columns": [],
+  "constraints": [],
+  "database_acl": [
+    {
+      "datacl": null,
+      "datcollate": "en_US.utf8",
+      "datctype": "en_US.utf8",
+      "encoding": "UTF8",
+      "owner": "capstone_v2_migrator"
+    }
+  ],
+  "default_acl": [],
+  "default_dependencies": [],
+  "default_functions": [],
+  "extensions": [
+    {
+      "extrelocatable": false,
+      "extversion": "1.0",
+      "name": "plpgsql",
+      "owner": "postgres",
+      "schema": "pg_catalog"
+    }
+  ],
+  "functions": [],
+  "indexes": [],
+  "relations": [],
+  "roles": [
+    {
+      "membership": false,
+      "rolbypassrls": false,
+      "rolcanlogin": true,
+      "rolcreatedb": false,
+      "rolcreaterole": false,
+      "rolinherit": true,
+      "rolname": "capstone_v2_migrator",
+      "rolreplication": false,
+      "rolsuper": false
+    },
+    {
+      "membership": false,
+      "rolbypassrls": false,
+      "rolcanlogin": true,
+      "rolcreatedb": false,
+      "rolcreaterole": false,
+      "rolinherit": true,
+      "rolname": "capstone_v2_runtime",
+      "rolreplication": false,
+      "rolsuper": false
+    }
+  ],
+  "runtime_database": [
+    {
+      "connect": true,
+      "create": false,
+      "schema_create": false,
+      "schema_usage": true,
+      "temp": true
+    }
+  ],
+  "runtime_privileges": [],
+  "schema_acl": [
+    {
+      "nspacl": "{pg_database_owner=UC/pg_database_owner,=U/pg_database_owner}",
+      "nspname": "public",
+      "owner": "pg_database_owner"
+    }
+  ],
+  "sequences": [],
+  "triggers": [],
+  "types": [],
+  "views": []
+}

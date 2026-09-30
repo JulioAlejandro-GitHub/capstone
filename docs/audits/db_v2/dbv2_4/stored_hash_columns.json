@@ -1,0 +1,23 @@
+[
+  {
+    "column": "source_file_sha256",
+    "column_digest": "59a43a0c57d22fcec8d8fe3031bb679d5993cd34cb5ee7a332d7a868a1b32b23",
+    "match": true,
+    "non_null": 27558,
+    "table": "dataset_source_records"
+  },
+  {
+    "column": "decoded_pixel_sha256",
+    "column_digest": "e874767563bfeb4103f2bba1bb4f7534f350597d6979dfcf289c51ed22b9482e",
+    "match": true,
+    "non_null": 27558,
+    "table": "dataset_source_records"
+  },
+  {
+    "column": "checksum_sha256",
+    "column_digest": "d09740170a198e4557bc8a0515c04121f7fc45f894bee4dbbd2cc005a25ce425",
+    "match": true,
+    "non_null": 0,
+    "table": "dataset_split_images"
+  }
+]

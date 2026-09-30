@@ -1,0 +1,1 @@
+{"reason":"Script integrity-check SQL bug (GROUP BY constant expression in generated UNIQUE check, SQLSTATE 42601) during disposable recovery validation before COMMIT; ROLLBACK executed; disposable cluster only; persistent DB untouched; failure/rollback half had PASSED."}
