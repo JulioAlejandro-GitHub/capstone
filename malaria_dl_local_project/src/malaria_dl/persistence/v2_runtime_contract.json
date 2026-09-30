@@ -1,497 +1,493 @@
 {
-  "stage": "E10.10.5E.4",
-  "functions": {
-    "v2_immutable": "a977be08eb1e4608fc83fbb23b18894f",
-    "v2_binary_metric_guard": "8a30424f43427c1379eccfe1f394a17d",
-    "v2_evaluation_complete": "7e29cb81e08c32027e1acbb8b34241c4",
-    "v2_xai_artifact_guard": "ecce80a2705458bf8368128ed51d7d69",
-    "v2_xai_lineage_guard": "28dbba4dfe581c05045685f5009e3dfa",
-    "e04_calibration_immutable": "8516629699bd33b4b2fe0dc0b7172f4e",
-    "v2_configuration_guard": "19c4791ad1df11fae23efa500350d146",
-    "v2_xai_comparison_guard": "ed859d179fedce31decf40b25299e35e",
-    "v2_calibration_pair_guard": "db421df3bbd317be1c4c6d59644fb60c",
-    "v2_run_configuration_required": "faeed5f8c9e795c5639f3d6d9db97199",
-    "v2_xai_artifact_source_guard": "e6799ecb1342f137c9f3c3e8eaf8d9ef",
-    "e04_legacy_admission": "50938d5a66a41605f1eb82daafe93341",
-    "e04_assert_calibration": "5931b3431bb812e94961e0e77e19ae86",
-    "e04_calibration_complete": "aaf21f0b7e2d13dcb2786afb8e5ff5e8"
-  },
-  "triggers": [
+  "calibration_indexes": [
     {
-      "relation": "run_threshold_calibration",
-      "name": "e04_calibration_complete",
-      "definition": "CREATE CONSTRAINT TRIGGER e04_calibration_complete AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION e04_calibration_complete()",
-      "tgenabled": "O",
-      "tgdeferrable": true,
-      "tginitdeferred": true
+      "definition": "CREATE UNIQUE INDEX uq_e04_contract_role ON public.evaluations USING btree (run_id, training_run_id, model_version_id, checkpoint_artifact_id, dataset_version_id, population_hash, protocol_version, protocol_hash, input_contract_hash, evaluation_role) NULLS NOT DISTINCT WHERE ((source_kind = 'e10'::text) AND (evaluation_role = ANY (ARRAY['calibration_default'::text, 'calibration_selected'::text])))",
+      "indisready": true,
+      "indisunique": true,
+      "indisvalid": true,
+      "indnullsnotdistinct": true,
+      "name": "uq_e04_contract_role"
     },
     {
-      "relation": "run_threshold_calibration",
-      "name": "e04_calibration_immutable",
-      "definition": "CREATE TRIGGER e04_calibration_immutable BEFORE DELETE OR UPDATE ON public.run_threshold_calibration FOR EACH ROW EXECUTE FUNCTION e04_calibration_immutable()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "evaluations",
-      "name": "e04_evaluation_complete",
-      "definition": "CREATE CONSTRAINT TRIGGER e04_evaluation_complete AFTER INSERT ON public.evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION e04_calibration_complete()",
-      "tgenabled": "O",
-      "tgdeferrable": true,
-      "tginitdeferred": true
-    },
-    {
-      "relation": "evaluations",
-      "name": "e04_legacy_admission",
-      "definition": "CREATE TRIGGER e04_legacy_admission BEFORE INSERT ON public.evaluations FOR EACH ROW EXECUTE FUNCTION e04_legacy_admission()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "run_clinical_metrics",
-      "name": "v2_binary_metric_guard",
-      "definition": "CREATE TRIGGER v2_binary_metric_guard BEFORE INSERT ON public.run_clinical_metrics FOR EACH ROW EXECUTE FUNCTION v2_binary_metric_guard()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "run_threshold_calibration",
-      "name": "v2_calibration_pair_guard",
-      "definition": "CREATE CONSTRAINT TRIGGER v2_calibration_pair_guard AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_calibration_pair_guard()",
-      "tgenabled": "O",
-      "tgdeferrable": true,
-      "tginitdeferred": true
-    },
-    {
-      "relation": "run_configurations",
-      "name": "v2_config_immutable",
-      "definition": "CREATE TRIGGER v2_config_immutable BEFORE DELETE OR UPDATE ON public.run_configurations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "run_configurations",
-      "name": "v2_configuration_guard",
-      "definition": "CREATE TRIGGER v2_configuration_guard BEFORE INSERT ON public.run_configurations FOR EACH ROW EXECUTE FUNCTION v2_configuration_guard()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "evaluation_ensemble_members",
-      "name": "v2_ensemble_complete",
-      "definition": "CREATE CONSTRAINT TRIGGER v2_ensemble_complete AFTER INSERT ON public.evaluation_ensemble_members DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_evaluation_complete()",
-      "tgenabled": "O",
-      "tgdeferrable": true,
-      "tginitdeferred": true
-    },
-    {
-      "relation": "evaluation_ensemble_members",
-      "name": "v2_ensemble_immutable",
-      "definition": "CREATE TRIGGER v2_ensemble_immutable BEFORE DELETE OR UPDATE ON public.evaluation_ensemble_members FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "evaluations",
-      "name": "v2_evaluation_complete",
-      "definition": "CREATE CONSTRAINT TRIGGER v2_evaluation_complete AFTER INSERT ON public.evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_evaluation_complete()",
-      "tgenabled": "O",
-      "tgdeferrable": true,
-      "tginitdeferred": true
-    },
-    {
-      "relation": "evaluations",
-      "name": "v2_evaluation_immutable",
-      "definition": "CREATE TRIGGER v2_evaluation_immutable BEFORE DELETE OR UPDATE ON public.evaluations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "run_clinical_metrics",
-      "name": "v2_metric_immutable",
-      "definition": "CREATE TRIGGER v2_metric_immutable BEFORE DELETE OR UPDATE ON public.run_clinical_metrics FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "runs",
-      "name": "v2_run_configuration_required",
-      "definition": "CREATE CONSTRAINT TRIGGER v2_run_configuration_required AFTER INSERT ON public.runs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_run_configuration_required()",
-      "tgenabled": "O",
-      "tgdeferrable": true,
-      "tginitdeferred": true
-    },
-    {
-      "relation": "xai_artifacts",
-      "name": "v2_xai_artifact_guard",
-      "definition": "CREATE TRIGGER v2_xai_artifact_guard BEFORE DELETE OR UPDATE ON public.xai_artifacts FOR EACH ROW EXECUTE FUNCTION v2_xai_artifact_guard()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "xai_artifacts",
-      "name": "v2_xai_artifact_source_guard",
-      "definition": "CREATE TRIGGER v2_xai_artifact_source_guard BEFORE INSERT ON public.xai_artifacts FOR EACH ROW EXECUTE FUNCTION v2_xai_artifact_source_guard()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "xai_quantitative_evaluations",
-      "name": "v2_xai_comparison_guard",
-      "definition": "CREATE TRIGGER v2_xai_comparison_guard BEFORE INSERT ON public.xai_quantitative_evaluations FOR EACH ROW EXECUTE FUNCTION v2_xai_comparison_guard()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "xai_evidence",
-      "name": "v2_xai_immutable",
-      "definition": "CREATE TRIGGER v2_xai_immutable BEFORE DELETE OR UPDATE ON public.xai_evidence FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "xai_interpretations",
-      "name": "v2_xai_interpretation_immutable",
-      "definition": "CREATE TRIGGER v2_xai_interpretation_immutable BEFORE DELETE OR UPDATE ON public.xai_interpretations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "xai_evidence",
-      "name": "v2_xai_lineage_guard",
-      "definition": "CREATE TRIGGER v2_xai_lineage_guard BEFORE INSERT ON public.xai_evidence FOR EACH ROW EXECUTE FUNCTION v2_xai_lineage_guard()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "xai_quantitative_evaluations",
-      "name": "v2_xai_quantitative_immutable",
-      "definition": "CREATE TRIGGER v2_xai_quantitative_immutable BEFORE DELETE OR UPDATE ON public.xai_quantitative_evaluations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
-    },
-    {
-      "relation": "xai_specialist_reviews",
-      "name": "v2_xai_review_immutable",
-      "definition": "CREATE TRIGGER v2_xai_review_immutable BEFORE DELETE OR UPDATE ON public.xai_specialist_reviews FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
-      "tgenabled": "O",
-      "tgdeferrable": false,
-      "tginitdeferred": false
+      "definition": "CREATE UNIQUE INDEX uq_e04_event_role ON public.evaluations USING btree (source_event_id, evaluation_role) WHERE ((source_kind = 'e10'::text) AND (evaluation_role = ANY (ARRAY['calibration_default'::text, 'calibration_selected'::text])))",
+      "indisready": true,
+      "indisunique": true,
+      "indisvalid": true,
+      "indnullsnotdistinct": false,
+      "name": "uq_e04_event_role"
     }
   ],
   "evaluation_constraints": [
     {
-      "name": "ck_e04_default_source",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((source_kind <> 'e10'::text) OR (evaluation_role <> 'calibration_default'::text) OR ((threshold_source = 'default'::text) AND (threshold_used = 0.5) AND (calibration_id IS NULL))))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "ck_e04_default_source"
     },
     {
-      "name": "ck_e04_selected_source",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((source_kind <> 'e10'::text) OR (evaluation_role <> 'calibration_selected'::text) OR ((threshold_source = 'validation_calibration'::text) AND (calibration_id IS NOT NULL))))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "ck_e04_selected_source"
     },
     {
-      "name": "ck_v2_evaluation_scope",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((((split = 'test'::text) AND (purpose = 'final'::text) AND (evaluation_role = 'final_test'::text)) OR ((split = ANY (ARRAY['train'::text, 'val'::text])) AND (purpose = 'development'::text) AND (evaluation_role = ANY (ARRAY['training_validation_final'::text, 'development'::text, 'calibration_default'::text, 'calibration_selected'::text]))) OR ((split = 'external'::text) AND (purpose = 'complementary'::text) AND (evaluation_role = 'external_complementary'::text))))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "ck_v2_evaluation_scope"
     },
     {
-      "name": "ck_v2_external_provenance",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((split <> 'external'::text) OR ((dataset_origin_id IS NOT NULL) AND (dataset_origin_role IS NOT NULL) AND (population_manifest_uri IS NOT NULL) AND (length(btrim(population_manifest_uri)) > 0) AND (population_manifest_sha256 IS NOT NULL) AND (population_manifest_sha256 ~ '^[0-9a-f]{64}$'::text) AND (dataset_provenance_uri IS NOT NULL) AND (length(btrim(dataset_provenance_uri)) > 0) AND (dataset_provenance_sha256 IS NOT NULL) AND (dataset_provenance_sha256 ~ '^[0-9a-f]{64}$'::text) AND (source_kind = ANY (ARRAY['legacy'::text, 'external_record'::text])) AND (length(btrim(source_record_key)) > 0) AND (length(btrim(source_record_phase)) > 0))))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "ck_v2_external_provenance"
     },
     {
-      "name": "ck_v2_external_source",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((source_kind <> 'external_record'::text) OR (split = 'external'::text)))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "ck_v2_external_source"
     },
     {
-      "name": "e04_evaluation_complete",
-      "definition": "TRIGGER DEFERRABLE INITIALLY DEFERRED",
       "condeferrable": true,
       "condeferred": true,
-      "convalidated": true
+      "convalidated": true,
+      "definition": "TRIGGER DEFERRABLE INITIALLY DEFERRED",
+      "name": "e04_evaluation_complete"
     },
     {
-      "name": "fk_evaluation_e10_record",
+      "condeferrable": true,
+      "condeferred": true,
+      "convalidated": true,
       "definition": "FOREIGN KEY (run_id, event_kind, event_phase, event_key) REFERENCES train_execution_records(run_id, kind, phase, record_key) DEFERRABLE INITIALLY DEFERRED",
-      "condeferrable": true,
-      "condeferred": true,
-      "convalidated": true
+      "name": "fk_evaluation_e10_record"
     },
     {
-      "name": "fk_v2_evaluation_dataset_origin",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "FOREIGN KEY (dataset_version_id, dataset_origin_id, dataset_origin_role) REFERENCES dataset_version_sources(dataset_version_id, dataset_id, role) ON DELETE RESTRICT",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "fk_v2_evaluation_dataset_origin"
     },
     {
-      "name": "v2_evaluation_complete",
+      "condeferrable": true,
+      "condeferred": true,
+      "convalidated": true,
       "definition": "TRIGGER DEFERRABLE INITIALLY DEFERRED",
-      "condeferrable": true,
-      "condeferred": true,
-      "convalidated": true
+      "name": "v2_evaluation_complete"
     },
     {
-      "name": "v2_evaluations_check_00fb2e80d9b2",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((jsonb_typeof(protocol_snapshot) = 'object'::text))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_00fb2e80d9b2"
     },
     {
-      "name": "v2_evaluations_check_05b75a389d97",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((threshold_used >= (0)::numeric) AND (threshold_used <= (1)::numeric)))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_05b75a389d97"
     },
     {
-      "name": "v2_evaluations_check_0652739ad678",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((protocol_hash ~ '^[0-9a-f]{64}$'::text))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_0652739ad678"
     },
     {
-      "name": "v2_evaluations_check_08204f883325",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((evaluation_role <> 'training_validation_final'::text) OR (run_id = training_run_id)))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_08204f883325"
     },
     {
-      "name": "v2_evaluations_check_114e1e7e39d4",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((purpose = ANY (ARRAY['development'::text, 'final'::text, 'complementary'::text])))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_114e1e7e39d4"
     },
     {
-      "name": "v2_evaluations_check_28938a6edbaa",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((source_kind <> 'e10'::text) OR (evaluation_role = ANY (ARRAY['training_validation_final'::text, 'calibration_default'::text, 'calibration_selected'::text]))))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_28938a6edbaa"
     },
     {
-      "name": "v2_evaluations_check_3b1acb9be108",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((((source_kind = 'e10'::text) AND (event_kind = 'e10_event'::text) AND (event_phase = 'run_event_v1'::text) AND (event_key = (source_event_id)::text) AND (event_kind IS NOT NULL) AND (event_phase IS NOT NULL) AND (event_key IS NOT NULL)) OR ((source_kind <> 'e10'::text) AND (event_kind IS NULL) AND (event_phase IS NULL) AND (event_key IS NULL))))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_3b1acb9be108"
     },
     {
-      "name": "v2_evaluations_check_3df12c5495af",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((subject_kind = 'ensemble'::text) OR (checkpoint_artifact_id IS NOT NULL)))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_3df12c5495af"
     },
     {
-      "name": "v2_evaluations_check_4cbf36ebbe5e",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((metric_definition = 'binary_nullable_v2'::text))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_4cbf36ebbe5e"
     },
     {
-      "name": "v2_evaluations_check_58c667b93f11",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((split <> 'test'::text) OR (source_kind = 'assessment'::text)))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_58c667b93f11"
     },
     {
-      "name": "v2_evaluations_check_6d2ae4a2559c",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((evaluation_role = ANY (ARRAY['training_validation_final'::text, 'development'::text, 'final_test'::text, 'calibration_default'::text, 'calibration_selected'::text, 'external_complementary'::text])))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_6d2ae4a2559c"
     },
     {
-      "name": "v2_evaluations_check_88394215eb49",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((((source_kind = 'e10'::text) AND (source_event_id IS NOT NULL) AND (source_assessment_attempt_id IS NULL)) OR ((source_kind = 'assessment'::text) AND (source_event_id IS NULL) AND (source_assessment_attempt_id IS NOT NULL)) OR ((source_kind = ANY (ARRAY['legacy'::text, 'external_record'::text])) AND (source_event_id IS NULL) AND (source_assessment_attempt_id IS NULL))))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_88394215eb49"
     },
     {
-      "name": "v2_evaluations_check_a359e10954fc",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK (((evaluation_role <> ALL (ARRAY['training_validation_final'::text, 'calibration_default'::text, 'calibration_selected'::text])) OR (split = 'val'::text)))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_a359e10954fc"
     },
     {
-      "name": "v2_evaluations_check_b5ea10e3edba",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((subject_kind = ANY (ARRAY['single'::text, 'ensemble'::text])))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_b5ea10e3edba"
     },
     {
-      "name": "v2_evaluations_check_b93d47c84570",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((input_contract_hash ~ '^[0-9a-f]{64}$'::text))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_b93d47c84570"
     },
     {
-      "name": "v2_evaluations_check_c13afae612b2",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((population_hash ~ '^[0-9a-f]{64}$'::text))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_c13afae612b2"
     },
     {
-      "name": "v2_evaluations_check_c2a936c0d6c6",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((split = ANY (ARRAY['train'::text, 'val'::text, 'test'::text, 'external'::text])))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_c2a936c0d6c6"
     },
     {
-      "name": "v2_evaluations_check_d2a4e9ce706e",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((((threshold_source = 'default'::text) AND (threshold_used = 0.5) AND (calibration_id IS NULL)) OR ((threshold_source = 'validation_calibration'::text) AND (calibration_id IS NOT NULL)) OR ((threshold_source = 'protocol_numeric'::text) AND (calibration_id IS NULL))))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_d2a4e9ce706e"
     },
     {
-      "name": "v2_evaluations_check_f1db93b69ab7",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((source_kind = ANY (ARRAY['e10'::text, 'assessment'::text, 'legacy'::text, 'external_record'::text])))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_f1db93b69ab7"
     },
     {
-      "name": "v2_evaluations_check_f337b5a1c02f",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((comparison_contract_hash ~ '^[0-9a-f]{64}$'::text))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_f337b5a1c02f"
     },
     {
-      "name": "v2_evaluations_check_f4818b1a9fd3",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "CHECK ((threshold_source = ANY (ARRAY['default'::text, 'validation_calibration'::text, 'protocol_numeric'::text])))",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_check_f4818b1a9fd3"
     },
     {
-      "name": "v2_evaluations_foreign_0baa7d166e2f",
-      "definition": "FOREIGN KEY (calibration_id) REFERENCES run_threshold_calibration(run_threshold_calibration_id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED",
       "condeferrable": true,
       "condeferred": true,
-      "convalidated": true
+      "convalidated": true,
+      "definition": "FOREIGN KEY (calibration_id) REFERENCES run_threshold_calibration(run_threshold_calibration_id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED",
+      "name": "v2_evaluations_foreign_0baa7d166e2f"
     },
     {
-      "name": "v2_evaluations_foreign_14b20ff24e12",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_foreign_14b20ff24e12"
     },
     {
-      "name": "v2_evaluations_foreign_4e6a43d876af",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "FOREIGN KEY (training_run_id) REFERENCES runs(id) ON DELETE RESTRICT",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_foreign_4e6a43d876af"
     },
     {
-      "name": "v2_evaluations_foreign_6aec504c7a2f",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "FOREIGN KEY (checkpoint_artifact_id) REFERENCES artifacts(id) ON DELETE RESTRICT",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_foreign_6aec504c7a2f"
     },
     {
-      "name": "v2_evaluations_foreign_6cfcdf2998f5",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "FOREIGN KEY (model_version_id, training_run_id) REFERENCES model_versions(id, training_run_id) ON DELETE RESTRICT",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_foreign_6cfcdf2998f5"
     },
     {
-      "name": "v2_evaluations_foreign_c764adede219",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "FOREIGN KEY (source_assessment_attempt_id) REFERENCES assessment_attempts(id) ON DELETE RESTRICT",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_foreign_c764adede219"
     },
     {
-      "name": "v2_evaluations_foreign_db5338c19de4",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "FOREIGN KEY (run_id) REFERENCES runs(id) ON DELETE RESTRICT",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_foreign_db5338c19de4"
     },
     {
-      "name": "v2_evaluations_primary_8c8464f42472",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "PRIMARY KEY (id)",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_primary_8c8464f42472"
     },
     {
-      "name": "v2_evaluations_unique_2b29f071653b",
+      "condeferrable": false,
+      "condeferred": false,
+      "convalidated": true,
       "definition": "UNIQUE (run_id, source_kind, source_record_phase, source_record_key)",
-      "condeferrable": false,
-      "condeferred": false,
-      "convalidated": true
+      "name": "v2_evaluations_unique_2b29f071653b"
     },
     {
-      "name": "v2_evaluations_unique_927a8d4fe69d",
-      "definition": "UNIQUE (id, run_id)",
       "condeferrable": false,
       "condeferred": false,
-      "convalidated": true
+      "convalidated": true,
+      "definition": "UNIQUE (id, run_id)",
+      "name": "v2_evaluations_unique_927a8d4fe69d"
     }
   ],
-  "calibration_indexes": [
+  "functions": {
+    "e04_assert_calibration": "5931b3431bb812e94961e0e77e19ae86",
+    "e04_calibration_complete": "aaf21f0b7e2d13dcb2786afb8e5ff5e8",
+    "e04_calibration_immutable": "8516629699bd33b4b2fe0dc0b7172f4e",
+    "e04_legacy_admission": "50938d5a66a41605f1eb82daafe93341",
+    "v2_binary_metric_guard": "8a30424f43427c1379eccfe1f394a17d",
+    "v2_calibration_pair_guard": "d76823a297986d6e44d15f2f7ba2e263",
+    "v2_configuration_guard": "fa49f05b1130a0bfd571fd57359d4b08",
+    "v2_evaluation_complete": "7e29cb81e08c32027e1acbb8b34241c4",
+    "v2_immutable": "a977be08eb1e4608fc83fbb23b18894f",
+    "v2_run_configuration_required": "faeed5f8c9e795c5639f3d6d9db97199",
+    "v2_xai_artifact_guard": "ecce80a2705458bf8368128ed51d7d69",
+    "v2_xai_artifact_source_guard": "e6799ecb1342f137c9f3c3e8eaf8d9ef",
+    "v2_xai_lineage_guard": "cf14d4ba704f860f431af69c21f812ad"
+  },
+  "revision": "pg_v2_baseline",
+  "source": {
+    "generator": "scripts/db/build_v2_runtime_contract.py",
+    "path": "docs/audits/db_v2/dbv2_2/restart_r1/dbv2_2_catalog_manifest.json",
+    "sha256": "15c95e0c047c7cc29397635130ddb0a1f6820eab6d4c746f7078fb9f8bb3eafb"
+  },
+  "triggers": [
     {
-      "name": "uq_e04_contract_role",
-      "definition": "CREATE UNIQUE INDEX uq_e04_contract_role ON public.evaluations USING btree (run_id, training_run_id, model_version_id, checkpoint_artifact_id, dataset_version_id, population_hash, protocol_version, protocol_hash, input_contract_hash, evaluation_role) NULLS NOT DISTINCT WHERE ((source_kind = 'e10'::text) AND (evaluation_role = ANY (ARRAY['calibration_default'::text, 'calibration_selected'::text])))",
-      "indisvalid": true,
-      "indisready": true,
-      "indisunique": true,
-      "indnullsnotdistinct": true
+      "definition": "CREATE CONSTRAINT TRIGGER e04_calibration_complete AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION e04_calibration_complete()",
+      "name": "e04_calibration_complete",
+      "relation": "run_threshold_calibration",
+      "tgdeferrable": true,
+      "tgenabled": "O",
+      "tginitdeferred": true
     },
     {
-      "name": "uq_e04_event_role",
-      "definition": "CREATE UNIQUE INDEX uq_e04_event_role ON public.evaluations USING btree (source_event_id, evaluation_role) WHERE ((source_kind = 'e10'::text) AND (evaluation_role = ANY (ARRAY['calibration_default'::text, 'calibration_selected'::text])))",
-      "indisvalid": true,
-      "indisready": true,
-      "indisunique": true,
-      "indnullsnotdistinct": false
+      "definition": "CREATE TRIGGER e04_calibration_immutable BEFORE DELETE OR UPDATE ON public.run_threshold_calibration FOR EACH ROW EXECUTE FUNCTION e04_calibration_immutable()",
+      "name": "e04_calibration_immutable",
+      "relation": "run_threshold_calibration",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE CONSTRAINT TRIGGER e04_evaluation_complete AFTER INSERT ON public.evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION e04_calibration_complete()",
+      "name": "e04_evaluation_complete",
+      "relation": "evaluations",
+      "tgdeferrable": true,
+      "tgenabled": "O",
+      "tginitdeferred": true
+    },
+    {
+      "definition": "CREATE TRIGGER e04_legacy_admission BEFORE INSERT ON public.evaluations FOR EACH ROW EXECUTE FUNCTION e04_legacy_admission()",
+      "name": "e04_legacy_admission",
+      "relation": "evaluations",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE TRIGGER v2_binary_metric_guard BEFORE INSERT ON public.run_clinical_metrics FOR EACH ROW EXECUTE FUNCTION v2_binary_metric_guard()",
+      "name": "v2_binary_metric_guard",
+      "relation": "run_clinical_metrics",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE CONSTRAINT TRIGGER v2_calibration_pair_guard AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_calibration_pair_guard()",
+      "name": "v2_calibration_pair_guard",
+      "relation": "run_threshold_calibration",
+      "tgdeferrable": true,
+      "tgenabled": "O",
+      "tginitdeferred": true
+    },
+    {
+      "definition": "CREATE TRIGGER v2_config_immutable BEFORE DELETE OR UPDATE ON public.run_configurations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "name": "v2_config_immutable",
+      "relation": "run_configurations",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE TRIGGER v2_configuration_guard BEFORE INSERT ON public.run_configurations FOR EACH ROW EXECUTE FUNCTION v2_configuration_guard()",
+      "name": "v2_configuration_guard",
+      "relation": "run_configurations",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE CONSTRAINT TRIGGER v2_ensemble_complete AFTER INSERT ON public.evaluation_ensemble_members DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_evaluation_complete()",
+      "name": "v2_ensemble_complete",
+      "relation": "evaluation_ensemble_members",
+      "tgdeferrable": true,
+      "tgenabled": "O",
+      "tginitdeferred": true
+    },
+    {
+      "definition": "CREATE TRIGGER v2_ensemble_immutable BEFORE DELETE OR UPDATE ON public.evaluation_ensemble_members FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "name": "v2_ensemble_immutable",
+      "relation": "evaluation_ensemble_members",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE CONSTRAINT TRIGGER v2_evaluation_complete AFTER INSERT ON public.evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_evaluation_complete()",
+      "name": "v2_evaluation_complete",
+      "relation": "evaluations",
+      "tgdeferrable": true,
+      "tgenabled": "O",
+      "tginitdeferred": true
+    },
+    {
+      "definition": "CREATE TRIGGER v2_evaluation_immutable BEFORE DELETE OR UPDATE ON public.evaluations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "name": "v2_evaluation_immutable",
+      "relation": "evaluations",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE TRIGGER v2_metric_immutable BEFORE DELETE OR UPDATE ON public.run_clinical_metrics FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "name": "v2_metric_immutable",
+      "relation": "run_clinical_metrics",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE CONSTRAINT TRIGGER v2_run_configuration_required AFTER INSERT ON public.runs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_run_configuration_required()",
+      "name": "v2_run_configuration_required",
+      "relation": "runs",
+      "tgdeferrable": true,
+      "tgenabled": "O",
+      "tginitdeferred": true
+    },
+    {
+      "definition": "CREATE TRIGGER v2_xai_artifact_guard BEFORE DELETE OR UPDATE ON public.xai_artifacts FOR EACH ROW EXECUTE FUNCTION v2_xai_artifact_guard()",
+      "name": "v2_xai_artifact_guard",
+      "relation": "xai_artifacts",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE TRIGGER v2_xai_artifact_source_guard BEFORE INSERT ON public.xai_artifacts FOR EACH ROW EXECUTE FUNCTION v2_xai_artifact_source_guard()",
+      "name": "v2_xai_artifact_source_guard",
+      "relation": "xai_artifacts",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE TRIGGER v2_xai_immutable BEFORE DELETE OR UPDATE ON public.xai_evidence FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "name": "v2_xai_immutable",
+      "relation": "xai_evidence",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE TRIGGER v2_xai_interpretation_immutable BEFORE DELETE OR UPDATE ON public.xai_interpretations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "name": "v2_xai_interpretation_immutable",
+      "relation": "xai_interpretations",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE TRIGGER v2_xai_lineage_guard BEFORE INSERT ON public.xai_evidence FOR EACH ROW EXECUTE FUNCTION v2_xai_lineage_guard()",
+      "name": "v2_xai_lineage_guard",
+      "relation": "xai_evidence",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE TRIGGER v2_xai_quantitative_immutable BEFORE DELETE OR UPDATE ON public.xai_quantitative_evaluations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "name": "v2_xai_quantitative_immutable",
+      "relation": "xai_quantitative_evaluations",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
+    },
+    {
+      "definition": "CREATE TRIGGER v2_xai_review_immutable BEFORE DELETE OR UPDATE ON public.xai_specialist_reviews FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "name": "v2_xai_review_immutable",
+      "relation": "xai_specialist_reviews",
+      "tgdeferrable": false,
+      "tgenabled": "O",
+      "tginitdeferred": false
     }
   ]
 }

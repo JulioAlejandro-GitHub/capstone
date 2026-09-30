@@ -1,0 +1,108 @@
+{
+  "/api/dataset/split": {
+    "body": {
+      "counts": {
+        "test": {
+          "parasitized": 1317,
+          "total": 5441,
+          "uninfected": 1378
+        },
+        "total": 55116,
+        "train": {
+          "parasitized": 11023,
+          "total": 44226,
+          "uninfected": 11023
+        },
+        "val": {
+          "parasitized": 1378,
+          "total": 5449,
+          "uninfected": 1378
+        }
+      },
+      "keys": [
+        "counts",
+        "split_process",
+        "split_table"
+      ]
+    },
+    "status": 200
+  },
+  "/api/dataset/summary": {
+    "body": {
+      "counts": {
+        "test": {
+          "parasitized": 1317,
+          "total": 5441,
+          "uninfected": 1378
+        },
+        "total": 55116,
+        "train": {
+          "parasitized": 11023,
+          "total": 44226,
+          "uninfected": 11023
+        },
+        "val": {
+          "parasitized": 1378,
+          "total": 5449,
+          "uninfected": 1378
+        }
+      },
+      "keys": [
+        "counts",
+        "dataset",
+        "label_mapping",
+        "split_process",
+        "split_table",
+        "summary_rows"
+      ]
+    },
+    "status": 200
+  },
+  "/api/v1/auth/me": {
+    "body": {
+      "error": {
+        "code": "AUTHENTICATION_REQUIRED",
+        "correlation_id": "7701d9fb-173a-4ec6-afc5-fd64fa778c6a",
+        "details": {},
+        "message": "Se requiere autenticación.",
+        "retryable": false
+      }
+    },
+    "status": 401
+  },
+  "/datasources": {
+    "body": {
+      "items": [
+        {
+          "database": "malaria_experiments",
+          "domain": "Parasitos",
+          "enabled": true,
+          "key": "malaria",
+          "label": "Malaria"
+        }
+      ]
+    },
+    "status": 200
+  },
+  "/health": {
+    "body": {
+      "environment": "development",
+      "status": "ok",
+      "version": "0.3.0"
+    },
+    "status": 200
+  },
+  "/ready": {
+    "body": {
+      "components": {
+        "database": "ready",
+        "migrations": "ready",
+        "storage": "ready"
+      },
+      "environment": "development",
+      "status": "ready",
+      "version": "0.3.0"
+    },
+    "status": 200
+  }
+}

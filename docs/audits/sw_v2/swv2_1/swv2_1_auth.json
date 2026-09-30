@@ -1,0 +1,51 @@
+{
+  "dataset_detail": {
+    "keys": [
+      "dataset",
+      "distribution",
+      "integrity",
+      "lifecycle",
+      "lineage",
+      "materialization",
+      "runs",
+      "validation"
+    ],
+    "status": 200
+  },
+  "datasets": {
+    "items": [
+      {
+        "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "patient_count": 201,
+        "source_record_count": 27558,
+        "status": "FROZEN",
+        "test_records": 2685,
+        "train_records": 22180,
+        "trainable": true,
+        "val_records": 2693
+      }
+    ],
+    "status": 200
+  },
+  "last_login_update_permitted_rows": 1,
+  "login_query": {
+    "case_insensitive_lookup": true,
+    "roles": [
+      "administrator"
+    ],
+    "status": "active",
+    "user_found": true
+  },
+  "me": {
+    "insecure_local": false,
+    "permissions": 54,
+    "roles": [
+      "administrator"
+    ],
+    "same_user": true,
+    "status": 200
+  },
+  "stored_hash_scheme": "argon2id",
+  "transaction": "ROLLED_BACK",
+  "wrong_password_rejected": true
+}

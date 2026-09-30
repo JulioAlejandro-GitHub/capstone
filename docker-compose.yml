@@ -29,7 +29,11 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}
+      # SWV2.1: the backend runs as the certified non-superuser runtime role. POSTGRES_USER is the
+      # local admin/DBeaver login and is blanked here so the runtime container never carries it.
+      DATABASE_URL: postgresql+psycopg://capstone_v2_runtime:${CAPSTONE_V2_RUNTIME_PASSWORD:?CAPSTONE_V2_RUNTIME_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ""
+      POSTGRES_PASSWORD: ""
       STORAGE_PROVIDER: local
       STORAGE_ROOT: /app/var/storage
     volumes:
