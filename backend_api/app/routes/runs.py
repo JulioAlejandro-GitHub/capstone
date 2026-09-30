@@ -18,6 +18,21 @@ from app.services.training_summaries import list_training_summaries
 
 router = APIRouter(tags=["runs"])
 
+
+@router.get('/runs/{run_id}/scientific-results')
+def scientific_results(run_id: UUID, datasource: str | None = Query(None)):
+    from app.db import read_only_transaction
+    from app.services.scientific_results import read_scientific_results
+    from src.malaria_dl.execution.schema import E10SchemaNotReady
+    try:
+        with read_only_transaction(datasource) as connection:
+            result = read_scientific_results(connection, run_id)
+    except E10SchemaNotReady:
+        raise HTTPException(503, 'SCIENTIFIC_SCHEMA_NOT_READY') from None
+    if result is None:
+        raise HTTPException(404, 'Run no encontrado')
+    return result
+
 LABEL_MAPPING = {
     "0": "uninfected",
     "1": "parasitized",

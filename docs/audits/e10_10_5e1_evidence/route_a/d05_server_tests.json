@@ -1,0 +1,220 @@
+[
+  {
+    "name": "native_generated_contract",
+    "passed": true,
+    "metadata": {
+      "attgenerated": "s",
+      "attnotnull": false,
+      "type": "text",
+      "expression": "assessment_structural_hash(identity)"
+    }
+  },
+  {
+    "name": "omitted_auto_calculation",
+    "passed": true
+  },
+  {
+    "name": "explicit_write_rejected",
+    "passed": true,
+    "sqlstate": "428C9"
+  },
+  {
+    "name": "identity_update_regenerates",
+    "passed": true
+  },
+  {
+    "name": "d06_three_valued_associativity",
+    "passed": true,
+    "cases": [
+      {
+        "a": true,
+        "b": true,
+        "c": true,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": true,
+        "b": false,
+        "c": true,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": true,
+        "b": null,
+        "c": true,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": false,
+        "b": true,
+        "c": true,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": false,
+        "b": false,
+        "c": true,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": false,
+        "b": null,
+        "c": true,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": null,
+        "b": true,
+        "c": true,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": null,
+        "b": false,
+        "c": true,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": null,
+        "b": null,
+        "c": true,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": true,
+        "b": true,
+        "c": false,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": true,
+        "b": false,
+        "c": false,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": true,
+        "b": null,
+        "c": false,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": false,
+        "b": true,
+        "c": false,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": false,
+        "b": false,
+        "c": false,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": false,
+        "b": null,
+        "c": false,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": null,
+        "b": true,
+        "c": false,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": null,
+        "b": false,
+        "c": false,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": null,
+        "b": null,
+        "c": false,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": true,
+        "b": true,
+        "c": null,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": true,
+        "b": false,
+        "c": null,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": true,
+        "b": null,
+        "c": null,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": false,
+        "b": true,
+        "c": null,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": false,
+        "b": false,
+        "c": null,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": false,
+        "b": null,
+        "c": null,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": null,
+        "b": true,
+        "c": null,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": null,
+        "b": false,
+        "c": null,
+        "same_and": true,
+        "same_or": true
+      },
+      {
+        "a": null,
+        "b": null,
+        "c": null,
+        "same_and": true,
+        "same_or": true
+      }
+    ]
+  }
+]

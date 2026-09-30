@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "returncode": 1,
+  "head": null,
+  "after": {
+    "default_functions": [],
+    "default_dependencies": [],
+    "relations": [],
+    "columns": [],
+    "constraints": [],
+    "indexes": [],
+    "views": [],
+    "functions": [],
+    "triggers": [],
+    "sequences": [],
+    "types": [],
+    "extensions": [
+      {
+        "name": "plpgsql",
+        "extversion": "1.0",
+        "owner": "postgres",
+        "schema": "pg_catalog",
+        "extrelocatable": false
+      }
+    ],
+    "schema_acl": [
+      {
+        "nspname": "public",
+        "owner": "pg_database_owner",
+        "nspacl": "{pg_database_owner=UC/pg_database_owner,=U/pg_database_owner}"
+      }
+    ],
+    "database_acl": [
+      {
+        "owner": "capstone_v2_migrator",
+        "datacl": null,
+        "encoding": "UTF8",
+        "datcollate": "en_US.utf8",
+        "datctype": "en_US.utf8"
+      }
+    ],
+    "default_acl": [],
+    "roles": [
+      {
+        "rolname": "capstone_v2_migrator",
+        "rolsuper": false,
+        "rolcreatedb": false,
+        "rolcreaterole": false,
+        "rolreplication": false,
+        "rolbypassrls": false,
+        "rolinherit": true,
+        "rolcanlogin": true,
+        "membership": false
+      },
+      {
+        "rolname": "capstone_v2_runtime",
+        "rolsuper": false,
+        "rolcreatedb": false,
+        "rolcreaterole": false,
+        "rolreplication": false,
+        "rolbypassrls": false,
+        "rolinherit": true,
+        "rolcanlogin": true,
+        "membership": false
+      }
+    ],
+    "runtime_privileges": [],
+    "runtime_database": [
+      {
+        "connect": true,
+        "create": false,
+        "temp": true,
+        "schema_create": false,
+        "schema_usage": true
+      }
+    ]
+  }
+}

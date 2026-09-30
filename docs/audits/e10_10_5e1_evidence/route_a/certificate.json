@@ -1,0 +1,53 @@
+{
+  "stage": "E10.10.5E.1",
+  "decision": "E-01 approved",
+  "scope": "ACL-only baseline recertification; NOT Gate E integration approval",
+  "passed": true,
+  "manifest_sha256": "f5478ce2802af7bb4ee063edf4934bb5b9adf8f37e814264d7afa979fa01f25f",
+  "catalog_sha256": "71e650852595bcc01bf5de547d8cc5eed32e75aee95ac6667dd89c3b6b713238",
+  "previous_certificate": {
+    "stage": "E10.10.5D.4",
+    "manifest_sha256": "f276f819aa8512492ed89a52f12d192c1ace6cde24eee967287d17cd5f05dd57",
+    "catalog_sha256": "6df01a4d0e8fbcfd3e65a23e1394902097e565adad6b1b99de56a90f342cfa68",
+    "previous_manifest": "6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be",
+    "previous_catalog": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2"
+  },
+  "only_catalog_change": "runtime SELECT on public.alembic_version",
+  "scientific_D01_D06_unchanged": true,
+  "postgres_system_identifier": "7691108219624775726",
+  "postgres_version": "17.9",
+  "server_tests": {
+    "server_tests.json": 46,
+    "d03_server_tests.json": 45,
+    "d05_server_tests.json": 5
+  },
+  "evidence_sha256": {
+    "rollback_37d875_preflight.json": "77425ca801e7b197c65d458d9e232a7d4fb8ff4745ad8fd5ac50e0cf3674ecf0",
+    "ref_3c190e_target.json": "4b3d6c9c18e8101a0fcbca2b2cf3e534c9a83e042ae216b59939616eb70589e8",
+    "preflight_before_provision.json": "c3e767af4a911ffe81a33e9f5552ab00428d8c319168d4750a2717d5b24091df",
+    "idempotence_result.json": "ccdbdbde1412bd04ab6b97e68dc1d80906d66d10fba12333b4061d3beca583b6",
+    "rollback_target.json": "fb78e94ca6f12bf27020a5bf3c8a09845f11e092b7bd650e0d434d69cfd8cb65",
+    "target.json": "49d3582544143fa37298a30c936e6ffade8cb76d7774fd3288c70c322abecd5a",
+    "rollback_result.json": "f71c300847fa9a539b842b6d4a60f783d07efdf819fb938d144ea08fac4bac46",
+    "rollback_37d875_target.json": "fb78e94ca6f12bf27020a5bf3c8a09845f11e092b7bd650e0d434d69cfd8cb65",
+    "manifest_rendered_catalog.json": "1ff2e56ad2effa54b1fadcd80445236b42b60ecabe7abba78d53b2db99f29958",
+    "legacy_revision.json": "aaa60f6b3f99fb4fd571d636d67821c0b50e6a45380b1c8f5c157241415c628a",
+    "restore_result.json": "613bb893d1ab8bc0d97c9924c6a03d6b48208e191031145398636099d599eaaa",
+    "restore_target.json": "ae7cfdac764d458c4ea5ffd9b9947e19605c7c5a25b3221939194b290a8d6c64",
+    "server_tests.json": "c00bc8d19e8edce5d184b0a07bb6e8ac0dddb89b7c22a7ad8ec24b73c9bc2a6e",
+    "d4_catalog_delta.json": "88cb075fded4d14bb080d2bd7a8885d34553131f25994e331fc92bdface472c7",
+    "backup_synthetic_fixture.json": "1357e053836b8cba9538da0361f301b6cc045c6f75898ffa9bf289e6acfa9b44",
+    "restore_preflight.json": "4596ac9d636d6c822fe562c4739b2a8385c9ce0c875c317167ae4cec005f2a1d",
+    "latest_preflight.json": "2a867c09cb43276ea41d7f859f45251687bc173c804eca830c981896547a120b",
+    "ref_3c190e_preflight.json": "c2027b525cc77f323387bdb74e55b929742446159fb304efdf032ef81f315702",
+    "e10_projection.json": "8776de8a7d8109299a9a8adfe68f4a9302556274b0b2035f7025e436875545b9",
+    "d05_server_tests.json": "6c6a773bb45635a6eb3484fcef94b5c3b8acd21a6abe2c1c7260022c9562aaee",
+    "runtime_acl_revision.json": "bd4d3336a5d24b7ee691e3dd5ca8a25cbdb6143e38566e4dedd6ee12b0d4b07e",
+    "d03_server_tests.json": "938d0906014197afdb34ba6fe4edb46612292cef27b1569b9257d672f296b35d",
+    "restored_catalog.json": "1ff2e56ad2effa54b1fadcd80445236b42b60ecabe7abba78d53b2db99f29958",
+    "preflight_before_alembic.json": "75fd5bd095b7a113277c6f440bf727da0a4eb6a22970ed3768c2c22ab04622d1",
+    "installed_catalog.json": "1ff2e56ad2effa54b1fadcd80445236b42b60ecabe7abba78d53b2db99f29958"
+  },
+  "gate_e": "BLOCKED_E02",
+  "pending": "TRAIN local/Docker, provenance producers, VALIDATION, recovery/concurrency, publication/lineage, API/React, history/ensemble/XAI producers"
+}

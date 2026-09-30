@@ -587,3 +587,5 @@ GRANT EXECUTE ON FUNCTION public.v2_xai_artifact_source_guard() TO capstone_v2_r
 
 REVOKE ALL ON TABLE public.alembic_version FROM PUBLIC, capstone_v2_runtime;
 
+GRANT SELECT ON TABLE public.alembic_version TO capstone_v2_runtime;
+

@@ -1,0 +1,40 @@
+{
+  "stage": "E10.10.5A",
+  "status": "STATIC_CHECKS_PASSED_PENDING_REVIEW",
+  "parser_postgresql_version": [
+    18,
+    4
+  ],
+  "postgresql_17_executed": false,
+  "database_connections": 0,
+  "revision": "pg_v2_baseline",
+  "application_tables": 102,
+  "physical_tables_including_alembic": 103,
+  "views": 33,
+  "functions": 75,
+  "triggers": 95,
+  "constraints": 950,
+  "constraint_types": {
+    "CONSTR_PRIMARY": 102,
+    "CONSTR_UNIQUE": 75,
+    "CONSTR_CHECK": 524,
+    "CONSTR_FOREIGN": 249
+  },
+  "independent_indexes": 229,
+  "sequences": 1,
+  "plpgsql_bodies_parsed": 72,
+  "statements": 1782,
+  "legacy_functions_preserved": 65,
+  "legacy_triggers_preserved": 77,
+  "legacy_constraints_preserved": 780,
+  "legacy_independent_indexes_preserved": 225,
+  "legacy_views_preserved": 27,
+  "protected_tables_checked": 17,
+  "historical_files_unchanged": 54,
+  "accredited_legacy_checksums": 22,
+  "limits": [
+    "No PostgreSQL 17 catalogue resolution or execution",
+    "No runtime trigger/concurrency tests",
+    "No installation, adoption, backup/restore or application contract certification"
+  ]
+}

@@ -175,6 +175,8 @@ class ExecutionRepository(CampaignRepository):
         c, run, config, dataset, environment, experiment=None, evidence_id=None,
         campaign_id=None,
     ):
+        from .schema import require_e10_schema, V2_REVISION
+        revision = require_e10_schema(c)['revision']
         # Relational identity must be unambiguous; never infer from folders/dates.
         models = (
             execute(
@@ -211,6 +213,9 @@ class ExecutionRepository(CampaignRepository):
                 }
             ),
         )
+        if revision == V2_REVISION:
+            from ..persistence.v2_projection import project_configuration
+            project_configuration(c, run, config)
 
     def put(self, run_id, owner, kind, phase, key, payload):
         with self.transaction() as c:

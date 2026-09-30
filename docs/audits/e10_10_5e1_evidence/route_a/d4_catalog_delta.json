@@ -1,0 +1,46 @@
+{
+  "relations": {
+    "before": [
+      {
+        "name": "alembic_version",
+        "relkind": "r",
+        "relpersistence": "p",
+        "owner": "capstone_v2_migrator",
+        "relrowsecurity": false,
+        "relforcerowsecurity": false,
+        "relreplident": "d",
+        "reloptions": null,
+        "relacl": "{capstone_v2_migrator=arwdDxtm/capstone_v2_migrator}"
+      }
+    ],
+    "after": [
+      {
+        "name": "alembic_version",
+        "relkind": "r",
+        "relpersistence": "p",
+        "owner": "capstone_v2_migrator",
+        "relrowsecurity": false,
+        "relforcerowsecurity": false,
+        "relreplident": "d",
+        "reloptions": null,
+        "relacl": "{capstone_v2_migrator=arwdDxtm/capstone_v2_migrator,capstone_v2_runtime=r/capstone_v2_migrator}"
+      }
+    ]
+  },
+  "runtime_privileges": {
+    "before": [
+      {
+        "relation": "alembic_version",
+        "privilege": "SELECT",
+        "allowed": false
+      }
+    ],
+    "after": [
+      {
+        "relation": "alembic_version",
+        "privilege": "SELECT",
+        "allowed": true
+      }
+    ]
+  }
+}

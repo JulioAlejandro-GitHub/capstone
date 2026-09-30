@@ -236,6 +236,11 @@ def catalogue(statements):
 def validate():
     manifest, statements = load_baseline()
     c = catalogue(statements)
+    acl = (ROOT / "alembic_v2/baseline/10_privileges.sql").read_text()
+    assert acl.rstrip().endswith(
+        "REVOKE ALL ON TABLE public.alembic_version FROM PUBLIC, capstone_v2_runtime;\n\n"
+        "GRANT SELECT ON TABLE public.alembic_version TO capstone_v2_runtime;"
+    ), "E-01 requires revocation followed by runtime SELECT only"
     baseline = json.loads((ROOT / "docs/audits/e10_10_1_baseline.json").read_text())
     with (ROOT / "docs/audits/e10_10_4_schema_matrix.csv").open() as handle:
         rows = list(csv.DictReader(handle))

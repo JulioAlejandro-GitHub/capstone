@@ -1,12 +1,12 @@
-# E10.10.5D.4 — riesgos y límites
+# E10.10.5E — riesgos actuales
 
-**E10.10.5D — ADOPCIÓN CERTIFICADA SOBRE COPIA AISLADA. PENDIENTE DE REVISIÓN Y APROBACIÓN.**
+**E-01 resuelta. E-02 bloqueante. Gate E continúa bloqueado y no solicitado.**
 
-- D-01/D-02 y D-04 continúan resueltas; contrato de pgcrypto sin cambios. D-05 corregida y recertificada. D-06: cuatro equivalencias demostradas; cero diferencias semánticas detectadas.
-- Gate D requiere revisión y aprobación explícita. E y cutover quedan fuera de alcance y no se iniciarán automáticamente.
-- Certificación limitada al backup acreditado. E10, campañas, assessments y evaluaciones externas sin registros históricos en esta copia: su preservación es vacua, no evidencia de historial poblado. Los contratos se verifican con fixtures positivos/negativos; una futura fuente distinta requerirá nuevo preflight.
-- Backups y correspondencias privadas están en temporales externos al repositorio, modo 0600/0700; conservarlos junto con volúmenes aislados para recuperación. Checksums publicados, sin contraseñas ni filas sensibles.
-- Cuatro CHECK difieren textualmente y los hashes brutos de catálogo son distintos; se mantienen visibles. La regla canónica es específica a PostgreSQL 17.9 y exige mismos objetos/dependencias, sin excepciones generales.
-- No se certificó carga productiva concurrente ni cutover. No existen bloqueos técnicos pendientes dentro de D sobre esta copia.
+- **E-02:** la restricción certificada `ck_v2_no_result_json` contradice escribir `runs.parameters.training_results` junto a ledger y métricas. Reproducido con runtime real, SQLSTATE 23514, rollback completo. Requiere decisión antes de continuar E; no está autorizado cambiar esa restricción por E-01.
+- Procedencia de checkpoint/protocolo/población aún sin productor y sellado integral. El contexto del probe es exclusivamente sintético y no acredita TRAIN.
+- Pendientes TRAIN local/Docker, VALIDATION/calibración, recuperación/reinicio/ACK, concurrencia, publicación/linaje, API/React y productores de historial/ensembles/XAI.
+- Lectores anteriores de resumen/detalle todavía necesitan adaptación v2 para evitar fallback científico y preservar métricas indefinidas como NULL.
+- La nueva referencia de baseline es E.1. D.4 y su Route B son evidencia histórica; no se declara una adopción Route B nueva ni se autoriza cutover.
+- Certificado ACL y pruebas offline no acreditan integración E ni validación clínica. Sin acceso operativo, campañas reales, dataset modificado ni hashes E10 históricos alterados.
 
-Evidencia anterior conservada en `e10_10_5d4_evidence/previous_reports/`; D-03 no certifica el manifiesto modificado. [Nueve puntos y decisión](e10_10_5_route_b_results.md).
+[Decisión concreta E-02 y evidencia](e10_10_5e1_acl_resolution.md).

@@ -1,0 +1,15 @@
+{
+  "commands": [
+    {
+      "command": "PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python -m pytest tests/db_v2 tests/adoption_v2 -q",
+      "exit_code": 0,
+      "passed": 99
+    },
+    {
+      "command": "PYTHONPATH=malaria_dl_local_project malaria_dl_local_project/.venv/bin/python -m pytest malaria_dl_local_project/tests/test_schema_revision_contract.py malaria_dl_local_project/tests/test_result_postgres_architecture.py -q",
+      "exit_code": 0,
+      "passed": 7
+    }
+  ],
+  "scope": "offline only"
+}

@@ -489,6 +489,12 @@ END $v2_acl$""",
         "REVOKE ALL ON TABLE public.alembic_version FROM PUBLIC, capstone_v2_runtime",
     )
     emit(
+        "10_privileges",
+        "acl",
+        "alembic_version_read",
+        "GRANT SELECT ON TABLE public.alembic_version TO capstone_v2_runtime",
+    )
+    emit(
         "11_technical_state",
         "seed",
         "free_gate",

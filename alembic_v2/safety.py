@@ -35,8 +35,10 @@ def read_authorization(path, url):
         parsed = urlsplit(url)
         nonce = str(UUID(target["isolation_id"]))
         valid = (
-            target["authorized_stage"] == "E10.10.5B"
-            and target["gate_a_approved"] is True
+            ((target["authorized_stage"] == "E10.10.5B"
+              and target.get("gate_a_approved") is True)
+             or (target["authorized_stage"] == "E10.10.5E"
+                 and target.get("gate_d_approved") is True))
             and target["isolation_id"] == nonce
             and re.fullmatch(r"capstone_v2_isolated_[a-z0-9_]+", target["database"])
             and re.fullmatch(r"[0-9a-f]{64}", target["container_id"])

@@ -69,6 +69,9 @@ class _PostgresScope(EventAcceptanceScope):
         # Same connection/root transaction as append; the authorized session row
         # remains exclusively locked. Guard namespace as well as run identity.
         result = TrainingResultsV1.from_dict(result.to_dict())
+        if self.revision == 'pg_v2_baseline':
+            from .v2_projection import project_evaluation
+            project_evaluation(self._connection, self._event, result)
         updated = _query(self._connection, """UPDATE runs
             SET parameters = parameters || jsonb_build_object('training_results', CAST(:result AS jsonb))
             WHERE id=:run AND jsonb_typeof(parameters)='object'
@@ -105,6 +108,8 @@ class PostgresResultRepository(ResultRepository):
                     raise ResultPersistenceError()
                 connection = connection.execution_options(isolation_level="READ COMMITTED")
                 with connection.begin():
+                    from ..execution.schema import require_e10_schema
+                    schema = require_e10_schema(connection)
                     _query(connection, "SELECT set_config('capstone.execution_token',:token,true)", token=str(self._execution_token))
                     _query(connection, "SELECT set_config('capstone.train_owner',:owner,true)", owner=str(context.owner))
                     _query(connection, "SELECT experiment_require_owner()")
@@ -116,6 +121,7 @@ class PostgresResultRepository(ResultRepository):
                                   run=context.run_id).scalar_one()
                     scope = _PostgresScope(connection, event, AcceptanceState(
                         existing_event=_decode(old), sequence_event=_decode(at_sequence), last_sequence=int(last)))
+                    scope.revision = schema['revision']
                     try:
                         yield scope
                     finally:

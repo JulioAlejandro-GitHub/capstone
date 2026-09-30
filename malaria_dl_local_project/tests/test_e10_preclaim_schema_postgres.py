@@ -73,7 +73,7 @@ def test_old_schema_rejects_before_any_mutation_or_budget_consumption(old, tmp_p
                 elif entry == 'controlled': execute_one(x.repo, **args, check=forbidden, launch=forbidden, loader=forbidden)
                 elif entry == 'local_prepare': backend.prepare(data)
                 else: backend.claim(data, 'synthetic')
-            assert 'alembic_revision_20260922_01' in exc.value.missing
+            assert 'unsupported_alembic_revision' in exc.value.missing
             assert snapshot(x.s.c) == before
         assert mutations == []
     finally:
@@ -81,9 +81,9 @@ def test_old_schema_rejects_before_any_mutation_or_budget_consumption(old, tmp_p
 
 
 @pytest.mark.parametrize('damage,capability', [
-    ("UPDATE alembic_version SET version_num='20260915_01'", 'alembic_revision_20260922_01'),
-    ("UPDATE alembic_version SET version_num='20990101_01'", 'alembic_revision_20260922_01'),
-    ('DROP TABLE alembic_version', 'alembic_revision_20260922_01'),
+    ("UPDATE alembic_version SET version_num='20260915_01'", 'unsupported_alembic_revision'),
+    ("UPDATE alembic_version SET version_num='20990101_01'", 'unsupported_alembic_revision'),
+    ('DROP TABLE alembic_version', 'unsupported_alembic_revision'),
     ('ALTER TABLE train_execution_records DROP COLUMN event_id CASCADE', 'event_columns'),
     ('ALTER TABLE train_execution_records DROP COLUMN event_sequence CASCADE', 'event_columns'),
     ('ALTER TABLE train_execution_records DROP CONSTRAINT train_event_metadata', 'event_metadata_constraint'),

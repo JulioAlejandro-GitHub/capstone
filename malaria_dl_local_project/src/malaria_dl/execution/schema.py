@@ -5,6 +5,8 @@ from ..campaigns.contracts import CampaignError
 from ..campaigns.repository import execute
 
 E10_REVISION = '20260922_01'
+V2_REVISION = 'pg_v2_baseline'
+SUPPORTED_REVISIONS = (E10_REVISION, V2_REVISION)
 
 
 class E10SchemaNotReady(CampaignError):
@@ -76,7 +78,7 @@ SELECT
 def require_e10_schema(connection):
     """Only SELECTs; also safe inside the caller's reservation transaction.
 
-    This code supports the current Alembic head. Unknown/newer revisions fail
+    This code supports the explicitly listed legacy and certified v2 heads. Unknown/newer revisions fail
     closed until explicitly reviewed; a stamp alone is insufficient.
     """
     try:
@@ -87,12 +89,15 @@ def require_e10_schema(connection):
               AND r.oid=to_regclass('train_execution_records')
               AND v.relnamespace=(SELECT oid FROM pg_namespace WHERE nspname=current_schema()))""").scalar_one()
         versions = execute(connection, 'SELECT version_num FROM alembic_version').scalars().all() if version_table else []
-        if versions != [E10_REVISION]:
-            missing.append('alembic_revision_' + E10_REVISION)
+        if len(versions) != 1 or versions[0] not in SUPPORTED_REVISIONS:
+            raise E10SchemaNotReady(['unsupported_alembic_revision'])
         capabilities = dict(execute(connection, CAPABILITIES, metadata=EVENT_METADATA, guard_body=EVENT_GUARD_BODY_MD5).mappings().one())
         missing.extend(name for name, ready in capabilities.items() if not ready)
+        if versions == [V2_REVISION]:
+            from ..persistence.schema_contract import require_v2_capabilities
+            require_v2_capabilities(connection)
     except SQLAlchemyError:
         raise E10SchemaNotReady(['schema_inspection_failed']) from None
     if missing:
         raise E10SchemaNotReady(missing)
-    return {'revision': E10_REVISION, **capabilities}
+    return {'revision': versions[0], **capabilities}

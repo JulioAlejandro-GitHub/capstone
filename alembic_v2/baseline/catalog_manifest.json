@@ -58,7 +58,7 @@
   "counts": {
     "setting": 2,
     "extension": 1,
-    "acl": 293,
+    "acl": 294,
     "function": 75,
     "table": 102,
     "constraint": 950,
@@ -77,7 +77,7 @@
     "07_indexes.sql": "076571de7fa30e967d59b77bbe5c4cc9821b78a604897376d6afc7cfa4d0d99b",
     "08_views.sql": "8e08f69ef33f435eb6f50c0b3239e0b97ccf82fc63b758ab55a908b91bf6609d",
     "09_triggers.sql": "913f1dfee85d1a0b3bb8b7b00eef3e309aed2f413a3cc091c7d4efe6e4bfee8a",
-    "10_privileges.sql": "cb3b41a61bf3f08a6fb5f1e13ded9710fbe954016b6e807b8b688dafa1a4b117",
+    "10_privileges.sql": "886ee209e98b884c7d3109e80272b16c2961a74521c0fa70202d98a3190180d1",
     "11_technical_state.sql": "677be879ea69cc5c7b80aa9f9315544a4dabcad0a92043d988a591bc77c6b181"
   },
   "statements": [
@@ -38345,6 +38345,15 @@
       "start": 25870,
       "end": 25946,
       "sha256": "4d84f1dd9aa637aca307b5222e8e222f70d62fdfb0a76ba6183ea1f9bf8de2c7"
+    },
+    {
+      "phase": "10_privileges",
+      "kind": "acl",
+      "name": "alembic_version_read",
+      "file": "10_privileges.sql",
+      "start": 25948,
+      "end": 26016,
+      "sha256": "eb54f7a42aa4c177608137dfe206dcb2059c6e3128bad3d0e24b73468ed49003"
     },
     {
       "phase": "11_technical_state",

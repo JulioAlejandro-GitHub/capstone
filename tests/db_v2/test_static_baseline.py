@@ -98,6 +98,14 @@ class StaticBaselineTests(unittest.TestCase):
         cls.manifest, cls.statements = load_baseline()
         cls.catalogue = catalogue(cls.statements)
 
+    def test_e01_revision_acl_is_select_only(self):
+        acl = (BASELINE / "10_privileges.sql").read_text()
+        statements = [s.strip() for s in acl.split(";") if "public.alembic_version" in s]
+        self.assertEqual(statements, [
+            "REVOKE ALL ON TABLE public.alembic_version FROM PUBLIC, capstone_v2_runtime",
+            "GRANT SELECT ON TABLE public.alembic_version TO capstone_v2_runtime",
+        ])
+
     def test_d03_identity_and_exact_default_scope(self):
         root = Path(__file__).resolve().parents[2]
         previous = json.loads(

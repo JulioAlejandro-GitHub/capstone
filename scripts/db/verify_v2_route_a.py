@@ -421,11 +421,12 @@ def backup_restore(reuse_backup=False):
             sql.SQL("GRANT CONNECT ON DATABASE {} TO capstone_v2_runtime").format(name)
         )
     with connect(restored) as c:
-        # pg_dump collapses an owner-only ACL to NULL (equivalent default ACL).
-        # Replay the manifest's exact REVOKE to retain catalog representation too.
+        # Replay the exact E-01 version-table contract, including runtime SELECT.
+        # Retain catalog representation as well as effective privileges.
         c.execute(
             "REVOKE ALL ON TABLE public.alembic_version FROM PUBLIC, capstone_v2_runtime"
         )
+        c.execute("GRANT SELECT ON TABLE public.alembic_version TO capstone_v2_runtime")
     with connect(t) as c, connect(restored) as r:
         before, after = snapshot(c), snapshot(r)
         tables = [a["name"] for a in before["relations"] if a["relkind"] == "r"]

@@ -1,0 +1,163 @@
+{
+  "contract_version": "e10_postgres_v2_d4_v1",
+  "manifest_sha256": "f5478ce2802af7bb4ee063edf4934bb5b9adf8f37e814264d7afa979fa01f25f",
+  "catalog_sha256": "71e650852595bcc01bf5de547d8cc5eed32e75aee95ac6667dd89c3b6b713238",
+  "functions": {
+    "v2_binary_metric_guard": "8a30424f43427c1379eccfe1f394a17d",
+    "v2_calibration_pair_guard": "db421df3bbd317be1c4c6d59644fb60c",
+    "v2_configuration_guard": "19c4791ad1df11fae23efa500350d146",
+    "v2_evaluation_complete": "7e29cb81e08c32027e1acbb8b34241c4",
+    "v2_immutable": "a977be08eb1e4608fc83fbb23b18894f",
+    "v2_run_configuration_required": "faeed5f8c9e795c5639f3d6d9db97199",
+    "v2_xai_artifact_guard": "ecce80a2705458bf8368128ed51d7d69",
+    "v2_xai_artifact_source_guard": "e6799ecb1342f137c9f3c3e8eaf8d9ef",
+    "v2_xai_comparison_guard": "ed859d179fedce31decf40b25299e35e",
+    "v2_xai_lineage_guard": "28dbba4dfe581c05045685f5009e3dfa"
+  },
+  "triggers": [
+    {
+      "relation": "evaluation_ensemble_members",
+      "name": "v2_ensemble_complete",
+      "definition": "CREATE CONSTRAINT TRIGGER v2_ensemble_complete AFTER INSERT ON public.evaluation_ensemble_members DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_evaluation_complete()",
+      "tgenabled": "O",
+      "tgdeferrable": true,
+      "tginitdeferred": true
+    },
+    {
+      "relation": "evaluation_ensemble_members",
+      "name": "v2_ensemble_immutable",
+      "definition": "CREATE TRIGGER v2_ensemble_immutable BEFORE DELETE OR UPDATE ON public.evaluation_ensemble_members FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "evaluations",
+      "name": "v2_evaluation_complete",
+      "definition": "CREATE CONSTRAINT TRIGGER v2_evaluation_complete AFTER INSERT ON public.evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_evaluation_complete()",
+      "tgenabled": "O",
+      "tgdeferrable": true,
+      "tginitdeferred": true
+    },
+    {
+      "relation": "evaluations",
+      "name": "v2_evaluation_immutable",
+      "definition": "CREATE TRIGGER v2_evaluation_immutable BEFORE DELETE OR UPDATE ON public.evaluations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "run_clinical_metrics",
+      "name": "v2_binary_metric_guard",
+      "definition": "CREATE TRIGGER v2_binary_metric_guard BEFORE INSERT ON public.run_clinical_metrics FOR EACH ROW EXECUTE FUNCTION v2_binary_metric_guard()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "run_clinical_metrics",
+      "name": "v2_metric_immutable",
+      "definition": "CREATE TRIGGER v2_metric_immutable BEFORE DELETE OR UPDATE ON public.run_clinical_metrics FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "run_configurations",
+      "name": "v2_config_immutable",
+      "definition": "CREATE TRIGGER v2_config_immutable BEFORE DELETE OR UPDATE ON public.run_configurations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "run_configurations",
+      "name": "v2_configuration_guard",
+      "definition": "CREATE TRIGGER v2_configuration_guard BEFORE INSERT ON public.run_configurations FOR EACH ROW EXECUTE FUNCTION v2_configuration_guard()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "run_threshold_calibration",
+      "name": "v2_calibration_pair_guard",
+      "definition": "CREATE CONSTRAINT TRIGGER v2_calibration_pair_guard AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_calibration_pair_guard()",
+      "tgenabled": "O",
+      "tgdeferrable": true,
+      "tginitdeferred": true
+    },
+    {
+      "relation": "runs",
+      "name": "v2_run_configuration_required",
+      "definition": "CREATE CONSTRAINT TRIGGER v2_run_configuration_required AFTER INSERT ON public.runs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_run_configuration_required()",
+      "tgenabled": "O",
+      "tgdeferrable": true,
+      "tginitdeferred": true
+    },
+    {
+      "relation": "xai_artifacts",
+      "name": "v2_xai_artifact_guard",
+      "definition": "CREATE TRIGGER v2_xai_artifact_guard BEFORE DELETE OR UPDATE ON public.xai_artifacts FOR EACH ROW EXECUTE FUNCTION v2_xai_artifact_guard()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "xai_artifacts",
+      "name": "v2_xai_artifact_source_guard",
+      "definition": "CREATE TRIGGER v2_xai_artifact_source_guard BEFORE INSERT ON public.xai_artifacts FOR EACH ROW EXECUTE FUNCTION v2_xai_artifact_source_guard()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "xai_evidence",
+      "name": "v2_xai_immutable",
+      "definition": "CREATE TRIGGER v2_xai_immutable BEFORE DELETE OR UPDATE ON public.xai_evidence FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "xai_evidence",
+      "name": "v2_xai_lineage_guard",
+      "definition": "CREATE TRIGGER v2_xai_lineage_guard BEFORE INSERT ON public.xai_evidence FOR EACH ROW EXECUTE FUNCTION v2_xai_lineage_guard()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "xai_interpretations",
+      "name": "v2_xai_interpretation_immutable",
+      "definition": "CREATE TRIGGER v2_xai_interpretation_immutable BEFORE DELETE OR UPDATE ON public.xai_interpretations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "xai_quantitative_evaluations",
+      "name": "v2_xai_comparison_guard",
+      "definition": "CREATE TRIGGER v2_xai_comparison_guard BEFORE INSERT ON public.xai_quantitative_evaluations FOR EACH ROW EXECUTE FUNCTION v2_xai_comparison_guard()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "xai_quantitative_evaluations",
+      "name": "v2_xai_quantitative_immutable",
+      "definition": "CREATE TRIGGER v2_xai_quantitative_immutable BEFORE DELETE OR UPDATE ON public.xai_quantitative_evaluations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    },
+    {
+      "relation": "xai_specialist_reviews",
+      "name": "v2_xai_review_immutable",
+      "definition": "CREATE TRIGGER v2_xai_review_immutable BEFORE DELETE OR UPDATE ON public.xai_specialist_reviews FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+      "tgenabled": "O",
+      "tgdeferrable": false,
+      "tginitdeferred": false
+    }
+  ]
+}

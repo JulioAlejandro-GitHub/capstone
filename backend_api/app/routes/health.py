@@ -4,8 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
-from alembic.config import Config
-from alembic.script import ScriptDirectory
+from src.malaria_dl.execution.schema import require_e10_schema
 
 from app.config import get_settings
 from app.database_safety import assert_capstone_database
@@ -24,15 +23,12 @@ def health(datasource: str | None = Query("malaria")):
 @router.get("/ready")
 def ready():
     settings = get_settings()
-    expected_revision = ScriptDirectory.from_config(Config("alembic.ini")).get_current_head()
     components = {"database": "ready", "migrations": "ready", "storage": "ready"}
     try:
         with get_primary_engine().connect() as connection:
             actual_database = connection.execute(text("SELECT current_database()")).scalar_one()
             assert_capstone_database(settings, actual_database)
-            revision = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one_or_none()
-            if revision != expected_revision:
-                components["migrations"] = "not_ready"
+            require_e10_schema(connection)
     except Exception:
         components["database"] = "not_ready"
         components["migrations"] = "not_ready"

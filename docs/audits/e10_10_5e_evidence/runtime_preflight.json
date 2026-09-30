@@ -1,0 +1,16 @@
+{
+  "scope": "isolated E, SELECT only",
+  "operational_access": false,
+  "migrator_read_only_diagnostic": {
+    "revision": "pg_v2_baseline",
+    "event_columns": true,
+    "event_metadata_constraint": true,
+    "event_unique_indexes": true,
+    "event_trigger_guard": true
+  },
+  "runtime_revision_select": false,
+  "runtime_is_superuser": false,
+  "runtime_rejection": "E10_SCHEMA_NOT_READY: schema_inspection_failed",
+  "manifest_sha256": "f276f819aa8512492ed89a52f12d192c1ace6cde24eee967287d17cd5f05dd57",
+  "integration_ready": false
+}

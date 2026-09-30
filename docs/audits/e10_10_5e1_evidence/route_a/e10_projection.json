@@ -1,0 +1,34 @@
+{
+  "epoch": "accepted",
+  "duplicate": "duplicate_accepted",
+  "fencing": true,
+  "missing_provenance_rejected": true,
+  "missing_provenance_ledger_rollback": true,
+  "sql_errors": [
+    {
+      "sqlstate": "23514",
+      "message": "new row for relation \"runs\" violates check constraint \"ck_v2_no_result_json\"\nDETAIL:  Failing row contains (1650dd7b-0389-46cb-bb63-1952d256e0c5, null, 8026cc79-a9aa-4403-bb38-de3a2d1b220d, null, null, training, running, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, [], 7, {\"training_results\": {\"validation\": {\"split\": \"val\", \"metrics\": ..., null, 2026-09-29 23:55:21.724035+00, 2026-09-29 23:55:21.724035+00, {}, null, {\"model_configuration_e2\": {\"configuration\": {\"model_id\": \"custo..., null, null, 0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 11abc483-19ab-4126-9b55-0e33a9d4b416, null, null, null, null, null, null, null)."
+    }
+  ],
+  "projection_failed": true,
+  "rollback_counts": {
+    "ledger": 1,
+    "evaluations": 0,
+    "metrics": 0,
+    "jsonb_result": false
+  },
+  "atomic_rollback_verified": true,
+  "ids": {
+    "dataset": "395fe0b3-bc9c-4b6e-ab49-ebb34c9a65ae",
+    "version": "11abc483-19ab-4126-9b55-0e33a9d4b416",
+    "external_version": "f7f8abbe-8207-4c8f-82ab-9e9c78890dae",
+    "model": "8026cc79-a9aa-4403-bb38-de3a2d1b220d",
+    "train": "1650dd7b-0389-46cb-bb63-1952d256e0c5",
+    "train2": "7b736827-5ee0-4dbf-97d6-fa5cc872d83f",
+    "evaluation_run": "c87a8973-8a7a-46dc-9a6a-49f00ec9655b",
+    "artifact": "f9cdbf57-6f09-4b4d-89cf-5ae02ff972f2",
+    "artifact2": "49ff50e7-da7c-4f86-8f95-d53ab4e066a2",
+    "model_version": "baef9ed9-489f-4130-80b2-1a9f5e018ff2",
+    "owner": "2b32b819-f001-4b50-90c3-483fd4a7ebe1"
+  }
+}

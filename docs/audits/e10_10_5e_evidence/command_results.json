@@ -1,0 +1,63 @@
+[
+  {
+    "command": "/private/tmp/e10e-venv/bin/python scripts/db/provision_v2_e_integration.py setup",
+    "exit_code": 0,
+    "result": "New isolated PostgreSQL 17.9, dedicated port 55491, fresh volume, synthetic only"
+  },
+  {
+    "command": "/private/tmp/e10e-venv/bin/python scripts/db/provision_v2_e_integration.py preflight",
+    "exit_code": 0
+  },
+  {
+    "command": "/private/tmp/e10e-venv/bin/python scripts/db/provision_v2_e_integration.py upgrade",
+    "exit_code": 0,
+    "result": "Independent certified D.4 Alembic baseline; no stamp"
+  },
+  {
+    "command": "/private/tmp/e10e-venv/bin/python scripts/db/probe_v2_e_runtime.py",
+    "exit_code": 2,
+    "result": "Runtime blocked: revision SELECT revoked by certified contract"
+  },
+  {
+    "command": "PYTHONPATH=malaria_dl_local_project malaria_dl_local_project/.venv/bin/python -m pytest malaria_dl_local_project/tests/test_result_service.py malaria_dl_local_project/tests/test_result_postgres_architecture.py malaria_dl_local_project/tests/test_training_results.py malaria_dl_local_project/tests/test_run_event_emitter.py -q",
+    "exit_code": 0,
+    "passed": 142
+  },
+  {
+    "command": "PYTHONPATH=.:malaria_dl_local_project:backend_api:/private/tmp/e10_10_5d_parser312 malaria_dl_local_project/.venv/bin/python -m pytest tests/db_v2 tests/adoption_v2 malaria_dl_local_project/tests/test_schema_revision_contract.py backend_api/tests/test_training_summaries_api.py -q",
+    "exit_code": 0,
+    "passed": 121,
+    "warnings": [
+      "Starlette TestClient/httpx deprecation"
+    ]
+  },
+  {
+    "command": "PYTHONPATH=backend_api:malaria_dl_local_project malaria_dl_local_project/.venv/bin/python -m pytest backend_api/tests/test_scientific_results_v2.py -q",
+    "exit_code": 0,
+    "passed": 2
+  },
+  {
+    "command": "node --test frontend/tests/scientific-results-v2.test.mjs",
+    "exit_code": 0,
+    "passed": 2,
+    "note": "Included in full npm test count; not additional"
+  },
+  {
+    "command": "npm test",
+    "cwd": "frontend",
+    "exit_code": 0,
+    "passed": 201
+  },
+  {
+    "command": "npm run build",
+    "cwd": "frontend",
+    "exit_code": 0,
+    "warnings": [
+      "Bundle >500 kB minified"
+    ]
+  },
+  {
+    "command": "git diff --check",
+    "exit_code": 0
+  }
+]

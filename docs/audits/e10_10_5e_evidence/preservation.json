@@ -1,0 +1,7 @@
+{
+  "scope": "Local immutable history only; ledger read from E10.10.1 capture, not current DB",
+  "files_checked": 54,
+  "mismatches": [],
+  "manifest_sha256": "f276f819aa8512492ed89a52f12d192c1ace6cde24eee967287d17cd5f05dd57",
+  "baseline_resource_mismatches": []
+}

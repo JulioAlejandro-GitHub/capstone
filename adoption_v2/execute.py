@@ -129,7 +129,7 @@ def catalog_snapshot(c):
 
 
 def certified_catalog():
-    path = ROOT / "docs/audits/e10_10_5d4_evidence/route_a/installed_catalog.json"
+    path = ROOT / "docs/audits/e10_10_5e1_evidence/route_a/installed_catalog.json"
     value = json.loads(path.read_text())
     import hashlib
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { ClinicalMetricsCards } from '../components/ClinicalMetricsCards';
+import { ScientificResults } from '../components/ScientificResults';
 import { ConfusionMatrix } from '../components/ConfusionMatrix';
 import { DataTable } from '../components/DataTable';
 import { Loading } from '../components/Loading';
@@ -734,6 +735,7 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
 
   return (
     <section className="page run-detail-page">
+      <ScientificResults runId={runId} datasource={datasource} />
       <span className="run-detail-sr-only" aria-live="polite">
         {copyFeedback === 'copy-error' ? 'No fue posible acceder al portapapeles.' : copyFeedback ? 'Contenido copiado.' : ''}
       </span>

@@ -1,3 +1,4 @@
+import type { ScientificResult } from '../components/ScientificResults';
 import type {
   CheckpointPolicySummary,
   ClinicalDashboard,
@@ -604,6 +605,9 @@ function withDatasource(datasource: string) {
 }
 
 export const api = {
+  scientificResults(runId: string, datasource: string) {
+    return request<ScientificResult>(`/runs/${encodeURIComponent(runId)}/scientific-results`, { datasource });
+  },
   absoluteUrl(pathOrUrl: string | null | undefined) {
     if (!pathOrUrl) return null;
     try {

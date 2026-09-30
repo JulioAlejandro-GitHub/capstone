@@ -1,0 +1,27 @@
+[
+  {
+    "command": "scripts/db/probe_v2_e1_runtime.py",
+    "interpreter": "/private/tmp/e10e-venv/bin/python",
+    "exit_code": 0,
+    "evidence": "route_a/runtime_acl_revision.json"
+  },
+  {
+    "command": "scripts/db/probe_v2_e1_legacy.py",
+    "interpreter": "malaria_dl_local_project/.venv/bin/python",
+    "exit_code": 0,
+    "evidence": "route_a/legacy_revision.json"
+  },
+  {
+    "command": "scripts/db/probe_v2_e1_projection.py",
+    "interpreter": "malaria_dl_local_project/.venv/bin/python",
+    "exit_code": 2,
+    "evidence": "route_a/e10_projection.json",
+    "meaning": "E-02 reproduced; not integration success"
+  },
+  {
+    "command": "scripts/db/capture_v2_e1_certificate.py",
+    "interpreter": "malaria_dl_local_project/.venv/bin/python",
+    "exit_code": 0,
+    "evidence": "route_a/certificate.json"
+  }
+]

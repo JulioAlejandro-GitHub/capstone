@@ -1,54 +1,31 @@
 {
-  "stage": "E10.10.5D.4",
-  "status": "CERTIFIED_WITH_FOUR_JUSTIFIED_REPRESENTATION_DIFFERENCES",
-  "reference": {
-    "stage": "E10.10.5D.4",
-    "manifest_sha256": "f276f819aa8512492ed89a52f12d192c1ace6cde24eee967287d17cd5f05dd57",
-    "catalog_sha256": "6df01a4d0e8fbcfd3e65a23e1394902097e565adad6b1b99de56a90f342cfa68",
-    "previous_manifest": "6b499688b35ca748994df0f6914560b73bc36afbe3eb718d490376ac457ce1be",
-    "previous_catalog": "a793026a0004a378375fe0b6c750ff0e6a6aeeb2c156e062282a1a025b895ac2"
+  "stage": "E10.10.5E.1",
+  "comparison_executed": true,
+  "method": "PostgreSQL 17 canonical rendering of verified manifest statements in a separate empty isolated database, plus direct manifest metadata checks",
+  "manifest_sha256": "f5478ce2802af7bb4ee063edf4934bb5b9adf8f37e814264d7afa979fa01f25f",
+  "installed_sha256": "71e650852595bcc01bf5de547d8cc5eed32e75aee95ac6667dd89c3b6b713238",
+  "expected_sha256": "71e650852595bcc01bf5de547d8cc5eed32e75aee95ac6667dd89c3b6b713238",
+  "counts": {
+    "default_functions": 187,
+    "default_dependencies": 356,
+    "relations": 137,
+    "columns": 2271,
+    "constraints": 957,
+    "indexes": 407,
+    "views": 33,
+    "functions": 111,
+    "triggers": 95,
+    "sequences": 1,
+    "types": 272,
+    "extensions": 2,
+    "schema_acl": 1,
+    "database_acl": 1,
+    "default_acl": 0,
+    "roles": 2,
+    "runtime_privileges": 952,
+    "runtime_database": 1
   },
-  "unjustified": {},
-  "justified": [
-    {
-      "relation": "campaign_controlled_requests",
-      "name": "campaign_controlled_requests_reason_check",
-      "actual_definition": "CHECK ((length(TRIM(BOTH FROM reason)) > 0))",
-      "expected_definition": "CHECK ((length(btrim(reason)) > 0))",
-      "canonical_sha256": "de4f8a950942dbc4b95520a40938c47673764712c2068209640ebb3dc2037236",
-      "rule": "D-06: locations; identical btrim(text) formatting; ordered AND/OR associativity; exact bindings and dependencies"
-    },
-    {
-      "relation": "cell_predictions",
-      "name": "ck_cell_prediction_label_index",
-      "actual_definition": "CHECK ((((prediction_status)::text <> 'completed'::text) OR (((predicted_class_index = 1) AND ((predicted_label)::text = 'parasitized'::text) AND (probability_parasitized >= threshold_used)) OR ((predicted_class_index = 0) AND ((predicted_label)::text = 'uninfected'::text) AND (probability_parasitized < threshold_used)))))",
-      "expected_definition": "CHECK ((((prediction_status)::text <> 'completed'::text) OR ((predicted_class_index = 1) AND ((predicted_label)::text = 'parasitized'::text) AND (probability_parasitized >= threshold_used)) OR ((predicted_class_index = 0) AND ((predicted_label)::text = 'uninfected'::text) AND (probability_parasitized < threshold_used))))",
-      "canonical_sha256": "83f4eecb2c93d45397e705841d46915da5ded448611bb1eba5591da43fb2de91",
-      "rule": "D-06: locations; identical btrim(text) formatting; ordered AND/OR associativity; exact bindings and dependencies"
-    },
-    {
-      "relation": "smear_analysis_summaries",
-      "name": "ck_smear_summary_fraction",
-      "actual_definition": "CHECK ((((classified_cell_count = 0) AND (parasitized_candidate_fraction IS NULL)) OR ((classified_cell_count > 0) AND ((parasitized_candidate_fraction >= (0)::double precision) AND (parasitized_candidate_fraction <= (1)::double precision)) AND (abs((parasitized_candidate_fraction - ((parasitized_candidate_count)::double precision / (classified_cell_count)::double precision))) <= (0.000000001)::double precision))))",
-      "expected_definition": "CHECK ((((classified_cell_count = 0) AND (parasitized_candidate_fraction IS NULL)) OR ((classified_cell_count > 0) AND (parasitized_candidate_fraction >= (0)::double precision) AND (parasitized_candidate_fraction <= (1)::double precision) AND (abs((parasitized_candidate_fraction - ((parasitized_candidate_count)::double precision / (classified_cell_count)::double precision))) <= (0.000000001)::double precision))))",
-      "canonical_sha256": "362b5fe0d8837a52953fb2cb1400bc405f0066d0e987722bf731e59c8ca68dbd",
-      "rule": "D-06: locations; identical btrim(text) formatting; ordered AND/OR associativity; exact bindings and dependencies"
-    },
-    {
-      "relation": "smear_analysis_summaries",
-      "name": "ck_smear_summary_probabilities",
-      "actual_definition": "CHECK ((((classified_cell_count = 0) AND (maximum_probability_parasitized IS NULL) AND (mean_probability_parasitized IS NULL) AND (median_probability_parasitized IS NULL)) OR ((classified_cell_count > 0) AND ((maximum_probability_parasitized >= (0)::double precision) AND (maximum_probability_parasitized <= (1)::double precision)) AND ((mean_probability_parasitized >= (0)::double precision) AND (mean_probability_parasitized <= (1)::double precision)) AND ((median_probability_parasitized >= (0)::double precision) AND (median_probability_parasitized <= (1)::double precision)))))",
-      "expected_definition": "CHECK ((((classified_cell_count = 0) AND (maximum_probability_parasitized IS NULL) AND (mean_probability_parasitized IS NULL) AND (median_probability_parasitized IS NULL)) OR ((classified_cell_count > 0) AND (maximum_probability_parasitized >= (0)::double precision) AND (maximum_probability_parasitized <= (1)::double precision) AND (mean_probability_parasitized >= (0)::double precision) AND (mean_probability_parasitized <= (1)::double precision) AND (median_probability_parasitized >= (0)::double precision) AND (median_probability_parasitized <= (1)::double precision))))",
-      "canonical_sha256": "0a45118f7255a593bd7416d063e1730d2c23f0a55cc5096ea7fa06948b0ca8dc",
-      "rule": "D-06: locations; identical btrim(text) formatting; ordered AND/OR associativity; exact bindings and dependencies"
-    }
-  ],
-  "raw_catalog_equal": false,
-  "manifest_sha256": "f276f819aa8512492ed89a52f12d192c1ace6cde24eee967287d17cd5f05dd57",
-  "adopted_raw_sha256": "f7e4b81c604ab58a3285b4cdc49d7c3e3bbd46e74d5d118ad0b74444deb0b573",
-  "certified_raw_sha256": "6df01a4d0e8fbcfd3e65a23e1394902097e565adad6b1b99de56a90f342cfa68",
-  "full_adopted_catalog": "e10_10_5d4_evidence/route_b/adopted_catalog.json",
-  "full_reference_catalog": "e10_10_5d4_evidence/route_a/installed_catalog.json",
-  "proof": "e10_10_5d4_evidence/d06_matrix.md",
-  "restore_raw_exact": true
+  "differences": {},
+  "direct_manifest_differences": [],
+  "status": "passed"
 }

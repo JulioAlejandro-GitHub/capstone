@@ -1,0 +1,8 @@
+{
+  "container_id": "fe5413d84293f465701599ae0f694973f28af2671b56b206a728a844f510e935",
+  "stopped": true,
+  "volume_preserved": "capstone_v2_isolated_61b1c3401133",
+  "scope": "only E.1 attested cluster",
+  "active_probe_sessions": 0,
+  "gate_owner": null
+}
