@@ -1,0 +1,215 @@
+{
+  "containers": [
+    {
+      "id": "6283301a7b5e",
+      "image": "capstone-malaria-backend",
+      "labels_compose_project": "capstone-malaria",
+      "mounts": "/host_mnt/User…,/host_mnt/User…,/host_mnt/User…,/host_mnt/User…,capstone-malar…,/host_mnt/User…,/host_mnt/User…,/host_mnt/User…,/host_mnt/User…,/host_mnt/User…,/host_mnt/User…",
+      "name": "capstone_backend",
+      "ports": "0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp",
+      "state": "running"
+    },
+    {
+      "id": "2604ff988465",
+      "image": "postgres:17.9",
+      "labels_compose_project": "capstone-malaria",
+      "mounts": "capstone-malar…",
+      "name": "capstone_db",
+      "ports": "0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp",
+      "state": "running"
+    },
+    {
+      "id": "1dc48428c6b9",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_db_v2",
+      "ports": "127.0.0.1:56440->5432/tcp",
+      "state": "running"
+    },
+    {
+      "id": "49437fb200f3",
+      "image": "node:20",
+      "labels_compose_project": "capstone-malaria",
+      "mounts": "/host_mnt/User…",
+      "name": "capstone_frontend",
+      "ports": "0.0.0.0:80->80/tcp, [::]:80->80/tcp",
+      "state": "running"
+    },
+    {
+      "id": "24e3d163618b",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_117ac0683125",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "04b123ea4b4d",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_15ea056917ee",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "7a08b4f04101",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_1621252d7ab4",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "7187d27ecd6b",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_588c68fd40f9",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "fe5413d84293",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_61b1c3401133",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "09aeb81b3621",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_8c5114865703",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "ed496415af1c",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_a150116595db",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "b0bf9a0c4185",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_c91e78474e3a",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "e1b000f97c56",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_d0ffe22fab83",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "31a156221505",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_e09f641a23c5",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "1b64b1d1fea3",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_e662bcacb2fb",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "c9efa7a0808c",
+      "image": "postgres:17.9",
+      "labels_compose_project": null,
+      "mounts": "capstone_v2_is…",
+      "name": "capstone_v2_isolated_fafc32d0d3a3",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "376abe1f49c8",
+      "image": "rabbitmq:3-management",
+      "labels_compose_project": null,
+      "mounts": "555e12b04348ae…",
+      "name": "clever_chaplygin",
+      "ports": "4369/tcp, 5671-5672/tcp, 15671-15672/tcp, 15691-15692/tcp, 25672/tcp",
+      "state": "exited"
+    },
+    {
+      "id": "4ba616592c8a",
+      "image": "minio/minio",
+      "labels_compose_project": "docker",
+      "mounts": "docker_minio_d…",
+      "name": "vigilante-minio",
+      "ports": "",
+      "state": "exited"
+    },
+    {
+      "id": "d7881192357b",
+      "image": "rabbitmq:3-management",
+      "labels_compose_project": "docker",
+      "mounts": "eef52fa049aeeb…",
+      "name": "vigilante-rabbitmq",
+      "ports": "",
+      "state": "exited"
+    }
+  ],
+  "dbv24_disposables": [
+    {
+      "id": "c9efa7a0808cefb2d8e6a7b814192c5fbb911ff55666bb6913975ebf990b482b",
+      "labels": {
+        "org.capstone.pgv2.isolation": "fafc32d0-d3a3-41a9-936b-9f415618c664"
+      },
+      "mounts": [
+        "capstone_v2_isolated_fafc32d0d3a3"
+      ],
+      "name": "capstone_v2_isolated_fafc32d0d3a3",
+      "port": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "56441"
+          }
+        ]
+      },
+      "running": false
+    },
+    {
+      "id": "7a08b4f041017f118018c6dbfee301b1d17823a45f5433216c16d0fb388f997e",
+      "labels": {
+        "org.capstone.pgv2.isolation": "1621252d-7ab4-4a98-8b6a-4bcd2631d177"
+      },
+      "mounts": [
+        "capstone_v2_isolated_1621252d7ab4"
+      ],
+      "name": "capstone_v2_isolated_1621252d7ab4",
+      "port": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "56441"
+          }
+        ]
+      },
+      "running": false
+    }
+  ]
+}

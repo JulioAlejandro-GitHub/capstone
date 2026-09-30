@@ -1,0 +1,10 @@
+{
+  "application_database_url_switched_to_v2": false,
+  "backend_compose_project": "capstone-malaria",
+  "backend_database_url_present": true,
+  "backend_host_is_legacy_service": true,
+  "backend_points_to_v2": false,
+  "backend_port": 5432,
+  "compose_file_tracked_changes": "",
+  "dotenv_mentions_v2": false
+}

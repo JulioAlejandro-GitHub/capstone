@@ -1,0 +1,66 @@
+{
+  "after": {
+    "tup_deleted": 638,
+    "tup_inserted": 154461,
+    "tup_updated": 1731,
+    "xact_commit": 2325
+  },
+  "before": {
+    "tup_deleted": 638,
+    "tup_inserted": 154461,
+    "tup_updated": 1731,
+    "xact_commit": 2318
+  },
+  "identical_before_after": true,
+  "identity_after": {
+    "database": "capstone_v2_isolated_persistent",
+    "database_oid": 16386,
+    "docker": {
+      "compose_project": null,
+      "container_id": "1dc48428c6b938da6525754cc4f26d535814f1f8c101928487f7c0d630ce4971",
+      "container_name": "capstone_db_v2",
+      "image": "postgres:17.9",
+      "labels": {
+        "org.capstone.pgv2.isolation": "1a590188-5f24-4068-ab38-b77bb8c61e65",
+        "org.capstone.pgv2.lifecycle": "persistent"
+      },
+      "mounts": [
+        {
+          "destination": "/var/lib/postgresql/data",
+          "name": "capstone_v2_isolated_persistent_data",
+          "rw": true,
+          "type": "volume"
+        }
+      ],
+      "port_bindings": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "56440"
+          }
+        ]
+      },
+      "restart_policy": "unless-stopped",
+      "running": true,
+      "volume": {
+        "created_at": "2026-09-30T16:28:37Z",
+        "driver": "local",
+        "labels": {
+          "org.capstone.pgv2.isolation": "1a590188-5f24-4068-ab38-b77bb8c61e65",
+          "org.capstone.pgv2.lifecycle": "persistent"
+        },
+        "name": "capstone_v2_isolated_persistent_data"
+      }
+    },
+    "recovery": false,
+    "server_version": "17.9 (Debian 17.9-1.pgdg13+1)",
+    "server_version_num": 170009,
+    "system_identifier": "7691366089693499436"
+  },
+  "recreated": false,
+  "same_container_id": true,
+  "status": "PASS",
+  "stopped_observed": true,
+  "v2_row_write_counters_unchanged": true,
+  "volume_removed": false
+}

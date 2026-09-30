@@ -1,0 +1,33 @@
+{
+  "alembic_static": {
+    "down_revision": null,
+    "heads": 1,
+    "revision": "pg_v2_baseline",
+    "revisions": [
+      "pg_v2_baseline"
+    ],
+    "roots": 1
+  },
+  "diff_vs_gate_dbv24_commit": [],
+  "resource_manifest_sha256": "232871ff0241c2912eef40daeee2c849fde70bdec5d64784cb72844e667b009a",
+  "resources": {
+    "01_prerequisites.sql": "949f60dbe2e9159bdc496b8eadf207cd8bfdae4efedbb52e74989e8a535f445e",
+    "02_generated_functions.sql": "46b9e028c015a011ed6a83184fda4d4163277195ee7cdac69d08f00b5050f162",
+    "03_tables.sql": "89094bf97acfc7767450c6ab77ce05e4f5fa19afdc6ee296cc7365906c33e399",
+    "04_functions.sql": "2e8d8c563ca624c250ec704c829df75c268698a9cf100ea68a818735fed3ad9a",
+    "05_keys.sql": "a8bb824d1ad9210758299271dc27b62faf7047dedf3fd674cd3dad084867e49d",
+    "06_constraints.sql": "ab477e9648519b0210a81bb936ab5db2c5a038803e15662d79c9ccb6efd77806",
+    "07_indexes.sql": "251d36c160f141cc6e0383dd9a43fb9ec7f9264f7c8f1861d62febfe4fb20e37",
+    "08_views.sql": "61ea7f2e3a345d43c05334152d58e790a1d9aafcd0ca3b5995e586db61543925",
+    "09_triggers.sql": "23db2bf8cc34e317be64a1c5ff28779977b401dd6717c29947d2bbfbef6f7d16",
+    "10_privileges.sql": "c79110d72b0179c58d0765bfeab2c62abd9dc16ec3d7b70e6d37e06cebd4c1d4",
+    "11_technical_state.sql": "891088549ff655b59eafebf598d3ad5ae6befdeb8a8f39992eeaff28a21c5ba1"
+  },
+  "resources_verified": 11,
+  "root_revision_file": "alembic_v2/versions/20260929_01_pg_v2_baseline.py",
+  "root_revision_sha256": "e3aaad12e49e65cff8ad9742fcdd83af075f2e2fcfaa81733a2bec121efef279",
+  "safety_py_sha256": "9e06a4ec6a79d134d5e02bb6ce84c408e82f866bf19dd32255b31e8888dec49b",
+  "structural_manifest_file": "docs/audits/db_v2/dbv2_2/restart_r1/dbv2_2_catalog_manifest.json",
+  "structural_manifest_file_sha256": "15c95e0c047c7cc29397635130ddb0a1f6820eab6d4c746f7078fb9f8bb3eafb",
+  "untracked": []
+}
