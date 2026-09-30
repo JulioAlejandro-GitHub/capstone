@@ -1,0 +1,12 @@
+{
+  "authorized_stage": "DBV2.2",
+  "container_id": "04b123ea4b4d453587dff975ac1ceadf0c43e6258707aee1e6e955942022c89e",
+  "container_name": "capstone_v2_isolated_15ea056917ee",
+  "database": "capstone_v2_isolated_15ea056917ee",
+  "database_oid": 16386,
+  "gate_dbv21_approved": true,
+  "host_port": 56439,
+  "isolation_id": "15ea0569-17ee-47ab-b5ed-834dd26fe5d1",
+  "postgres_system_identifier": "7691348671323906093",
+  "volume": "capstone_v2_isolated_15ea056917ee"
+}

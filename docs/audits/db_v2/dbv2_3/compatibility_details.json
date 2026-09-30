@@ -1,0 +1,261 @@
+{
+  "all_PK_UNIQUE_CHECK_index_trigger_identities_match": true,
+  "all_column_types_nullable_identity_generated_match": true,
+  "audit_events_transfer_required": false,
+  "dataset": {
+    "blocked": 0,
+    "direct": 12,
+    "inspected": 13,
+    "technical": 1
+  },
+  "differences": [
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "datasets"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "dataset_versions"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "clinical_identities"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "dataset_source_records"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "identity_evidence"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "dataset_split_assignments"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "dataset_split_statistics"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "dataset_split_validation_checks"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "dataset_splits"
+    },
+    {
+      "constraint": "dataset_splits_dataset_id_fkey",
+      "impact": "NONE for INSERT; parent rows preserved",
+      "kind": "DELETE_ACTION_RESTRICT",
+      "table": "dataset_splits"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "dataset_materializations"
+    },
+    {
+      "column": "id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "dataset_materialization_activations"
+    },
+    {
+      "column": "image_id",
+      "impact": "NONE: explicit copied ID; default not evaluated",
+      "kind": "UUID_DEFAULT_QUALIFICATION",
+      "table": "dataset_split_images"
+    },
+    {
+      "constraint": "dataset_split_images_dataset_id_fkey",
+      "impact": "NONE for INSERT; parent rows preserved",
+      "kind": "DELETE_ACTION_RESTRICT",
+      "table": "dataset_split_images"
+    }
+  ],
+  "edges": [
+    {
+      "child": "clinical_identities",
+      "definition": "FOREIGN KEY (dataset_id) REFERENCES datasets(id) ON DELETE RESTRICT",
+      "fk": "clinical_identities_dataset_id_fkey",
+      "parent": "datasets"
+    },
+    {
+      "child": "dataset_source_records",
+      "definition": "FOREIGN KEY (clinical_identity_id) REFERENCES clinical_identities(id) ON DELETE RESTRICT",
+      "fk": "dataset_source_records_clinical_identity_id_fkey",
+      "parent": "clinical_identities"
+    },
+    {
+      "child": "dataset_source_records",
+      "definition": "FOREIGN KEY (dataset_id) REFERENCES datasets(id) ON DELETE RESTRICT",
+      "fk": "dataset_source_records_dataset_id_fkey",
+      "parent": "datasets"
+    },
+    {
+      "child": "identity_evidence",
+      "definition": "FOREIGN KEY (clinical_identity_id) REFERENCES clinical_identities(id) ON DELETE RESTRICT",
+      "fk": "identity_evidence_clinical_identity_id_fkey",
+      "parent": "clinical_identities"
+    },
+    {
+      "child": "identity_evidence",
+      "definition": "FOREIGN KEY (source_record_id) REFERENCES dataset_source_records(id) ON DELETE RESTRICT",
+      "fk": "identity_evidence_source_record_id_fkey",
+      "parent": "dataset_source_records"
+    },
+    {
+      "child": "dataset_version_sources",
+      "definition": "FOREIGN KEY (dataset_id) REFERENCES datasets(id) ON DELETE RESTRICT",
+      "fk": "dataset_version_sources_dataset_id_fkey",
+      "parent": "datasets"
+    },
+    {
+      "child": "dataset_version_sources",
+      "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT",
+      "fk": "dataset_version_sources_dataset_version_id_fkey",
+      "parent": "dataset_versions"
+    },
+    {
+      "child": "dataset_split_assignments",
+      "definition": "FOREIGN KEY (clinical_identity_id) REFERENCES clinical_identities(id) ON DELETE RESTRICT",
+      "fk": "dataset_split_assignments_clinical_identity_id_fkey",
+      "parent": "clinical_identities"
+    },
+    {
+      "child": "dataset_split_assignments",
+      "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT",
+      "fk": "dataset_split_assignments_dataset_version_id_fkey",
+      "parent": "dataset_versions"
+    },
+    {
+      "child": "dataset_split_assignments",
+      "definition": "FOREIGN KEY (source_record_id) REFERENCES dataset_source_records(id) ON DELETE RESTRICT",
+      "fk": "dataset_split_assignments_source_record_id_fkey",
+      "parent": "dataset_source_records"
+    },
+    {
+      "child": "dataset_split_statistics",
+      "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT",
+      "fk": "dataset_split_statistics_dataset_version_id_fkey",
+      "parent": "dataset_versions"
+    },
+    {
+      "child": "dataset_split_validation_checks",
+      "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT",
+      "fk": "dataset_split_validation_checks_dataset_version_id_fkey",
+      "parent": "dataset_versions"
+    },
+    {
+      "child": "dataset_splits",
+      "definition": "FOREIGN KEY (dataset_id) REFERENCES datasets(id) ON DELETE RESTRICT",
+      "fk": "dataset_splits_dataset_id_fkey",
+      "parent": "datasets"
+    },
+    {
+      "child": "dataset_materializations",
+      "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT",
+      "fk": "dataset_materializations_dataset_version_id_fkey",
+      "parent": "dataset_versions"
+    },
+    {
+      "child": "dataset_materialization_activations",
+      "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT",
+      "fk": "dataset_materialization_activations_dataset_version_id_fkey",
+      "parent": "dataset_versions"
+    },
+    {
+      "child": "dataset_materialization_activations",
+      "definition": "FOREIGN KEY (materialization_id) REFERENCES dataset_materializations(id) ON DELETE RESTRICT",
+      "fk": "dataset_materialization_activations_materialization_id_fkey",
+      "parent": "dataset_materializations"
+    },
+    {
+      "child": "dataset_split_images",
+      "definition": "FOREIGN KEY (dataset_id) REFERENCES datasets(id) ON DELETE RESTRICT",
+      "fk": "dataset_split_images_dataset_id_fkey",
+      "parent": "datasets"
+    },
+    {
+      "child": "dataset_split_images",
+      "definition": "FOREIGN KEY (dataset_materialization_id) REFERENCES dataset_materializations(id) ON DELETE RESTRICT",
+      "fk": "dataset_split_images_dataset_materialization_id_fkey",
+      "parent": "dataset_materializations"
+    },
+    {
+      "child": "dataset_split_images",
+      "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT",
+      "fk": "dataset_split_images_dataset_version_id_fkey",
+      "parent": "dataset_versions"
+    },
+    {
+      "child": "user_roles",
+      "definition": "FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT",
+      "fk": "user_roles_role_id_fkey",
+      "parent": "roles"
+    },
+    {
+      "child": "user_roles",
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+      "fk": "user_roles_user_id_fkey",
+      "parent": "users"
+    }
+  ],
+  "matrix_rows": 177,
+  "order": [
+    "dataset_versions",
+    "datasets",
+    "roles",
+    "users",
+    "clinical_identities",
+    "dataset_materializations",
+    "dataset_split_statistics",
+    "dataset_split_validation_checks",
+    "dataset_splits",
+    "dataset_version_sources",
+    "user_roles",
+    "dataset_materialization_activations",
+    "dataset_source_records",
+    "dataset_split_images",
+    "dataset_split_assignments",
+    "identity_evidence"
+  ],
+  "semantic_transformations_required": 0,
+  "status": "PASS",
+  "trigger_functions_preserved": [
+    "enforce_activation_materialization_consistency",
+    "enforce_dataset_assignment_consistency",
+    "enforce_dataset_version_lifecycle",
+    "protect_frozen_dataset_assignment_updates",
+    "protect_frozen_dataset_assignments",
+    "protect_frozen_dataset_version_sources"
+  ],
+  "unexpected_dependencies": [],
+  "user": {
+    "blocked": 0,
+    "direct": 3,
+    "inspected": 3,
+    "technical": 0
+  }
+}

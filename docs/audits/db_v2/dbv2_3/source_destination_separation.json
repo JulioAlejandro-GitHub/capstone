@@ -1,0 +1,44 @@
+{
+  "destination": {
+    "authorized_stage": "DBV2.3",
+    "container_id": "1dc48428c6b938da6525754cc4f26d535814f1f8c101928487f7c0d630ce4971",
+    "container_name": "capstone_db_v2",
+    "database": "capstone_v2_isolated_persistent",
+    "database_oid": 16386,
+    "gate_dbv22_approved": true,
+    "host_port": 56440,
+    "isolation_id": "1a590188-5f24-4068-ab38-b77bb8c61e65",
+    "persistent": true,
+    "postgres_system_identifier": "7691366089693499436",
+    "volume": "capstone_v2_isolated_persistent_data"
+  },
+  "different_cluster": true,
+  "different_container": true,
+  "different_database": true,
+  "different_port": true,
+  "different_volume": true,
+  "same_physical_host": true,
+  "source": {
+    "environment": {
+      "configuration_identity": "capstone-malaria/db",
+      "container_id": "2604ff9884655b3b78ffc85997cbe30d6392afca7b904b5df2b37dacedb30d89",
+      "container_name": "capstone_db",
+      "database": "malaria_experiments",
+      "host_port": 5432,
+      "logical_host": "capstone_db",
+      "role": "julio",
+      "volume": "capstone-malaria_postgres_data"
+    },
+    "server": {
+      "database": "malaria_experiments",
+      "default_transaction_read_only": "on",
+      "role": "julio",
+      "server_address": null,
+      "server_port": "5432",
+      "system_identifier": "7668020338728398886",
+      "transaction_read_only": "on",
+      "version": "170009"
+    }
+  },
+  "status": "PASS"
+}

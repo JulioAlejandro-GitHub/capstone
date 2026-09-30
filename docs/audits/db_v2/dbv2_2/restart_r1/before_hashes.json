@@ -1,0 +1,18 @@
+{
+  "docs/audits/db_v2/dbv2_1_columns.csv": "d68fa820b0f261f6ea32b31ddabeaeba37e2ad013f4361090419a24cd894a5ef",
+  "docs/audits/db_v2/dbv2_1_views.md": "2c1fd946e273518f3c42fb714bd2d89b985f7ed31f20e2b7f1aa500d2048e5cb",
+  "docs/audits/db_v2/dbv2_1_table_matrix.csv": "eb888b30767355dc6eda240c868a36c99b38c7d895046832b80bc15a4a2fb7d6",
+  "docs/audits/db_v2/dbv2_1_open_decisions.md": "86b9c8fd8194b8630d2b07c2bb6def8f4e8cf7b0d3ea3a5d900e60236406e8a4",
+  "docs/audits/db_v2/dbv2_1_target_schema.sql": "5a17a6b0eb0f717e33ab43d03166e05388ff3d8a64b836cd62f10038d4a28961",
+  "docs/audits/db_v2/dbv2_1_xai_model.md": "4f1d1053880b4d79d40eb8c123854741cc5979a35c81f22b570e853e8ede6136",
+  "docs/audits/db_v2/dbv2_1_relationships.csv": "31e75ab9a8175a51d2ddd4dc25df36e882e6ca9381b8e44777ae3c7d020cabfe",
+  "docs/audits/db_v2/dbv2_1_er_diagram.md": "30e7fc31c2572dfa47537970e85f7848e569d1081dac545ec6e354e0e3f0ff77",
+  "docs/audits/db_v2/dbv2_1_structure_definition.md": "ab0e58be16b20d21616092c1f05079e6ffe285df8dbcd6e7ab3110bbf69728a5",
+  "docs/audits/db_v2/dbv2_1_functions_triggers.md": "479b73ebb1c90571aee418271e676885f24f232534a943dc598b68ccaad75d2a",
+  "docs/audits/db_v2/dbv2_1_data_transfer.md": "8003177cd459824133be17257083a74a2287696cea1a7ab524b1ba94b065a5ea",
+  "docs/audits/db_v2/dbv2_1_indexes.md": "ea461478ae2b5bef609689e56ea9fd790e5e4d328ebcfc319d0cfa635759f767",
+  "docs/audits/db_v2/dbv2_1_static_validation.json": "99bf8ee14872e66951e5d0e0d69648bbae4fc7c6868848285a1939c71888449e",
+  "docs/audits/db_v2/dbv2_1_source_evidence.json": "508868b92161cebed2e7a7c5960d4754e1ff1a248582363870254a98cfb494af",
+  "docs/audits/db_v2/dbv2_1_table_details.md": "a6fca8f01a86b8b37fb2710ad502f5b98cec9f94ea8b736143c02e1abdff097a",
+  "scripts/db/validate_dbv2_1.py": "dc10bb628a2aaec8c338c45af0ebeed2bec83ef566894dfff76adc8b77c0d82b"
+}

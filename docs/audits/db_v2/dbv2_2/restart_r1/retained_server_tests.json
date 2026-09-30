@@ -1,0 +1,422 @@
+[
+  {
+    "name": "recall_accept_0.01",
+    "passed": true
+  },
+  {
+    "name": "recall_accept_0.95",
+    "passed": true
+  },
+  {
+    "name": "recall_accept_0.98",
+    "passed": true
+  },
+  {
+    "name": "recall_accept_0.99",
+    "passed": true
+  },
+  {
+    "name": "recall_accept_1.0",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"run_configurations\" violates check constraint \"v2_run_configurations_check_d6094850fee4\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "v2_run_configurations_check_d6094850fee4",
+    "expected_sqlstate": "23514",
+    "name": "recall_reject_0",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"run_configurations\" violates check constraint \"v2_run_configurations_check_d6094850fee4\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "v2_run_configurations_check_d6094850fee4",
+    "expected_sqlstate": "23514",
+    "name": "recall_reject_-0.01",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"run_configurations\" violates check constraint \"v2_run_configurations_check_d6094850fee4\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "v2_run_configurations_check_d6094850fee4",
+    "expected_sqlstate": "23514",
+    "name": "recall_reject_1.01",
+    "passed": true
+  },
+  {
+    "actual_message": "null value in column \"clinical_target_recall\" of relation \"run_configurations\" violates not-null constraint",
+    "actual_sqlstate": "23502",
+    "expected_marker": "clinical_target_recall",
+    "expected_sqlstate": "23502",
+    "name": "recall_reject_None",
+    "passed": true
+  },
+  {
+    "name": "positive_synthetic_training_configuration",
+    "passed": true
+  },
+  {
+    "name": "A01_external_complementary_cross_dataset_positive_and_view_separation",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "expected_sqlstate": "23514",
+    "name": "A01_external_rejects_development",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "expected_sqlstate": "23514",
+    "name": "A01_external_rejects_final_test",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "expected_sqlstate": "23514",
+    "name": "A01_external_rejects_training_validation_final",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "expected_sqlstate": "23514",
+    "name": "A01_external_rejects_calibration_default",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "expected_sqlstate": "23514",
+    "name": "A01_external_rejects_calibration_selected",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "expected_sqlstate": "23514",
+    "name": "A01_missing_dataset_origin_id",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "expected_sqlstate": "23514",
+    "name": "A01_missing_dataset_origin_role",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "expected_sqlstate": "23514",
+    "name": "A01_missing_population_manifest_uri",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "expected_sqlstate": "23514",
+    "name": "A01_missing_population_manifest_sha256",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "expected_sqlstate": "23514",
+    "name": "A01_missing_dataset_provenance_uri",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "expected_sqlstate": "23514",
+    "name": "A01_missing_dataset_provenance_sha256",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_external_provenance\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_external_provenance",
+    "expected_sqlstate": "23514",
+    "name": "A01_invalid_provenance_hash",
+    "passed": true
+  },
+  {
+    "actual_message": "insert or update on table \"evaluations\" violates foreign key constraint \"fk_v2_evaluation_dataset_origin\"",
+    "actual_sqlstate": "23503",
+    "expected_marker": "fk_v2_evaluation_dataset_origin",
+    "expected_sqlstate": "23503",
+    "name": "A01_origin_FK",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_evaluation_scope",
+    "expected_sqlstate": "23514",
+    "name": "A01_no_external_validation_alias",
+    "passed": true
+  },
+  {
+    "actual_message": "V2_SCIENTIFIC_EVIDENCE_IMMUTABLE",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "V2_SCIENTIFIC_EVIDENCE_IMMUTABLE",
+    "expected_sqlstate": "P0001",
+    "name": "evaluation_immutable",
+    "passed": true
+  },
+  {
+    "actual_message": "TRAIN_CONFIGURATION_REQUIRED",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "TRAIN_CONFIGURATION_REQUIRED",
+    "expected_sqlstate": "P0001",
+    "name": "training_requires_configuration",
+    "passed": true
+  },
+  {
+    "actual_message": "EVALUATION_METRICS_MISSING",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "EVALUATION_METRICS_MISSING",
+    "expected_sqlstate": "P0001",
+    "name": "evaluation_requires_metrics_at_transaction_end",
+    "passed": true
+  },
+  {
+    "actual_message": "CHECKPOINT_TRAIN_MISMATCH",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "CHECKPOINT_TRAIN_MISMATCH",
+    "expected_sqlstate": "P0001",
+    "name": "evaluation_checkpoint_training_mismatch",
+    "passed": true
+  },
+  {
+    "actual_message": "insert or update on table \"evaluations\" violates foreign key constraint \"fk_evaluation_e10_record\"",
+    "actual_sqlstate": "23503",
+    "expected_marker": "fk_evaluation_e10_record",
+    "expected_sqlstate": "23503",
+    "name": "E10_missing_record_FK",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"evaluations\" violates check constraint \"v2_evaluations_check_3b1acb9be108\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "v2_evaluations_check_3b1acb9be108",
+    "expected_sqlstate": "23514",
+    "name": "E10_event_key_identity",
+    "passed": true
+  },
+  {
+    "name": "E10_positive_record_projection",
+    "passed": true
+  },
+  {
+    "actual_message": "RESULT_EVENT_SEQUENCE_INVALID",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "RESULT_EVENT_SEQUENCE_INVALID",
+    "expected_sqlstate": "P0001",
+    "name": "E10_sequence_gap",
+    "passed": true
+  },
+  {
+    "actual_message": "TRAIN_RECORD_IMMUTABLE",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "TRAIN_RECORD_IMMUTABLE",
+    "expected_sqlstate": "P0001",
+    "name": "E10_record_append_only",
+    "passed": true
+  },
+  {
+    "actual_message": "TRAIN_RECORD_IMMUTABLE",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "TRAIN_RECORD_IMMUTABLE",
+    "expected_sqlstate": "P0001",
+    "name": "E10_record_delete_forbidden",
+    "passed": true
+  },
+  {
+    "actual_message": "TRAIN_OWNER_FENCED",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "TRAIN_OWNER_FENCED",
+    "expected_sqlstate": "P0001",
+    "name": "E10_owner_fencing",
+    "passed": true
+  },
+  {
+    "actual_message": "E04_LEGACY_MIGRATOR_REQUIRED",
+    "actual_sqlstate": "42501",
+    "expected_marker": "E04_LEGACY_MIGRATOR_REQUIRED",
+    "expected_sqlstate": "42501",
+    "name": "E04_runtime_legacy_admission",
+    "passed": true
+  },
+  {
+    "actual_message": "E04_LEGACY_MIGRATOR_REQUIRED",
+    "actual_sqlstate": "42501",
+    "expected_marker": "E04_LEGACY_MIGRATOR_REQUIRED",
+    "expected_sqlstate": "42501",
+    "name": "E04_runtime_cannot_self_authorize",
+    "passed": true
+  },
+  {
+    "actual_message": "permission denied to set role \"capstone_v2_migrator\"",
+    "actual_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "expected_sqlstate": "42501",
+    "name": "E04_runtime_cannot_set_migrator",
+    "passed": true
+  },
+  {
+    "name": "calibration_VAL_pair_positive",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"run_threshold_calibration\" violates check constraint \"chk_run_threshold_calibration_split\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "chk_run_threshold_calibration_split",
+    "expected_sqlstate": "23514",
+    "name": "calibration_rejects_test",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"run_threshold_calibration\" violates check constraint \"chk_run_threshold_calibration_split\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "chk_run_threshold_calibration_split",
+    "expected_sqlstate": "23514",
+    "name": "calibration_rejects_external",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"run_threshold_calibration\" violates check constraint \"chk_run_threshold_calibration_split\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "chk_run_threshold_calibration_split",
+    "expected_sqlstate": "23514",
+    "name": "calibration_rejects_train",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"run_threshold_calibration\" violates check constraint \"ck_v2_calibration_val\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "ck_v2_calibration_val",
+    "expected_sqlstate": "23514",
+    "name": "calibration_rejects_validation",
+    "passed": true
+  },
+  {
+    "actual_message": "CALIBRATION_PAIR_INVALID",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "CALIBRATION_PAIR_INVALID",
+    "expected_sqlstate": "P0001",
+    "name": "calibration_pair_cannot_be_same",
+    "passed": true
+  },
+  {
+    "actual_message": "CALIBRATION_PAIR_INVALID",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "CALIBRATION_PAIR_INVALID",
+    "expected_sqlstate": "P0001",
+    "name": "calibration_pair_excludes_external",
+    "passed": true
+  },
+  {
+    "actual_message": "insert or update on table \"stage2_model_publications\" violates foreign key constraint \"fk_stage2_publication_model_training\"",
+    "actual_sqlstate": "23503",
+    "expected_marker": "fk_stage2_publication_model_training",
+    "expected_sqlstate": "23503",
+    "name": "publication_model_training_FK",
+    "passed": true
+  },
+  {
+    "actual_message": "insert or update on table \"stage2_model_publications\" violates foreign key constraint \"fk_stage2_publication_version_artifact\"",
+    "actual_sqlstate": "23503",
+    "expected_marker": "fk_stage2_publication_version_artifact",
+    "expected_sqlstate": "23503",
+    "name": "publication_checkpoint_FK",
+    "passed": true
+  },
+  {
+    "actual_message": "new row for relation \"stage2_model_publications\" violates check constraint \"chk_stage2_publication_state\"",
+    "actual_sqlstate": "23514",
+    "expected_marker": "chk_stage2_publication_state",
+    "expected_sqlstate": "23514",
+    "name": "publication_invalid_state",
+    "passed": true
+  },
+  {
+    "name": "publication_valid_lineage_positive",
+    "passed": true
+  },
+  {
+    "actual_message": "duplicate key value violates unique constraint \"uq_stage2_publication_active_version\"",
+    "actual_sqlstate": "23505",
+    "expected_marker": "uq_stage2_publication_active_version",
+    "expected_sqlstate": "23505",
+    "name": "publication_one_active_per_model_version",
+    "passed": true
+  },
+  {
+    "actual_message": "stage2_model_publication_events es append-only",
+    "actual_sqlstate": "P0001",
+    "expected_marker": "append-only",
+    "expected_sqlstate": "P0001",
+    "name": "publication_event_append_only",
+    "passed": true
+  },
+  {
+    "actual_message": "permission denied for schema public",
+    "actual_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "expected_sqlstate": "42501",
+    "name": "no_DDL",
+    "passed": true
+  },
+  {
+    "actual_message": "permission denied to create temporary tables in database \"capstone_v2_isolated_15ea056917ee\"",
+    "actual_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "expected_sqlstate": "42501",
+    "name": "no_TEMP",
+    "passed": true
+  },
+  {
+    "actual_message": "permission denied for table datasets",
+    "actual_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "expected_sqlstate": "42501",
+    "name": "no_TRUNCATE",
+    "passed": true
+  },
+  {
+    "actual_message": "permission denied for table alembic_version",
+    "actual_sqlstate": "42501",
+    "expected_marker": "permission denied",
+    "expected_sqlstate": "42501",
+    "name": "no_alembic_write",
+    "passed": true
+  },
+  {
+    "actual_message": "relation \"schema_migrations\" does not exist",
+    "actual_sqlstate": "42P01",
+    "expected_marker": "does not exist",
+    "expected_sqlstate": "42P01",
+    "name": "no_ledger_write",
+    "passed": true
+  },
+  {
+    "name": "all_valid_fixtures_pass_deferred_constraints",
+    "passed": true
+  }
+]

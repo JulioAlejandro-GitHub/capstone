@@ -1,0 +1,54 @@
+{
+  "activation_version_mismatches": 0,
+  "assignment_source_mismatches": 0,
+  "official_total": {
+    "patients": 201,
+    "total": 27558
+  },
+  "official_version": [
+    {
+      "frozen_at_present": true,
+      "id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "source_record_count": 27558,
+      "status": "FROZEN"
+    }
+  ],
+  "patients_in_multiple_splits": 0,
+  "physical_roots": [
+    {
+      "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "dataset_version_id": null,
+      "records": 27558
+    },
+    {
+      "dataset_dir": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_physical_split",
+      "dataset_version_id": null,
+      "records": 27558
+    }
+  ],
+  "referenced_role_count": 1,
+  "splits": [
+    {
+      "images": 2685,
+      "patients": 20,
+      "split_name": "test"
+    },
+    {
+      "images": 22180,
+      "patients": 161,
+      "split_name": "train"
+    },
+    {
+      "images": 2693,
+      "patients": 20,
+      "split_name": "val"
+    }
+  ],
+  "user_status_counts": [
+    {
+      "status": "active",
+      "users": 1
+    }
+  ],
+  "users_with_roles": 1
+}

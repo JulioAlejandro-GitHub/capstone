@@ -2831,7 +2831,15 @@ END $$;
 CREATE FUNCTION public.dbv21_xai_evaluation_complete() RETURNS trigger LANGUAGE plpgsql SET search_path=public,pg_catalog AS $$
 DECLARE eid uuid; q public.xai_quantitative_evaluations%ROWTYPE; p public.xai_evaluation_protocols%ROWTYPE; n integer;
 BEGIN
- eid:=CASE WHEN TG_TABLE_NAME='xai_quantitative_evaluations' THEN NEW.id ELSE NEW.evaluation_id END;
+ IF TG_TABLE_NAME = 'xai_quantitative_evaluations' THEN
+     eid := NEW.id;
+ ELSIF TG_TABLE_NAME = 'xai_evaluation_members' THEN
+     eid := NEW.evaluation_id;
+ ELSE
+     RAISE EXCEPTION
+         'dbv21_xai_evaluation_complete invoked from unsupported table: %',
+         TG_TABLE_NAME;
+ END IF;
  SELECT * INTO STRICT q FROM public.xai_quantitative_evaluations WHERE id=eid;
  SELECT * INTO STRICT p FROM public.xai_evaluation_protocols WHERE id=q.protocol_id;
  SELECT count(*) INTO n FROM public.xai_evaluation_members WHERE evaluation_id=eid;

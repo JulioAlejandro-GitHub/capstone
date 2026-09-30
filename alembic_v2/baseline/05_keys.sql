@@ -1,4 +1,4 @@
--- E10.10.5A frozen Alembic resource. Execute only through the guarded v2 environment.
+-- DBV2.2 + approved R1. Install exclusively via guarded Alembic v2.
 ALTER TABLE public.artifacts ADD CONSTRAINT artifacts_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.assessment_artifacts ADD CONSTRAINT assessment_artifacts_pkey PRIMARY KEY (attempt_id, sample_id, role);
@@ -111,8 +111,6 @@ ALTER TABLE public.microscopy_analysis_runs ADD CONSTRAINT microscopy_analysis_r
 
 ALTER TABLE public.microscopy_images ADD CONSTRAINT microscopy_images_pkey PRIMARY KEY (id);
 
-ALTER TABLE public.model_governance_backfill_audit ADD CONSTRAINT model_governance_backfill_audit_pkey PRIMARY KEY (id);
-
 ALTER TABLE public.model_versions ADD CONSTRAINT model_versions_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.models ADD CONSTRAINT models_pkey PRIMARY KEY (id);
@@ -146,8 +144,6 @@ ALTER TABLE public.run_model_deployments ADD CONSTRAINT run_model_deployments_pk
 ALTER TABLE public.run_threshold_calibration ADD CONSTRAINT run_threshold_calibration_pkey PRIMARY KEY (run_threshold_calibration_id);
 
 ALTER TABLE public.runs ADD CONSTRAINT runs_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.schema_migrations ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (migration_id);
 
 ALTER TABLE public.scientific_cases ADD CONSTRAINT scientific_cases_pkey PRIMARY KEY (id);
 
@@ -347,11 +343,23 @@ ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_unique_ee15a951
 
 ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_primary_8c8464f42472 PRIMARY KEY (id);
 
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_unique_ecdefdc0d70a UNIQUE NULLS NOT DISTINCT (evidence_id, comparison_evidence_id, metric_name, metric_version, protocol_hash, seed);
-
 ALTER TABLE public.xai_interpretations ADD CONSTRAINT v2_xai_interpretations_primary_8c8464f42472 PRIMARY KEY (id);
 
 ALTER TABLE public.xai_specialist_reviews ADD CONSTRAINT v2_xai_specialist_reviews_primary_8c8464f42472 PRIMARY KEY (id);
+
+ALTER TABLE public.xai_method_configurations ADD CONSTRAINT xai_method_configurations_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.xai_region_attributions ADD CONSTRAINT xai_region_attributions_pkey PRIMARY KEY (xai_evidence_id, region_type, region_index);
+
+ALTER TABLE public.xai_evaluation_protocols ADD CONSTRAINT xai_evaluation_protocols_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.xai_evaluation_members ADD CONSTRAINT xai_evaluation_members_pkey PRIMARY KEY (evaluation_id, xai_evidence_id);
+
+ALTER TABLE public.xai_method_configurations ADD CONSTRAINT uq_xai_method_configuration_hash UNIQUE (configuration_hash);
+
+ALTER TABLE public.xai_evaluation_protocols ADD CONSTRAINT uq_xai_protocol_hash UNIQUE (protocol_hash);
+
+ALTER TABLE public.xai_evaluation_protocols ADD CONSTRAINT uq_xai_protocol_metric UNIQUE (id, metric_name);
 
 CREATE UNIQUE INDEX uq_artifacts_id_run_id ON public.artifacts (id, run_id);
 

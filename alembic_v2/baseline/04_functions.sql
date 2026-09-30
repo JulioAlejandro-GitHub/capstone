@@ -1,9 +1,5 @@
--- E10.10.5A frozen Alembic resource. Execute only through the guarded v2 environment.
-CREATE OR REPLACE FUNCTION public.assessment_attempt_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+-- DBV2.2 + approved R1. Install exclusively via guarded Alembic v2.
+CREATE OR REPLACE FUNCTION public.assessment_attempt_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE i record; n integer;
 BEGIN
  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'ASSESSMENT_HISTORY_IMMUTABLE'; END IF;
@@ -28,13 +24,9 @@ BEGIN
   END IF;
  END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.assessment_consumer_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.assessment_consumer_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF NOT EXISTS(SELECT 1 FROM campaign_members m JOIN campaign_attempts a ON a.id=m.accepted_attempt_id
  JOIN train_execution_sessions s ON s.run_id=a.training_run_id JOIN assessment_identities i ON i.id=NEW.identity_id
@@ -47,13 +39,9 @@ BEGIN
  AND i.identity->'model'->'input_contract'=s.configuration->'resolved'->'input_contract')
  THEN RAISE EXCEPTION 'ASSESSMENT_CAMPAIGN_CONFLICT'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.assessment_identity_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.assessment_identity_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF NOT EXISTS(SELECT 1 FROM runs WHERE id=NEW.training_run_id AND run_type='training')
  THEN RAISE EXCEPTION 'ASSESSMENT_TRAIN_REQUIRED'; END IF;
@@ -70,20 +58,12 @@ BEGIN
       OR s->>'sha256' IS NULL OR s->>'sha256' !~ '^[a-f0-9]{64}$')
  THEN RAISE EXCEPTION 'ASSESSMENT_SAMPLE_INVALID'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.assessment_immutable()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
-BEGIN RAISE EXCEPTION 'ASSESSMENT_HISTORY_IMMUTABLE'; END $function$;
+CREATE OR REPLACE FUNCTION public.assessment_immutable() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
+BEGIN RAISE EXCEPTION 'ASSESSMENT_HISTORY_IMMUTABLE'; END $$;
 
-CREATE OR REPLACE FUNCTION public.assessment_result_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.assessment_result_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE a record; i jsonb; sample jsonb;
 BEGIN
  IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'ASSESSMENT_RESULT_IMMUTABLE'; END IF;
@@ -111,26 +91,18 @@ BEGIN
    END IF;
  END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_attempt_state()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_attempt_state() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  UPDATE campaign_members SET state=NEW.state,
  accepted_attempt_id=CASE WHEN NEW.state='verified' THEN
    (SELECT id FROM campaign_attempts WHERE member_id=NEW.member_id AND state='verified' ORDER BY ordinal LIMIT 1)
    ELSE NULL END WHERE id=NEW.member_id;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_audit()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_audit() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE before_value jsonb; after_value jsonb; event_id uuid;
 BEGIN
  event_id=gen_random_uuid();
@@ -142,25 +114,17 @@ BEGIN
    coalesce(after_value->>'id',before_value->>'id',after_value->>'campaign_id',before_value->>'campaign_id'),
    'DB','campaigns.e4',event_id::text,current_user,before_value,after_value,'{}'::jsonb,true);
  RETURN coalesce(NEW,OLD);
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_catalog_identity_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_catalog_identity_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF NEW.name IS DISTINCT FROM OLD.name AND EXISTS(
    SELECT 1 FROM runs r JOIN campaign_attempts a ON a.training_run_id=r.id WHERE r.model_id=OLD.id)
  THEN RAISE EXCEPTION 'LINKED_MODEL_NAME_IMMUTABLE'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_configuration_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_configuration_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE state_value text;
 BEGIN
  SELECT state INTO state_value FROM experimental_campaigns WHERE id=coalesce(NEW.campaign_id,OLD.campaign_id) FOR UPDATE;
@@ -171,23 +135,14 @@ BEGIN
     OR encode(sha256(convert_to(NEW.canonical_configuration,'UTF8')),'hex')<>NEW.configuration_hash
     THEN RAISE EXCEPTION 'CONFIGURATION_HASH_CONFLICT'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_environment_identity(v jsonb)
- RETURNS jsonb
- LANGUAGE sql
- IMMUTABLE
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_environment_identity(v jsonb) RETURNS jsonb LANGUAGE sql IMMUTABLE SET search_path TO 'public', 'pg_catalog' AS $$
  SELECT jsonb_build_object('source_sha256',v->'source_sha256','python',v->'python','tensorflow',v->'tensorflow',
                           'packages',v->'packages','determinism_environment',v->'determinism_environment')
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.campaign_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE ev record; configs jsonb; members jsonb; p jsonb;
 BEGIN
  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'CAMPAIGN_DELETE_FORBIDDEN'; END IF;
@@ -268,27 +223,17 @@ BEGIN
       THEN RAISE EXCEPTION 'INVALID_INITIAL_MEMBERS'; END IF;
  END IF;
  NEW.updated_at=now(); RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_json_integer(v jsonb, minimum_value numeric)
- RETURNS boolean
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_json_integer(v jsonb, minimum_value numeric) RETURNS boolean LANGUAGE plpgsql IMMUTABLE SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE n numeric;
 BEGIN
  IF jsonb_typeof(v) IS DISTINCT FROM 'number' THEN RETURN false; END IF;
  n=(v #>> '{}')::numeric;
  RETURN n=trunc(n) AND n>=minimum_value AND n<=2147483647;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_json_object(v jsonb, required_keys text[])
- RETURNS boolean
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_json_object(v jsonb, required_keys text[]) RETURNS boolean LANGUAGE plpgsql IMMUTABLE SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE k text;
 BEGIN
  IF jsonb_typeof(v) IS DISTINCT FROM 'object' THEN RETURN false; END IF;
@@ -296,22 +241,13 @@ BEGIN
    IF NOT (v ? k) OR v->k='null'::jsonb THEN RETURN false; END IF;
  END LOOP;
  RETURN true;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_json_string(v jsonb)
- RETURNS boolean
- LANGUAGE sql
- IMMUTABLE
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_json_string(v jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE SET search_path TO 'public', 'pg_catalog' AS $$
  SELECT coalesce(jsonb_typeof(v)='string' AND length(btrim(v #>> '{}'))>0,false)
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.campaign_member_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_member_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE parent_state text; current_attempt text;
 BEGIN
  SELECT state INTO parent_state FROM experimental_campaigns WHERE id=coalesce(NEW.campaign_id,OLD.campaign_id) FOR UPDATE;
@@ -333,13 +269,9 @@ BEGIN
    END IF;
  END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_model_matches(run_id uuid, member uuid)
- RETURNS boolean
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_model_matches(run_id uuid, member uuid) RETURNS boolean LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE model_name text; cfg jsonb; registry jsonb; d jsonb; matches integer;
 BEGIN
  SELECT mo.name,cf.configuration,c.registry_snapshot INTO model_name,cfg,registry
@@ -352,13 +284,9 @@ BEGIN
  WHERE item->>'id'=cfg->>'model_id' AND item->>'version'=cfg->>'adapter_version'
    AND (item->>'id'=model_name OR item->'aliases' @> to_jsonb(ARRAY[model_name]));
  RETURN matches=1;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.controlled_binding_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.controlled_binding_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF NOT EXISTS(SELECT 1 FROM campaign_attempts a JOIN train_execution_sessions s ON s.attempt_id=a.id
  JOIN campaign_technical_revisions v ON v.id=NEW.revision_id JOIN runs r ON r.id=NEW.run_id
@@ -368,36 +296,27 @@ BEGIN
  AND s.dataset IS NOT DISTINCT FROM r.execution_parameters->'model_configuration_e2'->'dataset')
  THEN RAISE EXCEPTION 'CONTROLLED_BINDING_INVALID'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.controlled_pause_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.controlled_pause_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF NEW.state IS DISTINCT FROM 'paused' AND EXISTS(
   SELECT 1 FROM campaign_controlled_requests q JOIN campaign_attempts a ON a.id=q.attempt_id
   WHERE q.campaign_id=NEW.id AND a.state IN ('active','completed'))
  THEN RAISE EXCEPTION 'CONTROLLED_TRAIN_REQUIRES_PAUSED'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.controlled_run_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.controlled_run_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE q record;
 BEGIN
  SELECT * INTO q FROM campaign_controlled_requests WHERE run_id=NEW.id;
  IF FOUND AND NEW.campaign_id IS DISTINCT FROM q.campaign_id THEN RAISE EXCEPTION 'CONTROLLED_CAMPAIGN_ID_REQUIRED'; END IF;
  IF TG_OP='UPDATE' AND NEW.campaign_id IS DISTINCT FROM OLD.campaign_id THEN RAISE EXCEPTION 'RUN_CAMPAIGN_IMMUTABLE'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE FUNCTION public.e04_assert_calibration(member_id uuid) RETURNS void LANGUAGE plpgsql
- SET search_path=public,pg_catalog AS $$
+CREATE FUNCTION public.e04_assert_calibration(member_id uuid) RETURNS void LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE e public.evaluations%ROWTYPE; d public.evaluations%ROWTYPE; s public.evaluations%ROWTYPE;
  c public.run_threshold_calibration%ROWTYPE; ev jsonb; result jsonb; context jsonb;
  n integer; m public.run_clinical_metrics%ROWTYPE; expected jsonb; k text;
@@ -482,8 +401,7 @@ BEGIN
  END IF;
 END $$;
 
-CREATE FUNCTION public.e04_calibration_immutable() RETURNS trigger LANGUAGE plpgsql
- SET search_path=public,pg_catalog AS $$
+CREATE FUNCTION public.e04_calibration_immutable() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF EXISTS(SELECT 1 FROM public.evaluations WHERE source_kind='e10'
  AND id IN (OLD.default_evaluation_id,OLD.selected_evaluation_id)) THEN
@@ -493,8 +411,7 @@ BEGIN
  RETURN NEW;
 END $$;
 
-CREATE FUNCTION public.e04_legacy_admission() RETURNS trigger LANGUAGE plpgsql
- SET search_path=public,pg_catalog AS $$
+CREATE FUNCTION public.e04_legacy_admission() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF NEW.source_kind='legacy' AND current_user <> 'capstone_v2_migrator' THEN
    RAISE EXCEPTION 'E04_LEGACY_MIGRATOR_REQUIRED' USING ERRCODE='42501';
@@ -502,10 +419,7 @@ BEGIN
  RETURN NEW;
 END $$;
 
-CREATE OR REPLACE FUNCTION public.enforce_activation_materialization_consistency()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.enforce_activation_materialization_consistency() RETURNS trigger LANGUAGE plpgsql AS $$
         DECLARE materialization_version UUID;
         BEGIN
           SELECT dataset_version_id INTO materialization_version
@@ -516,12 +430,9 @@ AS $function$
           END IF;
           RETURN NEW;
         END;
-        $function$;
+        $$;
 
-CREATE OR REPLACE FUNCTION public.enforce_dataset_assignment_consistency()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.enforce_dataset_assignment_consistency() RETURNS trigger LANGUAGE plpgsql AS $$
         DECLARE
           source_identity UUID;
           source_class_index INTEGER;
@@ -565,12 +476,9 @@ AS $function$
           END IF;
           RETURN NEW;
         END;
-        $function$;
+        $$;
 
-CREATE OR REPLACE FUNCTION public.enforce_dataset_version_lifecycle()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.enforce_dataset_version_lifecycle() RETURNS trigger LANGUAGE plpgsql AS $$
         BEGIN
           IF OLD.status = 'FROZEN' AND (
             NEW.name IS DISTINCT FROM OLD.name OR
@@ -610,12 +518,9 @@ AS $function$
           END IF;
           RETURN NEW;
         END;
-        $function$;
+        $$;
 
-CREATE OR REPLACE FUNCTION public.enforce_model_version_governance()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.enforce_model_version_governance() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
     owner_run_type TEXT;
 BEGIN
@@ -690,12 +595,9 @@ BEGIN
 
     RETURN NEW;
 END;
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.enforce_run_lineage_governance()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.enforce_run_lineage_governance() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
     parent_type TEXT;
     child_type TEXT;
@@ -755,20 +657,12 @@ BEGIN
 
     RETURN NEW;
 END;
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.execution_event_immutable()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
-BEGIN RAISE EXCEPTION 'EXECUTION_HISTORY_IMMUTABLE'; END $function$;
+CREATE OR REPLACE FUNCTION public.execution_event_immutable() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
+BEGIN RAISE EXCEPTION 'EXECUTION_HISTORY_IMMUTABLE'; END $$;
 
-CREATE OR REPLACE FUNCTION public.experiment_require_owner()
- RETURNS void
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.experiment_require_owner() RETURNS void LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE g record;
 BEGIN
  SELECT * INTO g FROM experiment_execution_gate WHERE singleton FOR UPDATE;
@@ -776,58 +670,31 @@ BEGIN
  OR NOT (EXISTS(SELECT 1 FROM pg_locks WHERE locktype='advisory' AND classid=120994 AND objid=1 AND objsubid=2 AND pid=g.db_pid AND granted)
  OR EXISTS(SELECT 1 FROM local_execution_jobs WHERE owner=g.owner AND state IN ('held','calculation_reported')))
  THEN RAISE EXCEPTION 'GLOBAL_EXECUTION_OWNER_REQUIRED'; END IF;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.prevent_audit_event_mutation()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.prevent_audit_event_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
       BEGIN
         RAISE EXCEPTION 'audit_events is append-only';
-      END $function$;
+      END $$;
 
-CREATE OR REPLACE FUNCTION public.prevent_model_governance_audit_mutation()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RAISE EXCEPTION
-        'model_governance_backfill_audit es append-only; registre un evento revert en lugar de %',
-        TG_OP
-        USING ERRCODE = '55000';
-END;
-$function$;
-
-CREATE OR REPLACE FUNCTION public.prevent_stage2_publication_event_mutation()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.prevent_stage2_publication_event_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     RAISE EXCEPTION 'stage2_model_publication_events es append-only';
 END;
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.prevent_validation_annotation_event_mutation()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.prevent_validation_annotation_event_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       RAISE EXCEPTION 'scientific validation annotation events are append-only'
         USING ERRCODE='55000';
-    END $function$;
+    END $$;
 
-CREATE OR REPLACE FUNCTION public.prevent_validation_membership_mutation()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.prevent_validation_membership_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       RAISE EXCEPTION 'scientific validation membership is append-only';
-    END $function$;
+    END $$;
 
-CREATE OR REPLACE FUNCTION public.protect_cell_classification_run()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_cell_classification_run() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE
       actual_input_count INTEGER;
       actual_eligible_count INTEGER;
@@ -960,12 +827,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.protect_cell_detection_run_identity()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_cell_detection_run_identity() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       IF TG_OP = 'DELETE' THEN
         RAISE EXCEPTION 'cell_detection_runs cannot be deleted'
@@ -1003,12 +867,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.protect_cell_explanation()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_cell_explanation() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       IF TG_OP = 'DELETE' THEN
         RAISE EXCEPTION 'cell_explanations cannot be deleted'
@@ -1042,12 +903,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.protect_deployed_model_version_payload()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_deployed_model_version_payload() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF TG_OP = 'UPDATE'
        AND ROW(
@@ -1096,12 +954,9 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.protect_frozen_dataset_assignment_updates()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_frozen_dataset_assignment_updates() RETURNS trigger LANGUAGE plpgsql AS $$
         DECLARE old_status TEXT; new_status TEXT;
         BEGIN
           SELECT status INTO old_status
@@ -1114,12 +969,9 @@ AS $function$
           END IF;
           RETURN NEW;
         END;
-        $function$;
+        $$;
 
-CREATE OR REPLACE FUNCTION public.protect_frozen_dataset_assignments()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_frozen_dataset_assignments() RETURNS trigger LANGUAGE plpgsql AS $$
         DECLARE version_id UUID; version_status TEXT;
         BEGIN
           version_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.dataset_version_id ELSE NEW.dataset_version_id END;
@@ -1130,12 +982,9 @@ AS $function$
           END IF;
           RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
         END;
-        $function$;
+        $$;
 
-CREATE OR REPLACE FUNCTION public.protect_frozen_dataset_version_sources()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_frozen_dataset_version_sources() RETURNS trigger LANGUAGE plpgsql AS $$
         DECLARE old_status TEXT; new_status TEXT;
         BEGIN
           IF TG_OP <> 'INSERT' THEN
@@ -1150,12 +999,9 @@ AS $function$
           END IF;
           RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
         END;
-        $function$;
+        $$;
 
-CREATE OR REPLACE FUNCTION public.protect_governed_artifact_identity()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_governed_artifact_identity() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF EXISTS (
         SELECT 1
@@ -1180,12 +1026,9 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.protect_validation_annotation()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_validation_annotation() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       IF TG_OP='DELETE' THEN
         RAISE EXCEPTION 'scientific validation annotations cannot be deleted'
@@ -1206,12 +1049,9 @@ AS $function$
           USING ERRCODE='40001';
       END IF;
       RETURN NEW;
-    END $function$;
+    END $$;
 
-CREATE OR REPLACE FUNCTION public.protect_validation_snapshot()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.protect_validation_snapshot() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       IF TG_OP = 'DELETE' THEN
         RAISE EXCEPTION 'scientific validation snapshots cannot be deleted';
@@ -1227,34 +1067,24 @@ AS $function$
         RAISE EXCEPTION 'scientific validation snapshot identity is immutable';
       END IF;
       RETURN NEW;
-    END $function$;
+    END $$;
 
-CREATE OR REPLACE FUNCTION public.reject_cell_analysis_row_mutation()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.reject_cell_analysis_row_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       RAISE EXCEPTION 'cell analysis result and review rows are append-only'
         USING ERRCODE = '55000';
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.reject_cell_classification_row_mutation()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.reject_cell_classification_row_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       RAISE EXCEPTION
         'cell classification inputs, predictions, summaries, events and reviews are append-only'
         USING ERRCODE = '55000';
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.train_record_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.train_record_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE s record;
 BEGIN
  IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'TRAIN_RECORD_IMMUTABLE'; END IF;
@@ -1262,13 +1092,9 @@ BEGIN
  IF s.state IS DISTINCT FROM 'active' OR s.owner::text IS DISTINCT FROM current_setting('capstone.train_owner',true)
  THEN RAISE EXCEPTION 'TRAIN_OWNER_FENCED'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.train_revision_binding_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.train_revision_binding_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF NOT EXISTS(SELECT 1 FROM campaign_attempts a JOIN campaign_members m ON m.id=a.member_id
  JOIN train_execution_sessions s ON s.attempt_id=a.id JOIN campaign_technical_revisions v ON v.id=NEW.revision_id
@@ -1276,13 +1102,9 @@ BEGIN
  AND s.environment IS NOT DISTINCT FROM v.payload->'environment')
  THEN RAISE EXCEPTION 'TRAIN_REVISION_BINDING_INVALID'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.train_session_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.train_session_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'TRAIN_HISTORY_IMMUTABLE'; END IF;
  IF NEW.run_id<>OLD.run_id OR NEW.owner<>OLD.owner OR NEW.attempt_id IS DISTINCT FROM OLD.attempt_id
@@ -1302,10 +1124,9 @@ BEGIN
    OR NOT EXISTS(SELECT 1 FROM train_execution_records WHERE run_id=NEW.run_id AND kind='artifact')
  ) THEN RAISE EXCEPTION 'TRAIN_VERIFICATION_INCOMPLETE'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE FUNCTION public.v2_binary_metric_guard() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$
+CREATE FUNCTION public.v2_binary_metric_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE e public.evaluations%ROWTYPE;
 BEGIN
  SELECT * INTO STRICT e FROM public.evaluations WHERE id=NEW.evaluation_id;
@@ -1329,10 +1150,10 @@ BEGIN
  RETURN NEW;
 END $$;
 
-CREATE FUNCTION public.v2_calibration_pair_guard() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$
+CREATE FUNCTION public.v2_calibration_pair_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE d public.evaluations%ROWTYPE; s public.evaluations%ROWTYPE;
 BEGIN
+ IF NOT EXISTS (SELECT 1 FROM public.run_configurations rc WHERE rc.run_id=NEW.run_id AND rc.clinical_target_recall=NEW.target_recall) THEN RAISE EXCEPTION 'CALIBRATION_CONFIGURATION_TARGET_MISMATCH'; END IF;
  SELECT * INTO STRICT d FROM public.evaluations WHERE id=NEW.default_evaluation_id;
  SELECT * INTO STRICT s FROM public.evaluations WHERE id=NEW.selected_evaluation_id;
  IF d.id=s.id OR d.split<>'val' OR s.split<>'val'
@@ -1344,8 +1165,7 @@ BEGIN
  RETURN NULL;
 END $$;
 
-CREATE FUNCTION public.v2_configuration_guard() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$
+CREATE FUNCTION public.v2_configuration_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE r public.runs%ROWTYPE; j jsonb; cfg jsonb;
 BEGIN
  SELECT * INTO STRICT r FROM public.runs WHERE id=NEW.run_id;
@@ -1366,12 +1186,12 @@ BEGIN
  OR j#>>'{model,preprocessing}' IS DISTINCT FROM NEW.normalization
  OR j#>>'{recipe,loss}' IS DISTINCT FROM NEW.loss_function
  OR (j#>>'{execution,calibrate_threshold}')::boolean IS DISTINCT FROM NEW.calibration_enabled
+ OR (j#>>'{execution,target_recall}')::numeric IS DISTINCT FROM NEW.clinical_target_recall
  THEN RAISE EXCEPTION 'FROZEN_CONFIGURATION_MISMATCH'; END IF;
  RETURN NEW;
 END $$;
 
-CREATE FUNCTION public.v2_evaluation_complete() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$
+CREATE FUNCTION public.v2_evaluation_complete() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE e public.evaluations%ROWTYPE; n integer; w numeric; r public.runs%ROWTYPE; ai public.assessment_identities%ROWTYPE; ast text;
 BEGIN
  IF TG_TABLE_NAME='evaluations' THEN e:=NEW; ELSE SELECT * INTO STRICT e FROM public.evaluations WHERE id=NEW.evaluation_id; END IF;
@@ -1394,23 +1214,19 @@ BEGIN
  RETURN NULL;
 END $$;
 
-CREATE FUNCTION public.v2_immutable() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$ BEGIN RAISE EXCEPTION 'V2_SCIENTIFIC_EVIDENCE_IMMUTABLE'; END $$;
+CREATE FUNCTION public.v2_immutable() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$ BEGIN RAISE EXCEPTION 'V2_SCIENTIFIC_EVIDENCE_IMMUTABLE'; END $$;
 
-CREATE FUNCTION public.v2_run_configuration_required() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$ BEGIN
+CREATE FUNCTION public.v2_run_configuration_required() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$ BEGIN
  IF NEW.run_type='training' AND NOT EXISTS(SELECT 1 FROM public.run_configurations WHERE run_id=NEW.id) THEN RAISE EXCEPTION 'TRAIN_CONFIGURATION_REQUIRED'; END IF;
  RETURN NULL;
 END $$;
 
-CREATE FUNCTION public.v2_xai_artifact_guard() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$ BEGIN
+CREATE FUNCTION public.v2_xai_artifact_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$ BEGIN
  IF TG_OP='DELETE' OR (to_jsonb(NEW)-'availability') IS DISTINCT FROM (to_jsonb(OLD)-'availability') THEN RAISE EXCEPTION 'XAI_ARTIFACT_IMMUTABLE'; END IF;
  RETURN NEW;
 END $$;
 
-CREATE FUNCTION public.v2_xai_artifact_source_guard() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$
+CREATE FUNCTION public.v2_xai_artifact_source_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE e public.xai_evidence%ROWTYPE; p jsonb;
 BEGIN
  SELECT * INTO STRICT e FROM public.xai_evidence WHERE id=NEW.evidence_id;
@@ -1422,41 +1238,31 @@ BEGIN
  RETURN NEW;
 END $$;
 
-CREATE FUNCTION public.v2_xai_comparison_guard() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$
-DECLARE a public.xai_evidence%ROWTYPE; b public.xai_evidence%ROWTYPE;
+CREATE FUNCTION public.v2_xai_lineage_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
+DECLARE v public.model_versions%ROWTYPE; method_key text; training_id uuid;
 BEGIN
- IF NEW.comparison_evidence_id IS NOT NULL THEN
- SELECT * INTO STRICT a FROM public.xai_evidence WHERE id=NEW.evidence_id;
- SELECT * INTO STRICT b FROM public.xai_evidence WHERE id=NEW.comparison_evidence_id;
- IF a.input_sha256 IS DISTINCT FROM b.input_sha256 OR a.input_contract_hash IS DISTINCT FROM b.input_contract_hash
- OR a.target_class IS DISTINCT FROM b.target_class OR a.explained_output IS DISTINCT FROM b.explained_output
- OR a.processing_stage IS DISTINCT FROM b.processing_stage THEN RAISE EXCEPTION 'XAI_COMPARISON_INCOMPATIBLE'; END IF;
- END IF;
- RETURN NEW;
-END $$;
-
-CREATE FUNCTION public.v2_xai_lineage_guard() RETURNS trigger LANGUAGE plpgsql
- SET search_path = public, pg_catalog AS $$
-DECLARE v public.model_versions%ROWTYPE;
-BEGIN
+ SELECT method INTO STRICT method_key FROM public.xai_method_configurations WHERE id=NEW.method_configuration_id;
+ IF method_key='shap' AND (NEW.background_manifest_uri IS NULL OR NEW.background_manifest_sha256 IS NULL) THEN RAISE EXCEPTION 'XAI_SHAP_BACKGROUND_REQUIRED'; END IF;
+ IF NEW.model_version_id IS NOT NULL THEN
  SELECT * INTO STRICT v FROM public.model_versions WHERE id=NEW.model_version_id;
  IF v.checkpoint_artifact_id IS DISTINCT FROM NEW.checkpoint_artifact_id OR v.artifact_sha256 IS DISTINCT FROM NEW.checkpoint_sha256 THEN RAISE EXCEPTION 'XAI_MODEL_CHECKPOINT_MISMATCH'; END IF;
- IF NEW.ml_explanation_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.explainability_results x WHERE x.id=NEW.ml_explanation_id AND x.run_id IS NOT DISTINCT FROM NEW.run_id AND x.prediction_id IS NOT DISTINCT FROM NEW.prediction_id AND lower(x.method)=NEW.method) THEN RAISE EXCEPTION 'XAI_ML_LINEAGE_MISMATCH'; END IF;
- IF NEW.cell_explanation_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.cell_explanations x WHERE x.id=NEW.cell_explanation_id AND x.cell_prediction_id=NEW.cell_prediction_id AND lower(x.method)=NEW.method) THEN RAISE EXCEPTION 'XAI_CELL_LINEAGE_MISMATCH'; END IF;
+ training_id:=v.training_run_id;
+ ELSE
+ SELECT a.run_id INTO training_id FROM public.artifacts a JOIN public.runs r ON r.id=a.run_id WHERE a.id=NEW.checkpoint_artifact_id AND a.checksum=NEW.checkpoint_sha256 AND r.run_type='training';
+ IF training_id IS NULL OR training_id IS DISTINCT FROM NEW.run_id THEN RAISE EXCEPTION 'XAI_PROVISIONAL_CHECKPOINT_MISMATCH'; END IF;
+ END IF;
+ IF NEW.ml_explanation_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.explainability_results x WHERE x.id=NEW.ml_explanation_id AND x.run_id IS NOT DISTINCT FROM NEW.run_id AND x.prediction_id IS NOT DISTINCT FROM NEW.prediction_id AND lower(x.method)=method_key) THEN RAISE EXCEPTION 'XAI_ML_LINEAGE_MISMATCH'; END IF;
+ IF NEW.cell_explanation_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.cell_explanations x WHERE x.id=NEW.cell_explanation_id AND x.cell_prediction_id=NEW.cell_prediction_id AND lower(x.method)=method_key) THEN RAISE EXCEPTION 'XAI_CELL_LINEAGE_MISMATCH'; END IF;
  IF NEW.prediction_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.predictions p WHERE p.id=NEW.prediction_id AND coalesce(p.model_version_id,p.classifier_model_version_id)=NEW.model_version_id) THEN RAISE EXCEPTION 'XAI_PREDICTION_MODEL_MISMATCH'; END IF;
  IF NEW.dataset_source_record_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.dataset_source_records d WHERE d.id=NEW.dataset_source_record_id AND d.source_file_sha256=NEW.input_sha256) THEN RAISE EXCEPTION 'XAI_SOURCE_IMAGE_MISMATCH'; END IF;
  IF NEW.assessment_attempt_id IS NOT NULL AND NEW.assessment_sample_id IS DISTINCT FROM NEW.dataset_source_record_id THEN RAISE EXCEPTION 'XAI_ASSESSMENT_SAMPLE_MISMATCH'; END IF;
- IF NEW.assessment_attempt_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.assessment_attempts aa JOIN public.assessment_identities ai ON ai.id=aa.identity_id WHERE aa.id=NEW.assessment_attempt_id AND ai.kind='explain' AND ai.training_run_id=v.training_run_id AND ai.identity#>>'{explanation,method}'=NEW.method AND (ai.identity#>>'{explanation,class}')::smallint=NEW.target_class AND ai.identity#>>'{model,sha256}'=NEW.checkpoint_sha256) THEN RAISE EXCEPTION 'XAI_ASSESSMENT_MODEL_MISMATCH'; END IF;
+ IF NEW.assessment_attempt_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.assessment_attempts aa JOIN public.assessment_identities ai ON ai.id=aa.identity_id WHERE aa.id=NEW.assessment_attempt_id AND ai.kind='explain' AND ai.training_run_id=training_id AND ai.identity#>>'{explanation,method}'=method_key AND (ai.identity#>>'{explanation,class}')::smallint=NEW.target_class AND ai.identity#>>'{model,sha256}'=NEW.checkpoint_sha256) THEN RAISE EXCEPTION 'XAI_ASSESSMENT_MODEL_MISMATCH'; END IF;
  IF NEW.cell_prediction_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.cell_predictions p JOIN public.cell_classification_inputs i ON i.id=p.classification_input_id JOIN public.cell_classification_runs cr ON cr.id=p.classification_run_id WHERE p.id=NEW.cell_prediction_id AND cr.model_registry_id=NEW.model_version_id AND i.microscopy_image_id=NEW.microscopy_image_id AND i.crop_sha256=NEW.input_sha256) THEN RAISE EXCEPTION 'XAI_CROP_MISMATCH'; END IF;
- IF NEW.evaluation_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.evaluations e WHERE e.id=NEW.evaluation_id AND (((e.model_version_id=NEW.model_version_id OR (e.model_version_id IS NULL AND e.training_run_id=v.training_run_id)) AND e.checkpoint_artifact_id=NEW.checkpoint_artifact_id) OR (e.subject_kind='ensemble' AND EXISTS(SELECT 1 FROM public.evaluation_ensemble_members em WHERE em.evaluation_id=e.id AND em.model_version_id=NEW.model_version_id AND em.checkpoint_artifact_id=NEW.checkpoint_artifact_id)))) THEN RAISE EXCEPTION 'XAI_EVALUATION_MISMATCH'; END IF;
+ IF NEW.evaluation_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.evaluations e WHERE e.id=NEW.evaluation_id AND (((e.model_version_id=NEW.model_version_id OR (e.model_version_id IS NULL AND e.training_run_id=training_id)) AND e.checkpoint_artifact_id=NEW.checkpoint_artifact_id) OR (e.subject_kind='ensemble' AND EXISTS(SELECT 1 FROM public.evaluation_ensemble_members em WHERE em.evaluation_id=e.id AND em.model_version_id=NEW.model_version_id AND em.checkpoint_artifact_id=NEW.checkpoint_artifact_id)))) THEN RAISE EXCEPTION 'XAI_EVALUATION_MISMATCH'; END IF;
  RETURN NEW;
 END $$;
 
-CREATE OR REPLACE FUNCTION public.validate_cell_classification_input_snapshot()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_cell_classification_input_snapshot() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE
       source_cell_index INTEGER;
       source_cell_code VARCHAR(40);
@@ -1522,12 +1328,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.validate_cell_classification_insert_state()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_cell_classification_insert_state() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE
       run_status VARCHAR(30);
       declared_count INTEGER;
@@ -1594,12 +1397,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.validate_cell_classification_review()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_cell_classification_review() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE
       automatic_status VARCHAR(20);
       automatic_label VARCHAR(20);
@@ -1628,12 +1428,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.validate_cell_classification_run_snapshot()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_cell_classification_run_snapshot() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE
       snapshot JSONB := NEW.model_snapshot;
       published_threshold DOUBLE PRECISION;
@@ -1731,12 +1528,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.validate_cell_explanation_contract()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_cell_explanation_contract() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE
       prediction_status VARCHAR(20);
       prediction_class SMALLINT;
@@ -1814,12 +1608,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.validate_cell_prediction_input()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_cell_prediction_input() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE
       input_eligible BOOLEAN;
       run_snapshot JSONB;
@@ -1866,12 +1657,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.validate_deployed_model_version()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_deployed_model_version() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
     version_status TEXT;
     version_sha256 TEXT;
@@ -1948,12 +1736,9 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.validate_image_analysis_job()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_image_analysis_job() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
     inference_type TEXT;
     deployment_status TEXT;
@@ -2001,12 +1786,9 @@ BEGIN
 
     RETURN NEW;
 END;
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.validate_run_model_deployment()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_run_model_deployment() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
     inference_type TEXT;
     deployment_status TEXT;
@@ -2039,12 +1821,9 @@ BEGIN
 
     RETURN NEW;
 END;
-$function$;
+$$;
 
-CREATE OR REPLACE FUNCTION public.validate_smear_analysis_summary()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION public.validate_smear_analysis_summary() RETURNS trigger LANGUAGE plpgsql AS $$
     DECLARE
       source_analysis_run_id UUID;
       source_detection_run_id UUID;
@@ -2212,13 +1991,9 @@ AS $function$
       END IF;
       RETURN NEW;
     END;
-    $function$;
+    $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_attempt_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_attempt_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE m record; c record; r record; cfg jsonb; rcfg jsonb; maximum integer; technical jsonb;
 BEGIN
  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'ATTEMPT_HISTORY_IMMUTABLE'; END IF;
@@ -2262,14 +2037,9 @@ BEGIN
      THEN RAISE EXCEPTION 'TRAIN_CAMPAIGN_CONTRACT_CONFLICT'; END IF;
  END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_configuration_valid(v jsonb)
- RETURNS boolean
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_configuration_valid(v jsonb) RETURNS boolean LANGUAGE plpgsql IMMUTABLE SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE r jsonb; m jsonb; e jsonb; i jsonb; o jsonb; x jsonb; k text;
 BEGIN
  IF NOT campaign_json_object(v,ARRAY['schema_version','model_id','adapter_version','resolved'])
@@ -2341,13 +2111,9 @@ BEGIN
  END LOOP;
  RETURN ((i->'shape') - 0) = m->'input_shape' AND (m->'input_shape'->2)='3'::jsonb
    AND i->'external'->>'mode'=m->>'preprocessing';
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_run_identity_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_run_identity_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF EXISTS(SELECT 1 FROM campaign_attempts WHERE training_run_id=OLD.id) AND
    (NEW.model_id IS DISTINCT FROM OLD.model_id
@@ -2359,13 +2125,9 @@ BEGIN
        campaign_environment_identity(OLD.execution_parameters->'model_configuration_e2'->'environment'))
  THEN RAISE EXCEPTION 'LINKED_TRAIN_IDENTITY_IMMUTABLE'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_technical_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_technical_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE c record; m record; a record; e jsonb;
 BEGIN
  IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'TECHNICAL_HISTORY_IMMUTABLE'; END IF;
@@ -2397,10 +2159,9 @@ BEGIN
   THEN RAISE EXCEPTION 'CONTROLLED_ATTEMPT_INELIGIBLE'; END IF;
  END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE FUNCTION public.e04_calibration_complete() RETURNS trigger LANGUAGE plpgsql
- SET search_path=public,pg_catalog AS $$
+CREATE FUNCTION public.e04_calibration_complete() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  IF TG_TABLE_NAME='evaluations' THEN
    PERFORM public.e04_assert_calibration(NEW.id);
@@ -2411,11 +2172,7 @@ BEGIN
  RETURN NULL;
 END $$;
 
-CREATE OR REPLACE FUNCTION public.experiment_reservation_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.experiment_reservation_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 BEGIN
  PERFORM experiment_require_owner();
  IF TG_OP='INSERT' THEN
@@ -2425,13 +2182,9 @@ BEGIN
   THEN RAISE EXCEPTION 'GLOBAL_ASSESSMENT_ALREADY_ACTIVE'; END IF;
  END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.train_event_guard()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.train_event_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE s record; previous numeric;
 BEGIN
  IF NEW.event_id IS NULL THEN RETURN NEW; END IF;
@@ -2445,14 +2198,9 @@ BEGIN
  IF NEW.event_sequence IS DISTINCT FROM previous+1
  THEN RAISE EXCEPTION 'RESULT_EVENT_SEQUENCE_INVALID'; END IF;
  RETURN NEW;
-END $function$;
+END $$;
 
-CREATE OR REPLACE FUNCTION public.campaign_contract_valid(v jsonb)
- RETURNS boolean
- LANGUAGE plpgsql
- IMMUTABLE
- SET search_path TO 'public', 'pg_catalog'
-AS $function$
+CREATE OR REPLACE FUNCTION public.campaign_contract_valid(v jsonb) RETURNS boolean LANGUAGE plpgsql IMMUTABLE SET search_path TO 'public', 'pg_catalog' AS $$
 DECLARE p jsonb; b jsonb; matrix jsonb; seeds jsonb; configs jsonb; members jsonb;
  env jsonb; x jsonb; item record; seen_seeds jsonb='[]'; descriptor jsonb; k text;
  n integer; idx integer=0;
@@ -2574,5 +2322,46 @@ BEGIN
    idx=idx+1;
  END LOOP;
  RETURN true;
-END $function$;
+END $$;
+
+CREATE FUNCTION public.dbv21_xai_configuration_guard() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
+DECLARE c jsonb; h text;
+BEGIN
+ IF TG_TABLE_NAME='xai_method_configurations' THEN
+ c:=jsonb_build_object('method',NEW.method,'implementation',NEW.implementation,'implementation_version',NEW.implementation_version,'parameters',NEW.parameters);
+ h:=encode(digest(convert_to(NEW.canonical_configuration,'UTF8'),'sha256'),'hex');
+ IF NEW.canonical_configuration::jsonb IS DISTINCT FROM c OR h IS DISTINCT FROM NEW.configuration_hash THEN RAISE EXCEPTION 'XAI_CONFIGURATION_HASH_MISMATCH'; END IF;
+ ELSE
+ c:=jsonb_build_object('metric_name',NEW.metric_name,'metric_family',NEW.metric_family,'protocol_name',NEW.protocol_name,'protocol_version',NEW.protocol_version,'parameters',NEW.parameters,'normalization_strategy',NEW.normalization_strategy,'perturbation_strategy',NEW.perturbation_strategy,'reference_definition',NEW.reference_definition);
+ h:=encode(digest(convert_to(NEW.canonical_protocol,'UTF8'),'sha256'),'hex');
+ IF NEW.canonical_protocol::jsonb IS DISTINCT FROM c OR h IS DISTINCT FROM NEW.protocol_hash THEN RAISE EXCEPTION 'XAI_PROTOCOL_HASH_MISMATCH'; END IF;
+ END IF;
+ RETURN NEW;
+END $$;
+
+CREATE FUNCTION public.dbv21_xai_evaluation_complete() RETURNS trigger LANGUAGE plpgsql SET search_path TO 'public', 'pg_catalog' AS $$
+DECLARE eid uuid; q public.xai_quantitative_evaluations%ROWTYPE; p public.xai_evaluation_protocols%ROWTYPE; n integer;
+BEGIN
+ IF TG_TABLE_NAME = 'xai_quantitative_evaluations' THEN
+     eid := NEW.id;
+ ELSIF TG_TABLE_NAME = 'xai_evaluation_members' THEN
+     eid := NEW.evaluation_id;
+ ELSE
+     RAISE EXCEPTION
+         'dbv21_xai_evaluation_complete invoked from unsupported table: %',
+         TG_TABLE_NAME;
+ END IF;
+ SELECT * INTO STRICT q FROM public.xai_quantitative_evaluations WHERE id=eid;
+ SELECT * INTO STRICT p FROM public.xai_evaluation_protocols WHERE id=q.protocol_id;
+ SELECT count(*) INTO n FROM public.xai_evaluation_members WHERE evaluation_id=eid;
+ IF q.membership_hash IS DISTINCT FROM (SELECT encode(digest(convert_to(coalesce(string_agg(xai_evidence_id::text || ':' || member_role, E'\n' ORDER BY xai_evidence_id::text COLLATE "C"),''),'UTF8'),'sha256'),'hex') FROM public.xai_evaluation_members WHERE evaluation_id=eid) THEN RAISE EXCEPTION 'XAI_MEMBERSHIP_HASH_MISMATCH'; END IF;
+ IF n<1 OR (p.metric_family='agreement' AND n<2) THEN RAISE EXCEPTION 'XAI_EVALUATION_MEMBERS_REQUIRED'; END IF;
+ IF p.metric_family='agreement' AND EXISTS (
+ SELECT 1 FROM public.xai_evaluation_members ma JOIN public.xai_evidence a ON a.id=ma.xai_evidence_id
+ JOIN public.xai_evaluation_members mb ON mb.evaluation_id=ma.evaluation_id JOIN public.xai_evidence b ON b.id=mb.xai_evidence_id
+ WHERE ma.evaluation_id=eid AND (a.input_sha256 IS DISTINCT FROM b.input_sha256 OR a.input_contract_hash IS DISTINCT FROM b.input_contract_hash OR a.target_class IS DISTINCT FROM b.target_class OR a.explained_output IS DISTINCT FROM b.explained_output OR a.processing_stage IS DISTINCT FROM b.processing_stage OR a.checkpoint_sha256 IS DISTINCT FROM b.checkpoint_sha256)) THEN RAISE EXCEPTION 'XAI_AGREEMENT_INCOMPATIBLE'; END IF;
+ IF p.metric_family='localization' AND q.metric_value IS NOT NULL AND q.reference_annotation_id IS NULL THEN RAISE EXCEPTION 'XAI_LOCALIZATION_REFERENCE_REQUIRED'; END IF;
+ IF q.reference_annotation_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.scientific_validation_annotations WHERE id=q.reference_annotation_id AND version=q.reference_annotation_version) THEN RAISE EXCEPTION 'XAI_REFERENCE_VERSION_MISMATCH'; END IF;
+ RETURN NULL;
+END $$;
 

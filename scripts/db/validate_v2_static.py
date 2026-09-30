@@ -218,7 +218,7 @@ def catalogue(statements):
             assert s.relation.relname == "experiment_execution_gate", (
                 "Scientific seed forbidden"
             )
-    assert len(tables) == 102 and set(primary) == set(tables)
+    assert set(primary) == set(tables)
     return {
         "tables": tables,
         "functions": functions,
@@ -235,6 +235,21 @@ def catalogue(statements):
 
 def validate():
     manifest, statements = load_baseline()
+    if manifest.get("contract") == "DBV2.1 + DBV2.2-R1":
+        from scripts.db.build_dbv22_baseline import artifacts, DEST
+        from scripts.db.validate_dbv2_1 import catalogue as approved_catalogue
+        for name, content in artifacts().items():
+            assert (DEST / name).read_bytes() == content, name
+        c = approved_catalogue(statements)
+        return {
+            "stage": "DBV2.2", "status": "PASS_STATIC_ONLY",
+            "physical_tables_including_alembic": len(c["tables"]) + 1,
+            "application_tables": len(c["tables"]),
+            "views": len(c["views"]), "functions": len(c["functions"]),
+            "triggers": len(c["triggers"]),
+            "approved_contract_exact_match": True,
+            "postgresql_17_executed": False,
+        }
     c = catalogue(statements)
     acl = (ROOT / "alembic_v2/baseline/10_privileges.sql").read_text()
     assert acl.rstrip().endswith(

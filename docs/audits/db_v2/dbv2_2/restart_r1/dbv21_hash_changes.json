@@ -1,0 +1,20 @@
+[
+  {
+    "file": "docs/audits/db_v2/dbv2_1_target_schema.sql",
+    "before": "5a17a6b0eb0f717e33ab43d03166e05388ff3d8a64b836cd62f10038d4a28961",
+    "after": "4ed5ccd6e9feba3ed9ce7086fef7a413d0fcc090b3bb567f6b75b5063ec6e749",
+    "reason": "DBV2.2-R1 — XAI deferred validation trigger correction"
+  },
+  {
+    "file": "docs/audits/db_v2/dbv2_1_functions_triggers.md",
+    "before": "479b73ebb1c90571aee418271e676885f24f232534a943dc598b68ccaad75d2a",
+    "after": "2529e3f0e60052aa514c7d20f964000d5858e7e68a614ead633c14edf56b0fd4",
+    "reason": "DBV2.2-R1 — XAI deferred validation trigger correction"
+  },
+  {
+    "file": "docs/audits/db_v2/dbv2_1_static_validation.json",
+    "before": "99bf8ee14872e66951e5d0e0d69648bbae4fc7c6868848285a1939c71888449e",
+    "after": "1add835c24db31cb3e30068ad20deb6c3dd43b4189ff46d063c4b50ffd451e11",
+    "reason": "DBV2.2-R1 — XAI deferred validation trigger correction"
+  }
+]

@@ -1,4 +1,4 @@
--- E10.10.5A frozen Alembic resource. Execute only through the guarded v2 environment.
+-- DBV2.2 + approved R1. Install exclusively via guarded Alembic v2.
 CREATE TRIGGER trg_artifacts_protect_governed_identity BEFORE UPDATE ON artifacts FOR EACH ROW EXECUTE PROCEDURE protect_governed_artifact_identity();
 
 CREATE TRIGGER assessment_artifact_guard BEFORE INSERT OR DELETE OR UPDATE ON assessment_artifacts FOR EACH ROW EXECUTE PROCEDURE assessment_result_guard();
@@ -105,8 +105,6 @@ CREATE TRIGGER trg_image_analysis_jobs_validate BEFORE INSERT OR UPDATE ON image
 
 CREATE TRIGGER trg_image_connected_components_append_only BEFORE DELETE OR UPDATE ON image_connected_components FOR EACH ROW EXECUTE PROCEDURE reject_cell_analysis_row_mutation();
 
-CREATE TRIGGER trg_model_governance_audit_append_only BEFORE DELETE OR UPDATE ON model_governance_backfill_audit FOR EACH ROW EXECUTE PROCEDURE prevent_model_governance_audit_mutation();
-
 CREATE TRIGGER trg_model_versions_governance BEFORE INSERT OR UPDATE ON model_versions FOR EACH ROW EXECUTE PROCEDURE enforce_model_version_governance();
 
 CREATE TRIGGER campaign_catalog_identity_guard BEFORE UPDATE ON models FOR EACH ROW EXECUTE PROCEDURE campaign_catalog_identity_guard();
@@ -181,8 +179,6 @@ CREATE TRIGGER v2_xai_lineage_guard BEFORE INSERT ON public.xai_evidence FOR EAC
 
 CREATE TRIGGER v2_configuration_guard BEFORE INSERT ON public.run_configurations FOR EACH ROW EXECUTE PROCEDURE public.v2_configuration_guard();
 
-CREATE TRIGGER v2_xai_comparison_guard BEFORE INSERT ON public.xai_quantitative_evaluations FOR EACH ROW EXECUTE PROCEDURE public.v2_xai_comparison_guard();
-
 CREATE CONSTRAINT TRIGGER v2_calibration_pair_guard AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE public.v2_calibration_pair_guard();
 
 CREATE CONSTRAINT TRIGGER v2_run_configuration_required AFTER INSERT ON public.runs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE public.v2_run_configuration_required();
@@ -196,4 +192,20 @@ CREATE CONSTRAINT TRIGGER e04_evaluation_complete AFTER INSERT ON public.evaluat
 CREATE CONSTRAINT TRIGGER e04_calibration_complete AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE public.e04_calibration_complete();
 
 CREATE TRIGGER e04_calibration_immutable BEFORE DELETE OR UPDATE ON public.run_threshold_calibration FOR EACH ROW EXECUTE PROCEDURE public.e04_calibration_immutable();
+
+CREATE TRIGGER dbv21_immutable BEFORE DELETE OR UPDATE ON public.xai_method_configurations FOR EACH ROW EXECUTE PROCEDURE public.v2_immutable();
+
+CREATE TRIGGER dbv21_immutable BEFORE DELETE OR UPDATE ON public.xai_region_attributions FOR EACH ROW EXECUTE PROCEDURE public.v2_immutable();
+
+CREATE TRIGGER dbv21_immutable BEFORE DELETE OR UPDATE ON public.xai_evaluation_protocols FOR EACH ROW EXECUTE PROCEDURE public.v2_immutable();
+
+CREATE TRIGGER dbv21_immutable BEFORE DELETE OR UPDATE ON public.xai_evaluation_members FOR EACH ROW EXECUTE PROCEDURE public.v2_immutable();
+
+CREATE TRIGGER dbv21_configuration_guard BEFORE INSERT ON public.xai_method_configurations FOR EACH ROW EXECUTE PROCEDURE public.dbv21_xai_configuration_guard();
+
+CREATE TRIGGER dbv21_configuration_guard BEFORE INSERT ON public.xai_evaluation_protocols FOR EACH ROW EXECUTE PROCEDURE public.dbv21_xai_configuration_guard();
+
+CREATE CONSTRAINT TRIGGER dbv21_xai_evaluation_complete AFTER INSERT ON public.xai_quantitative_evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE public.dbv21_xai_evaluation_complete();
+
+CREATE CONSTRAINT TRIGGER dbv21_xai_evaluation_complete AFTER INSERT ON public.xai_evaluation_members DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE public.dbv21_xai_evaluation_complete();
 

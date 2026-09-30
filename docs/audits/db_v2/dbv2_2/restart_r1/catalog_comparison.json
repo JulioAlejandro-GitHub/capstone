@@ -1,0 +1,96 @@
+{
+  "categories": {
+    "columns": {
+      "actual_count": 2280,
+      "expected_count": 2280,
+      "status": "MATCH"
+    },
+    "constraints": {
+      "actual_count": 961,
+      "expected_count": 961,
+      "status": "MATCH"
+    },
+    "database_acl": {
+      "actual_count": 1,
+      "expected_count": 1,
+      "status": "MATCH"
+    },
+    "default_acl": {
+      "actual_count": 0,
+      "expected_count": 0,
+      "status": "MATCH"
+    },
+    "default_dependencies": {
+      "actual_count": 356,
+      "expected_count": 356,
+      "status": "MATCH"
+    },
+    "default_functions": {
+      "actual_count": 191,
+      "expected_count": 191,
+      "status": "MATCH"
+    },
+    "extensions": {
+      "actual_count": 2,
+      "expected_count": 2,
+      "status": "MATCH"
+    },
+    "functions": {
+      "actual_count": 115,
+      "expected_count": 115,
+      "status": "MATCH"
+    },
+    "indexes": {
+      "actual_count": 414,
+      "expected_count": 414,
+      "status": "MATCH"
+    },
+    "relations": {
+      "actual_count": 139,
+      "expected_count": 139,
+      "status": "MATCH"
+    },
+    "roles": {
+      "actual_count": 2,
+      "expected_count": 2,
+      "status": "MATCH"
+    },
+    "runtime_database": {
+      "actual_count": 1,
+      "expected_count": 1,
+      "status": "MATCH"
+    },
+    "runtime_privileges": {
+      "actual_count": 966,
+      "expected_count": 966,
+      "status": "MATCH"
+    },
+    "schema_acl": {
+      "actual_count": 1,
+      "expected_count": 1,
+      "status": "MATCH"
+    },
+    "sequences": {
+      "actual_count": 1,
+      "expected_count": 1,
+      "status": "MATCH"
+    },
+    "triggers": {
+      "actual_count": 105,
+      "expected_count": 105,
+      "status": "MATCH"
+    },
+    "types": {
+      "actual_count": 276,
+      "expected_count": 276,
+      "status": "MATCH"
+    },
+    "views": {
+      "actual_count": 33,
+      "expected_count": 33,
+      "status": "MATCH"
+    }
+  },
+  "differences": {},
+  "status": "MATCH"
+}

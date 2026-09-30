@@ -1,4 +1,4 @@
--- E10.10.5A frozen Alembic resource. Execute only through the guarded v2 environment.
+-- DBV2.2 + approved R1. Install exclusively via guarded Alembic v2.
 ALTER TABLE public.artifacts ADD CONSTRAINT chk_artifacts_governance_status CHECK (artifact_status = ANY(ARRAY[CAST('unknown' AS text), CAST('available' AS text), CAST('missing' AS text), CAST('mutated' AS text), CAST('archived' AS text)]));
 
 ALTER TABLE public.assessment_artifacts ADD CONSTRAINT assessment_artifacts_payload_check CHECK (jsonb_typeof(payload) = CAST('object' AS text));
@@ -593,18 +593,6 @@ ALTER TABLE public.microscopy_images ADD CONSTRAINT microscopy_images_storage_ke
 
 ALTER TABLE public.microscopy_images ADD CONSTRAINT microscopy_images_width_px_check CHECK (width_px > 0);
 
-ALTER TABLE public.model_governance_backfill_audit ADD CONSTRAINT chk_model_governance_audit_after_object CHECK (jsonb_typeof(after_values) = CAST('object' AS text));
-
-ALTER TABLE public.model_governance_backfill_audit ADD CONSTRAINT chk_model_governance_audit_before_object CHECK (jsonb_typeof(before_values) = CAST('object' AS text));
-
-ALTER TABLE public.model_governance_backfill_audit ADD CONSTRAINT chk_model_governance_audit_event_type CHECK (event_type = ANY(ARRAY[CAST('apply' AS text), CAST('revert' AS text)]));
-
-ALTER TABLE public.model_governance_backfill_audit ADD CONSTRAINT chk_model_governance_audit_metadata_object CHECK (jsonb_typeof(metadata) = CAST('object' AS text));
-
-ALTER TABLE public.model_governance_backfill_audit ADD CONSTRAINT chk_model_governance_audit_result_status CHECK (result_status = ANY(ARRAY[CAST('applied' AS text), CAST('reverted' AS text), CAST('exact' AS text), CAST('ambiguous' AS text), CAST('missing' AS text), CAST('checksum_mismatch' AS text), CAST('skipped' AS text)]));
-
-ALTER TABLE public.model_governance_backfill_audit ADD CONSTRAINT chk_model_governance_audit_reversal CHECK ((event_type = CAST('apply' AS text) AND reversal_of_audit_id IS NULL) OR (event_type = CAST('revert' AS text) AND reversal_of_audit_id IS NOT NULL));
-
 ALTER TABLE public.model_versions ADD CONSTRAINT chk_model_versions_artifact_requires_training CHECK (checkpoint_artifact_id IS NULL OR training_run_id IS NOT NULL);
 
 ALTER TABLE public.model_versions ADD CONSTRAINT chk_model_versions_artifact_size CHECK (artifact_size_bytes IS NULL OR artifact_size_bytes >= 0);
@@ -708,8 +696,6 @@ ALTER TABLE public.runs ADD CONSTRAINT chk_runs_configuration_object CHECK (conf
 ALTER TABLE public.runs ADD CONSTRAINT ck_runs_release_status_requires_timestamp CHECK (release_status IS NULL OR release_updated_at IS NOT NULL);
 
 ALTER TABLE public.runs ADD CONSTRAINT ck_runs_release_status_training_vocabulary CHECK (release_status IS NULL OR (run_type = CAST('training' AS text) AND release_status = ANY(ARRAY[CAST('not_available' AS text), CAST('available_to_publish' AS text), CAST('productive_stage2' AS text)])));
-
-ALTER TABLE public.schema_migrations ADD CONSTRAINT chk_schema_migrations_checksum_sha256 CHECK (checksum ~ CAST('^[0-9a-f]{64}$' AS text));
 
 ALTER TABLE public.scientific_cases ADD CONSTRAINT ck_scientific_case_archive_state CHECK ((CAST(status AS text) <> CAST('archived' AS text) AND archived_at IS NULL AND archived_by IS NULL) OR (CAST(status AS text) = CAST('archived' AS text) AND archived_at IS NOT NULL AND archived_by IS NOT NULL));
 
@@ -831,7 +817,7 @@ ALTER TABLE public.train_execution_sessions ADD CONSTRAINT train_execution_sessi
 
 ALTER TABLE public.users ADD CONSTRAINT users_status_check CHECK (status = ANY(ARRAY[CAST('active' AS text), CAST('disabled' AS text)]));
 
-ALTER TABLE public.artifacts ADD CONSTRAINT artifacts_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.artifacts ADD CONSTRAINT artifacts_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.assessment_artifacts ADD CONSTRAINT assessment_artifacts_attempt_id_fkey FOREIGN KEY (attempt_id) REFERENCES assessment_attempts (id);
 
@@ -947,7 +933,7 @@ ALTER TABLE public.dataset_split_assignments ADD CONSTRAINT dataset_split_assign
 
 ALTER TABLE public.dataset_split_assignments ADD CONSTRAINT dataset_split_assignments_source_record_id_fkey FOREIGN KEY (source_record_id) REFERENCES dataset_source_records (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.dataset_split_images ADD CONSTRAINT dataset_split_images_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES datasets (id) ON DELETE SET NULL;
+ALTER TABLE public.dataset_split_images ADD CONSTRAINT dataset_split_images_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES datasets (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.dataset_split_images ADD CONSTRAINT dataset_split_images_dataset_materialization_id_fkey FOREIGN KEY (dataset_materialization_id) REFERENCES dataset_materializations (id) ON DELETE RESTRICT;
 
@@ -957,7 +943,7 @@ ALTER TABLE public.dataset_split_statistics ADD CONSTRAINT dataset_split_statist
 
 ALTER TABLE public.dataset_split_validation_checks ADD CONSTRAINT dataset_split_validation_checks_dataset_version_id_fkey FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.dataset_splits ADD CONSTRAINT dataset_splits_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES datasets (id) ON DELETE CASCADE;
+ALTER TABLE public.dataset_splits ADD CONSTRAINT dataset_splits_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES datasets (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.dataset_version_sources ADD CONSTRAINT dataset_version_sources_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES datasets (id) ON DELETE RESTRICT;
 
@@ -971,11 +957,11 @@ ALTER TABLE public.deployed_model_versions ADD CONSTRAINT fk_deployed_model_vers
 
 ALTER TABLE public.deployed_model_versions ADD CONSTRAINT fk_deployed_model_versions_version_artifact FOREIGN KEY (model_version_id, checkpoint_artifact_id) REFERENCES model_versions (id, checkpoint_artifact_id) ON DELETE RESTRICT;
 
-ALTER TABLE public.environment_packages ADD CONSTRAINT environment_packages_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.environment_packages ADD CONSTRAINT environment_packages_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.errors ADD CONSTRAINT errors_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.errors ADD CONSTRAINT errors_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.execution_logs ADD CONSTRAINT execution_logs_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.execution_logs ADD CONSTRAINT execution_logs_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.experimental_campaigns ADD CONSTRAINT experimental_campaigns_dataset_evidence_id_fkey FOREIGN KEY (dataset_evidence_id) REFERENCES audit_events (id) ON DELETE RESTRICT;
 
@@ -983,9 +969,9 @@ ALTER TABLE public.experimental_campaigns ADD CONSTRAINT experimental_campaigns_
 
 ALTER TABLE public.experimental_campaigns ADD CONSTRAINT experimental_campaigns_experiment_id_fkey FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.explainability_results ADD CONSTRAINT explainability_results_prediction_id_fkey FOREIGN KEY (prediction_id) REFERENCES predictions (id) ON DELETE SET NULL;
+ALTER TABLE public.explainability_results ADD CONSTRAINT explainability_results_prediction_id_fkey FOREIGN KEY (prediction_id) REFERENCES predictions (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.explainability_results ADD CONSTRAINT explainability_results_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.explainability_results ADD CONSTRAINT explainability_results_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.identity_evidence ADD CONSTRAINT identity_evidence_clinical_identity_id_fkey FOREIGN KEY (clinical_identity_id) REFERENCES clinical_identities (id) ON DELETE RESTRICT;
 
@@ -1051,8 +1037,6 @@ ALTER TABLE public.microscopy_images ADD CONSTRAINT microscopy_images_slide_id_f
 
 ALTER TABLE public.microscopy_images ADD CONSTRAINT microscopy_images_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.model_governance_backfill_audit ADD CONSTRAINT fk_model_governance_audit_reversal FOREIGN KEY (reversal_of_audit_id) REFERENCES model_governance_backfill_audit (id) ON DELETE RESTRICT;
-
 ALTER TABLE public.model_versions ADD CONSTRAINT fk_model_versions_checkpoint_artifact_owner FOREIGN KEY (checkpoint_artifact_id, training_run_id) REFERENCES artifacts (id, run_id) ON DELETE RESTRICT;
 
 ALTER TABLE public.model_versions ADD CONSTRAINT model_versions_model_id_fkey FOREIGN KEY (model_id) REFERENCES models (id) ON DELETE RESTRICT;
@@ -1079,9 +1063,9 @@ ALTER TABLE public.predictions ADD CONSTRAINT fk_predictions_model_version FOREI
 
 ALTER TABLE public.predictions ADD CONSTRAINT fk_predictions_source_image FOREIGN KEY (source_image_id) REFERENCES dataset_split_images (image_id) ON DELETE RESTRICT;
 
-ALTER TABLE public.predictions ADD CONSTRAINT predictions_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES datasets (id) ON DELETE SET NULL;
+ALTER TABLE public.predictions ADD CONSTRAINT predictions_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES datasets (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.predictions ADD CONSTRAINT predictions_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.predictions ADD CONSTRAINT predictions_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.quality_assessment_queue_items ADD CONSTRAINT quality_assessment_queue_items_analysis_run_id_fkey FOREIGN KEY (analysis_run_id) REFERENCES microscopy_analysis_runs (id) ON DELETE RESTRICT;
 
@@ -1103,25 +1087,25 @@ ALTER TABLE public.run_checkpoint_policy ADD CONSTRAINT fk_run_checkpoint_policy
 
 ALTER TABLE public.run_checkpoint_policy ADD CONSTRAINT fk_run_checkpoint_policy_version_artifact FOREIGN KEY (model_version_id, checkpoint_artifact_id) REFERENCES model_versions (id, checkpoint_artifact_id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_checkpoint_policy ADD CONSTRAINT run_checkpoint_policy_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.run_checkpoint_policy ADD CONSTRAINT run_checkpoint_policy_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_clinical_metrics ADD CONSTRAINT run_clinical_metrics_model_id_fkey FOREIGN KEY (model_id) REFERENCES models (id) ON DELETE SET NULL;
+ALTER TABLE public.run_clinical_metrics ADD CONSTRAINT run_clinical_metrics_model_id_fkey FOREIGN KEY (model_id) REFERENCES models (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_clinical_metrics ADD CONSTRAINT run_clinical_metrics_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.run_clinical_metrics ADD CONSTRAINT run_clinical_metrics_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_dataset_images ADD CONSTRAINT run_dataset_images_image_id_fkey FOREIGN KEY (image_id) REFERENCES dataset_split_images (image_id) ON DELETE CASCADE;
+ALTER TABLE public.run_dataset_images ADD CONSTRAINT run_dataset_images_image_id_fkey FOREIGN KEY (image_id) REFERENCES dataset_split_images (image_id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_dataset_images ADD CONSTRAINT run_dataset_images_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.run_dataset_images ADD CONSTRAINT run_dataset_images_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_image_predictions ADD CONSTRAINT run_image_predictions_image_id_fkey FOREIGN KEY (image_id) REFERENCES dataset_split_images (image_id) ON DELETE SET NULL;
+ALTER TABLE public.run_image_predictions ADD CONSTRAINT run_image_predictions_image_id_fkey FOREIGN KEY (image_id) REFERENCES dataset_split_images (image_id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_image_predictions ADD CONSTRAINT run_image_predictions_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.run_image_predictions ADD CONSTRAINT run_image_predictions_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.run_io_records ADD CONSTRAINT run_io_records_dataset_materialization_id_fkey FOREIGN KEY (dataset_materialization_id) REFERENCES dataset_materializations (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.run_io_records ADD CONSTRAINT run_io_records_dataset_version_id_fkey FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_io_records ADD CONSTRAINT run_io_records_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.run_io_records ADD CONSTRAINT run_io_records_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.run_lineage ADD CONSTRAINT fk_run_lineage_checkpoint_artifact_owner FOREIGN KEY (checkpoint_artifact_id, parent_run_id) REFERENCES artifacts (id, run_id) ON DELETE RESTRICT;
 
@@ -1133,7 +1117,7 @@ ALTER TABLE public.run_lineage ADD CONSTRAINT run_lineage_child_run_id_fkey FORE
 
 ALTER TABLE public.run_lineage ADD CONSTRAINT run_lineage_parent_run_id_fkey FOREIGN KEY (parent_run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_metrics ADD CONSTRAINT run_metrics_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.run_metrics ADD CONSTRAINT run_metrics_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.run_model_deployments ADD CONSTRAINT fk_run_model_deployments_deployment_version FOREIGN KEY (deployed_model_version_id, model_version_id) REFERENCES deployed_model_versions (id, model_version_id) ON DELETE RESTRICT;
 
@@ -1143,17 +1127,17 @@ ALTER TABLE public.run_threshold_calibration ADD CONSTRAINT fk_run_threshold_cal
 
 ALTER TABLE public.run_threshold_calibration ADD CONSTRAINT fk_run_threshold_calibration_model_version FOREIGN KEY (model_version_id) REFERENCES model_versions (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.run_threshold_calibration ADD CONSTRAINT run_threshold_calibration_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.run_threshold_calibration ADD CONSTRAINT run_threshold_calibration_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.runs ADD CONSTRAINT runs_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES experimental_campaigns (id);
 
-ALTER TABLE public.runs ADD CONSTRAINT runs_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES datasets (id) ON DELETE SET NULL;
+ALTER TABLE public.runs ADD CONSTRAINT runs_dataset_id_fkey FOREIGN KEY (dataset_id) REFERENCES datasets (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.runs ADD CONSTRAINT runs_dataset_version_id_fkey FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.runs ADD CONSTRAINT runs_experiment_id_fkey FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE SET NULL;
+ALTER TABLE public.runs ADD CONSTRAINT runs_experiment_id_fkey FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.runs ADD CONSTRAINT runs_model_id_fkey FOREIGN KEY (model_id) REFERENCES models (id) ON DELETE SET NULL;
+ALTER TABLE public.runs ADD CONSTRAINT runs_model_id_fkey FOREIGN KEY (model_id) REFERENCES models (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.scientific_cases ADD CONSTRAINT scientific_cases_archived_by_fkey FOREIGN KEY (archived_by) REFERENCES users (id) ON DELETE RESTRICT;
 
@@ -1221,9 +1205,9 @@ ALTER TABLE public.stage2_model_publications ADD CONSTRAINT fk_stage2_publicatio
 
 ALTER TABLE public.stage2_model_publications ADD CONSTRAINT fk_stage2_publication_version_artifact FOREIGN KEY (model_version_id, checkpoint_artifact_id) REFERENCES model_versions (id, checkpoint_artifact_id) ON DELETE RESTRICT;
 
-ALTER TABLE public.synthetic_data_runs ADD CONSTRAINT synthetic_data_runs_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.synthetic_data_runs ADD CONSTRAINT synthetic_data_runs_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.synthetic_data_runs ADD CONSTRAINT synthetic_data_runs_source_dataset_id_fkey FOREIGN KEY (source_dataset_id) REFERENCES datasets (id) ON DELETE SET NULL;
+ALTER TABLE public.synthetic_data_runs ADD CONSTRAINT synthetic_data_runs_source_dataset_id_fkey FOREIGN KEY (source_dataset_id) REFERENCES datasets (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.train_execution_records ADD CONSTRAINT train_execution_records_run_id_fkey FOREIGN KEY (run_id) REFERENCES train_execution_sessions (run_id);
 
@@ -1237,7 +1221,7 @@ ALTER TABLE public.train_execution_sessions ADD CONSTRAINT train_execution_sessi
 
 ALTER TABLE public.train_execution_sessions ADD CONSTRAINT train_execution_sessions_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id);
 
-ALTER TABLE public.training_history ADD CONSTRAINT training_history_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE;
+ALTER TABLE public.training_history ADD CONSTRAINT training_history_run_id_fkey FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.user_roles ADD CONSTRAINT user_roles_role_id_fkey FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE RESTRICT;
 
@@ -1255,7 +1239,7 @@ ALTER TABLE public.run_clinical_metrics ADD CONSTRAINT ck_v2_auc_reason CHECK ((
 
 ALTER TABLE public.training_history ADD CONSTRAINT ck_v2_epoch CHECK (epoch >= 0);
 
-ALTER TABLE public.run_threshold_calibration ADD CONSTRAINT ck_v2_calibration_val CHECK (calibration_split = 'val' AND default_threshold = 0.5 AND target_recall = 0.98);
+ALTER TABLE public.run_threshold_calibration ADD CONSTRAINT ck_v2_calibration_val CHECK (calibration_split = 'val' AND default_threshold = 0.5 AND target_recall > 0 AND target_recall <= 1);
 
 ALTER TABLE public.run_metrics ADD CONSTRAINT ck_v2_extension_only CHECK (lower(metric_name) NOT IN ('recall', 'sensitivity', 'specificity', 'precision', 'f1', 'f2', 'balanced_accuracy', 'roc_auc', 'pr_auc', 'tp', 'fp', 'fn', 'tn', 'recall_parasitized', 'sensitivity_parasitized', 'precision_parasitized', 'f1_parasitized', 'f2_parasitized', 'roc_auc_parasitized', 'pr_auc_parasitized'));
 
@@ -1341,7 +1325,7 @@ ALTER TABLE public.run_configurations ADD CONSTRAINT v2_run_configurations_check
 
 ALTER TABLE public.run_configurations ADD CONSTRAINT v2_run_configurations_check_278a5e3294ac CHECK (default_threshold = 0.5);
 
-ALTER TABLE public.run_configurations ADD CONSTRAINT v2_run_configurations_check_d6094850fee4 CHECK (clinical_target_recall = 0.98);
+ALTER TABLE public.run_configurations ADD CONSTRAINT v2_run_configurations_check_d6094850fee4 CHECK (clinical_target_recall > 0 AND clinical_target_recall <= 1);
 
 ALTER TABLE public.run_configurations ADD CONSTRAINT v2_run_configurations_check_3321a4aaab96 CHECK (configuration_hash ~ '^[0-9a-f]{64}$');
 
@@ -1449,12 +1433,6 @@ ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_foreign_b946b2b20
 
 ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_foreign_6aec504c7a2f FOREIGN KEY (checkpoint_artifact_id) REFERENCES public.artifacts (id) ON DELETE RESTRICT;
 
-ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_check_5e31bead5512 CHECK (method IN ('gradcam', 'shap', 'lime'));
-
-ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_check_94a05a1bd653 CHECK (jsonb_typeof(method_configuration) = 'object');
-
-ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_check_3321a4aaab96 CHECK (configuration_hash ~ '^[0-9a-f]{64}$');
-
 ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_check_71beacad95d0 CHECK (jsonb_typeof(input_contract) = 'object');
 
 ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_check_b93d47c84570 CHECK (input_contract_hash ~ '^[0-9a-f]{64}$');
@@ -1475,13 +1453,9 @@ ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_check_9d77320c4af
 
 ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_foreign_52bd313b1c15 FOREIGN KEY (assessment_attempt_id, assessment_sample_id) REFERENCES public.assessment_results (attempt_id, sample_id) MATCH FULL ON DELETE RESTRICT;
 
-ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_check_0b0c8b6b4dc8 CHECK (num_nonnulls(ml_explanation_id, cell_explanation_id, assessment_attempt_id) = 1);
-
 ALTER TABLE public.xai_evidence ADD CONSTRAINT ck_xai_input_origin CHECK (num_nonnulls(dataset_source_record_id, microscopy_image_id, input_artifact_id) = 1);
 
 ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_check_bfbb62e97a91 CHECK (num_nonnulls(prediction_id, cell_prediction_id) <= 1);
-
-ALTER TABLE public.xai_evidence ADD CONSTRAINT v2_xai_evidence_check_f1eec802dae7 CHECK ((method = 'shap' AND background_manifest_uri IS NOT NULL AND background_manifest_sha256 IS NOT NULL) OR method <> 'shap');
 
 ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_foreign_4b080b42e888 FOREIGN KEY (evidence_id) REFERENCES public.xai_evidence (id) ON DELETE RESTRICT;
 
@@ -1491,7 +1465,7 @@ ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_foreign_f9c5548
 
 ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_check_70ab6797c0c6 CHECK (num_nonnulls(artifact_id, assessment_artifact_id) <= 1);
 
-ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_check_eb359eee6311 CHECK (role IN ('raw_attribution', 'spatial_map', 'segments', 'segment_weights', 'overlay', 'render', 'background_manifest', 'input_manifest'));
+ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_check_eb359eee6311 CHECK (role IN ('RAW_ATTRIBUTION', 'SPATIAL_MAP', 'SEGMENTATION', 'REGION_WEIGHTS', 'OVERLAY', 'HEATMAP_RENDER', 'BACKGROUND_MANIFEST', 'INPUT_MANIFEST'));
 
 ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_check_967aa2df2b88 CHECK (ordinal >= 0);
 
@@ -1502,34 +1476,6 @@ ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_check_a81626200
 ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_check_4b7ae3b26ca5 CHECK (availability IN ('available', 'missing', 'quarantined', 'archived'));
 
 ALTER TABLE public.xai_artifacts ADD CONSTRAINT v2_xai_artifacts_check_a68006e838dc CHECK (tensor_shape IS NULL OR (cardinality(tensor_shape) > 0 AND 0 < ALL(tensor_shape)));
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_foreign_4b080b42e888 FOREIGN KEY (evidence_id) REFERENCES public.xai_evidence (id) ON DELETE RESTRICT;
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_foreign_851f5820eb59 FOREIGN KEY (comparison_evidence_id) REFERENCES public.xai_evidence (id) ON DELETE RESTRICT;
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_91eb3dc34528 CHECK (family IN ('stability', 'faithfulness', 'localization', 'concordance'));
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_0652739ad678 CHECK (protocol_hash ~ '^[0-9a-f]{64}$');
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_00fb2e80d9b2 CHECK (jsonb_typeof(protocol_snapshot) = 'object');
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_bcd82843d42a CHECK (sample_count > 0);
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_887951a61b99 CHECK (value > CAST('-Infinity' AS float8) AND value < CAST('Infinity' AS float8));
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_foreign_159f07174869 FOREIGN KEY (reference_annotation_id) REFERENCES public.scientific_validation_annotations (id) ON DELETE RESTRICT;
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_ffe78f63e439 CHECK (reference_manifest_sha256 ~ '^[0-9a-f]{64}$');
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_599c4acec50d CHECK (details_sha256 ~ '^[0-9a-f]{64}$');
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_4778c641fdd8 CHECK ((value IS NULL) = (null_reason IS NOT NULL));
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_21cdf11ae847 CHECK (comparison_evidence_id IS NULL OR comparison_evidence_id <> evidence_id);
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_655d0810bc12 CHECK (family <> 'concordance' OR comparison_evidence_id IS NOT NULL);
-
-ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT v2_xai_quantitative_evaluations_check_4d27ef172e06 CHECK (family <> 'localization' OR (reference_annotation_id IS NOT NULL AND reference_annotation_version IS NOT NULL AND reference_manifest_sha256 IS NOT NULL AND reference_manifest_uri IS NOT NULL));
 
 ALTER TABLE public.xai_interpretations ADD CONSTRAINT v2_xai_interpretations_foreign_4b080b42e888 FOREIGN KEY (evidence_id) REFERENCES public.xai_evidence (id) ON DELETE RESTRICT;
 
@@ -1548,4 +1494,46 @@ ALTER TABLE public.xai_specialist_reviews ADD CONSTRAINT v2_xai_specialist_revie
 ALTER TABLE public.xai_specialist_reviews ADD CONSTRAINT v2_xai_specialist_reviews_check_d8ae577b1870 CHECK (length(pg_catalog.btrim(rationale)) > 0);
 
 ALTER TABLE public.xai_specialist_reviews ADD CONSTRAINT v2_xai_specialist_reviews_check_07baf4b694f5 CHECK (jsonb_typeof(competence_snapshot) = 'object');
+
+ALTER TABLE public.xai_evidence ADD CONSTRAINT fk_xai_method_configuration FOREIGN KEY (method_configuration_id) REFERENCES public.xai_method_configurations (id) ON DELETE RESTRICT;
+
+ALTER TABLE public.xai_region_attributions ADD CONSTRAINT fk_xai_region_evidence FOREIGN KEY (xai_evidence_id) REFERENCES public.xai_evidence (id) ON DELETE RESTRICT;
+
+ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT fk_xai_metric_protocol FOREIGN KEY (protocol_id, metric_name) REFERENCES public.xai_evaluation_protocols (id, metric_name) ON DELETE RESTRICT;
+
+ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT fk_xai_reference_annotation FOREIGN KEY (reference_annotation_id) REFERENCES public.scientific_validation_annotations (id) ON DELETE RESTRICT;
+
+ALTER TABLE public.xai_evaluation_members ADD CONSTRAINT fk_xai_member_evaluation FOREIGN KEY (evaluation_id) REFERENCES public.xai_quantitative_evaluations (id) ON DELETE RESTRICT;
+
+ALTER TABLE public.xai_evaluation_members ADD CONSTRAINT fk_xai_member_evidence FOREIGN KEY (xai_evidence_id) REFERENCES public.xai_evidence (id) ON DELETE RESTRICT;
+
+ALTER TABLE public.xai_method_configurations ADD CONSTRAINT ck_configuration_hash_xai_method CHECK (configuration_hash ~ '^[0-9a-f]{64}$');
+
+ALTER TABLE public.xai_method_configurations ADD CONSTRAINT ck_xai_method_configurations_parameters CHECK (jsonb_typeof(parameters) = 'object');
+
+ALTER TABLE public.xai_evaluation_protocols ADD CONSTRAINT ck_protocol_hash_xai_protocol CHECK (protocol_hash ~ '^[0-9a-f]{64}$');
+
+ALTER TABLE public.xai_evaluation_protocols ADD CONSTRAINT ck_xai_evaluation_protocols_parameters CHECK (jsonb_typeof(parameters) = 'object');
+
+ALTER TABLE public.xai_method_configurations ADD CONSTRAINT ck_xai_method_identity CHECK (length(btrim(method)) > 0 AND method = lower(method) AND length(btrim(implementation)) > 0 AND length(btrim(implementation_version)) > 0);
+
+ALTER TABLE public.xai_evaluation_protocols ADD CONSTRAINT ck_xai_protocol_identity CHECK (length(btrim(metric_name)) > 0 AND length(btrim(metric_family)) > 0 AND metric_family = lower(metric_family) AND length(btrim(protocol_name)) > 0 AND length(btrim(protocol_version)) > 0 AND length(btrim(normalization_strategy)) > 0);
+
+ALTER TABLE public.xai_evidence ADD CONSTRAINT ck_xai_provisional_checkpoint CHECK (model_version_id IS NOT NULL OR run_id IS NOT NULL);
+
+ALTER TABLE public.xai_evidence ADD CONSTRAINT ck_xai_prediction_score CHECK (prediction_score >= 0 AND prediction_score <= 1);
+
+ALTER TABLE public.xai_region_attributions ADD CONSTRAINT ck_xai_region_domain CHECK (region_index >= 0 AND length(btrim(region_type)) > 0 AND (rank IS NULL OR rank > 0) AND attribution_value > CAST('-Infinity' AS float8) AND attribution_value < CAST('Infinity' AS float8) AND (region_definition IS NULL OR jsonb_typeof(region_definition) = 'object'));
+
+ALTER TABLE public.xai_evaluation_members ADD CONSTRAINT ck_xai_member_role CHECK (member_role ~ '^[a-z][a-z0-9_]*$');
+
+ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT ck_xai_metric_defined CHECK ((metric_value IS NULL AND undefined_reason IS NOT NULL AND length(btrim(undefined_reason)) > 0) OR (metric_value IS NOT NULL AND undefined_reason IS NULL AND metric_value > CAST('-Infinity' AS float8) AND metric_value < CAST('Infinity' AS float8)));
+
+ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT ck_xai_sample_count CHECK (sample_count > 0);
+
+ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT ck_xai_reference_tuple CHECK (num_nonnulls(reference_annotation_id, reference_annotation_version, reference_manifest_uri, reference_manifest_sha256) IN (0, 4) AND (reference_annotation_version IS NULL OR reference_annotation_version > 0) AND (reference_manifest_sha256 IS NULL OR reference_manifest_sha256 ~ '^[0-9a-f]{64}$'));
+
+ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT ck_xai_details_tuple CHECK (num_nonnulls(details_uri, details_sha256) IN (0, 2) AND (details_sha256 IS NULL OR details_sha256 ~ '^[0-9a-f]{64}$'));
+
+ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT ck_xai_membership_hash CHECK (membership_hash ~ '^[0-9a-f]{64}$');
 

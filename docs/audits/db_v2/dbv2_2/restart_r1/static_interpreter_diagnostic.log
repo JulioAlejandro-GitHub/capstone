@@ -1,0 +1,46 @@
+test_independent_root_and_only_head (test_alembic_envelope.AlembicEnvelopeTests.test_independent_root_and_only_head) ... ok
+test_missing_authorization_stops_before_engine_or_docker (test_alembic_envelope.AlembicEnvelopeTests.test_missing_authorization_stops_before_engine_or_docker) ... ok
+test_no_legacy_settings_import_or_bootstrap (test_alembic_envelope.AlembicEnvelopeTests.test_no_legacy_settings_import_or_bootstrap) ... ok
+test_offline_upgrade_cannot_export_an_unguarded_installer (test_alembic_envelope.AlembicEnvelopeTests.test_offline_upgrade_cannot_export_an_unguarded_installer) ... ok
+test_revision_refuses_unverified_connection_and_downgrade (test_alembic_envelope.AlembicEnvelopeTests.test_revision_refuses_unverified_connection_and_downgrade) ... ok
+test_dependency_order_and_exact_expression (test_d05_generated.GeneratedContractTests.test_dependency_order_and_exact_expression) ... ok
+test_manifest_contract (test_d05_generated.GeneratedContractTests.test_manifest_contract) ... ok
+test_dbv22_xai_regression (unittest.loader._FailedTest.test_dbv22_xai_regression) ... ERROR
+test_static_baseline (unittest.loader._FailedTest.test_static_baseline) ... ERROR
+
+======================================================================
+ERROR: test_dbv22_xai_regression (unittest.loader._FailedTest.test_dbv22_xai_regression)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_dbv22_xai_regression
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/tests/db_v2/test_dbv22_xai_regression.py", line 6, in <module>
+    from scripts.db.dbv22_xai_regression import validate_xai_dispatch
+  File "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/scripts/db/dbv22_xai_regression.py", line 4, in <module>
+    from pglast import ast, parse_sql
+ImportError: cannot import name 'parse_sql' from 'pglast' (/tmp/e10_10_4_sql_parser/pglast/__init__.py). Did you mean: 'parse_plpgsql'?
+
+
+======================================================================
+ERROR: test_static_baseline (unittest.loader._FailedTest.test_static_baseline)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_static_baseline
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/tests/db_v2/test_static_baseline.py", line 11, in <module>
+    from pglast import ast, parse_sql
+ImportError: cannot import name 'parse_sql' from 'pglast' (/tmp/e10_10_4_sql_parser/pglast/__init__.py). Did you mean: 'parse_plpgsql'?
+
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.010s
+
+FAILED (errors=2)

@@ -1,0 +1,7 @@
+{
+  "status": "BLOCKED",
+  "reason": "DBV2.1 CONTRACT CONFLICT",
+  "catalog_captured": false,
+  "objects": null,
+  "note": "No manifest estructural certificado: no se instaló BD-v2. Este archivo documenta ausencia de evidencia, no un catálogo vacío aprobado."
+}

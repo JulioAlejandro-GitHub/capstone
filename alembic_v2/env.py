@@ -23,7 +23,7 @@ def migrate():
     )
     opts = context.get_x_argument(as_dictionary=True)
     url = os.environ.get("PGV2_DATABASE_URL", "")
-    target = read_authorization(opts.get("target"), url)
+    target = read_authorization(opts.get("target") or os.environ.get("PGV2_TARGET"), url)
     # All resources and host/volume identity are validated BEFORE connecting.
     manifest, _ = load_baseline()
     inspect_isolation(target)
@@ -100,7 +100,7 @@ def migrate():
             command = getattr(config.cmd_opts, "cmd", None) if config.cmd_opts else None
             if command:
                 require(
-                    command[0].__name__ == "upgrade", "V2_STAMP_DOWNGRADE_FORBIDDEN"
+                    command[0].__name__ in ("upgrade", "current"), "V2_STAMP_DOWNGRADE_FORBIDDEN"
                 )
             context.configure(
                 connection=connection,
@@ -111,7 +111,8 @@ def migrate():
             )
             migration_context = context.get_context()
             require(
-                migration_context.opts.get("destination_rev") == "head",
+                migration_context.opts.get("destination_rev") == "head"
+                or (command and command[0].__name__ == "current"),
                 "V2_ONLY_UPGRADE_HEAD_ALLOWED",
             )
             connection.exec_driver_sql("SET LOCAL search_path = public, pg_catalog")

@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "dbv22_manifest_sha256": "15c95e0c047c7cc29397635130ddb0a1f6820eab6d4c746f7078fb9f8bb3eafb",
+  "root_revision_sha256": "e3aaad12e49e65cff8ad9742fcdd83af075f2e2fcfaa81733a2bec121efef279",
+  "resource_manifest_sha256": "232871ff0241c2912eef40daeee2c849fde70bdec5d64784cb72844e667b009a",
+  "all_sql_resources_unchanged": true,
+  "no_secret_values_in_evidence": true,
+  "private_files_mode": "0600",
+  "private_directory_mode": "0700"
+}

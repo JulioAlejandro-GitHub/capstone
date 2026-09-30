@@ -1,0 +1,41 @@
+BEGIN
+DO
+CREATE EXTENSION
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+INSERT 0 1
+INSERT 0 1
+COMMIT
+BEGIN
+NOTICE:  PASS evaluation INSERT is deferred (no 42703)
+NOTICE:  PASS incomplete evaluation rejected: P0001 XAI_EVALUATION_MEMBERS_REQUIRED
+DO
+ROLLBACK
+BEGIN
+INSERT 0 1
+INSERT 0 1
+COMMIT
+                                 result                                 
+------------------------------------------------------------------------
+ PASS coherent evaluation + member COMMIT; both trigger paths; no 42703
+(1 row)
+
+BEGIN
+INSERT 0 1
+INSERT 0 1
+COMMIT
+                                      result                                       
+-----------------------------------------------------------------------------------
+ PASS second evaluation shares evidence; immediate FKs and deferred trigger COMMIT
+(1 row)
+
+BEGIN
+NOTICE:  PASS invalid membership rejected: P0001 XAI_MEMBERSHIP_HASH_MISMATCH
+DO
+ROLLBACK

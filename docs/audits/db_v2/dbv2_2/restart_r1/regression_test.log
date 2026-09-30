@@ -1,0 +1,8 @@
+test_corrected_contract (test_dbv22_xai_regression.XAIDispatchRegression.test_corrected_contract) ... ok
+test_original_case_is_rejected (test_dbv22_xai_regression.XAIDispatchRegression.test_original_case_is_rejected) ... ok
+test_unknown_table_must_be_rejected (test_dbv22_xai_regression.XAIDispatchRegression.test_unknown_table_must_be_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.273s
+
+OK

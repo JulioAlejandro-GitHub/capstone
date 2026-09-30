@@ -1,0 +1,31 @@
+[
+  {
+    "name": "insertion_order_cds",
+    "passed": true
+  },
+  {
+    "name": "insertion_order_csd",
+    "passed": true
+  },
+  {
+    "name": "insertion_order_dcs",
+    "passed": true
+  },
+  {
+    "name": "insertion_order_dsc",
+    "passed": true
+  },
+  {
+    "name": "insertion_order_scd",
+    "passed": true
+  },
+  {
+    "name": "insertion_order_sdc",
+    "passed": true
+  },
+  {
+    "name": "orphan_COMMIT_atomic_rollback",
+    "passed": true,
+    "sqlstate": "P0001"
+  }
+]

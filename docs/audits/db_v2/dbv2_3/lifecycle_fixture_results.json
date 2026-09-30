@@ -1,0 +1,15 @@
+{
+  "all_rolled_back": true,
+  "results": [
+    {
+      "case": "direct_FROZEN_child_insert_rejected",
+      "passed": true,
+      "sqlstate": "23514"
+    },
+    {
+      "case": "approved_VALIDATED_to_FROZEN_preserves_timestamp_and_children",
+      "passed": true
+    }
+  ],
+  "source_connections": 0
+}

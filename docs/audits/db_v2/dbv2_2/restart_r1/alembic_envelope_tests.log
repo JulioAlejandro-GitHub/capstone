@@ -1,0 +1,10 @@
+test_independent_root_and_only_head (test_alembic_envelope.AlembicEnvelopeTests.test_independent_root_and_only_head) ... ok
+test_missing_authorization_stops_before_engine_or_docker (test_alembic_envelope.AlembicEnvelopeTests.test_missing_authorization_stops_before_engine_or_docker) ... ok
+test_no_legacy_settings_import_or_bootstrap (test_alembic_envelope.AlembicEnvelopeTests.test_no_legacy_settings_import_or_bootstrap) ... ok
+test_offline_upgrade_cannot_export_an_unguarded_installer (test_alembic_envelope.AlembicEnvelopeTests.test_offline_upgrade_cannot_export_an_unguarded_installer) ... ok
+test_revision_refuses_unverified_connection_and_downgrade (test_alembic_envelope.AlembicEnvelopeTests.test_revision_refuses_unverified_connection_and_downgrade) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.013s
+
+OK

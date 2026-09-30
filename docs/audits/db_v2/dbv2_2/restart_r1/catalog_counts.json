@@ -1,0 +1,11 @@
+{
+  "CHECK": 518,
+  "FK": 251,
+  "PK": 104,
+  "UNIQUE": 77,
+  "functions": 79,
+  "indexes": 414,
+  "tables": 104,
+  "triggers": 105,
+  "views": 33
+}

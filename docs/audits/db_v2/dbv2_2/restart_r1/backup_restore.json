@@ -1,0 +1,12 @@
+{
+  "database_acl_restored_explicitly": true,
+  "differences": {},
+  "head": [
+    {
+      "version_num": "pg_v2_baseline"
+    }
+  ],
+  "status": "PASS",
+  "structural_backup_sha256": "77d0fe5cf204a665268567bd1677fd5f7e6ebe78620e8a57c77cc65aefd302ed",
+  "technical_backup_sha256": "b1b6d0f874082f5dfefbf40d1c0c13ed7c1568fd56f37424f38a914cde9837f2"
+}

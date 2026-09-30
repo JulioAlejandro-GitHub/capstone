@@ -1,0 +1,43 @@
+{
+  "container_id": "1dc48428c6b938da6525754cc4f26d535814f1f8c101928487f7c0d630ce4971",
+  "container_name": "/capstone_db_v2",
+  "labels": {
+    "org.capstone.pgv2.isolation": "1a590188-5f24-4068-ab38-b77bb8c61e65",
+    "org.capstone.pgv2.lifecycle": "persistent"
+  },
+  "mounts": [
+    {
+      "Destination": "/var/lib/postgresql/data",
+      "Driver": "local",
+      "Mode": "z",
+      "Name": "capstone_v2_isolated_persistent_data",
+      "Propagation": "",
+      "RW": true,
+      "Source": "/var/lib/docker/volumes/capstone_v2_isolated_persistent_data/_data",
+      "Type": "volume"
+    }
+  ],
+  "passwords_recorded": false,
+  "ports": {
+    "5432/tcp": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "56440"
+      }
+    ]
+  },
+  "restart_policy": {
+    "MaximumRetryCount": 0,
+    "Name": "unless-stopped"
+  },
+  "running": true,
+  "volume": {
+    "driver": "local",
+    "labels": {
+      "org.capstone.pgv2.isolation": "1a590188-5f24-4068-ab38-b77bb8c61e65",
+      "org.capstone.pgv2.lifecycle": "persistent"
+    },
+    "mountpoint": "/var/lib/docker/volumes/capstone_v2_isolated_persistent_data/_data",
+    "name": "capstone_v2_isolated_persistent_data"
+  }
+}

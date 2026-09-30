@@ -1,0 +1,22 @@
+{
+  "environment": {
+    "configuration_identity": "capstone-malaria/db",
+    "container_id": "2604ff9884655b3b78ffc85997cbe30d6392afca7b904b5df2b37dacedb30d89",
+    "container_name": "capstone_db",
+    "database": "malaria_experiments",
+    "host_port": 5432,
+    "logical_host": "capstone_db",
+    "role": "julio",
+    "volume": "capstone-malaria_postgres_data"
+  },
+  "server": {
+    "database": "malaria_experiments",
+    "default_transaction_read_only": "on",
+    "role": "julio",
+    "server_address": null,
+    "server_port": "5432",
+    "system_identifier": "7668020338728398886",
+    "transaction_read_only": "on",
+    "version": "170009"
+  }
+}

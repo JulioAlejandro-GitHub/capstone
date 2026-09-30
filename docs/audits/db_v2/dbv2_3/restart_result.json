@@ -1,0 +1,8 @@
+{
+  "retained_for_dbv24": true,
+  "same_container_id": "1dc48428c6b938da6525754cc4f26d535814f1f8c101928487f7c0d630ce4971",
+  "same_volume": "capstone_v2_isolated_persistent_data",
+  "service_running": true,
+  "status": "PASS",
+  "volume_deleted": false
+}

@@ -38,7 +38,12 @@ def read_authorization(path, url):
             ((target["authorized_stage"] == "E10.10.5B"
               and target.get("gate_a_approved") is True)
              or (target["authorized_stage"] == "E10.10.5E"
-                 and target.get("gate_d_approved") is True))
+                 and target.get("gate_d_approved") is True)
+             or (target["authorized_stage"] == "DBV2.2"
+                 and target.get("gate_dbv21_approved") is True)
+             or (target["authorized_stage"] == "DBV2.3"
+                 and target.get("gate_dbv22_approved") is True
+                 and target.get("persistent") is True))
             and target["isolation_id"] == nonce
             and re.fullmatch(r"capstone_v2_isolated_[a-z0-9_]+", target["database"])
             and re.fullmatch(r"[0-9a-f]{64}", target["container_id"])
@@ -80,6 +85,12 @@ def validate_docker_snapshot(target, container, volume, other_containers):
     try:
         require(container["Id"] == target["container_id"], "V2_CONTAINER_ID_MISMATCH")
         require(container["State"]["Running"] is True, "V2_CONTAINER_NOT_RUNNING")
+        if target.get("authorized_stage") == "DBV2.3":
+            require(
+                container["Config"]["Labels"].get("org.capstone.pgv2.lifecycle") == "persistent"
+                and volume["Labels"].get("org.capstone.pgv2.lifecycle") == "persistent",
+                "V2_PERSISTENT_STORAGE_REQUIRED",
+            )
         require(
             container["Config"]["Labels"].get(LABEL) == target["isolation_id"],
             "V2_CONTAINER_LABEL_MISMATCH",
@@ -209,6 +220,8 @@ def validate_server_snapshot(target, identity, roles):
     require(
         170000 <= identity["server_version_num"] < 180000, "V2_POSTGRESQL_17_REQUIRED"
     )
+    if target.get("authorized_stage") in ("DBV2.2", "DBV2.3"):
+        require(identity["server_version_num"] == 170009, "DBV22_POSTGRESQL_17_9_REQUIRED")
     require(
         identity["recovery"] is False and identity["read_only"] == "off",
         "V2_SERVER_MODE_INVALID",

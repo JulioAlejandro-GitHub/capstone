@@ -1,0 +1,6 @@
+{
+  "file": "alembic_v2/safety.py",
+  "previous_sha256": "a0826cc88a2c16bf30943c240b1c23b05190fdf5d92529365db4c4fcaf8b754e",
+  "current_sha256": "9e06a4ec6a79d134d5e02bb6ce84c408e82f866bf19dd32255b31e8888dec49b",
+  "reason": "DBV2.3 persistent authorization and lifecycle labels; no baseline/resource/revision change"
+}

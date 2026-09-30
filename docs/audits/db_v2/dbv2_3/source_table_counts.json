@@ -1,0 +1,18 @@
+{
+  "clinical_identities": 201,
+  "dataset_materialization_activations": 0,
+  "dataset_materializations": 1,
+  "dataset_source_records": 27558,
+  "dataset_split_assignments": 27558,
+  "dataset_split_images": 55116,
+  "dataset_split_statistics": 1,
+  "dataset_split_validation_checks": 12,
+  "dataset_splits": 0,
+  "dataset_version_sources": 1,
+  "dataset_versions": 1,
+  "datasets": 2,
+  "identity_evidence": 27558,
+  "roles": 5,
+  "user_roles": 1,
+  "users": 1
+}

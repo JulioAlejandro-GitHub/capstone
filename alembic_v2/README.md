@@ -1,4 +1,58 @@
-# Estado vigente — E10.10.5E.4
+# Estado vigente — DBV2.2 + corrección aprobada R1
+
+Baseline independiente `pg_v2_baseline`, `down_revision=None`, un root y un head. Materializa DBV2.1 corregido: 104 tablas de aplicación + `alembic_version`, 33 views, 251 FK, 518 CHECK, 77 UNIQUE, 413 índices de aplicación, 79 funciones propias y 105 triggers. No crea `schema_migrations` ni `model_governance_backfill_audit`.
+
+[Certificación DBV2.2](../docs/audits/db_v2/dbv2_2/restart_r1/dbv2_2_baseline_report.md), [resolución R1](../docs/audits/db_v2/dbv2_2/dbv2_2_r1_xai_trigger_resolution.md) y [bloqueo original conservado](../docs/audits/db_v2/dbv2_2/dbv2_2_baseline_report.md). Pendiente GATE DBV2.2; no freeze final, transferencia, cutover ni inicio de SW-v2.
+
+`clinical_target_recall numeric NOT NULL`, sin DEFAULT, CHECK `0 < clinical_target_recall AND clinical_target_recall <= 1`. Las nueve tablas XAI y el overlay E-04 se verifican por identidad y definición, además de los conteos.
+
+## Instalación actual
+
+Preparar únicamente un PostgreSQL 17.9 desechable con roles `capstone_v2_migrator` / `capstone_v2_runtime`, descriptor de aislamiento verificado y URL explícita. No cargar `.env`. `PGV2_TARGET` apunta al descriptor autorizado DBV2.2 (`gate_dbv21_approved=true`); `PGV2_DATABASE_URL` debe coincidir exactamente con él.
+
+```sh
+alembic -c alembic_v2.ini upgrade head
+alembic -c alembic_v2.ini current
+alembic -c alembic_v2.ini heads
+```
+
+También se admite `-x target=<descriptor>`. El runtime sólo puede leer `alembic_version`; no tiene DDL, TEMP, TRUNCATE ni escritura del ledger. El instalador verifica recursos/identidad antes de escribir y no depende de historia legacy, adoption o stamp.
+
+## Construcción y verificación estáticas actuales
+
+Con pglast 8.4 disponible para el intérprete elegido:
+
+```sh
+python3 scripts/db/validate_dbv2_1.py --reference-root docs/audits/db_v2/dbv2_2/restart_r1/reference_candidate
+python3 scripts/db/build_dbv22_baseline.py
+python3 scripts/db/validate_v2_static.py
+```
+
+`build_dbv22_baseline.py --write` reconstruye recursos exclusivamente en desarrollo, antes del freeze. La lectura del SQL de diseño es offline: no se ejecuta ese archivo. La revisión instalada sólo consume los recursos propios en `baseline/`. Las copias `reference_candidate` sirven para comparar con la candidata histórica y verificar sus hashes originales; no son dependencias ejecutables del instalador.
+
+## Reproducir certificación en otro entorno nuevo
+
+Seleccionar un directorio de evidencia nuevo y un puerto libre dedicado mediante `DBV22_EVIDENCE_DIR` y `DBV22_PORT`; nunca reutilizar un target. El runner utiliza el socket local Docker Desktop de esta estación, que debe configurarse y verificarse al trasladarlo a otra estación. Necesita la imagen local `postgres:17.9` y las dependencias de Alembic/psycopg.
+
+```sh
+python scripts/db/certify_dbv22.py provision
+python scripts/db/certify_dbv22.py upgrade
+python scripts/db/certify_dbv22.py catalog
+python scripts/db/test_dbv22_server.py
+python scripts/db/test_dbv22_e04.py
+python scripts/db/verify_dbv22.py compare
+python scripts/db/verify_dbv22.py repeat
+python scripts/db/verify_dbv22.py failure
+python scripts/db/verify_dbv22.py restore
+```
+
+El restore se autentica como migrador para conservar ownership de pgcrypto y repone explícitamente la ACL de base, omitida por `pg_dump` sin `--create`. Los únicos datos del backup son el head Alembic y el singleton técnico. Los fixtures se revierten. Las suites estáticas se documentan con sus intérpretes y resultados en la evidencia; el parser PostgreSQL 18.4 no sustituye al servidor 17.9.
+
+---
+
+# Historial anterior a DBV2.1 (referencia, no instrucciones vigentes)
+
+# Estado histórico — E10.10.5E.4
 
 Baseline E-04 recertificada en PostgreSQL 17.9: [resolución](../docs/audits/e10_10_5e4_resolution.md) y [certificado](../docs/audits/e10_10_5e4_evidence/route_a/certificate.json). Integra E-03/E-04 y conserva D-01 a D-06/E-01/E-02. La integración permanece detenida por [E-05](../docs/audits/e10_10_5e5_decision.md); Gate E bloqueado. Los estados de certificación siguientes son históricos.
 

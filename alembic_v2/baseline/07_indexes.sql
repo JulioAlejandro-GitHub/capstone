@@ -1,4 +1,4 @@
--- E10.10.5A frozen Alembic resource. Execute only through the guarded v2 environment.
+-- DBV2.2 + approved R1. Install exclusively via guarded Alembic v2.
 CREATE INDEX idx_artifacts_artifact_type ON public.artifacts (artifact_type);
 
 CREATE INDEX idx_artifacts_checksum ON public.artifacts (checksum);
@@ -206,12 +206,6 @@ CREATE INDEX ix_microscopy_images_slide ON public.microscopy_images (slide_id);
 CREATE INDEX ix_microscopy_images_status_created ON public.microscopy_images (status, created_at DESC);
 
 CREATE UNIQUE INDEX uq_microscopy_images_external_path ON public.microscopy_images (source_system, source_relative_path) WHERE source_system IS NOT NULL AND source_relative_path IS NOT NULL;
-
-CREATE INDEX idx_model_governance_audit_batch ON public.model_governance_backfill_audit (batch_id, event_at);
-
-CREATE INDEX idx_model_governance_audit_record ON public.model_governance_backfill_audit (table_name, record_id, event_at);
-
-CREATE INDEX idx_model_governance_audit_reversal ON public.model_governance_backfill_audit (reversal_of_audit_id) WHERE reversal_of_audit_id IS NOT NULL;
 
 CREATE INDEX idx_model_versions_checkpoint_artifact ON public.model_versions (checkpoint_artifact_id);
 
@@ -431,11 +425,19 @@ CREATE UNIQUE INDEX uq_evaluation_final_training ON public.evaluations (run_id) 
 
 CREATE INDEX ix_evaluation_comparison ON public.evaluations (dataset_version_id, comparison_contract_hash, split, created_at, id);
 
-CREATE INDEX ix_xai_same_image ON public.xai_evidence (input_sha256, input_contract_hash, model_version_id, method, generated_at, id);
+CREATE INDEX ix_xai_same_image ON public.xai_evidence (input_sha256, input_contract_hash, model_version_id, method_configuration_id, generated_at, id);
 
-CREATE INDEX ix_xai_evaluation ON public.xai_evidence (evaluation_id, method);
+CREATE INDEX ix_xai_evaluation ON public.xai_evidence (evaluation_id, method_configuration_id);
 
 CREATE UNIQUE INDEX uq_e04_event_role ON public.evaluations (source_event_id, evaluation_role) WHERE source_kind = 'e10' AND evaluation_role IN ('calibration_default', 'calibration_selected');
 
 CREATE UNIQUE INDEX uq_e04_contract_role ON public.evaluations (run_id, training_run_id, model_version_id, checkpoint_artifact_id, dataset_version_id, population_hash, protocol_version, protocol_hash, input_contract_hash, evaluation_role) NULLS NOT DISTINCT WHERE source_kind = 'e10' AND evaluation_role IN ('calibration_default', 'calibration_selected');
+
+CREATE INDEX ix_xai_member_evidence ON public.xai_evaluation_members (xai_evidence_id, evaluation_id);
+
+CREATE INDEX ix_xai_method_configuration ON public.xai_evidence (method_configuration_id);
+
+CREATE INDEX ix_xai_metric_protocol ON public.xai_quantitative_evaluations (protocol_id, metric_name, evaluated_at);
+
+CREATE INDEX ix_xai_reference_annotation ON public.xai_quantitative_evaluations (reference_annotation_id);
 

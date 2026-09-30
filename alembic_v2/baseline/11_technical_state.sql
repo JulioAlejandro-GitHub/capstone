@@ -1,3 +1,3 @@
--- E10.10.5A frozen Alembic resource. Execute only through the guarded v2 environment.
-INSERT INTO public.experiment_execution_gate (singleton, owner, db_pid, process_evidence, blocked_reason) VALUES (true, NULL, NULL, '{}'::jsonb, NULL);
+-- DBV2.2 + approved R1. Install exclusively via guarded Alembic v2.
+INSERT INTO public.experiment_execution_gate (singleton, owner, db_pid, process_evidence, blocked_reason) VALUES (TRUE, NULL, NULL, CAST('{}' AS jsonb), NULL);
 

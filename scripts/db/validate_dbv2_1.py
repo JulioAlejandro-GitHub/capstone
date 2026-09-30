@@ -311,11 +311,11 @@ def csv_text(fields,rows):
     buff=io.StringIO(newline=''); w=csv.DictWriter(buff,fieldnames=fields,lineterminator='\n'); w.writeheader(); w.writerows(rows); return buff.getvalue()
 
 
-def build(write=False):
+def build(write=False, reference_root=ROOT):
     statements=read_sql(SQL); c=catalogue(statements); source=SQL.read_text()
     assert source.startswith('-- DBV2.1 STRUCTURAL SPECIFICATION\n-- DESIGN ARTIFACT ONLY\n-- DO NOT EXECUTE\n-- NOT AN ALEMBIC MIGRATION\n')
     oldstatements=[]
-    for p in sorted((ROOT/'alembic_v2/baseline').glob('*.sql')):
+    for p in sorted((reference_root/'alembic_v2/baseline').glob('*.sql')):
         if not p.name.startswith(('10_','11_')): oldstatements += read_sql(p)
     old_by_table=signature_by_table(oldstatements); new_by_table=signature_by_table(statements)
     oldtables={s.stmt.relation.relname for sql in oldstatements for s in parse_sql(sql) if isinstance(s.stmt,ast.CreateStmt)}
@@ -466,12 +466,14 @@ def build(write=False):
         elif isinstance(s,ast.IndexStmt): assert norm(c['indexes'][s.idxname])==norm(s)
         elif isinstance(s,ast.CreateFunctionStmt): assert norm(c['functions']['.'.join(strings(s.funcname))])==norm(s)
         elif isinstance(s,ast.CreateTrigStmt): assert norm(c['triggers'][s.relation.relname,s.trigname])==norm(s)
-    for path,digest in json.loads((OUT/'dbv2_1_source_evidence.json').read_text()).items(): assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest, 'Source modified: '+path
+    for path,digest in json.loads((OUT/'dbv2_1_source_evidence.json').read_text()).items(): assert hashlib.sha256((reference_root/path).read_bytes()).hexdigest()==digest, 'Source modified: '+path
     counts=collections.Counter(co.contype.name for co in c['constraints'].values()); actions=collections.Counter(r['action'] for r in matrix)
     report=dict(status='PASS_STATIC_ONLY',target_postgresql='17.9',parser_postgresql=get_postgresql_version(),sql_sha256=hashlib.sha256(SQL.read_bytes()).hexdigest(),tables=len(c['tables']),alembic_managed_tables=1,columns=len(columns),actions=dict(actions),foreign_keys=counts['CONSTR_FOREIGN'],checks=counts['CONSTR_CHECK'],unique_constraints=counts['CONSTR_UNIQUE'],unique_indexes=sum(s.unique for s in c['indexes'].values()),explicit_indexes=len(c['indexes']),implicit_indexes=len(backing),total_indexes=len(backing)+len(c['indexes']),functions=len(c['functions']),triggers=len(c['triggers']),views=len(c['views']),plpgsql_parsed=c['plpgsql'],e04_preserved=True,source_artifacts_unchanged=True,sql_executed=False,limitations=['Parser PostgreSQL 18.4; no certificación PostgreSQL 17.9.','PL/pgSQL parseado; semántica en servidor y concurrencia corresponden a DBV2.2.'])
     write_or_compare(OUT/'dbv2_1_static_validation.json',json.dumps(report,indent=2,ensure_ascii=False)+'\n',write)
     return report
 
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__); ap.add_argument('--write',action='store_true',help='Render derived documentation; never execute SQL'); args=ap.parse_args()
-    print(json.dumps(build(args.write),indent=2,ensure_ascii=False))
+    ap=argparse.ArgumentParser(description=__doc__); ap.add_argument('--write',action='store_true',help='Render derived documentation; never execute SQL')
+    ap.add_argument('--reference-root', type=Path, default=ROOT, help='Archived pre-DBV2.2 sources, verified against the unchanged DBV2.1 source hashes')
+    args=ap.parse_args()
+    print(json.dumps(build(args.write, args.reference_root),indent=2,ensure_ascii=False))

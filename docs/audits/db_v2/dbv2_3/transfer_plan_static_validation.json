@@ -1,0 +1,8 @@
+{
+  "explicit_column_mappings": 177,
+  "inserts": 16,
+  "source_password_values_read": false,
+  "sql_executed": false,
+  "status": "PASS_STATIC_ONLY",
+  "update_scope": "dataset_versions.status: approved technical restoration"
+}

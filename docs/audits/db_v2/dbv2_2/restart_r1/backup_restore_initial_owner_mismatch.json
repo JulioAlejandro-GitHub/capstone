@@ -1,0 +1,47 @@
+{
+  "database_acl_restored_explicitly": true,
+  "differences": {
+    "extensions": {
+      "actual": [
+        {
+          "extrelocatable": true,
+          "extversion": "1.3",
+          "name": "pgcrypto",
+          "owner": "postgres",
+          "schema": "public"
+        },
+        {
+          "extrelocatable": false,
+          "extversion": "1.0",
+          "name": "plpgsql",
+          "owner": "postgres",
+          "schema": "pg_catalog"
+        }
+      ],
+      "expected": [
+        {
+          "extrelocatable": true,
+          "extversion": "1.3",
+          "name": "pgcrypto",
+          "owner": "capstone_v2_migrator",
+          "schema": "public"
+        },
+        {
+          "extrelocatable": false,
+          "extversion": "1.0",
+          "name": "plpgsql",
+          "owner": "postgres",
+          "schema": "pg_catalog"
+        }
+      ]
+    }
+  },
+  "head": [
+    {
+      "version_num": "pg_v2_baseline"
+    }
+  ],
+  "status": "DIFFERENCE",
+  "structural_backup_sha256": "15632a510fe0c75c81f282b2c1b5784847e78877e96570a9606f09ce99cdd90b",
+  "technical_backup_sha256": "a344eb0aa29c340d192e95c9d1bbed92e351a660e59d2623dbc3df223b9dbe89"
+}

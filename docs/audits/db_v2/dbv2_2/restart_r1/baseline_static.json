@@ -1,0 +1,11 @@
+{
+  "stage": "DBV2.2",
+  "status": "PASS_STATIC_ONLY",
+  "physical_tables_including_alembic": 105,
+  "application_tables": 104,
+  "views": 33,
+  "functions": 79,
+  "triggers": 105,
+  "approved_contract_exact_match": true,
+  "postgresql_17_executed": false
+}

@@ -1,0 +1,6 @@
+test_explicit_persistent_gate_required (test_dbv23_authorization.PersistentAuthorizationTests.test_explicit_persistent_gate_required) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+OK

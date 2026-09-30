@@ -1,0 +1,17 @@
+BEGIN
+DO
+CREATE SCHEMA
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+NOTICE:  CONTRACT_CONFLICT table=xai_quantitative_evaluations SQLSTATE=42703 error=record "new" has no field "evaluation_id"
+NOTICE:  CONTRACT_CONFLICT table=xai_evaluation_members SQLSTATE=42703 error=record "new" has no field "id"
+DO
+ROLLBACK
+ remaining_probe_schemas 
+-------------------------
+                       0
+(1 row)
+

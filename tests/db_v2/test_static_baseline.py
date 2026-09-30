@@ -19,8 +19,8 @@ from alembic_v2.safety import (
     validate_docker_snapshot,
     validate_server_snapshot,
 )
-from scripts.db.build_v2_baseline import artifacts
-from scripts.db.validate_v2_static import catalogue, validate
+from scripts.db.build_dbv22_baseline import artifacts
+from scripts.db.validate_v2_static import catalogue, validate, norm
 
 
 def expression(node, row):
@@ -102,7 +102,7 @@ class StaticBaselineTests(unittest.TestCase):
         acl = (BASELINE / "10_privileges.sql").read_text()
         statements = [s.strip() for s in acl.split(";") if "public.alembic_version" in s]
         self.assertEqual(statements, [
-            "REVOKE ALL ON TABLE public.alembic_version FROM PUBLIC, capstone_v2_runtime",
+            "REVOKE ALL PRIVILEGES ON TABLE public.alembic_version FROM PUBLIC, capstone_v2_runtime",
             "GRANT SELECT ON TABLE public.alembic_version TO capstone_v2_runtime",
         ])
 
@@ -117,18 +117,22 @@ class StaticBaselineTests(unittest.TestCase):
                     "source_kind": "e10", "evaluation_role": role,
                 }), role in allowed)
         root = Path(__file__).resolve().parents[2]
-        historical = root / "docs/audits/e10_10_5e1_evidence/previous_baseline"
-        # E.1 changed only ACL; all other historical SQL is a stable reference.
-        for path in BASELINE.glob("*.sql"):
-            if path.name in {"04_functions.sql", "06_constraints.sql", "07_indexes.sql", "09_triggers.sql", "10_privileges.sql"}:
+        # DBV2.1 changes other objects explicitly; E-04 itself stays exact.
+        for raw in parse_sql((root / "alembic_v2/e04_contract.sql").read_text()):
+            node = raw.stmt
+            if isinstance(node, ast.CreateFunctionStmt):
+                actual = self.catalogue['functions']['.'.join(x.sval for x in node.funcname)]
+            elif isinstance(node, ast.CreateTrigStmt):
+                actual = self.catalogue['triggers'][node.relation.relname, node.trigname]
+            elif isinstance(node, ast.IndexStmt):
+                actual = self.catalogue['indexes'][node.idxname]
+            elif isinstance(node, ast.AlterTableStmt):
+                for cmd in node.cmds:
+                    self.assertEqual(norm(self.catalogue['constraints'][node.relation.relname, cmd.def_.conname]), norm(cmd.def_))
                 continue
-            expected = (historical / path.name).read_text()
-            if path.name == "06_constraints.sql":
-                expected = expected.replace(
-                    "v2_evaluations_check_6a2239d39784 CHECK (source_kind <> 'e10' OR evaluation_role = 'training_validation_final')",
-                    "v2_evaluations_check_28938a6edbaa CHECK (source_kind <> 'e10' OR evaluation_role IN ('training_validation_final', 'calibration_default', 'calibration_selected'))",
-                )
-            self.assertEqual(path.read_text(), expected, path.name)
+            else:
+                self.fail(type(node).__name__)
+            self.assertEqual(norm(actual), norm(node))
 
     def test_e04_deferred_link_and_scientific_identity(self):
         constraints = self.catalogue['constraints']
@@ -174,9 +178,12 @@ class StaticBaselineTests(unittest.TestCase):
             if e["kind"] == "table"
             for k, v in e["columns"].items()
         }
-        changed = {k for k in old if old[k]["default"] != new[k]["default"]}
-        self.assertEqual(changed, approved)
-        self.assertEqual(len(changed), 39)
+        # DBV2.1 removes historical tables/columns and the fixed recall default.
+        changed = {k for k in old.keys() & new.keys()
+                   if old[k]["default"] != new[k]["default"]
+                   and k != ("run_configurations", "clinical_target_recall")}
+        self.assertEqual(changed, approved - {("model_governance_backfill_audit", "id")})
+        self.assertEqual(len(changed), 38)
         for k in changed:
             self.assertEqual(new[k]["default"], "pg_catalog.gen_random_uuid()")
         identities = {k: v["identity"] for k, v in new.items() if v["identity"]}
@@ -194,10 +201,9 @@ class StaticBaselineTests(unittest.TestCase):
 
     def test_integral_catalogue_and_historical_contracts(self):
         result = validate()
-        self.assertEqual(result["physical_tables_including_alembic"], 103)
-        self.assertEqual(result["legacy_functions_preserved"], 65)
-        self.assertEqual(result["legacy_triggers_preserved"], 77)
-        self.assertEqual(result["accredited_legacy_checksums"], 22)
+        self.assertEqual(result["physical_tables_including_alembic"], 105)
+        self.assertTrue(result["approved_contract_exact_match"])
+        self.assertEqual(result["application_tables"], 104)
 
     def test_frozen_generation_is_reproducible(self):
         for name, content in artifacts().items():
@@ -270,7 +276,10 @@ class StaticBaselineTests(unittest.TestCase):
             if isinstance(parse_sql(s)[0].stmt, ast.InsertStmt)
         ]
         self.assertEqual(len(inserts), 1)
-        self.assertIn("(true, NULL, NULL, '{}'::jsonb, NULL)", inserts[0])
+        seed = parse_sql(inserts[0])[0].stmt
+        self.assertEqual(seed.relation.relname, "experiment_execution_gate")
+        self.assertEqual(len(seed.selectStmt.valuesLists), 1)
+        self.assertEqual(len(seed.selectStmt.valuesLists[0]), 5)
         for sql in self.statements:
             self.assertNotRegex(
                 sql, r"(?i)CREATE\s+INDEX\s+CONCURRENTLY|^COMMIT|^TRUNCATE|^DROP "
@@ -570,6 +579,20 @@ class SafetyTests(unittest.TestCase):
                 validate_server_snapshot(
                     self.target, dict(self.identity, **{field: value}), self.roles
                 )
+
+    def test_dbv22_requires_exact_17_9_and_approved_contract(self):
+        target = dict(self.target, authorized_stage="DBV2.2", gate_dbv21_approved=True)
+        validate_server_snapshot(target, dict(self.identity, server_version_num=170009), self.roles)
+        for version in (170008, 170010, 180000):
+            with self.subTest(version=version), self.assertRaises(UnsafeTarget):
+                validate_server_snapshot(target, dict(self.identity, server_version_num=version), self.roles)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "target.json"
+            path.write_text(json.dumps(target))
+            self.assertEqual(read_authorization(path, self.url), target)
+            path.write_text(json.dumps(dict(target, gate_dbv21_approved=False)))
+            with self.assertRaises(UnsafeTarget):
+                read_authorization(path, self.url)
 
     def test_privileged_or_inherited_runtime_role_rejected(self):
         for flag in (
