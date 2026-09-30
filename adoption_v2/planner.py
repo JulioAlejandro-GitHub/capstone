@@ -81,43 +81,82 @@ def validate_relations(rows):
                 event_id=e["source_event_id"],
             )
             event = json.loads(record["payload"]["canonical_event"])
-            require(
-                event["event_type"] == "evaluation_completed", "E10_EVENT_TYPE_MISMATCH"
-            )
-            m = lookup(rows, "run_clinical_metrics", evaluation_id=e["id"])
-            require(
-                event["payload"].get("schema_version") == "validation_evaluation_v1",
-                "E10_SCIENTIFIC_VERSION_INVALID",
-            )
-            checked = measurement(
-                event["payload"],
-                dict(e, auc_unavailability_reason=m["auc_unavailability_reason"]),
-                e["id"],
-            )
-            for field in (
-                "tn",
-                "fp",
-                "fn",
-                "tp",
-                "roc_auc_parasitized",
-                "pr_auc_parasitized",
-            ):
+            if e['evaluation_role'] in ('calibration_default', 'calibration_selected'):
+                require(event['event_type'] == 'calibration_completed', 'E10_EVENT_TYPE_MISMATCH')
+                payload = event['payload'].get('result', {})
+                data = payload.get('result', {})
+                require(payload.get('split') == data.get('calibration_split') == 'val'
+                        and data.get('threshold_source') == 'validation_calibration', 'E04_EVENT_PROVENANCE')
+                role = e['evaluation_role']
+                key = 'default_threshold_metrics' if role == 'calibration_default' else 'selected_metrics'
+                expected = data.get(key, {})
+                m = lookup(rows, 'run_clinical_metrics', evaluation_id=e['id'])
+                for field in ('tn','fp','fn','tp','roc_auc_parasitized','pr_auc_parasitized'):
+                    require(field in expected, 'E04_METRIC_PROVENANCE', field)
+                    value = expected[field]
+                    require((value is None and m[field] is None) or
+                            (value is not None and m[field] is not None and number(value,field) == number(m[field],field)),
+                            'E04_METRIC_PROVENANCE', field)
+                threshold_key = 'default_threshold' if role == 'calibration_default' else 'threshold_selected'
+                require(number(data.get(threshold_key),threshold_key) == number(e['threshold_used'],'threshold'),
+                        'E04_THRESHOLD_PROVENANCE')
+                c = [r for r in rows['run_threshold_calibration']
+                     if str(e['id']) in (str(r['default_evaluation_id']),str(r['selected_evaluation_id']))]
+                require(len(c) == 1, 'E04_PAIR_REQUIRED')
+                c = c[0]
+                default = lookup(rows,'evaluations',id=c['default_evaluation_id'])
+                selected = lookup(rows,'evaluations',id=c['selected_evaluation_id'])
+                require(default['source_kind'] == selected['source_kind'] == 'e10', 'E04_PAIR_REQUIRED')
+                for field in ('run_id','training_run_id','model_version_id','checkpoint_artifact_id','dataset_version_id',
+                              'population_hash','protocol_hash','protocol_version','protocol_snapshot',
+                              'input_contract_hash','comparison_contract_hash','source_event_id'):
+                    require(default.get(field) == selected.get(field), 'E04_PAIR_IDENTITY_MISMATCH', field)
+                require(str(selected.get('calibration_id')) == str(c['run_threshold_calibration_id'])
+                        and default.get('calibration_id') is None, 'E04_THRESHOLD_PROVENANCE')
+                require(c.get('model_version_id') == default.get('model_version_id'), 'E04_PAIR_IDENTITY_MISMATCH')
+                context = tr['execution_parameters'].get('e10_v2_evaluation_context_v1', {})
+                for field in ('checkpoint_artifact_id','model_version_id','protocol_version','protocol_hash',
+                              'population_hash','input_contract_hash','comparison_contract_hash'):
+                    require(str(context.get(field)) == str(default.get(field)), 'E04_CONTEXT_PROVENANCE', field)
+                require(context.get('protocol_snapshot') == default['protocol_snapshot'], 'E04_CONTEXT_PROVENANCE')
+            else:
                 require(
-                    checked[field] == m[field], "E10_SCIENTIFIC_VALUE_CONFLICT", field
+                    event["event_type"] == "evaluation_completed", "E10_EVENT_TYPE_MISMATCH"
                 )
-            for k in ("tn", "fp", "fn", "tp"):
+                m = lookup(rows, "run_clinical_metrics", evaluation_id=e["id"])
                 require(
-                    event["payload"]["confusion_matrix"][k] == m[k],
-                    "E10_PROJECTION_CONFLICT",
-                    k,
+                    event["payload"].get("schema_version") == "validation_evaluation_v1",
+                    "E10_SCIENTIFIC_VERSION_INVALID",
                 )
-            require(
-                event["payload"]["split"] == e["split"]
-                and event["payload"]["evaluation_role"] == e["evaluation_role"]
-                and event["payload"]["threshold"]
-                == {"value": e["threshold_used"], "source": e["threshold_source"]},
-                "E10_PROJECTION_CONTEXT_CONFLICT",
-            )
+                checked = measurement(
+                    event["payload"],
+                    dict(e, auc_unavailability_reason=m["auc_unavailability_reason"]),
+                    e["id"],
+                )
+                for field in (
+                    "tn",
+                    "fp",
+                    "fn",
+                    "tp",
+                    "roc_auc_parasitized",
+                    "pr_auc_parasitized",
+                ):
+                    require(
+                        checked[field] == m[field], "E10_SCIENTIFIC_VALUE_CONFLICT", field
+                    )
+                for k in ("tn", "fp", "fn", "tp"):
+                    require(
+                        event["payload"]["confusion_matrix"][k] == m[k],
+                        "E10_PROJECTION_CONFLICT",
+                        k,
+                    )
+                require(
+                    event["payload"]["split"] == e["split"]
+                    and event["payload"]["evaluation_role"] == e["evaluation_role"]
+                    and event["payload"]["threshold"]
+                    == {"value": e["threshold_used"], "source": e["threshold_source"]},
+                    "E10_PROJECTION_CONTEXT_CONFLICT",
+                )
         if e["source_kind"] == "assessment":
             attempt = lookup(
                 rows, "assessment_attempts", id=e["source_assessment_attempt_id"]

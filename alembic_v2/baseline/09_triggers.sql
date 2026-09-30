@@ -189,3 +189,11 @@ CREATE CONSTRAINT TRIGGER v2_run_configuration_required AFTER INSERT ON public.r
 
 CREATE TRIGGER v2_xai_artifact_source_guard BEFORE INSERT ON public.xai_artifacts FOR EACH ROW EXECUTE PROCEDURE public.v2_xai_artifact_source_guard();
 
+CREATE TRIGGER e04_legacy_admission BEFORE INSERT ON public.evaluations FOR EACH ROW EXECUTE PROCEDURE public.e04_legacy_admission();
+
+CREATE CONSTRAINT TRIGGER e04_evaluation_complete AFTER INSERT ON public.evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE public.e04_calibration_complete();
+
+CREATE CONSTRAINT TRIGGER e04_calibration_complete AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE public.e04_calibration_complete();
+
+CREATE TRIGGER e04_calibration_immutable BEFORE DELETE OR UPDATE ON public.run_threshold_calibration FOR EACH ROW EXECUTE PROCEDURE public.e04_calibration_immutable();
+

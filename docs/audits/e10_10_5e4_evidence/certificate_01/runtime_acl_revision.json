@@ -1,0 +1,121 @@
+{
+  "identity": {
+    "session_user": "capstone_v2_runtime",
+    "current_user": "capstone_v2_runtime"
+  },
+  "select": true,
+  "insert": {
+    "rejected": true,
+    "sqlstate": "42501"
+  },
+  "update": {
+    "rejected": true,
+    "sqlstate": "42501"
+  },
+  "delete": {
+    "rejected": true,
+    "sqlstate": "42501"
+  },
+  "truncate": {
+    "rejected": true,
+    "sqlstate": "42501"
+  },
+  "alter": {
+    "rejected": true,
+    "sqlstate": "42501"
+  },
+  "drop": {
+    "rejected": true,
+    "sqlstate": "42501"
+  },
+  "acl": [
+    {
+      "privilege_type": "DELETE",
+      "grantee": "capstone_v2_migrator"
+    },
+    {
+      "privilege_type": "INSERT",
+      "grantee": "capstone_v2_migrator"
+    },
+    {
+      "privilege_type": "MAINTAIN",
+      "grantee": "capstone_v2_migrator"
+    },
+    {
+      "privilege_type": "REFERENCES",
+      "grantee": "capstone_v2_migrator"
+    },
+    {
+      "privilege_type": "SELECT",
+      "grantee": "capstone_v2_migrator"
+    },
+    {
+      "privilege_type": "TRIGGER",
+      "grantee": "capstone_v2_migrator"
+    },
+    {
+      "privilege_type": "TRUNCATE",
+      "grantee": "capstone_v2_migrator"
+    },
+    {
+      "privilege_type": "UPDATE",
+      "grantee": "capstone_v2_migrator"
+    },
+    {
+      "privilege_type": "SELECT",
+      "grantee": "capstone_v2_runtime"
+    }
+  ],
+  "runtime_preflight": {
+    "revision": "pg_v2_baseline",
+    "event_columns": true,
+    "event_metadata_constraint": true,
+    "event_unique_indexes": true,
+    "event_trigger_guard": true
+  },
+  "unknown": "E10_SCHEMA_NOT_READY: unsupported_alembic_revision",
+  "unknown_event_rejected_before_mutation": true,
+  "absent": "E10_SCHEMA_NOT_READY: unsupported_alembic_revision",
+  "absent_event_rejected_before_mutation": true,
+  "multiple": "E10_SCHEMA_NOT_READY: unsupported_alembic_revision",
+  "multiple_event_rejected_before_mutation": true,
+  "sql_error": "E10_SCHEMA_NOT_READY: schema_inspection_failed",
+  "sql_error_event_rejected_before_mutation": true,
+  "alembic_stamp_authenticated_writer": {
+    "rejected": true,
+    "sqlstate": "42501"
+  },
+  "alembic_stamp": {
+    "argv": [
+      "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv/bin/python",
+      "-m",
+      "alembic",
+      "-c",
+      "alembic_v2.ini",
+      "-x",
+      "target=/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/docs/audits/e10_10_5e4_evidence/route_a/target.json",
+      "stamp",
+      "head"
+    ],
+    "exit_code": 1,
+    "rejected_before_connection": true,
+    "reason": "V2_AUTHORIZATION_MISMATCH"
+  },
+  "alembic_upgrade": {
+    "argv": [
+      "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv/bin/python",
+      "-m",
+      "alembic",
+      "-c",
+      "alembic_v2.ini",
+      "-x",
+      "target=/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/docs/audits/e10_10_5e4_evidence/route_a/target.json",
+      "upgrade",
+      "head"
+    ],
+    "exit_code": 1,
+    "rejected_before_connection": true,
+    "reason": "V2_AUTHORIZATION_MISMATCH"
+  },
+  "passed": true
+}

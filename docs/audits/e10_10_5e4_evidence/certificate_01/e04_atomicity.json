@@ -1,0 +1,149 @@
+[
+  {
+    "name": "after_ledger",
+    "passed": true,
+    "fault_sqlstate": "22012",
+    "rollback": {
+      "ledger": 0,
+      "calibration": 0,
+      "evaluations": 0,
+      "metrics": 0
+    },
+    "retry": {
+      "ledger": 1,
+      "calibration": 1,
+      "evaluations": 2,
+      "metrics": 2
+    },
+    "duplicate_accepted": true,
+    "canonical_event_unchanged": true,
+    "deterministic_role_ids": true,
+    "no_legacy_results_update": true
+  },
+  {
+    "name": "after_default",
+    "passed": true,
+    "fault_sqlstate": "22012",
+    "rollback": {
+      "ledger": 0,
+      "calibration": 0,
+      "evaluations": 0,
+      "metrics": 0
+    },
+    "retry": {
+      "ledger": 1,
+      "calibration": 1,
+      "evaluations": 2,
+      "metrics": 2
+    },
+    "duplicate_accepted": true,
+    "canonical_event_unchanged": true,
+    "deterministic_role_ids": true,
+    "no_legacy_results_update": true
+  },
+  {
+    "name": "create_calibration",
+    "passed": true,
+    "fault_sqlstate": "22012",
+    "rollback": {
+      "ledger": 0,
+      "calibration": 0,
+      "evaluations": 0,
+      "metrics": 0
+    },
+    "retry": {
+      "ledger": 1,
+      "calibration": 1,
+      "evaluations": 2,
+      "metrics": 2
+    },
+    "duplicate_accepted": true,
+    "canonical_event_unchanged": true,
+    "deterministic_role_ids": true,
+    "no_legacy_results_update": true
+  },
+  {
+    "name": "create_selected",
+    "passed": true,
+    "fault_sqlstate": "22012",
+    "rollback": {
+      "ledger": 0,
+      "calibration": 0,
+      "evaluations": 0,
+      "metrics": 0
+    },
+    "retry": {
+      "ledger": 1,
+      "calibration": 1,
+      "evaluations": 2,
+      "metrics": 2
+    },
+    "duplicate_accepted": true,
+    "canonical_event_unchanged": true,
+    "deterministic_role_ids": true,
+    "no_legacy_results_update": true
+  },
+  {
+    "name": "metrics_default",
+    "passed": true,
+    "fault_sqlstate": "22012",
+    "rollback": {
+      "ledger": 0,
+      "calibration": 0,
+      "evaluations": 0,
+      "metrics": 0
+    },
+    "retry": {
+      "ledger": 1,
+      "calibration": 1,
+      "evaluations": 2,
+      "metrics": 2
+    },
+    "duplicate_accepted": true,
+    "canonical_event_unchanged": true,
+    "deterministic_role_ids": true,
+    "no_legacy_results_update": true
+  },
+  {
+    "name": "metrics_selected",
+    "passed": true,
+    "fault_sqlstate": "22012",
+    "rollback": {
+      "ledger": 0,
+      "calibration": 0,
+      "evaluations": 0,
+      "metrics": 0
+    },
+    "retry": {
+      "ledger": 1,
+      "calibration": 1,
+      "evaluations": 2,
+      "metrics": 2
+    },
+    "duplicate_accepted": true,
+    "canonical_event_unchanged": true,
+    "deterministic_role_ids": true,
+    "no_legacy_results_update": true
+  },
+  {
+    "name": "before_commit",
+    "passed": true,
+    "fault_sqlstate": "22012",
+    "rollback": {
+      "ledger": 0,
+      "calibration": 0,
+      "evaluations": 0,
+      "metrics": 0
+    },
+    "retry": {
+      "ledger": 1,
+      "calibration": 1,
+      "evaluations": 2,
+      "metrics": 2
+    },
+    "duplicate_accepted": true,
+    "canonical_event_unchanged": true,
+    "deterministic_role_ids": true,
+    "no_legacy_results_update": true
+  }
+]

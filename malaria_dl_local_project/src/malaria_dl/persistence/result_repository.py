@@ -83,6 +83,14 @@ class _PostgresScope(EventAcceptanceScope):
         if updated is None:
             raise FinalEvaluationConflict()
 
+    def project_calibration_result(self) -> None:
+        if not self.active or not self.appended:
+            raise ResultPersistenceError()
+        from ..execution.schema import V2_REVISION
+        if self.revision == V2_REVISION:
+            from .v2_projection import project_calibration
+            project_calibration(self._connection, self._event)
+
 
 class PostgresResultRepository(ResultRepository):
     """Own a fresh top-level transaction per acceptance, never a caller savepoint.

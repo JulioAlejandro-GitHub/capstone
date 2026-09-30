@@ -1,0 +1,110 @@
+[
+  {
+    "name": "order_cds",
+    "passed": true
+  },
+  {
+    "name": "order_csd",
+    "passed": true
+  },
+  {
+    "name": "order_dcs",
+    "passed": true
+  },
+  {
+    "name": "order_dsc",
+    "passed": true
+  },
+  {
+    "name": "order_scd",
+    "passed": true
+  },
+  {
+    "name": "order_sdc",
+    "passed": true
+  },
+  {
+    "name": "commit_orphan_default",
+    "passed": true,
+    "sqlstate": "P0001",
+    "marker": "E04_PAIR_REQUIRED",
+    "failed_at_commit": true,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "commit_orphan_selected",
+    "passed": true,
+    "sqlstate": "23503",
+    "marker": "v2_evaluations_foreign_0baa7d166e2f",
+    "failed_at_commit": true,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "commit_calibration_without_members",
+    "passed": true,
+    "sqlstate": "23503",
+    "marker": "foreign key",
+    "failed_at_commit": true,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "contract_duplicate_new_event",
+    "passed": true,
+    "sqlstate": "23505",
+    "marker": "uq_e04_contract_role",
+    "failed_at_commit": false,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "contract_duplicate_null_model",
+    "passed": true,
+    "sqlstate": "23505",
+    "marker": "uq_e04_contract_role",
+    "failed_at_commit": false,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "event_test_origin",
+    "passed": true,
+    "sqlstate": "P0001",
+    "marker": "E04_EVENT_PROVENANCE",
+    "failed_at_commit": true,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "event_wrong_kind",
+    "passed": true,
+    "sqlstate": "P0001",
+    "marker": "E04_EVENT_PROVENANCE",
+    "failed_at_commit": true,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "event_missing_calibration",
+    "passed": true,
+    "sqlstate": "P0001",
+    "marker": "E04_EVENT_PROVENANCE",
+    "failed_at_commit": true,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "metric_payload_conflict",
+    "passed": true,
+    "sqlstate": "P0001",
+    "marker": "E04_METRIC_PROVENANCE",
+    "failed_at_commit": true,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "context_missing",
+    "passed": true,
+    "sqlstate": "P0001",
+    "marker": "E04_CONTEXT_PROVENANCE",
+    "failed_at_commit": true,
+    "entire_fixture_rolled_back": true
+  },
+  {
+    "name": "native_nulls_not_distinct",
+    "passed": true
+  }
+]

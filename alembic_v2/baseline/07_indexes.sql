@@ -435,3 +435,7 @@ CREATE INDEX ix_xai_same_image ON public.xai_evidence (input_sha256, input_contr
 
 CREATE INDEX ix_xai_evaluation ON public.xai_evidence (evaluation_id, method);
 
+CREATE UNIQUE INDEX uq_e04_event_role ON public.evaluations (source_event_id, evaluation_role) WHERE source_kind = 'e10' AND evaluation_role IN ('calibration_default', 'calibration_selected');
+
+CREATE UNIQUE INDEX uq_e04_contract_role ON public.evaluations (run_id, training_run_id, model_version_id, checkpoint_artifact_id, dataset_version_id, population_hash, protocol_version, protocol_hash, input_contract_hash, evaluation_role) NULLS NOT DISTINCT WHERE source_kind = 'e10' AND evaluation_role IN ('calibration_default', 'calibration_selected');
+

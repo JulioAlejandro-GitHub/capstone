@@ -1,0 +1,26 @@
+[
+  {
+    "name": "trigger",
+    "passed": true,
+    "missing": "v2_trigger_contract"
+  },
+  {
+    "name": "unique_index",
+    "passed": true,
+    "missing": "v2_calibration_uniqueness_contract"
+  },
+  {
+    "name": "selected_check",
+    "passed": true,
+    "missing": "v2_evaluation_contract"
+  },
+  {
+    "name": "authority_function",
+    "passed": true,
+    "missing": "v2_function_contract"
+  },
+  {
+    "name": "restored_contract_accepted",
+    "passed": true
+  }
+]

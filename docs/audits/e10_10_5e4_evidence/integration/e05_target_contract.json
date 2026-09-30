@@ -1,0 +1,39 @@
+{
+  "status": "BLOCKED_E05",
+  "scope": "Real configuration resolver + TRAIN snapshot writer + calibration calculator, no training",
+  "all_probe_rows_rolled_back": true,
+  "results": [
+    {
+      "requested_target": 0.98,
+      "resolver_accepted": true,
+      "train_writer_accepted": true,
+      "typed_configuration_target": 0.98,
+      "calibration_producer_target": 0.98,
+      "threshold_selected": 0.6,
+      "calibration_split": "val",
+      "calibration_insert_accepted": true,
+      "control_scope": "INSERT-only control with deferred member FKs; rolled back, not a complete pair"
+    },
+    {
+      "requested_target": 0.8,
+      "resolver_accepted": true,
+      "calibration_producer_target": 0.8,
+      "train_writer_accepted": false,
+      "sqlstate": "23514",
+      "constraint": "v2_run_configurations_check_d6094850fee4",
+      "calibration_insert_attempted": false
+    },
+    {
+      "requested_target": 0.99,
+      "resolver_accepted": true,
+      "calibration_producer_target": 0.99,
+      "train_writer_accepted": false,
+      "sqlstate": "23514",
+      "constraint": "v2_run_configurations_check_d6094850fee4",
+      "calibration_insert_attempted": false
+    }
+  ],
+  "cause": "Both typed TRAIN configuration and calibration require target_recall=0.98; the real resolver and calibration calculator accept other explicit targets",
+  "context_producer_completed": false,
+  "gate_e": "BLOCKED_NOT_REQUESTED"
+}

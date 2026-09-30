@@ -1,9 +1,9 @@
-# E10.10.5E.3 — candidata E-03; integración detenida por E-04
+# E10.10.5E.4 — baseline recertificada; integración detenida por E-05
 
-**Candidata sin certificar. Integración incompleta. Gate E bloqueado y no solicitado.**
+**E-04 RESUELTA Y BASELINE RECERTIFICADA. E10.10.5E permanece en integración. GATE E BLOQUEADO.**
 
-Se amplió exclusivamente el CHECK de roles E10, se regeneraron SQL/manifiesto y se instaló desde cero en PostgreSQL 17.9 aislado. El catálogo difiere de E.1 únicamente en ese CHECK; 30 pruebas estáticas aprobadas.
+Implementadas integridad diferida de pareja, procedencia, unicidad NULL-safe, atomicidad completa y separación PostgreSQL runtime/migrador. Catálogo, D-01 a D-06, E-01/E-02, rollback, idempotencia, backup/restore y Route B aprobados en PostgreSQL 17.9 aislado. Pins promovidos y certificado expedido después de las pruebas.
 
-El diagnóstico PostgreSQL encontró ocho rechazos ausentes en las guardas de calibración, incluyendo protocolo y contrato de entrada incompatibles, selected sin procedencia, miembros huérfanos y admisión de hechos nuevos como legacy. Conforme al apartado 11, se detuvo la integración para decisión E-04. No se expidió certificado ni se promovieron los pins de adopción.
+Al continuar hacia el productor real se confirmó E-05: resolver/calculador admiten objetivos configurables, pero los CHECK certificados de TRAIN/calibración exigen 0,98. Se detuvo la integración conforme al apartado 15; el productor y la matriz integral siguen pendientes.
 
-[Informe, evidencia y propuesta E-04](e10_10_5e3_resolution.md) · [Matriz pendiente](e10_10_5e_integration_results.md) · [Informe E.2 preservado](e10_10_5e3_evidence/previous_reports/e10_10_5_implementation.md).
+[Resolución y pruebas E-04](e10_10_5e4_resolution.md) · [Certificado](e10_10_5e4_evidence/route_a/certificate.json) · [Decisión E-05](e10_10_5e5_decision.md) · [Matriz](e10_10_5e_integration_results.md) · [Estado E-03 preservado](e10_10_5e4_evidence/previous_reports/e10_10_5_implementation.md).

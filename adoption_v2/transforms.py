@@ -350,10 +350,16 @@ def evaluation(context, key):
         require(e["source_kind"] == "assessment", "TEST_ASSESSMENT_REQUIRED")
     if e["source_kind"] == "e10":
         require(
-            e["evaluation_role"] == "training_validation_final"
+            e["evaluation_role"] in {"training_validation_final", "calibration_default", "calibration_selected"}
             and e["run_id"] == e["training_run_id"],
             "E10_ROLE_INVALID",
         )
+        if e['evaluation_role'] == 'calibration_default':
+            require(e['threshold_source'] == 'default' and e.get('calibration_id') is None,
+                    'E04_DEFAULT_SOURCE')
+        if e['evaluation_role'] == 'calibration_selected':
+            require(e['threshold_source'] == 'validation_calibration' and e.get('calibration_id') is not None,
+                    'E04_SELECTED_SOURCE')
         require(
             e.get("event_kind") == "e10_event"
             and e.get("event_phase") == "run_event_v1"

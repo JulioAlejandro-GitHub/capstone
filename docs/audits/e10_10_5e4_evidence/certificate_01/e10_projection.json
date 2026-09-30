@@ -1,0 +1,52 @@
+{
+  "epoch": "accepted",
+  "duplicate": "duplicate_accepted",
+  "fencing": true,
+  "missing_provenance_rejected": true,
+  "missing_provenance_ledger_rollback": true,
+  "typed_sql_failure_rejected": true,
+  "typed_sql_failure_rollback": {
+    "ledger": 1,
+    "evaluations": 0,
+    "metrics": 0
+  },
+  "evaluation": "accepted",
+  "evaluation_duplicate": "duplicate_accepted",
+  "service_never_updates_legacy_results": true,
+  "ledger_canonical_event_and_typed_atomic": true,
+  "historical_event_bytes_preserved": true,
+  "ids": {
+    "dataset": "b88c975d-de7a-4568-9bdf-21e03001b3ad",
+    "version": "6ffc1870-bb12-4525-8a1a-2d64ca6cd7f5",
+    "external_version": "7f1cc13e-5ed5-47d1-9212-20147dd96788",
+    "model": "5cb86f03-df85-45df-a0bd-149345810918",
+    "train": "38a168d9-fb2c-4fa0-bcc3-8a6fdc049a57",
+    "train2": "7ec1f2e8-2743-45c3-8b71-67fc40ebf2b4",
+    "evaluation_run": "8446b956-75f5-4990-ac82-3233cacae727",
+    "artifact": "9c1f2d13-e824-40d5-9bda-7abadcbc7750",
+    "artifact2": "d3f13d1d-c388-4d92-92ea-82a4c684d1b9",
+    "model_version": "90eea5c5-414a-4227-bf05-88a19c5db691",
+    "owner": "c98ceece-fa30-4594-87ba-648a2819240c"
+  },
+  "sql_errors": [
+    {
+      "sqlstate": "22012",
+      "message": "division by zero"
+    }
+  ],
+  "fresh_service_replay_after_discarded_ack": true,
+  "gap": true,
+  "sequence_conflict": true,
+  "event_id_conflict": true,
+  "check_rejections": [
+    {
+      "sqlstate": "23514",
+      "constraint": "ck_v2_no_result_json"
+    },
+    {
+      "sqlstate": "23514",
+      "constraint": "ck_v2_no_result_json"
+    }
+  ],
+  "scope": "Consumer/service integration only. Synthetic provenance injected explicitly; no TRAIN or producer certification."
+}

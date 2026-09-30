@@ -1,0 +1,273 @@
+{
+  "scope": "SQL-only synthetic diagnostic; not a producer or integration certificate",
+  "all_fixture_transactions_rolled_back": true,
+  "results": [
+    {
+      "name": "valid_pair",
+      "passed": true,
+      "accepted": true,
+      "error": null
+    },
+    {
+      "name": "default_test",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23514",
+        "message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"",
+        "constraint": "ck_v2_evaluation_scope"
+      }
+    },
+    {
+      "name": "selected_test",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23514",
+        "message": "new row for relation \"evaluations\" violates check constraint \"ck_v2_evaluation_scope\"",
+        "constraint": "ck_v2_evaluation_scope"
+      }
+    },
+    {
+      "name": "unauthorized_role",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23514",
+        "message": "new row for relation \"evaluations\" violates check constraint \"v2_evaluations_check_28938a6edbaa\"",
+        "constraint": "v2_evaluations_check_28938a6edbaa"
+      }
+    },
+    {
+      "name": "checkpoint_mismatch",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_PAIR_IDENTITY_MISMATCH",
+        "constraint": null
+      }
+    },
+    {
+      "name": "dataset_mismatch",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_PAIR_IDENTITY_MISMATCH",
+        "constraint": null
+      }
+    },
+    {
+      "name": "population_mismatch",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_PAIR_IDENTITY_MISMATCH",
+        "constraint": null
+      }
+    },
+    {
+      "name": "protocol_mismatch",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_PAIR_IDENTITY_MISMATCH",
+        "constraint": null
+      }
+    },
+    {
+      "name": "input_contract_mismatch",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_PAIR_IDENTITY_MISMATCH",
+        "constraint": null
+      }
+    },
+    {
+      "name": "missing_event",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_PAIR_IDENTITY_MISMATCH",
+        "constraint": null
+      }
+    },
+    {
+      "name": "null_event",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23514",
+        "message": "new row for relation \"evaluations\" violates check constraint \"v2_evaluations_check_3b1acb9be108\"",
+        "constraint": "v2_evaluations_check_3b1acb9be108"
+      }
+    },
+    {
+      "name": "selected_without_threshold_provenance",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23514",
+        "message": "new row for relation \"evaluations\" violates check constraint \"ck_e04_selected_source\"",
+        "constraint": "ck_e04_selected_source"
+      }
+    },
+    {
+      "name": "duplicate_member",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23505",
+        "message": "duplicate key value violates unique constraint \"v2_evaluations_unique_2b29f071653b\"",
+        "constraint": "v2_evaluations_unique_2b29f071653b"
+      }
+    },
+    {
+      "name": "second_selected_identity",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23505",
+        "message": "duplicate key value violates unique constraint \"uq_e04_event_role\"",
+        "constraint": "uq_e04_event_role"
+      }
+    },
+    {
+      "name": "new_e10_as_legacy",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "42501",
+        "message": "E04_LEGACY_MIGRATOR_REQUIRED",
+        "constraint": null
+      }
+    },
+    {
+      "name": "null_selected_member",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23502",
+        "message": "null value in column \"selected_evaluation_id\" of relation \"run_threshold_calibration\" violates not-null constraint",
+        "constraint": null
+      }
+    },
+    {
+      "name": "null_protocol",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23502",
+        "message": "null value in column \"protocol_hash\" of relation \"evaluations\" violates not-null constraint",
+        "constraint": null
+      }
+    },
+    {
+      "name": "null_model_version",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_PAIR_IDENTITY_MISMATCH",
+        "constraint": null
+      }
+    },
+    {
+      "name": "orphan_default",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_PAIR_REQUIRED",
+        "constraint": null
+      }
+    },
+    {
+      "name": "orphan_selected",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23514",
+        "message": "new row for relation \"evaluations\" violates check constraint \"ck_e04_selected_source\"",
+        "constraint": "ck_e04_selected_source"
+      }
+    },
+    {
+      "name": "default_fakes_selection",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23514",
+        "message": "new row for relation \"evaluations\" violates check constraint \"ck_e04_default_source\"",
+        "constraint": "ck_e04_default_source"
+      }
+    },
+    {
+      "name": "default_reuses_calibration",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23514",
+        "message": "new row for relation \"evaluations\" violates check constraint \"ck_e04_default_source\"",
+        "constraint": "ck_e04_default_source"
+      }
+    },
+    {
+      "name": "default_wrong_threshold",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23514",
+        "message": "new row for relation \"evaluations\" violates check constraint \"ck_e04_default_source\"",
+        "constraint": "ck_e04_default_source"
+      }
+    },
+    {
+      "name": "null_input",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "23502",
+        "message": "null value in column \"input_contract_hash\" of relation \"evaluations\" violates not-null constraint",
+        "constraint": null
+      }
+    },
+    {
+      "name": "snapshot_mismatch",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_PAIR_IDENTITY_MISMATCH",
+        "constraint": null
+      }
+    },
+    {
+      "name": "threshold_mismatch",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_THRESHOLD_PROVENANCE",
+        "constraint": null
+      }
+    },
+    {
+      "name": "wrong_calibration_reference",
+      "passed": true,
+      "accepted": false,
+      "error": {
+        "sqlstate": "P0001",
+        "message": "E04_THRESHOLD_PROVENANCE",
+        "constraint": null
+      }
+    }
+  ],
+  "passed": true
+}

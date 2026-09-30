@@ -585,6 +585,22 @@ REVOKE ALL ON FUNCTION public.v2_xai_artifact_source_guard() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION public.v2_xai_artifact_source_guard() TO capstone_v2_runtime;
 
+REVOKE ALL ON FUNCTION public.e04_legacy_admission() FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public.e04_legacy_admission() TO capstone_v2_runtime;
+
+REVOKE ALL ON FUNCTION public.e04_assert_calibration(uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public.e04_assert_calibration(uuid) TO capstone_v2_runtime;
+
+REVOKE ALL ON FUNCTION public.e04_calibration_complete() FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public.e04_calibration_complete() TO capstone_v2_runtime;
+
+REVOKE ALL ON FUNCTION public.e04_calibration_immutable() FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public.e04_calibration_immutable() TO capstone_v2_runtime;
+
 REVOKE ALL ON TABLE public.alembic_version FROM PUBLIC, capstone_v2_runtime;
 
 GRANT SELECT ON TABLE public.alembic_version TO capstone_v2_runtime;

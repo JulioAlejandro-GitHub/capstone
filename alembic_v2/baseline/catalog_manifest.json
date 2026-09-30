@@ -2,6 +2,7 @@
   "format_version": 1,
   "revision": "pg_v2_baseline",
   "source_sha256": "6aee9b58a9daf32385ec107b604382c19586f850fcca6accbf79c720e9e1c8b9",
+  "e04_contract_sha256": "f3e50deb994e823768d0a8dd7150c1a9e937c1b4e09226e37304adb36964db08",
   "d03_contract_sha256": "fd6b8ae6adf12220551ea7eb7b50d695aa9e548e5aa93af728c046c7e7c78b90",
   "d05_contract_sha256": "d3124d53560d98a4bfa84d061f497d28cf8dbc9e4806828ad8d6d6593cfcfee7",
   "generated_column_contracts": [
@@ -58,26 +59,26 @@
   "counts": {
     "setting": 2,
     "extension": 1,
-    "acl": 294,
-    "function": 75,
+    "acl": 302,
+    "function": 79,
     "table": 102,
-    "constraint": 950,
-    "index": 229,
+    "constraint": 952,
+    "index": 231,
     "view": 33,
-    "trigger": 95,
+    "trigger": 99,
     "seed": 1
   },
   "files": {
     "01_prerequisites.sql": "7bc46c27eb8b822bb7d0d9f12326fdb53a41837ec3620a4533f2009e96cc1ae5",
     "02_generated_functions.sql": "9918d63cfad0c7762da9961b9471cb63b799757e5afada2fe55d4d7147f8b15a",
     "03_tables.sql": "0f25191d17a21e3c3078035b6e341c4e34e6c7cd2e60db56ea738addccab44bc",
-    "04_functions.sql": "b4cb1c74c2fc1f94c27c0d3d0e79f4d94ff46c444c3d1e8cc97f5873f94c45e8",
+    "04_functions.sql": "c2fb3f1939cba1675fc67892dc6340e21db811a0085ed2f324c7aed041eb63a6",
     "05_keys.sql": "b59c1011dd20fa2ccb03e4ca26ed436d6b444c3076446f5478c97c462aabe3ce",
-    "06_constraints.sql": "18d81b1f5a86dae771886a5422d8925ecf5c55f362ff4ee1a0ff9454966137d6",
-    "07_indexes.sql": "076571de7fa30e967d59b77bbe5c4cc9821b78a604897376d6afc7cfa4d0d99b",
+    "06_constraints.sql": "d24cc7c1696ad74b3fc33d34160bbe3ba69217fc1dd86155f754a9ca42216318",
+    "07_indexes.sql": "d68579321c11bce18107ad28774623249e08fc757086bd9a2066236672779d75",
     "08_views.sql": "8e08f69ef33f435eb6f50c0b3239e0b97ccf82fc63b758ab55a908b91bf6609d",
-    "09_triggers.sql": "913f1dfee85d1a0b3bb8b7b00eef3e309aed2f413a3cc091c7d4efe6e4bfee8a",
-    "10_privileges.sql": "886ee209e98b884c7d3109e80272b16c2961a74521c0fa70202d98a3190180d1",
+    "09_triggers.sql": "c8ae02e42b85bb2901c2eca568625b68db04cdd86fb49d07352b39a82cdf8dc1",
+    "10_privileges.sql": "fc543b79e3e75b5b5cc06c429d71e69f097a8449e3b869b4f1168459d73d371f",
     "11_technical_state.sql": "677be879ea69cc5c7b80aa9f9315544a4dabcad0a92043d988a591bc77c6b181"
   },
   "statements": [
@@ -16533,13 +16534,51 @@
     {
       "phase": "04_functions",
       "kind": "function",
+      "name": "public.e04_assert_calibration",
+      "arguments": [
+        "member_id uuid"
+      ],
+      "body_sha256": "bc6464b2aab9f554ba4bf29c0bcb3f2ec3322a78f603f839bba1c1ac1ea6a029",
+      "dependencies": [],
+      "file": "04_functions.sql",
+      "start": 21219,
+      "end": 26676,
+      "sha256": "96cc2bab8dcc424c24265d0082baf3be804da0792632b18a82f3119e3094128a"
+    },
+    {
+      "phase": "04_functions",
+      "kind": "function",
+      "name": "public.e04_calibration_immutable",
+      "arguments": [],
+      "body_sha256": "27e8e3edc059071ba4d453c4c6a51d1904d0a8129777e7920c2713b8085db76e",
+      "dependencies": [],
+      "file": "04_functions.sql",
+      "start": 26678,
+      "end": 27070,
+      "sha256": "4719fec61b455f9d7b9e5a442b68b603c6d21c78a2c6797f748059e18f24fe7a"
+    },
+    {
+      "phase": "04_functions",
+      "kind": "function",
+      "name": "public.e04_legacy_admission",
+      "arguments": [],
+      "body_sha256": "8a4590f98c8453f9e5a9a7e1159153920c955804174844daef53aa5bdf590ef3",
+      "dependencies": [],
+      "file": "04_functions.sql",
+      "start": 27072,
+      "end": 27377,
+      "sha256": "dbf2d4630952d800f04c417e7c6b6f39bb5983d582cb0105f540cb0af76995ea"
+    },
+    {
+      "phase": "04_functions",
+      "kind": "function",
       "name": "public.enforce_activation_materialization_consistency",
       "arguments": [],
       "body_sha256": "fe0b8b0ccd4b7908a0ea19463d89229e8cc66df402f5a6a13e9d5f12fd0dd29d",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 21219,
-      "end": 21830,
+      "start": 27379,
+      "end": 27990,
       "sha256": "78489ce8d2dcbc5ee8a42ae595b957aadcadf542a377cc40a3a44962f6386bf3"
     },
     {
@@ -16550,8 +16589,8 @@
       "body_sha256": "57485665516157b35512429011712e5d43f5aa34c1c4417b729e5c51943d8525",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 21832,
-      "end": 23938,
+      "start": 27992,
+      "end": 30098,
       "sha256": "806d8377318aebb075cfe2d42f67f4f63f445ca10cc5a3ba3b792c5ab1d83df2"
     },
     {
@@ -16562,8 +16601,8 @@
       "body_sha256": "9f5e7d87a80017b5c2a241cf2ed5d60e2c6ec79c70be1d81fdc30d8666869999",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 23940,
-      "end": 26457,
+      "start": 30100,
+      "end": 32617,
       "sha256": "c7d706fcdc083c51a6d0c93cf01bc528d789e63bc2271a26c0086fc583f275ab"
     },
     {
@@ -16574,8 +16613,8 @@
       "body_sha256": "aa4479859a0fdcdc0c544da21b0035b947f31570894d27d0fc9f1a826315d1da",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 26459,
-      "end": 28856,
+      "start": 32619,
+      "end": 35016,
       "sha256": "7be28feb2a8aa7970baeec465878edd72d9cb7876ded948d13c1f3e5a156cd1c"
     },
     {
@@ -16586,8 +16625,8 @@
       "body_sha256": "a231aba174358dcfaf9d7a7a6e31022798be2be8880d03195b89cdf66274671c",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 28858,
-      "end": 31081,
+      "start": 35018,
+      "end": 37241,
       "sha256": "645223f38246dcf70ad1ad2c2a70e3c54cc04aeb8d99f25b3e599782afe5c694"
     },
     {
@@ -16598,8 +16637,8 @@
       "body_sha256": "21702a812239c58084a54c9f3e873f9afebf2e17302abbfc31f190a34a498a32",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 31083,
-      "end": 31305,
+      "start": 37243,
+      "end": 37465,
       "sha256": "90e10c34cf4671b4f5466a1f4a0cc36100bef33576a103ed859638b2e4e8b9ac"
     },
     {
@@ -16610,8 +16649,8 @@
       "body_sha256": "2584e98a4432bc60a66b21385f12c5e8ec69c99bed017c8f2786539d272c062b",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 31307,
-      "end": 31994,
+      "start": 37467,
+      "end": 38154,
       "sha256": "9ac27a20526c099517f72b7fa17ce7fa9bcd59e85efb2d0afa20597283f4d655"
     },
     {
@@ -16622,8 +16661,8 @@
       "body_sha256": "1e86740eb5675d69f2d1dccda94223c8674545c83041a0b0bdca42eeea8c63cc",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 31996,
-      "end": 32198,
+      "start": 38156,
+      "end": 38358,
       "sha256": "5ab7c2d390ca57ad09673ee3b0967861196fffd7f64cfef61ab38905ea444894"
     },
     {
@@ -16634,8 +16673,8 @@
       "body_sha256": "cb846351db82212a3c4f87ba06e9862ecb960122bf98f839c4fcd29eb04be652",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 32200,
-      "end": 32513,
+      "start": 38360,
+      "end": 38673,
       "sha256": "15aa84b629c318a69bf609c4405f2295361443ecb769ffa68cfc4242d789862b"
     },
     {
@@ -16646,8 +16685,8 @@
       "body_sha256": "1b30b7d9f25ae9c39b2d963b9761cf5b3d969abc429604002dc405c0f47ffe79",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 32515,
-      "end": 32734,
+      "start": 38675,
+      "end": 38894,
       "sha256": "818837f7f01da8e676ddd428e4012a740b0804df8766f05f7c50ecb0421cbf68"
     },
     {
@@ -16658,8 +16697,8 @@
       "body_sha256": "52c480595be5731f567eb95139da2d7055c3b0bccffb360cdaaa246c3fefd61c",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 32736,
-      "end": 33006,
+      "start": 38896,
+      "end": 39166,
       "sha256": "2f659478a9e0e59e40f828920b0231763895205d443bc19315dc42a47867d1ca"
     },
     {
@@ -16670,8 +16709,8 @@
       "body_sha256": "5802304f376252793ba9caa3982d83657990d9dbad5ac581575418ac1f70a817",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 33008,
-      "end": 33234,
+      "start": 39168,
+      "end": 39394,
       "sha256": "05fc26cf15045eb2bdc84d4cd4856c437b94ac8538d1dbb341ec6201c424f458"
     },
     {
@@ -16682,8 +16721,8 @@
       "body_sha256": "557e50f451923d2467822ecca70b94ca2f378deca08914a72f27ff9db60386b4",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 33236,
-      "end": 38672,
+      "start": 39396,
+      "end": 44832,
       "sha256": "fab263ab1c7031851764264220113c207e1b70f371fd39bcd41ec68d6b28144d"
     },
     {
@@ -16694,8 +16733,8 @@
       "body_sha256": "a129953642b2dcc9da59422f0ad4a62f6eecb859435b4c53f11516c2deb06bc6",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 38674,
-      "end": 40468,
+      "start": 44834,
+      "end": 46628,
       "sha256": "a6209409e3053ca1a72b0174a1c4299302e57ff963d08732d310c51a9277db4d"
     },
     {
@@ -16706,8 +16745,8 @@
       "body_sha256": "d22eb8eb4a9cbec5f57311808ac6b206c6a67b630d6741fe619da21a401a79a8",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 40470,
-      "end": 41805,
+      "start": 46630,
+      "end": 47965,
       "sha256": "7dbe4b20efe9b48793fd012db146b57976afdd8a6c0530506a61191610eee337"
     },
     {
@@ -16718,8 +16757,8 @@
       "body_sha256": "732ac87bec26ed8bbc2a79ffd14c450e85e752b171d9d4885578a6e053079dd3",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 41807,
-      "end": 43516,
+      "start": 47967,
+      "end": 49676,
       "sha256": "06d2f2ca75a79f121e13b819a4a0e3395209c28b9716c4ce71d8dfcd0e777a0c"
     },
     {
@@ -16730,8 +16769,8 @@
       "body_sha256": "71a38adb7ac2c9a939e8ac2a7813a87cd4a98019b473bafaca27d60333b00b5a",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 43518,
-      "end": 44183,
+      "start": 49678,
+      "end": 50343,
       "sha256": "f58f298faf1340421c10f886d20ed1c1542b1bd9688c17f3d759b6533d26e145"
     },
     {
@@ -16742,8 +16781,8 @@
       "body_sha256": "5c67c7192826b2b0934a066bc92c5acdcb94a95e123159515c8d7e69bee13b42",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 44185,
-      "end": 44858,
+      "start": 50345,
+      "end": 51018,
       "sha256": "67b88248ecc6e1645d8d470dcdc51b0338407ea43c740d077044566d5d1068b8"
     },
     {
@@ -16754,8 +16793,8 @@
       "body_sha256": "ee46596382b2900bb84ba6cf6b09e0ffc1cab6fbfad8e040b2e68194fdd8a420",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 44860,
-      "end": 45665,
+      "start": 51020,
+      "end": 51825,
       "sha256": "b49eb85978cfc61fe44443639b467de0fda359282f57cd9d4e1b56c3e1c14512"
     },
     {
@@ -16766,8 +16805,8 @@
       "body_sha256": "aa30f989476947da2eeeb0084f707d390f925d4939c9165bc40b8daa6e0c2054",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 45667,
-      "end": 46388,
+      "start": 51827,
+      "end": 52548,
       "sha256": "c8a340463be8ec718223138ca71ebb5d358430b14d77a73092db6d44b0fbaeb1"
     },
     {
@@ -16778,8 +16817,8 @@
       "body_sha256": "b1ba4971d65dd4b145d98814ea5ba763a69dd8391220ab3386cacdf99d03d6e6",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 46390,
-      "end": 47502,
+      "start": 52550,
+      "end": 53662,
       "sha256": "2b9f669c1f0cc088cc0c030e00b0ed9d918d0f0753635a1174c1b869e92f9b34"
     },
     {
@@ -16790,8 +16829,8 @@
       "body_sha256": "67a2a7c786322c167d46f58116d9bb12b1c049721a579f72e583a361c9355272",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 47504,
-      "end": 48409,
+      "start": 53664,
+      "end": 54569,
       "sha256": "034d24f78ea412da186946975e0eb37482aa4d4f640c66f806245d1c8e2a2e75"
     },
     {
@@ -16802,8 +16841,8 @@
       "body_sha256": "5e784d85e811cc7600cdc6473359067c62cfc38dd3b0978675660857a354d1a9",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 48411,
-      "end": 48674,
+      "start": 54571,
+      "end": 54834,
       "sha256": "a6b761fc2656d3079f037ec4777e16fa1e1347e7420008ba6e0744fc5cad5f4f"
     },
     {
@@ -16814,8 +16853,8 @@
       "body_sha256": "49cf79699a05696489cb7235d7a44fb844b82d4c19eed5084ee8ca88b46bccbe",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 48676,
-      "end": 48987,
+      "start": 54836,
+      "end": 55147,
       "sha256": "08ff3cdb38c961ca4401181802e5700c050292258c6dceb48f88f80d696e3948"
     },
     {
@@ -16826,8 +16865,8 @@
       "body_sha256": "95bd555e5895d67b479b56cf63da50bea70e8e00df429ebe9cfe5aa77c1facbc",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 48989,
-      "end": 49515,
+      "start": 55149,
+      "end": 55675,
       "sha256": "27401f4c4d5ba1f3283ea1d449b793fa51f9254b3975f5ea0eb95237092e6b0c"
     },
     {
@@ -16838,8 +16877,8 @@
       "body_sha256": "a4719644bd729a1d530ba5b7d55214a22eababb7913ae40701f4acc4c8999cd9",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 49517,
-      "end": 50140,
+      "start": 55677,
+      "end": 56300,
       "sha256": "257f94540460055de4467cdb4527e26f2363fcd24183f090217ec4acad14c74b"
     },
     {
@@ -16850,8 +16889,8 @@
       "body_sha256": "1c5b7713aa36c7173643b39652666cfbd783a014571f91f7cd58e387c593d60f",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 50142,
-      "end": 51811,
+      "start": 56302,
+      "end": 57971,
       "sha256": "dc7fa13d2a3b030199478a41063d9a04aa1d274af3ddca02985cc02aa0df29dd"
     },
     {
@@ -16862,8 +16901,8 @@
       "body_sha256": "c271714261d8eda8775550cfbe49ca93a7db80e6c74659ac01731f5f369c2b04",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 51813,
-      "end": 53435,
+      "start": 57973,
+      "end": 59595,
       "sha256": "3f3831c37dd1f32b5edef64a6e2bad88fd154fae97780ae5ba1a6533f6d677e5"
     },
     {
@@ -16874,8 +16913,8 @@
       "body_sha256": "d7fa92de05daee7d8234754b90fc69582f10390f90560e69561ff7882ee05550",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 53437,
-      "end": 54401,
+      "start": 59597,
+      "end": 60561,
       "sha256": "a07fbcd5e65dc989edc6a683ef29752b9dd1067aa99b9f4012fc8fb5d59cef38"
     },
     {
@@ -16886,8 +16925,8 @@
       "body_sha256": "c2e0609617cc1144f3162e82daa0219164fc9639524c82343d59315907a638e6",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 54403,
-      "end": 55979,
+      "start": 60563,
+      "end": 62139,
       "sha256": "3747157cfa48f89e6eefd471a0a4ed3a6bc989f688662ca2c170a9801435b8f9"
     },
     {
@@ -16898,8 +16937,8 @@
       "body_sha256": "a32bf8f60d9c1a217c6854617e8574210bd2a0dad46fc53221c22f42f016551c",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 55981,
-      "end": 59341,
+      "start": 62141,
+      "end": 65501,
       "sha256": "d69cf3a79fa176fcb63adc9dcb0fc401ae2c587f07cd6c73841f8081c87c3f92"
     },
     {
@@ -16910,8 +16949,8 @@
       "body_sha256": "5a5177139e24848b29bc0c939cab335594b05a60e515ebfe9b3646b08cb40fcb",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 59343,
-      "end": 59523,
+      "start": 65503,
+      "end": 65683,
       "sha256": "52dc1e240fb58de7cd35f438d876c8abf9ca664d1e71466feaef3cdeab9fff0d"
     },
     {
@@ -16922,8 +16961,8 @@
       "body_sha256": "662b506a61f70e2d480d9f12fb0130a0ea2e3a2a67b455d9c2fe9f598ffee02c",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 59525,
-      "end": 59849,
+      "start": 65685,
+      "end": 66009,
       "sha256": "de22330c08788bb3f0c68071af10b5d0c8d41aa69ebc835ccb06d95a1e387e2d"
     },
     {
@@ -16934,8 +16973,8 @@
       "body_sha256": "f8ec3dee466acb1f3d8e0a9d418261cf9fa583b4f6254975862414f9b4f04cac",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 59851,
-      "end": 60157,
+      "start": 66011,
+      "end": 66317,
       "sha256": "b49fab48921c6f0885ef411025e972363bca827761a32a945041cef1fd4e621a"
     },
     {
@@ -16946,8 +16985,8 @@
       "body_sha256": "d1274af7d50ae57e8dc0170048a4329b9290b1799261b8bdd1ae3d8263667006",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 60159,
-      "end": 61207,
+      "start": 66319,
+      "end": 67367,
       "sha256": "0d1093e5ac69f4fa44caea4ca5ecad36a9b76e324a2f211f8ec5109aebcd86fd"
     },
     {
@@ -16958,8 +16997,8 @@
       "body_sha256": "4727e074a0aaa4e9f1c65e99f1e484a430552c44d734c65b7b4a787b332cc3e8",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 61209,
-      "end": 61992,
+      "start": 67369,
+      "end": 68152,
       "sha256": "7aa4cf9314b17204bf8690ee272c4efa57c3b5b3fe310beabd5facfd87117cbe"
     },
     {
@@ -16970,8 +17009,8 @@
       "body_sha256": "48bf50dc5956fd35bf0733ffac2ea33943621f81302bf51787285b216bcfc977",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 61994,
-      "end": 65276,
+      "start": 68154,
+      "end": 71436,
       "sha256": "c56a254beb9a952b7761289ce2ceefac58f953e0e6551b204ebccbc7f02e6e3a"
     },
     {
@@ -16982,8 +17021,8 @@
       "body_sha256": "7d73913d7ea7196cb400c09eb0946f366bf6eef62b9a9a478199e813848bfe99",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 65278,
-      "end": 67790,
+      "start": 71438,
+      "end": 73950,
       "sha256": "4a2ec1be1dbc5e62ff042a0a667c8837d61aa180691d626d57078ef927736022"
     },
     {
@@ -16994,8 +17033,8 @@
       "body_sha256": "4a7b5671617d0e202cb3209bea3f651d26b739f1eeafd80e6c727ae0b8e77168",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 67792,
-      "end": 70252,
+      "start": 73952,
+      "end": 76412,
       "sha256": "0c5f65fc6d6b13d9e58e898d3bd9d2f69538fbdb946e94067c3eeb79cfc978b0"
     },
     {
@@ -17006,8 +17045,8 @@
       "body_sha256": "fb0eb7589d80a139bd1bf971f6329c822c0cfbe1e275c9ed618637d6c9ffc710",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 70254,
-      "end": 71304,
+      "start": 76414,
+      "end": 77464,
       "sha256": "2414cf6469a7312f446b5ea2fda5d4712650f70aad952e2ea2fdc445d7db73c5"
     },
     {
@@ -17018,8 +17057,8 @@
       "body_sha256": "a337d23bce2e89f0bf8ac9738faea3afabccf9dbcfda5a479b7b0de8434c69e3",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 71306,
-      "end": 76039,
+      "start": 77466,
+      "end": 82199,
       "sha256": "4b8f5d96775e3bafb82562e3632f4b6e56feb2c26664de2cb2f50c436b650d6f"
     },
     {
@@ -17030,8 +17069,8 @@
       "body_sha256": "7e49238d02a97057f92ccc2accc7b36c137d4225fd16cbafe34e48d0c7822e7f",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 76041,
-      "end": 79010,
+      "start": 82201,
+      "end": 85170,
       "sha256": "67262917a9e3910e6b2ac0e19752829b7285c5e3f57dee8adc55c0e941f7b304"
     },
     {
@@ -17042,8 +17081,8 @@
       "body_sha256": "c503746799de30f85321e680731360d285dfbfbe106b365f9fcdba28ba563395",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 79012,
-      "end": 80939,
+      "start": 85172,
+      "end": 87099,
       "sha256": "df64a68facd35928defc5e66b1302219e0b2806a2fddd7ae819059452857fa3e"
     },
     {
@@ -17054,8 +17093,8 @@
       "body_sha256": "a2ef98bad73f56f955f587b84dc7eeec8b016621e27aa8c6bcfb74bdda6b820f",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 80941,
-      "end": 84682,
+      "start": 87101,
+      "end": 90842,
       "sha256": "520691174161ab85d88e057bdd13bfcb838533ce147e170ddfe7896bc3de3b86"
     },
     {
@@ -17066,8 +17105,8 @@
       "body_sha256": "9eeca0f215ccbed26630af769af8f01010959939b2abf64e1869cdfd0c7b9fa1",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 84684,
-      "end": 86405,
+      "start": 90844,
+      "end": 92565,
       "sha256": "7ce141b5916ef6f625ccb45d44d1dd1262fd37f49f9998aafa4eff3fa64a2ee6"
     },
     {
@@ -17078,8 +17117,8 @@
       "body_sha256": "1fa1b776665a0950a0ad05acb3494b8768533173e73d15a1f9b27a8f0ab8e44f",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 86407,
-      "end": 87636,
+      "start": 92567,
+      "end": 93796,
       "sha256": "8f1d597cc17765bda1b1f3de1b440df4b4f9a2004d6ec49e74e60dc4e90b2bc6"
     },
     {
@@ -17090,8 +17129,8 @@
       "body_sha256": "da02ce639a457caa23f0c616e838738ac67a5cf7afcb6636d7fa1d33d70653ef",
       "dependencies": [],
       "file": "04_functions.sql",
-      "start": 87638,
-      "end": 94333,
+      "start": 93798,
+      "end": 100493,
       "sha256": "181bf10e3aa965eea2b40c6ba18844187f9eff282937465d025ff4069072532a"
     },
     {
@@ -17104,8 +17143,8 @@
         "public.campaign_model_matches"
       ],
       "file": "04_functions.sql",
-      "start": 94335,
-      "end": 98772,
+      "start": 100495,
+      "end": 104932,
       "sha256": "8c858d1004c175e6a9f56c1ae252e86612fd3be4c48b9cae171437a209b2f553"
     },
     {
@@ -17122,8 +17161,8 @@
         "public.campaign_json_string"
       ],
       "file": "04_functions.sql",
-      "start": 98774,
-      "end": 105076,
+      "start": 104934,
+      "end": 111236,
       "sha256": "b29b33f21166a8e9d83e60a7d8dc5cf9d54c2ce8dc828565588bbe2fdd2e6cd0"
     },
     {
@@ -17136,8 +17175,8 @@
         "public.campaign_environment_identity"
       ],
       "file": "04_functions.sql",
-      "start": 105078,
-      "end": 106219,
+      "start": 111238,
+      "end": 112379,
       "sha256": "3f09cbb3e33329ea9b92588a2fdebcb4e75f01bd6593e31ec5306d64f2cdb857"
     },
     {
@@ -17150,9 +17189,23 @@
         "public.campaign_json_object"
       ],
       "file": "04_functions.sql",
-      "start": 106221,
-      "end": 108920,
+      "start": 112381,
+      "end": 115080,
       "sha256": "a5e3e4fd21c8a23aa7e74b0e3a6fa6ad7e0921152d0f6d5ca1c83d9a6084a364"
+    },
+    {
+      "phase": "04_functions",
+      "kind": "function",
+      "name": "public.e04_calibration_complete",
+      "arguments": [],
+      "body_sha256": "7c76bc0c05a4c0f712a70a0a900232fa5f9a931a3b271376cf6c4f5cea66f040",
+      "dependencies": [
+        "public.e04_assert_calibration"
+      ],
+      "file": "04_functions.sql",
+      "start": 115082,
+      "end": 115474,
+      "sha256": "0d281d83833f2c45d03b96f2ae06e143dfd70db471a25eee11213258dc7549d9"
     },
     {
       "phase": "04_functions",
@@ -17164,8 +17217,8 @@
         "public.experiment_require_owner"
       ],
       "file": "04_functions.sql",
-      "start": 108922,
-      "end": 109580,
+      "start": 115476,
+      "end": 116134,
       "sha256": "c9e6d9ba25ca0df59727ad91537674f5b778747bf5cb30629797ac47315884e2"
     },
     {
@@ -17178,8 +17231,8 @@
         "public.experiment_require_owner"
       ],
       "file": "04_functions.sql",
-      "start": 109582,
-      "end": 110470,
+      "start": 116136,
+      "end": 117024,
       "sha256": "cd33c97cc949b48807cc0078f3e0739cf02267f39851b80c60e5265093a0fd22"
     },
     {
@@ -17197,8 +17250,8 @@
         "public.campaign_json_string"
       ],
       "file": "04_functions.sql",
-      "start": 110472,
-      "end": 120236,
+      "start": 117026,
+      "end": 126790,
       "sha256": "baa1789872de8c75970a408ebda5a1842adfd6e4ce6317a47d85a01dbf7a5506"
     },
     {
@@ -29695,6 +29748,32 @@
     {
       "phase": "06_constraints",
       "kind": "constraint",
+      "name": "evaluations.ck_e04_selected_source",
+      "table": "evaluations",
+      "constraint_type": "CONSTR_CHECK",
+      "deferrable": false,
+      "initially_deferred": false,
+      "file": "06_constraints.sql",
+      "start": 131470,
+      "end": 131693,
+      "sha256": "ed4d067bdd702d22a51021c043b18580f7f92634e02e7967895faaa73bd9e4d3"
+    },
+    {
+      "phase": "06_constraints",
+      "kind": "constraint",
+      "name": "evaluations.ck_e04_default_source",
+      "table": "evaluations",
+      "constraint_type": "CONSTR_CHECK",
+      "deferrable": false,
+      "initially_deferred": false,
+      "file": "06_constraints.sql",
+      "start": 131695,
+      "end": 131922,
+      "sha256": "77bae0358cd06af7833a599777cb4195a4368aadc4846af8e9f4494b9922f6b8"
+    },
+    {
+      "phase": "06_constraints",
+      "kind": "constraint",
       "name": "predictions.v2_predictions_foreign_a402d28a70f6",
       "table": "predictions",
       "constraint_type": "CONSTR_FOREIGN",
@@ -29708,8 +29787,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 131470,
-      "end": 131634,
+      "start": 131924,
+      "end": 132088,
       "sha256": "7c7b2d9678294288bf076952b9cfc25ea7cf39f50f420c1359f513238159b1c0"
     },
     {
@@ -29728,8 +29807,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 131636,
-      "end": 131822,
+      "start": 132090,
+      "end": 132276,
       "sha256": "204ae963a3c0787e5f07b0abe7c1e06f63d3c8bf9b8bfb66e8708e3fa4f32a77"
     },
     {
@@ -29741,8 +29820,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 131824,
-      "end": 131933,
+      "start": 132278,
+      "end": 132387,
       "sha256": "3a42188612f367792c369745b490acffe4b0be6e205786a4fa6a1b96afcb72c1"
     },
     {
@@ -29761,8 +29840,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 131935,
-      "end": 132165,
+      "start": 132389,
+      "end": 132619,
       "sha256": "034ff9c1ee798b223a15b89a0408940a25fc865d444bee7a0836a571392ed3e9"
     },
     {
@@ -29781,8 +29860,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 132167,
-      "end": 132398,
+      "start": 132621,
+      "end": 132852,
       "sha256": "e63789c1b93294d07f1facd5b169bbf631e740298d8639d3c369f7bc638859c6"
     },
     {
@@ -29794,8 +29873,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 132400,
-      "end": 132501,
+      "start": 132854,
+      "end": 132955,
       "sha256": "83983b1f939a57dd17167241b9b6a6402ae06e6e2452c407498515d756881fc2"
     },
     {
@@ -29807,8 +29886,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 132503,
-      "end": 132604,
+      "start": 132957,
+      "end": 133058,
       "sha256": "0705021b73b27df454ffb11773dffa526965d8eadd31b866a407c57cfd008364"
     },
     {
@@ -29820,8 +29899,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 132606,
-      "end": 132738,
+      "start": 133060,
+      "end": 133192,
       "sha256": "859ff114fd0a780cdb23e2e780f93f24e409c8203851f64842b229096ba12d2e"
     },
     {
@@ -29833,8 +29912,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 132740,
-      "end": 132870,
+      "start": 133194,
+      "end": 133324,
       "sha256": "368b72817a1cab8722e7cf31fca9ef5969b1b95b3a2d09cc0d5c16fa778d1832"
     },
     {
@@ -29846,8 +29925,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 132872,
-      "end": 132995,
+      "start": 133326,
+      "end": 133449,
       "sha256": "2fe0ede8868e4566aa38891184e1a2d0f2292d2f3c8140222e66557583654faf"
     },
     {
@@ -29859,8 +29938,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 132997,
-      "end": 133118,
+      "start": 133451,
+      "end": 133572,
       "sha256": "0253523e654e8e13e6d6cd595383156c97fe05975447df7207a74b0676b833e4"
     },
     {
@@ -29872,8 +29951,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 133120,
-      "end": 133258,
+      "start": 133574,
+      "end": 133712,
       "sha256": "b82213c4e8f8cf37b5b4de97ad19d47ee8a10c7c4e28ab30e4a25ce787058d2e"
     },
     {
@@ -29885,8 +29964,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 133260,
-      "end": 133396,
+      "start": 133714,
+      "end": 133850,
       "sha256": "31d860750054b40a154177e3458b9b986574ae4d234f58e57c327d5c4f32ac03"
     },
     {
@@ -29905,8 +29984,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 133398,
-      "end": 133562,
+      "start": 133852,
+      "end": 134016,
       "sha256": "143e47e7f9d256ee9d54d9e164704e24fdbb6f056c9fa82465fa0b535596076f"
     },
     {
@@ -29918,8 +29997,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 133564,
-      "end": 133721,
+      "start": 134018,
+      "end": 134175,
       "sha256": "21c0dc1f8468e57e3b942ba608a2d0aadfeb3a35cd194cfb62579ddc70f37358"
     },
     {
@@ -29931,8 +30010,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 133723,
-      "end": 133875,
+      "start": 134177,
+      "end": 134329,
       "sha256": "d1aa320d7471d9527c6021c1de780ed2f7f58d37c96ec2f0e132f99d73127c2e"
     },
     {
@@ -29944,8 +30023,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 133877,
-      "end": 134044,
+      "start": 134331,
+      "end": 134498,
       "sha256": "66734712e46c34c03aa6a0044275bcf7075682ac6bea1c06027207abf7fcd569"
     },
     {
@@ -29957,8 +30036,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 134046,
-      "end": 134233,
+      "start": 134500,
+      "end": 134687,
       "sha256": "75986f320faeb332d7b18283be1da0ca6bc03c7f9cdc1b3906d43fb6932558e1"
     },
     {
@@ -29970,8 +30049,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 134235,
-      "end": 134352,
+      "start": 134689,
+      "end": 134806,
       "sha256": "d40d94e50055e79c9f3bc540da7e9f9f5f86b11362330b66083cfeeae4f54df5"
     },
     {
@@ -29983,8 +30062,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 134354,
-      "end": 134473,
+      "start": 134808,
+      "end": 134927,
       "sha256": "1d8febec427a92221479e02ade43e4db0053cdc7491ac1c15f69da276b15de25"
     },
     {
@@ -29996,8 +30075,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 134475,
-      "end": 134592,
+      "start": 134929,
+      "end": 135046,
       "sha256": "c66427981a70ab60d5a358167e5d614cc83ba819cae43a6a8954e13d23778228"
     },
     {
@@ -30009,8 +30088,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 134594,
-      "end": 134718,
+      "start": 135048,
+      "end": 135172,
       "sha256": "9451bee78ea3fe8ae0f565500f2267dde90e4f902542fe5dc31e91ff45e37f6f"
     },
     {
@@ -30022,8 +30101,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 134720,
-      "end": 134851,
+      "start": 135174,
+      "end": 135305,
       "sha256": "b57bdbd03380d3a87e060bbf037a14b811c2217044533fc4989cdea555311937"
     },
     {
@@ -30035,8 +30114,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 134853,
-      "end": 135043,
+      "start": 135307,
+      "end": 135497,
       "sha256": "da1a2430637c14e7540d07fb0b9578fa317f35f56c82daa5c3e65bdc5c0cbe7d"
     },
     {
@@ -30048,8 +30127,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 135045,
-      "end": 135185,
+      "start": 135499,
+      "end": 135639,
       "sha256": "c9873c97e355da0cbfaa4a1b476595728e0745a8af424b8f3fd3993fef8c97e0"
     },
     {
@@ -30061,8 +30140,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 135187,
-      "end": 135323,
+      "start": 135641,
+      "end": 135777,
       "sha256": "24e65f86fd671ba4b130948fb77bdfbec2ec3feccd74c3b347065051e6be68ad"
     },
     {
@@ -30074,8 +30153,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 135325,
-      "end": 135456,
+      "start": 135779,
+      "end": 135910,
       "sha256": "b01670c4431041e00c06bbc5498adb7f86cfe2aadd57acde89edf8c8984f149b"
     },
     {
@@ -30087,8 +30166,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 135458,
-      "end": 135579,
+      "start": 135912,
+      "end": 136033,
       "sha256": "f588edab53889c3b44d4be431365357ea31467ab811df8d64d71bf8276c4c6d0"
     },
     {
@@ -30100,8 +30179,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 135581,
-      "end": 135702,
+      "start": 136035,
+      "end": 136156,
       "sha256": "073aaa4f0087db40c026e57580176b499e27a57fa105a1b2751fcb3f1bc7c432"
     },
     {
@@ -30113,8 +30192,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 135704,
-      "end": 135833,
+      "start": 136158,
+      "end": 136287,
       "sha256": "8a2cc6a9071a10c4a4ee31b9fe8ca85eaeeb6e2ba3db8fc6786a72856bc48af0"
     },
     {
@@ -30126,8 +30205,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 135835,
-      "end": 135956,
+      "start": 136289,
+      "end": 136410,
       "sha256": "3ac3bc8b72a4c6a9751d6852e9af9bc6e2865347a4e9621c4429f013e50d176e"
     },
     {
@@ -30139,8 +30218,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 135958,
-      "end": 136092,
+      "start": 136412,
+      "end": 136546,
       "sha256": "89a5185118610a09e42234da958c35530915dcd5c6898d98131fe12be99f1cae"
     },
     {
@@ -30152,8 +30231,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 136094,
-      "end": 136218,
+      "start": 136548,
+      "end": 136672,
       "sha256": "08e4ec961e104bcd00d45ffc2e8e06eab8e9aa1d675cd09c0d3025ed4f1725d9"
     },
     {
@@ -30165,8 +30244,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 136220,
-      "end": 136346,
+      "start": 136674,
+      "end": 136800,
       "sha256": "c9a43f0e83bc2ef763d656c2bbd93cc28154e415d49fc2c3020b4c70706d181f"
     },
     {
@@ -30178,8 +30257,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 136348,
-      "end": 136480,
+      "start": 136802,
+      "end": 136934,
       "sha256": "7cf05a0702ae66eeda2a3d7c8a96ea69013dac4d10923d997d2d2311f8991e91"
     },
     {
@@ -30191,8 +30270,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 136482,
-      "end": 136622,
+      "start": 136936,
+      "end": 137076,
       "sha256": "3f6177170fd130a93654f252fc4968f1a398aca152edb2812a75e775eece0b7b"
     },
     {
@@ -30204,8 +30283,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 136624,
-      "end": 136772,
+      "start": 137078,
+      "end": 137226,
       "sha256": "e8a773d1efa3b8eed530a7c28a431945edfc82ad590958dfa7629993d8275694"
     },
     {
@@ -30217,8 +30296,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 136774,
-      "end": 136925,
+      "start": 137228,
+      "end": 137379,
       "sha256": "272d861aca88658cec620ebddad76bf965423ce8d37a729a4f534541937cde40"
     },
     {
@@ -30230,8 +30309,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 136927,
-      "end": 137074,
+      "start": 137381,
+      "end": 137528,
       "sha256": "6c54ef3d17f0cedce743f3da6d9807ab62bd69085d82a9c48957bbb65d0603bf"
     },
     {
@@ -30243,8 +30322,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 137076,
-      "end": 137511,
+      "start": 137530,
+      "end": 137965,
       "sha256": "0472901c7e0fb6390d96fe00dea86f046be8518d5c7e460cc17c96828792e1f7"
     },
     {
@@ -30263,8 +30342,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 137513,
-      "end": 137663,
+      "start": 137967,
+      "end": 138117,
       "sha256": "41f0baf7486713e9b975d98f5927c833afe269327a16fc58301dac34635946f5"
     },
     {
@@ -30283,8 +30362,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 137665,
-      "end": 137824,
+      "start": 138119,
+      "end": 138278,
       "sha256": "2c630323be2c0c532855301908694ae46b26c339a74d4e6f8348c3c7164c88ad"
     },
     {
@@ -30303,8 +30382,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 137826,
-      "end": 137997,
+      "start": 138280,
+      "end": 138451,
       "sha256": "3b824232729a6893db971959c6a767f7414fef55fd46cbd8a364221e507f1a40"
     },
     {
@@ -30323,8 +30402,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 137999,
-      "end": 138173,
+      "start": 138453,
+      "end": 138627,
       "sha256": "85061fe733133483272ebf4bb7dd624a22362edf4eb8ff257a80e9353087051a"
     },
     {
@@ -30336,8 +30415,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 138175,
-      "end": 138309,
+      "start": 138629,
+      "end": 138763,
       "sha256": "2fbdad13a81795fe42f265b1d3c63249cd31d8a2604830f817ee7b6043ac718e"
     },
     {
@@ -30349,8 +30428,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 138311,
-      "end": 138550,
+      "start": 138765,
+      "end": 139004,
       "sha256": "5469da0bd8afbf029ef35a43caf554b9b79a1ee2618217a744129d48e9df2531"
     },
     {
@@ -30362,8 +30441,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 138552,
-      "end": 138693,
+      "start": 139006,
+      "end": 139147,
       "sha256": "1aad941afa1efbc0b744fce32b9de066b11f24241681013593b0d2dcce681a82"
     },
     {
@@ -30375,8 +30454,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 138695,
-      "end": 138822,
+      "start": 139149,
+      "end": 139276,
       "sha256": "3d0269ca2a00b44091f39b51962d85bdbc48d7be927bd3deece73ea77f8b66de"
     },
     {
@@ -30388,8 +30467,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 138824,
-      "end": 138945,
+      "start": 139278,
+      "end": 139399,
       "sha256": "4fe409751f2312050e8eeb57089f223d0b1ceae0aa976ac728a29367ea94ed0f"
     },
     {
@@ -30401,8 +30480,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 138947,
-      "end": 139070,
+      "start": 139401,
+      "end": 139524,
       "sha256": "4efa4955031baa2cdc435568d5e4ef5c96e83e4169fdeeb2b12a9a3ed9b10372"
     },
     {
@@ -30414,8 +30493,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 139072,
-      "end": 139199,
+      "start": 139526,
+      "end": 139653,
       "sha256": "af4659093ba34f7ce0132a7916f45cda1dc9d4231ed5f46f888f98d660a4a6d8"
     },
     {
@@ -30427,8 +30506,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 139201,
-      "end": 139333,
+      "start": 139655,
+      "end": 139787,
       "sha256": "25a3345ae01d2a4b7010de3d334252f4909f204d7fd916758e38eeb7f51b2bcb"
     },
     {
@@ -30440,8 +30519,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 139335,
-      "end": 139466,
+      "start": 139789,
+      "end": 139920,
       "sha256": "c613bfea8e0f59793badb0e98b0bbabdf075c12b937e46d44f15ae9bb80a156c"
     },
     {
@@ -30453,8 +30532,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 139468,
-      "end": 139622,
+      "start": 139922,
+      "end": 140076,
       "sha256": "d67c91f3ba2a15f3a533f2231940ca5e60a721d2fc951dc0a279c9e401ec0a8d"
     },
     {
@@ -30473,8 +30552,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 139624,
-      "end": 139811,
+      "start": 140078,
+      "end": 140265,
       "sha256": "e53438c83379a2bc5baae4b671f9aaf491fc97f4012aa5dd13bfe566683e86f7"
     },
     {
@@ -30486,8 +30565,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 139813,
-      "end": 139945,
+      "start": 140267,
+      "end": 140399,
       "sha256": "9c016cc761de6b88cf5e143b94e432c00249b2e45fcbc8b2f9e687ef566aea7a"
     },
     {
@@ -30499,18 +30578,18 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 139947,
-      "end": 140113,
+      "start": 140401,
+      "end": 140567,
       "sha256": "d1d35f686a2a9583a32f7f0e0c525f1fcde8980adcf97e94bfcb79b24ad85f43"
     },
     {
       "phase": "06_constraints",
       "kind": "constraint",
-      "name": "evaluations.v2_evaluations_foreign_93473146c016",
+      "name": "evaluations.v2_evaluations_foreign_0baa7d166e2f",
       "table": "evaluations",
       "constraint_type": "CONSTR_FOREIGN",
-      "deferrable": false,
-      "initially_deferred": false,
+      "deferrable": true,
+      "initially_deferred": true,
       "columns": [
         "calibration_id"
       ],
@@ -30519,9 +30598,9 @@
         "run_threshold_calibration_id"
       ],
       "file": "06_constraints.sql",
-      "start": 140115,
-      "end": 140320,
-      "sha256": "f44910e7922dbfdd2fefe6b9d8ce76eae877f999e407ce32a92c47276ad796fd"
+      "start": 140569,
+      "end": 140804,
+      "sha256": "87cc8ddeb2f945b2d893722f510e8c46c182b22793726bb125074d74c9d6608c"
     },
     {
       "phase": "06_constraints",
@@ -30532,8 +30611,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 140322,
-      "end": 140451,
+      "start": 140806,
+      "end": 140935,
       "sha256": "4167e487640b601e317a5891319a4476a058f97eb736fff4d8dc9c22e4ad9d32"
     },
     {
@@ -30554,8 +30633,8 @@
         "training_run_id"
       ],
       "file": "06_constraints.sql",
-      "start": 140453,
-      "end": 140657,
+      "start": 140937,
+      "end": 141141,
       "sha256": "732379fdbc2ed63980962f4bac10cd0f951557314069502087bc076af510719a"
     },
     {
@@ -30567,8 +30646,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 140659,
-      "end": 141085,
+      "start": 141143,
+      "end": 141569,
       "sha256": "6e9c941142c41a51bb88a0a5dfd5dfbf12166cfb6bad9485fe2dd94e99a39845"
     },
     {
@@ -30591,8 +30670,8 @@
         "role"
       ],
       "file": "06_constraints.sql",
-      "start": 141087,
-      "end": 141338,
+      "start": 141571,
+      "end": 141822,
       "sha256": "d08e1d08bc1bf77c771a26833828f0e06ccbebe8c03a4fbf1b008a1965956b73"
     },
     {
@@ -30604,8 +30683,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 141340,
-      "end": 142000,
+      "start": 141824,
+      "end": 142484,
       "sha256": "695bc1b3c2a7ed717c0bc7e71074c210305bc1ad9ab4530850c69fe4c0b009ae"
     },
     {
@@ -30617,8 +30696,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 142002,
-      "end": 142133,
+      "start": 142486,
+      "end": 142617,
       "sha256": "32d45ada02429eddb0e21f441e3b696ba3347046d6bd149ccca81016dd6fe678"
     },
     {
@@ -30630,8 +30709,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 142135,
-      "end": 142340,
+      "start": 142619,
+      "end": 142824,
       "sha256": "886417c2bfbfe41132101930bba8665952e3fb42b96cc937e3049873b5208da0"
     },
     {
@@ -30643,8 +30722,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 142342,
-      "end": 142663,
+      "start": 142826,
+      "end": 143147,
       "sha256": "9a03fb364088ad29424d36e8a3e52a28402513ffc51df4d1a48b456e056a19d5"
     },
     {
@@ -30656,8 +30735,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 142665,
-      "end": 143072,
+      "start": 143149,
+      "end": 143556,
       "sha256": "82da94239629d2bfce2fbc4e2d7b3d7a527c525cb2acaf9d1ae302e4431cd09a"
     },
     {
@@ -30669,8 +30748,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 143074,
-      "end": 143226,
+      "start": 143558,
+      "end": 143710,
       "sha256": "051ac133082b2b88f30e7cf1b02a952e390952a9ec4b3da6312b08cc3c0e1170"
     },
     {
@@ -30682,8 +30761,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 143228,
-      "end": 143362,
+      "start": 143712,
+      "end": 143846,
       "sha256": "b173a59e6ca48fe4aecd1d6ef23b3f5d4e63c08388f48abf3a48b2fa665c4005"
     },
     {
@@ -30695,8 +30774,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 143364,
-      "end": 143572,
+      "start": 143848,
+      "end": 144056,
       "sha256": "29b45e8304b1be196812a7c70bfc3360f3bc6555f6d0a348e56a29660cf4ec2c"
     },
     {
@@ -30708,8 +30787,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 143574,
-      "end": 143737,
+      "start": 144058,
+      "end": 144221,
       "sha256": "760baf6432ac817ae70cc3c2e98ec9872ba8d8354ba4a0fac65e7f595ccdf94a"
     },
     {
@@ -30721,8 +30800,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 143739,
-      "end": 144133,
+      "start": 144223,
+      "end": 144617,
       "sha256": "772c867478f18f1c32fb58586cc898d69437def6c93e4724f811259b40bf9715"
     },
     {
@@ -30741,8 +30820,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 144135,
-      "end": 144331,
+      "start": 144619,
+      "end": 144815,
       "sha256": "03dee3cc5478c8c4fc6d5402dbc4bfb9ef2b980fd38c89d5c80e14959d7b72cf"
     },
     {
@@ -30754,8 +30833,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 144333,
-      "end": 144466,
+      "start": 144817,
+      "end": 144950,
       "sha256": "95b586ae8de05847770f60fc8f74cb88f41045b1dacb1f558ddc2e4a860b26f2"
     },
     {
@@ -30774,8 +30853,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 144468,
-      "end": 144670,
+      "start": 144952,
+      "end": 145154,
       "sha256": "a9e183ac9757a259cc42ca8d0d3227bc15e240938481e42124984d13fdce352c"
     },
     {
@@ -30794,8 +30873,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 144672,
-      "end": 144875,
+      "start": 145156,
+      "end": 145359,
       "sha256": "b334de698dd9a11fe1710aa3875711b2779166c26874ccdad75f8eb69ae787d0"
     },
     {
@@ -30807,8 +30886,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 144877,
-      "end": 145049,
+      "start": 145361,
+      "end": 145533,
       "sha256": "b2e9d46485f76b7a033f94a5f5389c2e3863bb3f0d5a07e39f521e729ad80290"
     },
     {
@@ -30827,8 +30906,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 145051,
-      "end": 145232,
+      "start": 145535,
+      "end": 145716,
       "sha256": "57c84eb452cfbee664d4ade558a099f148f7929c7f76cdce663246bf5a63217b"
     },
     {
@@ -30847,8 +30926,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 145234,
-      "end": 145412,
+      "start": 145718,
+      "end": 145896,
       "sha256": "6e5d18d47fff540970f560e26274f8030c1d587c6d21c12cd1673a50124822c7"
     },
     {
@@ -30867,8 +30946,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 145414,
-      "end": 145580,
+      "start": 145898,
+      "end": 146064,
       "sha256": "4ef093cc4f854d12b40fe44f9176a169188e0ae8e8c32d960dde942ced566b98"
     },
     {
@@ -30887,8 +30966,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 145582,
-      "end": 145758,
+      "start": 146066,
+      "end": 146242,
       "sha256": "850ce41845a77e58798ba40e3369caae6ab388674c6f2a5da60ffc7469dcc9b4"
     },
     {
@@ -30907,8 +30986,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 145760,
-      "end": 145926,
+      "start": 146244,
+      "end": 146410,
       "sha256": "53f45452d355467f2e65b42ca65089fdda62afcf7fa386e52d9a858c162d57b2"
     },
     {
@@ -30927,8 +31006,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 145928,
-      "end": 146116,
+      "start": 146412,
+      "end": 146600,
       "sha256": "e4cb2a1973d3c65c6b3c6a694ed5a381f8b909939cd1a24a4155df9c7d452466"
     },
     {
@@ -30947,8 +31026,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 146118,
-      "end": 146286,
+      "start": 146602,
+      "end": 146770,
       "sha256": "29cc291137296d3aa9cb346e53db93e127856395103d4145bad8f53865e69da1"
     },
     {
@@ -30967,8 +31046,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 146288,
-      "end": 146466,
+      "start": 146772,
+      "end": 146950,
       "sha256": "c126e7cb9a8e1f111de0e512f0422c5aa27d20dbcf2e5ed54c33398ceeda7960"
     },
     {
@@ -30987,8 +31066,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 146468,
-      "end": 146620,
+      "start": 146952,
+      "end": 147104,
       "sha256": "36b71202c90b797d8d2824c9909ac164c16444269f837d7a488b376728e0f3f5"
     },
     {
@@ -31007,8 +31086,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 146622,
-      "end": 146794,
+      "start": 147106,
+      "end": 147278,
       "sha256": "1195485c6a056fd44746662a243d2db6c23876c68eb59ab1e17fe6c3568b3184"
     },
     {
@@ -31027,8 +31106,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 146796,
-      "end": 146969,
+      "start": 147280,
+      "end": 147453,
       "sha256": "d501717f45eab3a3cd383f845ceabe935889659b0c406d409846645f0b9f6d6b"
     },
     {
@@ -31040,8 +31119,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 146971,
-      "end": 147099,
+      "start": 147455,
+      "end": 147583,
       "sha256": "501ab6ee6c3814215f949e2477db501df1e151027ac391ab89076c3c356ad814"
     },
     {
@@ -31053,8 +31132,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 147101,
-      "end": 147237,
+      "start": 147585,
+      "end": 147721,
       "sha256": "dce2bd96e7d0787f9879bd403a8b9965055bdb67acd7d8142fdad6f634863925"
     },
     {
@@ -31066,8 +31145,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 147239,
-      "end": 147367,
+      "start": 147723,
+      "end": 147851,
       "sha256": "31691ddc23dc00a34ad56cc69344c499625e69f7a7504a138dba10b95a97c6b5"
     },
     {
@@ -31079,8 +31158,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 147369,
-      "end": 147499,
+      "start": 147853,
+      "end": 147983,
       "sha256": "c3f018011014722d0d8d3ed59df8aa13fe79aaa70c88e39fc0f035832d8e1654"
     },
     {
@@ -31092,8 +31171,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 147501,
-      "end": 147630,
+      "start": 147985,
+      "end": 148114,
       "sha256": "5c87f879ea8af4bff4a8f691cb54eaf8aeb9646e27919162b76a7c6541c72dd2"
     },
     {
@@ -31105,8 +31184,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 147632,
-      "end": 147754,
+      "start": 148116,
+      "end": 148238,
       "sha256": "eefa75e23418da6f8e605af399e120defab52364bb2eceab5e827703e7bdd147"
     },
     {
@@ -31118,8 +31197,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 147756,
-      "end": 147883,
+      "start": 148240,
+      "end": 148367,
       "sha256": "5c6a35cbf0e5df84e1473c71012fb6501bc84bd59e055218f5596acf56763ea2"
     },
     {
@@ -31131,8 +31210,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 147885,
-      "end": 147998,
+      "start": 148369,
+      "end": 148482,
       "sha256": "5b0db3e4aa6d4bf240e96b1dc6eeb0c23b2f5df6751969772ed1951456e7ecce"
     },
     {
@@ -31144,8 +31223,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 148000,
-      "end": 148178,
+      "start": 148484,
+      "end": 148662,
       "sha256": "390ce74c4f78c1b592340b7724a6a71899db226e632c4809d8857e0d79b5784e"
     },
     {
@@ -31157,8 +31236,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 148180,
-      "end": 148340,
+      "start": 148664,
+      "end": 148824,
       "sha256": "c48ff175ab8f71abe05e0ad0142c136811136a60ddb580b4a406b8ee97c3d59a"
     },
     {
@@ -31170,8 +31249,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 148342,
-      "end": 148478,
+      "start": 148826,
+      "end": 148962,
       "sha256": "a4a3c0bc545554021e363c776c2b37ced3ce78a3fd2e645800f4552d973fd235"
     },
     {
@@ -31183,8 +31262,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 148480,
-      "end": 148616,
+      "start": 148964,
+      "end": 149100,
       "sha256": "84d60c0ade190b9129cfa625f434a15905fa0b984f8e5b9bc0f3ab1ffaf09da2"
     },
     {
@@ -31205,8 +31284,8 @@
         "sample_id"
       ],
       "file": "06_constraints.sql",
-      "start": 148618,
-      "end": 148851,
+      "start": 149102,
+      "end": 149335,
       "sha256": "d51f81b98091288565e6287963b14c9d2f8130a2fd92aa1d3777dc8615a43d09"
     },
     {
@@ -31218,8 +31297,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 148853,
-      "end": 149023,
+      "start": 149337,
+      "end": 149507,
       "sha256": "7d4d9d15ee9874c90590c2a086277cfc13a917966fd814cfe00ad204ab6966f2"
     },
     {
@@ -31231,8 +31310,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 149025,
-      "end": 149183,
+      "start": 149509,
+      "end": 149667,
       "sha256": "1d1ea9f8977c1fd31b1eaf86e96b0d014d723dfda37faff034cffaedd92ae87b"
     },
     {
@@ -31244,8 +31323,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 149185,
-      "end": 149328,
+      "start": 149669,
+      "end": 149812,
       "sha256": "215348e7d2129eae3f83993c7f384006aac5492e5778c2f1ab0dea82f72b9922"
     },
     {
@@ -31257,8 +31336,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 149330,
-      "end": 149541,
+      "start": 149814,
+      "end": 150025,
       "sha256": "3bf79a28448186f1bb455292960049b689279e60ad87921eb73b16911ce78a67"
     },
     {
@@ -31277,8 +31356,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 149543,
-      "end": 149710,
+      "start": 150027,
+      "end": 150194,
       "sha256": "b657bf0a8c754ee803220391d05db2839d3b516e6d892ef50add143f2eb23fb4"
     },
     {
@@ -31297,8 +31376,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 149712,
-      "end": 149876,
+      "start": 150196,
+      "end": 150360,
       "sha256": "bdd753f9df378db3e20376f9f7fe1515b58d87b0adb01580a362f5e3f301c32b"
     },
     {
@@ -31317,8 +31396,8 @@
         "artifact_id"
       ],
       "file": "06_constraints.sql",
-      "start": 149878,
-      "end": 150073,
+      "start": 150362,
+      "end": 150557,
       "sha256": "ec51e1ebd831c7126b729032ba30fec7a35ceb0e5bf5f5f8db445291fcc194bc"
     },
     {
@@ -31330,8 +31409,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 150075,
-      "end": 150222,
+      "start": 150559,
+      "end": 150706,
       "sha256": "8b256711deb79b1a654ffa5229baeb586b8d094b80f562b5ade1f001e2de64f5"
     },
     {
@@ -31343,8 +31422,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 150224,
-      "end": 150452,
+      "start": 150708,
+      "end": 150936,
       "sha256": "742cce43c0de58313bc10d9b17ddf0a552c342465882fe9e8d56d0c1ea79795f"
     },
     {
@@ -31356,8 +31435,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 150454,
-      "end": 150559,
+      "start": 150938,
+      "end": 151043,
       "sha256": "897aec958c2c63365413f9a7b209ab96c8eeacc7b968eaf6663d96d32d4f9273"
     },
     {
@@ -31369,8 +31448,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 150561,
-      "end": 150679,
+      "start": 151045,
+      "end": 151163,
       "sha256": "0ecf8d2407a179b1d28d363db1345206a65a01dd1b0d832260e780c0231eed4f"
     },
     {
@@ -31382,8 +31461,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 150681,
-      "end": 150788,
+      "start": 151165,
+      "end": 151272,
       "sha256": "8d9b9f06df8eff483e45f111b4db48ca7dcd711d55934f4acdd57e60914a67ed"
     },
     {
@@ -31395,8 +31474,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 150790,
-      "end": 150950,
+      "start": 151274,
+      "end": 151434,
       "sha256": "6fb60da4de5b7e9d0fc449239c2469eb970cedc08aa2ba207c18b2983addf024"
     },
     {
@@ -31408,8 +31487,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 150952,
-      "end": 151126,
+      "start": 151436,
+      "end": 151610,
       "sha256": "9de745af6d4aff290adf3f7bfbe533339e62b5d0b6996a6532dc9fe3456aa278"
     },
     {
@@ -31428,8 +31507,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 151128,
-      "end": 151325,
+      "start": 151612,
+      "end": 151809,
       "sha256": "fbc842f25afde4cb080eed6737beefbff10ff5681600a5e0ee823f94f6f985fc"
     },
     {
@@ -31448,8 +31527,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 151327,
-      "end": 151535,
+      "start": 151811,
+      "end": 152019,
       "sha256": "b378dcf21b2be75974f9c1412095f8e7e451d77cf379fd1ae7131550b97e4492"
     },
     {
@@ -31461,8 +31540,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 151537,
-      "end": 151730,
+      "start": 152021,
+      "end": 152214,
       "sha256": "4e07adfbc7b143003cfca4aa15ef3a5d69d63d3ed894fd0d5c5a66b692e15341"
     },
     {
@@ -31474,8 +31553,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 151732,
-      "end": 151887,
+      "start": 152216,
+      "end": 152371,
       "sha256": "c6f54d0bbfaa2e14d429797f86e64dc0c127dad6e68f424918be55a7f3d851fc"
     },
     {
@@ -31487,8 +31566,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 151889,
-      "end": 152054,
+      "start": 152373,
+      "end": 152538,
       "sha256": "62f970468f7baf154a973376d0b3bf2b04c2fcb4262184aa189fa3315774cda7"
     },
     {
@@ -31500,8 +31579,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 152056,
-      "end": 152195,
+      "start": 152540,
+      "end": 152679,
       "sha256": "87479bbc2611d80f1e22dc9433a5dc1edb5beba34004c15facf0560b47715ca4"
     },
     {
@@ -31513,8 +31592,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 152197,
-      "end": 152394,
+      "start": 152681,
+      "end": 152878,
       "sha256": "358257578c4c7269f4b17091b5e77cdf82e9c6e5e7a933c202cc07aa030fc0b4"
     },
     {
@@ -31533,8 +31612,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 152396,
-      "end": 152626,
+      "start": 152880,
+      "end": 153110,
       "sha256": "d67b6050717e9d9976d53bdf9c2c9463156c8e06344f75337d311df2f5e9a640"
     },
     {
@@ -31546,8 +31625,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 152628,
-      "end": 152795,
+      "start": 153112,
+      "end": 153279,
       "sha256": "992371f14c2f522547284e8970f702498091a53f63b6f0e71df9a9da862d5724"
     },
     {
@@ -31559,8 +31638,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 152797,
-      "end": 152953,
+      "start": 153281,
+      "end": 153437,
       "sha256": "3a57cb7c34f1c08a9d9e3571746f505eea0180e05f8f7706d9ddf47918f2bb29"
     },
     {
@@ -31572,8 +31651,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 152955,
-      "end": 153121,
+      "start": 153439,
+      "end": 153605,
       "sha256": "3eeac4191017cd1797ff71c810a72f8d10e8c83e91f9e982db4c992883f0d85d"
     },
     {
@@ -31585,8 +31664,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 153123,
-      "end": 153317,
+      "start": 153607,
+      "end": 153801,
       "sha256": "bfc76063b7940684cd6d41ca25664e1135bc45861c4dfdee01327ebd0612f325"
     },
     {
@@ -31598,8 +31677,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 153319,
-      "end": 153503,
+      "start": 153803,
+      "end": 153987,
       "sha256": "9f1f629af58b3bd67cee46f329ba6d0c9065c753a85e62d350522a64e490633f"
     },
     {
@@ -31611,8 +31690,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 153505,
-      "end": 153819,
+      "start": 153989,
+      "end": 154303,
       "sha256": "8f78747ab2964faa907a7d12d5d0b7f02b5fa2041c0a32cf8aac37d742616874"
     },
     {
@@ -31631,8 +31710,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 153821,
-      "end": 154000,
+      "start": 154305,
+      "end": 154484,
       "sha256": "7d49272ac867f51c66fcd722b7cea2923f7ad7dd39ade87d5019a133e1dc9bd0"
     },
     {
@@ -31651,8 +31730,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 154002,
-      "end": 154177,
+      "start": 154486,
+      "end": 154661,
       "sha256": "7b907c5274f46c01da514760f7acf8780235ce03b48ecd4458266cb9d590f42c"
     },
     {
@@ -31664,8 +31743,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 154179,
-      "end": 154328,
+      "start": 154663,
+      "end": 154812,
       "sha256": "9272e30e34663b3a0eaeb8940c4b88d8c64de6c2dde6d85867aaac43209088e4"
     },
     {
@@ -31684,8 +31763,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 154330,
-      "end": 154518,
+      "start": 154814,
+      "end": 155002,
       "sha256": "8bed9ebd5f7ec4cd01893da2fbd0add5205f93a11ac9ba283c861facdd85911c"
     },
     {
@@ -31704,8 +31783,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 154520,
-      "end": 154718,
+      "start": 155004,
+      "end": 155202,
       "sha256": "c07170f3b84659028ef5017c9650834bc55af29324119385e55104d7c510fef2"
     },
     {
@@ -31724,8 +31803,8 @@
         "id"
       ],
       "file": "06_constraints.sql",
-      "start": 154720,
-      "end": 154903,
+      "start": 155204,
+      "end": 155387,
       "sha256": "f64bf89bcc2e5929f10377c956525cb4e28fb39b739373d9e050c8f2fbba028f"
     },
     {
@@ -31737,8 +31816,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 154905,
-      "end": 155072,
+      "start": 155389,
+      "end": 155556,
       "sha256": "fa226c206f3022627b8e02cf242f45300181a4c5da080afc31e3b60555c60724"
     },
     {
@@ -31750,8 +31829,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 155074,
-      "end": 155224,
+      "start": 155558,
+      "end": 155708,
       "sha256": "413afd3c4930f95fd755e9f0cd9b9650d40a2f0ad320df05b3f49f1e4f22bd3a"
     },
     {
@@ -31763,8 +31842,8 @@
       "deferrable": false,
       "initially_deferred": false,
       "file": "06_constraints.sql",
-      "start": 155226,
-      "end": 155381,
+      "start": 155710,
+      "end": 155865,
       "sha256": "1f2b2334fccfc5560bf861b2d48a62dd5876cb2192188842cd89e1c210ff060f"
     },
     {
@@ -33948,6 +34027,26 @@
       "sha256": "887560acb154f605ce9e0ade5962236d5eb05cf05a403bb09c27d576c6095817"
     },
     {
+      "phase": "07_indexes",
+      "kind": "index",
+      "name": "uq_e04_event_role",
+      "table": "evaluations",
+      "file": "07_indexes.sql",
+      "start": 25929,
+      "end": 26121,
+      "sha256": "36f3c86b8712aac2f1e764dd6498b50e51ead791880e17fba5599fb1bb86a438"
+    },
+    {
+      "phase": "07_indexes",
+      "kind": "index",
+      "name": "uq_e04_contract_role",
+      "table": "evaluations",
+      "file": "07_indexes.sql",
+      "start": 26123,
+      "end": 26478,
+      "sha256": "caea3ab11dcd8569197611bbc4b347e2c573fe0c934fbe7aa92ca42286339ad3"
+    },
+    {
       "phase": "08_views",
       "kind": "view",
       "name": "classification_reports",
@@ -35717,6 +35816,66 @@
       "start": 15329,
       "end": 15480,
       "sha256": "815ffd7bdbaaea080de321caa35228cfd3343fc1566c665140ae4d15a2f4c7e6"
+    },
+    {
+      "phase": "09_triggers",
+      "kind": "trigger",
+      "name": "evaluations.e04_legacy_admission",
+      "table": "evaluations",
+      "function": "public.e04_legacy_admission",
+      "constraint": false,
+      "deferrable": false,
+      "initially_deferred": false,
+      "enabled": "O",
+      "file": "09_triggers.sql",
+      "start": 15482,
+      "end": 15615,
+      "sha256": "84d21c31f1de4650798618659173f66aaf3347be3997404917aa78ecbd379b7e"
+    },
+    {
+      "phase": "09_triggers",
+      "kind": "trigger",
+      "name": "evaluations.e04_evaluation_complete",
+      "table": "evaluations",
+      "function": "public.e04_calibration_complete",
+      "constraint": true,
+      "deferrable": true,
+      "initially_deferred": true,
+      "enabled": "O",
+      "file": "09_triggers.sql",
+      "start": 15617,
+      "end": 15797,
+      "sha256": "6e7c556b7c5e4aa14daa8e1dce9e20d6c68fdfab7a8d158259c00e7024dcf558"
+    },
+    {
+      "phase": "09_triggers",
+      "kind": "trigger",
+      "name": "run_threshold_calibration.e04_calibration_complete",
+      "table": "run_threshold_calibration",
+      "function": "public.e04_calibration_complete",
+      "constraint": true,
+      "deferrable": true,
+      "initially_deferred": true,
+      "enabled": "O",
+      "file": "09_triggers.sql",
+      "start": 15799,
+      "end": 16004,
+      "sha256": "840b2e21e7e0b2f4449a6c6fb1099d3a3297b89129b3bc09689cb6c1c68fc934"
+    },
+    {
+      "phase": "09_triggers",
+      "kind": "trigger",
+      "name": "run_threshold_calibration.e04_calibration_immutable",
+      "table": "run_threshold_calibration",
+      "function": "public.e04_calibration_immutable",
+      "constraint": false,
+      "deferrable": false,
+      "initially_deferred": false,
+      "enabled": "O",
+      "file": "09_triggers.sql",
+      "start": 16006,
+      "end": 16173,
+      "sha256": "cae5a605b8b3dcf6f5ddb0a66c31a87c628f00bdbb92431cf75c6282f2be6cd2"
     },
     {
       "phase": "10_privileges",
@@ -38340,10 +38499,82 @@
     {
       "phase": "10_privileges",
       "kind": "acl",
-      "name": "alembic_version",
+      "name": "revoke_public.e04_legacy_admission",
       "file": "10_privileges.sql",
       "start": 25870,
-      "end": 25946,
+      "end": 25935,
+      "sha256": "e9006084ddbac61bb49bce1a2aabe9a982631e72e6e979f05506f9bbce7a098f"
+    },
+    {
+      "phase": "10_privileges",
+      "kind": "acl",
+      "name": "execute_public.e04_legacy_admission",
+      "file": "10_privileges.sql",
+      "start": 25937,
+      "end": 26016,
+      "sha256": "17c70a599dd4aec6cfea23f8ecb0406210da9a514faeeac63a7e735d5d577566"
+    },
+    {
+      "phase": "10_privileges",
+      "kind": "acl",
+      "name": "revoke_public.e04_assert_calibration",
+      "file": "10_privileges.sql",
+      "start": 26018,
+      "end": 26089,
+      "sha256": "9c949c9b5487351850cce3c5242c8d36c51022c36057867e7a19fccc21741e42"
+    },
+    {
+      "phase": "10_privileges",
+      "kind": "acl",
+      "name": "execute_public.e04_assert_calibration",
+      "file": "10_privileges.sql",
+      "start": 26091,
+      "end": 26176,
+      "sha256": "3f40403b15f2802d4b3de519bc0b23db79813d512235e0bb39d174212e9e91fa"
+    },
+    {
+      "phase": "10_privileges",
+      "kind": "acl",
+      "name": "revoke_public.e04_calibration_complete",
+      "file": "10_privileges.sql",
+      "start": 26178,
+      "end": 26247,
+      "sha256": "57de3abfee70f0290b2cec59679cba00857a69715477892c1bd9fe75cdd5654c"
+    },
+    {
+      "phase": "10_privileges",
+      "kind": "acl",
+      "name": "execute_public.e04_calibration_complete",
+      "file": "10_privileges.sql",
+      "start": 26249,
+      "end": 26332,
+      "sha256": "e050a480319263e803465c3c06756d815de825a467e5f8f2d1ebde2fc2d549d4"
+    },
+    {
+      "phase": "10_privileges",
+      "kind": "acl",
+      "name": "revoke_public.e04_calibration_immutable",
+      "file": "10_privileges.sql",
+      "start": 26334,
+      "end": 26404,
+      "sha256": "9358efe12842e6af6aedf246465e80a18c545fe96cfcf723cb814ff5a342e14c"
+    },
+    {
+      "phase": "10_privileges",
+      "kind": "acl",
+      "name": "execute_public.e04_calibration_immutable",
+      "file": "10_privileges.sql",
+      "start": 26406,
+      "end": 26490,
+      "sha256": "839730486cce45484133bab11c2c40472905b47060ebdb105e33e3419966dc3e"
+    },
+    {
+      "phase": "10_privileges",
+      "kind": "acl",
+      "name": "alembic_version",
+      "file": "10_privileges.sql",
+      "start": 26492,
+      "end": 26568,
       "sha256": "4d84f1dd9aa637aca307b5222e8e222f70d62fdfb0a76ba6183ea1f9bf8de2c7"
     },
     {
@@ -38351,8 +38582,8 @@
       "kind": "acl",
       "name": "alembic_version_read",
       "file": "10_privileges.sql",
-      "start": 25948,
-      "end": 26016,
+      "start": 26570,
+      "end": 26638,
       "sha256": "eb54f7a42aa4c177608137dfe206dcb2059c6e3128bad3d0e24b73468ed49003"
     },
     {

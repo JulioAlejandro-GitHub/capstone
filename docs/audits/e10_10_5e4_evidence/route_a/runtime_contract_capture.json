@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "sha256": "b068c7af14aa4ec9ae11e273fcb0d171a90ed8a025c65ebe4a3bb69ba3588cb5",
+  "functions": 14,
+  "triggers": 22,
+  "constraints": 40,
+  "indexes": 2
+}

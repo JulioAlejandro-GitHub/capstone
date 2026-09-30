@@ -1,0 +1,11 @@
+{
+  "database": "capstone_v2_isolated_588c68fd40f9_e4b_bdae7a",
+  "role": "capstone_v2_migrator",
+  "session_role": "capstone_v2_migrator",
+  "database_oid": 33381,
+  "database_owner": "capstone_v2_migrator",
+  "server_version_num": 170009,
+  "system_identifier": "7691311524523634732",
+  "recovery": false,
+  "read_only": "off"
+}

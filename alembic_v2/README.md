@@ -1,10 +1,14 @@
+# Estado vigente — E10.10.5E.4
+
+Baseline E-04 recertificada en PostgreSQL 17.9: [resolución](../docs/audits/e10_10_5e4_resolution.md) y [certificado](../docs/audits/e10_10_5e4_evidence/route_a/certificate.json). Integra E-03/E-04 y conserva D-01 a D-06/E-01/E-02. La integración permanece detenida por [E-05](../docs/audits/e10_10_5e5_decision.md); Gate E bloqueado. Los estados de certificación siguientes son históricos.
+
 > Estado D.3: D-04 resuelta y preflight aprobado. La aplicación se revirtió por FINAL_CATALOG_MISMATCH: D-05 (columna structural_hash generada ausente del contrato objetivo) y D-06 (cuatro CHECK pendientes de equivalencia). Baseline/certificado D-03 no modificados en D.3. Véase docs/audits/e10_10_5_route_b_results.md. Los estados anteriores de este documento son históricos.
 
 # Revisión arquitectónica D-03 (E10.10.5D.2)
 
 Baseline corregida y recertificada en PostgreSQL 17.9. El generador aplica el contrato explícito [d03_contract.json](d03_contract.json) sobre la especificación conceptual anterior: conserva `GENERATED ALWAYS AS IDENTITY` en `experiment_execution_events.id`, suprime la secuencia manual redundante y cualifica únicamente los 39 defaults UUID autorizados con `pg_catalog`. Las entidades nuevas y las dos tablas MERGE no reciben sustituciones globales. El manifiesto fija el hash de esta decisión, identidad y parámetros de secuencia. El catálogo compara además funciones resueltas y dependencias de defaults.
 
-[Certificación vigente](../docs/audits/e10_10_5_route_a_results.md). La certificación B anterior solo corresponde al manifiesto previo y se conserva en `docs/audits/e10_10_5b_evidence/`. El preflight de adopción D sigue bloqueado por D-04 (ownership de funciones de extensión); esta certificación no autoriza E ni cutover.
+[Certificación histórica D-03](../docs/audits/e10_10_5_route_a_results.md). La certificación B anterior solo corresponde al manifiesto previo y se conserva en `docs/audits/e10_10_5b_evidence/`. El preflight de adopción D sigue bloqueado por D-04 (ownership de funciones de extensión); esta certificación no autoriza E ni cutover.
 
 ## Documentación original de instalación
 

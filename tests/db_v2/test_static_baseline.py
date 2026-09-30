@@ -106,7 +106,7 @@ class StaticBaselineTests(unittest.TestCase):
             "GRANT SELECT ON TABLE public.alembic_version TO capstone_v2_runtime",
         ])
 
-    def test_e03_exact_role_set_and_no_other_sql_change(self):
+    def test_e03_exact_role_set_and_e04_preserved_resources(self):
         constraint = self.catalogue["constraints"][
             ("evaluations", "v2_evaluations_check_28938a6edbaa")
         ]
@@ -120,7 +120,7 @@ class StaticBaselineTests(unittest.TestCase):
         historical = root / "docs/audits/e10_10_5e1_evidence/previous_baseline"
         # E.1 changed only ACL; all other historical SQL is a stable reference.
         for path in BASELINE.glob("*.sql"):
-            if path.name == "10_privileges.sql":
+            if path.name in {"04_functions.sql", "06_constraints.sql", "07_indexes.sql", "09_triggers.sql", "10_privileges.sql"}:
                 continue
             expected = (historical / path.name).read_text()
             if path.name == "06_constraints.sql":
@@ -129,6 +129,20 @@ class StaticBaselineTests(unittest.TestCase):
                     "v2_evaluations_check_28938a6edbaa CHECK (source_kind <> 'e10' OR evaluation_role IN ('training_validation_final', 'calibration_default', 'calibration_selected'))",
                 )
             self.assertEqual(path.read_text(), expected, path.name)
+
+    def test_e04_deferred_link_and_scientific_identity(self):
+        constraints = self.catalogue['constraints']
+        link = [v for (t, _), v in constraints.items() if t == 'evaluations'
+                and v.contype == ConstrType.CONSTR_FOREIGN
+                and [a.sval for a in v.fk_attrs] == ['calibration_id']]
+        self.assertEqual(len(link), 1)
+        self.assertTrue(link[0].deferrable and link[0].initdeferred)
+        statement = next(s for s in self.statements if 'CREATE UNIQUE INDEX uq_e04_contract_role' in s)
+        self.assertIn('NULLS NOT DISTINCT', statement)
+        self.assertNotIn('threshold', statement)
+        self.assertNotIn('source_record_key', statement)
+        self.assertEqual(self.manifest['e04_contract_sha256'], __import__('hashlib').sha256(
+            (BASELINE.parent / 'e04_contract.sql').read_bytes()).hexdigest())
 
     def test_d03_identity_and_exact_default_scope(self):
         root = Path(__file__).resolve().parents[2]

@@ -19,6 +19,8 @@ from .ddl import delta, qi, qtable
 from .planner import build_plan
 from .preflight import authorization, schema_signature
 
+CERTIFIED_CATALOG_PATH = ROOT / "docs/audits/e10_10_5e4_evidence/route_a/installed_catalog.json"
+
 
 def private_write(path, value):
     path = Path(path)
@@ -129,7 +131,7 @@ def catalog_snapshot(c):
 
 
 def certified_catalog():
-    path = ROOT / "docs/audits/e10_10_5e1_evidence/route_a/installed_catalog.json"
+    path = CERTIFIED_CATALOG_PATH
     value = json.loads(path.read_text())
     import hashlib
 

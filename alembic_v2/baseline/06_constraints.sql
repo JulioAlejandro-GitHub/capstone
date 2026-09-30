@@ -1269,6 +1269,10 @@ ALTER TABLE public.predictions ADD CONSTRAINT fk_v2_prediction_evaluation_run FO
 
 ALTER TABLE public.predictions ADD CONSTRAINT ck_v2_prediction_sample CHECK (evaluation_id IS NULL OR (run_id IS NOT NULL AND dataset_source_record_id IS NOT NULL AND true_class IS NOT NULL));
 
+ALTER TABLE public.evaluations ADD CONSTRAINT ck_e04_selected_source CHECK (source_kind <> 'e10' OR evaluation_role <> 'calibration_selected' OR (threshold_source = 'validation_calibration' AND calibration_id IS NOT NULL));
+
+ALTER TABLE public.evaluations ADD CONSTRAINT ck_e04_default_source CHECK (source_kind <> 'e10' OR evaluation_role <> 'calibration_default' OR (threshold_source = 'default' AND threshold_used = 0.5 AND calibration_id IS NULL));
+
 ALTER TABLE public.predictions ADD CONSTRAINT v2_predictions_foreign_a402d28a70f6 FOREIGN KEY (evaluation_id) REFERENCES public.evaluations (id) ON DELETE RESTRICT;
 
 ALTER TABLE public.predictions ADD CONSTRAINT v2_predictions_foreign_e8d9af78807c FOREIGN KEY (dataset_source_record_id) REFERENCES public.dataset_source_records (id) ON DELETE RESTRICT;
@@ -1383,7 +1387,7 @@ ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_check_05b75a389d97 
 
 ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_check_f4818b1a9fd3 CHECK (threshold_source IN ('default', 'validation_calibration', 'protocol_numeric'));
 
-ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_foreign_93473146c016 FOREIGN KEY (calibration_id) REFERENCES public.run_threshold_calibration (run_threshold_calibration_id) ON DELETE RESTRICT;
+ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_foreign_0baa7d166e2f FOREIGN KEY (calibration_id) REFERENCES public.run_threshold_calibration (run_threshold_calibration_id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
 
 ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_check_4cbf36ebbe5e CHECK (metric_definition = 'binary_nullable_v2');
 

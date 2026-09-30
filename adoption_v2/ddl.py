@@ -145,9 +145,9 @@ def delta():
     probes = {
         "run_configurations": ["v2_configuration_guard"],
         "run_clinical_metrics": ["v2_binary_metric_guard"],
-        "evaluations": ["v2_evaluation_complete"],
+        "evaluations": ["v2_evaluation_complete", "e04_calibration_complete"],
         "evaluation_ensemble_members": ["v2_evaluation_complete"],
-        "run_threshold_calibration": ["v2_calibration_pair_guard"],
+        "run_threshold_calibration": ["v2_calibration_pair_guard", "e04_calibration_complete"],
         "xai_evidence": ["v2_xai_lineage_guard"],
         "xai_artifacts": ["v2_xai_artifact_source_guard"],
     }
@@ -157,7 +157,7 @@ def delta():
             trigger = "adoption_validate_" + fn
             validation.append(
                 f"CREATE TRIGGER {qi(trigger)} BEFORE UPDATE ON {qtable(table)} FOR EACH ROW EXECUTE FUNCTION public.{qi(fn)}()"
-                if fn not in ("v2_evaluation_complete", "v2_calibration_pair_guard")
+                if fn not in ("v2_evaluation_complete", "v2_calibration_pair_guard", "e04_calibration_complete")
                 else f"CREATE TRIGGER {qi(trigger)} AFTER UPDATE ON {qtable(table)} FOR EACH ROW EXECUTE FUNCTION public.{qi(fn)}()"
             )
             col = next(iter(table_specs[table]["columns"]))

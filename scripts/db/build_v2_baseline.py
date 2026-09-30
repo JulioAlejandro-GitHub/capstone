@@ -32,6 +32,14 @@ def digest(data):
 
 
 def render(node):
+    if isinstance(node, ast.IndexStmt) and node.nulls_not_distinct:
+        # pglast 8.4 prints this clause after WHERE, which PostgreSQL rejects.
+        fixed = copy.deepcopy(node)
+        fixed.nulls_not_distinct = False
+        where = fixed.whereClause
+        fixed.whereClause = None
+        return (RawStream()(fixed) + " NULLS NOT DISTINCT"
+                + (" WHERE " + RawStream()(where) if where else ""))
     return RawStream()(node)
 
 
@@ -87,6 +95,8 @@ def d03_column(table, col):
 
 
 def compile_spec(source):
+    # Approved E-04 overlay; immutable conceptual/historical SQL stays intact.
+    source += "\n" + (ROOT / "alembic_v2/e04_contract.sql").read_text()
     tables, functions, views = {}, {}, {}
     constraints, indexes, triggers, sequence = [], [], [], []
     ownership = []
@@ -226,6 +236,12 @@ def compile_spec(source):
             )[0].stmt.targetList[0].val
             e03_matches += 1
     assert e03_matches == 1, "E-03 must replace exactly one known CHECK"
+    calibration_links = [c for t, c in constraints if t == "evaluations"
+                         and c.contype == CT.CONSTR_FOREIGN
+                         and strings(c.fk_attrs) == ("calibration_id",)]
+    assert len(calibration_links) == 1
+    calibration_links[0].deferrable = True
+    calibration_links[0].initdeferred = True
     names = set()
     for t, c in constraints:
         if not c.conname:
@@ -537,6 +553,7 @@ def artifacts():
         "format_version": 1,
         "revision": REVISION,
         "source_sha256": digest(source.encode()),
+        "e04_contract_sha256": digest((ROOT / "alembic_v2/e04_contract.sql").read_bytes()),
         "d03_contract_sha256": digest(
             (ROOT / "alembic_v2/d03_contract.json").read_bytes()
         ),

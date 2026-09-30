@@ -1,0 +1,240 @@
+[
+  {
+    "name": "identity_native_contract",
+    "passed": true,
+    "initial": {
+      "last_value": 1,
+      "is_called": false
+    },
+    "dependencies": [
+      {
+        "deptype": "i"
+      }
+    ]
+  },
+  {
+    "name": "core_default:artifacts.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:campaign_execution_events.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:clinical_identities.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:dataset_materialization_activations.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:dataset_materializations.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:dataset_source_records.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:dataset_split_assignments.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:dataset_split_images.image_id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:dataset_split_statistics.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:dataset_split_validation_checks.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:dataset_splits.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:dataset_versions.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:datasets.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:deployed_model_versions.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:environment_packages.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:errors.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:execution_logs.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:experiments.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:explainability_results.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:identity_evidence.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:image_analysis_jobs.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:model_governance_backfill_audit.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:model_versions.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:models.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:predictions.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:run_checkpoint_policy.run_checkpoint_policy_id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:run_clinical_metrics.run_clinical_metric_id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:run_dataset_images.run_dataset_image_id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:run_image_predictions.run_image_prediction_id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:run_io_records.run_io_id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:run_lineage.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:run_metrics.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:run_model_deployments.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:run_threshold_calibration.run_threshold_calibration_id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:runs.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:stage2_model_publication_events.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:stage2_model_publications.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:synthetic_data_runs.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "core_default:training_history.id",
+    "passed": true,
+    "expression": "gen_random_uuid()"
+  },
+  {
+    "name": "identity_omitted_id",
+    "passed": true,
+    "sqlstate": "00000",
+    "row": {
+      "id": 1
+    }
+  },
+  {
+    "name": "identity_explicit_id",
+    "passed": true,
+    "sqlstate": "428C9"
+  },
+  {
+    "name": "identity_override",
+    "passed": true,
+    "sqlstate": "00000",
+    "row": {
+      "id": 9000001
+    }
+  },
+  {
+    "name": "global_event_immutable",
+    "passed": true,
+    "sqlstate": "P0001"
+  },
+  {
+    "name": "core_default_independent_of_wrapper_privilege",
+    "passed": true
+  }
+]

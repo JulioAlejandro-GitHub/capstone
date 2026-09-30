@@ -52,6 +52,8 @@ class ResultService:
                 scope.append()
                 if result is not None:
                     scope.project_training_result(result)
+                if event.event_type is RunEventType.CALIBRATION_COMPLETED:
+                    scope.project_calibration_result()
                 status = EventAcceptanceStatus.ACCEPTED
             acceptance = EventAcceptance(
                 status=status, run_id=event.run_id,

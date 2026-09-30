@@ -1,0 +1,9 @@
+{
+  "revision": "20260922_01",
+  "event_columns": true,
+  "event_metadata_constraint": true,
+  "event_unique_indexes": true,
+  "event_trigger_guard": true,
+  "session_user": "capstone_v2_runtime",
+  "scope": "actual legacy migrations over disposable synthetic parent tables; not full legacy baseline certification"
+}

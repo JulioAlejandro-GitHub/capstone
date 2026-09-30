@@ -31,6 +31,9 @@ class EventAcceptanceScope(ABC):
         from .errors import ResultPersistenceError
         raise ResultPersistenceError()
 
+    def project_calibration_result(self) -> None:
+        """Legacy ports retain ledger-only calibration; v2 overrides atomically."""
+
 
 class ResultRepository(ABC):
     @abstractmethod

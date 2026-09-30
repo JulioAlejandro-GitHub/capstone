@@ -1,0 +1,319 @@
+{
+  "stage": "E10.10.5E.4",
+  "decision": "E-03 and E-04 approved",
+  "passed": true,
+  "scope": "Baseline and calibration integrity recertification; NOT full E integration approval",
+  "manifest_sha256": "2ef834913bc23490ed364168143c157b8ceb2d588a8264902a5fce0baaf1d858",
+  "catalog_sha256": "7cd7829ef16a849a71c3a9055010bc901f87eaba1cab38bab239b4bef0b8ae8d",
+  "postgres_version": "17.9",
+  "postgres_system_identifier": "7691311524523634732",
+  "server_tests": {
+    "server_tests.json": 49,
+    "d03_server_tests.json": 45,
+    "d05_server_tests.json": 5,
+    "e04_atomicity.json": 7,
+    "e04_edges.json": 17,
+    "e04_runtime_preflight.json": 5,
+    "e04_contract_tests.json": 27
+  },
+  "D01_D06_preserved": true,
+  "d04_historical_function_dependencies_unchanged": true,
+  "d06_four_exact_check_references": true,
+  "exact_catalog_delta": {
+    "constraints": {
+      "before": [
+        {
+          "relation": "evaluations",
+          "name": "v2_evaluations_check_6a2239d39784",
+          "contype": "c",
+          "definition": "CHECK (((source_kind <> 'e10'::text) OR (evaluation_role = 'training_validation_final'::text)))",
+          "condeferrable": false,
+          "condeferred": false,
+          "convalidated": true,
+          "connoinherit": false
+        },
+        {
+          "relation": "evaluations",
+          "name": "v2_evaluations_foreign_93473146c016",
+          "contype": "f",
+          "definition": "FOREIGN KEY (calibration_id) REFERENCES run_threshold_calibration(run_threshold_calibration_id) ON DELETE RESTRICT",
+          "condeferrable": false,
+          "condeferred": false,
+          "convalidated": true,
+          "connoinherit": true
+        }
+      ],
+      "after": [
+        {
+          "relation": "evaluations",
+          "name": "ck_e04_default_source",
+          "contype": "c",
+          "definition": "CHECK (((source_kind <> 'e10'::text) OR (evaluation_role <> 'calibration_default'::text) OR ((threshold_source = 'default'::text) AND (threshold_used = 0.5) AND (calibration_id IS NULL))))",
+          "condeferrable": false,
+          "condeferred": false,
+          "convalidated": true,
+          "connoinherit": false
+        },
+        {
+          "relation": "evaluations",
+          "name": "ck_e04_selected_source",
+          "contype": "c",
+          "definition": "CHECK (((source_kind <> 'e10'::text) OR (evaluation_role <> 'calibration_selected'::text) OR ((threshold_source = 'validation_calibration'::text) AND (calibration_id IS NOT NULL))))",
+          "condeferrable": false,
+          "condeferred": false,
+          "convalidated": true,
+          "connoinherit": false
+        },
+        {
+          "relation": "evaluations",
+          "name": "e04_evaluation_complete",
+          "contype": "t",
+          "definition": "TRIGGER DEFERRABLE INITIALLY DEFERRED",
+          "condeferrable": true,
+          "condeferred": true,
+          "convalidated": true,
+          "connoinherit": true
+        },
+        {
+          "relation": "evaluations",
+          "name": "v2_evaluations_check_28938a6edbaa",
+          "contype": "c",
+          "definition": "CHECK (((source_kind <> 'e10'::text) OR (evaluation_role = ANY (ARRAY['training_validation_final'::text, 'calibration_default'::text, 'calibration_selected'::text]))))",
+          "condeferrable": false,
+          "condeferred": false,
+          "convalidated": true,
+          "connoinherit": false
+        },
+        {
+          "relation": "evaluations",
+          "name": "v2_evaluations_foreign_0baa7d166e2f",
+          "contype": "f",
+          "definition": "FOREIGN KEY (calibration_id) REFERENCES run_threshold_calibration(run_threshold_calibration_id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED",
+          "condeferrable": true,
+          "condeferred": true,
+          "convalidated": true,
+          "connoinherit": true
+        },
+        {
+          "relation": "run_threshold_calibration",
+          "name": "e04_calibration_complete",
+          "contype": "t",
+          "definition": "TRIGGER DEFERRABLE INITIALLY DEFERRED",
+          "condeferrable": true,
+          "condeferred": true,
+          "convalidated": true,
+          "connoinherit": true
+        }
+      ]
+    },
+    "indexes": {
+      "before": [],
+      "after": [
+        {
+          "name": "uq_e04_contract_role",
+          "relation": "evaluations",
+          "definition": "CREATE UNIQUE INDEX uq_e04_contract_role ON public.evaluations USING btree (run_id, training_run_id, model_version_id, checkpoint_artifact_id, dataset_version_id, population_hash, protocol_version, protocol_hash, input_contract_hash, evaluation_role) NULLS NOT DISTINCT WHERE ((source_kind = 'e10'::text) AND (evaluation_role = ANY (ARRAY['calibration_default'::text, 'calibration_selected'::text])))",
+          "indisunique": true,
+          "indisprimary": false,
+          "indisvalid": true,
+          "indisready": true,
+          "indislive": true,
+          "indimmediate": true,
+          "indisreplident": false,
+          "indnullsnotdistinct": true,
+          "owner": "capstone_v2_migrator",
+          "amname": "btree",
+          "reloptions": null
+        },
+        {
+          "name": "uq_e04_event_role",
+          "relation": "evaluations",
+          "definition": "CREATE UNIQUE INDEX uq_e04_event_role ON public.evaluations USING btree (source_event_id, evaluation_role) WHERE ((source_kind = 'e10'::text) AND (evaluation_role = ANY (ARRAY['calibration_default'::text, 'calibration_selected'::text])))",
+          "indisunique": true,
+          "indisprimary": false,
+          "indisvalid": true,
+          "indisready": true,
+          "indislive": true,
+          "indimmediate": true,
+          "indisreplident": false,
+          "indnullsnotdistinct": false,
+          "owner": "capstone_v2_migrator",
+          "amname": "btree",
+          "reloptions": null
+        }
+      ]
+    },
+    "functions": {
+      "before": [],
+      "after": [
+        {
+          "name": "e04_assert_calibration",
+          "arguments": "member_id uuid",
+          "definition": "CREATE OR REPLACE FUNCTION public.e04_assert_calibration(member_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_catalog'\nAS $function$\nDECLARE e public.evaluations%ROWTYPE; d public.evaluations%ROWTYPE; s public.evaluations%ROWTYPE;\n c public.run_threshold_calibration%ROWTYPE; ev jsonb; result jsonb; context jsonb;\n n integer; m public.run_clinical_metrics%ROWTYPE; expected jsonb; k text;\nBEGIN\n SELECT * INTO e FROM public.evaluations WHERE id=member_id;\n IF NOT FOUND OR e.source_kind<>'e10'\n OR e.evaluation_role NOT IN ('calibration_default','calibration_selected') THEN RETURN; END IF;\n SELECT count(*) INTO n FROM public.run_threshold_calibration\n WHERE default_evaluation_id=e.id OR selected_evaluation_id=e.id;\n IF n<>1 THEN RAISE EXCEPTION 'E04_PAIR_REQUIRED'; END IF;\n SELECT * INTO STRICT c FROM public.run_threshold_calibration\n WHERE default_evaluation_id=e.id OR selected_evaluation_id=e.id;\n SELECT * INTO d FROM public.evaluations WHERE id=c.default_evaluation_id;\n SELECT * INTO s FROM public.evaluations WHERE id=c.selected_evaluation_id;\n IF d.id IS NULL OR s.id IS NULL THEN RAISE EXCEPTION 'E04_PAIR_REQUIRED'; END IF;\n IF d.id=s.id OR d.evaluation_role IS DISTINCT FROM 'calibration_default'\n OR s.evaluation_role IS DISTINCT FROM 'calibration_selected'\n OR d.source_kind IS DISTINCT FROM 'e10' OR s.source_kind IS DISTINCT FROM 'e10'\n OR d.split IS DISTINCT FROM 'val' OR s.split IS DISTINCT FROM 'val'\n OR c.calibration_split IS DISTINCT FROM 'val'\n OR d.run_id IS DISTINCT FROM s.run_id OR d.training_run_id IS DISTINCT FROM s.training_run_id\n OR d.run_id IS DISTINCT FROM d.training_run_id OR d.training_run_id IS DISTINCT FROM c.run_id\n OR d.model_version_id IS DISTINCT FROM s.model_version_id\n OR c.model_version_id IS DISTINCT FROM d.model_version_id\n OR d.checkpoint_artifact_id IS DISTINCT FROM s.checkpoint_artifact_id\n OR d.dataset_version_id IS DISTINCT FROM s.dataset_version_id\n OR d.population_hash IS DISTINCT FROM s.population_hash\n OR d.protocol_version IS DISTINCT FROM s.protocol_version\n OR d.protocol_hash IS DISTINCT FROM s.protocol_hash\n OR d.protocol_snapshot IS DISTINCT FROM s.protocol_snapshot\n OR d.input_contract_hash IS DISTINCT FROM s.input_contract_hash\n OR d.comparison_contract_hash IS DISTINCT FROM s.comparison_contract_hash\n OR d.subject_kind IS DISTINCT FROM s.subject_kind\n OR d.source_event_id IS DISTINCT FROM s.source_event_id\n THEN RAISE EXCEPTION 'E04_PAIR_IDENTITY_MISMATCH'; END IF;\n IF d.threshold_source IS DISTINCT FROM 'default' OR d.calibration_id IS NOT NULL\n OR d.threshold_used IS DISTINCT FROM c.default_threshold\n OR s.threshold_source IS DISTINCT FROM 'validation_calibration'\n OR s.calibration_id IS DISTINCT FROM c.run_threshold_calibration_id\n OR s.threshold_used IS DISTINCT FROM c.threshold_selected\n THEN RAISE EXCEPTION 'E04_THRESHOLD_PROVENANCE'; END IF;\n SELECT (payload->>'canonical_event')::jsonb INTO ev FROM public.train_execution_records\n WHERE run_id=d.run_id AND event_id=d.source_event_id AND kind='e10_event'\n AND phase='run_event_v1' AND record_key=d.source_event_id::text;\n result:=ev#>'{payload,result,result}';\n IF ev->>'event_type' IS DISTINCT FROM 'calibration_completed'\n OR ev->>'event_id' IS DISTINCT FROM d.source_event_id::text\n OR ev->>'run_id' IS DISTINCT FROM d.run_id::text\n OR ev->>'schema_version' IS DISTINCT FROM 'run_event_v1'\n OR ev#>>'{payload,result,split}' IS DISTINCT FROM 'val'\n OR result->>'calibration_split' IS DISTINCT FROM 'val'\n OR result->>'threshold_source' IS DISTINCT FROM 'validation_calibration'\n OR (result->>'threshold_selected')::numeric IS DISTINCT FROM c.threshold_selected\n OR (result->>'threshold_used')::numeric IS DISTINCT FROM c.threshold_selected\n OR (result->>'default_threshold')::numeric IS DISTINCT FROM c.default_threshold\n OR (result->>'target_recall')::numeric IS DISTINCT FROM c.target_recall\n THEN RAISE EXCEPTION 'E04_EVENT_PROVENANCE'; END IF;\n SELECT execution_parameters->'e10_v2_evaluation_context_v1' INTO context\n FROM public.runs WHERE id=d.run_id;\n IF context IS NULL OR context->>'checkpoint_artifact_id' IS DISTINCT FROM d.checkpoint_artifact_id::text\n OR context->>'model_version_id' IS DISTINCT FROM d.model_version_id::text\n OR context->>'protocol_version' IS DISTINCT FROM d.protocol_version\n OR context->>'protocol_hash' IS DISTINCT FROM d.protocol_hash\n OR context->'protocol_snapshot' IS DISTINCT FROM d.protocol_snapshot\n OR context->>'population_hash' IS DISTINCT FROM d.population_hash\n OR context->>'input_contract_hash' IS DISTINCT FROM d.input_contract_hash\n OR context->>'comparison_contract_hash' IS DISTINCT FROM d.comparison_contract_hash\n THEN RAISE EXCEPTION 'E04_CONTEXT_PROVENANCE'; END IF;\n FOR m IN SELECT * FROM public.run_clinical_metrics WHERE evaluation_id IN (d.id,s.id) LOOP\n   expected:=CASE WHEN m.evaluation_id=d.id THEN result->'default_threshold_metrics' ELSE result->'selected_metrics' END;\n   IF expected IS NULL OR jsonb_typeof(expected) IS DISTINCT FROM 'object' THEN\n     RAISE EXCEPTION 'E04_METRIC_PROVENANCE';\n   END IF;\n   FOREACH k IN ARRAY ARRAY['tn','fp','fn','tp','roc_auc_parasitized','pr_auc_parasitized'] LOOP\n     IF NOT (expected ? k) OR (to_jsonb(m)->k) IS DISTINCT FROM expected->k THEN\n       RAISE EXCEPTION 'E04_METRIC_PROVENANCE';\n     END IF;\n   END LOOP;\n END LOOP;\n IF (SELECT count(*) FROM public.run_clinical_metrics WHERE evaluation_id IN (d.id,s.id))<>2 THEN\n   RAISE EXCEPTION 'E04_PAIR_METRICS_REQUIRED';\n END IF;\nEND $function$\n",
+          "owner": "capstone_v2_migrator",
+          "proacl": "{capstone_v2_migrator=X/capstone_v2_migrator,capstone_v2_runtime=X/capstone_v2_migrator}",
+          "prosecdef": false,
+          "proleakproof": false,
+          "provolatile": "v",
+          "proparallel": "u",
+          "proisstrict": false,
+          "proconfig": [
+            "search_path=public, pg_catalog"
+          ],
+          "extension": null
+        },
+        {
+          "name": "e04_calibration_complete",
+          "arguments": "",
+          "definition": "CREATE OR REPLACE FUNCTION public.e04_calibration_complete()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_catalog'\nAS $function$\nBEGIN\n IF TG_TABLE_NAME='evaluations' THEN\n   PERFORM public.e04_assert_calibration(NEW.id);\n ELSE\n   PERFORM public.e04_assert_calibration(NEW.default_evaluation_id);\n   PERFORM public.e04_assert_calibration(NEW.selected_evaluation_id);\n END IF;\n RETURN NULL;\nEND $function$\n",
+          "owner": "capstone_v2_migrator",
+          "proacl": "{capstone_v2_migrator=X/capstone_v2_migrator,capstone_v2_runtime=X/capstone_v2_migrator}",
+          "prosecdef": false,
+          "proleakproof": false,
+          "provolatile": "v",
+          "proparallel": "u",
+          "proisstrict": false,
+          "proconfig": [
+            "search_path=public, pg_catalog"
+          ],
+          "extension": null
+        },
+        {
+          "name": "e04_calibration_immutable",
+          "arguments": "",
+          "definition": "CREATE OR REPLACE FUNCTION public.e04_calibration_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_catalog'\nAS $function$\nBEGIN\n IF EXISTS(SELECT 1 FROM public.evaluations WHERE source_kind='e10'\n AND id IN (OLD.default_evaluation_id,OLD.selected_evaluation_id)) THEN\n   RAISE EXCEPTION 'E04_CALIBRATION_IMMUTABLE';\n END IF;\n IF TG_OP='DELETE' THEN RETURN OLD; END IF;\n RETURN NEW;\nEND $function$\n",
+          "owner": "capstone_v2_migrator",
+          "proacl": "{capstone_v2_migrator=X/capstone_v2_migrator,capstone_v2_runtime=X/capstone_v2_migrator}",
+          "prosecdef": false,
+          "proleakproof": false,
+          "provolatile": "v",
+          "proparallel": "u",
+          "proisstrict": false,
+          "proconfig": [
+            "search_path=public, pg_catalog"
+          ],
+          "extension": null
+        },
+        {
+          "name": "e04_legacy_admission",
+          "arguments": "",
+          "definition": "CREATE OR REPLACE FUNCTION public.e04_legacy_admission()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_catalog'\nAS $function$\nBEGIN\n IF NEW.source_kind='legacy' AND current_user <> 'capstone_v2_migrator' THEN\n   RAISE EXCEPTION 'E04_LEGACY_MIGRATOR_REQUIRED' USING ERRCODE='42501';\n END IF;\n RETURN NEW;\nEND $function$\n",
+          "owner": "capstone_v2_migrator",
+          "proacl": "{capstone_v2_migrator=X/capstone_v2_migrator,capstone_v2_runtime=X/capstone_v2_migrator}",
+          "prosecdef": false,
+          "proleakproof": false,
+          "provolatile": "v",
+          "proparallel": "u",
+          "proisstrict": false,
+          "proconfig": [
+            "search_path=public, pg_catalog"
+          ],
+          "extension": null
+        }
+      ]
+    },
+    "triggers": {
+      "before": [],
+      "after": [
+        {
+          "relation": "evaluations",
+          "name": "e04_evaluation_complete",
+          "definition": "CREATE CONSTRAINT TRIGGER e04_evaluation_complete AFTER INSERT ON public.evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION e04_calibration_complete()",
+          "tgenabled": "O",
+          "tgdeferrable": true,
+          "tginitdeferred": true
+        },
+        {
+          "relation": "evaluations",
+          "name": "e04_legacy_admission",
+          "definition": "CREATE TRIGGER e04_legacy_admission BEFORE INSERT ON public.evaluations FOR EACH ROW EXECUTE FUNCTION e04_legacy_admission()",
+          "tgenabled": "O",
+          "tgdeferrable": false,
+          "tginitdeferred": false
+        },
+        {
+          "relation": "run_threshold_calibration",
+          "name": "e04_calibration_complete",
+          "definition": "CREATE CONSTRAINT TRIGGER e04_calibration_complete AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION e04_calibration_complete()",
+          "tgenabled": "O",
+          "tgdeferrable": true,
+          "tginitdeferred": true
+        },
+        {
+          "relation": "run_threshold_calibration",
+          "name": "e04_calibration_immutable",
+          "definition": "CREATE TRIGGER e04_calibration_immutable BEFORE DELETE OR UPDATE ON public.run_threshold_calibration FOR EACH ROW EXECUTE FUNCTION e04_calibration_immutable()",
+          "tgenabled": "O",
+          "tgdeferrable": false,
+          "tginitdeferred": false
+        }
+      ]
+    }
+  },
+  "runtime_legacy_admission_forbidden": true,
+  "route_b_regression": true,
+  "historical_files_verified": 167,
+  "previous_certificate_sha256": "efe943f3a4a565b9ec1d868e332e9a472cdb0f0f569c27f1b5beaf6f6e36d77a",
+  "supersedes_e4_certificate_sha256": "c082032d6c5a7a189c8ef36312d447a782a436295297fd1aaee7a8d9e05ab2ae",
+  "e03_candidate_remains_uncertified": true,
+  "gate_e": "BLOCKED_INTEGRATION_PENDING",
+  "pending": "Real TRAIN/EVALUATE context producer and full E integration matrix",
+  "evidence_sha256": {
+    "preflight_before_provision.json": "66fe005933b6a5375c786b3f464f0e893ddd1c9ebfd46b090692d31fc0f22997",
+    "route_b_target.json": "e5459a140338cf0a90dbe1f561df26c90141ccdff19721d15c6fa83df318bfd9",
+    "ref_3f5e4f_target.json": "862af21b4e6c8b1a2706de653fe2a61f4dcd026a08cd01b95bebab3da40f6361",
+    "candidate_unit_tests.txt": "a04dd9e4975d1e6678dbcec2105bc5612b40a660497df5750127fa5607c10da0",
+    "route_b_regression.json": "da9306eb3186e14333bef639fc8d70741baf4d888fa14df94f5db0d8311a718c",
+    "idempotence_result.json": "66741161dcd4a5ca4083ef86d13f4e722a4a450feeccdd6e9502856c9c98aecd",
+    "e04_atomicity.json": "fec7827c156ed2b6cb5fe762ce0964d989e96cb85c3b800dc129921277287edb",
+    "rollback_target.json": "6f23911445b4df3a91ae1e577476ceb605343d4a33baa99d16019183a22ee8de",
+    "target.json": "af842cd0cdbcc57545bc98b550dcdcc9a9278157efa44f2b66f7f378cfa83fa3",
+    "rollback_result.json": "f71c300847fa9a539b842b6d4a60f783d07efdf819fb938d144ea08fac4bac46",
+    "e04_contract_tests.json": "c8168759142672cd9f0c3d8623eb669b5a12b86a513fc326fb2380833e53728c",
+    "orchestration.jsonl": "34b086e9408a4df81a803f80662fdee3d54dc3769e1f72bd87bee0263e227b68",
+    "manifest_rendered_catalog.json": "673a2a580e41d5a217f4d0753a2c7318e3136e54c6c7cc866c5271ba69534057",
+    "legacy_revision.json": "aaa60f6b3f99fb4fd571d636d67821c0b50e6a45380b1c8f5c157241415c628a",
+    "restore_result.json": "fd775c6d66cbf08c625f86751b156d36a81e298c67f35fe7aa4873211a884b89",
+    "e4b_bdae7a_target.json": "a260256cc3bf0421c4b52555c3b62f9736bfcb0bdf7da647168183636f6fa733",
+    "catalog_diff.json": "f89fe4ca4646a0e9b287f2a0eff03d069e7774ba79a3852a387894c5d2ef4a32",
+    "restore_target.json": "7144033461e0394e5374632fa34445d9baf83499a7f2d439743e6fde1605f332",
+    "server_tests.json": "b962b0811379d2512a6da2576533ebea0d984ae378bda6735630f85e179eb7c3",
+    "commands.jsonl": "ef8bd7fef865e39e3d529b159a69fce101c3c81aa86414a96ea6310d7967fc7b",
+    "backup_synthetic_fixture.json": "27179f0fea322900f1420f0776c0a1a97de49bdd1cfed98ca8f93b75b5a8fc4e",
+    "e04_runtime_preflight.json": "e3022a3fab02bf701205e37b459825ec68a48c45fef4256c0a3a460df5e574dc",
+    "ref_3f5e4f_preflight.json": "4e9ad65867236160fab02e4f9ae51666daa03e1308bc17f0b0739a729499fe89",
+    "restore_preflight.json": "f5e4ce7268e7a19d9e7af6be2f57f34d8ef6141650b94f7b78e7190b4dfc5e75",
+    "latest_preflight.json": "6aaa81f24981257877e4e62a75a5bbd583744dbef565ee2490656e4db511d9ce",
+    "runtime_contract_capture.json": "795d94b58c8407964a179d70024b12fe5382ee6e055e1cb0eea60b876d1c49ee",
+    "e10_projection.json": "b01ac7429ade3a05044c9007d3dafd21ccc4a806b6a3258cfc4cf7d87b720ef7",
+    "e4b_bdae7a_preflight.json": "98be714c15ea9e09bb04542b8811a0bc0e8b5ec1d055fda9a9875d06f9e269a8",
+    "d05_server_tests.json": "6c6a773bb45635a6eb3484fcef94b5c3b8acd21a6abe2c1c7260022c9562aaee",
+    "runtime_acl_revision.json": "f3d48ed6b9cf4157b86f13735b1f66f3e791ea851787c46456bd0097e419d293",
+    "service_unit_tests.txt": "e6825056a32bd56fbaf80f7d16250064d63136c50ae1a606db01988bf0cad0fd",
+    "rollback_aad5b1_target.json": "6f23911445b4df3a91ae1e577476ceb605343d4a33baa99d16019183a22ee8de",
+    "legacy_service_tests.txt": "51afb5f0c7e186f0c6cdd62487310376578b41fef2c3d7434fce72b6072e93ef",
+    "d03_server_tests.json": "938d0906014197afdb34ba6fe4edb46612292cef27b1569b9257d672f296b35d",
+    "isolated_backup.dump": "d52323b443fa08ae0900070cd43fc56fd0b1588c400bf71899104481e95a9e02",
+    "restored_catalog.json": "673a2a580e41d5a217f4d0753a2c7318e3136e54c6c7cc866c5271ba69534057",
+    "preflight_before_alembic.json": "1f9bc7b3c8996378f25bee45ddec51bf534b42f5d27f023fa520daec455e9d8c",
+    "e04_edges.json": "7693f1c7fedf9b4b05688f7a6344160820b7712a15db379d7559735b46be33e6",
+    "rollback_aad5b1_preflight.json": "d53c37beeae1d9aee73dc0ccdec80560bb360ad66a955c0d57595a8d391b316c",
+    "e4b_acd74e_target.json": "795d2c4e3135f3af45090bd11442736d7043b2dfa14fe6520345348ac5705902",
+    "installed_catalog.json": "673a2a580e41d5a217f4d0753a2c7318e3136e54c6c7cc866c5271ba69534057",
+    "e4b_acd74e_preflight.json": "0b8bcc852350e85544cf65213512abd24b450971154fc5d07373c4665dcb6a71"
+  },
+  "implementation_sha256": {
+    "alembic_v2/e04_contract.sql": "f3e50deb994e823768d0a8dd7150c1a9e937c1b4e09226e37304adb36964db08",
+    "scripts/db/build_v2_baseline.py": "3c200a28841d1b27461c552ea3bc12741f678c8cc3e823875c13db72029abf6d",
+    "adoption_v2/core.py": "743f8f01c46c89e0de9c76a8b8027ba45d742db4bde1cc1980d80aa649669a7c",
+    "adoption_v2/execute.py": "760206401f0c43025daa9787399c28b44b678736636e8ef1440be88b47856f43",
+    "adoption_v2/planner.py": "fa5d2b9a96bfe155251bb91301942572fc8e50802bd79ee8e7101a239d677919",
+    "adoption_v2/ddl.py": "dbce53e6589fbfc4881120bccd199fd602c25499d2c18228fbc32a26d07f23c1",
+    "adoption_v2/transforms.py": "ec0827d5df2f2bd0d8edbab2695652d4bbb16897a8429cd12c00bfdb3f4b29ca",
+    "malaria_dl_local_project/src/malaria_dl/persistence/v2_projection.py": "cda0f63de309d22664396573c15b010050917661323da8ed35e2494faded1f68",
+    "malaria_dl_local_project/src/malaria_dl/persistence/result_repository.py": "552f7a5abd4a1ea1b24d44197f4d166ce406d8b526d6de19b5a96546e9731382",
+    "malaria_dl_local_project/src/malaria_dl/results/service.py": "14cef37aabb171fa557336b623311e96bfbf68a48be9284677e1f05408a86919",
+    "malaria_dl_local_project/src/malaria_dl/persistence/v2_runtime_contract.json": "b068c7af14aa4ec9ae11e273fcb0d171a90ed8a025c65ebe4a3bb69ba3588cb5",
+    "malaria_dl_local_project/src/malaria_dl/persistence/schema_contract.py": "8cdba99dcb5ce13128a867732b7584ff0385a948311e80aa47d2cdaa71c20bc2"
+  }
+}
