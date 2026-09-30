@@ -1,0 +1,16 @@
+{
+  "alembic_v2/baseline/10_privileges.sql": "fc543b79e3e75b5b5cc06c429d71e69f097a8449e3b869b4f1168459d73d371f",
+  "alembic_v2/baseline/08_views.sql": "8e08f69ef33f435eb6f50c0b3239e0b97ccf82fc63b758ab55a908b91bf6609d",
+  "alembic_v2/baseline/04_functions.sql": "c2fb3f1939cba1675fc67892dc6340e21db811a0085ed2f324c7aed041eb63a6",
+  "alembic_v2/baseline/07_indexes.sql": "d68579321c11bce18107ad28774623249e08fc757086bd9a2066236672779d75",
+  "alembic_v2/baseline/11_technical_state.sql": "677be879ea69cc5c7b80aa9f9315544a4dabcad0a92043d988a591bc77c6b181",
+  "alembic_v2/baseline/catalog_manifest.json": "2ef834913bc23490ed364168143c157b8ceb2d588a8264902a5fce0baaf1d858",
+  "alembic_v2/baseline/01_prerequisites.sql": "7bc46c27eb8b822bb7d0d9f12326fdb53a41837ec3620a4533f2009e96cc1ae5",
+  "alembic_v2/baseline/05_keys.sql": "b59c1011dd20fa2ccb03e4ca26ed436d6b444c3076446f5478c97c462aabe3ce",
+  "alembic_v2/baseline/03_tables.sql": "0f25191d17a21e3c3078035b6e341c4e34e6c7cd2e60db56ea738addccab44bc",
+  "alembic_v2/baseline/02_generated_functions.sql": "9918d63cfad0c7762da9961b9471cb63b799757e5afada2fe55d4d7147f8b15a",
+  "alembic_v2/baseline/09_triggers.sql": "c8ae02e42b85bb2901c2eca568625b68db04cdd86fb49d07352b39a82cdf8dc1",
+  "alembic_v2/baseline/06_constraints.sql": "d24cc7c1696ad74b3fc33d34160bbe3ba69217fc1dd86155f754a9ca42216318",
+  "alembic_v2/e04_contract.sql": "f3e50deb994e823768d0a8dd7150c1a9e937c1b4e09226e37304adb36964db08",
+  "alembic_v2/versions/20260929_01_pg_v2_baseline.py": "e3aaad12e49e65cff8ad9742fcdd83af075f2e2fcfaa81733a2bec121efef279"
+}

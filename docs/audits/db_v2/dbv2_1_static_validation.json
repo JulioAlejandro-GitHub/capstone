@@ -1,0 +1,37 @@
+{
+  "status": "PASS_STATIC_ONLY",
+  "target_postgresql": "17.9",
+  "parser_postgresql": [
+    18,
+    4
+  ],
+  "sql_sha256": "5a17a6b0eb0f717e33ab43d03166e05388ff3d8a64b836cd62f10038d4a28961",
+  "tables": 104,
+  "alembic_managed_tables": 1,
+  "columns": 1511,
+  "actions": {
+    "MODIFY": 22,
+    "KEEP": 78,
+    "VIEW": 2,
+    "REMOVE": 2,
+    "NEW": 4
+  },
+  "foreign_keys": 251,
+  "checks": 518,
+  "unique_constraints": 77,
+  "unique_indexes": 41,
+  "explicit_indexes": 232,
+  "implicit_indexes": 181,
+  "total_indexes": 413,
+  "functions": 79,
+  "triggers": 105,
+  "views": 33,
+  "plpgsql_parsed": 76,
+  "e04_preserved": true,
+  "source_artifacts_unchanged": true,
+  "sql_executed": false,
+  "limitations": [
+    "Parser PostgreSQL 18.4; no certificación PostgreSQL 17.9.",
+    "PL/pgSQL parseado; semántica en servidor y concurrencia corresponden a DBV2.2."
+  ]
+}
