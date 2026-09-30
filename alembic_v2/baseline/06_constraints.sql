@@ -1407,7 +1407,7 @@ ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_check_3df12c5495af 
 
 ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_check_58c667b93f11 CHECK (split <> 'test' OR source_kind = 'assessment');
 
-ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_check_6a2239d39784 CHECK (source_kind <> 'e10' OR evaluation_role = 'training_validation_final');
+ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_check_28938a6edbaa CHECK (source_kind <> 'e10' OR evaluation_role IN ('training_validation_final', 'calibration_default', 'calibration_selected'));
 
 ALTER TABLE public.evaluations ADD CONSTRAINT v2_evaluations_check_08204f883325 CHECK (evaluation_role <> 'training_validation_final' OR run_id = training_run_id);
 

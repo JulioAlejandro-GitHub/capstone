@@ -215,6 +215,17 @@ def compile_spec(source):
     # The documentary 103 includes alembic_version. It is never application DDL.
     del tables["alembic_version"]
     constraints = [(t, c) for t, c in constraints if t != "alembic_version"]
+    # E-03 changes exactly the E10 role restriction; historical source is immutable.
+    e03_matches = 0
+    for t, c in constraints:
+        if (t == "evaluations" and c.contype == CT.CONSTR_CHECK
+                and render(c.raw_expr) == "source_kind <> 'e10' OR evaluation_role = 'training_validation_final'"):
+            c.raw_expr = parse_sql(
+                "SELECT source_kind <> 'e10' OR evaluation_role IN "
+                "('training_validation_final', 'calibration_default', 'calibration_selected')"
+            )[0].stmt.targetList[0].val
+            e03_matches += 1
+    assert e03_matches == 1, "E-03 must replace exactly one known CHECK"
     names = set()
     for t, c in constraints:
         if not c.conname:

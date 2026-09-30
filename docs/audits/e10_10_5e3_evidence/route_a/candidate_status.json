@@ -1,0 +1,58 @@
+{
+  "stage": "E10.10.5E.3",
+  "status": "BLOCKED_E04",
+  "certified": false,
+  "gate_e": "BLOCKED_NOT_REQUESTED",
+  "postgres_version": "17.9",
+  "postgres_system_identifier": "7691305878736203818",
+  "manifest_sha256": "31467acd6452aa3f53c4f9abe6f772d2940efeb389b1466a79c7918ee67fb7a1",
+  "catalog_sha256": "dd586ac22c67b5990127dee33198906ea02fa9370917349009ccaef78c46c774",
+  "exact_catalog_changes": {
+    "constraints": {
+      "before": [
+        {
+          "relation": "evaluations",
+          "name": "v2_evaluations_check_6a2239d39784",
+          "contype": "c",
+          "definition": "CHECK (((source_kind <> 'e10'::text) OR (evaluation_role = 'training_validation_final'::text)))",
+          "condeferrable": false,
+          "condeferred": false,
+          "convalidated": true,
+          "connoinherit": false
+        }
+      ],
+      "after": [
+        {
+          "relation": "evaluations",
+          "name": "v2_evaluations_check_28938a6edbaa",
+          "contype": "c",
+          "definition": "CHECK (((source_kind <> 'e10'::text) OR (evaluation_role = ANY (ARRAY['training_validation_final'::text, 'calibration_default'::text, 'calibration_selected'::text]))))",
+          "condeferrable": false,
+          "condeferred": false,
+          "convalidated": true,
+          "connoinherit": false
+        }
+      ]
+    }
+  },
+  "diagnostic_fixture_counts_after_rollback": {
+    "evaluations": 0,
+    "metrics": 0,
+    "calibrations": 0,
+    "ledger": 0,
+    "runs": 0
+  },
+  "required_rejections_absent": [
+    "protocol_mismatch",
+    "input_contract_mismatch",
+    "selected_without_threshold_provenance",
+    "second_selected_identity",
+    "new_e10_as_legacy",
+    "null_model_version",
+    "orphan_default",
+    "orphan_selected"
+  ],
+  "historical_files_verified": 149,
+  "pending": "Guard decision; complete baseline recertification, E-02 regression and entire E matrix",
+  "certificate_issued": false
+}

@@ -106,6 +106,30 @@ class StaticBaselineTests(unittest.TestCase):
             "GRANT SELECT ON TABLE public.alembic_version TO capstone_v2_runtime",
         ])
 
+    def test_e03_exact_role_set_and_no_other_sql_change(self):
+        constraint = self.catalogue["constraints"][
+            ("evaluations", "v2_evaluations_check_28938a6edbaa")
+        ]
+        allowed = {"training_validation_final", "calibration_default", "calibration_selected"}
+        for role in allowed | {"development", "final_test", "external_complementary", "unknown", ""}:
+            with self.subTest(role=role):
+                self.assertEqual(expression(constraint.raw_expr, {
+                    "source_kind": "e10", "evaluation_role": role,
+                }), role in allowed)
+        root = Path(__file__).resolve().parents[2]
+        historical = root / "docs/audits/e10_10_5e1_evidence/previous_baseline"
+        # E.1 changed only ACL; all other historical SQL is a stable reference.
+        for path in BASELINE.glob("*.sql"):
+            if path.name == "10_privileges.sql":
+                continue
+            expected = (historical / path.name).read_text()
+            if path.name == "06_constraints.sql":
+                expected = expected.replace(
+                    "v2_evaluations_check_6a2239d39784 CHECK (source_kind <> 'e10' OR evaluation_role = 'training_validation_final')",
+                    "v2_evaluations_check_28938a6edbaa CHECK (source_kind <> 'e10' OR evaluation_role IN ('training_validation_final', 'calibration_default', 'calibration_selected'))",
+                )
+            self.assertEqual(path.read_text(), expected, path.name)
+
     def test_d03_identity_and_exact_default_scope(self):
         root = Path(__file__).resolve().parents[2]
         previous = json.loads(

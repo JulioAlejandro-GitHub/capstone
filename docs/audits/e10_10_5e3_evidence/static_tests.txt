@@ -1,0 +1,4 @@
+Command: PYTHONPATH=/private/tmp/e10_10_5d_parser312:. malaria_dl_local_project/.venv/bin/python -m pytest -q tests/db_v2
+Exit code: 0
+30 passed in 2.35s
+Scope: static tests only; not baseline certification.
