@@ -1,0 +1,66 @@
+{
+  "epoch": "accepted",
+  "duplicate": "duplicate_accepted",
+  "fencing": true,
+  "missing_provenance_rejected": true,
+  "missing_provenance_ledger_rollback": true,
+  "typed_sql_failure_rejected": true,
+  "typed_sql_failure_rollback": {
+    "ledger": 1,
+    "evaluations": 0,
+    "metrics": 0
+  },
+  "evaluation": "accepted",
+  "evaluation_duplicate": "duplicate_accepted",
+  "service_never_updates_legacy_results": true,
+  "ledger_canonical_event_and_typed_atomic": true,
+  "historical_event_bytes_preserved": true,
+  "ids": {
+    "dataset": "9e212d75-e170-456a-a40a-e7b4e4d09e63",
+    "version": "3f15a892-baa3-4aed-88be-b7b72f35deac",
+    "external_version": "1e65e5dd-3f7d-42c4-94d6-c8abffe4aa84",
+    "model": "76f0c64e-b634-4f89-9357-3cd66506e288",
+    "train": "2443dad1-098e-43ac-ba59-92e945a7c7d4",
+    "train2": "4fc7c151-75c3-4048-a7b3-cafd9b98496c",
+    "evaluation_run": "43e6ce9e-3632-47da-a486-67063e827ef8",
+    "artifact": "8f372ee7-2522-4f5b-af49-6094c5084442",
+    "artifact2": "6376d6af-ee2c-4d8a-ab58-103cb57ab0ee",
+    "model_version": "c126b97f-96b3-44c8-86fd-e5a1bf62140f",
+    "owner": "9c8493ca-3c93-4e2f-bfd7-63cd409008b0"
+  },
+  "sql_errors": [
+    {
+      "sqlstate": "22012",
+      "message": "division by zero"
+    }
+  ],
+  "fresh_service_replay_after_discarded_ack": true,
+  "gap": true,
+  "sequence_conflict": true,
+  "event_id_conflict": true,
+  "check_rejections": [
+    {
+      "sqlstate": "23514",
+      "constraint": "ck_v2_no_result_json"
+    },
+    {
+      "sqlstate": "23514",
+      "constraint": "ck_v2_no_result_json"
+    }
+  ],
+  "calibration_architectural_block": [
+    {
+      "role": "calibration_default",
+      "source_kind": "e10",
+      "sqlstate": "23514",
+      "constraint": "v2_evaluations_check_6a2239d39784"
+    },
+    {
+      "role": "calibration_selected",
+      "source_kind": "e10",
+      "sqlstate": "23514",
+      "constraint": "v2_evaluations_check_6a2239d39784"
+    }
+  ],
+  "scope": "Consumer/service integration only. Synthetic provenance injected explicitly; no TRAIN or producer certification."
+}

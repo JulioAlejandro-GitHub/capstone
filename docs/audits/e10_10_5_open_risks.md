@@ -1,12 +1,10 @@
-# E10.10.5E — riesgos actuales
+# E10.10.5E.2 — riesgos actuales
 
-**E-01 resuelta. E-02 bloqueante. Gate E continúa bloqueado y no solicitado.**
+**E-02 aprobada, escritor corregido. E-03 bloqueante. Gate E bloqueado y no solicitado.**
 
-- **E-02:** la restricción certificada `ck_v2_no_result_json` contradice escribir `runs.parameters.training_results` junto a ledger y métricas. Reproducido con runtime real, SQLSTATE 23514, rollback completo. Requiere decisión antes de continuar E; no está autorizado cambiar esa restricción por E-01.
-- Procedencia de checkpoint/protocolo/población aún sin productor y sellado integral. El contexto del probe es exclusivamente sintético y no acredita TRAIN.
-- Pendientes TRAIN local/Docker, VALIDATION/calibración, recuperación/reinicio/ACK, concurrencia, publicación/linaje, API/React y productores de historial/ensembles/XAI.
-- Lectores anteriores de resumen/detalle todavía necesitan adaptación v2 para evitar fallback científico y preservar métricas indefinidas como NULL.
-- La nueva referencia de baseline es E.1. D.4 y su Route B son evidencia histórica; no se declara una adopción Route B nueva ni se autoriza cutover.
-- Certificado ACL y pruebas offline no acreditan integración E ni validación clínica. Sin acceso operativo, campañas reales, dataset modificado ni hashes E10 históricos alterados.
-
-[Decisión concreta E-02 y evidencia](e10_10_5e1_acl_resolution.md).
+- E-03: PostgreSQL prohíbe los roles calibration_default/calibration_selected cuando source_kind=e10, aunque la calibración exige esos roles. [Decisión específica y evidencia](e10_10_5e2_resolution.md#decisión-específica-solicitada).
+- Procedencia TRAIN/EVALUATE sin productor conectado ni sellado integral. El contexto del probe es exclusivamente sintético.
+- Finalización todavía lee training_results; el resumen legacy requiere separación v2. NULL y ausencia de fallback científico pendientes en el recorrido completo API/React.
+- Pendientes los recorridos integrales de TRAIN local/Docker, VALIDATION/calibración, recuperación/reinicio/ACK real, concurrencia, publicación/linaje, historial, ensembles y XAI. [Matriz completa](e10_10_5e_integration_results.md).
+- Compatibilidad legacy verificada sólo a nivel servicio/routing en E.2; regresión integral pendiente.
+- E.1 sigue siendo la baseline certificada. No se autoriza cutover, campaña real, uso clínico ni acceso operativo. Dataset congelado y contratos D-01 a D-06/E-01 preservados.

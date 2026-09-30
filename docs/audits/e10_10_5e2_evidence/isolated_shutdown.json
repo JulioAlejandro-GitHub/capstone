@@ -1,0 +1,8 @@
+{
+  "container_id": "fe5413d84293f465701599ae0f694973f28af2671b56b206a728a844f510e935",
+  "docker_stop_exit_code": 0,
+  "volume_preserved": true,
+  "gate_e": "blocked",
+  "integration": "incomplete",
+  "blocking_decision": "E-03"
+}

@@ -1,0 +1,33 @@
+{
+  "identity": {
+    "database": "capstone_v2_isolated_61b1c3401133",
+    "role": "capstone_v2_migrator",
+    "session_role": "capstone_v2_migrator",
+    "database_oid": 16386,
+    "database_owner": "capstone_v2_migrator",
+    "server_version_num": 170009,
+    "system_identifier": "7691108219624775726",
+    "recovery": false,
+    "read_only": "off"
+  },
+  "roles": [
+    {
+      "rolname": "capstone_v2_migrator",
+      "rolsuper": false,
+      "rolcreatedb": false,
+      "rolcreaterole": false,
+      "rolreplication": false,
+      "rolbypassrls": false,
+      "has_membership": false
+    },
+    {
+      "rolname": "capstone_v2_runtime",
+      "rolsuper": false,
+      "rolcreatedb": false,
+      "rolcreaterole": false,
+      "rolreplication": false,
+      "rolbypassrls": false,
+      "has_membership": false
+    }
+  ]
+}

@@ -69,9 +69,11 @@ class _PostgresScope(EventAcceptanceScope):
         # Same connection/root transaction as append; the authorized session row
         # remains exclusively locked. Guard namespace as well as run identity.
         result = TrainingResultsV1.from_dict(result.to_dict())
-        if self.revision == 'pg_v2_baseline':
+        from ..execution.schema import V2_REVISION
+        if self.revision == V2_REVISION:
             from .v2_projection import project_evaluation
             project_evaluation(self._connection, self._event, result)
+            return
         updated = _query(self._connection, """UPDATE runs
             SET parameters = parameters || jsonb_build_object('training_results', CAST(:result AS jsonb))
             WHERE id=:run AND jsonb_typeof(parameters)='object'
