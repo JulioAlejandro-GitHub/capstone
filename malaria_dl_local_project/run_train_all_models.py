@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Execute persisted campaigns. Historical pure planning helpers remain import-compatible."""
+"""Execute persisted campaigns. Historical pure planning helpers remain import-compatible.
+
+    python run_train_all_models.py --campaign-id <UUID>          execute (dataset from the campaign)
+    python run_train_all_models.py --campaign-id <UUID> --plan   read-only execution plan, no TRAIN
+"""
 
 import argparse
 import json

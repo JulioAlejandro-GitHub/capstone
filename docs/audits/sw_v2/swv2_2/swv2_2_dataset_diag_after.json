@@ -1,0 +1,1 @@
+{"role": "capstone_v2_runtime", "relative_root": "malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2", "expected_files": 27558, "actual_files": 27558, "extra": [], "missing": [], "hash_mismatches": 0, "hashed": 27558, "split_counts": {"train": 22180, "test": 2685, "val": 2693}}

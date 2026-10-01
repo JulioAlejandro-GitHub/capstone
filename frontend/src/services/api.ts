@@ -65,6 +65,12 @@ import type {
   HumanCellClassificationHistoryPage,
 } from '../types/cellClassification';
 import type {
+  CampaignCatalog,
+  CampaignConfiguration,
+  CampaignPreview,
+  SavedCampaign,
+} from '../types/campaign';
+import type {
   ScientificValidationAnnotation,
   ScientificValidationAnnotationEvent,
   ScientificValidationPage,
@@ -1354,6 +1360,32 @@ export const api = {
 
   getDatasetVersionDetail(datasource: string, datasetVersionId: string) {
     return request<DatasetVersionDetail>(`/api/datasets/${datasetVersionId}`, withDatasource(datasource));
+  },
+
+  // SWV2.2 Campaña: configure/validate/save only. There is intentionally no execution call.
+  getCampaignCatalog() {
+    return request<CampaignCatalog>('/api/campaigns/catalog', {}, { timeoutMs: 30000 });
+  },
+
+  previewCampaign(configuration: CampaignConfiguration, datasetVersionId: string | null, signal?: AbortSignal) {
+    return request<CampaignPreview>('/api/campaigns/preview', {
+      configuration: JSON.stringify(configuration),
+      dataset_version_id: datasetVersionId ?? undefined,
+    }, { signal, timeoutMs: 30000 });
+  },
+
+  createCampaign(payload: {
+    campaign_id: string; name: string; purpose: string; dataset_version_id: string;
+    configuration: CampaignConfiguration;
+  }) {
+    return request<SavedCampaign>('/api/campaigns', {}, {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
+      timeoutMs: 120000,
+    });
+  },
+
+  getCampaign(campaignId: string) {
+    return request<SavedCampaign>(`/api/campaigns/${encodeURIComponent(campaignId)}`, {}, { timeoutMs: 30000 });
   },
 
   getDatasetImages(datasource: string, params: Record<string, QueryValue> = {}) {

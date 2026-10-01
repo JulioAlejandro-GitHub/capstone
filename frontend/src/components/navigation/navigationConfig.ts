@@ -33,6 +33,7 @@ const modelAiGroups: NavigationGroup[] = [
   {
     id: 'experimentation', label: 'Experimentación', items: [
       { id: 'runs', label: 'Ejecuciones', path: routes.runs, icon: 'activity' },
+      { id: 'campaign', label: 'Campaña', path: routes.campaign, icon: 'compare' },
     ]
   },
   {

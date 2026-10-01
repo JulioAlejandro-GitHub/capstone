@@ -29,6 +29,7 @@ class Permission(StrEnum):
     MODELS_DEACTIVATE = "models.deactivate"
     MODELS_SET_DEFAULT = "models.set_default"
     RUNS_READ = "runs.read"
+    CAMPAIGNS_CONFIGURE = "campaigns.configure"
     PREDICTIONS_READ = "predictions.read"
     PREDICTIONS_EXECUTE = "predictions.execute"
     DATASETS_READ = "datasets.read"
@@ -107,7 +108,7 @@ SCIENTIFIC_WRITE = {
 ROLE_PERMISSIONS = {
     "administrator": set(Permission),
     "researcher": READ | SCIENTIFIC_READ | SCIENTIFIC_WRITE | {
-        Permission.PREDICTIONS_EXECUTE, Permission.AUDIT_READ,
+        Permission.PREDICTIONS_EXECUTE, Permission.AUDIT_READ, Permission.CAMPAIGNS_CONFIGURE,
         Permission.SCIENTIFIC_ANALYSIS_QUALITY_REVIEW,
         Permission.SCIENTIFIC_CELL_DETECTION_REVIEW,
         Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN,

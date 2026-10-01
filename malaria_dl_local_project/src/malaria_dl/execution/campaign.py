@@ -284,9 +284,16 @@ def parse_args(argv=None):
     p.add_argument(
         "--dataset-version-id",
         type=identifier,
-        help="Assertion only; must match campaign",
+        help="Optional assertion only; the campaign's persisted dataset_version_id is the "
+        "single source of truth and a different value is rejected",
     )
     mode = p.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--plan",
+        action="store_true",
+        help="Resolve the frozen campaign into its execution plan and report readiness; "
+        "read-only, never reserves an attempt nor starts TRAIN",
+    )
     mode.add_argument("--inspect", action="store_true")
     mode.add_argument("--resume", action="store_true")
     mode.add_argument("--result", action="store_true")
@@ -302,12 +309,21 @@ def main(argv=None):
 
     args = parse_args(argv)
     repo = ExecutionRepository()
+    if args.plan:
+        from ..campaigns.plan import execution_readiness, resolve_plan
+        row = repo.get(args.campaign_id, args.dataset_version_id)
+        plan = resolve_plan(row)
+        plan["execution_readiness"] = execution_readiness(repo, row)
+        print(json.dumps(plan, sort_keys=True, default=str))
+        return 0
     if args.inspect or args.result:
         repo.get(args.campaign_id, args.dataset_version_id)
         print(json.dumps(repo.summary(args.campaign_id), sort_keys=True))
         return 0
     if args.dataset_version_id is None:
-        raise CampaignError('EXPLICIT_DATASET_REQUIRED')
+        # Campaign mode: the dataset comes only from the persisted campaign. An explicit
+        # --dataset-version-id stays an assertion checked by repository.get.
+        args.dataset_version_id = str(repo.get(args.campaign_id)["dataset_version_id"])
     if args.dry_run:
         from .controlled import queue_dry_run
         proposal = json.loads(args.revision_proposal.read_text()) if args.revision_proposal else None

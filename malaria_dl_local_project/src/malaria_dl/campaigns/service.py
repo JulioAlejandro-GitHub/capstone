@@ -11,7 +11,7 @@ from pathlib import Path
 from ..data.governed_dataset import assert_run_dataset_snapshot_unchanged
 from ..persistence.dataset_evidence import verify_dataset_for_execution
 from .contracts import CampaignError, expand_matrix
-from .repository import CampaignRepository, identifier
+from .repository import CampaignRepository, identifier, same_configuration
 
 
 def planning_environment():
@@ -55,6 +55,22 @@ def planning_environment():
     }
 
 
+def frozen_contract(*, name, purpose, experiment_id, dataset, evidence_id, requested, protocol,
+                    environment, matrix):
+    return {
+        "version": "campaign_contract_v1",
+        "name": name,
+        "purpose": purpose,
+        "experiment_id": str(experiment_id) if experiment_id else None,
+        "dataset": dataset,
+        "dataset_evidence_id": str(evidence_id),
+        "requested": requested,
+        "protocol": protocol,
+        "environment": environment,
+        "matrix": matrix,
+    }
+
+
 class CampaignService:
     def __init__(
         self,
@@ -95,6 +111,41 @@ class CampaignService:
             experiment_id=experiment_id,
         )
 
+    def configure(self, *, campaign_id, name, purpose, dataset_version_id, request, protocol, actor):
+        """SWV2.2: create an already frozen campaign in one transaction; never starts TRAIN.
+
+        Same checks as create + freeze (protocol and matrix before any write, dataset evidence,
+        planning environment), without a persisted intermediate draft. A retried campaign_id
+        with identical decisions returns the stored campaign without new evidence.
+        """
+        campaign_id = identifier(campaign_id)
+        dataset_version_id = identifier(dataset_version_id)
+        # Every input check precedes the dataset verifier: it persists append-only evidence.
+        if any(not isinstance(x, str) or not x.strip() for x in (name, purpose, actor)):
+            raise CampaignError("CAMPAIGN_NAME_PURPOSE_ACTOR_REQUIRED")
+        expand_matrix(request, protocol)
+        try:
+            stored = self.repository.get(campaign_id)
+        except CampaignError as exc:
+            if str(exc) != "CAMPAIGN_NOT_FOUND":
+                raise
+            stored = None
+        if stored is not None:
+            candidate = {"name": name, "purpose": purpose, "requested": request, "protocol": protocol,
+                         "dataset": {"dataset_version_id": dataset_version_id}}
+            if stored["state"] == "draft" or not same_configuration(stored["contract"], candidate):
+                raise CampaignError("CAMPAIGN_ID_CONFLICT")
+            return stored
+        snapshot = self.verifier(dataset_version_id, consumer="campaigns.configure")
+        dataset = snapshot.metadata()
+        matrix = expand_matrix(request, protocol, frozen=True, dataset=dataset)
+        contract = frozen_contract(
+            name=name, purpose=purpose, experiment_id=None, dataset=dataset,
+            evidence_id=snapshot.evidence_id, requested=request, protocol=protocol,
+            environment=self.environment(), matrix=matrix,
+        )
+        return self.repository.create_frozen(campaign_id, contract, actor)
+
     def edit(self, campaign_id, request, protocol):
         self.inspect(request, protocol)
         return self.repository.edit(campaign_id, request, protocol)
@@ -129,20 +180,17 @@ class CampaignService:
         )
         assert_run_dataset_snapshot_unchanged(snapshot, row["dataset_snapshot"])
         # Keep original immutable evidence reference; recheck event remains append-only evidence.
-        contract = {
-            "version": "campaign_contract_v1",
-            "name": row["name"],
-            "purpose": row["purpose"],
-            "experiment_id": str(row["experiment_id"])
-            if row["experiment_id"]
-            else None,
-            "dataset": row["dataset_snapshot"],
-            "dataset_evidence_id": str(row["dataset_evidence_id"]),
-            "requested": row["requested"],
-            "protocol": row["protocol"],
-            "environment": row["environment"],
-            "matrix": matrix,
-        }
+        contract = frozen_contract(
+            name=row["name"],
+            purpose=row["purpose"],
+            experiment_id=row["experiment_id"],
+            dataset=row["dataset_snapshot"],
+            evidence_id=row["dataset_evidence_id"],
+            requested=row["requested"],
+            protocol=row["protocol"],
+            environment=row["environment"],
+            matrix=matrix,
+        )
         expected = {
             k: row[k]
             for k in (

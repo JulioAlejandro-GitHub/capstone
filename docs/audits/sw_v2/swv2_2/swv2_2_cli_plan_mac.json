@@ -1,0 +1,11 @@
+{
+  "host": "macOS, malaria_dl_local_project/.venv-local-train (Python 3.12.13)",
+  "command": "python run_train_all_models.py --campaign-id cfcd2c08-243e-4b52-b0c5-08c6f1bb287c --plan",
+  "database_role_supplied": "capstone_v2_runtime via DATABASE_URL environment variable (local .env not modified)",
+  "exit_code": 1,
+  "error": "CampaignError: CAMPAIGN_DATABASE_OPERATION_FAILED",
+  "root_cause": "src/malaria_dl/persistence/database.py: 'DATABASE_URL solo permite el hostname db' (pre-existing fail-closed rule; the ML library only connects inside the Compose network)",
+  "argument_parsing": "--campaign-id and --plan accepted; failure occurs at the first database access, before any read or write",
+  "writes": 0,
+  "classification": "pre-existing execution-environment constraint; out of SWV2.2 scope (Mac/Docker execution not redesigned) -> SWV2.3"
+}

@@ -1,0 +1,3 @@
+FAILED backend_api/tests/test_mutation_security_policy.py::test_every_legacy_mutation_has_central_audited_policy
+FAILED backend_api/tests/test_scientific_storage_docker_contract.py::test_compose_declares_one_private_read_write_scientific_volume_for_backend
+2 failed, 547 passed, 44 deselected, 12 warnings in 7.72s

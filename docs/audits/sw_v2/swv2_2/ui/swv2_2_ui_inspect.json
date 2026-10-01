@@ -1,0 +1,90 @@
+{
+  "mode": "inspect",
+  "menu": [
+    "Analizar imagen",
+    "Historial de análisis",
+    "Resumen",
+    "Ejecuciones",
+    "Campaña",
+    "Dataset",
+    "Datasets y modelos",
+    "Modelo IA",
+    "Campaña"
+  ],
+  "sections": [
+    "1. Datos generales",
+    "2. Dataset Version",
+    "3. Modelos",
+    "4. Configuración de modelos",
+    "5. Resumen de campaña",
+    "6. Validación"
+  ],
+  "dataset_selected": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "dataset_info": [
+    "UUID: d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "Estado: FROZEN · disponible para entrenamiento",
+    "TRAIN: 22.180",
+    "VALIDATION: 2.693",
+    "TEST: 2.685",
+    "Total: 27.558",
+    "Pacientes: 201",
+    "Versión: Malaria Patient Split v1 v1.0.0"
+  ],
+  "initial_total": "36",
+  "models": [
+    "Custom CNN",
+    "VGG16",
+    "DenseNet121"
+  ],
+  "optimizers": [
+    "Adam",
+    "AdamW",
+    "SGD",
+    "Adadelta"
+  ],
+  "buttons": [
+    "×",
+    "Análisis de frotis",
+    "AI\nModelo IA",
+    "Contraer navegación",
+    "Agregar variante de configuración",
+    "Guardar campaña"
+  ],
+  "invalid": {
+    "validation": [
+      "✗ Datos generales",
+      "✓ Dataset válido",
+      "✓ Modelos seleccionados",
+      "✓ Configuraciones válidas",
+      "✗ Parámetros válidos Valor fuera del dominio permitido.",
+      "✗ Total de Experimentos El total se calcula cuando la configuración es válida."
+    ],
+    "save_disabled": true,
+    "field_error": "Valor fuera del dominio permitido."
+  },
+  "configured": {
+    "total": "6",
+    "validation": [
+      "✓ Datos generales",
+      "✓ Dataset válido",
+      "✓ Modelos seleccionados",
+      "✓ Configuraciones válidas",
+      "✓ Parámetros válidos",
+      "✓ Total de Experimentos"
+    ],
+    "summary": [
+      "Dataset Version: d8c0cab5…",
+      "Modelos seleccionados: 3",
+      "Optimizadores: 1",
+      "Semillas: 2",
+      "Variantes: 1",
+      "Configuraciones: 3",
+      "Total de Experimentos: 6"
+    ],
+    "per_model": [
+      "Custom CNN: 2",
+      "DenseNet121: 2",
+      "VGG16: 2"
+    ]
+  }
+}

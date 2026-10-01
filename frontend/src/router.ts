@@ -9,6 +9,7 @@ export const routes = {
   runs: '/modelo-ia/ejecuciones',
   runDetail: (id: string) => `/modelo-ia/ejecuciones/${encoded(id)}`,
   runReleaseDetail: (id: string) => `/modelo-ia/ejecuciones/${encoded(id)}/liberacion`,
+  campaign: '/modelo-ia/campana',
   evaluations: '/modelo-ia/evaluaciones',
   comparison: '/modelo-ia/comparacion',
   modelVersions: '/modelo-ia/modelos-liberados',

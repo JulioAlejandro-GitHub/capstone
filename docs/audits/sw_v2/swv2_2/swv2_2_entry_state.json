@@ -1,0 +1,33 @@
+{
+  "audit_events": [
+    {
+      "action": "login",
+      "created_at": "2026-09-30 21:17:40.916421+00",
+      "event_type": "USER_LOGIN_SUCCEEDED",
+      "id": "9aa233c1-6f8b-4c7a-8a1b-13a0db3340c7",
+      "request_method": "POST",
+      "request_path": "/api/v1/auth/login",
+      "resource_id": null,
+      "resource_type": "login",
+      "success": true
+    },
+    {
+      "action": "login",
+      "created_at": "2026-09-30 23:24:49.151453+00",
+      "event_type": "USER_LOGIN_SUCCEEDED",
+      "id": "95e92915-c168-451e-ba93-c718440ee6b3",
+      "request_method": "POST",
+      "request_path": "/api/v1/auth/login",
+      "resource_id": null,
+      "resource_type": "login",
+      "success": true
+    }
+  ],
+  "counts": {
+    "alembic_version": 1,
+    "audit_events": 2,
+    "experiment_execution_gate": 1
+  },
+  "note": "Application logins after SWV2.1 (normal login behaviour: users.last_login_at + USER_LOGIN_SUCCEEDED). Not produced by SWV2.2.",
+  "users_last_login_at": "2026-09-30 23:24:49.147591+00"
+}

@@ -33,6 +33,15 @@ def execute(c, sql, **params):
     return c.execute(text(sql), params)
 
 
+def same_configuration(stored, candidate):
+    """Idempotent replay: same operator decisions; evidence/environment ids may differ per request."""
+    keys = ("name", "purpose", "requested", "protocol")
+    return (
+        all(json.loads(canonical(stored[k])) == json.loads(canonical(candidate[k])) for k in keys)
+        and stored["dataset"]["dataset_version_id"] == candidate["dataset"]["dataset_version_id"]
+    )
+
+
 class CampaignRepository:
     def __init__(self, scope=connection_scope):
         self.scope = scope
@@ -217,46 +226,94 @@ class CampaignRepository:
             actual = {k: row[k] for k in expected_draft}
             if actual != expected_draft:
                 raise CampaignError("DRAFT_CHANGED_DURING_VALIDATION")
-            for h, item in contract["matrix"]["configurations"].items():
-                execute(
-                    c,
-                    """INSERT INTO campaign_configurations(campaign_id,configuration_hash,configuration,canonical_configuration,requests)
-                  VALUES(CAST(:id AS uuid),:hash,CAST(:config AS jsonb),:canonical,CAST(:requests AS jsonb))""",
-                    id=str(row["id"]),
-                    hash=h,
-                    config=canonical(item["configuration"]),
-                    canonical=canonical(item["configuration"]),
-                    requests=canonical(item["requests"]),
-                )
-            for m in contract["matrix"]["members"]:
-                execute(
-                    c,
-                    """INSERT INTO campaign_members(id,campaign_id,configuration_hash,seed,position,state,exclusion_reason)
-                  VALUES(CAST(:member AS uuid),CAST(:campaign AS uuid),:hash,:seed,:position,:state,:reason)""",
-                    member=str(uuid4()),
-                    campaign=str(row["id"]),
-                    hash=m["configuration_hash"],
-                    seed=m["seed"],
-                    position=m["position"],
-                    state="excluded" if m["exclusion_reason"] else "pending",
-                    reason=m["exclusion_reason"],
-                )
-            execute(
-                c,
-                """UPDATE experimental_campaigns SET state='frozen',registry_snapshot=CAST(:registry AS jsonb),
-              contract=CAST(:contract AS jsonb),canonical_contract=:canonical,contract_hash=:hash,
-              expected_count=:count,frozen_at=now() WHERE id=CAST(:id AS uuid)""",
-                id=str(row["id"]),
-                registry=canonical(contract["matrix"]["registry"]),
-                contract=canonical(contract),
-                canonical=canonical(contract),
-                hash=digest(contract),
-                count=contract["matrix"]["expected_count"],
-            )
+            self._materialize(c, row["id"], contract)
         result = self.get(campaign_id)
         if result["contract"] != json.loads(canonical(contract)):
             raise CampaignError("CAMPAIGN_FREEZE_READBACK_FAILED")
         return result
+
+    def create_frozen(self, campaign_id, contract, actor):
+        """Draft row, configurations, members and freeze in ONE transaction (all or nothing).
+
+        ``campaign_id`` is caller-chosen so a retried request is idempotent: an identical stored
+        contract is returned unchanged, any other content under that id is a conflict.
+        """
+        validate_frozen_contract(contract)
+        campaign_id = identifier(campaign_id)
+        if any(not isinstance(x, str) or not x.strip()
+               for x in (contract["name"], contract["purpose"], actor)):
+            raise CampaignError("CAMPAIGN_NAME_PURPOSE_ACTOR_REQUIRED")
+        with self.transaction() as c:
+            existing = execute(
+                c, "SELECT contract FROM experimental_campaigns WHERE id=CAST(:id AS uuid) FOR UPDATE",
+                id=campaign_id,
+            ).one_or_none()
+            if existing is None:
+                execute(
+                    c,
+                    """INSERT INTO experimental_campaigns
+                  (id,experiment_id,name,purpose,dataset_version_id,dataset_snapshot,dataset_evidence_id,requested,protocol,environment,actor)
+                  VALUES(CAST(:id AS uuid),CAST(:experiment AS uuid),:name,:purpose,CAST(:dataset AS uuid),CAST(:snapshot AS jsonb),
+                  CAST(:evidence AS uuid),CAST(:requested AS jsonb),CAST(:protocol AS jsonb),CAST(:environment AS jsonb),:actor)""",
+                    id=campaign_id,
+                    experiment=identifier(contract["experiment_id"]) if contract["experiment_id"] else None,
+                    name=contract["name"],
+                    purpose=contract["purpose"],
+                    dataset=identifier(contract["dataset"]["dataset_version_id"]),
+                    snapshot=canonical(contract["dataset"]),
+                    evidence=identifier(contract["dataset_evidence_id"]),
+                    requested=canonical(contract["requested"]),
+                    protocol=canonical(contract["protocol"]),
+                    environment=canonical(contract["environment"]),
+                    actor=actor,
+                )
+                self._materialize(c, campaign_id, contract)
+        result = self.get(campaign_id)
+        if existing is not None and not same_configuration(result["contract"], contract):
+            raise CampaignError("CAMPAIGN_ID_CONFLICT")
+        if existing is None and result["contract"] != json.loads(canonical(contract)):
+            raise CampaignError("CAMPAIGN_CREATE_READBACK_FAILED")
+        return result
+
+    @staticmethod
+    def _materialize(c, campaign_id, contract):
+        """Configurations + members + draft->frozen; campaign_guard rechecks the whole matrix."""
+        for h, item in contract["matrix"]["configurations"].items():
+            execute(
+                c,
+                """INSERT INTO campaign_configurations(campaign_id,configuration_hash,configuration,canonical_configuration,requests)
+              VALUES(CAST(:id AS uuid),:hash,CAST(:config AS jsonb),:canonical,CAST(:requests AS jsonb))""",
+                id=str(campaign_id),
+                hash=h,
+                config=canonical(item["configuration"]),
+                canonical=canonical(item["configuration"]),
+                requests=canonical(item["requests"]),
+            )
+        for m in contract["matrix"]["members"]:
+            execute(
+                c,
+                """INSERT INTO campaign_members(id,campaign_id,configuration_hash,seed,position,state,exclusion_reason)
+              VALUES(CAST(:member AS uuid),CAST(:campaign AS uuid),:hash,:seed,:position,:state,:reason)""",
+                member=str(uuid4()),
+                campaign=str(campaign_id),
+                hash=m["configuration_hash"],
+                seed=m["seed"],
+                position=m["position"],
+                state="excluded" if m["exclusion_reason"] else "pending",
+                reason=m["exclusion_reason"],
+            )
+        execute(
+            c,
+            """UPDATE experimental_campaigns SET state='frozen',registry_snapshot=CAST(:registry AS jsonb),
+          contract=CAST(:contract AS jsonb),canonical_contract=:canonical,contract_hash=:hash,
+          expected_count=:count,frozen_at=now() WHERE id=CAST(:id AS uuid)""",
+            id=str(campaign_id),
+            registry=canonical(contract["matrix"]["registry"]),
+            contract=canonical(contract),
+            canonical=canonical(contract),
+            hash=digest(contract),
+            count=contract["matrix"]["expected_count"],
+        )
 
     def transition(self, campaign_id, state):
         transitions = {

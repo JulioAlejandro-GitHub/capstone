@@ -1,0 +1,8 @@
+        # passed the last option string
+FAILED tests/test_model_registry_e2.py::test_matrix_invalid_combination_rejected_before_preflight
+FAILED tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[vgg16_imagenet]
+FAILED tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[rescale_0_1]
+FAILED tests/test_campaign_exit_diagnostics.py::test_child_exit_preserved_without_accepting_partial_results[-9-CHILD_EXIT_-9]
+FAILED tests/test_campaign_exit_diagnostics.py::test_child_exit_preserved_without_accepting_partial_results[2-CHILD_EXIT_2]
+FAILED tests/test_campaign_exit_diagnostics.py::test_child_exit_preserved_without_accepting_partial_results[0-CHILD_EXIT_0_INCOMPLETE_RESULTS]
+6 failed, 222 passed, 2 warnings in 38.50s

@@ -1,0 +1,29 @@
+{
+  "require_e10_schema": {
+    "event_columns": true,
+    "event_metadata_constraint": true,
+    "event_trigger_guard": true,
+    "event_unique_indexes": true,
+    "result": "PASS",
+    "revision": "pg_v2_baseline"
+  },
+  "session": {
+    "alembic_write": false,
+    "current_user": "capstone_v2_runtime",
+    "database": "malaria_experiments",
+    "database_create": false,
+    "julio_member": false,
+    "migrator_member": false,
+    "public_create": false,
+    "rolbypassrls": false,
+    "rolcanlogin": true,
+    "rolcreatedb": false,
+    "rolcreaterole": false,
+    "rolinherit": true,
+    "rolreplication": false,
+    "rolsuper": false,
+    "schema": "public",
+    "session_user": "capstone_v2_runtime"
+  },
+  "target": "db:5432/malaria_experiments"
+}
