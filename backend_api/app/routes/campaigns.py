@@ -49,6 +49,7 @@ def campaigns(
     """Report of created campaigns (newest first). Edit opens the configuration page by id."""
     return list_campaigns(limit, offset)
 
+
 @router.post("", status_code=201)
 def create(
     payload: CampaignCreate,
