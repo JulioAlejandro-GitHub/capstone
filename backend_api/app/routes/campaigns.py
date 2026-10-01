@@ -16,6 +16,7 @@ from app.services.campaign_configuration import (
     campaign_catalog,
     campaign_detail,
     create_campaign,
+    list_campaigns,
     preview,
 )
 
@@ -39,6 +40,14 @@ def campaign_preview(
         raise HTTPException(422, detail=dict(code="CAMPAIGN_CONFIGURATION_MALFORMED")) from None
     return preview(document.model_dump(), dataset_version_id)
 
+
+@router.get("", dependencies=[Depends(require_permission(Permission.RUNS_READ))])
+def campaigns(
+    limit: int = Query(default=50, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+):
+    """Report of created campaigns (newest first). Edit opens the configuration page by id."""
+    return list_campaigns(limit, offset)
 
 @router.post("", status_code=201)
 def create(

@@ -103,11 +103,52 @@ def _shared_scope(connection):
     return scope
 
 
-def _saved(plan: dict) -> dict:
+def _saved(plan: dict, row: dict) -> dict:
+    from src.malaria_dl.campaigns.configuration import document_from_request
+
     keys = ("campaign_id", "name", "purpose", "state", "contract_hash", "frozen_at", "dataset_version_id",
             "dataset", "models", "optimizers", "seeds", "protocol", "configurations", "experiments",
             "total_experiments", "experiments_per_model", "command", "execution_boundary")
-    return {k: plan[k] for k in keys}
+    result = {k: plan[k] for k in keys}
+    # Operator document rebuilt from the stored request/protocol: the report's edit prefills
+    # the configuration page from the same document the operator saved.
+    result["configuration"] = document_from_request(row["requested"], row["protocol"])
+    return result
+
+
+def list_campaigns(limit: int, offset: int) -> dict:
+    """Report of created campaigns, newest first. Read-only; details via GET /{campaign_id}."""
+    from src.malaria_dl.campaigns.contracts import CampaignError
+    from src.malaria_dl.campaigns.plan import execution_command
+    from src.malaria_dl.campaigns.repository import CampaignRepository
+
+    try:
+        rows = CampaignRepository().list_campaigns(limit, offset)
+    except CampaignError as exc:
+        raise HTTPException(409, detail=dict(code=str(exc))) from None
+    items = []
+    for row in rows:
+        requested = row.get("requested") or {}
+        items.append(dict(
+            campaign_id=str(row["id"]),
+            name=row["name"],
+            purpose=row["purpose"],
+            state=row["state"],
+            contract_hash=row.get("contract_hash"),
+            frozen_at=row["frozen_at"].isoformat() if row.get("frozen_at") is not None else None,
+            created_at=row["created_at"].isoformat() if row.get("created_at") is not None else None,
+            actor=row.get("actor"),
+            dataset_version_id=str(row["dataset_version_id"]),
+            dataset_name=row.get("dataset_name"),
+            dataset_semantic_version=row.get("dataset_semantic_version"),
+            models=sorted(requested.get("models") or []),
+            optimizers=sorted(requested.get("optimizers") or []),
+            seeds=list(requested.get("seeds") or []),
+            total_experiments=int(row.get("expected_count") or 0),
+            members_by_state={str(k): int(v) for k, v in (row.get("members_by_state") or {}).items()},
+            command=execution_command(str(row["id"])),
+        ))
+    return dict(items=items)
 
 
 def create_campaign(payload, principal: Principal, request: Request) -> dict:
@@ -148,7 +189,7 @@ def create_campaign(payload, principal: Principal, request: Request) -> dict:
                              dataset_version_id=plan["dataset_version_id"],
                              total_experiments=plan["total_experiments"], state=plan["state"]),
         )
-    return _saved(plan)
+    return _saved(plan, row)
 
 
 def campaign_detail(campaign_id: UUID) -> dict:
@@ -157,8 +198,10 @@ def campaign_detail(campaign_id: UUID) -> dict:
     from src.malaria_dl.campaigns.plan import resolve_plan
     from src.malaria_dl.campaigns.repository import CampaignRepository
 
+    row = None
     try:
-        return _saved(resolve_plan(CampaignRepository().get(campaign_id)))
+        row = CampaignRepository().get(campaign_id)
+        return _saved(resolve_plan(row), row)
     except CampaignError as exc:
         if str(exc) == "CAMPAIGN_NOT_FOUND":
             raise HTTPException(404, "Campaña no encontrada.") from None

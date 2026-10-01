@@ -153,6 +153,52 @@ class CampaignRepository:
                         raise CampaignError("STORED_CONFIGURATION_HASH_CONFLICT")
             return row
 
+    def list_campaigns(self, limit=50, offset=0):
+        """Operator report view: newest campaigns first, with member states. Read-only.
+
+        Dataset name/semantic version join dataset_versions; member states aggregate
+        campaign_members. The configuration document is not duplicated here — the detail route
+        rebuilds it from the stored requested/protocol (``document_from_request``).
+        """
+        try:
+            limit = int(limit)
+        except (TypeError, ValueError):
+            limit = 50
+        limit = max(1, min(limit, 500))
+        try:
+            offset = int(offset)
+        except (TypeError, ValueError):
+            offset = 0
+        offset = max(0, offset)
+        with self.transaction(readonly=True) as c:
+            rows = [
+                dict(x)
+                for x in
+                execute(
+                    c,
+                    """SELECT c.id, c.name, c.purpose, c.state, c.contract_hash, c.frozen_at, c.created_at,
+                  c.actor, c.dataset_version_id, c.expected_count, c.requested,
+                  v.name AS dataset_name, v.semantic_version AS dataset_semantic_version
+                  FROM experimental_campaigns c
+                  LEFT JOIN dataset_versions v ON v.id = c.dataset_version_id
+                  ORDER BY c.created_at DESC, c.id DESC
+                  LIMIT :limit OFFSET :offset""",
+                    limit=limit, offset=offset,
+                ).mappings()
+            ]
+            if rows:
+                grouped = {}
+                for state in execute(
+                    c,
+                    """SELECT campaign_id, state, count(*) AS total FROM campaign_members
+              WHERE campaign_id = ANY(CAST(:ids AS uuid[])) GROUP BY campaign_id, state""",
+                    ids=[str(r["id"]) for r in rows],
+                ).mappings():
+                    grouped.setdefault(str(state["campaign_id"]), {})[state["state"]] = int(state["total"])
+                for row in rows:
+                    row["members_by_state"] = grouped.get(str(row["id"]), {})
+        return rows
+
     def create(
         self,
         *,

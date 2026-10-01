@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { Loading } from '../components/Loading';
 import { ApiError, api } from '../services/api';
+import { isValidPublicId, routes } from '../router';
 import type { DatasetVersionSummary } from '../types/api';
 import type {
   CampaignCatalog,
@@ -16,7 +18,10 @@ import type {
 // SWV2.2: one page to configure, validate and save a campaign. Models, parameters, domains,
 // defaults and the Total de Experimentos come from the backend; this page never starts TRAIN.
 
-interface CampaignConfigurationProps { datasource: string }
+interface CampaignConfigurationProps {
+  datasource: string;
+  go?: (pathname: string, extra?: Record<string, string | null | undefined>) => void;
+}
 
 const number = new Intl.NumberFormat('es-CL');
 const PREVIEW_DELAY_MS = 350;
@@ -73,6 +78,14 @@ function editableDefaults(model: CampaignModel) {
 
 function formatCommand(command: string) {
   return command.replace(/ --/g, ' \\\n  --');
+}
+
+function formatTimestamp(value: string | null) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })
+    + ' ' + date.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
 }
 
 function parseSeeds(text: string): number[] | null {
@@ -159,8 +172,8 @@ function ModelConfiguration({ model, values, fieldErrors, prefix, onChange }: {
   </details>;
 }
 
-function SavedCampaignPanel({ saved, reloaded, onReset }: {
-  saved: SavedCampaign; reloaded: SavedCampaign | null; onReset: () => void;
+function SavedCampaignPanel({ saved, reloaded, onReset, onViewReport }: {
+  saved: SavedCampaign; reloaded: SavedCampaign | null; onReset: () => void; onViewReport?: () => void;
 }) {
   const [copied, setCopied] = useState('');
   const command = formatCommand(saved.command);
@@ -198,11 +211,14 @@ function SavedCampaignPanel({ saved, reloaded, onReset }: {
       <small role="status">{copied}</small>
     </div>
     <p className="api-note">Ejecuta este comando manualmente desde la consola para iniciar la campaña.</p>
-    <button type="button" className="campaign-secondary" onClick={onReset}>Configurar otra campaña</button>
+    <div className="campaign-actions">
+      <button type="button" className="campaign-secondary" onClick={onReset}>Configurar otra campaña</button>
+      {onViewReport ? <button type="button" className="campaign-secondary" onClick={onViewReport}>Ver reporte</button> : null}
+    </div>
   </section>;
 }
 
-export function CampaignConfiguration({ datasource }: CampaignConfigurationProps) {
+export function CampaignConfiguration({ datasource, go }: CampaignConfigurationProps) {
   const [catalog, setCatalog] = useState<CampaignCatalog | null>(null);
   const [datasets, setDatasets] = useState<DatasetVersionSummary[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -216,11 +232,17 @@ export function CampaignConfiguration({ datasource }: CampaignConfigurationProps
   const [previewKey, setPreviewKey] = useState('');
   const [previewing, setPreviewing] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
-  const [campaignId, setCampaignId] = useState(newCampaignId);
+  const [campaignId, setCampaignId] = useState<string>(newCampaignId);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState<SavedCampaign | null>(null);
   const [reloaded, setReloaded] = useState<SavedCampaign | null>(null);
+  const [loaded, setLoaded] = useState<SavedCampaign | null>(null);
+  const [derived, setDerived] = useState(false);
+
+  const [searchParams] = useSearchParams();
+  const editingId = searchParams.get('campaignId');
+  const isEditing = isValidPublicId(editingId);
 
   const applyPreset = useCallback((source: CampaignCatalog, id: string) => {
     const preset = source.presets.find((item) => item.id === id) ?? source.presets[0];
@@ -239,9 +261,27 @@ export function CampaignConfiguration({ datasource }: CampaignConfigurationProps
         // Preselect only when exactly one version is trainable; otherwise the operator chooses.
         const trainable = versions.items.filter((item) => item.status === 'FROZEN' && item.trainable);
         setDatasetVersionId((current) => current || (trainable.length === 1 ? trainable[0].dataset_version_id : ''));
+        if (isEditing && editingId) {
+          // Edit mode (?campaignId=…): prefill the form from the stored campaign and its
+          // operator document; the configuration page is the single editing surface.
+          api.getCampaign(editingId)
+            .then((existing) => {
+              setLoaded(existing);
+              setCampaignId(existing.campaign_id);
+              setName(existing.name);
+              setPurpose(existing.purpose);
+              setDatasetVersionId(existing.dataset_version_id);
+              if (existing.configuration) {
+                setPresetId('');
+                setConfiguration(clone(existing.configuration));
+                setSeedText(existing.configuration.seeds.join(', '));
+              }
+            })
+            .catch((error) => setLoadError(`campaña no disponible (${errorCode(error)})`));
+        }
       })
       .catch((error) => setLoadError(errorCode(error)));
-  }, [applyPreset, datasource]);
+  }, [applyPreset, datasource, isEditing, editingId]);
 
   useEffect(load, [load]);
 
@@ -251,7 +291,7 @@ export function CampaignConfiguration({ datasource }: CampaignConfigurationProps
   const requestKey = configuration && seeds ? JSON.stringify({ configuration: { ...configuration, seeds }, datasetVersionId }) : '';
 
   useEffect(() => {
-    if (!configuration || !seeds || saved) return undefined;
+    if (!configuration || !seeds || saved || (isEditing && !loaded)) return undefined;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       setPreviewing(true);
@@ -305,11 +345,14 @@ export function CampaignConfiguration({ datasource }: CampaignConfigurationProps
   const reset = () => {
     setSaved(null);
     setReloaded(null);
+    setLoadError(null);
     setSaveError(null);
+    setDerived(false);
     setName('');
     setPurpose('');
     setCampaignId(newCampaignId());
     if (catalog) applyPreset(catalog, catalog.default_preset);
+    if (isEditing && go) go(routes.campaign); // drop ?campaignId so the URL matches a fresh configuration
   };
 
   const currentPreview = previewKey === requestKey ? preview : null;
@@ -320,11 +363,29 @@ export function CampaignConfiguration({ datasource }: CampaignConfigurationProps
     if (!configuration || !seeds || !canSave) return;
     setSaving(true);
     setSaveError(null);
+    setDerived(false);
+    const submit = (campaignId: string) => api.createCampaign({
+      campaign_id: campaignId, name: name.trim(), purpose: purpose.trim(), dataset_version_id: datasetVersionId,
+      configuration: { ...configuration, seeds },
+    });
     try {
-      const result = await api.createCampaign({
-        campaign_id: campaignId, name: name.trim(), purpose: purpose.trim(), dataset_version_id: datasetVersionId,
-        configuration: { ...configuration, seeds },
-      });
+      let result;
+      try {
+        result = await submit(campaignId);
+      } catch (error) {
+        // FROZEN campaigns are immutable (campaign_guard): identical content re-saves the same
+        // campaign, changed content is saved as a NEW derived campaign; the original remains in
+        // the report untouched.
+        if (isEditing && errorCode(error) === 'CAMPAIGN_ID_CONFLICT') {
+          const next = newCampaignId();
+          setCampaignId(next);
+          setDerived(true);
+          result = await submit(next);
+        } else {
+          throw error;
+        }
+      }
+      setCampaignId(result.campaign_id);
       setSaved(result);
       api.getCampaign(result.campaign_id).then(setReloaded).catch((error) => setSaveError(errorCode(error)));
     } catch (error) {
@@ -337,16 +398,21 @@ export function CampaignConfiguration({ datasource }: CampaignConfigurationProps
   if (loadError) {
     return <section className="page"><div className="panel warning-panel">
       <h1>Campaña</h1>
-      <p>No fue posible cargar el catálogo de campañas ({loadError}).</p>
+      <p>No fue posible cargar {isEditing ? 'la campaña' : 'el catálogo de campañas'} ({loadError}).</p>
       <button type="button" onClick={load}>Reintentar</button>
     </div></section>;
   }
-  if (!catalog || !configuration) return <Loading />;
+  if (!catalog || !configuration || (isEditing && !loaded)) return <Loading />;
 
   if (saved) {
     return <section className="page campaign-page">
       <div className="page-title"><div><h1>Campaña</h1><p>Configuración guardada en PostgreSQL v2.</p></div></div>
-      <SavedCampaignPanel saved={saved} reloaded={reloaded} onReset={reset} />
+      {derived ? <p className="campaign-derived" role="status">
+        La campaña original <code>{editingId}</code> es FROZEN (inmutable): se guardó una nueva campaña derivada.
+        Ambas aparecen en el reporte de campañas.
+      </p> : null}
+      <SavedCampaignPanel saved={saved} reloaded={reloaded} onReset={reset}
+        onViewReport={go ? () => go(routes.campaigns) : undefined} />
       {saveError ? <p className="campaign-error" role="alert">{message(saveError)}</p> : null}
     </section>;
   }
@@ -359,10 +425,25 @@ export function CampaignConfiguration({ datasource }: CampaignConfigurationProps
   return <section className="page campaign-page">
     <div className="page-title">
       <div>
-        <h1>Configurar campaña</h1>
-        <p>Define dataset, modelos y parámetros; al guardar obtienes el comando para ejecutarla desde consola.</p>
+        <h1>{isEditing ? 'Editar campaña' : 'Configurar campaña'}</h1>
+        <p>{isEditing ? 'Campaña recargada desde PostgreSQL v2. Si la modificas, al guardar se crea una campaña derivada.'
+          : 'Define dataset, modelos y parámetros; al guardar obtienes el comando para ejecutarla desde consola.'}</p>
       </div>
     </div>
+
+    {isEditing && loaded ? <section className="panel campaign-edit-banner">
+      <h2>Editando «{loaded.name}»</h2>
+      <dl className="campaign-saved-grid">
+        <div><dt>Estado</dt><dd>{loaded.state}</dd></div>
+        <div><dt>Total de Experimentos</dt><dd><strong>{number.format(loaded.total_experiments)}</strong></dd></div>
+        <div><dt>Congelada</dt><dd>{formatTimestamp(loaded.frozen_at)}</dd></div>
+        <div><dt>Contract hash</dt><dd><code title={loaded.contract_hash}>{loaded.contract_hash.slice(0, 16)}…</code></dd></div>
+        <div><dt>Dataset Version</dt><dd><code title={loaded.dataset_version_id}>{loaded.dataset_version_id.slice(0, 8)}…</code></dd></div>
+      </dl>
+      <p className="api-note">Las campañas FROZEN son inmutables (campaign_guard): si guardas con cambios,
+        se creará una nueva campaña derivada con un nuevo campaign_id; la original permanece en el reporte.</p>
+      {go ? <button type="button" className="campaign-secondary" onClick={() => go(routes.campaigns)}>Volver al reporte</button> : null}
+    </section> : null}
 
     <div className="campaign-layout">
       <div className="campaign-form">
@@ -412,6 +493,7 @@ export function CampaignConfiguration({ datasource }: CampaignConfigurationProps
           <div className="campaign-field">
             <label className="campaign-field-label" htmlFor="campaign-preset">Valores iniciales</label>
             <select id="campaign-preset" value={presetId} onChange={(e) => applyPreset(catalog, e.target.value)}>
+              {presetId === '' ? <option value="">Campaña existente (valores recargados)</option> : null}
               {catalog.presets.map((preset) => <option key={preset.id} value={preset.id}>{preset.label}</option>)}
             </select>
             <small>Cambiar los valores iniciales reemplaza modelos, optimizadores, semillas, variantes y EarlyStopping.</small>

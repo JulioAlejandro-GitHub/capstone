@@ -1,0 +1,6 @@
+# SWV2.3 — registro de tests ML (campañas)
+# Comando: cd malaria_dl_local_project && .venv/bin/python -m pytest tests/test_campaign_configuration_swv22.py -q
+# (SWV2.3 añade document_from_request a campaigns/configuration.py y list_campaigns a campaigns/repository.py;
+#  los 2 tests nuevos validan el round-trip documento→build y el fallback a defaults de catálogo.)
+........................................                                 [100%]
+40 passed in 0.13s

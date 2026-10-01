@@ -1,0 +1,6 @@
+# SWV2.3 — registro de tests en contenedor (PostgreSQL v2 real)
+# Comando: docker compose exec -T -w /app/malaria_dl_local_project backend python -m pytest tests/test_campaign_configuration_postgres_swv22.py -q
+# (Verifica contra la base real que el rol runtime y el esquema v2 siguen intactos tras SWV2.3:
+#  crear/congelar atómico, idempotencia, conflicto 409, sin parciales, boundary de ejecución, y DELETE prohibido.)
+.......                                                                  [100%]
+7 passed in 115.68s (0:01:55)

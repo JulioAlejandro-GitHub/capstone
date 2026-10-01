@@ -256,3 +256,41 @@ def test_test_split_is_never_used_for_training_or_selection(catalog):
                                            "final_test": "test"}
     assert all(i["configuration"]["resolved"]["execution"]["evaluate_best_on_test"] is False
                for i in result["matrix"]["configurations"].values())
+
+
+# --- stored campaign -> operator document (report + edit prefill) --------------------------
+
+def test_document_from_request_round_trips_through_build(catalog):
+    result = cc.resolve(small(catalog), COUNTS)
+    assert result["valid"], result["errors"]
+    document = cc.document_from_request(result["request"], result["protocol"])
+    assert document["models"] == result["request"]["models"] == ["custom_cnn", "vgg16"]
+    assert document["optimizers"] == ["adam", "sgd"]
+    assert document["seeds"] == [11, 29]
+    assert document["variants"][0]["parameters"]["custom_cnn"]["max_epochs"] == 50
+    assert document["variants"][0]["parameters"]["vgg16"]["fine_tune_epochs"] == 5
+    normalized, errors = cc.normalize(document)
+    assert errors == []
+    # Rebuilding from the reconstructed document reproduces the stored contract inputs exactly.
+    assert cc.build_request(normalized) == result["request"]
+    assert cc.build_protocol(normalized, result["matrix"]["expected_count"]) == result["protocol"]
+
+
+def test_document_from_request_falls_back_to_current_catalog_defaults(catalog):
+    """A stored request the current catalog no longer can express maps onto its defaults."""
+    request, protocol = cc.protocol_template()
+    request["models"] = ["custom_cnn"]
+    request["optimizers"] = ["adam"]
+    request["seeds"] = [11]
+    request["variants"][0]["by_model"]["custom_cnn"] = {
+        "model": {"input_shape": [128, 128, 3]},
+        "execution": {"max_epochs": 40, "batch_size": 32},
+    }
+    request["variants"][0]["by_model"].pop("vgg16", None)
+    request["variants"][0]["by_model"].pop("densenet121", None)
+    document = cc.document_from_request(request, protocol)
+    assert document["models"] == ["custom_cnn"]
+    assert document["variants"][0]["parameters"]["custom_cnn"]["input_size"] == 128
+    assert document["variants"][0]["parameters"]["custom_cnn"]["max_epochs"] == 40
+    normalized, errors = cc.normalize(document)
+    assert errors == []

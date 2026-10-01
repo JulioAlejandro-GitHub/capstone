@@ -117,4 +117,31 @@ export interface SavedCampaign {
   experiments_per_model: Record<string, number>;
   command: string;
   execution_boundary: string;
+  /** Operator document rebuilt from the stored request/protocol: prefills the configuration page in edit mode. */
+  configuration: CampaignConfiguration;
+}
+
+// SWV2.3: report of created campaigns (GET /api/campaigns); edit reuses the configuration page.
+export interface CampaignListItem {
+  campaign_id: string;
+  name: string;
+  purpose: string;
+  state: string;
+  contract_hash: string | null;
+  frozen_at: string | null;
+  created_at: string;
+  actor: string | null;
+  dataset_version_id: string;
+  dataset_name: string | null;
+  dataset_semantic_version: string | null;
+  models: string[];
+  optimizers: string[];
+  seeds: number[];
+  total_experiments: number;
+  members_by_state: Record<string, number>;
+  command: string;
+}
+
+export interface CampaignListResponse {
+  items: CampaignListItem[];
 }

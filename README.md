@@ -47,3 +47,6 @@ La elegibilidad mínima Stage 2 continúa siendo `TRAIN completed + EVALUATE com
 Consulte `docs/architecture/scientific_data_model.md`,
 `docs/architecture/cell_classification_pipeline.md` y
 `docs/stage2_productive_training_card.md`.
+
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/JulioAlejandro-GitHub/capstone)

@@ -2,6 +2,8 @@
 import json
 import os
 from copy import deepcopy
+from datetime import datetime, timezone
+from uuid import UUID
 
 import pytest
 from fastapi.routing import APIRoute
@@ -60,8 +62,9 @@ def preview(client, configuration, dataset=DATASET):
 
 def test_only_configuration_routes_exist_no_execution():
     found = {(m, r.path) for r in routes() for m in r.methods}
-    assert found == {("GET", "/api/campaigns/catalog"), ("GET", "/api/campaigns/preview"),
-                     ("POST", "/api/campaigns"), ("GET", "/api/campaigns/{campaign_id}")}
+    assert found == {("GET", "/api/campaigns"), ("GET", "/api/campaigns/catalog"),
+                     ("GET", "/api/campaigns/preview"), ("POST", "/api/campaigns"),
+                     ("GET", "/api/campaigns/{campaign_id}")}
     for word in ("execute", "run", "start", "train", "launch"):
         assert not any(word in r.path for r in routes())
 
@@ -137,4 +140,123 @@ def test_malformed_documents_are_rejected_before_resolution(client):
     configuration["seeds"] = [11]
     configuration["unexpected"] = True
     assert preview(client, configuration).status_code == 422
+
+
+# --- SWV2.3 report of created campaigns ----------------------------------------------------
+
+def test_list_reports_created_campaigns_with_states_and_dataset(client, monkeypatch):
+    from src.malaria_dl.campaigns.repository import CampaignRepository
+
+    rows = [
+        dict(
+            id="11111111-1111-4111-8111-111111111111", name="Campaña demo", purpose="Validación SWV2.2",
+            state="frozen", contract_hash="ab" * 32,
+            frozen_at=datetime(2026, 9, 30, 22, 41, tzinfo=timezone.utc),
+            created_at=datetime(2026, 9, 30, 22, 41, tzinfo=timezone.utc),
+            actor="admin", dataset_version_id=DATASET, expected_count=6,
+            requested={"models": ["custom_cnn", "vgg16"], "optimizers": ["adam"], "seeds": [11, 29]},
+            dataset_name="malaria", dataset_semantic_version="1.0.0",
+            members_by_state={"pending": 4, "excluded": 2},
+        ),
+        dict(
+            id="22222222-2222-4222-8222-222222222222", name="Campaña antigua", purpose="Plano E7",
+            state="active", contract_hash="cd" * 32,
+            frozen_at=datetime(2026, 9, 1, tzinfo=timezone.utc),
+            created_at=datetime(2026, 9, 1, tzinfo=timezone.utc),
+            actor="admin", dataset_version_id=DATASET, expected_count=36,
+            requested={"models": ["densenet121", "custom_cnn", "vgg16"],
+                       "optimizers": ["adam", "sgd"], "seeds": [1, 2, 3]},
+            dataset_name="malaria", dataset_semantic_version="1.0.0",
+            members_by_state={"pending": 30, "active": 6},
+        ),
+    ]
+    monkeypatch.setattr(CampaignRepository, "list_campaigns", lambda self, limit, offset: rows)
+    body = client.get("/api/campaigns", params={"limit": 50, "offset": 0}).json()
+    assert [i["campaign_id"] for i in body["items"]] == [
+        "11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"]
+    first = body["items"][0]
+    assert first["state"] == "frozen" and first["contract_hash"] == "ab" * 32
+    assert first["dataset_name"] == "malaria" and first["dataset_semantic_version"] == "1.0.0"
+    assert first["dataset_version_id"] == DATASET
+    assert first["models"] == ["custom_cnn", "vgg16"] and first["optimizers"] == ["adam"]
+    assert first["seeds"] == [11, 29]
+    assert first["total_experiments"] == 6
+    assert first["members_by_state"] == {"pending": 4, "excluded": 2}
+    assert first["frozen_at"].startswith("2026-09-30T22:41")
+    assert first["command"] == (
+        f"python run_train_all_models.py --campaign-id {first['campaign_id']}")
+    assert "configuration" not in first  # detail-only; the report stays lightweight
+
+
+def test_list_limit_bounds(client, monkeypatch):
+    from src.malaria_dl.campaigns.repository import CampaignRepository
+
+    calls = []
+
+    def fake(self, limit, offset):
+        calls.append((limit, offset))
+        return []
+
+    monkeypatch.setattr(CampaignRepository, "list_campaigns", fake)
+    assert client.get("/api/campaigns", params={"limit": 0}).status_code == 422
+    assert client.get("/api/campaigns", params={"limit": 501}).status_code == 422
+    assert client.get("/api/campaigns", params={"limit": 500, "offset": 10}).status_code == 200
+    assert calls == [(500, 10)]
+
+
+def test_detail_includes_the_operator_document_for_editing(client, monkeypatch):
+    from src.malaria_dl.campaigns.configuration import document_from_request, resolve
+    from src.malaria_dl.campaigns.contracts import CampaignError, digest
+    from src.malaria_dl.campaigns.repository import CampaignRepository
+
+    campaign_id = "22222222-2222-4222-8222-222222222222"
+    _, configuration = default_configuration(client)
+    configuration["seeds"] = [11, 29]
+    configuration["optimizers"] = ["adam"]
+    result = resolve(configuration, {"train": 22180, "val": 2693, "test": 2685})
+    contract = dict(
+        version="campaign_contract_v1", name="Campaña prueba", purpose="Prueba de detalle",
+        experiment_id=None,
+        dataset={"dataset_version_id": DATASET,
+                 "counts": {"train": 22180, "val": 2693, "test": 2685},
+                 "dataset_materialization_id": DATASET, "dataset_root": "/governed/malaria"},
+        dataset_evidence_id=DATASET,
+        requested=result["request"], protocol=result["protocol"],
+        environment={"source_sha256": "ab" * 32, "python": "3.11", "tensorflow": "2.16.1",
+                     "packages": {}, "determinism_environment": {}},
+        matrix=result["matrix"],
+    )
+    row = dict(
+        id=UUID(campaign_id), name="Campaña prueba", purpose="Prueba de detalle", state="frozen",
+        contract_hash=digest(contract),
+        frozen_at=datetime(2026, 9, 30, 22, 41, tzinfo=timezone.utc),
+        dataset_version_id=UUID(DATASET), dataset_snapshot=contract["dataset"],
+        dataset_evidence_id=UUID(DATASET), expected_count=result["matrix"]["expected_count"],
+        requested=result["request"], protocol=result["protocol"], environment=contract["environment"],
+        contract=contract,
+        configurations=[dict(id=UUID(int=int(h[:32], 16), version=4), campaign_id=UUID(campaign_id),
+                             configuration_hash=h, configuration=item["configuration"],
+                             canonical_configuration=h, requests=item["requests"])
+                        for h, item in contract["matrix"]["configurations"].items()],
+        members=[dict(id=UUID(f"44444444-4444-4444-8444-{i:012d}"), campaign_id=UUID(campaign_id),
+                      **m, state="excluded" if m["exclusion_reason"] else "pending",
+                      accepted_attempt_id=None)
+                  for i, m in enumerate(contract["matrix"]["members"])],
+    )
+
+    def fake_get(self, requested_id, dataset_version_id=None):
+        if str(requested_id) != campaign_id:
+            raise CampaignError("CAMPAIGN_NOT_FOUND")
+        return row
+
+    monkeypatch.setattr(CampaignRepository, "get", fake_get)
+    body = client.get(f"/api/campaigns/{campaign_id}").json()
+    assert body["campaign_id"] == campaign_id
+    assert body["total_experiments"] == 3 * 1 * 1 * 2 == len(body["experiments"])
+    assert body["state"] == "frozen" and body["frozen_at"].startswith("2026-09-30T22:41")
+    assert body["configuration"] == document_from_request(result["request"], result["protocol"])
+    # build_request persists the models sorted; the operator document reflects that order.
+    assert body["configuration"]["models"] == ["custom_cnn", "densenet121", "vgg16"]
+    assert body["configuration"]["seeds"] == [11, 29]
+    assert client.get("/api/campaigns/00000000-0000-4000-8000-000000000001").status_code == 404
 

@@ -33,7 +33,7 @@ const modelAiGroups: NavigationGroup[] = [
   {
     id: 'experimentation', label: 'Experimentación', items: [
       { id: 'runs', label: 'Ejecuciones', path: routes.runs, icon: 'activity' },
-      { id: 'campaign', label: 'Campaña', path: routes.campaign, icon: 'compare' },
+      { id: 'campaign', label: 'Campaña', path: routes.campaigns, icon: 'compare' },
     ]
   },
   {
@@ -78,4 +78,6 @@ export const moduleForPath = (pathname: string) =>
   navigationModules.find((module) => pathMatches(pathname, module.pathPrefix));
 
 export const sectionForPath = (pathname: string) =>
-  navigationItems.find((item) => pathMatches(pathname, item.path));
+  navigationItems.find((item) => pathMatches(pathname, item.path))
+  // The configuration page belongs to the same section as the campaigns report.
+  ?? (pathname === routes.campaign ? navigationItems.find((item) => item.id === 'campaign') : undefined);

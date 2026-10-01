@@ -385,6 +385,49 @@ def build_request(normalized):
                 seeds=sorted(normalized["seeds"]), variants=variants, exclusions=[])
 
 
+def document_from_request(request, protocol):
+    """Operator document of a stored campaign: the inverse of build_request/build_protocol.
+
+    ``request`` is the E4 request persisted in ``experimental_campaigns.requested``; per-model
+    values travel as explicit ``variants[].by_model`` overrides, so each variant re-reads them
+    through the current catalog parameter paths (a path the catalog no longer exposes falls back
+    to its current default; a model the catalog no longer registers is dropped). Only
+    operator-editable parameters are exposed, and the protocol contributes only its
+    operator-editable fields — exactly the shape the configuration page and ``normalize`` accept,
+    so a stored campaign prefills its own editing form and re-saves to the same contract.
+    """
+    models = {m["id"]: m for m in _catalog_models()}
+    requested = [m for m in request.get("models", []) if m in models]
+    variants = []
+    for variant in request.get("variants", []):
+        by_model = variant.get("by_model") or {}
+        parameters = {}
+        for model_id in requested:
+            overrides = by_model.get(model_id)
+            if not isinstance(overrides, dict):
+                continue
+            values = {}
+            for spec in models[model_id]["parameters"]:
+                if not spec["editable"]:
+                    continue
+                try:
+                    value = _get(overrides, tuple(spec["path"].split(".")))
+                    value = value[0] if spec["key"] == "input_size" else value
+                except (KeyError, TypeError):
+                    value = spec["default"]
+                values[spec["key"]] = value
+            parameters[model_id] = values
+        variants.append(dict(name=str(variant["name"]), parameters=parameters))
+    return dict(
+        version=CONFIGURATION_VERSION,
+        models=requested,
+        optimizers=list(request.get("optimizers", [])),
+        seeds=list(request.get("seeds", [])),
+        variants=variants,
+        protocol=_protocol_values(protocol),
+    )
+
+
 def build_protocol(normalized, expected_count):
     """Approved protocol + the operator's EarlyStopping/budget values; budget sized to the matrix.
 

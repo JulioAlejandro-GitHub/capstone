@@ -5,6 +5,7 @@ import { Layout } from './components/Layout';
 import { ProtectedRoute } from './auth';
 import { InvalidEntityId, NotFound, RouteEffects } from './components/RouteState';
 import { CampaignConfiguration } from './pages/CampaignConfiguration';
+import { CampaignsReport } from './pages/CampaignsReport';
 import { ClinicalEvaluation } from './pages/ClinicalEvaluation';
 import { Dashboard } from './pages/Dashboard';
 import { DatasetBrowser } from './pages/DatasetBrowser';
@@ -89,7 +90,8 @@ function App() {
         <Route path={`${routes.runs}/:trainingRunId`} element={<RunDetailRoute datasource={datasource} />} />
         <Route path={`${routes.runs}/:trainingRunId/liberacion`} element={<Stage2ReleaseDetail datasource={datasource} />} />
         <Route path={`${routes.runs}/RunId=:legacyId`} element={<LegacyRunRedirect />} />
-        <Route path={routes.campaign} element={<CampaignConfiguration {...common} />} />
+        <Route path={routes.campaigns} element={<CampaignsReport {...common} go={go} />} />
+        <Route path={routes.campaign} element={<CampaignConfiguration {...common} go={go} />} />
         <Route path={routes.evaluations} element={<ClinicalEvaluation {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
         <Route path={routes.comparison} element={<ModelComparison {...common} />} />
         <Route path={routes.modelVersions} element={<ModelVersionsRoute datasource={datasource} go={go} />} />

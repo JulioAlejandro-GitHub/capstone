@@ -1,0 +1,13 @@
+# SWV2.3 — registro de tests frontend (suite completa)
+# Comando: cd frontend && npm test   (node --test tests/*.test.mjs)
+# (SWV2.3 añade tests/campaigns-report.test.mjs — 8 tests — y actualiza campaign-configuration.test.mjs.)
+  ...
+1..219
+# tests 219
+# suites 0
+# pass 219
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 311.138542

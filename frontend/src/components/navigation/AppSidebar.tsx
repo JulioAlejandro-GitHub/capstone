@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
-import { withAllowedQuery } from '../../router';
+import { routes, withAllowedQuery } from '../../router';
 import { NavigationIcon } from './NavigationIcon';
 import { moduleForPath, navigationModules } from './navigationConfig';
 
@@ -88,12 +88,17 @@ export function AppSidebar({ datasource, mobileOpen, onMobileClose, mobileTrigge
             {isOpen ? <div id={submenuId} className="sidebar-submenu">
               {module.groups.map((group) => <section className="sidebar-group" key={group.id} aria-labelledby={`nav-group-${group.id}`}>
                 <h2 id={`nav-group-${group.id}`}>{group.label}</h2>
-                {group.items.map((item) => <NavLink key={item.id} to={withAllowedQuery(item.path, { datasource })}
-                  className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-                  data-tooltip={collapsed ? item.label : undefined} aria-label={collapsed ? item.label : undefined}
-                  aria-current={location.pathname === item.path ? 'page' : undefined}>
-                  <NavigationIcon name={item.icon} /><span className="sidebar-label">{item.label}</span>
-                </NavLink>)}
+                {group.items.map((item) => {
+                  // "Campaña" covers the report (campanas) and the configuration page (campana?campaignId=…).
+                  const active = location.pathname === item.path
+                    || (item.id === 'campaign' && location.pathname === routes.campaign);
+                  return <NavLink key={item.id} to={withAllowedQuery(item.path, { datasource })}
+                    className={({ isActive }) => `sidebar-link ${isActive || active ? 'active' : ''}`}
+                    data-tooltip={collapsed ? item.label : undefined} aria-label={collapsed ? item.label : undefined}
+                    aria-current={active ? 'page' : undefined}>
+                    <NavigationIcon name={item.icon} /><span className="sidebar-label">{item.label}</span>
+                  </NavLink>;
+                })}
               </section>)}
             </div> : null}
           </div>;

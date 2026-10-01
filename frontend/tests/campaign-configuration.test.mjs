@@ -11,13 +11,15 @@ const router = read('src/router.ts');
 const navigation = read('src/components/navigation/navigationConfig.ts');
 const campaignApi = api.slice(api.indexOf('// SWV2.2 Campaña'), api.indexOf('getDatasetImages('));
 
-test('Modelo IA → Campaña aparece inmediatamente debajo de Ejecuciones', () => {
+test('Modelo IA → Campaña aparece inmediatamente debajo de Ejecuciones y apunta al reporte', () => {
   const lines = navigation.split('\n');
   const runs = lines.findIndex((line) => line.includes("label: 'Ejecuciones'"));
   assert.ok(runs > 0);
-  assert.match(lines[runs + 1], /id: 'campaign', label: 'Campaña', path: routes\.campaign/);
+  assert.match(lines[runs + 1], /id: 'campaign', label: 'Campaña', path: routes\.campaigns/);
   assert.match(router, /campaign: '\/modelo-ia\/campana'/);
-  assert.match(app, /routes\.campaign/);
+  assert.match(router, /campaigns: '\/modelo-ia\/campanas'/);
+  assert.match(app, /routes\.campaigns/);
+  assert.match(app, /<CampaignsReport/);
   assert.match(app, /<CampaignConfiguration/);
 });
 

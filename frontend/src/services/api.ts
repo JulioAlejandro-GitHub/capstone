@@ -67,6 +67,7 @@ import type {
 import type {
   CampaignCatalog,
   CampaignConfiguration,
+  CampaignListResponse,
   CampaignPreview,
   SavedCampaign,
 } from '../types/campaign';
@@ -1386,6 +1387,10 @@ export const api = {
 
   getCampaign(campaignId: string) {
     return request<SavedCampaign>(`/api/campaigns/${encodeURIComponent(campaignId)}`, {}, { timeoutMs: 30000 });
+  },
+
+  getCampaigns(params: { limit?: number; offset?: number } = {}) {
+    return request<CampaignListResponse>('/api/campaigns', params);
   },
 
   getDatasetImages(datasource: string, params: Record<string, QueryValue> = {}) {

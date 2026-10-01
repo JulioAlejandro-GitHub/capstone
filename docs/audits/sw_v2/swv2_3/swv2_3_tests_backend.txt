@@ -1,0 +1,8 @@
+# SWV2.3 — registro de tests backend (API de campañas)
+# Comando: docker compose exec -T backend python -m pytest tests/test_campaigns_api_swv22.py -q
+# (SWV2.3 añade GET /api/campaigns y 3 tests: listado con estados/dataset, límites, y detalle con documento para edición.)
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated; use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[Any], AbstractAsyncContextManager[Any]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+11 passed, 2 warnings in 1.39s

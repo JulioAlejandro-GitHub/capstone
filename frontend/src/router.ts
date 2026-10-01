@@ -10,6 +10,7 @@ export const routes = {
   runDetail: (id: string) => `/modelo-ia/ejecuciones/${encoded(id)}`,
   runReleaseDetail: (id: string) => `/modelo-ia/ejecuciones/${encoded(id)}/liberacion`,
   campaign: '/modelo-ia/campana',
+  campaigns: '/modelo-ia/campanas',
   evaluations: '/modelo-ia/evaluaciones',
   comparison: '/modelo-ia/comparacion',
   modelVersions: '/modelo-ia/modelos-liberados',
@@ -30,7 +31,7 @@ export const routes = {
   smearReview: '/frotis/revision',
 } as const;
 
-export const isValidPublicId = (value: string | undefined): value is string =>
+export const isValidPublicId = (value: string | null | undefined): value is string =>
   Boolean(value && UUID_PATTERN.test(value));
 
 export function withAllowedQuery(
