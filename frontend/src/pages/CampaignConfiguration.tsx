@@ -25,7 +25,7 @@ interface CampaignConfigurationProps {
 
 const number = new Intl.NumberFormat('es-CL');
 const PREVIEW_DELAY_MS = 350;
-const SECTION_LABELS: Record<CampaignParameter['section'], string> = {
+const SECTION_LABELS: Record<string, string> = {
   architecture: 'Arquitectura',
   fine_tuning: 'Fine-tuning',
   training: 'Entrenamiento',
@@ -94,10 +94,14 @@ function parseSeeds(text: string): number[] | null {
   return tokens.map(Number);
 }
 
+// -------------------------------------------------------------------------
+// REFACTOR: Toggle component & unified ParameterControl
+// -------------------------------------------------------------------------
 function ParameterControl({ parameter, value, error, onChange }: {
   parameter: CampaignParameter; value: ParameterValue; error?: string; onChange: (value: ParameterValue) => void;
 }) {
   const inputId = useId();
+
   if (!parameter.editable) {
     return <div className="campaign-field is-fixed">
       <span className="campaign-field-label">{parameter.label}</span>
@@ -105,13 +109,31 @@ function ParameterControl({ parameter, value, error, onChange }: {
       {parameter.note ? <small>{parameter.note}</small> : null}
     </div>;
   }
-  let control;
+
+  // Estructura exacta de v0.app para booleanos (Toggle deslizable)
   if (parameter.type === 'boolean') {
-    control = <label className="campaign-switch">
-      <input id={inputId} type="checkbox" checked={value === true} onChange={(e) => onChange(e.target.checked)} />
-      <span>{value === true ? 'Sí' : 'No'}</span>
-    </label>;
-  } else if (parameter.type === 'enum') {
+    return (
+      <div className={`campaign-field field ${error ? 'has-error' : ''}`}>
+        <label htmlFor={inputId}>{parameter.label}</label>
+        <button
+          id={inputId}
+          type="button"
+          className={`toggle ${value === true ? 'on' : ''}`}
+          aria-pressed={value === true}
+          onClick={() => onChange(!value)}
+        >
+          <span></span>
+          {value === true ? 'Sí' : 'No'}
+        </button>
+        <small>Default: {String(parameter.default)}</small>
+        {error ? <small className="campaign-error" role="alert">{message(error)}</small> : null}
+      </div>
+    );
+  }
+
+  // Estructura para inputs estándar (Select y Number)
+  let control;
+  if (parameter.type === 'enum') {
     control = <select id={inputId} value={String(value)} onChange={(e) => onChange(e.target.value)}>
       {(parameter.choices ?? []).map((choice) => <option key={choice} value={choice}>{choice}</option>)}
     </select>;
@@ -125,13 +147,13 @@ function ParameterControl({ parameter, value, error, onChange }: {
       max={parameter.maximum}
       value={typeof value === 'number' ? value : String(value)}
       onChange={(e) => {
-        // Invalid text is sent as-is so the backend reports it; never silently coerced.
         const raw = e.target.value.trim();
         const valid = parameter.type === 'integer' ? /^-?\d+$/.test(raw) : raw !== '' && Number.isFinite(Number(raw));
         onChange(valid ? Number(raw) : e.target.value);
       }}
     />;
   }
+
   return <div className={`campaign-field ${error ? 'has-error' : ''}`}>
     <label className="campaign-field-label" htmlFor={inputId}>{parameter.label}</label>
     {control}
@@ -144,32 +166,52 @@ function ParameterControl({ parameter, value, error, onChange }: {
   </div>;
 }
 
-function ModelConfiguration({ model, values, fieldErrors, prefix, onChange }: {
-  model: CampaignModel; values: Record<string, ParameterValue>; fieldErrors: Record<string, string>;
-  prefix: string; onChange: (key: string, value: ParameterValue) => void;
+// -------------------------------------------------------------------------
+// REFACTOR: GlobalVariantConfiguration (Removido header de variante)
+// -------------------------------------------------------------------------
+function GlobalVariantConfiguration({ variant, index, globalParameters, fieldErrors, updateConfig }: {
+  variant: any; index: number; globalParameters: CampaignParameter[]; fieldErrors: Record<string, string>;
+  updateConfig: (key: string, value: ParameterValue) => void;
 }) {
-  const sections = (Object.keys(SECTION_LABELS) as CampaignParameter['section'][])
-    .map((section) => [section, model.parameters.filter((p) => p.section === section)] as const)
+  const sections = Object.keys(SECTION_LABELS)
+    .map((section) => [section, globalParameters.filter((p) => p.section === section)] as const)
     .filter(([, items]) => items.length);
-  const hasError = Object.keys(fieldErrors).some((field) => field.startsWith(`${prefix}.`));
-  return <details className={`campaign-model-config ${hasError ? 'has-error' : ''}`} open>
-    <summary>
-      <strong>{model.label}</strong>
-      <small>{model.id} · adapter {model.adapter_version} · {model.strategies.join(' + ')}</small>
-    </summary>
-    {sections.map(([section, items]) => <fieldset key={section} className="campaign-parameter-group">
-      <legend>{SECTION_LABELS[section]}</legend>
-      <div className="campaign-parameter-grid">
-        {items.map((parameter) => <ParameterControl
-          key={parameter.key}
-          parameter={parameter}
-          value={values[parameter.key] ?? parameter.default}
-          error={fieldErrors[`${prefix}.${parameter.key}`]}
-          onChange={(value) => onChange(parameter.key, value)}
-        />)}
-      </div>
-    </fieldset>)}
-  </details>;
+
+  const hasError = Object.keys(fieldErrors).some((field) => field.startsWith(`variants[${index}]`));
+
+  const config = variant.global_model_config || (
+    Object.values(variant.parameters || {}).reduce((acc: any, curr: any) => ({ ...acc, ...curr }), {})
+  );
+
+  // Mapeo inverso: Busca si FastAPI devolvió error para este parámetro en CUALQUIER modelo
+  const getError = (key: string) => {
+    const errField = Object.keys(fieldErrors).find(f =>
+      f.startsWith(`variants[${index}]`) && f.endsWith(`.${key}`)
+    );
+    return errField ? fieldErrors[errField] : undefined;
+  };
+
+  return <article className="campaign-variant">
+    <details className={`campaign-model-config ${hasError ? 'has-error' : ''}`} open>
+      <summary>
+        <strong>Configuración Global</strong>
+        <small>Aplica equitativamente a todos los modelos de la campaña</small>
+      </summary>
+
+      {sections.map(([section, items]) => <fieldset key={section} className="campaign-parameter-group">
+        <legend>{SECTION_LABELS[section]}</legend>
+        <div className="campaign-parameter-grid">
+          {items.map((parameter) => <ParameterControl
+            key={parameter.key}
+            parameter={parameter}
+            value={config[parameter.key] ?? parameter.default}
+            error={getError(parameter.key)}
+            onChange={(value) => updateConfig(parameter.key, value)}
+          />)}
+        </div>
+      </fieldset>)}
+    </details>
+  </article>;
 }
 
 function SavedCampaignPanel({ saved, reloaded, onReset, onViewReport }: {
@@ -258,12 +300,9 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
         setCatalog(nextCatalog);
         setDatasets(versions.items);
         applyPreset(nextCatalog, nextCatalog.default_preset);
-        // Preselect only when exactly one version is trainable; otherwise the operator chooses.
         const trainable = versions.items.filter((item) => item.status === 'FROZEN' && item.trainable);
         setDatasetVersionId((current) => current || (trainable.length === 1 ? trainable[0].dataset_version_id : ''));
         if (isEditing && editingId) {
-          // Edit mode (?campaignId=…): prefill the form from the stored campaign and its
-          // operator document; the configuration page is the single editing surface.
           api.getCampaign(editingId)
             .then((existing) => {
               setLoaded(existing);
@@ -285,7 +324,46 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
 
   useEffect(load, [load]);
 
+
   const models = useMemo(() => new Map((catalog?.models ?? []).map((m) => [m.id, m])), [catalog]);
+
+  const getBackendNormalizedVariants = useCallback(() => {
+    if (!configuration) return [];
+    return configuration.variants.map((v: any) => {
+      const baseConfig = v.global_model_config || Object.values(v.parameters || {}).reduce((acc: any, curr: any) => ({ ...acc, ...curr }), {});
+      const parameters: Record<string, Record<string, ParameterValue>> = {};
+
+      configuration.models.forEach((modelId: string) => {
+        const model = models.get(modelId);
+        if (model) {
+          parameters[modelId] = {};
+          model.parameters.forEach((p) => {
+            if (p.editable) {
+              parameters[modelId][p.key] = v.global_model_config?.[p.key]
+                ?? v.parameters?.[modelId]?.[p.key]
+                ?? baseConfig[p.key]
+                ?? p.default;
+            }
+          });
+        }
+      });
+
+      return { name: v.name, parameters };
+    });
+  }, [configuration, models]);
+
+  const globalParameters = useMemo(() => {
+    if (!catalog || !configuration) return [];
+    const map = new Map<string, CampaignParameter>();
+    configuration.models.forEach((modelId) => {
+      const model = models.get(modelId);
+      model?.parameters.forEach((p) => {
+        if (!map.has(p.key)) map.set(p.key, p);
+      });
+    });
+    return Array.from(map.values());
+  }, [catalog, configuration?.models, models]);
+
   const selectedDataset = datasets.find((item) => item.dataset_version_id === datasetVersionId) ?? null;
   const seeds = parseSeeds(seedText);
   const requestKey = configuration && seeds ? JSON.stringify({ configuration: { ...configuration, seeds }, datasetVersionId }) : '';
@@ -296,20 +374,22 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
     const timer = window.setTimeout(() => {
       setPreviewing(true);
       setPreviewError(null);
-      api.previewCampaign({ ...configuration, seeds }, datasetVersionId || null, controller.signal)
+
+      const normalizedVariants = getBackendNormalizedVariants();
+
+      api.previewCampaign({ ...configuration, seeds, variants: normalizedVariants } as any, datasetVersionId || null, controller.signal)
         .then((result) => { setPreview(result); setPreviewKey(requestKey); })
         .catch((error) => { if (!controller.signal.aborted) setPreviewError(errorCode(error)); })
         .finally(() => { if (!controller.signal.aborted) setPreviewing(false); });
     }, PREVIEW_DELAY_MS);
     return () => { controller.abort(); window.clearTimeout(timer); };
-    // requestKey captures configuration, seeds and dataset.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requestKey, saved]);
+  }, [requestKey, saved, getBackendNormalizedVariants]);
 
   const fieldErrors = useMemo(() => Object.fromEntries(
     (previewKey === requestKey ? preview?.errors ?? [] : []).map((e) => [e.field, e.code])), [preview, previewKey, requestKey]);
 
-  const update = (change: (draft: CampaignConfigurationDocument) => void) => {
+  const update = (change: (draft: CampaignConfigurationDocument | any) => void) => {
     setConfiguration((current) => {
       if (!current) return current;
       const draft = clone(current);
@@ -319,27 +399,11 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
   };
 
   const toggleModel = (id: string, on: boolean) => update((draft) => {
-    const model = models.get(id);
-    if (!model) return;
-    draft.models = on ? [...draft.models, id] : draft.models.filter((m) => m !== id);
-    draft.variants.forEach((variant) => {
-      if (on) variant.parameters[id] = variant.parameters[id] ?? editableDefaults(model);
-      else delete variant.parameters[id];
-    });
+    draft.models = on ? [...draft.models, id] : draft.models.filter((m: string) => m !== id);
   });
 
   const toggleOptimizer = (id: string, on: boolean) => update((draft) => {
-    draft.optimizers = on ? [...draft.optimizers, id] : draft.optimizers.filter((o) => o !== id);
-  });
-
-  const addVariant = () => update((draft) => {
-    const names = new Set(draft.variants.map((v) => v.name));
-    let index = draft.variants.length + 1;
-    while (names.has(`configuracion_${index}`)) index += 1;
-    draft.variants.push({
-      name: `configuracion_${index}`,
-      parameters: Object.fromEntries(draft.models.map((id) => [id, editableDefaults(models.get(id)!)])),
-    });
+    draft.optimizers = on ? [...draft.optimizers, id] : draft.optimizers.filter((o: string) => o !== id);
   });
 
   const reset = () => {
@@ -352,7 +416,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
     setPurpose('');
     setCampaignId(newCampaignId());
     if (catalog) applyPreset(catalog, catalog.default_preset);
-    if (isEditing && go) go(routes.campaign); // drop ?campaignId so the URL matches a fresh configuration
+    if (isEditing && go) go(routes.campaign);
   };
 
   const currentPreview = previewKey === requestKey ? preview : null;
@@ -364,18 +428,19 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
     setSaving(true);
     setSaveError(null);
     setDerived(false);
+
+    const normalizedVariants = getBackendNormalizedVariants();
+
     const submit = (campaignId: string) => api.createCampaign({
       campaign_id: campaignId, name: name.trim(), purpose: purpose.trim(), dataset_version_id: datasetVersionId,
-      configuration: { ...configuration, seeds },
+      configuration: { ...configuration, seeds, variants: normalizedVariants } as any,
     });
+
     try {
       let result;
       try {
         result = await submit(campaignId);
       } catch (error) {
-        // FROZEN campaigns are immutable (campaign_guard): identical content re-saves the same
-        // campaign, changed content is saved as a NEW derived campaign; the original remains in
-        // the report untouched.
         if (isEditing && errorCode(error) === 'CAMPAIGN_ID_CONFLICT') {
           const next = newCampaignId();
           setCampaignId(next);
@@ -537,61 +602,53 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
 
         <section className="panel">
           <h2>4. Configuración de modelos</h2>
-          {configuration.variants.map((variant, index) => <article key={index} className="campaign-variant">
-            <header>
-              <div className="campaign-field">
-                <label className="campaign-field-label" htmlFor={`variant-${index}`}>Variante de configuración</label>
-                <input id={`variant-${index}`} value={variant.name}
-                  onChange={(e) => update((draft) => { draft.variants[index].name = e.target.value; })} />
-                {fieldErrors[`variants[${index}].name`] ? <small className="campaign-error">
-                  {message(fieldErrors[`variants[${index}].name`])}</small> : null}
-              </div>
-              {configuration.variants.length > 1 ? <button type="button" className="campaign-secondary"
-                onClick={() => update((draft) => { draft.variants.splice(index, 1); })}>Quitar variante</button> : null}
-            </header>
-            {configuration.models.map((id) => {
-              const model = models.get(id);
-              return model ? <ModelConfiguration
-                key={id}
-                model={model}
-                values={variant.parameters[id] ?? {}}
-                fieldErrors={fieldErrors}
-                prefix={`variants[${index}].parameters.${id}`}
-                onChange={(key, value) => update((draft) => {
-                  draft.variants[index].parameters[id] = { ...draft.variants[index].parameters[id], [key]: value };
-                })}
-              /> : null;
-            })}
-          </article>)}
-          <button type="button" className="campaign-secondary" onClick={addVariant}>Agregar variante de configuración</button>
 
-          <h3>EarlyStopping y presupuesto (comunes a la campaña)</h3>
-          <div className="campaign-parameter-grid">
-            {catalog.protocol.editable.map((item) => {
-              const [section, leaf] = item.key.split('.') as ['early_stopping' | 'budget', string];
-              const value = (configuration.protocol[section] as Record<string, ParameterValue>)[leaf];
-              return <ParameterControl
-                key={item.key}
-                parameter={{ ...item, section: 'training', path: item.key, editable: true, source: catalog.protocol.source }}
-                value={value}
-                error={fieldErrors[`protocol.${item.key}`]}
-                onChange={(next) => update((draft) => {
-                  (draft.protocol[section] as Record<string, ParameterValue>)[leaf] = next;
-                })}
-              />;
-            })}
-          </div>
-          <dl className="campaign-fixed-grid">
-            <div><dt>Monitor EarlyStopping</dt><dd>{String(fixed['early_stopping.monitor'])} ({String(fixed['early_stopping.mode'])})</dd></div>
-            <div><dt>Checkpoint</dt><dd>{String(fixed['checkpoint.policy'])} · {String(fixed['checkpoint.monitor'])} ({String(fixed['checkpoint.mode'])})</dd></div>
-            <div><dt>Umbral de selección</dt><dd>{String(fixed['checkpoint.threshold'])}</dd></div>
-            <div><dt>Objetivo de sensibilidad</dt><dd>{String(fixed.sensitivity_target)}</dd></div>
-            <div><dt>Especificidad mínima</dt><dd>{String(fixed.specificity_minimum)}</dd></div>
-            <div><dt>Calibración</dt><dd>{String(fixed['calibration.algorithm'])}</dd></div>
-            <div><dt>Acceso a TEST</dt><dd>{String(fixed.test_access)}</dd></div>
-          </dl>
-          <small className="campaign-source">Protocolo base: {catalog.protocol.template_version} ({catalog.protocol.source}).
-            Los valores fijos pertenecen al protocolo científico aprobado.</small>
+          {configuration.variants.map((variant, index) => (
+            <GlobalVariantConfiguration
+              key={index}
+              variant={variant}
+              index={index}
+              globalParameters={globalParameters}
+              fieldErrors={fieldErrors}
+              updateConfig={(key, value) => update((draft) => {
+                draft.variants[index].global_model_config = draft.variants[index].global_model_config || {};
+                draft.variants[index].global_model_config[key] = value;
+              })}
+            />
+          ))}
+
+          <fieldset className="campaign-parameter-group" style={{ marginTop: '24px' }}>
+            <legend>Métricas, Control y EarlyStopping</legend>
+            <div className="campaign-parameter-grid">
+              {catalog.protocol.editable.map((item) => {
+                const [section, leaf] = item.key.split('.') as ['early_stopping' | 'budget', string];
+                const value = (configuration.protocol[section] as Record<string, ParameterValue>)[leaf];
+                return <ParameterControl
+                  key={item.key}
+                  parameter={{ ...item, section: 'training', path: item.key, editable: true, source: catalog.protocol.source }}
+                  value={value}
+                  error={fieldErrors[`protocol.${item.key}`]}
+                  onChange={(next) => update((draft) => {
+                    (draft.protocol[section] as Record<string, ParameterValue>)[leaf] = next;
+                  })}
+                />;
+              })}
+            </div>
+
+            <dl className="campaign-fixed-grid" style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #eef1f6' }}>
+              <div><dt>Monitor EarlyStopping</dt><dd>{String(fixed['early_stopping.monitor'])} ({String(fixed['early_stopping.mode'])})</dd></div>
+              <div><dt>Checkpoint</dt><dd>{String(fixed['checkpoint.policy'])} · {String(fixed['checkpoint.monitor'])} ({String(fixed['checkpoint.mode'])})</dd></div>
+              <div><dt>Umbral de selección</dt><dd>{String(fixed['checkpoint.threshold'])}</dd></div>
+              <div><dt>Objetivo de sensibilidad</dt><dd>{String(fixed.sensitivity_target)}</dd></div>
+              <div><dt>Especificidad mínima</dt><dd>{String(fixed.specificity_minimum)}</dd></div>
+              <div><dt>Calibración</dt><dd>{String(fixed['calibration.algorithm'])}</dd></div>
+              <div><dt>Acceso a TEST</dt><dd>{String(fixed.test_access)}</dd></div>
+            </dl>
+            <small className="campaign-source" style={{ display: 'block', marginTop: '12px' }}>
+              Protocolo base: {catalog.protocol.template_version} ({catalog.protocol.source}).
+              Los valores fijos pertenecen al protocolo científico aprobado.
+            </small>
+          </fieldset>
         </section>
       </div>
 
