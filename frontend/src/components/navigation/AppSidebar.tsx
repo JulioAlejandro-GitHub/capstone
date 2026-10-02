@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 
 import { routes, withAllowedQuery } from '../../router';
 import { NavigationIcon } from './NavigationIcon';
+import { UserMenu } from './UserMenu';
 import { moduleForPath, navigationModules } from './navigationConfig';
 
 const COLLAPSED_KEY = 'ml-dashboard.sidebar.collapsed';
@@ -105,6 +106,7 @@ export function AppSidebar({ datasource, mobileOpen, onMobileClose, mobileTrigge
         })}
       </nav>
       <footer className="sidebar-footer">
+        <UserMenu />
         <span className="connection-dot" aria-hidden="true" /><span className="sidebar-label">Backend conectado</span>
       </footer>
       <button className="sidebar-collapse" type="button" aria-label={collapsed ? 'Expandir navegación' : 'Contraer navegación'}

@@ -256,6 +256,35 @@ select {
   white-space: nowrap;
 }
 
+.user-menu-button {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--user-menu-accent, #94a3b8) 55%, transparent);
+  background: color-mix(in srgb, var(--user-menu-accent, #94a3b8) 16%, transparent);
+  color: var(--user-menu-accent, #94a3b8);
+  cursor: pointer;
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.user-menu-button:hover {
+  background: color-mix(in srgb, var(--user-menu-accent, #94a3b8) 28%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--user-menu-accent, #94a3b8) 14%, transparent);
+}
+
+.user-menu-button:focus-visible {
+  outline: 2px solid var(--user-menu-accent, #94a3b8);
+  outline-offset: 2px;
+}
+
+.user-menu-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .connection-dot,
 .backend-status span {
   flex: 0 0 auto;
