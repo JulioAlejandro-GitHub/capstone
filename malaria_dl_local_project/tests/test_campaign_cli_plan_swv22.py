@@ -125,7 +125,8 @@ def test_execution_takes_the_dataset_from_the_campaign(monkeypatch):
 
     def boundary(repository, campaign_id, root, **kwargs):
         seen.update(kwargs, campaign_id=campaign_id)
-        return 0, {"stopped": "before claim"}
+        return 0, {"state": "frozen", "expected": 4, "members": dict(
+            verified=0, failed=0, interrupted=0, pending=4)}
 
     repo.preflight_e10_schema = lambda: None
     monkeypatch.setattr(executor, "ExecutionRepository", lambda: repo)
@@ -133,6 +134,8 @@ def test_execution_takes_the_dataset_from_the_campaign(monkeypatch):
     monkeypatch.setattr(executor, "execute_campaign", boundary)
     assert executor.main(["--campaign-id", row["id"]]) == 0
     assert seen["dataset"] == DATASET and seen["campaign_id"] == row["id"]
+    # No --resume needed: an interrupted/paused campaign continues on rerun.
+    assert seen["resume"] is True and seen["revision_id"] is None
 
 
 def test_resolved_plan_matches_the_configuration():
@@ -164,7 +167,7 @@ def test_command_uses_only_the_campaign_id():
         execution_command("not-a-uuid")
 
 
-def test_readiness_is_reported_not_enforced(monkeypatch):
+def test_runtime_difference_is_recorded_not_enforced(monkeypatch):
     row, _ = frozen_row()
 
     class Snapshot:
@@ -176,10 +179,44 @@ def test_readiness_is_reported_not_enforced(monkeypatch):
     report = execution_readiness(FakeRepository(row), row, environment=lambda: dict(ENVIRONMENT, python="3.13"),
                                  dataset_resolver=lambda _id: Snapshot())
     status = {c["check"]: c for c in report["checks"]}
-    assert not report["ready"]
-    assert status["code_environment_identity"]["differing_keys"] == ["python"]
-    assert status["model_catalog_identity"]["code"] == "CANONICAL_MODEL_CATALOG_IDENTITY_REQUIRED"
+    # A different runtime (e.g. local macOS venv vs Docker) is information, not a barrier;
+    # an empty model catalog is filled on the first claim.
+    assert report["ready"]
+    assert status["code_environment_identity"] == dict(
+        check="code_environment_identity", status="INFO", code=None, differing_keys=["python"])
+    assert status["model_catalog_identity"]["status"] == "PASS"
     assert status["test_forbidden"]["status"] == "PASS" and status["e10_schema"]["status"] == "PASS"
+
+
+def test_paused_campaign_is_executable_and_duplicate_catalog_rows_are_not(monkeypatch):
+    row, _ = frozen_row()
+    row["state"] = "paused"
+
+    class Snapshot:
+        def metadata(self):
+            return dict(row["dataset_snapshot"])
+
+    class Duplicates(FakeRepository):
+        @contextmanager
+        def transaction(self, readonly=False):
+            class Result:
+                def scalar_one(self):
+                    return 2
+
+            class Connection:
+                def execute(self, *args, **kwargs):
+                    return Result()
+
+            yield Connection()
+
+    monkeypatch.setattr("src.malaria_dl.data.governed_dataset.assert_run_dataset_snapshot_unchanged",
+                        lambda a, b: None)
+    report = execution_readiness(Duplicates(row), row, environment=lambda: dict(ENVIRONMENT),
+                                 dataset_resolver=lambda _id: Snapshot())
+    status = {c["check"]: c for c in report["checks"]}
+    assert status["campaign_state_executable"]["status"] == "PASS"
+    assert status["model_catalog_identity"]["code"] == "CANONICAL_MODEL_CATALOG_IDENTITY_REQUIRED"
+    assert not report["ready"]
 
 
 @pytest.mark.parametrize("field", ["name", "purpose", "actor"])

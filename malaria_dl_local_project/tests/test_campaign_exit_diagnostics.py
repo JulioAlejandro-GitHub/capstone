@@ -17,7 +17,10 @@ def test_child_exit_preserved_without_accepting_partial_results(exit_code, expec
         def get(self, *args):
             return {'state': 'frozen'}
 
-        def claim(self, *args):
+        def preflight_e10_schema(self):
+            pass
+
+        def claim(self, *args, **kwargs):
             self.claims += 1
             return {'run_id': 'synthetic'} if self.claims == 1 else None
 
@@ -41,5 +44,6 @@ def test_child_exit_preserved_without_accepting_partial_results(exit_code, expec
         repo, 'synthetic', 'unused', check=lambda *args: None,
         launch=lambda *args: exit_code,
     )
-    assert status == 2
+    # A failed TRAIN stops the launcher (exit 1); no second member is claimed.
+    assert status == 1 and repo.claims == 1
     assert repo.outcomes == [('synthetic', 'failed', expected)]

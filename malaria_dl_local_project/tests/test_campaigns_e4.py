@@ -156,6 +156,9 @@ def test_new_registry_only_affects_new_plans(monkeypatch):
             registry.resolve_descriptor("custom_cnn"), id="synthetic_cnn", aliases=()
         )
     )
+    # A new model exists only with a public.models row; simulate that row here.
+    names = registry.registered_models()
+    monkeypatch.setattr(registry, "registered_models", lambda: names + ("synthetic_cnn",))
     assert expand_matrix(request())["expected_count"] == 16
     assert canonical(original) == saved
 

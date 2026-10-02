@@ -54,6 +54,38 @@ def project_configuration(connection, run_id, config):
     _insert(connection, 'run_configurations', row)
 
 
+EVALUATION_CONTEXT_KEY = 'e10_v2_evaluation_context_v1'
+
+
+def training_evaluation_context(*, checkpoint_artifact_id, protocol, dataset_version_id,
+                                population, input_contract):
+    """Producer side of e10_v2_evaluation_context_v1, from persisted evidence only.
+
+    protocol: the campaign's frozen protocol (its own 'version').
+    population: VAL sample paths actually predicted for the selected checkpoint.
+    comparison_contract_hash is identical for every member of a campaign (same
+    dataset, VAL population and protocol), so rows sharing it are comparable;
+    input_contract_hash differs per architecture and stays outside it.
+    """
+    from ..campaigns.contracts import digest
+    if not isinstance(protocol, dict) or not protocol.get('version') or not population:
+        raise ResultPersistenceError()
+    population_hash = digest({'dataset_version_id': str(dataset_version_id), 'split': 'val',
+                              'samples': sorted(population)})
+    protocol_hash = digest(protocol)
+    return {
+        'checkpoint_artifact_id': str(checkpoint_artifact_id),
+        'protocol_version': str(protocol['version']),
+        'protocol_hash': protocol_hash,
+        'protocol_snapshot': protocol,
+        'population_hash': population_hash,
+        'input_contract_hash': digest(input_contract),
+        'comparison_contract_hash': digest({
+            'dataset_version_id': str(dataset_version_id), 'population_hash': population_hash,
+            'protocol_hash': protocol_hash, 'metric_definition': 'binary_nullable_v2'}),
+    }
+
+
 def _evaluation_context(connection, event):
     run = connection.execute(text('SELECT * FROM runs WHERE id=:run'), {'run': event.run_id}).mappings().one()
     context = run['execution_parameters'].get('e10_v2_evaluation_context_v1')

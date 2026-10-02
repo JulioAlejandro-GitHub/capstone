@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """Execute persisted campaigns. Historical pure planning helpers remain import-compatible.
 
-    python run_train_all_models.py --campaign-id <UUID>          execute (dataset from the campaign)
-    python run_train_all_models.py --campaign-id <UUID> --plan   read-only execution plan, no TRAIN
+    cd malaria_dl_local_project && source .venv-local-train/bin/activate
+    python run_train_all_models.py --campaign-id <UUID>             execute every pending member
+    python run_train_all_models.py --campaign-id <UUID> --dry-run   full preflight, no attempt
+    python run_train_all_models.py --campaign-id <UUID> --plan      read-only execution plan
+
+Everything else (dataset, members, seeds, configuration, IDs, database target)
+comes from PostgreSQL or is generated. Rerunning the same command continues.
 """
 
 import argparse
@@ -10,6 +15,12 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+
+if __name__ == "__main__":
+    # Before heavy imports: a wrong interpreter fails with an actionable message.
+    from src.malaria_dl.execution.local_launch import bootstrap
+
+    bootstrap()
 
 from src.malaria_dl.data.governed_dataset import (
     dataset_uuid_arg,
@@ -148,8 +159,19 @@ def build_matrix(args):
 
 
 def main():
+    from sqlalchemy.exc import OperationalError
+    from src.malaria_dl.campaigns.contracts import CampaignError
+    from src.malaria_dl.data.governed_dataset import GovernedDatasetError
     from src.malaria_dl.execution.campaign import main as execute_campaign
-    return execute_campaign()
+    try:
+        return execute_campaign()
+    except OperationalError:
+        print("STOP DATABASE_UNREACHABLE: inicie PostgreSQL (docker compose up -d db)",
+              file=sys.stderr)
+    except (CampaignError, GovernedDatasetError) as exc:
+        # Raised before any claim (preflight, global gate): nothing was reserved.
+        print(f"STOP {exc}", file=sys.stderr)
+    return 1
 
 
 if __name__ == "__main__":

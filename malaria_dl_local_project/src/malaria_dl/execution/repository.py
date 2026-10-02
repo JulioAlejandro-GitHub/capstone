@@ -82,7 +82,8 @@ class ExecutionRepository(CampaignRepository):
         with self.transaction(readonly=True) as c:
             return require_e10_schema(c)
 
-    def claim(self, campaign_id, owner, host, parent_pid, artifact_root, revision_id=None):
+    def claim(self, campaign_id, owner, host, parent_pid, artifact_root, revision_id=None,
+              observed_runtime=None):
         from .schema import require_e10_schema
         with self.transaction() as c:
             require_e10_schema(c)
@@ -141,6 +142,7 @@ class ExecutionRepository(CampaignRepository):
                 campaign_id=(campaign_id if execute(
                     c, "SELECT to_regclass('campaign_technical_revisions') IS NOT NULL"
                 ).scalar_one() else None),
+                runtime=observed_runtime,
             )
             execute(
                 c,
@@ -173,7 +175,7 @@ class ExecutionRepository(CampaignRepository):
     @staticmethod
     def _create_run(
         c, run, config, dataset, environment, experiment=None, evidence_id=None,
-        campaign_id=None,
+        campaign_id=None, runtime=None,
     ):
         from .schema import require_e10_schema, V2_REVISION
         revision = require_e10_schema(c)['revision']
@@ -187,6 +189,18 @@ class ExecutionRepository(CampaignRepository):
             .scalars()
             .all()
         )
+        if not models:
+            # First run of a registry model: the catalog row is derivable, not an
+            # operator task. Duplicates remain an identity error, never a guess.
+            from ..persistence.tracking import model_defaults
+            d = model_defaults(config["model_id"])
+            models = [execute(
+                c,
+                "INSERT INTO models(name,model_type,framework,architecture,pretrained,pretrained_source) "
+                "VALUES(:name,:model_type,:framework,:architecture,:pretrained,:pretrained_source) RETURNING id",
+                name=config["model_id"], **{k: d.get(k) for k in (
+                    "model_type", "framework", "architecture", "pretrained", "pretrained_source")},
+            ).scalar_one()]
         if len(models) != 1:
             raise CampaignError("CANONICAL_MODEL_CATALOG_IDENTITY_REQUIRED")
         snapshot = {
@@ -210,12 +224,76 @@ class ExecutionRepository(CampaignRepository):
                 {
                     "model_configuration_e2": snapshot,
                     "dataset_verification_evidence_id": evidence_id,
+                    # Observed runtime (host, OS, packages, code hash): recorded for
+                    # reproducibility, never compared against the campaign reference.
+                    **({"runtime_environment": runtime} if runtime is not None else {}),
                 }
             ),
         )
         if revision == V2_REVISION:
             from ..persistence.v2_projection import project_configuration
             project_configuration(c, run, config)
+
+    def bind_evaluation_context(self, run_id, owner, selected_epoch):
+        """V2 producer, before VAL results are projected: register the selected
+        checkpoint as the run's model_checkpoint artifact and record the evaluation
+        provenance. Built only from persisted evidence (this run's artifact and
+        prediction records, the campaign's frozen protocol). Idempotent; fenced."""
+        from .schema import require_e10_schema, V2_REVISION
+        from ..persistence.v2_projection import EVALUATION_CONTEXT_KEY, training_evaluation_context
+        with self.transaction() as c:
+            if require_e10_schema(c)['revision'] != V2_REVISION:
+                return None  # E10 schema stores results in runs.parameters instead
+            self.authorize(c, owner)
+            session = execute(c, "SELECT * FROM train_execution_sessions WHERE run_id=CAST(:id AS uuid) FOR UPDATE",
+                              id=identifier(run_id)).mappings().one()
+            if str(session["owner"]) != identifier(owner) or session["state"] != "active":
+                raise CampaignError("TRAIN_OWNER_FENCED")
+            if not session["attempt_id"]:
+                raise CampaignError("CAMPAIGN_PROTOCOL_REQUIRED")
+            protocol = execute(c, """SELECT ec.protocol FROM experimental_campaigns ec
+                JOIN campaign_members m ON m.campaign_id=ec.id
+                JOIN campaign_attempts a ON a.member_id=m.id WHERE a.id=CAST(:attempt AS uuid)""",
+                attempt=str(session["attempt_id"])).scalar_one()
+
+            def record(kind):
+                rows = execute(c, """SELECT payload FROM train_execution_records AS record
+                    WHERE run_id=CAST(:id AS uuid) AND kind=:kind AND (to_jsonb(record)->>'event_id') IS NULL
+                      AND (payload->>'epoch')::int=:epoch""",
+                    id=identifier(run_id), kind=kind, epoch=int(selected_epoch)).scalars().all()
+                if len(rows) != 1:
+                    raise CampaignError("EXACT_CHECKPOINT_REQUIRED")
+                return rows[0]
+
+            artifact, predictions = record("artifact"), record("predictions")
+            from .artifacts import file_identity
+            if file_identity(artifact["path"]) != {"sha256": artifact["sha256"], "bytes": artifact["bytes"]}:
+                raise CampaignError("CHECKPOINT_IDENTITY_CONFLICT")
+            from uuid import uuid5, UUID
+            artifact_id = str(uuid5(UUID(identifier(run_id)), "model_checkpoint:" + artifact["version_id"]))
+            context = training_evaluation_context(
+                checkpoint_artifact_id=artifact_id, protocol=protocol,
+                dataset_version_id=session["dataset"]["dataset_version_id"],
+                population=[s["sample"] for s in predictions["samples"]],
+                input_contract=session["configuration"]["resolved"]["input_contract"])
+            current = execute(c, "SELECT execution_parameters->:key FROM runs WHERE id=CAST(:id AS uuid) FOR UPDATE",
+                              key=EVALUATION_CONTEXT_KEY, id=identifier(run_id)).scalar_one()
+            if current is not None:
+                if canonical(current) != canonical(context):
+                    raise CampaignError("EVALUATION_CONTEXT_CONFLICT")
+                return context
+            execute(c, """INSERT INTO artifacts(id,run_id,artifact_type,name,path,mime_type,file_size_bytes,checksum,metadata)
+                VALUES(CAST(:id AS uuid),CAST(:run AS uuid),'model_checkpoint',:name,:path,
+                       'application/octet-stream',:bytes,:sha256,CAST(:metadata AS jsonb))""",
+                id=artifact_id, run=identifier(run_id), name=Path(artifact["path"]).name,
+                path=artifact["path"], bytes=artifact["bytes"], sha256=artifact["sha256"],
+                metadata=canonical({"source": "e10_train", "role": "selected_checkpoint",
+                                    "epoch": artifact["epoch"], "phase": artifact["phase"],
+                                    "version_id": artifact["version_id"]}))
+            execute(c, """UPDATE runs SET execution_parameters=execution_parameters ||
+                    jsonb_build_object(CAST(:key AS text),CAST(:context AS jsonb)) WHERE id=CAST(:id AS uuid)""",
+                key=EVALUATION_CONTEXT_KEY, context=canonical(context), id=identifier(run_id))
+            return context
 
     def put(self, run_id, owner, kind, phase, key, payload):
         with self.transaction() as c:
@@ -361,7 +439,17 @@ class ExecutionRepository(CampaignRepository):
                 JOIN campaign_members m ON m.campaign_id=ec.id
                 JOIN campaign_attempts a ON a.member_id=m.id WHERE a.id=CAST(:attempt AS uuid)''',
                 attempt=str(session['attempt_id'])).scalar_one()
-        return CompletionEvidence(session, run, read_legacy_execution_records(c, run_id), events, campaign_dataset)
+        projected = None
+        if 'training_results' not in (run['parameters'] or {}) and execute(
+                c, "SELECT to_regclass('run_clinical_metrics') IS NOT NULL").scalar_one():
+            projected = execute(c, """SELECT e.source_event_id,e.threshold_used,e.threshold_source,
+                    m.tn,m.fp,m.fn,m.tp,m.roc_auc_parasitized,m.pr_auc_parasitized
+                FROM evaluations e JOIN run_clinical_metrics m ON m.evaluation_id=e.id
+                WHERE e.run_id=CAST(:id AS uuid) AND e.evaluation_role='training_validation_final'""",
+                **params).mappings().one_or_none()
+            projected = dict(projected) if projected else None
+        return CompletionEvidence(session, run, read_legacy_execution_records(c, run_id), events,
+                                  campaign_dataset, projected)
 
     def scientific_completion(self, run_id):
         """Revalidate sealed E10 evidence; finish rechecks under transition locks."""

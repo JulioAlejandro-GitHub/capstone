@@ -119,6 +119,9 @@ class CompletionEvidence:
     records: list
     events: list
     campaign_dataset: dict | None = None
+    # V2 schema: the 'training_validation_final' evaluation + run_clinical_metrics
+    # row projected from the EVALUATION_COMPLETED event (runs.parameters holds no results).
+    projected_validation: dict | None = None
 
 
 def is_e10_governed(evidence):
@@ -134,6 +137,22 @@ def _same(a, b):
 def _close(a, b):
     return (type(a) in (int,float) and type(b) in (int,float) and math.isfinite(a) and math.isfinite(b)
             and math.isclose(a,b,rel_tol=METRIC_TOLERANCE,abs_tol=METRIC_TOLERANCE))
+
+
+def _projection_matches(row, event, evaluation):
+    """The persisted V2 result must be exactly the projection of this event."""
+    if not row or str(row['source_event_id']) != str(event.event_id):
+        raise TrainingResultsMismatch()
+    cm = evaluation.confusion_matrix
+    if ((row['tn'], row['fp'], row['fn'], row['tp']) != (cm.tn, cm.fp, cm.fn, cm.tp)
+            or row['threshold_source'] != evaluation.threshold.source
+            or not _close(float(row['threshold_used']), evaluation.threshold.value)):
+        raise TrainingResultsMismatch()
+    for column, value in (('roc_auc_parasitized', evaluation.metrics.roc_auc),
+                          ('pr_auc_parasitized', evaluation.metrics.pr_auc)):
+        stored = row[column]
+        if (stored is None) != (value is None) or (value is not None and not _close(float(stored), value)):
+            raise TrainingResultsMismatch()
 
 
 class TrainingCompletionValidator:
@@ -169,10 +188,14 @@ class TrainingCompletionValidator:
             raise InvalidEventStream()
         terminal = terminals[0]
         try:
-            results = TrainingResultsV1.from_dict(run['parameters']['training_results'])
             evaluation = ValidationEvaluationV1.from_dict(ev.to_dict()['payload'])
-            if not _same(results.validation.to_dict(),evaluation.to_dict()):
-                raise TrainingResultsMismatch()
+            if 'training_results' in (run['parameters'] or {}):
+                results = TrainingResultsV1.from_dict(run['parameters']['training_results'])
+                if not _same(results.validation.to_dict(),evaluation.to_dict()):
+                    raise TrainingResultsMismatch()
+            else:
+                _projection_matches(evidence.projected_validation, ev, evaluation)
+                results = TrainingResultsV1(evaluation)
         except (KeyError,ValueError,TypeError,OverflowError):
             raise TrainingResultsMismatch() from None
         if (str(run['id']) != rid or run['run_type'] != 'training'

@@ -92,7 +92,7 @@ def test_frozen_twelve_and_resume_without_retraining(execution, tmp_path):
 
 
 @safe_test
-def test_individual_failure_continues(execution, tmp_path):
+def test_individual_failure_stops_and_rerun_retries(execution, tmp_path):
     row = execution.s.freeze()
     repo = execution.repo
     calls = []
@@ -103,14 +103,14 @@ def test_individual_failure_continues(execution, tmp_path):
             return 2
         return synthetic_train(repo, s)
 
-    code, summary = execute_campaign(
-        repo,
-        str(row["id"]),
-        tmp_path,
-        check=lambda *a: None,
-        launch=launch,
-        loader=lambda *a: None,
-    )
+    options = dict(check=lambda *a: None, launch=launch, loader=lambda *a: None)
+    code, summary = execute_campaign(repo, str(row["id"]), tmp_path, **options)
+    # The first failure stops the launcher; no further member is claimed.
+    assert code == 1 and summary["members"]["failed"] == 1 and summary["attempts"] == len(calls)
+    for _ in range(40):  # each rerun continues; failed members stay within budget
+        code, summary = execute_campaign(repo, str(row["id"]), tmp_path, resume=True, **options)
+        if code != 1:
+            break
     assert (
         code == 2
         and summary["members"]["verified"] == 8
@@ -139,15 +139,17 @@ def test_idempotency_and_fenced_owner(execution, tmp_path):
 
 
 @safe_test
-def test_systemic_failure_pauses_before_claim(execution, tmp_path):
+def test_initial_preflight_failure_stops_without_mutation(execution, tmp_path):
     row = execution.s.freeze()
     repo = execution.repo
 
     def reject(*a):
         raise CampaignError("DATASET_CHANGED")
 
-    code, summary = execute_campaign(repo, str(row["id"]), tmp_path, check=reject)
-    assert code == 3 and summary["state"] == "paused" and summary["attempts"] == 0
+    with pytest.raises(CampaignError, match="DATASET_CHANGED"):
+        execute_campaign(repo, str(row["id"]), tmp_path, check=reject)
+    summary = repo.summary(str(row["id"]))
+    assert summary["state"] == "frozen" and summary["attempts"] == 0 and summary["reasons"] == []
 
 
 @safe_test
@@ -158,7 +160,7 @@ def test_zero_exit_without_evidence_never_verified(execution, tmp_path):
         repo, str(row["id"]), tmp_path, check=lambda *a: None, launch=lambda *a: 0
     )
     assert (
-        code == 2 and summary["members"]["verified"] == 0 and summary["attempts"] == 36
+        code == 1 and summary["members"]["verified"] == 0 and summary["attempts"] == 1
     )
 
 
@@ -209,7 +211,7 @@ def test_parent_interruption_retains_attempt(execution, tmp_path):
         repo, str(row["id"]), tmp_path, check=lambda *a: None, launch=launch
     )
     assert (
-        code == 3
+        code == 130  # Ctrl+C: interrupted run kept, rerun resumes
         and summary["members"]["interrupted"] == 1
         and summary["attempts"] == 1
     )

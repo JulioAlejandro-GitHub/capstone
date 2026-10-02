@@ -66,6 +66,9 @@ def test_discovery_and_descriptor_errors(monkeypatch, tmp_path):
     reg.register(tiny)
     reg.register(replace(tiny, id="disabled", enabled=False))
     reg.register(replace(tiny, id="not_trainable", trainable=False))
+    # A new model exists only with a public.models row; simulate that row here.
+    names = reg.registered_models()
+    monkeypatch.setattr(reg, "registered_models", lambda: names + ("synthetic",))
     matrix = batch.build_matrix(batch.parse_args(["--dataset-version-id", UUID]))
     assert len(matrix) == 16
     assert {m for m, _, _ in matrix} == set(reg.enabled_models())
@@ -88,9 +91,14 @@ def test_discovery_and_descriptor_errors(monkeypatch, tmp_path):
     built.model.save(tmp_path / "tiny.keras")
     loaded = tf.keras.models.load_model(tmp_path / "tiny.keras")
     np.testing.assert_allclose(loaded(x).numpy(), built.model(x).numpy(), atol=1e-6)
-    for name in ("disabled", "not_trainable", "unknown"):
-        with pytest.raises(ValueError):
+    monkeypatch.setattr(
+        reg, "registered_models", lambda: names + ("synthetic", "disabled", "not_trainable")
+    )
+    for name in ("disabled", "not_trainable"):
+        with pytest.raises(ValueError, match="^MODEL_NOT_EXECUTABLE:"):
             reg.resolve_descriptor(name)
+    with pytest.raises(ValueError, match="^MODEL_NOT_REGISTERED:unknown$"):
+        reg.resolve_descriptor("unknown")
     for d in (
         tiny,
         replace(tiny, id="ambiguous", aliases=("custom_cnn",)),

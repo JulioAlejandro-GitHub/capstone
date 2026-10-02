@@ -1,4 +1,7 @@
-"""Global experimental execution fence, Linux process barrier and resource circuit.
+"""Global experimental execution fence, process barrier and resource circuit.
+
+Linux (Docker) reads /proc and the cgroup; other hosts (the macOS local TRAIN
+launcher) use psutil for the same process identities and memory headroom.
 
 An advisory lock serializes coordinators; durable process identity prevents a
 released DB connection from authorizing work while an orphan is still alive.
@@ -22,6 +25,7 @@ LOCK_ID = 1
 POLICY = {'version': 'e93_sequential_v1', 'minimum_available_bytes': 1024**3,
           'pause_after_consecutive_failures': 2, 'pause_on_new_oom_kill': True}
 CURRENT = ContextVar('capstone_global_execution', default=None)
+LINUX = Path('/proc/self/stat').exists()
 
 
 def token():
@@ -29,7 +33,25 @@ def token():
     return gate.owner if gate else os.getenv('CAPSTONE_EXECUTION_TOKEN')
 
 
+def _psutil_process_table():
+    import psutil
+    result = {}
+    for p in psutil.process_iter(['pid', 'ppid', 'create_time', 'status']):
+        pid = p.info['pid']
+        try:
+            session = os.getsid(pid)
+        except OSError:
+            session = None
+        created = p.info['create_time']
+        result[pid] = {'pid': pid, 'ppid': p.info['ppid'], 'session': session,
+                       'start_ticks': None if created is None else f'{created:.6f}',
+                       'state': p.info['status']}
+    return result
+
+
 def process_table():
+    if not LINUX:
+        return _psutil_process_table()
     result = {}
     for path in Path('/proc').iterdir():
         if not path.name.isdigit():
@@ -49,8 +71,24 @@ def process_table():
 
 
 def host_identity():
-    return {'host': socket.gethostname(),
-            'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip()}
+    if LINUX:
+        boot = Path('/proc/sys/kernel/random/boot_id').read_text().strip()
+    else:
+        import psutil
+        boot = f'boot-{psutil.boot_time():.0f}'
+    return {'host': socket.gethostname(), 'boot_id': boot}
+
+
+def cmdline(pid):
+    if LINUX:
+        return Path(f'/proc/{pid}/cmdline').read_bytes().split(b'\0')
+    import psutil
+    try:
+        return psutil.Process(pid).cmdline()
+    except (psutil.NoSuchProcess, psutil.ZombieProcess):
+        raise FileNotFoundError(pid) from None
+    except psutil.AccessDenied:
+        return []  # other users' processes cannot be Capstone coordinators
 
 
 def process_identity(pid):
@@ -91,6 +129,10 @@ def descendants(table, parent):
 
 
 def resources():
+    if not LINUX:
+        import psutil
+        return {'available_bytes': psutil.virtual_memory().available,
+                'cgroup_current_bytes': None, 'cgroup_max': 'max', 'oom_kill': 0}
     memory = {line.split(':')[0]: int(line.split()[1]) * 1024
               for line in Path('/proc/meminfo').read_text().splitlines()
               if line.startswith(('MemAvailable:', 'MemTotal:'))}
@@ -112,6 +154,13 @@ def assert_available(value):
 def verify_retained_processes(evidence):
     if not evidence:
         return
+    here = host_identity()
+    if any(any(i.get(k) != v for k, v in here.items()) for i in evidence.get('identities', [])):
+        # Evidence from the other host (Docker <-> macOS): its coordinator's own
+        # clean release is the only proof available; anything else stays blocked.
+        if evidence.get('release_confirmed') is True:
+            return
+        raise CampaignError('REMOTE_PROCESS_ABSENCE_UNPROVEN')
     table = process_table()
     for identity in evidence.get('identities', []):
         if not process_absent(identity, table):
@@ -168,7 +217,7 @@ class GlobalGate:
                 if pid == os.getpid():
                     continue
                 try:
-                    args = Path(f'/proc/{pid}/cmdline').read_bytes().split(b'\0')
+                    args = cmdline(pid)
                     if managed_execution(args):
                         raise CampaignError('UNREGISTERED_COORDINATOR_OR_WORKER_ALIVE')
                 except FileNotFoundError:
@@ -177,7 +226,8 @@ class GlobalGate:
             if row['blocked_reason'] and not self.acknowledge:
                 raise CampaignError('GLOBAL_RESOURCE_CIRCUIT_REQUIRES_ACK')
             # Adopt orphaned descendants, including children that create a new SID.
-            if ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0) != 0:
+            # Linux only; elsewhere escaped descendants are still found by session id.
+            if LINUX and ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0) != 0:
                 raise CampaignError('PROCESS_SUBREAPER_REQUIRED')
             parent = process_identity(os.getpid())
             self.sql("UPDATE experiment_execution_gate SET owner=CAST(:owner AS uuid),"

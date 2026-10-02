@@ -189,7 +189,9 @@ def test_cli_plan_reaches_the_execution_boundary_without_train(connection, monke
     assert checks["dataset_snapshot_unchanged"]["status"] == "PASS"
     assert checks["test_forbidden"]["status"] == "PASS"
     assert checks["frozen_adapters_available"]["status"] == "PASS"
-    assert checks["code_environment_identity"]["status"] == "PASS"  # same process environment as creation
+    # Runtime identity is informational (recorded per run), never a precondition.
+    assert checks["code_environment_identity"]["status"] == "INFO"
+    assert checks["code_environment_identity"]["differing_keys"] == []  # same process environment as creation
     for table in ("campaign_attempts", "runs", "train_execution_sessions", "train_execution_records"):
         assert before[table] == 0
 

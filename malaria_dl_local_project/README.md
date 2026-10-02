@@ -868,7 +868,42 @@ TRAIN requieren persistencia PostgreSQL incluso sin `--track-db`; para inspecci�
 BD use `--dry-run`. Consulte [Cómo agregar y habilitar un modelo](docs/model_registry_e2.md)
 para configuración, adaptadores, matriz predeterminada y límites E3–E9.
 
-## 10. Ejecución local con agente (Mac) + backend/PostgreSQL en Docker
+## Ejecución de una campaña (Mac o Docker)
+
+Interfaz normal y única necesaria:
+
+```bash
+cd capstone/malaria_dl_local_project
+source .venv-local-train/bin/activate
+python run_train_all_models.py --campaign-id <CAMPAIGN_UUID>
+```
+
+Todo lo demás sale de PostgreSQL (dataset, miembros, configuraciones, seeds) o se
+genera (attempt, run, owner). En el Mac el launcher habla directamente con el
+PostgreSQL de Docker Compose publicado en `127.0.0.1:5432`, con el mismo rol de runtime
+y el mismo `.env` raíz que el backend: no hay HTTP, JWT, `agent_config.json` ni
+`revision_id`. Requisito: `docker compose up -d db`.
+
+- **Preflight** (antes de crear nada): entorno virtual, esquema E10, dataset
+  materializado (fingerprints y conteos), configuración congelada, TEST bloqueado,
+  escritura de artifacts y global gate libre. Si falla imprime `STOP <código>` y no
+  modifica la campaña.
+- **Runtime**: el entorno real (Python, TF, paquetes, `source_sha256`, OS, host) se
+  **registra** en `runs.execution_parameters.runtime_environment`; una diferencia con el
+  entorno de referencia de la campaña se informa, no bloquea.
+- **Secuencial**: un TRAIN a la vez. Si un TRAIN falla se registra el intento y el
+  launcher termina con código 1 sin iniciar otro miembro.
+- **Ctrl+C**: el run queda `interrupted` y el subproceso se termina; el código de salida
+  es 130.
+- **Reanudar**: re-ejecutar el mismo comando. Los miembros verificados no se repiten; los
+  fallidos o interrumpidos se reintentan dentro del presupuesto de la campaña.
+- Opcional: `--dry-run` (preflight completo + siguiente miembro, sin escrituras),
+  `--plan`, `--inspect`.
+
+## 10. (Heredado) Ejecución local con agente HTTP (Mac) + backend/PostgreSQL en Docker
+
+> Ya no es necesario para ejecutar campañas: ver la sección anterior. Se conserva para
+> los intentos controlados históricos con revisión técnica.
 
 `src/malaria_dl/local_execution/` implementa un modo de ejecución `local_python`: el
 backend y PostgreSQL permanecen en Docker (administración de campañas, reservas,

@@ -58,9 +58,9 @@ CONFIGURATION_KEYS = {"version", "models", "optimizers", "seeds", "variants", "p
 
 
 def _registry():
-    from ..models.registry import MODEL_REGISTRY, enabled_models
+    from ..models.registry import enabled_models, resolve_descriptor
 
-    return [MODEL_REGISTRY[i] for i in enabled_models()]
+    return [resolve_descriptor(i) for i in enabled_models()]
 
 
 def _get(tree, path):

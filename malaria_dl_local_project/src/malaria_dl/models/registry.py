@@ -64,10 +64,26 @@ def register(descriptor):
     MODEL_REGISTRY[descriptor.id] = descriptor
 
 
+def registered_models():
+    """Names in public.models: the only source of which models exist."""
+    from sqlalchemy import text
+    from ..campaigns.repository import connection_scope
+
+    with connection_scope(readonly=True) as c:
+        return tuple(
+            c.execute(text("SELECT DISTINCT name FROM public.models ORDER BY name")).scalars()
+        )
+
+
 def resolve_descriptor(name, *, executable=True):
+    # public.models decides existence; MODEL_REGISTRY only says how Python implements it.
     matches = [d for d in MODEL_REGISTRY.values() if name in (d.id, *d.aliases)]
-    if len(matches) != 1:
+    if len(matches) > 1:
         raise ValueError("UNKNOWN_OR_AMBIGUOUS_MODEL:" + str(name))
+    if (matches[0].id if matches else name) not in registered_models():
+        raise ValueError("MODEL_NOT_REGISTERED:" + str(name))
+    if not matches:
+        raise ValueError("IMPLEMENTATION_NOT_AVAILABLE:" + str(name))
     descriptor = matches[0]
     if executable and not (descriptor.enabled and descriptor.trainable):
         raise ValueError("MODEL_NOT_EXECUTABLE:" + str(name))
@@ -75,7 +91,8 @@ def resolve_descriptor(name, *, executable=True):
 
 
 def enabled_models():
-    return tuple(d.id for d in MODEL_REGISTRY.values() if d.enabled and d.trainable)
+    # No implementation filter: a registered model without one fails in resolve_descriptor.
+    return registered_models()
 
 
 def model_arg(name):
@@ -90,6 +107,7 @@ def model_arg(name):
 from .optimizers import OPTIMIZER_DEFAULTS
 
 _CONFIG = Path(__file__).resolve().parents[3] / "configs" / "models"
+# Python implementations only: which models exist is decided by public.models.
 for _id, _aliases, _adapter, _strategies, _internal in (
     ("custom_cnn", (), "CustomCNNAdapter", ("base",), None),
     (

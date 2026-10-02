@@ -206,8 +206,28 @@ def resolve_governed_dataset(dataset_version_id=None) -> GovernedDatasetSnapshot
         return _resolve(connection, requested)
 
 
+def governed_relative_root(path) -> tuple:
+    """Location identity of a materialization: its path under <project>/data.
+
+    The absolute prefix depends on the host (/app/... in Docker, the checkout on
+    macOS); materializations are stored relative to <project>/data.
+    """
+    parts = Path(path).parts
+    if "data" not in parts:
+        return parts
+    return parts[len(parts) - parts[::-1].index("data"):]
+
+
+def local_dataset_root(path) -> Path:
+    """The same governed materialization on this host."""
+    if Path(path).is_dir():
+        return Path(path)
+    return (PROJECT_ROOT / "data").joinpath(*governed_relative_root(path))
+
+
 def assert_run_dataset_snapshot_unchanged(requested, persisted) -> None:
-    # Compare identity plus accredited physical location; never accept a relocated alias.
+    # Compare identity plus accredited location under <project>/data; the host
+    # prefix may differ (Docker vs local), a different materialization may not.
     keys = (
         "dataset_version_id",
         "dataset_materialization_id",
@@ -228,11 +248,9 @@ def assert_run_dataset_snapshot_unchanged(requested, persisted) -> None:
     )
     if any(not right.get(k) or left.get(k) != right.get(k) for k in keys):
         raise GovernedDatasetError("RUN_DATASET_SNAPSHOT_IMMUTABLE")
-    if (
-        right.get("dataset_root")
-        and Path(left["dataset_root"]).resolve()
-        != Path(right["dataset_root"]).resolve()
-    ):
+    if right.get("dataset_root") and governed_relative_root(
+        left["dataset_root"]
+    ) != governed_relative_root(right["dataset_root"]):
         raise GovernedDatasetError("RUN_DATASET_ROOT_IMMUTABLE")
     if right.get("counts") is not None and left.get("counts") != right["counts"]:
         raise GovernedDatasetError("RUN_DATASET_COUNTS_IMMUTABLE")

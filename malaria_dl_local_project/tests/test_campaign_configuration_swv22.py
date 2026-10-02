@@ -83,9 +83,12 @@ def test_early_stopping_contract_exposes_its_real_parameters(catalog):
     assert catalog["protocol"]["fixed"]["sensitivity_target"] == load_protocol()["objective"]["value"]
 
 
-def test_new_registered_descriptor_needs_no_campaign_change(catalog):
+def test_new_registered_descriptor_needs_no_campaign_change(catalog, monkeypatch):
     base = registry.MODEL_REGISTRY["custom_cnn"]
     registry.register(replace(base, id="swv22_probe", aliases=()))
+    # A new model exists only with a public.models row; simulate that row here.
+    names = registry.registered_models()
+    monkeypatch.setattr(registry, "registered_models", lambda: names + ("swv22_probe",))
     try:
         extended = cc.catalog()
         assert [m["id"] for m in extended["models"]][-1] == "swv22_probe"

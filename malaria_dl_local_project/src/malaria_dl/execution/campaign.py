@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import platform
 import signal
 import socket
 import subprocess
@@ -9,7 +10,7 @@ import sys
 from pathlib import Path
 from uuid import uuid4
 
-from ..campaigns.contracts import CampaignError
+from ..campaigns.contracts import CampaignError, member_configuration
 from ..campaigns.repository import identifier
 from ..campaigns.service import planning_environment
 from ..data.governed_dataset import (
@@ -20,6 +21,8 @@ from .artifacts import keras_loader, verify_session
 from .repository import ExecutionRepository
 from .schema import E10SchemaNotReady
 
+# Keys of the campaign's reference environment. Compared only to REPORT runtime
+# differences (plan, console); a difference is recorded on the run, never a barrier.
 IDENTITY_KEYS = (
     "source_sha256",
     "python",
@@ -29,18 +32,30 @@ IDENTITY_KEYS = (
 )
 
 
+def runtime_environment(environment=None):
+    """What actually executes this TRAIN; stored as runs.execution_parameters.runtime_environment."""
+    return {
+        **(environment or planning_environment)(),
+        "execution_mode": "docker" if Path("/.dockerenv").exists() else "local_python",
+        "platform": platform.system(),
+        "machine": platform.machine(),
+        "host": socket.gethostname(),
+    }
+
+
+def runtime_differences(row, current):
+    return sorted(k for k in IDENTITY_KEYS if current.get(k) != row["environment"].get(k))
+
+
 def preflight(
     repository,
     row,
     root,
     verifier=verify_dataset_for_execution,
-    environment=planning_environment,
 ):
+    """Protects the experiment: dataset, frozen configuration, TEST isolation, storage."""
     if row["state"] not in ("frozen", "active", "paused", "finalized"):
         raise CampaignError("CAMPAIGN_NOT_FROZEN")
-    current = environment()
-    if any(current.get(k) != row["environment"].get(k) for k in IDENTITY_KEYS):
-        raise CampaignError("FROZEN_CODE_ENVIRONMENT_CONFLICT_NEW_CAMPAIGN_REQUIRED")
     snapshot = verifier(
         str(row["dataset_version_id"]),
         expected_evidence_id=str(row["dataset_evidence_id"]),
@@ -182,7 +197,10 @@ def execute_campaign(
     launch=run_child,
     loader=keras_loader,
     revision_id=None,
+    log=lambda *_: None,
 ):
+    """Sequential: claim, TRAIN, verify, next. A failed TRAIN stops the loop (exit 1)
+    without claiming another member; rerunning retries it within the frozen budget."""
     from .global_gate import CURRENT
     from .controlled import technical_row
     gate = CURRENT.get()
@@ -196,9 +214,13 @@ def execute_campaign(
     # reconcile an existing campaign, nor consume a reservation.
     repository.preflight_e10_schema()
     owner = str(uuid4())
+    runtime = runtime_environment()
+    # First preflight is outside the systemic handler: a wrong dataset/config stops
+    # with NO mutation (no pause, no attempt). Later rechecks pause, as before.
+    row = runtime_row()
+    check(repository, row, root)
+    log("Preflight .......... OK (dataset, configuración congelada, TEST bloqueado, artifacts)")
     try:
-        row = runtime_row()
-        check(repository, row, root)
         if resume:
             reconcile(repository, row, loader)
             repository.resume(campaign_id)
@@ -207,21 +229,26 @@ def execute_campaign(
                 return (0 if summary["matrix_complete"] else 2), summary
         elif row["state"] not in ("frozen", "active"):
             raise CampaignError("USE_RESUME_FOR_STARTED_CAMPAIGN")
+        checked = True
         while True:
             if repository.get(campaign_id)['state'] == 'paused':
                 return 0, repository.summary(campaign_id)
             if gate is not None:
                 gate.require_healthy()
             # Common integrity is rechecked before every claim, not only the first.
-            check(repository, runtime_row(), root)
+            if not checked:
+                check(repository, runtime_row(), root)
+            checked = False
             session = repository.claim(
                 campaign_id, owner, socket.gethostname(), os.getpid(), root,
                 **({'revision_id': revision_id} if revision_id else {}),
+                observed_runtime=runtime,
             )
             if session is None:
                 break
             if gate is not None:
                 gate.active_run = str(session['run_id'])
+            log(session)
             try:
                 code = launch(session, repository)
                 current = repository.session(session["run_id"])
@@ -238,7 +265,8 @@ def execute_campaign(
                         gate.outcome(False)
                     if code == 3:
                         raise CampaignError("CHILD_SYSTEMIC_FAILURE")
-                    continue
+                    log(repository.session(session["run_id"]))
+                    return 1, repository.summary(campaign_id)
                 if gate is not None:
                     gate.require_healthy()
                 check(repository, runtime_row(), root)
@@ -246,6 +274,7 @@ def execute_campaign(
                 repository.finish(session["run_id"], owner, "verified", evidence)
                 if gate is not None:
                     gate.outcome(True)
+                log(repository.session(session["run_id"]))
             except KeyboardInterrupt:
                 repository.finish(
                     session["run_id"],
@@ -273,12 +302,15 @@ def execute_campaign(
         raise
     except (Exception, KeyboardInterrupt) as exc:  # noqa: BLE001 -- unknown failures are systemic, never success
         repository.pause(campaign_id, "SYSTEMIC_" + type(exc).__name__.upper())
-        return 3, repository.summary(campaign_id)
+        log(exc)
+        return (130 if isinstance(exc, KeyboardInterrupt) else 3), repository.summary(campaign_id)
 
 
 def parse_args(argv=None):
     p = argparse.ArgumentParser(
-        description="Execute a frozen PostgreSQL campaign; no scientific overrides"
+        description="Execute a frozen PostgreSQL campaign; no scientific overrides. "
+        "Normal use: --campaign-id only (pending members run sequentially; an "
+        "interrupted or paused campaign is resumed automatically)."
     )
     p.add_argument("--campaign-id", required=True, type=identifier)
     p.add_argument(
@@ -295,19 +327,88 @@ def parse_args(argv=None):
         "read-only, never reserves an attempt nor starts TRAIN",
     )
     mode.add_argument("--inspect", action="store_true")
-    mode.add_argument("--resume", action="store_true")
+    mode.add_argument("--resume", action="store_true",
+                      help="Accepted for compatibility; resuming is now the default")
     mode.add_argument("--result", action="store_true")
-    mode.add_argument('--dry-run', action='store_true')
-    p.add_argument("--artifact-root", default="outputs/campaign_runs")
+    mode.add_argument('--dry-run', action='store_true',
+                      help="Full preflight and next member; no attempt, no TRAIN, no DB writes")
+    p.add_argument("--artifact-root", default=None,
+                   help="Default: <project>/outputs/campaign_runs")
     p.add_argument('--technical-revision-id', type=identifier)
     p.add_argument('--revision-proposal', type=Path)
     return p.parse_args(argv)
 
 
+def describe(configuration):
+    resolved = configuration.get("resolved", {})
+    return " / ".join(str(x) for x in (
+        configuration.get("model_id"),
+        resolved.get("optimizer", {}).get("name"),
+        "seed %s" % resolved.get("execution", {}).get("seed"),
+    ))
+
+
+def console(row):
+    """Human progress lines; never prints credentials or the DATABASE_URL."""
+    total = len(row["members"])
+    done = [sum(m["state"] == "verified" for m in row["members"])]
+
+    def log(item):
+        if isinstance(item, str):
+            print(item)
+        elif isinstance(item, BaseException):
+            print(f"ERROR {type(item).__name__}: {item}", file=sys.stderr)
+        elif item["state"] == "active":
+            print(f"\n[{done[0] + 1}/{total}] {describe(item['configuration'])}\nRun: {item['run_id']}",
+                  flush=True)
+        elif item["state"] == "verified":
+            done[0] += 1
+            print("TRAIN verified.", flush=True)
+        else:
+            print(f"TRAIN {item['state']}: {item.get('cause')} (run {item['run_id']}). "
+                  "No se inicia otro miembro; re-ejecute el mismo comando para reintentar.",
+                  file=sys.stderr, flush=True)
+    return log
+
+
+def dry_run(repository, campaign_id, root):
+    """Everything execution checks before a claim, without claiming."""
+    from ..data.governed_dataset import resolve_governed_dataset
+    from .global_gate import status
+    repository.preflight_e10_schema()
+    row = repository.get(campaign_id)
+    # Same integrity verification, without persisting a dataset evidence row.
+    preflight(repository, row, root, verifier=lambda version, **_: resolve_governed_dataset(version))
+    budget = row["protocol"]["budget"]["max_attempts_per_member"]
+    eligible = sorted(
+        (m for m in row["members"] if m["state"] in ("pending", "failed", "interrupted")
+         and sum(a["member_id"] == m["id"] for a in row["attempts"]) < budget),
+        key=lambda m: (m["state"] != "pending", m["position"]))
+    gate = status(repository)
+    nxt = eligible[0] if eligible else None
+    return {"campaign_id": str(row["id"]), "state": row["state"], "writes": 0,
+            "eligible_members": len(eligible), "global_execution": gate,
+            "next_member": None if nxt is None else {
+                "position": nxt["position"], "seed": nxt["seed"],
+                "configuration": describe(member_configuration(row["contract"]["matrix"][
+                    "configurations"][nxt["configuration_hash"]]["configuration"], nxt["seed"]))},
+            "runtime_differences": runtime_differences(row, runtime_environment()),
+            "execution_ready": bool(eligible) and gate["available"]}
+
+
+def apply_determinism(row):
+    """The campaign's determinism variables reach every TRAIN child process."""
+    for key, value in (row["environment"].get("determinism_environment") or {}).items():
+        if value is not None:
+            os.environ.setdefault(key, str(value))
+
+
 def main(argv=None):
     import json
+    from ..common.paths import PROJECT_ROOT
 
     args = parse_args(argv)
+    root = Path(args.artifact_root) if args.artifact_root else PROJECT_ROOT / "outputs" / "campaign_runs"
     repo = ExecutionRepository()
     if args.plan:
         from ..campaigns.plan import execution_readiness, resolve_plan
@@ -324,23 +425,39 @@ def main(argv=None):
         # Campaign mode: the dataset comes only from the persisted campaign. An explicit
         # --dataset-version-id stays an assertion checked by repository.get.
         args.dataset_version_id = str(repo.get(args.campaign_id)["dataset_version_id"])
-    if args.dry_run:
+    if args.dry_run and (args.technical_revision_id or args.revision_proposal):
         from .controlled import queue_dry_run
         proposal = json.loads(args.revision_proposal.read_text()) if args.revision_proposal else None
-        if proposal is None and args.technical_revision_id is None:
-            raise CampaignError('EXPLICIT_TECHNICAL_REVISION_REQUIRED')
         print(json.dumps(queue_dry_run(repo, args.campaign_id, args.dataset_version_id,
                                       args.technical_revision_id, proposal)))
+        return 0
+    if args.dry_run:
+        print(json.dumps(dry_run(repo, args.campaign_id, root), sort_keys=True, default=str, indent=1))
         return 0
     if args.revision_proposal is not None:
         raise CampaignError('PROPOSAL_ALLOWED_ONLY_IN_DRY_RUN')
     from .global_gate import GlobalGate
     repo.preflight_e10_schema()
+    row = repo.get(args.campaign_id, args.dataset_version_id)
+    apply_determinism(row)
+    runtime = runtime_environment()
+    differing = runtime_differences(row, runtime)
+    print("Capstone TRAIN\n")
+    print(f"Campaign : {row['id']}\nDataset  : {row['dataset_version_id']}\n"
+          f"Mode     : {runtime['execution_mode']} ({runtime['platform']} {runtime['machine']})\n"
+          f"State    : {row['state']}\nMembers  : {len(row['members'])}\n"
+          f"Pending  : {sum(m['state'] != 'verified' for m in row['members'])}\n")
+    if differing:
+        print("Runtime ............ difiere de la referencia de la campaña en "
+              f"{', '.join(differing)}; se registra en cada run (runtime_environment)")
     with GlobalGate('campaign'):
+        print("Global gate ........ ACQUIRED", flush=True)
         code, summary = execute_campaign(
-            repo, args.campaign_id, args.artifact_root,
-            resume=args.resume, dataset=args.dataset_version_id,
-            revision_id=args.technical_revision_id,
+            repo, args.campaign_id, root,
+            resume=True, dataset=args.dataset_version_id,
+            revision_id=args.technical_revision_id, log=console(row),
         )
-    print(json.dumps(summary, sort_keys=True))
+    m = summary["members"]
+    print(f"\nCampaign state: {summary['state']} — verified {m['verified']}/{summary['expected']}, "
+          f"failed {m['failed']}, interrupted {m['interrupted']}, pending {m['pending']}")
     return code

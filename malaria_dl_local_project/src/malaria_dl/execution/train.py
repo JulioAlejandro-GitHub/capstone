@@ -248,6 +248,11 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
         epoch_offset += count
     if selection is None:
         raise CampaignError("NO_CHECKPOINT_SELECTED")
+    # V2 result projections (calibration/evaluation) need the selected checkpoint
+    # artifact and evaluation provenance first. The HTTP-agent reporter has no DB.
+    bind = getattr(repository, "bind_evaluation_context", None)
+    if event_emitter is not None and bind is not None:
+        bind(run, owner, selection["selected_epoch"])
     selected_path = root / f"epoch_{selection['selected_epoch']}.keras"
     selected = tf.keras.models.load_model(selected_path, compile=False)
     labels, _, scores = collect_predictions(selected, datasets["val"], threshold=0.5)

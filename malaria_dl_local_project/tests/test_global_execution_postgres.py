@@ -89,15 +89,16 @@ def test_new_oom_and_consecutive_failure_circuit(global_fixture, monkeypatch):
             assert c.execute(text('SELECT blocked_reason FROM experiment_execution_gate')).scalar_one() == 'NEW_CONTAINER_OOM_PAUSE'
 
 
-def test_two_failures_pause_without_consuming_matrix(global_fixture, monkeypatch):
+def test_first_failure_stops_without_consuming_matrix(global_fixture, monkeypatch):
     x = global_fixture
     # Tests below use synthetic worker outcomes, no process/model or dataset access.
     monkeypatch.setattr('src.malaria_dl.execution.global_gate.resources', lambda: {'available_bytes':2*1024**3,'cgroup_current_bytes':1,'cgroup_max':'max','oom_kill':0})
     with GlobalGate('synthetic-queue', engine_factory=x.factory):
         code, result = execute_campaign(x.repo, x.args['campaign'], x.args['root'], resume=True,
             dataset=x.args['dataset'], check=lambda *a: None, launch=lambda *a: 2, loader=lambda *a: None)
-        assert code == 3 and result['state'] == 'paused'
-        assert len(x.repo.get(x.args['campaign'])['attempts']) == 3  # original + only two failures
+        # The launcher stops at the first failed TRAIN, before the 2-failure breaker.
+        assert code == 1 and result['state'] == 'active'
+        assert len(x.repo.get(x.args['campaign'])['attempts']) == 2  # original + one failure
 
 
 def test_sequential_revision_and_verified_before_next(global_fixture, monkeypatch):

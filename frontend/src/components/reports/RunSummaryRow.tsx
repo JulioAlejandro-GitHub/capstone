@@ -16,7 +16,7 @@ interface RunSummaryRowProps {
   run: RunDashboard | TrainingSummary;
   onRunSelect: (runId: string) => void;
   processKind?: RunProcessKind;
-  stage2Expanded?:boolean;stage2ControlsId?:string;onStage2Toggle?:()=>void;
+  stage2Expanded?: boolean; stage2ControlsId?: string; onStage2Toggle?: () => void;
 }
 
 const releasePresentation = {
@@ -33,7 +33,7 @@ export function RunSummaryRow({
   run,
   onRunSelect,
   processKind,
-  stage2Expanded=false,stage2ControlsId,onStage2Toggle,
+  stage2Expanded = false, stage2ControlsId, onStage2Toggle,
 }: RunSummaryRowProps) {
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
@@ -44,14 +44,14 @@ export function RunSummaryRow({
       <section aria-label="RUN" className="report-cell report-run-cell" data-label="RUN">
         {processKind ? <RunProcessBadge kind={processKind} /> : null}
         <strong className="report-run-name">
-          {run.run_name?.trim() || 'No registrado'}
+          {run.run_name?.trim() || 'No registrado 1'}
         </strong>
         <span className="report-muted" title={run.run_id}>
           Run ID: {truncatedRunId(run.run_id)}
         </span>
         {processKind === 'training' ? (
           <span className="report-muted" title={run.dataset_version_id ?? undefined}>
-            dataset-version-id: {run.dataset_version_id || 'No registrado'}
+            dataset-version-id: {run.dataset_version_id || 'No registrado 2'}
           </span>
         ) : null}
         <div className="report-inline-facts">
@@ -68,9 +68,9 @@ export function RunSummaryRow({
       </section>
 
       <section aria-label="Modelo" className="report-cell report-model-cell" data-label="Modelo">
-        <strong className="report-primary-value">{run.model_name?.trim() || 'No registrado'}</strong>
+        <strong className="report-primary-value">{run.model_name?.trim() || 'No registrado 3'}</strong>
         <span className="report-muted">
-          Optimizer: <strong>{run.optimizer?.trim() || 'No registrado'}</strong>
+          Optimizer: <strong>{run.optimizer?.trim() || 'No registrado 4'}</strong>
         </span>
         <CommandChips command={run.command} />
       </section>

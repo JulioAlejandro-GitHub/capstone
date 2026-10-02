@@ -83,26 +83,30 @@ def _check(checks, name, ok, code=None, **detail):
     checks.append(dict(check=name, status="PASS" if ok else "FAIL", code=None if ok else code, **detail))
 
 
+def _info(checks, name, **detail):
+    """Recorded fact, not a precondition: never affects readiness."""
+    checks.append(dict(check=name, status="INFO", code=None, **detail))
+
+
 def execution_readiness(repository, row, *, environment=None, dataset_resolver=None):
     """Side-effect free view of the executor's preconditions in THIS process environment."""
     from ..data.governed_dataset import assert_run_dataset_snapshot_unchanged, resolve_governed_dataset
-    from ..execution.campaign import IDENTITY_KEYS
+    from ..execution.campaign import runtime_differences
     from ..models.registry import resolve_descriptor
     from .service import planning_environment
 
     checks = []
-    _check(checks, "campaign_state_executable", row["state"] in ("frozen", "active"),
-           "USE_RESUME_FOR_STARTED_CAMPAIGN" if row["state"] == "paused" else "CAMPAIGN_NOT_EXECUTABLE",
-           state=row["state"])
+    # paused is resumed automatically by the executor.
+    _check(checks, "campaign_state_executable", row["state"] in ("frozen", "active", "paused"),
+           "CAMPAIGN_NOT_EXECUTABLE", state=row["state"])
     try:
         repository.preflight_e10_schema()
         _check(checks, "e10_schema", True)
     except Exception as exc:  # noqa: BLE001 -- reported, never raised: plan stays readable
         _check(checks, "e10_schema", False, type(exc).__name__)
     current = (environment or planning_environment)()
-    differing = sorted(k for k in IDENTITY_KEYS if current.get(k) != row["environment"].get(k))
-    _check(checks, "code_environment_identity", not differing,
-           "FROZEN_CODE_ENVIRONMENT_CONFLICT_NEW_CAMPAIGN_REQUIRED", differing_keys=differing)
+    # Runtime is recorded on every run (runtime_environment), not enforced.
+    _info(checks, "code_environment_identity", differing_keys=runtime_differences(row, current))
     adapters_ok, test_ok = True, True
     for item in row["contract"]["matrix"]["configurations"].values():
         config = item["configuration"]
@@ -125,7 +129,8 @@ def execution_readiness(repository, row, *, environment=None, dataset_resolver=N
     with repository.transaction(readonly=True) as c:
         counts = {m: execute(c, "SELECT count(*) FROM models WHERE name=:name", name=m).scalar_one()
                   for m in models}
-    _check(checks, "model_catalog_identity", all(n == 1 for n in counts.values()),
+    # A missing catalog row is created on the first claim; duplicates are ambiguous.
+    _check(checks, "model_catalog_identity", all(n <= 1 for n in counts.values()),
            "CANONICAL_MODEL_CATALOG_IDENTITY_REQUIRED", rows_per_model=counts)
-    return dict(ready=all(c["status"] == "PASS" for c in checks), checks=checks,
+    return dict(ready=all(c["status"] != "FAIL" for c in checks), checks=checks,
                 note="Read-only diagnosis; no attempt reserved, no dataset evidence written, TRAIN not started.")
