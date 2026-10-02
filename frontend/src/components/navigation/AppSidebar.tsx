@@ -107,7 +107,7 @@ export function AppSidebar({ datasource, mobileOpen, onMobileClose, mobileTrigge
       </nav>
       <footer className="sidebar-footer">
         <UserMenu />
-        <span className="connection-dot" aria-hidden="true" /><span className="sidebar-label">Backend conectado</span>
+        {/* <span className="connection-dot" aria-hidden="true" /><span className="sidebar-label">Backend conectado</span> */}
       </footer>
       <button className="sidebar-collapse" type="button" aria-label={collapsed ? 'Expandir navegación' : 'Contraer navegación'}
         title={collapsed ? 'Expandir navegación' : 'Contraer navegación'} onClick={() => setCollapsed((value) => !value)}>
