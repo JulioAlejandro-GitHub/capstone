@@ -1,0 +1,165 @@
+/* =========================================================================
+   ds-primitives.css — Primitivas del Sistema de Diseño Unificado
+   ========================================================================= */
+
+.ds-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-gap-section, 24px);
+    padding: var(--ds-space-6, 24px);
+    background: var(--ds-bg-canvas, #f6f7fb);
+    color: var(--ds-fg-default, #172033);
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.ds-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--ds-space-4, 12px);
+}
+
+/* Grilla del formulario de campañas (Formulario principal + Aside sticky) */
+.ds-campaign-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: var(--ds-space-6, 24px);
+    align-items: start;
+}
+
+@media (max-width: 1024px) {
+    .ds-campaign-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* La ÚNICA superficie con borde limpia */
+.ds-section {
+    background: var(--ds-bg-surface, #ffffff);
+    border: var(--ds-border-width, 1px) solid var(--ds-border-default, #e3e7f0);
+    border-radius: var(--ds-radius-lg, 8px);
+    box-shadow: var(--ds-elevation-0, none);
+    padding: var(--ds-pad-section, 24px);
+    box-sizing: border-box;
+}
+
+/* Subsecciones con divisor sutil */
+.ds-stack-divided>*+* {
+    margin-top: var(--ds-gap-subsection, 24px);
+    padding-top: var(--ds-gap-subsection, 24px);
+    border-top: var(--ds-border-width, 1px) solid var(--ds-border-subtle, #eef1f7);
+}
+
+.ds-subsection-title {
+    margin: 0 0 var(--ds-space-4, 12px);
+    font-size: var(--ds-text-lg, 16px);
+    font-weight: var(--ds-weight-semibold, 600);
+    color: var(--ds-fg-default, #172033);
+}
+
+/* Listas de datos clave-valor */
+.ds-dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--ds-space-4, 12px) var(--ds-space-5, 16px);
+    margin: 0;
+}
+
+.ds-dl dt {
+    font-size: var(--ds-text-xs, 12px);
+    font-weight: var(--ds-weight-medium, 500);
+    color: var(--ds-fg-muted, #62708f);
+}
+
+.ds-dl dd {
+    margin: 0;
+    font-size: var(--ds-text-sm, 13px);
+    font-variant-numeric: tabular-nums;
+    color: var(--ds-fg-default, #172033);
+}
+
+.ds-dl--rows {
+    grid-template-columns: 1fr auto;
+    gap: var(--ds-space-3, 8px) var(--ds-space-5, 16px);
+}
+
+/* Grupo de listas (ej. modelos y optimizadores) */
+.ds-list-group {
+    border: var(--ds-border-width, 1px) solid var(--ds-border-default, #e3e7f0);
+    border-radius: var(--ds-radius-md, 6px);
+    background: var(--ds-bg-surface, #ffffff);
+}
+
+.ds-list-group>* {
+    padding: var(--ds-pad-control-y, 12px) var(--ds-pad-control-x, 16px);
+}
+
+.ds-list-group>*+* {
+    border-top: var(--ds-border-width, 1px) solid var(--ds-border-subtle, #eef1f7);
+}
+
+/* Callouts y Alertas de Estado */
+.ds-callout {
+    padding: var(--ds-space-4, 12px) var(--ds-space-5, 16px);
+    border-left: var(--ds-accent-width, 3px) solid currentColor;
+    border-radius: var(--ds-radius-sm, 4px);
+    font-size: var(--ds-text-sm, 13px);
+}
+
+.ds-callout[data-tone="warning"] {
+    color: var(--ds-status-warning-fg, #8a5a00);
+    background: var(--ds-status-warning-bg, #fff6df);
+}
+
+.ds-callout[data-tone="blocked"] {
+    color: var(--ds-status-blocked-fg, #4b3a8f);
+    background: var(--ds-status-blocked-bg, #efecfb);
+}
+
+.ds-callout[data-tone="rejected"] {
+    color: var(--ds-status-rejected-fg, #9a2323);
+    background: var(--ds-status-rejected-bg, #fdecec);
+}
+
+/* Píldoras de estado */
+.ds-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-2, 4px);
+    padding: var(--ds-space-1, 2px) var(--ds-space-3, 8px);
+    border-radius: var(--ds-radius-pill, 999px);
+    font-size: var(--ds-text-xs, 12px);
+    font-weight: var(--ds-weight-semibold, 600);
+}
+
+.ds-status[data-tone="approved"] {
+    color: var(--ds-status-approved-fg);
+    background: var(--ds-status-approved-bg);
+}
+
+.ds-status[data-tone="warning"] {
+    color: var(--ds-status-warning-fg);
+    background: var(--ds-status-warning-bg);
+}
+
+.ds-status[data-tone="rejected"] {
+    color: var(--ds-status-rejected-fg);
+    background: var(--ds-status-rejected-bg);
+}
+
+.ds-status[data-tone="blocked"] {
+    color: var(--ds-status-blocked-fg);
+    background: var(--ds-status-blocked-bg);
+}
+
+.ds-status[data-tone="running"] {
+    color: var(--ds-status-running-fg);
+    background: var(--ds-status-running-bg);
+}
+
+.ds-status[data-tone="neutral"] {
+    color: var(--ds-status-neutral-fg);
+    background: var(--ds-status-neutral-bg);
+}

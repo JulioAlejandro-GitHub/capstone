@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.observability import configure_logging, correlation_id_context, request_context_middleware
-from app.routes import campaigns, local_execution, assessments, analysis, artifacts, auth, catalog, cell_analysis, cell_classification, dashboard, dataset, dataset_versions, explainability, governance, health, metrics, observability, predictions, runs, scientific, scientific_validation
+from app.routes import campaigns, local_execution, assessments, analysis, artifacts, auth, catalog, cell_analysis, cell_classification, dashboard, dataset, dataset_versions, explainability, governance, health, metrics, observability, predictions, runs, scientific, scientific_validation, users
 
 
 settings = get_settings()
@@ -23,9 +24,12 @@ app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), al
 
 
 def error_response(status: int, code: str, message: str, details: dict | list | None = None):
-    return JSONResponse({"error": {"code": code, "message": message, "details": details or {},
-                                  "correlation_id": correlation_id_context.get(), "retryable": status >= 500}},
-                        status_code=status)
+    payload = {"error": {"code": code, "message": message, "details": details or {},
+                         "correlation_id": correlation_id_context.get(), "retryable": status >= 500}}
+    # ``jsonable_encoder`` garantiza que ``details`` sea serializable: los errores de
+    # validación de Pydantic pueden llevar excepciones vivas en ``ctx`` (p. ej. un
+    # ``ValueError`` de un ``field_validator``) que ``JSONResponse`` no sabría codificar.
+    return JSONResponse(jsonable_encoder(payload), status_code=status)
 
 
 @app.exception_handler(HTTPException)
@@ -46,7 +50,8 @@ async def internal_error(_: Request, __: Exception):
     return error_response(500, "INTERNAL_ERROR", "Error interno.")
 
 
-for router in (campaigns.router, local_execution.router, assessments.router, health.router, auth.router, dashboard.router, runs.router, catalog.router, dataset.router,
+for router in (campaigns.router, local_execution.router, assessments.router, health.router, auth.router,
+               users.me_router, users.router, dashboard.router, runs.router, catalog.router, dataset.router,
                dataset_versions.router,
                metrics.router, explainability.router, predictions.router, observability.router,
                artifacts.router, governance.router, scientific.router, analysis.router,

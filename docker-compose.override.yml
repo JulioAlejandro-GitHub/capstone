@@ -12,6 +12,13 @@ services:
     volumes:
       - ./backend_api/app:/app/app
       - ./backend_api/tests:/app/tests
+      # Los tests de contrato (test_docker_postgres_contract_guard, test_smear_reset_tool)
+      # resuelven la raíz del repo vía __file__ y cargan scripts desde /scripts,
+      # /backend_api/app y /alembic*; sin estos mounts `make test-backend` falla en colección.
+      - ./scripts:/scripts:ro
+      - ./backend_api/app:/backend_api/app:ro
+      - ./alembic:/alembic:ro
+      - ./alembic.ini:/alembic.ini:ro
       - ./alembic:/app/alembic:ro
       - ./alembic.ini:/app/alembic.ini:ro
       - ./pytest.ini:/app/pytest.ini:ro

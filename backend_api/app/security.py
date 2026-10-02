@@ -171,15 +171,24 @@ def current_principal(credentials: HTTPAuthorizationCredentials | None = Depends
         raise HTTPException(401, "Token expirado.") from exc
     except jwt.InvalidTokenError as exc:
         raise HTTPException(401, "Token inválido.") from exc
-    roles = tuple(role for role in claims.get("roles", []) if role in ROLE_PERMISSIONS)
+    # Los roles se leen de user_roles (no del JWT) en la misma consulta que valida
+    # el estado, para que cambios de rol y desactivaciones apliquen de inmediato.
     with get_primary_engine().connect() as connection:
         user = connection.execute(
-            text("SELECT username, status FROM users WHERE id=CAST(:id AS uuid)"),
+            text("""
+                SELECT u.username, u.status,
+                       COALESCE(array_agg(r.name) FILTER (WHERE r.name IS NOT NULL), '{}') roles
+                FROM users u
+                LEFT JOIN user_roles ur ON ur.user_id = u.id
+                LEFT JOIN roles r ON r.id = ur.role_id
+                WHERE u.id = CAST(:id AS uuid)
+                GROUP BY u.id
+            """),
             {"id": str(claims["sub"])},
         ).mappings().first()
     if not user or user["status"] != "active":
         raise HTTPException(401, "Usuario inactivo.")
-    roles = tuple(connection_role for connection_role in roles)
+    roles = tuple(role for role in user["roles"] if role in ROLE_PERMISSIONS)
     permissions = frozenset().union(*(ROLE_PERMISSIONS[role] for role in roles))
     return Principal(str(claims["sub"]), str(user["username"]), roles, permissions)
 

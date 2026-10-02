@@ -17,6 +17,11 @@ SERVICE_AUDITED_LEGACY_ROUTES = {
     ("POST", "/api/v1/analysis/queue"),
     ("POST", "/api/v1/analysis/queue/{queue_item_id}/execute"),
     ("POST", "/api/v1/analysis/queue/{queue_item_id}/retry"),
+    # Local TRAIN execution endpoints audit through their own private host
+    # SQLite journal (malaria_dl_local_project), not the central audit table.
+    ("POST", "/execution/local/events"),
+    ("POST", "/execution/local/event-state"),
+    ("POST", "/execution/local/{operation}"),
 }
 
 
@@ -76,9 +81,10 @@ def test_every_legacy_mutation_has_central_audited_policy():
     }
     assert route_operations == openapi_operations
 
-    # These three pre-existing queue operations write their audit event inside
-    # QualityQueueService's own transaction. Every other mutation must expose a
-    # central app.audit dependency in FastAPI's resolved dependency tree.
+    # Allowlisted operations audit inside their own service transaction
+    # (QualityQueueService) or their own private local journal (local TRAIN
+    # execution). Every other mutation must expose a central app.audit
+    # dependency in FastAPI's resolved dependency tree.
     service_audited = {
         (method, route.path)
         for route in routes

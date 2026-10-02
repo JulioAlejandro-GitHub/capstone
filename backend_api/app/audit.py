@@ -12,7 +12,7 @@ from sqlalchemy.engine import Connection, Engine
 
 from app.db import get_primary_engine
 from app.observability import correlation_id_context, sanitize
-from app.security import Permission, Principal, require_permission
+from app.security import Permission, Principal, current_principal, require_permission
 
 
 audit_transaction_connection: ContextVar[Connection | None] = ContextVar(
@@ -132,6 +132,26 @@ def transactional_permission(permission: Permission) -> Callable:
                     boundaries=(storage.root / "microscopy-images",),
                 )
             raise
+
+    return dependency
+
+
+def transactional_auth() -> Callable:
+    """Authorize an authenticated mutation and expose one transaction for domain mutation + audit.
+
+    Used by self-service endpoints (own profile/password) that any authenticated
+    principal may perform, without requiring a specific role permission.
+    """
+
+    async def dependency(
+        request: Request, principal: Principal = Depends(current_principal),
+    ):
+        with get_primary_engine().begin() as connection:
+            token = audit_transaction_connection.set(connection)
+            try:
+                yield principal
+            finally:
+                audit_transaction_connection.reset(token)
 
     return dependency
 

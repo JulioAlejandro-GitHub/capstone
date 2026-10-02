@@ -1362,3 +1362,76 @@
     flex-direction: column
   }
 }
+
+
+
+
+/* ==========================================================================
+   Toggle Deslizable (Reemplazo de Checkbox)
+   ========================================================================== */
+
+.campaign-field .toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 4px 0;
+  cursor: pointer;
+  font: inherit;
+  color: #27324a;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+/* El fondo (pista) del interruptor */
+.campaign-field .toggle span {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  background-color: #cfd6e4;
+  border-radius: 999px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* El círculo deslizable (thumb) */
+.campaign-field .toggle span::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(18, 26, 47, 0.15);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Estado Activo (ON) */
+.campaign-field .toggle.on span {
+  background-color: #1d4ed8;
+  /* Azul primario de tu dashboard */
+}
+
+.campaign-field .toggle.on span::after {
+  transform: translateX(16px);
+}
+
+/* Accesibilidad: Anillo de focus al navegar con teclado */
+.campaign-field .toggle:focus-visible {
+  outline: none;
+}
+
+.campaign-field .toggle:focus-visible span {
+  outline: 3px solid rgba(49, 92, 170, 0.24);
+  outline-offset: 2px;
+}
+
+/* Estado deshabilitado (opcional) */
+.campaign-field .toggle:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

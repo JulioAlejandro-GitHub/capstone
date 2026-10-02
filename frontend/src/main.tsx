@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './App';
 import { AuthProvider } from './auth';
+import './styles/tokens.css';
 import './styles.css';
 import './styles/smear-analysis-immersive.css';
 

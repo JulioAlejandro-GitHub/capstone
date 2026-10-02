@@ -1,0 +1,99 @@
+/* =========================================================================
+   tokens.css — fuente única de verdad del sistema de diseño.
+   ========================================================================= */
+
+:root {
+    /* Primitivos */
+    --ds-slate-0: #ffffff;
+    --ds-slate-25: #f8faff;
+    --ds-slate-50: #f6f7fb;
+    --ds-slate-100: #eef1f7;
+    --ds-slate-200: #e3e7f0;
+    --ds-slate-300: #cfd7e8;
+    --ds-slate-400: #8a95ad;
+    --ds-slate-500: #62708f;
+    --ds-slate-600: #465574;
+    --ds-slate-700: #27324a;
+    --ds-slate-900: #172033;
+
+    --ds-night-0: #060e20;
+    --ds-night-50: #0b1326;
+    --ds-night-100: #131b2e;
+    --ds-night-200: #171f33;
+    --ds-night-300: #222a3d;
+    --ds-night-400: #2d3449;
+    --ds-night-500: #3c494e;
+    --ds-night-600: #859399;
+    --ds-night-700: #bbc9cf;
+    --ds-night-800: #dae2fd;
+
+    --ds-neutral-950: #121212;
+
+    --ds-blue-600: #284a9c;
+    --ds-blue-500: #315caa;
+    --ds-blue-100: #eaf0ff;
+    --ds-cyan-300: #a4e6ff;
+    --ds-cyan-400: #4cd6ff;
+
+    --ds-green-700: #17653b;
+    --ds-green-100: #e7f8ef;
+    --ds-green-300: #4edea3;
+    --ds-amber-700: #8a5a00;
+    --ds-amber-100: #fff6df;
+    --ds-amber-300: #ffd5a5;
+    --ds-red-700: #9a2323;
+    --ds-red-100: #fdecec;
+    --ds-red-300: #ffb4ab;
+    --ds-violet-700: #4b3a8f;
+    --ds-violet-100: #efecfb;
+    --ds-violet-300: #c9bfff;
+}
+
+:root,
+[data-surface="workbench"] {
+    color-scheme: light;
+    --ds-bg-canvas: var(--ds-slate-50);
+    --ds-bg-surface: var(--ds-slate-0);
+    --ds-bg-subtle: var(--ds-slate-25);
+    --ds-bg-hover: var(--ds-slate-100);
+    --ds-bg-selected: var(--ds-blue-100);
+
+    --ds-fg-default: var(--ds-slate-900);
+    --ds-fg-muted: var(--ds-slate-500);
+
+    --ds-border-default: var(--ds-slate-200);
+    --ds-border-subtle: var(--ds-slate-100);
+}
+
+[data-surface="lab"] {
+    color-scheme: dark;
+    --ds-bg-canvas: var(--ds-night-50);
+    --ds-bg-surface: var(--ds-night-200);
+    --ds-bg-subtle: var(--ds-night-100);
+    --ds-bg-viewer: var(--ds-neutral-950);
+    --ds-bg-glass: rgba(11, 19, 38, .74);
+
+    --ds-fg-default: var(--ds-night-800);
+    --ds-fg-muted: var(--ds-night-700);
+
+    --ds-border-default: var(--ds-night-500);
+}
+
+/* Alias de compatibilidad histórica para que el CSS existente no falle */
+:root {
+    --color-background: var(--ds-night-50);
+    --color-surface-lowest: var(--ds-night-0);
+    --color-surface-low: var(--ds-night-100);
+    --color-surface: var(--ds-night-200);
+    --color-surface-high: var(--ds-night-300);
+    --color-surface-highest: var(--ds-night-400);
+    --color-on-surface: var(--ds-night-800);
+    --color-on-surface-variant: var(--ds-night-700);
+    --color-outline: var(--ds-night-600);
+    --color-outline-variant: var(--ds-night-500);
+    --color-primary: var(--ds-cyan-300);
+    --color-primary-container: var(--ds-cyan-400);
+    --color-quality-success: var(--ds-green-300);
+    --color-warning: var(--ds-amber-300);
+    --color-error: var(--ds-red-300);
+}
