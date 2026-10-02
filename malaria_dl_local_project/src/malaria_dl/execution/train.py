@@ -294,15 +294,18 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
         event_emitter.emit(RunEventType.EVALUATION_COMPLETED, evaluation.to_dict())
     records = repository.records(run)
     completion = {
+        # Executed epochs (contiguous global 1-based numbering).
         "epochs": len(history),
+        # Last executed global epoch, 1-based like epoch records and selected_epoch.
+        "stopped_epoch": history[-1]["epoch"],
         "selection": selection,
         "records_hash": digest(records),
+        # Clinical objective only: selected checkpoint's VAL recall at threshold 0.5
+        # against run_configurations.clinical_target_recall. Independent of
+        # selection.policy_satisfied and of technical completion.
+        "clinical_target_recall": e["target_recall"],
         "clinical_objective_met": bool(
-            (selection.get("val_recall_parasitized") or 0) >= e["min_recall"]
-            and (
-                e["min_specificity"] is None
-                or (selection.get("val_specificity") or 0) >= e["min_specificity"]
-            )
+            (selection.get("val_recall_parasitized") or 0) >= e["target_recall"]
         ),
     }
     if event_emitter is not None:

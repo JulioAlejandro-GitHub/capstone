@@ -29,6 +29,12 @@ CHECKPOINT_POLICY_CHOICES = [
     "balanced_accuracy",
 ]
 
+RECALL_METRIC_NAMES = [
+    "val_recall_parasitized",
+    "val_sensitivity_parasitized",
+    "val_recall",
+]
+
 # Mantiene el orden natural y una derivada prácticamente 1 para métricas
 # habituales, pero acota el score interno para poder separar de forma finita
 # los epochs colapsados. PostgreSQL jsonb no acepta Infinity/-Infinity.
@@ -232,15 +238,21 @@ def _selection_result(
     warning=None,
     all_epochs_collapsed=False,
     rejected_collapsed_epochs=0,
+    selection_method="policy",
+    selected_metric_mode="max",
 ) -> dict:
     collapsed = _is_collapsed(selected_record)
     return {
+        # Configured policy; the criterion actually executed is selection_method +
+        # selected_metric/selected_metric_mode (they differ under an explicit monitor).
         "policy": config.policy,
+        "selection_method": selection_method,
         "selected_epoch": _epoch(selected_record),
         "phase": selected_record.get("phase"),
         "phase_epoch": selected_record.get("phase_epoch"),
         "policy_satisfied": bool(policy_satisfied),
         "selected_metric": selected_metric,
+        "selected_metric_mode": selected_metric_mode,
         "selected_metric_value": _json_safe(selected_metric_value),
         "min_recall_required": float(config.min_recall),
         "beta": float(config.beta),
@@ -369,11 +381,7 @@ def select_best_epoch_from_history(
             warning=collapse_warning,
         )
 
-    recall_names = [
-        "val_recall_parasitized",
-        "val_sensitivity_parasitized",
-        "val_recall",
-    ]
+    recall_names = RECALL_METRIC_NAMES
     auc_names = ["val_auc", "val_roc_auc_parasitized", "val_auc_parasitized"]
     valid_candidates = [
         record
@@ -444,14 +452,34 @@ def select_best_epoch_by_monitor(
         selected, _ = _min_by_metric(available, [monitor])
     else:
         selected, _ = _max_by_metric(available, [monitor])
+    # The explicit monitor replaces the configured policy's ranking, not its
+    # constraint: policy_satisfied reports whether the selected checkpoint meets
+    # the policy's min_recall (only auc_with_min_recall declares one).
+    policy_satisfied = (
+        config.policy != "auc_with_min_recall"
+        or _metric(selected, RECALL_METRIC_NAMES, default=float("-inf"))
+        >= config.min_recall
+    )
+    # Never hide that the configured policy's ranking was not the one executed.
+    warning = (
+        f"Selected by explicit monitor {monitor} ({mode}), "
+        f"not by configured policy {config.policy} ranking."
+    )
+    if not policy_satisfied:
+        warning += " Selected checkpoint does not reach min_recall."
+    if collapse_warning:
+        warning = f"{collapse_warning} {warning}"
     return _selection_result(
         selected_record=selected,
         config=config,
         selected_metric=monitor,
         selected_metric_value=_metric(selected, [monitor]),
+        policy_satisfied=policy_satisfied,
         all_epochs_collapsed=all_collapsed,
         rejected_collapsed_epochs=rejected_collapsed,
-        warning=collapse_warning,
+        warning=warning,
+        selection_method="explicit_monitor",
+        selected_metric_mode=mode,
     )
 
 
@@ -471,8 +499,10 @@ def checkpoint_policy_summary(
         "selected_epoch": selection.get("selected_epoch"),
         "phase": selection.get("phase"),
         "phase_epoch": selection.get("phase_epoch"),
+        "selection_method": selection.get("selection_method"),
         "policy_satisfied": bool(selection.get("policy_satisfied")),
         "selected_metric": selection.get("selected_metric"),
+        "selected_metric_mode": selection.get("selected_metric_mode"),
         "selected_metric_value": selection.get("selected_metric_value"),
         "selected_metrics": selected_metrics,
         "prediction_collapse_detected": bool(

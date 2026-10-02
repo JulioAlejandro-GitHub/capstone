@@ -417,14 +417,32 @@ class ExecutionRepository(CampaignRepository):
                     cause=cause,
                     id=str(initial["attempt_id"]),
                 )
+            # Functional summary projected from the TRAIN completion payload; no new
+            # source of truth. Epoch indices are global and 1-based (epoch records,
+            # selected_epoch, checkpoint_epoch); Keras EarlyStopping's 0-based per-phase
+            # indices are never used here. completed_epochs and total_epochs are the
+            # same executed count (duplicated for compatibility).
+            done = evidence if state == "completed" and isinstance(evidence, dict) else {}
+            chosen = done.get("selection") or {}
             execute(
                 c,
                 "UPDATE runs SET status=:state,finished_at=clock_timestamp(),"
                 "duration_seconds=EXTRACT(EPOCH FROM clock_timestamp()-started_at),"
                 "completed_epochs=COALESCE(CAST(:epochs AS integer),completed_epochs),"
+                "total_epochs=COALESCE(CAST(:epochs AS integer),total_epochs),"
+                "stopped_epoch=COALESCE(CAST(:stopped AS integer),stopped_epoch),"
+                "best_epoch=COALESCE(CAST(:best AS integer),best_epoch),"
+                "checkpoint_monitor=COALESCE(:monitor,checkpoint_monitor),"
+                "checkpoint_mode=COALESCE(:mode,checkpoint_mode),"
+                "best_validation_value=COALESCE(CAST(:value AS double precision),best_validation_value),"
                 "updated_at=clock_timestamp() WHERE id=CAST(:id AS uuid)",
                 state="completed" if state in ("completed", "verified") else state,
-                epochs=evidence.get("epochs") if state == "completed" and isinstance(evidence, dict) else None,
+                epochs=done.get("epochs"),
+                stopped=done.get("stopped_epoch"),
+                best=chosen.get("selected_epoch"),
+                monitor=chosen.get("selected_metric"),
+                mode=chosen.get("selected_metric_mode"),
+                value=chosen.get("selected_metric_value"),
                 id=identifier(run),
             )
 
