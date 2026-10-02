@@ -64,15 +64,26 @@ def register(descriptor):
     MODEL_REGISTRY[descriptor.id] = descriptor
 
 
-def registered_models():
-    """Names in public.models: the only source of which models exist."""
+def model_catalog():
+    """Rows of public.models: the only source of which models exist and their catalog metadata."""
     from sqlalchemy import text
     from ..campaigns.repository import connection_scope
 
     with connection_scope(readonly=True) as c:
         return tuple(
-            c.execute(text("SELECT DISTINCT name FROM public.models ORDER BY name")).scalars()
+            dict(row)
+            for row in c.execute(
+                text(
+                    "SELECT name, architecture, model_type, framework "
+                    "FROM public.models ORDER BY name"
+                )
+            ).mappings()
         )
+
+
+def registered_models():
+    """Model names from the catalog (public.models), not the Python implementations."""
+    return tuple(m["name"] for m in model_catalog())
 
 
 def resolve_descriptor(name, *, executable=True):

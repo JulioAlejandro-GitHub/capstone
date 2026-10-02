@@ -157,8 +157,8 @@ def test_new_registry_only_affects_new_plans(monkeypatch):
         )
     )
     # A new model exists only with a public.models row; simulate that row here.
-    names = registry.registered_models()
-    monkeypatch.setattr(registry, "registered_models", lambda: names + ("synthetic_cnn",))
+    rows = registry.model_catalog()
+    monkeypatch.setattr(registry, "model_catalog", lambda: rows + ({"name": "synthetic_cnn", "architecture": None, "model_type": "classification", "framework": "tensorflow/keras"},))
     assert expand_matrix(request())["expected_count"] == 16
     assert canonical(original) == saved
 

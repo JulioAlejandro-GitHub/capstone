@@ -87,8 +87,8 @@ def test_new_registered_descriptor_needs_no_campaign_change(catalog, monkeypatch
     base = registry.MODEL_REGISTRY["custom_cnn"]
     registry.register(replace(base, id="swv22_probe", aliases=()))
     # A new model exists only with a public.models row; simulate that row here.
-    names = registry.registered_models()
-    monkeypatch.setattr(registry, "registered_models", lambda: names + ("swv22_probe",))
+    rows = registry.model_catalog()
+    monkeypatch.setattr(registry, "model_catalog", lambda: rows + ({"name": "swv22_probe", "architecture": None, "model_type": "classification", "framework": "tensorflow/keras"},))
     try:
         extended = cc.catalog()
         assert [m["id"] for m in extended["models"]][-1] == "swv22_probe"

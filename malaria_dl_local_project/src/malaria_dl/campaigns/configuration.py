@@ -1,4 +1,5 @@
-"""SWV2.2 operator configuration -> canonical E4 request/protocol. Pure: no DB, no TRAIN.
+"""SWV2.2 operator configuration -> canonical E4 request/protocol. No TRAIN; the model
+catalog (ids and labels) is read from public.models through models.registry.
 
 The operator edits a campaign on one page; this module is the single translation from that
 document into the existing E4 contract (``expand_matrix`` request + frozen protocol). It never
@@ -22,8 +23,6 @@ CONFIGURATION_VERSION = "campaign_configuration_v1"
 SEED_MAX = 2147483647
 NAME_MAX = 200
 
-# Presentation only; a registered model without an entry is shown by its registry id.
-MODEL_LABELS = {"custom_cnn": "Custom CNN", "vgg16": "VGG16", "densenet121": "DenseNet121"}
 OPTIMIZER_LABELS = {"adam": "Adam", "adamw": "AdamW", "sgd": "SGD", "adadelta": "Adadelta"}
 
 # model_config_v1 fields an operator may see. Editability/domain is decided per descriptor below,
@@ -58,9 +57,10 @@ CONFIGURATION_KEYS = {"version", "models", "optimizers", "seeds", "variants", "p
 
 
 def _registry():
-    from ..models.registry import enabled_models, resolve_descriptor
+    """(Python descriptor, public.models row) for every model in the catalog."""
+    from ..models.registry import model_catalog, resolve_descriptor
 
-    return [resolve_descriptor(i) for i in enabled_models()]
+    return [(resolve_descriptor(m["name"]), m) for m in model_catalog()]
 
 
 def _get(tree, path):
@@ -132,10 +132,11 @@ def protocol_template():
 
 def _catalog_models():
     models = []
-    for d in _registry():
+    for d, row in _registry():
         raw, resolved = _defaults(d)
         models.append(dict(
-            id=d.id, label=MODEL_LABELS.get(d.id, d.id), adapter_version=d.version, strategies=list(d.strategies),
+            # Label is public.models.architecture; a row without one is shown by its name.
+            id=d.id, label=row["architecture"] or d.id, adapter_version=d.version, strategies=list(d.strategies),
             optimizers=list(d.optimizers), input_contract=d.input_contract, output_contract=d.output_contract,
             parameters=[_parameter(d, raw, resolved, *p) for p in PARAMETERS],
         ))
@@ -145,7 +146,7 @@ def _catalog_models():
 def _optimizers():
     from ..models.optimizers import BATCH_LEARNING_RATES, OPTIMIZER_DEFAULTS, optimizer_config
 
-    names = [n for n in OPTIMIZER_DEFAULTS if any(n in d.optimizers for d in _registry())]
+    names = [n for n in OPTIMIZER_DEFAULTS if any(n in d.optimizers for d, _ in _registry())]
     return [dict(id=n, label=OPTIMIZER_LABELS.get(n, n), learning_rate=BATCH_LEARNING_RATES[n][0],
                  fine_tune_learning_rate=BATCH_LEARNING_RATES[n][1],
                  parameters=optimizer_config(n, {"learning_rate": BATCH_LEARNING_RATES[n][0]}),
@@ -183,7 +184,8 @@ def catalog():
     request, protocol = protocol_template()
     template_values = _protocol_values(protocol)
     ids = [m["id"] for m in models]
-    common = [o["id"] for o in _optimizers() if all(o["id"] in m["optimizers"] for m in models)]
+    optimizers = _optimizers()
+    common = [o["id"] for o in optimizers if all(o["id"] in m["optimizers"] for m in models)]
     e7_models = [m for m in models if m["id"] in request["models"]]
     presets = [
         dict(id="system_batch_defaults", label="Valores por defecto del sistema (perfil batch versionado)",
@@ -214,7 +216,7 @@ def catalog():
     return dict(
         version=CONFIGURATION_VERSION,
         models=models,
-        optimizers=_optimizers(),
+        optimizers=optimizers,
         seeds=dict(minimum=0, maximum=SEED_MAX, scope="campaign", default=list(request["seeds"]),
                    source="configs/science/e7_v1.json (seeds)"),
         protocol=dict(template_version=protocol["version"], source="configs/science/e7_v1.json → science.protocol.campaign_plan",
