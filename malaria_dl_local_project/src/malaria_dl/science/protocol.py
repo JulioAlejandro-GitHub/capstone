@@ -37,10 +37,7 @@ def load_protocol(path=PATH):
         and all(type(s) is int for s in p["seeds"]),
         "SHARED_SEEDS_REQUIRED",
     )
-    require(
-        set(p["architectures"]) == {"custom_cnn", "vgg16", "densenet121"},
-        "ARCHITECTURES_REQUIRED",
-    )
+    validate_architectures(p)
     for key, config in p["configurations"].items():
         require(
             digest(config) == key and "seed" not in config["resolved"]["execution"],
@@ -52,6 +49,19 @@ def load_protocol(path=PATH):
             "TEST_FORBIDDEN",
         )
     return p
+
+
+def validate_architectures(p):
+    """The protocol declares its architectures; no fixed list. Catalog-free on purpose,
+    so historical evidence never depends on the current public.models rows."""
+    names = p["architectures"]
+    require(
+        isinstance(names, list)
+        and bool(names)
+        and len(set(names)) == len(names)
+        and set(names) == {c["model_id"] for c in p["configurations"].values()},
+        "ARCHITECTURES_REQUIRED",
+    )
 
 
 def matrix(protocol, dataset=None):
@@ -141,7 +151,13 @@ def campaign_plan(protocol):
     Re-resolved E2 identity must exactly equal the frozen E7 snapshots before use.
     """
     from ..campaigns.contracts import expand_matrix
+    from ..models.registry import registered_models
 
+    # A new campaign may only use models that exist in public.models.
+    require(
+        set(protocol["architectures"]) <= set(registered_models()),
+        "ARCHITECTURE_NOT_REGISTERED",
+    )
     configurations = list(protocol["configurations"].values())
     by_model = {}
     for arch in protocol["architectures"]:

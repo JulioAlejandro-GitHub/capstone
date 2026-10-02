@@ -14,12 +14,18 @@ from .statistics import cluster_interval, curves, metrics, threshold_selection
 
 VERSION = "probability_ensemble_e8_v1"
 TOLERANCE = 1e-12
-ARCHITECTURES = ("custom_cnn", "densenet121", "vgg16")
 NAMESPACE = UUID("f92e90ca-980a-4a75-b247-5702c8fa8cd3")
+
+
+def architectures():
+    """One member per architecture of the parent E7 protocol (the experiment), in canonical
+    order. Neither a fixed list nor the live catalog: historical evidence stays stable."""
+    return sorted(load_protocol()["architectures"])
 
 
 def experimental_matrix():
     protocol = load_protocol()
+    group = architectures()
     rows = matrix(protocol)
     for r in rows:
         r["entity_type"] = "individual"
@@ -31,13 +37,15 @@ def experimental_matrix():
                         "entity_type": "ensemble",
                         "condition": "three_architectures_" + strategy,
                         "strategy": strategy,
-                        "architectures": list(ARCHITECTURES),
+                        "architectures": list(group),
                         "optimizer": optimizer,
                         "seed": seed,
                         "state": "planned",
                         "reason": "EXACT_MEMBER_EVALUATIONS_REQUIRED",
                         "member_run_ids": None,
-                        "weights": None if strategy == "weighted" else [1 / 3] * 3,
+                        "weights": None
+                        if strategy == "weighted"
+                        else [1 / len(group)] * len(group),
                         "protocol_hash": digest(protocol),
                         "extension": VERSION,
                     }
@@ -66,12 +74,13 @@ def weights_for(strategy, members):
 
 
 def align(evidences):
-    require(len(evidences) == 3, "THREE_ARCHITECTURES_REQUIRED")
     protocol = load_protocol()
+    group = architectures()
+    require(len(evidences) == len(group), "ENSEMBLE_ARCHITECTURE_GROUP_INVALID")
     indexed = []
     sample_contract = None
     dataset = None
-    architectures = []
+    names = []
     hashes = []
     seeds = []
     optimizers = []
@@ -110,7 +119,7 @@ def align(evidences):
             dataset = v["dataset"]
         require(samples == sample_contract, "ENSEMBLE_SAMPLE_PATIENT_LABEL_CONFLICT")
         require(v["dataset"] == dataset, "ENSEMBLE_DATASET_CONFLICT")
-        architectures.append(c["model_id"])
+        names.append(c["model_id"])
         hashes.append(v["model"]["sha256"])
         seeds.append(c["resolved"]["execution"]["seed"])
         optimizers.append(c["resolved"]["optimizer"]["name"])
@@ -119,10 +128,10 @@ def align(evidences):
         environments.append(assessed["environment_hash"])
         indexed.append({r["sample_id"]: r for r in rs})
     require(
-        sorted(architectures) == list(ARCHITECTURES),
+        sorted(names) == group,
         "ENSEMBLE_ARCHITECTURE_GROUP_INVALID",
     )
-    require(len(set(hashes)) == 3, "DUPLICATE_CHECKPOINT")
+    require(len(set(hashes)) == len(hashes), "DUPLICATE_CHECKPOINT")
     require(
         len(set(seeds)) == 1 and seeds[0] in protocol["seeds"],
         "ENSEMBLE_SEED_GROUP_CONFLICT",
@@ -194,7 +203,8 @@ def prepare(request, reader, *, code):
     identifier(request["ensemble_id"])
     members = request["members"]
     require(
-        isinstance(members, list) and len(members) == 3, "THREE_ARCHITECTURES_REQUIRED"
+        isinstance(members, list) and len(members) == len(architectures()),
+        "ENSEMBLE_ARCHITECTURE_GROUP_INVALID",
     )
     require(
         all(
@@ -204,7 +214,7 @@ def prepare(request, reader, *, code):
         "ENSEMBLE_MEMBER_FIELDS_INVALID",
     )
     require(
-        len({identifier(m["evaluation_id"]) for m in members}) == 3,
+        len({identifier(m["evaluation_id"]) for m in members}) == len(members),
         "DUPLICATE_MEMBER_REFERENCE",
     )
     ws = weights_for(request["strategy"], members)
@@ -374,15 +384,16 @@ def validate_configuration(value):
     require(b["weight_tolerance"] == TOLERANCE, "ENSEMBLE_TOLERANCE_CONFLICT")
     refs = b["validation_references"]
     require(
-        len(refs) == 3 and len({identifier(r["evaluation_id"]) for r in refs}) == 3,
+        len(refs) == len(architectures())
+        and len({identifier(r["evaluation_id"]) for r in refs}) == len(refs),
         "ENSEMBLE_VALIDATION_REFERENCES_INVALID",
     )
     ms = b["members"]
     require(
-        [m["architecture"] for m in ms] == list(ARCHITECTURES),
+        [m["architecture"] for m in ms] == architectures(),
         "ENSEMBLE_MEMBER_ORDER_CONFLICT",
     )
-    require(len({m["model"]["sha256"] for m in ms}) == 3, "DUPLICATE_CHECKPOINT")
+    require(len({m["model"]["sha256"] for m in ms}) == len(ms), "DUPLICATE_CHECKPOINT")
     for m in ms:
         require(
             set(m)
@@ -432,7 +443,7 @@ def validate_configuration(value):
         )
     require(b["strategy"] in ("uniform", "weighted"), "ENSEMBLE_STRATEGY_INVALID")
     if b["strategy"] == "uniform":
-        require(all(m["weight"] == 1 / 3 for m in ms), "UNIFORM_WEIGHT_CONFLICT")
+        require(all(m["weight"] == 1 / len(ms) for m in ms), "UNIFORM_WEIGHT_CONFLICT")
     require(
         type(b["decision"]["effective"]) in (int, float)
         and 0 <= b["decision"]["effective"] <= 1
@@ -613,7 +624,7 @@ def validate_evaluation(value):
             "ENSEMBLE_RESULT_DECISION_CONFLICT",
         )
         require(
-            len(r["contributions"]) == 3
+            len(r["contributions"]) == len(refs)
             and [x["evaluation_id"] for x in r["contributions"]]
             == [x["evaluation_id"] for x in refs],
             "ENSEMBLE_CONTRIBUTION_REFERENCE_CONFLICT",
@@ -643,7 +654,7 @@ def extension_contract():
         },
         "default_strategy": "uniform",
         "strategies": ["uniform", "weighted"],
-        "architectures": list(ARCHITECTURES),
+        "architectures": architectures(),
         "weights": {
             "tolerance": TOLERANCE,
             "minimum_positive": 2,
@@ -657,7 +668,7 @@ def extension_contract():
         "permitted_splits": ["val"],
         "test": "disabled_pending_future_frozen_authorization",
         "repetition": "one checkpoint per architecture, same TRAIN seed and optimizer; no cross-seed ensembles",
-        "matrix_rows": 96,
+        "matrix_rows": len(experimental_matrix()),
         "optional_pairs": "not_enabled",
         "superiority": "unproven",
     }

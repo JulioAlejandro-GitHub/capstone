@@ -208,16 +208,19 @@ class ExecutionRepository(CampaignRepository):
             "dataset": dataset,
             "environment": environment,
         }
+        seed = config["resolved"]["execution"]["seed"]
         execute(
             c,
-            "INSERT INTO runs(id,model_id,experiment_id,run_type,status,random_seed,dataset_version_id,execution_parameters"
+            "INSERT INTO runs(id,model_id,experiment_id,run_name,run_type,status,started_at,random_seed,dataset_version_id,execution_parameters"
             + (",campaign_id" if campaign_id is not None else "")
-            + ") VALUES(CAST(:id AS uuid),CAST(:model AS uuid),CAST(:experiment AS uuid),'training','running',:seed,CAST(:dataset AS uuid),CAST(:parameters AS jsonb)"
+            + ") VALUES(CAST(:id AS uuid),CAST(:model AS uuid),CAST(:experiment AS uuid),:name,'training','running',clock_timestamp(),:seed,CAST(:dataset AS uuid),CAST(:parameters AS jsonb)"
             + (",CAST(:campaign AS uuid)" if campaign_id is not None else "") + ")",
             id=run,
             model=str(models[0]),
             experiment=str(experiment) if experiment else None,
-            seed=config["resolved"]["execution"]["seed"],
+            # Human label only (UI/order); identity stays in id + configuration hash.
+            name=f"{config['model_id']}:{config['resolved']['optimizer']['name']}:seed{seed}",
+            seed=seed,
             dataset=dataset["dataset_version_id"],
             campaign=identifier(campaign_id) if campaign_id is not None else None,
             parameters=canonical(
@@ -416,8 +419,12 @@ class ExecutionRepository(CampaignRepository):
                 )
             execute(
                 c,
-                "UPDATE runs SET status=:state,finished_at=clock_timestamp() WHERE id=CAST(:id AS uuid)",
+                "UPDATE runs SET status=:state,finished_at=clock_timestamp(),"
+                "duration_seconds=EXTRACT(EPOCH FROM clock_timestamp()-started_at),"
+                "completed_epochs=COALESCE(CAST(:epochs AS integer),completed_epochs),"
+                "updated_at=clock_timestamp() WHERE id=CAST(:id AS uuid)",
                 state="completed" if state in ("completed", "verified") else state,
+                epochs=evidence.get("epochs") if state == "completed" and isinstance(evidence, dict) else None,
                 id=identifier(run),
             )
 
