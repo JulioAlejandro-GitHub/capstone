@@ -1,0 +1,297 @@
+{
+  "stage": "U1B.1",
+  "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "split": "train",
+  "independence": {
+    "images": 200,
+    "patients": 57,
+    "overlap_images_with_u1b": 0,
+    "overlap_patients_with_u1b": 0,
+    "selection": "label-blind md5('u1b1-2026-10-02' || source_record_id), excluding U1B images and patients"
+  },
+  "phase1_blind": {
+    "contrast_definition": "p99.5 - median of gaussian(sigma=1) HSV saturation inside the eroded cell",
+    "kde": {
+      "u1b": {
+        "modes": [
+          0.033,
+          0.399
+        ],
+        "valley": 0.201,
+        "valley_density_ratio_to_lower_mode_peak": 0.2408000560954187
+      },
+      "u1b_1": {
+        "modes": [
+          0.033,
+          0.442
+        ],
+        "valley": 0.254,
+        "valley_density_ratio_to_lower_mode_peak": 0.053636996809363416
+      }
+    },
+    "contrast_percentiles_10_25_50_75_90": {
+      "u1b": [
+        0.017164107811508834,
+        0.026412862409266907,
+        0.10955299678148109,
+        0.3926144814571707,
+        0.4662758509932122
+      ],
+      "u1b_1": [
+        0.014057961687578882,
+        0.020884139061530277,
+        0.03384064448062455,
+        0.08484461852480432,
+        0.43345024672751614
+      ]
+    },
+    "delta_rule": "argmin over [0.1, 0.125, 0.15, 0.175, 0.2] of fraction of U1B.1 cells with |contrast - delta| <= 0.025; ties keep 0.15",
+    "delta_sweep": {
+      "0.1": {
+        "empty_mask_rate": 0.75,
+        "foreground_fraction_median_nonempty": 0.015519679243088495,
+        "components_mean": 0.385,
+        "median_iou_vs_0.15_informative_cells": 0.6796075539715702,
+        "empty_status_flips_vs_0.15": 3,
+        "borderline_cells_fraction": {
+          "u1b": 0.035,
+          "u1b_1": 0.055
+        }
+      },
+      "0.125": {
+        "empty_mask_rate": 0.755,
+        "foreground_fraction_median_nonempty": 0.012997100248550124,
+        "components_mean": 0.365,
+        "median_iou_vs_0.15_informative_cells": 0.8472222222222222,
+        "empty_status_flips_vs_0.15": 2,
+        "borderline_cells_fraction": {
+          "u1b": 0.02,
+          "u1b_1": 0.02
+        }
+      },
+      "0.15": {
+        "empty_mask_rate": 0.765,
+        "foreground_fraction_median_nonempty": 0.011909391405794284,
+        "components_mean": 0.305,
+        "median_iou_vs_0.15_informative_cells": 1.0,
+        "empty_status_flips_vs_0.15": 0,
+        "borderline_cells_fraction": {
+          "u1b": 0.01,
+          "u1b_1": 0.02
+        }
+      },
+      "0.175": {
+        "empty_mask_rate": 0.78,
+        "foreground_fraction_median_nonempty": 0.010472466585013952,
+        "components_mean": 0.28,
+        "median_iou_vs_0.15_informative_cells": 0.890295358649789,
+        "empty_status_flips_vs_0.15": 3,
+        "borderline_cells_fraction": {
+          "u1b": 0.01,
+          "u1b_1": 0.03
+        }
+      },
+      "0.2": {
+        "empty_mask_rate": 0.79,
+        "foreground_fraction_median_nonempty": 0.009418395731123713,
+        "components_mean": 0.265,
+        "median_iou_vs_0.15_informative_cells": 0.8,
+        "empty_status_flips_vs_0.15": 5,
+        "borderline_cells_fraction": {
+          "u1b": 0.02,
+          "u1b_1": 0.015
+        }
+      }
+    },
+    "delta_final": 0.2,
+    "stain_morph_blind_stats": {
+      "u1b": {
+        "n": 200,
+        "empty_mask_rate": 0.51,
+        "foreground_fraction_median_nonempty": 0.00946483856700575,
+        "components_mean_nonempty": 1.346938775510204,
+        "largest_component_fraction_median_nonempty": 1.0,
+        "stability": {
+          "perturbation": "delta x0.8 and x1.2, min IoU",
+          "all_cells": {
+            "median": 0.9169823232323232,
+            "p10": 0.6626806338973945
+          },
+          "informative_cells": {
+            "n": 101,
+            "median": 0.794425087108014,
+            "p10": 0.5795454545454546
+          }
+        }
+      },
+      "u1b_1": {
+        "n": 200,
+        "empty_mask_rate": 0.79,
+        "foreground_fraction_median_nonempty": 0.009418395731123713,
+        "components_mean_nonempty": 1.2619047619047619,
+        "largest_component_fraction_median_nonempty": 1.0,
+        "stability": {
+          "perturbation": "delta x0.8 and x1.2, min IoU",
+          "all_cells": {
+            "median": 1.0,
+            "p10": 0.8084220788960552
+          },
+          "informative_cells": {
+            "n": 46,
+            "median": 0.8130593607305936,
+            "p10": 0.0
+          }
+        }
+      }
+    }
+  },
+  "frozen_generator": {
+    "method_name": "stain_morph",
+    "method_version": 2,
+    "implementation_version": "u1b-lab-1",
+    "parameters": {
+      "color_transform": "hsv_saturation",
+      "blur_sigma": 1.0,
+      "background_max_value": 0.04,
+      "cell_erosion_radius": 3,
+      "stain_delta": 0.2,
+      "min_object_px": 20,
+      "max_hole_px": 30,
+      "opening_radius": 1
+    },
+    "mask_dtype_generation": "bool",
+    "resize": "nearest",
+    "implementation_file": "scripts/experiments/unet_masks/masks.py",
+    "implementation_sha256": "65603c61c4925345d83ca305e5d097514679e54b1aea0159e63bfac7f9be24e9",
+    "spec_sha256": "4a84ad75d71dacf8f3d9c79d9de668ed57db176b09d2b265fd55c00ebbca078b"
+  },
+  "phase2_audit": {
+    "class_counts": {
+      "parasitized": 48,
+      "uninfected": 152
+    },
+    "stain_morph_by_class": {
+      "parasitized": {
+        "n": 48,
+        "empty_mask_rate": 0.14583333333333334,
+        "foreground_fraction_median": 0.008849114306345624,
+        "foreground_fraction_p10_p90": [
+          0.0,
+          0.018726449933027065
+        ],
+        "components_mean": 1.0833333333333333,
+        "largest_component_fraction_median": 1.0
+      },
+      "uninfected": {
+        "n": 152,
+        "empty_mask_rate": 0.993421052631579,
+        "foreground_fraction_median": 0.0,
+        "foreground_fraction_p10_p90": [
+          0.0,
+          0.0
+        ],
+        "components_mean": 0.006578947368421052,
+        "largest_component_fraction_median": 0.0
+      }
+    },
+    "empty_mask_causes": {
+      "no_pixel_above_threshold": {
+        "parasitized": 5,
+        "uninfected": 148
+      },
+      "removed_by_size_or_morphology": {
+        "parasitized": 2,
+        "uninfected": 3
+      }
+    },
+    "geometry_only_oof_roc_auc": {
+      "stain_morph": 0.9070038377192982,
+      "otsu_intensity": 0.525219298245614
+    },
+    "raw_image_reference_oof_roc_auc": 0.8841831140350878,
+    "otsu_intensity_control": {
+      "by_class": {
+        "parasitized": {
+          "n": 48,
+          "empty_mask_rate": 0.0,
+          "foreground_fraction_median": 0.7326623648599995,
+          "foreground_fraction_p10_p90": [
+            0.6673969760954334,
+            0.7754752474559176
+          ],
+          "components_mean": 1.0,
+          "largest_component_fraction_median": 1.0
+        },
+        "uninfected": {
+          "n": 152,
+          "empty_mask_rate": 0.0,
+          "foreground_fraction_median": 0.7456982210758836,
+          "foreground_fraction_p10_p90": [
+            0.6730861256205046,
+            0.7772809551825836
+          ],
+          "components_mean": 1.0,
+          "largest_component_fraction_median": 1.0
+        }
+      },
+      "median_fraction_of_stain_focus_inside_cell_mask": 1.0
+    },
+    "cv": "StratifiedGroupKFold(5) grouped by patient, StandardScaler + LogisticRegression, out-of-fold ROC-AUC",
+    "u1b_stain_morph_by_class": {
+      "at_frozen_delta": {
+        "parasitized": {
+          "n": 100,
+          "empty_mask_rate": 0.05,
+          "foreground_fraction_median": 0.00887570921013052,
+          "foreground_fraction_p10_p90": [
+            0.00377934293481405,
+            0.018180641007442686
+          ],
+          "components_mean": 1.29,
+          "largest_component_fraction_median": 1.0
+        },
+        "uninfected": {
+          "n": 100,
+          "empty_mask_rate": 0.97,
+          "foreground_fraction_median": 0.0,
+          "foreground_fraction_p10_p90": [
+            0.0,
+            0.0
+          ],
+          "components_mean": 0.03,
+          "largest_component_fraction_median": 0.0
+        }
+      },
+      "as_reported_in_u1b_delta_0.15": {
+        "parasitized": {
+          "n": 100,
+          "foreground_fraction_median": 0.011669382027397753,
+          "foreground_fraction_p10_p90": [
+            0.004844795438182594,
+            0.02611567297813265
+          ],
+          "empty_mask_rate": 0.04,
+          "full_mask_rate": 0.0,
+          "components_mean": 1.44,
+          "components_median": 1.0,
+          "largest_component_fraction_median": 1.0,
+          "border_touch_fraction_median": 0.0
+        },
+        "uninfected": {
+          "n": 100,
+          "foreground_fraction_median": 0.0,
+          "foreground_fraction_p10_p90": [
+            0.0,
+            0.0
+          ],
+          "empty_mask_rate": 0.94,
+          "full_mask_rate": 0.0,
+          "components_mean": 0.07,
+          "components_median": 0.0,
+          "largest_component_fraction_median": 0.0,
+          "border_touch_fraction_median": 0.0
+        }
+      }
+    }
+  }
+}

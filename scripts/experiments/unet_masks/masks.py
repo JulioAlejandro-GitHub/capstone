@@ -70,6 +70,16 @@ METHODS = {
 }
 
 
+# U1B.1 freeze: stain_delta chosen by the label-blind, pre-registered rule in
+# validate.py (results/u1b_validation/report.md). METHODS defaults stay as in U1B
+# so that the U1B results remain reproducible.
+FROZEN_PSEUDO_MASK = {
+    "method": "stain_morph",
+    "method_version": 2,
+    "parameters": {"stain_delta": 0.20},
+}
+
+
 def method_spec(method, parameters=None):
     if method not in METHODS:
         raise ValueError("UNKNOWN_MASK_METHOD:" + str(method))
@@ -149,6 +159,13 @@ def generate_mask(image, method, parameters=None):
     spec = method_spec(method, parameters)
     mask = _IMPLEMENTATIONS[method](_as_rgb_float(image), spec["parameters"])
     return np.asarray(mask, dtype=bool)
+
+
+def generate_frozen_pseudo_mask(image):
+    """Stain-derived pseudo-mask with the frozen U1B.1 configuration."""
+    if METHODS[FROZEN_PSEUDO_MASK["method"]]["version"] != FROZEN_PSEUDO_MASK["method_version"]:
+        raise ValueError("FROZEN_METHOD_VERSION_MISMATCH")
+    return generate_mask(image, FROZEN_PSEUDO_MASK["method"], FROZEN_PSEUDO_MASK["parameters"])
 
 
 def resize_mask(mask, size):
