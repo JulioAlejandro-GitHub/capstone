@@ -14,7 +14,6 @@ smear image plus its Polygon GT. Nothing here touches PostgreSQL or derives tile
 from __future__ import annotations
 
 import hashlib
-import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -22,6 +21,7 @@ from typing import Any
 
 from PIL import Image
 
+from malaria_split.identity.nlm import canonical_nlm_full_smear_patient_key
 from malaria_split.families import THIN_BLOOD_SMEARS_PF_SOURCE_NAME, DatasetFamily
 
 from .polygon_set import PolygonParseError, parse_polygon_file
@@ -62,6 +62,11 @@ class SmearSourceRecord:
     rbc_count: int
     wbc_count: int
     label_counts: dict[str, int]
+
+    @property
+    def canonical_nlm_patient_key(self) -> str:
+        """Cross-source grouping key; source provenance retains the directory ID."""
+        return canonical_nlm_full_smear_patient_key(self.patient_id)
 
     @property
     def image_filename(self) -> str:
@@ -155,8 +160,8 @@ def file_sha256(path: Path) -> str:
 
 
 def cell_images_candidate_identifier(patient_id: str) -> str:
-    """Unverified hint: Polygon Set IDs look like ``<n>`` + an NLM cell-images Patient-ID."""
-    return re.sub(r"^\d+", "", patient_id)
+    """Compatibility alias for the technical NLM key; no clinical verification."""
+    return canonical_nlm_full_smear_patient_key(patient_id)
 
 
 def _single_child_dir(

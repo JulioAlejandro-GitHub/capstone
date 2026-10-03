@@ -72,3 +72,15 @@ test-dataset-sources:
 
 test-dataset-source-regression:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_dataset_families.py malaria_dataset_split_project/tests/unit/test_polygon_set.py malaria_dataset_split_project/tests/unit/test_thin_blood_smears_pf.py malaria_dataset_split_project/tests/unit/test_freeze.py
+
+.PHONY: test-canonical-nlm-identity audit-canonical-nlm-identity
+# Pure adapters and offline evidence checks; no PostgreSQL test fixtures.
+test-canonical-nlm-identity:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_nlm_identity.py scripts/audit_s1_2/test_audit.py
+
+audit-canonical-nlm-identity:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/audit_s1_2/audit.py
+
+.PHONY: test-canonical-nlm-regression
+test-canonical-nlm-regression:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_identity_resolver.py malaria_dataset_split_project/tests/unit/test_patient_group_stratified_v1.py malaria_dataset_split_project/tests/unit/test_patient_split_optimizer.py

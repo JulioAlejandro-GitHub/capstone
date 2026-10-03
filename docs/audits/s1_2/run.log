@@ -1,0 +1,156 @@
+{
+  "source_ids": 193,
+  "parsed_successfully": 193,
+  "parse_failures": 0,
+  "canonical_ids": 193,
+  "duplicate_canonical_ids": 0,
+  "cell_canonical_ids": 201,
+  "intersection": 193,
+  "full_only": [],
+  "cell_only": [
+    "C1_thinF",
+    "C203ThinF",
+    "C204ThinF",
+    "C206ThinF",
+    "C207ThinF",
+    "C209ThinF",
+    "C33P1thinF",
+    "C37BP2_thinF"
+  ],
+  "polygon_ids": 33,
+  "polygon_cell_matches": 33,
+  "polygon": {
+    "TRAIN": {
+      "patients": 28,
+      "percent": 84.848485,
+      "images": 140,
+      "WBC": 47,
+      "parasitized": 1057,
+      "uninfected": 27236
+    },
+    "VAL": {
+      "patients": 2,
+      "percent": 6.060606,
+      "images": 10,
+      "WBC": 2,
+      "parasitized": 35,
+      "uninfected": 2026
+    },
+    "TEST": {
+      "patients": 3,
+      "percent": 9.090909,
+      "images": 15,
+      "WBC": 2,
+      "parasitized": 50,
+      "uninfected": 3809
+    },
+    "NO_ASSIGNMENT": {
+      "patients": 0,
+      "percent": 0.0,
+      "images": 0,
+      "WBC": 0,
+      "parasitized": 0,
+      "uninfected": 0
+    }
+  },
+  "full_smear": {
+    "TRAIN": {
+      "patients": 154,
+      "percent": 79.792746,
+      "images": 770,
+      "WBC": 218,
+      "parasitized": 6435,
+      "uninfected": 150754
+    },
+    "VAL": {
+      "patients": 19,
+      "percent": 9.84456,
+      "images": 95,
+      "WBC": 30,
+      "parasitized": 765,
+      "uninfected": 19085
+    },
+    "TEST": {
+      "patients": 20,
+      "percent": 10.362694,
+      "images": 100,
+      "WBC": 23,
+      "parasitized": 752,
+      "uninfected": 18872
+    },
+    "NO_ASSIGNMENT": {
+      "patients": 0,
+      "percent": 0.0,
+      "images": 0,
+      "WBC": 0,
+      "parasitized": 0,
+      "uninfected": 0
+    }
+  },
+  "observed_forms": {
+    "#C#P#thinF_original": 2,
+    "#C#P#thin_Original_Motic": 1,
+    "#C#P#thinF": 12,
+    "#C#P#N_ThinF": 9,
+    "#C#P#_ThinF": 6,
+    "#C#P#ThinF": 104,
+    "#C#NthinF": 1,
+    "#C#ThinF": 34,
+    "#C#P#NThinF": 11,
+    "#C#NThinF": 7,
+    "#C#thin_original": 2,
+    "#C#P#thin_original": 1,
+    "#C#P#thinOriginalOlympusCX#": 1,
+    "#C#AP#thinF": 1,
+    "#C#P#ReThinF": 1
+  },
+  "s1_1_mapping_equal": true,
+  "c47p8": [
+    {
+      "source_family": "smear_segmentation",
+      "source_patient_id": "146C47P8thin_Original_Motic",
+      "canonical_patient_id": "C47P8thin_Original_Motic",
+      "cell_identity_exists": true,
+      "set": "Polygon",
+      "status": "MATCHED_BY_NLM_NAMING_CONVENTION",
+      "existing_cell_split": "TRAIN",
+      "images": 5,
+      "WBC": 1,
+      "parasitized": 9,
+      "uninfected": 939
+    },
+    {
+      "source_family": "smear_segmentation",
+      "source_patient_id": "148C47P8thinOriginalOlympusCX21",
+      "canonical_patient_id": "C47P8thinOriginalOlympusCX21",
+      "cell_identity_exists": true,
+      "set": "Point",
+      "status": "MATCHED_BY_NLM_NAMING_CONVENTION",
+      "existing_cell_split": "TRAIN",
+      "images": 5,
+      "WBC": 1,
+      "parasitized": 3,
+      "uninfected": 826
+    }
+  ],
+  "status": "PASS",
+  "timestamp": "2026-10-03T13:15:33.085839+00:00",
+  "protected_dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "postgresql_writes": 0,
+  "db_snapshots_equal": true,
+  "inputs_equal": true,
+  "input_counts": {
+    "raw": 2022,
+    "cell": 27558,
+    "mapping": 2
+  },
+  "freeze_matches": true,
+  "annotation_count_source": "Official local Dataset_statistics.xlsx; no GT polygon validation",
+  "protected_cell_dataset_version_changed": false,
+  "cell_assignments_changed": 0,
+  "full_smear_raw_files_changed": 0,
+  "dataset_versions_created": 0,
+  "full_smear_assignments_created": 0,
+  "yolo_datasets_created": 0,
+  "tiles_created": 0
+}

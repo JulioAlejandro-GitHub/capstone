@@ -1,0 +1,6 @@
+{
+  "HEAD": "1e962fa22770f366f5aef13e5cd55956ee6c5f85",
+  "branch": "s1-smear-segmentation-source-adapter",
+  "parent": "cf8fa58c93768d866e5402e81f9131ff34f50fde",
+  "status": "M malaria_dataset_split_project/src/malaria_split/sources/thin_blood_smears_pf.py\n?? docs/audits/s1_2/\n?? malaria_dataset_split_project/src/malaria_split/identity/nlm.py\n?? scripts/audit_s1_2/"
+}

@@ -90,3 +90,5 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 
 - [Preparar/verificar Cell y Full Smears](operations/dataset_source_preparation.md) — `CURRENT_DOC`, comandos manuales sin PostgreSQL.
 - [S1.D — Implementación y prueba real](audits/s1_d/REPORT.md) — `HISTORICAL_AUDIT`, integridad RAW, idempotencia y límites de `--split`.
+
+- [S1.2 — Canonical NLM Patient Identity](audits/s1_2/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. 193 claves técnicas; Polygon 28/2/3 sobre el split Cell protegido; S2 pendiente.
