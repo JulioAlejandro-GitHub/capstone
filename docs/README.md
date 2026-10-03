@@ -94,3 +94,9 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 - [S1.2 — Canonical NLM Patient Identity](audits/s1_2/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. 193 claves técnicas; Polygon 28/2/3 sobre el split Cell protegido; S2 pendiente.
 - [S2 — Thin Blood Smear SAME SPLIT](audits/s2/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. 193 pacientes / 965 imágenes gobernados; versión provisional GENERATED; Polygon 28/2/3, limitaciones científicas y evidencia de integridad. S3 pendiente.
 - [S3 — Validation + Dataset Version](audits/s3/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Misma versión Smear validada/congelada; assignments S2 intactos, manifest reproducible y consumo explícito por S4.
+
+## Auditoría PRE-S4 del flujo de Análisis de Frotis
+
+- [PRE-S4 — Flujo de detección, crops y clasificación](audits/pre_s4_detection_workflow/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Trazado estático desde SmearUpload hasta el resultado y contrato mínimo para incorporar otro detector.
+
+- [D1 + D2 — Separación de CELL DETECTION y CELL CROP](audits/d1_d2_detection_crop/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Resolutores mínimos, equivalencia de componentes/PNG/SHA y validación PostgreSQL; gate global pendiente por fallas previas.

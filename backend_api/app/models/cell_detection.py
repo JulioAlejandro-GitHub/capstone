@@ -80,12 +80,28 @@ class CellCrop:
 
 
 @dataclass(frozen=True)
-class ImageDetectionResult:
+class DetectionResult:
+    """CELL DETECTION output, independent of crop generation and storage."""
+
     raw_width_px: int
     raw_height_px: int
     oriented_width_px: int
     oriented_height_px: int
     threshold_value: int | None
     components: tuple[ConnectedComponent, ...]
-    crops: tuple[CellCrop, ...]
     warnings: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ImageDetectionResult(DetectionResult):
+    """Combined detection and crop output consumed by existing persistence."""
+
+    crops: tuple[CellCrop, ...]
+
+
+class DetectorInputError(ValueError):
+    """Raised when a frozen source image cannot be processed safely."""
+
+    def __init__(self, code: str, message: str) -> None:
+        self.code = code
+        super().__init__(message)

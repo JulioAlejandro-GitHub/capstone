@@ -5,6 +5,14 @@ validate:
 test: test-backend test-frontend
 test-backend:
 	docker compose exec -T backend python -m pytest tests -m "not requires_docker_postgres"
+.PHONY: test-backend-detection-crop test-backend-detection-crop-integration
+test-backend-detection-crop:
+	docker compose exec -T backend python -m pytest -q \
+		tests/test_detection_crop_equivalence.py tests/test_cell_detection_services.py \
+		tests/test_cell_classification_services.py tests/test_smear_workflow_contract.py
+test-backend-detection-crop-integration:
+	docker compose exec -T -e TEST_EXECUTION=true -e TEST_ISOLATION_MODE=transaction backend \
+		python -m pytest -q tests/test_cell_detection_postgres.py tests/test_cell_classification_postgres.py
 test-backend-integration test-db:
 	docker compose exec -T -e TEST_EXECUTION=true -e TEST_ISOLATION_MODE=transaction backend \
 		python -m pytest tests -m requires_docker_postgres
