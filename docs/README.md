@@ -81,3 +81,7 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 - Antes de ejecutar un comando, comprobar que el documento está marcado
   `CURRENT_DOC` o listado como fuente operativa en este índice, y que coincide con la
   configuración del repositorio.
+
+## Auditoría S1.1 de procedencia e identidad
+
+- [S1.1 — TFDS ↔ NLM ↔ Capstone](audits/s1_1/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Comparación exhaustiva de imágenes y fingerprints; cruces clínicos Polygon/Cell explícitamente no resueltos.

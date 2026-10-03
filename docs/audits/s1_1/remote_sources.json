@@ -1,0 +1,44 @@
+{
+  "nlm_datasheet.html": {
+    "url": "https://lhncbc.nlm.nih.gov/LHC-research/LHC-projects/image-processing/malaria-datasheet.html",
+    "sha256": "1a92466ab4d1a8b11945646e62e73f7a6b0380eb34ae4eabf28528f87a7d3966",
+    "size": 18935,
+    "retrieved_at": "2026-10-03T10:03:46.885604+00:00"
+  },
+  "official_ReadMe.pdf": {
+    "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/ReadMe.pdf",
+    "sha256": "2fe6ab9b218b5b840a6979947b2dbc548f5ca244024e909cf0bf543d7a83b3f1",
+    "size": 200535,
+    "retrieved_at": "2026-10-03T10:03:47.900170+00:00"
+  },
+  "official_Dataset_statistics.xlsx": {
+    "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/Dataset_statistics.xlsx",
+    "sha256": "f4e8abe005763b97c0480c347ec19e016d6138b1f9dec37d2cc8aab53bc7b974",
+    "size": 66112,
+    "retrieved_at": "2026-10-03T10:03:48.532437+00:00"
+  },
+  "official_polygon_index.html": {
+    "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/Polygon%20Set/index.html",
+    "sha256": "6bfc397d0da86957bb7bca79ce7c49c920c2277138ffa3a8f9b7c0bb5eb48ea7",
+    "size": 5284,
+    "retrieved_at": "2026-10-03T10:03:49.040265+00:00"
+  },
+  "official_point_index.html": {
+    "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/Point%20Set/index.html",
+    "sha256": "470727c4837ea3aa3b5cf01da0cb9613c1f17b6da68c2d3fa610af75708c8cc0",
+    "size": 22250,
+    "retrieved_at": "2026-10-03T10:03:49.536861+00:00"
+  },
+  "official_parasitized.csv": {
+    "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/patientid_cellmapping_parasitized.csv",
+    "sha256": "d0367e513397404e980baee2a641bce9ce329a22e62ea9007962dfca2f8418d3",
+    "size": 761124,
+    "retrieved_at": "2026-10-03T10:03:50.502491+00:00"
+  },
+  "official_uninfected.csv": {
+    "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/patientid_cellmapping_uninfected.csv",
+    "sha256": "a8577b21e7154724f4bbd18326218e2c63a99b22ab372b79a7530d36df6dab78",
+    "size": 667059,
+    "retrieved_at": "2026-10-03T10:03:51.531776+00:00"
+  }
+}
