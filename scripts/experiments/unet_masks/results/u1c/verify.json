@@ -1,0 +1,70 @@
+{
+  "manifest_rows": 27558,
+  "manifest_sha256_matches_generator_json": true,
+  "coverage": {
+    "train": {
+      "expected": 22180,
+      "manifest_rows": 22180,
+      "mask_files": 22180,
+      "missing": 0,
+      "unexpected": 0,
+      "files_without_manifest_row": 0
+    },
+    "val": {
+      "expected": 2693,
+      "manifest_rows": 2693,
+      "mask_files": 2693,
+      "missing": 0,
+      "unexpected": 0,
+      "files_without_manifest_row": 0
+    },
+    "test": {
+      "expected": 2685,
+      "manifest_rows": 2685,
+      "mask_files": 2685,
+      "missing": 0,
+      "unexpected": 0,
+      "files_without_manifest_row": 0
+    }
+  },
+  "duplicate_source_record_ids": 0,
+  "duplicate_mask_paths": 0,
+  "integrity": {
+    "missing_file": 0,
+    "hash_failure": 0,
+    "invalid_binary": 0,
+    "dimension_mismatch_vs_source": 0,
+    "foreground_count_mismatch": 0,
+    "split_or_class_mismatch_vs_postgresql": 0,
+    "generator_identity_mismatch": 0
+  },
+  "reproducibility": {
+    "sample_size": 300,
+    "per_split": 100,
+    "selection": "sha256('u1c-repro-2026-10-02' || source_record_id) order",
+    "mismatches": 0
+  },
+  "descriptive_train_val": {
+    "train": {
+      "masks": 22180,
+      "empty_mask_count": 11546,
+      "empty_mask_rate": 0.5205590622182146,
+      "foreground_fraction_median_nonempty": 0.009703725,
+      "foreground_fraction_p10_p90_nonempty": [
+        0.004348889,
+        0.021740341000000014
+      ]
+    },
+    "val": {
+      "masks": 2693,
+      "empty_mask_count": 1451,
+      "empty_mask_rate": 0.538804307463795,
+      "foreground_fraction_median_nonempty": 0.009327155,
+      "foreground_fraction_p10_p90_nonempty": [
+        0.003710255,
+        0.021285162000000007
+      ]
+    }
+  },
+  "status": "PASS"
+}

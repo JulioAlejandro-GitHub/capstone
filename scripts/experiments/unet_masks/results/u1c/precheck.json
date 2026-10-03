@@ -1,0 +1,30 @@
+{
+  "generator": {
+    "method_name": "stain_morph",
+    "method_version": 2,
+    "implementation_version": "u1b-lab-1",
+    "stain_delta": 0.2,
+    "parameters": {
+      "color_transform": "hsv_saturation",
+      "blur_sigma": 1.0,
+      "background_max_value": 0.04,
+      "cell_erosion_radius": 3,
+      "stain_delta": 0.2,
+      "min_object_px": 20,
+      "max_hole_px": 30,
+      "opening_radius": 1
+    },
+    "implementation_sha256": "65603c61c4925345d83ca305e5d097514679e54b1aea0159e63bfac7f9be24e9",
+    "spec_sha256": "4a84ad75d71dacf8f3d9c79d9de668ed57db176b09d2b265fd55c00ebbca078b"
+  },
+  "counts": {
+    "train": 22180,
+    "val": 2693,
+    "test": 2685,
+    "total": 27558
+  },
+  "unique_source_record_ids": 27558,
+  "output_outside_materialization": true,
+  "rgb_missing": 0,
+  "rgb_sha256_mismatch_vs_postgresql": 0
+}

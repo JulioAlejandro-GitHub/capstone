@@ -1,0 +1,26 @@
+{
+  "artifact": "stain-derived pseudo-masks (PNG, L mode, 0=background, 255=foreground, source resolution)",
+  "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "entry_point": "masks.generate_frozen_pseudo_mask(image)",
+  "generator": {
+    "implementation_sha256": "65603c61c4925345d83ca305e5d097514679e54b1aea0159e63bfac7f9be24e9",
+    "implementation_version": "u1b-lab-1",
+    "method_name": "stain_morph",
+    "method_version": 2,
+    "parameters": {
+      "background_max_value": 0.04,
+      "blur_sigma": 1.0,
+      "cell_erosion_radius": 3,
+      "color_transform": "hsv_saturation",
+      "max_hole_px": 30,
+      "min_object_px": 20,
+      "opening_radius": 1,
+      "stain_delta": 0.2
+    },
+    "spec_sha256": "4a84ad75d71dacf8f3d9c79d9de668ed57db176b09d2b265fd55c00ebbca078b",
+    "stain_delta": 0.2
+  },
+  "manifest_sha256": "b79d701753b35e183e28316251f0b72268607cba3a86b231cd16e6c746548f7c",
+  "record_count": 27558,
+  "source_materialization_root": "malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2"
+}
