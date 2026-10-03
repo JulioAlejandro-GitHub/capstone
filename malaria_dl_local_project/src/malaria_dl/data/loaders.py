@@ -255,20 +255,9 @@ def remap_tfds_malaria_label(label):
 
 
 def get_tfds_data_dir() -> Path:
-    """
-    Devuelve la ruta local para TensorFlow Datasets.
+    from src.malaria_dl.common.paths import get_tfds_data_dir as resolve_tfds_dir
 
-    Prioridad:
-    1. Variable de entorno TFDS_DATA_DIR.
-    2. capstone/data/tensorflow_datasets.
-    """
-    env_value = os.getenv("TFDS_DATA_DIR")
-    if env_value:
-        return Path(env_value).expanduser().resolve()
-
-    from src.malaria_dl.common.paths import PROJECT_ROOT
-    capstone_root = PROJECT_ROOT.parent
-    return capstone_root / "data" / "tensorflow_datasets"
+    return resolve_tfds_dir()
 
 
 def load_malaria_splits(

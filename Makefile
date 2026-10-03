@@ -63,3 +63,12 @@ limpiar-artefactos:
 	python3 -m scripts.maintenance.clean_experiment_artifacts
 limpiar-experimentos:
 	python3 -m scripts.maintenance.clean_all_experiments
+
+# S1.D source tools explicitly run offline without Docker/PostgreSQL.
+SOURCE_PYTHON ?= malaria_dl_local_project/.venv-local-train/bin/python
+.PHONY: test-dataset-sources test-dataset-source-regression
+test-dataset-sources:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dl_local_project/tests/source_preparation
+
+test-dataset-source-regression:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_dataset_families.py malaria_dataset_split_project/tests/unit/test_polygon_set.py malaria_dataset_split_project/tests/unit/test_thin_blood_smears_pf.py malaria_dataset_split_project/tests/unit/test_freeze.py

@@ -71,9 +71,11 @@ def _csv_tuple(value: str) -> tuple[str, ...]:
 
 def audit_current_split(config_path: Path, root_override: str | None = None) -> int:
     config = _read_simple_config(config_path)
-    configured_root = root_override or os.getenv("MALARIA_CURRENT_SPLIT_ROOT") or config[
-        "current_physical_split_root"
-    ]
+    from malaria_split.source_config import resolve_source_config
+
+    configured_root = root_override or resolve_source_config(
+        current_split_default=config["current_physical_split_root"]
+    ).current_split_root
     root = Path(configured_root).expanduser()
     if not root.is_absolute():
         root = _capstone_root() / root
@@ -561,10 +563,9 @@ def freeze_patient_split_v1() -> int:
 
 
 def _resolve_source_root(root: str | None) -> Path:
-    configured = root or os.getenv("THIN_BLOOD_SMEARS_PF_ROOT")
-    if not configured:
-        raise RuntimeError("--root or THIN_BLOOD_SMEARS_PF_ROOT is required")
-    return Path(configured).expanduser()
+    from malaria_split.source_config import resolve_source_config
+
+    return resolve_source_config(root).smear_root
 
 
 def _smear_inspection(family: str, source: str, root: str | None):
