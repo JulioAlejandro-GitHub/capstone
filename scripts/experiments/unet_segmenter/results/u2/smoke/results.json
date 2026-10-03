@@ -1,0 +1,48 @@
+{
+  "smoke": true,
+  "test_split_used": false,
+  "checkpoint": {
+    "path": "/private/tmp/claude-501/-Users-julio-Desktop-Archivo-Magister-UAI-Capstone-MIA-2025-2-Desarrollo-SW-capstone/a94a5030-2417-4dbf-80a9-74bd635edcb4/scratchpad/u2-unet-segmenter/../u2-smoke2/best.keras",
+    "sha256": "142ea15b0133dc6d0f9299f0becf8d3847d58705f2ea7ae762edb1e47606b3b0",
+    "selected_epoch": 2,
+    "epochs_run": 2,
+    "monitor": "val_dice_pooled_pixels",
+    "monitor_value": 0.01305436316759951,
+    "reloaded_with_safe_mode": true
+  },
+  "train_seconds": 200.8,
+  "val_final": {
+    "images": 128,
+    "dice_all": 0.012757174872074586,
+    "iou_all": 0.006570063276835317,
+    "dice_nonempty": 0.025121821286546876,
+    "iou_nonempty": 0.012937970760537239,
+    "dice_nonempty_median": 0.018665144332199856,
+    "dice_pooled_pixels": 0.01305436316759951,
+    "iou_pooled_pixels": 0.006570065594955505,
+    "target_empty_count": 63,
+    "target_nonempty_count": 65,
+    "predicted_empty_count": 0,
+    "empty_target_correct_empty": 0,
+    "empty_target_false_positive": 63,
+    "nonempty_target_predicted_empty": 0,
+    "nonempty_target_zero_overlap": 0
+  },
+  "val_baseline_all_black": {
+    "images": 128,
+    "dice_all": 0.4921875,
+    "iou_all": 0.4921875,
+    "dice_nonempty": 0.0,
+    "iou_nonempty": 0.0,
+    "dice_nonempty_median": 0.0,
+    "dice_pooled_pixels": 0.0,
+    "iou_pooled_pixels": 0.0,
+    "target_empty_count": 63,
+    "target_nonempty_count": 65,
+    "predicted_empty_count": 128,
+    "empty_target_correct_empty": 63,
+    "empty_target_false_positive": 0,
+    "nonempty_target_predicted_empty": 65,
+    "nonempty_target_zero_overlap": 65
+  }
+}

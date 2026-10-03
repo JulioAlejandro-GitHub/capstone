@@ -1,0 +1,13 @@
+PASS model builds, output (None,200,200,1), params=1929825
+PASS loader refuses TEST (SPLIT_NOT_ALLOWED_IN_U2:test)
+PASS manifest sealed, counts train=22180 val=2693, no test rows
+PASS image float32 (B,200,200,3) in [0,1]
+PASS mask float32 (B,200,200,1)
+PASS mask values after nearest resize + augmentation: [0.0, 1.0]
+PASS non-empty masks survive 200x200 nearest resize (232/232)
+PASS paired augmentation keeps image/mask aligned (40 seeds)
+PASS dice loss: empty/empty=0, empty/FP~1, perfect=0, non-empty/all-black~1
+PASS pooled Dice monitor: all-black=0 and all-foreground penalised
+PASS forward/backward step finite
+PASS save/reload with safe_mode gives identical predictions
+ALL PASS
