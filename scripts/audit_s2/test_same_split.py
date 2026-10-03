@@ -21,6 +21,10 @@ VERSION_ID = uuid5(same_split.VERSION_ID, "rollback-test")
 @pytest.fixture(autouse=True)
 def isolated_version(monkeypatch):
     monkeypatch.setattr(same_split, "VERSION_ID", VERSION_ID)
+    original = same_split._definition
+    def fixture_definition(inspections, plan):
+        return {**original(inspections, plan), "name": "S2 rollback-test"}
+    monkeypatch.setattr(same_split, "_definition", fixture_definition)
 from malaria_split.sources.thin_blood_smears_pf import inspect_thin_blood_smears_pf
 from malaria_split.splitting.same_split import SameSplitConflict, inherit_patient_assignments, check_audited_distribution
 

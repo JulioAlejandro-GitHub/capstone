@@ -98,3 +98,15 @@ test-smear-same-split-regression:
 	docker compose exec -T backend mkdir -p /tmp/capstone_s2_regression
 	docker compose cp malaria_dataset_split_project/tests backend:/tmp/capstone_s2_regression/tests
 	docker compose exec -T -w /tmp/capstone_s2_regression -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider tests/integration/test_smear_source_ingest.py tests/integration/test_split_generation_rehearsal.py tests/integration/test_dataset_invariants_and_trainability.py
+
+.PHONY: test-smear-validation test-smear-validation-regression audit-smear-validation
+test-smear-validation:
+	docker compose exec -T -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider /scripts/audit_s3/test_validation.py
+
+test-smear-validation-regression:
+	docker compose exec -T backend mkdir -p /tmp/capstone_s3_regression
+	docker compose cp malaria_dataset_split_project/tests backend:/tmp/capstone_s3_regression/tests
+	docker compose exec -T -w /tmp/capstone_s3_regression -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider tests/integration/test_formal_validation.py tests/integration/test_dataset_invariants_and_trainability.py tests/unit/test_freeze.py
+
+audit-smear-validation:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/audit_s3/audit.py $(FLAGS)

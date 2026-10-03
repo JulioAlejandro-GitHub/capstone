@@ -1,0 +1,13 @@
+{
+  "Makefile": "249afe26ad045fd272e637d2606853d81ff99e21e6568fd0aca28a4fe7a9938a",
+  "malaria_dataset_split_project/src/malaria_split/governance/freeze.py": "734422400a7f7af47236cca7fad64e040212872fb68f1a1bc378d892f87d1213",
+  "malaria_dataset_split_project/src/malaria_split/governance/trainability.py": "bcab1cf2ae2a4a0ea167e45909624a1b9f3f07982432d739c81f5e2cedd78660",
+  "malaria_dataset_split_project/src/malaria_split/identity/nlm.py": "13364d45f78955139c20bad10d816f217949ec5bc12d3566e9d4a4c0eac69b1d",
+  "malaria_dataset_split_project/src/malaria_split/persistence/formal_validation.py": "50cb8aeacd41c1aeb82eb13b5e3bb246ab33d4b29b70490d81de68055546e6ea",
+  "malaria_dataset_split_project/src/malaria_split/persistence/smear_validation.py": "28a7dead23445942602f89c535e2023e475dd959384a45cf44307c17406cdfe3",
+  "scripts/audit_s2/test_same_split.py": "da22b0a178310bdcf3eb8f18272eb131de3754d77d5f19a19ac44b57a7680091",
+  "scripts/audit_s3/audit.py": "5d6a85f8c831a5d16a77c58f4743fe19a42e8d937bebede6e79aaf36342fff89",
+  "scripts/audit_s3/evidence.py": "9265a31a26f1a556e0a6a9f76ec73e8b6ee22f32cf7b1a1647f394f1546cbc87",
+  "scripts/audit_s3/test_validation.py": "a84e11426621206c7b05a09344ec98ec90b7dacb5dfb0b48ab599d1c77146f6b",
+  "scripts/audit_s3/worker.py": "7359b0fc5b3bd79c408fcfd92340d4ad94d0ba5a500706e6a83248d6f6345ee2"
+}

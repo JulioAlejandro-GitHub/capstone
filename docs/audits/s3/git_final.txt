@@ -1,0 +1,39 @@
+ M Makefile
+ M docs/README.md
+ M malaria_dataset_split_project/src/malaria_split/governance/freeze.py
+ M malaria_dataset_split_project/src/malaria_split/governance/trainability.py
+ M malaria_dataset_split_project/src/malaria_split/persistence/formal_validation.py
+ M scripts/audit_s2/test_same_split.py
+?? docs/audits/s3/REPORT.md
+?? docs/audits/s3/code_hashes.json
+?? docs/audits/s3/database_changes.json
+?? docs/audits/s3/freeze.json
+?? docs/audits/s3/git_final.txt
+?? docs/audits/s3/git_initial.txt
+?? docs/audits/s3/idempotency.json
+?? docs/audits/s3/integrity_after.json
+?? docs/audits/s3/integrity_before.json
+?? docs/audits/s3/lifecycle_regression.log
+?? docs/audits/s3/preflight.json
+?? docs/audits/s3/preflight_run.log
+?? docs/audits/s3/run.log
+?? docs/audits/s3/s2_regression.log
+?? docs/audits/s3/source_manifest.json
+?? docs/audits/s3/source_regression.log
+?? docs/audits/s3/summary.json
+?? docs/audits/s3/tests.log
+?? malaria_dataset_split_project/src/malaria_split/persistence/smear_validation.py
+?? scripts/audit_s3/audit.py
+?? scripts/audit_s3/evidence.py
+?? scripts/audit_s3/test_validation.py
+?? scripts/audit_s3/worker.py
+ Makefile                                           | 12 +++
+ docs/README.md                                     |  1 +
+ .../src/malaria_split/governance/freeze.py         | 99 +++++++++++++++++++++-
+ .../src/malaria_split/governance/trainability.py   | 22 ++++-
+ .../malaria_split/persistence/formal_validation.py | 21 +++--
+ scripts/audit_s2/test_same_split.py                |  4 +
+ 6 files changed, 145 insertions(+), 14 deletions(-)
+s1-smear-segmentation-source-adapter
+0d440a58d472427a1ff64409870e458406039874
+e082c8bd7d47a1a3acbf371a2f57ff8d2fbeafc7
