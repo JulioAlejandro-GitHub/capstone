@@ -84,3 +84,17 @@ audit-canonical-nlm-identity:
 .PHONY: test-canonical-nlm-regression
 test-canonical-nlm-regression:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_identity_resolver.py malaria_dataset_split_project/tests/unit/test_patient_group_stratified_v1.py malaria_dataset_split_project/tests/unit/test_patient_split_optimizer.py
+
+.PHONY: test-smear-same-split audit-smear-same-split
+# S2 real-source integration rehearsals use PostgreSQL transactions with rollback.
+test-smear-same-split:
+	docker compose exec -T -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider /scripts/audit_s2/test_same_split.py
+
+audit-smear-same-split:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/audit_s2/audit.py $(FLAGS)
+
+.PHONY: test-smear-same-split-regression
+test-smear-same-split-regression:
+	docker compose exec -T backend mkdir -p /tmp/capstone_s2_regression
+	docker compose cp malaria_dataset_split_project/tests backend:/tmp/capstone_s2_regression/tests
+	docker compose exec -T -w /tmp/capstone_s2_regression -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider tests/integration/test_smear_source_ingest.py tests/integration/test_split_generation_rehearsal.py tests/integration/test_dataset_invariants_and_trainability.py

@@ -1,0 +1,37 @@
+{
+  "clinical_identities": {
+    "changed_existing": 0,
+    "deleted": 0,
+    "inserted": 160
+  },
+  "dataset_materializations": {
+    "changed_existing": 0,
+    "deleted": 0,
+    "inserted": 0
+  },
+  "dataset_source_records": {
+    "changed_existing": 0,
+    "deleted": 0,
+    "inserted": 800
+  },
+  "dataset_split_assignments": {
+    "changed_existing": 0,
+    "deleted": 0,
+    "inserted": 965
+  },
+  "dataset_version_sources": {
+    "changed_existing": 0,
+    "deleted": 0,
+    "inserted": 2
+  },
+  "datasets": {
+    "changed_existing": 0,
+    "deleted": 0,
+    "inserted": 1
+  },
+  "identity_evidence": {
+    "changed_existing": 0,
+    "deleted": 0,
+    "inserted": 800
+  }
+}

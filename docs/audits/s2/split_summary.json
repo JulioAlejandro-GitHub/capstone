@@ -1,0 +1,115 @@
+{
+  "canonical_collisions": 0,
+  "cross_family_mismatches": 0,
+  "dataset_family": "smear_segmentation",
+  "images_total": 965,
+  "integrity": {
+    "cell_files": 27558,
+    "physical_inputs_equal": true,
+    "protected_cell_rows_equal": true,
+    "raw_files": 2022
+  },
+  "no_assignment": 0,
+  "patients_total": 193,
+  "persistence": {
+    "assignments": 965,
+    "cross_family_mismatches": 0,
+    "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+    "image_counts": {
+      "test": 100,
+      "train": 770,
+      "val": 95
+    },
+    "patient_counts": {
+      "test": 20,
+      "train": 154,
+      "val": 19
+    },
+    "patient_digest": "3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16",
+    "patient_overlap": 0,
+    "patients": 193,
+    "postgresql": {
+      "database": "malaria_experiments",
+      "role": "capstone_v2_runtime",
+      "server": "PostgreSQL 17.9 (Debian 17.9-1.pgdg13+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+    },
+    "record_digest": "ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f",
+    "result": "INSERTED",
+    "status": "GENERATED"
+  },
+  "point": {
+    "annotation_type": "point; not polygon",
+    "images": 800,
+    "patients": 160,
+    "splits": {
+      "test": {
+        "WBC": 21,
+        "images": 85,
+        "parasitized": 702,
+        "patients": 17,
+        "uninfected": 15063
+      },
+      "train": {
+        "WBC": 171,
+        "images": 630,
+        "parasitized": 5378,
+        "patients": 126,
+        "uninfected": 123518
+      },
+      "val": {
+        "WBC": 28,
+        "images": 85,
+        "parasitized": 730,
+        "patients": 17,
+        "uninfected": 17059
+      }
+    }
+  },
+  "polygon": {
+    "annotations": {
+      "test": {
+        "WBC": 2,
+        "images": 15,
+        "parasitized": 50,
+        "patients": 3,
+        "total_polygons": 3861,
+        "uninfected": 3809
+      },
+      "train": {
+        "WBC": 47,
+        "images": 140,
+        "parasitized": 1057,
+        "patients": 28,
+        "total_polygons": 28340,
+        "uninfected": 27236
+      },
+      "val": {
+        "WBC": 2,
+        "images": 10,
+        "parasitized": 35,
+        "patients": 2,
+        "total_polygons": 2063,
+        "uninfected": 2026
+      }
+    },
+    "images": 165,
+    "patients": 33,
+    "test_patients": 3,
+    "train_patients": 28,
+    "val_patients": 2
+  },
+  "reference_dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "strategy": "thin_blood_smear_same_split_v1",
+  "test": {
+    "images": 100,
+    "patients": 20
+  },
+  "train": {
+    "images": 770,
+    "patients": 154
+  },
+  "val": {
+    "images": 95,
+    "patients": 19
+  }
+}

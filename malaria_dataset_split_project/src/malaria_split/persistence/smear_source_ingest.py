@@ -1,4 +1,4 @@
-"""Atomic verify-or-insert of the ThinBloodSmearsPf Polygon Set source population.
+"""Atomic verify-or-insert of the ThinBloodSmearsPf annotation-set source population.
 
 Writes only ``datasets``, ``clinical_identities``, ``dataset_source_records`` and
 ``identity_evidence`` rows of the smear source. It never creates Dataset Versions,
@@ -46,28 +46,33 @@ def _assert_equal(label: str, actual: Any, expected: Any) -> None:
         raise SmearIngestConflict(f"{label} conflict: actual={actual!r}, expected={expected!r}")
 
 
-def dataset_source_id() -> UUID:
-    return uuid5(ID_NAMESPACE, f"DATASET_SOURCE:{SOURCE_NAME}")
+def source_name(annotation_set: str = "Polygon Set") -> str:
+    return SOURCE_NAME if annotation_set == "Polygon Set" else SOURCE_NAME + " Point Set"
+
+
+def dataset_source_id(annotation_set: str = "Polygon Set") -> UUID:
+    return uuid5(ID_NAMESPACE, f"DATASET_SOURCE:{source_name(annotation_set)}")
 
 
 def _dataset_metadata(inspection: SmearSourceInspection) -> dict[str, Any]:
     return {
         "dataset_family": DatasetFamily.SMEAR_SEGMENTATION.value,
-        "source_slug": SOURCE_SLUG,
+        "source_slug": SOURCE_SLUG if inspection.annotation_set == "Polygon Set" else SOURCE_SLUG + "_point",
         "adapter_version": ADAPTER_VERSION,
-        "ground_truth": "polygon_set",
+        "ground_truth": inspection.annotation_set.lower().replace(" ", "_"),
         "source_unit": "full_smear_image",
         "clinical_unit": "patient",
         "population_fingerprint_sha256": inspection.population_fingerprint,
         "provenance_sha256": inspection.provenance_sha256,
         "patient_count": len(inspection.patients),
-        "polygon_count": sum(record.polygon_count for record in inspection.records),
+        **({"polygon_count": sum(record.polygon_count for record in inspection.records)}
+           if inspection.annotation_set == "Polygon Set" else {"annotation_validation": "inventory_only"}),
     }
 
 
 def prepare_smear_rows(inspection: SmearSourceInspection) -> dict[str, list[dict[str, Any]]]:
     """Deterministic rows; UUIDs depend only on source name, Patient-ID and relative path."""
-    source_id = dataset_source_id()
+    source_id = dataset_source_id(inspection.annotation_set)
     readme_sha = inspection.provenance_sha256.get("ReadMe.pdf")
     identities = [{
         "id": uuid5(ID_NAMESPACE, f"{source_id}:PATIENT:{patient}"),
@@ -75,7 +80,7 @@ def prepare_smear_rows(inspection: SmearSourceInspection) -> dict[str, list[dict
         "source_identifier": patient, "status": "VERIFIED",
         "metadata": {
             "identifier_authority": SOURCE_PROVIDER,
-            "derivation": "Polygon Set/<Patient ID> directory name (official ReadMe.pdf)",
+            "derivation": f"{inspection.annotation_set}/<Patient ID> directory name (official ReadMe.pdf)",
             "cross_source_hint": {
                 "status": "UNVERIFIED",
                 "nih_nlm_malaria_cell_images_candidate_patient_id":
@@ -103,14 +108,15 @@ def prepare_smear_rows(inspection: SmearSourceInspection) -> dict[str, list[dict
                 "record_unit": "full_smear_image",
                 "class_semantics": "record_unit_not_diagnostic_label",
                 "annotation": {
-                    "format": "nih_nlm_polygon_set",
+                    "format": "nih_nlm_" + inspection.annotation_set.lower().replace(" ", "_"),
                     "relative_path": record.annotation_relative_path,
                     "sha256": record.annotation_sha256,
                     "size_bytes": record.annotation_size_bytes,
-                    "polygon_count": record.polygon_count,
-                    "rbc_count": record.rbc_count,
-                    "wbc_count": record.wbc_count,
-                    "label_counts": record.label_counts,
+                    **({"polygon_count": record.polygon_count,
+                        "rbc_count": record.rbc_count, "wbc_count": record.wbc_count,
+                        "label_counts": record.label_counts}
+                       if inspection.annotation_set == "Polygon Set" else
+                       {"validation": "inventory_only", "segmentation_eligible": False}),
                 },
             },
         })
@@ -119,11 +125,12 @@ def prepare_smear_rows(inspection: SmearSourceInspection) -> dict[str, list[dict
             "source_record_id": record_id,
             "clinical_identity_id": identity_ids[record.patient_id],
             "evidence_type": EVIDENCE_TYPE, "evidence_level": EVIDENCE_LEVEL,
-            "mapping_method": MAPPING_METHOD,
+            "mapping_method": MAPPING_METHOD if inspection.annotation_set == "Polygon Set"
+                              else "point_set_patient_directory_name",
             "evidence_reference": f"ReadMe.pdf sha256={readme_sha}",
             "official_source_reference": SOURCE_REFERENCE,
             "evidence_json": {
-                "path_template": "Polygon Set/<Patient ID>/Img/<ImageName>.jpg",
+                "path_template": f"{inspection.annotation_set}/<Patient ID>/Img/<ImageName>.jpg",
                 "image_relative_path": record.image_relative_path,
                 "annotation_relative_path": record.annotation_relative_path,
                 "patient_directory": record.patient_id,
@@ -165,13 +172,13 @@ def ingest_smear_source(connection: Connection, inspection: SmearSourceInspectio
         raise SmearIngestConflict("Source inspection contract FAIL; nothing persisted")
     repository = ScientificBootstrapRepository(connection)
     connection.execute(text("SELECT pg_advisory_xact_lock(:key)"), {"key": ADVISORY_LOCK_KEY})
-    source_id = dataset_source_id()
+    source_id = dataset_source_id(inspection.annotation_set)
     metadata = _dataset_metadata(inspection)
     sources = connection.execute(text(
         "SELECT * FROM datasets WHERE name=:name OR id=:id FOR UPDATE"
-    ), {"name": SOURCE_NAME, "id": source_id}).mappings().all()
+    ), {"name": source_name(inspection.annotation_set), "id": source_id}).mappings().all()
     expected_source = {
-        "id": source_id, "name": SOURCE_NAME, "provider": SOURCE_PROVIDER,
+        "id": source_id, "name": source_name(inspection.annotation_set), "provider": SOURCE_PROVIDER,
         "source_type": "medical_image_dataset", "source_reference": SOURCE_REFERENCE,
         "url": SOURCE_REFERENCE, "total_images": len(inspection.records),
         "checksum": inspection.population_fingerprint, "metadata": metadata,
@@ -194,7 +201,9 @@ def ingest_smear_source(connection: Connection, inspection: SmearSourceInspectio
             )
         """), {**expected_source, "metadata": json.dumps(metadata, sort_keys=True),
                "description": "Thin blood smear images (P. falciparum) with expert Polygon "
-                              "Set ground truth; one record per full smear image."})
+                              "Set ground truth; one record per full smear image."
+                              if inspection.annotation_set == "Polygon Set" else
+                              "Thin blood smears with Point GT; inventory only, not segmentation masks."})
         source_inserted = True
 
     rows = prepare_smear_rows(inspection)
@@ -235,7 +244,7 @@ def ingest_smear_source(connection: Connection, inspection: SmearSourceInspectio
             )
         """),
     }
-    counts = audit_smear_source(connection)
+    counts = audit_smear_source(connection, inspection.annotation_set)
     _assert_equal("persisted smear counts", {
         key: counts[key] for key in ("patients", "source_records", "identity_evidence")
     }, {
@@ -256,9 +265,9 @@ def apply_smear_source_ingest(engine: Engine, inspection: SmearSourceInspection)
         return ingest_smear_source(connection, inspection)
 
 
-def audit_smear_source(connection: Connection) -> dict[str, Any]:
+def audit_smear_source(connection: Connection, annotation_set: str = "Polygon Set") -> dict[str, Any]:
     """Read-only counts of the smear source population (zero when not yet ingested)."""
-    scope = {"dataset_id": dataset_source_id()}
+    scope = {"dataset_id": dataset_source_id(annotation_set)}
     scalar = lambda sql: connection.execute(text(sql), scope).scalar_one()
     return {
         "patients": scalar("SELECT count(*) FROM clinical_identities WHERE dataset_id=:dataset_id"),

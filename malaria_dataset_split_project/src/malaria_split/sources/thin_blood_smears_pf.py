@@ -1,4 +1,4 @@
-"""Read-only Source Adapter for NIH/NLM ThinBloodSmearsPf (Polygon Set).
+"""Read-only Source Adapter for NIH/NLM ThinBloodSmearsPf (Polygon and Point).
 
 Official layout (ReadMe.pdf, verified on the real copy; the real folder is ``Img``):
 
@@ -8,7 +8,8 @@ Official layout (ReadMe.pdf, verified on the real copy; the real folder is ``Img
 ```
 
 The Patient-ID is the patient directory name, verbatim. One source record is one full
-smear image plus its Polygon GT. Nothing here touches PostgreSQL or derives tiles.
+smear image plus its GT. Point GT is inventoried and hashed, never parsed as polygons.
+Nothing here touches PostgreSQL or derives tiles.
 """
 
 from __future__ import annotations
@@ -62,6 +63,7 @@ class SmearSourceRecord:
     rbc_count: int
     wbc_count: int
     label_counts: dict[str, int]
+    annotation_set: str = "Polygon Set"
 
     @property
     def canonical_nlm_patient_key(self) -> str:
@@ -74,7 +76,8 @@ class SmearSourceRecord:
 
     @property
     def source_record_key(self) -> str:
-        return f"nih_nlm_thin_blood_smears_pf:polygon_set/{self.patient_id}/{self.image_filename}"
+        set_key = self.annotation_set.lower().replace(" ", "_")
+        return f"nih_nlm_thin_blood_smears_pf:{set_key}/{self.patient_id}/{self.image_filename}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,6 +88,8 @@ class SmearSourceInspection:
     images_found: int
     annotations_found: int
     provenance_sha256: dict[str, str | None] = field(default_factory=dict)
+
+    annotation_set: str = "Polygon Set"
 
     @property
     def patients(self) -> tuple[str, ...]:
@@ -113,10 +118,10 @@ class SmearSourceInspection:
             labels.update(record.label_counts)
         return {
             "dataset_family": DatasetFamily.SMEAR_SEGMENTATION.value,
-            "source_name": SOURCE_NAME,
-            "source_slug": SOURCE_SLUG,
+            "source_name": SOURCE_NAME if self.annotation_set == "Polygon Set" else SOURCE_NAME + " Point Set",
+            "source_slug": SOURCE_SLUG if self.annotation_set == "Polygon Set" else SOURCE_SLUG + "_point",
             "adapter_version": ADAPTER_VERSION,
-            "ground_truth": "Polygon Set",
+            "ground_truth": self.annotation_set,
             "source_unit": "full_smear_image",
             "patients_found": len(per_patient),
             "images_found": self.images_found,
@@ -135,7 +140,7 @@ class SmearSourceInspection:
                 "min": min(per_patient.values(), default=0),
                 "max": max(per_patient.values(), default=0),
             },
-            "polygons": {
+            "polygons": None if self.annotation_set == "Point Set" else {
                 "total": sum(record.polygon_count for record in self.records),
                 "rbc": sum(record.rbc_count for record in self.records),
                 "wbc": sum(record.wbc_count for record in self.records),
@@ -202,22 +207,24 @@ def _files_by_stem(
     return result
 
 
-def inspect_thin_blood_smears_pf(root: Path) -> SmearSourceInspection:
-    """Discover patients, full smear images and Polygon GT under a local dataset copy."""
+def inspect_thin_blood_smears_pf(root: Path, *, annotation_set: str = POLYGON_SET_DIR) -> SmearSourceInspection:
+    """Discover image/GT pairs; parse geometry only for Polygon, inventory Point."""
+    if annotation_set not in ("Polygon Set", "Point Set"):
+        raise ValueError("Unknown annotation set")
     root = root.expanduser().resolve()
     issues: list[SourceIssue] = []
     ignored: list[str] = []
     records: list[SmearSourceRecord] = []
     images_found = 0
     annotations_found = 0
-    polygon_root = root / POLYGON_SET_DIR
+    polygon_root = root / annotation_set
     provenance = {
         name: file_sha256(root / name) if (root / name).is_file() else None
         for name in PROVENANCE_FILES
     }
     if not polygon_root.is_dir():
-        issues.append(SourceIssue("STRUCTURE_INVALID", POLYGON_SET_DIR, "directory not found"))
-        return SmearSourceInspection((), tuple(issues), (), 0, 0, provenance)
+        issues.append(SourceIssue("STRUCTURE_INVALID", annotation_set, "directory not found"))
+        return SmearSourceInspection((), tuple(issues), (), 0, 0, provenance, annotation_set)
 
     patient_dirs: list[Path] = []
     for item in sorted(polygon_root.iterdir()):
@@ -274,7 +281,8 @@ def inspect_thin_blood_smears_pf(root: Path) -> SmearSourceInspection:
                 ))
                 continue
             try:
-                annotation = parse_polygon_file(annotation_path, image_size=(width, height))
+                annotation = (parse_polygon_file(annotation_path, image_size=(width, height))
+                              if annotation_set == POLYGON_SET_DIR else None)
             except PolygonParseError as error:
                 issues.append(SourceIssue(
                     "INVALID_ANNOTATION", annotation_path.relative_to(root).as_posix(),
@@ -291,10 +299,11 @@ def inspect_thin_blood_smears_pf(root: Path) -> SmearSourceInspection:
                 annotation_relative_path=annotation_path.relative_to(root).as_posix(),
                 annotation_sha256=file_sha256(annotation_path),
                 annotation_size_bytes=annotation_path.stat().st_size,
-                polygon_count=len(annotation.polygons),
-                rbc_count=annotation.rbc_count,
-                wbc_count=annotation.wbc_count,
-                label_counts=annotation.label_counts,
+                polygon_count=len(annotation.polygons) if annotation else 0,
+                rbc_count=annotation.rbc_count if annotation else 0,
+                wbc_count=annotation.wbc_count if annotation else 0,
+                label_counts=annotation.label_counts if annotation else {},
+                annotation_set=annotation_set,
             ))
 
     seen: dict[str, str] = {}
@@ -308,5 +317,5 @@ def inspect_thin_blood_smears_pf(root: Path) -> SmearSourceInspection:
             seen[record.image_sha256] = record.image_relative_path
     return SmearSourceInspection(
         tuple(sorted(records, key=lambda item: item.image_relative_path)),
-        tuple(issues), tuple(sorted(ignored)), images_found, annotations_found, provenance,
+        tuple(issues), tuple(sorted(ignored)), images_found, annotations_found, provenance, annotation_set,
     )

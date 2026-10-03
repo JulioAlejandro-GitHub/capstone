@@ -1,0 +1,11 @@
+{
+  "Makefile": "a9a4a79f0d23d6b7cfa1445c639684d9dc2a4e596a2a7133ccd5a6f108d1cb19",
+  "malaria_dataset_split_project/src/malaria_split/identity/nlm.py": "13364d45f78955139c20bad10d816f217949ec5bc12d3566e9d4a4c0eac69b1d",
+  "malaria_dataset_split_project/src/malaria_split/persistence/same_split.py": "21a8ed541b6d26cb1f268b01bc79cd8aab65e79e2517e8ed36ff16423da9bea6",
+  "malaria_dataset_split_project/src/malaria_split/persistence/smear_source_ingest.py": "29960ee6ffccb71c463e8b9660def78bfb147dabe1d9cbec828244e404d6c03d",
+  "malaria_dataset_split_project/src/malaria_split/sources/thin_blood_smears_pf.py": "68da82095dc1b0732153005cf144640758b9b80f655f2fcb98a9ee9a2a510d75",
+  "malaria_dataset_split_project/src/malaria_split/splitting/same_split.py": "c665de1ebcde5a42dd87f494869a631bdbe34b042efd10f1940608a5e074027f",
+  "scripts/audit_s2/audit.py": "4acbde4537a2648545660e067d09b198b95e061929dde8003735bac35a76bfc8",
+  "scripts/audit_s2/test_same_split.py": "2f1350a57f649b37f19f25df1e3ce4915c4f646724fbb6ba8a9ff55e9d263716",
+  "scripts/audit_s2/worker.py": "812794a9c8050569cd3ec0b59203c941780192650faddb22266caa3d5d108745"
+}
