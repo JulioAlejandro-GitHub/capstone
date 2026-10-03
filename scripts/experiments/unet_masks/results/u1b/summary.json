@@ -1,0 +1,220 @@
+{
+  "stage": "U1B",
+  "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "split": "train",
+  "sample": {
+    "images": 200,
+    "patients": 100,
+    "per_class": {
+      "parasitized": 100,
+      "uninfected": 100
+    },
+    "selection": "md5(seed || source_record_id), seed=u1b-2026-10-02, 100 per class"
+  },
+  "pipeline_size": 200,
+  "mask_resize": "nearest",
+  "methods": {
+    "otsu_intensity": {
+      "method_name": "otsu_intensity",
+      "method_version": 1,
+      "implementation_version": "u1b-lab-1",
+      "parameters": {
+        "blur_sigma": 1.0,
+        "polarity": "bright",
+        "min_object_px": 64,
+        "max_hole_px": 64
+      },
+      "by_class": {
+        "parasitized": {
+          "n": 100,
+          "foreground_fraction_median": 0.7234078666833449,
+          "foreground_fraction_p10_p90": [
+            0.5994054354028907,
+            0.7820287951392029
+          ],
+          "empty_mask_rate": 0.0,
+          "full_mask_rate": 0.0,
+          "components_mean": 1.01,
+          "components_median": 1.0,
+          "largest_component_fraction_median": 1.0,
+          "border_touch_fraction_median": 0.11712182061579651
+        },
+        "uninfected": {
+          "n": 100,
+          "foreground_fraction_median": 0.7386793480993021,
+          "foreground_fraction_p10_p90": [
+            0.6215794410344224,
+            0.7798174450735905
+          ],
+          "empty_mask_rate": 0.0,
+          "full_mask_rate": 0.0,
+          "components_mean": 1.01,
+          "components_median": 1.0,
+          "largest_component_fraction_median": 1.0,
+          "border_touch_fraction_median": 0.13190154808205598
+        }
+      },
+      "overall_empty_mask_rate": 0.0,
+      "overall_full_mask_rate": 0.0,
+      "stability_min_iou_under_perturbation": {
+        "perturbations": [
+          {
+            "blur_sigma": 1.5
+          },
+          {
+            "blur_sigma": 0.5
+          }
+        ],
+        "median": 0.9941418757234359,
+        "p10": 0.9898422649807412
+      },
+      "geometry_only_oof_roc_auc": 0.5442,
+      "edge_case_counts": {
+        "parasitized, empty mask": 0,
+        "uninfected, non-empty mask": 100
+      }
+    },
+    "hsv_otsu": {
+      "method_name": "hsv_otsu",
+      "method_version": 1,
+      "implementation_version": "u1b-lab-1",
+      "parameters": {
+        "channel": "saturation",
+        "blur_sigma": 1.0,
+        "background_max_value": 0.04,
+        "cell_erosion_radius": 3,
+        "min_object_px": 16
+      },
+      "by_class": {
+        "parasitized": {
+          "n": 100,
+          "foreground_fraction_median": 0.014174890994193869,
+          "foreground_fraction_p10_p90": [
+            0.00678363707804233,
+            0.18650434371080568
+          ],
+          "empty_mask_rate": 0.0,
+          "full_mask_rate": 0.0,
+          "components_mean": 1.61,
+          "components_median": 1.0,
+          "largest_component_fraction_median": 1.0,
+          "border_touch_fraction_median": 0.0
+        },
+        "uninfected": {
+          "n": 100,
+          "foreground_fraction_median": 0.40142857142857147,
+          "foreground_fraction_p10_p90": [
+            0.09495648752381566,
+            0.5576063012553865
+          ],
+          "empty_mask_rate": 0.0,
+          "full_mask_rate": 0.0,
+          "components_mean": 2.9,
+          "components_median": 2.0,
+          "largest_component_fraction_median": 0.9979697884594306,
+          "border_touch_fraction_median": 0.0
+        }
+      },
+      "overall_empty_mask_rate": 0.0,
+      "overall_full_mask_rate": 0.0,
+      "stability_min_iou_under_perturbation": {
+        "perturbations": [
+          {
+            "blur_sigma": 1.5
+          },
+          {
+            "blur_sigma": 0.5
+          }
+        ],
+        "median": 0.9570680475103857,
+        "p10": 0.8991636492443325
+      },
+      "geometry_only_oof_roc_auc": 0.8993,
+      "edge_case_counts": {
+        "parasitized, empty mask": 0,
+        "uninfected, non-empty mask": 100
+      }
+    },
+    "stain_morph": {
+      "method_name": "stain_morph",
+      "method_version": 2,
+      "implementation_version": "u1b-lab-1",
+      "parameters": {
+        "color_transform": "hsv_saturation",
+        "blur_sigma": 1.0,
+        "background_max_value": 0.04,
+        "cell_erosion_radius": 3,
+        "stain_delta": 0.15,
+        "min_object_px": 20,
+        "max_hole_px": 30,
+        "opening_radius": 1
+      },
+      "by_class": {
+        "parasitized": {
+          "n": 100,
+          "foreground_fraction_median": 0.011669382027397753,
+          "foreground_fraction_p10_p90": [
+            0.004844795438182594,
+            0.02611567297813265
+          ],
+          "empty_mask_rate": 0.04,
+          "full_mask_rate": 0.0,
+          "components_mean": 1.44,
+          "components_median": 1.0,
+          "largest_component_fraction_median": 1.0,
+          "border_touch_fraction_median": 0.0
+        },
+        "uninfected": {
+          "n": 100,
+          "foreground_fraction_median": 0.0,
+          "foreground_fraction_p10_p90": [
+            0.0,
+            0.0
+          ],
+          "empty_mask_rate": 0.94,
+          "full_mask_rate": 0.0,
+          "components_mean": 0.07,
+          "components_median": 0.0,
+          "largest_component_fraction_median": 0.0,
+          "border_touch_fraction_median": 0.0
+        }
+      },
+      "overall_empty_mask_rate": 0.49,
+      "overall_full_mask_rate": 0.0,
+      "stability_min_iou_under_perturbation": {
+        "perturbations": [
+          {
+            "stain_delta": 0.12
+          },
+          {
+            "stain_delta": 0.18
+          }
+        ],
+        "median": 0.9200854554386446,
+        "p10": 0.7208145888274127
+      },
+      "geometry_only_oof_roc_auc": 0.9319500000000001,
+      "edge_case_counts": {
+        "parasitized, empty mask": 4,
+        "uninfected, non-empty mask": 6
+      }
+    }
+  },
+  "raw_image_reference": {
+    "features": [
+      "cell_gray_p1",
+      "cell_saturation_p99"
+    ],
+    "oof_roc_auc": 0.9023
+  },
+  "leakage_check": {
+    "classifier": "StandardScaler + LogisticRegression",
+    "cv": "StratifiedGroupKFold(5) grouped by patient, out-of-fold ROC-AUC",
+    "features": [
+      "foreground_fraction",
+      "connected_components",
+      "largest_component_fraction"
+    ],
+    "note": "Diagnostic only; not used to choose parameters."
+  }
+}
