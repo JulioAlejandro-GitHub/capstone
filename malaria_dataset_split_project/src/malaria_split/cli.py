@@ -44,6 +44,7 @@ from malaria_split.persistence.materialization import (
     materialize_dataset_version,
 )
 from malaria_split.governance.freeze import freeze_dataset_version
+from malaria_split.families import DatasetFamily, SOURCES, get_source
 
 
 def _project_root() -> Path:
@@ -256,10 +257,13 @@ def audit_patient_profiles_v1(dataset_version_id: str) -> int:
             evaluation = evaluate_candidate(profiles, baseline)
             duplicate_groups = connection.execute(text("""
                 SELECT count(*) FROM (
-                  SELECT source_file_sha256 FROM dataset_source_records
-                  GROUP BY source_file_sha256 HAVING count(*) > 1
+                  SELECT r.source_file_sha256 FROM dataset_source_records r
+                  JOIN dataset_version_sources vs ON vs.dataset_id=r.dataset_id
+                    AND vs.role='PRIMARY'
+                  WHERE vs.dataset_version_id=:id
+                  GROUP BY r.source_file_sha256 HAVING count(*) > 1
                 ) duplicates
-            """)).scalar_one()
+            """), {"id": version_id}).scalar_one()
     finally:
         engine.dispose()
     profile_counts = {
@@ -556,6 +560,56 @@ def freeze_patient_split_v1() -> int:
     return 0 if payload["status"] == "PASS" else 1
 
 
+def _resolve_source_root(root: str | None) -> Path:
+    configured = root or os.getenv("THIN_BLOOD_SMEARS_PF_ROOT")
+    if not configured:
+        raise RuntimeError("--root or THIN_BLOOD_SMEARS_PF_ROOT is required")
+    return Path(configured).expanduser()
+
+
+def _smear_inspection(family: str, source: str, root: str | None):
+    spec = get_source(family, source)
+    if spec.family is not DatasetFamily.SMEAR_SEGMENTATION:
+        raise RuntimeError(
+            "cell_classification is governed by bootstrap-malaria-v1; no new adapter applies"
+        )
+    from malaria_split.sources.thin_blood_smears_pf import inspect_thin_blood_smears_pf
+
+    return inspect_thin_blood_smears_pf(_resolve_source_root(root))
+
+
+def inspect_source(family: str, source: str, root: str | None) -> int:
+    """Filesystem-only inspection; never opens a database connection."""
+    inspection = _smear_inspection(family, source, root)
+    payload = {"mode": "READ_ONLY_SOURCE_INSPECTION", "database_writes": 0,
+               **inspection.report()}
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0 if inspection.contract_passed else 1
+
+
+def ingest_source(family: str, source: str, root: str | None) -> int:
+    inspection = _smear_inspection(family, source, root)
+    report = inspection.report()
+    payload: dict = {"mode": "ATOMIC_SOURCE_INGEST", "inspection": report}
+    if not inspection.contract_passed:
+        payload |= {"database_writes": 0, "status": "FAIL"}
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 1
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required for source ingest")
+    from malaria_split.persistence.smear_source_ingest import apply_smear_source_ingest
+
+    engine = create_postgresql_engine(database_url)
+    try:
+        payload["database_apply"] = apply_smear_source_ingest(engine, inspection)
+    finally:
+        engine.dispose()
+    payload["status"] = "PASS"
+    print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Auditoría read-only del split físico")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -588,6 +642,17 @@ def main(argv: list[str] | None = None) -> int:
     materialize = subparsers.add_parser("materialize-patient-split-v1")
     materialize.add_argument("--config", type=Path, default=_project_root() / "config/current_split.yaml")
     subparsers.add_parser("freeze-patient-split-v1")
+    for command in ("inspect-source", "ingest-source"):
+        source_parser = subparsers.add_parser(command)
+        source_parser.add_argument(
+            "--dataset-family", required=True, choices=[item.value for item in DatasetFamily]
+        )
+        source_parser.add_argument(
+            "--source", required=True, choices=sorted({item.slug for item in SOURCES})
+        )
+        source_parser.add_argument(
+            "--root", help="Raíz local de la fuente (o THIN_BLOOD_SMEARS_PF_ROOT)"
+        )
     args = parser.parse_args(argv)
     if args.command == "audit-current-split":
         return audit_current_split(args.config, args.root)
@@ -611,6 +676,10 @@ def main(argv: list[str] | None = None) -> int:
         return materialize_patient_split_v1(args.config)
     if args.command == "freeze-patient-split-v1":
         return freeze_patient_split_v1()
+    if args.command == "inspect-source":
+        return inspect_source(args.dataset_family, args.source, args.root)
+    if args.command == "ingest-source":
+        return ingest_source(args.dataset_family, args.source, args.root)
     return 2
 
 

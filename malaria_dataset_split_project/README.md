@@ -60,12 +60,19 @@ persist-patient-split-v1
 validate-patient-split-v1
 materialize-patient-split-v1
 freeze-patient-split-v1
+inspect-source
+ingest-source
 ```
 
 Los tres primeros son auditorías; los comandos de persistencia/materialización/freeze
 aplican sus propios guards, transacciones e idempotencia. Use el runbook antes de una
 operación que escriba en PostgreSQL o filesystem:
 `../docs/runbook_split_completo_malaria.md`.
+
+`inspect-source` / `ingest-source` atienden la Dataset Family `smear_segmentation`
+(NIH/NLM ThinBloodSmearsPf, Polygon Set): inspección sólo-filesystem e ingesta atómica e
+idempotente de source records, sin Dataset Version ni split. Véase
+`docs/s1_smear_segmentation_source_adapter.md`.
 
 La instalación del paquete también expone `malaria-split` mediante
 `malaria_split.cli:main`.

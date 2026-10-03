@@ -75,7 +75,10 @@ class ScientificBootstrapRepository:
     def __init__(self, connection: Connection) -> None:
         self.connection = connection
 
-    def rows_by_key(self, table: str, columns: str, key: str) -> dict[Any, Mapping[str, Any]]:
+    def rows_by_key(
+        self, table: str, columns: str, key: str, dataset_id: UUID | None = None
+    ) -> dict[Any, Mapping[str, Any]]:
+        """Rows keyed by ``key``; ``dataset_id`` restricts them to one Dataset Source."""
         allowed = {
             "clinical_identities": "source_identifier",
             "dataset_source_records": "source_record_key",
@@ -83,7 +86,16 @@ class ScientificBootstrapRepository:
         }
         if allowed.get(table) != key:
             raise ValueError("Unsupported bootstrap lookup")
-        rows = self.connection.execute(text(f"SELECT {columns} FROM {table}")).mappings()
+        if dataset_id is None:
+            where = ""
+        elif table == "identity_evidence":
+            where = (" WHERE source_record_id IN "
+                     "(SELECT id FROM dataset_source_records WHERE dataset_id=:dataset_id)")
+        else:
+            where = " WHERE dataset_id=:dataset_id"
+        rows = self.connection.execute(
+            text(f"SELECT {columns} FROM {table}{where}"), {"dataset_id": dataset_id}
+        ).mappings()
         return {row[key]: row for row in rows}
 
     def insert_many(self, statement: str, rows: list[dict[str, Any]], batch_size: int = 1000) -> None:
