@@ -146,6 +146,7 @@ modifican en ningún caso.
   `residue=[]`, `operational_unchanged=true`.
 - [e2e.txt](e2e.txt): 16 casos, sin errores E04 ni tracebacks.
 - [migration.txt](migration.txt): salida del instalador oficial v2.
+- [scientific_regression_c2122.txt](scientific_regression_c2122.txt): `make test-scientific-parameters` → 87 passed (guards científicos intactos).
 
 ## Evidencia ejecutada
 
