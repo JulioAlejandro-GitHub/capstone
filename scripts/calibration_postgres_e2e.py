@@ -193,7 +193,9 @@ def main() -> None:
                     rows = c.execute(text("SELECT e.*,m.tn,m.fp,m.fn,m.tp FROM evaluations e JOIN run_clinical_metrics m ON m.evaluation_id=e.id WHERE e.training_run_id=:run ORDER BY e.evaluation_role"), {'run':run}).mappings().all()
                     assert len(rows) == (3 if enabled else 1)
                     saved = next(r for r in rows if r['evaluation_role']=='training_validation_final')
-                    assert saved['threshold_used'] == evaluation.threshold.value
+                    # numeric column returns Decimal; compare as float to avoid the
+                    # Decimal('0.3') != 0.3 binary-representation gotcha.
+                    assert float(saved['threshold_used']) == evaluation.threshold.value
                     assert saved['threshold_source'] == evaluation.threshold.source
                     assert str(saved['checkpoint_artifact_id']) == bound['checkpoint_artifact_id']
                     assert [saved[k] for k in ('tn','fp','fn','tp')] == [getattr(evaluation.confusion_matrix,k) for k in ('tn','fp','fn','tp')]
