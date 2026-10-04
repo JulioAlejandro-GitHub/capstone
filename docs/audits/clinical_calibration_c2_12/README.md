@@ -1,7 +1,8 @@
 # C2.12 — Diagnóstico de integración y bloqueo de aislamiento
 
 Estado documental: `HISTORICAL_AUDIT`. Fecha: 2026-10-04.
-Resultado: **BLOQUEADO**. No constituye aprobación de integración PostgreSQL.
+Resultado C2.12/C2.12.1: **BLOQUEADO** (histórico). C2.12.2: **APROBADO (PASSED)**.
+No constituye aprobación de campaña real; acredita la integración PostgreSQL v2 de la calibración clínica.
 
 ## Actualización C2.12.1 — base desechable en la misma instancia
 
@@ -69,6 +70,82 @@ bit a bit ni ausencia de actividad de otros clientes. No se accedió a TEST ni a
 contenido histórico. Los únicos cambios son diagnóstico, objetivo Makefile y
 documentación. La fixture, persistencia E2E, idempotencia, conflictos, fallo SQL
 y limpieza de una base realmente creada **siguen pendientes**. C2.12 no aprobado.
+
+## Actualización C2.12.2 — suite E2E sintética en base desechable
+
+Resultado: **APROBADO (PASSED)**. La suite E2E sintética C2.12 se ejecutó de
+punta a punta en una base desechable `capstone_c212_<uuid>` de la instancia
+Compose existente, con commits independientes, guards científicos íntegros y
+limpieza verificada. Acredita la integración PostgreSQL v2 de la calibración
+clínica; no constituye aprobación de campaña real.
+
+### Qué se acreditó
+
+- **Excepción acotada y destino verificado:** `alembic_v2/safety.py` reconoce
+  únicamente el stage `C2.12.2` con un `isolation_id` derivado del UUID de la
+  ejecución; `alembic_v2/disposable.py` valida el destino antes de crearlo
+  (system identifier, OID, nombre aleatorio, propietario `capstone_v2_migrator`,
+  contenedor, volumen, puerto) y excluye la base operativa `malaria_experiments`
+  (OID 16386). El administrador `julio` crea/elimina exclusivamente ese destino;
+  no se ampliaron privilegios ni se cambiaron contraseñas.
+- **Migración oficial:** `alembic -c alembic_v2.ini upgrade head` con `PGV2_TARGET`
+  instala el baseline v2 (guards, triggers, constraints) en la base desechable.
+  `migration_exit=0`.
+- **Suite E2E (16 casos):** identidad aislada con guards reales → por escenario
+  A/B/C: campaña/snapshot/hash, proyección del controlador, duplicados/conflictos
+  de identidad y secuencia, fallo SQL real con atomicidad y recuperación →
+  comparación de parámetros, protocolo inválido y triggers de validación.
+  `e2e_exit=0`, `passed=16`, sin errores E04 ni tracebacks.
+- **Limpieza verificada:** identidad coincidente, cero conexiones ajenas,
+  `ALLOW_CONNECTIONS false`, DROP y comprobación de residuos (`residue=[]`).
+  `cleanup=verified_identity_zero_connections_dropped`.
+- **Base operativa sin cambios:** huellas md5 idénticas antes/después en
+  `runs` (12), `experimental_campaigns` (1), `campaign_configurations` (12),
+  `run_configurations` (12) y `evaluations` (12); definiciones de guards intactas.
+  `operational_unchanged=true`.
+
+Duración total ≈ 7.4 s. No se accedió a TEST, imágenes ni scores históricos.
+
+### Causa raíz del fallo anterior y corrección
+
+La ejecución anterior (commit base) terminó `NOT_APPROVED` (`e2e_exit=1`) por un
+`AssertionError` en la aserción de umbral: `saved['threshold_used']` (columna
+`numeric`) devuelve `Decimal`, y `Decimal('0.3') != 0.3` (float). Se corrigió el
+lado de la prueba en `scripts/calibration_postgres_e2e.py` comparando
+`float(saved['threshold_used']) == evaluation.threshold.value`. No es un cambio
+del guard.
+
+El handoff anterior había atribuido el fallo a un `E04_METRIC_PROVENANCE` por
+`pr_auc_parasitized = 5/12 = 0.4166666666666667` (16 dígitos, que el cast
+float8→numeric redondea a 15). **Esa premisa era un error de cálculo:** el
+`pr_auc_parasitized` real del escenario C es **0.5** (6/12), que redondea exacto.
+Los valores que sí cambian de representación (`0.0`→`0`, `1.0`→`1`) son
+**numéricamente iguales** en jsonb (`'0'::jsonb = '0.0'::jsonb` → true), por lo
+que el guard `e04_assert_calibration` (`to_jsonb(m)->k IS DISTINCT FROM
+expected->k`) **pasa** en los tres escenarios. El único valor que haría fallar el
+guard sería uno de 16 dígitos no redondeable (p. ej. `0.4166666666666667`), que
+ninguno de los escenarios actuales produce. Se verificó en vivo:
+`to_jsonb(0.4166666666666667::numeric)` conserva 16 dígitos y coincide con el
+jsonb del evento; `to_jsonb(0.4166666666666667::float8::numeric)` redondea a 15
+y no coincide. El mecanismo de precisión es correcto, pero no se manifiesta con
+los datos actuales.
+
+### Mejora defensiva disponible (no aplicada)
+
+El cast float8→numeric pierde el 16.º dígito significativo. Para blindar
+proyecciones futuras contra AUCs no redondeables, `v2_projection.py` podría
+convertir los valores de columnas `numeric` a `Decimal(repr(x))` (round-trip
+exacto con el jsonb canónico del evento). **No se aplica** en esta entrega: la
+suite ya pasa sin él y se conserva el caso como evidencia. Los guards no se
+modifican en ningún caso.
+
+### Evidencia
+
+- [lifecycle.json](lifecycle.json): `status=PASSED`, `migration_exit=0`,
+  `e2e_exit=0`, `cleanup=verified_identity_zero_connections_dropped`,
+  `residue=[]`, `operational_unchanged=true`.
+- [e2e.txt](e2e.txt): 16 casos, sin errores E04 ni tracebacks.
+- [migration.txt](migration.txt): salida del instalador oficial v2.
 
 ## Evidencia ejecutada
 

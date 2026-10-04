@@ -1,8 +1,8 @@
 {
-  "status": "NOT_APPROVED",
-  "started_at": "2026-10-04T17:00:20.285511+00:00",
+  "status": "PASSED",
+  "started_at": "2026-10-04T20:01:42.837154+00:00",
   "protected_database": "malaria_experiments",
-  "database": "capstone_c212_d724d3f2e52f4ec4a00248b29d16da45",
+  "database": "capstone_c212_7155e9bb711e4b5dbbf84fd78ce913de",
   "created": true,
   "before": {
     "runs": {
@@ -663,10 +663,10 @@
   },
   "target": {
     "authorized_stage": "C2.12.2",
-    "isolation_id": "d724d3f2-e52f-4ec4-a002-48b29d16da45",
-    "created_by_run": "d724d3f2-e52f-4ec4-a002-48b29d16da45",
-    "database": "capstone_c212_d724d3f2e52f4ec4a00248b29d16da45",
-    "database_oid": 135919,
+    "isolation_id": "7155e9bb-711e-4b5d-bbf8-4fd78ce913de",
+    "created_by_run": "7155e9bb-711e-4b5d-bbf8-4fd78ce913de",
+    "database": "capstone_c212_7155e9bb711e4b5dbbf84fd78ce913de",
+    "database_oid": 143261,
     "database_owner": "capstone_v2_migrator",
     "provision_admin": "julio",
     "protected_database": "malaria_experiments",
@@ -675,10 +675,10 @@
     "container_id": "e83626be1b85f5fe9e6d964fc7ceddda98b9e9655864ead8ee3f5ab2468a8191",
     "volume": "capstone_v2_isolated_persistent_data",
     "host_port": 5432,
-    "runner_pid": 5210
+    "runner_pid": 26348
   },
   "migration_exit": 0,
-  "e2e_exit": 1,
+  "e2e_exit": 0,
   "cleanup": "verified_identity_zero_connections_dropped",
   "residue": [],
   "after": {
@@ -1339,5 +1339,5 @@
     }
   },
   "operational_unchanged": true,
-  "finished_at": "2026-10-04T17:00:24.783605+00:00"
+  "finished_at": "2026-10-04T20:01:50.230827+00:00"
 }

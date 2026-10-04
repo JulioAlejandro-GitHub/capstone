@@ -1,8 +1,3828 @@
 {"sql_error": "23505", "message": "duplicate key value violates unique constraint \"uq_evaluation_final_training\""}
-Traceback (most recent call last):
-  File "/scripts/calibration_postgres_e2e.py", line 265, in <module>
-    main()
-  File "/scripts/calibration_postgres_e2e.py", line 196, in main
-    assert saved['threshold_used'] == evaluation.threshold.value
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError
+{"sql_error": "23505", "message": "duplicate key value violates unique constraint \"uq_evaluation_final_training\""}
+{"sql_error": "23505", "message": "duplicate key value violates unique constraint \"uq_evaluation_final_training\""}
+{
+  "database": "capstone_c212_7155e9bb711e4b5dbbf84fd78ce913de",
+  "cases": [
+    "isolated_identity_empty_v2_real_guards",
+    "A_campaign_snapshot_hash",
+    "A_controller_projection",
+    "A_duplicate_conflicts_sequences",
+    "A_sql_failure_atomicity_recovery",
+    "B_campaign_snapshot_hash",
+    "B_controller_projection",
+    "B_duplicate_conflicts_sequences",
+    "B_sql_failure_atomicity_recovery",
+    "C_campaign_snapshot_hash",
+    "C_controller_projection",
+    "C_duplicate_conflicts_sequences",
+    "C_sql_failure_atomicity_recovery",
+    "compare_effective_equal_different_missing_unknown_no_defaults",
+    "invalid_protocol_override_rejected",
+    "validation_only_triggers_enabled"
+  ],
+  "runs": [
+    {
+      "scenario": "A",
+      "run_id": "f126e029-60b2-401e-808f-520c6ebdd17c",
+      "campaign_id": "106ace42-9818-4357-9edb-34d9f3e7007b",
+      "configuration_hash": "a704493035c86e2f7dad1e294ccb3376cae8c55d4eafc54771f95df2f142a180",
+      "configuration": {
+        "model_id": "custom_cnn",
+        "resolved": {
+          "model": {
+            "l2": 0.0001,
+            "dropout": 0.4,
+            "weights": "none",
+            "head_units": 128,
+            "input_shape": [
+              200,
+              200,
+              3
+            ],
+            "preprocessing": "rescale_0_1",
+            "fine_tune_layers": 0,
+            "batch_normalization": "train"
+          },
+          "recipe": {
+            "loss": "binary_crossentropy",
+            "metrics": "binary_clinical_v1",
+            "fallback": "existing_clinical_policy_v1",
+            "reduce_lr": {
+              "factor": 0.5,
+              "min_lr": 1e-06,
+              "monitor": "val_loss",
+              "patience": 4
+            },
+            "augmentation": {
+              "flip": "horizontal_and_vertical",
+              "zoom": 0.2,
+              "contrast": 0.3,
+              "rotation": 0.07,
+              "translation": 0.2
+            },
+            "selection_threshold": 0.5,
+            "clinical_success_independent_of_technical_completion": true
+          },
+          "execution": {
+            "beta": 2,
+            "seed": 11,
+            "batch_size": 64,
+            "max_epochs": 100,
+            "min_recall": 1,
+            "no_augment": false,
+            "target_recall": 1,
+            "early_stopping": true,
+            "checkpoint_mode": "max",
+            "min_specificity": 0.5,
+            "fine_tune_epochs": 0,
+            "checkpoint_policy": "f2",
+            "deterministic_ops": false,
+            "checkpoint_monitor": "val_f2_parasitized",
+            "min_class_fraction": 0.05,
+            "calibrate_threshold": false,
+            "early_stopping_mode": "max",
+            "restore_best_weights": true,
+            "evaluate_best_on_test": false,
+            "early_stopping_monitor": "val_f2_parasitized",
+            "early_stopping_patience": 12,
+            "early_stopping_min_delta": 0.0001,
+            "reject_prediction_collapse": true
+          },
+          "optimizer": {
+            "name": "adam",
+            "parameters": {
+              "beta_1": 0.9,
+              "beta_2": 0.999,
+              "amsgrad": false,
+              "epsilon": 1e-07,
+              "use_ema": false,
+              "clipnorm": null,
+              "clipvalue": null,
+              "ema_momentum": 0.99,
+              "weight_decay": null,
+              "learning_rate": 0.0001,
+              "global_clipnorm": null,
+              "loss_scale_factor": null,
+              "ema_overwrite_frequency": null,
+              "gradient_accumulation_steps": null
+            },
+            "fine_tune_learning_rate": 1e-05
+          },
+          "selection": {
+            "beta": 2,
+            "mode": "max",
+            "monitor": "val_f2_parasitized",
+            "explicit": true,
+            "fallback": "retain existing policy warning and collapse status",
+            "threshold": 0.5,
+            "clinical_objective": "min_recall; assessed independently of technical completion",
+            "early_stopping_mode": "max",
+            "early_stopping_monitor": "val_f2_parasitized"
+          },
+          "input_contract": {
+            "dtype": "float32",
+            "shape": [
+              null,
+              200,
+              200,
+              3
+            ],
+            "decode": "tf_decode_image_rgb_v1",
+            "output": {
+              "dtype": "float32",
+              "shape": [
+                null,
+                1
+              ],
+              "meaning": "probability_parasitized",
+              "activation": "sigmoid"
+            },
+            "resize": {
+              "method": "bilinear",
+              "location": "loader",
+              "antialias": false
+            },
+            "channels": 3,
+            "external": {
+              "mode": "rescale_0_1",
+              "version": "tf_preprocessing_v1",
+              "location": "loader",
+              "output_order": "RGB"
+            },
+            "internal": {
+              "mode": null,
+              "location": "none"
+            },
+            "architecture": "custom_cnn",
+            "source_order": "RGB",
+            "source_scale": "0_255",
+            "label_mapping": {
+              "0": "uninfected",
+              "1": "parasitized",
+              "positive_class": 1,
+              "positive_label": "parasitized"
+            },
+            "schema_version": "malaria_input_v1",
+            "adapter_version": "1.0"
+          }
+        },
+        "schema_version": "model_config_v1",
+        "adapter_version": "1.0"
+      },
+      "calibration": {
+        "enabled": false,
+        "threshold": 0.5
+      },
+      "evaluations": [
+        {
+          "id": "e51bce37-e877-5787-8cf3-49453e35371a",
+          "run_id": "f126e029-60b2-401e-808f-520c6ebdd17c",
+          "training_run_id": "f126e029-60b2-401e-808f-520c6ebdd17c",
+          "model_version_id": null,
+          "checkpoint_artifact_id": "0630000f-79da-5199-9329-98376d2f7308",
+          "dataset_version_id": "f5c8a7ae-910b-4452-8c5d-21fe632a6daa",
+          "split": "val",
+          "evaluation_role": "training_validation_final",
+          "purpose": "development",
+          "dataset_origin_id": null,
+          "dataset_origin_role": null,
+          "population_manifest_uri": null,
+          "population_manifest_sha256": null,
+          "dataset_provenance_uri": null,
+          "dataset_provenance_sha256": null,
+          "subject_kind": "single",
+          "protocol_version": "synthetic_protocol_v1",
+          "protocol_hash": "27f3cdd273e6edd1f1e8fd3dfe688e427f1f0d25ae8d3d5a25845bdf5bfeb66a",
+          "population_hash": "8f0fd983cbe3d4cd02cc4a2115fbef32f0a06587278c7c97616a88ddf72fbf89",
+          "input_contract_hash": "5aa57a8c269b0dd1fbf9879064b468882b68f0d9609885876330d063f1b08ec0",
+          "comparison_contract_hash": "22ab224044169a1d3b3120020e19d6fb9ac5a278a960d5057a162ebd9d0baa4a",
+          "protocol_snapshot": {
+            "roles": {
+              "train": "train",
+              "selection": "val",
+              "final_test": "test",
+              "calibration": "val"
+            },
+            "budget": {
+              "max_members": 100,
+              "max_attempts_per_member": 3
+            },
+            "metrics": {
+              "primary": [
+                "f2"
+              ],
+              "secondary": [
+                "auc"
+              ],
+              "compliance": "point_estimate",
+              "definitions_version": "synthetic_v1"
+            },
+            "missing": "report_all_members",
+            "pending": [],
+            "ranking": {
+              "criteria": [
+                "f2 desc"
+              ],
+              "partition": "val",
+              "tie_breaks": [
+                "configuration_hash asc"
+              ]
+            },
+            "retries": "first_verified_attempt",
+            "version": "synthetic_protocol_v1",
+            "fallback": "diagnostic_only",
+            "objective": "Exercise planning only",
+            "checkpoint": {
+              "mode": "max",
+              "policy": "f2",
+              "monitor": "val_f2_parasitized",
+              "threshold": 0.5
+            },
+            "aggregation": {
+              "version": "synthetic_v1",
+              "specification": "mean of all planned seeds; report n/N"
+            },
+            "calibration": {
+              "version": "synthetic_v1",
+              "algorithm": "none",
+              "population": "val"
+            },
+            "limitations": {
+              "shared_val": "Same VAL used for selection and calibration; adaptive bias acknowledged",
+              "test_exposure": "unknown",
+              "independent_calibration": false
+            },
+            "test_access": "final_only_after_candidate_lock",
+            "uncertainty": {
+              "version": "synthetic_v1",
+              "specification": "patient-grouped bootstrap; synthetic specification, not a scientific run"
+            },
+            "early_stopping": {
+              "mode": "max",
+              "enabled": true,
+              "monitor": "val_f2_parasitized",
+              "patience": 12,
+              "min_delta": 0.0001,
+              "restore_best_weights": true
+            },
+            "sensitivity_target": 1,
+            "specificity_minimum": 0.5
+          },
+          "source_kind": "e10",
+          "source_record_key": "9e9e5137-3d13-4723-9045-daba0eface97:training_validation_final",
+          "source_record_phase": "run_event_v1",
+          "source_event_id": "9e9e5137-3d13-4723-9045-daba0eface97",
+          "event_kind": "e10_event",
+          "event_phase": "run_event_v1",
+          "event_key": "9e9e5137-3d13-4723-9045-daba0eface97",
+          "source_assessment_attempt_id": null,
+          "threshold_used": "0.5",
+          "threshold_source": "default",
+          "calibration_id": null,
+          "metric_definition": "binary_nullable_v2",
+          "created_at": "2026-10-04 20:01:48.698053+00:00",
+          "tn": 2,
+          "fp": 0,
+          "fn": 2,
+          "tp": 0
+        }
+      ],
+      "events": [
+        {
+          "attempt_id": "705ee590-09df-4cac-a001-3c5cad6a8e6f",
+          "event_id": "2c61e49a-55f1-4757-b7cf-e00334a7ccc7",
+          "event_type": "epoch_completed",
+          "occurred_at": "2026-10-04T20:01:48.560200+00:00",
+          "payload": {
+            "epoch": 1,
+            "synthetic": true
+          },
+          "run_id": "f126e029-60b2-401e-808f-520c6ebdd17c",
+          "schema_version": "run_event_v1",
+          "sequence": 1
+        },
+        {
+          "attempt_id": "705ee590-09df-4cac-a001-3c5cad6a8e6f",
+          "event_id": "9e9e5137-3d13-4723-9045-daba0eface97",
+          "event_type": "evaluation_completed",
+          "occurred_at": "2026-10-04T20:01:48.698053+00:00",
+          "payload": {
+            "confusion_matrix": {
+              "fn": 2,
+              "fp": 0,
+              "tn": 2,
+              "tp": 0
+            },
+            "evaluation_role": "training_validation_final",
+            "metrics": {
+              "balanced_accuracy": 0.5,
+              "f1": 0.0,
+              "f2": 0.0,
+              "pr_auc": 1.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "roc_auc": 1.0,
+              "specificity": 1.0
+            },
+            "n_samples": 4,
+            "schema_version": "validation_evaluation_v1",
+            "split": "val",
+            "threshold": {
+              "source": "default",
+              "value": 0.5
+            }
+          },
+          "run_id": "f126e029-60b2-401e-808f-520c6ebdd17c",
+          "schema_version": "run_event_v1",
+          "sequence": 2
+        }
+      ],
+      "calibration_summary": null,
+      "sql_failure_event_absent": "d405b5fd-0f62-4c48-8d1f-5c5cc92536d0",
+      "recovered_sequence": 3
+    },
+    {
+      "scenario": "B",
+      "run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+      "campaign_id": "d06b6032-b57d-422b-8f29-0c2cdd1dd549",
+      "configuration_hash": "e064064c7ab274bf9ed345354a9c1ff78b401babe819266aa76130f93688a001",
+      "configuration": {
+        "model_id": "custom_cnn",
+        "resolved": {
+          "model": {
+            "l2": 0.0001,
+            "dropout": 0.4,
+            "weights": "none",
+            "head_units": 128,
+            "input_shape": [
+              200,
+              200,
+              3
+            ],
+            "preprocessing": "rescale_0_1",
+            "fine_tune_layers": 0,
+            "batch_normalization": "train"
+          },
+          "recipe": {
+            "loss": "binary_crossentropy",
+            "metrics": "binary_clinical_v1",
+            "fallback": "existing_clinical_policy_v1",
+            "reduce_lr": {
+              "factor": 0.5,
+              "min_lr": 1e-06,
+              "monitor": "val_loss",
+              "patience": 4
+            },
+            "augmentation": {
+              "flip": "horizontal_and_vertical",
+              "zoom": 0.2,
+              "contrast": 0.3,
+              "rotation": 0.07,
+              "translation": 0.2
+            },
+            "selection_threshold": 0.5,
+            "clinical_success_independent_of_technical_completion": true
+          },
+          "execution": {
+            "beta": 2,
+            "seed": 11,
+            "batch_size": 64,
+            "max_epochs": 100,
+            "min_recall": 1,
+            "no_augment": false,
+            "target_recall": 1,
+            "early_stopping": true,
+            "checkpoint_mode": "max",
+            "min_specificity": 0.5,
+            "fine_tune_epochs": 0,
+            "checkpoint_policy": "f2",
+            "deterministic_ops": false,
+            "checkpoint_monitor": "val_f2_parasitized",
+            "min_class_fraction": 0.05,
+            "calibrate_threshold": true,
+            "early_stopping_mode": "max",
+            "restore_best_weights": true,
+            "evaluate_best_on_test": false,
+            "early_stopping_monitor": "val_f2_parasitized",
+            "early_stopping_patience": 12,
+            "early_stopping_min_delta": 0.0001,
+            "reject_prediction_collapse": true
+          },
+          "optimizer": {
+            "name": "adam",
+            "parameters": {
+              "beta_1": 0.9,
+              "beta_2": 0.999,
+              "amsgrad": false,
+              "epsilon": 1e-07,
+              "use_ema": false,
+              "clipnorm": null,
+              "clipvalue": null,
+              "ema_momentum": 0.99,
+              "weight_decay": null,
+              "learning_rate": 0.0001,
+              "global_clipnorm": null,
+              "loss_scale_factor": null,
+              "ema_overwrite_frequency": null,
+              "gradient_accumulation_steps": null
+            },
+            "fine_tune_learning_rate": 1e-05
+          },
+          "selection": {
+            "beta": 2,
+            "mode": "max",
+            "monitor": "val_f2_parasitized",
+            "explicit": true,
+            "fallback": "retain existing policy warning and collapse status",
+            "threshold": 0.5,
+            "clinical_objective": "min_recall; assessed independently of technical completion",
+            "early_stopping_mode": "max",
+            "early_stopping_monitor": "val_f2_parasitized"
+          },
+          "input_contract": {
+            "dtype": "float32",
+            "shape": [
+              null,
+              200,
+              200,
+              3
+            ],
+            "decode": "tf_decode_image_rgb_v1",
+            "output": {
+              "dtype": "float32",
+              "shape": [
+                null,
+                1
+              ],
+              "meaning": "probability_parasitized",
+              "activation": "sigmoid"
+            },
+            "resize": {
+              "method": "bilinear",
+              "location": "loader",
+              "antialias": false
+            },
+            "channels": 3,
+            "external": {
+              "mode": "rescale_0_1",
+              "version": "tf_preprocessing_v1",
+              "location": "loader",
+              "output_order": "RGB"
+            },
+            "internal": {
+              "mode": null,
+              "location": "none"
+            },
+            "architecture": "custom_cnn",
+            "source_order": "RGB",
+            "source_scale": "0_255",
+            "label_mapping": {
+              "0": "uninfected",
+              "1": "parasitized",
+              "positive_class": 1,
+              "positive_label": "parasitized"
+            },
+            "schema_version": "malaria_input_v1",
+            "adapter_version": "1.0"
+          }
+        },
+        "schema_version": "model_config_v1",
+        "adapter_version": "1.0"
+      },
+      "calibration": {
+        "schema_version": 1,
+        "threshold_policy": "target_recall",
+        "threshold_source": "validation_calibration",
+        "threshold_selected": 0.3,
+        "threshold_used": 0.3,
+        "default_threshold": 0.5,
+        "target_recall": 1.0,
+        "target_recall_satisfied": true,
+        "target_recall_satisfied_on_validation": true,
+        "min_specificity": 0.5,
+        "min_specificity_satisfied": true,
+        "beta": 2.0,
+        "selected_metrics": {
+          "threshold": 0.3,
+          "recall_parasitized": 1.0,
+          "sensitivity_parasitized": 1.0,
+          "specificity": 1.0,
+          "precision_parasitized": 1.0,
+          "f1_parasitized": 1.0,
+          "f2_parasitized": 1.0,
+          "balanced_accuracy": 1.0,
+          "roc_auc_parasitized": 1.0,
+          "pr_auc_parasitized": 1.0,
+          "tn": 2,
+          "fp": 0,
+          "fn": 0,
+          "tp": 2,
+          "true_negative": 2,
+          "false_positive": 0,
+          "false_negative": 0,
+          "true_positive": 2,
+          "confusion_matrix": [
+            [
+              2,
+              0
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "prediction_collapse_detected": false,
+          "n_pred_uninfected": 2,
+          "n_pred_parasitized": 2,
+          "percent_pred_uninfected": 0.5,
+          "percent_pred_parasitized": 0.5
+        },
+        "validation_metrics_at_threshold": {
+          "threshold": 0.3,
+          "recall_parasitized": 1.0,
+          "sensitivity_parasitized": 1.0,
+          "specificity": 1.0,
+          "precision_parasitized": 1.0,
+          "f1_parasitized": 1.0,
+          "f2_parasitized": 1.0,
+          "balanced_accuracy": 1.0,
+          "roc_auc_parasitized": 1.0,
+          "pr_auc_parasitized": 1.0,
+          "tn": 2,
+          "fp": 0,
+          "fn": 0,
+          "tp": 2,
+          "true_negative": 2,
+          "false_positive": 0,
+          "false_negative": 0,
+          "true_positive": 2,
+          "confusion_matrix": [
+            [
+              2,
+              0
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "prediction_collapse_detected": false,
+          "n_pred_uninfected": 2,
+          "n_pred_parasitized": 2,
+          "percent_pred_uninfected": 0.5,
+          "percent_pred_parasitized": 0.5
+        },
+        "default_threshold_metrics": {
+          "threshold": 0.5,
+          "recall_parasitized": 0.0,
+          "sensitivity_parasitized": 0.0,
+          "specificity": 1.0,
+          "precision_parasitized": 0.0,
+          "f1_parasitized": 0.0,
+          "f2_parasitized": 0.0,
+          "balanced_accuracy": 0.5,
+          "roc_auc_parasitized": 1.0,
+          "pr_auc_parasitized": 1.0,
+          "tn": 2,
+          "fp": 0,
+          "fn": 2,
+          "tp": 0,
+          "true_negative": 2,
+          "false_positive": 0,
+          "false_negative": 2,
+          "true_positive": 0,
+          "confusion_matrix": [
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              0
+            ]
+          ],
+          "prediction_collapse_detected": true,
+          "n_pred_uninfected": 4,
+          "n_pred_parasitized": 0,
+          "percent_pred_uninfected": 1.0,
+          "percent_pred_parasitized": 0.0
+        },
+        "candidate_count": 7,
+        "warning": null,
+        "calibration_split": "val",
+        "positive_label": "parasitized",
+        "negative_label": "uninfected",
+        "positive_class_index": 1,
+        "negative_class_index": 0,
+        "label_mapping_version": "clinical_v1_parasitized_positive",
+        "label_mapping": {
+          "version": "clinical_v1_parasitized_positive",
+          "0": "uninfected",
+          "1": "parasitized",
+          "negative_class_index": 0,
+          "negative_class_name": "uninfected",
+          "positive_class_index": 1,
+          "positive_class_name": "parasitized",
+          "raw_model_score_meaning": "probability_parasitized"
+        },
+        "raw_model_score_meaning": "probability_parasitized",
+        "score_name": "probability_parasitized",
+        "created_at": "2026-10-04T20:01:49"
+      },
+      "evaluations": [
+        {
+          "id": "82b950f7-53f4-547f-8d6f-f08924448adb",
+          "run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+          "training_run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+          "model_version_id": null,
+          "checkpoint_artifact_id": "6d6c114c-4563-5fc4-b3dc-a3f04f8c088c",
+          "dataset_version_id": "f5c8a7ae-910b-4452-8c5d-21fe632a6daa",
+          "split": "val",
+          "evaluation_role": "calibration_default",
+          "purpose": "development",
+          "dataset_origin_id": null,
+          "dataset_origin_role": null,
+          "population_manifest_uri": null,
+          "population_manifest_sha256": null,
+          "dataset_provenance_uri": null,
+          "dataset_provenance_sha256": null,
+          "subject_kind": "single",
+          "protocol_version": "synthetic_protocol_v1",
+          "protocol_hash": "3c0100f6c9b8f8d7822e8e8979044d7cf5ad40094d54d9d87a785b2b533c1e1a",
+          "population_hash": "8f0fd983cbe3d4cd02cc4a2115fbef32f0a06587278c7c97616a88ddf72fbf89",
+          "input_contract_hash": "5aa57a8c269b0dd1fbf9879064b468882b68f0d9609885876330d063f1b08ec0",
+          "comparison_contract_hash": "8976b2862577b30a5502f596a1ee7b291b85e82c3ee678ea758b709dcfc1b3bd",
+          "protocol_snapshot": {
+            "roles": {
+              "train": "train",
+              "selection": "val",
+              "final_test": "test",
+              "calibration": "val"
+            },
+            "budget": {
+              "max_members": 100,
+              "max_attempts_per_member": 3
+            },
+            "metrics": {
+              "primary": [
+                "f2"
+              ],
+              "secondary": [
+                "auc"
+              ],
+              "compliance": "point_estimate",
+              "definitions_version": "synthetic_v1"
+            },
+            "missing": "report_all_members",
+            "pending": [],
+            "ranking": {
+              "criteria": [
+                "f2 desc"
+              ],
+              "partition": "val",
+              "tie_breaks": [
+                "configuration_hash asc"
+              ]
+            },
+            "retries": "first_verified_attempt",
+            "version": "synthetic_protocol_v1",
+            "fallback": "diagnostic_only",
+            "objective": "Exercise planning only",
+            "checkpoint": {
+              "mode": "max",
+              "policy": "f2",
+              "monitor": "val_f2_parasitized",
+              "threshold": 0.5
+            },
+            "aggregation": {
+              "version": "synthetic_v1",
+              "specification": "mean of all planned seeds; report n/N"
+            },
+            "calibration": {
+              "version": "synthetic_v1",
+              "algorithm": "threshold_grid",
+              "population": "val"
+            },
+            "limitations": {
+              "shared_val": "Same VAL used for selection and calibration; adaptive bias acknowledged",
+              "test_exposure": "unknown",
+              "independent_calibration": false
+            },
+            "test_access": "final_only_after_candidate_lock",
+            "uncertainty": {
+              "version": "synthetic_v1",
+              "specification": "patient-grouped bootstrap; synthetic specification, not a scientific run"
+            },
+            "early_stopping": {
+              "mode": "max",
+              "enabled": true,
+              "monitor": "val_f2_parasitized",
+              "patience": 12,
+              "min_delta": 0.0001,
+              "restore_best_weights": true
+            },
+            "sensitivity_target": 1,
+            "specificity_minimum": 0.5
+          },
+          "source_kind": "e10",
+          "source_record_key": "9b4a68ec-e892-47db-9a00-a747688f13f0:calibration_default",
+          "source_record_phase": "run_event_v1",
+          "source_event_id": "9b4a68ec-e892-47db-9a00-a747688f13f0",
+          "event_kind": "e10_event",
+          "event_phase": "run_event_v1",
+          "event_key": "9b4a68ec-e892-47db-9a00-a747688f13f0",
+          "source_assessment_attempt_id": null,
+          "threshold_used": "0.5",
+          "threshold_source": "default",
+          "calibration_id": null,
+          "metric_definition": "binary_nullable_v2",
+          "created_at": "2026-10-04 20:01:49.165542+00:00",
+          "tn": 2,
+          "fp": 0,
+          "fn": 2,
+          "tp": 0
+        },
+        {
+          "id": "283d9faf-30ab-58a6-88d2-26b661072682",
+          "run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+          "training_run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+          "model_version_id": null,
+          "checkpoint_artifact_id": "6d6c114c-4563-5fc4-b3dc-a3f04f8c088c",
+          "dataset_version_id": "f5c8a7ae-910b-4452-8c5d-21fe632a6daa",
+          "split": "val",
+          "evaluation_role": "calibration_selected",
+          "purpose": "development",
+          "dataset_origin_id": null,
+          "dataset_origin_role": null,
+          "population_manifest_uri": null,
+          "population_manifest_sha256": null,
+          "dataset_provenance_uri": null,
+          "dataset_provenance_sha256": null,
+          "subject_kind": "single",
+          "protocol_version": "synthetic_protocol_v1",
+          "protocol_hash": "3c0100f6c9b8f8d7822e8e8979044d7cf5ad40094d54d9d87a785b2b533c1e1a",
+          "population_hash": "8f0fd983cbe3d4cd02cc4a2115fbef32f0a06587278c7c97616a88ddf72fbf89",
+          "input_contract_hash": "5aa57a8c269b0dd1fbf9879064b468882b68f0d9609885876330d063f1b08ec0",
+          "comparison_contract_hash": "8976b2862577b30a5502f596a1ee7b291b85e82c3ee678ea758b709dcfc1b3bd",
+          "protocol_snapshot": {
+            "roles": {
+              "train": "train",
+              "selection": "val",
+              "final_test": "test",
+              "calibration": "val"
+            },
+            "budget": {
+              "max_members": 100,
+              "max_attempts_per_member": 3
+            },
+            "metrics": {
+              "primary": [
+                "f2"
+              ],
+              "secondary": [
+                "auc"
+              ],
+              "compliance": "point_estimate",
+              "definitions_version": "synthetic_v1"
+            },
+            "missing": "report_all_members",
+            "pending": [],
+            "ranking": {
+              "criteria": [
+                "f2 desc"
+              ],
+              "partition": "val",
+              "tie_breaks": [
+                "configuration_hash asc"
+              ]
+            },
+            "retries": "first_verified_attempt",
+            "version": "synthetic_protocol_v1",
+            "fallback": "diagnostic_only",
+            "objective": "Exercise planning only",
+            "checkpoint": {
+              "mode": "max",
+              "policy": "f2",
+              "monitor": "val_f2_parasitized",
+              "threshold": 0.5
+            },
+            "aggregation": {
+              "version": "synthetic_v1",
+              "specification": "mean of all planned seeds; report n/N"
+            },
+            "calibration": {
+              "version": "synthetic_v1",
+              "algorithm": "threshold_grid",
+              "population": "val"
+            },
+            "limitations": {
+              "shared_val": "Same VAL used for selection and calibration; adaptive bias acknowledged",
+              "test_exposure": "unknown",
+              "independent_calibration": false
+            },
+            "test_access": "final_only_after_candidate_lock",
+            "uncertainty": {
+              "version": "synthetic_v1",
+              "specification": "patient-grouped bootstrap; synthetic specification, not a scientific run"
+            },
+            "early_stopping": {
+              "mode": "max",
+              "enabled": true,
+              "monitor": "val_f2_parasitized",
+              "patience": 12,
+              "min_delta": 0.0001,
+              "restore_best_weights": true
+            },
+            "sensitivity_target": 1,
+            "specificity_minimum": 0.5
+          },
+          "source_kind": "e10",
+          "source_record_key": "9b4a68ec-e892-47db-9a00-a747688f13f0:calibration_selected",
+          "source_record_phase": "run_event_v1",
+          "source_event_id": "9b4a68ec-e892-47db-9a00-a747688f13f0",
+          "event_kind": "e10_event",
+          "event_phase": "run_event_v1",
+          "event_key": "9b4a68ec-e892-47db-9a00-a747688f13f0",
+          "source_assessment_attempt_id": null,
+          "threshold_used": "0.3",
+          "threshold_source": "validation_calibration",
+          "calibration_id": "44e9eb3a-8eaf-5a86-a0f2-f955fe2a1524",
+          "metric_definition": "binary_nullable_v2",
+          "created_at": "2026-10-04 20:01:49.165542+00:00",
+          "tn": 2,
+          "fp": 0,
+          "fn": 0,
+          "tp": 2
+        },
+        {
+          "id": "88898d97-54e2-51b3-82fb-1a39fff6ee85",
+          "run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+          "training_run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+          "model_version_id": null,
+          "checkpoint_artifact_id": "6d6c114c-4563-5fc4-b3dc-a3f04f8c088c",
+          "dataset_version_id": "f5c8a7ae-910b-4452-8c5d-21fe632a6daa",
+          "split": "val",
+          "evaluation_role": "training_validation_final",
+          "purpose": "development",
+          "dataset_origin_id": null,
+          "dataset_origin_role": null,
+          "population_manifest_uri": null,
+          "population_manifest_sha256": null,
+          "dataset_provenance_uri": null,
+          "dataset_provenance_sha256": null,
+          "subject_kind": "single",
+          "protocol_version": "synthetic_protocol_v1",
+          "protocol_hash": "3c0100f6c9b8f8d7822e8e8979044d7cf5ad40094d54d9d87a785b2b533c1e1a",
+          "population_hash": "8f0fd983cbe3d4cd02cc4a2115fbef32f0a06587278c7c97616a88ddf72fbf89",
+          "input_contract_hash": "5aa57a8c269b0dd1fbf9879064b468882b68f0d9609885876330d063f1b08ec0",
+          "comparison_contract_hash": "8976b2862577b30a5502f596a1ee7b291b85e82c3ee678ea758b709dcfc1b3bd",
+          "protocol_snapshot": {
+            "roles": {
+              "train": "train",
+              "selection": "val",
+              "final_test": "test",
+              "calibration": "val"
+            },
+            "budget": {
+              "max_members": 100,
+              "max_attempts_per_member": 3
+            },
+            "metrics": {
+              "primary": [
+                "f2"
+              ],
+              "secondary": [
+                "auc"
+              ],
+              "compliance": "point_estimate",
+              "definitions_version": "synthetic_v1"
+            },
+            "missing": "report_all_members",
+            "pending": [],
+            "ranking": {
+              "criteria": [
+                "f2 desc"
+              ],
+              "partition": "val",
+              "tie_breaks": [
+                "configuration_hash asc"
+              ]
+            },
+            "retries": "first_verified_attempt",
+            "version": "synthetic_protocol_v1",
+            "fallback": "diagnostic_only",
+            "objective": "Exercise planning only",
+            "checkpoint": {
+              "mode": "max",
+              "policy": "f2",
+              "monitor": "val_f2_parasitized",
+              "threshold": 0.5
+            },
+            "aggregation": {
+              "version": "synthetic_v1",
+              "specification": "mean of all planned seeds; report n/N"
+            },
+            "calibration": {
+              "version": "synthetic_v1",
+              "algorithm": "threshold_grid",
+              "population": "val"
+            },
+            "limitations": {
+              "shared_val": "Same VAL used for selection and calibration; adaptive bias acknowledged",
+              "test_exposure": "unknown",
+              "independent_calibration": false
+            },
+            "test_access": "final_only_after_candidate_lock",
+            "uncertainty": {
+              "version": "synthetic_v1",
+              "specification": "patient-grouped bootstrap; synthetic specification, not a scientific run"
+            },
+            "early_stopping": {
+              "mode": "max",
+              "enabled": true,
+              "monitor": "val_f2_parasitized",
+              "patience": 12,
+              "min_delta": 0.0001,
+              "restore_best_weights": true
+            },
+            "sensitivity_target": 1,
+            "specificity_minimum": 0.5
+          },
+          "source_kind": "e10",
+          "source_record_key": "6574e7a6-d116-45ad-97ce-0af544a4bb07:training_validation_final",
+          "source_record_phase": "run_event_v1",
+          "source_event_id": "6574e7a6-d116-45ad-97ce-0af544a4bb07",
+          "event_kind": "e10_event",
+          "event_phase": "run_event_v1",
+          "event_key": "6574e7a6-d116-45ad-97ce-0af544a4bb07",
+          "source_assessment_attempt_id": null,
+          "threshold_used": "0.3",
+          "threshold_source": "validation_calibration",
+          "calibration_id": "44e9eb3a-8eaf-5a86-a0f2-f955fe2a1524",
+          "metric_definition": "binary_nullable_v2",
+          "created_at": "2026-10-04 20:01:49.231184+00:00",
+          "tn": 2,
+          "fp": 0,
+          "fn": 0,
+          "tp": 2
+        }
+      ],
+      "events": [
+        {
+          "attempt_id": "fde9618f-d04a-4f07-8e5c-6d57472f3776",
+          "event_id": "992f6211-dbbd-43ac-b4bd-09ed0a9f9b00",
+          "event_type": "epoch_completed",
+          "occurred_at": "2026-10-04T20:01:48.862817+00:00",
+          "payload": {
+            "epoch": 1,
+            "synthetic": true
+          },
+          "run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+          "schema_version": "run_event_v1",
+          "sequence": 1
+        },
+        {
+          "attempt_id": "fde9618f-d04a-4f07-8e5c-6d57472f3776",
+          "event_id": "9b4a68ec-e892-47db-9a00-a747688f13f0",
+          "event_type": "calibration_completed",
+          "occurred_at": "2026-10-04T20:01:49.165542+00:00",
+          "payload": {
+            "record": {
+              "kind": "calibration",
+              "phase": "val",
+              "record_key": "selected"
+            },
+            "result": {
+              "checkpoint_epoch": 1,
+              "result": {
+                "beta": 2.0,
+                "calibration_split": "val",
+                "candidate_count": 7,
+                "created_at": "2026-10-04T20:01:49",
+                "default_threshold": 0.5,
+                "default_threshold_metrics": {
+                  "balanced_accuracy": 0.5,
+                  "confusion_matrix": [
+                    [
+                      2,
+                      0
+                    ],
+                    [
+                      2,
+                      0
+                    ]
+                  ],
+                  "f1_parasitized": 0.0,
+                  "f2_parasitized": 0.0,
+                  "false_negative": 2,
+                  "false_positive": 0,
+                  "fn": 2,
+                  "fp": 0,
+                  "n_pred_parasitized": 0,
+                  "n_pred_uninfected": 4,
+                  "percent_pred_parasitized": 0.0,
+                  "percent_pred_uninfected": 1.0,
+                  "pr_auc_parasitized": 1.0,
+                  "precision_parasitized": 0.0,
+                  "prediction_collapse_detected": true,
+                  "recall_parasitized": 0.0,
+                  "roc_auc_parasitized": 1.0,
+                  "sensitivity_parasitized": 0.0,
+                  "specificity": 1.0,
+                  "threshold": 0.5,
+                  "tn": 2,
+                  "tp": 0,
+                  "true_negative": 2,
+                  "true_positive": 0
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "negative_class_index": 0,
+                  "negative_class_name": "uninfected",
+                  "positive_class_index": 1,
+                  "positive_class_name": "parasitized",
+                  "raw_model_score_meaning": "probability_parasitized",
+                  "version": "clinical_v1_parasitized_positive"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "min_specificity": 0.5,
+                "min_specificity_satisfied": true,
+                "negative_class_index": 0,
+                "negative_label": "uninfected",
+                "positive_class_index": 1,
+                "positive_label": "parasitized",
+                "raw_model_score_meaning": "probability_parasitized",
+                "schema_version": 1,
+                "score_name": "probability_parasitized",
+                "selected_metrics": {
+                  "balanced_accuracy": 1.0,
+                  "confusion_matrix": [
+                    [
+                      2,
+                      0
+                    ],
+                    [
+                      0,
+                      2
+                    ]
+                  ],
+                  "f1_parasitized": 1.0,
+                  "f2_parasitized": 1.0,
+                  "false_negative": 0,
+                  "false_positive": 0,
+                  "fn": 0,
+                  "fp": 0,
+                  "n_pred_parasitized": 2,
+                  "n_pred_uninfected": 2,
+                  "percent_pred_parasitized": 0.5,
+                  "percent_pred_uninfected": 0.5,
+                  "pr_auc_parasitized": 1.0,
+                  "precision_parasitized": 1.0,
+                  "prediction_collapse_detected": false,
+                  "recall_parasitized": 1.0,
+                  "roc_auc_parasitized": 1.0,
+                  "sensitivity_parasitized": 1.0,
+                  "specificity": 1.0,
+                  "threshold": 0.3,
+                  "tn": 2,
+                  "tp": 2,
+                  "true_negative": 2,
+                  "true_positive": 2
+                },
+                "target_recall": 1.0,
+                "target_recall_satisfied": true,
+                "target_recall_satisfied_on_validation": true,
+                "threshold_policy": "target_recall",
+                "threshold_selected": 0.3,
+                "threshold_source": "validation_calibration",
+                "threshold_used": 0.3,
+                "validation_metrics_at_threshold": {
+                  "balanced_accuracy": 1.0,
+                  "confusion_matrix": [
+                    [
+                      2,
+                      0
+                    ],
+                    [
+                      0,
+                      2
+                    ]
+                  ],
+                  "f1_parasitized": 1.0,
+                  "f2_parasitized": 1.0,
+                  "false_negative": 0,
+                  "false_positive": 0,
+                  "fn": 0,
+                  "fp": 0,
+                  "n_pred_parasitized": 2,
+                  "n_pred_uninfected": 2,
+                  "percent_pred_parasitized": 0.5,
+                  "percent_pred_uninfected": 0.5,
+                  "pr_auc_parasitized": 1.0,
+                  "precision_parasitized": 1.0,
+                  "prediction_collapse_detected": false,
+                  "recall_parasitized": 1.0,
+                  "roc_auc_parasitized": 1.0,
+                  "sensitivity_parasitized": 1.0,
+                  "specificity": 1.0,
+                  "threshold": 0.3,
+                  "tn": 2,
+                  "tp": 2,
+                  "true_negative": 2,
+                  "true_positive": 2
+                },
+                "warning": null
+              },
+              "split": "val"
+            }
+          },
+          "run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+          "schema_version": "run_event_v1",
+          "sequence": 2
+        },
+        {
+          "attempt_id": "fde9618f-d04a-4f07-8e5c-6d57472f3776",
+          "event_id": "6574e7a6-d116-45ad-97ce-0af544a4bb07",
+          "event_type": "evaluation_completed",
+          "occurred_at": "2026-10-04T20:01:49.231184+00:00",
+          "payload": {
+            "confusion_matrix": {
+              "fn": 0,
+              "fp": 0,
+              "tn": 2,
+              "tp": 2
+            },
+            "evaluation_role": "training_validation_final",
+            "metrics": {
+              "balanced_accuracy": 1.0,
+              "f1": 1.0,
+              "f2": 1.0,
+              "pr_auc": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "roc_auc": 1.0,
+              "specificity": 1.0
+            },
+            "n_samples": 4,
+            "schema_version": "validation_evaluation_v1",
+            "split": "val",
+            "threshold": {
+              "source": "validation_calibration",
+              "value": 0.3
+            }
+          },
+          "run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+          "schema_version": "run_event_v1",
+          "sequence": 3
+        }
+      ],
+      "calibration_summary": {
+        "run_threshold_calibration_id": "44e9eb3a-8eaf-5a86-a0f2-f955fe2a1524",
+        "run_id": "95adc248-42b7-40b1-a89e-f091c5fc9b25",
+        "model_name": null,
+        "threshold_policy": "target_recall",
+        "threshold_source": "validation_calibration",
+        "threshold_selected": "0.3",
+        "default_threshold": "0.5",
+        "target_recall": "1",
+        "target_recall_satisfied": null,
+        "min_specificity": null,
+        "validation_recall_at_threshold": null,
+        "validation_specificity_at_threshold": null,
+        "validation_precision_at_threshold": null,
+        "validation_f1_at_threshold": null,
+        "validation_f2_at_threshold": null,
+        "validation_balanced_accuracy_at_threshold": null,
+        "validation_pr_auc": null,
+        "validation_roc_auc": null,
+        "default_threshold_metrics": {},
+        "selected_threshold_metrics": {},
+        "candidate_count": null,
+        "threshold_warning": null,
+        "calibration_split": "val",
+        "threshold_calibration_path": null,
+        "model_metadata_path": null,
+        "created_at": "2026-10-04 20:01:49.165542+00:00",
+        "metadata": {},
+        "model_version_id": null,
+        "calibration_artifact_id": null,
+        "score_name": "probability_parasitized",
+        "label_mapping_version": "clinical_v1_parasitized_positive",
+        "positive_label": "parasitized",
+        "calibration_status": "recorded",
+        "default_evaluation_id": "82b950f7-53f4-547f-8d6f-f08924448adb",
+        "selected_evaluation_id": "283d9faf-30ab-58a6-88d2-26b661072682"
+      },
+      "sql_failure_event_absent": "3bfcc74a-ca92-49c1-8a61-60eec1020bac",
+      "recovered_sequence": 4
+    },
+    {
+      "scenario": "C",
+      "run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+      "campaign_id": "11f64344-bf41-426b-b382-e1a35efe4fec",
+      "configuration_hash": "61352ce5e3cc24f4de1b0f92f15b20f2fafa0898b17db40c87b0ec10cd94f387",
+      "configuration": {
+        "model_id": "custom_cnn",
+        "resolved": {
+          "model": {
+            "l2": 0.0001,
+            "dropout": 0.4,
+            "weights": "none",
+            "head_units": 128,
+            "input_shape": [
+              200,
+              200,
+              3
+            ],
+            "preprocessing": "rescale_0_1",
+            "fine_tune_layers": 0,
+            "batch_normalization": "train"
+          },
+          "recipe": {
+            "loss": "binary_crossentropy",
+            "metrics": "binary_clinical_v1",
+            "fallback": "existing_clinical_policy_v1",
+            "reduce_lr": {
+              "factor": 0.5,
+              "min_lr": 1e-06,
+              "monitor": "val_loss",
+              "patience": 4
+            },
+            "augmentation": {
+              "flip": "horizontal_and_vertical",
+              "zoom": 0.2,
+              "contrast": 0.3,
+              "rotation": 0.07,
+              "translation": 0.2
+            },
+            "selection_threshold": 0.5,
+            "clinical_success_independent_of_technical_completion": true
+          },
+          "execution": {
+            "beta": 2,
+            "seed": 11,
+            "batch_size": 64,
+            "max_epochs": 100,
+            "min_recall": 1,
+            "no_augment": false,
+            "target_recall": 1,
+            "early_stopping": true,
+            "checkpoint_mode": "max",
+            "min_specificity": 1,
+            "fine_tune_epochs": 0,
+            "checkpoint_policy": "f2",
+            "deterministic_ops": false,
+            "checkpoint_monitor": "val_f2_parasitized",
+            "min_class_fraction": 0.05,
+            "calibrate_threshold": true,
+            "early_stopping_mode": "max",
+            "restore_best_weights": true,
+            "evaluate_best_on_test": false,
+            "early_stopping_monitor": "val_f2_parasitized",
+            "early_stopping_patience": 12,
+            "early_stopping_min_delta": 0.0001,
+            "reject_prediction_collapse": true
+          },
+          "optimizer": {
+            "name": "adam",
+            "parameters": {
+              "beta_1": 0.9,
+              "beta_2": 0.999,
+              "amsgrad": false,
+              "epsilon": 1e-07,
+              "use_ema": false,
+              "clipnorm": null,
+              "clipvalue": null,
+              "ema_momentum": 0.99,
+              "weight_decay": null,
+              "learning_rate": 0.0001,
+              "global_clipnorm": null,
+              "loss_scale_factor": null,
+              "ema_overwrite_frequency": null,
+              "gradient_accumulation_steps": null
+            },
+            "fine_tune_learning_rate": 1e-05
+          },
+          "selection": {
+            "beta": 2,
+            "mode": "max",
+            "monitor": "val_f2_parasitized",
+            "explicit": true,
+            "fallback": "retain existing policy warning and collapse status",
+            "threshold": 0.5,
+            "clinical_objective": "min_recall; assessed independently of technical completion",
+            "early_stopping_mode": "max",
+            "early_stopping_monitor": "val_f2_parasitized"
+          },
+          "input_contract": {
+            "dtype": "float32",
+            "shape": [
+              null,
+              200,
+              200,
+              3
+            ],
+            "decode": "tf_decode_image_rgb_v1",
+            "output": {
+              "dtype": "float32",
+              "shape": [
+                null,
+                1
+              ],
+              "meaning": "probability_parasitized",
+              "activation": "sigmoid"
+            },
+            "resize": {
+              "method": "bilinear",
+              "location": "loader",
+              "antialias": false
+            },
+            "channels": 3,
+            "external": {
+              "mode": "rescale_0_1",
+              "version": "tf_preprocessing_v1",
+              "location": "loader",
+              "output_order": "RGB"
+            },
+            "internal": {
+              "mode": null,
+              "location": "none"
+            },
+            "architecture": "custom_cnn",
+            "source_order": "RGB",
+            "source_scale": "0_255",
+            "label_mapping": {
+              "0": "uninfected",
+              "1": "parasitized",
+              "positive_class": 1,
+              "positive_label": "parasitized"
+            },
+            "schema_version": "malaria_input_v1",
+            "adapter_version": "1.0"
+          }
+        },
+        "schema_version": "model_config_v1",
+        "adapter_version": "1.0"
+      },
+      "calibration": {
+        "schema_version": 1,
+        "threshold_policy": "target_recall",
+        "threshold_source": "validation_calibration",
+        "threshold_selected": 0.2,
+        "threshold_used": 0.2,
+        "default_threshold": 0.5,
+        "target_recall": 1.0,
+        "target_recall_satisfied": true,
+        "target_recall_satisfied_on_validation": true,
+        "min_specificity": 1.0,
+        "min_specificity_satisfied": false,
+        "beta": 2.0,
+        "selected_metrics": {
+          "threshold": 0.2,
+          "recall_parasitized": 1.0,
+          "sensitivity_parasitized": 1.0,
+          "specificity": 0.0,
+          "precision_parasitized": 0.5,
+          "f1_parasitized": 0.6666666666666666,
+          "f2_parasitized": 0.8333333333333334,
+          "balanced_accuracy": 0.5,
+          "roc_auc_parasitized": 0.0,
+          "pr_auc_parasitized": 0.5,
+          "tn": 0,
+          "fp": 2,
+          "fn": 0,
+          "tp": 2,
+          "true_negative": 0,
+          "false_positive": 2,
+          "false_negative": 0,
+          "true_positive": 2,
+          "confusion_matrix": [
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "prediction_collapse_detected": true,
+          "n_pred_uninfected": 0,
+          "n_pred_parasitized": 4,
+          "percent_pred_uninfected": 0.0,
+          "percent_pred_parasitized": 1.0
+        },
+        "validation_metrics_at_threshold": {
+          "threshold": 0.2,
+          "recall_parasitized": 1.0,
+          "sensitivity_parasitized": 1.0,
+          "specificity": 0.0,
+          "precision_parasitized": 0.5,
+          "f1_parasitized": 0.6666666666666666,
+          "f2_parasitized": 0.8333333333333334,
+          "balanced_accuracy": 0.5,
+          "roc_auc_parasitized": 0.0,
+          "pr_auc_parasitized": 0.5,
+          "tn": 0,
+          "fp": 2,
+          "fn": 0,
+          "tp": 2,
+          "true_negative": 0,
+          "false_positive": 2,
+          "false_negative": 0,
+          "true_positive": 2,
+          "confusion_matrix": [
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              2
+            ]
+          ],
+          "prediction_collapse_detected": true,
+          "n_pred_uninfected": 0,
+          "n_pred_parasitized": 4,
+          "percent_pred_uninfected": 0.0,
+          "percent_pred_parasitized": 1.0
+        },
+        "default_threshold_metrics": {
+          "threshold": 0.5,
+          "recall_parasitized": 0.0,
+          "sensitivity_parasitized": 0.0,
+          "specificity": 0.0,
+          "precision_parasitized": 0.0,
+          "f1_parasitized": 0.0,
+          "f2_parasitized": 0.0,
+          "balanced_accuracy": 0.0,
+          "roc_auc_parasitized": 0.0,
+          "pr_auc_parasitized": 0.5,
+          "tn": 0,
+          "fp": 2,
+          "fn": 2,
+          "tp": 0,
+          "true_negative": 0,
+          "false_positive": 2,
+          "false_negative": 2,
+          "true_positive": 0,
+          "confusion_matrix": [
+            [
+              0,
+              2
+            ],
+            [
+              2,
+              0
+            ]
+          ],
+          "prediction_collapse_detected": false,
+          "n_pred_uninfected": 2,
+          "n_pred_parasitized": 2,
+          "percent_pred_uninfected": 0.5,
+          "percent_pred_parasitized": 0.5
+        },
+        "candidate_count": 5,
+        "warning": "No threshold satisfied both target_recall and min_specificity; selected among thresholds satisfying target_recall.",
+        "calibration_split": "val",
+        "positive_label": "parasitized",
+        "negative_label": "uninfected",
+        "positive_class_index": 1,
+        "negative_class_index": 0,
+        "label_mapping_version": "clinical_v1_parasitized_positive",
+        "label_mapping": {
+          "version": "clinical_v1_parasitized_positive",
+          "0": "uninfected",
+          "1": "parasitized",
+          "negative_class_index": 0,
+          "negative_class_name": "uninfected",
+          "positive_class_index": 1,
+          "positive_class_name": "parasitized",
+          "raw_model_score_meaning": "probability_parasitized"
+        },
+        "raw_model_score_meaning": "probability_parasitized",
+        "score_name": "probability_parasitized",
+        "created_at": "2026-10-04T20:01:49"
+      },
+      "evaluations": [
+        {
+          "id": "9878ae3d-9292-5847-8406-238fb7a96207",
+          "run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+          "training_run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+          "model_version_id": null,
+          "checkpoint_artifact_id": "3cf82712-38ac-52b6-86b4-db76335ae09f",
+          "dataset_version_id": "f5c8a7ae-910b-4452-8c5d-21fe632a6daa",
+          "split": "val",
+          "evaluation_role": "calibration_default",
+          "purpose": "development",
+          "dataset_origin_id": null,
+          "dataset_origin_role": null,
+          "population_manifest_uri": null,
+          "population_manifest_sha256": null,
+          "dataset_provenance_uri": null,
+          "dataset_provenance_sha256": null,
+          "subject_kind": "single",
+          "protocol_version": "synthetic_protocol_v1",
+          "protocol_hash": "75c9e16e7ffcbaab80509ad34d6d7cb565737c12b7d8eb38e2fac2189708d67b",
+          "population_hash": "8f0fd983cbe3d4cd02cc4a2115fbef32f0a06587278c7c97616a88ddf72fbf89",
+          "input_contract_hash": "5aa57a8c269b0dd1fbf9879064b468882b68f0d9609885876330d063f1b08ec0",
+          "comparison_contract_hash": "19564d014edbca181fc009f5d6212bd3312ba6eab94b0b5020168a2f2ca71892",
+          "protocol_snapshot": {
+            "roles": {
+              "train": "train",
+              "selection": "val",
+              "final_test": "test",
+              "calibration": "val"
+            },
+            "budget": {
+              "max_members": 100,
+              "max_attempts_per_member": 3
+            },
+            "metrics": {
+              "primary": [
+                "f2"
+              ],
+              "secondary": [
+                "auc"
+              ],
+              "compliance": "point_estimate",
+              "definitions_version": "synthetic_v1"
+            },
+            "missing": "report_all_members",
+            "pending": [],
+            "ranking": {
+              "criteria": [
+                "f2 desc"
+              ],
+              "partition": "val",
+              "tie_breaks": [
+                "configuration_hash asc"
+              ]
+            },
+            "retries": "first_verified_attempt",
+            "version": "synthetic_protocol_v1",
+            "fallback": "diagnostic_only",
+            "objective": "Exercise planning only",
+            "checkpoint": {
+              "mode": "max",
+              "policy": "f2",
+              "monitor": "val_f2_parasitized",
+              "threshold": 0.5
+            },
+            "aggregation": {
+              "version": "synthetic_v1",
+              "specification": "mean of all planned seeds; report n/N"
+            },
+            "calibration": {
+              "version": "synthetic_v1",
+              "algorithm": "threshold_grid",
+              "population": "val"
+            },
+            "limitations": {
+              "shared_val": "Same VAL used for selection and calibration; adaptive bias acknowledged",
+              "test_exposure": "unknown",
+              "independent_calibration": false
+            },
+            "test_access": "final_only_after_candidate_lock",
+            "uncertainty": {
+              "version": "synthetic_v1",
+              "specification": "patient-grouped bootstrap; synthetic specification, not a scientific run"
+            },
+            "early_stopping": {
+              "mode": "max",
+              "enabled": true,
+              "monitor": "val_f2_parasitized",
+              "patience": 12,
+              "min_delta": 0.0001,
+              "restore_best_weights": true
+            },
+            "sensitivity_target": 1,
+            "specificity_minimum": 1
+          },
+          "source_kind": "e10",
+          "source_record_key": "a404cb12-8f69-4f4d-bbc1-09596165e8ab:calibration_default",
+          "source_record_phase": "run_event_v1",
+          "source_event_id": "a404cb12-8f69-4f4d-bbc1-09596165e8ab",
+          "event_kind": "e10_event",
+          "event_phase": "run_event_v1",
+          "event_key": "a404cb12-8f69-4f4d-bbc1-09596165e8ab",
+          "source_assessment_attempt_id": null,
+          "threshold_used": "0.5",
+          "threshold_source": "default",
+          "calibration_id": null,
+          "metric_definition": "binary_nullable_v2",
+          "created_at": "2026-10-04 20:01:49.626762+00:00",
+          "tn": 0,
+          "fp": 2,
+          "fn": 2,
+          "tp": 0
+        },
+        {
+          "id": "6a21a234-c45d-5555-b652-0ba8a4a5e7f5",
+          "run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+          "training_run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+          "model_version_id": null,
+          "checkpoint_artifact_id": "3cf82712-38ac-52b6-86b4-db76335ae09f",
+          "dataset_version_id": "f5c8a7ae-910b-4452-8c5d-21fe632a6daa",
+          "split": "val",
+          "evaluation_role": "calibration_selected",
+          "purpose": "development",
+          "dataset_origin_id": null,
+          "dataset_origin_role": null,
+          "population_manifest_uri": null,
+          "population_manifest_sha256": null,
+          "dataset_provenance_uri": null,
+          "dataset_provenance_sha256": null,
+          "subject_kind": "single",
+          "protocol_version": "synthetic_protocol_v1",
+          "protocol_hash": "75c9e16e7ffcbaab80509ad34d6d7cb565737c12b7d8eb38e2fac2189708d67b",
+          "population_hash": "8f0fd983cbe3d4cd02cc4a2115fbef32f0a06587278c7c97616a88ddf72fbf89",
+          "input_contract_hash": "5aa57a8c269b0dd1fbf9879064b468882b68f0d9609885876330d063f1b08ec0",
+          "comparison_contract_hash": "19564d014edbca181fc009f5d6212bd3312ba6eab94b0b5020168a2f2ca71892",
+          "protocol_snapshot": {
+            "roles": {
+              "train": "train",
+              "selection": "val",
+              "final_test": "test",
+              "calibration": "val"
+            },
+            "budget": {
+              "max_members": 100,
+              "max_attempts_per_member": 3
+            },
+            "metrics": {
+              "primary": [
+                "f2"
+              ],
+              "secondary": [
+                "auc"
+              ],
+              "compliance": "point_estimate",
+              "definitions_version": "synthetic_v1"
+            },
+            "missing": "report_all_members",
+            "pending": [],
+            "ranking": {
+              "criteria": [
+                "f2 desc"
+              ],
+              "partition": "val",
+              "tie_breaks": [
+                "configuration_hash asc"
+              ]
+            },
+            "retries": "first_verified_attempt",
+            "version": "synthetic_protocol_v1",
+            "fallback": "diagnostic_only",
+            "objective": "Exercise planning only",
+            "checkpoint": {
+              "mode": "max",
+              "policy": "f2",
+              "monitor": "val_f2_parasitized",
+              "threshold": 0.5
+            },
+            "aggregation": {
+              "version": "synthetic_v1",
+              "specification": "mean of all planned seeds; report n/N"
+            },
+            "calibration": {
+              "version": "synthetic_v1",
+              "algorithm": "threshold_grid",
+              "population": "val"
+            },
+            "limitations": {
+              "shared_val": "Same VAL used for selection and calibration; adaptive bias acknowledged",
+              "test_exposure": "unknown",
+              "independent_calibration": false
+            },
+            "test_access": "final_only_after_candidate_lock",
+            "uncertainty": {
+              "version": "synthetic_v1",
+              "specification": "patient-grouped bootstrap; synthetic specification, not a scientific run"
+            },
+            "early_stopping": {
+              "mode": "max",
+              "enabled": true,
+              "monitor": "val_f2_parasitized",
+              "patience": 12,
+              "min_delta": 0.0001,
+              "restore_best_weights": true
+            },
+            "sensitivity_target": 1,
+            "specificity_minimum": 1
+          },
+          "source_kind": "e10",
+          "source_record_key": "a404cb12-8f69-4f4d-bbc1-09596165e8ab:calibration_selected",
+          "source_record_phase": "run_event_v1",
+          "source_event_id": "a404cb12-8f69-4f4d-bbc1-09596165e8ab",
+          "event_kind": "e10_event",
+          "event_phase": "run_event_v1",
+          "event_key": "a404cb12-8f69-4f4d-bbc1-09596165e8ab",
+          "source_assessment_attempt_id": null,
+          "threshold_used": "0.2",
+          "threshold_source": "validation_calibration",
+          "calibration_id": "1d3d0a2d-e427-5f5a-a7c2-ab3983c5dfb1",
+          "metric_definition": "binary_nullable_v2",
+          "created_at": "2026-10-04 20:01:49.626762+00:00",
+          "tn": 0,
+          "fp": 2,
+          "fn": 0,
+          "tp": 2
+        },
+        {
+          "id": "24f79420-776f-5252-9130-4646653f5fa5",
+          "run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+          "training_run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+          "model_version_id": null,
+          "checkpoint_artifact_id": "3cf82712-38ac-52b6-86b4-db76335ae09f",
+          "dataset_version_id": "f5c8a7ae-910b-4452-8c5d-21fe632a6daa",
+          "split": "val",
+          "evaluation_role": "training_validation_final",
+          "purpose": "development",
+          "dataset_origin_id": null,
+          "dataset_origin_role": null,
+          "population_manifest_uri": null,
+          "population_manifest_sha256": null,
+          "dataset_provenance_uri": null,
+          "dataset_provenance_sha256": null,
+          "subject_kind": "single",
+          "protocol_version": "synthetic_protocol_v1",
+          "protocol_hash": "75c9e16e7ffcbaab80509ad34d6d7cb565737c12b7d8eb38e2fac2189708d67b",
+          "population_hash": "8f0fd983cbe3d4cd02cc4a2115fbef32f0a06587278c7c97616a88ddf72fbf89",
+          "input_contract_hash": "5aa57a8c269b0dd1fbf9879064b468882b68f0d9609885876330d063f1b08ec0",
+          "comparison_contract_hash": "19564d014edbca181fc009f5d6212bd3312ba6eab94b0b5020168a2f2ca71892",
+          "protocol_snapshot": {
+            "roles": {
+              "train": "train",
+              "selection": "val",
+              "final_test": "test",
+              "calibration": "val"
+            },
+            "budget": {
+              "max_members": 100,
+              "max_attempts_per_member": 3
+            },
+            "metrics": {
+              "primary": [
+                "f2"
+              ],
+              "secondary": [
+                "auc"
+              ],
+              "compliance": "point_estimate",
+              "definitions_version": "synthetic_v1"
+            },
+            "missing": "report_all_members",
+            "pending": [],
+            "ranking": {
+              "criteria": [
+                "f2 desc"
+              ],
+              "partition": "val",
+              "tie_breaks": [
+                "configuration_hash asc"
+              ]
+            },
+            "retries": "first_verified_attempt",
+            "version": "synthetic_protocol_v1",
+            "fallback": "diagnostic_only",
+            "objective": "Exercise planning only",
+            "checkpoint": {
+              "mode": "max",
+              "policy": "f2",
+              "monitor": "val_f2_parasitized",
+              "threshold": 0.5
+            },
+            "aggregation": {
+              "version": "synthetic_v1",
+              "specification": "mean of all planned seeds; report n/N"
+            },
+            "calibration": {
+              "version": "synthetic_v1",
+              "algorithm": "threshold_grid",
+              "population": "val"
+            },
+            "limitations": {
+              "shared_val": "Same VAL used for selection and calibration; adaptive bias acknowledged",
+              "test_exposure": "unknown",
+              "independent_calibration": false
+            },
+            "test_access": "final_only_after_candidate_lock",
+            "uncertainty": {
+              "version": "synthetic_v1",
+              "specification": "patient-grouped bootstrap; synthetic specification, not a scientific run"
+            },
+            "early_stopping": {
+              "mode": "max",
+              "enabled": true,
+              "monitor": "val_f2_parasitized",
+              "patience": 12,
+              "min_delta": 0.0001,
+              "restore_best_weights": true
+            },
+            "sensitivity_target": 1,
+            "specificity_minimum": 1
+          },
+          "source_kind": "e10",
+          "source_record_key": "6c8dc136-3444-4727-babe-669e31381120:training_validation_final",
+          "source_record_phase": "run_event_v1",
+          "source_event_id": "6c8dc136-3444-4727-babe-669e31381120",
+          "event_kind": "e10_event",
+          "event_phase": "run_event_v1",
+          "event_key": "6c8dc136-3444-4727-babe-669e31381120",
+          "source_assessment_attempt_id": null,
+          "threshold_used": "0.2",
+          "threshold_source": "validation_calibration",
+          "calibration_id": "1d3d0a2d-e427-5f5a-a7c2-ab3983c5dfb1",
+          "metric_definition": "binary_nullable_v2",
+          "created_at": "2026-10-04 20:01:49.685957+00:00",
+          "tn": 0,
+          "fp": 2,
+          "fn": 0,
+          "tp": 2
+        }
+      ],
+      "events": [
+        {
+          "attempt_id": "1255e55d-d068-48b9-8caf-4a7d7cec0b9f",
+          "event_id": "29dc7b0b-fc9f-485b-9487-9c2341a10b23",
+          "event_type": "epoch_completed",
+          "occurred_at": "2026-10-04T20:01:49.390565+00:00",
+          "payload": {
+            "epoch": 1,
+            "synthetic": true
+          },
+          "run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+          "schema_version": "run_event_v1",
+          "sequence": 1
+        },
+        {
+          "attempt_id": "1255e55d-d068-48b9-8caf-4a7d7cec0b9f",
+          "event_id": "a404cb12-8f69-4f4d-bbc1-09596165e8ab",
+          "event_type": "calibration_completed",
+          "occurred_at": "2026-10-04T20:01:49.626762+00:00",
+          "payload": {
+            "record": {
+              "kind": "calibration",
+              "phase": "val",
+              "record_key": "selected"
+            },
+            "result": {
+              "checkpoint_epoch": 1,
+              "result": {
+                "beta": 2.0,
+                "calibration_split": "val",
+                "candidate_count": 5,
+                "created_at": "2026-10-04T20:01:49",
+                "default_threshold": 0.5,
+                "default_threshold_metrics": {
+                  "balanced_accuracy": 0.0,
+                  "confusion_matrix": [
+                    [
+                      0,
+                      2
+                    ],
+                    [
+                      2,
+                      0
+                    ]
+                  ],
+                  "f1_parasitized": 0.0,
+                  "f2_parasitized": 0.0,
+                  "false_negative": 2,
+                  "false_positive": 2,
+                  "fn": 2,
+                  "fp": 2,
+                  "n_pred_parasitized": 2,
+                  "n_pred_uninfected": 2,
+                  "percent_pred_parasitized": 0.5,
+                  "percent_pred_uninfected": 0.5,
+                  "pr_auc_parasitized": 0.5,
+                  "precision_parasitized": 0.0,
+                  "prediction_collapse_detected": false,
+                  "recall_parasitized": 0.0,
+                  "roc_auc_parasitized": 0.0,
+                  "sensitivity_parasitized": 0.0,
+                  "specificity": 0.0,
+                  "threshold": 0.5,
+                  "tn": 0,
+                  "tp": 0,
+                  "true_negative": 0,
+                  "true_positive": 0
+                },
+                "label_mapping": {
+                  "0": "uninfected",
+                  "1": "parasitized",
+                  "negative_class_index": 0,
+                  "negative_class_name": "uninfected",
+                  "positive_class_index": 1,
+                  "positive_class_name": "parasitized",
+                  "raw_model_score_meaning": "probability_parasitized",
+                  "version": "clinical_v1_parasitized_positive"
+                },
+                "label_mapping_version": "clinical_v1_parasitized_positive",
+                "min_specificity": 1.0,
+                "min_specificity_satisfied": false,
+                "negative_class_index": 0,
+                "negative_label": "uninfected",
+                "positive_class_index": 1,
+                "positive_label": "parasitized",
+                "raw_model_score_meaning": "probability_parasitized",
+                "schema_version": 1,
+                "score_name": "probability_parasitized",
+                "selected_metrics": {
+                  "balanced_accuracy": 0.5,
+                  "confusion_matrix": [
+                    [
+                      0,
+                      2
+                    ],
+                    [
+                      0,
+                      2
+                    ]
+                  ],
+                  "f1_parasitized": 0.6666666666666666,
+                  "f2_parasitized": 0.8333333333333334,
+                  "false_negative": 0,
+                  "false_positive": 2,
+                  "fn": 0,
+                  "fp": 2,
+                  "n_pred_parasitized": 4,
+                  "n_pred_uninfected": 0,
+                  "percent_pred_parasitized": 1.0,
+                  "percent_pred_uninfected": 0.0,
+                  "pr_auc_parasitized": 0.5,
+                  "precision_parasitized": 0.5,
+                  "prediction_collapse_detected": true,
+                  "recall_parasitized": 1.0,
+                  "roc_auc_parasitized": 0.0,
+                  "sensitivity_parasitized": 1.0,
+                  "specificity": 0.0,
+                  "threshold": 0.2,
+                  "tn": 0,
+                  "tp": 2,
+                  "true_negative": 0,
+                  "true_positive": 2
+                },
+                "target_recall": 1.0,
+                "target_recall_satisfied": true,
+                "target_recall_satisfied_on_validation": true,
+                "threshold_policy": "target_recall",
+                "threshold_selected": 0.2,
+                "threshold_source": "validation_calibration",
+                "threshold_used": 0.2,
+                "validation_metrics_at_threshold": {
+                  "balanced_accuracy": 0.5,
+                  "confusion_matrix": [
+                    [
+                      0,
+                      2
+                    ],
+                    [
+                      0,
+                      2
+                    ]
+                  ],
+                  "f1_parasitized": 0.6666666666666666,
+                  "f2_parasitized": 0.8333333333333334,
+                  "false_negative": 0,
+                  "false_positive": 2,
+                  "fn": 0,
+                  "fp": 2,
+                  "n_pred_parasitized": 4,
+                  "n_pred_uninfected": 0,
+                  "percent_pred_parasitized": 1.0,
+                  "percent_pred_uninfected": 0.0,
+                  "pr_auc_parasitized": 0.5,
+                  "precision_parasitized": 0.5,
+                  "prediction_collapse_detected": true,
+                  "recall_parasitized": 1.0,
+                  "roc_auc_parasitized": 0.0,
+                  "sensitivity_parasitized": 1.0,
+                  "specificity": 0.0,
+                  "threshold": 0.2,
+                  "tn": 0,
+                  "tp": 2,
+                  "true_negative": 0,
+                  "true_positive": 2
+                },
+                "warning": "No threshold satisfied both target_recall and min_specificity; selected among thresholds satisfying target_recall."
+              },
+              "split": "val"
+            }
+          },
+          "run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+          "schema_version": "run_event_v1",
+          "sequence": 2
+        },
+        {
+          "attempt_id": "1255e55d-d068-48b9-8caf-4a7d7cec0b9f",
+          "event_id": "6c8dc136-3444-4727-babe-669e31381120",
+          "event_type": "evaluation_completed",
+          "occurred_at": "2026-10-04T20:01:49.685957+00:00",
+          "payload": {
+            "confusion_matrix": {
+              "fn": 0,
+              "fp": 2,
+              "tn": 0,
+              "tp": 2
+            },
+            "evaluation_role": "training_validation_final",
+            "metrics": {
+              "balanced_accuracy": 0.5,
+              "f1": 0.6666666666666666,
+              "f2": 0.8333333333333334,
+              "pr_auc": 0.5,
+              "precision": 0.5,
+              "recall": 1.0,
+              "roc_auc": 0.0,
+              "specificity": 0.0
+            },
+            "n_samples": 4,
+            "schema_version": "validation_evaluation_v1",
+            "split": "val",
+            "threshold": {
+              "source": "validation_calibration",
+              "value": 0.2
+            }
+          },
+          "run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+          "schema_version": "run_event_v1",
+          "sequence": 3
+        }
+      ],
+      "calibration_summary": {
+        "run_threshold_calibration_id": "1d3d0a2d-e427-5f5a-a7c2-ab3983c5dfb1",
+        "run_id": "d7074fad-e871-4d9a-898b-c79aa123530e",
+        "model_name": null,
+        "threshold_policy": "target_recall",
+        "threshold_source": "validation_calibration",
+        "threshold_selected": "0.2",
+        "default_threshold": "0.5",
+        "target_recall": "1",
+        "target_recall_satisfied": null,
+        "min_specificity": null,
+        "validation_recall_at_threshold": null,
+        "validation_specificity_at_threshold": null,
+        "validation_precision_at_threshold": null,
+        "validation_f1_at_threshold": null,
+        "validation_f2_at_threshold": null,
+        "validation_balanced_accuracy_at_threshold": null,
+        "validation_pr_auc": null,
+        "validation_roc_auc": null,
+        "default_threshold_metrics": {},
+        "selected_threshold_metrics": {},
+        "candidate_count": null,
+        "threshold_warning": null,
+        "calibration_split": "val",
+        "threshold_calibration_path": null,
+        "model_metadata_path": null,
+        "created_at": "2026-10-04 20:01:49.626762+00:00",
+        "metadata": {},
+        "model_version_id": null,
+        "calibration_artifact_id": null,
+        "score_name": "probability_parasitized",
+        "label_mapping_version": "clinical_v1_parasitized_positive",
+        "positive_label": "parasitized",
+        "calibration_status": "recorded",
+        "default_evaluation_id": "9878ae3d-9292-5847-8406-238fb7a96207",
+        "selected_evaluation_id": "6a21a234-c45d-5555-b652-0ba8a4a5e7f5"
+      },
+      "sql_failure_event_absent": "249c2f28-6e71-43ca-9f68-b97c3801c3e0",
+      "recovered_sequence": 4
+    }
+  ],
+  "schema": {
+    "revision": "pg_v2_baseline",
+    "event_columns": true,
+    "event_metadata_constraint": true,
+    "event_unique_indexes": true,
+    "event_trigger_guard": true
+  },
+  "comparison": {
+    "execution.batch_size": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 64,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 64,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 64,
+        "governed": true
+      }
+    },
+    "execution.beta": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 2,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 2,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 2,
+        "governed": true
+      }
+    },
+    "execution.calibrate_threshold": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": true,
+        "governed": true
+      }
+    },
+    "execution.checkpoint_mode": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      }
+    },
+    "execution.checkpoint_monitor": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      }
+    },
+    "execution.checkpoint_policy": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "f2",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "f2",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "f2",
+        "governed": true
+      }
+    },
+    "execution.deterministic_ops": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": false,
+        "governed": true
+      }
+    },
+    "execution.early_stopping": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": true,
+        "governed": true
+      }
+    },
+    "execution.early_stopping_min_delta": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.0001,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.0001,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.0001,
+        "governed": true
+      }
+    },
+    "execution.early_stopping_mode": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      }
+    },
+    "execution.early_stopping_monitor": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      }
+    },
+    "execution.early_stopping_patience": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 12,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 12,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 12,
+        "governed": true
+      }
+    },
+    "execution.evaluate_best_on_test": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": false,
+        "governed": true
+      }
+    },
+    "execution.fine_tune_epochs": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0,
+        "governed": true
+      }
+    },
+    "execution.max_epochs": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 100,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 100,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 100,
+        "governed": true
+      }
+    },
+    "execution.min_class_fraction": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.05,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.05,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.05,
+        "governed": true
+      }
+    },
+    "execution.min_recall": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 1,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 1,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 1,
+        "governed": true
+      }
+    },
+    "execution.min_specificity": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 1,
+        "governed": true
+      }
+    },
+    "execution.no_augment": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": false,
+        "governed": true
+      }
+    },
+    "execution.reject_prediction_collapse": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": true,
+        "governed": true
+      }
+    },
+    "execution.restore_best_weights": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": true,
+        "governed": true
+      }
+    },
+    "execution.seed": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 11,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 11,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 11,
+        "governed": true
+      }
+    },
+    "execution.target_recall": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 1,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 1,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 1,
+        "governed": true
+      }
+    },
+    "input_contract.adapter_version": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "1.0",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "1.0",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "1.0",
+        "governed": false
+      }
+    },
+    "input_contract.architecture": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "custom_cnn",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "custom_cnn",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "custom_cnn",
+        "governed": false
+      }
+    },
+    "input_contract.channels": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 3,
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 3,
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 3,
+        "governed": false
+      }
+    },
+    "input_contract.decode": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "tf_decode_image_rgb_v1",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "tf_decode_image_rgb_v1",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "tf_decode_image_rgb_v1",
+        "governed": false
+      }
+    },
+    "input_contract.dtype": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "float32",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "float32",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "float32",
+        "governed": false
+      }
+    },
+    "input_contract.external.location": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "loader",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "loader",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "loader",
+        "governed": false
+      }
+    },
+    "input_contract.external.mode": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "rescale_0_1",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "rescale_0_1",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "rescale_0_1",
+        "governed": false
+      }
+    },
+    "input_contract.external.output_order": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "RGB",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "RGB",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "RGB",
+        "governed": false
+      }
+    },
+    "input_contract.external.version": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "tf_preprocessing_v1",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "tf_preprocessing_v1",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "tf_preprocessing_v1",
+        "governed": false
+      }
+    },
+    "input_contract.internal.location": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "none",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "none",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "none",
+        "governed": false
+      }
+    },
+    "input_contract.internal.mode": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": null,
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": null,
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": null,
+        "governed": false
+      }
+    },
+    "input_contract.label_mapping.0": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "uninfected",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "uninfected",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "uninfected",
+        "governed": false
+      }
+    },
+    "input_contract.label_mapping.1": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "parasitized",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "parasitized",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "parasitized",
+        "governed": false
+      }
+    },
+    "input_contract.label_mapping.positive_class": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 1,
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 1,
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 1,
+        "governed": false
+      }
+    },
+    "input_contract.label_mapping.positive_label": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "parasitized",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "parasitized",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "parasitized",
+        "governed": false
+      }
+    },
+    "input_contract.output.activation": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "sigmoid",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "sigmoid",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "sigmoid",
+        "governed": false
+      }
+    },
+    "input_contract.output.dtype": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "float32",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "float32",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "float32",
+        "governed": false
+      }
+    },
+    "input_contract.output.meaning": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "probability_parasitized",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "probability_parasitized",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "probability_parasitized",
+        "governed": false
+      }
+    },
+    "input_contract.output.shape": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": [
+          null,
+          1
+        ],
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": [
+          null,
+          1
+        ],
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": [
+          null,
+          1
+        ],
+        "governed": false
+      }
+    },
+    "input_contract.resize.antialias": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": false,
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": false,
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": false,
+        "governed": false
+      }
+    },
+    "input_contract.resize.location": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "loader",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "loader",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "loader",
+        "governed": false
+      }
+    },
+    "input_contract.resize.method": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "bilinear",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "bilinear",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "bilinear",
+        "governed": false
+      }
+    },
+    "input_contract.schema_version": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "malaria_input_v1",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "malaria_input_v1",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "malaria_input_v1",
+        "governed": false
+      }
+    },
+    "input_contract.shape": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": [
+          null,
+          200,
+          200,
+          3
+        ],
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": [
+          null,
+          200,
+          200,
+          3
+        ],
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": [
+          null,
+          200,
+          200,
+          3
+        ],
+        "governed": false
+      }
+    },
+    "input_contract.source_order": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "RGB",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "RGB",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "RGB",
+        "governed": false
+      }
+    },
+    "input_contract.source_scale": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "0_255",
+        "governed": false
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "0_255",
+        "governed": false
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "0_255",
+        "governed": false
+      }
+    },
+    "model.batch_normalization": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "train",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "train",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "train",
+        "governed": true
+      }
+    },
+    "model.dropout": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.4,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.4,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.4,
+        "governed": true
+      }
+    },
+    "model.fine_tune_layers": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0,
+        "governed": true
+      }
+    },
+    "model.head_units": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 128,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 128,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 128,
+        "governed": true
+      }
+    },
+    "model.input_shape": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": [
+          200,
+          200,
+          3
+        ],
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": [
+          200,
+          200,
+          3
+        ],
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": [
+          200,
+          200,
+          3
+        ],
+        "governed": true
+      }
+    },
+    "model.l2": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.0001,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.0001,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.0001,
+        "governed": true
+      }
+    },
+    "model.preprocessing": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "rescale_0_1",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "rescale_0_1",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "rescale_0_1",
+        "governed": true
+      }
+    },
+    "model.weights": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "none",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "none",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "none",
+        "governed": true
+      }
+    },
+    "optimizer.fine_tune_learning_rate": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 1e-05,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 1e-05,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 1e-05,
+        "governed": true
+      }
+    },
+    "optimizer.name": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "adam",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "adam",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "adam",
+        "governed": true
+      }
+    },
+    "optimizer.parameters.amsgrad": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": false,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.beta_1": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.9,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.9,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.9,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.beta_2": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.999,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.999,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.999,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.clipnorm": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": null,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.clipvalue": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": null,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.ema_momentum": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.99,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.99,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.99,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.ema_overwrite_frequency": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": null,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.epsilon": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 1e-07,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 1e-07,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 1e-07,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.global_clipnorm": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": null,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.gradient_accumulation_steps": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": null,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.learning_rate": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.0001,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.0001,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.0001,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.loss_scale_factor": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": null,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.momentum": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": false,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": false,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": false,
+        "value": null,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.nesterov": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": false,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": false,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": false,
+        "value": null,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.rho": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": false,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": false,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": false,
+        "value": null,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.use_ema": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": false,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": false,
+        "governed": true
+      }
+    },
+    "optimizer.parameters.weight_decay": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": null,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": null,
+        "governed": true
+      }
+    },
+    "recipe.augmentation.contrast": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.3,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.3,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.3,
+        "governed": true
+      }
+    },
+    "recipe.augmentation.flip": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "horizontal_and_vertical",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "horizontal_and_vertical",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "horizontal_and_vertical",
+        "governed": true
+      }
+    },
+    "recipe.augmentation.rotation": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.07,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.07,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.07,
+        "governed": true
+      }
+    },
+    "recipe.augmentation.translation": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.2,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.2,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.2,
+        "governed": true
+      }
+    },
+    "recipe.augmentation.zoom": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.2,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.2,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.2,
+        "governed": true
+      }
+    },
+    "recipe.clinical_success_independent_of_technical_completion": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": true,
+        "governed": true
+      }
+    },
+    "recipe.fallback": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "existing_clinical_policy_v1",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "existing_clinical_policy_v1",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "existing_clinical_policy_v1",
+        "governed": true
+      }
+    },
+    "recipe.loss": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "binary_crossentropy",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "binary_crossentropy",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "binary_crossentropy",
+        "governed": true
+      }
+    },
+    "recipe.metrics": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "binary_clinical_v1",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "binary_clinical_v1",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "binary_clinical_v1",
+        "governed": true
+      }
+    },
+    "recipe.reduce_lr.factor": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      }
+    },
+    "recipe.reduce_lr.min_lr": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 1e-06,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 1e-06,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 1e-06,
+        "governed": true
+      }
+    },
+    "recipe.reduce_lr.monitor": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "val_loss",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "val_loss",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "val_loss",
+        "governed": true
+      }
+    },
+    "recipe.reduce_lr.patience": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 4,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 4,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 4,
+        "governed": true
+      }
+    },
+    "recipe.selection_threshold": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      }
+    },
+    "selection.beta": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 2,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 2,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 2,
+        "governed": true
+      }
+    },
+    "selection.clinical_objective": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "min_recall; assessed independently of technical completion",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "min_recall; assessed independently of technical completion",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "min_recall; assessed independently of technical completion",
+        "governed": true
+      }
+    },
+    "selection.early_stopping_mode": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      }
+    },
+    "selection.early_stopping_monitor": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      }
+    },
+    "selection.explicit": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": true,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": true,
+        "governed": true
+      }
+    },
+    "selection.fallback": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "retain existing policy warning and collapse status",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "retain existing policy warning and collapse status",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "retain existing policy warning and collapse status",
+        "governed": true
+      }
+    },
+    "selection.mode": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "max",
+        "governed": true
+      }
+    },
+    "selection.monitor": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": "val_f2_parasitized",
+        "governed": true
+      }
+    },
+    "selection.threshold": {
+      "f126e029-60b2-401e-808f-520c6ebdd17c": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      },
+      "95adc248-42b7-40b1-a89e-f091c5fc9b25": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      },
+      "d7074fad-e871-4d9a-898b-c79aa123530e": {
+        "present": true,
+        "value": 0.5,
+        "governed": true
+      }
+    }
+  },
+  "committed_reader_pid": 1722,
+  "passed": 16
+}
