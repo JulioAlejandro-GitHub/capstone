@@ -106,3 +106,5 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 - [Reporte reproducible B1](../results/benchmarks/cpu_historical/report.md) — `HISTORICAL_AUDIT`, 2026-10-04. Doce configuraciones, 396 épocas y métricas VALIDATION verificadas desde predicciones persistidas; extracción PostgreSQL de solo lectura.
 - [Hallazgos científicos y técnicos B1](../results/benchmarks/cpu_historical/HALLAZGOS_B1.md) — `HISTORICAL_AUDIT`, 2026-10-04. Duraciones, EarlyStopping, checkpoints y límites de evidencia CPU/Metal.
 - [Consultas y transformaciones B1](../results/benchmarks/cpu_historical/SQL_B1.md) — `HISTORICAL_AUDIT`, 2026-10-04. SQL ejecutado, JOIN, conteos, fórmulas y diagnóstico de fuentes incompletas.
+
+- [Scientific Parameter Registry — C2.11.7](scientific_parameters.md) — `CURRENT_DOC`: diccionario, matriz de dependencias, consumidores y consulta de snapshots efectivos; generado automáticamente.

@@ -122,3 +122,11 @@ test-smear-validation-regression:
 
 audit-smear-validation:
 	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/audit_s3/audit.py $(FLAGS)
+
+.PHONY: scientific-parameters-doc test-scientific-parameters
+scientific-parameters-doc:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/generate_scientific_parameters.py
+
+test-scientific-parameters:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/generate_scientific_parameters.py --check
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dl_local_project $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dl_local_project/tests/test_scientific_parameter_registry.py malaria_dl_local_project/tests/test_threshold_calibration.py malaria_dl_local_project/tests/test_checkpoint_policy.py malaria_dl_local_project/tests/test_training_results.py malaria_dl_local_project/tests/test_assessment_e6.py::test_threshold_no_implicit_clinical_fallback malaria_dl_local_project/tests/test_assessment_e6.py::test_test_forbidden_development

@@ -48,7 +48,7 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
         make_image_dataset_from_directory,
         preprocess_physical_dataset,
     )
-    from ..evaluation.threshold_calibration import find_threshold_for_target_recall
+    from ..evaluation.calibration_controller import CalibrationController
     from ..models.adapters import compile_phase
     from ..training.checkpoint_policy import (
         CheckpointPolicyConfig,
@@ -273,17 +273,8 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
     selected_path = root / f"epoch_{selection['selected_epoch']}.keras"
     selected = tf.keras.models.load_model(selected_path, compile=False)
     labels, _, scores = collect_predictions(selected, datasets["val"], threshold=0.5)
-    calibration = (
-        find_threshold_for_target_recall(
-            labels,
-            scores,
-            target_recall=e["target_recall"],
-            min_specificity=e["min_specificity"],
-            beta=e["beta"],
-        )
-        if e["calibrate_threshold"]
-        else {"enabled": False, "threshold": 0.5}
-    )
+    controller = CalibrationController(config)
+    calibration = controller.calibrate(labels, scores)
     put(
         "calibration",
         "val",
@@ -299,12 +290,8 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
     )
     if event_emitter is not None:
         from ..evaluation.validation import evaluate_validation_predictions
-        from ..results.training import ThresholdResult
 
-        effective_validation_threshold = ThresholdResult(
-            calibration['threshold_used'] if e['calibrate_threshold'] else calibration['threshold'],
-            calibration['threshold_source'] if e['calibrate_threshold'] else 'default',
-        )
+        effective_validation_threshold = controller.threshold(calibration)
         evaluation = evaluate_validation_predictions(labels, scores, effective_validation_threshold)
         if evaluation.n_samples != len(sample_paths):
             raise CampaignError("VALIDATION_POPULATION_CONFLICT")
