@@ -246,7 +246,20 @@ export type TrainingReleaseStatus =
   | 'available_to_publish'
   | 'productive_stage2';
 
+export interface ScientificParameters {
+  target_recall: number | null;
+  min_recall: number | null;
+  calibrate_threshold: boolean | null;
+  early_stopping_patience: number | null;
+  early_stopping_min_delta: number | null;
+  min_class_fraction: number | null;
+  reject_prediction_collapse: boolean | null;
+  threshold: number | null;
+  val_f2_parasitized: number | null;
+}
+
 export interface TrainingSummary {
+  scientific_parameters?: ScientificParameters;
   run_id: string;
   run_type: 'training';
   status: string;

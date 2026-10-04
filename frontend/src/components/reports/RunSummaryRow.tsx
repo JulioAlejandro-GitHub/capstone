@@ -8,6 +8,7 @@ import {
 } from '../../utils/runReport';
 import { AutoAnalysisBadge } from './AutoAnalysisBadge';
 import { CommandChips } from './CommandChips';
+import { ScientificParameters } from './ScientificParameters';
 import { MetricChip } from './MetricChip';
 import { MiniConfusionMatrix } from './MiniConfusionMatrix';
 import { RunProcessBadge, type RunProcessKind } from './RunProcessBadge';
@@ -73,6 +74,9 @@ export function RunSummaryRow({
           Optimizer: <strong>{run.optimizer?.trim() || 'No registrado 4'}</strong>
         </span>
         <CommandChips command={run.command} />
+        {processKind === 'training' ? (
+          <ScientificParameters parameters={'scientific_parameters' in run ? run.scientific_parameters : undefined} />
+        ) : null}
       </section>
 
       <section aria-label="Resultados" className="report-cell report-results-cell" data-label="Resultados">
