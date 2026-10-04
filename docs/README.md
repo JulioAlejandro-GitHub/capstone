@@ -100,3 +100,9 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 - [PRE-S4 — Flujo de detección, crops y clasificación](audits/pre_s4_detection_workflow/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Trazado estático desde SmearUpload hasta el resultado y contrato mínimo para incorporar otro detector.
 
 - [D1 + D2 — Separación de CELL DETECTION y CELL CROP](audits/d1_d2_detection_crop/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Resolutores mínimos, equivalencia de componentes/PNG/SHA y validación PostgreSQL; gate global pendiente por fallas previas.
+
+## B1 — Entrenamientos históricos y trazabilidad SQL
+
+- [Reporte reproducible B1](../results/benchmarks/cpu_historical/report.md) — `HISTORICAL_AUDIT`, 2026-10-04. Doce configuraciones, 396 épocas y métricas VALIDATION verificadas desde predicciones persistidas; extracción PostgreSQL de solo lectura.
+- [Hallazgos científicos y técnicos B1](../results/benchmarks/cpu_historical/HALLAZGOS_B1.md) — `HISTORICAL_AUDIT`, 2026-10-04. Duraciones, EarlyStopping, checkpoints y límites de evidencia CPU/Metal.
+- [Consultas y transformaciones B1](../results/benchmarks/cpu_historical/SQL_B1.md) — `HISTORICAL_AUDIT`, 2026-10-04. SQL ejecutado, JOIN, conteos, fórmulas y diagnóstico de fuentes incompletas.

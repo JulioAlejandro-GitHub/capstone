@@ -1,7 +1,10 @@
 """E5 transactions. No file ledger; failed writes stop execution."""
 
+from datetime import datetime
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
+
+from sqlalchemy.engine import Connection
 
 from ..campaigns.contracts import CampaignError, canonical, member_configuration
 from ..campaigns.repository import CampaignRepository, execute, identifier
@@ -174,9 +177,10 @@ class ExecutionRepository(CampaignRepository):
 
     @staticmethod
     def _create_run(
-        c, run, config, dataset, environment, experiment=None, evidence_id=None,
-        campaign_id=None, runtime=None,
-    ):
+        c: Connection, run: str, config: dict, dataset: dict, environment: dict,
+        experiment: str | UUID | None = None, evidence_id: str | None = None,
+        campaign_id: str | UUID | None = None, runtime: dict | None = None,
+    ) -> None:
         from .schema import require_e10_schema, V2_REVISION
         revision = require_e10_schema(c)['revision']
         # Relational identity must be unambiguous; never infer from folders/dates.
@@ -209,11 +213,18 @@ class ExecutionRepository(CampaignRepository):
             "environment": environment,
         }
         seed = config["resolved"]["execution"]["seed"]
+        execution = config["resolved"]["execution"]
+        selection = config["resolved"]["selection"]
         execute(
             c,
-            "INSERT INTO runs(id,model_id,experiment_id,run_name,run_type,status,started_at,random_seed,dataset_version_id,execution_parameters"
+            "INSERT INTO runs(id,model_id,experiment_id,run_name,run_type,status,started_at,random_seed,dataset_version_id,execution_parameters,"
+            "dataset_id,max_epochs,total_epochs,checkpoint_monitor,checkpoint_mode,early_stopping_enabled,"
+            "early_stopping_patience,early_stopping_min_delta,restore_best_weights"
             + (",campaign_id" if campaign_id is not None else "")
             + ") VALUES(CAST(:id AS uuid),CAST(:model AS uuid),CAST(:experiment AS uuid),:name,'training','running',clock_timestamp(),:seed,CAST(:dataset AS uuid),CAST(:parameters AS jsonb)"
+            + ",(SELECT CASE WHEN count(*)=1 THEN min(dataset_id::text)::uuid END FROM dataset_version_sources "
+            "WHERE dataset_version_id=CAST(:dataset AS uuid) AND role='PRIMARY'),"
+            ":max_epochs,:total_epochs,:monitor,:mode,:early_stopping,:patience,:min_delta,:restore"
             + (",CAST(:campaign AS uuid)" if campaign_id is not None else "") + ")",
             id=run,
             model=str(models[0]),
@@ -221,6 +232,13 @@ class ExecutionRepository(CampaignRepository):
             # Human label only (UI/order); identity stays in id + configuration hash.
             name=f"{config['model_id']}:{config['resolved']['optimizer']['name']}:seed{seed}",
             seed=seed,
+            max_epochs=execution["max_epochs"],
+            total_epochs=execution["max_epochs"] + execution["fine_tune_epochs"],
+            monitor=selection["monitor"], mode=selection["mode"],
+            early_stopping=execution["early_stopping"],
+            patience=execution["early_stopping_patience"],
+            min_delta=execution["early_stopping_min_delta"],
+            restore=execution["restore_best_weights"],
             dataset=dataset["dataset_version_id"],
             campaign=identifier(campaign_id) if campaign_id is not None else None,
             parameters=canonical(
@@ -233,11 +251,37 @@ class ExecutionRepository(CampaignRepository):
                 }
             ),
         )
+        if runtime is not None:
+            ExecutionRepository.project_runtime(c, run, runtime)
         if revision == V2_REVISION:
             from ..persistence.v2_projection import project_configuration
             project_configuration(c, run, config)
 
-    def bind_evaluation_context(self, run_id, owner, selected_epoch):
+    @staticmethod
+    def project_runtime(c: Connection, run: str, runtime: dict,
+                        started_at: str | None = None) -> None:
+        """Project observed worker facts, never the configuration builder's host."""
+        started = datetime.fromisoformat(started_at) if started_at else None
+        if started is not None and started.utcoffset() is None:
+            raise CampaignError("TRAIN_TIMESTAMP_TIMEZONE_REQUIRED")
+        execute(c, """UPDATE runs SET host_name=:host, git_commit=:git_commit,
+            python_version=:python, tensorflow_version=:tensorflow, keras_version=:keras,
+            platform=:platform, machine=:machine, execution_type=:execution_mode,
+            started_at=COALESCE(CAST(:started AS timestamptz),started_at),
+            execution_parameters=execution_parameters || jsonb_build_object(
+                'runtime_environment',CAST(:runtime AS jsonb)) ||
+                CASE WHEN CAST(:started AS timestamptz) IS NULL THEN '{}'::jsonb
+                     ELSE jsonb_build_object('training_started_at',CAST(:started AS timestamptz)) END,
+            updated_at=clock_timestamp()
+            WHERE id=CAST(:id AS uuid) AND finished_at IS NULL
+              AND NOT (execution_parameters ? 'training_started_at')""",
+            id=str(run), runtime=canonical(runtime), started=started,
+            keras=(runtime.get("packages") or {}).get("keras"),
+            **{k: runtime.get(k) for k in ("host", "git_commit", "python", "tensorflow",
+                                          "platform", "machine", "execution_mode")})
+
+    def bind_evaluation_context(self, run_id: str | UUID, owner: str | UUID,
+                                selected_epoch: int) -> dict | None:
         """V2 producer, before VAL results are projected: register the selected
         checkpoint as the run's model_checkpoint artifact and record the evaluation
         provenance. Built only from persisted evidence (this run's artifact and
@@ -269,6 +313,14 @@ class ExecutionRepository(CampaignRepository):
                 return rows[0]
 
             artifact, predictions = record("artifact"), record("predictions")
+            selection = execute(c, """SELECT s.payload FROM train_execution_records s
+                JOIN train_execution_records e USING (run_id,phase,record_key)
+                WHERE s.run_id=CAST(:id AS uuid) AND s.kind='selection' AND e.kind='epoch'
+                  AND s.event_id IS NULL AND e.event_id IS NULL
+                ORDER BY (e.payload->>'epoch')::integer DESC LIMIT 1""",
+                id=identifier(run_id)).scalar_one()
+            if selection['selected_epoch'] != int(selected_epoch):
+                raise CampaignError('TRAIN_SELECTION_CONFLICT')
             from .artifacts import file_identity
             if file_identity(artifact["path"]) != {"sha256": artifact["sha256"], "bytes": artifact["bytes"]}:
                 raise CampaignError("CHECKPOINT_IDENTITY_CONFLICT")
@@ -291,6 +343,8 @@ class ExecutionRepository(CampaignRepository):
                 id=artifact_id, run=identifier(run_id), name=Path(artifact["path"]).name,
                 path=artifact["path"], bytes=artifact["bytes"], sha256=artifact["sha256"],
                 metadata=canonical({"source": "e10_train", "role": "selected_checkpoint",
+                                    "attempt_id": str(session["attempt_id"]),
+                                    "selection": selection,
                                     "epoch": artifact["epoch"], "phase": artifact["phase"],
                                     "version_id": artifact["version_id"]}))
             execute(c, """UPDATE runs SET execution_parameters=execution_parameters ||
@@ -298,7 +352,8 @@ class ExecutionRepository(CampaignRepository):
                 key=EVALUATION_CONTEXT_KEY, context=canonical(context), id=identifier(run_id))
             return context
 
-    def put(self, run_id, owner, kind, phase, key, payload):
+    def put(self, run_id: str | UUID, owner: str | UUID, kind: str, phase: str,
+            key: str | int, payload: dict) -> None:
         with self.transaction() as c:
             self.authorize(c, owner)
             session = (
@@ -336,6 +391,8 @@ class ExecutionRepository(CampaignRepository):
                 key=str(key),
                 payload=canonical(payload),
             )
+            if kind == "runtime" and phase == "base" and "runtime_environment" in payload:
+                self.project_runtime(c, str(run_id), payload["runtime_environment"], payload["started_at"])
 
     def child_started(self, run, owner, pid):
         with self.transaction() as c:
@@ -349,7 +406,8 @@ class ExecutionRepository(CampaignRepository):
             if row is None:
                 raise CampaignError("CHILD_ALREADY_REGISTERED")
 
-    def finish(self, run, owner, state, evidence=None, cause=None):
+    def finish(self, run: str | UUID, owner: str | UUID, state: str,
+               evidence: dict | None = None, cause: str | None = None) -> None:
         # Lock order: campaign, member, attempt, session, run.
         initial = self.session(run)
         with self.transaction() as c:
@@ -370,19 +428,20 @@ class ExecutionRepository(CampaignRepository):
                     "SELECT id FROM campaign_members WHERE id=CAST(:id AS uuid) FOR UPDATE",
                     id=str(member["id"]),
                 )
+            if initial['attempt_id']:
+                execute(c, 'SELECT id FROM campaign_attempts WHERE id=CAST(:id AS uuid) FOR UPDATE',
+                        id=str(initial['attempt_id'])).one()
+            current = dict(execute(c, 'SELECT * FROM train_execution_sessions WHERE run_id=CAST(:id AS uuid) FOR UPDATE',
+                                   id=identifier(run)).mappings().one())
+            execute(c, 'SELECT id FROM runs WHERE id=CAST(:id AS uuid) FOR UPDATE', id=identifier(run)).one()
+            if str(current['owner']) != identifier(owner) or current['attempt_id'] != initial['attempt_id']:
+                raise CampaignError('TRAIN_OWNER_FENCED')
             if state in ('completed', 'verified'):
-                if initial['attempt_id']:
-                    execute(c, 'SELECT id FROM campaign_attempts WHERE id=CAST(:id AS uuid) FOR UPDATE',
-                            id=str(initial['attempt_id'])).one()
-                current = dict(execute(c, 'SELECT * FROM train_execution_sessions WHERE run_id=CAST(:id AS uuid) FOR UPDATE',
-                                       id=identifier(run)).mappings().one())
-                execute(c, 'SELECT id FROM runs WHERE id=CAST(:id AS uuid) FOR UPDATE', id=identifier(run)).one()
-                if str(current['owner']) != identifier(owner) or current['attempt_id'] != initial['attempt_id']:
-                    raise CampaignError('TRAIN_OWNER_FENCED')
                 from .completion import TrainingCompletionValidator, is_e10_governed, CompletionError
                 sources = self._completion_sources(c, run)
                 if is_e10_governed(sources):
-                    if current['state'] != ('active' if state == 'completed' else 'completed'):
+                    allowed = ('active',) if state == 'completed' else ('completed', 'verified')
+                    if current['state'] not in allowed:
                         raise CampaignError('TRAIN_TRANSITION_INVALID')
                     contract = TrainingCompletionValidator().validate(
                         sources, evidence if state == 'completed' else current['completion'], sealed=state == 'verified')
@@ -400,6 +459,14 @@ class ExecutionRepository(CampaignRepository):
                                 or canonical(evidence.get('selection')) != canonical(current['completion']['selection'])):
                             raise CompletionError()
                         verify_checkpoint_file(current, evidence['artifact'])
+                if state == 'verified' and current['state'] == 'verified':
+                    if canonical(current['verification']) != canonical(evidence):
+                        raise CampaignError('RESULT_IDEMPOTENCY_CONFLICT')
+                    return
+            # Verification only changes verification evidence and operational state.
+            # Its latency must never become part of the scientific TRAIN duration.
+            if state != 'verified':
+                self._finish_run(c, run, state, evidence, cause)
             col = "verification" if state == "verified" else "completion"
             execute(
                 c,
@@ -412,21 +479,53 @@ class ExecutionRepository(CampaignRepository):
             if initial["attempt_id"]:
                 execute(
                     c,
-                    "UPDATE campaign_attempts SET state=:state,cause=:cause,finished_at=clock_timestamp() WHERE id=CAST(:id AS uuid)",
+                    "UPDATE campaign_attempts SET state=:state,cause=:cause,"
+                    "finished_at=CASE WHEN :state='verified' THEN finished_at ELSE "
+                    "(SELECT finished_at FROM runs WHERE id=CAST(:run AS uuid)) END WHERE id=CAST(:id AS uuid)",
                     state=state,
                     cause=cause,
+                    run=identifier(run),
                     id=str(initial["attempt_id"]),
                 )
-            execute(
-                c,
-                "UPDATE runs SET status=:state,finished_at=clock_timestamp(),"
-                "duration_seconds=EXTRACT(EPOCH FROM clock_timestamp()-started_at),"
-                "completed_epochs=COALESCE(CAST(:epochs AS integer),completed_epochs),"
-                "updated_at=clock_timestamp() WHERE id=CAST(:id AS uuid)",
-                state="completed" if state in ("completed", "verified") else state,
-                epochs=evidence.get("epochs") if state == "completed" and isinstance(evidence, dict) else None,
-                id=identifier(run),
-            )
+
+    @staticmethod
+    def _finish_run(c: Connection, run: str | UUID, state: str, evidence: dict | None,
+                    cause: str | None) -> None:
+        from ..persistence.execution_record_readers import read_legacy_execution_records, read_result_events
+        from .contracts import RunEventType
+
+        records = read_legacy_execution_records(c, run)
+        # E10 mirrors the legacy records: count only the canonical epoch records.
+        epochs = {(r['phase'], r['record_key']): r['payload']
+                  for r in records if r['kind'] == 'epoch'}
+        fine = [r['epoch'] for (phase, _), r in epochs.items() if phase == 'fine_tuning']
+        selection = (evidence or {}).get('selection', {}) if state == 'completed' else {}
+        finished = (evidence or {}).get('finished_at')
+        finished = datetime.fromisoformat(finished) if finished else None
+        if finished is None:
+            terminal = [e for e in read_result_events(c, run) if e.event_type in
+                        (RunEventType.TRAINING_COMPLETED, RunEventType.TRAINING_FAILED)]
+            if terminal:
+                finished = terminal[-1].occurred_at
+        if finished is not None and finished.utcoffset() is None:
+            raise CampaignError('TRAIN_TIMESTAMP_TIMEZONE_REQUIRED')
+        execute(c, """WITH timing AS (SELECT COALESCE(CAST(:finished AS timestamptz),clock_timestamp()) AS ended)
+            UPDATE runs SET status=:state, finished_at=timing.ended,
+              duration_seconds=EXTRACT(EPOCH FROM timing.ended-started_at),
+              completed_epochs=:epochs, fine_tuning_start_epoch=:fine,
+              stopped_epoch=CASE WHEN early_stopping_enabled AND :epochs>0 THEN :epochs ELSE NULL END,
+              checkpoint_monitor=COALESCE(CAST(:monitor AS text),checkpoint_monitor),
+              checkpoint_mode=CASE WHEN CAST(:monitor AS text) IS NULL OR
+                execution_parameters #>> '{model_configuration_e2,configuration,resolved,selection,explicit}'='true'
+                THEN checkpoint_mode ELSE 'max' END,
+              best_epoch=:best, best_validation_value=:value, error_message=:cause,
+              updated_at=clock_timestamp()
+            FROM timing WHERE id=CAST(:id AS uuid) AND finished_at IS NULL""",
+            id=identifier(run), state=state, finished=finished, epochs=len(epochs),
+            # Existing convention: offset (zero based), not first displayed FT epoch.
+            fine=min(fine)-1 if fine else None, best=selection.get('selected_epoch'),
+            monitor=selection.get('selected_metric'),
+            value=selection.get('selected_metric_value'), cause=cause)
 
     @staticmethod
     def _completion_sources(c, run_id):

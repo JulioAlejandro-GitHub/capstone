@@ -24,6 +24,10 @@ test-ml:
 		tests/test_label_mapping.py \
 		tests/test_decision.py \
 		tests/test_image_quality.py
+
+.PHONY: test-train-persistence
+test-train-persistence:
+	python3 scripts/test_train_persistence.py
 db-status:
 	./scripts/db/status.sh
 db-backup:

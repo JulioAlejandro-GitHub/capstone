@@ -59,6 +59,10 @@ def test_shared_scientific_path_has_identical_ordered_event_types(setup,tmp_path
             if journal:journal.close()
     assert [e.event_type for e in streams[0]]==[e.event_type for e in streams[1]]
     assert [e.sequence for e in streams[0]]==[e.sequence for e in streams[1]]==list(range(1,len(streams[0])+1))
+    for rows in legacy:
+        for row in rows:
+            if row['kind'] == 'runtime':
+                row['payload'].pop('started_at', None)
     assert legacy[0]==legacy[1]
     assert outputs[0]==outputs[1]
     assert streams[0][-2].to_dict()['payload']==streams[1][-2].to_dict()['payload']

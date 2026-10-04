@@ -110,6 +110,14 @@ def test_atomic_completion_seal_verification_and_safe_repeat(prepared):
     assert proof['training_completion_hash']==digest(seal.to_dict())
     x.repo.finish(current['run_id'],current['owner'],'verified',proof)
     assert x.repo.session(current['run_id'])['state']=='verified'
+    with x.pg.sql() as c:
+        run_before = c.execute(text('SELECT to_jsonb(r) FROM runs r WHERE id=:id'),
+                               {'id': current['run_id']}).scalar_one()
+    proof = verify_session(x.repo, x.repo.session(current['run_id']), lambda *a: None)
+    x.repo.finish(current['run_id'], current['owner'], 'verified', proof)
+    with x.pg.sql() as c:
+        assert c.execute(text('SELECT to_jsonb(r) FROM runs r WHERE id=:id'),
+                         {'id': current['run_id']}).scalar_one() == run_before
 
 
 @pytest.mark.parametrize('case',['evaluation_missing','terminal_missing','parameters','projection','failed','duplicate_evaluation','population','dataset_version','snapshot','artifact_hash'])
