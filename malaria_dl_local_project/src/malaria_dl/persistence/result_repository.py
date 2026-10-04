@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 
-from ..execution.contracts import ExecutionContext, RunEvent
+from ..execution.contracts import ExecutionContext, RunEvent, RunEventType
 from ..results.errors import ResultError, ResultPersistenceError, WriterNotAuthorized, FinalEvaluationConflict
 from ..results.training import TrainingResultsV1
 from ..results.identity import canonical_event
@@ -61,6 +61,12 @@ class _PostgresScope(EventAcceptanceScope):
             run=event.run_id, schema=event.schema_version, key=str(event.event_id),
             payload=json.dumps({'canonical_event': canonical_event(event)}, ensure_ascii=True),
             id=event.event_id, sequence=event.sequence)
+        if event.event_type is RunEventType.PHASE_STARTED:
+            result = event.to_dict()['payload'].get('result', {})
+            if result.get('phase') == 'base' and 'runtime_environment' in result:
+                from ..execution.repository import ExecutionRepository
+                ExecutionRepository.project_runtime(self._connection, str(event.run_id),
+                    result['runtime_environment'], result['started_at'])
         self.appended = True
 
     def project_training_result(self, result: TrainingResultsV1) -> None:

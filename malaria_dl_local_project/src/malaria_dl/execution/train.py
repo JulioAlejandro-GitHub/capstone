@@ -1,13 +1,22 @@
 """Campaign TRAIN from persisted configuration. No CSV or JSON sidecars."""
 
+from __future__ import annotations
+
 import os
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from ..campaigns.contracts import CampaignError, digest
 from .artifacts import file_identity
 from .contracts import RunEventType
 from .emitter import RunEventEmitter
+
+if TYPE_CHECKING:
+    from ..local_execution.transport import Reports
+    from ..models.registry import ModelDescriptor
+    from .repository import ExecutionRepository
 
 
 def clean(value):
@@ -24,7 +33,8 @@ def clean(value):
     return value
 
 
-def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | None = None):
+def train(repository: ExecutionRepository | Reports, session: dict, descriptor: ModelDescriptor,
+          *, event_emitter: RunEventEmitter | None = None) -> None:
     """Transitional E10.7 dual reporting; remove the legacy dependency in E10.11.
 
     No emitter preserves the Local/standalone legacy path. Delivery errors are
@@ -48,6 +58,7 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
     )
 
     run, owner = str(session["run_id"]), str(session["owner"])
+    started_at = datetime.now(timezone.utc).isoformat()
     config = session["configuration"]
     r = config["resolved"]
     e = r["execution"]
@@ -94,7 +105,7 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
     selection = None
     epoch_offset = 0
 
-    def put(kind, phase, key, payload):
+    def put(kind: str, phase: str, key: str | int, payload: dict) -> None:
         payload = clean(payload)
         repository.put(run, owner, kind, phase, key, payload)
         if event_emitter is None:
@@ -120,6 +131,9 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
                       "result": payload["result"]}
         elif kind == "runtime":
             result = {"phase": phase, "callbacks": payload["callbacks"]}
+            if "runtime_environment" in payload:
+                result.update(runtime_environment=payload["runtime_environment"],
+                              started_at=payload["started_at"])
         else:
             result = payload
         event_emitter.emit(types[kind], {"legacy_record": reference, "result": result})
@@ -221,6 +235,9 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
             {"type": type(c).__name__, "monitor": getattr(c, "monitor", None)}
             for c in callbacks
         ]
+        if phase == "base":
+            from .campaign import runtime_environment
+            runtime.update(runtime_environment=runtime_environment(), started_at=started_at)
         put("runtime", phase, "configuration", runtime)
         h = model.fit(
             datasets["train"],
@@ -294,18 +311,16 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
         event_emitter.emit(RunEventType.EVALUATION_COMPLETED, evaluation.to_dict())
     records = repository.records(run)
     completion = {
-        # Executed epochs (contiguous global 1-based numbering).
+        "finished_at": datetime.now(timezone.utc).isoformat(),
         "epochs": len(history),
-        # Last executed global epoch, 1-based like epoch records and selected_epoch.
-        "stopped_epoch": history[-1]["epoch"],
         "selection": selection,
         "records_hash": digest(records),
-        # Clinical objective only: selected checkpoint's VAL recall at threshold 0.5
-        # against run_configurations.clinical_target_recall. Independent of
-        # selection.policy_satisfied and of technical completion.
-        "clinical_target_recall": e["target_recall"],
         "clinical_objective_met": bool(
-            (selection.get("val_recall_parasitized") or 0) >= e["target_recall"]
+            (selection.get("val_recall_parasitized") or 0) >= e["min_recall"]
+            and (
+                e["min_specificity"] is None
+                or (selection.get("val_specificity") or 0) >= e["min_specificity"]
+            )
         ),
     }
     if event_emitter is not None:

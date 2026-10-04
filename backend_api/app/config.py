@@ -93,6 +93,8 @@ class Settings:
     staging_retention_hours: int
     allowed_microscopy_formats: tuple[str, ...]
     quality_analysis_max_dimension: int
+    cell_detector_key: str
+    cell_crop_strategy_key: str
     cell_detection_page_max: int
     cell_classification_batch_size: int
     cell_classification_review_margin: float
@@ -167,6 +169,8 @@ class Settings:
                 if item.strip()
             ),
             quality_analysis_max_dimension=_int("QUALITY_ANALYSIS_MAX_DIMENSION", 2048, 64),
+            cell_detector_key=os.getenv("CELL_DETECTOR_KEY", "connected_components_v1"),
+            cell_crop_strategy_key=os.getenv("CELL_CROP_STRATEGY_KEY", "bbox_crop_v1"),
             cell_detection_page_max=_int("CELL_DETECTION_PAGE_MAX", 500, 500),
             cell_classification_batch_size=_int(
                 "CELL_CLASSIFICATION_BATCH_SIZE", 32, 1

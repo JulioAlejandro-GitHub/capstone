@@ -371,14 +371,17 @@ def postgres_context(tmp_path):
         settings,
         connection.execute(text("SELECT current_database()")).scalar_one(),
     )
-    assert connection.execute(
-        text(
-            """
-            SELECT version_num='20260810_05'
-            FROM alembic_version
-            """
-        )
-    ).scalar_one(), "la migración 20260810_05 debe estar aplicada"
+    # Validate capabilities, including the adopted v2 baseline, not a historic revision.
+    schema = inspect(connection)
+    for table in (
+        "cell_detection_runs",
+        "image_connected_components",
+        "cell_detections",
+        "cell_crops",
+        "cell_detection_events",
+        "scientific_reviews",
+    ):
+        assert schema.has_table(table), f"Required cell-analysis table missing: {table}"
 
     actor_id = uuid4()
     suffix = uuid4().hex[:10]
@@ -490,6 +493,7 @@ def test_real_execution_is_idempotent_traceable_and_file_backed(postgres_context
     assert first["detector_key"] == DETECTOR_KEY
     assert first["detector_version"] == DETECTOR_VERSION
     assert first["algorithm_version"] == ALGORITHM_VERSION
+    assert first["profile_snapshot"] == service.detector.profile_snapshot(None)
     assert first["profile_snapshot"]["coordinate_space"] == COORDINATE_SPACE
     assert first["image_count"] == first["processed_image_count"] == 1
     assert first["component_count"] >= 3
@@ -573,6 +577,22 @@ def test_real_execution_is_idempotent_traceable_and_file_backed(postgres_context
         {"id": detection_run_id},
     ).mappings().all()
     assert len(detections) == first["detection_count"]
+    # The existing classification entry reads exactly the persisted crops.
+    from app.repositories.cell_classification import CellClassificationRepository
+    from app.services.cell_classification import freeze_classification_inputs
+
+    classification_input = CellClassificationRepository(context.connection).detection_run_input(
+        detection_run_id
+    )
+    assert classification_input is not None
+    frozen, manifest = freeze_classification_inputs(classification_input["detections"])
+    assert len(frozen) == len(detections)
+    assert all(item["eligible"] for item in frozen)
+    assert [item["crop_sha256"] for item in frozen] == [row["sha256"] for row in detections]
+    assert [item["_crop_storage_key"] for item in frozen] == [
+        row["relative_storage_key"] for row in detections
+    ]
+    assert freeze_classification_inputs(classification_input["detections"])[1] == manifest
     for row in detections:
         assert CELL_CODE.fullmatch(row["cell_code"])
         assert row["coordinate_space"] == COORDINATE_SPACE

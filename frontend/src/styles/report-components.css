@@ -139,6 +139,41 @@
   border-left: 1px solid #edf0f6;
 }
 
+.run-scientific-parameters {
+  min-width: 0;
+  max-width: 100%;
+  max-height: 180px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #edf0f6;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.run-scientific-parameters dl {
+  margin: 0;
+}
+
+.run-scientific-parameters__entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.65fr);
+  gap: 8px;
+  padding: 4px 0;
+  overflow-wrap: anywhere;
+}
+
+.run-scientific-parameters dt {
+  color: #62708f;
+}
+
+.run-scientific-parameters dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .report-cell::before {
   display: none;
   color: #62708f;

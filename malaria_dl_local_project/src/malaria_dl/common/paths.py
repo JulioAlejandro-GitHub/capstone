@@ -10,3 +10,11 @@ DB_DIR = PROJECT_ROOT / "db"
 
 __all__ = ["PROJECT_ROOT", "DATA_DIR", "OUTPUT_DIR", "RELEASES_DIR", "DB_DIR"]
 
+
+
+def get_tfds_data_dir() -> Path:
+    """Existing TFDS_DATA_DIR override; fallback is the repository-level cache."""
+    import os
+
+    configured = os.getenv("TFDS_DATA_DIR")
+    return Path(configured).expanduser().resolve() if configured else PROJECT_ROOT.parent / "data/tensorflow_datasets"

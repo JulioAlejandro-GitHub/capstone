@@ -1,0 +1,68 @@
+/Users/julio/.matplotlib is not a writable directory
+Matplotlib created a temporary cache directory at /var/folders/r0/ncxcq14d05x1gsmgxfrj16f00000gn/T/matplotlib-w_qvhay0 because there was an issue with the default path (/Users/julio/.matplotlib); it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+Matplotlib is building the font cache; this may take a moment.
+WARNING:tensorflow:From /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/scripts/audit_s1_1/inspect_images.py:56: tf_record_iterator (from tensorflow.python.lib.io.tf_record) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use eager execution and: 
+`tf.data.TFRecordDataset(path)`
+{
+  "mapping": {
+    "patientid_cellmapping_parasitized.csv": {
+      "sha256": "d0367e513397404e980baee2a641bce9ce329a22e62ea9007962dfca2f8418d3",
+      "rows": 151,
+      "ids": 151
+    },
+    "patientid_cellmapping_uninfected.csv": {
+      "sha256": "a8577b21e7154724f4bbd18326218e2c63a99b22ab372b79a7530d36df6dab78",
+      "rows": 201,
+      "ids": 201
+    }
+  },
+  "archive_sha256": "0a949556b2414159b5100192609805376654c4266d8d187be9b1922fad43c668",
+  "archive_size": 353452851,
+  "tfrecord_examples": 27558,
+  "tf_feature_keys": [
+    "image",
+    "label"
+  ],
+  "images": 27558,
+  "class_counts": {
+    "parasitized": 13779,
+    "uninfected": 13779
+  },
+  "official_mapping_mismatches": [],
+  "patient_ids": 201,
+  "filename_prefix_ids": 201,
+  "checks": {
+    "tfds_pixel_match": 27558,
+    "materialized_pixel_match": 27558,
+    "historical_pixel_match": 27558,
+    "db_hash_match": 27558,
+    "db_dimensions_match": 27558
+  },
+  "tfds_same_encoded_bytes": 27558,
+  "materialized_same_encoded_bytes": 27558,
+  "historical_same_encoded_bytes": 0,
+  "suspected_aliases": [
+    {
+      "patient_id": "C47P8thinOriginalOlympusCX21",
+      "clinical_identity_id": "15612ccb-c11a-5367-8090-9c50fbed208b",
+      "records": 67,
+      "parasitized": 2,
+      "uninfected": 65,
+      "split": "train"
+    },
+    {
+      "patient_id": "C47P8thin_Original_Motic",
+      "clinical_identity_id": "4b152d53-306d-516f-9a62-34df4d87134c",
+      "records": 77,
+      "parasitized": 8,
+      "uninfected": 69,
+      "split": "train"
+    }
+  ],
+  "case_collisions": 0,
+  "cross_source_status": {
+    "UNRESOLVED": 33
+  }
+}

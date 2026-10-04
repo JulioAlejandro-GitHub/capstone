@@ -1,0 +1,720 @@
+{
+  "after": {
+    "archived_at": null,
+    "class_mapping": {
+      "0": "full_smear_image"
+    },
+    "created_at": "2026-10-03 14:01:23.737883+00:00",
+    "frozen_at": "2026-10-03 18:21:08.709905+00:00",
+    "generated_at": "2026-10-03 14:01:23.737883+00:00",
+    "grouping_field": "clinical_identity_id",
+    "grouping_strategy": "PATIENT",
+    "id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+    "methodology_json": {
+      "annotation_sets": {
+        "Point Set": "point; not segmentation masks",
+        "Polygon Set": "polygon"
+      },
+      "dataset_family": "smear_segmentation",
+      "freeze_contract": {
+        "assignment_count": 965,
+        "clinical_identity_count": 193,
+        "dataset_family": "smear_segmentation",
+        "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+        "fingerprints": {
+          "clinical_identity_sha256": "3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0",
+          "patient_assignment_sha256": "3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16",
+          "record_assignment_sha256": "ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f",
+          "source_population_sha256": "fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3"
+        },
+        "identity_rule": "canonical_nlm_full_smear_patient_key:s1.2:v1",
+        "manifest_contract": "governed_source_assignments_v1",
+        "manifest_sha256": "69fe60e20576632a25b37501fa76342ea1b2855b39c1bb1049f97942a87bb67a",
+        "reference_dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "required_validation_check_count": 17,
+        "required_validation_checks": [
+          "assignment_count",
+          "duplicate_cross_split_overlap",
+          "fingerprint_reproducibility",
+          "five_images_per_patient",
+          "identity_conflicts",
+          "identity_coverage",
+          "patient_count",
+          "patient_train_test_overlap",
+          "patient_train_val_overlap",
+          "patient_val_test_overlap",
+          "point_population",
+          "polygon_population",
+          "s2_assignments_unchanged",
+          "same_split_cross_family",
+          "source_provenance",
+          "source_record_count",
+          "split_completeness"
+        ],
+        "s4_consumption": "explicit dataset_version_id; Polygon only; inherit every assignment",
+        "scientific_limitations": [
+          "Polygon VAL has 2 patients; TEST has 3. Images/tiles are correlated within patient.",
+          "Technical NLM naming correspondence is not clinically verified biological identity."
+        ],
+        "scope": "source_population_and_assignments",
+        "source_provenance": {
+          "Point Set": {
+            "population_fingerprint": "a790cadc9a060e92adeebfddc5753947f7adbce7372fc3baf5670c4d24ff512d",
+            "provenance": {
+              "Data License Agreement.docx": "e7617a7206967e1806ba335f8b986880c959fbb4d81295dc71049c8639d4b86f",
+              "Dataset_statistics.xlsx": "f4e8abe005763b97c0480c347ec19e016d6138b1f9dec37d2cc8aab53bc7b974",
+              "ReadMe.pdf": "0684e14c188c2ae74aaf5d0da12c7d5c73ee233078e3214f6df652ff1502bd8d"
+            }
+          },
+          "Polygon Set": {
+            "population_fingerprint": "fdfce51e79913ea7859ffb5092aef4e88ef4567112fc7b54c22448015f7bf00d",
+            "provenance": {
+              "Data License Agreement.docx": "e7617a7206967e1806ba335f8b986880c959fbb4d81295dc71049c8639d4b86f",
+              "Dataset_statistics.xlsx": "f4e8abe005763b97c0480c347ec19e016d6138b1f9dec37d2cc8aab53bc7b974",
+              "ReadMe.pdf": "0684e14c188c2ae74aaf5d0da12c7d5c73ee233078e3214f6df652ff1502bd8d"
+            }
+          }
+        },
+        "source_record_count": 965,
+        "split_algorithm": "thin_blood_smear_same_split_v1",
+        "version": "governed_source_freeze_v1"
+      },
+      "identity_evidence": "technical naming convention; not clinical identity verification",
+      "identity_rule": "canonical_nlm_full_smear_patient_key:s1.2:v1",
+      "phase": "S2; provisional GENERATED; S3 validation and freeze pending",
+      "policy": "SAME_SPLIT",
+      "reference_dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "reference_fingerprints": {
+        "clinical_identity_sha256": "d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59",
+        "patient_assignment_sha256": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f",
+        "record_assignment_sha256": "9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2",
+        "source_population_sha256": "eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0"
+      },
+      "seed_semantics": "schema requires integer; 0 unused, no RNG",
+      "source_fingerprints": {
+        "Point Set": "a790cadc9a060e92adeebfddc5753947f7adbce7372fc3baf5670c4d24ff512d",
+        "Polygon Set": "fdfce51e79913ea7859ffb5092aef4e88ef4567112fc7b54c22448015f7bf00d"
+      },
+      "target_ratios_semantics": "reference nominal ratios; no optimization"
+    },
+    "name": "Thin Blood Smear Patient Split",
+    "positive_class": "not_applicable_full_smear_image",
+    "random_seed": 0,
+    "semantic_version": "1.0.0",
+    "source_record_count": 965,
+    "split_algorithm": "thin_blood_smear_same_split_v1",
+    "split_algorithm_version": "1.0.0",
+    "status": "FROZEN",
+    "stratification_strategy": "inherit_reference_patient_assignment",
+    "target_test_ratio": "0.1000000",
+    "target_train_ratio": "0.8000000",
+    "target_val_ratio": "0.1000000",
+    "validated_at": "2026-10-03 18:21:08.709905+00:00"
+  },
+  "before": {
+    "archived_at": null,
+    "class_mapping": {
+      "0": "full_smear_image"
+    },
+    "created_at": "2026-10-03 14:01:23.737883+00:00",
+    "frozen_at": null,
+    "generated_at": "2026-10-03 14:01:23.737883+00:00",
+    "grouping_field": "clinical_identity_id",
+    "grouping_strategy": "PATIENT",
+    "id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+    "methodology_json": {
+      "annotation_sets": {
+        "Point Set": "point; not segmentation masks",
+        "Polygon Set": "polygon"
+      },
+      "dataset_family": "smear_segmentation",
+      "identity_evidence": "technical naming convention; not clinical identity verification",
+      "identity_rule": "canonical_nlm_full_smear_patient_key:s1.2:v1",
+      "phase": "S2; provisional GENERATED; S3 validation and freeze pending",
+      "policy": "SAME_SPLIT",
+      "reference_dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "reference_fingerprints": {
+        "clinical_identity_sha256": "d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59",
+        "patient_assignment_sha256": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f",
+        "record_assignment_sha256": "9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2",
+        "source_population_sha256": "eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0"
+      },
+      "seed_semantics": "schema requires integer; 0 unused, no RNG",
+      "source_fingerprints": {
+        "Point Set": "a790cadc9a060e92adeebfddc5753947f7adbce7372fc3baf5670c4d24ff512d",
+        "Polygon Set": "fdfce51e79913ea7859ffb5092aef4e88ef4567112fc7b54c22448015f7bf00d"
+      },
+      "target_ratios_semantics": "reference nominal ratios; no optimization"
+    },
+    "name": "Thin Blood Smear Patient Split",
+    "positive_class": "not_applicable_full_smear_image",
+    "random_seed": 0,
+    "semantic_version": "1.0.0",
+    "source_record_count": 965,
+    "split_algorithm": "thin_blood_smear_same_split_v1",
+    "split_algorithm_version": "1.0.0",
+    "status": "GENERATED",
+    "stratification_strategy": "inherit_reference_patient_assignment",
+    "target_test_ratio": "0.1000000",
+    "target_train_ratio": "0.8000000",
+    "target_val_ratio": "0.1000000",
+    "validated_at": null
+  },
+  "checks_before": [],
+  "fingerprints": {
+    "clinical_identity_sha256": "3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0",
+    "patient_assignment_sha256": "3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16",
+    "record_assignment_sha256": "ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f",
+    "source_population_sha256": "fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3"
+  },
+  "manifest_fingerprint": "69fe60e20576632a25b37501fa76342ea1b2855b39c1bb1049f97942a87bb67a",
+  "outcome": {
+    "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+    "fingerprints": {
+      "clinical_identity": "3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0",
+      "patient_assignment": "3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16",
+      "record_assignment": "ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f",
+      "source_population": "fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3"
+    },
+    "frozen_at": "2026-10-03 18:21:08.709905+00:00",
+    "materialization_id": null,
+    "result": "FROZEN_COMMIT",
+    "trainability_reasons": [
+      "NO_READY_RECONCILED_MATERIALIZATION"
+    ],
+    "trainable": false
+  },
+  "persisted_checks": [
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "assignment_count",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "965",
+      "id": "bcb7cdbf-625b-5d46-92ec-036e2e583505",
+      "observed_value": "965",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "duplicate_cross_split_overlap",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "0",
+      "id": "af934c57-b59c-53f3-b82a-c25e5d122029",
+      "observed_value": "0",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "fingerprint_reproducibility",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "{'source_population_sha256': 'fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3', 'clinical_identity_sha256': '3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0', 'patient_assignment_sha256': '3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16', 'record_assignment_sha256': 'ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f'}",
+      "id": "9d59a3f1-5751-5399-a119-66d98b797a42",
+      "observed_value": "{'source_population_sha256': 'fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3', 'clinical_identity_sha256': '3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0', 'patient_assignment_sha256': '3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16', 'record_assignment_sha256': 'ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f'}",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "five_images_per_patient",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "[5]",
+      "id": "83952158-48d1-59da-b394-f310518b982d",
+      "observed_value": "[5]",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "identity_conflicts",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {
+        "evidence": "exact S1 identity and evidence row reconciliation"
+      },
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "0",
+      "id": "4b490c47-0211-56d9-903d-ae27e4d4709b",
+      "observed_value": "0",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "identity_coverage",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "193",
+      "id": "67c64754-7397-5ab3-9a06-7a50851067d4",
+      "observed_value": "193",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "patient_count",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "{'train': 154, 'val': 19, 'test': 20}",
+      "id": "d71037d4-1324-5aa7-8b9a-7882ac80f85b",
+      "observed_value": "{'test': 20, 'train': 154, 'val': 19}",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "patient_train_test_overlap",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "0",
+      "id": "d508ebc8-1eea-5526-a0cb-95d3a4a86989",
+      "observed_value": "0",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "patient_train_val_overlap",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "0",
+      "id": "30abf8a8-e1c0-51ae-8a80-d23421c32e3b",
+      "observed_value": "0",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "patient_val_test_overlap",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "0",
+      "id": "91182925-ccbf-5ccb-b405-64a7a0548e95",
+      "observed_value": "0",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "point_population",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "160 patients / 800 images / 800 GT",
+      "id": "977cdc11-6905-590d-ae58-17c561dd361e",
+      "observed_value": "{'patients': 160, 'images': 800, 'gt': 800, 'splits': {'train': {'patients': 126, 'images': 630}, 'val': {'patients': 17, 'images': 85}, 'test': {'patients': 17, 'images': 85}}}",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "polygon_population",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "33 patients / 165 images / 165 GT / 28-2-3",
+      "id": "40de2ce4-fd9e-5714-ab41-dc7158e424a7",
+      "observed_value": "{'patients': 33, 'images': 165, 'gt': 165, 'splits': {'train': {'patients': 28, 'images': 140}, 'val': {'patients': 2, 'images': 10}, 'test': {'patients': 3, 'images': 15}}}",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "s2_assignments_unchanged",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "{'patient_digest': '3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16', 'record_digest': 'ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f'}",
+      "id": "e5e23b62-e338-50f5-a4da-a41a839581ee",
+      "observed_value": "{'patient_digest': '3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16', 'record_digest': 'ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f'}",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "same_split_cross_family",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {
+        "matched_patients": 193
+      },
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "0",
+      "id": "ad61b7b3-2953-5cb6-b1a3-6310f3471a33",
+      "observed_value": "0",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "source_provenance",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {
+        "source_fingerprints": {
+          "Point Set": "a790cadc9a060e92adeebfddc5753947f7adbce7372fc3baf5670c4d24ff512d",
+          "Polygon Set": "fdfce51e79913ea7859ffb5092aef4e88ef4567112fc7b54c22448015f7bf00d"
+        }
+      },
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "MATCH",
+      "id": "996a635f-9f3b-594e-9a35-bc092b5ccd2d",
+      "observed_value": "MATCH",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "source_record_count",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "965",
+      "id": "d38f2b9f-e14c-5b2e-bd79-c27a3360a249",
+      "observed_value": "965",
+      "status": "PASS"
+    },
+    {
+      "blocking_for_freeze": true,
+      "blocking_for_validation": true,
+      "check_name": "split_completeness",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {},
+      "executed_at": "2026-10-03 18:21:08.709905+00:00",
+      "expected_value": "{'train': 770, 'val': 95, 'test': 100}",
+      "id": "3c2301dd-6ce7-55f8-8343-3d94df232896",
+      "observed_value": "{'train': 770, 'val': 95, 'test': 100}",
+      "status": "PASS"
+    }
+  ],
+  "persisted_statistics": [
+    {
+      "computed_at": "2026-10-03 18:21:08.709905+00:00",
+      "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+      "details_json": {
+        "cross_family_mismatches": 0,
+        "dataset_family": "smear_segmentation",
+        "fingerprints": {
+          "clinical_identity_sha256": "3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0",
+          "patient_assignment_sha256": "3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16",
+          "record_assignment_sha256": "ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f",
+          "source_population_sha256": "fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3"
+        },
+        "no_assignment": 0,
+        "patient_overlaps": {
+          "train_test": 0,
+          "train_val": 0,
+          "val_test": 0
+        },
+        "patients": {
+          "test": 20,
+          "train": 154,
+          "val": 19
+        },
+        "populations": {
+          "Point Set": {
+            "gt": 800,
+            "images": 800,
+            "patients": 160,
+            "splits": {
+              "test": {
+                "images": 85,
+                "patients": 17
+              },
+              "train": {
+                "images": 630,
+                "patients": 126
+              },
+              "val": {
+                "images": 85,
+                "patients": 17
+              }
+            }
+          },
+          "Polygon Set": {
+            "gt": 165,
+            "images": 165,
+            "patients": 33,
+            "splits": {
+              "test": {
+                "images": 15,
+                "patients": 3
+              },
+              "train": {
+                "images": 140,
+                "patients": 28
+              },
+              "val": {
+                "images": 10,
+                "patients": 2
+              }
+            }
+          }
+        },
+        "records": {
+          "test": 100,
+          "train": 770,
+          "val": 95
+        },
+        "scientific_limitations": [
+          "Polygon VAL has 2 patients; TEST has 3. Images/tiles are correlated within patient.",
+          "Technical NLM naming correspondence is not clinically verified biological identity."
+        ],
+        "total_assignments": 965,
+        "total_patients": 193,
+        "total_source_records": 965
+      },
+      "id": "19b7d2cd-184e-5724-9e78-de5cf0990b34",
+      "metric_name": "formal_scientific_validation_v1",
+      "numeric_value": null,
+      "scope": "dataset",
+      "text_value": null
+    }
+  ],
+  "protected_after": {
+    "assignments": {
+      "count": 28523,
+      "sha256": "90a431bcf14e4c1385be1c91a72965aa66ddfeeee84a81feb90c98d7d4f7b541"
+    },
+    "cell_version": {
+      "count": 1,
+      "sha256": "4043e543e562b0420a2e96c826d04ea3eaa9fb7dd9722033d2bfc10b71d7e6d6"
+    },
+    "datasets": {
+      "count": 3,
+      "sha256": "50d911ccca6557b69e794cac248d4ec0b4adf3237150761e9422aae1dee3136e"
+    },
+    "evidence": {
+      "count": 28523,
+      "sha256": "baba4b1aa0c0a98d14906002db926a2f03a85c946353862efba281834ab6df5b"
+    },
+    "identities": {
+      "count": 394,
+      "sha256": "6bbb7d5987a09e80d712761fb195c17d554067b5c293f2a157280ce16f78a964"
+    },
+    "materializations": {
+      "count": 1,
+      "sha256": "b5dcd47ba41a83efe20f33c0e20b105be14cca3cbeddbc94ab14e9f737e1f147"
+    },
+    "records": {
+      "count": 28523,
+      "sha256": "99c9dfcdb4f433ebd7a904a8770f77a0480ccb1225e3e83cb4ca77abac26e7a2"
+    },
+    "sources": {
+      "count": 3,
+      "sha256": "667662b20c7d1d399b096153a5e8abcc8aa69b562504de87c20ea5da688ff4c9"
+    }
+  },
+  "statistics_before": [],
+  "trainability": {
+    "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+    "reasons": [
+      "NO_READY_RECONCILED_MATERIALIZATION"
+    ],
+    "resolved_materialization_id": null,
+    "trainable": false
+  },
+  "validation": {
+    "checks": {
+      "assignment_count": {
+        "details": {},
+        "expected": "965",
+        "observed": "965",
+        "status": "PASS"
+      },
+      "duplicate_cross_split_overlap": {
+        "details": {},
+        "expected": "0",
+        "observed": "0",
+        "status": "PASS"
+      },
+      "fingerprint_reproducibility": {
+        "details": {},
+        "expected": "{'source_population_sha256': 'fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3', 'clinical_identity_sha256': '3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0', 'patient_assignment_sha256': '3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16', 'record_assignment_sha256': 'ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f'}",
+        "observed": "{'source_population_sha256': 'fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3', 'clinical_identity_sha256': '3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0', 'patient_assignment_sha256': '3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16', 'record_assignment_sha256': 'ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f'}",
+        "status": "PASS"
+      },
+      "five_images_per_patient": {
+        "details": {},
+        "expected": "[5]",
+        "observed": "[5]",
+        "status": "PASS"
+      },
+      "identity_conflicts": {
+        "details": {
+          "evidence": "exact S1 identity and evidence row reconciliation"
+        },
+        "expected": "0",
+        "observed": "0",
+        "status": "PASS"
+      },
+      "identity_coverage": {
+        "details": {},
+        "expected": "193",
+        "observed": "193",
+        "status": "PASS"
+      },
+      "patient_count": {
+        "details": {},
+        "expected": "{'train': 154, 'val': 19, 'test': 20}",
+        "observed": "{'test': 20, 'train': 154, 'val': 19}",
+        "status": "PASS"
+      },
+      "patient_train_test_overlap": {
+        "details": {},
+        "expected": "0",
+        "observed": "0",
+        "status": "PASS"
+      },
+      "patient_train_val_overlap": {
+        "details": {},
+        "expected": "0",
+        "observed": "0",
+        "status": "PASS"
+      },
+      "patient_val_test_overlap": {
+        "details": {},
+        "expected": "0",
+        "observed": "0",
+        "status": "PASS"
+      },
+      "point_population": {
+        "details": {},
+        "expected": "160 patients / 800 images / 800 GT",
+        "observed": "{'patients': 160, 'images': 800, 'gt': 800, 'splits': {'train': {'patients': 126, 'images': 630}, 'val': {'patients': 17, 'images': 85}, 'test': {'patients': 17, 'images': 85}}}",
+        "status": "PASS"
+      },
+      "polygon_population": {
+        "details": {},
+        "expected": "33 patients / 165 images / 165 GT / 28-2-3",
+        "observed": "{'patients': 33, 'images': 165, 'gt': 165, 'splits': {'train': {'patients': 28, 'images': 140}, 'val': {'patients': 2, 'images': 10}, 'test': {'patients': 3, 'images': 15}}}",
+        "status": "PASS"
+      },
+      "s2_assignments_unchanged": {
+        "details": {},
+        "expected": "{'patient_digest': '3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16', 'record_digest': 'ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f'}",
+        "observed": "{'patient_digest': '3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16', 'record_digest': 'ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f'}",
+        "status": "PASS"
+      },
+      "same_split_cross_family": {
+        "details": {
+          "matched_patients": 193
+        },
+        "expected": "0",
+        "observed": "0",
+        "status": "PASS"
+      },
+      "source_provenance": {
+        "details": {
+          "source_fingerprints": {
+            "Point Set": "a790cadc9a060e92adeebfddc5753947f7adbce7372fc3baf5670c4d24ff512d",
+            "Polygon Set": "fdfce51e79913ea7859ffb5092aef4e88ef4567112fc7b54c22448015f7bf00d"
+          }
+        },
+        "expected": "MATCH",
+        "observed": "MATCH",
+        "status": "PASS"
+      },
+      "source_record_count": {
+        "details": {},
+        "expected": "965",
+        "observed": "965",
+        "status": "PASS"
+      },
+      "split_completeness": {
+        "details": {},
+        "expected": "{'train': 770, 'val': 95, 'test': 100}",
+        "observed": "{'train': 770, 'val': 95, 'test': 100}",
+        "status": "PASS"
+      }
+    },
+    "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+    "patient_digest": "3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16",
+    "record_digest": "ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f",
+    "statistics": {
+      "cross_family_mismatches": 0,
+      "dataset_family": "smear_segmentation",
+      "fingerprints": {
+        "clinical_identity_sha256": "3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0",
+        "patient_assignment_sha256": "3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16",
+        "record_assignment_sha256": "ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f",
+        "source_population_sha256": "fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3"
+      },
+      "no_assignment": 0,
+      "patient_overlaps": {
+        "train_test": 0,
+        "train_val": 0,
+        "val_test": 0
+      },
+      "patients": {
+        "test": 20,
+        "train": 154,
+        "val": 19
+      },
+      "populations": {
+        "Point Set": {
+          "gt": 800,
+          "images": 800,
+          "patients": 160,
+          "splits": {
+            "test": {
+              "images": 85,
+              "patients": 17
+            },
+            "train": {
+              "images": 630,
+              "patients": 126
+            },
+            "val": {
+              "images": 85,
+              "patients": 17
+            }
+          }
+        },
+        "Polygon Set": {
+          "gt": 165,
+          "images": 165,
+          "patients": 33,
+          "splits": {
+            "test": {
+              "images": 15,
+              "patients": 3
+            },
+            "train": {
+              "images": 140,
+              "patients": 28
+            },
+            "val": {
+              "images": 10,
+              "patients": 2
+            }
+          }
+        }
+      },
+      "records": {
+        "test": 100,
+        "train": 770,
+        "val": 95
+      },
+      "scientific_limitations": [
+        "Polygon VAL has 2 patients; TEST has 3. Images/tiles are correlated within patient.",
+        "Technical NLM naming correspondence is not clinically verified biological identity."
+      ],
+      "total_assignments": 965,
+      "total_patients": 193,
+      "total_source_records": 965
+    }
+  }
+}

@@ -1,0 +1,7 @@
+docker compose exec -T backend mkdir -p /tmp/capstone_s3_regression
+docker compose cp malaria_dataset_split_project/tests backend:/tmp/capstone_s3_regression/tests
+ capstone_backend Copying malaria_dataset_split_project/tests to capstone_backend:/tmp/capstone_s3_regression/tests
+ capstone_backend Copied malaria_dataset_split_project/tests to capstone_backend:/tmp/capstone_s3_regression/tests
+docker compose exec -T -w /tmp/capstone_s3_regression -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider tests/integration/test_formal_validation.py tests/integration/test_dataset_invariants_and_trainability.py tests/unit/test_freeze.py
+...................                                                      [100%]
+19 passed in 52.78s

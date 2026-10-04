@@ -111,9 +111,11 @@ def prepare_split_generation(
     if regenerated != expected_digest:
         raise DigestMismatch(f"DIGEST_MISMATCH:{regenerated}:{expected_digest}")
     rows = connection.execute(text("""
-        SELECT id source_record_id,clinical_identity_id,class_index,class_name
-        FROM dataset_source_records ORDER BY id
-    """)).mappings()
+        SELECT r.id source_record_id,r.clinical_identity_id,r.class_index,r.class_name
+        FROM dataset_source_records r
+        JOIN dataset_version_sources vs ON vs.dataset_id=r.dataset_id AND vs.role='PRIMARY'
+        WHERE vs.dataset_version_id=:id ORDER BY r.id
+    """), {"id": dataset_version_id}).mappings()
     assignments = optimization.winner.assignments
     prepared_rows = tuple({
         "id": uuid5(ASSIGNMENT_NAMESPACE, f"{dataset_version_id}:{row['source_record_id']}"),

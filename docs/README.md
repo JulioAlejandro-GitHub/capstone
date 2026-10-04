@@ -81,3 +81,28 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 - Antes de ejecutar un comando, comprobar que el documento está marcado
   `CURRENT_DOC` o listado como fuente operativa en este índice, y que coincide con la
   configuración del repositorio.
+
+## Auditoría S1.1 de procedencia e identidad
+
+- [S1.1 — TFDS ↔ NLM ↔ Capstone](audits/s1_1/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Comparación exhaustiva de imágenes y fingerprints; cruces clínicos Polygon/Cell explícitamente no resueltos.
+
+## Preparación reproducible de fuentes S1.D
+
+- [Preparar/verificar Cell y Full Smears](operations/dataset_source_preparation.md) — `CURRENT_DOC`, comandos manuales sin PostgreSQL.
+- [S1.D — Implementación y prueba real](audits/s1_d/REPORT.md) — `HISTORICAL_AUDIT`, integridad RAW, idempotencia y límites de `--split`.
+
+- [S1.2 — Canonical NLM Patient Identity](audits/s1_2/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. 193 claves técnicas; Polygon 28/2/3 sobre el split Cell protegido; S2 pendiente.
+- [S2 — Thin Blood Smear SAME SPLIT](audits/s2/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. 193 pacientes / 965 imágenes gobernados; versión provisional GENERATED; Polygon 28/2/3, limitaciones científicas y evidencia de integridad. S3 pendiente.
+- [S3 — Validation + Dataset Version](audits/s3/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Misma versión Smear validada/congelada; assignments S2 intactos, manifest reproducible y consumo explícito por S4.
+
+## Auditoría PRE-S4 del flujo de Análisis de Frotis
+
+- [PRE-S4 — Flujo de detección, crops y clasificación](audits/pre_s4_detection_workflow/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Trazado estático desde SmearUpload hasta el resultado y contrato mínimo para incorporar otro detector.
+
+- [D1 + D2 — Separación de CELL DETECTION y CELL CROP](audits/d1_d2_detection_crop/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Resolutores mínimos, equivalencia de componentes/PNG/SHA y validación PostgreSQL; gate global pendiente por fallas previas.
+
+## B1 — Entrenamientos históricos y trazabilidad SQL
+
+- [Reporte reproducible B1](../results/benchmarks/cpu_historical/report.md) — `HISTORICAL_AUDIT`, 2026-10-04. Doce configuraciones, 396 épocas y métricas VALIDATION verificadas desde predicciones persistidas; extracción PostgreSQL de solo lectura.
+- [Hallazgos científicos y técnicos B1](../results/benchmarks/cpu_historical/HALLAZGOS_B1.md) — `HISTORICAL_AUDIT`, 2026-10-04. Duraciones, EarlyStopping, checkpoints y límites de evidencia CPU/Metal.
+- [Consultas y transformaciones B1](../results/benchmarks/cpu_historical/SQL_B1.md) — `HISTORICAL_AUDIT`, 2026-10-04. SQL ejecutado, JOIN, conteos, fórmulas y diagnóstico de fuentes incompletas.

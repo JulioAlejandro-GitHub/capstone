@@ -1,0 +1,43 @@
+{
+  "Polygon Set": {
+    "patients": 33,
+    "images": 165,
+    "images_per_patient": {
+      "5": 33
+    },
+    "WBC": 51,
+    "parasitized_RBC": 1142,
+    "uninfected_RBC": 33071
+  },
+  "Point Set": {
+    "patients": 160,
+    "images": 800,
+    "images_per_patient": {
+      "5": 160
+    },
+    "WBC": 220,
+    "parasitized_RBC": 6810,
+    "uninfected_RBC": 155640
+  },
+  "cell_identifiers_absent_from_full_smear": [
+    "C1_thinF",
+    "C203ThinF",
+    "C204ThinF",
+    "C206ThinF",
+    "C207ThinF",
+    "C209ThinF",
+    "C33P1thinF",
+    "C37BP2_thinF"
+  ],
+  "full_smear_candidates_absent_from_cell": [],
+  "prefix_unique": 193,
+  "prefix_range": [
+    142,
+    380
+  ],
+  "prefix_semantics": "UNRESOLVED: unique directory index-like prefix; no official semantic definition found",
+  "stem_overlap_distribution": {
+    "5": 188,
+    "4": 5
+  }
+}

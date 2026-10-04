@@ -1,0 +1,14 @@
+{
+  "db_before.json": {
+    "uncompressed_sha256": "4aa2df4d62327a4d4df5bf5d4c4b04690c581471df599b2daa809ab1cb7eb567",
+    "gzip_sha256": "6e6e4e4617f8adc67a180fa9008248b0c9aa030d969fd78aba36bdcb10a40145",
+    "uncompressed_bytes": 69651187,
+    "gzip_bytes": 9938528
+  },
+  "db_after.json": {
+    "uncompressed_sha256": "4aa2df4d62327a4d4df5bf5d4c4b04690c581471df599b2daa809ab1cb7eb567",
+    "gzip_sha256": "6e6e4e4617f8adc67a180fa9008248b0c9aa030d969fd78aba36bdcb10a40145",
+    "uncompressed_bytes": 69651187,
+    "gzip_bytes": 9938528
+  }
+}

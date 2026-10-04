@@ -1,0 +1,15 @@
+{
+  "malaria_dl_local_project/.venv-local-train/lib/python3.12/site-packages/tensorflow_datasets/datasets/malaria/malaria_dataset_builder.py": "edd70b5d46d9673e6bfb7db7cd79886bbcc4d0ab0d74f7bf9d3acc453464d8e6",
+  "malaria_dl_local_project/.venv-local-train/lib/python3.12/site-packages/tensorflow_datasets/datasets/malaria/checksums.tsv": "e8f35577cb3602e2cd25a79b2eecbf74ccbec158a41095f1c25843c0e63abb14",
+  "malaria_dl_local_project/.venv-local-train/lib/python3.12/site-packages/tensorflow_datasets/core/features/image_feature.py": "ac07d9c8465486cffd49466e39c8953ae488741a0b5e07a553674d0390d6fd1f",
+  "malaria_dl_local_project/scripts/download_malaria_dataset.py": "52ea4b58618a02db6c617fa49e26b0616b793b4ee5a7832dfe37c2c8b45e1883",
+  "malaria_dl_local_project/scripts/create_physical_dataset_split.py": "370db0ff13653cbf40f260c10554143252207c23032e396c93ce128c68612790",
+  "malaria_dl_local_project/src/data.py": "593a6a86f703889eecd3465affb6b53e4da80ae74235fbe858825ba9f11ad924",
+  "malaria_dl_local_project/src/malaria_dl/data/loaders.py": "7efd5ff94c04116ac6569a68538080f4cc07357c567f1609b3f62f96a55af06f",
+  "malaria_dataset_split_project/src/malaria_split/identity/source_identity_index.py": "2211ab4a2adfc7fa699f3d04bd979c46da0ded28c5cccb29c3cc5bfc6525b49f",
+  "malaria_dataset_split_project/src/malaria_split/identity/patient_identity_resolver.py": "0f25e842d039aee02727932400b99ffe1eb4c79818fa721130ea29e82d4332e8",
+  "malaria_dataset_split_project/src/malaria_split/persistence/bootstrap.py": "210115d83fbfd0a011cabc455dd5e79296c82163948fd6083d6b212225bb629b",
+  "malaria_dataset_split_project/src/malaria_split/persistence/materialization.py": "757bd274d29da2410e49de9259421acbfb7bfbfcff93130d2ec64fb4644753f7",
+  "malaria_dataset_split_project/src/malaria_split/governance/freeze.py": "3d4bb5b21bfadc35a970839bd2c8ac59ed507b30d2b31dc852fd81ae58deccfb",
+  "malaria_dataset_split_project/src/malaria_split/persistence/split_generation.py": "1a546e3b372fc87d99c092ff8a6922dc7900ed70a0748205da07988446641ffd"
+}

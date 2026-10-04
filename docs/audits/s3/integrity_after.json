@@ -1,0 +1,51 @@
+{
+  "files": {
+    "cell": {
+      "count": 27558,
+      "sha256": "477298cc9875bc403b4a83f02e0a1a021c80f4c4ebb32e2f848812be05fc3527"
+    },
+    "mappings": {
+      "count": 2,
+      "sha256": "b4aff928a2f71e7214f6b9f4996ae6ceb0753a1f47823aec353f2db5fafa8490"
+    },
+    "raw": {
+      "count": 2022,
+      "sha256": "78625f3517c1f69f60e81ad5526699c901f0d8c8625f0d617d36a98384aaa8a5"
+    }
+  },
+  "inventory_reference": "docs/audits/s2/integrity_after.json; exact per-file equality checked",
+  "protected_database": {
+    "assignments": {
+      "count": 28523,
+      "sha256": "90a431bcf14e4c1385be1c91a72965aa66ddfeeee84a81feb90c98d7d4f7b541"
+    },
+    "cell_version": {
+      "count": 1,
+      "sha256": "4043e543e562b0420a2e96c826d04ea3eaa9fb7dd9722033d2bfc10b71d7e6d6"
+    },
+    "datasets": {
+      "count": 3,
+      "sha256": "50d911ccca6557b69e794cac248d4ec0b4adf3237150761e9422aae1dee3136e"
+    },
+    "evidence": {
+      "count": 28523,
+      "sha256": "baba4b1aa0c0a98d14906002db926a2f03a85c946353862efba281834ab6df5b"
+    },
+    "identities": {
+      "count": 394,
+      "sha256": "6bbb7d5987a09e80d712761fb195c17d554067b5c293f2a157280ce16f78a964"
+    },
+    "materializations": {
+      "count": 1,
+      "sha256": "b5dcd47ba41a83efe20f33c0e20b105be14cca3cbeddbc94ab14e9f737e1f147"
+    },
+    "records": {
+      "count": 28523,
+      "sha256": "99c9dfcdb4f433ebd7a904a8770f77a0480ccb1225e3e83cb4ca77abac26e7a2"
+    },
+    "sources": {
+      "count": 3,
+      "sha256": "667662b20c7d1d399b096153a5e8abcc8aa69b562504de87c20ea5da688ff4c9"
+    }
+  }
+}

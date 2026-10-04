@@ -75,6 +75,38 @@ WITH selected_trainings AS MATERIALIZED (
 SELECT
     selected.id AS run_id,
     selected.parameters->'training_results' AS scientific_result,
+    jsonb_build_object(
+        'target_recall', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,target_recall}', 'null'::jsonb),
+            to_jsonb(run_configuration.clinical_target_recall)
+        ),
+        'min_recall', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,min_recall}', 'null'::jsonb),
+            run_configuration.extension_configuration #> '{execution,min_recall}'
+        ),
+        'calibrate_threshold', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,calibrate_threshold}', 'null'::jsonb),
+            to_jsonb(run_configuration.calibration_enabled)
+        ),
+        'early_stopping_patience', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,early_stopping_patience}', 'null'::jsonb),
+            to_jsonb(run_configuration.early_stopping_patience)
+        ),
+        'early_stopping_min_delta', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,early_stopping_min_delta}', 'null'::jsonb),
+            to_jsonb(run_configuration.early_stopping_min_delta)
+        ),
+        'min_class_fraction', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,min_class_fraction}', 'null'::jsonb),
+            run_configuration.extension_configuration #> '{execution,min_class_fraction}'
+        ),
+        'reject_prediction_collapse', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,reject_prediction_collapse}', 'null'::jsonb),
+            run_configuration.extension_configuration #> '{execution,reject_prediction_collapse}'
+        ),
+        'threshold', final_validation.threshold_used,
+        'val_f2_parasitized', final_validation.f2_parasitized
+    ) AS scientific_parameters,
     selected.run_type,
     selected.status,
     selected.release_status,
@@ -162,6 +194,18 @@ SELECT
 FROM selected_trainings AS selected
 JOIN child_counts AS children ON children.training_run_id = selected.id
 JOIN visual_metrics AS metrics ON metrics.training_run_id = selected.id
+-- Each source is scoped to this RUN; run_configurations.run_id is unique.
+LEFT JOIN run_configurations AS run_configuration ON run_configuration.run_id = selected.id
+LEFT JOIN LATERAL (
+    SELECT evaluation.threshold_used, metric.f2_parasitized
+    FROM evaluations AS evaluation
+    LEFT JOIN run_clinical_metrics AS metric ON metric.evaluation_id = evaluation.id
+    WHERE evaluation.training_run_id = selected.id
+      AND evaluation.split = 'val'
+      AND evaluation.evaluation_role = 'training_validation_final'
+    ORDER BY evaluation.created_at DESC, evaluation.id DESC
+    LIMIT 1
+) AS final_validation ON TRUE
 LEFT JOIN models AS model ON model.id = selected.model_id
 LEFT JOIN datasets AS dataset ON dataset.id = selected.dataset_id
 -- Campaign execution engine (E5/E9) evidence: never written to the legacy

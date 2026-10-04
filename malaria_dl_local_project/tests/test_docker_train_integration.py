@@ -96,9 +96,16 @@ def test_exact_pre_e10_7_baseline_equivalence(setup, monkeypatch, mode):
     shutil.rmtree(s['artifact_root'])  # This test's own temporary files only.
     s.clear(); s.update(original); repo.rows.clear(); trace.clear()
     train_module.train(repo, s, desc, **({'event_emitter': emitter} if mode == 'e10' else {}))
-    assert repo.records(s['run_id']) == before_records
-    assert s['completion'] == before_completion
-    assert digest(repo.records(s['run_id'])) == before_completion['records_hash']
+    records = repo.records(s['run_id'])
+    assert s['completion']['records_hash'] == digest(records)
+    # P1 adds worker provenance/timing; scientific evidence stays identical.
+    for row in records:
+        if row['kind'] == 'runtime':
+            row['payload'].pop('runtime_environment', None)
+            row['payload'].pop('started_at', None)
+    assert records == before_records
+    assert {k: v for k, v in s['completion'].items() if k not in ('finished_at', 'records_hash')} == {
+        k: v for k, v in before_completion.items() if k != 'records_hash'}
     assert {p.name: p.read_bytes() for p in Path(s['artifact_root']).iterdir()} == before_artifacts
     assert bool(reporter.events) == (mode == 'e10')
 

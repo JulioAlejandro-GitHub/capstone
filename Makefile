@@ -5,6 +5,14 @@ validate:
 test: test-backend test-frontend
 test-backend:
 	docker compose exec -T backend python -m pytest tests -m "not requires_docker_postgres"
+.PHONY: test-backend-detection-crop test-backend-detection-crop-integration
+test-backend-detection-crop:
+	docker compose exec -T backend python -m pytest -q \
+		tests/test_detection_crop_equivalence.py tests/test_cell_detection_services.py \
+		tests/test_cell_classification_services.py tests/test_smear_workflow_contract.py
+test-backend-detection-crop-integration:
+	docker compose exec -T -e TEST_EXECUTION=true -e TEST_ISOLATION_MODE=transaction backend \
+		python -m pytest -q tests/test_cell_detection_postgres.py tests/test_cell_classification_postgres.py
 test-backend-integration test-db:
 	docker compose exec -T -e TEST_EXECUTION=true -e TEST_ISOLATION_MODE=transaction backend \
 		python -m pytest tests -m requires_docker_postgres
@@ -16,6 +24,10 @@ test-ml:
 		tests/test_label_mapping.py \
 		tests/test_decision.py \
 		tests/test_image_quality.py
+
+.PHONY: test-train-persistence
+test-train-persistence:
+	python3 scripts/test_train_persistence.py
 db-status:
 	./scripts/db/status.sh
 db-backup:
@@ -63,3 +75,50 @@ limpiar-artefactos:
 	python3 -m scripts.maintenance.clean_experiment_artifacts
 limpiar-experimentos:
 	python3 -m scripts.maintenance.clean_all_experiments
+
+# S1.D source tools explicitly run offline without Docker/PostgreSQL.
+SOURCE_PYTHON ?= malaria_dl_local_project/.venv-local-train/bin/python
+.PHONY: test-dataset-sources test-dataset-source-regression
+test-dataset-sources:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dl_local_project/tests/source_preparation
+
+test-dataset-source-regression:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_dataset_families.py malaria_dataset_split_project/tests/unit/test_polygon_set.py malaria_dataset_split_project/tests/unit/test_thin_blood_smears_pf.py malaria_dataset_split_project/tests/unit/test_freeze.py
+
+.PHONY: test-canonical-nlm-identity audit-canonical-nlm-identity
+# Pure adapters and offline evidence checks; no PostgreSQL test fixtures.
+test-canonical-nlm-identity:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_nlm_identity.py scripts/audit_s1_2/test_audit.py
+
+audit-canonical-nlm-identity:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/audit_s1_2/audit.py
+
+.PHONY: test-canonical-nlm-regression
+test-canonical-nlm-regression:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_identity_resolver.py malaria_dataset_split_project/tests/unit/test_patient_group_stratified_v1.py malaria_dataset_split_project/tests/unit/test_patient_split_optimizer.py
+
+.PHONY: test-smear-same-split audit-smear-same-split
+# S2 real-source integration rehearsals use PostgreSQL transactions with rollback.
+test-smear-same-split:
+	docker compose exec -T -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider /scripts/audit_s2/test_same_split.py
+
+audit-smear-same-split:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/audit_s2/audit.py $(FLAGS)
+
+.PHONY: test-smear-same-split-regression
+test-smear-same-split-regression:
+	docker compose exec -T backend mkdir -p /tmp/capstone_s2_regression
+	docker compose cp malaria_dataset_split_project/tests backend:/tmp/capstone_s2_regression/tests
+	docker compose exec -T -w /tmp/capstone_s2_regression -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider tests/integration/test_smear_source_ingest.py tests/integration/test_split_generation_rehearsal.py tests/integration/test_dataset_invariants_and_trainability.py
+
+.PHONY: test-smear-validation test-smear-validation-regression audit-smear-validation
+test-smear-validation:
+	docker compose exec -T -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider /scripts/audit_s3/test_validation.py
+
+test-smear-validation-regression:
+	docker compose exec -T backend mkdir -p /tmp/capstone_s3_regression
+	docker compose cp malaria_dataset_split_project/tests backend:/tmp/capstone_s3_regression/tests
+	docker compose exec -T -w /tmp/capstone_s3_regression -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app/malaria_dataset_split_project/src backend python -m pytest -q -p no:cacheprovider tests/integration/test_formal_validation.py tests/integration/test_dataset_invariants_and_trainability.py tests/unit/test_freeze.py
+
+audit-smear-validation:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/audit_s3/audit.py $(FLAGS)
