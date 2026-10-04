@@ -124,6 +124,15 @@ audit-smear-validation:
 	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/audit_s3/audit.py $(FLAGS)
 
 .PHONY: scientific-parameters-doc test-scientific-parameters
+.PHONY: test-calibration-postgres
+.PHONY: check-calibration-database-isolation
+check-calibration-database-isolation:
+	PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_calibration_database_isolation.py
+
+# C2.12: one disposable database in the existing instance; guarded official v2 install.
+test-calibration-postgres:
+	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/run_calibration_postgres.py
+
 scientific-parameters-doc:
 	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/generate_scientific_parameters.py
 

@@ -39,6 +39,9 @@ def migrate():
     )
     try:
         with engine.connect() as connection, connection.begin():
+            if target.get('authorized_stage') == 'C2.12.2':
+                from alembic_v2.disposable import assume_migration_identity
+                assume_migration_identity(connection, target)
             verify_connection(connection, target)
             # Transaction-owned serialization. Nothing has been written, including the ledger.
             locked = connection.exec_driver_sql(

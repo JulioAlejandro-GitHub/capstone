@@ -1,0 +1,8 @@
+{"sql_error": "23505", "message": "duplicate key value violates unique constraint \"uq_evaluation_final_training\""}
+Traceback (most recent call last):
+  File "/scripts/calibration_postgres_e2e.py", line 265, in <module>
+    main()
+  File "/scripts/calibration_postgres_e2e.py", line 196, in main
+    assert saved['threshold_used'] == evaluation.threshold.value
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

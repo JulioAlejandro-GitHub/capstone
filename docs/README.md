@@ -23,6 +23,11 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 
 ## Fuentes operativas canónicas
 
+Auditoría C2.12: [Integración PostgreSQL y calibración — BLOQUEADO](audits/clinical_calibration_c2_12/README.md)
+(`HISTORICAL_AUDIT`, 2026-10-04; evidencia real de prerrequisitos, sin aprobación E2E).
+Incluye C2.12.1: administrador disponible, instalación de base desechable bloqueada
+por los controles actuales de identidad del instalador v2; alternativa mínima documentada.
+
 | Tema | Documento |
 |---|---|
 | Desarrollo local | [Desarrollo local](engineering/local_development.md) |

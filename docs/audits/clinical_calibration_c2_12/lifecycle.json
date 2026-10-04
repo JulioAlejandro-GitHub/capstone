@@ -1,0 +1,1343 @@
+{
+  "status": "NOT_APPROVED",
+  "started_at": "2026-10-04T17:00:20.285511+00:00",
+  "protected_database": "malaria_experiments",
+  "database": "capstone_c212_d724d3f2e52f4ec4a00248b29d16da45",
+  "created": true,
+  "before": {
+    "runs": {
+      "count": 12,
+      "fingerprint": "9a67f6391ad78c9ad72ddc6f53c82cf5"
+    },
+    "experimental_campaigns": {
+      "count": 1,
+      "fingerprint": "067371912584ba1feabaf050a288e4a3"
+    },
+    "campaign_configurations": {
+      "count": 12,
+      "fingerprint": "38b6fddce28fad93e2a5d4385640ad1d"
+    },
+    "run_configurations": {
+      "count": 12,
+      "fingerprint": "8b8c30d4019a2393df164be3581d6166"
+    },
+    "evaluations": {
+      "count": 12,
+      "fingerprint": "d31764976182a94aeb280c8344bb8986"
+    },
+    "table_mutations": [
+      {
+        "relname": "alembic_version",
+        "n_tup_ins": 1,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "artifacts",
+        "n_tup_ins": 48,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_artifacts",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_attempts",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_campaign_consumers",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_final_locks",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_identities",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_results",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "audit_events",
+        "n_tup_ins": 1475,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "blood_samples",
+        "n_tup_ins": 80,
+        "n_tup_upd": 15,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "campaign_attempts",
+        "n_tup_ins": 12,
+        "n_tup_upd": 36,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "campaign_configurations",
+        "n_tup_ins": 208,
+        "n_tup_upd": 0,
+        "n_tup_del": 52
+      },
+      {
+        "relname": "campaign_controlled_requests",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "campaign_execution_events",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "campaign_members",
+        "n_tup_ins": 564,
+        "n_tup_upd": 48,
+        "n_tup_del": 127
+      },
+      {
+        "relname": "campaign_technical_revisions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_classification_events",
+        "n_tup_ins": 2432,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_classification_inputs",
+        "n_tup_ins": 2244,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_classification_reviews",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_classification_runs",
+        "n_tup_ins": 36,
+        "n_tup_upd": 156,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_crops",
+        "n_tup_ins": 2358,
+        "n_tup_upd": 0,
+        "n_tup_del": 56
+      },
+      {
+        "relname": "cell_detection_events",
+        "n_tup_ins": 60,
+        "n_tup_upd": 0,
+        "n_tup_del": 8
+      },
+      {
+        "relname": "cell_detection_runs",
+        "n_tup_ins": 52,
+        "n_tup_upd": 68,
+        "n_tup_del": 2
+      },
+      {
+        "relname": "cell_detections",
+        "n_tup_ins": 2358,
+        "n_tup_upd": 0,
+        "n_tup_del": 56
+      },
+      {
+        "relname": "cell_explanations",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_predictions",
+        "n_tup_ins": 2236,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "clinical_identities",
+        "n_tup_ins": 1502,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_materialization_activations",
+        "n_tup_ins": 20,
+        "n_tup_upd": 5,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_materializations",
+        "n_tup_ins": 66,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_source_records",
+        "n_tup_ins": 33911,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_split_assignments",
+        "n_tup_ins": 395127,
+        "n_tup_upd": 0,
+        "n_tup_del": 27
+      },
+      {
+        "relname": "dataset_split_images",
+        "n_tup_ins": 55116,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_split_statistics",
+        "n_tup_ins": 16,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_split_validation_checks",
+        "n_tup_ins": 762,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_splits",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_version_sources",
+        "n_tup_ins": 103,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_versions",
+        "n_tup_ins": 222,
+        "n_tup_upd": 356,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "datasets",
+        "n_tup_ins": 26,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "deployed_model_versions",
+        "n_tup_ins": 20,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "environment_packages",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "errors",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "evaluation_ensemble_members",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "evaluations",
+        "n_tup_ins": 12,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "execution_logs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "experiment_execution_events",
+        "n_tup_ins": 61,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "experiment_execution_gate",
+        "n_tup_ins": 1,
+        "n_tup_upd": 51,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "experimental_campaigns",
+        "n_tup_ins": 43,
+        "n_tup_upd": 49,
+        "n_tup_del": 6
+      },
+      {
+        "relname": "experiments",
+        "n_tup_ins": 3,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "explainability_results",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "identity_evidence",
+        "n_tup_ins": 33858,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "image_analysis_jobs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "image_connected_components",
+        "n_tup_ins": 2650,
+        "n_tup_upd": 0,
+        "n_tup_del": 158
+      },
+      {
+        "relname": "image_ingestion_batches",
+        "n_tup_ins": 75,
+        "n_tup_upd": 15,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "image_quality_assessments",
+        "n_tup_ins": 5,
+        "n_tup_upd": 0,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "local_execution_jobs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "microscopy_analysis_events",
+        "n_tup_ins": 26,
+        "n_tup_upd": 0,
+        "n_tup_del": 16
+      },
+      {
+        "relname": "microscopy_analysis_run_images",
+        "n_tup_ins": 69,
+        "n_tup_upd": 5,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "microscopy_analysis_runs",
+        "n_tup_ins": 69,
+        "n_tup_upd": 11,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "microscopy_images",
+        "n_tup_ins": 101,
+        "n_tup_upd": 2,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "model_versions",
+        "n_tup_ins": 36,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "models",
+        "n_tup_ins": 35,
+        "n_tup_upd": 10,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "predictions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "quality_assessment_queue_items",
+        "n_tup_ins": 7,
+        "n_tup_upd": 10,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "quality_gate_decisions",
+        "n_tup_ins": 5,
+        "n_tup_upd": 0,
+        "n_tup_del": 1
+      },
+      {
+        "relname": "research_subjects",
+        "n_tup_ins": 89,
+        "n_tup_upd": 4,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "roles",
+        "n_tup_ins": 1,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_checkpoint_policy",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_clinical_metrics",
+        "n_tup_ins": 12,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_configurations",
+        "n_tup_ins": 16,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_dataset_images",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_image_predictions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_io_records",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_lineage",
+        "n_tup_ins": 36,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_metrics",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_model_deployments",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_threshold_calibration",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "runs",
+        "n_tup_ins": 124,
+        "n_tup_upd": 186,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_cases",
+        "n_tup_ins": 80,
+        "n_tup_upd": 5,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_reviews",
+        "n_tup_ins": 8,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_annotation_events",
+        "n_tup_ins": 22,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_annotations",
+        "n_tup_ins": 14,
+        "n_tup_upd": 8,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_classification_runs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_detection_runs",
+        "n_tup_ins": 12,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_images",
+        "n_tup_ins": 12,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_sessions",
+        "n_tup_ins": 12,
+        "n_tup_upd": 2,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "smear_analysis_summaries",
+        "n_tup_ins": 28,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "smear_slides",
+        "n_tup_ins": 80,
+        "n_tup_upd": 0,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "stage2_model_publication_events",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "stage2_model_publications",
+        "n_tup_ins": 20,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "synthetic_data_runs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "train_execution_records",
+        "n_tup_ins": 4076,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "train_execution_revisions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "train_execution_sessions",
+        "n_tup_ins": 12,
+        "n_tup_upd": 36,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "training_history",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "user_roles",
+        "n_tup_ins": 68,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "users",
+        "n_tup_ins": 329,
+        "n_tup_upd": 53,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_artifacts",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_evaluation_members",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_evaluation_protocols",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_evidence",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_interpretations",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_method_configurations",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_quantitative_evaluations",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_region_attributions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_specialist_reviews",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      }
+    ],
+    "guards": {
+      "functions": "95b79602feec74507e4dc15391bb38a4"
+    }
+  },
+  "target": {
+    "authorized_stage": "C2.12.2",
+    "isolation_id": "d724d3f2-e52f-4ec4-a002-48b29d16da45",
+    "created_by_run": "d724d3f2-e52f-4ec4-a002-48b29d16da45",
+    "database": "capstone_c212_d724d3f2e52f4ec4a00248b29d16da45",
+    "database_oid": 135919,
+    "database_owner": "capstone_v2_migrator",
+    "provision_admin": "julio",
+    "protected_database": "malaria_experiments",
+    "protected_database_oid": 16386,
+    "postgres_system_identifier": "7691366089693499436",
+    "container_id": "e83626be1b85f5fe9e6d964fc7ceddda98b9e9655864ead8ee3f5ab2468a8191",
+    "volume": "capstone_v2_isolated_persistent_data",
+    "host_port": 5432,
+    "runner_pid": 5210
+  },
+  "migration_exit": 0,
+  "e2e_exit": 1,
+  "cleanup": "verified_identity_zero_connections_dropped",
+  "residue": [],
+  "after": {
+    "runs": {
+      "count": 12,
+      "fingerprint": "9a67f6391ad78c9ad72ddc6f53c82cf5"
+    },
+    "experimental_campaigns": {
+      "count": 1,
+      "fingerprint": "067371912584ba1feabaf050a288e4a3"
+    },
+    "campaign_configurations": {
+      "count": 12,
+      "fingerprint": "38b6fddce28fad93e2a5d4385640ad1d"
+    },
+    "run_configurations": {
+      "count": 12,
+      "fingerprint": "8b8c30d4019a2393df164be3581d6166"
+    },
+    "evaluations": {
+      "count": 12,
+      "fingerprint": "d31764976182a94aeb280c8344bb8986"
+    },
+    "table_mutations": [
+      {
+        "relname": "alembic_version",
+        "n_tup_ins": 1,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "artifacts",
+        "n_tup_ins": 48,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_artifacts",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_attempts",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_campaign_consumers",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_final_locks",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_identities",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "assessment_results",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "audit_events",
+        "n_tup_ins": 1475,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "blood_samples",
+        "n_tup_ins": 80,
+        "n_tup_upd": 15,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "campaign_attempts",
+        "n_tup_ins": 12,
+        "n_tup_upd": 36,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "campaign_configurations",
+        "n_tup_ins": 208,
+        "n_tup_upd": 0,
+        "n_tup_del": 52
+      },
+      {
+        "relname": "campaign_controlled_requests",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "campaign_execution_events",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "campaign_members",
+        "n_tup_ins": 564,
+        "n_tup_upd": 48,
+        "n_tup_del": 127
+      },
+      {
+        "relname": "campaign_technical_revisions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_classification_events",
+        "n_tup_ins": 2432,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_classification_inputs",
+        "n_tup_ins": 2244,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_classification_reviews",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_classification_runs",
+        "n_tup_ins": 36,
+        "n_tup_upd": 156,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_crops",
+        "n_tup_ins": 2358,
+        "n_tup_upd": 0,
+        "n_tup_del": 56
+      },
+      {
+        "relname": "cell_detection_events",
+        "n_tup_ins": 60,
+        "n_tup_upd": 0,
+        "n_tup_del": 8
+      },
+      {
+        "relname": "cell_detection_runs",
+        "n_tup_ins": 52,
+        "n_tup_upd": 68,
+        "n_tup_del": 2
+      },
+      {
+        "relname": "cell_detections",
+        "n_tup_ins": 2358,
+        "n_tup_upd": 0,
+        "n_tup_del": 56
+      },
+      {
+        "relname": "cell_explanations",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "cell_predictions",
+        "n_tup_ins": 2236,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "clinical_identities",
+        "n_tup_ins": 1502,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_materialization_activations",
+        "n_tup_ins": 20,
+        "n_tup_upd": 5,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_materializations",
+        "n_tup_ins": 66,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_source_records",
+        "n_tup_ins": 33911,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_split_assignments",
+        "n_tup_ins": 395127,
+        "n_tup_upd": 0,
+        "n_tup_del": 27
+      },
+      {
+        "relname": "dataset_split_images",
+        "n_tup_ins": 55116,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_split_statistics",
+        "n_tup_ins": 16,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_split_validation_checks",
+        "n_tup_ins": 762,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_splits",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_version_sources",
+        "n_tup_ins": 103,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "dataset_versions",
+        "n_tup_ins": 222,
+        "n_tup_upd": 356,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "datasets",
+        "n_tup_ins": 26,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "deployed_model_versions",
+        "n_tup_ins": 20,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "environment_packages",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "errors",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "evaluation_ensemble_members",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "evaluations",
+        "n_tup_ins": 12,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "execution_logs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "experiment_execution_events",
+        "n_tup_ins": 61,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "experiment_execution_gate",
+        "n_tup_ins": 1,
+        "n_tup_upd": 51,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "experimental_campaigns",
+        "n_tup_ins": 43,
+        "n_tup_upd": 49,
+        "n_tup_del": 6
+      },
+      {
+        "relname": "experiments",
+        "n_tup_ins": 3,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "explainability_results",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "identity_evidence",
+        "n_tup_ins": 33858,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "image_analysis_jobs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "image_connected_components",
+        "n_tup_ins": 2650,
+        "n_tup_upd": 0,
+        "n_tup_del": 158
+      },
+      {
+        "relname": "image_ingestion_batches",
+        "n_tup_ins": 75,
+        "n_tup_upd": 15,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "image_quality_assessments",
+        "n_tup_ins": 5,
+        "n_tup_upd": 0,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "local_execution_jobs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "microscopy_analysis_events",
+        "n_tup_ins": 26,
+        "n_tup_upd": 0,
+        "n_tup_del": 16
+      },
+      {
+        "relname": "microscopy_analysis_run_images",
+        "n_tup_ins": 69,
+        "n_tup_upd": 5,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "microscopy_analysis_runs",
+        "n_tup_ins": 69,
+        "n_tup_upd": 11,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "microscopy_images",
+        "n_tup_ins": 101,
+        "n_tup_upd": 2,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "model_versions",
+        "n_tup_ins": 36,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "models",
+        "n_tup_ins": 35,
+        "n_tup_upd": 10,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "predictions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "quality_assessment_queue_items",
+        "n_tup_ins": 7,
+        "n_tup_upd": 10,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "quality_gate_decisions",
+        "n_tup_ins": 5,
+        "n_tup_upd": 0,
+        "n_tup_del": 1
+      },
+      {
+        "relname": "research_subjects",
+        "n_tup_ins": 89,
+        "n_tup_upd": 4,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "roles",
+        "n_tup_ins": 1,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_checkpoint_policy",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_clinical_metrics",
+        "n_tup_ins": 12,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_configurations",
+        "n_tup_ins": 16,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_dataset_images",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_image_predictions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_io_records",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_lineage",
+        "n_tup_ins": 36,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_metrics",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_model_deployments",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "run_threshold_calibration",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "runs",
+        "n_tup_ins": 124,
+        "n_tup_upd": 186,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_cases",
+        "n_tup_ins": 80,
+        "n_tup_upd": 5,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_reviews",
+        "n_tup_ins": 8,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_annotation_events",
+        "n_tup_ins": 22,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_annotations",
+        "n_tup_ins": 14,
+        "n_tup_upd": 8,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_classification_runs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_detection_runs",
+        "n_tup_ins": 12,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_images",
+        "n_tup_ins": 12,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "scientific_validation_sessions",
+        "n_tup_ins": 12,
+        "n_tup_upd": 2,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "smear_analysis_summaries",
+        "n_tup_ins": 28,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "smear_slides",
+        "n_tup_ins": 80,
+        "n_tup_upd": 0,
+        "n_tup_del": 3
+      },
+      {
+        "relname": "stage2_model_publication_events",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "stage2_model_publications",
+        "n_tup_ins": 20,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "synthetic_data_runs",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "train_execution_records",
+        "n_tup_ins": 4076,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "train_execution_revisions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "train_execution_sessions",
+        "n_tup_ins": 12,
+        "n_tup_upd": 36,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "training_history",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "user_roles",
+        "n_tup_ins": 68,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "users",
+        "n_tup_ins": 329,
+        "n_tup_upd": 53,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_artifacts",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_evaluation_members",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_evaluation_protocols",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_evidence",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_interpretations",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_method_configurations",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_quantitative_evaluations",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_region_attributions",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      },
+      {
+        "relname": "xai_specialist_reviews",
+        "n_tup_ins": 0,
+        "n_tup_upd": 0,
+        "n_tup_del": 0
+      }
+    ],
+    "guards": {
+      "functions": "95b79602feec74507e4dc15391bb38a4"
+    }
+  },
+  "operational_unchanged": true,
+  "finished_at": "2026-10-04T17:00:24.783605+00:00"
+}
