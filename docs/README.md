@@ -23,10 +23,10 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 
 ## Fuentes operativas canónicas
 
-Auditoría C2.12: [Integración PostgreSQL y calibración — BLOQUEADO](audits/clinical_calibration_c2_12/README.md)
-(`HISTORICAL_AUDIT`, 2026-10-04; evidencia real de prerrequisitos, sin aprobación E2E).
-Incluye C2.12.1: administrador disponible, instalación de base desechable bloqueada
-por los controles actuales de identidad del instalador v2; alternativa mínima documentada.
+Auditoría C2.12: [Integración PostgreSQL y calibración — APROBADO](audits/clinical_calibration_c2_12/README.md)
+(`HISTORICAL_AUDIT`, 2026-10-04; cierre operativo C2.12.2: suite E2E real PASSED,
+limpieza acreditada, base operativa intacta). Conserva el bloqueo inicial C2.12/C2.12.1
+como auditoría histórica; el informe de cierre está en la sección `# Cierre operativo — C2.12`.
 
 | Tema | Documento |
 |---|---|

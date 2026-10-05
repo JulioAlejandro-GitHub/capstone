@@ -1,7 +1,7 @@
 # C2.12 — Diagnóstico de integración y bloqueo de aislamiento
 
 Estado documental: `HISTORICAL_AUDIT`. Fecha: 2026-10-04.
-Resultado C2.12/C2.12.1: **BLOQUEADO** (histórico). C2.12.2: **APROBADO (PASSED)**.
+Estado histórico inicial: **BLOQUEADO** (C2.12/C2.12.1). Estado operativo final: **APROBADO** (C2.12.2, cierre 2026-10-04).
 No constituye aprobación de campaña real; acredita la integración PostgreSQL v2 de la calibración clínica.
 
 ## Actualización C2.12.1 — base desechable en la misma instancia
@@ -293,3 +293,108 @@ criterios de aceptación conjuntos siguen sin acreditarse.
 
 **Recomendación:** no usar C2.12 como autorización para la campaña mini CPU/GPU.
 Completar primero la verificación aislada; conservar calibración pública `none`.
+
+# Cierre operativo — C2.12
+
+Estado final: **APROBADO**. Fecha del cierre: 2026-10-04.
+Clasificación documental: `HISTORICAL_AUDIT` (se conserva la auditoría original;
+la aprobación posterior no la invalida ni reemplaza).
+
+- **Estado histórico inicial:** BLOQUEADO (C2.12 y C2.12.1, documentado arriba).
+- **Estado operativo final:** APROBADO, sujeto a la evidencia de los commits.
+
+## Commits
+
+| Commit | Contenido |
+|---|---|
+| `991c57b` | Aprovisionamiento: excepción acotada C2.12.2 (`alembic_v2/safety.py`, `alembic_v2/disposable.py`, `alembic_v2/env.py`), Makefile, scripts, suite E2E |
+| `d13435d` | Corrección de la aserción de umbral E2E (Decimal vs float) |
+| `7167949` | Documentación C2.12.2 + evidencia (README, `e2e.txt`, `lifecycle.json`) |
+| `3a616f8` | Evidencia `make test-scientific-parameters` (87 passed) |
+
+## Objetivo verificado
+
+Integración PostgreSQL v2 de la calibración clínica: campaña/matriz → RUN →
+eventos → calibración (`none` y `threshold_grid`) → evaluación final → proyección
+SQL, en una base desechable real, con guards científicos íntegros.
+
+## Alcance de las pruebas
+
+Suite E2E sintética (16 casos) en `capstone_c212_7155e9bb…` (PostgreSQL 17.9 real,
+instancia Compose). Servicios y proyecciones reales, transacciones raíz nuevas,
+datos sintéticos (sin TEST, imágenes ni scores históricos).
+
+## Resultados (12 criterios)
+
+| # | Criterio | Evidencia concreta | Resultado |
+|---|---|---|---|
+| 1 | Aprovisionamiento base desechable | `lifecycle.json.target`: system identifier, OID 143261, owner `capstone_v2_migrator`, contenedor, volumen, marker `C2.12.2:<nonce>` | ✅ creado |
+| 2 | Instalación esquema v2 | `lifecycle.json.migration_exit=0` (ver limitación sobre `migration.txt`) | ✅ |
+| 3 | Guards/triggers/restricciones | `lifecycle.json` huella `guards.functions` idéntica antes/después; `scientific_regression_c2122.txt` 87 passed; E2E `tgenabled='D'` → 0 | ✅ intactos |
+| 4 | Ejecución E2E real | `e2e.txt` `passed=16`, `lifecycle.json.e2e_exit=0` | ✅ |
+| 5 | Configuración efectiva por RUN | `e2e.txt`: `configuration_hash` + `provenance_snapshot`/`extension_configuration` por RUN | ✅ |
+| 6 | Calibración none + threshold_grid | `e2e.txt`: `"algorithm": "none"` (A) / `"threshold_grid"` (B/C) | ✅ |
+| 7 | Resultados clínicos | `e2e.txt`: `tn/fp/fn/tp` en `run_clinical_metrics` (22) | ✅ |
+| 8 | Idempotencia de eventos | aserción `duplicate_accepted` (E2E termina 0) | ✅ |
+| 9 | Conflictos y errores SQL | `e2e.txt`: `23505` (3), `conflict` (3), `sequence` (14) | ✅ |
+| 10 | Comparación snapshots | `e2e.txt`: `compare_effective…` + objeto `comparison` | ✅ |
+| 11 | Limpieza base desechable | `lifecycle.json.cleanup=verified_identity_zero_connections_dropped`, `residue=[]` | ✅ |
+| 12 | Base operativa intacta | `lifecycle.json.operational_unchanged=true` (huellas md5 idénticas) | ✅ |
+
+## Evidencia SQL
+
+- Identidad: `SELECT oid, pg_get_userbyid(datdba), shobj_description(oid,'pg_database') FROM pg_database` → OID, owner `capstone_v2_migrator`, marker `C2.12.2:<nonce>`.
+- Métricas: `SELECT e.*, m.tn,m.fp,m.fn,m.tp FROM evaluations e JOIN run_clinical_metrics m ON m.evaluation_id=e.id`.
+- Ledger: `SELECT payload->>'canonical_event' FROM train_execution_records … ORDER BY event_sequence`.
+- Triggers: `SELECT count(*) FROM pg_trigger WHERE … AND tgenabled='D'` → 0 (ninguno desactivado).
+
+## Evidencia de aislamiento
+
+`lifecycle.json.target`: `postgres_system_identifier=7691366089693499436`,
+`container_id` (64 hex), `volume=capstone_v2_isolated_persistent_data`,
+`host_port=5432`, `protected_database=malaria_experiments` (OID 16386),
+`database_owner=capstone_v2_migrator`, `created_by_run=<nonce>`.
+El puerto 5432 se combina con todas las identidades; no autoriza solo.
+
+## Evidencia de limpieza
+
+`lifecycle.json`: `cleanup=verified_identity_zero_connections_dropped`,
+`residue=[]`, `operational_unchanged=true`. Antes del DROP: identidad re-verificada,
+`ALLOW_CONNECTIONS false`, cero conexiones ajenas (doble comprobación).
+
+## Invariantes científicos
+
+| Invariante | Tipo de evidencia |
+|---|---|
+| B1 intacto | Comprobada: huellas md5 idénticas antes/después (`lifecycle.json`) |
+| Sin acceso a TEST | Comprobada: E2E `SELECT count(*) FROM evaluations WHERE split<>'val'` → 0; datos sintéticos |
+| Sin campañas CPU/GPU | Sustentada en ausencia: el E2E no invoca TRAIN ni inferencia |
+| Sin entrenamientos reales | Sustentada en ausencia: `repo.finish(run,'failed','SYNTHETIC_VERIFICATION_ONLY')` |
+| Algoritmos científicos intactos | Comprobada: `make test-scientific-parameters` → 87 passed |
+| Políticas de checkpoint intactas | Comprobada: `test_checkpoint_policy.py` en la regresión |
+| Algoritmos de calibración intactos | Comprobada: `test_threshold_calibration.py` en la regresión |
+| Hallazgos C1 H01–H05 | Documentados en la auditoría C1 (no modificados) |
+| Parámetros históricos no reconstruidos | Comprobada: `compare_runs` con `synthetic_historical` → `present=false`, `governed=false` |
+
+## Regresión científica
+
+- `make test-scientific-parameters`: **87 passed, 2 warnings** (deprecaciones protobuf), exit 0.
+- `make test-calibration-postgres`: lifecycle completo → `PASSED` (ver `lifecycle.json`).
+  El antiguo preflight bloqueante (`check_calibration_postgres.py`) fue sustituido por la suite E2E; no se confunden.
+
+## Limitaciones conocidas
+
+- `migration.txt` está vacío (0 bytes): la migración oficial no produjo salida
+  capturable. La evidencia de instalación es `migration_exit=0` y el esquema
+  verificado por `require_e10_schema` en el E2E. No se re-ejecuta para no crear
+  otra base.
+- La aprobación acredita la integración PostgreSQL v2 de la calibración clínica
+  con datos sintéticos; no constituye aprobación de campaña real CPU/GPU.
+
+## Conclusión técnica
+
+C2.12 queda **APROBADO**: la suite E2E con PostgreSQL real terminó correctamente
+(16 casos), la limpieza está acreditada y la base operativa permanece intacta.
+El bloqueo inicial (C2.12/C2.12.1) se resolvió con una excepción de aprovisionamiento
+acotada que conserva todos los guards científicos. La trazabilidad completa va del
+bloqueo inicial a la resolución y aprobación final.
