@@ -1,0 +1,1160 @@
+# Malaria Parasite Detection — Entorno local con Python
+
+La arquitectura canónica reside en `src/malaria_dl/`. Los imports y comandos
+históricos `src.*` continúan soportados mediante adaptadores sin lógica
+duplicada. Véanse `docs/architecture_after_refactor.md` y
+`docs/legacy_compatibility.md`.
+
+Proyecto local para entrenar y evaluar modelos de Deep Learning sobre el dataset **NIH / NLM Malaria Cell Images** usando TensorFlow Datasets.
+
+Incluye:
+- Custom CNN
+- Transfer Learning con VGG16
+- Extracción de características CNN + SVM
+- Ensembles E8 sobre probabilidades verificadas de E6
+- Test Time Augmentation
+- Evaluación con accuracy, precision, recall, F1, AUC y matriz de confusión
+- Explicabilidad visual post hoc con LIME, SHAP y Grad-CAM
+
+Guía de flujos:
+
+```text
+docs/workflows.md
+```
+
+Ese documento separa entrenamiento, evaluación experimental e inferencia clínica experimental con imagen externa.
+
+## 1. Instalación de entornos Python (CPU y GPU Metal)
+
+El flujo de campañas en **macOS Apple Silicon (arm64)** utiliza Python 3.12 y dos
+entornos virtuales independientes, sin instalar TensorFlow en el Python global:
+
+| Entorno | Uso | Dependencias |
+| --- | --- | --- |
+| `.venv-local-train` | TRAIN en CPU | `requirements-cpu.txt` |
+| `.venv-metal` | TRAIN con GPU Metal | `requirements-gpu.txt` (incluye CPU + `tensorflow-metal`) |
+
+Las versiones principales verificadas en los runs del 2026-10-06 son TensorFlow
+`2.17.1`, Keras `3.15.1`, NumPy `1.26.4` y, para GPU,
+`tensorflow-metal==1.2.0`. Estos archivos son una **base de instalación**, no
+un lock completo de dependencias transitivas. El proyecto también conserva
+`requirements.txt` y `requirements-local-train.txt` para otros flujos históricos;
+no se deben sustituir indiscriminadamente.
+
+Desde `capstone/malaria_dl_local_project`:
+
+```bash
+chmod +x setup_venvs.sh
+./setup_venvs.sh all
+```
+
+Alternativamente, instalar sólo uno:
+
+```bash
+./setup_venvs.sh cpu
+./setup_venvs.sh gpu
+```
+
+**Protección:** `setup_venvs.sh` no sobrescribe entornos existentes; si ya existe
+la carpeta, termina con error. No borres los entornos usados en campañas
+verificadas sin generar antes un inventario reproducible (`pip freeze`).
+
+Verificar CPU (se espera `[]`):
+
+```bash
+source .venv-local-train/bin/activate
+python -c 'import tensorflow as tf; print(tf.config.list_physical_devices("GPU"))'
+deactivate
+```
+
+Verificar GPU Metal (se espera al menos un dispositivo `GPU:0`):
+
+```bash
+source .venv-metal/bin/activate
+python -c 'import tensorflow as tf; print(tf.config.list_physical_devices("GPU"))'
+deactivate
+```
+
+Detectar una GPU no prueba que todas las operaciones se hayan ejecutado en
+Metal: para afirmaciones de rendimiento se debe contrastar el uso efectivo del
+dispositivo y registrar las condiciones del benchmark. Para Linux/Windows u
+otros flujos, la instalación genérica anterior con `requirements.txt` sigue
+siendo una alternativa manual, **no** cubierta por `setup_venvs.sh`.
+
+## 2. Dataset gobernado y fuentes locales
+
+Los nuevos entrenamientos exigen una Dataset Version gobernada explícita. El siguiente
+inventario identifica la versión utilizada en campañas verificadas; vuelva a
+comprobar su estado y materialización antes de nuevos entrenamientos:
+
+```text
+Malaria Patient Split v1
+dataset_version_id = d8c0cab5-09dd-597f-9de7-7ca01aee2ec2
+status = FROZEN
+trainable = YES
+
+201 pacientes / 27.558 imágenes
+TRAIN 22.180 / VAL 2.693 / TEST 2.685
+```
+
+PostgreSQL resuelve su materialización `READY/PASS` y el código abre el root
+versionado resultante. Un TRAIN nuevo nunca selecciona silenciosamente
+`data/malaria_physical_split/`. Omitir, vaciar o malformar `--dataset-version-id` produce error temprano,
+también en el ejecutor masivo. Se verifica la materialización exacta del sello,
+los cuatro fingerprints y los bytes contra las referencias acreditadas upstream.
+
+La evidencia nueva de esta verificación se persiste exclusivamente en PostgreSQL
+(`audit_events`, evento `ml.dataset_verification`), incluso sin `--track-db`.
+No hay fallback CSV/JSON: un fallo de persistencia bloquea el consumo. El lote TRAIN
+fija una evidencia y propaga su UUID a todos los subprocesos; cada uno revalida y
+rechaza cambios de versión, materialización o fingerprints. `--dry-run` de TRAIN
+sólo genera comandos, exige UUID y no acredita integridad operativa.
+
+Consulte [el contrato de uso de Etapa 1](docs/dataset_explicit_contract.md).
+
+### Fuente local TensorFlow Datasets
+
+El dataset **NIH / NLM Malaria Cell Images** se gestiona con TensorFlow Datasets, pero la descarga debe quedar dentro de la raíz del repositorio `capstone/`:
+
+```text
+capstone/data/tensorflow_datasets/
+```
+
+Desde `capstone/malaria_dl_local_project`, esa ruta corresponde a:
+
+```text
+../data/tensorflow_datasets/
+```
+
+El código usa la función `get_tfds_data_dir()` en `src/data.py`:
+
+- Si existe `TFDS_DATA_DIR`, usa esa ruta.
+- Si no existe `TFDS_DATA_DIR`, usa por defecto `capstone/data/tensorflow_datasets`.
+
+Descargar o validar el dataset:
+
+```bash
+cd capstone/malaria_dl_local_project
+source .venv-local-train/bin/activate
+python scripts/download_malaria_dataset.py
+```
+
+Validar que existe localmente:
+
+```bash
+ls ../data/tensorflow_datasets/malaria
+```
+
+También puedes validar desde Python:
+
+```bash
+python - <<'PY'
+from src.data import get_tfds_data_dir
+print(get_tfds_data_dir())
+PY
+```
+
+La carpeta `capstone/data/tensorflow_datasets/` está ignorada por Git. No se deben versionar imágenes, shards ni archivos TFRecord del dataset.
+
+### Split físico legacy 80/10/10
+
+El flujo anterior creó copias físicas estratificadas en:
+
+```text
+data/malaria_physical_split/
+```
+
+Este material se conserva para reproducibilidad de runs históricos y compatibilidad
+explícita con herramientas legacy. No es la fuente de un TRAIN nuevo gobernado y no
+debe eliminarse ni regenerarse como parte de una ejecución normal.
+
+Inspeccionar o reproducir el proceso histórico sin escribir archivos:
+
+```bash
+python scripts/create_physical_dataset_split.py \
+  --seed 42 \
+  --train-ratio 0.8 \
+  --val-ratio 0.1 \
+  --test-ratio 0.1 \
+  --dry-run
+```
+
+Más detalle:
+
+```text
+docs/physical_dataset_split.md
+```
+
+## Preprocesamiento por arquitectura
+
+El pipeline usa `src/preprocessing.py` como punto único de preprocesamiento y los scripts aceptan `--preprocessing`.
+
+- `auto`: valor por defecto. Mantiene compatibilidad y resuelve a `rescale_0_1`.
+- `rescale_0_1`: resize + `float32` + normalización `[0, 1]`. Úsalo para `custom_cnn` y checkpoints ya entrenados.
+- `vgg16_imagenet`: resize + `tf.keras.applications.vgg16.preprocess_input`. Úsalo solo con VGG16 reentrenado con ese mismo modo.
+
+DenseNet121 usa `auto`/`rescale_0_1` en el pipeline y conserva dentro del
+modelo una capa serializable con la normalización ImageNet por canal
+(media/desviación estándar) equivalente a
+`tf.keras.applications.densenet.preprocess_input`. La combinación
+`densenet121 + vgg16_imagenet` se rechaza explícitamente.
+
+No mezcles modos entre entrenamiento e inferencia. Un checkpoint VGG16 histórico en `outputs/vgg16/` debe evaluarse con `rescale_0_1`. Para probar VGG16 con preprocesamiento ImageNet, reentrena en una carpeta separada:
+
+```bash
+python -m src.train \
+  --model vgg16 \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 30 \
+  --fine-tune-epochs 10 \
+  --img-size 200 \
+  --batch-size 64 \
+  --preprocessing vgg16_imagenet \
+  --output-dir outputs/vgg16_imagenet
+```
+
+Luego usa `--preprocessing vgg16_imagenet` en `src.evaluate`, `src.explain`, `src.tta`, `src.svm_features` y `src.predict_image` para ese checkpoint.
+
+`src.ensemble` (E8) combina predicciones E6 ya verificadas. Cada miembro conserva su preprocesamiento E3; se valida el mismo conjunto de muestras y el mapeo de clases.
+
+Los JSON de métricas y CSV de predicciones incluyen `preprocessing_mode` cuando el script genera esos artefactos.
+
+## 3. Entrenar modelos
+
+Todos los ejemplos de esta sección fijan `dataset_version_id`. El guard previo exige
+una versión `FROZEN`, 12/12 validaciones `PASS`, materialización `READY/PASS` y
+fingerprints finales sellados; ante cualquier incumplimiento el comando falla sin
+fallback al split legacy.
+
+### Política Max Epochs
+
+`--max-epochs` define el máximo de la fase base y reemplaza a `--epochs` como
+nombre recomendado. `--epochs` sigue funcionando como alias legacy; si se
+entregan ambos, gana `--max-epochs`. En transfer learning,
+`--fine-tune-epochs` continúa siendo el máximo independiente de la segunda
+fase:
+
+```text
+base_max_epochs = max_epochs
+fine_tune_max_epochs = fine_tune_epochs
+total_max_epochs = max_epochs + fine_tune_epochs
+```
+
+Early stopping y selección de checkpoint usan únicamente `validation`. Por
+defecto se restauran los mejores pesos y, al terminar, `test` se evalúa una
+sola vez con `best_model.keras`. Para smoke tests puede omitirse esa evaluación
+con `--skip-final-test-evaluation`.
+
+### Custom CNN
+
+```bash
+python -m src.train --model custom_cnn \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 50 --img-size 200 --batch-size 64
+```
+
+`--data-source` y `--dataset-dir` permanecen aceptados por compatibilidad del CLI,
+pero `--dataset-dir` sólo acepta la raíz gobernada exacta y `--data-source` sólo
+acepta `physical` en TRAIN/EVALUATE/EXPLAIN gobernados. Si no se especifica la
+ruta, se hereda la de la materialización; una ruta legacy distinta se rechaza.
+
+### VGG16 con Transfer Learning
+
+```bash
+python -m src.train --model vgg16 \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 30 --fine-tune-epochs 10 --img-size 200 --batch-size 64
+```
+
+### DenseNet121 con entrenamiento combinado
+
+```bash
+python -m src.train \
+  --model densenet121 \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 30 \
+  --fine-tune-epochs 6 \
+  --img-size 200 \
+  --batch-size 64 \
+  --learning-rate 0.001 \
+  --fine-tune-learning-rate 0.00001 \
+  --preprocessing auto \
+  --checkpoint-policy auc_with_min_recall \
+  --min-recall 0.98 \
+  --target-recall 0.98 \
+  --positive-label parasitized \
+  --track-db
+```
+
+Los backbones usan pesos ImageNet por defecto. Para una prueba offline o una
+inicialización aleatoria agrega `--pretrained-weights none`.
+
+Con fine-tuning se registra `execution_type=train_combined`; sin él,
+`execution_type=train_base`. Cada ejecución genera:
+
+- `training_history.csv` con el historial canónico y métricas disponibles.
+- `combined_training_history.csv` con épocas continuas y fases.
+- `combined_accuracy.png`, `combined_loss.png` y `combined_training_curves.png`.
+- `model_execution_summary.json` y `model_execution_summary.md`.
+- `checkpoint_selection.json` con máximo, detención y mejor época de validation.
+- Artefactos finales de test cuando esa evaluación está habilitada.
+- Un snapshot auditable en `outputs/<model>/runs/<execution_id>/`.
+
+Los archivos directos de `outputs/<model>/` se mantienen como salida/latest
+compatible. PostgreSQL registra el snapshot por ejecución, incluyendo SHA-256,
+para que un entrenamiento posterior no cambie los artefactos de runs previos.
+
+### Selección del mejor checkpoint
+
+Por defecto `best_model.keras` se selecciona con política clínica:
+
+```text
+--checkpoint-policy auc_with_min_recall
+--min-recall 0.98
+--reject-prediction-collapse
+```
+
+`auc_with_min_recall` selecciona el mayor `val_auc` entre los epochs que cumplen `val_recall_parasitized >= min_recall`. Si ningún epoch cumple la sensibilidad mínima, selecciona fallback por mejor recall y marca `policy_satisfied=false` con warning.
+Cuando no se fuerza un monitor CLI, EarlyStopping sigue un score interno de
+validation con el mismo orden de prioridad: primero alcanzar `min_recall` y
+luego mejorar AUC.
+
+Si no se informa ninguna de las dos banderas de épocas, los máximos base son
+`custom_cnn=50`, `vgg16=30` y `densenet121=30`.
+
+Ejemplo explícito:
+
+```bash
+python -m src.train \
+  --model vgg16 \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 30 \
+  --fine-tune-epochs 10 \
+  --img-size 200 \
+  --batch-size 64 \
+  --optimizer adam \
+  --learning-rate 1e-4 \
+  --checkpoint-policy auc_with_min_recall \
+  --min-recall 0.98 \
+  --track-db
+```
+
+También se puede seleccionar por `f2`, `balanced_accuracy` o `val_auc`:
+
+```bash
+python -m src.train \
+  --model custom_cnn \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 30 \
+  --img-size 200 \
+  --batch-size 64 \
+  --checkpoint-policy f2 \
+  --beta 2.0
+```
+
+No se usa `val_recall_parasitized` puro como default, porque un modelo puede aprender la solución trivial de predecir todo como `parasitized`: sensibilidad 1.0, especificidad 0.0 y balanced accuracy 0.5.
+
+El criterio queda registrado en `outputs/<model>/checkpoint_policy_summary.json` y `outputs/<model>/checkpoint_selection.json`. La metadata clínica del modelo queda en `outputs/<model>/model_metadata.json`. Los logs quedan separados en `training_base_log.csv` y `fine_tuning_log.csv`; `training_log.csv` se mantiene como alias del entrenamiento base e incluye métricas clínicas de validation.
+
+Más detalle:
+
+```text
+docs/checkpoint_policy.md
+```
+
+### SVM usando features del VGG16 entrenado
+
+Primero entrena VGG16. Luego:
+
+```bash
+python -m src.svm_features --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
+```
+
+### Ensembles experimentales E8
+
+Promedio uniforme (por defecto) o ponderado explícito de Custom CNN, VGG16 y DenseNet121, con el mismo grupo de semilla y optimizador. Usa referencias EVALUATE E6 y PostgreSQL; no carga checkpoints para inferencia ni ejecuta TEST. Los pesos no se normalizan silenciosamente.
+
+```bash
+docker compose exec -T -w /app/malaria_dl_local_project \
+  backend python -B -m src.ensemble --help
+```
+
+Subcomandos: `prepare`, `validate`, `combine`, `compare`. Las fuentes son probabilidades por muestra en PostgreSQL. El comparador E7 incorpora `compare-ensembles`; los reportes se exportan después de persistir y releer evidencia. Véanse [contrato, comandos y fixture E8](../docs/science/ensembles_e8_v1.md).
+
+### Test Time Augmentation
+
+```bash
+python -m src.tta --checkpoint outputs/vgg16/best_model.keras --img-size 200 --n-aug 8
+```
+
+### Evaluación de un modelo guardado
+
+Para un modelo gobernado, use su Model Version inmutable; EVALUATE resuelve el TRAIN
+origen y hereda automáticamente su `dataset_version_id`:
+
+```bash
+python -m src.evaluate --model-version-id UUID_DE_MODEL_VERSION \
+  --img-size 200 --batch-size 64 --track-db --require-lineage
+```
+
+La ruta directa al checkpoint se conserva únicamente como compatibilidad explícita
+para modelos/runs históricos no gobernados:
+
+```bash
+python -m src.evaluate --checkpoint outputs/vgg16/best_model.keras --img-size 200 --batch-size 64
+```
+
+### Inferencia estructurada de imagen externa
+
+La clase clínica positiva por defecto es `parasitized`.
+
+La convención oficial del proyecto es:
+
+```text
+0 = uninfected
+1 = parasitized
+raw_model_score = probability_parasitized
+label_mapping_version = clinical_v1_parasitized_positive
+```
+
+La decisión clínica experimental aplica el umbral sobre `probability_parasitized`:
+
+```text
+probability_parasitized >= threshold -> parasitized
+probability_parasitized < threshold  -> uninfected
+```
+
+TensorFlow Datasets entrega originalmente `0 = parasitized` y `1 = uninfected`, pero `src.data` remapea las etiquetas antes de entrenar, evaluar y explicar. Si necesitas usar un checkpoint antiguo entrenado con la convención TFDS previa, declara explícitamente:
+
+```bash
+--label-mapping legacy_tfds_parasitized_zero
+```
+
+Este flag está disponible en `src.predict_image`, `src.evaluate`, `src.explain`, `src.calibrate` y `src.tta`. E8 exige el mapeo E3 acreditado por cada fuente E6.
+
+`src.predict_image` reporta explícitamente:
+
+- `probability_parasitized`
+- `probability_uninfected`
+- `raw_model_score_meaning`
+- `label_mapping_version`
+- `confidence_level`
+- `decision`
+- `human_readable_response`
+
+### Métricas clínicas estándar
+
+E8 reutiliza las definiciones de E7, incluyendo average precision, ausencias con motivo e incertidumbre por paciente. No genera CSV.
+
+Los flujos `src.train`, `src.evaluate`, `src.tta` y `src.svm_features` reutilizan `compute_clinical_metrics`. Las métricas se calculan con `parasitized` como clase positiva (`pos_label=1`) y el score usado por ROC-AUC/PR-AUC es siempre `probability_parasitized`.
+
+Métricas reportadas:
+
+- `accuracy`
+- `precision_parasitized`
+- `recall_parasitized` / `sensitivity_parasitized`
+- `specificity`
+- `f1_parasitized`
+- `f2_parasitized`
+- `roc_auc_parasitized`
+- `pr_auc_parasitized`
+- `balanced_accuracy`
+- `confusion_matrix`
+- `classification_report`
+- `prediction_distribution`
+- `prediction_collapse`
+
+En este proyecto, la clase positiva clínica es `parasitized`. Por ello, las métricas clínicas priorizan la detección de células parasitadas. El F2-score pondera más el recall que la precisión, lo que resulta adecuado cuando los falsos negativos son más graves que los falsos positivos. Sin embargo, el sistema también reporta especificidad y distribución de predicciones para detectar modelos degenerados que predicen una sola clase.
+
+Detalle: [docs/clinical_metrics.md](docs/clinical_metrics.md).
+
+### Cómo detectar colapso de predicción
+
+Los reportes de evaluación incluyen distribución de predicciones y `prediction_collapse`. Ejemplo problemático:
+
+```text
+Confusion matrix:
+[[0 1385]
+ [0 1371]]
+```
+
+Interpretación: el modelo predijo todas las imágenes como `parasitized`. En ese caso la sensibilidad puede ser 1.0, pero la especificidad es 0.0 y la balanced accuracy es 0.5. Ese checkpoint no debe usarse como modelo clínico experimental sin reentrenamiento o revisión.
+
+Inferencia simple:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --img-size 200 \
+  --positive-label parasitized \
+  --threshold 0.5
+```
+
+El CLI es un wrapper sobre la función reusable:
+
+```python
+from src.predict_image import run_clinical_inference
+
+result = run_clinical_inference(
+    checkpoint="outputs/vgg16/best_model.keras",
+    image_path="ruta/a/imagen.png",
+    img_size=200,
+)
+```
+
+La futura API web debe reutilizar esa función para evitar duplicar lógica de preprocesamiento, calibración, explicabilidad y tracking.
+
+Inferencia con Grad-CAM:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --img-size 200 \
+  --positive-label parasitized \
+  --threshold 0.5 \
+  --explain gradcam \
+  --output-json outputs/predictions/prediction_result.json
+```
+
+Inferencia con TTA y tracking en PostgreSQL:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --img-size 200 \
+  --positive-label parasitized \
+  --threshold 0.5 \
+  --tta \
+  --n-aug 8 \
+  --track-db
+```
+
+Inferencia con ensemble:
+
+```bash
+python -m src.predict_image \
+  --ensemble \
+  --models outputs/custom_cnn/best_model.keras outputs/vgg16/best_model.keras \
+  --weights 0.4 0.6 \
+  --image-path ruta/a/imagen.png \
+  --img-size 200 \
+  --positive-label parasitized \
+  --threshold 0.5
+```
+
+Calibrar threshold clínico con validation set:
+
+```bash
+python -m src.calibrate \
+  --checkpoint outputs/custom_cnn/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --target-recall 0.98 \
+  --dataset-split val \
+  --update-model-metadata \
+  --track-db
+```
+
+Esto guarda `outputs/<model>/threshold_calibration.json` y, con `--update-model-metadata`, agrega `clinical_threshold` a `outputs/<model>/model_metadata.json`. El threshold se selecciona sobre validation para favorecer sensibilidad de `parasitized`; test no se usa para calibrar.
+
+Entrenamiento con calibración integrada:
+
+```bash
+python -m src.train \
+  --model custom_cnn \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 30 \
+  --img-size 200 \
+  --batch-size 64 \
+  --checkpoint-policy auc_with_min_recall \
+  --min-recall 0.98 \
+  --calibrate-threshold \
+  --target-recall 0.98 \
+  --track-db
+```
+
+Evaluación e inferencia usando threshold clínico:
+
+```bash
+python -m src.evaluate \
+  --checkpoint outputs/custom_cnn/best_model.keras \
+  --img-size 200 \
+  --batch-size 64 \
+  --threshold clinical
+
+python -m src.predict_image \
+  --checkpoint outputs/custom_cnn/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --positive-label parasitized \
+  --threshold clinical
+```
+
+La calibración probabilística por temperature scaling sigue disponible explícitamente:
+
+```bash
+python -m src.calibrate \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --calibration-kind temperature_scaling \
+  --output-file outputs/vgg16/calibration.json
+```
+
+Más detalle: `docs/threshold_calibration.md`.
+
+Cuando se usa `--track-db`, la imagen se copia y renombra en:
+
+```text
+../data/prediction_uploads/
+```
+
+La ruta registrada en `predictions.image_path` y `artifacts.path` queda con formato relativo al repo, por ejemplo:
+
+```text
+data/prediction_uploads/20260618_153012_a8f23c_imagen.png
+```
+
+Estas imagenes quedan ignoradas por Git y se pueden consultar desde el backend/frontend como “Predicciones subidas”.
+
+Las explicaciones de imágenes externas se guardan en:
+
+```text
+outputs/explainability/external_predictions/
+  gradcam/
+  lime/
+  shap/
+```
+
+Además, cada inferencia queda acumulada en:
+
+```text
+outputs/predictions/external_predictions.csv
+```
+
+Si conoces la clase real, puedes registrarla para calcular si fue TP, TN, FP o FN:
+
+```bash
+python -m src.predict_image \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --image-path ruta/a/imagen.png \
+  --true-label uninfected \
+  --positive-label parasitized \
+  --track-db
+```
+
+Ejemplo rápido usando la Dataset Version gobernada:
+
+```bash
+python -m src.train --model custom_cnn \
+  --dataset-version-id d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 \
+  --max-epochs 1 --img-size 200 --batch-size 64
+```
+
+## Explicabilidad del modelo: LIME, SHAP y Grad-CAM
+
+El proyecto permite explicar predicciones individuales de modelos Keras entrenados usando LIME, SHAP y Grad-CAM:
+
+```bash
+python -m src.explain --checkpoint outputs/custom_cnn/best_model.keras --method all --num-samples 20 --track-db
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method shap --num-samples 20
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method both --num-samples 20
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method all --num-samples 20 --track-db
+```
+
+También se pueden controlar el tamaño de imagen, batch, umbral y carpeta de salida:
+
+```bash
+python -m src.explain \
+  --checkpoint outputs/vgg16/best_model.keras \
+  --method both \
+  --img-size 200 \
+  --batch-size 64 \
+  --num-samples 20 \
+  --threshold 0.5 \
+  --positive-label parasitized \
+  --preprocessing auto \
+  --max-candidates 200 \
+  --output-dir outputs/explainability
+```
+
+LIME identifica superpíxeles relevantes para una predicción local del modelo. SHAP estima la contribución de regiones o píxeles a la predicción. Grad-CAM genera mapas de calor usando los gradientes de la clase predicha sobre la última capa convolucional. Estas técnicas ayudan a revisar verdaderos positivos, verdaderos negativos, falsos positivos, falsos negativos y casos de baja confianza cercanos al umbral de clasificación.
+
+En los reportes clínicos experimentales, la clase positiva debe ser `parasitized`. Bajo la convención oficial, `raw_model_score` equivale a `probability_parasitized`; los campos `raw_model_score_meaning` y `label_mapping_version` quedan guardados para evitar ambigüedad con checkpoints antiguos.
+
+Las salidas se guardan en:
+
+```text
+outputs/explainability/
+  lime/
+    true_positive/
+    true_negative/
+    false_positive/
+    false_negative/
+    low_confidence/
+  shap/
+    true_positive/
+    true_negative/
+    false_positive/
+    false_negative/
+    low_confidence/
+  gradcam/
+    true_positive/
+    true_negative/
+    false_positive/
+    false_negative/
+    low_confidence/
+  explanation_summary.csv
+```
+
+Cada imagen explicada se guarda como PNG con clase real, clase predicha y `prob-parasitized` en el nombre del archivo. El CSV `explanation_summary.csv` registra `case_id`, tipo de caso, clase real, clase predicha, probabilidad de la clase positiva, clase positiva, umbral, método, éxito, error, ruta de imagen, convención de etiquetas y, para Grad-CAM, la capa convolucional usada.
+
+## Explicabilidad con Grad-CAM
+
+Grad-CAM permite visualizar las regiones de una imagen que más influyeron en la decisión de una red convolucional. En el proyecto se utiliza para revisar si el modelo está enfocando su atención en zonas microscópicas clínicamente plausibles.
+
+Comandos de ejemplo:
+
+```bash
+python -m src.explain --checkpoint outputs/custom_cnn/best_model.keras --method gradcam --num-samples 20
+
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method gradcam --num-samples 20
+
+python -m src.explain --checkpoint outputs/vgg16/best_model.keras --method all --num-samples 20
+```
+
+La salida de Grad-CAM se guarda en:
+
+```bash
+outputs/explainability/gradcam/
+```
+
+## Explicabilidad post hoc
+
+La explicabilidad se incorpora para aportar trazabilidad visual al proceso de evaluación y facilitar el análisis de coherencia del modelo en un contexto de apoyo diagnóstico. No reemplaza métricas cuantitativas como AUC, recall o F1, pero permite inspeccionar si las regiones que influyen en una predicción son razonables desde el punto de vista visual.
+
+LIME aporta una explicación local basada en superpíxeles: perturba regiones de una imagen y estima qué zonas sostienen la decisión del modelo para ese caso. SHAP estima contribuciones de entrada a la predicción usando un conjunto pequeño de imágenes de entrenamiento como background.
+
+## Grad-CAM — Gradient-weighted Class Activation Mapping
+
+Grad-CAM es una técnica de explicabilidad visual para redes convolucionales. Calcula la importancia de los mapas de activación de la última capa convolucional usando los gradientes de la clase predicha. El resultado es un mapa de calor que permite observar qué zonas de la imagen influyeron más en la decisión del modelo.
+
+En este proyecto se utiliza para:
+
+- Explicar verdaderos positivos
+- Explicar falsos negativos
+- Revisar falsos positivos
+- Analizar casos de baja confianza
+- Evaluar si el modelo usa regiones visuales coherentes con patrones microscópicos relevantes
+
+El script selecciona casos explicables de forma balanceada entre:
+
+- Verdaderos positivos
+- Verdaderos negativos
+- Falsos positivos
+- Falsos negativos
+- Casos de baja confianza cercanos al umbral 0.50
+
+KPI de explicabilidad:
+
+| KPI                           | Meta                                                                    |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| Casos explicados              | mínimo 20                                                               |
+| Cobertura de errores críticos | revisar falsos positivos y falsos negativos disponibles                 |
+| Trazabilidad                  | 100% de casos explicados con imagen, score, clase real y clase predicha |
+| Comparación LIME/SHAP         | al menos 10 casos si se ejecuta `--method both`                         |
+| Comparación completa          | LIME, SHAP y Grad-CAM si se ejecuta `--method all`                      |
+
+## 4. Exportar imágenes a carpetas
+
+```bash
+python -m src.export_dataset --output-dir data/malaria_images
+```
+
+Esto crea:
+
+```text
+data/malaria_images/
+  parasitized/
+  uninfected/
+```
+
+## 5. Reset experimental seguro
+
+Antes de reentrenar desde cero puedes purgar datos experimentales y limpiar `outputs/` con scripts seguros en `dry-run` por defecto.
+
+```bash
+python scripts/purge_db_data.py
+python scripts/clean_training_outputs.py
+```
+
+Ejecución real con backup:
+
+```bash
+python scripts/reset_experimental_state.py \
+  --execute \
+  --confirm RESET_EXPERIMENTS \
+  --backup-before
+```
+
+Guía completa: [docs/reset_experimental_state.md](docs/reset_experimental_state.md).
+
+## 6. Trazabilidad gobernada en PostgreSQL
+
+Los TRAIN nuevos registran `runs.dataset_version_id` y un snapshot de la
+materialización, conteos y cuatro fingerprints científicos en `run_io_records`.
+EVALUATE y las calibraciones de un TRAIN gobernado heredan esa misma versión desde el
+run padre; no permiten sustituirla por otro dataset. Threshold y temperature scaling
+usan exclusivamente `VAL`.
+
+El registro siguiente corresponde únicamente al inventario físico histórico:
+
+Para auditar runs legacy que usaron el split físico, se puede registrar su inventario
+en PostgreSQL:
+
+```bash
+python scripts/register_physical_split_in_db.py \
+  --dataset-dir data/malaria_physical_split \
+  --dataset-name malaria_physical_split \
+  --dataset-source tensorflow_datasets/malaria \
+  --execute
+```
+
+Guía completa y consultas SQL: [docs/database_dataset_tracking.md](docs/database_dataset_tracking.md).
+
+La pantalla vigente **Modelo IA → Dataset** consume Dataset Versions gobernadas y
+muestra `Malaria Patient Split v1` como `FROZEN` y `TRAINABLE`; no presenta los
+conteos legacy 22.046/2.756/2.756 como dataset actual.
+
+El tracking clínico de runs con `--track-db` registra IO, métricas clínicas,
+política de checkpoint, calibración de threshold, artefactos y predicciones por
+imagen en tablas incrementales de PostgreSQL. La convención registrada es siempre
+`0 = uninfected`, `1 = parasitized` y `raw_model_score = probability_parasitized`.
+Guía: [docs/postgresql_tracking.md](docs/postgresql_tracking.md).
+
+El frontend incluye una vista **Evaluacion clinica** y un Run Detail clinico para
+auditar F2, PR-AUC, sensibilidad, especificidad, checkpoint policy, threshold,
+matriz de confusion, predicciones por imagen, artefactos y explicabilidad.
+Guía: [docs/frontend_clinical_dashboard.md](docs/frontend_clinical_dashboard.md).
+
+## 7. Estructura del proyecto
+
+```text
+capstone/
+  data/
+    tensorflow_datasets/     # ignorado por Git
+  malaria_dl_local_project/
+    requirements.txt
+    requirements-local-train.txt
+    requirements-cpu.txt
+    requirements-gpu.txt
+    setup_venvs.sh
+    README.md
+    scripts/
+      download_malaria_dataset.py
+    src/
+      __init__.py
+      config.py
+      data.py
+      models.py
+      metrics.py
+      train.py
+    evaluate.py
+      predict_image.py
+      svm_features.py
+      ensemble.py
+      export_dataset.py
+      explain.py
+      tta.py
+    outputs/                 # ignorado por Git
+      explainability/
+```
+
+## 8. Notas metodológicas
+
+Guía integrada de entrenamiento, evaluación, inferencia, threshold clínico y tracking:
+[docs/training_evaluation_inference_workflow.md](docs/training_evaluation_inference_workflow.md).
+
+TensorFlow Datasets entrega el dataset `malaria` como un único split llamado `train`.
+El pipeline vigente ya resolvió la identidad clínica y materializó una partición
+patient-disjoint: los 201 pacientes están asignados a exactamente un split, con
+12/12 validaciones anti-leakage aprobadas. PostgreSQL es el source of truth y el
+filesystem versionado es su materialización reconciliada. El antiguo split aleatorio
+80/10/10 permanece únicamente como `LEGACY_REQUIRED` para reproducibilidad histórica.
+
+La construcción, validación, materialización y congelamiento de futuras versiones se
+mantiene en `malaria_dataset_split_project/`; la guía operativa completa está en
+`../docs/runbook_split_completo_malaria.md`.
+
+## 9. Dataset
+
+TensorFlow Datasets:
+
+https://www.tensorflow.org/datasets/catalog/malaria
+
+Fuente NIH/NLM:
+
+https://lhncbc.nlm.nih.gov/publication/pub9932
+
+### Registro y configuración E2
+
+TRAIN y el ejecutor masivo usan el registro único de modelos habilitados. Los nuevos
+TRAIN requieren persistencia PostgreSQL incluso sin `--track-db`; para inspección sin
+BD use `--dry-run`. Consulte [Cómo agregar y habilitar un modelo](docs/model_registry_e2.md)
+para configuración, adaptadores, matriz predeterminada y límites E3–E9.
+
+## Campañas desde frontend y ejecución local
+
+Las campañas se crean y configuran desde **Modelo IA → Campañas** en
+`http://localhost/modelo-ia/campanas?datasource=malaria`. El frontend persiste
+la campaña en PostgreSQL; no se requiere crear un JSON de configuración para
+el launcher actual. Cada campaña contiene dataset, modelo, optimizador,
+semillas y parámetros de ejecución. Una campaña ya finalizada con miembros
+`verified` **no debe reutilizarse para forzar nuevos entrenamientos**: crea una
+nueva campaña con la misma configuración para conservar trazabilidad.
+
+Antes de iniciar un TRAIN, inspeccionar su plan sin reservar intentos:
+
+```bash
+python run_train_all_models.py --campaign-id CAMPAIGN_UUID --plan
+```
+
+Revisar `configuration_hash`, dataset, `seed`, cantidad de miembros,
+`calibrate_threshold`, `evaluate_best_on_test` y `execution_readiness.ready`.
+El `contract_hash` puede ser diferente entre campañas y no debe interpretarse
+como prueba de que la configuración del modelo haya cambiado.
+
+### Elegir CPU o GPU Metal
+
+**CPU:**
+
+```bash
+source .venv-local-train/bin/activate
+python run_train_all_models.py --campaign-id CAMPAIGN_UUID
+```
+
+**GPU Metal** (en otra campaña, con configuración científica equivalente):
+
+```bash
+deactivate  # sólo si hay un entorno activo
+source .venv-metal/bin/activate
+python -c 'import tensorflow as tf; print(tf.config.list_physical_devices("GPU"))'
+python run_train_all_models.py --campaign-id CAMPAIGN_UUID
+```
+
+El proceso corre en el Mac (`local_python`), mientras PostgreSQL sigue en
+Docker. El launcher registra las diferencias del runtime en
+`runs.execution_parameters.runtime_environment`. Consultar resultados:
+
+```bash
+python run_train_all_models.py --campaign-id CAMPAIGN_UUID --result
+```
+
+`TRAIN verified` significa que terminó correctamente, **no** que se haya
+alcanzado el objetivo clínico. `clinical_status.met/unmet` se revisa por
+separado. El TEST permanece sujeto al protocolo de la campaña.
+
+### Benchmark CPU vs. GPU (referencia 2026-10-06)
+
+Dos campañas de Custom CNN + Adam, semilla 47, 3 épocas, batch 64, mismo
+`configuration_hash` y dataset oficial:
+
+| Métrica | CPU | GPU Metal |
+| --- | ---: | ---: |
+| Campaña | `900bbe8f-46b5-46bc-a64a-092b5c998afe` | `2ffeca5d-11e9-4c18-9b25-22a55a8e90ac` |
+| Run | `e9eb63f4-44a0-469f-a358-69df27071faf` | `bbbd5b60-afaa-4034-a504-a60ed642aafe` |
+| Tiempo `runs.duration_seconds` | 546.026399 s | 117.308581 s |
+| Tiempo acumulado de épocas Keras | 541 s | 115 s |
+| Mejor época (`best_epoch`) | 2 | 2 |
+| Mejor `val_f2_parasitized` | 0.93616697 | 0.95166841 |
+| Objetivo clínico ≥ 98 % | No cumplido | No cumplido |
+
+Usando el tiempo persistido del run:
+
+- **Speedup** `S = T_CPU / T_GPU ≈ 4.65×`.
+- **Reducción** `R = (1 - T_GPU / T_CPU) × 100 ≈ 78.52 %`.
+- **Tiempo ahorrado** `T_CPU - T_GPU ≈ 428.72 s`.
+
+Los campos `gpu_available` y `gpu_devices` en esos registros no acreditan por
+sí solos la colocación real de operaciones en Metal. Los valores representan
+una observación por dispositivo, no un benchmark estadístico repetido.
+
+Consulta SQL de solo lectura para nuevas comparaciones:
+
+```sql
+SELECT id, campaign_id, run_name, status, execution_type,
+       started_at, finished_at, duration_seconds,
+       completed_epochs, best_epoch, checkpoint_monitor,
+       checkpoint_mode, best_validation_value,
+       gpu_available, gpu_devices
+FROM public.runs
+WHERE campaign_id IN ('900bbe8f-46b5-46bc-a64a-092b5c998afe',
+                      '2ffeca5d-11e9-4c18-9b25-22a55a8e90ac')
+ORDER BY started_at;
+```
+
+## Ejecución de una campaña (Mac o Docker)
+
+Interfaz normal y única necesaria:
+
+```bash
+cd capstone/malaria_dl_local_project
+source .venv-local-train/bin/activate
+python run_train_all_models.py --campaign-id <CAMPAIGN_UUID>
+```
+
+Todo lo demás sale de PostgreSQL (dataset, miembros, configuraciones, seeds) o se
+genera (attempt, run, owner). En el Mac el launcher habla directamente con el
+PostgreSQL de Docker Compose publicado en `127.0.0.1:5432`, con el mismo rol de runtime
+y el mismo `.env` raíz que el backend: no hay HTTP, JWT, `agent_config.json` ni
+`revision_id`. Requisito: `docker compose up -d db`.
+
+- **Preflight** (antes de crear nada): entorno virtual, esquema E10, dataset
+  materializado (fingerprints y conteos), configuración congelada, TEST bloqueado,
+  escritura de artifacts y global gate libre. Si falla imprime `STOP <código>` y no
+  modifica la campaña.
+- **Runtime**: el entorno real (Python, TF, paquetes, `source_sha256`, OS, host) se
+  **registra** en `runs.execution_parameters.runtime_environment`; una diferencia con el
+  entorno de referencia de la campaña se informa, no bloquea.
+- **Secuencial**: un TRAIN a la vez. Si un TRAIN falla se registra el intento y el
+  launcher termina con código 1 sin iniciar otro miembro.
+- **Ctrl+C**: el run queda `interrupted` y el subproceso se termina; el código de salida
+  es 130.
+- **Reanudar**: re-ejecutar el mismo comando. Los miembros verificados no se repiten; los
+  fallidos o interrumpidos se reintentan dentro del presupuesto de la campaña.
+- Opcional: `--dry-run` (preflight completo + siguiente miembro, sin escrituras),
+  `--plan`, `--inspect`.
+
+## 10. (Heredado) Ejecución local con agente HTTP (Mac) + backend/PostgreSQL en Docker
+
+> Ya no es necesario para ejecutar campañas: ver la sección anterior. Se conserva para
+> los intentos controlados históricos con revisión técnica.
+
+`src/malaria_dl/local_execution/` implementa un modo de ejecución `local_python`: el
+backend y PostgreSQL permanecen en Docker (administración de campañas, reservas,
+exclusividad, persistencia); sólo el subproceso TRAIN corre nativamente en el Mac, fuera
+del límite de memoria del contenedor. El agente nunca se conecta a PostgreSQL
+directamente — reporta todo vía la API del backend (`/execution/local/*`). El arranque
+automático está **deshabilitado por defecto**: la ruta HTTP exige
+`CAPSTONE_LOCAL_EXECUTION_ENABLED=1` explícito en el backend, y el agente sólo actúa
+cuando se invoca a mano.
+
+Detalle completo de diseño, contrato agente-backend y estado Implementado / Verificado
+en `docs/audits/e9_3_local_agent_2026-09-15/auditoria.md`.
+
+### 10.1 Preparar el entorno local (agente heredado)
+
+Entorno virtual dedicado (Python 3.12, nunca el Python global), con pines exactos y
+reproducibles en `requirements-local-train.txt`:
+
+```bash
+cd malaria_dl_local_project
+python3.12 -m venv .venv-local-train
+.venv-local-train/bin/pip install --upgrade pip
+.venv-local-train/bin/pip install -r requirements-local-train.txt
+```
+
+Verificación de plataforma/dispositivo (debe mostrar `arm64`/`Darwin` y sin GPU/Metal):
+
+```bash
+.venv-local-train/bin/python -c "
+import platform, tensorflow as tf, numpy as np
+print(platform.platform(), platform.machine())
+print('tensorflow', tf.__version__, 'numpy', np.__version__)
+print('devices', tf.config.list_physical_devices())"
+```
+
+### 10.2 Validar conectividad y almacenamiento (dry-run, sin escrituras)
+
+El agente nunca elige modelos ni crea experimentos: el backend entrega la sesión exacta
+(campaña, miembro, revisión técnica) en un archivo de configuración JSON que el
+operador prepara a partir de los identificadores de la reserva ya autorizada:
+
+```json
+{
+  "url": "https://<host-del-backend>",
+  "roots": {"dataset": "/ruta/local/al/dataset", "artifacts": "/ruta/local/a/artifacts"},
+  "request": {
+    "campaign_id": "...", "dataset_id": "...", "member_id": "...",
+    "previous_attempt_id": "...", "revision_id": "...", "request_id": "...",
+    "reason": "...", "dataset_root_id": "dataset", "artifact_root_id": "artifacts",
+    "mode": "controlled", "environment": {"...": "..."}, "agent_id": "..."
+  }
+}
+```
+
+```bash
+export CAPSTONE_AGENT_BEARER=<token>
+.venv-local-train/bin/python -m src.malaria_dl.local_execution.agent dry-run \
+  --config agent_config.json --state agent_state.json
+```
+
+Esto sólo hace `prepare()` + estado del gate global — cero reservas, cero escrituras.
+
+### 10.3 Iniciar el agente (una única reserva, un único TRAIN)
+
+```bash
+.venv-local-train/bin/python -m src.malaria_dl.local_execution.agent start \
+  --config agent_config.json --state agent_state.json
+```
+
+Reclama la reserva (idempotente por `request_id`), verifica el manifiesto del dataset,
+lanza el subproceso TRAIN, mantiene heartbeat cada 15 s (vencimiento 60 s) en un hilo
+independiente del cálculo, y reporta épocas/artefactos/checkpoint vía la API a medida
+que ocurren. Con `mode: "controlled"` termina tras un único intento, sin encadenar.
+
+### 10.4 Consultar estado
+
+```bash
+.venv-local-train/bin/python -m src.malaria_dl.local_execution.agent status \
+  --config agent_config.json --state agent_state.json
+```
+
+Reporta `state`, `communication` (`connected`/`uncertain` tras 60 s sin heartbeat) y si
+la reserva ya fue liberada. Nunca libera nada por sí mismo.
+
+### 10.5 Pausar nuevas asignaciones
+
+No hay un flag de pausa separado: el agente sólo actúa cuando se invoca. Para impedir
+nuevas asignaciones, no relance `agent start` (y, del lado backend, mantenga
+`CAPSTONE_LOCAL_EXECUTION_ENABLED` sin definir o en `0`). Un intento controlado ya
+reservado no se puede pausar a medias: el contrato exige terminar y verificar ese
+intento antes de que la exclusividad se libere.
+
+### 10.6 Recuperar una desconexión
+
+```bash
+.venv-local-train/bin/python -m src.malaria_dl.local_execution.agent reconcile \
+  --config agent_config.json --state agent_state.json
+```
+
+Si el estado local (`agent_state.json`) tiene un `exit_proof` pendiente de confirmar,
+lo reenvía; si no, sólo consulta estado. El vencimiento de heartbeat nunca se trata como
+evidencia de que el TRAIN terminó — la exclusividad permanece retenida hasta una salida
+con ausencia de proceso probada.
+
+### 10.7 Preparar un único intento controlado
+
+Requiere una revisión técnica `local_python` ya registrada por el backend
+(`ControlledRepository.register_revision`, campaña `paused`) y un `request_id` nuevo.
+El agente sólo consume la sesión que el backend arma — no reasigna intentos históricos
+ni cambia hashes de revisiones previas.
+
+### 10.8 Detener el agente sin interrumpir un TRAIN activo
+
+`SIGINT`/`SIGTERM` sólo detienen el bucle de solicitud del *siguiente* trabajo; nunca
+señalan al subproceso TRAIN en curso, que se deja terminar y reportar normalmente:
+
+```bash
+kill -TERM <pid-del-agente>
+```
+
+### Estado histórico de instalación (no vigente como diagnóstico actual)
+
+- El venv y `requirements-local-train.txt` fueron creados y verificados en este Mac
+  (import + plataforma/dispositivo reales); no se instaló nada en el Python global.
+- La referencia histórica indicaba que la migración
+  `alembic/versions/20260915_01_local_execution.py` aún no estaba aplicada
+  al momento de aquella auditoría. **No describe el estado actual** de PostgreSQL.
+- `CAPSTONE_LOCAL_EXECUTION_ENABLED`/`CAPSTONE_LOCAL_STORAGE_ROOTS` no están definidas
+  en ningún compose/env real — la ruta HTTP permanece deshabilitada por defecto.

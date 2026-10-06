@@ -1,0 +1,3 @@
+# Apple Silicon GPU Metal; includes the shared CPU dependencies.
+-r requirements-cpu.txt
+tensorflow-metal==1.2.0

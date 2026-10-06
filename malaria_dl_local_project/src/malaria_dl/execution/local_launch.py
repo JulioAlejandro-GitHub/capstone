@@ -12,6 +12,12 @@ import sys
 from pathlib import Path
 from urllib.parse import quote
 
+ALLOWED_VENVS = {
+    ".venv-local-train",
+    ".venv-metal",
+}
+
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 VENV = ".venv-local-train"
 REQUIRED = ("tensorflow", "keras", "numpy", "sqlalchemy", "psycopg", "psutil", "dotenv")
@@ -31,7 +37,7 @@ def environment_problem(prefix=None, base=None, version=None, find=importlib.uti
     prefix = sys.prefix if prefix is None else prefix
     base = sys.base_prefix if base is None else base
     version = sys.version_info if version is None else version
-    if Path(prefix).name != VENV or prefix == base:
+    if Path(prefix).name not in ALLOWED_VENVS or prefix == base:
         return f"intérprete activo: {prefix}"
     if tuple(version[:2]) != (3, 12):
         return f"Python {version[0]}.{version[1]} (se requiere 3.12)"
