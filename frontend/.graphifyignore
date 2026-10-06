@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+.next/
+coverage/
+playwright-report/
+test-results/
+graphify-out/
+*.tsbuildinfo
+*.map
+.env
+.env.*
+!.env.example

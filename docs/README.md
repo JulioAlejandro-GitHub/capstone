@@ -51,6 +51,12 @@ también comprueba que el artefacto y su contrato técnico permitan completar de
 segura el deployment, smoke test e inferencia. Esas comprobaciones son precondiciones
 de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 
+## C2.13 — Validación experimental mini CPU/GPU
+
+- [C2.13 — Preflight C2.13-A](audits/clinical_calibration_c2_13/README.md) — `HISTORICAL_AUDIT`, 2026-10-04.
+  Preflight **COMPLETO**, pendiente aprobación explícita del usuario (Option A/B).
+  GPU bloqueado (sin Metal); CPU OK. No se han iniciado entrenamientos ni creado campañas.
+
 ## Capacidades opcionales y de compatibilidad
 
 - [Preparación de releases desde Ejecuciones](executions_prepare_release_api.md),

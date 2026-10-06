@@ -75,3 +75,7 @@ docs/dump-malaria_experiments-202607290730.sql
 # S1.D official full-smear RAW source and owned download staging/cache.
 /malaria_dl_local_project/data/NIH-NLM-ThinBloodSmearsPf/
 /malaria_dl_local_project/data/.NIH-NLM-ThinBloodSmearsPf.download/
+/backend_api/graphify-out
+/frontend/graphify-out
+/malaria_dataset_split_project/graphify-out
+/malaria_dl_local_project/graphify-out
