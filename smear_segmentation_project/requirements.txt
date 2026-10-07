@@ -1,0 +1,8 @@
+# YOLO Detector Train
+ultralytics==8.4.174
+torch==2.14.1
+torchvision==0.29.1
+
+# Compatibility with the shared TensorFlow 2.17.1 environment
+numpy==1.26.4
+opencv-python==4.11.0.86

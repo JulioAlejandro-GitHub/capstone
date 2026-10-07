@@ -81,3 +81,9 @@ docs/dump-malaria_experiments-202607290730.sql
 /malaria_dl_local_project/graphify-out
 /graphify-analysis
 /malaria_dl_local_project/.venv-metal
+
+# Local ML framework artifacts
+/data/keras/
+
+# Downloaded YOLO model weights
+/yolo26n-seg.pt
