@@ -101,11 +101,6 @@ def main():
         ):
             raise CampaignError("CHILD_FROZEN_IDENTITY_CONFLICT")
         preflight(repo, row, os.path.dirname(session["artifact_root"]))
-        # Read images from this host's copy of the verified materialization; the
-        # persisted session/run snapshot keeps the campaign's frozen value.
-        from ..data.governed_dataset import local_dataset_root
-        session = {**session, "dataset": {**session["dataset"], "dataset_root": str(
-            local_dataset_root(session["dataset"]["dataset_root"]))}}
         from ..models.registry import resolve_descriptor
         from .global_gate import token
 

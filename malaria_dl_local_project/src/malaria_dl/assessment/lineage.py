@@ -2,6 +2,7 @@
 
 from collections import Counter
 from pathlib import Path
+from typing import Any
 from uuid import UUID, uuid5
 
 from ..campaigns.contracts import CampaignError
@@ -10,6 +11,7 @@ from ..data.governed_dataset import (
     assert_run_dataset_snapshot_unchanged,
     resolve_governed_dataset,
     training_dataset_metadata,
+    validate_dataset_location,
 )
 from ..data.input_contract import resolve_checkpoint_input, validate_input_contract
 from ..execution.artifacts import file_identity, verify_session
@@ -81,7 +83,9 @@ def resolve(repository, training_run_id=None, model_version_id=None):
                 "epoch": artifact["epoch"],
             },
         }
-        return binding, session["dataset"], calibration[0]
+        dataset = training_dataset_metadata(session["run_id"])
+        assert_run_dataset_snapshot_unchanged(dataset, session["dataset"])
+        return binding, dataset, calibration[0]
     # Historical consultation is unchanged. New execution requires the original complete evidence.
     from contextlib import contextmanager
 
@@ -140,7 +144,17 @@ def resolve(repository, training_run_id=None, model_version_id=None):
     )
 
 
-def dataset_samples(repository, inherited, split, override=None, *, inspection=False):
+def dataset_samples(
+    repository: Any,
+    inherited: dict[str, Any],
+    split: str,
+    override: str | None = None,
+    *,
+    inspection: bool = False,
+    training_run_id: str | None = None,
+    dataset_dir: Path | str | None = None,
+) -> list[dict[str, Any]]:
+    require(split in ("train", "val", "test"), "PROTOCOL_REQUIRED")
     require(
         override is None or identifier(override) == inherited["dataset_version_id"],
         "DATASET_OVERRIDE_CONFLICT",
@@ -149,10 +163,12 @@ def dataset_samples(repository, inherited, split, override=None, *, inspection=F
         resolve_governed_dataset(inherited["dataset_version_id"])
         if inspection
         else verify_dataset_for_execution(
-            inherited["dataset_version_id"], consumer="assessment.e6"
+            inherited["dataset_version_id"], consumer="assessment.e6",
+            training_run_id=training_run_id, dataset_dir=dataset_dir,
         )
     )
     assert_run_dataset_snapshot_unchanged(snapshot, inherited)
+    validate_dataset_location(snapshot, dataset_dir)
     with repository.transaction(readonly=True) as c:
         rows = list(
             execute(
@@ -173,7 +189,7 @@ def dataset_samples(repository, inherited, split, override=None, *, inspection=F
         if r["split_name"] != split:
             continue
         relative = materialized_relative_path(r, collisions).as_posix()
-        path = Path(inherited["dataset_root"]) / relative
+        path = snapshot.dataset_root / relative
         require(
             file_identity(path)["sha256"] == r["source_file_sha256"],
             "SAMPLE_CONTENT_CHANGED",

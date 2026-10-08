@@ -48,6 +48,7 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
         make_image_dataset_from_directory,
         preprocess_physical_dataset,
     )
+    from ..data.governed_dataset import local_dataset_root
     from ..evaluation.calibration_controller import CalibrationController
     from ..models.adapters import compile_phase
     from ..training.checkpoint_policy import (
@@ -72,9 +73,12 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
         tf.config.experimental.enable_op_determinism()
     datasets = {}
     sample_paths = []
+    # Both campaign and standalone consume the verified host mount, retaining
+    # the original snapshot in the session and all scientific records.
+    dataset_root = local_dataset_root(session["dataset"]["dataset_root"])
     for role in ("train", "val"):
         raw = make_image_dataset_from_directory(
-            Path(session["dataset"]["dataset_root"]) / role,
+            dataset_root / role,
             r["model"]["input_shape"][0],
             e["batch_size"],
             role == "train",
@@ -82,7 +86,7 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
         )
         if role == "val":
             sample_paths = [
-                str(Path(p).relative_to(session["dataset"]["dataset_root"]))
+                str(Path(p).relative_to(dataset_root))
                 for p in raw.file_paths
             ]
         datasets[role] = preprocess_physical_dataset(

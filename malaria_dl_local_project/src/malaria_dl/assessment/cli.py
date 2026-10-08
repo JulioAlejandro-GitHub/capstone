@@ -18,6 +18,8 @@ def parser(kind, batch=False):
         p.add_argument("--model-version-id")
         p.add_argument("--recover-attempt-id")
     p.add_argument("--dataset-version-id")
+    p.add_argument("--model", help="Modelo esperado; requiere el linaje explícito del TRAIN.")
+    p.add_argument("--dataset-dir", help="Ubicación de la misma materialización gobernada.")
     p.add_argument("--inspect", action="store_true")
     p.add_argument("--split", choices=("train", "val", "test"))
     p.add_argument("--purpose", choices=("development", "final"))
@@ -38,6 +40,8 @@ def parser(kind, batch=False):
 
 
 def main(kind="evaluate", batch=False, argv=None):
+    from ..execution.local_launch import bootstrap
+    bootstrap()
     from ..execution.global_gate import GlobalGate
     with GlobalGate("assessment-" + kind):
         return _main(kind, batch, argv)
@@ -87,6 +91,8 @@ def _main(kind="evaluate", batch=False, argv=None):
             )
         options = {
             "dataset_version_id": args.dataset_version_id,
+            "model": args.model,
+            "dataset_dir": args.dataset_dir,
             "split": args.split,
             "purpose": args.purpose,
             "protocol": protocol,

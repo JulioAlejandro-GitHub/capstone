@@ -11,6 +11,7 @@ from .contracts import (
     prediction,
     require,
     threshold,
+    validate_split_protocol,
     verify_rows,
 )
 from .lineage import dataset_samples, resolve
@@ -56,6 +57,8 @@ def prepare(
     training_run_id=None,
     model_version_id=None,
     dataset_version_id=None,
+    dataset_dir=None,
+    model=None,
     split,
     purpose,
     protocol,
@@ -67,16 +70,25 @@ def prepare(
     inspection=False,
     input_override=None,
 ):
+    validate_split_protocol(split, purpose, protocol)
     binding, dataset, calibration = resolve(
         repository, training_run_id, model_version_id
     )
+    if model is not None:
+        from ..models.registry import MODEL_REGISTRY
+
+        architecture = binding["input_contract"]["architecture"]
+        descriptor = MODEL_REGISTRY.get(architecture)
+        names = (architecture, *(descriptor.aliases if descriptor else ()))
+        require(model in names, "MODEL_TRAIN_CONFLICT")
     require(
         input_override is None or binding["input_contract"] == input_override,
         "INPUT_OVERRIDE_CONFLICT",
     )
     decision = threshold(requested_threshold, protocol, calibration)
     samples = dataset_samples(
-        repository, dataset, split, dataset_version_id, inspection=inspection
+        repository, dataset, split, dataset_version_id, inspection=inspection,
+        training_run_id=binding["training_run_id"], dataset_dir=dataset_dir,
     )
     evaluation = None
     if evaluation_id:
@@ -102,7 +114,8 @@ def prepare(
         if explanation["method"] == "shap":
             # References must be accredited TRAIN samples, never selected by TEST scores.
             background_samples = dataset_samples(
-                repository, dataset, "train", inspection=inspection
+                repository, dataset, "train", inspection=inspection,
+                training_run_id=binding["training_run_id"], dataset_dir=dataset_dir,
             )
             ids = set(explanation["background"])
             require(len(ids) == len(explanation["background"]), "BACKGROUND_AMBIGUOUS")

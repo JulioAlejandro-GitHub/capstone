@@ -25,6 +25,21 @@ test-ml:
 		tests/test_decision.py \
 		tests/test_image_quality.py
 
+.PHONY: test-governed-dataset
+# Synthetic files and mocked persistence only; never run an official split.
+DATASET_TEST_PYTHON ?= malaria_dl_local_project/.venv-local-train/bin/python
+test-governed-dataset:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dl_local_project $(DATASET_TEST_PYTHON) -m pytest -q -p no:cacheprovider \
+		-k 'not test_byte_exact_canonical_rules_match_upstream_sources' \
+		malaria_dl_local_project/tests/test_dataset_resolution.py \
+		malaria_dl_local_project/tests/test_dataset_stage1.py \
+		malaria_dl_local_project/tests/test_governed_dataset_contract.py::test_snapshot_is_immutable_and_change_is_rejected \
+		malaria_dl_local_project/tests/test_local_train_launcher.py::test_relocated_host_prefix_is_the_same_dataset \
+		malaria_dl_local_project/tests/test_local_train_launcher.py::test_different_dataset_is_still_rejected \
+		malaria_dl_local_project/tests/test_local_train_launcher.py::test_docker_bootstrap_changes_nothing \
+		malaria_dl_local_project/tests/test_local_train_launcher.py::test_host_bootstrap_needs_no_jwt \
+		malaria_dl_local_project/tests/test_assessment_e6.py
+
 .PHONY: test-train-persistence
 test-train-persistence:
 	python3 scripts/test_train_persistence.py

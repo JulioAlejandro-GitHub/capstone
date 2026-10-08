@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from uuid import uuid4
 
+from ..data.governed_dataset import local_dataset_root
 from ..execution.artifacts import file_identity
 from .contracts import require
 
@@ -18,6 +19,7 @@ class KerasRuntime:
         tf.keras.utils.set_random_seed(value["seed"])
         tf.config.experimental.enable_op_determinism()
         self.value = value
+        self.dataset_root = local_dataset_root(value["dataset"]["dataset_root"])
         self.tf = tf
         self.model = tf.keras.models.load_model(value["model"]["path"], compile=False)
         validate_model_input(self.model, value["model"]["input_contract"])
@@ -28,12 +30,13 @@ class KerasRuntime:
         tf = self.tf
         contract = self.value["model"]["input_contract"]
         images = []
+        allowed = self.value["samples"] + (self.value.get("explanation") or {}).get("background", [])
         for s in samples:
-            path = Path(self.value["dataset"]["dataset_root"]) / s["relative_path"]
+            require(s in allowed, "SAMPLE_NOT_AUTHORIZED")
+            path = self.dataset_root / s["relative_path"]
             require(
-                path.resolve().is_relative_to(
-                    Path(self.value["dataset"]["dataset_root"]).resolve()
-                ),
+                path.resolve().is_relative_to(self.dataset_root.resolve())
+                and Path(s["relative_path"]).parts[0] == s["split"],
                 "SAMPLE_PATH_CONFLICT",
             )
             require(path.is_file() and not path.is_symlink(), "SAMPLE_FILE_INVALID")

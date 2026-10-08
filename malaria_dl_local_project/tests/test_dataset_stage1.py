@@ -24,6 +24,12 @@ MATERIALIZATION = "22345678-abcd-4234-8234-123456789abc"
 TRAIN = "32345678-abcd-4234-8234-123456789abc"
 
 
+@pytest.fixture(autouse=True)
+def synthetic_model_catalog(monkeypatch):
+    from src.malaria_dl.models import registry
+    monkeypatch.setattr(registry, "registered_models", lambda: tuple(registry.MODEL_REGISTRY))
+
+
 class Result:
     def __init__(self, rows):
         self.rows = rows
@@ -456,13 +462,13 @@ def test_consumers_reject_before_inference(
     if historic:
         fixture.training["dataset_version_id"] = None
     def inherited(*a):
-        return {}, gd.training_dataset_metadata(TRAIN), None
+        return {"training_run_id": TRAIN}, gd.training_dataset_metadata(TRAIN), None
     monkeypatch.setattr(service, "resolve", inherited)
     inference = Mock(side_effect=AssertionError("inference must not run"))
     monkeypatch.setattr(service, "KerasRuntime", inference)
     with pytest.raises((gd.GovernedDatasetError, AssessmentError), match="NOT_ACCREDITED|OVERRIDE_CONFLICT"):
         service.prepare(None, training_run_id=TRAIN, dataset_version_id=str(uuid4()), split="val", purpose="development",
-            protocol={"version":"synthetic", "allowed_numeric_thresholds":[.5]}, requested_threshold=".5", seed=42, batch_size=2,
+            protocol={"version":"synthetic", "splits":["val"], "purposes":["development"], "allowed_numeric_thresholds":[.5]}, requested_threshold=".5", seed=42, batch_size=2,
             explanation={"method":"gradcam"} if kind=="explain" else None)
     inference.assert_not_called()
     assert not list(fixture.root.rglob("*.csv"))
