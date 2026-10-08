@@ -120,7 +120,7 @@ def test_registered_legacy_candidate_preserves_operational_checks(monkeypatch, o
     result = stage2_status.Stage2StatusService().status(UUID(TRAIN), "malaria")
     assert result.eligible
     assert result.deployment_readiness.ready == (not operational_blockers)
-    assert result.next_action == ("enable_for_stage2" if not operational_blockers else "unavailable")
+    assert result.next_action == "enable_for_stage2"
     preview.preview.assert_called_once_with(TRAIN)
     preview.enable.assert_not_called()
     with factory.call_args.args[0]() as connection:
@@ -177,6 +177,6 @@ async def test_real_status_is_eligible_read_only_and_not_published():
     assert result["published"] is result["available"] is False
     assert result["blockers"] == []
     assert {b["code"] for b in result["technical_blockers"]} >= {
-        "MODEL_VERSION_NOT_REGISTERED", "E6_PUBLICATION_REFERENCE_UNSUPPORTED",
+        "MODEL_VERSION_NOT_REGISTERED",
     }
     assert (scientific_fingerprint(), publication_fingerprint()) == before

@@ -5,6 +5,7 @@ import os
 from sqlalchemy import create_engine, pool
 
 from alembic import context
+from alembic.script import ScriptDirectory
 from alembic_v2.resources import REVISION, load_baseline
 from alembic_v2.safety import (
     inspect_isolation,
@@ -22,6 +23,9 @@ def migrate():
         "V2_OFFLINE_EXECUTION_DISABLED_USE_STATIC_VALIDATOR",
     )
     opts = context.get_x_argument(as_dictionary=True)
+    if opts.get('activation_migration') == 'true':
+        from alembic_v2.activation import migrate_activation
+        return migrate_activation(config, opts)
     url = os.environ.get("PGV2_DATABASE_URL", "")
     target = read_authorization(opts.get("target") or os.environ.get("PGV2_TARGET"), url)
     # All resources and host/volume identity are validated BEFORE connecting.
@@ -81,7 +85,7 @@ def migrate():
                         "SELECT version_num FROM public.alembic_version"
                     ).scalars()
                 )
-                require(versions == [REVISION], "V2_UNKNOWN_OR_LEGACY_REVISION")
+                require(len(versions) == 1 and versions[0] in {revision.revision for revision in ScriptDirectory.from_config(config).walk_revisions()}, "V2_UNKNOWN_OR_LEGACY_REVISION")
                 extensions = set(
                     connection.exec_driver_sql(
                         "SELECT extname FROM pg_extension"

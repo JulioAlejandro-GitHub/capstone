@@ -138,7 +138,7 @@ export interface ProductiveModelAvailability {
 }
 export interface Stage2Publication {
   id:string;datasource:string;model_version_id:string;training_run_id:string;
-  evaluation_run_id:string;checkpoint_artifact_id:string;scope:'stage2';
+  evaluation_run_id:string|null;evaluation_attempt_id?:string|null;checkpoint_artifact_id:string;scope:'stage2';
   status:'active'|'inactive';is_active:boolean;published_at:string;published_by:string|null;
   deactivated_at:string|null;deactivated_by:string|null;created_at:string;updated_at:string;
 }

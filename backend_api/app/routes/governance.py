@@ -8,6 +8,8 @@ from pydantic import BaseModel,ConfigDict
 from app.db import fetch_all,fetch_one,get_engine,resolve_datasource
 from app.services.serialization import row_to_dict,rows_to_list
 from app.services.productive_model import ProductiveModelResolver
+from app.schemas.cell_activation import CellActivationRequest, CellActivationResult
+from app.services.cell_activation import CellActivationService
 from app.schemas.stage2_status import Stage2Status
 from app.services.stage2_status import Stage2StatusService, Stage2TrainingNotFound
 
@@ -219,6 +221,21 @@ def model_version_stage2_status(model_version_id:str,datasource:str|None=Query("
     return safe(lambda:stage2_status_with_deployment(
       stage2_publication_service(datasource).status(uid(model_version_id)),datasource,
     ))
+
+def get_cell_activation_service(datasource: str | None = Query("malaria")) -> CellActivationService:
+    key = resolve_datasource(datasource)
+    return CellActivationService(get_engine(key), key)
+
+
+@router.post("/training-runs/{training_run_id}/cell-activation", response_model=CellActivationResult)
+def activate_cell_model(
+    training_run_id: UUID, body: CellActivationRequest,
+    service: CellActivationService = Depends(get_cell_activation_service),
+    principal: Principal = Depends(audited_permission(Permission.MODELS_PUBLISH, "scientific.model.deployment.activated")),
+) -> CellActivationResult:
+    return CellActivationResult.model_validate(safe(lambda: service.activate(
+        training_run_id, actor=principal.username, replace_existing=body.replace_existing, reason=body.reason)))
+
 
 @router.post("/model-versions/{model_version_id}/stage2-publications")
 def publish_stage2_model(

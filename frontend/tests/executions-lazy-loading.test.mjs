@@ -37,30 +37,31 @@ test('4 filtros, URL y navegación de detalle se conservan', () => {
   }
 });
 
-test('5 not_available se presenta como No disponible', () => {
-  assert.match(row, /not_available: \{ label: 'No disponible'/);
+test('5 los estados internos de liberación no se exponen en el resumen', () => {
+  assert.doesNotMatch(row, /No disponible|Disponible para publicar|Estado no disponible/);
 });
 
-test('6 available_to_publish se presenta como Disponible para publicar', () => {
-  assert.match(row, /available_to_publish: \{ label: 'Disponible para publicar'/);
+test('6 la acción de TRAIN usa el texto de clasificación celular', () => {
+  assert.match(row, /Activar para clasificación celular/);
 });
 
-test('7 productive_stage2 se presenta como Productivo Etapa 2', () => {
-  assert.match(row, /productive_stage2: \{ label: 'Productivo Etapa 2'/);
+test('7 un modelo activo se identifica sin ofrecer activación redundante', () => {
+  assert.match(row, /stage2Active \? 'Modelo en Estado Activo' : 'Activar para clasificación celular'/);
 });
 
-test('8 null queda explícitamente sin estado y no disponible', () => {
-  assert.match(row, /: \{ label: 'Estado no disponible'/);
+test('8 errores del estado canónico no muestran un resumen productivo obsoleto', () => {
+  assert.match(group, /!stage2Error && training.release_status === 'productive_stage2'/);
 });
 
-test('9 tarjeta productiva usa exclusivamente release_status y estilo success', () => {
-  assert.match(group, /release_status === 'productive_stage2'/);
-  assert.match(group, /training-card--stage2-production/);
+test('9 tarjeta activa prioriza disponibilidad canónica sobre el resumen persistido', () => {
+  assert.match(group, /stage2Status.is_stage2_available === true && stage2Status.available_for_inference === true/);
+  assert.match(group, /stage2Active \? 'training-card--stage2-production'/);
   assert.match(styles, /\.training-card--stage2-production/);
 });
 
-test('10 la acción de TRAIN conserva el texto Ver detalle', () => {
-  assert.match(row, /onClick=\{onStage2Toggle\} type="button">Ver detalle<\/button>/);
+test('10 acción de TRAIN conserva la expansión accesible sin publicar directamente', () => {
+  assert.match(row, /onClick=\{onStage2Toggle\}/);
+  assert.doesNotMatch(row, /onPublish|activateCellModel/);
 });
 
 test('11 el resumen no infiere Liberación desde contratos Stage 2', () => {
@@ -163,7 +164,7 @@ test('30 publicación y readiness no se precargan al montar', () => {
   assert.doesNotMatch(initialEffect, /loadStage2|stage2-release-status|stage2-availability|productive-model-availability/);
 });
 
-test('31 abrir Ver detalle consulta readiness sólo del TRAIN elegido', () => {
+test('31 abrir Activar consulta readiness sólo del TRAIN elegido', () => {
   assert.match(group, /if \(next\) onStage2Open\(\)/);
   assert.match(loadStage2, /getStage2ReleaseStatus\(requestDatasource, runId/);
   assert.doesNotMatch(loadStage2, /getStage2Availability/);
@@ -175,7 +176,7 @@ test('32 estado productivo global no forma parte de la carga del panel', () => {
 });
 
 test('33 flujo mutante conserva endpoints, payload y reemplazo existentes', () => {
-  for (const token of ['publishStage2Model', 'deactivateStage2Publication', 'replace_existing', 'replacement-required']) {
+  for (const token of ['activateCellModel', 'replace_existing', 'replacement-required']) {
     assert.match(runs, new RegExp(token));
   }
 });
@@ -194,10 +195,8 @@ test('36 expansión usa button nativo operable con Enter y Espacio', () => {
   assert.match(group, /<button[^]*onClick=\{toggleChildren\}[^]*type="button"/);
 });
 
-test('37 productivo comunica texto e icono además del color', () => {
-  assert.match(row, /Productivo Etapa 2/);
-  assert.match(row, /aria-hidden="true"/);
-  assert.match(styles, /training-release-badge--productive/);
+test('37 modelo activo comunica su estado mediante texto', () => {
+  assert.match(row, /Modelo en Estado Activo/);
 });
 
 test('contratos y cliente propagan AbortSignal sin duplicar base URL', () => {

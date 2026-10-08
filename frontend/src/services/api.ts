@@ -1147,6 +1147,14 @@ export const api = {
       { timeoutMs: 30000 },
     );
   },
+  activateCellModel(datasource: string, trainingRunId: string, payload: { reason?: string; replace_existing: boolean }) {
+    return request<{ model_version_id: string; deployment_id: string; available_for_inference: boolean; idempotent: boolean }>(
+      `/api/training-runs/${encodeURIComponent(trainingRunId)}/cell-activation`, withDatasource(datasource), {
+        timeoutMs: 120000,
+        init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) },
+      },
+    );
+  },
   publishStage2Model(datasource: string, modelVersionId: string, payload: {
     actor?: string; reason?: string; replace_existing?: boolean;
   }) {

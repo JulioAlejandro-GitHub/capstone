@@ -239,8 +239,9 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
     runId: string,
     replaceExisting = false,
   ): Promise<'published' | 'replacement-required' | 'failed'> => {
-    const modelVersionId = stage2Status[runId]?.model_version_id;
-    if (!modelVersionId) return 'failed';
+    const candidate = stage2Status[runId];
+    const modelVersionId = candidate?.model_version_id;
+    if (!candidate?.eligible) return 'failed';
     setStage2Loading((current) => ({ ...current, [runId]: true }));
     setStage2Errors((current) => {
       const next = { ...current };
@@ -248,21 +249,19 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
       return next;
     });
     try {
-      if (!replaceExisting) {
-        const current = await api.getProductiveModelAvailability(datasource);
-        if (current.available && current.model?.model_version_id !== modelVersionId) {
-          return 'replacement-required';
-        }
+      const current = await api.getProductiveModelAvailability(datasource);
+      if (current.available && current.model?.model_version_id === modelVersionId) {
+        await loadStage2(runId, true);
+        return 'published';
       }
-      const response = await api.publishStage2Model(datasource, modelVersionId, {
-        reason: 'Disponibilización técnica desde el reporte de Ejecuciones',
+      if (current.available && !replaceExisting) return 'replacement-required';
+      const activated = await api.activateCellModel(datasource, runId, {
+        reason: 'Activación para clasificación celular',
         replace_existing: replaceExisting,
       });
-      setStage2Status((current) => ({ ...current, [runId]: response }));
+      if (!activated.available_for_inference) throw new Error('No se pudo activar el modelo para clasificación celular.');
       await Promise.all(
-        Object.keys(stage2Status)
-          .filter((visibleId) => visibleId !== runId)
-          .map((visibleId) => loadStage2(visibleId, true)),
+        Object.keys(stage2Status).map((visibleId) => loadStage2(visibleId, true)),
       );
       return 'published';
     } catch (reason) {
@@ -270,31 +269,10 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
         return 'replacement-required';
       }
       const message = reason instanceof ApiError && reason.message
-        ? `No fue posible publicar el modelo: ${reason.message}`
-        : promotionErrorMessage(reason);
+        ? `No fue posible activar el modelo: ${reason.message}`
+        : reason instanceof Error ? reason.message : 'No fue posible activar el modelo.';
       setStage2Errors((current) => ({ ...current, [runId]: message }));
       return 'failed';
-    } finally {
-      setStage2Loading((current) => ({ ...current, [runId]: false }));
-    }
-  };
-
-  const deactivateStage2 = async (runId: string) => {
-    const publicationId = stage2Status[runId]?.publication?.id;
-    if (!publicationId) return;
-    setStage2Loading((current) => ({ ...current, [runId]: true }));
-    setStage2Errors((current) => {
-      const next = { ...current };
-      delete next[runId];
-      return next;
-    });
-    try {
-      const response = await api.deactivateStage2Publication(datasource, publicationId, {
-        reason: 'Baja técnica desde el reporte de Ejecuciones',
-      });
-      setStage2Status((current) => ({ ...current, [runId]: response }));
-    } catch (reason) {
-      setStage2Errors((current) => ({ ...current, [runId]: promotionErrorMessage(reason) }));
     } finally {
       setStage2Loading((current) => ({ ...current, [runId]: false }));
     }
@@ -486,7 +464,6 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
                   onChildrenExpand={() => { void loadChildren(training.run_id); }}
                   onChildrenRetry={() => { void loadChildren(training.run_id, true); }}
                   onRunSelect={onRunSelect}
-                  onStage2Deactivate={() => deactivateStage2(training.run_id)}
                   onStage2Open={() => { void loadStage2(training.run_id); }}
                   onStage2Publish={(replaceExisting) => publishStage2(training.run_id, replaceExisting)}
                   stage2Error={stage2Errors[training.run_id]}

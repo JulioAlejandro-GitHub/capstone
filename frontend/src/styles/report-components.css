@@ -660,6 +660,31 @@
   overflow-wrap: anywhere;
 }
 
+.stage2-publication-grid .stage2-release-rule {
+  grid-column: 1 / -1;
+  padding: 10px 12px;
+  border-left: 3px solid #2d6cdf;
+  background: #edf3fc;
+}
+
+.stage2-release-rule>strong:first-of-type {
+  font-size: 15px;
+}
+
+.stage2-release-rule .stage2-release-states {
+  color: #26324a;
+  font-size: 12px;
+}
+
+.stage2-release-rule .stage2-missing-condition {
+  color: #8a2d2d;
+}
+
+.stage2-activation-limitation {
+  color: #684b13;
+  font-size: 12px;
+}
+
 .stage2-eligibility-badge {
   color: #17603a;
   background: #e5f6ed;

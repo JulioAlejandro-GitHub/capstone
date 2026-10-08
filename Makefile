@@ -14,7 +14,7 @@ test-stage2-status-backend:
 		/app/malaria_dl_local_project/tests/test_stage2_publication_eligibility.py
 
 test-stage2-status-frontend:
-	docker compose exec -T frontend node --test tests/stage2-status.test.mjs tests/stage2-availability.test.mjs tests/executions-lazy-loading.test.mjs tests/e6-lineage.test.mjs tests/four-step-production-flow.test.mjs
+	docker compose exec -T frontend node --test tests/stage2-status.test.mjs tests/stage2-availability.test.mjs tests/executions-promotion.test.mjs tests/executions-lazy-loading.test.mjs tests/e6-lineage.test.mjs tests/four-step-production-flow.test.mjs
 	docker compose exec -T frontend npm run build
 
 # Synthetic SELECT fixtures and read-only evidence; no scientific execution or DB writes.
@@ -175,3 +175,21 @@ scientific-parameters-doc:
 test-scientific-parameters:
 	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/generate_scientific_parameters.py --check
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dl_local_project $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dl_local_project/tests/test_scientific_parameter_registry.py malaria_dl_local_project/tests/test_threshold_calibration.py malaria_dl_local_project/tests/test_checkpoint_policy.py malaria_dl_local_project/tests/test_training_results.py malaria_dl_local_project/tests/test_assessment_e6.py::test_threshold_no_implicit_clinical_fallback malaria_dl_local_project/tests/test_assessment_e6.py::test_test_forbidden_development
+
+.PHONY: test-cell-activation-backend
+test-cell-activation-backend:
+	docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.cell-activation-test.yml up -d --wait cell-activation-db
+	@trap 'docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.cell-activation-test.yml rm -sf cell-activation-db' EXIT; \
+	docker compose run --rm --no-deps -T \
+		-v "$(CURDIR)/alembic_v2:/app/alembic_v2:ro" -v "$(CURDIR)/alembic_v2.ini:/app/alembic_v2.ini:ro" \
+		-e CELL_ACTIVATION_TEST_URL=postgresql+psycopg://postgres@cell-activation-db:5432/cell_activation_test \
+		-e PYTHONDONTWRITEBYTECODE=1 backend python -m pytest -q -p no:cacheprovider \
+		tests/test_cell_activation.py tests/test_cell_classification_services.py
+
+.PHONY: test-cell-checkpoint-read-only
+test-cell-checkpoint-read-only:
+	docker compose exec -T -e PYTHONDONTWRITEBYTECODE=1 backend python -m pytest -q -p no:cacheprovider tests/test_cell_activation_read_only.py
+
+.PHONY: migrate-cell-activation
+migrate-cell-activation:
+	python scripts/db/migrate_cell_activation.py

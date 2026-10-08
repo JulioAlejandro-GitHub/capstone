@@ -1,6 +1,8 @@
 # Elegibilidad técnica de Etapa 2 con E6
 
-Estado documental: `CURRENT_DOC`. Fecha: 2026-10-08.
+Estado documental: `HISTORICAL_AUDIT`. Fecha: 2026-10-08.
+
+Este diagnóstico de lectura precede a la [implementación de activación para Clasificación celular](cell_model_activation.md), que resuelve las limitaciones de publicación aquí documentadas.
 
 ## Diagnóstico
 

@@ -48,7 +48,7 @@ class Stage2StatusService:
             version_id = evaluation.get("model_version_id") or selected_artifact.get("version_id")
             version = repository.read_version(connection, training_run_id, version_id)
             version_id = version_id or (str(version["id"]) if version else None)
-            artifact_id = evaluation.get("checkpoint_artifact_id") or (str(version["checkpoint_artifact_id"]) if version and version.get("checkpoint_artifact_id") else None)
+            artifact_id = (str(version["checkpoint_artifact_id"]) if version and version.get("checkpoint_artifact_id") else evaluation.get("checkpoint_artifact_id"))
             publication = repository.read_publication(connection, training_run_id, version_id)
             deployment = repository.read_deployment(connection, version_id, artifact_id) or {}
 
@@ -68,9 +68,7 @@ class Stage2StatusService:
             technical.append({"code": "CHECKPOINT_UNAVAILABLE", "message": "El checkpoint no está accesible desde el backend de despliegue."})
         elif not verified:
             technical.append({"code": "CHECKPOINT_UNVERIFIED", "message": "No se pudo confirmar tamaño y SHA-256 del checkpoint."})
-        if evaluation.get("evaluation_source_kind") == "assessment_e6":
-            technical.append({"code": "E6_PUBLICATION_REFERENCE_UNSUPPORTED", "message": "La publicación actual aún no admite una referencia directa a un intento E6. Se requiere adaptar esa referencia antes de publicar."})
-        elif version:
+        if evaluation.get("evaluation_source_kind") != "assessment_e6" and version:
             # Preserve the existing operational package checks for traditional candidates.
             # Every DB access of this preview is forced read-only; enable() is never called.
             preview = Stage2ModelAvailabilityService(lambda: read_only_transaction(datasource)).preview(str(training_run_id))
@@ -102,7 +100,7 @@ class Stage2StatusService:
             "is_stage2_production": available, "available_for_inference": available,
             "stage2_status": "production" if available else "not_available",
             "production_state": "active" if available else "eligible" if eligible else "not_eligible",
-            "next_action": "view_stage2_model" if available else "enable_for_stage2" if eligible and ready else "unavailable",
+            "next_action": "view_stage2_model" if available else "enable_for_stage2" if eligible else "unavailable",
             "deployment_readiness": {"ready": ready, "status": "ready" if ready else "blocked", "checkpoint_accessible": accessible, "checkpoint_verified": verified},
             "blockers": [{"code": "STAGE2_CONDITION_MISSING", "message": message} for message in eligibility["missing_conditions"]],
             "technical_blockers": technical,
