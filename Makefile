@@ -144,3 +144,7 @@ test-scientific-parameters:
 YOLO_PYTHON ?= malaria_dl_local_project/.venv-metal/bin/python
 test-yolo-runtime:
 	PYTHONDONTWRITEBYTECODE=1 $(YOLO_PYTHON) -m pytest -q -p no:cacheprovider smear_segmentation_project/tests
+
+.PHONY: test-backend-yolo-adapter
+test-backend-yolo-adapter:
+	docker compose exec -T backend python -m pytest -q tests/test_yolo_detector_adapter.py

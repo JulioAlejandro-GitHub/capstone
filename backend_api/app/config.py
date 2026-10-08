@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -57,6 +57,31 @@ def _origins(value: str) -> tuple[str, ...]:
     return origins
 
 
+def validate_yolo_runtime_url(value: str) -> str:
+    """Only the Docker Desktop host bridge is trusted for this local runtime."""
+    try:
+        parsed = urlparse(value)
+        valid = (
+            value == value.strip()
+            and not any(character.isspace() for character in value)
+            and parsed.scheme in {"http", "https"}
+            and parsed.hostname == "host.docker.internal"
+            and parsed.netloc in {
+                "host.docker.internal",
+                f"host.docker.internal:{parsed.port}",
+            }
+            and (parsed.port is None or 1 <= parsed.port <= 65535)
+            and parsed.path in {"", "/"}
+            and not parsed.params and not parsed.query and not parsed.fragment
+            and "?" not in value and "#" not in value
+        )
+    except ValueError:
+        valid = False
+    if not valid:
+        raise ValueError("YOLO_RUNTIME_URL debe ser un origen HTTP(S) en host.docker.internal")
+    return value.rstrip("/")
+
+
 @dataclass(frozen=True)
 class Settings:
     app_env: str
@@ -94,6 +119,9 @@ class Settings:
     allowed_microscopy_formats: tuple[str, ...]
     quality_analysis_max_dimension: int
     cell_detector_key: str
+    yolo_runtime_url: str
+    yolo_runtime_token: str = field(repr=False)
+    yolo_runtime_timeout_seconds: float
     cell_crop_strategy_key: str
     cell_detection_page_max: int
     cell_classification_batch_size: int
@@ -170,6 +198,11 @@ class Settings:
             ),
             quality_analysis_max_dimension=_int("QUALITY_ANALYSIS_MAX_DIMENSION", 2048, 64),
             cell_detector_key=os.getenv("CELL_DETECTOR_KEY", "connected_components_v1"),
+            yolo_runtime_url=validate_yolo_runtime_url(
+                os.getenv("YOLO_RUNTIME_URL", "http://host.docker.internal:8765")
+            ),
+            yolo_runtime_token=os.getenv("YOLO_RUNTIME_TOKEN", ""),
+            yolo_runtime_timeout_seconds=_float("YOLO_RUNTIME_TIMEOUT_SECONDS", 120.0, 0.001),
             cell_crop_strategy_key=os.getenv("CELL_CROP_STRATEGY_KEY", "bbox_crop_v1"),
             cell_detection_page_max=_int("CELL_DETECTION_PAGE_MAX", 500, 500),
             cell_classification_batch_size=_int(

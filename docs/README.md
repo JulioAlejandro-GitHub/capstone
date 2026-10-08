@@ -34,6 +34,7 @@ como auditoría histórica; el informe de cierre está en la sección `# Cierre 
 | PostgreSQL Docker-only | [Contrato de instancia PostgreSQL única](engineering/postgresql_docker_single_instance.md) |
 | Seguridad de base de datos | [Política de seguridad DB](engineering/database_safety_policy.md) |
 | Runtime YOLO local (76.3A) | [Contrato y validación](operations/yolo_runtime.md) |
+| Integración YOLO backend (76.3B/C) | [Adaptador, configuración y pruebas](operations/yolo_backend_adapter.md) |
 | Reset de análisis de frotis | [Reset controlado](operations/smear_analysis_reset.md) |
 | Purga de datos por subsistema | [Purga por subsistema](operations/subsystem_data_purge.md) |
 | Alembic | [Política Alembic](engineering/alembic_simple_policy.md) |

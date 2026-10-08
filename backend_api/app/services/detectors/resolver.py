@@ -6,9 +6,13 @@ from dataclasses import dataclass
 from PIL import Image
 
 from app.models.cell_detection import DetectionResult
-from app.services.detectors import connected_components_v1
+from app.services.detectors import connected_components_v1, yolo26_seg_v1
 
 DEFAULT_DETECTOR_KEY = "connected_components_v1"
+_IMPLEMENTATIONS = {
+    connected_components_v1.DETECTOR_KEY: connected_components_v1,
+    yolo26_seg_v1.DETECTOR_KEY: yolo26_seg_v1,
+}
 
 
 @dataclass(frozen=True)
@@ -22,12 +26,13 @@ class Detector:
 
 def resolve_detector(key: str = DEFAULT_DETECTOR_KEY) -> Detector:
     """Resolve a versioned implementation; unknown detectors never fall back silently."""
-    if key != connected_components_v1.DETECTOR_KEY:
+    implementation = _IMPLEMENTATIONS.get(key)
+    if implementation is None:
         raise ValueError(f"Unsupported cell detector: {key}")
     return Detector(
-        key=connected_components_v1.DETECTOR_KEY,
-        version=connected_components_v1.DETECTOR_VERSION,
-        algorithm_version=connected_components_v1.ALGORITHM_VERSION,
-        profile_snapshot=connected_components_v1.profile_snapshot,
-        detect_image=connected_components_v1.detect_image,
+        key=implementation.DETECTOR_KEY,
+        version=implementation.DETECTOR_VERSION,
+        algorithm_version=implementation.ALGORITHM_VERSION,
+        profile_snapshot=implementation.profile_snapshot,
+        detect_image=implementation.detect_image,
     )

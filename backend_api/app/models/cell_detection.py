@@ -59,9 +59,9 @@ class ConnectedComponent:
     centroid_x: float
     centroid_y: float
     area_px: int
-    perimeter_px: float
-    circularity: float
-    solidity: float
+    perimeter_px: float | None
+    circularity: float | None
+    solidity: float | None
     touches_border: bool
     component_status: ComponentStatus
     rejection_code: str | None
