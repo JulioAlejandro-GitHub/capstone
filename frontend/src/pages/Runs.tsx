@@ -349,7 +349,10 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
   const childParentByRunId = useMemo(() => {
     const result = new Map<string, string>();
     loadedChildren.forEach((children) => {
-      children.evaluations.forEach((run) => result.set(run.run_id, children.training_run_id));
+      children.evaluations.forEach((run) => result.set(
+        run.source_kind === 'assessment_e6' ? `assessment:${run.attempt_id}` : run.run_id,
+        children.training_run_id,
+      ));
       children.explainabilities.forEach((run) => result.set(run.run_id, children.training_run_id));
     });
     return result;
@@ -366,7 +369,12 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
     };
     summaries.items.forEach((training) => addOption(training.run_id, training.run_name, training.run_type));
     loadedChildren.forEach((children) => {
-      children.evaluations.forEach((run) => addOption(run.run_id, run.run_name, run.run_type));
+      children.evaluations.forEach((run) => {
+        if (run.source_kind === 'assessment_e6') {
+          const key = `assessment:${run.attempt_id}`;
+          options.set(key, { value: key, label: `EVALUATE · E6 · ${run.split.toUpperCase()} · ${visibleRunId(run.attempt_id)}` });
+        } else addOption(run.run_id, run.run_name, run.run_type);
+      });
       children.explainabilities.forEach((run) => addOption(run.run_id, run.run_name, run.run_type));
     });
     return Array.from(options.values());
@@ -474,7 +482,7 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
               </div>
               {filteredTrainings.map((training) => {
                 const key = childrenCacheKey(datasource, training.run_id);
-                return <TrainingRunGroupCard
+                return <TrainingRunGroupCard datasource={datasource}
                   childrenState={childrenByKey[key] ?? EMPTY_CHILDREN_STATE}
                   key={key}
                   onChildrenExpand={() => { void loadChildren(training.run_id); }}

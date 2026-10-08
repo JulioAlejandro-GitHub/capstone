@@ -1,5 +1,6 @@
 import type { ScientificResult } from '../components/ScientificResults';
 import type {
+  AssessmentDetail,
   CheckpointPolicySummary,
   ClinicalDashboard,
   ClinicalRunSummary,
@@ -1075,6 +1076,10 @@ export const api = {
       { datasource, limit },
       { signal },
     );
+  },
+
+  getAssessment(attemptId: string, signal?: AbortSignal) {
+    return request<AssessmentDetail>(`/assessments/${encodeURIComponent(attemptId)}`, {}, { signal });
   },
 
   getTrainingLineageChildren({

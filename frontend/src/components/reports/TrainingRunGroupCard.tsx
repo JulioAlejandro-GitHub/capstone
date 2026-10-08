@@ -5,6 +5,7 @@ import type {
   TrainingLineageChildren,
   TrainingSummary,
 } from '../../types/api';
+import { AssessmentEvaluationCard } from './AssessmentEvaluationCard';
 import { RunLineageChildCard } from './RunLineageChildCard';
 import { RunSummaryRow } from './RunSummaryRow';
 import { Stage2PublicationPanel } from './Stage2PublicationPanel';
@@ -17,6 +18,7 @@ export type TrainingChildrenLoadState = {
 };
 
 interface TrainingRunGroupCardProps {
+  datasource: string;
   training: TrainingSummary;
   childrenState: TrainingChildrenLoadState;
   onChildrenExpand: () => void;
@@ -31,6 +33,7 @@ interface TrainingRunGroupCardProps {
 }
 
 export function TrainingRunGroupCard({
+  datasource,
   training,
   childrenState,
   onChildrenExpand,
@@ -128,7 +131,9 @@ export function TrainingRunGroupCard({
                 ) : (
                   <div className="run-lineage-group__children-grid">
                     <div className="lineage-child-stack">
-                      {loadedChildren.evaluations.map((run) => (
+                      {loadedChildren.evaluations.map((run) => run.source_kind === 'assessment_e6' ? (
+                        <AssessmentEvaluationCard key={run.attempt_id} assessment={run} datasource={datasource} />
+                      ) : (
                         <RunLineageChildCard
                           key={run.run_id}
                           kind="evaluation"

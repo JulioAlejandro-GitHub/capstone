@@ -301,6 +301,7 @@ export interface TrainingSummaryCollection {
 }
 
 interface LineageChildBase {
+  source_kind: 'run';
   run_id: string;
   status: string;
   run_name: string | null;
@@ -351,12 +352,55 @@ export interface ExplainabilityLineageChild extends LineageChildBase {
   failed_count: number;
 }
 
+export interface AssessmentMetrics {
+  count: number;
+  definition: string;
+  tn: number; fp: number; fn: number; tp: number;
+  accuracy: number | null;
+  precision: number | null;
+  recall: number | null;
+  specificity: number | null;
+  f2: number | null;
+  confusion_matrix: number[][];
+}
+
+export interface AssessmentVerification {
+  count: number;
+  sha256: string;
+  metrics: AssessmentMetrics;
+}
+
+export interface AssessmentEvaluationChild {
+  source_kind: 'assessment_e6';
+  attempt_id: string;
+  identity_id: string;
+  training_run_id: string;
+  state: 'active' | 'verified' | 'failed' | 'interrupted';
+  ordinal: number;
+  split: 'train' | 'val' | 'test';
+  purpose: 'development' | 'final';
+  started_at: string;
+  finished_at: string | null;
+  verification: AssessmentVerification | null;
+}
+
+export interface AssessmentDetail extends Omit<AssessmentEvaluationChild, 'source_kind' | 'attempt_id' | 'split' | 'purpose'> {
+  id: string;
+  kind: 'evaluate' | 'explain';
+  cause: string | null;
+  identity: {
+    split: AssessmentEvaluationChild['split'];
+    purpose: AssessmentEvaluationChild['purpose'];
+    model: { model_version_id: string; checkpoint_artifact_id: string };
+  };
+}
+
 export interface TrainingLineageChildren {
   training_run_id: string;
   evaluation_count: number;
   explainability_count: number;
   total_count: number;
-  evaluations: EvaluationLineageChild[];
+  evaluations: (EvaluationLineageChild | AssessmentEvaluationChild)[];
   explainabilities: ExplainabilityLineageChild[];
   limit: number;
   truncated: boolean;

@@ -42,6 +42,7 @@ como auditoría histórica; el informe de cierre está en la sección `# Cierre 
 | Auditoría segura de Malaria Patient Split v1 | [Runbook del split](runbook_split_completo_malaria.md) |
 | TRAIN/EVALUATE gobernado | [Guía de entrenamiento](guia_entrenamiento_patient_split.md) |
 | Resolución transversal TRAIN/EVALUATE/EXPLAIN | [Contrato y evidencia Docker/macOS](engineering/governed_dataset_resolution.md) (`CURRENT_DOC`, 2026-10-08) |
+| Linaje TRAIN → EVALUATE E6 | [Representación, estados y validación](engineering/e6_frontend_lineage.md) (`CURRENT_DOC`, 2026-10-08) |
 | Entrenamiento productivo Stage 2 | [Tarjeta productiva Stage 2](stage2_productive_training_card.md) |
 | Ingesta y almacenamiento | [Ingesta](architecture/microscopy_image_ingestion.md) y [storage local](engineering/local_storage.md) |
 | Revisión de células | [Workspace de revisión](architecture/cell_review_workspace.md) |

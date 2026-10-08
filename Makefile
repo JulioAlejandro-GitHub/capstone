@@ -5,6 +5,16 @@ validate:
 test: test-backend test-frontend
 test-backend:
 	docker compose exec -T backend python -m pytest tests -m "not requires_docker_postgres"
+
+.PHONY: test-e6-lineage-backend test-e6-lineage-frontend
+# Synthetic SELECT fixtures and read-only evidence; no scientific execution or DB writes.
+test-e6-lineage-backend:
+	docker compose exec -T -e PYTHONDONTWRITEBYTECODE=1 backend python -m pytest -q -p no:cacheprovider \
+		tests/test_lineage_children_api.py tests/test_training_summaries_api.py tests/test_e6_lineage_read_only.py
+
+test-e6-lineage-frontend:
+	docker compose exec -T frontend node --test tests/e6-lineage.test.mjs tests/executions-lazy-loading.test.mjs tests/clean-routing.test.mjs tests/scientific-results-v2.test.mjs tests/stage2-availability.test.mjs
+	docker compose exec -T frontend npm run build
 .PHONY: test-backend-detection-crop test-backend-detection-crop-integration
 test-backend-detection-crop:
 	docker compose exec -T backend python -m pytest -q \
