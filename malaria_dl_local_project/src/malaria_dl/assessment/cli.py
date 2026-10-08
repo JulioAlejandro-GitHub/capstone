@@ -3,7 +3,7 @@
 import argparse
 import json
 
-from .contracts import AssessmentError, require
+from .contracts import AssessmentError, require, validate_split_protocol
 from .lineage import campaign_inventory
 from .repository import AssessmentRepository
 from .service import explanation_spec, prepare, run
@@ -18,6 +18,8 @@ def parser(kind, batch=False):
         p.add_argument("--model-version-id")
         p.add_argument("--recover-attempt-id")
     p.add_argument("--dataset-version-id")
+    p.add_argument("--model", help="Modelo esperado; requiere el linaje explícito del TRAIN.")
+    p.add_argument("--dataset-dir", help="Ubicación de la misma materialización gobernada.")
     p.add_argument("--inspect", action="store_true")
     p.add_argument("--split", choices=("train", "val", "test"))
     p.add_argument("--purpose", choices=("development", "final"))
@@ -38,6 +40,11 @@ def parser(kind, batch=False):
 
 
 def main(kind="evaluate", batch=False, argv=None):
+    from ..execution.local_launch import bootstrap
+    bootstrap()
+    if parser(kind, batch).parse_args(argv).inspect:
+        # Inspection performs read-only verification, not an execution reservation.
+        return _main(kind, batch, argv)
     from ..execution.global_gate import GlobalGate
     with GlobalGate("assessment-" + kind):
         return _main(kind, batch, argv)
@@ -51,17 +58,16 @@ def _main(kind="evaluate", batch=False, argv=None):
             repository.recover(args.recover_attempt_id)
             print("ASSESSMENT_INTERRUPTED_RETRY_CREATES_NEW_ATTEMPT")
             return 0
-        if batch:
+        if batch and args.inspect and args.split is None:
             _campaign, items = campaign_inventory(
                 repository, args.campaign_id, args.dataset_version_id
             )
-            if args.inspect:
-                print(
-                    json.dumps(
-                        {"campaign_id": args.campaign_id, "members": items}, default=str
-                    )
+            print(
+                json.dumps(
+                    {"campaign_id": args.campaign_id, "members": items}, default=str
                 )
-                return 0
+            )
+            return 0
         require(
             all(
                 x is not None
@@ -76,6 +82,12 @@ def _main(kind="evaluate", batch=False, argv=None):
             "EXPLICIT_PROTOCOL_SPLIT_PURPOSE_THRESHOLD_SEED_REQUIRED",
         )
         protocol = json.loads(args.protocol)
+        validate_split_protocol(args.split, args.purpose, protocol)
+        if batch:
+            _campaign, items = campaign_inventory(
+                repository, args.campaign_id, args.dataset_version_id,
+                **({"metadata_only": True} if args.split == "test" else {}),
+            )
         spec = None
         if kind == "explain":
             spec = explanation_spec(
@@ -87,6 +99,8 @@ def _main(kind="evaluate", batch=False, argv=None):
             )
         options = {
             "dataset_version_id": args.dataset_version_id,
+            "model": args.model,
+            "dataset_dir": args.dataset_dir,
             "split": args.split,
             "purpose": args.purpose,
             "protocol": protocol,
@@ -102,12 +116,18 @@ def _main(kind="evaluate", batch=False, argv=None):
                 if not item["eligible"]:
                     output.append(item)
                     continue
+                proof = {}
                 value = prepare(
                     repository,
                     training_run_id=item["model"]["training_run_id"],
                     model_version_id=item["model"]["model_version_id"],
+                    verification=proof,
                     **options,
                 )
+                if args.inspect:
+                    output.append({"member_id": item["member_id"], "inspection": value,
+                                   "inspection_verification": proof})
+                    continue
                 result = run(repository, value, args.artifact_root)
                 repository.consume(args.campaign_id, item["member_id"], result)
                 output.append(
@@ -118,16 +138,18 @@ def _main(kind="evaluate", batch=False, argv=None):
                     }
                 )
             print(json.dumps(output))
-            return 0 if all(x.get("state") == "verified" for x in output) else 2
+            return 0 if all("inspection" in x or x.get("state") == "verified" for x in output) else 2
+        proof = {}
         value = prepare(
             repository,
             training_run_id=args.source_training_run_id,
             model_version_id=args.model_version_id,
             evaluation_id=getattr(args, "evaluation_id", None),
+            verification=proof,
             **options,
         )
         if args.inspect:
-            print(json.dumps(value))
+            print(json.dumps({**value, "inspection_verification": proof}))
             return 0
         result = run(repository, value, args.artifact_root)
         print(

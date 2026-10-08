@@ -12,39 +12,37 @@ const api=read('src/services/api.ts');
 const styles=read('src/styles/report-components.css');
 const panel=read('src/components/reports/Stage2PublicationPanel.tsx');
 
-test('TRAIN concentra una sola acción de liberación llamada Ver detalle',()=>{
+test('TRAIN concentra la acción Activar para clasificación celular',()=>{
   assert.match(row,/processKind === 'training'/);
   assert.match(row,/<button[^]*stage2-detail-link/);
   assert.match(row,/aria-expanded=\{stage2Expanded\}/);
-  assert.match(row,/>Ver detalle<\/button>/);
+  assert.match(row,/Activar para clasificación celular/);
   assert.doesNotMatch(row,/Preparar despliegue|Habilitar para Etapa 2|Ver modelo productivo/);
   assert.doesNotMatch(child,/publishTrainingStage2|stage2-release-summary/);
 });
-test('estado productivo deriva de release_status y estiliza toda la tarjeta',()=>{
+test('estado activo prioriza disponibilidad canónica y estiliza toda la tarjeta',()=>{
   assert.match(group,/release_status === 'productive_stage2'/);
   assert.match(group,/training-card--stage2-production/);
-  assert.match(row,/training-release-badge/);
+  assert.match(row,/stage2Active/);
   for(const token of ['--stage2-production-background','--stage2-production-border','--stage2-production-badge-background'])assert.match(styles,new RegExp(token));
 });
 test('estado no depende solo del color',()=>{
-  for(const token of ['✓','Productivo Etapa 2','Disponible para publicar','No disponible'])assert.match(row,new RegExp(token));
-  assert.match(row,/aria-hidden="true"/);assert.match(row,/role="status"/);
+  assert.match(row,/Modelo en Estado Activo/);
 });
 test('Liberación visible no vuelve a inferir elegibilidad',()=>{
-  assert.match(row,/releasePresentation\[run\.release_status\]/);
+  assert.match(row,/stage2Active/);
   assert.doesNotMatch(row,/eligible|missing_conditions|is_stage2_production|production_state/);
 });
-test('Ver detalle abre el acordeón y la vista anterior permanece compatible',()=>{
+test('Activar abre el acordeón y la vista anterior permanece compatible',()=>{
   assert.match(group,/Stage2PublicationPanel/);
   assert.match(group,/setStage2Expanded/);
   assert.match(group,/onStage2Open/);
   assert.match(app,/Stage2ReleaseDetail/);
 });
-test('acordeón publica y da de baja mediante confirmación inline',()=>{
-  assert.match(panel,/Confirmar publicación/);
-  assert.match(panel,/Confirmar baja/);
-  assert.match(runs,/publishStage2Model/);
-  assert.match(runs,/deactivateStage2Publication/);
+test('acordeón activa y confirma reemplazos inline',()=>{
+  assert.match(panel,/Activar para clasificación celular/);
+  assert.match(runs,/activateCellModel/);
+  assert.match(api,/deactivateStage2Publication/);
 });
 test('detalle publica mediante confirmación y bloquea doble clic',()=>{
   assert.match(detail,/Stage2EnablementModal/);

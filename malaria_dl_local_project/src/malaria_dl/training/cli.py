@@ -375,6 +375,8 @@ def parse_args(argv=None):
 
 
 def main():
+    from ..execution.local_launch import bootstrap
+    bootstrap()
     args = parse_args()
     if args.dry_run:
         print(json.dumps(args.model_configuration, sort_keys=True))

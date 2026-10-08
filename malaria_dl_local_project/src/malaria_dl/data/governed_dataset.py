@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from contextlib import contextmanager
 import argparse
+from contextlib import contextmanager
+from copy import deepcopy
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -45,6 +46,7 @@ class GovernedDatasetSnapshot:
     clinical_identity_fingerprint: str
     counts: dict[str, Any]
     evidence_id: str | None = field(default=None, compare=False)
+    verified_splits: tuple[str, ...] = field(default=(), compare=False)
 
     def metadata(self) -> dict[str, Any]:
         return {
@@ -57,6 +59,23 @@ class GovernedDatasetSnapshot:
             "clinical_identity_fingerprint": self.clinical_identity_fingerprint,
             "counts": self.counts,
             "selection_unit": "dataset_version_id",
+        }
+
+    def verification_metadata(self) -> dict[str, Any]:
+        """Current evidence is separate from the immutable scientific snapshot."""
+        from .dataset_integrity import VERIFIER_VERSION
+
+        return {
+            "verifier_version": VERIFIER_VERSION,
+            "snapshot": self.metadata(),
+            "required_splits": list(self.verified_splits),
+            "physically_verified_splits": list(self.verified_splits),
+            "global_integrity_status": "verified_frozen_metadata",
+            "physical_integrity_status": "verified" if self.verified_splits else "not_checked",
+            "integrity_status": (
+                "verified" if self.verified_splits == ("train", "val", "test")
+                else "verified_requested_splits" if self.verified_splits else "verified_metadata_only"
+            ),
         }
 
 
@@ -90,7 +109,24 @@ def dataset_read_connection():
         engine.dispose()
 
 
-def _resolve(connection, requested):
+def normalize_required_splits(
+    required_splits: tuple[str, ...] | list[str] | None,
+    *,
+    test_authorized: bool = False,
+) -> tuple[str, ...]:
+    """Explicit scope; () verifies database metadata only, never physical files."""
+    if not isinstance(required_splits, (tuple, list)):
+        raise GovernedDatasetError("DATASET_REQUIRED_SPLITS_REQUIRED")
+    if any(s not in ("train", "val", "test") for s in required_splits):
+        raise GovernedDatasetError("DATASET_SPLIT_INVALID")
+    if len(set(required_splits)) != len(required_splits):
+        raise GovernedDatasetError("DATASET_SPLIT_DUPLICATE")
+    if "test" in required_splits and test_authorized is not True:
+        raise GovernedDatasetError("TEST_FINAL_LOCK_REQUIRED")
+    return tuple(s for s in ("train", "val", "test") if s in required_splits)
+
+
+def _resolve(connection, requested, required_splits, *, test_authorized=False):
     row = (
         connection.execute(
             text(
@@ -170,19 +206,22 @@ def _resolve(connection, requested):
         raise GovernedDatasetError("DATASET_REQUIRED_CHECKS_NOT_PASS")
     relative = Path(materialization["relative_root"] or "")
     data_root = (PROJECT_ROOT / "data").resolve()
-    root = (data_root / relative).resolve()
+    root = local_dataset_root(data_root / relative).resolve()
     if (
         relative.is_absolute()
         or not root.is_relative_to(data_root)
         or root == data_root
     ):
         raise GovernedDatasetError("MATERIALIZED_DATASET_ROOT_INVALID")
-    if not root.is_dir():
+    if required_splits and not root.is_dir():
         raise GovernedDatasetError("MATERIALIZED_DATASET_ROOT_MISSING")
     from .dataset_integrity import verify_integrity
 
     try:
-        counts = verify_integrity(connection, requested, root, contract)
+        counts = verify_integrity(
+            connection, requested, root, contract,
+            required_splits=required_splits, test_authorized=test_authorized,
+        )
     except GovernedDatasetError as exc:
         exc.evidence = {
             "dataset_materialization_id": materialization_id,
@@ -196,14 +235,18 @@ def _resolve(connection, requested):
         root,
         *(fingerprints[k] for k in names),
         counts,
+        verified_splits=required_splits,
     )
 
 
-def resolve_governed_dataset(dataset_version_id=None) -> GovernedDatasetSnapshot:
+def resolve_governed_dataset(
+    dataset_version_id=None, *, required_splits=None, test_authorized=False,
+) -> GovernedDatasetSnapshot:
     """Read-only verification. No implicit version and no writes or split commands."""
     requested = normalize_dataset_version_id(dataset_version_id)
+    splits = normalize_required_splits(required_splits, test_authorized=test_authorized)
     with dataset_read_connection() as connection:
-        return _resolve(connection, requested)
+        return _resolve(connection, requested, splits, test_authorized=test_authorized)
 
 
 def governed_relative_root(path) -> tuple:
@@ -218,11 +261,20 @@ def governed_relative_root(path) -> tuple:
     return parts[len(parts) - parts[::-1].index("data"):]
 
 
-def local_dataset_root(path) -> Path:
-    """The same governed materialization on this host."""
-    if Path(path).is_dir():
-        return Path(path)
-    return (PROJECT_ROOT / "data").joinpath(*governed_relative_root(path))
+def local_dataset_root(path: Path | str) -> Path:
+    """Locate the governed materialization; existence is not accreditation.
+
+    Always use this project's data mount, even if the foreign host prefix also
+    exists. Callers must verify identity/content before consuming this location.
+    """
+    path = Path(path).expanduser()
+    if not path.is_absolute():
+        return PROJECT_ROOT / path
+    if path.is_relative_to(PROJECT_ROOT / "data"):
+        return path
+    if "data" in path.parts:
+        return (PROJECT_ROOT / "data").joinpath(*governed_relative_root(path))
+    return path
 
 
 def assert_run_dataset_snapshot_unchanged(requested, persisted) -> None:
@@ -256,7 +308,7 @@ def assert_run_dataset_snapshot_unchanged(requested, persisted) -> None:
         raise GovernedDatasetError("RUN_DATASET_COUNTS_IMMUTABLE")
 
 
-def training_dataset_metadata(training_run_id):
+def training_dataset_metadata(training_run_id: UUID | str) -> dict[str, Any]:
     try:
         run_id = str(UUID(str(training_run_id)))
     except (ValueError, TypeError) as exc:
@@ -265,8 +317,10 @@ def training_dataset_metadata(training_run_id):
         row = (
             connection.execute(
                 text("""
-            SELECT dataset_version_id,execution_parameters,parameters,metadata FROM runs
-            WHERE id=:id AND run_type='training'
+            SELECT r.dataset_version_id,r.execution_parameters,r.parameters,
+                   s.dataset AS session_dataset
+            FROM runs r LEFT JOIN train_execution_sessions s ON s.run_id=r.id
+            WHERE r.id=:id AND r.run_type='training'
         """),
                 {"id": run_id},
             )
@@ -276,12 +330,23 @@ def training_dataset_metadata(training_run_id):
     if not row or not row["dataset_version_id"]:
         raise GovernedDatasetError("TRAIN_DATASET_NOT_ACCREDITED")
     version = normalize_dataset_version_id(row["dataset_version_id"])
-    candidates = [row.get("execution_parameters") or {}, row.get("parameters") or {}]
-    # Existing runs already store the snapshot in these JSONB columns. Never backfill.
-    complete = [c for c in candidates if c.get("dataset_materialization_id")]
+    candidates = [row.get("session_dataset") or {}]
+    for column in ("execution_parameters", "parameters"):
+        parameters = row.get(column) or {}
+        candidates.extend([
+            (parameters.get("model_configuration_e2") or {}).get("dataset") or {},
+            parameters,
+        ])
+    keys = (
+        "dataset_version_id", "dataset_materialization_id", "dataset_root",
+        "patient_assignment_fingerprint", "record_assignment_fingerprint",
+        "source_population_fingerprint", "clinical_identity_fingerprint", "counts",
+    )
+    # Choose one complete persisted representation; never assemble missing evidence.
+    complete = [c for c in candidates if all(c.get(k) for k in keys)]
     if not complete:
         raise GovernedDatasetError("TRAIN_DATASET_SNAPSHOT_MISSING")
-    snapshot = dict(complete[0])
+    snapshot = deepcopy(complete[0])
     snapshot["dataset_version_id"] = normalize_dataset_version_id(
         snapshot.get("dataset_version_id")
     )
@@ -290,17 +355,29 @@ def training_dataset_metadata(training_run_id):
     )
     if snapshot["dataset_version_id"] != version:
         raise GovernedDatasetError("TRAIN_DATASET_SNAPSHOT_CONFLICT")
-    for candidate in complete:
-        normalized = dict(candidate)
-        for key in ("dataset_version_id", "dataset_materialization_id"):
-            normalized[key] = normalize_dataset_version_id(normalized.get(key))
-        assert_run_dataset_snapshot_unchanged(snapshot, normalized)
+    # Partial legacy representations still constrain every identity field present.
+    for candidate in candidates:
+        for key in keys:
+            value = candidate.get(key)
+            if value is None:
+                continue
+            expected = snapshot[key]
+            if key in ("dataset_version_id", "dataset_materialization_id"):
+                value = normalize_dataset_version_id(value)
+            elif key == "dataset_root":
+                value, expected = governed_relative_root(value), governed_relative_root(expected)
+            if value != expected:
+                raise GovernedDatasetError("TRAIN_DATASET_SNAPSHOT_CONFLICT")
     return snapshot
 
 
-def resolve_training_run_dataset(training_run_id):
+def resolve_training_run_dataset(training_run_id, *, required_splits=None, test_authorized=False):
+    splits = normalize_required_splits(required_splits, test_authorized=test_authorized)
     persisted = training_dataset_metadata(training_run_id)
-    resolved = resolve_governed_dataset(persisted["dataset_version_id"])
+    resolved = resolve_governed_dataset(
+        persisted["dataset_version_id"], required_splits=splits,
+        test_authorized=test_authorized,
+    )
     assert_run_dataset_snapshot_unchanged(resolved, persisted)
     return resolved
 
@@ -312,5 +389,5 @@ def validate_dataset_location(snapshot, dataset_dir=None, data_source="physical"
         path = Path(dataset_dir).expanduser()
         if not path.is_absolute():
             path = PROJECT_ROOT / path
-        if path.resolve() != snapshot.dataset_root.resolve():
+        if local_dataset_root(path).resolve() != snapshot.dataset_root.resolve():
             raise GovernedDatasetError("DATASET_DIR_CONFLICT")

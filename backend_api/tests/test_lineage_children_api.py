@@ -107,7 +107,11 @@ class FakeConnection:
 def install_connection(monkeypatch, *, parent=None, rows=None):
     connection = FakeConnection(
         parent=parent or {"id": TRAINING_ID, "run_type": "training"},
-        rows=rows,
+        rows=[{
+            "evaluation_count": row["evaluation_count"],
+            "explainability_count": row["explainability_count"],
+            "payload": {**row, "source_kind": "run"} if row.get("run_id") else None,
+        } for row in (rows or [])],
     )
     opened = []
 
@@ -211,7 +215,7 @@ def test_sql_only_loads_direct_matching_children_with_stable_global_order():
     assert "child.run_type = 'explainability'" in sql
     assert "partition by lineage.child_run_id" in sql
     assert "count(distinct child_run_id) filter" in sql
-    assert "order by started_at asc nulls last, created_at asc, run_id asc" in sql
+    assert "order by started_at asc nulls last, created_at asc, sort_id asc" in sql
     assert "limit :limit" in sql
     for forbidden_scope in (
         "with recursive",

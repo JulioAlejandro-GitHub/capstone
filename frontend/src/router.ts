@@ -12,6 +12,7 @@ export const routes = {
   campaign: '/modelo-ia/campana',
   campaigns: '/modelo-ia/campanas',
   evaluations: '/modelo-ia/evaluaciones',
+  assessmentDetail: (id: string) => `/modelo-ia/evaluaciones/e6/${encoded(id)}`,
   comparison: '/modelo-ia/comparacion',
   modelVersions: '/modelo-ia/modelos-liberados',
   modelVersionDetail: (id: string) => `/modelo-ia/modelos-liberados/${encoded(id)}`,

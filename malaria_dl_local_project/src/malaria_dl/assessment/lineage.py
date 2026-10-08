@@ -2,14 +2,17 @@
 
 from collections import Counter
 from pathlib import Path
+from typing import Any
 from uuid import UUID, uuid5
 
 from ..campaigns.contracts import CampaignError
 from ..campaigns.repository import execute, identifier
 from ..data.governed_dataset import (
     assert_run_dataset_snapshot_unchanged,
+    normalize_required_splits,
     resolve_governed_dataset,
     training_dataset_metadata,
+    validate_dataset_location,
 )
 from ..data.input_contract import resolve_checkpoint_input, validate_input_contract
 from ..execution.artifacts import file_identity, verify_session
@@ -81,7 +84,9 @@ def resolve(repository, training_run_id=None, model_version_id=None):
                 "epoch": artifact["epoch"],
             },
         }
-        return binding, session["dataset"], calibration[0]
+        dataset = training_dataset_metadata(session["run_id"])
+        assert_run_dataset_snapshot_unchanged(dataset, session["dataset"])
+        return binding, dataset, calibration[0]
     # Historical consultation is unchanged. New execution requires the original complete evidence.
     from contextlib import contextmanager
 
@@ -140,19 +145,38 @@ def resolve(repository, training_run_id=None, model_version_id=None):
     )
 
 
-def dataset_samples(repository, inherited, split, override=None, *, inspection=False):
+def dataset_samples(
+    repository: Any,
+    inherited: dict[str, Any],
+    split: str,
+    override: str | None = None,
+    *,
+    inspection: bool = False,
+    training_run_id: str | None = None,
+    dataset_dir: Path | str | None = None,
+    metadata_only: bool = False,
+    test_authorized: bool = False,
+    verification: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    require(split in ("train", "val", "test"), "PROTOCOL_REQUIRED")
     require(
         override is None or identifier(override) == inherited["dataset_version_id"],
         "DATASET_OVERRIDE_CONFLICT",
     )
+    splits = () if metadata_only else (split,)
+    normalize_required_splits(splits, test_authorized=test_authorized)
     snapshot = (
-        resolve_governed_dataset(inherited["dataset_version_id"])
+        resolve_governed_dataset(inherited["dataset_version_id"],
+                                 required_splits=splits, test_authorized=test_authorized)
         if inspection
         else verify_dataset_for_execution(
-            inherited["dataset_version_id"], consumer="assessment.e6"
+            inherited["dataset_version_id"], consumer="assessment.e6",
+            training_run_id=training_run_id, dataset_dir=dataset_dir,
+            required_splits=splits, test_authorized=test_authorized,
         )
     )
     assert_run_dataset_snapshot_unchanged(snapshot, inherited)
+    validate_dataset_location(snapshot, dataset_dir)
     with repository.transaction(readonly=True) as c:
         rows = list(
             execute(
@@ -173,9 +197,9 @@ def dataset_samples(repository, inherited, split, override=None, *, inspection=F
         if r["split_name"] != split:
             continue
         relative = materialized_relative_path(r, collisions).as_posix()
-        path = Path(inherited["dataset_root"]) / relative
+        path = snapshot.dataset_root / relative
         require(
-            file_identity(path)["sha256"] == r["source_file_sha256"],
+            metadata_only or file_identity(path)["sha256"] == r["source_file_sha256"],
             "SAMPLE_CONTENT_CHANGED",
         )
         samples.append(
@@ -189,10 +213,12 @@ def dataset_samples(repository, inherited, split, override=None, *, inspection=F
             }
         )
     require(len(samples) == inherited["counts"][split], "SAMPLE_COUNT_CONFLICT")
+    if verification is not None:
+        verification.update(snapshot.verification_metadata(), training_run_id=training_run_id)
     return samples
 
 
-def campaign_inventory(repository, campaign_id, dataset_version_id=None):
+def campaign_inventory(repository, campaign_id, dataset_version_id=None, *, metadata_only=False):
     campaign = repository.get(campaign_id, dataset_version_id)
     require(
         campaign["state"] in ("frozen", "active", "paused", "finalized"),
@@ -210,9 +236,15 @@ def campaign_inventory(repository, campaign_id, dataset_version_id=None):
         }
         if a and a["state"] == "verified" and str(a["member_id"]) == str(m["id"]):
             try:
-                binding, dataset, _ = resolve(
-                    repository, training_run_id=a["training_run_id"]
-                )
+                if metadata_only:
+                    # TEST authorization precedes even checkpoint access. Full
+                    # lineage validation follows in prepare after the exact lock.
+                    binding = {"training_run_id": str(a["training_run_id"]), "model_version_id": None}
+                    dataset = training_dataset_metadata(a["training_run_id"])
+                else:
+                    binding, dataset, _ = resolve(
+                        repository, training_run_id=a["training_run_id"]
+                    )
                 require(
                     dataset == campaign["dataset_snapshot"], "CAMPAIGN_DATASET_CONFLICT"
                 )

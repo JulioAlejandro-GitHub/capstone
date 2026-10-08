@@ -669,6 +669,7 @@ class CellClassificationService:
             "model_version",
             "source_training_run_id",
             "source_evaluation_run_id",
+            "source_evaluation_attempt_id",
             "checkpoint_artifact_id",
             "checkpoint_sha256",
             "checkpoint_size_bytes",

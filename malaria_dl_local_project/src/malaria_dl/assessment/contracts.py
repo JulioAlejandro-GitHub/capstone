@@ -64,21 +64,8 @@ def threshold(requested, protocol, calibration=None):
     }
 
 
-def identity(
-    binding,
-    dataset,
-    samples,
-    *,
-    split,
-    purpose,
-    protocol,
-    decision,
-    code,
-    seed,
-    batch_size,
-    explanation=None,
-    evaluation=None,
-):
+def validate_split_protocol(split: str, purpose: str, protocol: dict) -> None:
+    """The existing authorization rule, checked before selecting image files."""
     require(
         split in ("train", "val", "test") and purpose in ("development", "final"),
         "PROTOCOL_REQUIRED",
@@ -95,6 +82,24 @@ def identity(
         or (purpose == "development" and split != "test"),
         "TEST_FINAL_LOCK_REQUIRED",
     )
+
+
+def identity(
+    binding,
+    dataset,
+    samples,
+    *,
+    split,
+    purpose,
+    protocol,
+    decision,
+    code,
+    seed,
+    batch_size,
+    explanation=None,
+    evaluation=None,
+):
+    validate_split_protocol(split, purpose, protocol)
     require(
         type(seed) is int and type(batch_size) is int and batch_size > 0,
         "INFERENCE_OPTIONS_INVALID",

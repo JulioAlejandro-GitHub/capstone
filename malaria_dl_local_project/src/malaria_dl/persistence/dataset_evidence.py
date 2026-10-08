@@ -3,23 +3,24 @@
 No CSV/JSON sidecars; verified is returned only after commit and a fresh read.
 """
 
-from dataclasses import replace
 import json
+from dataclasses import replace
 from uuid import uuid4
 
 from sqlalchemy import text
 
-from .database import get_engine
 from ..data.dataset_integrity import VERIFIER_VERSION
 from ..data.governed_dataset import (
     GovernedDatasetError,
+    assert_run_dataset_snapshot_unchanged,
+    dataset_read_connection,
     normalize_dataset_version_id,
+    normalize_required_splits,
     resolve_governed_dataset,
     training_dataset_metadata,
-    assert_run_dataset_snapshot_unchanged,
     validate_dataset_location,
-    dataset_read_connection,
 )
+from .database import get_engine
 
 EVENT_TYPE = "ml.dataset_verification"
 
@@ -92,16 +93,23 @@ def verify_dataset_for_execution(
     dataset_dir=None,
     data_source="physical",
     consumer="src.train",
+    required_splits=None,
+    test_authorized=False,
 ):
     # Invalid public/programmatic identifiers fail before any DB or file access.
     if training_run_id is None or dataset_version_id is not None:
         dataset_version_id = normalize_dataset_version_id(dataset_version_id)
+    splits = normalize_required_splits(required_splits, test_authorized=test_authorized)
     requested = None
     payload = {
         "verifier_version": VERIFIER_VERSION,
         "consumer": consumer,
         "training_run_id": str(training_run_id) if training_run_id else None,
         "expected_evidence_id": expected_evidence_id,
+        "required_splits": list(splits),
+        "physically_verified_splits": [],
+        "global_integrity_status": "unverified",
+        "physical_integrity_status": "unverified",
     }
     try:
         parent = training_dataset_metadata(training_run_id) if training_run_id else None
@@ -115,21 +123,25 @@ def verify_dataset_for_execution(
         else:
             requested = normalize_dataset_version_id(dataset_version_id)
         payload["dataset_version_id"] = requested
-        resolved = resolve_governed_dataset(requested)
+        resolved = resolve_governed_dataset(
+            requested, required_splits=splits, test_authorized=test_authorized,
+        )
         if parent is not None:
             assert_run_dataset_snapshot_unchanged(resolved, parent)
         if expected_evidence_id is not None:
             expected = read_dataset_evidence(expected_evidence_id)
             if (
                 not expected["success"]
-                or expected["after_state"].get("verifier_version") != VERIFIER_VERSION
+                or expected["after_state"].get("verifier_version") not in (
+                    "ml_dataset_integrity_v1", VERIFIER_VERSION,
+                )
             ):
                 raise GovernedDatasetError("DATASET_EVIDENCE_NOT_VERIFIED")
             assert_run_dataset_snapshot_unchanged(
                 resolved, expected["after_state"].get("snapshot") or {}
             )
         validate_dataset_location(resolved, dataset_dir, data_source)
-        payload.update(snapshot=resolved.metadata(), integrity_status="verified")
+        payload.update(resolved.verification_metadata())
     except GovernedDatasetError as exc:
         if getattr(exc, "evidence", None):
             payload["rejection_evidence"] = exc.evidence

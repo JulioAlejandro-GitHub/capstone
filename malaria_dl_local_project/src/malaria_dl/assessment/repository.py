@@ -3,6 +3,7 @@
 import os
 import socket
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 from ..campaigns.contracts import canonical, digest
@@ -11,6 +12,52 @@ from .contracts import require
 
 
 class AssessmentRepository(CampaignRepository):
+    def authorize_test_request(
+        self, *, training_run_id: str | None, model_version_id: str | None,
+        dataset_version_id: str | None, protocol: dict[str, Any],
+        requested_threshold: str | float, seed: int, batch_size: int,
+        explanation: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        """Read the existing exact final lock before opening any dataset files.
+
+        The persisted identity is required to establish its scope without reading
+        TEST to discover that scope. Historical locks can use their identity row.
+        """
+        require(training_run_id or model_version_id, "EXPLICIT_MODEL_IDENTITY_REQUIRED")
+        with self.transaction(readonly=True) as c:
+            locks = list(execute(c, """
+                SELECT l.identity_hash,l.evidence,
+                       COALESCE(l.evidence->'final_identity',i.identity) AS identity
+                FROM assessment_final_locks l
+                LEFT JOIN assessment_identities i ON i.identity_hash=l.identity_hash
+                WHERE (CAST(:train AS text) IS NULL OR l.evidence->'candidate'->>'training_run_id'=:train)
+                  AND (CAST(:model AS text) IS NULL OR l.evidence->'candidate'->>'model_version_id'=:model)
+            """, train=identifier(training_run_id) if training_run_id else None,
+                model=identifier(model_version_id) if model_version_id else None).mappings())
+        matches = []
+        if explanation and explanation["method"] == "shap":
+            explanation = {**explanation, "background": sorted(explanation["background"])}
+        for row in locks:
+            value, evidence = row["identity"], row["evidence"]
+            if not value or digest(value) != row["identity_hash"]:
+                continue
+            spec = value.get("explanation")
+            if spec and spec["method"] == "shap":
+                spec = {**spec, "background": sorted(s["sample_id"] for s in spec["background"])}
+            if (value["split"] == "test" and value["purpose"] == "final"
+                    and value["kind"] == ("explain" if explanation else "evaluate")
+                    and evidence.get("status") == "locked"
+                    and evidence.get("candidate") == value["model"]
+                    and evidence.get("decision") == value["decision"]
+                    and value["protocol"] == protocol
+                    and value["seed"] == seed and value["batch_size"] == batch_size
+                    and value["decision"]["requested"] == str(requested_threshold)
+                    and spec == explanation
+                    and (dataset_version_id is None or identifier(dataset_version_id) == value["dataset"]["dataset_version_id"])):
+                matches.append(value)
+        require(len(matches) == 1, "TEST_FINAL_LOCK_REQUIRED")
+        return matches[0]
+
     @staticmethod
     def authorize(c, owner):
         execute(
