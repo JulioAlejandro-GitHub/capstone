@@ -22,7 +22,7 @@ from test_dataset_stage1 import (
 
 
 def persisted(fixture) -> dict:
-    snapshot = gd.resolve_governed_dataset(VERSION).metadata()
+    snapshot = gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True).metadata()
     snapshot["dataset_root"] = "/app/malaria_dl_local_project/data/sealed"
     fixture.training = {
         "dataset_version_id": VERSION,
@@ -98,7 +98,7 @@ def test_host_prefix_difference_preserves_snapshot(fixture, evidence_store) -> N
     original = persisted(fixture)
     fixture.training["parameters"] = {"dataset_root": str(fixture.root)}
     before = deepcopy(fixture.training)
-    resolved = ev.verify_dataset_for_execution(training_run_id=TRAIN)
+    resolved = ev.verify_dataset_for_execution(training_run_id=TRAIN, required_splits=("train", "val", "test"), test_authorized=True)
     gd.assert_run_dataset_snapshot_unchanged(resolved, original)
     assert resolved.dataset_root == fixture.root
     assert fixture.training == before
@@ -122,7 +122,7 @@ def test_same_relative_mount_even_when_foreign_directory_exists(
 
 
 def test_dataset_dir_cannot_select_alternate_population(fixture) -> None:
-    snapshot = gd.resolve_governed_dataset(VERSION)
+    snapshot = gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True)
     gd.validate_dataset_location(snapshot, "/app/project/data/sealed")
     alternate = fixture.root.parent / "malaria_physical_split"
     alternate.mkdir()
@@ -207,6 +207,7 @@ def test_runtime_uses_local_val_preserves_input_and_refuses_unlisted_image(
     calls = []
     runtime = object.__new__(KerasRuntime)
     runtime.value = {
+        "split": "val",
         "dataset": inherited,
         "samples": samples,
         "model": {
@@ -275,7 +276,7 @@ def test_individual_and_campaign_cli_share_preparation(monkeypatch, kind: str) -
         "--purpose",
         "development",
         "--protocol",
-        "{}",
+        '{"version":"synthetic","splits":["val"],"purposes":["development"]}',
         "--threshold",
         ".5",
         "--seed",
@@ -388,7 +389,7 @@ def test_campaign_and_individual_train_use_same_verifier(
     from src.malaria_dl.models import registry
 
     original = persisted(fixture)
-    initial = ev.verify_dataset_for_execution(VERSION)
+    initial = ev.verify_dataset_for_execution(VERSION, required_splits=("train", "val", "test"), test_authorized=True)
     verified = []
     verifier = ev.verify_dataset_for_execution
 
@@ -416,6 +417,8 @@ def test_campaign_and_individual_train_use_same_verifier(
         session=lambda run: session,
         finish=lambda *args: None,
     )
+    from test_dataset_split_isolation import guard_dataset_io
+    accesses = guard_dataset_io(monkeypatch, fixture.root, ("train", "val"))
     campaign.preflight(repo, frozen, fixture.root.parent / "artifacts", verifier=verify)
     monkeypatch.setattr(global_gate, "GlobalGate", lambda *args: nullcontext())
     monkeypatch.setattr(repository, "ExecutionRepository", lambda: repo)
@@ -446,3 +449,5 @@ def test_campaign_and_individual_train_use_same_verifier(
     assert all(snapshot.metadata() == consumed[0] for snapshot in verified)
     gd.assert_run_dataset_snapshot_unchanged(consumed[0], original)
     assert frozen["dataset_snapshot"] == original
+    assert {split for _, split, _ in accesses} == {"train", "val"}
+    assert all(snapshot.verified_splits == ("train", "val") for snapshot in verified)

@@ -98,7 +98,7 @@ class CampaignService:
     ):
         dataset_version_id = identifier(dataset_version_id)
         self.inspect(request, protocol)
-        snapshot = self.verifier(dataset_version_id, consumer="campaigns.create")
+        snapshot = self.verifier(dataset_version_id, consumer="campaigns.create", required_splits=("train", "val"))
         return self.repository.create(
             name=name,
             purpose=purpose,
@@ -136,7 +136,7 @@ class CampaignService:
             if stored["state"] == "draft" or not same_configuration(stored["contract"], candidate):
                 raise CampaignError("CAMPAIGN_ID_CONFLICT")
             return stored
-        snapshot = self.verifier(dataset_version_id, consumer="campaigns.configure")
+        snapshot = self.verifier(dataset_version_id, consumer="campaigns.configure", required_splits=("train", "val"))
         dataset = snapshot.metadata()
         matrix = expand_matrix(request, protocol, frozen=True, dataset=dataset)
         contract = frozen_contract(
@@ -177,6 +177,7 @@ class CampaignService:
             str(row["dataset_version_id"]),
             expected_evidence_id=str(row["dataset_evidence_id"]),
             consumer="campaigns.freeze",
+            required_splits=("train", "val"),
         )
         assert_run_dataset_snapshot_unchanged(snapshot, row["dataset_snapshot"])
         # Keep original immutable evidence reference; recheck event remains append-only evidence.

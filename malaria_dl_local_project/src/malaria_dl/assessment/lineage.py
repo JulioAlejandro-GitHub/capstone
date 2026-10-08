@@ -9,6 +9,7 @@ from ..campaigns.contracts import CampaignError
 from ..campaigns.repository import execute, identifier
 from ..data.governed_dataset import (
     assert_run_dataset_snapshot_unchanged,
+    normalize_required_splits,
     resolve_governed_dataset,
     training_dataset_metadata,
     validate_dataset_location,
@@ -153,18 +154,25 @@ def dataset_samples(
     inspection: bool = False,
     training_run_id: str | None = None,
     dataset_dir: Path | str | None = None,
+    metadata_only: bool = False,
+    test_authorized: bool = False,
+    verification: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     require(split in ("train", "val", "test"), "PROTOCOL_REQUIRED")
     require(
         override is None or identifier(override) == inherited["dataset_version_id"],
         "DATASET_OVERRIDE_CONFLICT",
     )
+    splits = () if metadata_only else (split,)
+    normalize_required_splits(splits, test_authorized=test_authorized)
     snapshot = (
-        resolve_governed_dataset(inherited["dataset_version_id"])
+        resolve_governed_dataset(inherited["dataset_version_id"],
+                                 required_splits=splits, test_authorized=test_authorized)
         if inspection
         else verify_dataset_for_execution(
             inherited["dataset_version_id"], consumer="assessment.e6",
             training_run_id=training_run_id, dataset_dir=dataset_dir,
+            required_splits=splits, test_authorized=test_authorized,
         )
     )
     assert_run_dataset_snapshot_unchanged(snapshot, inherited)
@@ -191,7 +199,7 @@ def dataset_samples(
         relative = materialized_relative_path(r, collisions).as_posix()
         path = snapshot.dataset_root / relative
         require(
-            file_identity(path)["sha256"] == r["source_file_sha256"],
+            metadata_only or file_identity(path)["sha256"] == r["source_file_sha256"],
             "SAMPLE_CONTENT_CHANGED",
         )
         samples.append(
@@ -205,10 +213,12 @@ def dataset_samples(
             }
         )
     require(len(samples) == inherited["counts"][split], "SAMPLE_COUNT_CONFLICT")
+    if verification is not None:
+        verification.update(snapshot.verification_metadata(), training_run_id=training_run_id)
     return samples
 
 
-def campaign_inventory(repository, campaign_id, dataset_version_id=None):
+def campaign_inventory(repository, campaign_id, dataset_version_id=None, *, metadata_only=False):
     campaign = repository.get(campaign_id, dataset_version_id)
     require(
         campaign["state"] in ("frozen", "active", "paused", "finalized"),
@@ -226,9 +236,15 @@ def campaign_inventory(repository, campaign_id, dataset_version_id=None):
         }
         if a and a["state"] == "verified" and str(a["member_id"]) == str(m["id"]):
             try:
-                binding, dataset, _ = resolve(
-                    repository, training_run_id=a["training_run_id"]
-                )
+                if metadata_only:
+                    # TEST authorization precedes even checkpoint access. Full
+                    # lineage validation follows in prepare after the exact lock.
+                    binding = {"training_run_id": str(a["training_run_id"]), "model_version_id": None}
+                    dataset = training_dataset_metadata(a["training_run_id"])
+                else:
+                    binding, dataset, _ = resolve(
+                        repository, training_run_id=a["training_run_id"]
+                    )
                 require(
                     dataset == campaign["dataset_snapshot"], "CAMPAIGN_DATASET_CONFLICT"
                 )

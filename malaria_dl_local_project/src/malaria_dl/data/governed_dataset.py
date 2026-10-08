@@ -46,6 +46,7 @@ class GovernedDatasetSnapshot:
     clinical_identity_fingerprint: str
     counts: dict[str, Any]
     evidence_id: str | None = field(default=None, compare=False)
+    verified_splits: tuple[str, ...] = field(default=(), compare=False)
 
     def metadata(self) -> dict[str, Any]:
         return {
@@ -58,6 +59,23 @@ class GovernedDatasetSnapshot:
             "clinical_identity_fingerprint": self.clinical_identity_fingerprint,
             "counts": self.counts,
             "selection_unit": "dataset_version_id",
+        }
+
+    def verification_metadata(self) -> dict[str, Any]:
+        """Current evidence is separate from the immutable scientific snapshot."""
+        from .dataset_integrity import VERIFIER_VERSION
+
+        return {
+            "verifier_version": VERIFIER_VERSION,
+            "snapshot": self.metadata(),
+            "required_splits": list(self.verified_splits),
+            "physically_verified_splits": list(self.verified_splits),
+            "global_integrity_status": "verified_frozen_metadata",
+            "physical_integrity_status": "verified" if self.verified_splits else "not_checked",
+            "integrity_status": (
+                "verified" if self.verified_splits == ("train", "val", "test")
+                else "verified_requested_splits" if self.verified_splits else "verified_metadata_only"
+            ),
         }
 
 
@@ -91,7 +109,24 @@ def dataset_read_connection():
         engine.dispose()
 
 
-def _resolve(connection, requested):
+def normalize_required_splits(
+    required_splits: tuple[str, ...] | list[str] | None,
+    *,
+    test_authorized: bool = False,
+) -> tuple[str, ...]:
+    """Explicit scope; () verifies database metadata only, never physical files."""
+    if not isinstance(required_splits, (tuple, list)):
+        raise GovernedDatasetError("DATASET_REQUIRED_SPLITS_REQUIRED")
+    if any(s not in ("train", "val", "test") for s in required_splits):
+        raise GovernedDatasetError("DATASET_SPLIT_INVALID")
+    if len(set(required_splits)) != len(required_splits):
+        raise GovernedDatasetError("DATASET_SPLIT_DUPLICATE")
+    if "test" in required_splits and test_authorized is not True:
+        raise GovernedDatasetError("TEST_FINAL_LOCK_REQUIRED")
+    return tuple(s for s in ("train", "val", "test") if s in required_splits)
+
+
+def _resolve(connection, requested, required_splits, *, test_authorized=False):
     row = (
         connection.execute(
             text(
@@ -178,12 +213,15 @@ def _resolve(connection, requested):
         or root == data_root
     ):
         raise GovernedDatasetError("MATERIALIZED_DATASET_ROOT_INVALID")
-    if not root.is_dir():
+    if required_splits and not root.is_dir():
         raise GovernedDatasetError("MATERIALIZED_DATASET_ROOT_MISSING")
     from .dataset_integrity import verify_integrity
 
     try:
-        counts = verify_integrity(connection, requested, root, contract)
+        counts = verify_integrity(
+            connection, requested, root, contract,
+            required_splits=required_splits, test_authorized=test_authorized,
+        )
     except GovernedDatasetError as exc:
         exc.evidence = {
             "dataset_materialization_id": materialization_id,
@@ -197,14 +235,18 @@ def _resolve(connection, requested):
         root,
         *(fingerprints[k] for k in names),
         counts,
+        verified_splits=required_splits,
     )
 
 
-def resolve_governed_dataset(dataset_version_id=None) -> GovernedDatasetSnapshot:
+def resolve_governed_dataset(
+    dataset_version_id=None, *, required_splits=None, test_authorized=False,
+) -> GovernedDatasetSnapshot:
     """Read-only verification. No implicit version and no writes or split commands."""
     requested = normalize_dataset_version_id(dataset_version_id)
+    splits = normalize_required_splits(required_splits, test_authorized=test_authorized)
     with dataset_read_connection() as connection:
-        return _resolve(connection, requested)
+        return _resolve(connection, requested, splits, test_authorized=test_authorized)
 
 
 def governed_relative_root(path) -> tuple:
@@ -329,9 +371,13 @@ def training_dataset_metadata(training_run_id: UUID | str) -> dict[str, Any]:
     return snapshot
 
 
-def resolve_training_run_dataset(training_run_id):
+def resolve_training_run_dataset(training_run_id, *, required_splits=None, test_authorized=False):
+    splits = normalize_required_splits(required_splits, test_authorized=test_authorized)
     persisted = training_dataset_metadata(training_run_id)
-    resolved = resolve_governed_dataset(persisted["dataset_version_id"])
+    resolved = resolve_governed_dataset(
+        persisted["dataset_version_id"], required_splits=splits,
+        test_authorized=test_authorized,
+    )
     assert_run_dataset_snapshot_unchanged(resolved, persisted)
     return resolved
 

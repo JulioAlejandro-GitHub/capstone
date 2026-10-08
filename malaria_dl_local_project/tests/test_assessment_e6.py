@@ -361,6 +361,8 @@ def test_minimal_model_uses_exact_e3_input(tmp_path, monkeypatch, architecture, 
     Image.fromarray(rgb).save(path)
     sample["sha256"] = file_identity(path)["sha256"]
     runtime = KerasRuntime(v)
+    from test_dataset_split_isolation import guard_dataset_io
+    image_accesses = guard_dataset_io(monkeypatch, physical_root, ("val",))
     np.testing.assert_allclose(
         runtime.images([sample]).numpy()[0],
         transform_rgb(rgb, contract).numpy(),
@@ -368,6 +370,7 @@ def test_minimal_model_uses_exact_e3_input(tmp_path, monkeypatch, architecture, 
     )
     assert len(runtime.predict([sample])) == 1
     assert v["dataset"] == original_dataset
+    assert {split for _, split, _ in image_accesses} == {"val"}
     if architecture == "custom_cnn":
         v["explanation"] = explanation_spec("gradcam", "conv", 1, None, [])
         heat, overlay, result = runtime.explain(sample)
@@ -628,7 +631,7 @@ def test_accredited_sample_population_and_equivalent_override(
     monkeypatch.setattr(Result, "__iter__", lambda self: iter(self.rows), raising=False)
 
     f = dataset_fixture
-    inherited = resolve_governed_dataset(VERSION).metadata()
+    inherited = resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True).metadata()
     repo = SimpleNamespace(transaction=lambda **kw: nullcontext(f.connection))
     samples = dataset_samples(repo, inherited, "val", VERSION, inspection=True)
     assert len(samples) == 2 and {s["label"] for s in samples} == {0, 1}

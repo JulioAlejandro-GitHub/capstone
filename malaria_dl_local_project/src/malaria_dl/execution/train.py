@@ -342,6 +342,7 @@ def _standalone(args):
     snapshot = verify_dataset_for_execution(
         args.dataset_version_id,
         consumer="train.e5",
+        required_splits=("train", "val"),
         dataset_dir=args.dataset_dir,
         data_source=args.data_source,
         expected_evidence_id=getattr(args, "expected_dataset_evidence_id", None),
@@ -360,6 +361,7 @@ def _standalone(args):
         verified_snapshot = verify_dataset_for_execution(
             args.dataset_version_id,
             consumer="train.e5.finalize",
+            required_splits=("train", "val"),
             expected_evidence_id=snapshot.evidence_id,
         )
         if verified_snapshot.metadata() != snapshot.metadata():

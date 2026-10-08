@@ -194,7 +194,7 @@ class ScienceRepository(AssessmentRepository):
             "FINAL_INFERENCE_OPTIONS_CONFLICT",
         )
         samples = lineage.dataset_samples(
-            self, value["dataset"], "test", inspection=True
+            self, value["dataset"], "test", inspection=True, metadata_only=True
         )
         rebuilt = identity(
             value["model"],

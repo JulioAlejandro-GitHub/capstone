@@ -115,7 +115,7 @@ def main(argv=None):
             ),
             "EXPLICIT_REFERENCES_INVALID",
         )
-        dataset = resolve_governed_dataset(args.dataset_version_id).metadata()
+        dataset = resolve_governed_dataset(args.dataset_version_id, required_splits=()).metadata()
         report = compare(
             protocol,
             dataset,

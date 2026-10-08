@@ -32,6 +32,7 @@ test-governed-dataset:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dl_local_project $(DATASET_TEST_PYTHON) -m pytest -q -p no:cacheprovider \
 		-k 'not test_byte_exact_canonical_rules_match_upstream_sources' \
 		malaria_dl_local_project/tests/test_dataset_resolution.py \
+		malaria_dl_local_project/tests/test_dataset_split_isolation.py \
 		malaria_dl_local_project/tests/test_dataset_stage1.py \
 		malaria_dl_local_project/tests/test_governed_dataset_contract.py::test_snapshot_is_immutable_and_change_is_rejected \
 		malaria_dl_local_project/tests/test_local_train_launcher.py::test_relocated_host_prefix_is_the_same_dataset \

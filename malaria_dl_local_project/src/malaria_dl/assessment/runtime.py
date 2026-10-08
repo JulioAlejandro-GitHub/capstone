@@ -33,6 +33,7 @@ class KerasRuntime:
         allowed = self.value["samples"] + (self.value.get("explanation") or {}).get("background", [])
         for s in samples:
             require(s in allowed, "SAMPLE_NOT_AUTHORIZED")
+            require(s["split"] == self.value["split"], "SAMPLE_NOT_AUTHORIZED")
             path = self.dataset_root / s["relative_path"]
             require(
                 path.resolve().is_relative_to(self.dataset_root.resolve())
