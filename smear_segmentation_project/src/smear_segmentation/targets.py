@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from malaria_split.sources.polygon_set import PolygonAnnotation, PolygonEntry
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from malaria_split.sources.polygon_set import PolygonAnnotation, PolygonEntry
 
 
 RBC_SOURCE_LABELS = frozenset({

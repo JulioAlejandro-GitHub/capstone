@@ -139,3 +139,8 @@ scientific-parameters-doc:
 test-scientific-parameters:
 	PYTHONDONTWRITEBYTECODE=1 $(SOURCE_PYTHON) scripts/generate_scientific_parameters.py --check
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dl_local_project $(SOURCE_PYTHON) -m pytest -q -p no:cacheprovider malaria_dl_local_project/tests/test_scientific_parameter_registry.py malaria_dl_local_project/tests/test_threshold_calibration.py malaria_dl_local_project/tests/test_checkpoint_policy.py malaria_dl_local_project/tests/test_training_results.py malaria_dl_local_project/tests/test_assessment_e6.py::test_threshold_no_implicit_clinical_fallback malaria_dl_local_project/tests/test_assessment_e6.py::test_test_forbidden_development
+
+.PHONY: test-yolo-runtime
+YOLO_PYTHON ?= malaria_dl_local_project/.venv-metal/bin/python
+test-yolo-runtime:
+	PYTHONDONTWRITEBYTECODE=1 $(YOLO_PYTHON) -m pytest -q -p no:cacheprovider smear_segmentation_project/tests

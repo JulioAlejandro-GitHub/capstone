@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from malaria_split.sources.polygon_set import PolygonEntry
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from malaria_split.sources.polygon_set import PolygonEntry
 
 
 TILE_SIZE = 1024
