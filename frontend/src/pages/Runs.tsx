@@ -206,15 +206,8 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
       return next;
     });
     try {
-      const [release, preview] = await Promise.all([
-        api.getStage2ReleaseStatus(requestDatasource, runId, controller.signal),
-        api.getStage2Availability(requestDatasource, runId, controller.signal),
-      ]);
+      const response = await api.getStage2ReleaseStatus(requestDatasource, runId, controller.signal);
       if (!mounted.current || activeDatasource.current !== requestDatasource) return null;
-      const response: Stage2Availability = {
-        ...release,
-        technical_blockers: preview.technical_blockers,
-      };
       stage2LoadState.current[runId] = 'success';
       setStage2Status((current) => ({ ...current, [runId]: response }));
       return response;
@@ -225,6 +218,11 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
       }
       if (!mounted.current || activeDatasource.current !== requestDatasource) return null;
       stage2LoadState.current[runId] = 'error';
+      setStage2Status((current) => {
+        const next = { ...current };
+        delete next[runId];
+        return next;
+      });
       setStage2Errors((current) => ({ ...current, [runId]: promotionErrorMessage(reason) }));
       return null;
     } finally {

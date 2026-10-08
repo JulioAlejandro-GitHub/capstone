@@ -166,7 +166,7 @@ test('30 publicación y readiness no se precargan al montar', () => {
 test('31 abrir Ver detalle consulta readiness sólo del TRAIN elegido', () => {
   assert.match(group, /if \(next\) onStage2Open\(\)/);
   assert.match(loadStage2, /getStage2ReleaseStatus\(requestDatasource, runId/);
-  assert.match(loadStage2, /getStage2Availability\(requestDatasource, runId/);
+  assert.doesNotMatch(loadStage2, /getStage2Availability/);
 });
 
 test('32 estado productivo global no forma parte de la carga del panel', () => {

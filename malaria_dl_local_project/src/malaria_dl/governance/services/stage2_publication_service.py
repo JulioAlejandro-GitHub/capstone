@@ -6,6 +6,8 @@ from uuid import UUID
 
 from sqlalchemy import text
 
+from src.malaria_dl.governance.eligibility import stage2_eligibility
+
 from src.model_governance.errors import GovernanceNotFoundError, GovernanceStateError
 
 
@@ -55,20 +57,7 @@ class Stage2PublicationService:
 
     @staticmethod
     def _eligibility(context):
-        train_completed = context["train_status"] == "completed"
-        evaluate_completed = context["evaluation_status"] == "completed"
-        missing = []
-        if not train_completed:
-            missing.append("TRAIN no completado")
-        if context["evaluation_run_id"] is None:
-            missing.append("EVALUATE no encontrado")
-        elif not evaluate_completed:
-            missing.append("EVALUATE no completado")
-        return train_completed and evaluate_completed, {
-            "train_completed": train_completed,
-            "evaluate_completed": evaluate_completed,
-            "missing_conditions": missing,
-        }
+        return stage2_eligibility(context)
 
     def status(self, model_version_id):
         model_version_id = self._id(model_version_id)

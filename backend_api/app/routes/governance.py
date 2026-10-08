@@ -8,6 +8,9 @@ from pydantic import BaseModel,ConfigDict
 from app.db import fetch_all,fetch_one,get_engine,resolve_datasource
 from app.services.serialization import row_to_dict,rows_to_list
 from app.services.productive_model import ProductiveModelResolver
+from app.schemas.stage2_status import Stage2Status
+from app.services.stage2_status import Stage2StatusService, Stage2TrainingNotFound
+
 from app.security import Permission,Principal
 from app.audit import audited_permission,mutation_connection
 
@@ -25,6 +28,22 @@ DEPLOYMENT_SERVICE=ModelDeploymentService(model_cache=MODEL_CACHE)
 INFERENCE_SERVICE=TraceableInferenceService(cache=MODEL_CACHE)
 
 router=APIRouter(prefix="/api",tags=["model-governance"])
+
+def get_stage2_status_service() -> Stage2StatusService:
+    return Stage2StatusService()
+
+
+def read_stage2_status(service: Stage2StatusService, training_run_id: UUID, datasource: str | None) -> Stage2Status:
+    try:
+        return service.status(training_run_id, datasource)
+    except Stage2TrainingNotFound as exc:
+        raise HTTPException(404, "TRAIN no encontrado") from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(503, "No fue posible consultar el estado de liberación") from exc
+
+
 def uid(value):
     try:return str(UUID(str(value)))
     except ValueError as exc:raise HTTPException(422,"UUID inválido") from exc
@@ -175,9 +194,12 @@ def prepare_release(
     except HTTPException:raise
     except Exception as exc:raise HTTPException(409,{"code":"PREPARE_RELEASE_FAILED","message":type(exc).__name__}) from exc
 
-@router.get("/training-runs/{training_run_id}/stage2-availability")
-def stage2_availability(training_run_id:str,datasource:str|None=Query("malaria")):
-    return safe(lambda:stage2_service(datasource).preview(uid(training_run_id)))
+@router.get("/training-runs/{training_run_id}/stage2-availability", response_model=Stage2Status)
+def stage2_availability(
+    training_run_id: UUID, datasource: str | None = Query("malaria"),
+    service: Stage2StatusService = Depends(get_stage2_status_service),
+) -> Stage2Status:
+    return read_stage2_status(service, training_run_id, datasource)
 
 @router.get("/stage2/productive-model-availability")
 def productive_model_availability(datasource:str|None=Query("malaria")):
@@ -185,13 +207,12 @@ def productive_model_availability(datasource:str|None=Query("malaria")):
     engine=get_engine(resolve_datasource(datasource))
     return ProductiveModelResolver(engine=engine).availability()
 
-@router.get("/training-runs/{training_run_id}/stage2-release-status")
-def stage2_release_status(training_run_id:str,datasource:str|None=Query("malaria")):
-    """Estado persistente del candidato técnico; sólo TRAIN + EVALUATE bloquean."""
-    return safe(lambda:stage2_status_with_deployment(
-      stage2_publication_service(datasource).status_for_training(uid(training_run_id)),
-      datasource,
-    ))
+@router.get("/training-runs/{training_run_id}/stage2-release-status", response_model=Stage2Status)
+def stage2_release_status(
+    training_run_id: UUID, datasource: str | None = Query("malaria"),
+    service: Stage2StatusService = Depends(get_stage2_status_service),
+) -> Stage2Status:
+    return read_stage2_status(service, training_run_id, datasource)
 
 @router.get("/model-versions/{model_version_id}/stage2-status")
 def model_version_stage2_status(model_version_id:str,datasource:str|None=Query("malaria")):

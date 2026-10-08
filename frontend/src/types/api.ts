@@ -102,6 +102,16 @@ export interface ProductionPublicationResult {
 }
 
 export interface Stage2Availability {
+  train_started_at?:string|null;train_finished_at?:string|null;
+  evaluation_source_kind?:'run'|'assessment_e6'|null;
+  evaluation_attempt_id?:string|null;evaluation_identity_id?:string|null;
+  evaluation_started_at?:string|null;evaluation_finished_at?:string|null;
+  evaluation_split?:string|null;evaluation_purpose?:string|null;
+  model_version_registered?:boolean;architecture?:string|null;
+  checkpoint_sha256?:string|null;checkpoint_bytes?:number|null;evidence_source?:string|null;
+  published?:boolean;
+  explanations?:Array<{run_id:string;status:string;finished_at:string|null}>;
+  deployment_readiness?:{ready:boolean;status:'ready'|'blocked';checkpoint_accessible:boolean;checkpoint_verified:boolean};
   training_run_id:string;train_status?:string;evaluation_run_id?:string|null;evaluation_status?:string|null;
   explainability_run_ids?:string[];eligible:boolean;eligible_for_stage2_production?:boolean;
   available?:boolean;is_stage2_available?:boolean;is_stage2_production?:boolean;
@@ -111,7 +121,7 @@ export interface Stage2Availability {
   next_action?:'enable_for_stage2'|'view_stage2_model'|'unavailable';
   action_label?:string;blockers:PromotionBlockingReason[];technical_blockers?:PromotionBlockingReason[];warnings:string[];
   model_version_id:string|null;deployment_id?:string|null;fixture?:boolean;
-  checkpoint_artifact_id?:string;checkpoint?:string;model_name?:string;version_number?:number;
+  checkpoint_artifact_id?:string|null;checkpoint?:string|null;model_name?:string|null;version_number?:number|null;
   environment?:'stage2'|'production';alias?:'default'|'champion';production_scope?:'stage2_experimental'|'stage2_technical';deployment_status?:string;
   artifact_sha256?:string;threshold?:number;threshold_source?:string;deployed_at?:string;
   smoke_status?:string;available_for_inference?:boolean;

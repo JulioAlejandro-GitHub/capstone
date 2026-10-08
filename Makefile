@@ -7,6 +7,16 @@ test-backend:
 	docker compose exec -T backend python -m pytest tests -m "not requires_docker_postgres"
 
 .PHONY: test-e6-lineage-backend test-e6-lineage-frontend
+.PHONY: test-stage2-status-backend test-stage2-status-frontend
+test-stage2-status-backend:
+	docker compose exec -T -e PYTHONDONTWRITEBYTECODE=1 backend python -m pytest -q -p no:cacheprovider \
+		tests/test_stage2_status_read_only.py tests/test_governance_api.py tests/test_e6_lineage_read_only.py \
+		/app/malaria_dl_local_project/tests/test_stage2_publication_eligibility.py
+
+test-stage2-status-frontend:
+	docker compose exec -T frontend node --test tests/stage2-status.test.mjs tests/stage2-availability.test.mjs tests/executions-lazy-loading.test.mjs tests/e6-lineage.test.mjs tests/four-step-production-flow.test.mjs
+	docker compose exec -T frontend npm run build
+
 # Synthetic SELECT fixtures and read-only evidence; no scientific execution or DB writes.
 test-e6-lineage-backend:
 	docker compose exec -T -e PYTHONDONTWRITEBYTECODE=1 backend python -m pytest -q -p no:cacheprovider \

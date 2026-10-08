@@ -162,6 +162,7 @@ export function TrainingRunGroupCard({
 
       {stage2Expanded ? (
         <Stage2PublicationPanel
+          onRetry={onStage2Open}
           error={stage2Error}
           explainCount={training.explainability_count}
           id={stage2PanelId}
