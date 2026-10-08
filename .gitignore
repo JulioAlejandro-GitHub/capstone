@@ -87,3 +87,4 @@ docs/dump-malaria_experiments-202607290730.sql
 
 # Downloaded YOLO model weights
 /yolo26n-seg.pt
+/malaria_dl_local_project/artifacts/assessments
