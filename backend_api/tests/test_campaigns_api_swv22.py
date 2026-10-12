@@ -260,3 +260,31 @@ def test_detail_includes_the_operator_document_for_editing(client, monkeypatch):
     assert body["configuration"]["seeds"] == [11, 29]
     assert client.get("/api/campaigns/00000000-0000-4000-8000-000000000001").status_code == 404
 
+
+@pytest.mark.parametrize('statement,code,status', [
+    ("SELECT nonexistent_db02a_column", 'CAMPAIGN_DATABASE_OPERATION_FAILED', 500),
+    ("INSERT INTO experimental_campaigns (id,state,dataset_evidence_id) VALUES ('11111111-1111-4111-8111-111111111111','draft','22222222-2222-4222-8222-222222222222')", 'CAMPAIGN_DATASET_EVIDENCE_CONFLICT', 422),
+])
+def test_db02a_http_correlates_safe_database_error(client, monkeypatch, caplog, statement, code, status):
+    from sqlalchemy import text
+    from src.malaria_dl.campaigns.service import CampaignService
+    from app.db import get_primary_engine
+    with get_primary_engine().connect() as c:
+        assert c.execute(text('SELECT current_database()')).scalar_one() == 'capstone_db02a_test_20261012'
+    def fail(self, **kwargs):
+        with self.repository.transaction() as c:
+            c.execute(text(statement))
+    monkeypatch.setattr(CampaignService, 'configure', fail)
+    _, configuration = default_configuration(client)
+    response = client.post('/api/campaigns', json=dict(
+        campaign_id='11111111-1111-4111-8111-111111111111', name='Synthetic',
+        purpose='Isolated test', dataset_version_id=DATASET, configuration=configuration))
+    assert response.status_code == status
+    payload = response.json()['error']
+    assert payload['details']['code'] == code
+    assert payload['correlation_id']
+    record = next(json.loads(r.message) for r in caplog.records if 'campaign.database_error' in r.message)
+    assert record['correlation_id'] == payload['correlation_id']
+    with get_primary_engine().connect() as c:
+        for table in ('experimental_campaigns','campaign_configurations','campaign_members'):
+            assert c.execute(text(f'SELECT count(*) FROM {table}')).scalar_one() == 0

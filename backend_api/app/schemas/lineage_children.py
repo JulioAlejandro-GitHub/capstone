@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
-from app.schemas.assessment_lineage import AssessmentEvaluationChild
+from app.schemas.assessment_lineage import AssessmentEvaluationChild, AssessmentExplanationChild
 
 
 class LineageConfidence(str, Enum):
@@ -84,6 +84,7 @@ class TrainingLineageChildren(BaseModel):
             Field(discriminator="source_kind"),
         ]
     ]
-    explainabilities: list[ExplainabilityLineageChild]
+    explainabilities: list[Annotated[ExplainabilityLineageChild | AssessmentExplanationChild, Field(discriminator="source_kind")]]
     limit: int = Field(ge=1, le=500)
+    offset: int = Field(default=0, ge=0)
     truncated: bool

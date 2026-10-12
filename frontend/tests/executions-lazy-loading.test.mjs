@@ -90,7 +90,7 @@ test('15 expandir un TRAIN conserva identidad independiente y no carga otro', ()
 });
 
 test('16 success o loaded evita repetir GET al reabrir', () => {
-  assert.match(loadChildren, /current\.status === 'loading' \|\| current\.status === 'success'/);
+  assert.match(loadChildren, /current\.status === 'loading' \|\| \(current\.status === 'success' && !retry\)/);
   assert.match(group, /data: TrainingLineageChildren \| null/);
 });
 
@@ -131,9 +131,9 @@ test('23 conteos concurrentes se reconcilian sin alterar Liberación', () => {
   assert.doesNotMatch(loadChildren, /release_status/);
 });
 
-test('24 respuesta truncada muestra primeros N de M', () => {
+test('24 respuesta paginada muestra N, posición y total M', () => {
   assert.match(group, /loadedChildren\.truncated/);
-  assert.match(group, /Se muestran los primeros \{visibleChildren\} de \{loadedChildren\.total_count\}/);
+  assert.match(group, /Se muestran \{visibleChildren\} desde \{\(loadedChildren\.offset \?\? 0\) \+ 1\} de \{loadedChildren\.total_count\}/);
 });
 
 test('25 TRAIN sin hijos deshabilita expansión y no llama al loader', () => {
@@ -147,7 +147,7 @@ test('26 EVALUATE se renderiza desde la respuesta lazy', () => {
 });
 
 test('27 EXPLAIN respeta el nombre backend explainabilities', () => {
-  assert.match(types, /explainabilities: ExplainabilityLineageChild\[\]/);
+  assert.match(types, /explainabilities: \(ExplainabilityLineageChild \| AssessmentExplanationChild\)\[\]/);
   assert.match(group, /loadedChildren\.explainabilities\.map/);
   assert.doesNotMatch(types.slice(types.indexOf('interface TrainingLineageChildren'), types.indexOf('export type RunLineageConfidence')), /explainability:/);
 });

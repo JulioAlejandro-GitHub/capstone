@@ -21,3 +21,10 @@ class AssessmentEvaluationChild(BaseModel):
     started_at: datetime
     finished_at: datetime | None
     verification: dict[str, JsonValue] | None
+
+
+class AssessmentExplanationChild(AssessmentEvaluationChild):
+    source_kind: Literal["assessment_explain_e6"] = "assessment_explain_e6"
+    method: str | None
+    result_count: int | None
+    artifact_reference: str

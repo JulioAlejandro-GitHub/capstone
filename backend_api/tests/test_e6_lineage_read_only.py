@@ -28,7 +28,7 @@ REAL_ATTEMPT = "dded6222-12ae-407a-82c6-601e265e3f7d"
 TABLES = (
     "runs", "run_lineage", "assessment_identities", "assessment_attempts",
     "evaluations", "run_metrics", "run_clinical_metrics", "confusion_matrices",
-    "explainability_results", "models", "datasets", "run_configurations",
+    "explainability_results", "models", "datasets", "run_configurations", "assessment_artifacts",
     "train_execution_sessions", "train_execution_records",
 )
 METRICS = dict(count=2, tn=1, fp=0, fn=0, tp=1, accuracy=1., precision=1.,
@@ -97,6 +97,8 @@ def install_fixtures(monkeypatch: pytest.MonkeyPatch, values: dict) -> None:
 
     monkeypatch.setattr(lineage_children, "read_only_transaction", connection)
     monkeypatch.setattr(training_summaries, "read_only_transaction", connection)
+    from app.routes import assessments
+    monkeypatch.setattr(assessments, "read_only_transaction", connection)
 
 
 @pytest.mark.parametrize("states,legacy,explain,projected,expected,selected", [
@@ -155,7 +157,8 @@ def test_scope_distinct_identities_and_explain_assessments(monkeypatch) -> None:
     install_fixtures(monkeypatch, values)
     result = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100)
     assert len(result.evaluations) == result.evaluation_count == 2
-    assert result.explainability_count == 0
+    assert result.explainability_count == len(result.explainabilities) == 1
+    assert result.explainabilities[0].source_kind == "assessment_explain_e6"
     assert training_summaries.list_training_summaries("malaria", 100).items[0].evaluation_count == 2
 
 
@@ -181,23 +184,81 @@ def scientific_fingerprint() -> dict:
         )}
 
 
+
+def explain_fixture(values, index, states=("verified",)):
+    identity = str(UUID(int=1000 + index))
+    values["assessment_identities"].append(dict(id=identity, training_run_id=TRAIN,
+        kind="explain", created_at=STAMP, identity=dict(split="val", purpose="development",
+        explanation=dict(method="gradcam"), model=dict(model_version_id=TRAIN, checkpoint_artifact_id=LEGACY))))
+    for ordinal, state in enumerate(states, 1):
+        aid = str(UUID(int=10000 + index * 10 + ordinal))
+        values["assessment_attempts"].append(dict(id=aid, identity_id=identity, ordinal=ordinal,
+            state=state, started_at=STAMP, finished_at=None if state == "active" else STAMP,
+            verification=dict(count=2693, sha256="a" * 64, artifacts_hash="b" * 64) if state == "verified" else None))
+    return identity
+
+
 @pytest.mark.anyio
-async def test_real_attempt_http_metrics_and_unchanged_evidence() -> None:
+async def test_fourteen_trainings_one_evaluate_two_explain_and_detail(monkeypatch):
+    values = fixtures(("verified",), False, False, False)
+    for index in range(13):
+        values["runs"].append({**values["runs"][0], "id": str(UUID(int=2000 + index))})
+    for index in range(2):
+        explain_fixture(values, index)
+        aid = values["assessment_attempts"][-1]["id"]
+        values["assessment_artifacts"].append(dict(attempt_id=aid, sample_id=TRAIN,
+            role="overlay", artifact_id=str(UUID(int=3000 + index)), payload=dict(
+            artifact_id=str(UUID(int=3000 + index)), role="overlay", path="outputs/db02a-missing.png",
+            sha256="c" * 64, bytes=100)))
     before = scientific_fingerprint()
+    install_fixtures(monkeypatch, values)
+    summaries = training_summaries.list_training_summaries("malaria", 100)
+    assert len(summaries.items) == 14
+    for summary in summaries.items:
+        children = lineage_children.get_training_lineage_children(summary.run_id, "malaria", 100)
+        assert summary.evaluation_count == children.evaluation_count == len(children.evaluations)
+        assert summary.explainability_count == children.explainability_count == len(children.explainabilities)
+        assert (children.evaluation_count, children.explainability_count) == ((1, 2) if str(summary.run_id) == TRAIN else (0, 0))
+    children = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100)
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
-        summaries = await client.get("/runs/training-summaries?limit=500")
-        children = await client.get(f"/runs/{REAL_TRAIN}/lineage-children")
-        detail = await client.get(f"/assessments/{REAL_ATTEMPT}")
-    assert summaries.status_code == children.status_code == detail.status_code == 200
-    summary = next(item for item in summaries.json()["items"] if item["run_id"] == REAL_TRAIN)
-    payload = children.json()
-    assert summary["evaluation_count"] == payload["evaluation_count"] == 1
-    item = next(item for item in payload["evaluations"] if item.get("attempt_id") == REAL_ATTEMPT)
-    assert item["state"] == "verified" and item["split"] == "val"
-    assert "run_id" not in item
-    assert item["verification"] == detail.json()["verification"]
-    metrics = item["verification"]["metrics"]
-    assert metrics["count"] == 2693
-    assert metrics["recall"] == 0.910188679245283
-    assert metrics["f2"] == 0.900268736936399
+        for item in children.explainabilities:
+            assert item.method == "gradcam" and item.result_count == 2693
+            assert "run_id" not in item.model_dump()
+            detail = await client.get(f"/assessments/{item.attempt_id}")
+            artifacts = await client.get(item.artifact_reference)
+            assert detail.status_code == artifacts.status_code == 200
+            assert detail.json()["identity"]["explanation"]["method"] == "gradcam"
+            assert detail.json()["id"] == str(item.attempt_id)
+            assert artifacts.json()["items"][0]["path"] == "outputs/db02a-missing.png"
     assert scientific_fingerprint() == before
+
+
+@pytest.mark.parametrize("states,expected", [(("failed", "active"), "active"), (("verified", "failed"), "verified"), (("failed",), "failed")])
+def test_explain_attempt_selection(monkeypatch, states, expected):
+    values = fixtures((), False, False, False)
+    explain_fixture(values, 0, states)
+    install_fixtures(monkeypatch, values)
+    children = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100)
+    assert children.explainability_count == len(children.explainabilities) == 1
+    child = children.explainabilities[0]
+    assert child.state == expected
+    assert (child.verification is not None) == (expected == "verified")
+    assert (child.result_count is not None) == (expected == "verified")
+
+
+def test_more_than_one_hundred_children_pages(monkeypatch):
+    values = fixtures(("verified",), False, False, False)
+    for index in range(105):
+        explain_fixture(values, index, ("verified", "failed"))
+    install_fixtures(monkeypatch, values)
+    first = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100)
+    second = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100, offset=100)
+    assert first.total_count == second.total_count == 106
+    assert first.explainability_count == second.explainability_count == 105
+    assert len(first.evaluations) + len(first.explainabilities) == 100
+    assert len(second.evaluations) + len(second.explainabilities) == 6
+    assert first.truncated and not second.truncated
+    ids = [x.attempt_id for page in (first, second) for x in (*page.evaluations, *page.explainabilities)]
+    assert len(set(ids)) == 106
+    assert "assessment_results" not in lineage_children.LINEAGE_CHILDREN_SQL
+    assert "assessment_artifacts" not in lineage_children.LINEAGE_CHILDREN_SQL

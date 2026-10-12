@@ -19,7 +19,7 @@ export function useAssessment(attemptId: string | undefined) {
     setState({ attemptId, data: null, error: null, loading: true });
     api.getAssessment(attemptId, controller.signal).then((data) => {
       if (controller.signal.aborted) return;
-      if (data.id !== attemptId || data.kind !== 'evaluate') {
+      if (data.id !== attemptId || !['evaluate', 'explain'].includes(data.kind)) {
         setState({ attemptId, data: null, error: 'La respuesta no corresponde a la evaluación solicitada.', loading: false });
         return;
       }

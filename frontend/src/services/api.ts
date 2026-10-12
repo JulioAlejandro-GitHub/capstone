@@ -1,6 +1,7 @@
 import type { ScientificResult } from '../components/ScientificResults';
 import type {
   AssessmentDetail,
+  AssessmentArtifact,
   CheckpointPolicySummary,
   ClinicalDashboard,
   ClinicalRunSummary,
@@ -269,6 +270,7 @@ export class ApiError extends Error {
     public readonly classificationRunId: string | null = null,
     public readonly stage: string | null = null,
     public readonly retryable: boolean | null = null,
+    public readonly correlationId: string | null = null,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -356,7 +358,8 @@ async function performRequest<T>(url: URL, options: RequestOptions): Promise<T> 
       } catch {
         // Non-JSON HTTP errors remain HTTP errors, never parse/network errors.
       }
-      const detail = asObject(payload.detail);
+      const envelope = asObject(payload.error);
+      const detail = asObject(payload.detail ?? envelope.details);
       const message = typeof detail.message === 'string'
         ? detail.message
         : (typeof payload.detail === 'string' ? payload.detail : raw || response.statusText);
@@ -368,6 +371,7 @@ async function performRequest<T>(url: URL, options: RequestOptions): Promise<T> 
         typeof detail.classification_run_id === 'string' ? detail.classification_run_id : null,
         typeof detail.stage === 'string' ? detail.stage : null,
         typeof detail.retryable === 'boolean' ? detail.retryable : null,
+        typeof envelope.correlation_id === 'string' ? envelope.correlation_id : null,
       );
     }
     try {
@@ -1078,6 +1082,10 @@ export const api = {
     );
   },
 
+  getAssessmentArtifacts(attemptId: string, offset = 0, signal?: AbortSignal) {
+    return request<{items: AssessmentArtifact[]}>(`/assessments/${encodeURIComponent(attemptId)}/artifacts`, {limit: 100, offset}, {signal});
+  },
+
   getAssessment(attemptId: string, signal?: AbortSignal) {
     return request<AssessmentDetail>(`/assessments/${encodeURIComponent(attemptId)}`, {}, { signal });
   },
@@ -1086,16 +1094,18 @@ export const api = {
     trainingRunId,
     datasource,
     limit = 100,
+    offset = 0,
     signal,
   }: {
     trainingRunId: string;
     datasource: string;
     limit?: number;
+    offset?: number;
     signal?: AbortSignal;
   }) {
     return request<TrainingLineageChildren>(
       `/runs/${encodeURIComponent(trainingRunId)}/lineage-children`,
-      { datasource, limit },
+      { datasource, limit, offset },
       { signal },
     );
   },

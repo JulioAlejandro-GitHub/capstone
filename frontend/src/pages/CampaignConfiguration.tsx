@@ -52,16 +52,17 @@ function message(code: string) {
   return ERROR_MESSAGES[base] ?? `Configuración rechazada por el contrato (${code}).`;
 }
 
-function errorCode(error: unknown) {
-  if (error instanceof ApiError) {
-    try {
-      const body = JSON.parse(error.message) as { error?: { details?: { code?: string } } };
-      return body.error?.details?.code ?? error.code ?? error.message;
-    } catch {
-      return error.code ?? error.message;
-    }
-  }
-  return error instanceof Error ? error.message : 'Error desconocido.';
+export function campaignErrorMessage(error: unknown): string {
+  if (!(error instanceof ApiError)) return 'No fue posible completar la operación.';
+  const correlation = error.correlationId && /^[a-f0-9-]{36}$/i.test(error.correlationId)
+    ? ` Referencia: ${error.correlationId}.` : '';
+  if (error.kind === 'network') return 'No fue posible conectar con el servidor.';
+  if (error.kind === 'timeout') return 'El servidor no respondió dentro del tiempo de espera.';
+  if (error.kind === 'abort') return 'Solicitud cancelada.';
+  if (error.status !== null && error.status >= 500) return `Error interno del servidor.${correlation}`;
+  const code = error.code && /^[A-Z][A-Z0-9_]{0,99}$/.test(error.code) ? error.code : null;
+  if (error.status === 422) return `La configuración fue rechazada${code ? ` (${code})` : ''}.${correlation}`;
+  return `No fue posible completar la operación${error.status ? ` (HTTP ${error.status})` : ''}.${correlation}`;
 }
 
 function newCampaignId() {
@@ -316,10 +317,10 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
                 setSeedText(existing.configuration.seeds.join(', '));
               }
             })
-            .catch((error) => setLoadError(`campaña no disponible (${errorCode(error)})`));
+            .catch((error) => setLoadError(`campaña no disponible (${campaignErrorMessage(error)})`));
         }
       })
-      .catch((error) => setLoadError(errorCode(error)));
+      .catch((error) => setLoadError(campaignErrorMessage(error)));
   }, [applyPreset, datasource, isEditing, editingId]);
 
   useEffect(load, [load]);
@@ -379,7 +380,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
 
       api.previewCampaign({ ...configuration, seeds, variants: normalizedVariants } as any, datasetVersionId || null, controller.signal)
         .then((result) => { setPreview(result); setPreviewKey(requestKey); })
-        .catch((error) => { if (!controller.signal.aborted) setPreviewError(errorCode(error)); })
+        .catch((error) => { if (!controller.signal.aborted) setPreviewError(campaignErrorMessage(error)); })
         .finally(() => { if (!controller.signal.aborted) setPreviewing(false); });
     }, PREVIEW_DELAY_MS);
     return () => { controller.abort(); window.clearTimeout(timer); };
@@ -441,7 +442,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
       try {
         result = await submit(campaignId);
       } catch (error) {
-        if (isEditing && errorCode(error) === 'CAMPAIGN_ID_CONFLICT') {
+        if (isEditing && error instanceof ApiError && error.code === 'CAMPAIGN_ID_CONFLICT') {
           const next = newCampaignId();
           setCampaignId(next);
           setDerived(true);
@@ -452,9 +453,9 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
       }
       setCampaignId(result.campaign_id);
       setSaved(result);
-      api.getCampaign(result.campaign_id).then(setReloaded).catch((error) => setSaveError(errorCode(error)));
+      api.getCampaign(result.campaign_id).then(setReloaded).catch((error) => setSaveError(campaignErrorMessage(error)));
     } catch (error) {
-      setSaveError(errorCode(error));
+      setSaveError(campaignErrorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -478,7 +479,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
       </p> : null}
       <SavedCampaignPanel saved={saved} reloaded={reloaded} onReset={reset}
         onViewReport={go ? () => go(routes.campaigns) : undefined} />
-      {saveError ? <p className="campaign-error" role="alert">{message(saveError)}</p> : null}
+      {saveError ? <p className="campaign-error" role="alert">{saveError}</p> : null}
     </section>;
   }
 
@@ -684,7 +685,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
           </ul>
           {!currentPreview && !previewError ? <small>Validando con el backend…</small> : null}
           {previewError ? <small className="campaign-error" role="alert">No fue posible validar ({previewError}).</small> : null}
-          {saveError ? <p className="campaign-error" role="alert">{message(saveError)}</p> : null}
+          {saveError ? <p className="campaign-error" role="alert">{saveError}</p> : null}
           <button type="button" className="campaign-primary" disabled={!canSave} onClick={save}>
             {saving ? 'Guardando…' : 'Guardar campaña'}
           </button>

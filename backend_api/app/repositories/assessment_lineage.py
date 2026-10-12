@@ -1,6 +1,6 @@
 """Shared read projection for TRAIN children; never materializes scientific records.
 
-The caller supplies selected_trainings(id). One E6 evaluation per identity is
+The caller supplies selected_trainings(id). One E6 evaluation or explanation per identity is
 visible: a verified attempt wins, otherwise the latest ordinal is shown. Failed,
 interrupted and active attempts remain observable, without verified metrics.
 Explicit evaluations.source_assessment_attempt_id links deduplicate legacy runs;
@@ -9,7 +9,7 @@ E6 is authoritative even when that link points at an older attempt.
 
 LINEAGE_SOURCES_CTES = """
 ranked_assessments AS (
-    SELECT i.id AS identity_id, i.training_run_id, i.identity,
+    SELECT i.id AS identity_id, i.training_run_id, i.identity, i.kind,
            a.id AS attempt_id, a.state, a.ordinal, a.verification,
            a.started_at, a.finished_at, i.created_at,
            row_number() OVER (
@@ -19,7 +19,7 @@ ranked_assessments AS (
     FROM assessment_identities i
     JOIN selected_trainings selected ON selected.id = i.training_run_id
     JOIN assessment_attempts a ON a.identity_id = i.id
-    WHERE i.kind = 'evaluate'
+    WHERE i.kind IN ('evaluate', 'explain')
       AND a.state IN ('verified', 'active', 'failed', 'interrupted')
 ), visible_assessments AS MATERIALIZED (
     SELECT * FROM ranked_assessments WHERE attempt_rank = 1

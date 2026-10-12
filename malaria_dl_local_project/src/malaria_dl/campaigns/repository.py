@@ -1,6 +1,7 @@
 """Transactional E4 repository. PostgreSQL is authoritative; no file fallback."""
 
 import json
+import logging
 from contextlib import contextmanager
 from uuid import UUID, uuid4
 
@@ -43,8 +44,9 @@ def same_configuration(stored, candidate):
 
 
 class CampaignRepository:
-    def __init__(self, scope=connection_scope):
+    def __init__(self, scope=connection_scope, correlation_id: str = ""):
         self.scope = scope
+        self.correlation_id = correlation_id
 
     @contextmanager
     def transaction(self, readonly=False):
@@ -58,8 +60,30 @@ class CampaignRepository:
                 yield c
         except CampaignError:
             raise
-        except Exception:  # noqa: BLE001 -- sanitize driver details at public boundary
-            raise CampaignError("CAMPAIGN_DATABASE_OPERATION_FAILED") from None
+        except Exception as exc:  # Never format the exception: SQLAlchemy includes parameters.
+            original = getattr(exc, "orig", exc)
+            diag = getattr(original, "diag", None)
+            sqlstate = getattr(original, "sqlstate", None)
+            message = getattr(diag, "message_primary", None)
+            # Only these exact, value-free scientific messages are safe to disclose.
+            known_codes = {
+                "CAMPAIGN_DATASET_EVIDENCE_CONFLICT", "CAMPAIGN_HASH_CONFLICT",
+                "CAMPAIGN_IDENTITY_IMMUTABLE", "FROZEN_CAMPAIGN_IMMUTABLE",
+                "INVALID_CAMPAIGN_TRANSITION", "CAMPAIGN_NOT_TERMINAL",
+                "CAMPAIGN_STARTS_DRAFT", "CAMPAIGN_DELETE_FORBIDDEN",
+                "INCOMPLETE_FROZEN_MATRIX",
+            }
+            code = message if sqlstate == "P0001" and message in known_codes else None
+            logging.getLogger(__name__).error(json.dumps({
+                "event": "campaign.database_error",
+                "exception_class": type(original).__name__,
+                "sqlstate": sqlstate,
+                "table": getattr(diag, "table_name", None),
+                "constraint": getattr(diag, "constraint_name", None),
+                "message": code,
+                "correlation_id": self.correlation_id,
+            }))
+            raise CampaignError(code or "CAMPAIGN_DATABASE_OPERATION_FAILED") from None
 
     @staticmethod
     def _campaign(c, campaign_id, lock=False):

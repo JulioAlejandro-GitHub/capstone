@@ -478,12 +478,14 @@ def get_lineage_children(
     training_run_id: UUID,
     datasource: str | None = Query(default="malaria"),
     limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
 ):
     try:
         return get_training_lineage_children(
             training_run_id=training_run_id,
             datasource=datasource,
             limit=limit,
+            offset=offset,
         )
     except TrainingRunNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Run no encontrado.") from exc

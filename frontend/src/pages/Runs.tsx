@@ -118,11 +118,11 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
     setChildrenByKey(next);
   }, []);
 
-  const loadChildren = useCallback(async (trainingRunId: string, retry = false) => {
+  const loadChildren = useCallback(async (trainingRunId: string, retry = false, offset = 0) => {
     const requestDatasource = datasource;
     const key = childrenCacheKey(requestDatasource, trainingRunId);
     const current = childrenByKeyRef.current[key] ?? EMPTY_CHILDREN_STATE;
-    if (current.status === 'loading' || current.status === 'success') return;
+    if (current.status === 'loading' || (current.status === 'success' && !retry)) return;
     if (current.status === 'error' && !retry) return;
 
     const controller = new AbortController();
@@ -134,6 +134,7 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
         trainingRunId,
         datasource: requestDatasource,
         limit: 100,
+        offset,
         signal: controller.signal,
       });
       if (!mounted.current || activeDatasource.current !== requestDatasource) return;
@@ -329,7 +330,7 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
         run.source_kind === 'assessment_e6' ? `assessment:${run.attempt_id}` : run.run_id,
         children.training_run_id,
       ));
-      children.explainabilities.forEach((run) => result.set(run.run_id, children.training_run_id));
+      children.explainabilities.forEach((run) => result.set(run.source_kind === 'assessment_explain_e6' ? `assessment:${run.attempt_id}` : run.run_id, children.training_run_id));
     });
     return result;
   }, [loadedChildren]);
@@ -351,7 +352,9 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
           options.set(key, { value: key, label: `EVALUATE · E6 · ${run.split.toUpperCase()} · ${visibleRunId(run.attempt_id)}` });
         } else addOption(run.run_id, run.run_name, run.run_type);
       });
-      children.explainabilities.forEach((run) => addOption(run.run_id, run.run_name, run.run_type));
+      children.explainabilities.forEach((run) => run.source_kind === 'assessment_explain_e6'
+        ? addOption(`assessment:${run.attempt_id}`, `EXPLAIN E6 ${run.method ?? ''}`, 'explainability')
+        : addOption(run.run_id, run.run_name, run.run_type));
     });
     return Array.from(options.values());
   }, [loadedChildren, summaries]);
@@ -462,6 +465,7 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
                   childrenState={childrenByKey[key] ?? EMPTY_CHILDREN_STATE}
                   key={key}
                   onChildrenExpand={() => { void loadChildren(training.run_id); }}
+                  onChildrenPage={(offset) => { void loadChildren(training.run_id, true, offset); }}
                   onChildrenRetry={() => { void loadChildren(training.run_id, true); }}
                   onRunSelect={onRunSelect}
                   onStage2Open={() => { void loadStage2(training.run_id); }}

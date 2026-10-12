@@ -5,6 +5,7 @@ import type {
   TrainingLineageChildren,
   TrainingSummary,
 } from '../../types/api';
+import { AssessmentExplanationCard } from './AssessmentExplanationCard';
 import { AssessmentEvaluationCard } from './AssessmentEvaluationCard';
 import { RunLineageChildCard } from './RunLineageChildCard';
 import { RunSummaryRow } from './RunSummaryRow';
@@ -23,6 +24,7 @@ interface TrainingRunGroupCardProps {
   childrenState: TrainingChildrenLoadState;
   onChildrenExpand: () => void;
   onChildrenRetry: () => void;
+  onChildrenPage?: (offset: number) => void;
   onRunSelect: (runId: string) => void;
   stage2Status?: Stage2Availability;
   stage2Loading?: boolean;
@@ -37,6 +39,7 @@ export function TrainingRunGroupCard({
   childrenState,
   onChildrenExpand,
   onChildrenRetry,
+  onChildrenPage,
   onRunSelect,
   stage2Status,
   stage2Loading,
@@ -126,9 +129,13 @@ export function TrainingRunGroupCard({
               <>
                 {loadedChildren.truncated ? (
                   <p className="lineage-children-warning" role="status">
-                    Se muestran los primeros {visibleChildren} de {loadedChildren.total_count} registros asociados
+                    Se muestran {visibleChildren} desde {(loadedChildren.offset ?? 0) + 1} de {loadedChildren.total_count} registros asociados
                   </p>
                 ) : null}
+                {onChildrenPage ? <nav aria-label="Páginas de ejecuciones">
+                  <button disabled={(loadedChildren.offset ?? 0) === 0} onClick={() => onChildrenPage(Math.max(0, (loadedChildren.offset ?? 0) - 100))}>Anterior</button>
+                  <button disabled={!loadedChildren.truncated} onClick={() => onChildrenPage((loadedChildren.offset ?? 0) + 100)}>Siguiente</button>
+                </nav> : null}
                 {visibleChildren === 0 ? (
                   <p className="lineage-children-status" role="status">Sin ejecuciones asociadas.</p>
                 ) : (
@@ -146,7 +153,9 @@ export function TrainingRunGroupCard({
                       ))}
                     </div>
                     <div className="lineage-child-stack">
-                      {loadedChildren.explainabilities.map((run) => (
+                      {loadedChildren.explainabilities.map((run) => run.source_kind === 'assessment_explain_e6' ? (
+                        <AssessmentExplanationCard key={run.attempt_id} assessment={run} datasource={datasource} />
+                      ) : (
                         <RunLineageChildCard
                           key={run.run_id}
                           kind="explainability"

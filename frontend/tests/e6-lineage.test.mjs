@@ -85,6 +85,7 @@ test('E6 detail displays the API payload and links back to the original TRAIN', 
   const detailLoader = loader({
     'react-router-dom': { ...require('react-router-dom'), useParams: () => ({ attemptId: attempt }) },
     '../hooks/useAssessment': { useAssessment: () => ({ data: detail, error: null, loading: false }) },
+    '../components/reports/AssessmentExplanationDetail': {AssessmentExplanationDetail: () => null},
   });
   const { AssessmentDetail } = detailLoader('pages/AssessmentDetail.tsx');
   const html = render(React.createElement(AssessmentDetail, { datasource: 'malaria' }));
@@ -190,4 +191,61 @@ test('expanded TRAIN renders the E6 card using the shared lineage response', () 
   assert.ok(html.includes('1 EVALUATE'));
   assert.ok(html.includes('0.9102'));
   assert.ok(html.includes(`/evaluaciones/e6/${attempt}?datasource=malaria`));
+});
+
+test('EXPLAIN E6 retains attempt identity and links to its detail without a run', () => {
+  const {AssessmentExplanationCard} = load('components/reports/AssessmentExplanationCard.tsx');
+  const html = render(React.createElement(AssessmentExplanationCard, {datasource: 'malaria', assessment: {
+    ...assessment, source_kind: 'assessment_explain_e6', method: 'gradcam', result_count: 2693,
+  }}));
+  assert.ok(html.includes('EXPLAIN E6') && html.includes('gradcam'));
+  assert.ok(html.includes(`/evaluaciones/e6/${attempt}?datasource=malaria`));
+  assert.ok(!html.includes(`/ejecuciones/${attempt}`));
+});
+
+test('EXPLAIN detail preserves evidence and artifact reference when the file is unavailable', () => {
+  const detailLoader = loader({
+    '../../hooks/useAssessmentArtifacts': {useAssessmentArtifacts: () => ({items: [{artifact_id: 'artifact-fixture', role: 'overlay', path: 'outputs/missing.png', sha256: 'c'.repeat(64)}], loading: false, error: null})},
+    '../../services/api': {api: {artifactUrl: () => '/missing.png'}},
+  });
+  const {AssessmentExplanationDetail} = detailLoader('components/reports/AssessmentExplanationDetail.tsx');
+  const html = render(React.createElement(AssessmentExplanationDetail, {datasource: 'malaria', data: {
+    ...assessment, id: attempt, identity: {explanation: {method: 'gradcam'}, model: {checkpoint_artifact_id: 'checkpoint-fixture'}},
+  }}));
+  for(const value of ['gradcam', attempt, 'artifact-fixture', 'outputs/missing.png', 'checkpoint-fixture']) assert.ok(html.includes(value));
+  assert.ok(html.includes('Ver imagen'));
+  assert.ok(!html.includes('<img')); // No external content is checked on detail load.
+});
+
+test('pagination requests the second hundred while keeping total counts', () => {
+  const groupLoader = loader({react: {useState: () => [true, () => {}]}, './RunSummaryRow': {RunSummaryRow: () => null}, './Stage2PublicationPanel': {Stage2PublicationPanel: () => null}});
+  const {TrainingRunGroupCard} = groupLoader('components/reports/TrainingRunGroupCard.tsx');
+  let offset = null;
+  const tree = TrainingRunGroupCard({datasource: 'malaria', training: {run_id: train, evaluation_count: 1, explainability_count: 105},
+    childrenState: {status: 'success', data: {evaluations: [], explainabilities: [], total_count: 106, truncated: true, offset: 0}},
+    onChildrenPage: value => {offset = value;}});
+  function find(node) {
+    if (!node?.props) return null;
+    if (node.type === 'button' && node.props.children === 'Siguiente') return node;
+    return React.Children.toArray(node.props.children).map(find).find(Boolean);
+  }
+  const next = find(tree);
+  assert.ok(next && !next.props.disabled);
+  next.props.onClick();
+  assert.equal(offset, 100);
+});
+
+test('missing artifact is an artifact error and keeps the EXPLAIN detail', () => {
+  const detailLoader = loader({
+    react: {useState: () => [true, () => {}]},
+    '../../hooks/useAssessmentArtifacts': {useAssessmentArtifacts: () => ({items: [{artifact_id: 'missing', role: 'overlay', path: 'outputs/missing.png', sha256: 'c'.repeat(64)}], loading: false, error: null})},
+    '../../services/api': {api: {artifactUrl: () => '/missing.png'}},
+  });
+  const {AssessmentExplanationDetail} = detailLoader('components/reports/AssessmentExplanationDetail.tsx');
+  const html = render(React.createElement(AssessmentExplanationDetail, {datasource: 'malaria', data: {
+    ...assessment, id: attempt, identity: {explanation: {method: 'gradcam'}, model: {checkpoint_artifact_id: 'checkpoint-fixture'}},
+  }}));
+  assert.ok(html.includes('Error de artefacto'));
+  assert.ok(html.includes('La ejecución permanece registrada'));
+  assert.ok(html.includes(attempt));
 });
