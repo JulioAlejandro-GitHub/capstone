@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from uuid import UUID, uuid4
 
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from ..persistence.database import get_engine
 from .contracts import CampaignError, canonical, digest, validate_frozen_contract
@@ -83,6 +84,11 @@ class CampaignRepository:
                 "message": code,
                 "correlation_id": self.correlation_id,
             }))
+            # Keep connectivity and invalid SQL distinguishable from scientific rejection.
+            if isinstance(exc, OperationalError) or (
+                isinstance(exc, ProgrammingError) and sqlstate != "P0001"
+            ):
+                raise
             raise CampaignError(code or "CAMPAIGN_DATABASE_OPERATION_FAILED") from None
 
     @staticmethod

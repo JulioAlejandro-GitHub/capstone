@@ -47,49 +47,16 @@ class ExecutionRepository(CampaignRepository):
             return read_result_events(c, run_id)
 
     def preflight_result_events(self, run_id):
-        """Docker-only E10.3 schema capability/restart guard; never runs Alembic.
-
-        Like controlled/global preflight, inspect installed schema objects rather
-        than changing or stamping a database. Legacy and Local need not call this.
-        """
+        """Reject restarting an existing event stream before worker execution."""
         with self.transaction(readonly=True) as c:
-            installed = execute(c, """
-                SELECT
-                  (SELECT count(*) FROM pg_attribute
-                   WHERE attrelid=to_regclass('train_execution_records')
-                     AND NOT attisdropped AND
-                     ((attname='event_id' AND atttypid='uuid'::regtype) OR
-                      (attname='event_sequence' AND atttypid='numeric'::regtype)))=2
-                  AND EXISTS(SELECT 1 FROM pg_constraint
-                    WHERE conrelid=to_regclass('train_execution_records')
-                      AND conname='train_event_metadata' AND convalidated)
-                  AND (SELECT count(*) FROM pg_index
-                    WHERE indrelid=to_regclass('train_execution_records')
-                      AND indexrelid IN (to_regclass('train_event_id_unique'),
-                                         to_regclass('train_event_sequence_unique'))
-                      AND indisunique AND indisvalid)=2
-                  AND EXISTS(SELECT 1 FROM pg_trigger
-                    WHERE tgrelid=to_regclass('train_execution_records')
-                      AND tgname='a_train_event_guard' AND tgenabled IN ('O','A'))
-                """).scalar_one()
-            if not installed:
-                raise CampaignError('E10_RESULT_EVENTS_MIGRATION_REQUIRED_20260922_01')
             if execute(c, """SELECT EXISTS(SELECT 1 FROM train_execution_records
                     WHERE run_id=CAST(:run AS uuid) AND event_id IS NOT NULL)""",
                     run=identifier(run_id)).scalar_one():
                 raise CampaignError('E10_ACTIVE_STREAM_RECOVERY_UNSUPPORTED')
 
-    def preflight_e10_schema(self):
-        """Read-only readiness check before any campaign reservation."""
-        from .schema import require_e10_schema
-        with self.transaction(readonly=True) as c:
-            return require_e10_schema(c)
-
     def claim(self, campaign_id, owner, host, parent_pid, artifact_root, revision_id=None,
               observed_runtime=None):
-        from .schema import require_e10_schema
         with self.transaction() as c:
-            require_e10_schema(c)
             campaign = self._campaign(c, campaign_id, True)
             if campaign["state"] not in ("frozen", "active"):
                 raise CampaignError("CAMPAIGN_NOT_EXECUTABLE")
@@ -142,9 +109,7 @@ class ExecutionRepository(CampaignRepository):
                 runtime_environment,
                 campaign["experiment_id"],
                 evidence_id=str(campaign["dataset_evidence_id"]),
-                campaign_id=(campaign_id if execute(
-                    c, "SELECT to_regclass('campaign_technical_revisions') IS NOT NULL"
-                ).scalar_one() else None),
+                campaign_id=campaign_id,
                 runtime=observed_runtime,
             )
             execute(
@@ -181,8 +146,6 @@ class ExecutionRepository(CampaignRepository):
         experiment: str | UUID | None = None, evidence_id: str | None = None,
         campaign_id: str | UUID | None = None, runtime: dict | None = None,
     ) -> None:
-        from .schema import require_e10_schema, V2_REVISION
-        revision = require_e10_schema(c)['revision']
         # Relational identity must be unambiguous; never infer from folders/dates.
         models = (
             execute(
@@ -253,9 +216,8 @@ class ExecutionRepository(CampaignRepository):
         )
         if runtime is not None:
             ExecutionRepository.project_runtime(c, run, runtime)
-        if revision == V2_REVISION:
-            from ..persistence.v2_projection import project_configuration
-            project_configuration(c, run, config)
+        from ..persistence.v2_projection import project_configuration
+        project_configuration(c, run, config)
 
     @staticmethod
     def project_runtime(c: Connection, run: str, runtime: dict,
@@ -286,11 +248,8 @@ class ExecutionRepository(CampaignRepository):
         checkpoint as the run's model_checkpoint artifact and record the evaluation
         provenance. Built only from persisted evidence (this run's artifact and
         prediction records, the campaign's frozen protocol). Idempotent; fenced."""
-        from .schema import require_e10_schema, V2_REVISION
         from ..persistence.v2_projection import EVALUATION_CONTEXT_KEY, training_evaluation_context
         with self.transaction() as c:
-            if require_e10_schema(c)['revision'] != V2_REVISION:
-                return None  # E10 schema stores results in runs.parameters instead
             self.authorize(c, owner)
             session = execute(c, "SELECT * FROM train_execution_sessions WHERE run_id=CAST(:id AS uuid) FOR UPDATE",
                               id=identifier(run_id)).mappings().one()
@@ -305,7 +264,7 @@ class ExecutionRepository(CampaignRepository):
 
             def record(kind):
                 rows = execute(c, """SELECT payload FROM train_execution_records AS record
-                    WHERE run_id=CAST(:id AS uuid) AND kind=:kind AND (to_jsonb(record)->>'event_id') IS NULL
+                    WHERE run_id=CAST(:id AS uuid) AND kind=:kind AND record.event_id IS NULL
                       AND (payload->>'epoch')::int=:epoch""",
                     id=identifier(run_id), kind=kind, epoch=int(selected_epoch)).scalars().all()
                 if len(rows) != 1:
@@ -372,7 +331,7 @@ class ExecutionRepository(CampaignRepository):
                 raise CampaignError("TRAIN_OWNER_FENCED")
             old = execute(
                 c,
-                "SELECT payload FROM train_execution_records AS record WHERE run_id=CAST(:id AS uuid) AND kind=:kind AND phase=:phase AND record_key=:key AND (to_jsonb(record)->>'event_id') IS NULL",
+                "SELECT payload FROM train_execution_records AS record WHERE run_id=CAST(:id AS uuid) AND kind=:kind AND phase=:phase AND record_key=:key AND record.event_id IS NULL",
                 id=identifier(run_id),
                 kind=kind,
                 phase=phase,
@@ -546,8 +505,7 @@ class ExecutionRepository(CampaignRepository):
                 JOIN campaign_attempts a ON a.member_id=m.id WHERE a.id=CAST(:attempt AS uuid)''',
                 attempt=str(session['attempt_id'])).scalar_one()
         projected = None
-        if 'training_results' not in (run['parameters'] or {}) and execute(
-                c, "SELECT to_regclass('run_clinical_metrics') IS NOT NULL").scalar_one():
+        if 'training_results' not in (run['parameters'] or {}):
             projected = execute(c, """SELECT e.source_event_id,e.threshold_used,e.threshold_source,
                     m.tn,m.fp,m.fn,m.tp,m.roc_auc_parasitized,m.pr_auc_parasitized
                 FROM evaluations e JOIN run_clinical_metrics m ON m.evaluation_id=e.id
@@ -594,8 +552,6 @@ class ExecutionRepository(CampaignRepository):
 
     def preflight(self):
         with self.transaction() as c:
-            execute(c, "SELECT run_id FROM train_execution_sessions LIMIT 0")
-            execute(c, "SELECT kind FROM train_execution_records LIMIT 0")
             if not execute(
                 c,
                 "SELECT has_table_privilege(current_user,'train_execution_sessions','INSERT,UPDATE') AND has_table_privilege(current_user,'train_execution_records','INSERT')",

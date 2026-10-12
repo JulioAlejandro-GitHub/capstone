@@ -48,8 +48,6 @@ class LocalEventBackend:
             with engine.connect().execution_options(isolation_level='REPEATABLE READ') as c, c.begin():
                 c.execute(text('SET TRANSACTION READ ONLY'))
                 resolved = self.resolver.resolve_on_connection(c, identity, principal)
-                # Also fail before scientific work when E10.3 is not installed.
-                c.execute(text('SELECT event_id,event_sequence FROM train_execution_records LIMIT 0'))
                 events = read_result_events(c, resolved.context.run_id)
                 terminals = [e for e in events if e.event_type.value in ('training_completed','training_failed')]
                 if (any(e.sequence != i for i,e in enumerate(events,1))

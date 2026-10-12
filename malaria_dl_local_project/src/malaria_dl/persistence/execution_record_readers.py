@@ -6,11 +6,10 @@ from .result_repository import _decode
 
 
 def read_legacy_execution_records(connection, run_id):
-    # ->> maps SQL NULL to NULL and also works before the E10 metadata migration
-    # (missing column in the row object). Never classify by kind/payload content.
+    # Ledger identity comes from event_id, never from kind/payload content.
     return [dict(row) for row in connection.execute(text('''
         SELECT kind,phase,record_key,payload FROM train_execution_records AS record
-        WHERE run_id=CAST(:id AS uuid) AND (to_jsonb(record)->>'event_id') IS NULL
+        WHERE run_id=CAST(:id AS uuid) AND record.event_id IS NULL
         ORDER BY kind,phase,record_key'''), {'id': identifier(run_id)}).mappings()]
 
 
@@ -19,11 +18,11 @@ def read_result_events(connection, run_id):
 
     This is a trusted backend read, not a remote authorization or restart API.
     E10.3's decoder checks canonical text AND projected identity; corrupt evidence
-    fails closed. A schema predating E10 contains no events and returns [].
+    fails closed.
     """
     rows = connection.execute(text('''
         SELECT record.* FROM train_execution_records AS record
-        WHERE run_id=CAST(:id AS uuid) AND (to_jsonb(record)->>'event_id') IS NOT NULL
-        ORDER BY (to_jsonb(record)->>'event_sequence')::numeric'''),
+        WHERE run_id=CAST(:id AS uuid) AND record.event_id IS NOT NULL
+        ORDER BY record.event_sequence'''),
         {'id': identifier(run_id)}).mappings()
     return [_decode(row) for row in rows]

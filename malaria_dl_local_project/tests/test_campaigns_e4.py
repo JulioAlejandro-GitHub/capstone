@@ -304,6 +304,8 @@ def test_service_rechecks_exact_dataset_and_rejects_code_change():
 
 
 def test_cli_inspect_without_db_or_tensorflow(tmp_path, monkeypatch, capsys):
+    # Discovery now reads PostgreSQL; this unit supplies only its catalog response.
+    monkeypatch.setattr(registry, 'registered_models', lambda: tuple(registry.MODEL_REGISTRY))
     from src.campaign import main
     from src.malaria_dl.campaigns import repository
 

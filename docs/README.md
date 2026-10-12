@@ -23,6 +23,12 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 
 ## Fuentes operativas canónicas
 
+CAPSTONE-DB-02C — [Ejecución de campañas independiente de Alembic](audits/capstone_db_02c_alembic_execution.md)
+(`CURRENT_DOC`, 2026-10-12): implementación técnica en `fix/capstone-db-02c`;
+348 pruebas DB-02C/regresión y 49 pruebas DB-02B PASS. Preparación de TRAIN demostrada
+sobre PostgreSQL aislado sin tabla Alembic. **Pendiente de integración y autorización
+operativa; no se ejecutó TRAIN ni se modificó la campaña real.**
+
 CAPSTONE-DB-02B — [Corrección de evidencia del dataset en campañas](audits/capstone_db_02b_campaign_evidence.md)
 (`CURRENT_DOC`, 2026-10-12): integrado en main; SQL aplicado y verificado, 49 pruebas finales PASS.
 **CERRADO operativamente:** campaña real, readback e integridad confirmados; rollback disponible.

@@ -1,0 +1,50 @@
+services:
+  db02c-db:
+    image: postgres:17.9
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: db02c_test
+    networks:
+      default:
+        aliases: [db]
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d db02c_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+  db02c-tests:
+    image: capstone-malaria-backend
+    working_dir: /workspace
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      JWT_SECRET: db02c-isolated-test-only-not-a-real-secret
+      STORAGE_ROOT: /tmp
+      ARTIFACTS_ROOT: /tmp
+      DATABASE_URL: postgresql+psycopg://postgres@db/db02c_test
+      PYTHONPATH: /workspace/backend_api:/workspace/malaria_dl_local_project:/workspace/malaria_dl_local_project/tests
+    volumes:
+      - .:/workspace:ro
+    tmpfs:
+      - /workspace/malaria_dl_local_project/data:mode=1777
+    command: >-
+      python -m pytest -p no:cacheprovider -q
+      tests/db02c
+      malaria_dl_local_project/tests/test_local_train_launcher.py
+      malaria_dl_local_project/tests/test_campaign_cli_plan_swv22.py
+      malaria_dl_local_project/tests/test_campaign_exit_diagnostics.py
+      malaria_dl_local_project/tests/test_campaign_executor_e5.py
+      malaria_dl_local_project/tests/test_campaigns_e4.py
+      malaria_dl_local_project/tests/test_e02_projection_routing.py
+      malaria_dl_local_project/tests/test_execution_record_readers.py
+      malaria_dl_local_project/tests/test_training_completion.py
+      malaria_dl_local_project/tests/test_checkpoint_policy.py
+      malaria_dl_local_project/tests/test_training_results.py
+      malaria_dl_local_project/tests/test_result_service.py
+      malaria_dl_local_project/tests/test_v2_training_producer.py
+      malaria_dl_local_project/tests/test_local_event_runtime.py
+      malaria_dl_local_project/tests/test_docker_train_architecture.py
+networks:
+  default:
+    internal: true

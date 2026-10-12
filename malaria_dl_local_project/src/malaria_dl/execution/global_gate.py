@@ -205,8 +205,6 @@ class GlobalGate:
         self.engine = self.engine_factory()
         self.connection = self.engine.connect()
         try:
-            if not self.sql("SELECT to_regclass('experiment_execution_gate') IS NOT NULL").scalar_one():
-                raise CampaignError('GLOBAL_EXECUTION_MIGRATION_REQUIRED')
             if not self.sql('SELECT pg_try_advisory_lock(:namespace,:key)', namespace=LOCK_NAMESPACE, key=LOCK_ID).scalar_one():
                 raise CampaignError('GLOBAL_EXPERIMENT_BUSY')
             self.locked = True
@@ -372,9 +370,6 @@ def attach_worker():
 def status(repository):
     """Read-only eligibility; an observation is not a reservation."""
     with repository.transaction(readonly=True) as c:
-        installed = c.execute(text("SELECT to_regclass('experiment_execution_gate') IS NOT NULL")).scalar_one()
-        if not installed:
-            return {'installed': False, 'available': False, 'reason': 'GLOBAL_EXECUTION_MIGRATION_REQUIRED'}
         row = c.execute(text('SELECT * FROM experiment_execution_gate WHERE singleton')).mappings().one()
         active = c.execute(text("SELECT (SELECT count(*) FROM train_execution_sessions WHERE state IN ('active','completed')) + (SELECT count(*) FROM assessment_attempts WHERE state='active')")).scalar_one()
     try:
@@ -386,7 +381,7 @@ def status(repository):
         reason = reason or ('GLOBAL_EXPERIMENT_RECORD_ACTIVE' if active else None)
     except CampaignError as exc:
         reason = str(exc)
-    return {'installed': True, 'available': reason is None, 'reason': reason,
+    return {'available': reason is None, 'reason': reason,
             'active_records': active, 'policy': POLICY}
 
 
