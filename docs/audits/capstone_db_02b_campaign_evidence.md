@@ -1,9 +1,9 @@
 # CAPSTONE-DB-02B — Evidencia del dataset en campañas
 
-Estado documental: `CURRENT_DOC` — integrada en `main` y aplicada a PostgreSQL; **CIERRE PARCIAL: prueba de campaña pendiente de sesión autenticada**.
+Estado documental: `CURRENT_DOC` — **CAPSTONE-DB-02B CERRADO operativamente**. Integrado en main local, SQL instalado, campaña real y readback verificados. Publicación remota pendiente por bloqueo de revisión automática.
 
 Las secciones anteriores a «Cierre operativo» conservan la evidencia de preparación.
-Su estado histórico de autorización/aplicación queda sustituido por la sección final.
+Su estado histórico de autorización/aplicación queda sustituido por la última actualización de cierre.
 
 Fecha: 2026-10-12. Base de trabajo: `55e5670` (CAPSTONE-DB-02A integrado).
 Rama: `fix/capstone-db-02b`; worktree: `/private/tmp/capstone-db-02b`.
@@ -227,7 +227,7 @@ Actualización: 2026-10-12, 15:01 UTC. Autorización: solicitud del usuario
 «Ejecución operativa, integración Git y cierre», incluidas integración, aplicación
 SQL, una campaña real y publicación de main después de comprobar integración/pruebas.
 
-**CIERRE PARCIAL.** La corrección está instalada y verificada. No se declara cerrado
+**Estado intermedio, posteriormente superado: CIERRE PARCIAL.** La corrección está instalada y verificada. No se declara cerrado
 el incidente porque falta crear y recuperar la campaña mediante una sesión autenticada.
 No hay acceso del agente a un navegador autenticado ni una sesión HTTP autorizada.
 Se solicitó al usuario realizar únicamente esa creación desde su sesión, sin compartir
@@ -313,3 +313,48 @@ Se solicita confirmación directa del usuario para ese destino concreto debido a
 impuesto por la revisión automática. Este bloqueo es adicional a la sesión autenticada
 pendiente para la prueba de campaña. Main local conserva todos los cambios y commits;
 no se eliminaron ramas/worktrees ni se reescribió historial.
+
+
+### Cierre confirmado tras creación autenticada por el usuario
+
+**CAPSTONE-DB-02B CERRADO operativamente.** El usuario comunicó la creación de
+`4b5a9626-ddb7-4f48-a93e-b29b8085b349`. La verificación posterior de solo lectura
+confirma los diez criterios de cierre operativo de la solicitud. Esta actualización
+sustituye el estado parcial y la solicitud pendiente de creación anteriores.
+
+| Elemento | Resultado final |
+|---|---|
+| Integración | main local, merge `5f12f81`, implementación `63e65da` |
+| Función y trigger | Corrección aplicada/verificada; propietario, ACL y trigger conservados |
+| Pruebas | 49 PASS, 0 FAIL, 0 SKIP; no repetidas tras cambios exclusivamente documentales |
+| Campaña | `4b5a9626-ddb7-4f48-a93e-b29b8085b349` — CAPSTONE-DB-02B — prueba operativa |
+| Creación HTTP | POST `/api/campaigns`, 201 Created, 2026-10-12 15:03:58 UTC |
+| Readback HTTP | GET `/api/campaigns/4b5a9626-ddb7-4f48-a93e-b29b8085b349`, 200 OK |
+| Persistencia | frozen; 1 configuración, 1 miembro pending; expected_count=1 |
+| Dataset | `d8c0cab5-09dd-597f-9de7-7ca01aee2ec2` |
+| Evidencia | `97a466ef-e4bb-4452-b4c3-3a7a87b72dc3` |
+| Verificación científica | ml.dataset_verification, success=true, error_code=NULL; verified_requested_splits; train/val solicitados y físicamente verificados |
+| Identidad / snapshot | Coincidencia exacta con la evidencia y el contrato |
+| Matriz y hashes | Configuraciones y miembros idénticos al contrato; hashes válidos |
+| Ejecución científica | 0 runs, 0 attempts; TRAIN/EVALUATE/EXPLAIN no ejecutados |
+| Frontend | Flujo autenticado realizado por el usuario; POST/GET confirmados en logs. Sin inspección visual directa del agente |
+| Rollback | No requerido |
+| Conservación | Campaña mantenida como evidencia; no se crearon campañas adicionales |
+| Publicación remota | Sigue bloqueada por revisión automática; pendiente confirmación directa del destino |
+
+Se consultaron `experimental_campaigns`, `campaign_configurations`, `campaign_members`,
+`campaign_attempts`, `runs` y `audit_events` usando
+`PGOPTIONS='-c default_transaction_read_only=on'` y psql con ON_ERROR_STOP.
+Las comparaciones JSONB comprobaron igualdad exacta entre evidencia/snapshot,
+contrato/snapshot, matriz/configuraciones y matriz/miembros. Los hashes se recomputaron
+con SHA256 de las representaciones canónicas almacenadas. No se escribieron datos.
+
+El evento de aplicación `ml.campaign.configured`, POST `/api/campaigns`, success=true,
+con correlation_id `c04c1de6-d00d-4f76-b3f7-d98ee44ff32f` referencia esa campaña.
+Los logs de acceso del backend acreditan 201 y GET 200 del ID concreto; el agente no
+emitió solicitudes autenticadas ni accedió a tokens. No se atribuye una validación visual.
+
+Evidencia: [campaña y comprobaciones SQL](capstone_db_02b/operational/campaign_evidence.json)
+y [respuestas HTTP](capstone_db_02b/operational/campaign_http.txt).
+La publicación Git pendiente es una incidencia de entrega separada: no invalida las
+comprobaciones de creación, persistencia e integridad de la corrección ya instalada.

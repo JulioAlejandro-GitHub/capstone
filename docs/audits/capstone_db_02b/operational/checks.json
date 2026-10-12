@@ -20,8 +20,8 @@
   "tests_failed": 0,
   "tests_skipped": 0,
   "rollback_required": false,
-  "campaign_test": "pending_authenticated_user_session",
-  "visual_validation": "pending",
+  "campaign_test": "passed_user_authenticated_application_flow",
+  "visual_validation": "not_observed_by_agent",
   "scientific_execution_by_agent": false,
   "definition_sha256": {
     "before.sql": "ae7505ab6222e99b28155ed1e875457a48ba255b13e19e069ccdb228d74944ca",
@@ -29,5 +29,8 @@
   },
   "remote_push": "blocked_by_automatic_approval_review",
   "remote_destination": "https://github.com/JulioAlejandro-GitHub/capstone.git",
-  "documentation_commit": "0770763"
+  "documentation_commit": "0770763",
+  "campaign_id": "4b5a9626-ddb7-4f48-a93e-b29b8085b349",
+  "campaign_readback": "PASS_SQL_and_HTTP_200_confirmed_in_backend_logs",
+  "operational_status": "CERRADO"
 }
