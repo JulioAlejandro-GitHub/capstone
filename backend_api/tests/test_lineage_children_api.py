@@ -156,6 +156,7 @@ def test_existing_training_returns_typed_evaluation_and_explainability(monkeypat
     assert connection.calls[1][1] == {
         "training_run_id": TRAINING_ID,
         "limit": 100,
+        "offset": 0,
     }
 
 
@@ -315,7 +316,7 @@ def response_payload():
 def test_http_response_model_alias_route_and_parameter_validation(monkeypatch):
     calls = []
 
-    def fake_service(training_run_id, datasource, limit):
+    def fake_service(training_run_id, datasource, limit, offset=0):
         calls.append((training_run_id, datasource, limit))
         return response_payload()
 

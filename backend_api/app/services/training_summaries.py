@@ -64,11 +64,12 @@ WITH selected_trainings AS MATERIALIZED (
             WHERE lineage.relationship_type = 'evaluates_checkpoint_from'
               AND child.run_type = 'evaluation'
         ) + (SELECT count(*) FROM visible_assessments a
-             WHERE a.training_run_id = selected.id) AS evaluation_count,
+             WHERE a.training_run_id = selected.id AND a.kind = 'evaluate') AS evaluation_count,
         COUNT(DISTINCT lineage.child_run_id) FILTER (
             WHERE lineage.relationship_type = 'explains_checkpoint_from'
               AND child.run_type = 'explainability'
-        ) AS explainability_count
+        ) + (SELECT count(*) FROM visible_assessments a
+             WHERE a.training_run_id = selected.id AND a.kind = 'explain') AS explainability_count
     FROM selected_trainings AS selected
     LEFT JOIN eligible_run_lineage AS lineage ON lineage.parent_run_id = selected.id
     LEFT JOIN runs AS child ON child.id = lineage.child_run_id

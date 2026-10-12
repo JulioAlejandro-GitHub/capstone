@@ -7,7 +7,7 @@ from sqlalchemy import text
 
 from app.db import read_only_transaction, resolve_datasource
 from app.repositories.assessment_lineage import LINEAGE_SOURCES_CTES
-from app.schemas.assessment_lineage import AssessmentEvaluationChild
+from app.schemas.assessment_lineage import AssessmentEvaluationChild, AssessmentExplanationChild
 from app.schemas.lineage_children import (
     EvaluationLineageChild,
     ExplainabilityLineageChild,
@@ -73,11 +73,11 @@ WITH selected_trainings AS (SELECT CAST(:training_run_id AS uuid) AS id),
         COUNT(DISTINCT child_run_id) FILTER (
             WHERE relationship_type = 'evaluates_checkpoint_from'
               AND run_type = 'evaluation'
-        ) + (SELECT count(*) FROM visible_assessments) AS evaluation_count,
+        ) + (SELECT count(*) FROM visible_assessments WHERE kind = 'evaluate') AS evaluation_count,
         COUNT(DISTINCT child_run_id) FILTER (
             WHERE relationship_type = 'explains_checkpoint_from'
               AND run_type = 'explainability'
-        ) AS explainability_count
+        ) + (SELECT count(*) FROM visible_assessments WHERE kind = 'explain') AS explainability_count
     FROM direct_children
 ), generic_metrics AS (
     SELECT
@@ -286,19 +286,23 @@ WITH selected_trainings AS (SELECT CAST(:training_run_id AS uuid) AS id),
     UNION ALL
     SELECT attempt_id, started_at, created_at,
            jsonb_build_object(
-               'source_kind', 'assessment_e6',
+               'source_kind', CASE WHEN kind = 'explain' THEN 'assessment_explain_e6' ELSE 'assessment_e6' END,
                'attempt_id', attempt_id, 'identity_id', identity_id,
                'training_run_id', training_run_id,
                'state', state, 'ordinal', ordinal,
                'split', identity->>'split', 'purpose', identity->>'purpose',
                'started_at', started_at, 'finished_at', finished_at,
                'verification', CASE WHEN state = 'verified' THEN verification ELSE NULL END
-           )
+           ) || CASE WHEN kind = 'explain' THEN jsonb_build_object(
+               'method', identity #>> '{explanation,method}',
+               'result_count', CASE WHEN state = 'verified' THEN verification->'count' ELSE NULL END,
+               'artifact_reference', '/assessments/' || attempt_id::text || '/artifacts'
+           ) ELSE '{}'::jsonb END
     FROM visible_assessments
 ), page AS MATERIALIZED (
     SELECT * FROM combined_children
     ORDER BY started_at ASC NULLS LAST, created_at ASC, sort_id ASC
-    LIMIT :limit
+    LIMIT :limit OFFSET :offset
 )
 SELECT counts.evaluation_count, counts.explainability_count, page.payload
 FROM child_counts AS counts
@@ -386,12 +390,15 @@ def get_training_lineage_children(
     training_run_id: UUID,
     datasource: str | None,
     limit: int,
+    offset: int = 0,
 ) -> TrainingLineageChildren:
     if not 1 <= limit <= 500:
         raise ValueError("limit debe estar entre 1 y 500")
 
+    if offset < 0:
+        raise ValueError("offset debe ser no negativo")
     key = resolve_datasource(datasource)
-    params = {"training_run_id": training_run_id, "limit": limit}
+    params = {"training_run_id": training_run_id, "limit": limit, "offset": offset}
     with read_only_transaction(key) as connection:
         parent = connection.execute(
             text(PARENT_RUN_SQL),
@@ -415,12 +422,15 @@ def get_training_lineage_children(
     evaluation_count = int(first["evaluation_count"] or 0)
     explainability_count = int(first["explainability_count"] or 0)
     evaluations: list[EvaluationLineageChild | AssessmentEvaluationChild] = []
-    explainabilities: list[ExplainabilityLineageChild] = []
+    explainabilities: list[ExplainabilityLineageChild | AssessmentExplanationChild] = []
     try:
         for raw_row in rows:
             if raw_row["payload"] is None:
                 continue
             row = dict(raw_row["payload"])
+            if row.get("source_kind") == "assessment_explain_e6":
+                explainabilities.append(AssessmentExplanationChild.model_validate(row))
+                continue
             if row.get("source_kind") == "assessment_e6":
                 evaluations.append(AssessmentEvaluationChild.model_validate(row))
                 continue
@@ -454,5 +464,6 @@ def get_training_lineage_children(
         evaluations=evaluations,
         explainabilities=explainabilities,
         limit=limit,
-        truncated=total_count > returned_count,
+        offset=offset,
+        truncated=total_count > offset + returned_count,
     )

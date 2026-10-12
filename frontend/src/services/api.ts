@@ -1,6 +1,7 @@
 import type { ScientificResult } from '../components/ScientificResults';
 import type {
   AssessmentDetail,
+  AssessmentArtifact,
   CheckpointPolicySummary,
   ClinicalDashboard,
   ClinicalRunSummary,
@@ -1081,6 +1082,10 @@ export const api = {
     );
   },
 
+  getAssessmentArtifacts(attemptId: string, offset = 0, signal?: AbortSignal) {
+    return request<{items: AssessmentArtifact[]}>(`/assessments/${encodeURIComponent(attemptId)}/artifacts`, {limit: 100, offset}, {signal});
+  },
+
   getAssessment(attemptId: string, signal?: AbortSignal) {
     return request<AssessmentDetail>(`/assessments/${encodeURIComponent(attemptId)}`, {}, { signal });
   },
@@ -1089,16 +1094,18 @@ export const api = {
     trainingRunId,
     datasource,
     limit = 100,
+    offset = 0,
     signal,
   }: {
     trainingRunId: string;
     datasource: string;
     limit?: number;
+    offset?: number;
     signal?: AbortSignal;
   }) {
     return request<TrainingLineageChildren>(
       `/runs/${encodeURIComponent(trainingRunId)}/lineage-children`,
-      { datasource, limit },
+      { datasource, limit, offset },
       { signal },
     );
   },

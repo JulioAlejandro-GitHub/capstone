@@ -377,7 +377,8 @@ export interface AssessmentMetrics {
 export interface AssessmentVerification {
   count: number;
   sha256: string;
-  metrics: AssessmentMetrics;
+  metrics?: AssessmentMetrics;
+  artifacts_hash?: string;
 }
 
 export interface AssessmentEvaluationChild {
@@ -394,6 +395,22 @@ export interface AssessmentEvaluationChild {
   verification: AssessmentVerification | null;
 }
 
+export interface AssessmentExplanationChild extends Omit<AssessmentEvaluationChild, 'source_kind' | 'verification'> {
+  source_kind: 'assessment_explain_e6';
+  method: string | null;
+  result_count: number | null;
+  artifact_reference: string;
+  verification: { count: number; sha256: string; artifacts_hash?: string } | null;
+}
+
+export interface AssessmentArtifact {
+  artifact_id: string;
+  role: string;
+  path: string;
+  sha256: string;
+  bytes: number;
+}
+
 export interface AssessmentDetail extends Omit<AssessmentEvaluationChild, 'source_kind' | 'attempt_id' | 'split' | 'purpose'> {
   id: string;
   kind: 'evaluate' | 'explain';
@@ -402,6 +419,7 @@ export interface AssessmentDetail extends Omit<AssessmentEvaluationChild, 'sourc
     split: AssessmentEvaluationChild['split'];
     purpose: AssessmentEvaluationChild['purpose'];
     model: { model_version_id: string; checkpoint_artifact_id: string };
+    explanation?: { method: string };
   };
 }
 
@@ -411,9 +429,10 @@ export interface TrainingLineageChildren {
   explainability_count: number;
   total_count: number;
   evaluations: (EvaluationLineageChild | AssessmentEvaluationChild)[];
-  explainabilities: ExplainabilityLineageChild[];
+  explainabilities: (ExplainabilityLineageChild | AssessmentExplanationChild)[];
   limit: number;
   truncated: boolean;
+  offset?: number;
 }
 
 export type RunLineageConfidence =

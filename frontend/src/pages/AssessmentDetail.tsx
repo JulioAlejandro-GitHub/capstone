@@ -1,3 +1,4 @@
+import { AssessmentExplanationDetail } from '../components/reports/AssessmentExplanationDetail';
 import { Link, useParams } from 'react-router-dom';
 import { AssessmentEvaluationSummary } from '../components/reports/AssessmentEvaluationCard';
 import { InvalidEntityId } from '../components/RouteState';
@@ -14,9 +15,9 @@ export function AssessmentDetail({ datasource }: { datasource: string }) {
   if (loading) return <Loading />;
   if (error || !data) return <div role="alert">{error || 'Evaluación no encontrada.'}</div>;
   return <section className="page">
-    <h1>Evaluación E6</h1>
+    <h1>{data.kind === 'explain' ? 'Explicación E6' : 'Evaluación E6'}</h1>
     <Link to={withAllowedQuery(routes.runDetail(data.training_run_id), { datasource })}>Ver TRAIN de origen</Link>
-    <article className="lineage-child-card lineage-child-card--evaluation">
+    {data.kind === 'explain' ? <AssessmentExplanationDetail key={data.id} data={data} datasource={datasource} /> : <article className="lineage-child-card lineage-child-card--evaluation">
       <AssessmentEvaluationSummary assessment={{
         source_kind: 'assessment_e6', attempt_id: data.id,
         identity_id: data.identity_id, training_run_id: data.training_run_id,
@@ -34,6 +35,6 @@ export function AssessmentDetail({ datasource }: { datasource: string }) {
         <div><dt>Definición de métricas</dt><dd>{data.verification?.metrics?.definition ?? 'Sin métricas verificadas'}</dd></div>
       </dl>
       {data.cause ? <p role="status">Causa: {data.cause}</p> : null}
-    </article>
+    </article>}
   </section>;
 }
