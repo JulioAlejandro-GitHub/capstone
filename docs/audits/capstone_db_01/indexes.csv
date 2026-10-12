@@ -1,0 +1,417 @@
+amname,relation,definition,index_name,indisvalid,indisunique,indisprimary
+btree,alembic_version,CREATE UNIQUE INDEX alembic_version_pkc ON public.alembic_version USING btree (version_num),alembic_version_pkc,True,True,True
+btree,artifacts,CREATE UNIQUE INDEX artifacts_pkey ON public.artifacts USING btree (id),artifacts_pkey,True,True,True
+btree,assessment_artifacts,"CREATE UNIQUE INDEX assessment_artifacts_pkey ON public.assessment_artifacts USING btree (attempt_id, sample_id, role)",assessment_artifacts_pkey,True,True,True
+btree,assessment_attempts,CREATE UNIQUE INDEX assessment_attempts_pkey ON public.assessment_attempts USING btree (id),assessment_attempts_pkey,True,True,True
+btree,assessment_campaign_consumers,"CREATE UNIQUE INDEX assessment_campaign_consumers_pkey ON public.assessment_campaign_consumers USING btree (campaign_id, member_id, identity_id)",assessment_campaign_consumers_pkey,True,True,True
+btree,assessment_final_locks,CREATE UNIQUE INDEX assessment_final_locks_pkey ON public.assessment_final_locks USING btree (id),assessment_final_locks_pkey,True,True,True
+btree,assessment_identities,CREATE UNIQUE INDEX assessment_identities_pkey ON public.assessment_identities USING btree (id),assessment_identities_pkey,True,True,True
+btree,assessment_results,"CREATE UNIQUE INDEX assessment_results_pkey ON public.assessment_results USING btree (attempt_id, sample_id)",assessment_results_pkey,True,True,True
+btree,audit_events,CREATE UNIQUE INDEX audit_events_pkey ON public.audit_events USING btree (id),audit_events_pkey,True,True,True
+btree,blood_samples,CREATE UNIQUE INDEX blood_samples_pkey ON public.blood_samples USING btree (id),blood_samples_pkey,True,True,True
+btree,campaign_attempts,CREATE UNIQUE INDEX campaign_attempts_pkey ON public.campaign_attempts USING btree (id),campaign_attempts_pkey,True,True,True
+btree,campaign_configurations,"CREATE UNIQUE INDEX campaign_configurations_pkey ON public.campaign_configurations USING btree (campaign_id, configuration_hash)",campaign_configurations_pkey,True,True,True
+btree,campaign_controlled_requests,CREATE UNIQUE INDEX campaign_controlled_requests_pkey ON public.campaign_controlled_requests USING btree (id),campaign_controlled_requests_pkey,True,True,True
+btree,campaign_execution_events,CREATE UNIQUE INDEX campaign_execution_events_pkey ON public.campaign_execution_events USING btree (id),campaign_execution_events_pkey,True,True,True
+btree,campaign_members,CREATE UNIQUE INDEX campaign_members_pkey ON public.campaign_members USING btree (id),campaign_members_pkey,True,True,True
+btree,campaign_technical_revisions,CREATE UNIQUE INDEX campaign_technical_revisions_pkey ON public.campaign_technical_revisions USING btree (id),campaign_technical_revisions_pkey,True,True,True
+btree,cell_classification_events,CREATE UNIQUE INDEX cell_classification_events_pkey ON public.cell_classification_events USING btree (id),cell_classification_events_pkey,True,True,True
+btree,cell_classification_inputs,CREATE UNIQUE INDEX cell_classification_inputs_pkey ON public.cell_classification_inputs USING btree (id),cell_classification_inputs_pkey,True,True,True
+btree,cell_classification_reviews,CREATE UNIQUE INDEX cell_classification_reviews_pkey ON public.cell_classification_reviews USING btree (id),cell_classification_reviews_pkey,True,True,True
+btree,cell_classification_runs,CREATE UNIQUE INDEX cell_classification_runs_pkey ON public.cell_classification_runs USING btree (id),cell_classification_runs_pkey,True,True,True
+btree,cell_crops,CREATE UNIQUE INDEX cell_crops_pkey ON public.cell_crops USING btree (id),cell_crops_pkey,True,True,True
+btree,cell_detection_events,CREATE UNIQUE INDEX cell_detection_events_pkey ON public.cell_detection_events USING btree (id),cell_detection_events_pkey,True,True,True
+btree,cell_detection_runs,CREATE UNIQUE INDEX cell_detection_runs_pkey ON public.cell_detection_runs USING btree (id),cell_detection_runs_pkey,True,True,True
+btree,cell_detections,CREATE UNIQUE INDEX cell_detections_pkey ON public.cell_detections USING btree (id),cell_detections_pkey,True,True,True
+btree,cell_explanations,CREATE UNIQUE INDEX cell_explanations_pkey ON public.cell_explanations USING btree (id),cell_explanations_pkey,True,True,True
+btree,cell_predictions,CREATE UNIQUE INDEX cell_predictions_pkey ON public.cell_predictions USING btree (id),cell_predictions_pkey,True,True,True
+btree,clinical_identities,CREATE UNIQUE INDEX clinical_identities_pkey ON public.clinical_identities USING btree (id),clinical_identities_pkey,True,True,True
+btree,dataset_materialization_activations,CREATE UNIQUE INDEX dataset_materialization_activations_pkey ON public.dataset_materialization_activations USING btree (id),dataset_materialization_activations_pkey,True,True,True
+btree,dataset_materializations,CREATE UNIQUE INDEX dataset_materializations_pkey ON public.dataset_materializations USING btree (id),dataset_materializations_pkey,True,True,True
+btree,dataset_source_records,CREATE UNIQUE INDEX dataset_source_records_pkey ON public.dataset_source_records USING btree (id),dataset_source_records_pkey,True,True,True
+btree,dataset_split_assignments,CREATE UNIQUE INDEX dataset_split_assignments_pkey ON public.dataset_split_assignments USING btree (id),dataset_split_assignments_pkey,True,True,True
+btree,dataset_split_images,CREATE UNIQUE INDEX dataset_split_images_pkey ON public.dataset_split_images USING btree (image_id),dataset_split_images_pkey,True,True,True
+btree,dataset_split_statistics,CREATE UNIQUE INDEX dataset_split_statistics_pkey ON public.dataset_split_statistics USING btree (id),dataset_split_statistics_pkey,True,True,True
+btree,dataset_split_validation_checks,CREATE UNIQUE INDEX dataset_split_validation_checks_pkey ON public.dataset_split_validation_checks USING btree (id),dataset_split_validation_checks_pkey,True,True,True
+btree,dataset_splits,CREATE UNIQUE INDEX dataset_splits_pkey ON public.dataset_splits USING btree (id),dataset_splits_pkey,True,True,True
+btree,dataset_version_sources,"CREATE UNIQUE INDEX dataset_version_sources_pkey ON public.dataset_version_sources USING btree (dataset_version_id, dataset_id, role)",dataset_version_sources_pkey,True,True,True
+btree,dataset_versions,CREATE UNIQUE INDEX dataset_versions_pkey ON public.dataset_versions USING btree (id),dataset_versions_pkey,True,True,True
+btree,datasets,CREATE UNIQUE INDEX datasets_pkey ON public.datasets USING btree (id),datasets_pkey,True,True,True
+btree,deployed_model_versions,CREATE UNIQUE INDEX deployed_model_versions_pkey ON public.deployed_model_versions USING btree (id),deployed_model_versions_pkey,True,True,True
+btree,environment_packages,CREATE UNIQUE INDEX environment_packages_pkey ON public.environment_packages USING btree (id),environment_packages_pkey,True,True,True
+btree,errors,CREATE UNIQUE INDEX errors_pkey ON public.errors USING btree (id),errors_pkey,True,True,True
+btree,execution_logs,CREATE UNIQUE INDEX execution_logs_pkey ON public.execution_logs USING btree (id),execution_logs_pkey,True,True,True
+btree,experiment_execution_events,CREATE UNIQUE INDEX experiment_execution_events_pkey ON public.experiment_execution_events USING btree (id),experiment_execution_events_pkey,True,True,True
+btree,experiment_execution_gate,CREATE UNIQUE INDEX experiment_execution_gate_pkey ON public.experiment_execution_gate USING btree (singleton),experiment_execution_gate_pkey,True,True,True
+btree,experimental_campaigns,CREATE UNIQUE INDEX experimental_campaigns_pkey ON public.experimental_campaigns USING btree (id),experimental_campaigns_pkey,True,True,True
+btree,experiments,CREATE UNIQUE INDEX experiments_pkey ON public.experiments USING btree (id),experiments_pkey,True,True,True
+btree,explainability_results,CREATE UNIQUE INDEX explainability_results_pkey ON public.explainability_results USING btree (id),explainability_results_pkey,True,True,True
+btree,identity_evidence,CREATE UNIQUE INDEX identity_evidence_pkey ON public.identity_evidence USING btree (id),identity_evidence_pkey,True,True,True
+btree,image_analysis_jobs,CREATE UNIQUE INDEX image_analysis_jobs_pkey ON public.image_analysis_jobs USING btree (id),image_analysis_jobs_pkey,True,True,True
+btree,image_connected_components,CREATE UNIQUE INDEX image_connected_components_pkey ON public.image_connected_components USING btree (id),image_connected_components_pkey,True,True,True
+btree,image_ingestion_batches,CREATE UNIQUE INDEX image_ingestion_batches_pkey ON public.image_ingestion_batches USING btree (id),image_ingestion_batches_pkey,True,True,True
+btree,image_quality_assessments,CREATE UNIQUE INDEX image_quality_assessments_pkey ON public.image_quality_assessments USING btree (id),image_quality_assessments_pkey,True,True,True
+btree,local_execution_jobs,CREATE UNIQUE INDEX local_execution_jobs_pkey ON public.local_execution_jobs USING btree (id),local_execution_jobs_pkey,True,True,True
+btree,microscopy_analysis_events,CREATE UNIQUE INDEX microscopy_analysis_events_pkey ON public.microscopy_analysis_events USING btree (id),microscopy_analysis_events_pkey,True,True,True
+btree,microscopy_analysis_run_images,CREATE UNIQUE INDEX microscopy_analysis_run_images_pkey ON public.microscopy_analysis_run_images USING btree (id),microscopy_analysis_run_images_pkey,True,True,True
+btree,microscopy_analysis_runs,CREATE UNIQUE INDEX microscopy_analysis_runs_pkey ON public.microscopy_analysis_runs USING btree (id),microscopy_analysis_runs_pkey,True,True,True
+btree,microscopy_images,CREATE UNIQUE INDEX microscopy_images_pkey ON public.microscopy_images USING btree (id),microscopy_images_pkey,True,True,True
+btree,model_versions,CREATE UNIQUE INDEX model_versions_pkey ON public.model_versions USING btree (id),model_versions_pkey,True,True,True
+btree,models,CREATE UNIQUE INDEX models_pkey ON public.models USING btree (id),models_pkey,True,True,True
+btree,predictions,CREATE UNIQUE INDEX predictions_pkey ON public.predictions USING btree (id),predictions_pkey,True,True,True
+btree,quality_assessment_queue_items,CREATE UNIQUE INDEX quality_assessment_queue_items_pkey ON public.quality_assessment_queue_items USING btree (id),quality_assessment_queue_items_pkey,True,True,True
+btree,quality_gate_decisions,CREATE UNIQUE INDEX quality_gate_decisions_pkey ON public.quality_gate_decisions USING btree (id),quality_gate_decisions_pkey,True,True,True
+btree,research_subjects,CREATE UNIQUE INDEX research_subjects_pkey ON public.research_subjects USING btree (id),research_subjects_pkey,True,True,True
+btree,roles,CREATE UNIQUE INDEX roles_pkey ON public.roles USING btree (id),roles_pkey,True,True,True
+btree,run_checkpoint_policy,CREATE UNIQUE INDEX run_checkpoint_policy_pkey ON public.run_checkpoint_policy USING btree (run_checkpoint_policy_id),run_checkpoint_policy_pkey,True,True,True
+btree,run_clinical_metrics,CREATE UNIQUE INDEX run_clinical_metrics_pkey ON public.run_clinical_metrics USING btree (run_clinical_metric_id),run_clinical_metrics_pkey,True,True,True
+btree,run_dataset_images,CREATE UNIQUE INDEX run_dataset_images_pkey ON public.run_dataset_images USING btree (run_dataset_image_id),run_dataset_images_pkey,True,True,True
+btree,run_image_predictions,CREATE UNIQUE INDEX run_image_predictions_pkey ON public.run_image_predictions USING btree (run_image_prediction_id),run_image_predictions_pkey,True,True,True
+btree,run_io_records,CREATE UNIQUE INDEX run_io_records_pkey ON public.run_io_records USING btree (run_io_id),run_io_records_pkey,True,True,True
+btree,run_lineage,CREATE UNIQUE INDEX run_lineage_pkey ON public.run_lineage USING btree (id),run_lineage_pkey,True,True,True
+btree,run_metrics,CREATE UNIQUE INDEX run_metrics_pkey ON public.run_metrics USING btree (id),run_metrics_pkey,True,True,True
+btree,run_model_deployments,CREATE UNIQUE INDEX run_model_deployments_pkey ON public.run_model_deployments USING btree (id),run_model_deployments_pkey,True,True,True
+btree,run_threshold_calibration,CREATE UNIQUE INDEX run_threshold_calibration_pkey ON public.run_threshold_calibration USING btree (run_threshold_calibration_id),run_threshold_calibration_pkey,True,True,True
+btree,runs,CREATE UNIQUE INDEX runs_pkey ON public.runs USING btree (id),runs_pkey,True,True,True
+btree,scientific_cases,CREATE UNIQUE INDEX scientific_cases_pkey ON public.scientific_cases USING btree (id),scientific_cases_pkey,True,True,True
+btree,scientific_reviews,CREATE UNIQUE INDEX scientific_reviews_pkey ON public.scientific_reviews USING btree (id),scientific_reviews_pkey,True,True,True
+btree,scientific_validation_annotation_events,CREATE UNIQUE INDEX scientific_validation_annotation_events_pkey ON public.scientific_validation_annotation_events USING btree (id),scientific_validation_annotation_events_pkey,True,True,True
+btree,scientific_validation_annotations,CREATE UNIQUE INDEX scientific_validation_annotations_pkey ON public.scientific_validation_annotations USING btree (id),scientific_validation_annotations_pkey,True,True,True
+btree,scientific_validation_classification_runs,"CREATE UNIQUE INDEX scientific_validation_classification_runs_pkey ON public.scientific_validation_classification_runs USING btree (session_id, classification_run_id)",scientific_validation_classification_runs_pkey,True,True,True
+btree,scientific_validation_detection_runs,"CREATE UNIQUE INDEX scientific_validation_detection_runs_pkey ON public.scientific_validation_detection_runs USING btree (session_id, detection_run_id)",scientific_validation_detection_runs_pkey,True,True,True
+btree,scientific_validation_images,"CREATE UNIQUE INDEX scientific_validation_images_pkey ON public.scientific_validation_images USING btree (session_id, microscopy_image_id)",scientific_validation_images_pkey,True,True,True
+btree,scientific_validation_sessions,CREATE UNIQUE INDEX scientific_validation_sessions_pkey ON public.scientific_validation_sessions USING btree (id),scientific_validation_sessions_pkey,True,True,True
+btree,smear_analysis_summaries,CREATE UNIQUE INDEX smear_analysis_summaries_pkey ON public.smear_analysis_summaries USING btree (id),smear_analysis_summaries_pkey,True,True,True
+btree,smear_slides,CREATE UNIQUE INDEX smear_slides_pkey ON public.smear_slides USING btree (id),smear_slides_pkey,True,True,True
+btree,stage2_model_publication_events,CREATE UNIQUE INDEX stage2_model_publication_events_pkey ON public.stage2_model_publication_events USING btree (id),stage2_model_publication_events_pkey,True,True,True
+btree,stage2_model_publications,CREATE UNIQUE INDEX stage2_model_publications_pkey ON public.stage2_model_publications USING btree (id),stage2_model_publications_pkey,True,True,True
+btree,synthetic_data_runs,CREATE UNIQUE INDEX synthetic_data_runs_pkey ON public.synthetic_data_runs USING btree (id),synthetic_data_runs_pkey,True,True,True
+btree,train_execution_records,"CREATE UNIQUE INDEX train_execution_records_pkey ON public.train_execution_records USING btree (run_id, kind, phase, record_key)",train_execution_records_pkey,True,True,True
+btree,train_execution_revisions,CREATE UNIQUE INDEX train_execution_revisions_pkey ON public.train_execution_revisions USING btree (attempt_id),train_execution_revisions_pkey,True,True,True
+btree,train_execution_sessions,CREATE UNIQUE INDEX train_execution_sessions_pkey ON public.train_execution_sessions USING btree (run_id),train_execution_sessions_pkey,True,True,True
+btree,training_history,CREATE UNIQUE INDEX training_history_pkey ON public.training_history USING btree (id),training_history_pkey,True,True,True
+btree,user_roles,"CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (user_id, role_id)",user_roles_pkey,True,True,True
+btree,users,CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id),users_pkey,True,True,True
+btree,assessment_artifacts,CREATE UNIQUE INDEX assessment_artifacts_artifact_id_key ON public.assessment_artifacts USING btree (artifact_id),assessment_artifacts_artifact_id_key,True,True,False
+btree,assessment_attempts,CREATE UNIQUE INDEX assessment_attempts_artifact_root_key ON public.assessment_attempts USING btree (artifact_root),assessment_attempts_artifact_root_key,True,True,False
+btree,assessment_attempts,"CREATE UNIQUE INDEX assessment_attempts_identity_id_ordinal_key ON public.assessment_attempts USING btree (identity_id, ordinal)",assessment_attempts_identity_id_ordinal_key,True,True,False
+btree,assessment_final_locks,CREATE UNIQUE INDEX assessment_final_locks_identity_hash_key ON public.assessment_final_locks USING btree (identity_hash),assessment_final_locks_identity_hash_key,True,True,False
+btree,assessment_identities,CREATE UNIQUE INDEX assessment_identities_identity_hash_key ON public.assessment_identities USING btree (identity_hash),assessment_identities_identity_hash_key,True,True,False
+btree,assessment_identities,CREATE UNIQUE INDEX assessment_identities_structural_hash_key ON public.assessment_identities USING btree (structural_hash),assessment_identities_structural_hash_key,True,True,False
+btree,blood_samples,"CREATE UNIQUE INDEX uq_blood_samples_case_code ON public.blood_samples USING btree (case_id, sample_code)",uq_blood_samples_case_code,True,True,False
+btree,campaign_attempts,"CREATE UNIQUE INDEX campaign_attempts_member_id_id_key ON public.campaign_attempts USING btree (member_id, id)",campaign_attempts_member_id_id_key,True,True,False
+btree,campaign_attempts,"CREATE UNIQUE INDEX campaign_attempts_member_id_ordinal_key ON public.campaign_attempts USING btree (member_id, ordinal)",campaign_attempts_member_id_ordinal_key,True,True,False
+btree,campaign_attempts,CREATE UNIQUE INDEX campaign_attempts_training_run_id_key ON public.campaign_attempts USING btree (training_run_id),campaign_attempts_training_run_id_key,True,True,False
+btree,campaign_controlled_requests,CREATE UNIQUE INDEX campaign_controlled_requests_attempt_id_key ON public.campaign_controlled_requests USING btree (attempt_id),campaign_controlled_requests_attempt_id_key,True,True,False
+btree,campaign_controlled_requests,CREATE UNIQUE INDEX campaign_controlled_requests_previous_attempt_id_key ON public.campaign_controlled_requests USING btree (previous_attempt_id),campaign_controlled_requests_previous_attempt_id_key,True,True,False
+btree,campaign_controlled_requests,CREATE UNIQUE INDEX campaign_controlled_requests_run_id_key ON public.campaign_controlled_requests USING btree (run_id),campaign_controlled_requests_run_id_key,True,True,False
+btree,campaign_members,"CREATE UNIQUE INDEX campaign_members_campaign_id_configuration_hash_seed_key ON public.campaign_members USING btree (campaign_id, configuration_hash, seed)",campaign_members_campaign_id_configuration_hash_seed_key,True,True,False
+btree,campaign_members,"CREATE UNIQUE INDEX campaign_members_campaign_id_position_key ON public.campaign_members USING btree (campaign_id, ""position"")",campaign_members_campaign_id_position_key,True,True,False
+btree,campaign_technical_revisions,"CREATE UNIQUE INDEX campaign_technical_revisions_campaign_id_id_key ON public.campaign_technical_revisions USING btree (campaign_id, id)",campaign_technical_revisions_campaign_id_id_key,True,True,False
+btree,cell_classification_inputs,"CREATE UNIQUE INDEX uq_cell_classification_inputs_crop ON public.cell_classification_inputs USING btree (classification_run_id, crop_id)",uq_cell_classification_inputs_crop,True,True,False
+btree,cell_classification_inputs,"CREATE UNIQUE INDEX uq_cell_classification_inputs_detection ON public.cell_classification_inputs USING btree (classification_run_id, cell_detection_id)",uq_cell_classification_inputs_detection,True,True,False
+btree,cell_classification_inputs,"CREATE UNIQUE INDEX uq_cell_classification_inputs_order ON public.cell_classification_inputs USING btree (classification_run_id, input_order)",uq_cell_classification_inputs_order,True,True,False
+btree,cell_classification_inputs,"CREATE UNIQUE INDEX uq_cell_classification_inputs_prediction_owner ON public.cell_classification_inputs USING btree (id, classification_run_id, cell_detection_id, crop_id)",uq_cell_classification_inputs_prediction_owner,True,True,False
+btree,cell_classification_runs,CREATE UNIQUE INDEX cell_classification_runs_classification_run_code_key ON public.cell_classification_runs USING btree (classification_run_code),cell_classification_runs_classification_run_code_key,True,True,False
+btree,cell_classification_runs,"CREATE UNIQUE INDEX uq_cell_classification_runs_detection_identity ON public.cell_classification_runs USING btree (id, detection_run_id)",uq_cell_classification_runs_detection_identity,True,True,False
+btree,cell_classification_runs,"CREATE UNIQUE INDEX uq_cell_classification_runs_identity ON public.cell_classification_runs USING btree (id, analysis_run_id, detection_run_id)",uq_cell_classification_runs_identity,True,True,False
+btree,cell_crops,CREATE UNIQUE INDEX uq_cell_crops_detection ON public.cell_crops USING btree (cell_detection_id),uq_cell_crops_detection,True,True,False
+btree,cell_crops,CREATE UNIQUE INDEX uq_cell_crops_storage_key ON public.cell_crops USING btree (relative_storage_key),uq_cell_crops_storage_key,True,True,False
+btree,cell_detection_runs,CREATE UNIQUE INDEX cell_detection_runs_detection_run_code_key ON public.cell_detection_runs USING btree (detection_run_code),cell_detection_runs_detection_run_code_key,True,True,False
+btree,cell_detection_runs,"CREATE UNIQUE INDEX uq_cell_detection_runs_identity ON public.cell_detection_runs USING btree (id, analysis_run_id)",uq_cell_detection_runs_identity,True,True,False
+btree,cell_detections,CREATE UNIQUE INDEX uq_cell_detections_cell_code ON public.cell_detections USING btree (cell_code),uq_cell_detections_cell_code,True,True,False
+btree,cell_detections,CREATE UNIQUE INDEX uq_cell_detections_component ON public.cell_detections USING btree (connected_component_id),uq_cell_detections_component,True,True,False
+btree,cell_detections,"CREATE UNIQUE INDEX uq_cell_detections_identity ON public.cell_detections USING btree (id, detection_run_id, microscopy_image_id)",uq_cell_detections_identity,True,True,False
+btree,cell_detections,"CREATE UNIQUE INDEX uq_cell_detections_run_index ON public.cell_detections USING btree (detection_run_id, cell_index)",uq_cell_detections_run_index,True,True,False
+btree,cell_explanations,CREATE UNIQUE INDEX cell_explanations_cell_prediction_id_key ON public.cell_explanations USING btree (cell_prediction_id),cell_explanations_cell_prediction_id_key,True,True,False
+btree,cell_predictions,CREATE UNIQUE INDEX cell_predictions_classification_input_id_key ON public.cell_predictions USING btree (classification_input_id),cell_predictions_classification_input_id_key,True,True,False
+btree,cell_predictions,"CREATE UNIQUE INDEX uq_cell_predictions_run_identity ON public.cell_predictions USING btree (id, classification_run_id)",uq_cell_predictions_run_identity,True,True,False
+btree,clinical_identities,"CREATE UNIQUE INDEX uq_clinical_identities_source ON public.clinical_identities USING btree (dataset_id, identity_type, source_identifier)",uq_clinical_identities_source,True,True,False
+btree,dataset_materializations,"CREATE UNIQUE INDEX uq_dataset_materializations_attempt ON public.dataset_materializations USING btree (dataset_version_id, attempt_number)",uq_dataset_materializations_attempt,True,True,False
+btree,dataset_source_records,"CREATE UNIQUE INDEX uq_dataset_source_records_key ON public.dataset_source_records USING btree (dataset_id, source_record_key)",uq_dataset_source_records_key,True,True,False
+btree,dataset_split_assignments,"CREATE UNIQUE INDEX uq_dataset_split_assignments_record ON public.dataset_split_assignments USING btree (dataset_version_id, source_record_id)",uq_dataset_split_assignments_record,True,True,False
+btree,dataset_split_images,"CREATE UNIQUE INDEX uq_dataset_split_images_path ON public.dataset_split_images USING btree (dataset_dir, relative_path)",uq_dataset_split_images_path,True,True,False
+btree,dataset_versions,"CREATE UNIQUE INDEX uq_dataset_versions_name_semver ON public.dataset_versions USING btree (name, semantic_version)",uq_dataset_versions_name_semver,True,True,False
+btree,image_connected_components,"CREATE UNIQUE INDEX uq_image_connected_components_identity ON public.image_connected_components USING btree (id, detection_run_id, analysis_run_image_id, microscopy_image_id)",uq_image_connected_components_identity,True,True,False
+btree,image_connected_components,"CREATE UNIQUE INDEX uq_image_connected_components_run_image_index ON public.image_connected_components USING btree (detection_run_id, analysis_run_image_id, component_index)",uq_image_connected_components_run_image_index,True,True,False
+btree,image_quality_assessments,"CREATE UNIQUE INDEX image_quality_assessments_analysis_run_id_microscopy_image__key ON public.image_quality_assessments USING btree (analysis_run_id, microscopy_image_id)",image_quality_assessments_analysis_run_id_microscopy_image__key,True,True,False
+btree,local_execution_jobs,CREATE UNIQUE INDEX local_execution_jobs_owner_key ON public.local_execution_jobs USING btree (owner),local_execution_jobs_owner_key,True,True,False
+btree,local_execution_jobs,CREATE UNIQUE INDEX local_execution_jobs_run_id_key ON public.local_execution_jobs USING btree (run_id),local_execution_jobs_run_id_key,True,True,False
+btree,microscopy_analysis_run_images,"CREATE UNIQUE INDEX microscopy_analysis_run_image_analysis_run_id_microscopy_im_key ON public.microscopy_analysis_run_images USING btree (analysis_run_id, microscopy_image_id)",microscopy_analysis_run_image_analysis_run_id_microscopy_im_key,True,True,False
+btree,microscopy_analysis_run_images,"CREATE UNIQUE INDEX microscopy_analysis_run_image_analysis_run_id_sequence_numb_key ON public.microscopy_analysis_run_images USING btree (analysis_run_id, sequence_number)",microscopy_analysis_run_image_analysis_run_id_sequence_numb_key,True,True,False
+btree,microscopy_analysis_run_images,"CREATE UNIQUE INDEX microscopy_analysis_run_image_id_analysis_run_id_microscopy_key ON public.microscopy_analysis_run_images USING btree (id, analysis_run_id, microscopy_image_id)",microscopy_analysis_run_image_id_analysis_run_id_microscopy_key,True,True,False
+btree,microscopy_analysis_runs,CREATE UNIQUE INDEX microscopy_analysis_runs_run_code_key ON public.microscopy_analysis_runs USING btree (run_code),microscopy_analysis_runs_run_code_key,True,True,False
+btree,microscopy_images,"CREATE UNIQUE INDEX uq_microscopy_images_slide_code ON public.microscopy_images USING btree (slide_id, image_code)",uq_microscopy_images_slide_code,True,True,False
+btree,microscopy_images,"CREATE UNIQUE INDEX uq_microscopy_images_slide_sha256 ON public.microscopy_images USING btree (slide_id, sha256)",uq_microscopy_images_slide_sha256,True,True,False
+btree,research_subjects,CREATE UNIQUE INDEX research_subjects_subject_code_key ON public.research_subjects USING btree (subject_code),research_subjects_subject_code_key,True,True,False
+btree,roles,CREATE UNIQUE INDEX roles_name_key ON public.roles USING btree (name),roles_name_key,True,True,False
+btree,run_dataset_images,"CREATE UNIQUE INDEX uq_run_dataset_images_usage ON public.run_dataset_images USING btree (run_id, image_id, usage_context)",uq_run_dataset_images_usage,True,True,False
+btree,run_lineage,"CREATE UNIQUE INDEX uq_run_lineage_parent_child_type ON public.run_lineage USING btree (parent_run_id, child_run_id, relationship_type)",uq_run_lineage_parent_child_type,True,True,False
+btree,scientific_cases,CREATE UNIQUE INDEX scientific_cases_case_code_key ON public.scientific_cases USING btree (case_code),scientific_cases_case_code_key,True,True,False
+btree,scientific_validation_annotation_events,"CREATE UNIQUE INDEX scientific_validation_annotat_annotation_id_annotation_vers_key ON public.scientific_validation_annotation_events USING btree (annotation_id, annotation_version)",scientific_validation_annotat_annotation_id_annotation_vers_key,True,True,False
+btree,scientific_validation_images,"CREATE UNIQUE INDEX scientific_validation_images_session_id_sequence_number_key ON public.scientific_validation_images USING btree (session_id, sequence_number)",scientific_validation_images_session_id_sequence_number_key,True,True,False
+btree,smear_analysis_summaries,CREATE UNIQUE INDEX smear_analysis_summaries_classification_run_id_key ON public.smear_analysis_summaries USING btree (classification_run_id),smear_analysis_summaries_classification_run_id_key,True,True,False
+btree,smear_slides,"CREATE UNIQUE INDEX uq_smear_slides_sample_code ON public.smear_slides USING btree (sample_id, slide_code)",uq_smear_slides_sample_code,True,True,False
+btree,train_execution_sessions,CREATE UNIQUE INDEX train_execution_sessions_artifact_root_key ON public.train_execution_sessions USING btree (artifact_root),train_execution_sessions_artifact_root_key,True,True,False
+btree,train_execution_sessions,CREATE UNIQUE INDEX train_execution_sessions_attempt_id_key ON public.train_execution_sessions USING btree (attempt_id),train_execution_sessions_attempt_id_key,True,True,False
+btree,users,CREATE UNIQUE INDEX users_email_key ON public.users USING btree (email),users_email_key,True,True,False
+btree,users,CREATE UNIQUE INDEX users_username_key ON public.users USING btree (username),users_username_key,True,True,False
+btree,training_history,"CREATE UNIQUE INDEX uq_v2_epoch ON public.training_history USING btree (run_id, phase, epoch)",uq_v2_epoch,True,True,False
+btree,predictions,"CREATE UNIQUE INDEX uq_v2_evaluation_sample ON public.predictions USING btree (evaluation_id, dataset_source_record_id)",uq_v2_evaluation_sample,True,True,False
+btree,run_clinical_metrics,CREATE UNIQUE INDEX v2_run_clinical_metrics_unique_f9437c271ff6 ON public.run_clinical_metrics USING btree (evaluation_id),v2_run_clinical_metrics_unique_f9437c271ff6,True,True,False
+btree,run_configurations,CREATE UNIQUE INDEX v2_run_configurations_primary_360aa242ca7c ON public.run_configurations USING btree (run_id),v2_run_configurations_primary_360aa242ca7c,True,True,True
+btree,evaluations,CREATE UNIQUE INDEX v2_evaluations_primary_8c8464f42472 ON public.evaluations USING btree (id),v2_evaluations_primary_8c8464f42472,True,True,True
+btree,evaluations,"CREATE UNIQUE INDEX v2_evaluations_unique_2b29f071653b ON public.evaluations USING btree (run_id, source_kind, source_record_phase, source_record_key)",v2_evaluations_unique_2b29f071653b,True,True,False
+btree,evaluations,"CREATE UNIQUE INDEX v2_evaluations_unique_927a8d4fe69d ON public.evaluations USING btree (id, run_id)",v2_evaluations_unique_927a8d4fe69d,True,True,False
+btree,evaluation_ensemble_members,"CREATE UNIQUE INDEX v2_evaluation_ensemble_members_primary_0f6c3f155b09 ON public.evaluation_ensemble_members USING btree (evaluation_id, ordinal)",v2_evaluation_ensemble_members_primary_0f6c3f155b09,True,True,True
+btree,evaluation_ensemble_members,"CREATE UNIQUE INDEX v2_evaluation_ensemble_members_unique_3a2092158e31 ON public.evaluation_ensemble_members USING btree (evaluation_id, model_version_id)",v2_evaluation_ensemble_members_unique_3a2092158e31,True,True,False
+btree,xai_evidence,CREATE UNIQUE INDEX v2_xai_evidence_primary_8c8464f42472 ON public.xai_evidence USING btree (id),v2_xai_evidence_primary_8c8464f42472,True,True,True
+btree,xai_evidence,CREATE UNIQUE INDEX v2_xai_evidence_unique_d9477cb1fece ON public.xai_evidence USING btree (ml_explanation_id),v2_xai_evidence_unique_d9477cb1fece,True,True,False
+btree,xai_evidence,CREATE UNIQUE INDEX v2_xai_evidence_unique_d4bf0f195fcf ON public.xai_evidence USING btree (cell_explanation_id),v2_xai_evidence_unique_d4bf0f195fcf,True,True,False
+btree,xai_evidence,"CREATE UNIQUE INDEX v2_xai_evidence_unique_0be310eeb2b7 ON public.xai_evidence USING btree (assessment_attempt_id, assessment_sample_id)",v2_xai_evidence_unique_0be310eeb2b7,True,True,False
+btree,xai_artifacts,CREATE UNIQUE INDEX v2_xai_artifacts_primary_8c8464f42472 ON public.xai_artifacts USING btree (id),v2_xai_artifacts_primary_8c8464f42472,True,True,True
+btree,xai_artifacts,"CREATE UNIQUE INDEX v2_xai_artifacts_unique_ee15a9513a9e ON public.xai_artifacts USING btree (evidence_id, role, ordinal)",v2_xai_artifacts_unique_ee15a9513a9e,True,True,False
+btree,xai_quantitative_evaluations,CREATE UNIQUE INDEX v2_xai_quantitative_evaluations_primary_8c8464f42472 ON public.xai_quantitative_evaluations USING btree (id),v2_xai_quantitative_evaluations_primary_8c8464f42472,True,True,True
+btree,xai_interpretations,CREATE UNIQUE INDEX v2_xai_interpretations_primary_8c8464f42472 ON public.xai_interpretations USING btree (id),v2_xai_interpretations_primary_8c8464f42472,True,True,True
+btree,xai_specialist_reviews,CREATE UNIQUE INDEX v2_xai_specialist_reviews_primary_8c8464f42472 ON public.xai_specialist_reviews USING btree (id),v2_xai_specialist_reviews_primary_8c8464f42472,True,True,True
+btree,xai_method_configurations,CREATE UNIQUE INDEX xai_method_configurations_pkey ON public.xai_method_configurations USING btree (id),xai_method_configurations_pkey,True,True,True
+btree,xai_region_attributions,"CREATE UNIQUE INDEX xai_region_attributions_pkey ON public.xai_region_attributions USING btree (xai_evidence_id, region_type, region_index)",xai_region_attributions_pkey,True,True,True
+btree,xai_evaluation_protocols,CREATE UNIQUE INDEX xai_evaluation_protocols_pkey ON public.xai_evaluation_protocols USING btree (id),xai_evaluation_protocols_pkey,True,True,True
+btree,xai_evaluation_members,"CREATE UNIQUE INDEX xai_evaluation_members_pkey ON public.xai_evaluation_members USING btree (evaluation_id, xai_evidence_id)",xai_evaluation_members_pkey,True,True,True
+btree,xai_method_configurations,CREATE UNIQUE INDEX uq_xai_method_configuration_hash ON public.xai_method_configurations USING btree (configuration_hash),uq_xai_method_configuration_hash,True,True,False
+btree,xai_evaluation_protocols,CREATE UNIQUE INDEX uq_xai_protocol_hash ON public.xai_evaluation_protocols USING btree (protocol_hash),uq_xai_protocol_hash,True,True,False
+btree,xai_evaluation_protocols,"CREATE UNIQUE INDEX uq_xai_protocol_metric ON public.xai_evaluation_protocols USING btree (id, metric_name)",uq_xai_protocol_metric,True,True,False
+btree,artifacts,"CREATE UNIQUE INDEX uq_artifacts_id_run_id ON public.artifacts USING btree (id, run_id)",uq_artifacts_id_run_id,True,True,False
+btree,cell_crops,"CREATE UNIQUE INDEX uq_cell_crops_id_detection ON public.cell_crops USING btree (id, cell_detection_id)",uq_cell_crops_id_detection,True,True,False
+btree,deployed_model_versions,"CREATE UNIQUE INDEX uq_deployed_model_versions_id_version ON public.deployed_model_versions USING btree (id, model_version_id)",uq_deployed_model_versions_id_version,True,True,False
+btree,image_analysis_jobs,"CREATE UNIQUE INDEX uq_image_analysis_jobs_identity ON public.image_analysis_jobs USING btree (id, inference_run_id, deployed_model_version_id, model_version_id)",uq_image_analysis_jobs_identity,True,True,False
+btree,microscopy_analysis_runs,"CREATE UNIQUE INDEX uq_microscopy_analysis_equivalent ON public.microscopy_analysis_runs USING btree (ingestion_batch_id, quality_profile_key, quality_profile_version, quality_algorithm_version, input_manifest_sha256)",uq_microscopy_analysis_equivalent,True,True,False
+btree,model_versions,"CREATE UNIQUE INDEX uq_model_versions_id_checkpoint_artifact ON public.model_versions USING btree (id, checkpoint_artifact_id)",uq_model_versions_id_checkpoint_artifact,True,True,False
+btree,model_versions,"CREATE UNIQUE INDEX uq_model_versions_id_training_run ON public.model_versions USING btree (id, training_run_id)",uq_model_versions_id_training_run,True,True,False
+btree,run_model_deployments,"CREATE UNIQUE INDEX uq_run_model_deployments_binding ON public.run_model_deployments USING btree (run_id, deployed_model_version_id, role, ordinal)",uq_run_model_deployments_binding,True,True,False
+btree,run_model_deployments,"CREATE UNIQUE INDEX uq_run_model_deployments_run_deployment_version ON public.run_model_deployments USING btree (run_id, deployed_model_version_id, model_version_id)",uq_run_model_deployments_run_deployment_version,True,True,False
+btree,run_threshold_calibration,"CREATE UNIQUE INDEX uq_run_threshold_calibration_id_version ON public.run_threshold_calibration USING btree (run_threshold_calibration_id, model_version_id)",uq_run_threshold_calibration_id_version,True,True,False
+btree,stage2_model_publications,"CREATE UNIQUE INDEX uq_stage2_model_publications_id_version ON public.stage2_model_publications USING btree (id, model_version_id)",uq_stage2_model_publications_id_version,True,True,False
+btree,artifacts,CREATE INDEX idx_artifacts_artifact_type ON public.artifacts USING btree (artifact_type),idx_artifacts_artifact_type,True,False,False
+btree,artifacts,CREATE INDEX idx_artifacts_checksum ON public.artifacts USING btree (checksum),idx_artifacts_checksum,True,False,False
+btree,artifacts,CREATE INDEX idx_artifacts_governance_status ON public.artifacts USING btree (artifact_status),idx_artifacts_governance_status,True,False,False
+btree,artifacts,CREATE INDEX idx_artifacts_metadata_source ON public.artifacts USING btree (((metadata ->> 'source'::text))),idx_artifacts_metadata_source,True,False,False
+btree,artifacts,CREATE INDEX idx_artifacts_run_id ON public.artifacts USING btree (run_id),idx_artifacts_run_id,True,False,False
+btree,artifacts,"CREATE INDEX idx_artifacts_type_path ON public.artifacts USING btree (artifact_type, path)",idx_artifacts_type_path,True,False,False
+btree,artifacts,CREATE INDEX idx_artifacts_uri ON public.artifacts USING btree (artifact_uri) WHERE (artifact_uri IS NOT NULL),idx_artifacts_uri,True,False,False
+btree,assessment_attempts,"CREATE UNIQUE INDEX uq_assessment_live ON public.assessment_attempts USING btree (identity_id) WHERE (state = ANY (ARRAY['active'::text, 'verified'::text]))",uq_assessment_live,True,True,False
+btree,assessment_attempts,CREATE UNIQUE INDEX uq_global_assessment_active ON public.assessment_attempts USING btree ((true)) WHERE (state = 'active'::text),uq_global_assessment_active,True,True,False
+btree,audit_events,"CREATE INDEX ix_audit_events_actor ON public.audit_events USING btree (actor_user_id, created_at)",ix_audit_events_actor,True,False,False
+btree,audit_events,CREATE INDEX ix_audit_events_created_at ON public.audit_events USING btree (created_at),ix_audit_events_created_at,True,False,False
+btree,audit_events,"CREATE INDEX ix_audit_events_resource ON public.audit_events USING btree (resource_type, resource_id, created_at)",ix_audit_events_resource,True,False,False
+btree,blood_samples,CREATE INDEX ix_blood_samples_case ON public.blood_samples USING btree (case_id),ix_blood_samples_case,True,False,False
+btree,blood_samples,"CREATE INDEX ix_blood_samples_status_created ON public.blood_samples USING btree (status, created_at DESC)",ix_blood_samples_status_created,True,False,False
+btree,blood_samples,"CREATE UNIQUE INDEX uq_blood_samples_external_identity ON public.blood_samples USING btree (case_id, source_system, external_sample_id) WHERE (external_sample_id IS NOT NULL)",uq_blood_samples_external_identity,True,True,False
+btree,campaign_attempts,CREATE INDEX ix_campaign_attempt_state ON public.campaign_attempts USING btree (state),ix_campaign_attempt_state,True,False,False
+btree,campaign_attempts,CREATE UNIQUE INDEX uq_campaign_one_active_attempt ON public.campaign_attempts USING btree (member_id) WHERE (state = 'active'::text),uq_campaign_one_active_attempt,True,True,False
+btree,campaign_members,"CREATE INDEX ix_campaign_member_state ON public.campaign_members USING btree (campaign_id, state)",ix_campaign_member_state,True,False,False
+btree,cell_classification_events,"CREATE INDEX ix_cell_classification_events_run_created ON public.cell_classification_events USING btree (classification_run_id, created_at, id)",ix_cell_classification_events_run_created,True,False,False
+btree,cell_classification_events,"CREATE INDEX ix_cell_classification_events_run_detection ON public.cell_classification_events USING btree (classification_run_id, cell_detection_id, created_at, id)",ix_cell_classification_events_run_detection,True,False,False
+btree,cell_classification_events,"CREATE INDEX ix_cell_classification_events_run_prediction ON public.cell_classification_events USING btree (classification_run_id, cell_prediction_id, created_at, id)",ix_cell_classification_events_run_prediction,True,False,False
+btree,cell_classification_inputs,CREATE INDEX ix_cell_classification_inputs_crop ON public.cell_classification_inputs USING btree (crop_id) WHERE (crop_id IS NOT NULL),ix_cell_classification_inputs_crop,True,False,False
+btree,cell_classification_inputs,CREATE INDEX ix_cell_classification_inputs_detection ON public.cell_classification_inputs USING btree (cell_detection_id),ix_cell_classification_inputs_detection,True,False,False
+btree,cell_classification_inputs,"CREATE INDEX ix_cell_classification_inputs_run_eligible_order ON public.cell_classification_inputs USING btree (classification_run_id, eligible, input_order)",ix_cell_classification_inputs_run_eligible_order,True,False,False
+btree,cell_classification_inputs,"CREATE INDEX ix_cell_classification_inputs_run_image_cell ON public.cell_classification_inputs USING btree (classification_run_id, image_sequence_number, cell_index, id)",ix_cell_classification_inputs_run_image_cell,True,False,False
+btree,cell_classification_reviews,"CREATE INDEX ix_cell_classification_reviews_actor_created ON public.cell_classification_reviews USING btree (actor_user_id, created_at DESC, id DESC)",ix_cell_classification_reviews_actor_created,True,False,False
+btree,cell_classification_reviews,"CREATE INDEX ix_cell_classification_reviews_prediction_created ON public.cell_classification_reviews USING btree (cell_prediction_id, created_at, id)",ix_cell_classification_reviews_prediction_created,True,False,False
+btree,cell_classification_runs,"CREATE INDEX ix_cell_classification_runs_analysis_created ON public.cell_classification_runs USING btree (analysis_run_id, created_at DESC, id DESC)",ix_cell_classification_runs_analysis_created,True,False,False
+btree,cell_classification_runs,"CREATE INDEX ix_cell_classification_runs_detection_created ON public.cell_classification_runs USING btree (detection_run_id, created_at DESC, id DESC)",ix_cell_classification_runs_detection_created,True,False,False
+btree,cell_classification_runs,"CREATE INDEX ix_cell_classification_runs_model_created ON public.cell_classification_runs USING btree (production_model_id, created_at DESC, id DESC)",ix_cell_classification_runs_model_created,True,False,False
+btree,cell_classification_runs,"CREATE INDEX ix_cell_classification_runs_status_created ON public.cell_classification_runs USING btree (status, created_at DESC, id DESC)",ix_cell_classification_runs_status_created,True,False,False
+btree,cell_classification_runs,"CREATE UNIQUE INDEX uq_cell_classification_runs_equivalent_active ON public.cell_classification_runs USING btree (detection_run_id, production_model_id, COALESCE(model_version, ''::character varying), COALESCE((model_snapshot ->> 'checkpoint_sha256'::text), ''::text), COALESCE((model_snapshot ->> 'inference_version'::text), ''::text), input_manifest_sha256) WHERE ((status)::text = ANY (ARRAY[('created'::character varying)::text, ('processing'::character varying)::text, ('completed'::character varying)::text, ('completed_with_warnings'::character varying)::text]))",uq_cell_classification_runs_equivalent_active,True,True,False
+btree,cell_detection_events,"CREATE INDEX ix_cell_detection_events_run_created ON public.cell_detection_events USING btree (detection_run_id, created_at, id)",ix_cell_detection_events_run_created,True,False,False
+btree,cell_detection_events,"CREATE INDEX ix_cell_detection_events_run_image ON public.cell_detection_events USING btree (detection_run_id, microscopy_image_id, created_at, id)",ix_cell_detection_events_run_image,True,False,False
+btree,cell_detection_runs,"CREATE INDEX ix_cell_detection_runs_analysis_created ON public.cell_detection_runs USING btree (analysis_run_id, created_at DESC, id DESC)",ix_cell_detection_runs_analysis_created,True,False,False
+btree,cell_detection_runs,"CREATE INDEX ix_cell_detection_runs_status_created ON public.cell_detection_runs USING btree (status, created_at DESC, id DESC)",ix_cell_detection_runs_status_created,True,False,False
+btree,cell_detection_runs,"CREATE UNIQUE INDEX uq_cell_detection_runs_equivalent_active ON public.cell_detection_runs USING btree (analysis_run_id, detector_key, detector_version, algorithm_version, input_manifest_sha256) WHERE ((status)::text = ANY (ARRAY[('created'::character varying)::text, ('processing'::character varying)::text, ('completed'::character varying)::text, ('completed_with_warnings'::character varying)::text]))",uq_cell_detection_runs_equivalent_active,True,True,False
+btree,cell_detections,"CREATE INDEX ix_cell_detections_run_image ON public.cell_detections USING btree (detection_run_id, microscopy_image_id, cell_index)",ix_cell_detections_run_image,True,False,False
+btree,cell_explanations,"CREATE INDEX ix_cell_explanations_status_created ON public.cell_explanations USING btree (status, created_at DESC, id DESC)",ix_cell_explanations_status_created,True,False,False
+btree,cell_predictions,CREATE INDEX ix_cell_predictions_crop ON public.cell_predictions USING btree (crop_id),ix_cell_predictions_crop,True,False,False
+btree,cell_predictions,CREATE INDEX ix_cell_predictions_detection ON public.cell_predictions USING btree (cell_detection_id),ix_cell_predictions_detection,True,False,False
+btree,cell_predictions,"CREATE INDEX ix_cell_predictions_run_label ON public.cell_predictions USING btree (classification_run_id, predicted_label, created_at, id) WHERE ((prediction_status)::text = 'completed'::text)",ix_cell_predictions_run_label,True,False,False
+btree,cell_predictions,"CREATE INDEX ix_cell_predictions_run_near_threshold ON public.cell_predictions USING btree (classification_run_id, near_threshold, created_at, id)",ix_cell_predictions_run_near_threshold,True,False,False
+btree,cell_predictions,"CREATE INDEX ix_cell_predictions_run_status ON public.cell_predictions USING btree (classification_run_id, prediction_status, created_at, id)",ix_cell_predictions_run_status,True,False,False
+btree,dataset_materialization_activations,CREATE INDEX ix_dataset_materialization_activations_dataset_version_id ON public.dataset_materialization_activations USING btree (dataset_version_id),ix_dataset_materialization_activations_dataset_version_id,True,False,False
+btree,dataset_materialization_activations,CREATE INDEX ix_dataset_materialization_activations_materialization_id ON public.dataset_materialization_activations USING btree (materialization_id),ix_dataset_materialization_activations_materialization_id,True,False,False
+btree,dataset_materialization_activations,CREATE UNIQUE INDEX uq_dataset_materialization_activations_current_family ON public.dataset_materialization_activations USING btree (dataset_family) WHERE (deactivated_at IS NULL),uq_dataset_materialization_activations_current_family,True,True,False
+btree,dataset_materializations,CREATE INDEX ix_dataset_materializations_dataset_version_id ON public.dataset_materializations USING btree (dataset_version_id),ix_dataset_materializations_dataset_version_id,True,False,False
+btree,dataset_source_records,CREATE INDEX ix_dataset_source_records_clinical_identity_id ON public.dataset_source_records USING btree (clinical_identity_id),ix_dataset_source_records_clinical_identity_id,True,False,False
+btree,dataset_source_records,CREATE INDEX ix_dataset_source_records_dataset_id ON public.dataset_source_records USING btree (dataset_id),ix_dataset_source_records_dataset_id,True,False,False
+btree,dataset_source_records,CREATE INDEX ix_dataset_source_records_decoded_pixel_sha256 ON public.dataset_source_records USING btree (decoded_pixel_sha256) WHERE (decoded_pixel_sha256 IS NOT NULL),ix_dataset_source_records_decoded_pixel_sha256,True,False,False
+btree,dataset_source_records,CREATE INDEX ix_dataset_source_records_source_file_sha256 ON public.dataset_source_records USING btree (source_file_sha256) WHERE (source_file_sha256 IS NOT NULL),ix_dataset_source_records_source_file_sha256,True,False,False
+btree,dataset_split_assignments,CREATE INDEX ix_dataset_split_assignments_clinical_identity_id ON public.dataset_split_assignments USING btree (clinical_identity_id),ix_dataset_split_assignments_clinical_identity_id,True,False,False
+btree,dataset_split_assignments,CREATE INDEX ix_dataset_split_assignments_dataset_version_id ON public.dataset_split_assignments USING btree (dataset_version_id),ix_dataset_split_assignments_dataset_version_id,True,False,False
+btree,dataset_split_images,CREATE INDEX idx_dataset_split_images_class ON public.dataset_split_images USING btree (class_name),idx_dataset_split_images_class,True,False,False
+btree,dataset_split_images,CREATE INDEX idx_dataset_split_images_dataset_dir ON public.dataset_split_images USING btree (dataset_dir),idx_dataset_split_images_dataset_dir,True,False,False
+btree,dataset_split_images,CREATE INDEX idx_dataset_split_images_dataset_id ON public.dataset_split_images USING btree (dataset_id),idx_dataset_split_images_dataset_id,True,False,False
+btree,dataset_split_images,CREATE INDEX idx_dataset_split_images_relative_path ON public.dataset_split_images USING btree (relative_path),idx_dataset_split_images_relative_path,True,False,False
+btree,dataset_split_images,CREATE INDEX idx_dataset_split_images_split ON public.dataset_split_images USING btree (split_name),idx_dataset_split_images_split,True,False,False
+btree,dataset_split_images,CREATE INDEX ix_dataset_split_images_dataset_materialization_id ON public.dataset_split_images USING btree (dataset_materialization_id),ix_dataset_split_images_dataset_materialization_id,True,False,False
+btree,dataset_split_images,CREATE INDEX ix_dataset_split_images_dataset_version_id ON public.dataset_split_images USING btree (dataset_version_id),ix_dataset_split_images_dataset_version_id,True,False,False
+btree,dataset_split_statistics,"CREATE INDEX ix_dataset_split_statistics_version_metric ON public.dataset_split_statistics USING btree (dataset_version_id, scope, metric_name)",ix_dataset_split_statistics_version_metric,True,False,False
+btree,dataset_split_validation_checks,"CREATE INDEX ix_dataset_split_validation_checks_version_name ON public.dataset_split_validation_checks USING btree (dataset_version_id, check_name, executed_at)",ix_dataset_split_validation_checks_version_name,True,False,False
+btree,dataset_version_sources,CREATE INDEX ix_dataset_version_sources_dataset_id ON public.dataset_version_sources USING btree (dataset_id),ix_dataset_version_sources_dataset_id,True,False,False
+btree,dataset_versions,CREATE INDEX ix_dataset_versions_status ON public.dataset_versions USING btree (status),ix_dataset_versions_status,True,False,False
+gin,datasets,CREATE INDEX idx_datasets_metadata_gin ON public.datasets USING gin (metadata),idx_datasets_metadata_gin,True,False,False
+btree,deployed_model_versions,CREATE INDEX idx_deployed_model_versions_checkpoint_artifact ON public.deployed_model_versions USING btree (checkpoint_artifact_id),idx_deployed_model_versions_checkpoint_artifact,True,False,False
+btree,deployed_model_versions,CREATE INDEX idx_deployed_model_versions_model_version ON public.deployed_model_versions USING btree (model_version_id),idx_deployed_model_versions_model_version,True,False,False
+btree,deployed_model_versions,"CREATE INDEX idx_deployed_model_versions_slot_history ON public.deployed_model_versions USING btree (deployment_name, environment, alias, created_at DESC)",idx_deployed_model_versions_slot_history,True,False,False
+btree,deployed_model_versions,"CREATE INDEX idx_deployed_model_versions_status ON public.deployed_model_versions USING btree (status, created_at DESC)",idx_deployed_model_versions_status,True,False,False
+btree,deployed_model_versions,CREATE INDEX idx_deployed_model_versions_threshold_calibration ON public.deployed_model_versions USING btree (threshold_calibration_id) WHERE (threshold_calibration_id IS NOT NULL),idx_deployed_model_versions_threshold_calibration,True,False,False
+btree,deployed_model_versions,"CREATE UNIQUE INDEX uq_deployed_model_versions_active_slot ON public.deployed_model_versions USING btree (deployment_name, environment, alias) WHERE (status = 'active'::text)",uq_deployed_model_versions_active_slot,True,True,False
+btree,deployed_model_versions,"CREATE UNIQUE INDEX uq_deployed_model_versions_one_production_champion ON public.deployed_model_versions USING btree (environment, alias) WHERE ((status = 'active'::text) AND (environment = 'production'::text) AND (alias = 'champion'::text))",uq_deployed_model_versions_one_production_champion,True,True,False
+btree,environment_packages,CREATE INDEX idx_environment_packages_run_id ON public.environment_packages USING btree (run_id),idx_environment_packages_run_id,True,False,False
+btree,errors,CREATE INDEX idx_errors_run_id ON public.errors USING btree (run_id),idx_errors_run_id,True,False,False
+btree,execution_logs,CREATE INDEX idx_execution_logs_run_id ON public.execution_logs USING btree (run_id),idx_execution_logs_run_id,True,False,False
+btree,experimental_campaigns,"CREATE INDEX ix_campaign_dataset_state ON public.experimental_campaigns USING btree (dataset_version_id, state)",ix_campaign_dataset_state,True,False,False
+btree,explainability_results,"CREATE INDEX idx_explainability_case_method ON public.explainability_results USING btree (case_type, method)",idx_explainability_case_method,True,False,False
+btree,explainability_results,CREATE INDEX idx_explainability_method ON public.explainability_results USING btree (method),idx_explainability_method,True,False,False
+btree,explainability_results,CREATE INDEX idx_explainability_output_path ON public.explainability_results USING btree (output_path),idx_explainability_output_path,True,False,False
+btree,explainability_results,CREATE INDEX idx_explainability_run_id ON public.explainability_results USING btree (run_id),idx_explainability_run_id,True,False,False
+btree,explainability_results,CREATE INDEX idx_explainability_success ON public.explainability_results USING btree (success),idx_explainability_success,True,False,False
+btree,identity_evidence,CREATE INDEX ix_identity_evidence_clinical_identity_id ON public.identity_evidence USING btree (clinical_identity_id),ix_identity_evidence_clinical_identity_id,True,False,False
+btree,identity_evidence,CREATE INDEX ix_identity_evidence_source_record_id ON public.identity_evidence USING btree (source_record_id),ix_identity_evidence_source_record_id,True,False,False
+btree,image_analysis_jobs,CREATE INDEX idx_image_analysis_jobs_deployment ON public.image_analysis_jobs USING btree (deployed_model_version_id),idx_image_analysis_jobs_deployment,True,False,False
+btree,runs,CREATE INDEX idx_runs_execution_type ON public.runs USING btree (execution_type),idx_runs_execution_type,True,False,False
+btree,runs,"CREATE INDEX idx_runs_inference_script ON public.runs USING btree (run_type, script_name)",idx_runs_inference_script,True,False,False
+btree,image_analysis_jobs,CREATE INDEX idx_image_analysis_jobs_input_artifact ON public.image_analysis_jobs USING btree (input_artifact_id) WHERE (input_artifact_id IS NOT NULL),idx_image_analysis_jobs_input_artifact,True,False,False
+btree,image_analysis_jobs,CREATE INDEX idx_image_analysis_jobs_model_version ON public.image_analysis_jobs USING btree (model_version_id),idx_image_analysis_jobs_model_version,True,False,False
+btree,image_analysis_jobs,CREATE INDEX idx_image_analysis_jobs_run ON public.image_analysis_jobs USING btree (inference_run_id),idx_image_analysis_jobs_run,True,False,False
+btree,image_analysis_jobs,CREATE INDEX idx_image_analysis_jobs_source_image ON public.image_analysis_jobs USING btree (source_image_id) WHERE (source_image_id IS NOT NULL),idx_image_analysis_jobs_source_image,True,False,False
+btree,image_analysis_jobs,"CREATE INDEX idx_image_analysis_jobs_status_created ON public.image_analysis_jobs USING btree (status, created_at DESC)",idx_image_analysis_jobs_status_created,True,False,False
+btree,image_analysis_jobs,"CREATE UNIQUE INDEX uq_image_analysis_jobs_idempotency ON public.image_analysis_jobs USING btree (inference_run_id, idempotency_key) WHERE (idempotency_key IS NOT NULL)",uq_image_analysis_jobs_idempotency,True,True,False
+btree,image_connected_components,"CREATE INDEX ix_image_connected_components_run_image ON public.image_connected_components USING btree (detection_run_id, microscopy_image_id, component_index)",ix_image_connected_components_run_image,True,False,False
+btree,image_connected_components,"CREATE INDEX ix_image_connected_components_status ON public.image_connected_components USING btree (detection_run_id, component_status, component_index)",ix_image_connected_components_status,True,False,False
+btree,image_ingestion_batches,"CREATE INDEX ix_ingestion_batches_sample ON public.image_ingestion_batches USING btree (sample_id, created_at DESC)",ix_ingestion_batches_sample,True,False,False
+btree,image_ingestion_batches,"CREATE UNIQUE INDEX uq_ingestion_batches_source_group ON public.image_ingestion_batches USING btree (source_system, source_group_key) WHERE ((source_system IS NOT NULL) AND (source_group_key IS NOT NULL))",uq_ingestion_batches_source_group,True,True,False
+btree,local_execution_jobs,"CREATE UNIQUE INDEX local_one_active ON public.local_execution_jobs USING btree ((true)) WHERE (state = ANY (ARRAY['held'::text, 'calculation_reported'::text]))",local_one_active,True,True,False
+btree,microscopy_analysis_events,"CREATE INDEX ix_microscopy_analysis_events_run ON public.microscopy_analysis_events USING btree (analysis_run_id, created_at, id)",ix_microscopy_analysis_events_run,True,False,False
+btree,microscopy_analysis_runs,"CREATE INDEX ix_microscopy_analysis_runs_status ON public.microscopy_analysis_runs USING btree (run_status, created_at DESC)",ix_microscopy_analysis_runs_status,True,False,False
+btree,microscopy_analysis_runs,"CREATE INDEX ix_microscopy_analysis_runs_subject ON public.microscopy_analysis_runs USING btree (subject_id, created_at DESC)",ix_microscopy_analysis_runs_subject,True,False,False
+btree,microscopy_images,CREATE INDEX ix_microscopy_images_ingestion_batch ON public.microscopy_images USING btree (ingestion_batch_id),ix_microscopy_images_ingestion_batch,True,False,False
+btree,microscopy_images,CREATE INDEX ix_microscopy_images_sha256 ON public.microscopy_images USING btree (sha256),ix_microscopy_images_sha256,True,False,False
+btree,microscopy_images,CREATE INDEX ix_microscopy_images_slide ON public.microscopy_images USING btree (slide_id),ix_microscopy_images_slide,True,False,False
+btree,microscopy_images,"CREATE INDEX ix_microscopy_images_status_created ON public.microscopy_images USING btree (status, created_at DESC)",ix_microscopy_images_status_created,True,False,False
+btree,microscopy_images,"CREATE UNIQUE INDEX uq_microscopy_images_external_path ON public.microscopy_images USING btree (source_system, source_relative_path) WHERE ((source_system IS NOT NULL) AND (source_relative_path IS NOT NULL))",uq_microscopy_images_external_path,True,True,False
+btree,model_versions,CREATE INDEX idx_model_versions_checkpoint_artifact ON public.model_versions USING btree (checkpoint_artifact_id),idx_model_versions_checkpoint_artifact,True,False,False
+btree,model_versions,CREATE INDEX idx_model_versions_model ON public.model_versions USING btree (model_id),idx_model_versions_model,True,False,False
+btree,model_versions,CREATE INDEX idx_model_versions_sha256 ON public.model_versions USING btree (artifact_sha256),idx_model_versions_sha256,True,False,False
+btree,model_versions,"CREATE INDEX idx_model_versions_status_lineage ON public.model_versions USING btree (status, lineage_status)",idx_model_versions_status_lineage,True,False,False
+btree,model_versions,CREATE INDEX idx_model_versions_training_run ON public.model_versions USING btree (training_run_id),idx_model_versions_training_run,True,False,False
+btree,model_versions,CREATE UNIQUE INDEX uq_model_versions_checkpoint_artifact ON public.model_versions USING btree (checkpoint_artifact_id) WHERE (checkpoint_artifact_id IS NOT NULL),uq_model_versions_checkpoint_artifact,True,True,False
+btree,model_versions,"CREATE UNIQUE INDEX uq_model_versions_name_number ON public.model_versions USING btree (model_name, version_number) WHERE ((model_name IS NOT NULL) AND (version_number IS NOT NULL))",uq_model_versions_name_number,True,True,False
+gin,runs,CREATE INDEX idx_runs_metadata_gin ON public.runs USING gin (metadata),idx_runs_metadata_gin,True,False,False
+btree,runs,CREATE INDEX idx_runs_model_id ON public.runs USING btree (model_id),idx_runs_model_id,True,False,False
+btree,model_versions,"CREATE UNIQUE INDEX uq_model_versions_training_version_name ON public.model_versions USING btree (training_run_id, version_name) WHERE ((training_run_id IS NOT NULL) AND (version_name IS NOT NULL))",uq_model_versions_training_version_name,True,True,False
+btree,model_versions,"CREATE UNIQUE INDEX uq_model_versions_unjustified_sha256 ON public.model_versions USING btree (artifact_sha256) WHERE ((artifact_sha256 IS NOT NULL) AND (NULLIF(btrim(artifact_hash_reuse_justification), ''::text) IS NULL))",uq_model_versions_unjustified_sha256,True,True,False
+btree,predictions,CREATE INDEX idx_predictions_analysis_job ON public.predictions USING btree (image_analysis_job_id),idx_predictions_analysis_job,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_case_type ON public.predictions USING btree (case_type),idx_predictions_case_type,True,False,False
+btree,predictions,"CREATE INDEX idx_predictions_case_type_run ON public.predictions USING btree (case_type, run_id)",idx_predictions_case_type_run,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_classifier_model_version ON public.predictions USING btree (classifier_model_version_id),idx_predictions_classifier_model_version,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_created_at ON public.predictions USING btree (created_at),idx_predictions_created_at,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_deployed_model_version ON public.predictions USING btree (deployed_model_version_id),idx_predictions_deployed_model_version,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_detector_model_version ON public.predictions USING btree (detector_model_version_id) WHERE (detector_model_version_id IS NOT NULL),idx_predictions_detector_model_version,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_inference_run ON public.predictions USING btree (inference_run_id),idx_predictions_inference_run,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_metadata_source ON public.predictions USING btree (((metadata ->> 'source'::text))),idx_predictions_metadata_source,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_metadata_workflow ON public.predictions USING btree (((metadata ->> 'workflow'::text))),idx_predictions_metadata_workflow,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_model_version ON public.predictions USING btree (model_version_id),idx_predictions_model_version,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_predicted_label ON public.predictions USING btree (predicted_label),idx_predictions_predicted_label,True,False,False
+btree,predictions,"CREATE INDEX idx_predictions_review_status ON public.predictions USING btree (review_status, created_at DESC)",idx_predictions_review_status,True,False,False
+btree,predictions,CREATE INDEX idx_predictions_run_id ON public.predictions USING btree (run_id),idx_predictions_run_id,True,False,False
+btree,predictions,"CREATE INDEX idx_predictions_true_pred ON public.predictions USING btree (true_label, predicted_label)",idx_predictions_true_pred,True,False,False
+btree,predictions,"CREATE UNIQUE INDEX uq_predictions_job_cell_index ON public.predictions USING btree (image_analysis_job_id, cell_index) WHERE (prediction_scope = 'cell'::text)",uq_predictions_job_cell_index,True,True,False
+btree,quality_assessment_queue_items,"CREATE INDEX ix_quality_queue_order ON public.quality_assessment_queue_items USING btree (status, priority DESC, requested_at)",ix_quality_queue_order,True,False,False
+btree,quality_assessment_queue_items,"CREATE INDEX ix_quality_queue_priority_requested ON public.quality_assessment_queue_items USING btree (priority DESC, requested_at)",ix_quality_queue_priority_requested,True,False,False
+btree,quality_assessment_queue_items,"CREATE UNIQUE INDEX uq_quality_queue_active_run ON public.quality_assessment_queue_items USING btree (analysis_run_id) WHERE ((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text]))",uq_quality_queue_active_run,True,True,False
+btree,quality_gate_decisions,"CREATE INDEX ix_quality_gate_decisions_run ON public.quality_gate_decisions USING btree (analysis_run_id, created_at, id)",ix_quality_gate_decisions_run,True,False,False
+btree,research_subjects,"CREATE INDEX ix_research_subjects_status_created ON public.research_subjects USING btree (status, created_at DESC)",ix_research_subjects_status_created,True,False,False
+gin,runs,CREATE INDEX idx_runs_parameters_gin ON public.runs USING gin (parameters),idx_runs_parameters_gin,True,False,False
+btree,research_subjects,"CREATE UNIQUE INDEX uq_research_subjects_external_identity ON public.research_subjects USING btree (source_system, external_patient_id) WHERE (external_patient_id IS NOT NULL)",uq_research_subjects_external_identity,True,True,False
+btree,run_checkpoint_policy,CREATE INDEX idx_run_checkpoint_policy_artifact ON public.run_checkpoint_policy USING btree (checkpoint_artifact_id),idx_run_checkpoint_policy_artifact,True,False,False
+btree,run_checkpoint_policy,CREATE INDEX idx_run_checkpoint_policy_model_version ON public.run_checkpoint_policy USING btree (model_version_id),idx_run_checkpoint_policy_model_version,True,False,False
+btree,run_checkpoint_policy,CREATE INDEX idx_run_checkpoint_policy_run_id ON public.run_checkpoint_policy USING btree (run_id),idx_run_checkpoint_policy_run_id,True,False,False
+btree,run_clinical_metrics,CREATE INDEX idx_run_clinical_metrics_model_name ON public.run_clinical_metrics USING btree (model_name),idx_run_clinical_metrics_model_name,True,False,False
+btree,run_clinical_metrics,CREATE INDEX idx_run_clinical_metrics_run_id ON public.run_clinical_metrics USING btree (run_id),idx_run_clinical_metrics_run_id,True,False,False
+btree,run_clinical_metrics,CREATE INDEX idx_run_clinical_metrics_split_name ON public.run_clinical_metrics USING btree (split_name),idx_run_clinical_metrics_split_name,True,False,False
+btree,run_dataset_images,CREATE INDEX idx_run_dataset_images_image_id ON public.run_dataset_images USING btree (image_id),idx_run_dataset_images_image_id,True,False,False
+btree,run_dataset_images,CREATE INDEX idx_run_dataset_images_run_id ON public.run_dataset_images USING btree (run_id),idx_run_dataset_images_run_id,True,False,False
+btree,run_dataset_images,CREATE INDEX idx_run_dataset_images_split ON public.run_dataset_images USING btree (split_name),idx_run_dataset_images_split,True,False,False
+btree,run_dataset_images,CREATE INDEX idx_run_dataset_images_usage_context ON public.run_dataset_images USING btree (usage_context),idx_run_dataset_images_usage_context,True,False,False
+btree,run_image_predictions,CREATE INDEX idx_run_image_predictions_case_type ON public.run_image_predictions USING btree (case_type),idx_run_image_predictions_case_type,True,False,False
+btree,run_image_predictions,CREATE INDEX idx_run_image_predictions_run_id ON public.run_image_predictions USING btree (run_id),idx_run_image_predictions_run_id,True,False,False
+btree,run_image_predictions,CREATE INDEX idx_run_image_predictions_split ON public.run_image_predictions USING btree (split_name),idx_run_image_predictions_split,True,False,False
+gin,run_io_records,CREATE INDEX idx_run_io_records_clinical_metadata_gin ON public.run_io_records USING gin (clinical_metadata),idx_run_io_records_clinical_metadata_gin,True,False,False
+btree,run_io_records,CREATE INDEX idx_run_io_records_created_at ON public.run_io_records USING btree (created_at),idx_run_io_records_created_at,True,False,False
+gin,run_io_records,CREATE INDEX idx_run_io_records_model_metadata_gin ON public.run_io_records USING gin (model_metadata),idx_run_io_records_model_metadata_gin,True,False,False
+btree,run_io_records,CREATE INDEX idx_run_io_records_model_name ON public.run_io_records USING btree (model_name),idx_run_io_records_model_name,True,False,False
+btree,run_io_records,CREATE INDEX idx_run_io_records_run_id ON public.run_io_records USING btree (run_id),idx_run_io_records_run_id,True,False,False
+btree,run_io_records,CREATE INDEX idx_run_io_records_run_type ON public.run_io_records USING btree (run_type),idx_run_io_records_run_type,True,False,False
+btree,run_io_records,CREATE INDEX idx_run_io_records_script_name ON public.run_io_records USING btree (script_name),idx_run_io_records_script_name,True,False,False
+btree,run_io_records,CREATE INDEX ix_run_io_records_dataset_materialization_id ON public.run_io_records USING btree (dataset_materialization_id),ix_run_io_records_dataset_materialization_id,True,False,False
+btree,run_io_records,CREATE INDEX ix_run_io_records_dataset_version_id ON public.run_io_records USING btree (dataset_version_id),ix_run_io_records_dataset_version_id,True,False,False
+btree,run_lineage,CREATE INDEX idx_run_lineage_checkpoint_artifact ON public.run_lineage USING btree (checkpoint_artifact_id),idx_run_lineage_checkpoint_artifact,True,False,False
+btree,run_lineage,CREATE INDEX idx_run_lineage_checkpoint_path ON public.run_lineage USING btree (checkpoint_path),idx_run_lineage_checkpoint_path,True,False,False
+btree,run_lineage,CREATE INDEX idx_run_lineage_child_run_id ON public.run_lineage USING btree (child_run_id),idx_run_lineage_child_run_id,True,False,False
+btree,run_lineage,CREATE INDEX idx_run_lineage_model_version ON public.run_lineage USING btree (model_version_id),idx_run_lineage_model_version,True,False,False
+btree,run_lineage,CREATE INDEX idx_run_lineage_parent_run_id ON public.run_lineage USING btree (parent_run_id),idx_run_lineage_parent_run_id,True,False,False
+btree,run_lineage,CREATE INDEX idx_run_lineage_relationship_type ON public.run_lineage USING btree (relationship_type),idx_run_lineage_relationship_type,True,False,False
+btree,run_lineage,CREATE UNIQUE INDEX uq_run_lineage_single_evaluation_training_parent ON public.run_lineage USING btree (child_run_id) WHERE (relationship_type = 'evaluates_checkpoint_from'::text),uq_run_lineage_single_evaluation_training_parent,True,True,False
+btree,run_metrics,CREATE INDEX idx_run_metrics_name ON public.run_metrics USING btree (metric_name),idx_run_metrics_name,True,False,False
+btree,run_metrics,CREATE INDEX idx_run_metrics_run_id ON public.run_metrics USING btree (run_id),idx_run_metrics_run_id,True,False,False
+btree,run_model_deployments,CREATE INDEX idx_run_model_deployments_deployment ON public.run_model_deployments USING btree (deployed_model_version_id),idx_run_model_deployments_deployment,True,False,False
+btree,run_model_deployments,CREATE INDEX idx_run_model_deployments_model_version ON public.run_model_deployments USING btree (model_version_id),idx_run_model_deployments_model_version,True,False,False
+btree,run_model_deployments,CREATE UNIQUE INDEX uq_run_model_deployments_primary ON public.run_model_deployments USING btree (run_id) WHERE (role = 'primary'::text),uq_run_model_deployments_primary,True,True,False
+btree,run_threshold_calibration,CREATE INDEX idx_run_threshold_calibration_artifact ON public.run_threshold_calibration USING btree (calibration_artifact_id),idx_run_threshold_calibration_artifact,True,False,False
+btree,run_threshold_calibration,CREATE INDEX idx_run_threshold_calibration_model_version ON public.run_threshold_calibration USING btree (model_version_id),idx_run_threshold_calibration_model_version,True,False,False
+btree,run_threshold_calibration,CREATE INDEX idx_run_threshold_calibration_run_id ON public.run_threshold_calibration USING btree (run_id),idx_run_threshold_calibration_run_id,True,False,False
+btree,runs,CREATE INDEX idx_runs_dataset_id ON public.runs USING btree (dataset_id),idx_runs_dataset_id,True,False,False
+gin,runs,CREATE INDEX idx_runs_execution_parameters_gin ON public.runs USING gin (execution_parameters),idx_runs_execution_parameters_gin,True,False,False
+btree,runs,CREATE INDEX idx_runs_run_type ON public.runs USING btree (run_type),idx_runs_run_type,True,False,False
+btree,runs,CREATE INDEX idx_runs_started_at ON public.runs USING btree (started_at),idx_runs_started_at,True,False,False
+btree,runs,CREATE INDEX idx_runs_status ON public.runs USING btree (status),idx_runs_status,True,False,False
+btree,runs,CREATE INDEX idx_runs_training_release_status ON public.runs USING btree (release_status) WHERE (run_type = 'training'::text),idx_runs_training_release_status,True,False,False
+btree,runs,CREATE INDEX ix_runs_dataset_version_id ON public.runs USING btree (dataset_version_id),ix_runs_dataset_version_id,True,False,False
+btree,runs,CREATE UNIQUE INDEX uq_runs_single_productive_stage2 ON public.runs USING btree (release_status) WHERE ((run_type = 'training'::text) AND (release_status = 'productive_stage2'::text)),uq_runs_single_productive_stage2,True,True,False
+btree,scientific_cases,"CREATE INDEX ix_scientific_cases_status_created ON public.scientific_cases USING btree (status, created_at DESC)",ix_scientific_cases_status_created,True,False,False
+btree,scientific_cases,CREATE INDEX ix_scientific_cases_subject ON public.scientific_cases USING btree (subject_id),ix_scientific_cases_subject,True,False,False
+btree,scientific_reviews,"CREATE INDEX ix_scientific_reviews_actor_created ON public.scientific_reviews USING btree (actor_user_id, created_at DESC, id DESC)",ix_scientific_reviews_actor_created,True,False,False
+btree,scientific_reviews,"CREATE INDEX ix_scientific_reviews_entity_created ON public.scientific_reviews USING btree (entity_type, entity_id, created_at, id)",ix_scientific_reviews_entity_created,True,False,False
+btree,scientific_validation_annotation_events,"CREATE INDEX ix_validation_annotation_events_actor_created ON public.scientific_validation_annotation_events USING btree (actor_user_id, created_at DESC, id DESC)",ix_validation_annotation_events_actor_created,True,False,False
+btree,scientific_validation_annotation_events,"CREATE INDEX ix_validation_annotation_events_annotation_created ON public.scientific_validation_annotation_events USING btree (annotation_id, created_at, id)",ix_validation_annotation_events_annotation_created,True,False,False
+btree,scientific_validation_annotations,"CREATE INDEX ix_validation_annotations_general_target ON public.scientific_validation_annotations USING btree (target_type, cell_detection_id, sample_id, created_at, id) WHERE (validation_session_id IS NULL)",ix_validation_annotations_general_target,True,False,False
+btree,scientific_validation_annotations,"CREATE INDEX ix_validation_annotations_session_analysis ON public.scientific_validation_annotations USING btree (validation_session_id, analysis_run_id, created_at, id) WHERE ((target_type)::text = 'analysis'::text)",ix_validation_annotations_session_analysis,True,False,False
+btree,scientific_validation_annotations,"CREATE INDEX ix_validation_annotations_session_category ON public.scientific_validation_annotations USING btree (validation_session_id, category, created_at, id)",ix_validation_annotations_session_category,True,False,False
+btree,scientific_validation_annotations,"CREATE INDEX ix_validation_annotations_session_cell ON public.scientific_validation_annotations USING btree (validation_session_id, cell_detection_id, created_at, id) WHERE ((target_type)::text = 'cell'::text)",ix_validation_annotations_session_cell,True,False,False
+btree,scientific_validation_annotations,"CREATE INDEX ix_validation_annotations_session_created ON public.scientific_validation_annotations USING btree (validation_session_id, created_at, id)",ix_validation_annotations_session_created,True,False,False
+btree,scientific_validation_annotations,"CREATE INDEX ix_validation_annotations_session_sample ON public.scientific_validation_annotations USING btree (validation_session_id, sample_id, created_at, id) WHERE ((target_type)::text = 'sample'::text)",ix_validation_annotations_session_sample,True,False,False
+btree,scientific_validation_sessions,"CREATE INDEX ix_validation_sessions_creator_created ON public.scientific_validation_sessions USING btree (created_by, created_at DESC, id DESC)",ix_validation_sessions_creator_created,True,False,False
+btree,scientific_validation_sessions,"CREATE INDEX ix_validation_sessions_status_created ON public.scientific_validation_sessions USING btree (status, created_at DESC, id DESC)",ix_validation_sessions_status_created,True,False,False
+btree,smear_analysis_summaries,"CREATE INDEX ix_smear_analysis_summaries_analysis_created ON public.smear_analysis_summaries USING btree (analysis_run_id, created_at DESC, id DESC)",ix_smear_analysis_summaries_analysis_created,True,False,False
+btree,smear_analysis_summaries,"CREATE INDEX ix_smear_analysis_summaries_detection_created ON public.smear_analysis_summaries USING btree (detection_run_id, created_at DESC, id DESC)",ix_smear_analysis_summaries_detection_created,True,False,False
+btree,smear_analysis_summaries,"CREATE INDEX ix_smear_analysis_summaries_outcome_created ON public.smear_analysis_summaries USING btree (outcome, created_at DESC, id DESC)",ix_smear_analysis_summaries_outcome_created,True,False,False
+btree,smear_slides,CREATE INDEX ix_smear_slides_sample ON public.smear_slides USING btree (sample_id),ix_smear_slides_sample,True,False,False
+btree,smear_slides,"CREATE INDEX ix_smear_slides_status_created ON public.smear_slides USING btree (status, created_at DESC)",ix_smear_slides_status_created,True,False,False
+btree,stage2_model_publication_events,"CREATE INDEX idx_stage2_publication_events_publication ON public.stage2_model_publication_events USING btree (publication_id, event_at)",idx_stage2_publication_events_publication,True,False,False
+btree,stage2_model_publications,"CREATE INDEX idx_stage2_publication_candidates ON public.stage2_model_publications USING btree (datasource, scope, is_active, published_at DESC)",idx_stage2_publication_candidates,True,False,False
+btree,stage2_model_publications,"CREATE UNIQUE INDEX uq_stage2_publication_active_version ON public.stage2_model_publications USING btree (model_version_id, scope) WHERE is_active",uq_stage2_publication_active_version,True,True,False
+btree,train_execution_records,CREATE UNIQUE INDEX train_event_id_unique ON public.train_execution_records USING btree (event_id) WHERE (event_id IS NOT NULL),train_event_id_unique,True,True,False
+btree,train_execution_records,"CREATE UNIQUE INDEX train_event_sequence_unique ON public.train_execution_records USING btree (run_id, event_sequence) WHERE (event_sequence IS NOT NULL)",train_event_sequence_unique,True,True,False
+btree,train_execution_sessions,"CREATE UNIQUE INDEX uq_global_train_active ON public.train_execution_sessions USING btree ((true)) WHERE (state = ANY (ARRAY['active'::text, 'completed'::text]))",uq_global_train_active,True,True,False
+btree,training_history,CREATE INDEX idx_training_history_run_id ON public.training_history USING btree (run_id),idx_training_history_run_id,True,False,False
+btree,evaluations,CREATE UNIQUE INDEX uq_evaluation_final_training ON public.evaluations USING btree (run_id) WHERE (evaluation_role = 'training_validation_final'::text),uq_evaluation_final_training,True,True,False
+btree,evaluations,"CREATE INDEX ix_evaluation_comparison ON public.evaluations USING btree (dataset_version_id, comparison_contract_hash, split, created_at, id)",ix_evaluation_comparison,True,False,False
+btree,xai_evidence,"CREATE INDEX ix_xai_same_image ON public.xai_evidence USING btree (input_sha256, input_contract_hash, model_version_id, method_configuration_id, generated_at, id)",ix_xai_same_image,True,False,False
+btree,xai_evidence,"CREATE INDEX ix_xai_evaluation ON public.xai_evidence USING btree (evaluation_id, method_configuration_id)",ix_xai_evaluation,True,False,False
+btree,evaluations,"CREATE UNIQUE INDEX uq_e04_event_role ON public.evaluations USING btree (source_event_id, evaluation_role) WHERE ((source_kind = 'e10'::text) AND (evaluation_role = ANY (ARRAY['calibration_default'::text, 'calibration_selected'::text])))",uq_e04_event_role,True,True,False
+btree,evaluations,"CREATE UNIQUE INDEX uq_e04_contract_role ON public.evaluations USING btree (run_id, training_run_id, model_version_id, checkpoint_artifact_id, dataset_version_id, population_hash, protocol_version, protocol_hash, input_contract_hash, evaluation_role) NULLS NOT DISTINCT WHERE ((source_kind = 'e10'::text) AND (evaluation_role = ANY (ARRAY['calibration_default'::text, 'calibration_selected'::text])))",uq_e04_contract_role,True,True,False
+btree,xai_evaluation_members,"CREATE INDEX ix_xai_member_evidence ON public.xai_evaluation_members USING btree (xai_evidence_id, evaluation_id)",ix_xai_member_evidence,True,False,False
+btree,xai_evidence,CREATE INDEX ix_xai_method_configuration ON public.xai_evidence USING btree (method_configuration_id),ix_xai_method_configuration,True,False,False
+btree,xai_quantitative_evaluations,"CREATE INDEX ix_xai_metric_protocol ON public.xai_quantitative_evaluations USING btree (protocol_id, metric_name, evaluated_at)",ix_xai_metric_protocol,True,False,False
+btree,xai_quantitative_evaluations,CREATE INDEX ix_xai_reference_annotation ON public.xai_quantitative_evaluations USING btree (reference_annotation_id),ix_xai_reference_annotation,True,False,False
+btree,stage2_model_publications,"CREATE UNIQUE INDEX uq_cell_active_publication ON public.stage2_model_publications USING btree (datasource, scope) WHERE is_active",uq_cell_active_publication,True,True,False
+btree,deployed_model_versions,"CREATE UNIQUE INDEX uq_cell_active_deployment ON public.deployed_model_versions USING btree (environment, alias) WHERE ((status = 'active'::text) AND (environment = 'stage2'::text) AND (alias = 'default'::text))",uq_cell_active_deployment,True,True,False

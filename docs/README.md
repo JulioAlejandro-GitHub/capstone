@@ -23,6 +23,18 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 
 ## Fuentes operativas canónicas
 
+CAPSTONE-DB-01 — [Cierre de Fase 1: auditoría PostgreSQL](audits/capstone_db_01/06_phase1_closure.md)
+(`HISTORICAL_AUDIT`, 2026-10-12): respaldo e inventario verificados; **NO APROBABLE
+para limpieza general**, con clasificación semántica parcial. DB-01 incorpora la
+aclaración del usuario: `CAMPAIGN_DATABASE_OPERATION_FAILED`, sin fallo de red demostrado. Incluye
+[inventario](audits/capstone_db_01/01_postgresql_inventory.md),
+[restricciones](audits/capstone_db_01/02_constraints_classification.md),
+[errores conocidos](audits/capstone_db_01/03_known_errors_analysis.md),
+[dependencias](audits/capstone_db_01/04_code_dependencies.md),
+[propuesta](audits/capstone_db_01/05_remediation_proposal.md),
+[bitácora](audits/capstone_db_01/commands_and_evidence.md) y anexos estructurales/de búsqueda
+enlazados desde esos informes. Sin cambios funcionales ni inicio de Fase 2.
+
 Auditoría C2.12: [Integración PostgreSQL y calibración — APROBADO](audits/clinical_calibration_c2_12/README.md)
 (`HISTORICAL_AUDIT`, 2026-10-04; cierre operativo C2.12.2: suite E2E real PASSED,
 limpieza acreditada, base operativa intacta). Conserva el bloqueo inicial C2.12/C2.12.1

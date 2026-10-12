@@ -1,0 +1,12 @@
+{
+  "checked_at_utc": "2026-10-12T12:36:04.787953+00:00",
+  "backup_manifest_sha256": "710d750013048dc00d3361facbbcc32842d9c0c51020512195b4a5adf1d1af3a",
+  "backup_files_verified": 19,
+  "backup_hashes_match": true,
+  "backup_permissions_pass": true,
+  "backup_git_exclusion_pass": true,
+  "catalog_copy_matches": true,
+  "document_links_pass": true,
+  "schema_unchanged": true,
+  "clinical_data_in_reports": "No row-level clinical data exported; aggregate counts only."
+}
