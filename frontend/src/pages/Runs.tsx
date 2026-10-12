@@ -349,7 +349,7 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
       children.evaluations.forEach((run) => {
         if (run.source_kind === 'assessment_e6') {
           const key = `assessment:${run.attempt_id}`;
-          options.set(key, { value: key, label: `EVALUATE · E6 · ${run.split.toUpperCase()} · ${visibleRunId(run.attempt_id)}` });
+          options.set(key, { value: key, label: `${run.split === 'test' ? 'TEST' : 'EVALUATE'} · E6 · ${run.split.toUpperCase()} · ${visibleRunId(run.attempt_id)}` });
         } else addOption(run.run_id, run.run_name, run.run_type);
       });
       children.explainabilities.forEach((run) => run.source_kind === 'assessment_explain_e6'

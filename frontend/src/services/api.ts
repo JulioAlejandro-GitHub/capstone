@@ -1,6 +1,7 @@
 import type { ScientificResult } from '../components/ScientificResults';
 import type {
   AssessmentDetail,
+  AssessmentChoice,
   AssessmentArtifact,
   CheckpointPolicySummary,
   ClinicalDashboard,
@@ -1080,6 +1081,10 @@ export const api = {
       { datasource, limit },
       { signal },
     );
+  },
+
+  getAssessments(offset = 0, signal?: AbortSignal) {
+    return request<{items: AssessmentChoice[]}>(`/assessments`, {limit: 100, offset}, {signal});
   },
 
   getAssessmentArtifacts(attemptId: string, offset = 0, signal?: AbortSignal) {

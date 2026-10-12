@@ -46,7 +46,7 @@ export function RunSummaryRow({
         </span>
         {processKind === 'training' ? (
           <span className="report-muted" title={run.dataset_version_id ?? undefined}>
-            dataset-version-id: {run.dataset_version_id || 'No registrado 2'}
+            dataset-version-id: {run.dataset_version_id || 'No registrado'}
           </span>
         ) : null}
         <div className="report-inline-facts">

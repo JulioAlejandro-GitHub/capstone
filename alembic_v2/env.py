@@ -23,6 +23,9 @@ def migrate():
         "V2_OFFLINE_EXECUTION_DISABLED_USE_STATIC_VALIDATOR",
     )
     opts = context.get_x_argument(as_dictionary=True)
+    if opts.get('exec1') == 'true':
+        from alembic_v2.exec1 import migrate_exec1
+        return migrate_exec1()
     if opts.get('activation_migration') == 'true':
         from alembic_v2.activation import migrate_activation
         return migrate_activation(config, opts)

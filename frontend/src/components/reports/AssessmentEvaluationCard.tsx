@@ -16,7 +16,7 @@ export function AssessmentEvaluationSummary({ assessment }: { assessment: Assess
       <StatusBadge status={assessment.state} />
     </header>
     <div className="lineage-child-card__identity">
-      <strong>EVALUATE · {assessment.split.toUpperCase()}</strong>
+      <strong>{assessment.split === 'test' ? 'TEST' : 'EVALUATE'} · {assessment.split.toUpperCase()}</strong>
       <span>Intento: {assessment.attempt_id}</span>
       <span>Propósito: {assessment.purpose}</span>
       <span>Finalización: {assessment.finished_at ? new Date(assessment.finished_at).toLocaleString('es-CL') : 'Pendiente'}</span>
@@ -29,6 +29,10 @@ export function AssessmentEvaluationSummary({ assessment }: { assessment: Assess
         <MetricChip label="Specificity" value={metrics.specificity} />
         <MetricChip label="Precision" value={metrics.precision} />
         <MetricChip label="F2" value={metrics.f2} />
+        <MetricChip label="F1" value={metrics.f1 ?? null} />
+        <MetricChip label="Balanced accuracy" value={metrics.balanced_accuracy ?? null} />
+        <MetricChip label="ROC-AUC" value={metrics.roc_auc ?? null} />
+        <MetricChip label="PR-AUC" value={metrics.pr_auc ?? null} />
       </div>
       <span>{metrics.count.toLocaleString('es-CL')} resultados persistidos</span>
     </div> : <p className="report-muted">{assessment.state === 'active'

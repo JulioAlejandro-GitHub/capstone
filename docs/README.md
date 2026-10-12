@@ -23,6 +23,9 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 
 ## Fuentes operativas canónicas
 
+CAPSTONE EXEC.1 — [Contrato de ejecución e historial](exec1_execution_contract.md)
+(`CURRENT_DOC`, 2026-10-12): ocho entradas comunes, TEST independiente, persistencia sintética verificada, historial y selección explícita SCC. Migración PostgreSQL aplicada sin cambiar evidencia histórica. El umbral predeterminado se recupera del TRAIN, incluso si su calibración estaba desactivada.
+
 CAPSTONE-DB-02C — [Ejecución de campañas independiente de Alembic](audits/capstone_db_02c_alembic_execution.md)
 (`CURRENT_DOC`, 2026-10-12): implementación técnica en `fix/capstone-db-02c`;
 348 pruebas DB-02C/regresión y 49 pruebas DB-02B PASS. Preparación de TRAIN demostrada

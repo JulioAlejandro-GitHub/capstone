@@ -97,7 +97,7 @@ def install_fixtures(monkeypatch: pytest.MonkeyPatch, values: dict) -> None:
 
     monkeypatch.setattr(lineage_children, "read_only_transaction", connection)
     monkeypatch.setattr(training_summaries, "read_only_transaction", connection)
-    from app.routes import assessments
+    from app.repositories import assessments
     monkeypatch.setattr(assessments, "read_only_transaction", connection)
 
 
@@ -117,6 +117,7 @@ def install_fixtures(monkeypatch: pytest.MonkeyPatch, values: dict) -> None:
 def test_selection_counts_pagination_and_legacy_compatibility(
     monkeypatch, states, legacy, explain, projected, expected, selected,
 ) -> None:
+    expected = len(states) + int(legacy and not projected)
     install_fixtures(monkeypatch, fixtures(states, legacy, explain, projected))
     summary = training_summaries.list_training_summaries("malaria", 100).items[0]
     result = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100)
@@ -125,8 +126,9 @@ def test_selection_counts_pagination_and_legacy_compatibility(
     assert result.total_count == expected + int(explain)
     e6 = [item for item in result.evaluations if item.source_kind == "assessment_e6"]
     if selected:
-        assert len(e6) == 1
-        item = e6[0]
+        assert len(e6) == len(states)
+        assert {str(item.attempt_id) for item in e6} == {attempt_id(n) for n in range(1,len(states)+1)}
+        item = next(item for item in e6 if str(item.attempt_id) == attempt_id(selected))
         assert str(item.attempt_id) == attempt_id(selected)
         assert str(item.identity_id) == IDENTITY
         assert str(item.training_run_id) == TRAIN
@@ -239,8 +241,8 @@ def test_explain_attempt_selection(monkeypatch, states, expected):
     explain_fixture(values, 0, states)
     install_fixtures(monkeypatch, values)
     children = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100)
-    assert children.explainability_count == len(children.explainabilities) == 1
-    child = children.explainabilities[0]
+    assert children.explainability_count == len(children.explainabilities) == len(states)
+    child = next(item for item in children.explainabilities if item.state == expected)
     assert child.state == expected
     assert (child.verification is not None) == (expected == "verified")
     assert (child.result_count is not None) == (expected == "verified")
@@ -253,12 +255,36 @@ def test_more_than_one_hundred_children_pages(monkeypatch):
     install_fixtures(monkeypatch, values)
     first = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100)
     second = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100, offset=100)
-    assert first.total_count == second.total_count == 106
-    assert first.explainability_count == second.explainability_count == 105
+    assert first.total_count == second.total_count == 211
+    assert first.explainability_count == second.explainability_count == 210
     assert len(first.evaluations) + len(first.explainabilities) == 100
-    assert len(second.evaluations) + len(second.explainabilities) == 6
-    assert first.truncated and not second.truncated
-    ids = [x.attempt_id for page in (first, second) for x in (*page.evaluations, *page.explainabilities)]
-    assert len(set(ids)) == 106
+    assert len(second.evaluations) + len(second.explainabilities) == 100
+    third = lineage_children.get_training_lineage_children(UUID(TRAIN), "malaria", 100, offset=200)
+    assert len(third.evaluations) + len(third.explainabilities) == 11
+    assert first.truncated and second.truncated and not third.truncated
+    ids = [x.attempt_id for page in (first, second, third) for x in (*page.evaluations, *page.explainabilities)]
+    assert len(set(ids)) == 211
     assert "assessment_results" not in lineage_children.LINEAGE_CHILDREN_SQL
     assert "assessment_artifacts" not in lineage_children.LINEAGE_CHILDREN_SQL
+
+
+@pytest.mark.anyio
+async def test_test_history_list_selects_exact_attempt_without_mixing_metrics(monkeypatch):
+    values = fixtures(('verified',),False,False,False)
+    values['assessment_identities'][0]['identity'].update(split='test',purpose='final')
+    second_identity,second_attempt = str(UUID(int=5001)),str(UUID(int=5002))
+    values['assessment_identities'].append({**values['assessment_identities'][0],'id':second_identity})
+    values['assessment_attempts'].append({**values['assessment_attempts'][0],
+        'id':second_attempt,'identity_id':second_identity,
+        'verification':{'count':2,'sha256':'b'*64,'metrics':{**METRICS,'recall':.5}}})
+    install_fixtures(monkeypatch,values)
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url='http://test') as client:
+        response = await client.get('/assessments',params={'training_run_id':TRAIN})
+        assert response.status_code == 200
+        listed = response.json()['items']
+        assert {x['attempt_id'] for x in listed} == {attempt_id(1),second_attempt}
+        assert all(x['split'] == 'test' and x['purpose'] == 'final' for x in listed)
+        first = (await client.get('/assessments/'+attempt_id(1))).json()
+        second = (await client.get('/assessments/'+second_attempt)).json()
+        assert first['verification']['metrics']['recall'] == 1
+        assert second['verification']['metrics']['recall'] == .5

@@ -249,3 +249,50 @@ test('missing artifact is an artifact error and keeps the EXPLAIN detail', () =>
   assert.ok(html.includes('La ejecución permanece registrada'));
   assert.ok(html.includes(attempt));
 });
+
+test('TEST histories keep their own IDs and scientific metrics', () => {
+  const first = {...assessment, split: 'test', purpose: 'final',
+    verification: {...assessment.verification, metrics: {...metrics, f1:.8, roc_auc:.9, pr_auc:.85, balanced_accuracy:.88}}};
+  const second = {...first, attempt_id: 'second-test', verification: {...first.verification, metrics:{...first.verification.metrics, recall:.5}}};
+  const html = render(React.createElement('div', null, [first,second].map(item =>
+    React.createElement(AssessmentEvaluationCard,{key:item.attempt_id,assessment:item,datasource:'malaria'}))));
+  assert.ok(html.includes('TEST · TEST'));
+  assert.ok(html.includes(attempt) && html.includes('second-test'));
+  assert.ok(html.includes('0.9102') && html.includes('0.5000'));
+  assert.ok(html.includes('ROC-AUC') && html.includes('PR-AUC'));
+});
+
+test('comparison starts without implicit scientific selection', () => {
+  const choices = [{...assessment, kind:'evaluate'}];
+  const comparisonLoader = loader({
+    react: {useState: (initial) => [initial, () => {}]},
+    '../../hooks/useAssessmentChoices': {useAssessmentChoices: () => ({items:choices,loading:false,error:null})},
+    '../../hooks/useAssessment': {useAssessment: () => {throw new Error('Implicit selection forbidden');}},
+  });
+  const {AssessmentComparison} = comparisonLoader('components/reports/AssessmentComparison.tsx');
+  const html = render(React.createElement(AssessmentComparison,{datasource:'malaria'}));
+  assert.ok(html.includes('Sin evidencia seleccionada'));
+  assert.ok(html.includes(attempt));
+  assert.ok(!html.includes('checked=""'));
+});
+
+test('comparison toggles the exact execution ID while retaining other selections', () => {
+  let selected = ['older-test'];
+  const comparisonLoader = loader({
+    react: {useState: initial => Array.isArray(initial) ? [selected, updater => {selected=updater(selected);}] : [initial,()=>{}]},
+    '../../hooks/useAssessmentChoices': {useAssessmentChoices: () => ({items:[{...assessment,kind:'evaluate'}],loading:false,error:null})},
+    '../../hooks/useAssessment': {useAssessment: () => ({data:null,loading:false,error:null})},
+  });
+  const {AssessmentComparison} = comparisonLoader('components/reports/AssessmentComparison.tsx');
+  const tree = AssessmentComparison({datasource:'malaria'});
+  function find(node) {
+    if (!node?.props) return null;
+    if (node.type === 'input') return node;
+    return React.Children.toArray(node.props.children).map(find).find(Boolean);
+  }
+  const checkbox = find(tree);
+  checkbox.props.onChange({target:{checked:true}});
+  assert.deepEqual([...selected],['older-test',attempt]);
+  checkbox.props.onChange({target:{checked:false}});
+  assert.deepEqual([...selected],['older-test']);
+});

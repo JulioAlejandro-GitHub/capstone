@@ -12,7 +12,7 @@ from src.malaria_dl.assessment.contracts import (
     threshold,
     verify_rows,
 )
-from src.malaria_dl.assessment.service import explanation_spec, run
+from src.malaria_dl.assessment.service import explanation_spec, run, verify
 from src.malaria_dl.campaigns.contracts import digest
 from src.malaria_dl.data.input_contract import make_input_contract
 from src.malaria_dl.execution.artifacts import file_identity
@@ -146,13 +146,13 @@ class Runtime:
         )
 
 
-def test_exact_reuse_does_not_predict(tmp_path):
+def test_repeated_execution_predicts_independently(tmp_path):
     repo = MemoryRepository()
     v = value(tmp_path)
     Runtime.calls = 0
     a = run(repo, v, tmp_path, Runtime)
     b = run(repo, v, tmp_path, Runtime)
-    assert a["id"] == b["id"] and Runtime.calls == 2 and a["state"] == "verified"
+    assert a["id"] != b["id"] and Runtime.calls == 4 and a["state"] == "verified"
     assert a["verification"]["metrics"]["confusion_matrix"] == [[1, 0], [0, 1]]
     assert not list(tmp_path.glob("*.csv"))
 
@@ -199,14 +199,12 @@ def test_partial_failure_retry_new_attempt(tmp_path):
     )
 
 
-def test_active_response_no_predict(tmp_path):
+def test_active_execution_does_not_replace_new_work(tmp_path):
     repo = MemoryRepository()
     v = value(tmp_path)
     a, _ = repo.reserve(v, tmp_path)
-    assert (
-        run(repo, v, tmp_path, lambda v: pytest.fail("predict forbidden"))["id"]
-        == a["id"]
-    )
+    b = run(repo, v, tmp_path, Runtime)
+    assert b["id"] != a["id"] and repo.attempt(a["id"])["state"] == "active"
 
 
 @pytest.mark.parametrize("fault", ["missing", "changed", "results"])
@@ -221,7 +219,7 @@ def test_corruption_never_reused(tmp_path, fault):
     else:
         repo.rows[a["id"]].pop(v["samples"][0]["sample_id"])
     with pytest.raises(ValueError):
-        run(repo, v, tmp_path, Runtime)
+        verify(repo, a, repo.identity(a["identity_id"]))
 
 
 def test_threshold_no_implicit_clinical_fallback():
@@ -244,7 +242,7 @@ def test_threshold_no_implicit_clinical_fallback():
 
 def test_test_forbidden_development(tmp_path):
     v = value(tmp_path)
-    with pytest.raises(AssessmentError, match="TEST"):
+    with pytest.raises(AssessmentError, match="SPLIT_PURPOSE_CONFLICT"):
         identity(
             v["model"],
             v["dataset"],
@@ -276,7 +274,7 @@ def test_explanations_artifacts_separate_and_tamper_rejected(tmp_path):
     )
     Path(repo.artifacts(a["id"])[0]["path"]).write_bytes(b"corrupt")
     with pytest.raises(AssessmentError):
-        run(repo, v, tmp_path, Runtime)
+        verify(repo, a, repo.identity(a["identity_id"]))
 
 
 def test_reconstruction_rejects_conflicting_labels(tmp_path):
@@ -487,10 +485,10 @@ def test_campaign_inspection_keeps_unaccepted_visible(monkeypatch):
 
 
 def test_cli_rejects_legacy_implicit_batch():
-    from src.malaria_dl.assessment.cli import parser
+    from src.malaria_dl.assessment.cli import main
 
     with pytest.raises(SystemExit):
-        parser("evaluate", batch=True).parse_args(
+        main("evaluate", batch=True, argv=
             ["--dataset-version-id", str(uuid4())]
         )
 

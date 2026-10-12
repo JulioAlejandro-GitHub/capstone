@@ -145,6 +145,7 @@ class ExecutionRepository(CampaignRepository):
         c: Connection, run: str, config: dict, dataset: dict, environment: dict,
         experiment: str | UUID | None = None, evidence_id: str | None = None,
         campaign_id: str | UUID | None = None, runtime: dict | None = None,
+        source_training_run_id: str | None = None,
     ) -> None:
         # Relational identity must be unambiguous; never infer from folders/dates.
         models = (
@@ -208,6 +209,7 @@ class ExecutionRepository(CampaignRepository):
                 {
                     "model_configuration_e2": snapshot,
                     "dataset_verification_evidence_id": evidence_id,
+                    **({"source_training_run_id": identifier(source_training_run_id)} if source_training_run_id else {}),
                     # Observed runtime (host, OS, packages, code hash): recorded for
                     # reproducibility, never compared against the campaign reference.
                     **({"runtime_environment": runtime} if runtime is not None else {}),
@@ -613,11 +615,13 @@ class ExecutionRepository(CampaignRepository):
             "reasons": reasons,
         }
 
-    def standalone(self, config, dataset, environment, root, host, pid, evidence_id):
+    def standalone(self, config, dataset, environment, root, host, pid, evidence_id,
+                   campaign_id=None, source_training_run_id=None):
         run, owner = str(uuid4()), str(uuid4())
         with self.transaction() as c:
             self._create_run(
-                c, run, config, dataset, environment, evidence_id=evidence_id
+                c, run, config, dataset, environment, evidence_id=evidence_id,
+                campaign_id=campaign_id, source_training_run_id=source_training_run_id,
             )
             execute(
                 c,

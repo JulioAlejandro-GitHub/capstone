@@ -121,8 +121,6 @@ def normalize_required_splits(
         raise GovernedDatasetError("DATASET_SPLIT_INVALID")
     if len(set(required_splits)) != len(required_splits):
         raise GovernedDatasetError("DATASET_SPLIT_DUPLICATE")
-    if "test" in required_splits and test_authorized is not True:
-        raise GovernedDatasetError("TEST_FINAL_LOCK_REQUIRED")
     return tuple(s for s in ("train", "val", "test") if s in required_splits)
 
 

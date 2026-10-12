@@ -162,3 +162,27 @@ test-db02c:
 	trap 'docker compose -p capstone-db02c-test -f docker-compose.db02c-test.yml down --volumes' EXIT; \
 	docker compose -p capstone-db02c-test -f docker-compose.db02c-test.yml up -d --wait db02c-db; \
 	docker compose -p capstone-db02c-test -f docker-compose.db02c-test.yml run --rm --no-deps db02c-tests
+
+.PHONY: test-exec1 test-exec1-frontend
+test-exec1:
+	docker compose exec -T -w /app/malaria_dl_local_project backend python -m pytest -q tests/test_exec1.py tests/test_assessment_e6.py tests/test_dataset_split_isolation.py
+
+test-exec1-frontend:
+	docker compose exec -T frontend npm test
+	docker compose exec -T frontend npm run build
+
+.PHONY: test-exec1-postgres
+test-exec1-postgres:
+	docker compose cp alembic_v2/versions/20261012_01_exec1.py backend:/tmp/exec1_migration.py
+	docker compose exec -T -w /app/malaria_dl_local_project backend python -m pytest -q tests/test_exec1_postgres.py
+
+.PHONY: test-exec1-backend
+test-exec1-backend:
+	docker compose exec -T backend python -m pytest -q tests/test_e6_lineage_read_only.py malaria_dl_local_project/tests/test_assessment_api_e6.py
+
+.PHONY: prepare-exec1-postgres test-exec1-train-regression
+prepare-exec1-postgres:
+	python3 scripts/testing/prepare_exec1_postgres.py
+
+test-exec1-train-regression:
+	docker compose exec -T -w /app/malaria_dl_local_project backend python -m pytest -q tests/test_train_checkpoint_policy_args.py tests/test_max_epochs_config.py tests/test_checkpoint_policy.py

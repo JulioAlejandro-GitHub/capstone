@@ -1,31 +1,26 @@
-"""Explicit E6 command contract. Old scientific defaults are not accepted."""
-
+"""EXEC.1: fixed splits and identical script/module orchestration."""
 import argparse
 import json
 
-from .contracts import AssessmentError, require, validate_split_protocol
-from .lineage import campaign_inventory
+from ..campaigns.contracts import CampaignError
+from ..campaigns.repository import identifier
+from ..execution.selection import select_trainings
+from .contracts import require
 from .repository import AssessmentRepository
 from .service import explanation_spec, prepare, run
 
 
-def parser(kind, batch=False):
-    p = argparse.ArgumentParser(description="E6 exact lineage; PostgreSQL results")
-    if batch:
-        p.add_argument("--campaign-id", required=True)
-    else:
-        p.add_argument("--source-training-run-id")
-        p.add_argument("--model-version-id")
-        p.add_argument("--recover-attempt-id")
-    p.add_argument("--dataset-version-id")
-    p.add_argument("--model", help="Modelo esperado; requiere el linaje explícito del TRAIN.")
-    p.add_argument("--dataset-dir", help="Ubicación de la misma materialización gobernada.")
+def parser(kind: str, batch: bool = False) -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(description=f"EXEC.1 {kind.upper()}: Campaign-ID and/or Source-Training-Run-ID")
+    p.add_argument("--campaign-id", type=identifier)
+    p.add_argument("--source-training-run-id", type=identifier)
+    p.add_argument("--model-version-id", type=identifier)
+    p.add_argument("--dataset-version-id", type=identifier)
+    p.add_argument("--model")
+    p.add_argument("--dataset-dir")
     p.add_argument("--inspect", action="store_true")
-    p.add_argument("--split", choices=("train", "val", "test"))
-    p.add_argument("--purpose", choices=("development", "final"))
-    p.add_argument("--protocol", help="Explicit JSON object; never a result sidecar")
-    p.add_argument("--threshold")
-    p.add_argument("--seed", type=int)
+    p.add_argument("--threshold", default="auto", help="auto: recover the threshold recorded by TRAIN; clinical: require VAL calibration; or an explicit number")
+    p.add_argument("--seed", type=int, default=42)
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--artifact-root", default="artifacts/assessments")
     if kind == "explain":
@@ -34,140 +29,57 @@ def parser(kind, batch=False):
         p.add_argument("--class-id", type=int, choices=(0, 1), default=1)
         p.add_argument("--num-samples", type=int)
         p.add_argument("--background-sample-id", action="append", default=[])
-        if not batch:
-            p.add_argument("--evaluation-id")
+        p.add_argument("--evaluation-id")
     return p
 
 
-def main(kind="evaluate", batch=False, argv=None):
+def main(kind: str = "evaluate", batch: bool = False, argv: list[str] | None = None) -> int:
+    p = parser(kind, batch)
+    args = p.parse_args(argv)
+    if not (args.campaign_id or args.source_training_run_id):
+        p.error("Se requiere --campaign-id y/o --source-training-run-id")
     from ..execution.local_launch import bootstrap
     bootstrap()
-    if parser(kind, batch).parse_args(argv).inspect:
-        # Inspection performs read-only verification, not an execution reservation.
-        return _main(kind, batch, argv)
+    if args.inspect:
+        return _execute(kind, args)
     from ..execution.global_gate import GlobalGate
     with GlobalGate("assessment-" + kind):
-        return _main(kind, batch, argv)
+        return _execute(kind, args)
 
 
-def _main(kind="evaluate", batch=False, argv=None):
-    args = parser(kind, batch).parse_args(argv)
+def _execute(kind: str, args: argparse.Namespace) -> int:
     repository = AssessmentRepository()
     try:
-        if not batch and args.recover_attempt_id:
-            repository.recover(args.recover_attempt_id)
-            print("ASSESSMENT_INTERRUPTED_RETRY_CREATES_NEW_ATTEMPT")
-            return 0
-        if batch and args.inspect and args.split is None:
-            _campaign, items = campaign_inventory(
-                repository, args.campaign_id, args.dataset_version_id
-            )
-            print(
-                json.dumps(
-                    {"campaign_id": args.campaign_id, "members": items}, default=str
-                )
-            )
-            return 0
-        require(
-            all(
-                x is not None
-                for x in (
-                    args.split,
-                    args.purpose,
-                    args.protocol,
-                    args.threshold,
-                    args.seed,
-                )
-            ),
-            "EXPLICIT_PROTOCOL_SPLIT_PURPOSE_THRESHOLD_SEED_REQUIRED",
-        )
-        protocol = json.loads(args.protocol)
-        validate_split_protocol(args.split, args.purpose, protocol)
-        if batch:
-            _campaign, items = campaign_inventory(
-                repository, args.campaign_id, args.dataset_version_id,
-                **({"metadata_only": True} if args.split == "test" else {}),
-            )
-        spec = None
-        if kind == "explain":
-            spec = explanation_spec(
-                args.method,
-                args.layer,
-                args.class_id,
-                args.num_samples,
-                args.background_sample_id,
-            )
-        options = {
-            "dataset_version_id": args.dataset_version_id,
-            "model": args.model,
-            "dataset_dir": args.dataset_dir,
-            "split": args.split,
-            "purpose": args.purpose,
-            "protocol": protocol,
-            "requested_threshold": args.threshold,
-            "seed": args.seed,
-            "batch_size": args.batch_size,
-            "explanation": spec,
-            "inspection": args.inspect,
-        }
-        if batch:
-            output = []
-            for item in items:
-                if not item["eligible"]:
-                    output.append(item)
-                    continue
+        items = select_trainings(repository, args.campaign_id, args.source_training_run_id)
+        split, purpose = ("test", "final") if kind == "test" else ("val", "development")
+        protocol = {"version": "exec1", "splits": [split], "purposes": [purpose],
+                    "allowed_numeric_thresholds": [] if args.threshold in ("auto", "clinical") else [float(args.threshold)]}
+        spec = explanation_spec(args.method, args.layer, args.class_id, args.num_samples,
+                                args.background_sample_id) if kind == "explain" else None
+        output = []
+        for item in items:
+            entry = {"source_training_run_id": str(item["id"])}
+            try:
+                require(item["status"] == "completed", "TRAIN_NOT_COMPLETED")
                 proof = {}
-                value = prepare(
-                    repository,
-                    training_run_id=item["model"]["training_run_id"],
-                    model_version_id=item["model"]["model_version_id"],
-                    verification=proof,
-                    **options,
-                )
+                value = prepare(repository, training_run_id=str(item["id"]),
+                    model_version_id=args.model_version_id, dataset_version_id=args.dataset_version_id,
+                    model=args.model, dataset_dir=args.dataset_dir, split=split, purpose=purpose,
+                    protocol=protocol, requested_threshold=args.threshold, seed=args.seed,
+                    batch_size=args.batch_size, explanation=spec,
+                    evaluation_id=getattr(args, "evaluation_id", None),
+                    inspection=args.inspect, verification=proof)
+                value["campaign_id"] = args.campaign_id or (str(item["campaign_id"]) if item["campaign_id"] else None)
                 if args.inspect:
-                    output.append({"member_id": item["member_id"], "inspection": value,
-                                   "inspection_verification": proof})
-                    continue
-                result = run(repository, value, args.artifact_root)
-                repository.consume(args.campaign_id, item["member_id"], result)
-                output.append(
-                    {
-                        "member_id": item["member_id"],
-                        "attempt_id": str(result["id"]),
-                        "state": result["state"],
-                    }
-                )
-            print(json.dumps(output))
-            return 0 if all("inspection" in x or x.get("state") == "verified" for x in output) else 2
-        proof = {}
-        value = prepare(
-            repository,
-            training_run_id=args.source_training_run_id,
-            model_version_id=args.model_version_id,
-            evaluation_id=getattr(args, "evaluation_id", None),
-            verification=proof,
-            **options,
-        )
-        if args.inspect:
-            print(json.dumps({**value, "inspection_verification": proof}))
-            return 0
-        result = run(repository, value, args.artifact_root)
-        print(
-            json.dumps(
-                {
-                    "attempt_id": str(result["id"]),
-                    "state": result["state"],
-                    "verification": result["verification"],
-                }
-            )
-        )
-        return 0 if result["state"] == "verified" else 2
-    except Exception as exc:  # noqa: BLE001 -- public sanitized CLI boundary
-        # Never print connection strings, SQL parameters, paths or raw driver tracebacks.
-        code = (
-            str(exc)
-            if isinstance(exc, AssessmentError)
-            else "ASSESSMENT_OPERATION_FAILED"
-        )
-        print(code)
+                    entry.update(inspection=value, inspection_verification=proof)
+                else:
+                    result = run(repository, value, args.artifact_root)
+                    entry.update(attempt_id=str(result["id"]), state=result["state"], verification=result["verification"])
+            except Exception as exc:
+                entry.update(state="failed", error=str(exc) if isinstance(exc, CampaignError) else "ASSESSMENT_OPERATION_FAILED")
+            output.append(entry)
+        print(json.dumps(output, default=str))
+        return 0 if all("inspection" in x or x.get("state") == "verified" for x in output) else 2
+    except Exception as exc:
+        print(str(exc) if isinstance(exc, CampaignError) else "ASSESSMENT_OPERATION_FAILED")
         return 2

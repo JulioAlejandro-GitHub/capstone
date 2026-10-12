@@ -15,7 +15,7 @@ export function AssessmentDetail({ datasource }: { datasource: string }) {
   if (loading) return <Loading />;
   if (error || !data) return <div role="alert">{error || 'Evaluación no encontrada.'}</div>;
   return <section className="page">
-    <h1>{data.kind === 'explain' ? 'Explicación E6' : 'Evaluación E6'}</h1>
+    <h1>{data.kind === 'explain' ? 'Explicación E6' : data.identity.split === 'test' ? 'TEST' : 'Evaluación E6'}</h1>
     <Link to={withAllowedQuery(routes.runDetail(data.training_run_id), { datasource })}>Ver TRAIN de origen</Link>
     {data.kind === 'explain' ? <AssessmentExplanationDetail key={data.id} data={data} datasource={datasource} /> : <article className="lineage-child-card lineage-child-card--evaluation">
       <AssessmentEvaluationSummary assessment={{
@@ -30,6 +30,9 @@ export function AssessmentDetail({ datasource }: { datasource: string }) {
         <div><dt>Identidad científica</dt><dd>{data.identity_id}</dd></div>
         <div><dt>TRAIN</dt><dd>{data.training_run_id}</dd></div>
         <div><dt>Número de intento</dt><dd>{data.ordinal}</dd></div>
+        <div><dt>Dataset</dt><dd>{data.identity.dataset?.dataset_version_id ?? 'Sin evidencia'}</dd></div>
+        <div><dt>Umbral</dt><dd>{data.identity.decision?.effective ?? 'Sin evidencia'}</dd></div>
+        <div><dt>Seed / batch size</dt><dd>{data.identity.seed ?? 'N/A'} / {data.identity.batch_size ?? 'N/A'}</dd></div>
         <div><dt>Modelo</dt><dd>{data.identity.model.model_version_id}</dd></div>
         <div><dt>Checkpoint</dt><dd>{data.identity.model.checkpoint_artifact_id}</dd></div>
         <div><dt>Definición de métricas</dt><dd>{data.verification?.metrics?.definition ?? 'Sin métricas verificadas'}</dd></div>

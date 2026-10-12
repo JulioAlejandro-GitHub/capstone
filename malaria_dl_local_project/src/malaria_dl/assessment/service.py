@@ -72,15 +72,6 @@ def prepare(
     verification=None,
 ):
     validate_split_protocol(split, purpose, protocol)
-    locked = None
-    if split == "test":
-        locked = repository.authorize_test_request(
-            training_run_id=training_run_id, model_version_id=model_version_id,
-            dataset_version_id=dataset_version_id, protocol=protocol,
-            requested_threshold=requested_threshold, seed=seed, batch_size=batch_size,
-            explanation=explanation,
-        )
-        require(locked["code"] == inference_environment(explanation), "TEST_FINAL_LOCK_REQUIRED")
     binding, dataset, calibration = resolve(
         repository, training_run_id, model_version_id
     )
@@ -99,7 +90,6 @@ def prepare(
     samples = dataset_samples(
         repository, dataset, split, dataset_version_id, inspection=inspection,
         training_run_id=binding["training_run_id"], dataset_dir=dataset_dir,
-        metadata_only=split == "test",
         verification=verification,
     )
     evaluation = None
@@ -150,15 +140,6 @@ def prepare(
         explanation=explanation,
         evaluation=evaluation,
     )
-    if split == "test":
-        require(value == locked, "TEST_FINAL_LOCK_REQUIRED")
-        verified = dataset_samples(
-            repository, dataset, split, dataset_version_id, inspection=inspection,
-            training_run_id=binding["training_run_id"], dataset_dir=dataset_dir,
-            test_authorized=True,
-            verification=verification,
-        )
-        require(verified == samples, "SAMPLE_IDENTITY_INVALID")
     return value
 
 
@@ -224,6 +205,9 @@ def verify(repository, attempt, value):
 
 
 def run(repository, value, artifact_root, runtime_factory=KerasRuntime):
+    # Each invocation is new evidence, even with identical scientific parameters.
+    from uuid import uuid4
+    value = {**value, "execution_id": str(uuid4())}
     attempt, created = repository.reserve(value, artifact_root)
     if not created:
         if attempt["state"] == "verified":
@@ -237,7 +221,7 @@ def run(repository, value, artifact_root, runtime_factory=KerasRuntime):
         )
         runtime = runtime_factory(
             value
-        )  # final-lock trigger has already authorized the exact identity
+        )
         samples = value["samples"]
         for start in range(0, len(samples), value["batch_size"]):
             batch = samples[start : start + value["batch_size"]]

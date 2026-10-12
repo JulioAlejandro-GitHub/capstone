@@ -90,23 +90,8 @@ def test_val_cli_never_touches_train_or_test(
     repo, snapshot, template = assessment_setup(fixture, monkeypatch)
     repo.consume = lambda *args: None
     monkeypatch.setattr(cli, "AssessmentRepository", lambda: repo)
-    monkeypatch.setattr(
-        cli,
-        "campaign_inventory",
-        lambda *args: (
-            {},
-            [
-                {
-                    "member_id": "member",
-                    "eligible": True,
-                    "model": {
-                        "training_run_id": TRAIN,
-                        "model_version_id": template["model"]["model_version_id"],
-                    },
-                }
-            ],
-        ),
-    )
+    monkeypatch.setattr(cli, "select_trainings", lambda *args: [
+        {"id": TRAIN, "campaign_id": VERSION, "status": "completed"}])
     observed = []
     monkeypatch.setattr(
         cli,
@@ -125,23 +110,12 @@ def test_val_cli_never_touches_train_or_test(
     before = deepcopy(snapshot)
     calls = guard_dataset_io(monkeypatch, fixture.root, ("val",))
     args = ["--campaign-id", VERSION] if batch else ["--source-training-run-id", TRAIN]
-    args += [
-        "--split",
-        "val",
-        "--purpose",
-        "development",
-        "--seed",
-        "42",
-        "--threshold",
-        ".5",
-        "--protocol",
-        json.dumps(template["protocol"]),
-    ]
+    args += ["--seed", "42", "--threshold", ".5"]
     if kind == "explain":
         args += ["--method", "gradcam", "--layer", "conv"]
     if inspection:
         args += ["--inspect"]
-    assert cli._main(kind, batch, args) == 0
+    assert cli._execute(kind, cli.parser(kind, batch).parse_args(args)) == 0
     output = json.loads(capsys.readouterr().out)
     assert snapshot == before
     assert {split for _, split, _ in calls} == {"val"}
@@ -152,7 +126,7 @@ def test_val_cli_never_touches_train_or_test(
         proof = (
             output[0]["inspection_verification"]
             if batch
-            else output["inspection_verification"]
+            else output[0]["inspection_verification"]
         )
     else:
         proof = next(iter(evidence_store.values()))["after_state"]
@@ -216,7 +190,7 @@ def test_val_rejects_without_accessing_other_splits(
 
 
 @pytest.mark.parametrize(
-    "splits", [None, "val", ("unknown",), ("val", "val"), ("test",)]
+    "splits", [None, "val", ("unknown",), ("val", "val")]
 )
 def test_invalid_or_unauthorized_scope_fails_before_database_and_files(
     monkeypatch, splits
@@ -231,38 +205,14 @@ def test_invalid_or_unauthorized_scope_fails_before_database_and_files(
         ev.verify_dataset_for_execution(VERSION, required_splits=splits)
 
 
-@pytest.mark.parametrize("purpose", ["development", "final"])
-def test_test_without_lock_rejected_before_filesystem(fixture, monkeypatch, purpose):
-    from src.malaria_dl.assessment import repository as repository_module
-    from src.malaria_dl.assessment.repository import AssessmentRepository
-
-    repo = AssessmentRepository()
-    monkeypatch.setattr(repo, "transaction", lambda **kw: nullcontext(None))
-    monkeypatch.setattr(
-        repository_module,
-        "execute",
-        lambda *args, **kw: SimpleNamespace(mappings=list),
-    )
-    monkeypatch.setattr(
-        service, "resolve", lambda *args: pytest.fail("No checkpoint access")
-    )
-    monkeypatch.setattr(
-        service,
-        "inference_environment",
-        lambda *args: pytest.fail("No source file access"),
-    )
-    guard_dataset_io(monkeypatch, fixture.root, ())
-    with pytest.raises(AssessmentError, match="TEST_FINAL_LOCK_REQUIRED"):
-        service.prepare(
-            repo,
-            training_run_id=TRAIN,
-            split="test",
-            purpose=purpose,
-            protocol={"version": "explicit", "splits": ["test"], "purposes": [purpose]},
-            requested_threshold=".5",
-            seed=42,
-            batch_size=1,
-        )
+def test_test_without_lock_reads_only_test(fixture, evidence_store, monkeypatch):
+    repo, snapshot, template = assessment_setup(fixture, monkeypatch)
+    calls = guard_dataset_io(monkeypatch, fixture.root, ("test",))
+    prepared = service.prepare(repo, training_run_id=TRAIN, split="test", purpose="final",
+        protocol={"version":"exec1", "splits":["test"], "purposes":["final"], "allowed_numeric_thresholds":[.5]},
+        requested_threshold=".5", seed=42, batch_size=1)
+    assert {s["split"] for s in prepared["samples"]} == {"test"}
+    assert {split for _, split, _ in calls} == {"test"}
 
 
 @pytest.mark.parametrize("background_split", ["val", "train"])
@@ -319,89 +269,6 @@ def test_val_does_not_require_other_physical_splits(fixture, monkeypatch):
     assert after.verified_splits == ("val",)
 
 
-@pytest.mark.parametrize(
-    "fault", [None, "candidate", "decision", "hash", "scope", "missing_identity"]
-)
-def test_exact_existing_lock_precedes_test_files(
-    fixture, evidence_store, monkeypatch, fault
-):
-    from src.malaria_dl.assessment import repository as repository_module
-    from src.malaria_dl.assessment.contracts import identity, threshold
-    from src.malaria_dl.campaigns.contracts import digest
-
-    repo, snapshot, template = assessment_setup(fixture, monkeypatch)
-    samples = lineage.dataset_samples(
-        repo, snapshot, "test", inspection=True, metadata_only=True
-    )
-    protocol = {
-        "version": "synthetic-final",
-        "splits": ["test"],
-        "purposes": ["final"],
-        "allowed_numeric_thresholds": [0.5],
-    }
-    locked = identity(
-        template["model"],
-        snapshot,
-        samples,
-        split="test",
-        purpose="final",
-        protocol=protocol,
-        decision=threshold(".5", protocol),
-        code={},
-        seed=42,
-        batch_size=1,
-    )
-    row = {
-        "identity_hash": digest(locked),
-        "identity": locked,
-        "evidence": {
-            "status": "locked",
-            "candidate": deepcopy(locked["model"]),
-            "decision": deepcopy(locked["decision"]),
-        },
-    }
-    if fault in ("candidate", "decision"):
-        row["evidence"][fault] = {}
-    elif fault == "hash":
-        row["identity_hash"] = "0" * 64
-    elif fault == "scope":
-        locked["protocol"] = {**protocol, "version": "other"}
-        row["identity_hash"] = digest(locked)
-    elif fault == "missing_identity":
-        row["identity"] = None
-    monkeypatch.setattr(
-        repository_module,
-        "execute",
-        lambda *args, **kw: SimpleNamespace(mappings=lambda: [row]),
-    )
-    repo.authorize_test_request = (
-        repository_module.AssessmentRepository.authorize_test_request.__get__(repo)
-    )
-    calls = guard_dataset_io(
-        monkeypatch, fixture.root, ("test",) if fault is None else ()
-    )
-
-    def prepare():
-        return service.prepare(
-            repo,
-            training_run_id=TRAIN,
-            split="test",
-            purpose="final",
-            protocol=protocol,
-            requested_threshold=".5",
-            seed=42,
-            batch_size=1,
-        )
-
-    if fault is None:
-        assert prepare() == locked
-        assert {split for _, split, _ in calls} == {"test"}
-    else:
-        with pytest.raises(AssessmentError, match="TEST_FINAL_LOCK_REQUIRED"):
-            prepare()
-        assert not calls
-
-
 def test_inspection_does_not_acquire_writing_global_gate(monkeypatch):
     from src.malaria_dl.execution import global_gate, local_launch
 
@@ -409,7 +276,7 @@ def test_inspection_does_not_acquire_writing_global_gate(monkeypatch):
     monkeypatch.setattr(
         global_gate, "GlobalGate", lambda *args: pytest.fail("No PostgreSQL writes")
     )
-    monkeypatch.setattr(cli, "_main", lambda *args: 0)
+    monkeypatch.setattr(cli, "_execute", lambda *args: 0)
     assert (
         cli.main("evaluate", argv=["--source-training-run-id", TRAIN, "--inspect"]) == 0
     )
@@ -439,65 +306,9 @@ def test_v1_evidence_pins_identity_but_never_claims_current_full_verification(
 
 
 @pytest.mark.parametrize("kind", ["evaluate", "explain"])
-@pytest.mark.parametrize("purpose", ["development", "final"])
-def test_campaign_test_authorization_precedes_checkpoint_and_dataset(
-    fixture, monkeypatch, kind, purpose
-):
-    from src.malaria_dl.assessment import repository as repository_module
-
-    snapshot = persisted(fixture)
-    repo = repository_module.AssessmentRepository()
-    monkeypatch.setattr(
-        repo,
-        "get",
-        lambda *args: {
-            "state": "frozen",
-            "dataset_snapshot": snapshot,
-            "attempts": [
-                {
-                    "id": "attempt",
-                    "member_id": "member",
-                    "training_run_id": TRAIN,
-                    "state": "verified",
-                }
-            ],
-            "members": [
-                {"id": "member", "state": "verified", "accepted_attempt_id": "attempt"}
-            ],
-        },
-    )
-    monkeypatch.setattr(repo, "transaction", lambda **kw: nullcontext(None))
-    monkeypatch.setattr(
-        repository_module, "execute", lambda *args, **kw: SimpleNamespace(mappings=list)
-    )
-    monkeypatch.setattr(cli, "AssessmentRepository", lambda: repo)
-    monkeypatch.setattr(lineage, "training_dataset_metadata", lambda run: snapshot)
-    monkeypatch.setattr(
-        lineage,
-        "resolve",
-        lambda *a, **kw: pytest.fail("Checkpoint access before authorization"),
-    )
-    monkeypatch.setattr(
-        service,
-        "resolve",
-        lambda *a, **kw: pytest.fail("Checkpoint access before authorization"),
-    )
-    guard_dataset_io(monkeypatch, fixture.root, ())
-    args = [
-        "--campaign-id",
-        VERSION,
-        "--inspect",
-        "--split",
-        "test",
-        "--purpose",
-        purpose,
-        "--protocol",
-        json.dumps({"version": "synthetic", "splits": ["test"], "purposes": [purpose]}),
-        "--threshold",
-        ".5",
-        "--seed",
-        "42",
-    ]
+def test_development_cli_cannot_select_test(kind):
+    args = ["--campaign-id", VERSION, "--split", "test"]
     if kind == "explain":
         args += ["--method", "gradcam", "--layer", "conv"]
-    assert cli._main(kind, True, args) == 2
+    with pytest.raises(SystemExit):
+        cli.parser(kind).parse_args(args)

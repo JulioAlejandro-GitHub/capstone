@@ -355,6 +355,8 @@ def _standalone(args):
         socket.gethostname(),
         os.getpid(),
         snapshot.evidence_id,
+        campaign_id=getattr(args, "campaign_id", None),
+        source_training_run_id=getattr(args, "source_training_run_id", None),
     )
     try:
         train(repo, session, resolve_descriptor(args.model))
@@ -379,3 +381,5 @@ def _standalone(args):
                 cause="INDIVIDUAL_TRAIN_FAILED",
             )
         raise
+
+    return repo.session(session["run_id"])

@@ -362,6 +362,12 @@ export interface ExplainabilityLineageChild extends LineageChildBase {
   failed_count: number;
 }
 
+export interface AssessmentChoice {
+  attempt_id: string; training_run_id: string; kind: "evaluate" | "explain";
+  split: "train" | "val" | "test"; purpose: string; state: string; started_at: string;
+  threshold: number | null; dataset_version_id: string; checkpoint_artifact_id: string;
+}
+
 export interface AssessmentMetrics {
   count: number;
   definition: string;
@@ -371,6 +377,10 @@ export interface AssessmentMetrics {
   recall: number | null;
   specificity: number | null;
   f2: number | null;
+  f1?: number | null;
+  balanced_accuracy?: number | null;
+  roc_auc?: number | null;
+  pr_auc?: number | null;
   confusion_matrix: number[][];
 }
 
@@ -420,6 +430,10 @@ export interface AssessmentDetail extends Omit<AssessmentEvaluationChild, 'sourc
     purpose: AssessmentEvaluationChild['purpose'];
     model: { model_version_id: string; checkpoint_artifact_id: string };
     explanation?: { method: string };
+    dataset?: { dataset_version_id: string };
+    decision?: { effective: number };
+    seed?: number;
+    batch_size?: number;
   };
 }
 
