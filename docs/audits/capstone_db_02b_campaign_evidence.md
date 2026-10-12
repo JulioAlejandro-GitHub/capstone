@@ -358,3 +358,8 @@ Evidencia: [campaña y comprobaciones SQL](capstone_db_02b/operational/campaign_
 y [respuestas HTTP](capstone_db_02b/operational/campaign_http.txt).
 La publicación Git pendiente es una incidencia de entrega separada: no invalida las
 comprobaciones de creación, persistencia e integridad de la corrección ya instalada.
+
+Observación Git al finalizar: la referencia local `origin/main` ya apunta a `ca8289d`,
+incluyendo integración y aplicación documentada. Esa sincronización no fue ejecutada
+por este agente. El commit de cierre `2daf19b` y esta aclaración quedan pendientes
+de publicación; no se reintentó el push bloqueado.
