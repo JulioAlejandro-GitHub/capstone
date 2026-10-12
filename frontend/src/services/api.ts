@@ -269,6 +269,7 @@ export class ApiError extends Error {
     public readonly classificationRunId: string | null = null,
     public readonly stage: string | null = null,
     public readonly retryable: boolean | null = null,
+    public readonly correlationId: string | null = null,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -356,7 +357,8 @@ async function performRequest<T>(url: URL, options: RequestOptions): Promise<T> 
       } catch {
         // Non-JSON HTTP errors remain HTTP errors, never parse/network errors.
       }
-      const detail = asObject(payload.detail);
+      const envelope = asObject(payload.error);
+      const detail = asObject(payload.detail ?? envelope.details);
       const message = typeof detail.message === 'string'
         ? detail.message
         : (typeof payload.detail === 'string' ? payload.detail : raw || response.statusText);
@@ -368,6 +370,7 @@ async function performRequest<T>(url: URL, options: RequestOptions): Promise<T> 
         typeof detail.classification_run_id === 'string' ? detail.classification_run_id : null,
         typeof detail.stage === 'string' ? detail.stage : null,
         typeof detail.retryable === 'boolean' ? detail.retryable : null,
+        typeof envelope.correlation_id === 'string' ? envelope.correlation_id : null,
       );
     }
     try {
