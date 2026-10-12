@@ -37,10 +37,6 @@ def validate_revision(row, payload):
 
 
 class ControlledRepository(ExecutionRepository):
-    def installed(self):
-        with self.transaction(readonly=True) as c:
-            return bool(execute(c,"SELECT to_regclass('campaign_technical_revisions') IS NOT NULL").scalar_one())
-
     def register_revision(self, campaign, revision_id, payload):
         """Explicit write, never called by dry-run or reservation implicitly."""
         with self.transaction() as c:
@@ -77,15 +73,12 @@ class ControlledRepository(ExecutionRepository):
 
     def dry_run(self,campaign,member,previous,dataset,revision_id=None,proposal=None,current=None):
         row=self.get(campaign,dataset)
-        installed=self.installed()
-        if not installed and proposal is None:
-            raise CampaignError('TECHNICAL_REVISION_MIGRATION_REQUIRED')
         with self.transaction(readonly=True) as c:
             payload=proposal if proposal is not None else self.revision(c,campaign,revision_id)
             m,n=self.eligibility(c,row,member,previous,dataset,payload,current or planning_environment())
         from .global_gate import status
         global_status = status(self)
-        return {'campaign_id':str(row['id']),'dataset_version_id':identifier(dataset),'member_id':str(m['id']),'previous_attempt_id':identifier(previous),'next_ordinal':n,'state':'paused','eligible_without_reservation':True,'installed':installed,'revision_registered':proposal is None,'execution_ready':installed and proposal is None and global_status['available'],'global_execution':global_status,'memory_optimization_required':False,'revision_hash':digest(payload),'writes':0}
+        return {'campaign_id':str(row['id']),'dataset_version_id':identifier(dataset),'member_id':str(m['id']),'previous_attempt_id':identifier(previous),'next_ordinal':n,'state':'paused','eligible_without_reservation':True,'revision_registered':proposal is None,'execution_ready':proposal is None and global_status['available'],'global_execution':global_status,'memory_optimization_required':False,'revision_hash':digest(payload),'writes':0}
 
     def reserve(self,campaign,member,previous,dataset,revision_id,request_id,reason,root,current=None):
         current=current or planning_environment()
@@ -97,8 +90,6 @@ class ControlledRepository(ExecutionRepository):
                     raise CampaignError('CONTROLLED_IDEMPOTENCY_CONFLICT')
                 run=str(old['run_id']); created=False
             else:
-                from .schema import require_e10_schema
-                require_e10_schema(c)
                 payload=self.revision(c,campaign,revision_id)
                 m,n=self.eligibility(c,row,member,previous,dataset,payload,current)
                 if not isinstance(reason,str) or not reason.strip():raise CampaignError('CONTROLLED_REASON_REQUIRED')
@@ -142,13 +133,10 @@ def effective_row(repository,row,session):
     """Only a registered binding can select an alternate runtime identity."""
     if session['environment']==row['environment']:return row
     control=ControlledRepository(repository.scope)
-    if not control.installed():raise CampaignError('TECHNICAL_REVISION_NOT_INSTALLED')
     with control.transaction(readonly=True) as c:
         q=execute(c,'SELECT * FROM campaign_controlled_requests WHERE run_id=CAST(:run AS uuid) AND campaign_id=CAST(:cid AS uuid)',run=str(session['run_id']),cid=str(row['id'])).mappings().one_or_none()
         if q is None:
-            installed = execute(c,"SELECT to_regclass('train_execution_revisions') IS NOT NULL").scalar_one()
-            if installed:
-                q=execute(c,'SELECT revision_id FROM train_execution_revisions WHERE attempt_id=CAST(:attempt AS uuid) AND campaign_id=CAST(:cid AS uuid)',attempt=str(session['attempt_id']),cid=str(row['id'])).mappings().one_or_none()
+            q=execute(c,'SELECT revision_id FROM train_execution_revisions WHERE attempt_id=CAST(:attempt AS uuid) AND campaign_id=CAST(:cid AS uuid)',attempt=str(session['attempt_id']),cid=str(row['id'])).mappings().one_or_none()
         if q is None:raise CampaignError('TECHNICAL_BINDING_REQUIRED')
         payload=control.revision(c,row['id'],q['revision_id']);validate_revision(row,payload)
         if session['environment']!=payload['environment']:raise CampaignError('TECHNICAL_SESSION_CONFLICT')
@@ -213,7 +201,6 @@ def execute_one(repo, *, campaign,member,previous,dataset,revision_id,request_id
         if row['state']!='paused':raise CampaignError('PAUSED_CAMPAIGN_REQUIRED')
         s=repo.session(old['run_id'])
         return {'launched':False,'run_id':str(s['run_id']),'state':s['state']}
-    repo.preflight_e10_schema()
     # All checks that can fail without reserving happen first.
     repo.dry_run(campaign,member,previous,dataset,revision_id)
     row=repo.get(campaign,dataset)
@@ -268,7 +255,6 @@ def main():
     else:
         if not a.revision_id or not a.request_id or not a.reason:p.error('revision-id, request-id and reason required')
         from .global_gate import GlobalGate
-        repo.preflight_e10_schema()
         with GlobalGate('controlled'):
             result=execute_one(repo,campaign=a.campaign_id,member=a.member_id,previous=a.previous_attempt_id,dataset=a.dataset_version_id,revision_id=a.revision_id,request_id=a.request_id,reason=a.reason,root=a.artifact_root)
     print(json.dumps(result))

@@ -50,10 +50,6 @@ class FakeRepository:
             raise CampaignError("CAMPAIGN_DATASET_CONFLICT")
         return self.row
 
-    def preflight_e10_schema(self):
-        self.calls.append(("preflight_e10_schema",))
-        return {"revision": "pg_v2_baseline"}
-
     @contextmanager
     def transaction(self, readonly=False):
         assert readonly, "plan must only open read-only transactions"
@@ -128,7 +124,6 @@ def test_execution_takes_the_dataset_from_the_campaign(monkeypatch):
         return 0, {"state": "frozen", "expected": 4, "members": dict(
             verified=0, failed=0, interrupted=0, pending=4)}
 
-    repo.preflight_e10_schema = lambda: None
     monkeypatch.setattr(executor, "ExecutionRepository", lambda: repo)
     monkeypatch.setattr("src.malaria_dl.execution.global_gate.GlobalGate", Gate)
     monkeypatch.setattr(executor, "execute_campaign", boundary)
@@ -185,7 +180,8 @@ def test_runtime_difference_is_recorded_not_enforced(monkeypatch):
     assert status["code_environment_identity"] == dict(
         check="code_environment_identity", status="INFO", code=None, differing_keys=["python"])
     assert status["model_catalog_identity"]["status"] == "PASS"
-    assert status["test_forbidden"]["status"] == "PASS" and status["e10_schema"]["status"] == "PASS"
+    assert status["test_forbidden"]["status"] == "PASS"
+    assert "e10_schema" not in status
 
 
 def test_paused_campaign_is_executable_and_duplicate_catalog_rows_are_not(monkeypatch):

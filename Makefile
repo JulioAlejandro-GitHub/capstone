@@ -155,3 +155,10 @@ test-db02b:
 	trap 'docker compose -p capstone-db02b-test -f docker-compose.db02b-test.yml down --volumes' EXIT; \
 	docker compose -p capstone-db02b-test -f docker-compose.db02b-test.yml up -d --wait db02b-db; \
 	docker compose -p capstone-db02b-test -f docker-compose.db02b-test.yml run --rm --no-deps db02b-tests
+
+.PHONY: test-db02c
+test-db02c:
+	@set -eu; \
+	trap 'docker compose -p capstone-db02c-test -f docker-compose.db02c-test.yml down --volumes' EXIT; \
+	docker compose -p capstone-db02c-test -f docker-compose.db02c-test.yml up -d --wait db02c-db; \
+	docker compose -p capstone-db02c-test -f docker-compose.db02c-test.yml run --rm --no-deps db02c-tests
