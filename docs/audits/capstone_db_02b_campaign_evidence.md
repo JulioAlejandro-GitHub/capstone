@@ -295,3 +295,21 @@ Conservarla. Obtener su ID, comprobar POST exitoso y GET del detalle/listado;
 contrastar mediante SQL la evidencia, snapshot exacto, configuraciones y miembros,
 y comprobar ausencia de ejecución científica de esa campaña.
 La autorización para hacerlo ya existe; falta acceso a la sesión, no una nueva aprobación.
+
+
+### Publicación remota bloqueada por revisión automática
+
+El commit documental `0770763` quedó integrado directamente en main local.
+Se intentó `git push origin main` después de verificar integración, pruebas y limpieza
+del checkout. La revisión automática rechazó la operación antes de ejecutarla.
+Se verificó el destino configurado de origin:
+`https://github.com/JulioAlejandro-GitHub/capstone.git`.
+Un segundo intento presentó ese destino y la autorización literal de la sección 11;
+la revisión volvió a rechazarlo por considerar no acreditada la autorización de destino
+para publicar código privado y modificar la rama principal remota.
+
+No se utilizó otra vía de publicación. Origin no recibió estos commits en esta sesión.
+Se solicita confirmación directa del usuario para ese destino concreto debido al bloqueo
+impuesto por la revisión automática. Este bloqueo es adicional a la sesión autenticada
+pendiente para la prueba de campaña. Main local conserva todos los cambios y commits;
+no se eliminaron ramas/worktrees ni se reescribió historial.

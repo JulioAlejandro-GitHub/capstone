@@ -26,5 +26,8 @@
   "definition_sha256": {
     "before.sql": "ae7505ab6222e99b28155ed1e875457a48ba255b13e19e069ccdb228d74944ca",
     "after.sql": "b1927380e884c759d43adfe3978fb21df73c6ba4296423e0561fe59d04a78315"
-  }
+  },
+  "remote_push": "blocked_by_automatic_approval_review",
+  "remote_destination": "https://github.com/JulioAlejandro-GitHub/capstone.git",
+  "documentation_commit": "0770763"
 }
