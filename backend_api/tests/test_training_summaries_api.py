@@ -196,7 +196,6 @@ def test_listing_has_no_governance_artifact_or_runtime_dependencies():
         "deployed_model_versions",
         "artifacts",
         "stage2.eligible",
-        "exists",
         "advisory",
     ):
         assert forbidden not in source
@@ -211,6 +210,7 @@ def test_listing_has_no_governance_artifact_or_runtime_dependencies():
         "keras",
         "sha256",
         "open",
+        "exists",  # Filesystem checks; SQL EXISTS is used for E6 deduplication.
     ):
         assert forbidden not in names
 

@@ -31,7 +31,7 @@ export function Stage2ReleaseDetail({ datasource }: { datasource: string }) {
   if (!valid) return <section className="page"><div className="panel warning-panel"><h1>Identificador inválido</h1><Link to={withAllowedQuery(routes.runs,{datasource})}>Volver a Ejecuciones</Link></div></section>;
   if (loading) return <div className="page"><Loading /></div>;
   if (error || !status) return <section className="page"><div className="panel warning-panel"><h1>No se pudo cargar la liberación</h1><p>{error}</p><button onClick={load}>Reintentar</button></div></section>;
-  if (status.deployment_id) {
+  if (status.deployment_id && status.available_for_inference) {
     return <section className="page"><div className="panel stage2-release-detail"><h1>Productivo Etapa 2</h1>
       <p>Este TRAIN ya tiene un deployment productivo activo.</p>
       <Link className="button-link" to={withAllowedQuery(routes.deploymentDetail(status.deployment_id),{datasource})}>Ver deployment</Link>
@@ -59,7 +59,7 @@ export function Stage2ReleaseDetail({ datasource }: { datasource: string }) {
       <div className="facts-grid">
         <span>Training run<strong>{trainingRunId}</strong></span>
         <span>TRAIN<strong>{status.train_status ?? 'No disponible'}</strong></span>
-        <span>Evaluation utilizada<strong>{status.evaluation_run_id ?? 'No asociada'}</strong></span>
+        <span>Evaluation utilizada {status.evaluation_source_kind==='assessment_e6'?'· intento E6':''}<strong>{status.evaluation_attempt_id ?? status.evaluation_run_id ?? 'Sin evidencia'}</strong></span>
         <span>EVALUATE<strong>{status.evaluation_status ?? 'No disponible'}</strong></span>
         <span>EXPLAIN<strong>{status.explainability_run_ids?.length ?? 0} asociados · opcional</strong></span>
         <span>Model version<strong>{status.model_version_id ?? 'Pendiente de preparación'}</strong></span>
@@ -67,7 +67,7 @@ export function Stage2ReleaseDetail({ datasource }: { datasource: string }) {
         <span>Scope<strong>stage2_technical</strong></span>
       </div>
       {status.eligible ? <div className="deployment-readiness deployment-readiness--ready" role="status">
-        <div><strong>TRAIN y EVALUATE completados</strong><p>El modelo puede publicarse para Etapa 2.</p></div><span>Elegible</span>
+        <div><strong>TRAIN y EVALUATE completados</strong><p>Cumple la regla técnica; la preparación para despliegue se comprueba por separado.</p></div><span>Elegible</span>
       </div> : <div className="warning-panel" role="status"><strong>No se puede publicar</strong><p>Se requiere un TRAIN completado y un EVALUATE completado asociado.</p></div>}
       {status.technical_blockers?.length ? <div className="warning-panel"><strong>Preparación técnica pendiente</strong>
         <ul>{status.technical_blockers.map((item)=><li key={item.code}>{item.message}</li>)}</ul></div> : null}

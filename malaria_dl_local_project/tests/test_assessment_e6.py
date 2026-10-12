@@ -317,14 +317,22 @@ def test_artifact_write_failure_never_verified(tmp_path, monkeypatch):
         ("densenet121", "rescale_0_1"),
     ],
 )
-def test_minimal_model_uses_exact_e3_input(tmp_path, architecture, mode):
+@pytest.mark.parametrize("foreign_root", [False, True])
+def test_minimal_model_uses_exact_e3_input(tmp_path, monkeypatch, architecture, mode, foreign_root):
     import numpy as np
     import tensorflow as tf
     from PIL import Image
     from src.malaria_dl.assessment.runtime import KerasRuntime
     from src.malaria_dl.data.input_contract import INTERNAL_DENSENET, transform_rgb
+    from src.malaria_dl.data import governed_dataset
 
     v = value(tmp_path)
+    physical_root = tmp_path
+    if foreign_root:
+        monkeypatch.setattr(governed_dataset, "PROJECT_ROOT", tmp_path)
+        physical_root = tmp_path / "data" / "sealed"
+        v["dataset"]["dataset_root"] = "/app/project/data/sealed"
+    original_dataset = deepcopy(v["dataset"])
     contract = make_input_contract(
         architecture,
         "synthetic_v1",
@@ -347,18 +355,22 @@ def test_minimal_model_uses_exact_e3_input(tmp_path, architecture, mode):
     model.save(v["model"]["path"])
     v["model"].update(file_identity(v["model"]["path"]), input_contract=contract)
     sample = v["samples"][0]
-    path = tmp_path / sample["relative_path"]
+    path = physical_root / sample["relative_path"]
     path.parent.mkdir(parents=True, exist_ok=True)
     rgb = np.full((8, 8, 3), [180, 100, 50], dtype=np.uint8)
     Image.fromarray(rgb).save(path)
     sample["sha256"] = file_identity(path)["sha256"]
     runtime = KerasRuntime(v)
+    from test_dataset_split_isolation import guard_dataset_io
+    image_accesses = guard_dataset_io(monkeypatch, physical_root, ("val",))
     np.testing.assert_allclose(
         runtime.images([sample]).numpy()[0],
         transform_rgb(rgb, contract).numpy(),
         atol=1e-6,
     )
     assert len(runtime.predict([sample])) == 1
+    assert v["dataset"] == original_dataset
+    assert {split for _, split, _ in image_accesses} == {"val"}
     if architecture == "custom_cnn":
         v["explanation"] = explanation_spec("gradcam", "conv", 1, None, [])
         heat, overlay, result = runtime.explain(sample)
@@ -385,7 +397,9 @@ def test_exact_e5_binding_and_cross_version_rejected(tmp_path, monkeypatch):
     from src.malaria_dl.assessment import lineage
     from src.malaria_dl.execution.artifacts import verify_session
     from test_campaign_executor_e5 import evidence
+    from src.malaria_dl.models import registry
 
+    monkeypatch.setattr(registry, "registered_models", lambda: tuple(registry.MODEL_REGISTRY))
     session, records = evidence(tmp_path)
     version = str(uuid4())
     for r in records:
@@ -406,6 +420,7 @@ def test_exact_e5_binding_and_cross_version_rejected(tmp_path, monkeypatch):
         lambda scope: SimpleNamespace(records=lambda _: records),
     )
     repo = SimpleNamespace(transaction=lambda **kw: nullcontext(None), scope=None)
+    monkeypatch.setattr(lineage, "training_dataset_metadata", lambda _: session["dataset"])
     binding, dataset, _ = lineage.resolve(repo, session["run_id"], version)
     assert binding["model_version_id"] == version and dataset == session["dataset"]
     assert binding == lineage.resolve(repo, session["run_id"])[0]
@@ -616,7 +631,7 @@ def test_accredited_sample_population_and_equivalent_override(
     monkeypatch.setattr(Result, "__iter__", lambda self: iter(self.rows), raising=False)
 
     f = dataset_fixture
-    inherited = resolve_governed_dataset(VERSION).metadata()
+    inherited = resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True).metadata()
     repo = SimpleNamespace(transaction=lambda **kw: nullcontext(f.connection))
     samples = dataset_samples(repo, inherited, "val", VERSION, inspection=True)
     assert len(samples) == 2 and {s["label"] for s in samples} == {0, 1}

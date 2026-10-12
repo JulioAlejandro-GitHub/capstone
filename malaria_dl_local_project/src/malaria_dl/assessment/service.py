@@ -11,6 +11,7 @@ from .contracts import (
     prediction,
     require,
     threshold,
+    validate_split_protocol,
     verify_rows,
 )
 from .lineage import dataset_samples, resolve
@@ -56,6 +57,8 @@ def prepare(
     training_run_id=None,
     model_version_id=None,
     dataset_version_id=None,
+    dataset_dir=None,
+    model=None,
     split,
     purpose,
     protocol,
@@ -66,17 +69,38 @@ def prepare(
     evaluation_id=None,
     inspection=False,
     input_override=None,
+    verification=None,
 ):
+    validate_split_protocol(split, purpose, protocol)
+    locked = None
+    if split == "test":
+        locked = repository.authorize_test_request(
+            training_run_id=training_run_id, model_version_id=model_version_id,
+            dataset_version_id=dataset_version_id, protocol=protocol,
+            requested_threshold=requested_threshold, seed=seed, batch_size=batch_size,
+            explanation=explanation,
+        )
+        require(locked["code"] == inference_environment(explanation), "TEST_FINAL_LOCK_REQUIRED")
     binding, dataset, calibration = resolve(
         repository, training_run_id, model_version_id
     )
+    if model is not None:
+        from ..models.registry import MODEL_REGISTRY
+
+        architecture = binding["input_contract"]["architecture"]
+        descriptor = MODEL_REGISTRY.get(architecture)
+        names = (architecture, *(descriptor.aliases if descriptor else ()))
+        require(model in names, "MODEL_TRAIN_CONFLICT")
     require(
         input_override is None or binding["input_contract"] == input_override,
         "INPUT_OVERRIDE_CONFLICT",
     )
     decision = threshold(requested_threshold, protocol, calibration)
     samples = dataset_samples(
-        repository, dataset, split, dataset_version_id, inspection=inspection
+        repository, dataset, split, dataset_version_id, inspection=inspection,
+        training_run_id=binding["training_run_id"], dataset_dir=dataset_dir,
+        metadata_only=split == "test",
+        verification=verification,
     )
     evaluation = None
     if evaluation_id:
@@ -100,10 +124,9 @@ def prepare(
     if explanation:
         explanation = dict(explanation)
         if explanation["method"] == "shap":
-            # References must be accredited TRAIN samples, never selected by TEST scores.
-            background_samples = dataset_samples(
-                repository, dataset, "train", inspection=inspection
-            )
+            # Explicit references must belong to this operation's authorized split.
+            # Never replace a historical TRAIN background silently with VAL images.
+            background_samples = samples
             ids = set(explanation["background"])
             require(len(ids) == len(explanation["background"]), "BACKGROUND_AMBIGUOUS")
             explanation["background"] = sorted(
@@ -113,7 +136,7 @@ def prepare(
             require(
                 len(explanation["background"]) == len(ids), "BACKGROUND_NOT_ACCREDITED"
             )
-    return identity(
+    value = identity(
         binding,
         dataset,
         samples,
@@ -127,6 +150,16 @@ def prepare(
         explanation=explanation,
         evaluation=evaluation,
     )
+    if split == "test":
+        require(value == locked, "TEST_FINAL_LOCK_REQUIRED")
+        verified = dataset_samples(
+            repository, dataset, split, dataset_version_id, inspection=inspection,
+            training_run_id=binding["training_run_id"], dataset_dir=dataset_dir,
+            test_authorized=True,
+            verification=verification,
+        )
+        require(verified == samples, "SAMPLE_IDENTITY_INVALID")
+    return value
 
 
 def verify(repository, attempt, value):

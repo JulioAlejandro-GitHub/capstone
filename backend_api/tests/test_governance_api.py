@@ -11,10 +11,9 @@ class GovernanceApiTests(unittest.TestCase):
     def test_stage2_availability_is_read_only_preview(self):
         run_id="084604a0-cb23-43c0-be0f-eab5b0ba1a31"
         service=mock.Mock()
-        service.preview.return_value={"training_run_id":run_id,"eligible":True}
-        with mock.patch.object(governance,"stage2_service",return_value=service):
-            response=governance.stage2_availability(run_id,"malaria")
-        service.preview.assert_called_once_with(run_id)
+        service.status.return_value={"training_run_id":run_id,"eligible":True}
+        response=governance.stage2_availability(run_id,"malaria",service)
+        service.status.assert_called_once_with(run_id,"malaria")
         service.enable.assert_not_called()
         self.assertTrue(response["eligible"])
 

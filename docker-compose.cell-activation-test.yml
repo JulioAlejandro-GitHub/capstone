@@ -1,0 +1,13 @@
+services:
+  cell-activation-db:
+    image: postgres:17.9
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: cell_activation_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cell_activation_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30

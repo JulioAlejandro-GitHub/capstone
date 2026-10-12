@@ -17,14 +17,8 @@ interface RunSummaryRowProps {
   run: RunDashboard | TrainingSummary;
   onRunSelect: (runId: string) => void;
   processKind?: RunProcessKind;
-  stage2Expanded?: boolean; stage2ControlsId?: string; onStage2Toggle?: () => void;
+  stage2Active?: boolean; stage2Expanded?: boolean; stage2ControlsId?: string; onStage2Toggle?: () => void;
 }
-
-const releasePresentation = {
-  not_available: { label: 'No disponible', modifier: 'unavailable', icon: '—' },
-  available_to_publish: { label: 'Disponible para publicar', modifier: 'available', icon: '✓' },
-  productive_stage2: { label: 'Productivo Etapa 2', modifier: 'productive', icon: '✓' },
-} as const;
 
 function truncatedRunId(runId: string): string {
   return runId.length > 12 ? `${runId.slice(0, 8)}…` : runId;
@@ -34,7 +28,7 @@ export function RunSummaryRow({
   run,
   onRunSelect,
   processKind,
-  stage2Expanded = false, stage2ControlsId, onStage2Toggle,
+  stage2Active = false, stage2Expanded = false, stage2ControlsId, onStage2Toggle,
 }: RunSummaryRowProps) {
   const counts = resolveRunConfusion(run);
   const metrics = resolveRunReportMetrics(run);
@@ -103,19 +97,12 @@ export function RunSummaryRow({
         >
           Ver detalle
         </button> : null}
-        {processKind === 'training' && 'release_status' in run ? <div className="stage2-release-summary" role="status">
-          <span className="run-promotion__title">Liberación</span>
-          {(() => {
-            const presentation = run.release_status
-              ? releasePresentation[run.release_status]
-              : { label: 'Estado no disponible', modifier: 'unknown', icon: '?' };
-            return <strong className={`training-release-badge training-release-badge--${presentation.modifier}`}>
-              <span aria-hidden="true">{presentation.icon}</span> {presentation.label}
-            </strong>;
-          })()}
+        {processKind === 'training' ? <div className="stage2-release-summary">
           <button aria-controls={stage2ControlsId} aria-expanded={stage2Expanded}
             className="report-detail-button stage2-detail-link"
-            onClick={onStage2Toggle} type="button">Ver detalle</button>
+            onClick={onStage2Toggle} type="button">
+            {stage2Active ? 'Modelo en Estado Activo' : 'Activar para clasificación celular'}
+          </button>
         </div> : null}
       </section>
     </div>

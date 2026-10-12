@@ -23,6 +23,18 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 
 ## Fuentes operativas canónicas
 
+CAPSTONE-DB-01 — [Cierre de Fase 1: auditoría PostgreSQL](audits/capstone_db_01/06_phase1_closure.md)
+(`HISTORICAL_AUDIT`, 2026-10-12): respaldo e inventario verificados; **NO APROBABLE
+para limpieza general**, con clasificación semántica parcial. DB-01 incorpora la
+aclaración del usuario: `CAMPAIGN_DATABASE_OPERATION_FAILED`, sin fallo de red demostrado. Incluye
+[inventario](audits/capstone_db_01/01_postgresql_inventory.md),
+[restricciones](audits/capstone_db_01/02_constraints_classification.md),
+[errores conocidos](audits/capstone_db_01/03_known_errors_analysis.md),
+[dependencias](audits/capstone_db_01/04_code_dependencies.md),
+[propuesta](audits/capstone_db_01/05_remediation_proposal.md),
+[bitácora](audits/capstone_db_01/commands_and_evidence.md) y anexos estructurales/de búsqueda
+enlazados desde esos informes. Sin cambios funcionales ni inicio de Fase 2.
+
 Auditoría C2.12: [Integración PostgreSQL y calibración — APROBADO](audits/clinical_calibration_c2_12/README.md)
 (`HISTORICAL_AUDIT`, 2026-10-04; cierre operativo C2.12.2: suite E2E real PASSED,
 limpieza acreditada, base operativa intacta). Conserva el bloqueo inicial C2.12/C2.12.1
@@ -33,6 +45,8 @@ como auditoría histórica; el informe de cierre está en la sección `# Cierre 
 | Desarrollo local | [Desarrollo local](engineering/local_development.md) |
 | PostgreSQL Docker-only | [Contrato de instancia PostgreSQL única](engineering/postgresql_docker_single_instance.md) |
 | Seguridad de base de datos | [Política de seguridad DB](engineering/database_safety_policy.md) |
+| Runtime YOLO local (76.3A) | [Contrato y validación](operations/yolo_runtime.md) |
+| Integración YOLO backend (76.3B/C) | [Adaptador, configuración y pruebas](operations/yolo_backend_adapter.md) |
 | Reset de análisis de frotis | [Reset controlado](operations/smear_analysis_reset.md) |
 | Purga de datos por subsistema | [Purga por subsistema](operations/subsystem_data_purge.md) |
 | Alembic | [Política Alembic](engineering/alembic_simple_policy.md) |
@@ -41,6 +55,11 @@ como auditoría histórica; el informe de cierre está en la sección `# Cierre 
 | Dataset Versions en la UI | [Dataset gobernado](dataset_ui_governed_versions.md) |
 | Auditoría segura de Malaria Patient Split v1 | [Runbook del split](runbook_split_completo_malaria.md) |
 | TRAIN/EVALUATE gobernado | [Guía de entrenamiento](guia_entrenamiento_patient_split.md) |
+| Resolución transversal TRAIN/EVALUATE/EXPLAIN | [Contrato y evidencia Docker/macOS](engineering/governed_dataset_resolution.md) (`CURRENT_DOC`, 2026-10-08) |
+| Linaje TRAIN → EVALUATE E6 | [Representación, estados y validación](engineering/e6_frontend_lineage.md) (`CURRENT_DOC`, 2026-10-08) |
+| Auditoría de lectura EXPLAIN E6 | [CELL-EXPLAIN-01: PostgreSQL → API → Frontend](audits/cell_explain_01_readback_audit.md) (`HISTORICAL_AUDIT`, 2026-10-08; diagnóstico sin implementación) |
+| Elegibilidad de Etapa 2 con E6 | [Diagnóstico previo a la activación](engineering/stage2_e6_eligibility.md) (`HISTORICAL_AUDIT`, 2026-10-08) |
+| Activación para Clasificación celular | [Contrato, migraciones, flujo de crops y validación](engineering/cell_model_activation.md) (`CURRENT_DOC`, 2026-10-08) |
 | Entrenamiento productivo Stage 2 | [Tarjeta productiva Stage 2](stage2_productive_training_card.md) |
 | Ingesta y almacenamiento | [Ingesta](architecture/microscopy_image_ingestion.md) y [storage local](engineering/local_storage.md) |
 | Revisión de células | [Workspace de revisión](architecture/cell_review_workspace.md) |

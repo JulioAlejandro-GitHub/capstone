@@ -5,6 +5,7 @@ import type {
   TrainingLineageChildren,
   TrainingSummary,
 } from '../../types/api';
+import { AssessmentEvaluationCard } from './AssessmentEvaluationCard';
 import { RunLineageChildCard } from './RunLineageChildCard';
 import { RunSummaryRow } from './RunSummaryRow';
 import { Stage2PublicationPanel } from './Stage2PublicationPanel';
@@ -17,6 +18,7 @@ export type TrainingChildrenLoadState = {
 };
 
 interface TrainingRunGroupCardProps {
+  datasource: string;
   training: TrainingSummary;
   childrenState: TrainingChildrenLoadState;
   onChildrenExpand: () => void;
@@ -27,10 +29,10 @@ interface TrainingRunGroupCardProps {
   stage2Error?: string;
   onStage2Open: () => void;
   onStage2Publish: (replaceExisting: boolean) => Promise<'published' | 'replacement-required' | 'failed'>;
-  onStage2Deactivate: () => Promise<void>;
 }
 
 export function TrainingRunGroupCard({
+  datasource,
   training,
   childrenState,
   onChildrenExpand,
@@ -41,7 +43,6 @@ export function TrainingRunGroupCard({
   stage2Error,
   onStage2Open,
   onStage2Publish,
-  onStage2Deactivate,
 }: TrainingRunGroupCardProps) {
   const [childrenExpanded, setChildrenExpanded] = useState(false);
   const [stage2Expanded, setStage2Expanded] = useState(false);
@@ -62,6 +63,10 @@ export function TrainingRunGroupCard({
     if (next) onStage2Open();
   };
 
+  const stage2Active = stage2Status
+    ? stage2Status.is_stage2_available === true && stage2Status.available_for_inference === true
+    : !stage2Error && training.release_status === 'productive_stage2';
+
   const loadedChildren = childrenState.data;
   const visibleChildren = (loadedChildren?.evaluations.length ?? 0)
     + (loadedChildren?.explainabilities.length ?? 0);
@@ -69,12 +74,13 @@ export function TrainingRunGroupCard({
   return (
     <article
       aria-label={`Entrenamiento ${training.run_name?.trim() || training.run_id}`}
-      className={`run-lineage-group training-card ${training.release_status === 'productive_stage2' ? 'training-card--stage2-production' : ''}`}
+      className={`run-lineage-group training-card ${stage2Active ? 'training-card--stage2-production' : ''}`}
     >
       <RunSummaryRow
         onRunSelect={onRunSelect}
         processKind="training"
         run={training}
+        stage2Active={stage2Active}
         stage2Expanded={stage2Expanded}
         stage2ControlsId={stage2PanelId}
         onStage2Toggle={toggleStage2}
@@ -128,7 +134,9 @@ export function TrainingRunGroupCard({
                 ) : (
                   <div className="run-lineage-group__children-grid">
                     <div className="lineage-child-stack">
-                      {loadedChildren.evaluations.map((run) => (
+                      {loadedChildren.evaluations.map((run) => run.source_kind === 'assessment_e6' ? (
+                        <AssessmentEvaluationCard key={run.attempt_id} assessment={run} datasource={datasource} />
+                      ) : (
                         <RunLineageChildCard
                           key={run.run_id}
                           kind="evaluation"
@@ -157,11 +165,11 @@ export function TrainingRunGroupCard({
 
       {stage2Expanded ? (
         <Stage2PublicationPanel
+          onRetry={onStage2Open}
           error={stage2Error}
           explainCount={training.explainability_count}
           id={stage2PanelId}
           loading={stage2Loading}
-          onDeactivate={onStage2Deactivate}
           onPublish={onStage2Publish}
           status={stage2Status}
         />

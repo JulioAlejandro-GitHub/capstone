@@ -6,6 +6,8 @@ from pydantic import ValidationError
 from sqlalchemy import text
 
 from app.db import read_only_transaction, resolve_datasource
+from app.repositories.assessment_lineage import LINEAGE_SOURCES_CTES
+from app.schemas.assessment_lineage import AssessmentEvaluationChild
 from app.schemas.lineage_children import (
     EvaluationLineageChild,
     ExplainabilityLineageChild,
@@ -21,7 +23,8 @@ WHERE id = :training_run_id
 
 
 LINEAGE_CHILDREN_SQL = """
-WITH eligible_lineage AS MATERIALIZED (
+WITH selected_trainings AS (SELECT CAST(:training_run_id AS uuid) AS id),
+""" + LINEAGE_SOURCES_CTES + """, eligible_lineage AS MATERIALIZED (
     SELECT
         lineage.id AS lineage_id,
         lineage.parent_run_id,
@@ -48,7 +51,7 @@ WITH eligible_lineage AS MATERIALIZED (
             PARTITION BY lineage.child_run_id
             ORDER BY lineage.created_at ASC, lineage.id ASC
         ) AS lineage_rank
-    FROM run_lineage AS lineage
+    FROM eligible_run_lineage AS lineage
     JOIN runs AS child ON child.id = lineage.child_run_id
     WHERE lineage.parent_run_id = :training_run_id
       AND (
@@ -70,7 +73,7 @@ WITH eligible_lineage AS MATERIALIZED (
         COUNT(DISTINCT child_run_id) FILTER (
             WHERE relationship_type = 'evaluates_checkpoint_from'
               AND run_type = 'evaluation'
-        ) AS evaluation_count,
+        ) + (SELECT count(*) FROM visible_assessments) AS evaluation_count,
         COUNT(DISTINCT child_run_id) FILTER (
             WHERE relationship_type = 'explains_checkpoint_from'
               AND run_type = 'explainability'
@@ -276,19 +279,31 @@ WITH eligible_lineage AS MATERIALIZED (
       ON legacy.run_id = child.child_run_id
     LEFT JOIN explanation_summary AS explanation
       ON explanation.run_id = child.child_run_id
+), combined_children AS (
+    SELECT run_id AS sort_id, started_at, created_at,
+           to_jsonb(child) || jsonb_build_object('source_kind', 'run') AS payload
+    FROM hydrated_children child
+    UNION ALL
+    SELECT attempt_id, started_at, created_at,
+           jsonb_build_object(
+               'source_kind', 'assessment_e6',
+               'attempt_id', attempt_id, 'identity_id', identity_id,
+               'training_run_id', training_run_id,
+               'state', state, 'ordinal', ordinal,
+               'split', identity->>'split', 'purpose', identity->>'purpose',
+               'started_at', started_at, 'finished_at', finished_at,
+               'verification', CASE WHEN state = 'verified' THEN verification ELSE NULL END
+           )
+    FROM visible_assessments
 ), page AS MATERIALIZED (
-    SELECT *
-    FROM hydrated_children
-    ORDER BY started_at ASC NULLS LAST, created_at ASC, run_id ASC
+    SELECT * FROM combined_children
+    ORDER BY started_at ASC NULLS LAST, created_at ASC, sort_id ASC
     LIMIT :limit
 )
-SELECT
-    counts.evaluation_count,
-    counts.explainability_count,
-    page.*
+SELECT counts.evaluation_count, counts.explainability_count, page.payload
 FROM child_counts AS counts
 LEFT JOIN page ON TRUE
-ORDER BY page.started_at ASC NULLS LAST, page.created_at ASC, page.run_id ASC
+ORDER BY page.started_at ASC NULLS LAST, page.created_at ASC, page.sort_id ASC
 """
 
 
@@ -399,13 +414,18 @@ def get_training_lineage_children(
     first = dict(rows[0])
     evaluation_count = int(first["evaluation_count"] or 0)
     explainability_count = int(first["explainability_count"] or 0)
-    evaluations = []
-    explainabilities = []
+    evaluations: list[EvaluationLineageChild | AssessmentEvaluationChild] = []
+    explainabilities: list[ExplainabilityLineageChild] = []
     try:
         for raw_row in rows:
-            row = dict(raw_row)
-            if row.get("run_id") is None:
+            if raw_row["payload"] is None:
                 continue
+            row = dict(raw_row["payload"])
+            if row.get("source_kind") == "assessment_e6":
+                evaluations.append(AssessmentEvaluationChild.model_validate(row))
+                continue
+            if row.get("source_kind") != "run":
+                raise LineageChildrenContractError("Origen de evaluación desconocido.")
             if row["run_type"] == "evaluation":
                 payload = {field: row.get(field) for field in EVALUATION_FIELDS}
                 evaluations.append(EvaluationLineageChild.model_validate(payload))

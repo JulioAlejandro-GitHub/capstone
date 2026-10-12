@@ -10,6 +10,8 @@ from uuid import UUID
 
 from sqlalchemy import text
 
+from src.malaria_dl.governance.eligibility import stage2_eligibility
+
 from src.model_contract_service import ModelContractService
 from src.model_deployment_service import _project_path
 from src.model_governance import repository
@@ -101,7 +103,11 @@ class Stage2ModelAvailabilityService:
                "scope":self.production_scope}).scalar_one_or_none()
         if not evaluation:
             blockers.append({"code":"EVALUATION_REQUIRED","message":"Se requiere un EVALUATE completed asociado a este TRAIN."})
-        eligible=not blockers
+        eligible, _ = stage2_eligibility({
+            "run_type": training["run_type"], "train_status": training["status"],
+            "evaluation_run_id": evaluation["evaluation_run_id"] if evaluation else None,
+            "evaluation_status": evaluation["status"] if evaluation else None,
+        })
         if not versions:
             technical_blockers.append({"code":"MODEL_VERSION_REQUIRED","message":"No se pudo resolver todavía una model_version inmutable."})
             return {"training_run_id":training_run_id,"train_status":training["status"],

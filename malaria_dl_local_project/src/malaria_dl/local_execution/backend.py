@@ -29,7 +29,7 @@ class LocalBackend:
         from ..persistence.dataset_evidence import verify_dataset_for_execution
         from ..data.governed_dataset import assert_run_dataset_snapshot_unchanged
         from ..campaigns.service import planning_environment
-        snapshot=verify_dataset_for_execution(str(row['dataset_version_id']),expected_evidence_id=str(row['dataset_evidence_id']),consumer='local_python.claim')
+        snapshot=verify_dataset_for_execution(str(row['dataset_version_id']),expected_evidence_id=str(row['dataset_evidence_id']),consumer='local_python.claim',required_splits=('train','val'))
         assert_run_dataset_snapshot_unchanged(snapshot,row['dataset_snapshot'])
         if planning_environment()['source_sha256']!=payload['environment']['source_sha256']:
             raise CampaignError('LOCAL_BACKEND_SOURCE_CONFLICT')

@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from sqlalchemy import text
 
 from app.db import read_only_transaction, resolve_datasource
+from app.repositories.assessment_lineage import LINEAGE_SOURCES_CTES
 from app.schemas.training_summaries import (
     TrainingSummary,
     TrainingSummaryCollection,
@@ -39,7 +40,7 @@ WITH selected_trainings AS MATERIALIZED (
         training.created_at DESC,
         training.id
     LIMIT :limit
-), visual_metrics AS (
+), """ + LINEAGE_SOURCES_CTES + """, visual_metrics AS (
     SELECT
         selected.id AS training_run_id,
         MAX(metric.metric_value) FILTER (
@@ -62,13 +63,14 @@ WITH selected_trainings AS MATERIALIZED (
         COUNT(DISTINCT lineage.child_run_id) FILTER (
             WHERE lineage.relationship_type = 'evaluates_checkpoint_from'
               AND child.run_type = 'evaluation'
-        ) AS evaluation_count,
+        ) + (SELECT count(*) FROM visible_assessments a
+             WHERE a.training_run_id = selected.id) AS evaluation_count,
         COUNT(DISTINCT lineage.child_run_id) FILTER (
             WHERE lineage.relationship_type = 'explains_checkpoint_from'
               AND child.run_type = 'explainability'
         ) AS explainability_count
     FROM selected_trainings AS selected
-    LEFT JOIN run_lineage AS lineage ON lineage.parent_run_id = selected.id
+    LEFT JOIN eligible_run_lineage AS lineage ON lineage.parent_run_id = selected.id
     LEFT JOIN runs AS child ON child.id = lineage.child_run_id
     GROUP BY selected.id
 )

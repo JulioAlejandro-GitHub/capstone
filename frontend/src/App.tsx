@@ -15,6 +15,7 @@ import { ErrorsLogs } from './pages/ErrorsLogs';
 import { Explainability } from './pages/Explainability';
 import { ModelComparison } from './pages/ModelComparison';
 import { ModelVersions } from './pages/ModelVersions';
+import { AssessmentDetail } from './pages/AssessmentDetail';
 import { RunDetail } from './pages/RunDetail';
 import { Stage2ReleaseDetail } from './pages/Stage2ReleaseDetail';
 import { Runs } from './pages/Runs';
@@ -92,6 +93,7 @@ function App() {
         <Route path={`${routes.runs}/RunId=:legacyId`} element={<LegacyRunRedirect />} />
         <Route path={routes.campaigns} element={<CampaignsReport {...common} go={go} />} />
         <Route path={routes.campaign} element={<CampaignConfiguration {...common} go={go} />} />
+        <Route path={`${routes.evaluations}/e6/:attemptId`} element={<AssessmentDetail {...common} />} />
         <Route path={routes.evaluations} element={<ClinicalEvaluation {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
         <Route path={routes.comparison} element={<ModelComparison {...common} />} />
         <Route path={routes.modelVersions} element={<ModelVersionsRoute datasource={datasource} go={go} />} />

@@ -2,10 +2,11 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+from app.schemas.assessment_lineage import AssessmentEvaluationChild
 
 
 class LineageConfidence(str, Enum):
@@ -19,6 +20,7 @@ class LineageConfidence(str, Enum):
 class LineageChildBase(BaseModel):
     model_config = ConfigDict(extra="forbid", from_attributes=True)
 
+    source_kind: Literal["run"] = "run"
     run_id: UUID
     status: str
     run_name: str | None
@@ -76,7 +78,12 @@ class TrainingLineageChildren(BaseModel):
     evaluation_count: int = Field(ge=0)
     explainability_count: int = Field(ge=0)
     total_count: int = Field(ge=0)
-    evaluations: list[EvaluationLineageChild]
+    evaluations: list[
+        Annotated[
+            EvaluationLineageChild | AssessmentEvaluationChild,
+            Field(discriminator="source_kind"),
+        ]
+    ]
     explainabilities: list[ExplainabilityLineageChild]
     limit: int = Field(ge=1, le=500)
     truncated: bool

@@ -68,7 +68,7 @@ class ResolvedProductiveModel:
     model_name: str
     model_version: str | None
     source_training_run_id: str
-    source_evaluation_run_id: str
+    source_evaluation_run_id: str | None
     checkpoint_artifact_id: str
     checkpoint_path: Path
     checkpoint_sha256: str
@@ -91,6 +91,7 @@ class ResolvedProductiveModel:
     published_at: Any
     production_status: str
     deployment_metadata: dict[str, Any]
+    source_evaluation_attempt_id: str | None = None
 
     @property
     def cache_key(self) -> tuple[str, str]:
@@ -112,6 +113,7 @@ class ResolvedProductiveModel:
             "model_version": self.model_version,
             "source_training_run_id": self.source_training_run_id,
             "source_evaluation_run_id": self.source_evaluation_run_id,
+            "source_evaluation_attempt_id": self.source_evaluation_attempt_id,
             "checkpoint_artifact_id": self.checkpoint_artifact_id,
             "checkpoint_sha256": self.checkpoint_sha256,
             "checkpoint_size_bytes": self.checkpoint_size_bytes,
@@ -353,18 +355,20 @@ class ProductiveModelResolver:
               artifact.artifact_status,
               publication.id::text publication_id,
               publication.evaluation_run_id::text source_evaluation_run_id,
+              publication.evaluation_attempt_id::text source_evaluation_attempt_id,
+              d.threshold_assessment_attempt_id::text,
               publication.status publication_status,
               publication.is_active publication_is_active,
               publication.published_at,publication.metadata publication_metadata,
               training.status training_status,training.run_type training_type,
               evaluation.status evaluation_status,evaluation.run_type evaluation_type,
-              calibration.threshold_selected calibration_threshold,
-              calibration.threshold_source calibration_threshold_source,
+              COALESCE(calibration.threshold_selected,(threshold_identity.identity#>>'{decision,effective}')::numeric) calibration_threshold,
+              COALESCE(calibration.threshold_source,CASE WHEN threshold_attempt.id IS NOT NULL THEN 'assessment_decision' END) calibration_threshold_source,
               calibration.threshold_policy calibration_threshold_policy,
               calibration.calibration_split,
-              calibration.calibration_status,
-              calibration.score_name calibration_score_name,
-              calibration.positive_label calibration_positive_label,
+              COALESCE(calibration.calibration_status,threshold_attempt.state) calibration_status,
+              COALESCE(calibration.score_name,threshold_identity.identity#>>'{model,input_contract,output,meaning}') calibration_score_name,
+              COALESCE(calibration.positive_label,threshold_identity.identity#>>'{model,input_contract,label_mapping,positive_label}') calibration_positive_label,
               calibration.metadata calibration_metadata,
               EXISTS(
                 SELECT 1
@@ -392,10 +396,12 @@ class ProductiveModelResolver:
             JOIN artifacts artifact
               ON artifact.id=publication.checkpoint_artifact_id
             JOIN runs training ON training.id=mv.training_run_id
-            JOIN runs evaluation ON evaluation.id=publication.evaluation_run_id
+            LEFT JOIN runs evaluation ON evaluation.id=publication.evaluation_run_id
             LEFT JOIN run_threshold_calibration calibration
               ON calibration.run_threshold_calibration_id=d.threshold_calibration_id
              AND calibration.model_version_id=d.model_version_id
+            LEFT JOIN assessment_attempts threshold_attempt ON threshold_attempt.id=d.threshold_assessment_attempt_id
+            LEFT JOIN assessment_identities threshold_identity ON threshold_identity.id=threshold_attempt.identity_id
             WHERE (
               (
                 NOT :historical
@@ -591,7 +597,10 @@ class ProductiveModelResolver:
             )
 
         threshold_snapshot = _json_object(row.get("threshold_profile_snapshot"))
-        if not row.get("threshold_calibration_id") or not threshold_snapshot:
+        assessment_threshold = row.get("threshold_assessment_attempt_id")
+        if assessment_threshold and str(assessment_threshold) != str(row.get("source_evaluation_attempt_id")):
+            raise ProductiveModelError("PRODUCTIVE_THRESHOLD_INVALID", reason="threshold no corresponde a la evaluación publicada")
+        if not (row.get("threshold_calibration_id") or assessment_threshold) or not threshold_snapshot:
             raise ProductiveModelError(
                 "PRODUCTIVE_THRESHOLD_MISSING", reason="threshold snapshot ausente"
             )
@@ -634,7 +643,7 @@ class ProductiveModelResolver:
         ).strip()
         if (
             not threshold_source
-            or row.get("calibration_status") not in {"recorded", "validated"}
+            or row.get("calibration_status") not in ({"verified"} if assessment_threshold else {"recorded", "validated"})
             or row.get("calibration_positive_label") != "parasitized"
             or row.get("calibration_score_name") != "probability_parasitized"
         ):
@@ -707,7 +716,8 @@ class ProductiveModelResolver:
                 "PRODUCTIVE_ARCHITECTURE_MISSING", reason="architecture ausente"
             )
         calibration_metadata = {
-            "threshold_calibration_id": str(row["threshold_calibration_id"]),
+            "threshold_calibration_id": str(row["threshold_calibration_id"]) if row.get("threshold_calibration_id") else None,
+            "threshold_assessment_attempt_id": assessment_threshold,
             "threshold_policy": row.get("calibration_threshold_policy"),
             "calibration_split": row.get("calibration_split"),
             "calibration_status": row.get("calibration_status"),
@@ -725,7 +735,8 @@ class ProductiveModelResolver:
                 else None
             ),
             source_training_run_id=str(row["source_training_run_id"]),
-            source_evaluation_run_id=str(row["source_evaluation_run_id"]),
+            source_evaluation_run_id=str(row["source_evaluation_run_id"]) if row.get("source_evaluation_run_id") else None,
+            source_evaluation_attempt_id=row.get("source_evaluation_attempt_id"),
             checkpoint_artifact_id=str(row["checkpoint_artifact_id"]),
             checkpoint_path=path,
             checkpoint_sha256=expected_sha,
@@ -864,9 +875,10 @@ class ProductiveModelResolver:
                     resolved.source_training_run_id,
                 ),
                 (
-                    str(snapshot["source_evaluation_run_id"]),
+                    snapshot.get("source_evaluation_run_id"),
                     resolved.source_evaluation_run_id,
                 ),
+                (snapshot.get("source_evaluation_attempt_id"), resolved.source_evaluation_attempt_id),
                 (str(snapshot["framework"]).lower(), resolved.framework),
                 (
                     (
@@ -989,6 +1001,7 @@ class ProductiveModelResolver:
                 "model_version_id": resolved.model_version_id,
                 "training_run_id": resolved.source_training_run_id,
                 "evaluation_run_id": resolved.source_evaluation_run_id,
+                "evaluation_attempt_id": resolved.source_evaluation_attempt_id,
                 "model_name": resolved.model_name,
                 "model_version": resolved.model_version,
                 "checkpoint_sha256": resolved.checkpoint_sha256,
@@ -1050,6 +1063,31 @@ class ProductiveModelResolver:
                     "PRODUCTIVE_MODEL_CHANGED",
                     reason="stage2/default cambió antes de congelar la ejecución",
                 )
+            return current
+        if resolved.source_evaluation_attempt_id:
+            connection.execute(text("SELECT pg_advisory_xact_lock_shared(hashtext('stage2-selection:malaria'))"))
+            locked = connection.execute(text("""
+              SELECT d.id FROM deployed_model_versions d
+              JOIN stage2_model_publications p ON p.model_version_id=d.model_version_id
+                AND p.checkpoint_artifact_id=d.checkpoint_artifact_id
+              JOIN model_versions mv ON mv.id=d.model_version_id
+              JOIN artifacts artifact ON artifact.id=d.checkpoint_artifact_id
+              JOIN runs training ON training.id=mv.training_run_id
+              JOIN assessment_attempts a ON a.id=p.evaluation_attempt_id
+              WHERE d.id=CAST(:deployment AS uuid) AND p.id=CAST(:publication AS uuid)
+                AND d.status='active' AND p.is_active AND p.status='active'
+                AND d.threshold_assessment_attempt_id=a.id AND a.state='verified'
+                AND training.status='completed'
+              FOR SHARE OF d,p,mv,artifact,training,a
+            """), {'deployment': resolved.deployment_id, 'publication': resolved.publication_id}).first()
+            if not locked:
+                raise ProductiveModelError('PRODUCTIVE_MODEL_CHANGED', reason='El modelo activo cambió antes de crear la clasificación.')
+            rows = self._fetch_candidates(connection=connection)
+            if len(rows) != 1:
+                raise ProductiveModelError('PRODUCTIVE_MODEL_NOT_UNIQUE')
+            current = self._safe_validate(rows[0], require_active=True)
+            if not self._same_identity(resolved, current):
+                raise ProductiveModelError('PRODUCTIVE_MODEL_CHANGED')
             return current
         locked = connection.execute(
             text(

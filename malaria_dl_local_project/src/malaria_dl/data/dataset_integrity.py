@@ -5,13 +5,14 @@ persistence.split_generation._sha256_lines; filename collisions mirror
 persistence.materialization.build_materialization_plan. Keep parity tests.
 """
 
-from collections import Counter
 import hashlib
+import os
+from collections import Counter
 from pathlib import Path
 
 from sqlalchemy import text
 
-VERIFIER_VERSION = "ml_dataset_integrity_v1"
+VERIFIER_VERSION = "ml_dataset_integrity_v2"
 
 
 def canonical_digest(rows, *, trailing_newline=True):
@@ -32,9 +33,12 @@ def file_sha256(path):
     return digest.hexdigest()
 
 
-def verify_integrity(connection, version_id, root, contract):
+def verify_integrity(connection, version_id, root, contract, *, required_splits=None,
+                     test_authorized=False):
     # Import lazily to keep errors in the public dataset domain.
-    from .governed_dataset import GovernedDatasetError
+    from .governed_dataset import GovernedDatasetError, normalize_required_splits
+
+    splits = normalize_required_splits(required_splits, test_authorized=test_authorized)
 
     def require(condition, code):
         if not condition:
@@ -150,17 +154,38 @@ def verify_integrity(connection, version_id, root, contract):
         expected[relative.as_posix()] = checksum
         counts[row["split_name"]] += 1
     require(len(expected) == len(rows), "DATASET_PATH_COLLISION")
-    actual = {p.relative_to(root).as_posix(): p for p in root.rglob("*") if p.is_file()}
-    require(set(actual) == set(expected), "DATASET_CONTENT_SET_MISMATCH")
-    for relative, checksum in expected.items():
-        require(
-            actual[relative].resolve().is_relative_to(root.resolve()),
-            "DATASET_PATH_ESCAPE",
-        )
-        require(
-            file_sha256(actual[relative]) == checksum, "DATASET_CONTENT_HASH_MISMATCH"
-        )
     require(all(counts[s] > 0 for s in ("train", "val", "test")), "DATASET_SPLIT_EMPTY")
+    # Everything above is global verification of PostgreSQL metadata. Only the
+    # explicitly authorized subtrees below may be enumerated or hashed.
+    if splits == ("train", "val", "test"):
+        require(
+            {p.name for p in root.iterdir()} == set(splits),
+            "DATASET_CONTENT_SET_MISMATCH",
+        )
+    for split in splits:
+        split_root = root / split
+        require(not split_root.is_symlink(), "DATASET_PATH_ESCAPE")
+        require(split_root.is_dir(), "DATASET_CONTENT_SET_MISMATCH")
+        actual = {}
+
+        pending = [split_root]
+        while pending:
+            with os.scandir(pending.pop()) as entries:
+                for entry in entries:
+                    require(not entry.is_symlink(), "DATASET_PATH_ESCAPE")
+                    path = Path(entry.path)
+                    if entry.is_dir(follow_symlinks=False):
+                        pending.append(path)
+                    else:
+                        require(entry.is_file(follow_symlinks=False), "DATASET_CONTENT_SET_MISMATCH")
+                        actual[path.relative_to(root).as_posix()] = path
+        selected = {p: checksum for p, checksum in expected.items() if Path(p).parts[0] == split}
+        require(set(actual) == set(selected), "DATASET_CONTENT_SET_MISMATCH")
+        for relative, checksum in selected.items():
+            require(
+                file_sha256(actual[relative]) == checksum,
+                "DATASET_CONTENT_HASH_MISMATCH",
+            )
     return dict(counts)
 
 

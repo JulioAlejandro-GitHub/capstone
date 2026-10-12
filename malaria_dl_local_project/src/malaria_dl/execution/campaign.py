@@ -60,6 +60,7 @@ def preflight(
         str(row["dataset_version_id"]),
         expected_evidence_id=str(row["dataset_evidence_id"]),
         consumer="campaign.execute",
+        required_splits=("train", "val"),
     )
     assert_run_dataset_snapshot_unchanged(snapshot, row["dataset_snapshot"])
     from ..models.registry import resolve_descriptor
@@ -378,7 +379,8 @@ def dry_run(repository, campaign_id, root):
     repository.preflight_e10_schema()
     row = repository.get(campaign_id)
     # Same integrity verification, without persisting a dataset evidence row.
-    preflight(repository, row, root, verifier=lambda version, **_: resolve_governed_dataset(version))
+    preflight(repository, row, root, verifier=lambda version, **kw: resolve_governed_dataset(
+        version, required_splits=kw["required_splits"]))
     budget = row["protocol"]["budget"]["max_attempts_per_member"]
     eligible = sorted(
         (m for m in row["members"] if m["state"] in ("pending", "failed", "interrupted")
