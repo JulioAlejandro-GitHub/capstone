@@ -1,6 +1,9 @@
 # CAPSTONE-DB-02B — Evidencia del dataset en campañas
 
-Estado documental: `CURRENT_DOC` — corrección técnicamente lista; **aplicación y cierre operativo pendientes de autorización**.
+Estado documental: `CURRENT_DOC` — integrada en `main` y aplicada a PostgreSQL; **CIERRE PARCIAL: prueba de campaña pendiente de sesión autenticada**.
+
+Las secciones anteriores a «Cierre operativo» conservan la evidencia de preparación.
+Su estado histórico de autorización/aplicación queda sustituido por la sección final.
 
 Fecha: 2026-10-12. Base de trabajo: `55e5670` (CAPSTONE-DB-02A integrado).
 Rama: `fix/capstone-db-02b`; worktree: `/private/tmp/capstone-db-02b`.
@@ -216,3 +219,79 @@ a ser rechazados al actualizarse. No hace falta reiniciar backend/frontend.
 aplicación del SQL y creación/consulta de una campaña desde el frontend. No se solicita
 permiso para trabajos ya completados ni se interpreta el paso de las pruebas como
 aprobación de cambios operativos.
+
+
+## Cierre operativo — CAPSTONE-DB-02B
+
+Actualización: 2026-10-12, 15:01 UTC. Autorización: solicitud del usuario
+«Ejecución operativa, integración Git y cierre», incluidas integración, aplicación
+SQL, una campaña real y publicación de main después de comprobar integración/pruebas.
+
+**CIERRE PARCIAL.** La corrección está instalada y verificada. No se declara cerrado
+el incidente porque falta crear y recuperar la campaña mediante una sesión autenticada.
+No hay acceso del agente a un navegador autenticado ni una sesión HTTP autorizada.
+Se solicitó al usuario realizar únicamente esa creación desde su sesión, sin compartir
+credenciales/tokens. No se generaron tokens ni se eludieron controles de acceso.
+
+| Elemento | Evidencia |
+|---|---|
+| Commit de integración | `5f12f819ad7b7d14d1dc6aaad8eb5126e6260a0a` |
+| Rama integrada | `fix/capstone-db-02b`, implementación `63e65da` |
+| PostgreSQL antes | Coincidencia exacta con la definición original de rollback |
+| SQL aplicado | Exit 0: BEGIN, SET, CREATE FUNCTION, COMMIT |
+| PostgreSQL después | Coincidencia exacta con apply.sql |
+| Propietario / ACL | Sin cambios: capstone_v2_migrator; EXECUTE de migrator/runtime |
+| Trigger | Habilitado (`O`), BEFORE INSERT/DELETE/UPDATE en experimental_campaigns |
+| Pruebas finales | 49 PASS, 0 FAIL, 0 SKIP; 0.89 s, desde main |
+| Campaña creada | Pendiente de sesión autenticada; ninguna creada por el agente |
+| Readback HTTP/SQL de campaña | Pendiente |
+| Frontend | Pendiente; no se afirma inspección visual |
+| Rollback | No requerido |
+| TRAIN/EVALUATE/EXPLAIN | No ejecutados |
+| Estado final | CIERRE PARCIAL: etapa E pendiente |
+
+### Comandos y resultados
+
+1. `git status --short`, `git branch -avv`, `git worktree list`,
+   `git log --oneline --decorate -10`, `git diff --stat main...fix/capstone-db-02b`
+   y `git log --oneline main..fix/capstone-db-02b`.
+   Ambos checkouts limpios. No existe rama `capstone-db-02b`.
+   Main estaba en `4655c44`; sus dos commits nuevos de skills se conservaron.
+2. `git merge --no-ff fix/capstone-db-02b -m 'merge: integrate CAPSTONE-DB-02B campaign evidence correction'`.
+   Merge `5f12f81`, sin conflictos ni cambios de código runtime; no reinicios.
+3. `docker compose ps`: backend/frontend activos; PostgreSQL healthy.
+   Con `PGOPTIONS='-c default_transaction_read_only=on'`, consultas administrativas
+   de función, propietario/ACL, trigger y pg_stat_activity. Ninguna otra transacción
+   activa detectada en la base al efectuar la comprobación previa.
+4. Se exportó `pg_get_functiondef('public.campaign_guard()'::regprocedure)` y se
+   comparó exactamente con el cuerpo de rollback.sql. También se confirmó que
+   apply.sql difiere de rollback.sql únicamente en la condición aprobada.
+5. Aplicación autorizada desde el checkout operativo:
+
+   ```sh
+   docker compose exec -T db sh -c 'psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < scripts/db/capstone_db_02b/apply.sql
+   ```
+
+   Exit 0 y COMMIT confirmado. No se ejecutó rollback ni DDL adicional.
+6. Nueva exportación de la función y comparación exacta con apply.sql: PASS.
+   Propietario, ACL y asociación/habilitación del trigger: conservados.
+   La semántica NULL/desconocido/cobertura insuficiente se acredita con las pruebas
+   aisladas, sin insertar evidencias artificiales en PostgreSQL operativo.
+7. `make test-db02b` desde main: 49 PASS. El contenedor tmpfs y su red interna
+   se eliminaron correctamente; la suite no apunta a PostgreSQL operativo.
+
+Evidencia conservada: [comprobaciones](capstone_db_02b/operational/checks.json),
+[función antes](capstone_db_02b/operational/before.sql),
+[función después](capstone_db_02b/operational/after.sql),
+[resultado de aplicación](capstone_db_02b/operational/apply_result.txt) y
+[pruebas finales](capstone_db_02b/operational/test_results.txt).
+
+### Pendiente específico
+
+Desde una sesión autorizada, crear **una sola campaña**, nombre sugerido
+«CAPSTONE-DB-02B — prueba operativa», con el dataset
+`d8c0cab5-09dd-597f-9de7-7ca01aee2ec2` y una configuración mínima válida.
+Conservarla. Obtener su ID, comprobar POST exitoso y GET del detalle/listado;
+contrastar mediante SQL la evidencia, snapshot exacto, configuraciones y miembros,
+y comprobar ausencia de ejecución científica de esa campaña.
+La autorización para hacerlo ya existe; falta acceso a la sesión, no una nueva aprobación.

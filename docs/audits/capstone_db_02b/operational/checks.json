@@ -1,0 +1,30 @@
+{
+  "integration_commit": "5f12f819ad7b7d14d1dc6aaad8eb5126e6260a0a",
+  "implementation_commit": "63e65da",
+  "branch": "fix/capstone-db-02b",
+  "database": "malaria_experiments",
+  "before_matches_rollback": true,
+  "after_matches_apply": true,
+  "only_approved_condition_changed": true,
+  "other_active_transactions_at_precheck": 0,
+  "owner_before_and_after": "capstone_v2_migrator",
+  "acl_before_and_after": [
+    "capstone_v2_migrator=X/capstone_v2_migrator",
+    "capstone_v2_runtime=X/capstone_v2_migrator"
+  ],
+  "trigger_enabled_before_and_after": "O",
+  "trigger_table": "public.experimental_campaigns",
+  "application_exit_code": 0,
+  "commit_confirmed": true,
+  "tests_passed": 49,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "rollback_required": false,
+  "campaign_test": "pending_authenticated_user_session",
+  "visual_validation": "pending",
+  "scientific_execution_by_agent": false,
+  "definition_sha256": {
+    "before.sql": "ae7505ab6222e99b28155ed1e875457a48ba255b13e19e069ccdb228d74944ca",
+    "after.sql": "b1927380e884c759d43adfe3978fb21df73c6ba4296423e0561fe59d04a78315"
+  }
+}

@@ -24,8 +24,8 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 ## Fuentes operativas canónicas
 
 CAPSTONE-DB-02B — [Corrección de evidencia del dataset en campañas](audits/capstone_db_02b_campaign_evidence.md)
-(`CURRENT_DOC`, 2026-10-12): SQL mínimo y rollback preparados; 49 pruebas aisladas PASS.
-Aplicación PostgreSQL y comprobación frontend operativas pendientes de autorización.
+(`CURRENT_DOC`, 2026-10-12): integrado en main; SQL aplicado y verificado, 49 pruebas finales PASS.
+**CIERRE PARCIAL:** campaña real/readback pendientes de sesión autenticada; rollback disponible.
 
 CAPSTONE-DB-01 — [Cierre de Fase 1: auditoría PostgreSQL](audits/capstone_db_01/06_phase1_closure.md)
 (`HISTORICAL_AUDIT`, 2026-10-12): respaldo e inventario verificados; **NO APROBABLE
