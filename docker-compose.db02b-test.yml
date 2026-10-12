@@ -1,0 +1,29 @@
+services:
+  db02b-db:
+    image: postgres:17.9
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: db02b_test
+    networks:
+      default:
+        aliases: [db]
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d db02b_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+  db02b-tests:
+    image: capstone-malaria-backend
+    working_dir: /workspace
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      DATABASE_URL: postgresql+psycopg://postgres@db/db02b_test
+      PYTHONPATH: /workspace/malaria_dl_local_project:/workspace/malaria_dl_local_project/tests
+    volumes:
+      - .:/workspace:ro
+    command: python -m pytest -p no:cacheprovider -v tests/db02b
+networks:
+  default:
+    internal: true

@@ -148,3 +148,10 @@ test-yolo-runtime:
 .PHONY: test-backend-yolo-adapter
 test-backend-yolo-adapter:
 	docker compose exec -T backend python -m pytest -q tests/test_yolo_detector_adapter.py
+
+.PHONY: test-db02b
+test-db02b:
+	@set -eu; \
+	trap 'docker compose -p capstone-db02b-test -f docker-compose.db02b-test.yml down --volumes' EXIT; \
+	docker compose -p capstone-db02b-test -f docker-compose.db02b-test.yml up -d --wait db02b-db; \
+	docker compose -p capstone-db02b-test -f docker-compose.db02b-test.yml run --rm --no-deps db02b-tests
