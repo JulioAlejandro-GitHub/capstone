@@ -4,20 +4,20 @@ import test from 'node:test';
 
 const read=(path)=>readFileSync(new URL(`../src/${path}`,import.meta.url),'utf8');
 
-test('Etapa 2 aparece sólo en TRAIN y Liberación usa el resumen persistente',()=>{
+test('activación aparece sólo en TRAIN y reutiliza los endpoints existentes',()=>{
   const row=read('components/reports/RunSummaryRow.tsx');
   const child=read('components/reports/RunLineageChildCard.tsx');
   const api=read('services/api.ts');
   assert.match(row,/processKind === 'training'/);
   assert.match(row,/stage2-release-summary/);
-  assert.match(row,/releasePresentation\[run\.release_status\]/);
+  assert.match(row,/stage2Active/);
   assert.doesNotMatch(child,/Stage2AvailabilityAction|enableStage2/);
   assert.match(api,/stage2-release-status/);
   assert.match(api,/stage2-publications/);
   assert.match(read('pages/Runs.tsx'),/getProductiveModelAvailability[^]*replacement-required/);
 });
 
-test('Ver detalle controla un acordeón accesible con confirmaciones inline',()=>{
+test('Activar controla un acordeón accesible con confirmaciones inline',()=>{
   const row=read('components/reports/RunSummaryRow.tsx');
   const card=read('components/reports/TrainingRunGroupCard.tsx');
   const panel=read('components/reports/Stage2PublicationPanel.tsx');
@@ -25,20 +25,18 @@ test('Ver detalle controla un acordeón accesible con confirmaciones inline',()=
   assert.match(row,/aria-controls=\{stage2ControlsId\}/);
   assert.match(card,/setStage2Expanded/);
   assert.match(card,/onStage2Open/);
-  assert.match(panel,/Confirmar publicación/);
-  assert.match(panel,/Ya existe un modelo elegido para Etapa 2/);
+  assert.match(panel,/Activar para clasificación celular/);
+  assert.match(panel,/Ya hay otro modelo activo/);
   assert.match(panel,/Continuar y reemplazar/);
-  assert.match(panel,/Confirmar baja/);
   assert.match(panel,/No constituye aprobación clínica ni diagnóstico automatizado/);
   assert.doesNotMatch(panel,/checkpoint_path|artifact_path|best_model\\.keras/);
 });
 
-test('la tarjeta presenta todos los estados persistidos y null explícito',()=>{
+test('el resumen muestra sólo la acción o Modelo en Estado Activo, sin indicadores de elegibilidad',()=>{
   const row=read('components/reports/RunSummaryRow.tsx');
-  assert.match(row,/Disponible para publicar/);
-  assert.match(row,/Productivo Etapa 2/);
-  assert.match(row,/No disponible/);
-  assert.match(row,/Estado no disponible/);
+  assert.match(row,/Activar para clasificación celular/);
+  assert.match(row,/Modelo en Estado Activo/);
+  assert.doesNotMatch(row,/Disponible para publicar|Productivo Etapa 2|Estado no disponible|Elegible/);
   assert.doesNotMatch(row,/missing_conditions|is_stage2_production/);
 });
 

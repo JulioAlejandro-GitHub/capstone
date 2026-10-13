@@ -10,20 +10,15 @@ from fastapi import Request
 from sqlalchemy.engine import Engine
 
 from app.audit import mutation_connection, record_event
+from app.config import get_settings
 from app.db import get_primary_engine
-from app.models.cell_detection import ComponentStatus
+from app.models.cell_detection import ComponentStatus, DetectorInputError
 from app.repositories.cell_analysis import CellAnalysisRepository
 from app.security import Principal
 from app.services.cell_crop_storage import CellCropStorage, StagedCellCrop
-from app.services.detectors.connected_components_v1 import (
-    ALGORITHM_VERSION,
-    COORDINATE_SPACE,
-    DETECTOR_KEY,
-    DETECTOR_VERSION,
-    DetectorInputError,
-    detect_path,
-    profile_snapshot,
-)
+from app.services.cell_detection import detect_path
+from app.services.detectors.resolver import resolve_detector
+from app.services.crops.resolver import resolve_crop_strategy
 from app.services.local_storage import (
     LocalStorage,
     StorageChecksumMismatchError,
@@ -73,7 +68,16 @@ class CellAnalysisService:
         engine: Engine | None = None,
         local_storage: LocalStorage | None = None,
         crop_storage: CellCropStorage | None = None,
-    ):
+        detector_key: str | None = None,
+        crop_strategy_key: str | None = None,
+    ) -> None:
+        settings = get_settings()
+        self.detector = resolve_detector(
+            detector_key if detector_key is not None else settings.cell_detector_key
+        )
+        self.crop_strategy = resolve_crop_strategy(
+            crop_strategy_key if crop_strategy_key is not None else settings.cell_crop_strategy_key
+        )
         self.engine = engine or get_primary_engine()
         self.local_storage = local_storage
         self.crop_storage = crop_storage
@@ -133,9 +137,9 @@ class CellAnalysisService:
     def eligible_analysis_runs(self, *, limit: int, offset: int) -> dict:
         with self.engine.connect() as connection:
             return CellAnalysisRepository(connection).eligible_analysis_runs(
-                detector_key=DETECTOR_KEY,
-                detector_version=DETECTOR_VERSION,
-                algorithm_version=ALGORITHM_VERSION,
+                detector_key=self.detector.key,
+                detector_version=self.detector.version,
+                algorithm_version=self.detector.algorithm_version,
                 limit=limit,
                 offset=offset,
             )
@@ -143,7 +147,7 @@ class CellAnalysisService:
     def _create_or_existing(
         self, analysis_run_id: str, principal: Principal, request: Request
     ) -> tuple[dict, bool]:
-        profile = profile_snapshot()
+        profile = self.detector.profile_snapshot(None)
         with self.engine.begin() as connection:
             repository = CellAnalysisRepository(connection)
             analysis = repository.analysis_input(analysis_run_id, for_update=True)
@@ -152,9 +156,9 @@ class CellAnalysisService:
             self._eligible(analysis)
             existing = repository.find_equivalent(
                 analysis_run_id=analysis["id"],
-                detector_key=DETECTOR_KEY,
-                detector_version=DETECTOR_VERSION,
-                algorithm_version=ALGORITHM_VERSION,
+                detector_key=self.detector.key,
+                detector_version=self.detector.version,
+                algorithm_version=self.detector.algorithm_version,
                 input_manifest_sha256=analysis["input_manifest_sha256"],
             )
             if existing:
@@ -165,9 +169,9 @@ class CellAnalysisService:
                 run_id=detection_run_id,
                 analysis_run_id=analysis["id"],
                 detection_run_code=detection_run_code,
-                detector_key=DETECTOR_KEY,
-                detector_version=DETECTOR_VERSION,
-                algorithm_version=ALGORITHM_VERSION,
+                detector_key=self.detector.key,
+                detector_version=self.detector.version,
+                algorithm_version=self.detector.algorithm_version,
                 profile_snapshot=profile,
                 input_manifest_sha256=analysis["input_manifest_sha256"],
                 image_count=len(analysis["images"]),
@@ -182,9 +186,9 @@ class CellAnalysisService:
                 progress_total=len(analysis["images"]),
                 metadata={
                     "analysis_run_id": str(analysis["id"]),
-                    "detector_key": DETECTOR_KEY,
-                    "detector_version": DETECTOR_VERSION,
-                    "algorithm_version": ALGORITHM_VERSION,
+                    "detector_key": self.detector.key,
+                    "detector_version": self.detector.version,
+                    "algorithm_version": self.detector.algorithm_version,
                 },
             )
             record_event(
@@ -200,9 +204,9 @@ class CellAnalysisService:
                     "detection_run_id": str(detection_run_id),
                     "detection_run_code": detection_run_code,
                     "analysis_run_id": str(analysis["id"]),
-                    "detector_key": DETECTOR_KEY,
-                    "detector_version": DETECTOR_VERSION,
-                    "algorithm_version": ALGORITHM_VERSION,
+                    "detector_key": self.detector.key,
+                    "detector_version": self.detector.version,
+                    "algorithm_version": self.detector.algorithm_version,
                     "input_manifest_sha256": analysis["input_manifest_sha256"],
                     "image_count": len(analysis["images"]),
                 },
@@ -321,6 +325,8 @@ class CellAnalysisService:
                     expected_file_size_bytes=image["input_file_size_bytes"],
                     profile=profile,
                     integrity_preverified=True,
+                    detector=self.detector,
+                    crop_strategy=self.crop_strategy,
                 )
                 crops_by_component = {
                     crop.component_index: crop for crop in result.crops
@@ -387,7 +393,7 @@ class CellAnalysisService:
                         "bbox_y": component.bbox.y,
                         "bbox_width": component.bbox.width,
                         "bbox_height": component.bbox.height,
-                        "coordinate_space": COORDINATE_SPACE,
+                        "coordinate_space": profile["coordinate_space"],
                         "detector_score": component.detector_score,
                         "automated_status": "candidate",
                     }

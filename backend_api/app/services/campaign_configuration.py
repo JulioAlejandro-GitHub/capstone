@@ -13,6 +13,7 @@ from fastapi import HTTPException, Request
 from app.audit import mutation_connection, record_event
 from app.db import get_primary_engine
 from app.security import Principal
+from app.observability import correlation_id_context
 from app.services.governed_datasets import list_governed_dataset_versions
 
 DATASOURCE = "malaria"
@@ -166,7 +167,7 @@ def create_campaign(payload, principal: Principal, request: Request) -> dict:
                                              checks=_checks(result, dataset_error)))
     name, purpose = payload.name.strip(), payload.purpose.strip()
     with mutation_connection(get_primary_engine()) as connection:
-        service = CampaignService(repository=CampaignRepository(scope=_shared_scope(connection)))
+        service = CampaignService(repository=CampaignRepository(scope=_shared_scope(connection), correlation_id=correlation_id_context.get()))
         try:
             row = service.configure(
                 campaign_id=payload.campaign_id, name=name, purpose=purpose,
@@ -174,7 +175,8 @@ def create_campaign(payload, principal: Principal, request: Request) -> dict:
                 protocol=result["protocol"], actor=principal.username,
             )
         except CampaignError as exc:
-            status = 409 if str(exc) == "CAMPAIGN_ID_CONFLICT" else 422
+            status = (500 if str(exc) == "CAMPAIGN_DATABASE_OPERATION_FAILED"
+                      else 409 if str(exc) == "CAMPAIGN_ID_CONFLICT" else 422)
             raise HTTPException(status, detail=dict(code=str(exc))) from None
         except GovernedDatasetError as exc:
             raise HTTPException(422, detail=dict(code=str(exc))) from None

@@ -27,7 +27,13 @@ def docker_context(session, row, attempt, member) -> ExecutionContext:
     config = session['configuration']
     return ExecutionContext(
         run_id=UUID(str(session['run_id'])), owner=UUID(str(session['owner'])),
-        attempt_id=UUID(str(session['attempt_id'])), execution_mode=ExecutionMode.DOCKER,
+        attempt_id=UUID(str(session['attempt_id'])), 
+        # execution_mode=ExecutionMode.DOCKER,
+        execution_mode=(
+            ExecutionMode.DOCKER
+            if os.path.exists("/.dockerenv")
+            else ExecutionMode.LOCAL_PYTHON
+        ),
         dataset_version_id=UUID(session['dataset']['dataset_version_id']),
         model_id=config['model_id'], adapter_version=config['adapter_version'],
         campaign_id=UUID(str(row['id'])), member_id=UUID(str(member['id'])),
@@ -95,11 +101,6 @@ def main():
         ):
             raise CampaignError("CHILD_FROZEN_IDENTITY_CONFLICT")
         preflight(repo, row, os.path.dirname(session["artifact_root"]))
-        # Read images from this host's copy of the verified materialization; the
-        # persisted session/run snapshot keeps the campaign's frozen value.
-        from ..data.governed_dataset import local_dataset_root
-        session = {**session, "dataset": {**session["dataset"], "dataset_root": str(
-            local_dataset_root(session["dataset"]["dataset_root"]))}}
         from ..models.registry import resolve_descriptor
         from .global_gate import token
 

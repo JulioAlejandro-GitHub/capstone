@@ -1,0 +1,23 @@
+{
+  "pattern": "alembic_version|unsupported_alembic_revision|E10_SCHEMA_NOT_READY|schema_ready|schema_version|campaign_guard|frozen|legacy|contract_version|migration",
+  "tracked_files_scanned": {
+    "documentation": 523,
+    "scripts_configuration": 1008,
+    "history": 65,
+    "runtime": 443,
+    "tests": 262
+  },
+  "matches_by_layer": {
+    "documentation": 1495,
+    "history": 380,
+    "runtime": 576,
+    "tests": 620,
+    "scripts_configuration": 10675
+  },
+  "matches": 13746,
+  "excluded": {
+    "data": 2,
+    "results": 7
+  },
+  "scope_note": "Incluye c\u00f3digo versionado de todos los proyectos, tambi\u00e9n malaria_dataset_split_project por solicitud expl\u00edcita del usuario; no incluye im\u00e1genes/datos binarios. B\u00fasqueda no equivale a revisi\u00f3n sem\u00e1ntica exhaustiva."
+}

@@ -18,11 +18,10 @@ from app.services.detectors.connected_components_v1 import (
     ALGORITHM_VERSION,
     DETECTOR_KEY,
     DETECTOR_VERSION,
-    DetectorInputError,
-    detect_image,
-    detect_path,
     profile_snapshot,
 )
+from app.models.cell_detection import DetectorInputError
+from app.services.cell_detection import detect_image, detect_path
 from app.services.local_storage import LocalStorage, StorageError
 
 

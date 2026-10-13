@@ -1,0 +1,116 @@
+PYTHONDONTWRITEBYTECODE=1 malaria_dl_local_project/.venv-local-train/bin/python scripts/audit_s2/audit.py --apply
+{
+  "strategy": "thin_blood_smear_same_split_v1",
+  "reference_dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "dataset_family": "smear_segmentation",
+  "patients_total": 193,
+  "images_total": 965,
+  "train": {
+    "patients": 154,
+    "images": 770
+  },
+  "val": {
+    "patients": 19,
+    "images": 95
+  },
+  "test": {
+    "patients": 20,
+    "images": 100
+  },
+  "no_assignment": 0,
+  "canonical_collisions": 0,
+  "cross_family_mismatches": 0,
+  "polygon": {
+    "patients": 33,
+    "images": 165,
+    "train_patients": 28,
+    "val_patients": 2,
+    "test_patients": 3,
+    "annotations": {
+      "train": {
+        "patients": 28,
+        "images": 140,
+        "parasitized": 1057,
+        "uninfected": 27236,
+        "WBC": 47,
+        "total_polygons": 28340
+      },
+      "val": {
+        "patients": 2,
+        "images": 10,
+        "parasitized": 35,
+        "uninfected": 2026,
+        "WBC": 2,
+        "total_polygons": 2063
+      },
+      "test": {
+        "patients": 3,
+        "images": 15,
+        "parasitized": 50,
+        "uninfected": 3809,
+        "WBC": 2,
+        "total_polygons": 3861
+      }
+    }
+  },
+  "point": {
+    "patients": 160,
+    "images": 800,
+    "splits": {
+      "train": {
+        "patients": 126,
+        "images": 630,
+        "parasitized": 5378,
+        "uninfected": 123518,
+        "WBC": 171
+      },
+      "val": {
+        "patients": 17,
+        "images": 85,
+        "parasitized": 730,
+        "uninfected": 17059,
+        "WBC": 28
+      },
+      "test": {
+        "patients": 17,
+        "images": 85,
+        "parasitized": 702,
+        "uninfected": 15063,
+        "WBC": 21
+      }
+    },
+    "annotation_type": "point; not polygon"
+  },
+  "persistence": {
+    "assignments": 965,
+    "cross_family_mismatches": 0,
+    "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+    "image_counts": {
+      "test": 100,
+      "train": 770,
+      "val": 95
+    },
+    "patient_counts": {
+      "test": 20,
+      "train": 154,
+      "val": 19
+    },
+    "patient_digest": "3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16",
+    "patient_overlap": 0,
+    "patients": 193,
+    "postgresql": {
+      "database": "malaria_experiments",
+      "role": "capstone_v2_runtime",
+      "server": "PostgreSQL 17.9 (Debian 17.9-1.pgdg13+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+    },
+    "record_digest": "ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f",
+    "result": "INSERTED",
+    "status": "GENERATED"
+  },
+  "integrity": {
+    "physical_inputs_equal": true,
+    "protected_cell_rows_equal": true,
+    "raw_files": 2022,
+    "cell_files": 27558
+  }
+}

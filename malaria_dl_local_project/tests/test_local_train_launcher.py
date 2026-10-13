@@ -40,9 +40,6 @@ class Campaign:
         return {"id": campaign_id, "state": self.state, "attempts": [], "members": self.members,
                 "environment": REFERENCE}
 
-    def preflight_e10_schema(self):
-        self.calls.append(("schema",))
-
     def claim(self, campaign_id, owner, host, pid, root, **kwargs):
         self.calls.append(("claim", kwargs))
         member = next((m for m in self.members if m["state"] in ("pending", "failed", "interrupted")), None)
@@ -156,7 +153,7 @@ def test_initial_preflight_failure_is_mutation_free():
 
     with pytest.raises(gd.GovernedDatasetError):
         executor.execute_campaign(repo, "c", "/unused", resume=True, check=reject)
-    assert repo.calls == [("schema",)]
+    assert repo.calls == []
 
 
 # Ctrl+C: the run is marked interrupted, nothing else is claimed, rerun resumes.
@@ -212,10 +209,9 @@ class Connection:
 
 
 def create_run(monkeypatch, catalog):
-    monkeypatch.setattr("src.malaria_dl.execution.schema.require_e10_schema",
-                        lambda c: {"revision": "20260922_01"})
     c = Connection(catalog)
-    config = {"model_id": "custom_cnn", "resolved": {"execution": {"seed": 47}}}
+    from src.malaria_dl.models.configuration import resolve_config
+    config = resolve_config('custom_cnn', overrides={'execution': {'seed': 47}})
     dataset = {"dataset_version_id": str(uuid4())}
     runtime = dict(REFERENCE, python="3.12.13", execution_mode="local_python", platform="Darwin")
     ExecutionRepository._create_run(c, str(uuid4()), config, dataset, REFERENCE, runtime=runtime)
@@ -389,7 +385,7 @@ def test_local_live_process_still_blocks():
 
 
 class GateEngine:
-    """Scripted SQL: gate installed, advisory lock held by another coordinator."""
+    """Scripted SQL: advisory lock held by another coordinator."""
 
     def __init__(self, lock):
         self.lock, self.statements = lock, []
@@ -400,7 +396,7 @@ class GateEngine:
     def execute(self, statement, params=None):
         sql = str(statement)
         self.statements.append(sql)
-        value = {"to_regclass": True, "pg_try_advisory_lock": self.lock}
+        value = {"pg_try_advisory_lock": self.lock}
         result = next((v for k, v in value.items() if k in sql), None)
 
         class Result:

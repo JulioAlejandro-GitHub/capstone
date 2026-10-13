@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "dataset": "NIH-NLM-ThinBloodSmearsPf",
+  "dataset_family": "smear_segmentation",
+  "source": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/index.html",
+  "started_at": "2026-10-03T11:42:34.671709+00:00",
+  "downloaded_at": "2026-10-03T11:42:39.787673+00:00",
+  "hash_strategy": "LOCAL_BASELINE_SHA256",
+  "official_checksum_available": false,
+  "transfers": [
+    {
+      "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/index.html",
+      "effective_url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/index.html",
+      "retrieved_at": "2026-10-03T11:40:59.086183+00:00",
+      "size": 1783,
+      "sha256": "74f53d1e65c45ad057be90425e7c284e44f0d44b7ffbf9b7db7d7bf4f7c75e1e",
+      "hash_strategy": "LOCAL_BASELINE_SHA256",
+      "downloaded_files": 0,
+      "downloaded_bytes": 0
+    },
+    {
+      "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/NIH-NLM-ThinBloodSmearsPf.zip",
+      "effective_url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/NIH-NLM-ThinBloodSmearsPf.zip",
+      "retrieved_at": "2026-10-03T11:41:20.839298+00:00",
+      "size": 690355704,
+      "sha256": "3d86af70b3a80d7ecdcc07f8fee0d0d9c9c197cccd907e239abb92c0357c3ea9",
+      "hash_strategy": "LOCAL_BASELINE_SHA256",
+      "downloaded_files": 0,
+      "downloaded_bytes": 0
+    },
+    {
+      "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/ReadMe.pdf",
+      "effective_url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/ReadMe.pdf",
+      "retrieved_at": "2026-10-03T11:41:21.366588+00:00",
+      "size": 200535,
+      "sha256": "2fe6ab9b218b5b840a6979947b2dbc548f5ca244024e909cf0bf543d7a83b3f1",
+      "hash_strategy": "LOCAL_BASELINE_SHA256",
+      "downloaded_files": 0,
+      "downloaded_bytes": 0
+    },
+    {
+      "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/Dataset_statistics.xlsx",
+      "effective_url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/Dataset_statistics.xlsx",
+      "retrieved_at": "2026-10-03T11:41:21.471987+00:00",
+      "size": 66112,
+      "sha256": "f4e8abe005763b97c0480c347ec19e016d6138b1f9dec37d2cc8aab53bc7b974",
+      "hash_strategy": "LOCAL_BASELINE_SHA256",
+      "downloaded_files": 0,
+      "downloaded_bytes": 0
+    },
+    {
+      "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/Data%20License%20Agreement.docx",
+      "effective_url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/Data%20License%20Agreement.docx",
+      "retrieved_at": "2026-10-03T11:42:35.618048+00:00",
+      "size": 22625,
+      "sha256": "e7617a7206967e1806ba335f8b986880c959fbb4d81295dc71049c8639d4b86f",
+      "hash_strategy": "LOCAL_BASELINE_SHA256",
+      "downloaded_files": 1,
+      "downloaded_bytes": 22625
+    }
+  ],
+  "document_versions": [
+    {
+      "document": "ReadMe.pdf",
+      "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/ReadMe.pdf",
+      "standalone_relative_path": ".capstone_source_documents/ReadMe.pdf",
+      "archive_differs_from_standalone": true,
+      "archive_sha256": "0684e14c188c2ae74aaf5d0da12c7d5c73ee233078e3214f6df652ff1502bd8d",
+      "standalone_sha256": "2fe6ab9b218b5b840a6979947b2dbc548f5ca244024e909cf0bf543d7a83b3f1"
+    },
+    {
+      "document": "Dataset_statistics.xlsx",
+      "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/Dataset_statistics.xlsx",
+      "standalone_relative_path": "Dataset_statistics.xlsx",
+      "archive_differs_from_standalone": false,
+      "archive_sha256": "f4e8abe005763b97c0480c347ec19e016d6138b1f9dec37d2cc8aab53bc7b974",
+      "standalone_sha256": "f4e8abe005763b97c0480c347ec19e016d6138b1f9dec37d2cc8aab53bc7b974"
+    },
+    {
+      "document": "Data License Agreement.docx",
+      "url": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/Data%20License%20Agreement.docx",
+      "standalone_relative_path": "Data License Agreement.docx",
+      "archive_differs_from_standalone": false,
+      "archive_sha256": "e7617a7206967e1806ba335f8b986880c959fbb4d81295dc71049c8639d4b86f",
+      "standalone_sha256": "e7617a7206967e1806ba335f8b986880c959fbb4d81295dc71049c8639d4b86f"
+    }
+  ],
+  "structure": {
+    "Polygon Set": {
+      "patients": 33,
+      "images": 165,
+      "ground_truth_files": 165
+    },
+    "Point Set": {
+      "patients": 160,
+      "images": 800,
+      "ground_truth_files": 800
+    }
+  },
+  "file_count": 2021,
+  "total_raw_bytes": 798756574,
+  "manifest_path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/NIH-NLM-ThinBloodSmearsPf/.capstone_download_manifest.json",
+  "manifest_sha256": "f9fa9e72cc686a0e3b3e6e30d07abaf713d7c19295960fbf1ef0405e587aafa6",
+  "all_acquisition_resources": 5,
+  "all_acquisition_bytes": 690646759,
+  "initial_transfer_created_at": "2026-10-03T11:40:59.084355+00:00",
+  "protected_dataset_unchanged": true
+}

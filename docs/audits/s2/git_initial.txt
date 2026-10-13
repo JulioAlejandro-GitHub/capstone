@@ -1,0 +1,4 @@
+branch: s1-smear-segmentation-source-adapter
+HEAD: e082c8bd7d47a1a3acbf371a2f57ff8d2fbeafc7
+parent: 1e962fa22770f366f5aef13e5cd55956ee6c5f85
+git status --short: clean (captured before S2 changes)

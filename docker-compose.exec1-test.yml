@@ -1,0 +1,12 @@
+services:
+  exec1-postgres:
+    image: postgres:17.9
+    environment:
+      POSTGRES_USER: exec1_fixture
+      POSTGRES_PASSWORD: exec1_fixture_only
+      POSTGRES_DB: exec1_fixture
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U exec1_fixture -d exec1_fixture"]
+      interval: 2s
+      timeout: 2s
+      retries: 20

@@ -1,4 +1,4 @@
-"""Read-only, fail-closed E10 reservation capability check. Never runs migrations."""
+"""Administrative/historical schema diagnostic only. Never call from operational flows."""
 from sqlalchemy.exc import SQLAlchemyError
 
 from ..campaigns.contracts import CampaignError

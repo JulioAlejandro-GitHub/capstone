@@ -1,0 +1,77 @@
+docker compose exec -T -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/app:/app/malaria_dl_local_project backend python /scripts/check_calibration_postgres.py
+{
+  "observed_at": "2026-10-04T16:07:35.178647+00:00",
+  "queries": {
+    "server": [
+      {
+        "version": "17.9 (Debian 17.9-1.pgdg13+1)",
+        "schema": "public",
+        "read_only": "on",
+        "can_create_schema": false
+      }
+    ],
+    "revision": [
+      {
+        "version_num": "pg_v2_baseline"
+      }
+    ],
+    "gate": [
+      {
+        "occupied": false
+      }
+    ],
+    "ownership_function": [
+      {
+        "proname": "experiment_require_owner",
+        "prosecdef": false,
+        "proconfig": [
+          "search_path=public, pg_catalog"
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "tablename": "campaign_configurations"
+      },
+      {
+        "tablename": "evaluations"
+      },
+      {
+        "tablename": "experimental_campaigns"
+      },
+      {
+        "tablename": "run_clinical_metrics"
+      },
+      {
+        "tablename": "run_configurations"
+      },
+      {
+        "tablename": "run_threshold_calibration"
+      },
+      {
+        "tablename": "runs"
+      },
+      {
+        "tablename": "train_execution_records"
+      }
+    ],
+    "temporary_schemas": []
+  },
+  "event_schema": {
+    "revision": "pg_v2_baseline",
+    "event_columns": true,
+    "event_metadata_constraint": true,
+    "event_unique_indexes": true,
+    "event_trigger_guard": true
+  },
+  "status": "BLOCKED",
+  "reasons": [
+    "Configured role cannot create an isolated schema",
+    "Ownership guard is bound to public; search_path alone cannot isolate it",
+    "No certified v2 isolation fixture for independent committed event transactions"
+  ],
+  "writes_performed": 0,
+  "integration_tests_executed": 0,
+  "cleanup": "No objects or rows created"
+}
+make: *** [test-calibration-postgres] Error 2

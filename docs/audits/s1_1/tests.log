@@ -1,0 +1,11 @@
+PYTHONDONTWRITEBYTECODE=1 malaria_dl_local_project/.venv-local-train/bin/python -m unittest discover -s scripts/audit_s1_1 -p 'test_audit.py' -v
+test_candidate_is_not_clinical_verification (test_audit.AuditTests.test_candidate_is_not_clinical_verification) ... ok
+test_canonical_pixel_hash_ignores_encoding (test_audit.AuditTests.test_canonical_pixel_hash_ignores_encoding) ... ok
+test_dimensions_are_part_of_comparison (test_audit.AuditTests.test_dimensions_are_part_of_comparison) ... ok
+test_patient_names_preserve_significant_suffixes (test_audit.AuditTests.test_patient_names_preserve_significant_suffixes) ... ok
+test_write_guard (test_audit.AuditTests.test_write_guard) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.031s
+
+OK

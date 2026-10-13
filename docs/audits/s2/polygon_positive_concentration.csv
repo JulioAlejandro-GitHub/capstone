@@ -1,0 +1,6 @@
+canonical_patient_id,split,rbc_parasitized,positive_fraction
+C49P10thinF,TEST,43,0.86
+C52P13thinF,VAL,30,0.8571428571428571
+C57P18thinF,VAL,5,0.14285714285714285
+C235ThinF,TEST,0,0.0
+C169P130ThinF,TEST,7,0.14

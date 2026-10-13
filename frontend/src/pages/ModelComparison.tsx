@@ -1,3 +1,4 @@
+import { AssessmentComparison } from '../components/reports/AssessmentComparison';
 import { useEffect, useState } from 'react';
 
 import { DataTable } from '../components/DataTable';
@@ -48,6 +49,8 @@ export function ModelComparison({ datasource }: ModelComparisonProps) {
           <p>Comparacion clinica experimental por run y resumen historico por modelo.</p>
         </div>
       </div>
+
+      <AssessmentComparison datasource={datasource} />
 
       <section className="panel clinical-disclaimer">
         <strong>Comparacion responsable</strong>

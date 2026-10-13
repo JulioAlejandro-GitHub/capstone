@@ -102,6 +102,16 @@ export interface ProductionPublicationResult {
 }
 
 export interface Stage2Availability {
+  train_started_at?:string|null;train_finished_at?:string|null;
+  evaluation_source_kind?:'run'|'assessment_e6'|null;
+  evaluation_attempt_id?:string|null;evaluation_identity_id?:string|null;
+  evaluation_started_at?:string|null;evaluation_finished_at?:string|null;
+  evaluation_split?:string|null;evaluation_purpose?:string|null;
+  model_version_registered?:boolean;architecture?:string|null;
+  checkpoint_sha256?:string|null;checkpoint_bytes?:number|null;evidence_source?:string|null;
+  published?:boolean;
+  explanations?:Array<{run_id:string;status:string;finished_at:string|null}>;
+  deployment_readiness?:{ready:boolean;status:'ready'|'blocked';checkpoint_accessible:boolean;checkpoint_verified:boolean};
   training_run_id:string;train_status?:string;evaluation_run_id?:string|null;evaluation_status?:string|null;
   explainability_run_ids?:string[];eligible:boolean;eligible_for_stage2_production?:boolean;
   available?:boolean;is_stage2_available?:boolean;is_stage2_production?:boolean;
@@ -111,7 +121,7 @@ export interface Stage2Availability {
   next_action?:'enable_for_stage2'|'view_stage2_model'|'unavailable';
   action_label?:string;blockers:PromotionBlockingReason[];technical_blockers?:PromotionBlockingReason[];warnings:string[];
   model_version_id:string|null;deployment_id?:string|null;fixture?:boolean;
-  checkpoint_artifact_id?:string;checkpoint?:string;model_name?:string;version_number?:number;
+  checkpoint_artifact_id?:string|null;checkpoint?:string|null;model_name?:string|null;version_number?:number|null;
   environment?:'stage2'|'production';alias?:'default'|'champion';production_scope?:'stage2_experimental'|'stage2_technical';deployment_status?:string;
   artifact_sha256?:string;threshold?:number;threshold_source?:string;deployed_at?:string;
   smoke_status?:string;available_for_inference?:boolean;
@@ -128,7 +138,7 @@ export interface ProductiveModelAvailability {
 }
 export interface Stage2Publication {
   id:string;datasource:string;model_version_id:string;training_run_id:string;
-  evaluation_run_id:string;checkpoint_artifact_id:string;scope:'stage2';
+  evaluation_run_id:string|null;evaluation_attempt_id?:string|null;checkpoint_artifact_id:string;scope:'stage2';
   status:'active'|'inactive';is_active:boolean;published_at:string;published_by:string|null;
   deactivated_at:string|null;deactivated_by:string|null;created_at:string;updated_at:string;
 }
@@ -246,7 +256,20 @@ export type TrainingReleaseStatus =
   | 'available_to_publish'
   | 'productive_stage2';
 
+export interface ScientificParameters {
+  target_recall: number | null;
+  min_recall: number | null;
+  calibrate_threshold: boolean | null;
+  early_stopping_patience: number | null;
+  early_stopping_min_delta: number | null;
+  min_class_fraction: number | null;
+  reject_prediction_collapse: boolean | null;
+  threshold: number | null;
+  val_f2_parasitized: number | null;
+}
+
 export interface TrainingSummary {
+  scientific_parameters?: ScientificParameters;
   run_id: string;
   run_type: 'training';
   status: string;
@@ -288,6 +311,7 @@ export interface TrainingSummaryCollection {
 }
 
 interface LineageChildBase {
+  source_kind: 'run';
   run_id: string;
   status: string;
   run_name: string | null;
@@ -338,15 +362,91 @@ export interface ExplainabilityLineageChild extends LineageChildBase {
   failed_count: number;
 }
 
+export interface AssessmentChoice {
+  attempt_id: string; training_run_id: string; kind: "evaluate" | "explain";
+  split: "train" | "val" | "test"; purpose: string; state: string; started_at: string;
+  threshold: number | null; dataset_version_id: string; checkpoint_artifact_id: string;
+}
+
+export interface AssessmentMetrics {
+  count: number;
+  definition: string;
+  tn: number; fp: number; fn: number; tp: number;
+  accuracy: number | null;
+  precision: number | null;
+  recall: number | null;
+  specificity: number | null;
+  f2: number | null;
+  f1?: number | null;
+  balanced_accuracy?: number | null;
+  roc_auc?: number | null;
+  pr_auc?: number | null;
+  confusion_matrix: number[][];
+}
+
+export interface AssessmentVerification {
+  count: number;
+  sha256: string;
+  metrics?: AssessmentMetrics;
+  artifacts_hash?: string;
+}
+
+export interface AssessmentEvaluationChild {
+  source_kind: 'assessment_e6';
+  attempt_id: string;
+  identity_id: string;
+  training_run_id: string;
+  state: 'active' | 'verified' | 'failed' | 'interrupted';
+  ordinal: number;
+  split: 'train' | 'val' | 'test';
+  purpose: 'development' | 'final';
+  started_at: string;
+  finished_at: string | null;
+  verification: AssessmentVerification | null;
+}
+
+export interface AssessmentExplanationChild extends Omit<AssessmentEvaluationChild, 'source_kind' | 'verification'> {
+  source_kind: 'assessment_explain_e6';
+  method: string | null;
+  result_count: number | null;
+  artifact_reference: string;
+  verification: { count: number; sha256: string; artifacts_hash?: string } | null;
+}
+
+export interface AssessmentArtifact {
+  artifact_id: string;
+  role: string;
+  path: string;
+  sha256: string;
+  bytes: number;
+}
+
+export interface AssessmentDetail extends Omit<AssessmentEvaluationChild, 'source_kind' | 'attempt_id' | 'split' | 'purpose'> {
+  id: string;
+  kind: 'evaluate' | 'explain';
+  cause: string | null;
+  identity: {
+    split: AssessmentEvaluationChild['split'];
+    purpose: AssessmentEvaluationChild['purpose'];
+    model: { model_version_id: string; checkpoint_artifact_id: string };
+    explanation?: { method: string };
+    dataset?: { dataset_version_id: string };
+    decision?: { effective: number };
+    seed?: number;
+    batch_size?: number;
+  };
+}
+
 export interface TrainingLineageChildren {
   training_run_id: string;
   evaluation_count: number;
   explainability_count: number;
   total_count: number;
-  evaluations: EvaluationLineageChild[];
-  explainabilities: ExplainabilityLineageChild[];
+  evaluations: (EvaluationLineageChild | AssessmentEvaluationChild)[];
+  explainabilities: (ExplainabilityLineageChild | AssessmentExplanationChild)[];
   limit: number;
   truncated: boolean;
+  offset?: number;
 }
 
 export type RunLineageConfidence =

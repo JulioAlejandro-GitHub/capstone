@@ -941,6 +941,7 @@ def main(args=None):
         args.dataset_version_id,
         expected_evidence_id=getattr(args, "expected_dataset_evidence_id", None),
         dataset_dir=args.dataset_dir, data_source=args.data_source, consumer="src.train",
+        required_splits=("train", "val"),
     )
     args.dataset_version_id = str(governed_dataset.dataset_version_id)
     args.dataset_dir = str(governed_dataset.dataset_root)

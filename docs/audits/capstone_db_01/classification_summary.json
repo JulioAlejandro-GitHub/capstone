@@ -1,0 +1,18 @@
+{
+  "constraints": {
+    "A": 536,
+    "B": 389,
+    "D": 42
+  },
+  "columns": 1515,
+  "routines": {
+    "B": 68,
+    "D": 9,
+    "A": 3
+  },
+  "application_triggers": {
+    "B": 100,
+    "D": 7
+  },
+  "internal_triggers": 1016
+}

@@ -26,6 +26,26 @@ def probability(value):
 
 
 def threshold(requested, protocol, calibration=None):
+    if requested == "auto":
+        require(
+            isinstance(calibration, dict) and isinstance(calibration.get("result"), dict),
+            "TRAIN_THRESHOLD_EVIDENCE_REQUIRED",
+        )
+        result = calibration["result"]
+        if result.get("enabled") is False:
+            # This value was recorded by TRAIN before TEST; never invent a fallback.
+            value = probability(result.get("threshold"))
+            return {
+                "requested": "auto",
+                "effective": value,
+                "source": {"version": "training_fixed_threshold_v1", "sha256": digest(calibration)},
+                "calibrator": None,
+                "score_domain": "raw",
+                "positive_class": 1,
+                "comparison": ">=",
+            }
+        decision = threshold("clinical", protocol, calibration)
+        return {**decision, "requested": "auto"}
     if requested == "clinical":
         require(
             isinstance(calibration, dict)
@@ -64,6 +84,26 @@ def threshold(requested, protocol, calibration=None):
     }
 
 
+def validate_split_protocol(split: str, purpose: str, protocol: dict) -> None:
+    """The existing authorization rule, checked before selecting image files."""
+    require(
+        split in ("train", "val", "test") and purpose in ("development", "final"),
+        "PROTOCOL_REQUIRED",
+    )
+    require(
+        isinstance(protocol, dict)
+        and protocol.get("version")
+        and split in protocol.get("splits", [])
+        and purpose in protocol.get("purposes", []),
+        "PROTOCOL_CONFLICT",
+    )
+    require(
+        (purpose == "final" and split == "test")
+        or (purpose == "development" and split != "test"),
+        "SPLIT_PURPOSE_CONFLICT",
+    )
+
+
 def identity(
     binding,
     dataset,
@@ -79,22 +119,7 @@ def identity(
     explanation=None,
     evaluation=None,
 ):
-    require(
-        split in ("train", "val", "test") and purpose in ("development", "final"),
-        "PROTOCOL_REQUIRED",
-    )
-    require(
-        isinstance(protocol, dict)
-        and protocol.get("version")
-        and split in protocol.get("splits", [])
-        and purpose in protocol.get("purposes", []),
-        "PROTOCOL_CONFLICT",
-    )
-    require(
-        (purpose == "final" and split == "test")
-        or (purpose == "development" and split != "test"),
-        "TEST_FINAL_LOCK_REQUIRED",
-    )
+    validate_split_protocol(split, purpose, protocol)
     require(
         type(seed) is int and type(batch_size) is int and batch_size > 0,
         "INFERENCE_OPTIONS_INVALID",
@@ -189,4 +214,18 @@ def verify_rows(value, rows):
             "PREDICTION_CONFLICT",
         )
     ordered = sorted(rows, key=lambda r: r["sample_id"])
-    return {"count": len(rows), "sha256": digest(ordered), "metrics": metrics(ordered)}
+    result = metrics(ordered)
+    if value["split"] == "test":
+        # Preserve historical VAL metric hashes; TEST adds the missing measures.
+        from ..evaluation.clinical_metrics import _safe_roc_auc, _safe_pr_auc
+        tp, tn, fp, fn = (result[k] for k in ("tp", "tn", "fp", "fn"))
+        labels = [r["label"] for r in ordered]
+        scores = [r["raw_score"] for r in ordered]
+        result.update(
+            f1=2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else None,
+            balanced_accuracy=(result["recall"] + result["specificity"]) / 2
+                if result["recall"] is not None and result["specificity"] is not None else None,
+            roc_auc=_safe_roc_auc(labels, scores),
+            pr_auc=_safe_pr_auc(labels, scores),
+        )
+    return {"count": len(rows), "sha256": digest(ordered), "metrics": result}

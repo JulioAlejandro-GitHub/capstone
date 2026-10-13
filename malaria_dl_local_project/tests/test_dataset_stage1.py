@@ -24,6 +24,12 @@ MATERIALIZATION = "22345678-abcd-4234-8234-123456789abc"
 TRAIN = "32345678-abcd-4234-8234-123456789abc"
 
 
+@pytest.fixture(autouse=True)
+def synthetic_model_catalog(monkeypatch):
+    from src.malaria_dl.models import registry
+    monkeypatch.setattr(registry, "registered_models", lambda: tuple(registry.MODEL_REGISTRY))
+
+
 class Result:
     def __init__(self, rows):
         self.rows = rows
@@ -169,12 +175,12 @@ def test_resolver_rejects_before_database(value, code, monkeypatch):
     connection = Mock(side_effect=AssertionError("must not connect"))
     monkeypatch.setattr(gd, "dataset_read_connection", connection)
     with pytest.raises(gd.GovernedDatasetError, match=code):
-        gd.resolve_governed_dataset(value)
+        gd.resolve_governed_dataset(value, required_splits=("train", "val", "test"), test_authorized=True)
     connection.assert_not_called()
 
 
 def test_exact_seal_and_upstream_hashing(fixture):
-    snap = gd.resolve_governed_dataset(VERSION.upper())
+    snap = gd.resolve_governed_dataset(VERSION.upper(), required_splits=("train", "val", "test"), test_authorized=True)
     assert str(snap.dataset_version_id) == VERSION
     assert str(snap.dataset_materialization_id) == MATERIALIZATION
     assert snap.counts == dict(train=2, val=2, test=2)
@@ -227,7 +233,7 @@ def test_rejected_contracts(fixture, case, code):
     elif case == "reference":
         fixture.contract["fingerprints"].pop("source_population_sha256")
     with pytest.raises(gd.GovernedDatasetError, match=code):
-        gd.resolve_governed_dataset(VERSION)
+        gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True)
 
 
 @pytest.mark.parametrize(
@@ -237,7 +243,7 @@ def test_each_fingerprint_is_recomputed(fixture, collection):
     rows = getattr(fixture, collection)
     rows[0] = tuple(["changed", *rows[0][1:]])
     with pytest.raises(gd.GovernedDatasetError, match="FINGERPRINT_MISMATCH"):
-        gd.resolve_governed_dataset(VERSION)
+        gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True)
 
 
 def test_changed_bytes_same_name_and_count_rejected(fixture):
@@ -246,17 +252,17 @@ def test_changed_bytes_same_name_and_count_rejected(fixture):
     path.write_bytes(b"x" * len(original))
     assert len(list(fixture.root.rglob("*.png"))) == 6
     with pytest.raises(gd.GovernedDatasetError, match="CONTENT_HASH_MISMATCH"):
-        gd.resolve_governed_dataset(VERSION)
+        gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True)
 
 
 def test_missing_or_unexpected_file_rejected(fixture):
     (fixture.root / "unexpected.png").write_bytes(b"not part of seal")
     with pytest.raises(gd.GovernedDatasetError, match="CONTENT_SET_MISMATCH"):
-        gd.resolve_governed_dataset(VERSION)
+        gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True)
 
 
 def parent_fixture(fixture):
-    metadata = gd.resolve_governed_dataset(VERSION).metadata()
+    metadata = gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True).metadata()
     fixture.training = dict(
         dataset_version_id=VERSION,
         execution_parameters=metadata,
@@ -270,20 +276,20 @@ def test_parent_inheritance_normalized_and_pinned(fixture, evidence_store):
     parent = parent_fixture(fixture)
     snap = ev.verify_dataset_for_execution(
         VERSION.upper(), training_run_id=TRAIN, consumer="src.evaluate"
-    )
+    , required_splits=("train", "val", "test"), test_authorized=True)
     assert snap.metadata() == parent
     assert evidence_store[snap.evidence_id]["success"]
     inherited = ev.verify_dataset_for_execution(
         training_run_id=TRAIN, consumer="src.explain"
-    )
+    , required_splits=("train", "val", "test"), test_authorized=True)
     assert inherited.metadata() == parent
     with pytest.raises(gd.GovernedDatasetError, match="TRAIN_DATASET_VERSION_MISMATCH"):
-        ev.verify_dataset_for_execution(str(uuid4()), training_run_id=TRAIN)
+        ev.verify_dataset_for_execution(str(uuid4()), training_run_id=TRAIN, required_splits=("train", "val", "test"), test_authorized=True)
     fixture.training["execution_parameters"]["dataset_materialization_id"] = str(
         uuid4()
     )
     with pytest.raises(gd.GovernedDatasetError, match="SNAPSHOT_IMMUTABLE"):
-        ev.verify_dataset_for_execution(training_run_id=TRAIN)
+        ev.verify_dataset_for_execution(training_run_id=TRAIN, required_splits=("train", "val", "test"), test_authorized=True)
 
 
 def test_historical_unaccredited_blocked_without_backfill(fixture, evidence_store):
@@ -292,20 +298,20 @@ def test_historical_unaccredited_blocked_without_backfill(fixture, evidence_stor
     )
     original = deepcopy(fixture.training)
     with pytest.raises(gd.GovernedDatasetError, match="NOT_ACCREDITED"):
-        ev.verify_dataset_for_execution(training_run_id=TRAIN)
+        ev.verify_dataset_for_execution(training_run_id=TRAIN, required_splits=("train", "val", "test"), test_authorized=True)
     assert fixture.training == original
     assert all("UPDATE runs" not in q for q, _ in fixture.queries)
 
 
 def test_batch_pin_cannot_substitute_materialization(fixture, evidence_store):
-    initial = ev.verify_dataset_for_execution(VERSION, consumer="run_train_all_models")
+    initial = ev.verify_dataset_for_execution(VERSION, consumer="run_train_all_models", required_splits=("train", "val", "test"), test_authorized=True)
     other = str(uuid4())
     fixture.materialization["id"] = other
     fixture.contract["dataset_materialization_id"] = other
     with pytest.raises(gd.GovernedDatasetError, match="SNAPSHOT_IMMUTABLE"):
         ev.verify_dataset_for_execution(
             VERSION, expected_evidence_id=initial.evidence_id
-        )
+        , required_splits=("train", "val", "test"), test_authorized=True)
 
 
 @pytest.mark.parametrize("override", ["different", "tfds"])
@@ -318,9 +324,9 @@ def test_path_and_source_cannot_replace_governed_dataset(
         else {"data_source": "tfds"}
     )
     with pytest.raises(gd.GovernedDatasetError, match="CONFLICT|REQUIRES_PHYSICAL"):
-        ev.verify_dataset_for_execution(VERSION, **kwargs)
+        ev.verify_dataset_for_execution(VERSION, **kwargs, required_splits=("train", "val", "test"), test_authorized=True)
     assert (
-        ev.verify_dataset_for_execution(VERSION, dataset_dir="data/sealed").dataset_root
+        ev.verify_dataset_for_execution(VERSION, dataset_dir="data/sealed", required_splits=("train", "val", "test"), test_authorized=True).dataset_root
         == fixture.root
     )
 
@@ -334,7 +340,7 @@ def test_batch_cli_requires_uuid(module, value):
 
 
 def test_legacy_command_builder_propagates_explicit_pin_to_twelve(fixture):
-    snap = replace(gd.resolve_governed_dataset(VERSION), evidence_id=str(uuid4()))
+    snap = replace(gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True), evidence_id=str(uuid4()))
     commands = [batch.build_train_command(model, optimizer, 1, 32, 2, 42, VERSION, .98, 2,
                 expected_evidence_id=snap.evidence_id)
                 for model in batch.enabled_models() for optimizer in batch.OPTIMIZER_DEFAULTS]
@@ -354,7 +360,7 @@ def test_dataset_only_legacy_training_invocation_rejected(monkeypatch):
 def test_failed_persistence_never_returns_verified(fixture, monkeypatch):
     monkeypatch.setattr(ev, "get_engine", Mock(side_effect=RuntimeError("private DSN")))
     with pytest.raises(gd.GovernedDatasetError, match="PERSISTENCE_FAILED") as error:
-        ev.verify_dataset_for_execution(VERSION)
+        ev.verify_dataset_for_execution(VERSION, required_splits=("train", "val", "test"), test_authorized=True)
     assert "private" not in str(error.value)
     assert not list(fixture.root.rglob("*.csv"))
 
@@ -419,7 +425,7 @@ def test_programmatic_execution_missing_id_is_early(value, monkeypatch):
     monkeypatch.setattr(ev, "persist_dataset_evidence", persist)
     monkeypatch.setattr(ev, "resolve_governed_dataset", resolve)
     with pytest.raises(gd.GovernedDatasetError, match="REQUIRED|INVALID"):
-        ev.verify_dataset_for_execution(value)
+        ev.verify_dataset_for_execution(value, required_splits=("train", "val", "test"), test_authorized=True)
     persist.assert_not_called()
     resolve.assert_not_called()
 
@@ -456,13 +462,13 @@ def test_consumers_reject_before_inference(
     if historic:
         fixture.training["dataset_version_id"] = None
     def inherited(*a):
-        return {}, gd.training_dataset_metadata(TRAIN), None
+        return {"training_run_id": TRAIN}, gd.training_dataset_metadata(TRAIN), None
     monkeypatch.setattr(service, "resolve", inherited)
     inference = Mock(side_effect=AssertionError("inference must not run"))
     monkeypatch.setattr(service, "KerasRuntime", inference)
     with pytest.raises((gd.GovernedDatasetError, AssessmentError), match="NOT_ACCREDITED|OVERRIDE_CONFLICT"):
         service.prepare(None, training_run_id=TRAIN, dataset_version_id=str(uuid4()), split="val", purpose="development",
-            protocol={"version":"synthetic", "allowed_numeric_thresholds":[.5]}, requested_threshold=".5", seed=42, batch_size=2,
+            protocol={"version":"synthetic", "splits":["val"], "purposes":["development"], "allowed_numeric_thresholds":[.5]}, requested_threshold=".5", seed=42, batch_size=2,
             explanation={"method":"gradcam"} if kind=="explain" else None)
     inference.assert_not_called()
     assert not list(fixture.root.rglob("*.csv"))
@@ -545,13 +551,13 @@ def test_additional_blocking_failure_is_not_ignored(fixture):
         dict(check_name="additional", status="FAIL", blocking_for_validation=True)
     )
     with pytest.raises(gd.GovernedDatasetError, match="CHECKS_NOT_PASS"):
-        gd.resolve_governed_dataset(VERSION)
+        gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True)
 
 
 def test_rejection_evidence_retains_sealed_reference(fixture, evidence_store):
     next(fixture.root.rglob("*.png")).write_bytes(b"altered fixture")
     with pytest.raises(gd.GovernedDatasetError, match="CONTENT_HASH_MISMATCH"):
-        ev.verify_dataset_for_execution(VERSION)
+        ev.verify_dataset_for_execution(VERSION, required_splits=("train", "val", "test"), test_authorized=True)
     result = next(iter(evidence_store.values()))
     assert result["success"] is False
     assert result["after_state"]["integrity_status"] == "rejected"

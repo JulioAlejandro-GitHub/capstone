@@ -2,85 +2,113 @@ import { useState } from 'react';
 import type { Stage2Availability } from '../../types/api';
 
 interface Props {
-  id:string;status?:Stage2Availability;loading?:boolean;error?:string;
-  explainCount:number;
-  onPublish:(replaceExisting:boolean)=>Promise<'published'|'replacement-required'|'failed'>;
-  onDeactivate:()=>Promise<void>;
+  id: string;
+  status?: Stage2Availability;
+  loading?: boolean;
+  error?: string;
+  explainCount: number;
+  onPublish: (replaceExisting: boolean) => Promise<'published' | 'replacement-required' | 'failed'>;
+  onRetry?: () => void;
 }
 
-const value=(raw?:string|null)=>raw||'No registrado';
-const date=(raw?:string|null)=>raw?new Intl.DateTimeFormat('es-CL',{
-  dateStyle:'medium',timeStyle:'short',
-}).format(new Date(raw)):'No registrada';
+const value = (raw?: string | null) => raw || 'Sin evidencia';
+const date = (raw?: string | null) => raw ? new Intl.DateTimeFormat('es-CL', {
+  dateStyle: 'medium', timeStyle: 'short',
+}).format(new Date(raw)) : 'Sin evidencia';
+
+function completionLabel(completed: boolean | undefined, state?: string | null): string {
+  if (completed === true) return 'Completado';
+  switch (state) {
+    case 'running': case 'active': return 'En curso';
+    case 'failed': return 'Fallido';
+    case 'interrupted': return 'Interrumpido';
+    case 'cancelled': case 'canceled': return 'Cancelado';
+    case 'pending': case 'queued': return 'Pendiente';
+    case 'completed': case 'verified': return 'Pendiente de validación';
+    default: return 'Sin información';
+  }
+}
 
 export function Stage2PublicationPanel({
-  id,status,loading=false,error,explainCount,onPublish,onDeactivate,
-}:Props) {
-  const [confirm,setConfirm]=useState<'publish'|'replace'|'deactivate'|null>(null);
-  const active=Boolean(status?.is_stage2_available);
-  const execute=async()=>{
-    if(confirm==='publish'||confirm==='replace'){
-      const result=await onPublish(confirm==='replace');
-      if(result==='replacement-required'){setConfirm('replace');return;}
-      if(result==='failed')return;
-    }else if(confirm==='deactivate')await onDeactivate();
+  id, status, loading = false, error, explainCount, onPublish, onRetry,
+}: Props) {
+  const [confirm, setConfirm] = useState<'replace' | null>(null);
+  const active = status?.is_stage2_available === true && status.available_for_inference === true;
+  const publishable = status?.eligible === true;
+  const execute = async (replaceExisting = false) => {
+    if (loading || active || !publishable) return;
+    const result = await onPublish(replaceExisting);
+    if (result === 'replacement-required') { setConfirm('replace'); return; }
+    if (result === 'failed') return;
     setConfirm(null);
   };
-  const publishable=Boolean(status?.eligible&&!status?.technical_blockers?.length);
-  if (loading && !status) return <section aria-label="Detalle de disponibilidad para Etapa 2"
+
+  if (loading && !status) return <section aria-label="Clasificación celular"
     className="stage2-publication-panel" id={id}>
-    <p role="status">Consultando disponibilidad para Etapa 2…</p>
+    <p role="status">Consultando modelo…</p>
   </section>;
-  return <section aria-label="Detalle de disponibilidad para Etapa 2"
+  if (!status) return <section aria-label="Clasificación celular"
     className="stage2-publication-panel" id={id}>
+    <p role="alert">No se pudo consultar el modelo. Inténtalo de nuevo.</p>
+    {onRetry ? <button type="button" onClick={onRetry}>Reintentar consulta</button> : null}
+  </section>;
+
+  const confirming = !active && publishable;
+  const trainLabel = completionLabel(status.eligibility?.train_completed, status.train_status);
+  const evaluateLabel = status.evaluation_status
+    ? completionLabel(status.eligibility?.evaluate_completed, status.evaluation_status)
+    : 'Sin evaluación asociada';
+  return <section aria-label="Clasificación celular" className="stage2-publication-panel" id={id}>
     <header>
-      <div><h3>{active?'Modelo disponible para Etapa 2':'Disponibilizar modelo para Etapa 2'}</h3>
-        <p>{active
-          ?'Esta versión se encuentra activa como candidata para el procesamiento de imágenes de frotis completo.'
-          :status?.eligible
-            ?'TRAIN y EVALUATE están completados. Esta versión puede quedar disponible como candidata para el procesamiento de imágenes de frotis completo en la Etapa 2.'
-            :'La versión no cumple la regla mínima de elegibilidad.'}</p></div>
-      <strong className={active?'stage2-production-badge':'stage2-eligibility-badge'}>
-        {active?'✓ Productivo Etapa 2':status?.eligible?'Elegible':'No disponible'}
-      </strong>
+      <h3>Regla de liberación</h3>
+      {active ? <strong role="status">Modelo en Estado Activo</strong> : null}
     </header>
     <div className="stage2-publication-grid">
-      <span>Regla<strong>TRAIN completed + EVALUATE completed</strong></span>
-      <span>TRAIN<strong>{value(status?.training_run_id)} · {value(status?.train_status)}</strong></span>
-      <span>EVALUATE<strong>{value(status?.evaluation_run_id)} · {value(status?.evaluation_status)}</strong></span>
-      <span>EXPLAIN<strong>{explainCount?`${explainCount} asociado(s) · informativo`:'No registrado · opcional'}</strong></span>
-      <span>Versión del modelo<strong>{value(status?.model_version_id)}</strong></span>
-      <span>Modelo / checkpoint<strong>{value(status?.model_name)} · {value(status?.checkpoint)}</strong></span>
-      <span>Estado Etapa 2<strong>{active?'Activo para nuevos trabajos':status?.eligible?'Disponible para publicar':'No disponible'}</strong></span>
-      {status?.deployment_id?<><span>Deployment<strong>{status.deployment_id.slice(0,8)}</strong></span>
+      <span className="stage2-release-rule">Regla
+        <strong>TRAIN completed + EVALUATE completed</strong>
+        <span className="stage2-release-states">TRAIN: {trainLabel}. · EVALUATE: {evaluateLabel}.</span>
+        {status.eligible
+          ? <strong role="status">Cumple la regla de liberación para clasificación celular</strong>
+          : <span className="stage2-missing-condition" role="status">
+            {status.eligibility ? <>
+              {!status.eligibility.train_completed ? 'Pendiente: TRAIN debe estar completado. ' : ''}
+              {!status.eligibility.evaluate_completed
+                ? 'Pendiente: EVALUATE debe estar completado y vinculado a este TRAIN.' : ''}
+            </> : 'No se pudo confirmar el cumplimiento de la regla de liberación.'}
+          </span>}
+      </span>
+      <span>TRAIN<strong>{value(status.training_run_id)} · {trainLabel}</strong></span>
+      <span>TRAIN finalizado<strong>{date(status.train_finished_at)}</strong></span>
+      <span>EVALUATE finalizado<strong>{date(status.evaluation_finished_at)} · {status.evaluation_split?.toUpperCase() ?? 'Sin evidencia'}</strong></span>
+      <span>EXPLAIN<strong>{status.explanations?.length
+        ? status.explanations.map((item) => `${item.status} · ${item.run_id}`).join(' / ')
+        : explainCount ? `${explainCount} asociado(s) · informativo` : 'N/A · opcional, sin ejecución asociada'}</strong></span>
+      <span>Arquitectura<strong>{value(status.architecture)}</strong></span>
+      <span>Modelo / checkpoint<strong>{value(status.model_name)} · {value(status.checkpoint)}</strong></span>
+      {status.deployment_id ? <>
+        <span>Deployment<strong>{status.deployment_id.slice(0, 8)}</strong></span>
         <span>Slot productivo<strong>{status.environment} / {status.alias}</strong></span>
-        <span>Threshold<strong>{status.threshold??'Registrado'} · {status.threshold_source??'fuente registrada'}</strong></span>
-        <span>Desplegado<strong>{date(status.deployed_at)}</strong></span></>:null}
-      {status?.publication?<><span>Publicación<strong>{status.publication.id}</strong></span>
-        <span>Publicado<strong>{date(status.publication.published_at)} · {value(status.publication.published_by)}</strong></span></>:null}
+        <span>Threshold<strong>{status.threshold ?? 'Registrado'} · {status.threshold_source ?? 'fuente registrada'}</strong></span>
+        <span>Desplegado<strong>{date(status.deployed_at)}</strong></span>
+      </> : null}
+      {status.publication ? <span>Publicado<strong>{date(status.publication.published_at)} · {value(status.publication.published_by)}</strong></span> : null}
     </div>
-    {!publishable?<p className="stage2-missing-condition" role="status">
-      {status?.technical_blockers?.map((item)=>item.message).join(' · ')
-        ||status?.eligibility?.missing_conditions.join(' · ')||'Estado no elegible.'}
-    </p>:null}
     <p className="stage2-experimental-warning">
-      Esta publicación es técnica y experimental. No constituye aprobación clínica ni diagnóstico automatizado.
+      Uso experimental. No constituye aprobación clínica ni diagnóstico automatizado.
     </p>
-    {error?<p className="run-promotion-error" role="alert">{error}</p>:null}
-    {confirm?<div className="stage2-inline-confirmation" role="alert">
-      <p>{confirm==='publish'
-        ?'Se publicará una referencia inmutable de esta versión. La Etapa 2 podrá seleccionarla para nuevos análisis.'
-        :confirm==='replace'
-          ?'Ya existe un modelo elegido para Etapa 2. Si continúas, el modelo anterior dejará de estar elegido y esta versión pasará a ser la nueva elegida.'
-        :'Los análisis anteriores conservarán su trazabilidad. El modelo dejará de estar disponible únicamente para nuevos trabajos de Etapa 2.'}</p>
-      <div><button className={confirm==='deactivate'?'':'primary-action'} disabled={loading}
-        onClick={()=>void execute()} type="button">{confirm==='publish'?'Confirmar publicación':confirm==='replace'?'Continuar y reemplazar':'Confirmar baja'}</button>
-        <button disabled={loading} onClick={()=>setConfirm(null)} type="button">Cancelar</button></div>
-    </div>:active||publishable?<button className={active?'':'primary-action'} disabled={loading}
-      onClick={()=>setConfirm(active?'deactivate':'publish')} type="button">
-      {active?'Dar de baja de Etapa 2':'Publicar y desplegar en Etapa 2'}
-    </button>:<button disabled title={status?.technical_blockers?.map((item)=>item.message).join(', ')
-      ||status?.eligibility?.missing_conditions.join(', ')}
-      type="button">Publicar y desplegar en Etapa 2</button>}
+    {error ? <p className="run-promotion-error" role="alert">
+      {error}
+    </p> : null}
+    {confirm && confirming ? <div className="stage2-inline-confirmation" role="alert">
+      <p>Ya hay otro modelo activo. Al continuar, este modelo lo reemplazará para las nuevas clasificaciones.</p>
+      <div>
+        <button className="primary-action" disabled={loading}
+          onClick={() => void execute(true)} type="button">Continuar y reemplazar</button>
+        <button disabled={loading} onClick={() => setConfirm(null)} type="button">Cancelar</button>
+      </div>
+    </div> : <button className={active ? '' : 'primary-action'} disabled={loading || active || !publishable}
+      onClick={() => void execute()} type="button">
+      Activar para clasificación celular
+    </button>}
   </section>;
 }

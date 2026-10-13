@@ -32,6 +32,10 @@ def read_authorization(path, url):
     require(bool(path) and bool(url), "V2_EXPLICIT_TARGET_REQUIRED")
     try:
         target = json.loads(Path(path).read_text())
+        if target.get("authorized_stage") == "C2.12.2":
+            from alembic_v2.disposable import validate_authorization
+            validate_authorization(target, url)
+            return target
         parsed = urlsplit(url)
         nonce = str(UUID(target["isolation_id"]))
         valid = (
@@ -83,6 +87,10 @@ def docker_json(args):
 def validate_docker_snapshot(target, container, volume, other_containers):
     """Pure checks, separately testable without starting Docker or PostgreSQL."""
     try:
+        if target.get("authorized_stage") == "C2.12.2":
+            from alembic_v2.disposable import validate_container
+            validate_container(target, container, volume, other_containers)
+            return
         require(container["Id"] == target["container_id"], "V2_CONTAINER_ID_MISMATCH")
         require(container["State"]["Running"] is True, "V2_CONTAINER_NOT_RUNNING")
         if target.get("authorized_stage") == "DBV2.3":
@@ -246,7 +254,20 @@ def validate_server_snapshot(target, identity, roles):
 
 def verify_connection(connection, target):
     try:
-        identity = dict(connection.exec_driver_sql(IDENTITY_SQL).mappings().one())
+        if target.get("authorized_stage") == "C2.12.2":
+            from alembic_v2.disposable import verify_created_database
+            # Query the existing administrator through the verified container;
+            # do not grant pg_control_system() to the migration role.
+            verify_created_database(target)
+            query = IDENTITY_SQL.replace(
+                "(SELECT system_identifier::text FROM pg_control_system())",
+                "NULL::text",
+            )
+            identity = dict(connection.exec_driver_sql(query).mappings().one())
+            identity["system_identifier"] = target["postgres_system_identifier"]
+            require(identity['server_version_num'] == 170009, 'C212_POSTGRES_VERSION')
+        else:
+            identity = dict(connection.exec_driver_sql(IDENTITY_SQL).mappings().one())
         roles = [dict(r) for r in connection.exec_driver_sql(ROLES_SQL).mappings()]
         validate_server_snapshot(target, identity, roles)
     except UnsafeTarget:

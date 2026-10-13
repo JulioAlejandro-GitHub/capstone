@@ -1,0 +1,75 @@
+ Network capstone-db02b-test_default Creating 
+ Network capstone-db02b-test_default Created 
+ Container capstone-db02b-test-db02b-db-1 Creating 
+ Container capstone-db02b-test-db02b-db-1 Created 
+ Container capstone-db02b-test-db02b-db-1 Starting 
+ Container capstone-db02b-test-db02b-db-1 Started 
+ Container capstone-db02b-test-db02b-db-1 Waiting 
+ Container capstone-db02b-test-db02b-db-1 Healthy 
+ Container capstone-db02b-test-db02b-tests-run-f5369618c0ed Creating 
+ db02b-tests The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested 
+ Container capstone-db02b-test-db02b-tests-run-f5369618c0ed Created 
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-8.4.2, pluggy-1.6.0 -- /usr/local/bin/python
+rootdir: /workspace
+configfile: pytest.ini
+plugins: anyio-4.15.1
+collecting ... collected 49 items
+
+tests/db02b/test_campaign_evidence.py::test_accept_and_commit_full_campaign[verified] PASSED [  2%]
+tests/db02b/test_campaign_evidence.py::test_accept_and_commit_full_campaign[verified_requested_splits] PASSED [  4%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes0] PASSED [  6%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes1] PASSED [  8%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes2] PASSED [ 10%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes3] PASSED [ 12%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes4] PASSED [ 14%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes5] PASSED [ 16%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes6] PASSED [ 18%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes7] PASSED [ 20%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes8] PASSED [ 22%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes9] PASSED [ 24%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes10] PASSED [ 26%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes11] PASSED [ 28%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes12] PASSED [ 30%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes13] PASSED [ 32%]
+tests/db02b/test_campaign_evidence.py::test_reject_invalid_evidence[changes14] PASSED [ 34%]
+tests/db02b/test_campaign_evidence.py::test_missing_status_rejected PASSED [ 36%]
+tests/db02b/test_campaign_evidence.py::test_service_passes_fresh_evidence_and_exact_snapshot PASSED [ 38%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[rollback.sql-DELETE FROM experimental_campaigns WHERE id=:id-CAMPAIGN_DELETE_FORBIDDEN] PASSED [ 40%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[rollback.sql-UPDATE experimental_campaigns SET actor='other' WHERE id=:id-CAMPAIGN_IDENTITY_IMMUTABLE] PASSED [ 42%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[rollback.sql-UPDATE experimental_campaigns SET id=gen_random_uuid() WHERE id=:id-CAMPAIGN_IDENTITY_IMMUTABLE] PASSED [ 44%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[rollback.sql-UPDATE experimental_campaigns SET created_at=now()+interval '1 day' WHERE id=:id-CAMPAIGN_IDENTITY_IMMUTABLE] PASSED [ 46%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[rollback.sql-UPDATE experimental_campaigns SET state='active' WHERE id=:id-INVALID_CAMPAIGN_TRANSITION] PASSED [ 48%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[rollback.sql-UPDATE experimental_campaigns SET state='frozen', canonical_contract='{}', contract='[]' WHERE id=:id-CAMPAIGN_HASH_CONFLICT] PASSED [ 51%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[rollback.sql-UPDATE experimental_campaigns SET dataset_snapshot='{}' WHERE id=:id-CAMPAIGN_DATASET_EVIDENCE_CONFLICT] PASSED [ 53%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[apply.sql-DELETE FROM experimental_campaigns WHERE id=:id-CAMPAIGN_DELETE_FORBIDDEN] PASSED [ 55%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[apply.sql-UPDATE experimental_campaigns SET actor='other' WHERE id=:id-CAMPAIGN_IDENTITY_IMMUTABLE] PASSED [ 57%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[apply.sql-UPDATE experimental_campaigns SET id=gen_random_uuid() WHERE id=:id-CAMPAIGN_IDENTITY_IMMUTABLE] PASSED [ 59%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[apply.sql-UPDATE experimental_campaigns SET created_at=now()+interval '1 day' WHERE id=:id-CAMPAIGN_IDENTITY_IMMUTABLE] PASSED [ 61%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[apply.sql-UPDATE experimental_campaigns SET state='active' WHERE id=:id-INVALID_CAMPAIGN_TRANSITION] PASSED [ 63%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[apply.sql-UPDATE experimental_campaigns SET state='frozen', canonical_contract='{}', contract='[]' WHERE id=:id-CAMPAIGN_HASH_CONFLICT] PASSED [ 65%]
+tests/db02b/test_campaign_evidence.py::test_unchanged_draft_rules[apply.sql-UPDATE experimental_campaigns SET dataset_snapshot='{}' WHERE id=:id-CAMPAIGN_DATASET_EVIDENCE_CONFLICT] PASSED [ 67%]
+tests/db02b/test_campaign_evidence.py::test_frozen_immutability_and_terminal_rule[rollback.sql] PASSED [ 69%]
+tests/db02b/test_campaign_evidence.py::test_frozen_immutability_and_terminal_rule[apply.sql] PASSED [ 71%]
+tests/db02b/test_campaign_evidence.py::test_original_reproduces_rejection_and_rollback_restores PASSED [ 73%]
+tests/db02b/test_campaign_evidence.py::test_failure_after_members_rolls_back_all_rows PASSED [ 75%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[matrix-rollback.sql] PASSED [ 77%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[matrix-apply.sql] PASSED [ 79%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[grid-rollback.sql] PASSED [ 81%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[grid-apply.sql] PASSED [ 83%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[protocol-rollback.sql] PASSED [ 85%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[protocol-apply.sql] PASSED [ 87%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[science-rollback.sql] PASSED [ 89%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[science-apply.sql] PASSED [ 91%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[initial_members-rollback.sql] PASSED [ 93%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[initial_members-apply.sql] PASSED [ 95%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[starts_draft-rollback.sql] PASSED [ 97%]
+tests/db02b/test_campaign_evidence.py::test_other_guard_branches[starts_draft-apply.sql] PASSED [100%]
+
+============================== 49 passed in 0.88s ==============================
+ Container capstone-db02b-test-db02b-db-1 Stopping 
+ Container capstone-db02b-test-db02b-db-1 Stopped 
+ Container capstone-db02b-test-db02b-db-1 Removing 
+ Container capstone-db02b-test-db02b-db-1 Removed 
+ Network capstone-db02b-test_default Removing 
+ Network capstone-db02b-test_default Removed 

@@ -99,11 +99,6 @@ def execution_readiness(repository, row, *, environment=None, dataset_resolver=N
     # paused is resumed automatically by the executor.
     _check(checks, "campaign_state_executable", row["state"] in ("frozen", "active", "paused"),
            "CAMPAIGN_NOT_EXECUTABLE", state=row["state"])
-    try:
-        repository.preflight_e10_schema()
-        _check(checks, "e10_schema", True)
-    except Exception as exc:  # noqa: BLE001 -- reported, never raised: plan stays readable
-        _check(checks, "e10_schema", False, type(exc).__name__)
     current = (environment or planning_environment)()
     # Runtime is recorded on every run (runtime_environment), not enforced.
     _info(checks, "code_environment_identity", differing_keys=runtime_differences(row, current))

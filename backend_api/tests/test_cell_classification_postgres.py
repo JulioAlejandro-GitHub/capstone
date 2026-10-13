@@ -898,9 +898,18 @@ def classification_postgres(monkeypatch, tmp_path):
         settings,
         connection.execute(text("SELECT current_database()")).scalar_one(),
     )
-    assert connection.execute(
-        text("SELECT version_num='20260810_05' FROM alembic_version")
-    ).scalar_one(), "la migración 20260810_05 debe estar aplicada"
+    # Validate capabilities, including the adopted v2 baseline, not a historic revision.
+    schema = inspect(connection)
+    for table in (
+        "cell_detection_runs",
+        "cell_crops",
+        "cell_classification_runs",
+        "cell_classification_inputs",
+        "cell_predictions",
+        "smear_analysis_summaries",
+        "cell_classification_reviews",
+    ):
+        assert schema.has_table(table), f"Required cell-analysis table missing: {table}"
     baseline = _database_counts(connection)
     suffix = uuid4().hex[:10]
     roles = ("administrator", "operator", "reviewer", "read_only")

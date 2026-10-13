@@ -1,0 +1,3 @@
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src malaria_dl_local_project/.venv-local-train/bin/python -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_dataset_families.py malaria_dataset_split_project/tests/unit/test_polygon_set.py malaria_dataset_split_project/tests/unit/test_thin_blood_smears_pf.py malaria_dataset_split_project/tests/unit/test_freeze.py
+..............................s.....                                     [100%]
+35 passed, 1 skipped in 0.23s

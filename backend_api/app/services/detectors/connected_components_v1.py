@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-import io
 import math
 from collections import deque
 from copy import deepcopy
-from pathlib import Path
 
-from PIL import Image, ImageFilter, ImageOps, UnidentifiedImageError
+from PIL import Image, ImageFilter, ImageOps
 
 from app.models.cell_detection import (
     BoundingBox,
-    CellCrop,
     ComponentStatus,
     ConnectedComponent,
-    ImageDetectionResult,
+    DetectionResult,
 )
 
 
@@ -65,18 +62,6 @@ _FIXED_PROFILE_FIELDS = {
     "orientation_policy",
     "resampling",
 }
-
-_PNG_PIXEL_PRESERVING_MODES = {
-    "1", "L", "LA", "P", "RGB", "RGBA", "I;16", "I;16L", "I;16B",
-}
-
-
-class DetectorInputError(ValueError):
-    """Raised when a frozen source image cannot be processed safely."""
-
-    def __init__(self, code: str, message: str):
-        self.code = code
-        super().__init__(message)
 
 
 def profile_snapshot(overrides: dict | None = None) -> dict:
@@ -337,8 +322,8 @@ def _components(mask: bytearray, width: int, height: int, profile: dict) -> list
     return found
 
 
-def detect_image(image: Image.Image, profile: dict | None = None) -> ImageDetectionResult:
-    """Detect candidates in a Pillow image without touching a database or filesystem."""
+def detect_image(image: Image.Image, profile: dict | None = None) -> DetectionResult:
+    """Return candidate geometry and metrics only; CELL CROP owns PNG generation."""
 
     selected = profile_snapshot(profile)
     raw_width, raw_height = image.size
@@ -352,103 +337,17 @@ def detect_image(image: Image.Image, profile: dict | None = None) -> ImageDetect
         luminance = luminance.filter(ImageFilter.GaussianBlur((blur_kernel - 1) / 2))
     mask, threshold = _foreground_mask(luminance, selected)
     components = _components(mask, width, height, selected)
-    crops: list[CellCrop] = []
-    if components and any(
-        component.component_status == ComponentStatus.ACCEPTED
-        for component in components
-    ) and oriented.mode not in _PNG_PIXEL_PRESERVING_MODES:
-        raise DetectorInputError(
-            "UNSUPPORTED_CROP_MODE",
-            "El modo de píxel original no admite un crop PNG sin conversión.",
-        )
-    for component in components:
-        if component.component_status != ComponentStatus.ACCEPTED:
-            continue
-        padded = component.bbox.padded(
-            int(selected["crop_padding_px"]), width, height
-        )
-        crop_image = oriented.crop(
-            (padded.x, padded.y, padded.right, padded.bottom)
-        )
-        output = io.BytesIO()
-        crop_image.save(output, format="PNG", optimize=False)
-        crops.append(
-            CellCrop(
-                component_index=component.component_index,
-                bbox=padded,
-                padding_px=int(selected["crop_padding_px"]),
-                png_bytes=output.getvalue(),
-                width_px=padded.width,
-                height_px=padded.height,
-            )
-        )
     warnings: list[str] = []
     if not any(c.component_status == ComponentStatus.ACCEPTED for c in components):
         warnings.append("NO_ACCEPTED_COMPONENTS")
     if any(c.rejection_code == "MAXIMUM_COMPONENTS_EXCEEDED" for c in components):
         warnings.append("MAXIMUM_COMPONENTS_REACHED")
-    return ImageDetectionResult(
+    return DetectionResult(
         raw_width_px=raw_width,
         raw_height_px=raw_height,
         oriented_width_px=width,
         oriented_height_px=height,
         threshold_value=threshold,
         components=tuple(components),
-        crops=tuple(crops),
         warnings=tuple(warnings),
     )
-
-
-def detect_path(
-    path: Path,
-    *,
-    expected_sha256: str,
-    expected_width_px: int,
-    expected_height_px: int,
-    expected_file_size_bytes: int,
-    profile: dict | None = None,
-    integrity_preverified: bool = False,
-) -> ImageDetectionResult:
-    """Verify a frozen source, then detect on its EXIF-oriented full raster."""
-
-    try:
-        info = path.stat()
-        if not path.is_file() or path.is_symlink():
-            raise DetectorInputError("SOURCE_NOT_REGULAR", "La imagen original no es regular.")
-        if not integrity_preverified:
-            from app.services.local_storage import (
-                StorageChecksumMismatchError,
-                StorageError,
-                StorageSizeMismatchError,
-                verify_regular_file,
-            )
-
-            try:
-                verify_regular_file(
-                    path,
-                    expected_size_bytes=expected_file_size_bytes,
-                    expected_sha256=expected_sha256,
-                )
-            except StorageSizeMismatchError as exc:
-                raise DetectorInputError(
-                    "FILE_SIZE_MISMATCH", "El tamaño del original cambió."
-                ) from exc
-            except StorageChecksumMismatchError as exc:
-                raise DetectorInputError(
-                    "CHECKSUM_MISMATCH", "El checksum del original cambió."
-                ) from exc
-            except StorageError as exc:
-                raise DetectorInputError(
-                    "SOURCE_NOT_REGULAR", "La imagen original no es regular."
-                ) from exc
-        with Image.open(path) as source:
-            if source.size != (expected_width_px, expected_height_px):
-                raise DetectorInputError("DIMENSIONS_MISMATCH", "Las dimensiones del original cambiaron.")
-            source.load()
-            return detect_image(source, profile)
-    except DetectorInputError:
-        raise
-    except (FileNotFoundError, UnidentifiedImageError, OSError, SyntaxError) as exc:
-        raise DetectorInputError(
-            "SOURCE_DECODE_FAILED", "La imagen original no pudo decodificarse."
-        ) from exc

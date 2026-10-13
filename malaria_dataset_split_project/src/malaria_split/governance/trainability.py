@@ -24,6 +24,26 @@ REQUIRED_LOGICAL_VALIDATION_CHECKS = (
     "class_presence_test",
 )
 
+SMEAR_LOGICAL_VALIDATION_CHECKS = (
+    "identity_coverage", "identity_conflicts", "patient_train_val_overlap",
+    "patient_train_test_overlap", "patient_val_test_overlap",
+    "duplicate_cross_split_overlap", "assignment_count", "source_record_count",
+    "split_completeness", "patient_count", "five_images_per_patient",
+    "same_split_cross_family", "polygon_population", "point_population",
+    "source_provenance", "s2_assignments_unchanged", "fingerprint_reproducibility",
+)
+
+
+def required_logical_validation_checks(connection: Connection, dataset_version_id: UUID) -> tuple[str, ...]:
+    methodology = connection.execute(
+        text("SELECT methodology_json FROM dataset_versions WHERE id=:id"),
+        {"id": dataset_version_id},
+    ).scalar_one()
+    if methodology.get("dataset_family") == "smear_segmentation":
+        return SMEAR_LOGICAL_VALIDATION_CHECKS
+    return REQUIRED_LOGICAL_VALIDATION_CHECKS
+
+
 DATASET_NOT_FROZEN = "DATASET_NOT_FROZEN"
 VALIDATION_NOT_PASS = "VALIDATION_NOT_PASS"
 NO_READY_RECONCILED_MATERIALIZATION = "NO_READY_RECONCILED_MATERIALIZATION"
@@ -74,7 +94,7 @@ def _latest_validation_checks(
 
 def logical_validation_passes(connection: Connection, dataset_version_id: UUID) -> bool:
     checks = _latest_validation_checks(connection, dataset_version_id)
-    for name in REQUIRED_LOGICAL_VALIDATION_CHECKS:
+    for name in required_logical_validation_checks(connection, dataset_version_id):
         check = checks.get(name)
         if not check or not check["blocking_for_validation"] or check["status"] != "PASS":
             return False

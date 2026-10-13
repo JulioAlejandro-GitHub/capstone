@@ -1,0 +1,4838 @@
+[
+  [
+    "Point set has 160 patients with 800 images, all cells annotated by points"
+  ],
+  [
+    "File path",
+    "WBC",
+    "Infected RBC",
+    "Uninfected RBC"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\143C39P4thinF_original\\GT\\IMG_20150622_105102.txt'",
+    "1",
+    "39",
+    "123"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\143C39P4thinF_original\\GT\\IMG_20150622_105253.txt'",
+    "1",
+    "27",
+    "98"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\143C39P4thinF_original\\GT\\IMG_20150622_105803.txt'",
+    "3",
+    "42",
+    "123"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\143C39P4thinF_original\\GT\\IMG_20150622_110115.txt'",
+    "0",
+    "37",
+    "121"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\143C39P4thinF_original\\GT\\IMG_20150622_110352.txt'",
+    "1",
+    "45",
+    "104"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\144C3thin_original\\GT\\IMG_20150608_162835.txt'",
+    "0",
+    "0",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\144C3thin_original\\GT\\IMG_20150608_162922.txt'",
+    "1",
+    "0",
+    "242"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\144C3thin_original\\GT\\IMG_20150608_163002.txt'",
+    "1",
+    "0",
+    "254"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\144C3thin_original\\GT\\IMG_20150608_163029.txt'",
+    "1",
+    "0",
+    "288"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\144C3thin_original\\GT\\IMG_20150608_163047.txt'",
+    "0",
+    "0",
+    "285"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\145C42P5thin_original\\GT\\IMG_20150623_134426.txt'",
+    "0",
+    "1",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\145C42P5thin_original\\GT\\IMG_20150623_134547.txt'",
+    "0",
+    "2",
+    "246"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\145C42P5thin_original\\GT\\IMG_20150623_134751.txt'",
+    "0",
+    "3",
+    "215"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\145C42P5thin_original\\GT\\IMG_20150623_134919.txt'",
+    "0",
+    "0",
+    "211"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\145C42P5thin_original\\GT\\IMG_20150623_135251.txt'",
+    "0",
+    "3",
+    "239"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\147C4thin_original\\GT\\IMG_20150608_165540.txt'",
+    "1",
+    "0",
+    "257"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\147C4thin_original\\GT\\IMG_20150608_165620.txt'",
+    "0",
+    "0",
+    "249"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\147C4thin_original\\GT\\IMG_20150608_165908.txt'",
+    "0",
+    "0",
+    "254"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\147C4thin_original\\GT\\IMG_20150608_170016.txt'",
+    "0",
+    "0",
+    "222"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\147C4thin_original\\GT\\IMG_20150608_170038.txt'",
+    "0",
+    "0",
+    "224"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\148C47P8thinOriginalOlympusCX21\\GT\\IMG_20150717_172748.txt'",
+    "1",
+    "1",
+    "187"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\148C47P8thinOriginalOlympusCX21\\GT\\IMG_20150717_173432.txt'",
+    "0",
+    "0",
+    "154"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\148C47P8thinOriginalOlympusCX21\\GT\\IMG_20150717_173515.txt'",
+    "0",
+    "0",
+    "156"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\148C47P8thinOriginalOlympusCX21\\GT\\IMG_20150717_173554.txt'",
+    "0",
+    "1",
+    "167"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\148C47P8thinOriginalOlympusCX21\\GT\\IMG_20150717_174222.txt'",
+    "0",
+    "1",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\149C48P9thinF\\GT\\IMG_20150721_160406.txt'",
+    "0",
+    "57",
+    "229"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\149C48P9thinF\\GT\\IMG_20150721_160944.txt'",
+    "0",
+    "42",
+    "216"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\149C48P9thinF\\GT\\IMG_20150721_161055.txt'",
+    "0",
+    "44",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\149C48P9thinF\\GT\\IMG_20150721_161243.txt'",
+    "0",
+    "25",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\149C48P9thinF\\GT\\IMG_20150721_161412.txt'",
+    "0",
+    "25",
+    "176"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\151C50P11thinF\\GT\\IMG_20150724_114951.txt'",
+    "0",
+    "4",
+    "147"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\151C50P11thinF\\GT\\IMG_20150724_115141.txt'",
+    "0",
+    "3",
+    "192"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\151C50P11thinF\\GT\\IMG_20150724_115603.txt'",
+    "0",
+    "4",
+    "158"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\151C50P11thinF\\GT\\IMG_20150724_115651.txt'",
+    "0",
+    "10",
+    "191"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\151C50P11thinF\\GT\\IMG_20150724_115749.txt'",
+    "1",
+    "8",
+    "208"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\152C51AP12thinF\\GT\\IMG_20150724_153313.txt'",
+    "0",
+    "19",
+    "101"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\152C51AP12thinF\\GT\\IMG_20150724_154243.txt'",
+    "0",
+    "24",
+    "152"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\152C51AP12thinF\\GT\\IMG_20150724_154330.txt'",
+    "1",
+    "25",
+    "121"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\152C51AP12thinF\\GT\\IMG_20150724_155046.txt'",
+    "0",
+    "18",
+    "122"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\152C51AP12thinF\\GT\\IMG_20150724_155557.txt'",
+    "0",
+    "13",
+    "72"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\154C53P14thinF\\GT\\IMG_20150726_114404.txt'",
+    "0",
+    "0",
+    "160"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\154C53P14thinF\\GT\\IMG_20150726_114439.txt'",
+    "0",
+    "0",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\154C53P14thinF\\GT\\IMG_20150726_114606.txt'",
+    "1",
+    "1",
+    "211"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\154C53P14thinF\\GT\\IMG_20150726_114918.txt'",
+    "0",
+    "3",
+    "195"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\154C53P14thinF\\GT\\IMG_20150726_115046.txt'",
+    "0",
+    "0",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\155C54P15thinF\\GT\\IMG_20150728_102017.txt'",
+    "0",
+    "1",
+    "216"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\155C54P15thinF\\GT\\IMG_20150728_105949.txt'",
+    "0",
+    "3",
+    "242"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\155C54P15thinF\\GT\\IMG_20150728_112832.txt'",
+    "0",
+    "1",
+    "252"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\155C54P15thinF\\GT\\IMG_20150728_112938.txt'",
+    "0",
+    "0",
+    "231"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\155C54P15thinF\\GT\\IMG_20150728_113006.txt'",
+    "0",
+    "1",
+    "254"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\157C56P17thinF\\GT\\IMG_20150728_151330.txt'",
+    "0",
+    "4",
+    "129"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\157C56P17thinF\\GT\\IMG_20150728_153328.txt'",
+    "0",
+    "2",
+    "114"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\157C56P17thinF\\GT\\IMG_20150728_153413.txt'",
+    "0",
+    "1",
+    "122"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\157C56P17thinF\\GT\\IMG_20150728_155921.txt'",
+    "0",
+    "3",
+    "125"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\157C56P17thinF\\GT\\IMG_20150728_160256.txt'",
+    "0",
+    "1",
+    "132"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\159C58P19thinF\\GT\\IMG_20150802_121847.txt'",
+    "0",
+    "0",
+    "186"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\159C58P19thinF\\GT\\IMG_20150802_122215.txt'",
+    "0",
+    "0",
+    "175"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\159C58P19thinF\\GT\\IMG_20150802_122338.txt'",
+    "1",
+    "1",
+    "165"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\159C58P19thinF\\GT\\IMG_20150802_122520.txt'",
+    "0",
+    "0",
+    "177"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\159C58P19thinF\\GT\\IMG_20150802_122648.txt'",
+    "0",
+    "0",
+    "165"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\200C59P20thinF\\GT\\IMG_20150803_111244.txt'",
+    "0",
+    "42",
+    "165"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\200C59P20thinF\\GT\\IMG_20150803_111333.txt'",
+    "0",
+    "48",
+    "138"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\200C59P20thinF\\GT\\IMG_20150803_112733.txt'",
+    "0",
+    "63",
+    "171"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\200C59P20thinF\\GT\\IMG_20150803_112802.txt'",
+    "0",
+    "51",
+    "152"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\200C59P20thinF\\GT\\IMG_20150803_112858.txt'",
+    "1",
+    "48",
+    "152"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\201C60P21thinF\\GT\\IMG_20150803_144003.txt'",
+    "0",
+    "21",
+    "174"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\201C60P21thinF\\GT\\IMG_20150803_144510.txt'",
+    "0",
+    "14",
+    "172"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\201C60P21thinF\\GT\\IMG_20150804_104919.txt'",
+    "0",
+    "17",
+    "164"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\201C60P21thinF\\GT\\IMG_20150804_105034.txt'",
+    "0",
+    "29",
+    "142"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\201C60P21thinF\\GT\\IMG_20150804_105955.txt'",
+    "1",
+    "25",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\202C61P22N_ThinF\\GT\\IMG_20150818_112252.txt'",
+    "2",
+    "1",
+    "263"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\202C61P22N_ThinF\\GT\\IMG_20150818_112433.txt'",
+    "1",
+    "0",
+    "195"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\202C61P22N_ThinF\\GT\\IMG_20150818_112518.txt'",
+    "0",
+    "1",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\202C61P22N_ThinF\\GT\\IMG_20150818_112626.txt'",
+    "0",
+    "0",
+    "220"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\202C61P22N_ThinF\\GT\\IMG_20150818_112704.txt'",
+    "0",
+    "1",
+    "222"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\203C62P23N_ThinF\\GT\\IMG_20150818_132811.txt'",
+    "0",
+    "7",
+    "197"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\203C62P23N_ThinF\\GT\\IMG_20150818_132918.txt'",
+    "0",
+    "7",
+    "200"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\203C62P23N_ThinF\\GT\\IMG_20150818_133055.txt'",
+    "0",
+    "6",
+    "187"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\203C62P23N_ThinF\\GT\\IMG_20150818_133211.txt'",
+    "0",
+    "5",
+    "218"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\203C62P23N_ThinF\\GT\\IMG_20150818_133307.txt'",
+    "0",
+    "6",
+    "189"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\204C63P24N_ThinF\\GT\\IMG_20150818_142948.txt'",
+    "0",
+    "6",
+    "216"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\204C63P24N_ThinF\\GT\\IMG_20150818_143319.txt'",
+    "0",
+    "6",
+    "191"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\204C63P24N_ThinF\\GT\\IMG_20150818_143423.txt'",
+    "0",
+    "9",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\204C63P24N_ThinF\\GT\\IMG_20150818_143544.txt'",
+    "0",
+    "11",
+    "197"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\204C63P24N_ThinF\\GT\\IMG_20150818_143757.txt'",
+    "0",
+    "14",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\205C64P25N_ThinF\\GT\\IMG_20150818_152337.txt'",
+    "0",
+    "2",
+    "176"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\205C64P25N_ThinF\\GT\\IMG_20150818_152455.txt'",
+    "0",
+    "1",
+    "179"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\205C64P25N_ThinF\\GT\\IMG_20150818_152613.txt'",
+    "0",
+    "1",
+    "205"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\205C64P25N_ThinF\\GT\\IMG_20150818_152921.txt'",
+    "0",
+    "3",
+    "228"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\205C64P25N_ThinF\\GT\\IMG_20150818_153401.txt'",
+    "0",
+    "2",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\206C65P26N_ThinF\\GT\\IMG_20150818_154010.txt'",
+    "0",
+    "3",
+    "202"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\206C65P26N_ThinF\\GT\\IMG_20150818_154050.txt'",
+    "0",
+    "4",
+    "177"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\206C65P26N_ThinF\\GT\\IMG_20150818_154326.txt'",
+    "0",
+    "5",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\206C65P26N_ThinF\\GT\\IMG_20150818_154436.txt'",
+    "0",
+    "2",
+    "179"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\206C65P26N_ThinF\\GT\\IMG_20150818_154624.txt'",
+    "0",
+    "2",
+    "206"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\207C66P27N_ThinF\\GT\\IMG_20150818_163419.txt'",
+    "0",
+    "19",
+    "205"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\207C66P27N_ThinF\\GT\\IMG_20150818_163551.txt'",
+    "0",
+    "13",
+    "175"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\207C66P27N_ThinF\\GT\\IMG_20150818_164008.txt'",
+    "0",
+    "15",
+    "151"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\207C66P27N_ThinF\\GT\\IMG_20150818_164408.txt'",
+    "0",
+    "22",
+    "141"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\207C66P27N_ThinF\\GT\\IMG_20150818_164702.txt'",
+    "0",
+    "9",
+    "151"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\210C69P30N_ThinF\\GT\\IMG_20150819_135421.txt'",
+    "0",
+    "4",
+    "250"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\210C69P30N_ThinF\\GT\\IMG_20150819_135613.txt'",
+    "0",
+    "2",
+    "261"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\210C69P30N_ThinF\\GT\\IMG_20150819_135705.txt'",
+    "1",
+    "0",
+    "234"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\210C69P30N_ThinF\\GT\\IMG_20150819_140143.txt'",
+    "0",
+    "1",
+    "260"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\210C69P30N_ThinF\\GT\\IMG_20150819_140652.txt'",
+    "0",
+    "2",
+    "236"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\213C72P33_ThinF\\GT\\IMG_20150815_104045.txt'",
+    "1",
+    "2",
+    "207"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\213C72P33_ThinF\\GT\\IMG_20150815_104307.txt'",
+    "1",
+    "2",
+    "222"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\213C72P33_ThinF\\GT\\IMG_20150815_104843.txt'",
+    "0",
+    "0",
+    "211"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\213C72P33_ThinF\\GT\\IMG_20150815_104923.txt'",
+    "0",
+    "1",
+    "235"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\213C72P33_ThinF\\GT\\IMG_20150815_105033.txt'",
+    "0",
+    "0",
+    "211"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\214C73P34_ThinF\\GT\\IMG_20150815_111114.txt'",
+    "0",
+    "0",
+    "212"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\214C73P34_ThinF\\GT\\IMG_20150815_111302.txt'",
+    "0",
+    "0",
+    "160"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\214C73P34_ThinF\\GT\\IMG_20150815_111422.txt'",
+    "0",
+    "0",
+    "188"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\214C73P34_ThinF\\GT\\IMG_20150815_111501.txt'",
+    "0",
+    "0",
+    "185"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\214C73P34_ThinF\\GT\\IMG_20150815_111653.txt'",
+    "0",
+    "2",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\215C74P35_ThinF\\GT\\IMG_20150815_113951.txt'",
+    "0",
+    "9",
+    "126"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\215C74P35_ThinF\\GT\\IMG_20150815_114153.txt'",
+    "0",
+    "5",
+    "182"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\215C74P35_ThinF\\GT\\IMG_20150815_114401.txt'",
+    "0",
+    "5",
+    "157"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\215C74P35_ThinF\\GT\\IMG_20150815_114555.txt'",
+    "0",
+    "4",
+    "132"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\215C74P35_ThinF\\GT\\IMG_20150815_114819.txt'",
+    "1",
+    "4",
+    "128"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\216C75P36_ThinF\\GT\\IMG_20150815_162935.txt'",
+    "0",
+    "1",
+    "154"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\216C75P36_ThinF\\GT\\IMG_20150815_163015.txt'",
+    "0",
+    "1",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\216C75P36_ThinF\\GT\\IMG_20150815_163059.txt'",
+    "1",
+    "3",
+    "172"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\216C75P36_ThinF\\GT\\IMG_20150815_163147.txt'",
+    "0",
+    "0",
+    "161"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\216C75P36_ThinF\\GT\\IMG_20150815_163225.txt'",
+    "0",
+    "1",
+    "180"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\218C76P37ThinF\\GT\\IMG_20150815_165356.txt'",
+    "0",
+    "5",
+    "180"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\218C76P37ThinF\\GT\\IMG_20150815_171214.txt'",
+    "0",
+    "8",
+    "195"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\218C76P37ThinF\\GT\\IMG_20150815_171454.txt'",
+    "0",
+    "13",
+    "249"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\218C76P37ThinF\\GT\\IMG_20150815_172808.txt'",
+    "0",
+    "17",
+    "232"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\218C76P37ThinF\\GT\\IMG_20150815_172902.txt'",
+    "0",
+    "16",
+    "232"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\219C77P38ThinF\\GT\\IMG_20150601_152941.txt'",
+    "0",
+    "2",
+    "132"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\219C77P38ThinF\\GT\\IMG_20150601_155125.txt'",
+    "0",
+    "2",
+    "132"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\219C77P38ThinF\\GT\\IMG_20150601_155642.txt'",
+    "1",
+    "2",
+    "156"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\219C77P38ThinF\\GT\\IMG_20150602_111510.txt'",
+    "0",
+    "3",
+    "127"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\219C77P38ThinF\\GT\\IMG_20150602_112011.txt'",
+    "0",
+    "6",
+    "124"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\220C78P39ThinF\\GT\\IMG_20150606_103413.txt'",
+    "2",
+    "11",
+    "219"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\220C78P39ThinF\\GT\\IMG_20150606_103459.txt'",
+    "1",
+    "7",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\220C78P39ThinF\\GT\\IMG_20150606_103630.txt'",
+    "0",
+    "4",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\220C78P39ThinF\\GT\\IMG_20150606_104106.txt'",
+    "0",
+    "9",
+    "171"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\220C78P39ThinF\\GT\\IMG_20150606_104426.txt'",
+    "1",
+    "8",
+    "153"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\222C80P41ThinF\\GT\\IMG_20150817_110348.txt'",
+    "1",
+    "17",
+    "148"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\222C80P41ThinF\\GT\\IMG_20150817_110608.txt'",
+    "1",
+    "21",
+    "151"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\222C80P41ThinF\\GT\\IMG_20150817_110834.txt'",
+    "1",
+    "28",
+    "137"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\222C80P41ThinF\\GT\\IMG_20150817_110957.txt'",
+    "1",
+    "36",
+    "163"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\222C80P41ThinF\\GT\\IMG_20150817_111121.txt'",
+    "1",
+    "28",
+    "157"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\223C81P42ThinF\\GT\\IMG_20150817_115942.txt'",
+    "0",
+    "13",
+    "219"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\223C81P42ThinF\\GT\\IMG_20150817_120351.txt'",
+    "1",
+    "12",
+    "187"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\223C81P42ThinF\\GT\\IMG_20150817_120524.txt'",
+    "0",
+    "13",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\223C81P42ThinF\\GT\\IMG_20150817_120712.txt'",
+    "2",
+    "12",
+    "166"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\223C81P42ThinF\\GT\\IMG_20150817_120856.txt'",
+    "1",
+    "6",
+    "202"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\224C82P43ThinF\\GT\\IMG_20150817_123500.txt'",
+    "0",
+    "35",
+    "227"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\224C82P43ThinF\\GT\\IMG_20150817_123652.txt'",
+    "1",
+    "33",
+    "208"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\224C82P43ThinF\\GT\\IMG_20150817_123824.txt'",
+    "0",
+    "38",
+    "184"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\224C82P43ThinF\\GT\\IMG_20150817_124010.txt'",
+    "0",
+    "29",
+    "189"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\224C82P43ThinF\\GT\\IMG_20150817_124418.txt'",
+    "0",
+    "28",
+    "156"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\225C83P44ThinF\\GT\\IMG_20150817_133218.txt'",
+    "0",
+    "0",
+    "207"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\225C83P44ThinF\\GT\\IMG_20150817_133355.txt'",
+    "0",
+    "0",
+    "190"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\225C83P44ThinF\\GT\\IMG_20150817_133454.txt'",
+    "0",
+    "0",
+    "180"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\225C83P44ThinF\\GT\\IMG_20150817_133609.txt'",
+    "0",
+    "2",
+    "174"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\225C83P44ThinF\\GT\\IMG_20150817_134331.txt'",
+    "1",
+    "1",
+    "204"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\226C84P45ThinF\\GT\\IMG_20150818_101056.txt'",
+    "0",
+    "21",
+    "131"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\226C84P45ThinF\\GT\\IMG_20150818_101146.txt'",
+    "0",
+    "21",
+    "94"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\226C84P45ThinF\\GT\\IMG_20150818_101226.txt'",
+    "0",
+    "14",
+    "91"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\226C84P45ThinF\\GT\\IMG_20150818_101257.txt'",
+    "0",
+    "24",
+    "77"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\226C84P45ThinF\\GT\\IMG_20150818_101412.txt'",
+    "0",
+    "19",
+    "102"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\227C85P46ThinF\\GT\\IMG_20150820_105154.txt'",
+    "0",
+    "3",
+    "227"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\227C85P46ThinF\\GT\\IMG_20150820_105301.txt'",
+    "0",
+    "6",
+    "270"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\227C85P46ThinF\\GT\\IMG_20150820_105748.txt'",
+    "0",
+    "6",
+    "280"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\227C85P46ThinF\\GT\\IMG_20150820_110040.txt'",
+    "0",
+    "1",
+    "253"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\227C85P46ThinF\\GT\\IMG_20150820_110143.txt'",
+    "0",
+    "4",
+    "256"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\229C87P48ThinF\\GT\\IMG_20150820_132327.txt'",
+    "0",
+    "3",
+    "185"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\229C87P48ThinF\\GT\\IMG_20150820_132514.txt'",
+    "0",
+    "4",
+    "219"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\229C87P48ThinF\\GT\\IMG_20150820_132642.txt'",
+    "0",
+    "5",
+    "188"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\229C87P48ThinF\\GT\\IMG_20150820_141913.txt'",
+    "0",
+    "3",
+    "210"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\229C87P48ThinF\\GT\\IMG_20150820_144714.txt'",
+    "0",
+    "4",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\230C88P49ThinF\\GT\\IMG_20150820_150141.txt'",
+    "0",
+    "3",
+    "221"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\230C88P49ThinF\\GT\\IMG_20150820_150724.txt'",
+    "0",
+    "1",
+    "252"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\230C88P49ThinF\\GT\\IMG_20150820_151451.txt'",
+    "0",
+    "1",
+    "213"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\230C88P49ThinF\\GT\\IMG_20150820_151626.txt'",
+    "0",
+    "2",
+    "191"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\230C88P49ThinF\\GT\\IMG_20150820_152521.txt'",
+    "0",
+    "2",
+    "222"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\232C90P51ThinF\\GT\\IMG_20150821_115056.txt'",
+    "0",
+    "2",
+    "269"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\232C90P51ThinF\\GT\\IMG_20150821_115310.txt'",
+    "0",
+    "2",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\232C90P51ThinF\\GT\\IMG_20150821_115700.txt'",
+    "1",
+    "3",
+    "287"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\232C90P51ThinF\\GT\\IMG_20150821_115846.txt'",
+    "1",
+    "1",
+    "246"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\232C90P51ThinF\\GT\\IMG_20150821_120044.txt'",
+    "1",
+    "1",
+    "241"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\233C91P52ThinF\\GT\\IMG_20150821_123116.txt'",
+    "0",
+    "35",
+    "197"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\233C91P52ThinF\\GT\\IMG_20150821_123314.txt'",
+    "0",
+    "25",
+    "197"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\233C91P52ThinF\\GT\\IMG_20150821_124504.txt'",
+    "0",
+    "30",
+    "224"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\233C91P52ThinF\\GT\\IMG_20150821_124739.txt'",
+    "0",
+    "33",
+    "207"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\233C91P52ThinF\\GT\\IMG_20150821_124937.txt'",
+    "0",
+    "42",
+    "217"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\234C92P53ThinF\\GT\\IMG_20150821_150457.txt'",
+    "0",
+    "8",
+    "286"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\234C92P53ThinF\\GT\\IMG_20150821_150718.txt'",
+    "0",
+    "2",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\234C92P53ThinF\\GT\\IMG_20150821_151224.txt'",
+    "0",
+    "7",
+    "215"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\234C92P53ThinF\\GT\\IMG_20150821_151646.txt'",
+    "0",
+    "7",
+    "214"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\234C92P53ThinF\\GT\\IMG_20150821_151722.txt'",
+    "1",
+    "3",
+    "244"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\235C93P54ThinF\\GT\\IMG_20150821_162641.txt'",
+    "0",
+    "10",
+    "229"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\235C93P54ThinF\\GT\\IMG_20150821_162901.txt'",
+    "1",
+    "16",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\235C93P54ThinF\\GT\\IMG_20150821_163452.txt'",
+    "0",
+    "8",
+    "215"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\235C93P54ThinF\\GT\\IMG_20150821_163640.txt'",
+    "0",
+    "17",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\235C93P54ThinF\\GT\\IMG_20150821_163815.txt'",
+    "0",
+    "18",
+    "221"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\237C95P56ThinF\\GT\\IMG_20150821_171242.txt'",
+    "0",
+    "4",
+    "118"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\237C95P56ThinF\\GT\\IMG_20150821_171530.txt'",
+    "0",
+    "1",
+    "115"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\237C95P56ThinF\\GT\\IMG_20150821_171603.txt'",
+    "0",
+    "6",
+    "114"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\237C95P56ThinF\\GT\\IMG_20150821_171631.txt'",
+    "0",
+    "2",
+    "132"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\237C95P56ThinF\\GT\\IMG_20150821_171701.txt'",
+    "0",
+    "5",
+    "104"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\238C96P57ThinF\\GT\\IMG_20150824_105213.txt'",
+    "0",
+    "6",
+    "220"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\238C96P57ThinF\\GT\\IMG_20150824_105445.txt'",
+    "0",
+    "3",
+    "201"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\238C96P57ThinF\\GT\\IMG_20150824_105531.txt'",
+    "0",
+    "1",
+    "227"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\238C96P57ThinF\\GT\\IMG_20150824_110812.txt'",
+    "0",
+    "1",
+    "222"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\238C96P57ThinF\\GT\\IMG_20150824_111748.txt'",
+    "0",
+    "5",
+    "235"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\239C12NThinF\\GT\\IMG_20150614_124212.txt'",
+    "1",
+    "0",
+    "292"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\239C12NThinF\\GT\\IMG_20150614_124244.txt'",
+    "0",
+    "0",
+    "283"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\239C12NThinF\\GT\\IMG_20150614_124301.txt'",
+    "3",
+    "0",
+    "277"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\239C12NThinF\\GT\\IMG_20150614_125703.txt'",
+    "0",
+    "0",
+    "256"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\239C12NThinF\\GT\\IMG_20150614_125741.txt'",
+    "1",
+    "0",
+    "297"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\240C13NThinF\\GT\\IMG_20150614_131318.txt'",
+    "1",
+    "0",
+    "242"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\240C13NThinF\\GT\\IMG_20150614_131417.txt'",
+    "0",
+    "0",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\240C13NThinF\\GT\\IMG_20150614_131457.txt'",
+    "2",
+    "0",
+    "246"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\240C13NThinF\\GT\\IMG_20150614_131529.txt'",
+    "0",
+    "0",
+    "269"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\240C13NThinF\\GT\\IMG_20150614_131553.txt'",
+    "1",
+    "0",
+    "251"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\241C2NThinF\\GT\\IMG_20150604_114631.txt'",
+    "1",
+    "0",
+    "272"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\241C2NThinF\\GT\\IMG_20150604_114730.txt'",
+    "0",
+    "0",
+    "255"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\241C2NThinF\\GT\\IMG_20150604_114751.txt'",
+    "0",
+    "0",
+    "267"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\241C2NThinF\\GT\\IMG_20150604_114815.txt'",
+    "1",
+    "0",
+    "252"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\241C2NThinF\\GT\\IMG_20150604_115238.txt'",
+    "0",
+    "0",
+    "286"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\242C5NThinF\\GT\\IMG_20150609_122006.txt'",
+    "0",
+    "0",
+    "236"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\242C5NThinF\\GT\\IMG_20150609_122020.txt'",
+    "0",
+    "0",
+    "244"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\242C5NThinF\\GT\\IMG_20150609_122034.txt'",
+    "0",
+    "0",
+    "231"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\242C5NThinF\\GT\\IMG_20150609_122108.txt'",
+    "0",
+    "0",
+    "244"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\242C5NThinF\\GT\\IMG_20150609_122227.txt'",
+    "0",
+    "0",
+    "251"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\243C6NThinF\\GT\\IMG_20150609_121955.txt'",
+    "0",
+    "0",
+    "227"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\243C6NThinF\\GT\\IMG_20150609_122327.txt'",
+    "1",
+    "0",
+    "238"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\243C6NThinF\\GT\\IMG_20150609_122421.txt'",
+    "0",
+    "0",
+    "259"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\243C6NThinF\\GT\\IMG_20150609_122547.txt'",
+    "0",
+    "0",
+    "245"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\243C6NThinF\\GT\\IMG_20150609_122725.txt'",
+    "0",
+    "0",
+    "223"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\245C97P58ThinF\\GT\\IMG_20150917_145555.txt'",
+    "0",
+    "30",
+    "167"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\245C97P58ThinF\\GT\\IMG_20150917_150838.txt'",
+    "0",
+    "22",
+    "145"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\245C97P58ThinF\\GT\\IMG_20150917_151320.txt'",
+    "0",
+    "20",
+    "144"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\245C97P58ThinF\\GT\\IMG_20150917_151437.txt'",
+    "0",
+    "20",
+    "163"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\245C97P58ThinF\\GT\\IMG_20150917_151512.txt'",
+    "0",
+    "25",
+    "166"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\246C98P59ThinF\\GT\\IMG_20150917_153030.txt'",
+    "0",
+    "8",
+    "161"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\246C98P59ThinF\\GT\\IMG_20150917_153311.txt'",
+    "0",
+    "7",
+    "168"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\246C98P59ThinF\\GT\\IMG_20150917_153600.txt'",
+    "0",
+    "4",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\246C98P59ThinF\\GT\\IMG_20150917_153801.txt'",
+    "0",
+    "2",
+    "213"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\246C98P59ThinF\\GT\\IMG_20150917_153938.txt'",
+    "1",
+    "3",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\248C100P61ThinF\\GT\\IMG_20150918_144104.txt'",
+    "0",
+    "10",
+    "172"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\248C100P61ThinF\\GT\\IMG_20150918_144348.txt'",
+    "0",
+    "7",
+    "138"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\248C100P61ThinF\\GT\\IMG_20150918_144823.txt'",
+    "0",
+    "6",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\248C100P61ThinF\\GT\\IMG_20150918_145042.txt'",
+    "0",
+    "9",
+    "197"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\248C100P61ThinF\\GT\\IMG_20150918_145422.txt'",
+    "0",
+    "8",
+    "172"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\249C101P62ThinF\\GT\\IMG_20150918_150842.txt'",
+    "4",
+    "26",
+    "84"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\249C101P62ThinF\\GT\\IMG_20150918_151006.txt'",
+    "2",
+    "32",
+    "76"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\249C101P62ThinF\\GT\\IMG_20150918_151149.txt'",
+    "0",
+    "21",
+    "70"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\249C101P62ThinF\\GT\\IMG_20150918_151239.txt'",
+    "0",
+    "28",
+    "78"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\249C101P62ThinF\\GT\\IMG_20150918_151335.txt'",
+    "0",
+    "28",
+    "59"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\250C102P63ThinF\\GT\\IMG_20150918_161508.txt'",
+    "1",
+    "6",
+    "196"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\250C102P63ThinF\\GT\\IMG_20150918_161826.txt'",
+    "0",
+    "3",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\250C102P63ThinF\\GT\\IMG_20150918_162051.txt'",
+    "1",
+    "7",
+    "142"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\250C102P63ThinF\\GT\\IMG_20150918_162155.txt'",
+    "0",
+    "2",
+    "131"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\250C102P63ThinF\\GT\\IMG_20150918_162300.txt'",
+    "0",
+    "3",
+    "187"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\251C103P64ThinF\\GT\\IMG_20150918_164250.txt'",
+    "1",
+    "6",
+    "196"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\251C103P64ThinF\\GT\\IMG_20150918_164331.txt'",
+    "0",
+    "4",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\251C103P64ThinF\\GT\\IMG_20150918_164553.txt'",
+    "0",
+    "7",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\251C103P64ThinF\\GT\\IMG_20150918_165016.txt'",
+    "0",
+    "5",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\251C103P64ThinF\\GT\\IMG_20150918_165125.txt'",
+    "0",
+    "4",
+    "185"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\252C104P65ThinF\\GT\\IMG_20150918_170850.txt'",
+    "0",
+    "1",
+    "209"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\252C104P65ThinF\\GT\\IMG_20150918_171154.txt'",
+    "1",
+    "2",
+    "223"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\252C104P65ThinF\\GT\\IMG_20150918_171751.txt'",
+    "0",
+    "2",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\252C104P65ThinF\\GT\\IMG_20150918_172053.txt'",
+    "0",
+    "1",
+    "201"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\252C104P65ThinF\\GT\\IMG_20150918_172214.txt'",
+    "0",
+    "0",
+    "172"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\253C105P66ThinF\\GT\\IMG_20150924_094800.txt'",
+    "0",
+    "2",
+    "141"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\253C105P66ThinF\\GT\\IMG_20150924_094944.txt'",
+    "0",
+    "0",
+    "180"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\253C105P66ThinF\\GT\\IMG_20150924_095034.txt'",
+    "0",
+    "3",
+    "156"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\253C105P66ThinF\\GT\\IMG_20150924_095130.txt'",
+    "0",
+    "4",
+    "163"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\253C105P66ThinF\\GT\\IMG_20150924_095633.txt'",
+    "0",
+    "1",
+    "131"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\254C106P67ThinF\\GT\\IMG_20150924_102245.txt'",
+    "1",
+    "3",
+    "165"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\254C106P67ThinF\\GT\\IMG_20150924_102413.txt'",
+    "0",
+    "1",
+    "193"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\254C106P67ThinF\\GT\\IMG_20150924_102826.txt'",
+    "1",
+    "1",
+    "147"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\254C106P67ThinF\\GT\\IMG_20150924_103245.txt'",
+    "0",
+    "2",
+    "151"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\254C106P67ThinF\\GT\\IMG_20150924_103636.txt'",
+    "1",
+    "0",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\255C107P68ThinF\\GT\\IMG_20150924_221632.txt'",
+    "0",
+    "12",
+    "174"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\255C107P68ThinF\\GT\\IMG_20150924_221801.txt'",
+    "2",
+    "15",
+    "157"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\255C107P68ThinF\\GT\\IMG_20150924_221909.txt'",
+    "1",
+    "9",
+    "161"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\255C107P68ThinF\\GT\\IMG_20150924_222233.txt'",
+    "0",
+    "14",
+    "156"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\255C107P68ThinF\\GT\\IMG_20150924_222415.txt'",
+    "0",
+    "12",
+    "176"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\256C108P69ThinF\\GT\\IMG_20150924_223834.txt'",
+    "0",
+    "4",
+    "231"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\256C108P69ThinF\\GT\\IMG_20150924_224038.txt'",
+    "1",
+    "3",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\256C108P69ThinF\\GT\\IMG_20150924_224616.txt'",
+    "1",
+    "4",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\256C108P69ThinF\\GT\\IMG_20150924_224909.txt'",
+    "0",
+    "1",
+    "239"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\256C108P69ThinF\\GT\\IMG_20150924_225004.txt'",
+    "0",
+    "5",
+    "227"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\257C109P70ThinF\\GT\\IMG_20150930_102716.txt'",
+    "0",
+    "3",
+    "201"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\257C109P70ThinF\\GT\\IMG_20150930_102812.txt'",
+    "0",
+    "0",
+    "184"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\257C109P70ThinF\\GT\\IMG_20150930_102944.txt'",
+    "0",
+    "2",
+    "173"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\257C109P70ThinF\\GT\\IMG_20150930_103113.txt'",
+    "1",
+    "3",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\257C109P70ThinF\\GT\\IMG_20150930_103214.txt'",
+    "0",
+    "4",
+    "182"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\258C110P71ThinF\\GT\\IMG_20150930_105319.txt'",
+    "0",
+    "6",
+    "184"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\258C110P71ThinF\\GT\\IMG_20150930_105559.txt'",
+    "1",
+    "4",
+    "202"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\258C110P71ThinF\\GT\\IMG_20150930_105729.txt'",
+    "0",
+    "1",
+    "215"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\258C110P71ThinF\\GT\\IMG_20150930_105925.txt'",
+    "0",
+    "3",
+    "219"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\258C110P71ThinF\\GT\\IMG_20150930_110052.txt'",
+    "0",
+    "6",
+    "246"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\259C111P72ThinF\\GT\\IMG_20150930_112430.txt'",
+    "0",
+    "3",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\259C111P72ThinF\\GT\\IMG_20150930_112609.txt'",
+    "0",
+    "3",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\259C111P72ThinF\\GT\\IMG_20150930_112827.txt'",
+    "0",
+    "4",
+    "176"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\259C111P72ThinF\\GT\\IMG_20150930_113003.txt'",
+    "0",
+    "1",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\259C111P72ThinF\\GT\\IMG_20150930_113049.txt'",
+    "0",
+    "5",
+    "164"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\260C112P73ThinF\\GT\\IMG_20150930_131254.txt'",
+    "0",
+    "1",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\260C112P73ThinF\\GT\\IMG_20150930_131401.txt'",
+    "0",
+    "4",
+    "165"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\260C112P73ThinF\\GT\\IMG_20150930_131516.txt'",
+    "0",
+    "2",
+    "177"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\260C112P73ThinF\\GT\\IMG_20150930_131605.txt'",
+    "0",
+    "3",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\260C112P73ThinF\\GT\\IMG_20150930_131659.txt'",
+    "1",
+    "1",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\261C113P74ThinF\\GT\\IMG_20150930_134355.txt'",
+    "0",
+    "8",
+    "168"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\261C113P74ThinF\\GT\\IMG_20150930_134429.txt'",
+    "0",
+    "9",
+    "185"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\261C113P74ThinF\\GT\\IMG_20150930_134614.txt'",
+    "0",
+    "9",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\261C113P74ThinF\\GT\\IMG_20150930_134751.txt'",
+    "0",
+    "9",
+    "178"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\261C113P74ThinF\\GT\\IMG_20150930_134949.txt'",
+    "0",
+    "6",
+    "159"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\262C114P75ThinF\\GT\\IMG_20150930_150013.txt'",
+    "0",
+    "3",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\262C114P75ThinF\\GT\\IMG_20150930_150057.txt'",
+    "0",
+    "1",
+    "171"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\262C114P75ThinF\\GT\\IMG_20150930_150145.txt'",
+    "0",
+    "2",
+    "161"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\262C114P75ThinF\\GT\\IMG_20150930_150555.txt'",
+    "0",
+    "1",
+    "145"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\262C114P75ThinF\\GT\\IMG_20150930_150733.txt'",
+    "0",
+    "2",
+    "148"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\264C116P77ThinF\\GT\\IMG_20150930_171219.txt'",
+    "1",
+    "39",
+    "77"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\264C116P77ThinF\\GT\\IMG_20150930_171448.txt'",
+    "0",
+    "55",
+    "85"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\264C116P77ThinF\\GT\\IMG_20150930_171558.txt'",
+    "0",
+    "65",
+    "92"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\264C116P77ThinF\\GT\\IMG_20150930_171635.txt'",
+    "0",
+    "47",
+    "73"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\264C116P77ThinF\\GT\\IMG_20150930_171739.txt'",
+    "1",
+    "45",
+    "74"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\265C117P78ThinF\\GT\\IMG_20150930_214138.txt'",
+    "0",
+    "9",
+    "105"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\265C117P78ThinF\\GT\\IMG_20150930_214317.txt'",
+    "0",
+    "5",
+    "114"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\265C117P78ThinF\\GT\\IMG_20150930_214511.txt'",
+    "0",
+    "6",
+    "98"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\265C117P78ThinF\\GT\\IMG_20150930_214629.txt'",
+    "0",
+    "7",
+    "105"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\265C117P78ThinF\\GT\\IMG_20150930_214941.txt'",
+    "0",
+    "11",
+    "75"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\266C118P79ThinF\\GT\\IMG_20151002_104831.txt'",
+    "0",
+    "25",
+    "144"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\266C118P79ThinF\\GT\\IMG_20151002_105018.txt'",
+    "0",
+    "31",
+    "133"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\266C118P79ThinF\\GT\\IMG_20151002_105125.txt'",
+    "0",
+    "26",
+    "137"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\266C118P79ThinF\\GT\\IMG_20151002_105346.txt'",
+    "1",
+    "20",
+    "152"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\266C118P79ThinF\\GT\\IMG_20151002_105735.txt'",
+    "0",
+    "22",
+    "139"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\267C119P80ThinF\\GT\\IMG_20151002_122720.txt'",
+    "0",
+    "15",
+    "163"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\267C119P80ThinF\\GT\\IMG_20151002_123043.txt'",
+    "0",
+    "16",
+    "159"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\267C119P80ThinF\\GT\\IMG_20151002_123608.txt'",
+    "1",
+    "15",
+    "144"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\267C119P80ThinF\\GT\\IMG_20151002_123911.txt'",
+    "0",
+    "19",
+    "127"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\267C119P80ThinF\\GT\\IMG_20151002_124304.txt'",
+    "1",
+    "13",
+    "164"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\268C120P81ThinF\\GT\\IMG_20151002_125443.txt'",
+    "0",
+    "19",
+    "137"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\268C120P81ThinF\\GT\\IMG_20151002_130150.txt'",
+    "0",
+    "17",
+    "224"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\268C120P81ThinF\\GT\\IMG_20151002_130407.txt'",
+    "0",
+    "18",
+    "196"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\268C120P81ThinF\\GT\\IMG_20151002_130715.txt'",
+    "0",
+    "9",
+    "201"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\268C120P81ThinF\\GT\\IMG_20151002_130918.txt'",
+    "0",
+    "25",
+    "207"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\269C121P82ThinF\\GT\\IMG_20151002_132926.txt'",
+    "0",
+    "0",
+    "83"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\269C121P82ThinF\\GT\\IMG_20151002_133001.txt'",
+    "0",
+    "0",
+    "74"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\269C121P82ThinF\\GT\\IMG_20151002_133158.txt'",
+    "1",
+    "0",
+    "77"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\269C121P82ThinF\\GT\\IMG_20151002_133427.txt'",
+    "1",
+    "0",
+    "84"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\269C121P82ThinF\\GT\\IMG_20151002_133540.txt'",
+    "0",
+    "0",
+    "86"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\271C123P84ThinF\\GT\\IMG_20151002_150931.txt'",
+    "0",
+    "12",
+    "202"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\271C123P84ThinF\\GT\\IMG_20151002_151143.txt'",
+    "0",
+    "10",
+    "193"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\271C123P84ThinF\\GT\\IMG_20151002_151432.txt'",
+    "0",
+    "16",
+    "164"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\271C123P84ThinF\\GT\\IMG_20151002_151851.txt'",
+    "1",
+    "9",
+    "182"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\271C123P84ThinF\\GT\\IMG_20151002_152144.txt'",
+    "0",
+    "9",
+    "188"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\272C124P85ThinF\\GT\\IMG_20151002_153825.txt'",
+    "0",
+    "7",
+    "199"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\272C124P85ThinF\\GT\\IMG_20151002_154502.txt'",
+    "0",
+    "3",
+    "163"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\272C124P85ThinF\\GT\\IMG_20151002_154808.txt'",
+    "0",
+    "8",
+    "142"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\272C124P85ThinF\\GT\\IMG_20151002_154846.txt'",
+    "0",
+    "12",
+    "159"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\272C124P85ThinF\\GT\\IMG_20151002_155026.txt'",
+    "0",
+    "6",
+    "176"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\273C125P86ThinF\\GT\\IMG_20151004_101158.txt'",
+    "0",
+    "4",
+    "154"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\273C125P86ThinF\\GT\\IMG_20151004_101929.txt'",
+    "0",
+    "1",
+    "155"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\273C125P86ThinF\\GT\\IMG_20151004_102013.txt'",
+    "0",
+    "1",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\273C125P86ThinF\\GT\\IMG_20151004_102053.txt'",
+    "0",
+    "3",
+    "153"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\273C125P86ThinF\\GT\\IMG_20151004_102132.txt'",
+    "0",
+    "2",
+    "159"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\275C127P88ThinF\\GT\\IMG_20151004_111220.txt'",
+    "0",
+    "1",
+    "147"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\275C127P88ThinF\\GT\\IMG_20151004_111436.txt'",
+    "1",
+    "3",
+    "141"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\275C127P88ThinF\\GT\\IMG_20151004_111526.txt'",
+    "0",
+    "1",
+    "101"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\275C127P88ThinF\\GT\\IMG_20151004_111651.txt'",
+    "0",
+    "1",
+    "138"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\275C127P88ThinF\\GT\\IMG_20151004_111755.txt'",
+    "0",
+    "2",
+    "118"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\277C129P90ThinF\\GT\\IMG_20151004_133244.txt'",
+    "0",
+    "28",
+    "100"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\277C129P90ThinF\\GT\\IMG_20151004_133329.txt'",
+    "0",
+    "23",
+    "96"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\277C129P90ThinF\\GT\\IMG_20151004_133421.txt'",
+    "0",
+    "23",
+    "96"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\277C129P90ThinF\\GT\\IMG_20151004_133538.txt'",
+    "1",
+    "33",
+    "80"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\277C129P90ThinF\\GT\\IMG_20151004_133703.txt'",
+    "0",
+    "32",
+    "87"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\278C130P91ThinF\\GT\\IMG_20151004_135449.txt'",
+    "0",
+    "18",
+    "125"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\278C130P91ThinF\\GT\\IMG_20151004_141341.txt'",
+    "0",
+    "11",
+    "156"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\278C130P91ThinF\\GT\\IMG_20151004_141428.txt'",
+    "0",
+    "17",
+    "134"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\278C130P91ThinF\\GT\\IMG_20151004_141504.txt'",
+    "1",
+    "13",
+    "155"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\278C130P91ThinF\\GT\\IMG_20151004_141825.txt'",
+    "0",
+    "12",
+    "134"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\279C131P92ThinF\\GT\\IMG_20151004_144943.txt'",
+    "4",
+    "14",
+    "149"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\279C131P92ThinF\\GT\\IMG_20151004_145224.txt'",
+    "2",
+    "13",
+    "142"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\279C131P92ThinF\\GT\\IMG_20151004_145302.txt'",
+    "0",
+    "5",
+    "136"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\279C131P92ThinF\\GT\\IMG_20151004_145410.txt'",
+    "2",
+    "9",
+    "177"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\279C131P92ThinF\\GT\\IMG_20151004_150208.txt'",
+    "1",
+    "6",
+    "150"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\280C132P93ThinF\\GT\\IMG_20151004_151701.txt'",
+    "0",
+    "57",
+    "129"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\280C132P93ThinF\\GT\\IMG_20151004_151733.txt'",
+    "0",
+    "56",
+    "141"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\280C132P93ThinF\\GT\\IMG_20151004_151811.txt'",
+    "1",
+    "48",
+    "128"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\280C132P93ThinF\\GT\\IMG_20151004_152045.txt'",
+    "0",
+    "58",
+    "111"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\280C132P93ThinF\\GT\\IMG_20151004_152257.txt'",
+    "0",
+    "50",
+    "110"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\281C133P94ThinF\\GT\\IMG_20151004_153930.txt'",
+    "0",
+    "16",
+    "101"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\281C133P94ThinF\\GT\\IMG_20151004_154158.txt'",
+    "0",
+    "19",
+    "106"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\281C133P94ThinF\\GT\\IMG_20151004_154351.txt'",
+    "0",
+    "31",
+    "93"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\281C133P94ThinF\\GT\\IMG_20151004_154512.txt'",
+    "0",
+    "28",
+    "119"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\281C133P94ThinF\\GT\\IMG_20151004_154717.txt'",
+    "0",
+    "22",
+    "120"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\283C135P96ThinF\\GT\\IMG_20151005_123441.txt'",
+    "1",
+    "3",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\283C135P96ThinF\\GT\\IMG_20151005_123715.txt'",
+    "0",
+    "1",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\283C135P96ThinF\\GT\\IMG_20151005_123857.txt'",
+    "1",
+    "3",
+    "166"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\283C135P96ThinF\\GT\\IMG_20151005_124031.txt'",
+    "0",
+    "2",
+    "164"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\283C135P96ThinF\\GT\\IMG_20151005_124204.txt'",
+    "0",
+    "1",
+    "127"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\284C136P97ThinF\\GT\\IMG_20151005_140538.txt'",
+    "0",
+    "30",
+    "94"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\284C136P97ThinF\\GT\\IMG_20151005_140646.txt'",
+    "0",
+    "30",
+    "100"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\284C136P97ThinF\\GT\\IMG_20151005_141321.txt'",
+    "1",
+    "21",
+    "90"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\284C136P97ThinF\\GT\\IMG_20151005_141803.txt'",
+    "0",
+    "28",
+    "107"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\284C136P97ThinF\\GT\\IMG_20151005_141946.txt'",
+    "0",
+    "28",
+    "94"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\285C137P98ThinF\\GT\\IMG_20151005_155444.txt'",
+    "0",
+    "14",
+    "93"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\285C137P98ThinF\\GT\\IMG_20151005_155704.txt'",
+    "1",
+    "19",
+    "55"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\285C137P98ThinF\\GT\\IMG_20151005_160122.txt'",
+    "1",
+    "12",
+    "75"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\285C137P98ThinF\\GT\\IMG_20151005_160256.txt'",
+    "1",
+    "14",
+    "66"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\285C137P98ThinF\\GT\\IMG_20151005_160918.txt'",
+    "0",
+    "20",
+    "65"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\286C138P99ThinF\\GT\\IMG_20151005_170905.txt'",
+    "0",
+    "2",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\286C138P99ThinF\\GT\\IMG_20151005_171116.txt'",
+    "1",
+    "0",
+    "184"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\286C138P99ThinF\\GT\\IMG_20151005_171332.txt'",
+    "1",
+    "0",
+    "176"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\286C138P99ThinF\\GT\\IMG_20151005_171940.txt'",
+    "0",
+    "0",
+    "177"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\286C138P99ThinF\\GT\\IMG_20151005_172643.txt'",
+    "1",
+    "1",
+    "164"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\287C139P100ThinF\\GT\\IMG_20151005_182257.txt'",
+    "1",
+    "2",
+    "189"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\287C139P100ThinF\\GT\\IMG_20151005_182410.txt'",
+    "0",
+    "4",
+    "175"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\287C139P100ThinF\\GT\\IMG_20151005_182527.txt'",
+    "0",
+    "0",
+    "165"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\287C139P100ThinF\\GT\\IMG_20151005_182822.txt'",
+    "0",
+    "4",
+    "164"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\287C139P100ThinF\\GT\\IMG_20151005_183338.txt'",
+    "1",
+    "2",
+    "145"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\288C140P101ThinF\\GT\\IMG_20151005_205406.txt'",
+    "0",
+    "14",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\288C140P101ThinF\\GT\\IMG_20151005_205922.txt'",
+    "1",
+    "13",
+    "190"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\288C140P101ThinF\\GT\\IMG_20151005_210026.txt'",
+    "0",
+    "15",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\288C140P101ThinF\\GT\\IMG_20151005_210207.txt'",
+    "0",
+    "11",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\288C140P101ThinF\\GT\\IMG_20151005_210309.txt'",
+    "0",
+    "18",
+    "178"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\289C141P102ThinF\\GT\\IMG_20151005_213930.txt'",
+    "0",
+    "2",
+    "119"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\289C141P102ThinF\\GT\\IMG_20151005_214033.txt'",
+    "0",
+    "4",
+    "114"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\289C141P102ThinF\\GT\\IMG_20151005_214208.txt'",
+    "0",
+    "5",
+    "108"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\289C141P102ThinF\\GT\\IMG_20151005_214338.txt'",
+    "0",
+    "1",
+    "137"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\289C141P102ThinF\\GT\\IMG_20151005_214615.txt'",
+    "0",
+    "1",
+    "146"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\290C142P103ThinF\\GT\\IMG_20151005_221115.txt'",
+    "0",
+    "2",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\290C142P103ThinF\\GT\\IMG_20151005_221900.txt'",
+    "0",
+    "3",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\290C142P103ThinF\\GT\\IMG_20151005_221931.txt'",
+    "0",
+    "4",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\290C142P103ThinF\\GT\\IMG_20151005_222255.txt'",
+    "0",
+    "0",
+    "184"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\290C142P103ThinF\\GT\\IMG_20151005_222440.txt'",
+    "0",
+    "1",
+    "182"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\291C143P104ThinF\\GT\\IMG_20151005_225413.txt'",
+    "0",
+    "1",
+    "195"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\291C143P104ThinF\\GT\\IMG_20151005_225454.txt'",
+    "0",
+    "3",
+    "200"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\291C143P104ThinF\\GT\\IMG_20151005_225528.txt'",
+    "0",
+    "5",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\291C143P104ThinF\\GT\\IMG_20151005_225623.txt'",
+    "0",
+    "2",
+    "176"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\291C143P104ThinF\\GT\\IMG_20151005_225746.txt'",
+    "0",
+    "2",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\292C144P105ThinF\\GT\\IMG_20151015_155004.txt'",
+    "0",
+    "17",
+    "301"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\292C144P105ThinF\\GT\\IMG_20151015_155149.txt'",
+    "0",
+    "11",
+    "302"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\292C144P105ThinF\\GT\\IMG_20151015_160529.txt'",
+    "0",
+    "12",
+    "270"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\292C144P105ThinF\\GT\\IMG_20151015_160908.txt'",
+    "1",
+    "15",
+    "285"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\292C144P105ThinF\\GT\\IMG_20151015_163142.txt'",
+    "0",
+    "12",
+    "315"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\293C145P106ThinF\\GT\\IMG_20151016_154309.txt'",
+    "0",
+    "4",
+    "154"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\293C145P106ThinF\\GT\\IMG_20151016_154641.txt'",
+    "0",
+    "4",
+    "143"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\293C145P106ThinF\\GT\\IMG_20151016_154719.txt'",
+    "1",
+    "9",
+    "154"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\293C145P106ThinF\\GT\\IMG_20151016_154756.txt'",
+    "1",
+    "3",
+    "113"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\293C145P106ThinF\\GT\\IMG_20151016_154844.txt'",
+    "0",
+    "3",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\294C201ThinF\\GT\\IMG_20150930_142848.txt'",
+    "0",
+    "0",
+    "254"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\294C201ThinF\\GT\\IMG_20150930_143129.txt'",
+    "0",
+    "0",
+    "224"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\294C201ThinF\\GT\\IMG_20150930_143411.txt'",
+    "1",
+    "0",
+    "250"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\294C201ThinF\\GT\\IMG_20150930_143502.txt'",
+    "0",
+    "0",
+    "245"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\294C201ThinF\\GT\\IMG_20150930_143544.txt'",
+    "0",
+    "0",
+    "228"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\295C202ThinF\\GT\\IMG_20151015_151254.txt'",
+    "0",
+    "0",
+    "282"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\295C202ThinF\\GT\\IMG_20151015_151736.txt'",
+    "0",
+    "0",
+    "231"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\295C202ThinF\\GT\\IMG_20151015_152200.txt'",
+    "0",
+    "0",
+    "232"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\295C202ThinF\\GT\\IMG_20151015_152333.txt'",
+    "0",
+    "0",
+    "245"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\295C202ThinF\\GT\\IMG_20151015_152701.txt'",
+    "0",
+    "0",
+    "295"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\300C208ThinF\\GT\\IMG_20151029_151017.txt'",
+    "0",
+    "0",
+    "215"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\300C208ThinF\\GT\\IMG_20151029_155411.txt'",
+    "0",
+    "0",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\300C208ThinF\\GT\\IMG_20151029_155436.txt'",
+    "1",
+    "0",
+    "205"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\300C208ThinF\\GT\\IMG_20151029_155554.txt'",
+    "1",
+    "0",
+    "207"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\300C208ThinF\\GT\\IMG_20151029_155827.txt'",
+    "0",
+    "0",
+    "213"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\303C205ThinF\\GT\\IMG_20151106_151514.txt'",
+    "1",
+    "0",
+    "238"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\303C205ThinF\\GT\\IMG_20151106_151622.txt'",
+    "0",
+    "0",
+    "254"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\303C205ThinF\\GT\\IMG_20151106_151711.txt'",
+    "0",
+    "0",
+    "258"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\303C205ThinF\\GT\\IMG_20151106_151800.txt'",
+    "2",
+    "0",
+    "277"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\303C205ThinF\\GT\\IMG_20151106_152003.txt'",
+    "0",
+    "0",
+    "271"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\304C211ThinF\\GT\\IMG_20151029_163959.txt'",
+    "1",
+    "0",
+    "270"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\304C211ThinF\\GT\\IMG_20151029_164033.txt'",
+    "0",
+    "0",
+    "280"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\304C211ThinF\\GT\\IMG_20151029_164218.txt'",
+    "1",
+    "0",
+    "271"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\304C211ThinF\\GT\\IMG_20151029_164248.txt'",
+    "0",
+    "0",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\304C211ThinF\\GT\\IMG_20151029_164451.txt'",
+    "0",
+    "0",
+    "251"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\307C214ThinF\\GT\\IMG_20151106_114526.txt'",
+    "1",
+    "0",
+    "249"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\307C214ThinF\\GT\\IMG_20151106_114611.txt'",
+    "1",
+    "0",
+    "235"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\307C214ThinF\\GT\\IMG_20151106_114910.txt'",
+    "0",
+    "0",
+    "239"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\307C214ThinF\\GT\\IMG_20151106_115440.txt'",
+    "0",
+    "0",
+    "213"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\307C214ThinF\\GT\\IMG_20151106_131748.txt'",
+    "1",
+    "0",
+    "225"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\308C215ThinF\\GT\\IMG_20151106_133012.txt'",
+    "2",
+    "0",
+    "257"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\308C215ThinF\\GT\\IMG_20151106_133043.txt'",
+    "1",
+    "0",
+    "271"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\308C215ThinF\\GT\\IMG_20151106_133116.txt'",
+    "1",
+    "0",
+    "243"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\308C215ThinF\\GT\\IMG_20151106_133247.txt'",
+    "0",
+    "0",
+    "229"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\308C215ThinF\\GT\\IMG_20151106_133643.txt'",
+    "0",
+    "0",
+    "223"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\310C217ThinF\\GT\\IMG_20151106_141135.txt'",
+    "0",
+    "0",
+    "276"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\310C217ThinF\\GT\\IMG_20151106_141326.txt'",
+    "0",
+    "0",
+    "266"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\310C217ThinF\\GT\\IMG_20151106_141500.txt'",
+    "0",
+    "0",
+    "285"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\310C217ThinF\\GT\\IMG_20151106_141649.txt'",
+    "0",
+    "0",
+    "274"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\310C217ThinF\\GT\\IMG_20151106_142147.txt'",
+    "0",
+    "0",
+    "253"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\311C218ThinF\\GT\\IMG_20151106_143940.txt'",
+    "0",
+    "0",
+    "244"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\311C218ThinF\\GT\\IMG_20151106_144001.txt'",
+    "0",
+    "0",
+    "223"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\311C218ThinF\\GT\\IMG_20151106_144143.txt'",
+    "1",
+    "0",
+    "235"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\311C218ThinF\\GT\\IMG_20151106_144228.txt'",
+    "0",
+    "0",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\311C218ThinF\\GT\\IMG_20151106_144337.txt'",
+    "0",
+    "0",
+    "227"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\312C219ThinF\\GT\\IMG_20151106_145856.txt'",
+    "1",
+    "0",
+    "235"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\312C219ThinF\\GT\\IMG_20151106_145927.txt'",
+    "1",
+    "0",
+    "233"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\312C219ThinF\\GT\\IMG_20151106_150027.txt'",
+    "0",
+    "0",
+    "235"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\312C219ThinF\\GT\\IMG_20151106_150135.txt'",
+    "1",
+    "0",
+    "233"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\312C219ThinF\\GT\\IMG_20151106_150314.txt'",
+    "0",
+    "0",
+    "231"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\313C220ThinF\\GT\\IMG_20151106_153947.txt'",
+    "0",
+    "0",
+    "260"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\313C220ThinF\\GT\\IMG_20151106_154016.txt'",
+    "0",
+    "0",
+    "248"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\313C220ThinF\\GT\\IMG_20151106_154339.txt'",
+    "0",
+    "0",
+    "236"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\313C220ThinF\\GT\\IMG_20151106_154510.txt'",
+    "0",
+    "0",
+    "238"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\313C220ThinF\\GT\\IMG_20151106_154533.txt'",
+    "1",
+    "0",
+    "235"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\314C221ThinF\\GT\\IMG_20151106_155857.txt'",
+    "0",
+    "0",
+    "207"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\314C221ThinF\\GT\\IMG_20151106_160022.txt'",
+    "0",
+    "0",
+    "207"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\314C221ThinF\\GT\\IMG_20151106_160304.txt'",
+    "0",
+    "0",
+    "214"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\314C221ThinF\\GT\\IMG_20151106_160515.txt'",
+    "1",
+    "0",
+    "211"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\314C221ThinF\\GT\\IMG_20151106_160653.txt'",
+    "0",
+    "0",
+    "217"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\315C223ThinF\\GT\\IMG_20151112_103809.txt'",
+    "0",
+    "0",
+    "262"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\315C223ThinF\\GT\\IMG_20151112_104118.txt'",
+    "0",
+    "0",
+    "274"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\315C223ThinF\\GT\\IMG_20151112_104240.txt'",
+    "0",
+    "0",
+    "253"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\315C223ThinF\\GT\\IMG_20151112_104410.txt'",
+    "1",
+    "0",
+    "221"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\315C223ThinF\\GT\\IMG_20151112_104708.txt'",
+    "0",
+    "0",
+    "260"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\316C224ThinF\\GT\\IMG_20151112_111955.txt'",
+    "0",
+    "0",
+    "265"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\316C224ThinF\\GT\\IMG_20151112_112334.txt'",
+    "0",
+    "0",
+    "237"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\316C224ThinF\\GT\\IMG_20151112_112735.txt'",
+    "0",
+    "0",
+    "249"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\316C224ThinF\\GT\\IMG_20151112_112834.txt'",
+    "0",
+    "0",
+    "266"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\316C224ThinF\\GT\\IMG_20151112_113157.txt'",
+    "1",
+    "0",
+    "245"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\317C225ThinF\\GT\\IMG_20151112_113735.txt'",
+    "0",
+    "0",
+    "286"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\317C225ThinF\\GT\\IMG_20151112_113803.txt'",
+    "0",
+    "0",
+    "296"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\317C225ThinF\\GT\\IMG_20151112_113836.txt'",
+    "1",
+    "0",
+    "298"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\317C225ThinF\\GT\\IMG_20151112_113915.txt'",
+    "0",
+    "0",
+    "292"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\317C225ThinF\\GT\\IMG_20151112_113953.txt'",
+    "0",
+    "0",
+    "281"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\319C227ThinF\\GT\\IMG_20151112_135158.txt'",
+    "0",
+    "0",
+    "260"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\319C227ThinF\\GT\\IMG_20151112_135308.txt'",
+    "1",
+    "0",
+    "268"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\319C227ThinF\\GT\\IMG_20151112_135422.txt'",
+    "1",
+    "0",
+    "249"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\319C227ThinF\\GT\\IMG_20151112_135509.txt'",
+    "1",
+    "0",
+    "256"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\319C227ThinF\\GT\\IMG_20151112_135818.txt'",
+    "0",
+    "0",
+    "285"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\320C228ThinF\\GT\\IMG_20151112_142109.txt'",
+    "0",
+    "0",
+    "281"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\320C228ThinF\\GT\\IMG_20151112_142216.txt'",
+    "0",
+    "0",
+    "268"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\320C228ThinF\\GT\\IMG_20151112_142452.txt'",
+    "0",
+    "0",
+    "278"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\320C228ThinF\\GT\\IMG_20151112_142730.txt'",
+    "0",
+    "0",
+    "246"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\320C228ThinF\\GT\\IMG_20151112_142900.txt'",
+    "0",
+    "0",
+    "272"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\321C229ThinF\\GT\\IMG_20151112_144147.txt'",
+    "0",
+    "0",
+    "275"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\321C229ThinF\\GT\\IMG_20151112_144222.txt'",
+    "0",
+    "0",
+    "253"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\321C229ThinF\\GT\\IMG_20151112_144534.txt'",
+    "0",
+    "0",
+    "277"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\321C229ThinF\\GT\\IMG_20151112_144613.txt'",
+    "2",
+    "0",
+    "281"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\321C229ThinF\\GT\\IMG_20151112_144652.txt'",
+    "0",
+    "0",
+    "293"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\322C230ThinF\\GT\\IMG_20151112_150329.txt'",
+    "0",
+    "0",
+    "260"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\322C230ThinF\\GT\\IMG_20151112_150621.txt'",
+    "1",
+    "0",
+    "252"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\322C230ThinF\\GT\\IMG_20151112_150647.txt'",
+    "0",
+    "0",
+    "253"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\322C230ThinF\\GT\\IMG_20151112_150730.txt'",
+    "0",
+    "0",
+    "251"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\322C230ThinF\\GT\\IMG_20151112_150753.txt'",
+    "0",
+    "0",
+    "273"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\324C232ThinF\\GT\\IMG_20151112_154211.txt'",
+    "0",
+    "0",
+    "270"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\324C232ThinF\\GT\\IMG_20151112_154251.txt'",
+    "0",
+    "0",
+    "284"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\324C232ThinF\\GT\\IMG_20151112_154345.txt'",
+    "0",
+    "0",
+    "288"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\324C232ThinF\\GT\\IMG_20151112_154424.txt'",
+    "0",
+    "0",
+    "281"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\324C232ThinF\\GT\\IMG_20151112_154719.txt'",
+    "0",
+    "0",
+    "281"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\325C233ThinF\\GT\\IMG_20151112_160059.txt'",
+    "0",
+    "0",
+    "284"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\325C233ThinF\\GT\\IMG_20151112_160129.txt'",
+    "0",
+    "0",
+    "273"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\325C233ThinF\\GT\\IMG_20151112_160635.txt'",
+    "0",
+    "0",
+    "267"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\325C233ThinF\\GT\\IMG_20151112_161024.txt'",
+    "2",
+    "0",
+    "283"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\325C233ThinF\\GT\\IMG_20151112_161119.txt'",
+    "2",
+    "0",
+    "285"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\326C234ThinF\\GT\\IMG_20151112_162759.txt'",
+    "1",
+    "0",
+    "264"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\326C234ThinF\\GT\\IMG_20151112_162843.txt'",
+    "0",
+    "0",
+    "281"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\326C234ThinF\\GT\\IMG_20151112_162909.txt'",
+    "1",
+    "0",
+    "278"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\326C234ThinF\\GT\\IMG_20151112_162940.txt'",
+    "0",
+    "0",
+    "298"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\326C234ThinF\\GT\\IMG_20151112_163036.txt'",
+    "0",
+    "0",
+    "288"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\328C222ThinF\\GT\\IMG_20151115_150057.txt'",
+    "0",
+    "0",
+    "205"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\328C222ThinF\\GT\\IMG_20151115_150728.txt'",
+    "0",
+    "0",
+    "211"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\328C222ThinF\\GT\\IMG_20151115_150925.txt'",
+    "0",
+    "0",
+    "220"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\328C222ThinF\\GT\\IMG_20151115_151015.txt'",
+    "0",
+    "0",
+    "199"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\328C222ThinF\\GT\\IMG_20151115_151211.txt'",
+    "0",
+    "0",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\329C146P107ThinF\\GT\\IMG_20151018_134554.txt'",
+    "0",
+    "11",
+    "247"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\329C146P107ThinF\\GT\\IMG_20151018_135703.txt'",
+    "0",
+    "9",
+    "219"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\329C146P107ThinF\\GT\\IMG_20151018_135846.txt'",
+    "1",
+    "5",
+    "217"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\329C146P107ThinF\\GT\\IMG_20151018_140044.txt'",
+    "0",
+    "6",
+    "221"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\329C146P107ThinF\\GT\\IMG_20151018_140342.txt'",
+    "1",
+    "6",
+    "250"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\330C147P108ThinF\\GT\\IMG_20151115_092605.txt'",
+    "0",
+    "5",
+    "228"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\330C147P108ThinF\\GT\\IMG_20151115_092900.txt'",
+    "0",
+    "0",
+    "181"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\330C147P108ThinF\\GT\\IMG_20151115_095606.txt'",
+    "0",
+    "2",
+    "180"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\330C147P108ThinF\\GT\\IMG_20151115_101156.txt'",
+    "0",
+    "0",
+    "182"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\330C147P108ThinF\\GT\\IMG_20151115_101317.txt'",
+    "3",
+    "3",
+    "199"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\331C148P109ThinF\\GT\\IMG_20151115_112253.txt'",
+    "0",
+    "4",
+    "220"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\331C148P109ThinF\\GT\\IMG_20151115_112333.txt'",
+    "0",
+    "10",
+    "241"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\331C148P109ThinF\\GT\\IMG_20151115_112445.txt'",
+    "0",
+    "5",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\331C148P109ThinF\\GT\\IMG_20151115_112538.txt'",
+    "0",
+    "1",
+    "212"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\331C148P109ThinF\\GT\\IMG_20151115_112855.txt'",
+    "0",
+    "6",
+    "254"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\332C149P110ThinF\\GT\\IMG_20151115_114555.txt'",
+    "0",
+    "14",
+    "296"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\332C149P110ThinF\\GT\\IMG_20151115_114629.txt'",
+    "0",
+    "5",
+    "268"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\332C149P110ThinF\\GT\\IMG_20151115_114729.txt'",
+    "0",
+    "14",
+    "263"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\332C149P110ThinF\\GT\\IMG_20151115_114910.txt'",
+    "2",
+    "11",
+    "283"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\332C149P110ThinF\\GT\\IMG_20151115_115154.txt'",
+    "1",
+    "10",
+    "248"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\333C150P111ThinF\\GT\\IMG_20151115_115805.txt'",
+    "0",
+    "0",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\333C150P111ThinF\\GT\\IMG_20151115_115922.txt'",
+    "1",
+    "1",
+    "233"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\333C150P111ThinF\\GT\\IMG_20151115_115950.txt'",
+    "0",
+    "0",
+    "200"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\333C150P111ThinF\\GT\\IMG_20151115_120029.txt'",
+    "0",
+    "0",
+    "228"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\333C150P111ThinF\\GT\\IMG_20151115_120244.txt'",
+    "0",
+    "0",
+    "222"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\334C151P112ThinF\\GT\\IMG_20151115_121644.txt'",
+    "0",
+    "1",
+    "257"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\334C151P112ThinF\\GT\\IMG_20151115_121725.txt'",
+    "0",
+    "1",
+    "224"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\334C151P112ThinF\\GT\\IMG_20151115_121843.txt'",
+    "0",
+    "0",
+    "255"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\334C151P112ThinF\\GT\\IMG_20151115_121942.txt'",
+    "0",
+    "1",
+    "228"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\334C151P112ThinF\\GT\\IMG_20151115_122342.txt'",
+    "1",
+    "3",
+    "246"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\335C152P113ThinF\\GT\\IMG_20151115_123837.txt'",
+    "0",
+    "1",
+    "148"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\335C152P113ThinF\\GT\\IMG_20151115_124032.txt'",
+    "1",
+    "1",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\335C152P113ThinF\\GT\\IMG_20151115_124217.txt'",
+    "0",
+    "1",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\335C152P113ThinF\\GT\\IMG_20151115_124323.txt'",
+    "1",
+    "2",
+    "160"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\335C152P113ThinF\\GT\\IMG_20151115_124557.txt'",
+    "0",
+    "3",
+    "172"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\336C153P114ThinF\\GT\\IMG_20151115_135639.txt'",
+    "0",
+    "1",
+    "288"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\336C153P114ThinF\\GT\\IMG_20151115_135746.txt'",
+    "1",
+    "2",
+    "271"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\336C153P114ThinF\\GT\\IMG_20151115_135832.txt'",
+    "0",
+    "2",
+    "287"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\336C153P114ThinF\\GT\\IMG_20151115_135911.txt'",
+    "0",
+    "1",
+    "250"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\336C153P114ThinF\\GT\\IMG_20151115_140242.txt'",
+    "1",
+    "1",
+    "282"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\337C154P115ThinF\\GT\\IMG_20151115_141336.txt'",
+    "0",
+    "7",
+    "229"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\337C154P115ThinF\\GT\\IMG_20151115_141407.txt'",
+    "0",
+    "8",
+    "221"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\337C154P115ThinF\\GT\\IMG_20151115_141507.txt'",
+    "0",
+    "0",
+    "213"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\337C154P115ThinF\\GT\\IMG_20151115_141543.txt'",
+    "0",
+    "5",
+    "215"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\337C154P115ThinF\\GT\\IMG_20151115_141621.txt'",
+    "0",
+    "2",
+    "192"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\338C155P116ThinF\\GT\\IMG_20151115_142526.txt'",
+    "0",
+    "1",
+    "178"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\338C155P116ThinF\\GT\\IMG_20151115_142805.txt'",
+    "1",
+    "1",
+    "196"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\338C155P116ThinF\\GT\\IMG_20151115_142836.txt'",
+    "0",
+    "0",
+    "204"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\338C155P116ThinF\\GT\\IMG_20151115_143051.txt'",
+    "0",
+    "0",
+    "182"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\338C155P116ThinF\\GT\\IMG_20151115_143125.txt'",
+    "0",
+    "0",
+    "178"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\339C156P117ThinF\\GT\\IMG_20151115_153831.txt'",
+    "0",
+    "6",
+    "258"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\339C156P117ThinF\\GT\\IMG_20151115_154022.txt'",
+    "0",
+    "6",
+    "277"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\339C156P117ThinF\\GT\\IMG_20151115_154313.txt'",
+    "0",
+    "6",
+    "274"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\339C156P117ThinF\\GT\\IMG_20151115_154435.txt'",
+    "0",
+    "5",
+    "295"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\339C156P117ThinF\\GT\\IMG_20151115_155104.txt'",
+    "0",
+    "8",
+    "254"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\340C157P118ThinF\\GT\\IMG_20151115_162818.txt'",
+    "0",
+    "6",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\340C157P118ThinF\\GT\\IMG_20151115_163611.txt'",
+    "0",
+    "6",
+    "216"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\340C157P118ThinF\\GT\\IMG_20151115_163759.txt'",
+    "1",
+    "5",
+    "186"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\340C157P118ThinF\\GT\\IMG_20151115_163915.txt'",
+    "1",
+    "6",
+    "173"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\340C157P118ThinF\\GT\\IMG_20151115_164026.txt'",
+    "0",
+    "6",
+    "229"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\341C158P119ThinF\\GT\\IMG_20151115_181035.txt'",
+    "0",
+    "12",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\341C158P119ThinF\\GT\\IMG_20151115_181136.txt'",
+    "0",
+    "8",
+    "195"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\341C158P119ThinF\\GT\\IMG_20151115_181436.txt'",
+    "0",
+    "4",
+    "201"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\341C158P119ThinF\\GT\\IMG_20151115_181558.txt'",
+    "0",
+    "7",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\341C158P119ThinF\\GT\\IMG_20151115_181859.txt'",
+    "0",
+    "11",
+    "193"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\342C159P120ThinF\\GT\\IMG_20151115_185541.txt'",
+    "0",
+    "16",
+    "176"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\342C159P120ThinF\\GT\\IMG_20151115_190002.txt'",
+    "0",
+    "12",
+    "225"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\342C159P120ThinF\\GT\\IMG_20151115_190421.txt'",
+    "0",
+    "15",
+    "193"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\342C159P120ThinF\\GT\\IMG_20151115_190642.txt'",
+    "0",
+    "10",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\342C159P120ThinF\\GT\\IMG_20151115_190812.txt'",
+    "2",
+    "11",
+    "243"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\344C161P122ThinF\\GT\\IMG_20151116_100724.txt'",
+    "0",
+    "0",
+    "98"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\344C161P122ThinF\\GT\\IMG_20151116_100840.txt'",
+    "1",
+    "0",
+    "101"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\344C161P122ThinF\\GT\\IMG_20151116_100959.txt'",
+    "1",
+    "1",
+    "116"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\344C161P122ThinF\\GT\\IMG_20151116_101059.txt'",
+    "0",
+    "1",
+    "119"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\344C161P122ThinF\\GT\\IMG_20151116_101126.txt'",
+    "1",
+    "0",
+    "119"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\345C162P123ThinF\\GT\\IMG_20151116_102655.txt'",
+    "0",
+    "3",
+    "161"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\345C162P123ThinF\\GT\\IMG_20151116_102751.txt'",
+    "0",
+    "2",
+    "152"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\345C162P123ThinF\\GT\\IMG_20151116_104114.txt'",
+    "0",
+    "4",
+    "167"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\345C162P123ThinF\\GT\\IMG_20151116_104342.txt'",
+    "0",
+    "1",
+    "149"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\345C162P123ThinF\\GT\\IMG_20151116_104451.txt'",
+    "0",
+    "3",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\346C163P124ThinF\\GT\\IMG_20151116_110818.txt'",
+    "0",
+    "3",
+    "277"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\346C163P124ThinF\\GT\\IMG_20151116_110921.txt'",
+    "0",
+    "2",
+    "242"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\346C163P124ThinF\\GT\\IMG_20151116_111147.txt'",
+    "0",
+    "3",
+    "222"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\346C163P124ThinF\\GT\\IMG_20151116_111742.txt'",
+    "0",
+    "1",
+    "277"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\346C163P124ThinF\\GT\\IMG_20151116_111925.txt'",
+    "0",
+    "2",
+    "284"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\347C164P125ThinF\\GT\\IMG_20151116_113550.txt'",
+    "0",
+    "3",
+    "157"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\347C164P125ThinF\\GT\\IMG_20151116_113651.txt'",
+    "0",
+    "3",
+    "132"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\347C164P125ThinF\\GT\\IMG_20151116_113954.txt'",
+    "0",
+    "1",
+    "135"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\347C164P125ThinF\\GT\\IMG_20151116_114404.txt'",
+    "0",
+    "8",
+    "177"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\347C164P125ThinF\\GT\\IMG_20151116_115112.txt'",
+    "0",
+    "2",
+    "145"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\348C165P126ThinF\\GT\\IMG_20151117_164432.txt'",
+    "0",
+    "1",
+    "226"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\348C165P126ThinF\\GT\\IMG_20151117_171006.txt'",
+    "0",
+    "1",
+    "221"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\348C165P126ThinF\\GT\\IMG_20151117_171646.txt'",
+    "0",
+    "0",
+    "217"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\348C165P126ThinF\\GT\\IMG_20151117_172356.txt'",
+    "0",
+    "0",
+    "204"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\348C165P126ThinF\\GT\\IMG_20151117_172859.txt'",
+    "0",
+    "0",
+    "201"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\349C45P6ThinF\\GT\\IMG_20151130_154725.txt'",
+    "0",
+    "22",
+    "166"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\349C45P6ThinF\\GT\\IMG_20151130_155011.txt'",
+    "0",
+    "11",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\349C45P6ThinF\\GT\\IMG_20151130_155110.txt'",
+    "1",
+    "19",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\349C45P6ThinF\\GT\\IMG_20151130_160135.txt'",
+    "0",
+    "21",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\349C45P6ThinF\\GT\\IMG_20151130_160241.txt'",
+    "0",
+    "11",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\350C46P7ThinF\\GT\\IMG_20151130_205558.txt'",
+    "0",
+    "16",
+    "149"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\350C46P7ThinF\\GT\\IMG_20151130_205719.txt'",
+    "0",
+    "8",
+    "127"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\350C46P7ThinF\\GT\\IMG_20151130_205756.txt'",
+    "0",
+    "18",
+    "119"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\350C46P7ThinF\\GT\\IMG_20151130_205828.txt'",
+    "0",
+    "17",
+    "137"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\350C46P7ThinF\\GT\\IMG_20151130_210123.txt'",
+    "1",
+    "9",
+    "118"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\351C166P127ThinF\\GT\\IMG_20151117_193235.txt'",
+    "0",
+    "5",
+    "214"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\351C166P127ThinF\\GT\\IMG_20151117_193931.txt'",
+    "0",
+    "6",
+    "208"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\351C166P127ThinF\\GT\\IMG_20151117_194147.txt'",
+    "0",
+    "2",
+    "225"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\351C166P127ThinF\\GT\\IMG_20151117_194410.txt'",
+    "0",
+    "8",
+    "190"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\351C166P127ThinF\\GT\\IMG_20151117_194932.txt'",
+    "1",
+    "6",
+    "226"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\352C167P128ReThinF\\GT\\IMG_20151201_105102.txt'",
+    "0",
+    "10",
+    "246"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\352C167P128ReThinF\\GT\\IMG_20151201_105354.txt'",
+    "1",
+    "23",
+    "230"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\352C167P128ReThinF\\GT\\IMG_20151201_105559.txt'",
+    "0",
+    "23",
+    "225"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\352C167P128ReThinF\\GT\\IMG_20151201_105707.txt'",
+    "0",
+    "19",
+    "228"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\352C167P128ReThinF\\GT\\IMG_20151201_110011.txt'",
+    "0",
+    "18",
+    "223"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\353C168P129ThinF\\GT\\IMG_20151118_153739.txt'",
+    "1",
+    "6",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\353C168P129ThinF\\GT\\IMG_20151118_154126.txt'",
+    "0",
+    "7",
+    "166"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\353C168P129ThinF\\GT\\IMG_20151118_154651.txt'",
+    "0",
+    "8",
+    "168"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\353C168P129ThinF\\GT\\IMG_20151118_155802.txt'",
+    "0",
+    "7",
+    "158"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\353C168P129ThinF\\GT\\IMG_20151118_160516.txt'",
+    "0",
+    "8",
+    "188"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\355C170P131ThinF\\GT\\IMG_20151119_115918.txt'",
+    "0",
+    "3",
+    "276"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\355C170P131ThinF\\GT\\IMG_20151119_120019.txt'",
+    "0",
+    "7",
+    "242"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\355C170P131ThinF\\GT\\IMG_20151119_120111.txt'",
+    "0",
+    "11",
+    "229"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\355C170P131ThinF\\GT\\IMG_20151119_120150.txt'",
+    "1",
+    "3",
+    "223"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\355C170P131ThinF\\GT\\IMG_20151119_120233.txt'",
+    "0",
+    "4",
+    "185"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\356C171P132ThinF\\GT\\IMG_20151119_152913.txt'",
+    "2",
+    "2",
+    "281"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\356C171P132ThinF\\GT\\IMG_20151119_153150.txt'",
+    "1",
+    "2",
+    "222"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\356C171P132ThinF\\GT\\IMG_20151119_153347.txt'",
+    "0",
+    "2",
+    "212"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\356C171P132ThinF\\GT\\IMG_20151119_153425.txt'",
+    "0",
+    "3",
+    "239"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\356C171P132ThinF\\GT\\IMG_20151119_153512.txt'",
+    "1",
+    "2",
+    "190"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\357C172P133ThinF\\GT\\IMG_20151119_154936.txt'",
+    "2",
+    "14",
+    "267"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\357C172P133ThinF\\GT\\IMG_20151119_155019.txt'",
+    "0",
+    "11",
+    "244"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\357C172P133ThinF\\GT\\IMG_20151119_155156.txt'",
+    "1",
+    "14",
+    "263"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\357C172P133ThinF\\GT\\IMG_20151119_155307.txt'",
+    "0",
+    "13",
+    "256"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\357C172P133ThinF\\GT\\IMG_20151119_155343.txt'",
+    "0",
+    "22",
+    "268"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\358C173P134NThinF\\GT\\IMG_20151130_115339.txt'",
+    "0",
+    "6",
+    "258"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\358C173P134NThinF\\GT\\IMG_20151130_115733.txt'",
+    "0",
+    "2",
+    "227"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\358C173P134NThinF\\GT\\IMG_20151130_120046.txt'",
+    "0",
+    "7",
+    "242"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\358C173P134NThinF\\GT\\IMG_20151130_125408.txt'",
+    "2",
+    "2",
+    "277"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\358C173P134NThinF\\GT\\IMG_20151130_125501.txt'",
+    "0",
+    "4",
+    "255"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\359C174P135NThinF\\GT\\IMG_20151127_135311.txt'",
+    "0",
+    "15",
+    "196"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\359C174P135NThinF\\GT\\IMG_20151127_135342.txt'",
+    "0",
+    "19",
+    "213"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\359C174P135NThinF\\GT\\IMG_20151127_135435.txt'",
+    "0",
+    "19",
+    "197"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\359C174P135NThinF\\GT\\IMG_20151127_135512.txt'",
+    "0",
+    "15",
+    "179"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\359C174P135NThinF\\GT\\IMG_20151127_135554.txt'",
+    "0",
+    "21",
+    "184"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\360C175P136NThinF\\GT\\IMG_20151127_141253.txt'",
+    "0",
+    "23",
+    "236"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\360C175P136NThinF\\GT\\IMG_20151127_141325.txt'",
+    "0",
+    "15",
+    "216"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\360C175P136NThinF\\GT\\IMG_20151127_141428.txt'",
+    "0",
+    "28",
+    "210"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\360C175P136NThinF\\GT\\IMG_20151127_142009.txt'",
+    "0",
+    "34",
+    "214"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\360C175P136NThinF\\GT\\IMG_20151127_142326.txt'",
+    "0",
+    "24",
+    "218"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\361C176P137NThinF\\GT\\IMG_20151201_114035.txt'",
+    "0",
+    "25",
+    "118"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\361C176P137NThinF\\GT\\IMG_20151201_120845.txt'",
+    "0",
+    "19",
+    "121"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\361C176P137NThinF\\GT\\IMG_20151201_121303.txt'",
+    "2",
+    "19",
+    "112"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\361C176P137NThinF\\GT\\IMG_20151201_121724.txt'",
+    "3",
+    "23",
+    "133"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\361C176P137NThinF\\GT\\IMG_20151201_121808.txt'",
+    "2",
+    "27",
+    "123"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\363C178P139NThinF\\GT\\IMG_20151201_151903.txt'",
+    "1",
+    "2",
+    "106"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\363C178P139NThinF\\GT\\IMG_20151201_153246.txt'",
+    "2",
+    "4",
+    "156"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\363C178P139NThinF\\GT\\IMG_20151201_153846.txt'",
+    "1",
+    "3",
+    "116"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\363C178P139NThinF\\GT\\IMG_20151201_154025.txt'",
+    "0",
+    "1",
+    "127"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\363C178P139NThinF\\GT\\IMG_20151201_154337.txt'",
+    "0",
+    "0",
+    "152"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\364C179P140ThinF\\GT\\IMG_20151127_153350.txt'",
+    "0",
+    "21",
+    "164"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\364C179P140ThinF\\GT\\IMG_20151127_153420.txt'",
+    "1",
+    "15",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\364C179P140ThinF\\GT\\IMG_20151127_153436.txt'",
+    "0",
+    "24",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\364C179P140ThinF\\GT\\IMG_20151127_153453.txt'",
+    "0",
+    "17",
+    "175"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\364C179P140ThinF\\GT\\IMG_20151127_153521.txt'",
+    "0",
+    "15",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\365C180P141NThinF\\GT\\IMG_20151201_163702.txt'",
+    "1",
+    "40",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\365C180P141NThinF\\GT\\IMG_20151201_163751.txt'",
+    "1",
+    "46",
+    "144"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\365C180P141NThinF\\GT\\IMG_20151201_163848.txt'",
+    "0",
+    "46",
+    "140"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\365C180P141NThinF\\GT\\IMG_20151201_164714.txt'",
+    "0",
+    "36",
+    "163"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\365C180P141NThinF\\GT\\IMG_20151201_165423.txt'",
+    "0",
+    "34",
+    "153"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\366C181P142ThinF\\GT\\IMG_20151127_155722.txt'",
+    "0",
+    "29",
+    "175"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\366C181P142ThinF\\GT\\IMG_20151127_155914.txt'",
+    "0",
+    "34",
+    "158"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\366C181P142ThinF\\GT\\IMG_20151127_160434.txt'",
+    "1",
+    "26",
+    "156"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\366C181P142ThinF\\GT\\IMG_20151127_160514.txt'",
+    "0",
+    "12",
+    "168"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\366C181P142ThinF\\GT\\IMG_20151127_160539.txt'",
+    "1",
+    "33",
+    "182"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\367C182P143NThinF\\GT\\IMG_20151201_171836.txt'",
+    "0",
+    "42",
+    "143"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\367C182P143NThinF\\GT\\IMG_20151201_171905.txt'",
+    "0",
+    "53",
+    "138"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\367C182P143NThinF\\GT\\IMG_20151201_171950.txt'",
+    "0",
+    "67",
+    "161"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\367C182P143NThinF\\GT\\IMG_20151201_172057.txt'",
+    "0",
+    "48",
+    "136"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\367C182P143NThinF\\GT\\IMG_20151201_172216.txt'",
+    "1",
+    "75",
+    "126"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\368C183P144NThinF\\GT\\IMG_20151201_222119.txt'",
+    "0",
+    "19",
+    "133"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\368C183P144NThinF\\GT\\IMG_20151201_222917.txt'",
+    "1",
+    "27",
+    "151"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\368C183P144NThinF\\GT\\IMG_20151201_223208.txt'",
+    "0",
+    "16",
+    "113"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\368C183P144NThinF\\GT\\IMG_20151201_223357.txt'",
+    "0",
+    "10",
+    "155"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\368C183P144NThinF\\GT\\IMG_20151201_223431.txt'",
+    "0",
+    "11",
+    "100"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\369C184P145ThinF\\GT\\IMG_20151203_102405.txt'",
+    "0",
+    "46",
+    "141"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\369C184P145ThinF\\GT\\IMG_20151203_102543.txt'",
+    "0",
+    "44",
+    "137"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\369C184P145ThinF\\GT\\IMG_20151203_103114.txt'",
+    "0",
+    "43",
+    "141"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\369C184P145ThinF\\GT\\IMG_20151203_103326.txt'",
+    "0",
+    "41",
+    "122"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\369C184P145ThinF\\GT\\IMG_20151203_103637.txt'",
+    "0",
+    "47",
+    "142"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\370C185P146ThinF\\GT\\IMG_20151203_110344.txt'",
+    "0",
+    "3",
+    "264"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\370C185P146ThinF\\GT\\IMG_20151203_110448.txt'",
+    "0",
+    "2",
+    "252"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\370C185P146ThinF\\GT\\IMG_20151203_110817.txt'",
+    "0",
+    "2",
+    "257"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\370C185P146ThinF\\GT\\IMG_20151203_110933.txt'",
+    "0",
+    "3",
+    "229"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\370C185P146ThinF\\GT\\IMG_20151203_111121.txt'",
+    "1",
+    "3",
+    "218"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\371C186P147NThinF\\GT\\IMG_20151203_150132.txt'",
+    "0",
+    "21",
+    "185"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\371C186P147NThinF\\GT\\IMG_20151203_150222.txt'",
+    "0",
+    "12",
+    "168"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\371C186P147NThinF\\GT\\IMG_20151203_150322.txt'",
+    "0",
+    "19",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\371C186P147NThinF\\GT\\IMG_20151203_150408.txt'",
+    "0",
+    "24",
+    "166"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\371C186P147NThinF\\GT\\IMG_20151203_150557.txt'",
+    "0",
+    "24",
+    "168"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\373C188P149ThinF\\GT\\IMG_20151203_134209.txt'",
+    "0",
+    "7",
+    "202"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\373C188P149ThinF\\GT\\IMG_20151203_134229.txt'",
+    "0",
+    "15",
+    "216"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\373C188P149ThinF\\GT\\IMG_20151203_134319.txt'",
+    "1",
+    "13",
+    "188"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\373C188P149ThinF\\GT\\IMG_20151203_134419.txt'",
+    "0",
+    "9",
+    "192"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\373C188P149ThinF\\GT\\IMG_20151203_134449.txt'",
+    "0",
+    "6",
+    "201"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\374C189P150ThinF\\GT\\IMG_20151203_140809.txt'",
+    "0",
+    "20",
+    "127"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\374C189P150ThinF\\GT\\IMG_20151203_140902.txt'",
+    "1",
+    "22",
+    "113"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\374C189P150ThinF\\GT\\IMG_20151203_141004.txt'",
+    "0",
+    "10",
+    "73"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\374C189P150ThinF\\GT\\IMG_20151203_141110.txt'",
+    "0",
+    "7",
+    "72"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\374C189P150ThinF\\GT\\IMG_20151203_141308.txt'",
+    "0",
+    "14",
+    "60"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\375C236ThinF\\GT\\IMG_20151127_102115.txt'",
+    "0",
+    "0",
+    "285"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\375C236ThinF\\GT\\IMG_20151127_102428.txt'",
+    "0",
+    "0",
+    "266"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\375C236ThinF\\GT\\IMG_20151127_102516.txt'",
+    "0",
+    "0",
+    "261"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\375C236ThinF\\GT\\IMG_20151127_102546.txt'",
+    "1",
+    "0",
+    "249"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\375C236ThinF\\GT\\IMG_20151127_102635.txt'",
+    "0",
+    "0",
+    "261"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\376C237ThinF\\GT\\IMG_20151127_104748.txt'",
+    "0",
+    "0",
+    "248"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\376C237ThinF\\GT\\IMG_20151127_104844.txt'",
+    "0",
+    "0",
+    "251"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\376C237ThinF\\GT\\IMG_20151127_104954.txt'",
+    "0",
+    "0",
+    "248"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\376C237ThinF\\GT\\IMG_20151127_105320.txt'",
+    "1",
+    "0",
+    "263"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\376C237ThinF\\GT\\IMG_20151127_105345.txt'",
+    "0",
+    "0",
+    "261"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\378C239ThinF\\GT\\IMG_20151127_113008.txt'",
+    "0",
+    "0",
+    "286"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\378C239ThinF\\GT\\IMG_20151127_113150.txt'",
+    "1",
+    "0",
+    "287"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\378C239ThinF\\GT\\IMG_20151127_113202.txt'",
+    "1",
+    "0",
+    "297"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\378C239ThinF\\GT\\IMG_20151127_113223.txt'",
+    "0",
+    "0",
+    "289"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\378C239ThinF\\GT\\IMG_20151127_113253.txt'",
+    "1",
+    "0",
+    "291"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\379C240ThinF\\GT\\IMG_20151127_115223.txt'",
+    "2",
+    "0",
+    "230"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\379C240ThinF\\GT\\IMG_20151127_115247.txt'",
+    "0",
+    "0",
+    "237"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\379C240ThinF\\GT\\IMG_20151127_115306.txt'",
+    "1",
+    "0",
+    "233"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\379C240ThinF\\GT\\IMG_20151127_115328.txt'",
+    "1",
+    "0",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\379C240ThinF\\GT\\IMG_20151127_115545.txt'",
+    "1",
+    "0",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\380C241NThinF\\GT\\IMG_20151207_124030.txt'",
+    "0",
+    "0",
+    "157"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\380C241NThinF\\GT\\IMG_20151207_124115.txt'",
+    "0",
+    "0",
+    "187"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\380C241NThinF\\GT\\IMG_20151207_124208.txt'",
+    "0",
+    "0",
+    "177"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\380C241NThinF\\GT\\IMG_20151207_124240.txt'",
+    "0",
+    "0",
+    "186"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Point Set\\380C241NThinF\\GT\\IMG_20151207_124358.txt'",
+    "0",
+    "0",
+    "194"
+  ],
+  [
+    "Sum each column",
+    "220",
+    "6810",
+    "155640"
+  ],
+  [
+    "All RBC's",
+    "162450"
+  ],
+  [
+    "All cells",
+    "162670"
+  ],
+  [
+    "Summary ",
+    "#WBC = 220"
+  ],
+  [
+    "#All RBCs = 162,450"
+  ],
+  [
+    "#RBCs infected = 6810"
+  ],
+  [
+    "#RBCs uninfected = 155,640"
+  ]
+]
