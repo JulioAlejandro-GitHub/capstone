@@ -1,13 +1,22 @@
 """Campaign TRAIN from persisted configuration. No CSV or JSON sidecars."""
 
+from __future__ import annotations
+
 import os
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from ..campaigns.contracts import CampaignError, digest
 from .artifacts import file_identity
 from .contracts import RunEventType
 from .emitter import RunEventEmitter
+
+if TYPE_CHECKING:
+    from ..local_execution.transport import Reports
+    from ..models.registry import ModelDescriptor
+    from .repository import ExecutionRepository
 
 
 def clean(value):
@@ -24,7 +33,8 @@ def clean(value):
     return value
 
 
-def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | None = None):
+def train(repository: ExecutionRepository | Reports, session: dict, descriptor: ModelDescriptor,
+          *, event_emitter: RunEventEmitter | None = None) -> None:
     """Transitional E10.7 dual reporting; remove the legacy dependency in E10.11.
 
     No emitter preserves the Local/standalone legacy path. Delivery errors are
@@ -38,7 +48,8 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
         make_image_dataset_from_directory,
         preprocess_physical_dataset,
     )
-    from ..evaluation.threshold_calibration import find_threshold_for_target_recall
+    from ..data.governed_dataset import local_dataset_root
+    from ..evaluation.calibration_controller import CalibrationController
     from ..models.adapters import compile_phase
     from ..training.checkpoint_policy import (
         CheckpointPolicyConfig,
@@ -48,6 +59,7 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
     )
 
     run, owner = str(session["run_id"]), str(session["owner"])
+    started_at = datetime.now(timezone.utc).isoformat()
     config = session["configuration"]
     r = config["resolved"]
     e = r["execution"]
@@ -61,9 +73,12 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
         tf.config.experimental.enable_op_determinism()
     datasets = {}
     sample_paths = []
+    # Both campaign and standalone consume the verified host mount, retaining
+    # the original snapshot in the session and all scientific records.
+    dataset_root = local_dataset_root(session["dataset"]["dataset_root"])
     for role in ("train", "val"):
         raw = make_image_dataset_from_directory(
-            Path(session["dataset"]["dataset_root"]) / role,
+            dataset_root / role,
             r["model"]["input_shape"][0],
             e["batch_size"],
             role == "train",
@@ -71,7 +86,7 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
         )
         if role == "val":
             sample_paths = [
-                str(Path(p).relative_to(session["dataset"]["dataset_root"]))
+                str(Path(p).relative_to(dataset_root))
                 for p in raw.file_paths
             ]
         datasets[role] = preprocess_physical_dataset(
@@ -94,7 +109,7 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
     selection = None
     epoch_offset = 0
 
-    def put(kind, phase, key, payload):
+    def put(kind: str, phase: str, key: str | int, payload: dict) -> None:
         payload = clean(payload)
         repository.put(run, owner, kind, phase, key, payload)
         if event_emitter is None:
@@ -120,6 +135,9 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
                       "result": payload["result"]}
         elif kind == "runtime":
             result = {"phase": phase, "callbacks": payload["callbacks"]}
+            if "runtime_environment" in payload:
+                result.update(runtime_environment=payload["runtime_environment"],
+                              started_at=payload["started_at"])
         else:
             result = payload
         event_emitter.emit(types[kind], {"legacy_record": reference, "result": result})
@@ -221,6 +239,9 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
             {"type": type(c).__name__, "monitor": getattr(c, "monitor", None)}
             for c in callbacks
         ]
+        if phase == "base":
+            from .campaign import runtime_environment
+            runtime.update(runtime_environment=runtime_environment(), started_at=started_at)
         put("runtime", phase, "configuration", runtime)
         h = model.fit(
             datasets["train"],
@@ -256,17 +277,8 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
     selected_path = root / f"epoch_{selection['selected_epoch']}.keras"
     selected = tf.keras.models.load_model(selected_path, compile=False)
     labels, _, scores = collect_predictions(selected, datasets["val"], threshold=0.5)
-    calibration = (
-        find_threshold_for_target_recall(
-            labels,
-            scores,
-            target_recall=e["target_recall"],
-            min_specificity=e["min_specificity"],
-            beta=e["beta"],
-        )
-        if e["calibrate_threshold"]
-        else {"enabled": False, "threshold": 0.5}
-    )
+    controller = CalibrationController(config)
+    calibration = controller.calibrate(labels, scores)
     put(
         "calibration",
         "val",
@@ -282,18 +294,15 @@ def train(repository, session, descriptor, *, event_emitter: RunEventEmitter | N
     )
     if event_emitter is not None:
         from ..evaluation.validation import evaluate_validation_predictions
-        from ..results.training import ThresholdResult
 
-        effective_validation_threshold = ThresholdResult(
-            calibration['threshold_used'] if e['calibrate_threshold'] else calibration['threshold'],
-            calibration['threshold_source'] if e['calibrate_threshold'] else 'default',
-        )
+        effective_validation_threshold = controller.threshold(calibration)
         evaluation = evaluate_validation_predictions(labels, scores, effective_validation_threshold)
         if evaluation.n_samples != len(sample_paths):
             raise CampaignError("VALIDATION_POPULATION_CONFLICT")
         event_emitter.emit(RunEventType.EVALUATION_COMPLETED, evaluation.to_dict())
     records = repository.records(run)
     completion = {
+        "finished_at": datetime.now(timezone.utc).isoformat(),
         "epochs": len(history),
         "selection": selection,
         "records_hash": digest(records),
@@ -333,6 +342,7 @@ def _standalone(args):
     snapshot = verify_dataset_for_execution(
         args.dataset_version_id,
         consumer="train.e5",
+        required_splits=("train", "val"),
         dataset_dir=args.dataset_dir,
         data_source=args.data_source,
         expected_evidence_id=getattr(args, "expected_dataset_evidence_id", None),
@@ -345,12 +355,15 @@ def _standalone(args):
         socket.gethostname(),
         os.getpid(),
         snapshot.evidence_id,
+        campaign_id=getattr(args, "campaign_id", None),
+        source_training_run_id=getattr(args, "source_training_run_id", None),
     )
     try:
         train(repo, session, resolve_descriptor(args.model))
         verified_snapshot = verify_dataset_for_execution(
             args.dataset_version_id,
             consumer="train.e5.finalize",
+            required_splits=("train", "val"),
             expected_evidence_id=snapshot.evidence_id,
         )
         if verified_snapshot.metadata() != snapshot.metadata():
@@ -368,3 +381,5 @@ def _standalone(args):
                 cause="INDIVIDUAL_TRAIN_FAILED",
             )
         raise
+
+    return repo.session(session["run_id"])

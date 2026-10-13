@@ -10,7 +10,7 @@ from uuid import UUID, uuid5
 from sqlalchemy import Connection, Engine, text
 
 from malaria_split.governance.dataset_lifecycle import transition_dataset_version
-from malaria_split.governance.trainability import REQUIRED_LOGICAL_VALIDATION_CHECKS
+from malaria_split.governance.trainability import REQUIRED_LOGICAL_VALIDATION_CHECKS, required_logical_validation_checks
 from malaria_split.persistence.split_generation import (
     APPROVED_ASSIGNMENT_DIGEST,
     APPROVED_RECORD_ASSIGNMENT_DIGEST,
@@ -156,6 +156,12 @@ def persist_formal_validation(
     connection: Connection, prepared: FormalValidationPreparation,
     failure_hook: Callable[[Connection], None] | None = None,
 ) -> FormalValidationResult:
+    required = required_logical_validation_checks(connection, prepared.dataset_version_id)
+    if set(prepared.checks) != set(required):
+        raise FormalValidationError("REQUIRED_CHECK_SET_MISMATCH")
+    failed = [name for name, check in prepared.checks.items() if check["status"] != "PASS"]
+    if failed:
+        raise FormalValidationError(f"PREVALIDATION_FAILED:{','.join(failed)}")
     version = connection.execute(text("""
         SELECT status,validated_at FROM dataset_versions WHERE id=:id FOR UPDATE NOWAIT
     """), {"id": prepared.dataset_version_id}).mappings().one()
@@ -167,11 +173,11 @@ def persist_formal_validation(
                blocking_for_validation,blocking_for_freeze
         FROM dataset_split_validation_checks WHERE dataset_version_id=:id
     """), {"id": prepared.dataset_version_id}).mappings().all()
-    if version["status"] == "VALIDATED":
+    if version["status"] in ("VALIDATED", "FROZEN"):
         if len(stat_rows) != 1 or stat_rows[0]["metric_name"] != STATISTIC_METRIC or stat_rows[0]["details_json"] != prepared.statistics:
             raise FormalValidationError("VALIDATED_STATE_CONFLICT")
         persisted = {row["check_name"]: row for row in check_rows}
-        if len(persisted) != 12 or any(
+        if len(check_rows) != len(required) or len(persisted) != len(required) or any(
             name not in persisted or persisted[name]["status"] != check["status"]
             or persisted[name]["observed_value"] != check["observed"]
             or persisted[name]["expected_value"] != check["expected"]
@@ -181,12 +187,9 @@ def persist_formal_validation(
             for name, check in prepared.checks.items()
         ):
             raise FormalValidationError("VALIDATED_STATE_CONFLICT")
-        return FormalValidationResult(True, "VALIDATED", version["validated_at"], 1, 12)
+        return FormalValidationResult(True, version["status"], version["validated_at"], 1, len(required))
     if version["status"] != "GENERATED" or stat_rows or check_rows:
         raise FormalValidationError("VALIDATION_TRANSACTION_PRECONDITION_FAILED")
-    failed = [name for name, check in prepared.checks.items() if check["status"] != "PASS"]
-    if failed:
-        raise FormalValidationError(f"PREVALIDATION_FAILED:{','.join(failed)}")
     connection.execute(text("""
         INSERT INTO dataset_split_statistics(id,dataset_version_id,scope,metric_name,details_json)
         VALUES (:row_id,:version_id,'dataset',:metric,CAST(:details AS jsonb))
@@ -207,10 +210,10 @@ def persist_formal_validation(
     if connection.execute(text("""
         SELECT count(*) FROM dataset_split_validation_checks WHERE dataset_version_id=:id
           AND status='PASS' AND blocking_for_validation
-    """), {"id": prepared.dataset_version_id}).scalar_one() != 12:
+    """), {"id": prepared.dataset_version_id}).scalar_one() != len(required):
         raise FormalValidationError("PERSISTED_REQUIRED_CHECKS_NOT_PASS")
     transitioned = transition_dataset_version(connection, prepared.dataset_version_id, "VALIDATED")
-    return FormalValidationResult(False, transitioned["status"], transitioned["validated_at"], 1, 12)
+    return FormalValidationResult(False, transitioned["status"], transitioned["validated_at"], 1, len(required))
 
 
 def apply_formal_validation(engine: Engine, prepared: FormalValidationPreparation) -> FormalValidationResult:

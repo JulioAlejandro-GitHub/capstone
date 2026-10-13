@@ -8,8 +8,8 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 
-from ..execution.contracts import ExecutionContext, RunEvent
-from ..results.errors import ResultError, ResultPersistenceError, WriterNotAuthorized, FinalEvaluationConflict
+from ..execution.contracts import ExecutionContext, RunEvent, RunEventType
+from ..results.errors import ResultError, ResultPersistenceError, WriterNotAuthorized
 from ..results.training import TrainingResultsV1
 from ..results.identity import canonical_event
 from ..results.models import AcceptanceState
@@ -61,6 +61,12 @@ class _PostgresScope(EventAcceptanceScope):
             run=event.run_id, schema=event.schema_version, key=str(event.event_id),
             payload=json.dumps({'canonical_event': canonical_event(event)}, ensure_ascii=True),
             id=event.event_id, sequence=event.sequence)
+        if event.event_type is RunEventType.PHASE_STARTED:
+            result = event.to_dict()['payload'].get('result', {})
+            if result.get('phase') == 'base' and 'runtime_environment' in result:
+                from ..execution.repository import ExecutionRepository
+                ExecutionRepository.project_runtime(self._connection, str(event.run_id),
+                    result['runtime_environment'], result['started_at'])
         self.appended = True
 
     def project_training_result(self, result: TrainingResultsV1) -> None:
@@ -69,27 +75,14 @@ class _PostgresScope(EventAcceptanceScope):
         # Same connection/root transaction as append; the authorized session row
         # remains exclusively locked. Guard namespace as well as run identity.
         result = TrainingResultsV1.from_dict(result.to_dict())
-        from ..execution.schema import V2_REVISION
-        if self.revision == V2_REVISION:
-            from .v2_projection import project_evaluation
-            project_evaluation(self._connection, self._event, result)
-            return
-        updated = _query(self._connection, """UPDATE runs
-            SET parameters = parameters || jsonb_build_object('training_results', CAST(:result AS jsonb))
-            WHERE id=:run AND jsonb_typeof(parameters)='object'
-              AND NOT (parameters ? 'training_results')
-            RETURNING id""", run=self._event.run_id,
-            result=json.dumps(result.to_dict(), allow_nan=False, sort_keys=True)).first()
-        if updated is None:
-            raise FinalEvaluationConflict()
+        from .v2_projection import project_evaluation
+        project_evaluation(self._connection, self._event, result)
 
     def project_calibration_result(self) -> None:
         if not self.active or not self.appended:
             raise ResultPersistenceError()
-        from ..execution.schema import V2_REVISION
-        if self.revision == V2_REVISION:
-            from .v2_projection import project_calibration
-            project_calibration(self._connection, self._event)
+        from .v2_projection import project_calibration
+        project_calibration(self._connection, self._event)
 
 
 class PostgresResultRepository(ResultRepository):
@@ -118,8 +111,6 @@ class PostgresResultRepository(ResultRepository):
                     raise ResultPersistenceError()
                 connection = connection.execution_options(isolation_level="READ COMMITTED")
                 with connection.begin():
-                    from ..execution.schema import require_e10_schema
-                    schema = require_e10_schema(connection)
                     _query(connection, "SELECT set_config('capstone.execution_token',:token,true)", token=str(self._execution_token))
                     _query(connection, "SELECT set_config('capstone.train_owner',:owner,true)", owner=str(context.owner))
                     _query(connection, "SELECT experiment_require_owner()")
@@ -131,7 +122,6 @@ class PostgresResultRepository(ResultRepository):
                                   run=context.run_id).scalar_one()
                     scope = _PostgresScope(connection, event, AcceptanceState(
                         existing_event=_decode(old), sequence_event=_decode(at_sequence), last_sequence=int(last)))
-                    scope.revision = schema['revision']
                     try:
                         yield scope
                     finally:

@@ -1,0 +1,29 @@
+ M .gitignore
+ M Makefile
+ M docs/README.md
+ M malaria_dataset_split_project/.env.example
+ M malaria_dataset_split_project/pyproject.toml
+ M malaria_dataset_split_project/src/malaria_split/cli.py
+ M malaria_dl_local_project/scripts/download_malaria_dataset.py
+ M malaria_dl_local_project/src/malaria_dl/common/paths.py
+ M malaria_dl_local_project/src/malaria_dl/data/loaders.py
+?? docs/audits/s1_d/REPORT.md
+?? docs/audits/s1_d/acquisition_summary.json
+?? docs/audits/s1_d/first_run.log
+?? docs/audits/s1_d/full_verify_stdlib.log
+?? docs/audits/s1_d/git_status.txt
+?? docs/audits/s1_d/prepare_default.log
+?? docs/audits/s1_d/prepare_verify_only.log
+?? docs/audits/s1_d/protected_after.json
+?? docs/audits/s1_d/protected_before.json
+?? docs/audits/s1_d/resume_run.log
+?? docs/audits/s1_d/second_run.log
+?? docs/audits/s1_d/tests_new.log
+?? docs/audits/s1_d/tests_regression.log
+?? docs/operations/dataset_source_preparation.md
+?? malaria_dataset_split_project/src/malaria_split/source_config.py
+?? malaria_dl_local_project/scripts/download_full_smears_dataset.py
+?? malaria_dl_local_project/scripts/prepare_datasets.py
+?? malaria_dl_local_project/src/malaria_dl/data/cell_source.py
+?? malaria_dl_local_project/src/malaria_dl/data/full_smears_download.py
+?? malaria_dl_local_project/tests/source_preparation/test_sources.py

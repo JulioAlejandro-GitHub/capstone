@@ -379,7 +379,7 @@ def apply_scientific_bootstrap(engine: Engine, prepared: PreparedScientificPopul
 
         existing_identities = repository.rows_by_key(
             "clinical_identities", "id,dataset_id,identity_type,source_identifier,status",
-            "source_identifier",
+            "source_identifier", dataset_id=source_id,
         )
         identity_rows = []
         identity_ids: dict[str, UUID] = {}
@@ -412,7 +412,7 @@ def apply_scientific_bootstrap(engine: Engine, prepared: PreparedScientificPopul
             "id,dataset_id,clinical_identity_id,source_record_key,tfds_index,source_filename,"
             "class_index,class_name,original_label,project_label,relative_source_key,"
             "source_file_sha256,decoded_pixel_sha256,image_width,image_height,file_size_bytes,identity_status",
-            "source_record_key",
+            "source_record_key", dataset_id=source_id,
         )
         record_rows = []
         record_ids: dict[str, UUID] = {}
@@ -457,7 +457,7 @@ def apply_scientific_bootstrap(engine: Engine, prepared: PreparedScientificPopul
             "identity_evidence",
             "id,source_record_id,clinical_identity_id,evidence_type,evidence_level,mapping_method,"
             "evidence_reference,official_source_reference,evidence_json",
-            "source_record_id",
+            "source_record_id", dataset_id=source_id,
         )
         evidence_rows = []
         for evidence in prepared.evidence:
@@ -543,12 +543,19 @@ def apply_scientific_bootstrap(engine: Engine, prepared: PreparedScientificPopul
                 VALUES (:version_id,:dataset_id,'PRIMARY')
             """), {"version_id": version_id, "dataset_id": source_id})
 
+        scope = {"dataset_id": source_id}
         counts = {
-            "patients": repository.scalar("SELECT count(*) FROM clinical_identities"),
-            "records": repository.scalar("SELECT count(*) FROM dataset_source_records"),
-            "evidence_records": repository.scalar(
-                "SELECT count(DISTINCT source_record_id) FROM identity_evidence"
+            "patients": repository.scalar(
+                "SELECT count(*) FROM clinical_identities WHERE dataset_id=:dataset_id", scope
             ),
+            "records": repository.scalar(
+                "SELECT count(*) FROM dataset_source_records WHERE dataset_id=:dataset_id", scope
+            ),
+            "evidence_records": repository.scalar("""
+                SELECT count(DISTINCT e.source_record_id) FROM identity_evidence e
+                JOIN dataset_source_records r ON r.id=e.source_record_id
+                WHERE r.dataset_id=:dataset_id
+            """, scope),
             "versions": repository.scalar("SELECT count(*) FROM dataset_versions"),
         }
         _assert_equal("transactional counts", counts,
@@ -562,7 +569,14 @@ def audit_scientific_bootstrap(engine: Engine) -> dict[str, Any]:
         version = connection.execute(text("""
             SELECT * FROM dataset_versions WHERE name=:name AND semantic_version=:version
         """), {"name": VERSION_NAME, "version": VERSION_SEMVER}).mappings().one()
-        scalar = lambda sql: connection.execute(text(sql), {"version_id": version["id"]}).scalar_one()
+        source_id = connection.execute(text("""
+            SELECT dataset_id FROM dataset_version_sources
+            WHERE dataset_version_id=:version_id AND role='PRIMARY'
+        """), {"version_id": version["id"]}).scalar_one()
+        # Population counts are scoped to v1's PRIMARY source so that other Dataset
+        # Families sharing these tables (e.g. smear_segmentation) never alter this audit.
+        scope = {"version_id": version["id"], "dataset_id": source_id}
+        scalar = lambda sql: connection.execute(text(sql), scope).scalar_one()
         patient_rows = connection.execute(text("""
             SELECT ci.source_identifier,
                    count(*) total,
@@ -570,30 +584,32 @@ def audit_scientific_bootstrap(engine: Engine) -> dict[str, Any]:
                    count(*) FILTER (WHERE dsr.class_name='uninfected') uninfected
             FROM clinical_identities ci JOIN dataset_source_records dsr
               ON dsr.clinical_identity_id=ci.id
+            WHERE ci.dataset_id=:dataset_id
             GROUP BY ci.id,ci.source_identifier
-        """)).mappings().all()
+        """), scope).mappings().all()
         class_counts = dict(connection.execute(text(
-            "SELECT class_name,count(*) FROM dataset_source_records GROUP BY class_name"
-        )).all())
+            "SELECT class_name,count(*) FROM dataset_source_records "
+            "WHERE dataset_id=:dataset_id GROUP BY class_name"
+        ), scope).all())
         result = {
             "dataset_source_id": str(scalar("SELECT dataset_id FROM dataset_version_sources WHERE dataset_version_id=:version_id AND role='PRIMARY'")),
             "dataset_version_id": str(version["id"]), "dataset_version_status": version["status"],
             "dataset_version_source_links": scalar("SELECT count(*) FROM dataset_version_sources WHERE dataset_version_id=:version_id"),
             "dataset_version_primary_source_links": scalar("SELECT count(*) FROM dataset_version_sources WHERE dataset_version_id=:version_id AND role='PRIMARY'"),
-            "clinical_identity_count": scalar("SELECT count(*) FROM clinical_identities"),
-            "patient_identities_verified": scalar("SELECT count(*) FROM clinical_identities WHERE status='VERIFIED'"),
-            "patient_identities_unresolved": scalar("SELECT count(*) FROM clinical_identities WHERE status='UNRESOLVED'"),
-            "patient_identities_conflict": scalar("SELECT count(*) FROM clinical_identities WHERE status='CONFLICT'"),
-            "source_record_count": scalar("SELECT count(*) FROM dataset_source_records"),
-            "source_records_with_identity": scalar("SELECT count(*) FROM dataset_source_records WHERE clinical_identity_id IS NOT NULL"),
-            "source_records_without_identity": scalar("SELECT count(*) FROM dataset_source_records WHERE clinical_identity_id IS NULL"),
-            "identity_evidence_count": scalar("SELECT count(*) FROM identity_evidence"),
-            "source_records_with_identity_evidence": scalar("SELECT count(DISTINCT source_record_id) FROM identity_evidence"),
-            "source_records_without_identity_evidence": scalar("SELECT count(*) FROM dataset_source_records r WHERE NOT EXISTS (SELECT 1 FROM identity_evidence e WHERE e.source_record_id=r.id)"),
-            "source_file_sha256_populated": scalar("SELECT count(*) FROM dataset_source_records WHERE source_file_sha256 IS NOT NULL"),
-            "source_file_sha256_null": scalar("SELECT count(*) FROM dataset_source_records WHERE source_file_sha256 IS NULL"),
-            "decoded_pixel_sha256_populated": scalar("SELECT count(*) FROM dataset_source_records WHERE decoded_pixel_sha256 IS NOT NULL"),
-            "decoded_pixel_sha256_null": scalar("SELECT count(*) FROM dataset_source_records WHERE decoded_pixel_sha256 IS NULL"),
+            "clinical_identity_count": scalar("SELECT count(*) FROM clinical_identities WHERE dataset_id=:dataset_id"),
+            "patient_identities_verified": scalar("SELECT count(*) FROM clinical_identities WHERE dataset_id=:dataset_id AND status='VERIFIED'"),
+            "patient_identities_unresolved": scalar("SELECT count(*) FROM clinical_identities WHERE dataset_id=:dataset_id AND status='UNRESOLVED'"),
+            "patient_identities_conflict": scalar("SELECT count(*) FROM clinical_identities WHERE dataset_id=:dataset_id AND status='CONFLICT'"),
+            "source_record_count": scalar("SELECT count(*) FROM dataset_source_records WHERE dataset_id=:dataset_id"),
+            "source_records_with_identity": scalar("SELECT count(*) FROM dataset_source_records WHERE dataset_id=:dataset_id AND clinical_identity_id IS NOT NULL"),
+            "source_records_without_identity": scalar("SELECT count(*) FROM dataset_source_records WHERE dataset_id=:dataset_id AND clinical_identity_id IS NULL"),
+            "identity_evidence_count": scalar("SELECT count(*) FROM identity_evidence e JOIN dataset_source_records r ON r.id=e.source_record_id WHERE r.dataset_id=:dataset_id"),
+            "source_records_with_identity_evidence": scalar("SELECT count(DISTINCT e.source_record_id) FROM identity_evidence e JOIN dataset_source_records r ON r.id=e.source_record_id WHERE r.dataset_id=:dataset_id"),
+            "source_records_without_identity_evidence": scalar("SELECT count(*) FROM dataset_source_records r WHERE r.dataset_id=:dataset_id AND NOT EXISTS (SELECT 1 FROM identity_evidence e WHERE e.source_record_id=r.id)"),
+            "source_file_sha256_populated": scalar("SELECT count(*) FROM dataset_source_records WHERE dataset_id=:dataset_id AND source_file_sha256 IS NOT NULL"),
+            "source_file_sha256_null": scalar("SELECT count(*) FROM dataset_source_records WHERE dataset_id=:dataset_id AND source_file_sha256 IS NULL"),
+            "decoded_pixel_sha256_populated": scalar("SELECT count(*) FROM dataset_source_records WHERE dataset_id=:dataset_id AND decoded_pixel_sha256 IS NOT NULL"),
+            "decoded_pixel_sha256_null": scalar("SELECT count(*) FROM dataset_source_records WHERE dataset_id=:dataset_id AND decoded_pixel_sha256 IS NULL"),
             "unique_patients": len(patient_rows),
             "min_cells_per_patient": min(row["total"] for row in patient_rows),
             "max_cells_per_patient": max(row["total"] for row in patient_rows),

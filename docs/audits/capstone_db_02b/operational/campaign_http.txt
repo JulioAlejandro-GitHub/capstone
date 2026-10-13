@@ -1,0 +1,3 @@
+2026-10-12T15:03:58.746017096Z POST /api/campaigns HTTP/1.1 — 201 Created
+2026-10-12T15:03:58.818252721Z GET /api/campaigns/4b5a9626-ddb7-4f48-a93e-b29b8085b349 HTTP/1.1 — 200 OK
+Source: docker compose logs --no-color --timestamps --since 2026-10-12T15:03:00Z backend (filtered campaign access lines; client address omitted).

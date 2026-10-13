@@ -105,7 +105,17 @@ def isolated():
           CREATE TABLE models(id uuid PRIMARY KEY,name text NOT NULL);
           CREATE TABLE runs(id uuid PRIMARY KEY,experiment_id uuid REFERENCES experiments(id),run_type text,model_id uuid REFERENCES models(id),
             status text DEFAULT 'started',metadata jsonb DEFAULT '{}',parameters jsonb DEFAULT '{}',finished_at timestamptz,
-            dataset_version_id uuid REFERENCES dataset_versions(id),random_seed integer,execution_parameters jsonb);
+            dataset_version_id uuid REFERENCES dataset_versions(id),random_seed integer,execution_parameters jsonb,
+            run_name text, started_at timestamptz, duration_seconds numeric, updated_at timestamptz,
+            dataset_id uuid, max_epochs integer, total_epochs integer, completed_epochs integer DEFAULT 0,
+            fine_tuning_start_epoch integer, stopped_epoch integer, best_epoch integer,
+            checkpoint_monitor text, checkpoint_mode text, best_validation_value double precision,
+            early_stopping_enabled boolean, early_stopping_patience integer,
+            early_stopping_min_delta double precision, restore_best_weights boolean,
+            host_name text, git_commit text, python_version text, tensorflow_version text,
+            keras_version text, platform text, machine text, execution_type text, error_message text);
+          CREATE TABLE dataset_version_sources(dataset_version_id uuid REFERENCES dataset_versions(id),
+            dataset_id uuid, role text);
           CREATE TABLE audit_events (LIKE public.audit_events INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES);""",
         )
         # Retain append-only semantics on the isolated audit copy.

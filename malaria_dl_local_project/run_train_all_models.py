@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
-"""Execute persisted campaigns. Historical pure planning helpers remain import-compatible.
+"""EXEC.1 TRAIN: each invocation creates new runs from persisted configurations.
 
-    cd malaria_dl_local_project && source .venv-local-train/bin/activate
-    python run_train_all_models.py --campaign-id <UUID>             execute every pending member
-    python run_train_all_models.py --campaign-id <UUID> --dry-run   full preflight, no attempt
-    python run_train_all_models.py --campaign-id <UUID> --plan      read-only execution plan
-
-Everything else (dataset, members, seeds, configuration, IDs, database target)
-comes from PostgreSQL or is generated. Rerunning the same command continues.
+Use --campaign-id and/or --source-training-run-id; --dry-run prints the plan.
+Historical command-building helpers remain available to Python import callers.
 """
 
 import argparse
@@ -15,12 +10,6 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-
-if __name__ == "__main__":
-    # Before heavy imports: a wrong interpreter fails with an actionable message.
-    from src.malaria_dl.execution.local_launch import bootstrap
-
-    bootstrap()
 
 from src.malaria_dl.data.governed_dataset import (
     dataset_uuid_arg,
@@ -162,7 +151,7 @@ def main():
     from sqlalchemy.exc import OperationalError
     from src.malaria_dl.campaigns.contracts import CampaignError
     from src.malaria_dl.data.governed_dataset import GovernedDatasetError
-    from src.malaria_dl.execution.campaign import main as execute_campaign
+    from src.malaria_dl.execution.operations import main as execute_campaign
     try:
         return execute_campaign()
     except OperationalError:

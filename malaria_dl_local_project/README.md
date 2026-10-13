@@ -24,37 +24,68 @@ docs/workflows.md
 
 Ese documento separa entrenamiento, evaluación experimental e inferencia clínica experimental con imagen externa.
 
-## 1. Crear entorno virtual
+## 1. Instalación de entornos Python (CPU y GPU Metal)
 
-### macOS / Linux
+El flujo de campañas en **macOS Apple Silicon (arm64)** utiliza Python 3.12 y dos
+entornos virtuales independientes, sin instalar TensorFlow en el Python global:
+
+| Entorno | Uso | Dependencias |
+| --- | --- | --- |
+| `.venv-local-train` | TRAIN en CPU | `requirements-cpu.txt` |
+| `.venv-metal` | TRAIN con GPU Metal | `requirements-gpu.txt` (incluye CPU + `tensorflow-metal`) |
+
+Las versiones principales verificadas en los runs del 2026-10-06 son TensorFlow
+`2.17.1`, Keras `3.15.1`, NumPy `1.26.4` y, para GPU,
+`tensorflow-metal==1.2.0`. Estos archivos son una **base de instalación**, no
+un lock completo de dependencias transitivas. El proyecto también conserva
+`requirements.txt` y `requirements-local-train.txt` para otros flujos históricos;
+no se deben sustituir indiscriminadamente.
+
+Desde `capstone/malaria_dl_local_project`:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+chmod +x setup_venvs.sh
+./setup_venvs.sh all
 ```
 
-### Windows PowerShell
+Alternativamente, instalar sólo uno:
 
-```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+```bash
+./setup_venvs.sh cpu
+./setup_venvs.sh gpu
 ```
 
-Si PowerShell bloquea la activación:
+**Protección:** `setup_venvs.sh` no sobrescribe entornos existentes; si ya existe
+la carpeta, termina con error. No borres los entornos usados en campañas
+verificadas sin generar antes un inventario reproducible (`pip freeze`).
 
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Verificar CPU (se espera `[]`):
+
+```bash
+source .venv-local-train/bin/activate
+python -c 'import tensorflow as tf; print(tf.config.list_physical_devices("GPU"))'
+deactivate
 ```
+
+Verificar GPU Metal (se espera al menos un dispositivo `GPU:0`):
+
+```bash
+source .venv-metal/bin/activate
+python -c 'import tensorflow as tf; print(tf.config.list_physical_devices("GPU"))'
+deactivate
+```
+
+Detectar una GPU no prueba que todas las operaciones se hayan ejecutado en
+Metal: para afirmaciones de rendimiento se debe contrastar el uso efectivo del
+dispositivo y registrar las condiciones del benchmark. Para Linux/Windows u
+otros flujos, la instalación genérica anterior con `requirements.txt` sigue
+siendo una alternativa manual, **no** cubierta por `setup_venvs.sh`.
 
 ## 2. Dataset gobernado y fuentes locales
 
 Los nuevos entrenamientos exigen una Dataset Version gobernada explícita. El siguiente
-inventario es documental; compruebe su estado actual antes de ejecutar (Etapa 1 no
-lo ha verificado operativamente):
+inventario identifica la versión utilizada en campañas verificadas; vuelva a
+comprobar su estado y materialización antes de nuevos entrenamientos:
 
 ```text
 Malaria Patient Split v1
@@ -104,7 +135,7 @@ Descargar o validar el dataset:
 
 ```bash
 cd capstone/malaria_dl_local_project
-source .venv/bin/activate
+source .venv-local-train/bin/activate
 python scripts/download_malaria_dataset.py
 ```
 
@@ -814,6 +845,10 @@ capstone/
     tensorflow_datasets/     # ignorado por Git
   malaria_dl_local_project/
     requirements.txt
+    requirements-local-train.txt
+    requirements-cpu.txt
+    requirements-gpu.txt
+    setup_venvs.sh
     README.md
     scripts/
       download_malaria_dataset.py
@@ -868,6 +903,96 @@ TRAIN requieren persistencia PostgreSQL incluso sin `--track-db`; para inspecci�
 BD use `--dry-run`. Consulte [Cómo agregar y habilitar un modelo](docs/model_registry_e2.md)
 para configuración, adaptadores, matriz predeterminada y límites E3–E9.
 
+## Campañas desde frontend y ejecución local
+
+Las campañas se crean y configuran desde **Modelo IA → Campañas** en
+`http://localhost/modelo-ia/campanas?datasource=malaria`. El frontend persiste
+la campaña en PostgreSQL; no se requiere crear un JSON de configuración para
+el launcher actual. Cada campaña contiene dataset, modelo, optimizador,
+semillas y parámetros de ejecución. Una campaña ya finalizada con miembros
+`verified` **no debe reutilizarse para forzar nuevos entrenamientos**: crea una
+nueva campaña con la misma configuración para conservar trazabilidad.
+
+Antes de iniciar un TRAIN, inspeccionar su plan sin reservar intentos:
+
+```bash
+python run_train_all_models.py --campaign-id CAMPAIGN_UUID --plan
+```
+
+Revisar `configuration_hash`, dataset, `seed`, cantidad de miembros,
+`calibrate_threshold`, `evaluate_best_on_test` y `execution_readiness.ready`.
+El `contract_hash` puede ser diferente entre campañas y no debe interpretarse
+como prueba de que la configuración del modelo haya cambiado.
+
+### Elegir CPU o GPU Metal
+
+**CPU:**
+
+```bash
+source .venv-local-train/bin/activate
+python run_train_all_models.py --campaign-id CAMPAIGN_UUID
+```
+
+**GPU Metal** (en otra campaña, con configuración científica equivalente):
+
+```bash
+deactivate  # sólo si hay un entorno activo
+source .venv-metal/bin/activate
+python -c 'import tensorflow as tf; print(tf.config.list_physical_devices("GPU"))'
+python run_train_all_models.py --campaign-id CAMPAIGN_UUID
+```
+
+El proceso corre en el Mac (`local_python`), mientras PostgreSQL sigue en
+Docker. El launcher registra las diferencias del runtime en
+`runs.execution_parameters.runtime_environment`. Consultar resultados:
+
+```bash
+python run_train_all_models.py --campaign-id CAMPAIGN_UUID --result
+```
+
+`TRAIN verified` significa que terminó correctamente, **no** que se haya
+alcanzado el objetivo clínico. `clinical_status.met/unmet` se revisa por
+separado. El TEST permanece sujeto al protocolo de la campaña.
+
+### Benchmark CPU vs. GPU (referencia 2026-10-06)
+
+Dos campañas de Custom CNN + Adam, semilla 47, 3 épocas, batch 64, mismo
+`configuration_hash` y dataset oficial:
+
+| Métrica | CPU | GPU Metal |
+| --- | ---: | ---: |
+| Campaña | `900bbe8f-46b5-46bc-a64a-092b5c998afe` | `2ffeca5d-11e9-4c18-9b25-22a55a8e90ac` |
+| Run | `e9eb63f4-44a0-469f-a358-69df27071faf` | `bbbd5b60-afaa-4034-a504-a60ed642aafe` |
+| Tiempo `runs.duration_seconds` | 546.026399 s | 117.308581 s |
+| Tiempo acumulado de épocas Keras | 541 s | 115 s |
+| Mejor época (`best_epoch`) | 2 | 2 |
+| Mejor `val_f2_parasitized` | 0.93616697 | 0.95166841 |
+| Objetivo clínico ≥ 98 % | No cumplido | No cumplido |
+
+Usando el tiempo persistido del run:
+
+- **Speedup** `S = T_CPU / T_GPU ≈ 4.65×`.
+- **Reducción** `R = (1 - T_GPU / T_CPU) × 100 ≈ 78.52 %`.
+- **Tiempo ahorrado** `T_CPU - T_GPU ≈ 428.72 s`.
+
+Los campos `gpu_available` y `gpu_devices` en esos registros no acreditan por
+sí solos la colocación real de operaciones en Metal. Los valores representan
+una observación por dispositivo, no un benchmark estadístico repetido.
+
+Consulta SQL de solo lectura para nuevas comparaciones:
+
+```sql
+SELECT id, campaign_id, run_name, status, execution_type,
+       started_at, finished_at, duration_seconds,
+       completed_epochs, best_epoch, checkpoint_monitor,
+       checkpoint_mode, best_validation_value,
+       gpu_available, gpu_devices
+FROM public.runs
+WHERE campaign_id IN ('900bbe8f-46b5-46bc-a64a-092b5c998afe',
+                      '2ffeca5d-11e9-4c18-9b25-22a55a8e90ac')
+ORDER BY started_at;
+```
+
 ## Ejecución de una campaña (Mac o Docker)
 
 Interfaz normal y única necesaria:
@@ -917,7 +1042,7 @@ cuando se invoca a mano.
 Detalle completo de diseño, contrato agente-backend y estado Implementado / Verificado
 en `docs/audits/e9_3_local_agent_2026-09-15/auditoria.md`.
 
-### 10.1 Preparar el entorno local
+### 10.1 Preparar el entorno local (agente heredado)
 
 Entorno virtual dedicado (Python 3.12, nunca el Python global), con pines exactos y
 reproducibles en `requirements-local-train.txt`:
@@ -1024,12 +1149,12 @@ señalan al subproceso TRAIN en curso, que se deja terminar y reportar normalmen
 kill -TERM <pid-del-agente>
 ```
 
-### Requisitos pendientes de instalación
+### Estado histórico de instalación (no vigente como diagnóstico actual)
 
 - El venv y `requirements-local-train.txt` fueron creados y verificados en este Mac
   (import + plataforma/dispositivo reales); no se instaló nada en el Python global.
-- La migración `alembic/versions/20260915_01_local_execution.py` **no** está aplicada
-  sobre la base persistente real (`alembic current` sigue en `20260914_02`); aplicarla
-  requiere una decisión explícita separada de este fix, fuera de este alcance.
+- La referencia histórica indicaba que la migración
+  `alembic/versions/20260915_01_local_execution.py` aún no estaba aplicada
+  al momento de aquella auditoría. **No describe el estado actual** de PostgreSQL.
 - `CAPSTONE_LOCAL_EXECUTION_ENABLED`/`CAPSTONE_LOCAL_STORAGE_ROOTS` no están definidas
   en ningún compose/env real — la ruta HTTP permanece deshabilitada por defecto.

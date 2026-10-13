@@ -23,11 +23,44 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 
 ## Fuentes operativas canónicas
 
+CAPSTONE EXEC.1 — [Contrato de ejecución e historial](exec1_execution_contract.md)
+(`CURRENT_DOC`, 2026-10-12): ocho entradas comunes, TEST independiente, persistencia sintética verificada, historial y selección explícita SCC. Migración PostgreSQL aplicada sin cambiar evidencia histórica. El umbral predeterminado se recupera del TRAIN, incluso si su calibración estaba desactivada.
+
+CAPSTONE-DB-02C — [Ejecución de campañas independiente de Alembic](audits/capstone_db_02c_alembic_execution.md)
+(`CURRENT_DOC`, 2026-10-12): implementación técnica en `fix/capstone-db-02c`;
+348 pruebas DB-02C/regresión y 49 pruebas DB-02B PASS. Preparación de TRAIN demostrada
+sobre PostgreSQL aislado sin tabla Alembic. **Pendiente de integración y autorización
+operativa; no se ejecutó TRAIN ni se modificó la campaña real.**
+
+CAPSTONE-DB-02B — [Corrección de evidencia del dataset en campañas](audits/capstone_db_02b_campaign_evidence.md)
+(`CURRENT_DOC`, 2026-10-12): integrado en main; SQL aplicado y verificado, 49 pruebas finales PASS.
+**CERRADO operativamente:** campaña real, readback e integridad confirmados; rollback disponible.
+Publicación remota pendiente por bloqueo de revisión automática.
+
+CAPSTONE-DB-01 — [Cierre de Fase 1: auditoría PostgreSQL](audits/capstone_db_01/06_phase1_closure.md)
+(`HISTORICAL_AUDIT`, 2026-10-12): respaldo e inventario verificados; **NO APROBABLE
+para limpieza general**, con clasificación semántica parcial. DB-01 incorpora la
+aclaración del usuario: `CAMPAIGN_DATABASE_OPERATION_FAILED`, sin fallo de red demostrado. Incluye
+[inventario](audits/capstone_db_01/01_postgresql_inventory.md),
+[restricciones](audits/capstone_db_01/02_constraints_classification.md),
+[errores conocidos](audits/capstone_db_01/03_known_errors_analysis.md),
+[dependencias](audits/capstone_db_01/04_code_dependencies.md),
+[propuesta](audits/capstone_db_01/05_remediation_proposal.md),
+[bitácora](audits/capstone_db_01/commands_and_evidence.md) y anexos estructurales/de búsqueda
+enlazados desde esos informes. Sin cambios funcionales ni inicio de Fase 2.
+
+Auditoría C2.12: [Integración PostgreSQL y calibración — APROBADO](audits/clinical_calibration_c2_12/README.md)
+(`HISTORICAL_AUDIT`, 2026-10-04; cierre operativo C2.12.2: suite E2E real PASSED,
+limpieza acreditada, base operativa intacta). Conserva el bloqueo inicial C2.12/C2.12.1
+como auditoría histórica; el informe de cierre está en la sección `# Cierre operativo — C2.12`.
+
 | Tema | Documento |
 |---|---|
 | Desarrollo local | [Desarrollo local](engineering/local_development.md) |
 | PostgreSQL Docker-only | [Contrato de instancia PostgreSQL única](engineering/postgresql_docker_single_instance.md) |
 | Seguridad de base de datos | [Política de seguridad DB](engineering/database_safety_policy.md) |
+| Runtime YOLO local (76.3A) | [Contrato y validación](operations/yolo_runtime.md) |
+| Integración YOLO backend (76.3B/C) | [Adaptador, configuración y pruebas](operations/yolo_backend_adapter.md) |
 | Reset de análisis de frotis | [Reset controlado](operations/smear_analysis_reset.md) |
 | Purga de datos por subsistema | [Purga por subsistema](operations/subsystem_data_purge.md) |
 | Alembic | [Política Alembic](engineering/alembic_simple_policy.md) |
@@ -36,6 +69,11 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 | Dataset Versions en la UI | [Dataset gobernado](dataset_ui_governed_versions.md) |
 | Auditoría segura de Malaria Patient Split v1 | [Runbook del split](runbook_split_completo_malaria.md) |
 | TRAIN/EVALUATE gobernado | [Guía de entrenamiento](guia_entrenamiento_patient_split.md) |
+| Resolución transversal TRAIN/EVALUATE/EXPLAIN | [Contrato y evidencia Docker/macOS](engineering/governed_dataset_resolution.md) (`CURRENT_DOC`, 2026-10-08) |
+| Linaje TRAIN → EVALUATE E6 | [Representación, estados y validación](engineering/e6_frontend_lineage.md) (`CURRENT_DOC`, 2026-10-08) |
+| Auditoría de lectura EXPLAIN E6 | [CELL-EXPLAIN-01: PostgreSQL → API → Frontend](audits/cell_explain_01_readback_audit.md) (`HISTORICAL_AUDIT`, 2026-10-08; diagnóstico sin implementación) |
+| Elegibilidad de Etapa 2 con E6 | [Diagnóstico previo a la activación](engineering/stage2_e6_eligibility.md) (`HISTORICAL_AUDIT`, 2026-10-08) |
+| Activación para Clasificación celular | [Contrato, migraciones, flujo de crops y validación](engineering/cell_model_activation.md) (`CURRENT_DOC`, 2026-10-08) |
 | Entrenamiento productivo Stage 2 | [Tarjeta productiva Stage 2](stage2_productive_training_card.md) |
 | Ingesta y almacenamiento | [Ingesta](architecture/microscopy_image_ingestion.md) y [storage local](engineering/local_storage.md) |
 | Revisión de células | [Workspace de revisión](architecture/cell_review_workspace.md) |
@@ -45,6 +83,12 @@ La regla de elegibilidad para publicar un candidato es únicamente
 también comprueba que el artefacto y su contrato técnico permitan completar de forma
 segura el deployment, smoke test e inferencia. Esas comprobaciones son precondiciones
 de habilitación técnica; no agregan criterios científicos a la elegibilidad.
+
+## C2.13 — Validación experimental mini CPU/GPU
+
+- [C2.13 — Preflight C2.13-A](audits/clinical_calibration_c2_13/README.md) — `HISTORICAL_AUDIT`, 2026-10-04.
+  Preflight **COMPLETO**, pendiente aprobación explícita del usuario (Option A/B).
+  GPU bloqueado (sin Metal); CPU OK. No se han iniciado entrenamientos ni creado campañas.
 
 ## Capacidades opcionales y de compatibilidad
 
@@ -81,3 +125,30 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 - Antes de ejecutar un comando, comprobar que el documento está marcado
   `CURRENT_DOC` o listado como fuente operativa en este índice, y que coincide con la
   configuración del repositorio.
+
+## Auditoría S1.1 de procedencia e identidad
+
+- [S1.1 — TFDS ↔ NLM ↔ Capstone](audits/s1_1/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Comparación exhaustiva de imágenes y fingerprints; cruces clínicos Polygon/Cell explícitamente no resueltos.
+
+## Preparación reproducible de fuentes S1.D
+
+- [Preparar/verificar Cell y Full Smears](operations/dataset_source_preparation.md) — `CURRENT_DOC`, comandos manuales sin PostgreSQL.
+- [S1.D — Implementación y prueba real](audits/s1_d/REPORT.md) — `HISTORICAL_AUDIT`, integridad RAW, idempotencia y límites de `--split`.
+
+- [S1.2 — Canonical NLM Patient Identity](audits/s1_2/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. 193 claves técnicas; Polygon 28/2/3 sobre el split Cell protegido; S2 pendiente.
+- [S2 — Thin Blood Smear SAME SPLIT](audits/s2/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. 193 pacientes / 965 imágenes gobernados; versión provisional GENERATED; Polygon 28/2/3, limitaciones científicas y evidencia de integridad. S3 pendiente.
+- [S3 — Validation + Dataset Version](audits/s3/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Misma versión Smear validada/congelada; assignments S2 intactos, manifest reproducible y consumo explícito por S4.
+
+## Auditoría PRE-S4 del flujo de Análisis de Frotis
+
+- [PRE-S4 — Flujo de detección, crops y clasificación](audits/pre_s4_detection_workflow/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Trazado estático desde SmearUpload hasta el resultado y contrato mínimo para incorporar otro detector.
+
+- [D1 + D2 — Separación de CELL DETECTION y CELL CROP](audits/d1_d2_detection_crop/REPORT.md) — `HISTORICAL_AUDIT`, 2026-10-03. Resolutores mínimos, equivalencia de componentes/PNG/SHA y validación PostgreSQL; gate global pendiente por fallas previas.
+
+## B1 — Entrenamientos históricos y trazabilidad SQL
+
+- [Reporte reproducible B1](../results/benchmarks/cpu_historical/report.md) — `HISTORICAL_AUDIT`, 2026-10-04. Doce configuraciones, 396 épocas y métricas VALIDATION verificadas desde predicciones persistidas; extracción PostgreSQL de solo lectura.
+- [Hallazgos científicos y técnicos B1](../results/benchmarks/cpu_historical/HALLAZGOS_B1.md) — `HISTORICAL_AUDIT`, 2026-10-04. Duraciones, EarlyStopping, checkpoints y límites de evidencia CPU/Metal.
+- [Consultas y transformaciones B1](../results/benchmarks/cpu_historical/SQL_B1.md) — `HISTORICAL_AUDIT`, 2026-10-04. SQL ejecutado, JOIN, conteos, fórmulas y diagnóstico de fuentes incompletas.
+
+- [Scientific Parameter Registry — C2.11.7](scientific_parameters.md) — `CURRENT_DOC`: diccionario, matriz de dependencias, consumidores y consulta de snapshots efectivos; generado automáticamente.

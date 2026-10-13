@@ -1,0 +1,1028 @@
+[
+  [
+    "Polygon set has 33 patients with 165 images, all cells annotated by polygons"
+  ],
+  [
+    "File path",
+    "WBC",
+    "Infected RBC",
+    "Uninfected RBC"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\142C38P3thinF_original\\GT\\IMG_20150621_112023.txt'",
+    "0",
+    "0",
+    "187"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\142C38P3thinF_original\\GT\\IMG_20150621_112043.txt'",
+    "0",
+    "2",
+    "207"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\142C38P3thinF_original\\GT\\IMG_20150621_112116.txt'",
+    "0",
+    "2",
+    "213"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\142C38P3thinF_original\\GT\\IMG_20150621_112138.txt'",
+    "0",
+    "1",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\142C38P3thinF_original\\GT\\IMG_20150621_112227.txt'",
+    "0",
+    "0",
+    "198"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\146C47P8thin_Original_Motic\\GT\\IMG_20150714_093512.txt'",
+    "0",
+    "5",
+    "220"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\146C47P8thin_Original_Motic\\GT\\IMG_20150714_093600.txt'",
+    "0",
+    "0",
+    "193"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\146C47P8thin_Original_Motic\\GT\\IMG_20150714_093636.txt'",
+    "1",
+    "2",
+    "190"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\146C47P8thin_Original_Motic\\GT\\IMG_20150714_093715.txt'",
+    "0",
+    "0",
+    "151"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\146C47P8thin_Original_Motic\\GT\\IMG_20150714_093806.txt'",
+    "0",
+    "2",
+    "185"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\150C49P10thinF\\GT\\IMG_20150724_102330.txt'",
+    "0",
+    "11",
+    "232"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\150C49P10thinF\\GT\\IMG_20150724_102843.txt'",
+    "0",
+    "5",
+    "191"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\150C49P10thinF\\GT\\IMG_20150724_102951.txt'",
+    "0",
+    "9",
+    "233"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\150C49P10thinF\\GT\\IMG_20150724_103054.txt'",
+    "0",
+    "7",
+    "241"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\150C49P10thinF\\GT\\IMG_20150724_103233.txt'",
+    "0",
+    "11",
+    "211"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\153C52P13thinF\\GT\\IMG_20150725_123938.txt'",
+    "0",
+    "6",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\153C52P13thinF\\GT\\IMG_20150725_124606.txt'",
+    "0",
+    "7",
+    "159"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\153C52P13thinF\\GT\\IMG_20150725_124830.txt'",
+    "0",
+    "5",
+    "177"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\153C52P13thinF\\GT\\IMG_20150725_125213.txt'",
+    "0",
+    "5",
+    "170"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\153C52P13thinF\\GT\\IMG_20150725_125847.txt'",
+    "0",
+    "7",
+    "186"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\156C55P16thinF\\GT\\IMG_20150728_121151.txt'",
+    "0",
+    "2",
+    "113"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\156C55P16thinF\\GT\\IMG_20150728_121350.txt'",
+    "1",
+    "0",
+    "195"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\156C55P16thinF\\GT\\IMG_20150728_123154.txt'",
+    "0",
+    "0",
+    "190"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\156C55P16thinF\\GT\\IMG_20150728_123237.txt'",
+    "0",
+    "1",
+    "206"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\156C55P16thinF\\GT\\IMG_20150728_123510.txt'",
+    "0",
+    "0",
+    "189"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\158C57P18thinF\\GT\\IMG_20150729_104027.txt'",
+    "0",
+    "0",
+    "199"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\158C57P18thinF\\GT\\IMG_20150729_110134.txt'",
+    "0",
+    "1",
+    "212"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\158C57P18thinF\\GT\\IMG_20150729_110305.txt'",
+    "1",
+    "2",
+    "223"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\158C57P18thinF\\GT\\IMG_20150729_110457.txt'",
+    "1",
+    "1",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\158C57P18thinF\\GT\\IMG_20150729_111518.txt'",
+    "0",
+    "1",
+    "266"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\208C67P28N_ThinF\\GT\\IMG_20150819_115417.txt'",
+    "0",
+    "4",
+    "183"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\208C67P28N_ThinF\\GT\\IMG_20150819_115955.txt'",
+    "0",
+    "6",
+    "174"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\208C67P28N_ThinF\\GT\\IMG_20150819_121053.txt'",
+    "0",
+    "9",
+    "235"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\208C67P28N_ThinF\\GT\\IMG_20150819_121240.txt'",
+    "0",
+    "6",
+    "287"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\208C67P28N_ThinF\\GT\\IMG_20150819_121456.txt'",
+    "0",
+    "17",
+    "274"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\209C68P29N_ThinF\\GT\\IMG_20150819_133236.txt'",
+    "0",
+    "84",
+    "134"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\209C68P29N_ThinF\\GT\\IMG_20150819_133350.txt'",
+    "0",
+    "74",
+    "133"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\209C68P29N_ThinF\\GT\\IMG_20150819_133447.txt'",
+    "3",
+    "71",
+    "135"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\209C68P29N_ThinF\\GT\\IMG_20150819_134112.txt'",
+    "0",
+    "58",
+    "120"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\209C68P29N_ThinF\\GT\\IMG_20150819_134326.txt'",
+    "0",
+    "62",
+    "121"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\211C70P31_ThinF\\GT\\IMG_20150813_130332.txt'",
+    "2",
+    "15",
+    "99"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\211C70P31_ThinF\\GT\\IMG_20150813_130510.txt'",
+    "0",
+    "14",
+    "80"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\211C70P31_ThinF\\GT\\IMG_20150813_130849.txt'",
+    "0",
+    "9",
+    "70"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\211C70P31_ThinF\\GT\\IMG_20150813_131022.txt'",
+    "0",
+    "9",
+    "88"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\211C70P31_ThinF\\GT\\IMG_20150813_131330.txt'",
+    "2",
+    "22",
+    "94"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\212C71P32_ThinF\\GT\\IMG_20150813_161634.txt'",
+    "0",
+    "0",
+    "243"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\212C71P32_ThinF\\GT\\IMG_20150813_162016.txt'",
+    "0",
+    "4",
+    "277"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\212C71P32_ThinF\\GT\\IMG_20150813_162146.txt'",
+    "0",
+    "2",
+    "214"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\212C71P32_ThinF\\GT\\IMG_20150813_162554.txt'",
+    "0",
+    "3",
+    "206"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\212C71P32_ThinF\\GT\\IMG_20150813_163120.txt'",
+    "0",
+    "1",
+    "219"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\221C79P40ThinF\\GT\\IMG_20150817_102702.txt'",
+    "0",
+    "1",
+    "184"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\221C79P40ThinF\\GT\\IMG_20150817_102823.txt'",
+    "0",
+    "0",
+    "158"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\221C79P40ThinF\\GT\\IMG_20150817_103139.txt'",
+    "0",
+    "0",
+    "145"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\221C79P40ThinF\\GT\\IMG_20150817_103303.txt'",
+    "0",
+    "2",
+    "157"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\221C79P40ThinF\\GT\\IMG_20150817_103901.txt'",
+    "0",
+    "1",
+    "123"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\228C86P47ThinF\\GT\\IMG_20150820_123717.txt'",
+    "0",
+    "0",
+    "244"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\228C86P47ThinF\\GT\\IMG_20150820_124025.txt'",
+    "0",
+    "1",
+    "253"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\228C86P47ThinF\\GT\\IMG_20150820_124259.txt'",
+    "0",
+    "1",
+    "262"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\228C86P47ThinF\\GT\\IMG_20150820_124943.txt'",
+    "0",
+    "1",
+    "238"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\228C86P47ThinF\\GT\\IMG_20150820_125057.txt'",
+    "0",
+    "1",
+    "239"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\231C89P50ThinF\\GT\\IMG_20150820_162153.txt'",
+    "0",
+    "14",
+    "191"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\231C89P50ThinF\\GT\\IMG_20150820_162300.txt'",
+    "0",
+    "8",
+    "214"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\231C89P50ThinF\\GT\\IMG_20150820_162504.txt'",
+    "2",
+    "15",
+    "191"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\231C89P50ThinF\\GT\\IMG_20150820_162813.txt'",
+    "0",
+    "13",
+    "221"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\231C89P50ThinF\\GT\\IMG_20150820_163347.txt'",
+    "0",
+    "8",
+    "206"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\236C94P55ThinF\\GT\\IMG_20150821_165118.txt'",
+    "0",
+    "1",
+    "266"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\236C94P55ThinF\\GT\\IMG_20150821_165519.txt'",
+    "0",
+    "0",
+    "295"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\236C94P55ThinF\\GT\\IMG_20150821_170021.txt'",
+    "0",
+    "5",
+    "223"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\236C94P55ThinF\\GT\\IMG_20150821_170249.txt'",
+    "0",
+    "1",
+    "227"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\236C94P55ThinF\\GT\\IMG_20150821_170403.txt'",
+    "1",
+    "3",
+    "241"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\244C7NthinF\\GT\\IMG_20150611_104404.txt'",
+    "0",
+    "0",
+    "204"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\244C7NthinF\\GT\\IMG_20150611_104510.txt'",
+    "0",
+    "0",
+    "201"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\244C7NthinF\\GT\\IMG_20150611_104609.txt'",
+    "1",
+    "0",
+    "218"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\244C7NthinF\\GT\\IMG_20150611_104753.txt'",
+    "2",
+    "0",
+    "190"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\244C7NthinF\\GT\\IMG_20150611_104824.txt'",
+    "0",
+    "0",
+    "216"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\247C99P60ThinF\\GT\\IMG_20150918_140900.txt'",
+    "1",
+    "55",
+    "109"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\247C99P60ThinF\\GT\\IMG_20150918_141001.txt'",
+    "0",
+    "79",
+    "101"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\247C99P60ThinF\\GT\\IMG_20150918_141129.txt'",
+    "0",
+    "68",
+    "114"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\247C99P60ThinF\\GT\\IMG_20150918_141314.txt'",
+    "1",
+    "59",
+    "106"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\247C99P60ThinF\\GT\\IMG_20150918_141351.txt'",
+    "0",
+    "52",
+    "104"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\263C115P76ThinF\\GT\\IMG_20150930_161825.txt'",
+    "1",
+    "3",
+    "226"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\263C115P76ThinF\\GT\\IMG_20150930_162038.txt'",
+    "0",
+    "5",
+    "205"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\263C115P76ThinF\\GT\\IMG_20150930_162315.txt'",
+    "0",
+    "2",
+    "260"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\263C115P76ThinF\\GT\\IMG_20150930_163018.txt'",
+    "0",
+    "1",
+    "251"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\263C115P76ThinF\\GT\\IMG_20150930_163156.txt'",
+    "1",
+    "2",
+    "249"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\270C122P83ThinF\\GT\\IMG_20151002_144341.txt'",
+    "0",
+    "0",
+    "169"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\270C122P83ThinF\\GT\\IMG_20151002_144610.txt'",
+    "0",
+    "0",
+    "141"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\270C122P83ThinF\\GT\\IMG_20151002_144855.txt'",
+    "0",
+    "1",
+    "152"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\270C122P83ThinF\\GT\\IMG_20151002_145014.txt'",
+    "0",
+    "1",
+    "173"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\270C122P83ThinF\\GT\\IMG_20151002_145330.txt'",
+    "0",
+    "1",
+    "160"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\274C126P87ThinF\\GT\\IMG_20151004_104408.txt'",
+    "0",
+    "5",
+    "162"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\274C126P87ThinF\\GT\\IMG_20151004_104441.txt'",
+    "0",
+    "5",
+    "118"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\274C126P87ThinF\\GT\\IMG_20151004_104623.txt'",
+    "1",
+    "2",
+    "124"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\274C126P87ThinF\\GT\\IMG_20151004_104728.txt'",
+    "0",
+    "6",
+    "126"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\274C126P87ThinF\\GT\\IMG_20151004_104813.txt'",
+    "0",
+    "4",
+    "148"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\276C128P89ThinF\\GT\\IMG_20151004_130408.txt'",
+    "0",
+    "17",
+    "149"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\276C128P89ThinF\\GT\\IMG_20151004_130549.txt'",
+    "0",
+    "14",
+    "141"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\276C128P89ThinF\\GT\\IMG_20151004_130810.txt'",
+    "0",
+    "19",
+    "147"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\276C128P89ThinF\\GT\\IMG_20151004_131030.txt'",
+    "0",
+    "18",
+    "153"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\276C128P89ThinF\\GT\\IMG_20151004_131129.txt'",
+    "1",
+    "18",
+    "163"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\282C134P95ThinF\\GT\\IMG_20151005_121048.txt'",
+    "1",
+    "2",
+    "126"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\282C134P95ThinF\\GT\\IMG_20151005_121343.txt'",
+    "0",
+    "3",
+    "124"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\282C134P95ThinF\\GT\\IMG_20151005_121425.txt'",
+    "1",
+    "1",
+    "128"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\282C134P95ThinF\\GT\\IMG_20151005_121554.txt'",
+    "2",
+    "2",
+    "130"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\282C134P95ThinF\\GT\\IMG_20151005_121656.txt'",
+    "0",
+    "2",
+    "105"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\302C210ThinF\\GT\\IMG_20151029_162357.txt'",
+    "0",
+    "0",
+    "254"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\302C210ThinF\\GT\\IMG_20151029_162439.txt'",
+    "0",
+    "0",
+    "273"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\302C210ThinF\\GT\\IMG_20151029_162605.txt'",
+    "1",
+    "0",
+    "253"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\302C210ThinF\\GT\\IMG_20151029_162834.txt'",
+    "1",
+    "0",
+    "251"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\302C210ThinF\\GT\\IMG_20151029_162934.txt'",
+    "2",
+    "0",
+    "276"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\305C212ThinF\\GT\\IMG_20151106_105437.txt'",
+    "0",
+    "0",
+    "301"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\305C212ThinF\\GT\\IMG_20151106_105834.txt'",
+    "0",
+    "0",
+    "295"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\305C212ThinF\\GT\\IMG_20151106_105941.txt'",
+    "0",
+    "0",
+    "277"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\305C212ThinF\\GT\\IMG_20151106_110230.txt'",
+    "1",
+    "0",
+    "276"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\305C212ThinF\\GT\\IMG_20151106_110411.txt'",
+    "1",
+    "0",
+    "263"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\306C213ThinF\\GT\\IMG_20151106_112252.txt'",
+    "0",
+    "0",
+    "267"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\306C213ThinF\\GT\\IMG_20151106_112422.txt'",
+    "1",
+    "0",
+    "257"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\306C213ThinF\\GT\\IMG_20151106_112603.txt'",
+    "0",
+    "0",
+    "252"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\306C213ThinF\\GT\\IMG_20151106_112759.txt'",
+    "0",
+    "0",
+    "269"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\306C213ThinF\\GT\\IMG_20151106_112853.txt'",
+    "1",
+    "0",
+    "258"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\309C216ThinF\\GT\\IMG_20151106_134733.txt'",
+    "1",
+    "0",
+    "239"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\309C216ThinF\\GT\\IMG_20151106_134931.txt'",
+    "1",
+    "0",
+    "260"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\309C216ThinF\\GT\\IMG_20151106_135228.txt'",
+    "0",
+    "0",
+    "253"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\309C216ThinF\\GT\\IMG_20151106_135337.txt'",
+    "0",
+    "0",
+    "252"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\309C216ThinF\\GT\\IMG_20151106_135653.txt'",
+    "0",
+    "0",
+    "253"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\318C226ThinF\\GT\\IMG_20151112_131255.txt'",
+    "0",
+    "0",
+    "270"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\318C226ThinF\\GT\\IMG_20151112_131408.txt'",
+    "0",
+    "0",
+    "257"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\318C226ThinF\\GT\\IMG_20151112_131546.txt'",
+    "0",
+    "0",
+    "258"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\318C226ThinF\\GT\\IMG_20151112_131622.txt'",
+    "1",
+    "0",
+    "265"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\318C226ThinF\\GT\\IMG_20151112_131731.txt'",
+    "0",
+    "0",
+    "293"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\323C231ThinF\\GT\\IMG_20151112_152234.txt'",
+    "1",
+    "0",
+    "225"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\323C231ThinF\\GT\\IMG_20151112_153041.txt'",
+    "1",
+    "0",
+    "215"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\323C231ThinF\\GT\\IMG_20151112_153106.txt'",
+    "1",
+    "0",
+    "212"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\323C231ThinF\\GT\\IMG_20151112_153147.txt'",
+    "1",
+    "0",
+    "208"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\323C231ThinF\\GT\\IMG_20151112_153246.txt'",
+    "0",
+    "0",
+    "221"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\327C235ThinF\\GT\\IMG_20151112_164625.txt'",
+    "0",
+    "0",
+    "313"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\327C235ThinF\\GT\\IMG_20151112_164723.txt'",
+    "0",
+    "0",
+    "306"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\327C235ThinF\\GT\\IMG_20151112_164834.txt'",
+    "1",
+    "0",
+    "310"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\327C235ThinF\\GT\\IMG_20151112_164918.txt'",
+    "0",
+    "0",
+    "287"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\327C235ThinF\\GT\\IMG_20151112_165055.txt'",
+    "0",
+    "0",
+    "303"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\343C160P121ThinF\\GT\\IMG_20151116_092925.txt'",
+    "0",
+    "2",
+    "152"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\343C160P121ThinF\\GT\\IMG_20151116_093109.txt'",
+    "0",
+    "0",
+    "149"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\343C160P121ThinF\\GT\\IMG_20151116_093629.txt'",
+    "0",
+    "0",
+    "145"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\343C160P121ThinF\\GT\\IMG_20151116_093704.txt'",
+    "0",
+    "1",
+    "144"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\343C160P121ThinF\\GT\\IMG_20151116_093748.txt'",
+    "0",
+    "0",
+    "163"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\354C169P130ThinF\\GT\\IMG_20151118_163539.txt'",
+    "1",
+    "2",
+    "240"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\354C169P130ThinF\\GT\\IMG_20151118_172913.txt'",
+    "0",
+    "3",
+    "229"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\354C169P130ThinF\\GT\\IMG_20151118_173039.txt'",
+    "0",
+    "2",
+    "250"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\354C169P130ThinF\\GT\\IMG_20151119_143039.txt'",
+    "0",
+    "0",
+    "233"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\354C169P130ThinF\\GT\\IMG_20151119_143212.txt'",
+    "0",
+    "0",
+    "230"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\362C177P138NThinF\\GT\\IMG_20151201_141604.txt'",
+    "0",
+    "2",
+    "224"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\362C177P138NThinF\\GT\\IMG_20151201_142514.txt'",
+    "1",
+    "7",
+    "165"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\362C177P138NThinF\\GT\\IMG_20151201_142846.txt'",
+    "3",
+    "5",
+    "203"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\362C177P138NThinF\\GT\\IMG_20151201_142942.txt'",
+    "0",
+    "7",
+    "187"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\362C177P138NThinF\\GT\\IMG_20151201_143025.txt'",
+    "1",
+    "9",
+    "190"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\372C187P148NThinF\\GT\\IMG_20151203_152841.txt'",
+    "0",
+    "1",
+    "164"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\372C187P148NThinF\\GT\\IMG_20151203_153036.txt'",
+    "0",
+    "5",
+    "127"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\372C187P148NThinF\\GT\\IMG_20151203_153410.txt'",
+    "0",
+    "2",
+    "152"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\372C187P148NThinF\\GT\\IMG_20151203_153713.txt'",
+    "0",
+    "4",
+    "205"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\372C187P148NThinF\\GT\\IMG_20151203_154111.txt'",
+    "0",
+    "2",
+    "132"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\377C238NThinF\\GT\\IMG_20151207_114038.txt'",
+    "0",
+    "0",
+    "208"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\377C238NThinF\\GT\\IMG_20151207_114345.txt'",
+    "0",
+    "0",
+    "195"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\377C238NThinF\\GT\\IMG_20151207_114444.txt'",
+    "1",
+    "0",
+    "194"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\377C238NThinF\\GT\\IMG_20151207_114605.txt'",
+    "1",
+    "0",
+    "177"
+  ],
+  [
+    "'NIH-NLM-ThinBloodSmearsPf\\Polygon Set\\377C238NThinF\\GT\\IMG_20151207_114653.txt'",
+    "0",
+    "0",
+    "169"
+  ],
+  [
+    "Sum each column",
+    "51",
+    "1142",
+    "33071"
+  ],
+  [
+    "All RBC's",
+    "34213"
+  ],
+  [
+    "All cells",
+    "34264"
+  ],
+  [
+    "Summary ",
+    "#All WBC = 51"
+  ],
+  [
+    "#All RBCs = 34,213"
+  ],
+  [
+    "#RBCs infected = 1142"
+  ],
+  [
+    "#RBCs uninfected = 33,071"
+  ]
+]

@@ -19,7 +19,6 @@ from ..data.governed_dataset import (
 from ..persistence.dataset_evidence import verify_dataset_for_execution
 from .artifacts import keras_loader, verify_session
 from .repository import ExecutionRepository
-from .schema import E10SchemaNotReady
 
 # Keys of the campaign's reference environment. Compared only to REPORT runtime
 # differences (plan, console); a difference is recorded on the run, never a barrier.
@@ -60,6 +59,7 @@ def preflight(
         str(row["dataset_version_id"]),
         expected_evidence_id=str(row["dataset_evidence_id"]),
         consumer="campaign.execute",
+        required_splits=("train", "val"),
     )
     assert_run_dataset_snapshot_unchanged(snapshot, row["dataset_snapshot"])
     from ..models.registry import resolve_descriptor
@@ -210,9 +210,6 @@ def execute_campaign(
     if gate is not None and loader is keras_loader:
         from .process_verification import isolated_keras_loader
         loader = isolated_keras_loader
-    # Outside the systemic-failure handler: incompatibility must not pause or
-    # reconcile an existing campaign, nor consume a reservation.
-    repository.preflight_e10_schema()
     owner = str(uuid4())
     runtime = runtime_environment()
     # First preflight is outside the systemic handler: a wrong dataset/config stops
@@ -298,8 +295,6 @@ def execute_campaign(
         repository.finalize_terminal(campaign_id)
         summary = repository.summary(campaign_id)
         return (0 if summary["matrix_complete"] else 2), summary
-    except E10SchemaNotReady:
-        raise
     except (Exception, KeyboardInterrupt) as exc:  # noqa: BLE001 -- unknown failures are systemic, never success
         repository.pause(campaign_id, "SYSTEMIC_" + type(exc).__name__.upper())
         log(exc)
@@ -375,10 +370,10 @@ def dry_run(repository, campaign_id, root):
     """Everything execution checks before a claim, without claiming."""
     from ..data.governed_dataset import resolve_governed_dataset
     from .global_gate import status
-    repository.preflight_e10_schema()
     row = repository.get(campaign_id)
     # Same integrity verification, without persisting a dataset evidence row.
-    preflight(repository, row, root, verifier=lambda version, **_: resolve_governed_dataset(version))
+    preflight(repository, row, root, verifier=lambda version, **kw: resolve_governed_dataset(
+        version, required_splits=kw["required_splits"]))
     budget = row["protocol"]["budget"]["max_attempts_per_member"]
     eligible = sorted(
         (m for m in row["members"] if m["state"] in ("pending", "failed", "interrupted")
@@ -437,7 +432,6 @@ def main(argv=None):
     if args.revision_proposal is not None:
         raise CampaignError('PROPOSAL_ALLOWED_ONLY_IN_DRY_RUN')
     from .global_gate import GlobalGate
-    repo.preflight_e10_schema()
     row = repo.get(args.campaign_id, args.dataset_version_id)
     apply_determinism(row)
     runtime = runtime_environment()

@@ -1,0 +1,22 @@
+{
+  "records": 27558,
+  "patients": 201,
+  "traceability_mismatches": [],
+  "class_counts": {
+    "parasitized": 13779,
+    "uninfected": 13779
+  },
+  "split_class_counts": {
+    "train|parasitized": 11137,
+    "train|uninfected": 11043,
+    "test|parasitized": 1317,
+    "val|uninfected": 1368,
+    "val|parasitized": 1325,
+    "test|uninfected": 1368
+  },
+  "patient_split_counts": {
+    "val": 20,
+    "train": 161,
+    "test": 20
+  }
+}

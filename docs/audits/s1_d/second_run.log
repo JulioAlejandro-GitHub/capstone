@@ -1,0 +1,25 @@
+Dataset: NIH-NLM-ThinBloodSmearsPf
+Source: https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/index.html
+Destination: /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/NIH-NLM-ThinBloodSmearsPf
+{
+  "dataset": "NIH-NLM-ThinBloodSmearsPf",
+  "source": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/index.html",
+  "destination": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/NIH-NLM-ThinBloodSmearsPf",
+  "integrity": "PASS",
+  "status": "ALREADY_DOWNLOADED",
+  "downloaded_files": 0,
+  "downloaded_bytes": 0,
+  "structure": {
+    "Polygon Set": {
+      "patients": 33,
+      "images": 165,
+      "ground_truth_files": 165
+    },
+    "Point Set": {
+      "patients": 160,
+      "images": 800,
+      "ground_truth_files": 800
+    }
+  },
+  "manifest": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/NIH-NLM-ThinBloodSmearsPf/.capstone_download_manifest.json"
+}

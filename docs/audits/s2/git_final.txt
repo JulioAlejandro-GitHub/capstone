@@ -1,0 +1,39 @@
+ M Makefile
+ M docs/README.md
+ M malaria_dataset_split_project/src/malaria_split/persistence/smear_source_ingest.py
+ M malaria_dataset_split_project/src/malaria_split/sources/thin_blood_smears_pf.py
+?? docs/audits/s2/REPORT.md
+?? docs/audits/s2/code_hashes.json
+?? docs/audits/s2/database_changes.json
+?? docs/audits/s2/db_after.json.gz
+?? docs/audits/s2/db_before.json.gz
+?? docs/audits/s2/git_final.txt
+?? docs/audits/s2/git_initial.txt
+?? docs/audits/s2/idempotency.json
+?? docs/audits/s2/integrity_after.json
+?? docs/audits/s2/integrity_before.json
+?? docs/audits/s2/persistence.json
+?? docs/audits/s2/persistence_regression.log
+?? docs/audits/s2/polygon_positive_concentration.csv
+?? docs/audits/s2/polygon_split_summary.csv
+?? docs/audits/s2/postgresql_final.json
+?? docs/audits/s2/preflight.json
+?? docs/audits/s2/preflight_run.log
+?? docs/audits/s2/regression.log
+?? docs/audits/s2/run.log
+?? docs/audits/s2/smear_patient_assignments.csv
+?? docs/audits/s2/split_summary.json
+?? docs/audits/s2/tests.log
+?? malaria_dataset_split_project/src/malaria_split/persistence/same_split.py
+?? malaria_dataset_split_project/src/malaria_split/splitting/same_split.py
+?? scripts/audit_s2/audit.py
+?? scripts/audit_s2/test_same_split.py
+?? scripts/audit_s2/worker.py
+ Makefile                                           | 14 ++++++
+ docs/README.md                                     |  1 +
+ .../persistence/smear_source_ingest.py             | 53 +++++++++++++---------
+ .../malaria_split/sources/thin_blood_smears_pf.py  | 45 ++++++++++--------
+ 4 files changed, 73 insertions(+), 40 deletions(-)
+s1-smear-segmentation-source-adapter
+e082c8bd7d47a1a3acbf371a2f57ff8d2fbeafc7
+1e962fa22770f366f5aef13e5cd55956ee6c5f85

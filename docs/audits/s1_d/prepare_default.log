@@ -1,0 +1,41 @@
+CAPSTONE — DATASET PREPARATION
+[1/2] Cell Classification Source
+{
+  "dataset": "NLM-Falciparum-Thin-Cell-Images",
+  "source": "https://data.lhncbc.nlm.nih.gov/public/Malaria/cell_images.zip",
+  "destination": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/data/tensorflow_datasets/malaria/1.0.0",
+  "mechanism": "TFDS malaria 1.0.0",
+  "source_evidence": "approved S1.1 provenance; arbitrary SOURCE overrides rejected",
+  "integrity": "PASS",
+  "status": "ALREADY_DOWNLOADED",
+  "download_performed": false,
+  "images": 27558,
+  "class_counts": {
+    "parasitized": 13779,
+    "uninfected": 13779
+  }
+}
+[2/2] Full Smear Source
+{
+  "dataset": "NIH-NLM-ThinBloodSmearsPf",
+  "source": "https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/index.html",
+  "destination": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/NIH-NLM-ThinBloodSmearsPf",
+  "integrity": "PASS",
+  "status": "ALREADY_DOWNLOADED",
+  "downloaded_files": 0,
+  "downloaded_bytes": 0,
+  "structure": {
+    "Polygon Set": {
+      "patients": 33,
+      "images": 165,
+      "ground_truth_files": 165
+    },
+    "Point Set": {
+      "patients": 160,
+      "images": 800,
+      "ground_truth_files": 800
+    }
+  },
+  "manifest": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/NIH-NLM-ThinBloodSmearsPf/.capstone_download_manifest.json"
+}
+DATASET SOURCES: READY

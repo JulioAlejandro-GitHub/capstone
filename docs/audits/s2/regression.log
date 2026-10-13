@@ -1,0 +1,9 @@
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src malaria_dl_local_project/.venv-local-train/bin/python -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_nlm_identity.py scripts/audit_s1_2/test_audit.py
+................................                                         [100%]
+32 passed in 1.30s
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src malaria_dl_local_project/.venv-local-train/bin/python -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_dataset_families.py malaria_dataset_split_project/tests/unit/test_polygon_set.py malaria_dataset_split_project/tests/unit/test_thin_blood_smears_pf.py malaria_dataset_split_project/tests/unit/test_freeze.py
+..............................s.....                                     [100%]
+35 passed, 1 skipped in 0.19s
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=malaria_dataset_split_project/src malaria_dl_local_project/.venv-local-train/bin/python -m pytest -q -p no:cacheprovider malaria_dataset_split_project/tests/unit/test_identity_resolver.py malaria_dataset_split_project/tests/unit/test_patient_group_stratified_v1.py malaria_dataset_split_project/tests/unit/test_patient_split_optimizer.py
+...................                                                      [100%]
+19 passed in 0.37s

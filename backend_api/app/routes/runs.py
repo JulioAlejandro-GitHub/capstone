@@ -23,12 +23,8 @@ router = APIRouter(tags=["runs"])
 def scientific_results(run_id: UUID, datasource: str | None = Query(None)):
     from app.db import read_only_transaction
     from app.services.scientific_results import read_scientific_results
-    from src.malaria_dl.execution.schema import E10SchemaNotReady
-    try:
-        with read_only_transaction(datasource) as connection:
-            result = read_scientific_results(connection, run_id)
-    except E10SchemaNotReady:
-        raise HTTPException(503, 'SCIENTIFIC_SCHEMA_NOT_READY') from None
+    with read_only_transaction(datasource) as connection:
+        result = read_scientific_results(connection, run_id)
     if result is None:
         raise HTTPException(404, 'Run no encontrado')
     return result
@@ -478,12 +474,14 @@ def get_lineage_children(
     training_run_id: UUID,
     datasource: str | None = Query(default="malaria"),
     limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
 ):
     try:
         return get_training_lineage_children(
             training_run_id=training_run_id,
             datasource=datasource,
             limit=limit,
+            offset=offset,
         )
     except TrainingRunNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Run no encontrado.") from exc

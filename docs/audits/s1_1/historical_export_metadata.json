@@ -1,0 +1,45 @@
+{
+  "dataset_source": "tensorflow_datasets/malaria",
+  "split_type": "physical_stratified_split",
+  "train_ratio": 0.8,
+  "val_ratio": 0.1,
+  "test_ratio": 0.1,
+  "seed": 42,
+  "label_mapping_version": "clinical_v1_parasitized_positive",
+  "class_names": [
+    "uninfected",
+    "parasitized"
+  ],
+  "negative_class_index": 0,
+  "negative_class_name": "uninfected",
+  "positive_class_index": 1,
+  "positive_class_name": "parasitized",
+  "tfds_original_mapping": {
+    "0": "parasitized",
+    "1": "uninfected"
+  },
+  "project_mapping": {
+    "0": "uninfected",
+    "1": "parasitized"
+  },
+  "image_format": "png",
+  "created_at": "2026-06-26T23:58:31.893326+00:00",
+  "counts": {
+    "train": {
+      "uninfected": 11023,
+      "parasitized": 11023,
+      "total": 22046
+    },
+    "val": {
+      "uninfected": 1378,
+      "parasitized": 1378,
+      "total": 2756
+    },
+    "test": {
+      "uninfected": 1378,
+      "parasitized": 1378,
+      "total": 2756
+    },
+    "total": 27558
+  }
+}

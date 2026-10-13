@@ -12,7 +12,7 @@ from src.malaria_dl.assessment.contracts import (
     threshold,
     verify_rows,
 )
-from src.malaria_dl.assessment.service import explanation_spec, run
+from src.malaria_dl.assessment.service import explanation_spec, run, verify
 from src.malaria_dl.campaigns.contracts import digest
 from src.malaria_dl.data.input_contract import make_input_contract
 from src.malaria_dl.execution.artifacts import file_identity
@@ -146,13 +146,13 @@ class Runtime:
         )
 
 
-def test_exact_reuse_does_not_predict(tmp_path):
+def test_repeated_execution_predicts_independently(tmp_path):
     repo = MemoryRepository()
     v = value(tmp_path)
     Runtime.calls = 0
     a = run(repo, v, tmp_path, Runtime)
     b = run(repo, v, tmp_path, Runtime)
-    assert a["id"] == b["id"] and Runtime.calls == 2 and a["state"] == "verified"
+    assert a["id"] != b["id"] and Runtime.calls == 4 and a["state"] == "verified"
     assert a["verification"]["metrics"]["confusion_matrix"] == [[1, 0], [0, 1]]
     assert not list(tmp_path.glob("*.csv"))
 
@@ -199,14 +199,12 @@ def test_partial_failure_retry_new_attempt(tmp_path):
     )
 
 
-def test_active_response_no_predict(tmp_path):
+def test_active_execution_does_not_replace_new_work(tmp_path):
     repo = MemoryRepository()
     v = value(tmp_path)
     a, _ = repo.reserve(v, tmp_path)
-    assert (
-        run(repo, v, tmp_path, lambda v: pytest.fail("predict forbidden"))["id"]
-        == a["id"]
-    )
+    b = run(repo, v, tmp_path, Runtime)
+    assert b["id"] != a["id"] and repo.attempt(a["id"])["state"] == "active"
 
 
 @pytest.mark.parametrize("fault", ["missing", "changed", "results"])
@@ -221,7 +219,7 @@ def test_corruption_never_reused(tmp_path, fault):
     else:
         repo.rows[a["id"]].pop(v["samples"][0]["sample_id"])
     with pytest.raises(ValueError):
-        run(repo, v, tmp_path, Runtime)
+        verify(repo, a, repo.identity(a["identity_id"]))
 
 
 def test_threshold_no_implicit_clinical_fallback():
@@ -244,7 +242,7 @@ def test_threshold_no_implicit_clinical_fallback():
 
 def test_test_forbidden_development(tmp_path):
     v = value(tmp_path)
-    with pytest.raises(AssessmentError, match="TEST"):
+    with pytest.raises(AssessmentError, match="SPLIT_PURPOSE_CONFLICT"):
         identity(
             v["model"],
             v["dataset"],
@@ -276,7 +274,7 @@ def test_explanations_artifacts_separate_and_tamper_rejected(tmp_path):
     )
     Path(repo.artifacts(a["id"])[0]["path"]).write_bytes(b"corrupt")
     with pytest.raises(AssessmentError):
-        run(repo, v, tmp_path, Runtime)
+        verify(repo, a, repo.identity(a["identity_id"]))
 
 
 def test_reconstruction_rejects_conflicting_labels(tmp_path):
@@ -317,14 +315,22 @@ def test_artifact_write_failure_never_verified(tmp_path, monkeypatch):
         ("densenet121", "rescale_0_1"),
     ],
 )
-def test_minimal_model_uses_exact_e3_input(tmp_path, architecture, mode):
+@pytest.mark.parametrize("foreign_root", [False, True])
+def test_minimal_model_uses_exact_e3_input(tmp_path, monkeypatch, architecture, mode, foreign_root):
     import numpy as np
     import tensorflow as tf
     from PIL import Image
     from src.malaria_dl.assessment.runtime import KerasRuntime
     from src.malaria_dl.data.input_contract import INTERNAL_DENSENET, transform_rgb
+    from src.malaria_dl.data import governed_dataset
 
     v = value(tmp_path)
+    physical_root = tmp_path
+    if foreign_root:
+        monkeypatch.setattr(governed_dataset, "PROJECT_ROOT", tmp_path)
+        physical_root = tmp_path / "data" / "sealed"
+        v["dataset"]["dataset_root"] = "/app/project/data/sealed"
+    original_dataset = deepcopy(v["dataset"])
     contract = make_input_contract(
         architecture,
         "synthetic_v1",
@@ -347,18 +353,22 @@ def test_minimal_model_uses_exact_e3_input(tmp_path, architecture, mode):
     model.save(v["model"]["path"])
     v["model"].update(file_identity(v["model"]["path"]), input_contract=contract)
     sample = v["samples"][0]
-    path = tmp_path / sample["relative_path"]
+    path = physical_root / sample["relative_path"]
     path.parent.mkdir(parents=True, exist_ok=True)
     rgb = np.full((8, 8, 3), [180, 100, 50], dtype=np.uint8)
     Image.fromarray(rgb).save(path)
     sample["sha256"] = file_identity(path)["sha256"]
     runtime = KerasRuntime(v)
+    from test_dataset_split_isolation import guard_dataset_io
+    image_accesses = guard_dataset_io(monkeypatch, physical_root, ("val",))
     np.testing.assert_allclose(
         runtime.images([sample]).numpy()[0],
         transform_rgb(rgb, contract).numpy(),
         atol=1e-6,
     )
     assert len(runtime.predict([sample])) == 1
+    assert v["dataset"] == original_dataset
+    assert {split for _, split, _ in image_accesses} == {"val"}
     if architecture == "custom_cnn":
         v["explanation"] = explanation_spec("gradcam", "conv", 1, None, [])
         heat, overlay, result = runtime.explain(sample)
@@ -385,7 +395,9 @@ def test_exact_e5_binding_and_cross_version_rejected(tmp_path, monkeypatch):
     from src.malaria_dl.assessment import lineage
     from src.malaria_dl.execution.artifacts import verify_session
     from test_campaign_executor_e5 import evidence
+    from src.malaria_dl.models import registry
 
+    monkeypatch.setattr(registry, "registered_models", lambda: tuple(registry.MODEL_REGISTRY))
     session, records = evidence(tmp_path)
     version = str(uuid4())
     for r in records:
@@ -406,6 +418,7 @@ def test_exact_e5_binding_and_cross_version_rejected(tmp_path, monkeypatch):
         lambda scope: SimpleNamespace(records=lambda _: records),
     )
     repo = SimpleNamespace(transaction=lambda **kw: nullcontext(None), scope=None)
+    monkeypatch.setattr(lineage, "training_dataset_metadata", lambda _: session["dataset"])
     binding, dataset, _ = lineage.resolve(repo, session["run_id"], version)
     assert binding["model_version_id"] == version and dataset == session["dataset"]
     assert binding == lineage.resolve(repo, session["run_id"])[0]
@@ -472,10 +485,10 @@ def test_campaign_inspection_keeps_unaccepted_visible(monkeypatch):
 
 
 def test_cli_rejects_legacy_implicit_batch():
-    from src.malaria_dl.assessment.cli import parser
+    from src.malaria_dl.assessment.cli import main
 
     with pytest.raises(SystemExit):
-        parser("evaluate", batch=True).parse_args(
+        main("evaluate", batch=True, argv=
             ["--dataset-version-id", str(uuid4())]
         )
 
@@ -616,7 +629,7 @@ def test_accredited_sample_population_and_equivalent_override(
     monkeypatch.setattr(Result, "__iter__", lambda self: iter(self.rows), raising=False)
 
     f = dataset_fixture
-    inherited = resolve_governed_dataset(VERSION).metadata()
+    inherited = resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True).metadata()
     repo = SimpleNamespace(transaction=lambda **kw: nullcontext(f.connection))
     samples = dataset_samples(repo, inherited, "val", VERSION, inspection=True)
     assert len(samples) == 2 and {s["label"] for s in samples} == {0, 1}

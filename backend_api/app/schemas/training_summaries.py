@@ -14,9 +14,24 @@ class TrainingReleaseStatus(str, Enum):
     PRODUCTIVE_STAGE2 = "productive_stage2"
 
 
+class ScientificParameters(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    target_recall: float | None = None
+    min_recall: float | None = None
+    calibrate_threshold: bool | None = None
+    early_stopping_patience: int | None = None
+    early_stopping_min_delta: float | None = None
+    min_class_fraction: float | None = None
+    reject_prediction_collapse: bool | None = None
+    threshold: float | None = None
+    val_f2_parasitized: float | None = None
+
+
 class TrainingSummary(BaseModel):
     model_config = ConfigDict(extra="forbid", from_attributes=True)
 
+    scientific_parameters: ScientificParameters = Field(default_factory=ScientificParameters)
     run_id: UUID
     run_type: Literal["training"]
     status: str

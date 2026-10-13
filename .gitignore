@@ -71,3 +71,20 @@ docs/dump-malaria_experiments-202607290730.sql
 /var/maintenance/
 
 /var/maintenance-tests/
+
+# S1.D official full-smear RAW source and owned download staging/cache.
+/malaria_dl_local_project/data/NIH-NLM-ThinBloodSmearsPf/
+/malaria_dl_local_project/data/.NIH-NLM-ThinBloodSmearsPf.download/
+/backend_api/graphify-out
+/frontend/graphify-out
+/malaria_dataset_split_project/graphify-out
+/malaria_dl_local_project/graphify-out
+/graphify-analysis
+/malaria_dl_local_project/.venv-metal
+
+# Local ML framework artifacts
+/data/keras/
+
+# Downloaded YOLO model weights
+/yolo26n-seg.pt
+/malaria_dl_local_project/artifacts/assessments

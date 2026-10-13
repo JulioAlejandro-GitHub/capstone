@@ -29,7 +29,7 @@ class LocalBackend:
         from ..persistence.dataset_evidence import verify_dataset_for_execution
         from ..data.governed_dataset import assert_run_dataset_snapshot_unchanged
         from ..campaigns.service import planning_environment
-        snapshot=verify_dataset_for_execution(str(row['dataset_version_id']),expected_evidence_id=str(row['dataset_evidence_id']),consumer='local_python.claim')
+        snapshot=verify_dataset_for_execution(str(row['dataset_version_id']),expected_evidence_id=str(row['dataset_evidence_id']),consumer='local_python.claim',required_splits=('train','val'))
         assert_run_dataset_snapshot_unchanged(snapshot,row['dataset_snapshot'])
         if planning_environment()['source_sha256']!=payload['environment']['source_sha256']:
             raise CampaignError('LOCAL_BACKEND_SOURCE_CONFLICT')
@@ -48,7 +48,6 @@ class LocalBackend:
         return dict(job)
 
     def prepare(self,data):
-        self.repo.preflight_e10_schema()
         row=self.repo.get(data['campaign_id'],data['dataset_id'])
         with self.repo.transaction(readonly=True) as c:payload=self.repo.revision(c,data['campaign_id'],data['revision_id'])
         validate_revision(row,payload)
@@ -92,8 +91,6 @@ class LocalBackend:
             if old:
                 if old['principal']!=principal or old['request_hash']!=fingerprint:raise CampaignError('LOCAL_REQUEST_CONFLICT')
                 return old['result']
-            from ..execution.schema import require_e10_schema
-            require_e10_schema(c)
             verify_retained_processes(gate['process_evidence'])
             if gate['owner'] or gate['blocked_reason']:raise CampaignError('GLOBAL_EXECUTION_BLOCKED')
             if c.execute(text("SELECT (SELECT count(*) FROM train_execution_sessions WHERE state IN ('active','completed'))+(SELECT count(*) FROM assessment_attempts WHERE state='active')")).scalar_one():raise CampaignError('GLOBAL_EXPERIMENT_BUSY')

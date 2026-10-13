@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from sqlalchemy import text
 
 from app.db import read_only_transaction, resolve_datasource
+from app.repositories.assessment_lineage import LINEAGE_SOURCES_CTES
 from app.schemas.training_summaries import (
     TrainingSummary,
     TrainingSummaryCollection,
@@ -39,7 +40,7 @@ WITH selected_trainings AS MATERIALIZED (
         training.created_at DESC,
         training.id
     LIMIT :limit
-), visual_metrics AS (
+), """ + LINEAGE_SOURCES_CTES + """, visual_metrics AS (
     SELECT
         selected.id AS training_run_id,
         MAX(metric.metric_value) FILTER (
@@ -62,19 +63,53 @@ WITH selected_trainings AS MATERIALIZED (
         COUNT(DISTINCT lineage.child_run_id) FILTER (
             WHERE lineage.relationship_type = 'evaluates_checkpoint_from'
               AND child.run_type = 'evaluation'
-        ) AS evaluation_count,
+        ) + (SELECT count(*) FROM visible_assessments a
+             WHERE a.training_run_id = selected.id AND a.kind = 'evaluate') AS evaluation_count,
         COUNT(DISTINCT lineage.child_run_id) FILTER (
             WHERE lineage.relationship_type = 'explains_checkpoint_from'
               AND child.run_type = 'explainability'
-        ) AS explainability_count
+        ) + (SELECT count(*) FROM visible_assessments a
+             WHERE a.training_run_id = selected.id AND a.kind = 'explain') AS explainability_count
     FROM selected_trainings AS selected
-    LEFT JOIN run_lineage AS lineage ON lineage.parent_run_id = selected.id
+    LEFT JOIN eligible_run_lineage AS lineage ON lineage.parent_run_id = selected.id
     LEFT JOIN runs AS child ON child.id = lineage.child_run_id
     GROUP BY selected.id
 )
 SELECT
     selected.id AS run_id,
     selected.parameters->'training_results' AS scientific_result,
+    jsonb_build_object(
+        'target_recall', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,target_recall}', 'null'::jsonb),
+            to_jsonb(run_configuration.clinical_target_recall)
+        ),
+        'min_recall', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,min_recall}', 'null'::jsonb),
+            run_configuration.extension_configuration #> '{execution,min_recall}'
+        ),
+        'calibrate_threshold', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,calibrate_threshold}', 'null'::jsonb),
+            to_jsonb(run_configuration.calibration_enabled)
+        ),
+        'early_stopping_patience', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,early_stopping_patience}', 'null'::jsonb),
+            to_jsonb(run_configuration.early_stopping_patience)
+        ),
+        'early_stopping_min_delta', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,early_stopping_min_delta}', 'null'::jsonb),
+            to_jsonb(run_configuration.early_stopping_min_delta)
+        ),
+        'min_class_fraction', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,min_class_fraction}', 'null'::jsonb),
+            run_configuration.extension_configuration #> '{execution,min_class_fraction}'
+        ),
+        'reject_prediction_collapse', COALESCE(
+            NULLIF(selected.execution_parameters #> '{model_configuration_e2,configuration,resolved,execution,reject_prediction_collapse}', 'null'::jsonb),
+            run_configuration.extension_configuration #> '{execution,reject_prediction_collapse}'
+        ),
+        'threshold', final_validation.threshold_used,
+        'val_f2_parasitized', final_validation.f2_parasitized
+    ) AS scientific_parameters,
     selected.run_type,
     selected.status,
     selected.release_status,
@@ -162,6 +197,18 @@ SELECT
 FROM selected_trainings AS selected
 JOIN child_counts AS children ON children.training_run_id = selected.id
 JOIN visual_metrics AS metrics ON metrics.training_run_id = selected.id
+-- Each source is scoped to this RUN; run_configurations.run_id is unique.
+LEFT JOIN run_configurations AS run_configuration ON run_configuration.run_id = selected.id
+LEFT JOIN LATERAL (
+    SELECT evaluation.threshold_used, metric.f2_parasitized
+    FROM evaluations AS evaluation
+    LEFT JOIN run_clinical_metrics AS metric ON metric.evaluation_id = evaluation.id
+    WHERE evaluation.training_run_id = selected.id
+      AND evaluation.split = 'val'
+      AND evaluation.evaluation_role = 'training_validation_final'
+    ORDER BY evaluation.created_at DESC, evaluation.id DESC
+    LIMIT 1
+) AS final_validation ON TRUE
 LEFT JOIN models AS model ON model.id = selected.model_id
 LEFT JOIN datasets AS dataset ON dataset.id = selected.dataset_id
 -- Campaign execution engine (E5/E9) evidence: never written to the legacy

@@ -1,0 +1,33 @@
+branch
+s1-smear-segmentation-source-adapter
+
+HEAD
+1e962fa22770f366f5aef13e5cd55956ee6c5f85
+
+parent
+cf8fa58c93768d866e5402e81f9131ff34f50fde
+
+git status (M modified, ?? created)
+ M Makefile
+ M docs/README.md
+ M malaria_dataset_split_project/src/malaria_split/sources/thin_blood_smears_pf.py
+?? docs/audits/s1_2/REPORT.md
+?? docs/audits/s1_2/canonical_identity_summary.json
+?? docs/audits/s1_2/db_after.json.gz
+?? docs/audits/s1_2/db_before.json.gz
+?? docs/audits/s1_2/full_smear_existing_split.csv
+?? docs/audits/s1_2/full_smear_identity_mapping.csv
+?? docs/audits/s1_2/git_at_execution.json
+?? docs/audits/s1_2/git_final.txt
+?? docs/audits/s1_2/git_initial.json
+?? docs/audits/s1_2/identity_split_regression.log
+?? docs/audits/s1_2/input_hashes_after.json
+?? docs/audits/s1_2/input_hashes_before.json
+?? docs/audits/s1_2/polygon_existing_split.csv
+?? docs/audits/s1_2/regression.log
+?? docs/audits/s1_2/run.log
+?? docs/audits/s1_2/tests.log
+?? malaria_dataset_split_project/src/malaria_split/identity/nlm.py
+?? malaria_dataset_split_project/tests/unit/test_nlm_identity.py
+?? scripts/audit_s1_2/audit.py
+?? scripts/audit_s1_2/test_audit.py

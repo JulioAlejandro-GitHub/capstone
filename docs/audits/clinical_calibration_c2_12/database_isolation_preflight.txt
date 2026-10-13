@@ -1,0 +1,64 @@
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_calibration_database_isolation.py
+{
+  "observed_at": "2026-10-04T16:44:39.843668+00:00",
+  "status": "BLOCKED",
+  "server": {
+    "read_only": "on",
+    "system_identifier": "7691366089693499436",
+    "roles": [
+      {
+        "rolname": "capstone_v2_migrator",
+        "rolsuper": false,
+        "rolcreatedb": false,
+        "rolcreaterole": false
+      },
+      {
+        "rolname": "capstone_v2_runtime",
+        "rolsuper": false,
+        "rolcreatedb": false,
+        "rolcreaterole": false
+      },
+      {
+        "rolname": "julio",
+        "rolsuper": true,
+        "rolcreatedb": false,
+        "rolcreaterole": false
+      }
+    ],
+    "databases": [
+      {
+        "oid": "16386",
+        "datname": "malaria_experiments",
+        "owner": "capstone_v2_migrator"
+      },
+      {
+        "oid": "5",
+        "datname": "postgres",
+        "owner": "postgres"
+      }
+    ]
+  },
+  "docker": {
+    "service": "db",
+    "container_id": "e83626be1b85f5fe9e6d964fc7ceddda98b9e9655864ead8ee3f5ab2468a8191",
+    "isolation_label_present": false,
+    "ports": {
+      "5432/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "5432"
+        }
+      ]
+    }
+  },
+  "guard_rejections": {
+    "authorization": "V2_AUTHORIZATION_MISMATCH",
+    "docker_identity": "V2_CONTAINER_LABEL_MISMATCH"
+  },
+  "candidate_only": true,
+  "writes_performed": 0,
+  "databases_created": 0,
+  "integration_tests_executed": 0,
+  "limitation": "Existing v2 installer does not authorize this Compose lifecycle; no guard changed"
+}
+make: *** [check-calibration-database-isolation] Error 2

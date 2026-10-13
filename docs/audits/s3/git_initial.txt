@@ -1,0 +1,4 @@
+s1-smear-segmentation-source-adapter
+0d440a58d472427a1ff64409870e458406039874
+e082c8bd7d47a1a3acbf371a2f57ff8d2fbeafc7
+git status --short: clean before S3 changes

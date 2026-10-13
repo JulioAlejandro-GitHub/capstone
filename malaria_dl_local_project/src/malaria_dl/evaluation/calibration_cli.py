@@ -412,7 +412,7 @@ def main():
     governed_dataset = None
     if args.source_training_run_id:
         from src.malaria_dl.data.governed_dataset import resolve_training_run_dataset
-        governed_dataset = resolve_training_run_dataset(args.source_training_run_id)
+        governed_dataset = resolve_training_run_dataset(args.source_training_run_id, required_splits=(args.dataset_split,))
         if governed_dataset is not None:
             args.dataset_version_id = str(governed_dataset.dataset_version_id)
             args.dataset_dir = str(governed_dataset.dataset_root)

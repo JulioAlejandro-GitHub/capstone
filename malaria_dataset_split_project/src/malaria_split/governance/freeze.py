@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
-from typing import Any, Iterable
+from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING, Any, Iterable, Callable, Sequence
+
+if TYPE_CHECKING:
+    from malaria_split.sources.thin_blood_smears_pf import SmearSourceInspection
 from uuid import UUID
 
 from sqlalchemy import Connection, Engine, text
@@ -43,7 +46,7 @@ class FinalFingerprints:
 class FreezeOutcome:
     result: str
     dataset_version_id: UUID
-    materialization_id: UUID
+    materialization_id: UUID | None
     fingerprints: FinalFingerprints
     frozen_at: Any
     trainable: bool
@@ -151,7 +154,7 @@ def _freeze_contract(
     }
 
 
-def freeze_dataset_version(engine: Engine, dataset_version_id: UUID = V1_ID) -> FreezeOutcome:
+def _freeze_materialized_cell_dataset_version(engine: Engine, dataset_version_id: UUID) -> FreezeOutcome:
     with engine.begin() as connection:
         version, materialization = _preflight(connection, dataset_version_id)
         run_a = compute_final_fingerprints(connection, dataset_version_id)
@@ -187,3 +190,91 @@ def freeze_dataset_version(engine: Engine, dataset_version_id: UUID = V1_ID) -> 
         state = get_dataset_version_trainability(connection, dataset_version_id)
     return FreezeOutcome(result, dataset_version_id, materialization["id"], run_a,
                          frozen_at, state.trainable, state.reasons)
+
+
+def freeze_dataset_version(
+    engine: Engine, dataset_version_id: UUID = V1_ID, *,
+    source_inspections: Sequence[SmearSourceInspection] | None = None,
+    expected_assignments: dict[str, str] | None = None,
+    integrity_guard: Callable[[Connection], None] | None = None,
+) -> FreezeOutcome:
+    """Freeze through the family contract; a source seal does not imply TRAINABLE.
+
+    Cell retains its historical READY materialization and approved digest gates.
+    Smear validates the existing source population before S4 changes representation.
+    """
+    with engine.begin() as connection:
+        version = connection.execute(text(
+            "SELECT * FROM dataset_versions WHERE id=:id FOR UPDATE NOWAIT"
+        ), {"id": dataset_version_id}).mappings().one()
+        if version['methodology_json'].get('dataset_family') == 'smear_segmentation':
+            if source_inspections is None or expected_assignments is None or integrity_guard is None:
+                raise FreezeError('SOURCE_FREEZE_REQUIRES_INSPECTIONS_S2_EVIDENCE_AND_INTEGRITY_GUARD')
+            return _freeze_governed_source(connection, dict(version), source_inspections,
+                                           expected_assignments, integrity_guard)
+    return _freeze_materialized_cell_dataset_version(engine, dataset_version_id)
+
+
+def _freeze_governed_source(
+    connection: Connection, version: dict[str, Any],
+    inspections: Sequence[SmearSourceInspection], expected_assignments: dict[str, str],
+    integrity_guard: Callable[[Connection], None],
+) -> FreezeOutcome:
+    # Lazy imports avoid the existing S2 -> freeze fingerprint dependency cycle.
+    from malaria_split.persistence.formal_validation import persist_formal_validation
+    from malaria_split.persistence.smear_validation import prepare_smear_validation
+
+    dataset_version_id = version['id']
+    connection.execute(text('SELECT pg_advisory_xact_lock(2026100302)'))
+    connection.execute(text('SELECT id FROM dataset_versions WHERE id=:id FOR SHARE'), {'id': V1_ID})
+    prepared = prepare_smear_validation(connection, inspections, expected_assignments, dataset_version_id)
+    persist_formal_validation(connection, prepared.formal)
+    if not logical_validation_passes(connection, dataset_version_id):
+        raise FreezeError('FORMAL_VALIDATION_NOT_PASS')
+    repeated = prepare_smear_validation(connection, inspections, expected_assignments, dataset_version_id)
+    if prepared != repeated:
+        raise FreezeError('FINAL_FINGERPRINT_REPRODUCIBILITY_FAIL')
+    contract = {
+        'version': 'governed_source_freeze_v1', 'scope': 'source_population_and_assignments',
+        'dataset_version_id': str(dataset_version_id), 'dataset_family': 'smear_segmentation',
+        'reference_dataset_version_id': str(V1_ID),
+        'split_algorithm': version['split_algorithm'],
+        'identity_rule': version['methodology_json']['identity_rule'],
+        'source_record_count': prepared.formal.statistics['total_source_records'],
+        'assignment_count': prepared.formal.statistics['total_assignments'],
+        'clinical_identity_count': prepared.formal.statistics['total_patients'],
+        'required_validation_checks': sorted(prepared.formal.checks),
+        'required_validation_check_count': len(prepared.formal.checks),
+        'fingerprints': prepared.fingerprints,
+        'manifest_contract': prepared.manifest['contract'],
+        'manifest_sha256': prepared.manifest_fingerprint,
+        'source_provenance': prepared.manifest['sources'],
+        's4_consumption': 'explicit dataset_version_id; Polygon only; inherit every assignment',
+        'scientific_limitations': prepared.formal.statistics['scientific_limitations'],
+    }
+    methodology = dict(version['methodology_json'])
+    existing = methodology.get('freeze_contract')
+    if version['status'] == 'FROZEN':
+        if existing != contract:
+            raise FreezeError('FROZEN_STATE_CONFLICT')
+        result = 'ALREADY_FROZEN_MATCH_NO_OP'
+    else:
+        if existing is not None:
+            raise FreezeError('PREEXISTING_FREEZE_CONTRACT_CONFLICT')
+        # RAW/Cell inventories and protected rows are checked inside the transaction.
+        # Any failure rolls back validation rows and lifecycle as well as the seal.
+        integrity_guard(connection)
+        methodology['freeze_contract'] = contract
+        connection.execute(text('UPDATE dataset_versions SET methodology_json=CAST(:metadata AS jsonb) WHERE id=:id'),
+                           {'id': dataset_version_id, 'metadata': json.dumps(methodology, sort_keys=True)})
+        transition_dataset_version(connection, dataset_version_id, 'FROZEN')
+        result = 'FROZEN_COMMIT'
+    if version['status'] == 'FROZEN':
+        integrity_guard(connection)
+    fingerprints = compute_final_fingerprints(connection, dataset_version_id)
+    if ({key + '_sha256': value for key, value in asdict(fingerprints).items()} != prepared.fingerprints
+            or fingerprints != compute_final_fingerprints(connection, dataset_version_id)):
+        raise FreezeError('FINAL_FINGERPRINT_REPRODUCIBILITY_FAIL')
+    frozen_at = connection.execute(text('SELECT frozen_at FROM dataset_versions WHERE id=:id'), {'id': dataset_version_id}).scalar_one()
+    state = get_dataset_version_trainability(connection, dataset_version_id)
+    return FreezeOutcome(result, dataset_version_id, None, fingerprints, frozen_at, state.trainable, state.reasons)

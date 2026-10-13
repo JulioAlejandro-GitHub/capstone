@@ -1,0 +1,156 @@
+{
+  "annotation_count_source": "Official local Dataset_statistics.xlsx; no GT polygon validation",
+  "c47p8": [
+    {
+      "WBC": 1,
+      "canonical_patient_id": "C47P8thin_Original_Motic",
+      "cell_identity_exists": true,
+      "existing_cell_split": "TRAIN",
+      "images": 5,
+      "parasitized": 9,
+      "set": "Polygon",
+      "source_family": "smear_segmentation",
+      "source_patient_id": "146C47P8thin_Original_Motic",
+      "status": "MATCHED_BY_NLM_NAMING_CONVENTION",
+      "uninfected": 939
+    },
+    {
+      "WBC": 1,
+      "canonical_patient_id": "C47P8thinOriginalOlympusCX21",
+      "cell_identity_exists": true,
+      "existing_cell_split": "TRAIN",
+      "images": 5,
+      "parasitized": 3,
+      "set": "Point",
+      "source_family": "smear_segmentation",
+      "source_patient_id": "148C47P8thinOriginalOlympusCX21",
+      "status": "MATCHED_BY_NLM_NAMING_CONVENTION",
+      "uninfected": 826
+    }
+  ],
+  "canonical_ids": 193,
+  "cell_assignments_changed": 0,
+  "cell_canonical_ids": 201,
+  "cell_only": [
+    "C1_thinF",
+    "C203ThinF",
+    "C204ThinF",
+    "C206ThinF",
+    "C207ThinF",
+    "C209ThinF",
+    "C33P1thinF",
+    "C37BP2_thinF"
+  ],
+  "dataset_versions_created": 0,
+  "db_snapshots_equal": true,
+  "duplicate_canonical_ids": 0,
+  "freeze_matches": true,
+  "full_only": [],
+  "full_smear": {
+    "NO_ASSIGNMENT": {
+      "WBC": 0,
+      "images": 0,
+      "parasitized": 0,
+      "patients": 0,
+      "percent": 0.0,
+      "uninfected": 0
+    },
+    "TEST": {
+      "WBC": 23,
+      "images": 100,
+      "parasitized": 752,
+      "patients": 20,
+      "percent": 10.362694,
+      "uninfected": 18872
+    },
+    "TRAIN": {
+      "WBC": 218,
+      "images": 770,
+      "parasitized": 6435,
+      "patients": 154,
+      "percent": 79.792746,
+      "uninfected": 150754
+    },
+    "VAL": {
+      "WBC": 30,
+      "images": 95,
+      "parasitized": 765,
+      "patients": 19,
+      "percent": 9.84456,
+      "uninfected": 19085
+    }
+  },
+  "full_smear_assignments_created": 0,
+  "full_smear_raw_files_changed": 0,
+  "input_counts": {
+    "cell": 27558,
+    "mapping": 2,
+    "raw": 2022
+  },
+  "inputs_equal": true,
+  "intersection": 193,
+  "observed_forms": {
+    "#C#AP#thinF": 1,
+    "#C#NThinF": 7,
+    "#C#NthinF": 1,
+    "#C#P#NThinF": 11,
+    "#C#P#N_ThinF": 9,
+    "#C#P#ReThinF": 1,
+    "#C#P#ThinF": 104,
+    "#C#P#_ThinF": 6,
+    "#C#P#thinF": 12,
+    "#C#P#thinF_original": 2,
+    "#C#P#thinOriginalOlympusCX#": 1,
+    "#C#P#thin_Original_Motic": 1,
+    "#C#P#thin_original": 1,
+    "#C#ThinF": 34,
+    "#C#thin_original": 2
+  },
+  "parse_failures": 0,
+  "parsed_successfully": 193,
+  "polygon": {
+    "NO_ASSIGNMENT": {
+      "WBC": 0,
+      "images": 0,
+      "parasitized": 0,
+      "patients": 0,
+      "percent": 0.0,
+      "uninfected": 0
+    },
+    "TEST": {
+      "WBC": 2,
+      "images": 15,
+      "parasitized": 50,
+      "patients": 3,
+      "percent": 9.090909,
+      "uninfected": 3809
+    },
+    "TRAIN": {
+      "WBC": 47,
+      "images": 140,
+      "parasitized": 1057,
+      "patients": 28,
+      "percent": 84.848485,
+      "uninfected": 27236
+    },
+    "VAL": {
+      "WBC": 2,
+      "images": 10,
+      "parasitized": 35,
+      "patients": 2,
+      "percent": 6.060606,
+      "uninfected": 2026
+    }
+  },
+  "polygon_cell_matches": 33,
+  "polygon_ids": 33,
+  "postgresql_writes": 0,
+  "protected_cell_dataset_version_changed": false,
+  "protected_dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+  "s1_1_mapping_equal": true,
+  "source_ids": 193,
+  "status": "PASS",
+  "tiles_created": 0,
+  "timestamp": "2026-10-03T13:15:33.085839+00:00",
+  "yolo_datasets_created": 0
+}

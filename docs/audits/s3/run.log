@@ -1,0 +1,96 @@
+PYTHONDONTWRITEBYTECODE=1 malaria_dl_local_project/.venv-local-train/bin/python scripts/audit_s3/audit.py --apply
+{
+  "cell_changed": false,
+  "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+  "fingerprint": "69fe60e20576632a25b37501fa76342ea1b2855b39c1bb1049f97942a87bb67a",
+  "fingerprint_contract": "canonical SHA-256 of governed_source_assignments_v1 source manifest",
+  "lifecycle_after": "FROZEN",
+  "lifecycle_before": "GENERATED",
+  "raw_changed": false,
+  "reproducible": true,
+  "s2_assignments_changed": false,
+  "s4_authorized": true,
+  "statistics": {
+    "cross_family_mismatches": 0,
+    "dataset_family": "smear_segmentation",
+    "fingerprints": {
+      "clinical_identity_sha256": "3d9735a29aa0e112e70adc21b2ff8b3f31f69b61936486e36d628c07384f61d0",
+      "patient_assignment_sha256": "3e523015e3f93ec0e92d958561172ab39588fb8f6c2d9701ba717e823a67df16",
+      "record_assignment_sha256": "ac5d935ad5b35bbf308efbe84da0d8357e6108a7fe274a48eab1f9828fa98d4f",
+      "source_population_sha256": "fc7705cffd4befbb17a63c56879e06b9831325fa97d9188b39c85ac7bdcc39c3"
+    },
+    "no_assignment": 0,
+    "patient_overlaps": {
+      "train_test": 0,
+      "train_val": 0,
+      "val_test": 0
+    },
+    "patients": {
+      "test": 20,
+      "train": 154,
+      "val": 19
+    },
+    "populations": {
+      "Point Set": {
+        "gt": 800,
+        "images": 800,
+        "patients": 160,
+        "splits": {
+          "test": {
+            "images": 85,
+            "patients": 17
+          },
+          "train": {
+            "images": 630,
+            "patients": 126
+          },
+          "val": {
+            "images": 85,
+            "patients": 17
+          }
+        }
+      },
+      "Polygon Set": {
+        "gt": 165,
+        "images": 165,
+        "patients": 33,
+        "splits": {
+          "test": {
+            "images": 15,
+            "patients": 3
+          },
+          "train": {
+            "images": 140,
+            "patients": 28
+          },
+          "val": {
+            "images": 10,
+            "patients": 2
+          }
+        }
+      }
+    },
+    "records": {
+      "test": 100,
+      "train": 770,
+      "val": 95
+    },
+    "scientific_limitations": [
+      "Polygon VAL has 2 patients; TEST has 3. Images/tiles are correlated within patient.",
+      "Technical NLM naming correspondence is not clinically verified biological identity."
+    ],
+    "total_assignments": 965,
+    "total_patients": 193,
+    "total_source_records": 965
+  },
+  "status": "APPROVED",
+  "trainability": {
+    "dataset_version_id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+    "reasons": [
+      "NO_READY_RECONCILED_MATERIALIZATION"
+    ],
+    "resolved_materialization_id": null,
+    "trainable": false
+  }
+}
+

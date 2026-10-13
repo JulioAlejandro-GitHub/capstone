@@ -4,7 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 
-def install_science(monkeypatch, *, fit_error=None):
+def install_science(monkeypatch, *, fit_error=None, first_epoch_best=False):
     import tensorflow as tf
     from src import metrics
     from src.malaria_dl.data import loaders
@@ -33,9 +33,10 @@ def install_science(monkeypatch, *, fit_error=None):
                     if hasattr(cb, 'on_epoch_end'):
                         cb.on_epoch_end(epoch, {
                             'loss': 0.4 - epoch * 0.1, 'val_loss': 0.3 - epoch * 0.1,
-                            'val_f2_parasitized': 0.8 + epoch * 0.1,
+                            'val_f2_parasitized': 0.9 - epoch * 0.1 if first_epoch_best else 0.8 + epoch * 0.1,
                             'val_recall_parasitized': 1.0, 'val_specificity': 1.0,
-                            'val_auc': 1.0, 'val_prediction_collapse': False,
+                            'val_auc': 1.0 - epoch * 0.2 if first_epoch_best else 1.0,
+                            'val_prediction_collapse': False,
                         })
             return SimpleNamespace(epoch=[0, 1])
     model = Model()

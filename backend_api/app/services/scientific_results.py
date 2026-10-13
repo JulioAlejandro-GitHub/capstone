@@ -1,7 +1,6 @@
 """Read the canonical v2 scientific records without legacy metric fallbacks."""
 from sqlalchemy import text
 
-from src.malaria_dl.execution.schema import require_e10_schema, V2_REVISION
 
 
 def metric_dto(row):
@@ -21,16 +20,10 @@ def metric_dto(row):
 
 
 def read_scientific_results(connection, run_id):
-    revision = require_e10_schema(connection)['revision']
     params = {'run': run_id}
     run = connection.execute(text('SELECT id, parameters, release_status FROM runs WHERE id=:run'), params).mappings().one_or_none()
     if run is None:
         return None
-    if revision != V2_REVISION:
-        return {'contract_version': 'legacy_e10_v1', 'run_id': str(run_id),
-                'historical_result': run['parameters'].get('training_results'),
-                'release_status': run['release_status']}
-
     def rows(sql):
         return [dict(r) for r in connection.execute(text(sql), params).mappings()]
 
@@ -46,7 +39,7 @@ def read_scientific_results(connection, run_id):
         training_history=rows('SELECT * FROM training_history WHERE run_id=:run ORDER BY phase,epoch'),
         xai_evidence=rows('SELECT * FROM xai_evidence WHERE run_id=:run ORDER BY generated_at,id'),
         xai_artifacts=rows(f'SELECT * FROM xai_artifacts WHERE evidence_id IN ({evidence_scope}) ORDER BY evidence_id,role,ordinal'),
-        xai_quantitative_evaluations=rows(f'SELECT * FROM xai_quantitative_evaluations WHERE evidence_id IN ({evidence_scope}) ORDER BY evaluated_at,id'),
+        xai_quantitative_evaluations=rows(f'SELECT * FROM xai_quantitative_evaluations WHERE id IN (SELECT evaluation_id FROM xai_evaluation_members WHERE xai_evidence_id IN ({evidence_scope})) ORDER BY evaluated_at,id'),
         xai_interpretations=rows(f'SELECT * FROM xai_interpretations WHERE evidence_id IN ({evidence_scope}) ORDER BY created_at,id'),
         xai_specialist_reviews=rows(f'SELECT r.* FROM xai_specialist_reviews r JOIN xai_interpretations i ON i.id=r.interpretation_id WHERE i.evidence_id IN ({evidence_scope}) ORDER BY r.reviewed_at,r.id'),
     )
