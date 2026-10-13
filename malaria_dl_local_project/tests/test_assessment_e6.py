@@ -506,6 +506,7 @@ def test_legacy_multiple_versions_rejected():
         ).resolve(source_training_run_id=str(uuid4()))
 
 
+@pytest.mark.filterwarnings("error:The structure of.*inputs.*:UserWarning")
 @pytest.mark.filterwarnings("error::sklearn.exceptions.UndefinedMetricWarning")
 @pytest.mark.parametrize("method", ["lime", "shap"])
 def test_minimal_attribution_methods_preserve_raw_domain(tmp_path, method):

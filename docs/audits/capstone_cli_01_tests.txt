@@ -1,9 +1,10 @@
+LOCAL-TRAIN
 cd malaria_dl_local_project && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. DATABASE_URL=postgresql://cli01:fixture@invalid/cli01 "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-local-train/bin/python" -m pytest -q -p no:cacheprovider -k "not byte_exact_canonical_rules_match_upstream_sources and not test_process_identity_is_stable_on_this_host and not test_remote_released_evidence_is_accepted_unreleased_is_not and not test_local_live_process_still_blocks" tests/test_cli01.py tests/test_exec1.py tests/test_assessment_e6.py tests/test_dataset_split_isolation.py tests/test_dataset_stage1.py tests/test_governed_dataset_contract.py tests/test_campaign_cli_plan_swv22.py tests/test_local_train_launcher.py
-........................................................................ [ 24%]
-........................................................................ [ 48%]
-........................................................................ [ 72%]
-........................................................................ [ 96%]
-...........                                                              [100%]
+........................................................................ [ 23%]
+........................................................................ [ 47%]
+........................................................................ [ 70%]
+........................................................................ [ 94%]
+.................                                                        [100%]
 =============================== warnings summary ===============================
 malaria_dl_local_project/tests/test_cli01.py::test_gradcam_auto_layer_graph_compatibility[custom_cnn]
   <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
@@ -11,29 +12,47 @@ malaria_dl_local_project/tests/test_cli01.py::test_gradcam_auto_layer_graph_comp
 malaria_dl_local_project/tests/test_cli01.py::test_gradcam_auto_layer_graph_compatibility[custom_cnn]
   <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
 
-malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+malaria_dl_local_project/tests/test_cli01.py::test_shap_input_structure_preserves_weights_gradients_and_attributions[0-tensor]
   /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-local-train/lib/python3.12/site-packages/shap/plots/colors/_colors.py:47: PendingDeprecationWarning: The set_bad function will be deprecated in a future version. Use cmap.with_extremes(bad=...) or Colormap(bad=...) instead.
     red_blue.set_bad(gray_rgb.tolist(), 1.0)
 
-malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+malaria_dl_local_project/tests/test_cli01.py::test_shap_input_structure_preserves_weights_gradients_and_attributions[0-tensor]
   /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-local-train/lib/python3.12/site-packages/shap/plots/colors/_colors.py:48: PendingDeprecationWarning: The set_over function will be deprecated in a future version. Use cmap.with_extremes(over=...) or Colormap(over=...) instead.
     red_blue.set_over(gray_rgb.tolist(), 1.0)
 
-malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+malaria_dl_local_project/tests/test_cli01.py::test_shap_input_structure_preserves_weights_gradients_and_attributions[0-tensor]
   /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-local-train/lib/python3.12/site-packages/shap/plots/colors/_colors.py:49: PendingDeprecationWarning: The set_under function will be deprecated in a future version. Use cmap.with_extremes(under=...) or Colormap(under=...) instead.
     red_blue.set_under(gray_rgb.tolist(), 1.0)  # "under" is incorrectly used instead of "bad" in the scatter plot
 
-malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
-  /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-local-train/lib/python3.12/site-packages/keras/src/models/functional.py:259: UserWarning: The structure of `inputs` doesn't match the expected structure.
-  Expected: input_layer_9
-  Received: inputs=['Tensor(shape=(1, 8, 8, 3))']
-    warnings.warn(msg)
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+305 passed, 4 deselected, 5 warnings in 16.66s
 
-malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
-  /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-local-train/lib/python3.12/site-packages/keras/src/models/functional.py:259: UserWarning: The structure of `inputs` doesn't match the expected structure.
-  Expected: input_layer_9
-  Received: inputs=['Tensor(shape=(50, 8, 8, 3))']
-    warnings.warn(msg)
+METAL ENVIRONMENT
+cd malaria_dl_local_project && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. DATABASE_URL=postgresql://cli01:fixture@invalid/cli01 "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-metal/bin/python" -m pytest -q -p no:cacheprovider -k "not byte_exact_canonical_rules_match_upstream_sources and not test_process_identity_is_stable_on_this_host and not test_remote_released_evidence_is_accepted_unreleased_is_not and not test_local_live_process_still_blocks" tests/test_cli01.py tests/test_exec1.py tests/test_assessment_e6.py tests/test_dataset_split_isolation.py tests/test_dataset_stage1.py tests/test_governed_dataset_contract.py tests/test_campaign_cli_plan_swv22.py tests/test_local_train_launcher.py
+........................................................................ [ 23%]
+........................................................................ [ 47%]
+........................................................................ [ 70%]
+........................................................................ [ 94%]
+.................                                                        [100%]
+=============================== warnings summary ===============================
+malaria_dl_local_project/tests/test_cli01.py::test_gradcam_auto_layer_graph_compatibility[custom_cnn]
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_cli01.py::test_gradcam_auto_layer_graph_compatibility[custom_cnn]
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_cli01.py::test_shap_input_structure_preserves_weights_gradients_and_attributions[0-tensor]
+  /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-metal/lib/python3.12/site-packages/shap/plots/colors/_colors.py:47: PendingDeprecationWarning: The set_bad function will be deprecated in a future version. Use cmap.with_extremes(bad=...) or Colormap(bad=...) instead.
+    red_blue.set_bad(gray_rgb.tolist(), 1.0)
+
+malaria_dl_local_project/tests/test_cli01.py::test_shap_input_structure_preserves_weights_gradients_and_attributions[0-tensor]
+  /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-metal/lib/python3.12/site-packages/shap/plots/colors/_colors.py:48: PendingDeprecationWarning: The set_over function will be deprecated in a future version. Use cmap.with_extremes(over=...) or Colormap(over=...) instead.
+    red_blue.set_over(gray_rgb.tolist(), 1.0)
+
+malaria_dl_local_project/tests/test_cli01.py::test_shap_input_structure_preserves_weights_gradients_and_attributions[0-tensor]
+  /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-metal/lib/python3.12/site-packages/shap/plots/colors/_colors.py:49: PendingDeprecationWarning: The set_under function will be deprecated in a future version. Use cmap.with_extremes(under=...) or Colormap(under=...) instead.
+    red_blue.set_under(gray_rgb.tolist(), 1.0)  # "under" is incorrectly used instead of "bad" in the scatter plot
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-299 passed, 4 deselected, 7 warnings in 17.85s
+305 passed, 4 deselected, 5 warnings in 18.40s
+No supported GPU was found.
