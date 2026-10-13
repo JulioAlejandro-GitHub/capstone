@@ -5,7 +5,6 @@ import json
 from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace
-from uuid import uuid4
 
 import numpy as np
 import pytest
@@ -172,15 +171,7 @@ def test_other_architectures_unchanged(architecture):
 
 @pytest.mark.parametrize("optimizer", ["adam", "adamw", "sgd", "adadelta"])
 def test_vgg_four_optimizers_step_reload(optimizer, tmp_path):
-    import run_train_all_models as batch
-
-    args = batch.parse_args(["--dataset-version-id", str(uuid4()), "--models", "vgg16"])
-    assert {o for _, o, _ in batch.build_matrix(args)} == {
-        "adam",
-        "adamw",
-        "sgd",
-        "adadelta",
-    }
+    assert set(resolve_descriptor("vgg16").optimizers) == {"adam", "adamw", "sgd", "adadelta"}
     cfg = resolve_config(
         "vgg16",
         {

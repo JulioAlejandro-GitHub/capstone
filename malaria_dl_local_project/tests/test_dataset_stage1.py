@@ -2,7 +2,6 @@
 
 from contextlib import nullcontext
 from copy import deepcopy
-from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
@@ -12,9 +11,6 @@ from uuid import UUID, uuid4
 
 import pytest
 
-import run_train_all_models as batch
-import run_evaluate_all_trainings as eval_batch
-import run_explain_all_trainings as explain_batch
 from src.malaria_dl.data import governed_dataset as gd
 from src.malaria_dl.data.dataset_integrity import canonical_digest, VERIFIER_VERSION
 from src.malaria_dl.persistence import dataset_evidence as ev
@@ -304,7 +300,7 @@ def test_historical_unaccredited_blocked_without_backfill(fixture, evidence_stor
 
 
 def test_batch_pin_cannot_substitute_materialization(fixture, evidence_store):
-    initial = ev.verify_dataset_for_execution(VERSION, consumer="run_train_all_models", required_splits=("train", "val", "test"), test_authorized=True)
+    initial = ev.verify_dataset_for_execution(VERSION, consumer="src.train", required_splits=("train", "val", "test"), test_authorized=True)
     other = str(uuid4())
     fixture.materialization["id"] = other
     fixture.contract["dataset_materialization_id"] = other
@@ -331,23 +327,8 @@ def test_path_and_source_cannot_replace_governed_dataset(
     )
 
 
-@pytest.mark.parametrize("module", [batch, eval_batch, explain_batch])
-@pytest.mark.parametrize("value", [None, "", "bad"])
-def test_batch_cli_requires_uuid(module, value):
-    argv = [] if value is None else ["--dataset-version-id", value]
-    with pytest.raises(SystemExit):
-        module.parse_args(argv)
 
 
-def test_legacy_command_builder_propagates_explicit_pin_to_twelve(fixture):
-    snap = replace(gd.resolve_governed_dataset(VERSION, required_splits=("train", "val", "test"), test_authorized=True), evidence_id=str(uuid4()))
-    commands = [batch.build_train_command(model, optimizer, 1, 32, 2, 42, VERSION, .98, 2,
-                expected_evidence_id=snap.evidence_id)
-                for model in batch.enabled_models() for optimizer in batch.OPTIMIZER_DEFAULTS]
-    assert len(commands) == 12
-    for cmd in commands:
-        assert cmd[cmd.index("--dataset-version-id") + 1] == VERSION
-        assert cmd[cmd.index("--expected-dataset-evidence-id") + 1] == snap.evidence_id
 
 
 def test_dataset_only_legacy_training_invocation_rejected(monkeypatch):
@@ -474,49 +455,8 @@ def test_consumers_reject_before_inference(
     assert not list(fixture.root.rglob("*.csv"))
 
 
-@pytest.mark.parametrize("module", [eval_batch, explain_batch])
-def test_inventory_requires_scope_before_connect(module, monkeypatch):
-    connection = Mock(side_effect=AssertionError("no DB"))
-    monkeypatch.setattr(module, "connect", connection)
-    with pytest.raises(gd.GovernedDatasetError, match="REQUIRED"):
-        module.fetch_training_inventory(Path.cwd())
-    connection.assert_not_called()
 
 
-@pytest.mark.parametrize("module", [eval_batch, explain_batch])
-def test_inventory_filters_and_rejects_wrong_training(module, monkeypatch):
-    queries = []
-    wrong = [
-        TRAIN,
-        str(uuid4()),
-        "synthetic",
-        "custom_cnn",
-        "adam",
-        "model.keras",
-        32,
-        2,
-        "auto",
-        str(uuid4()),
-        "candidate",
-        "resolved",
-        True,
-        True,
-    ]
-
-    class Cursor:
-        def execute(self, q, p=None):
-            queries.append((q, p))
-
-        def fetchall(self):
-            return [wrong]
-
-    conn = SimpleNamespace(cursor=lambda: nullcontext(Cursor()))
-    monkeypatch.setattr(module, "connect", lambda _: nullcontext(conn))
-    with pytest.raises(gd.GovernedDatasetError, match="BATCH_TRAIN_DATASET_MISMATCH"):
-        module.fetch_training_inventory(Path.cwd(), VERSION)
-    assert queries[0][0] == "BEGIN READ ONLY"
-    assert queries[1][1]["dataset_version_id"] == VERSION
-    assert "IS NULL" not in queries[1][0]
 
 
 def test_byte_exact_canonical_rules_match_upstream_sources():

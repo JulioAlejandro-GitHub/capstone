@@ -82,10 +82,10 @@ def assessment_setup(fixture, monkeypatch):
 
 
 @pytest.mark.parametrize("kind", ["evaluate", "explain"])
-@pytest.mark.parametrize("batch", [False, True])
+@pytest.mark.parametrize("by_campaign", [False, True])
 @pytest.mark.parametrize("inspection", [False, True])
 def test_val_cli_never_touches_train_or_test(
-    fixture, evidence_store, monkeypatch, capsys, kind, batch, inspection
+    fixture, evidence_store, monkeypatch, capsys, kind, by_campaign, inspection
 ):
     repo, snapshot, template = assessment_setup(fixture, monkeypatch)
     repo.consume = lambda *args: None
@@ -109,13 +109,13 @@ def test_val_cli_never_touches_train_or_test(
     # Damage unauthorized subtrees: neither their absence nor contents are read.
     before = deepcopy(snapshot)
     calls = guard_dataset_io(monkeypatch, fixture.root, ("val",))
-    args = ["--campaign-id", VERSION] if batch else ["--source-training-run-id", TRAIN]
-    args += ["--seed", "42", "--threshold", ".5"]
+    args = ["--campaign-id", VERSION] if by_campaign else ["--source-training-run-id", TRAIN]
+    args += ["--seed", "42", "--batch-size", "2", "--threshold", ".5"]
     if kind == "explain":
         args += ["--method", "gradcam", "--layer", "conv"]
     if inspection:
         args += ["--inspect"]
-    assert cli._execute(kind, cli.parser(kind, batch).parse_args(args)) == 0
+    assert cli._execute(kind, cli.parser(kind).parse_args(args)) == 0
     output = json.loads(capsys.readouterr().out)
     assert snapshot == before
     assert {split for _, split, _ in calls} == {"val"}
@@ -125,7 +125,7 @@ def test_val_cli_never_touches_train_or_test(
         assert not observed and not evidence_store
         proof = (
             output[0]["inspection_verification"]
-            if batch
+            if by_campaign
             else output[0]["inspection_verification"]
         )
     else:
@@ -237,7 +237,7 @@ def test_shap_background_cannot_cross_split(
             requested_threshold=".5",
             seed=42,
             batch_size=1,
-            explanation=service.explanation_spec("shap", None, 1, 8, [background]),
+            explanation=service.explanation_spec("shap", None, 1, 1000, [background]),
         )
 
     if background_split == "val":

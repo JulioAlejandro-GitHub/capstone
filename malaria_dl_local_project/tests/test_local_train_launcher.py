@@ -1,4 +1,4 @@
-"""Local TRAIN launcher contract: `run_train_all_models.py --campaign-id <UUID>` only.
+"""Local TRAIN launcher contract: `-m src.train --campaign-id <UUID>` only.
 
 No database, model or child process: synthetic repositories and connections.
 The real campaign b54ea684 is never touched here.
@@ -425,5 +425,13 @@ def test_busy_global_gate_stops_without_a_second_train():
 
 def test_launcher_bootstraps_before_heavy_imports():
     from pathlib import Path
-    source = (Path(local_launch.PROJECT_ROOT) / "run_train_all_models.py").read_text()
-    assert source.index("bootstrap()") < source.index("from src.malaria_dl.data.governed_dataset")
+    source = (Path(local_launch.PROJECT_ROOT) / "src/malaria_dl/execution/operations.py").read_text()
+    assert source.index("bootstrap()") < source.index("from .train import standalone")
+
+
+@pytest.fixture(autouse=True)
+def synthetic_catalog(monkeypatch):
+    from src.malaria_dl.models import registry
+    monkeypatch.setattr(registry, "model_catalog", lambda: tuple(
+        {"name": name, "architecture": name, "model_type": "classification", "framework": "tensorflow/keras"}
+        for name in registry.MODEL_REGISTRY))

@@ -130,7 +130,7 @@ def test_save_reload_and_plan_round_trip(connection):
     assert by_model["custom_cnn"]["execution"]["max_epochs"] == 40
     assert by_model["densenet121"]["execution"]["fine_tune_epochs"] == 7
     assert all(c["execution"]["early_stopping_patience"] == 9 for c in plan["configurations"])
-    assert plan["command"] == f"python run_train_all_models.py --campaign-id {row['id']}"
+    assert plan["command"] == f"python -m src.train --campaign-id {row['id']}"
     with pytest.raises(CampaignError, match="CAMPAIGN_DATASET_CONFLICT"):
         CampaignRepository(scope=scope_for(connection)).get(row["id"], str(uuid4()))
     stored = {r[0]: r[1] for r in connection.execute(text(

@@ -10,7 +10,7 @@ without reserving an attempt, writing dataset evidence or starting TRAIN.
 from .contracts import CampaignError
 from .repository import execute, identifier
 
-ENTRY_POINT = "run_train_all_models.py"
+ENTRY_POINT = "-m src.train"
 EXECUTION_BOUNDARY = "execution.campaign.execute_campaign -> ExecutionRepository.claim -> worker -> TRAIN"
 
 

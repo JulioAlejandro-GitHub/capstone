@@ -49,7 +49,8 @@ def threshold(requested, protocol, calibration=None):
     if requested == "clinical":
         require(
             isinstance(calibration, dict)
-            and calibration.get("result", {}).get("enabled") is not False,
+            and isinstance(calibration.get("result"), dict)
+            and calibration["result"].get("enabled") is not False,
             "CLINICAL_THRESHOLD_EVIDENCE_REQUIRED",
         )
         result = calibration["result"]

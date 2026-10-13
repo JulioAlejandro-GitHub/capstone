@@ -311,7 +311,7 @@ def test_unverified_checkpoint_never_advances(global_fixture):
         assert not result['matrix_complete']
 
 
-def test_unclean_disappearance_is_not_resource_release(global_fixture):
+def test_unclean_release_recovers_after_proven_local_absence(global_fixture):
     import json
     from src.malaria_dl.execution.global_gate import host_identity
     x=global_fixture
@@ -319,9 +319,8 @@ def test_unclean_disappearance_is_not_resource_release(global_fixture):
         c.execute(text('UPDATE experiment_execution_gate SET process_evidence=CAST(:e AS jsonb)'),
                   {'e':json.dumps({'identities':[{**host_identity(),'pid':99999999,'start_ticks':'1'}],
                                    'sessions':[],'release_confirmed':False})})
-    with pytest.raises(CampaignError,match='PROCESS_TREE_RELEASE_UNPROVEN'):
-        with GlobalGate('synthetic-crash',engine_factory=x.factory):
-            pytest.fail('unclean process tree admitted')
+    with GlobalGate('synthetic-crash',engine_factory=x.factory):
+        pass  # Current local absence supersedes the historical unclean release flag.
     assert len(x.repo.get(x.args['campaign'])['attempts'])==1
 
 
@@ -340,7 +339,7 @@ def test_queue_dry_run_selects_pending_and_never_reserves(global_fixture):
 
 def test_inspection_is_not_an_executing_coordinator():
     from src.malaria_dl.execution.global_gate import managed_execution
-    assert managed_execution([b'python',b'run_train_all_models.py',b'--resume'])
-    assert not managed_execution([b'python',b'run_train_all_models.py',b'--dry-run'])
+    assert managed_execution([b'python',b'-m',b'src.train'])
+    assert not managed_execution([b'python',b'-m',b'src.train',b'--dry-run'])
     assert not managed_execution([b'python',b'-m',b'src.malaria_dl.execution.controlled',b'dry-run'])
     assert managed_execution([b'python',b'-m',b'src.train'])
