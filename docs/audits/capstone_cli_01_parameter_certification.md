@@ -287,14 +287,14 @@ identidad, artefactos, verificación, reintentos y conservación histórica;
 TEST sintético independiente; resolución de checkpoint; grafos Grad-CAM de las
 tres arquitecturas; UUID y rutas nuevos para TRAIN; ausencia de ejecutores.
 
-Resultado final: **PROBADO — 299 passed, 4 deselected, 7 warnings en 17,85 s**.
+Resultado final: **PROBADO — 305 passed, 4 deselected, 5 warnings en 16,66 s (local-train) y 18,40 s (metal)**.
 Salida íntegra: [capstone_cli_01_tests.txt](capstone_cli_01_tests.txt).
 
 **VERIFICADO:** `git diff --check` sin errores y Ruff F821/F822/F823 sin nombres
 indefinidos en módulos modificados y pruebas adaptadas. Los cuatro `--help` y la
 falta de selección se verifican en subprocess; `--inspect` se prueba con dependencias
 inyectadas para las cuatro operaciones. Las advertencias registradas corresponden a
-Keras/SHAP/protobuf; no hay `UndefinedMetricWarning`.
+SHAP/protobuf; no hay advertencias de estructura de entrada Keras ni `UndefinedMetricWarning`.
 
 **CERTIFICADO:** los 18 criterios de aceptación del contrato se satisfacen con la
 modalidad de mocks/fixtures autorizada. Esto no certifica ejecuciones sobre PostgreSQL
@@ -325,7 +325,7 @@ Grad-CAM. No se amplió el acceso a PostgreSQL para resolver los fallos de aisla
   no promete limitar a N el coste de hashes del verificador de dataset existente.
 - **PENDIENTE externo al alcance:** rendimiento y calidad científica de nuevas
   explicaciones reales; esta entrega certifica contrato de software, no eficacia clínica.
-- Advertencias de dependencias Keras/SHAP/protobuf se registran en la salida de pruebas;
+- Advertencias de dependencias SHAP/protobuf se registran en la salida de pruebas;
   no equivalen al `UndefinedMetricWarning` por LIME=1, que ahora es un argumento inválido.
 
 **EXPLAIN-UI-01 — PENDIENTE.** Visualización de artefactos con errores en
@@ -367,6 +367,7 @@ Inventario de esta entrega, separado de la evidencia histórica conservada:
 | Eliminado | `malaria_dl_local_project/run_train_all_models.py` |
 | Modificado | `malaria_dl_local_project/src/malaria_dl/assessment/cli.py` |
 | Modificado | `malaria_dl_local_project/src/malaria_dl/assessment/contracts.py` |
+| Modificado | `malaria_dl_local_project/src/malaria_dl/assessment/runtime.py` |
 | Modificado | `malaria_dl_local_project/src/malaria_dl/assessment/service.py` |
 | Modificado | `malaria_dl_local_project/src/malaria_dl/campaigns/plan.py` |
 | Modificado | `malaria_dl_local_project/src/malaria_dl/execution/global_gate.py` |
@@ -421,3 +422,34 @@ expectativa antigua en la suite PostgreSQL del gate; esa integración no se ejec
 consultó ni modificó PostgreSQL operativo, no se enviaron señales a procesos y no se
 inició una explicación real. Esta corrección no acredita que no exista otro bloqueo
 operativo posterior.
+
+## 15. Corrección de la estructura de entrada SHAP/Keras
+
+La ejecución reportada `24023051-41a3-4bf9-a2a7-25f771e2a4c8` terminó `verified`
+con una muestra, pero emitió `UserWarning` por diferencias de estructura de entrada.
+La lectura del SHAP instalado confirmó que `GradientExplainer` entrega listas de
+tensores a Keras incluso con una sola entrada.
+
+**IMPLEMENTADO:** `assessment/runtime.py` construye una vista Functional con
+`inputs=self.model.inputs` y `outputs=self.model.outputs[0]` exclusivamente para
+SHAP. Comparte el grafo y los objetos de pesos del checkpoint; no clona, entrena,
+reescribe pesos ni modifica preprocessing, seed, nsamples, background, signo por
+clase o agregación de atribuciones. No se filtran ni silencian advertencias.
+
+**PROBADO:** la advertencia de estructura se convierte en error en las pruebas.
+Se añadieron seis casos (Functional con entrada tensor/lista y Sequential, clases
+0/1), usando objetivo de unos y referencia de ceros. Se comprueba identidad de los
+pesos, igualdad exacta de salidas y gradientes, pesos intactos después de SHAP y
+atribuciones no nulas iguales al resultado analítico de un modelo lineal.
+
+- `make test-cli01`: 305 aprobadas, 4 excluidas, 5 advertencias; 16,66 s.
+- `make test-cli01 SOURCE_PYTHON=malaria_dl_local_project/.venv-metal/bin/python`:
+  305 aprobadas, 4 excluidas, 5 advertencias; 18,40 s.
+
+Ninguna corrida emitió la advertencia corregida de Keras. Las cinco advertencias
+restantes son de deprecación de protobuf/SHAP. El entorno de pruebas metal informó
+`No supported GPU was found`; esta verificación no acredita ejecución en GPU física.
+La salida de ambas corridas se conserva en `capstone_cli_01_tests.txt`.
+
+**NO EJECUTADO:** EXPLAIN sobre datos operativos, lectura de imágenes TEST oficiales,
+modificación de PostgreSQL operativo o del intento ya verificado. Sin commit nuevo.

@@ -118,7 +118,13 @@ class KerasRuntime:
             import shap
 
             background = self.images(spec["background"]).numpy()
-            explainer = shap.GradientExplainer(self.model, background)
+            # SHAP calls Keras with a list even for a single input. Expose the
+            # same graph and shared weights with that input structure; do not
+            # clone/reload the checkpoint or suppress Keras warnings.
+            shap_model = self.tf.keras.Model(
+                inputs=self.model.inputs, outputs=self.model.outputs[0]
+            )
+            explainer = shap.GradientExplainer(shap_model, background)
             values = explainer.shap_values(
                 tensor[None], nsamples=spec["num_samples"], rseed=self.value["seed"]
             )

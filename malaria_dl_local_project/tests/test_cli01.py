@@ -374,3 +374,53 @@ def test_assessment_gate_error_has_no_traceback_or_execution(monkeypatch, capsys
     output = capsys.readouterr()
     assert output.out == 'STOP PREVIOUS_EXPERIMENT_PROCESS_STILL_ALIVE\n'
     assert not output.err
+
+
+@pytest.mark.filterwarnings("error:The structure of.*inputs.*:UserWarning")
+@pytest.mark.parametrize('structure', ['tensor', 'list', 'sequential'])
+@pytest.mark.parametrize('class_id', [0, 1])
+def test_shap_input_structure_preserves_weights_gradients_and_attributions(
+    tmp_path, monkeypatch, structure, class_id
+):
+    import numpy as np
+    import tensorflow as tf
+    import shap
+    from src.malaria_dl.assessment.runtime import KerasRuntime
+
+    inputs = tf.keras.Input((8, 8, 3))
+    flatten = tf.keras.layers.Flatten()
+    dense = tf.keras.layers.Dense(1, use_bias=False, kernel_initializer=tf.keras.initializers.Constant(.001))
+    if structure == 'sequential':
+        model = tf.keras.Sequential([inputs, flatten, dense])
+    else:
+        model = tf.keras.Model([inputs] if structure == 'list' else inputs, dense(flatten(inputs)))
+    original_weights = [w.numpy().copy() for w in model.weights]
+    template = value(tmp_path)
+    target, reference = template['samples']
+    template['explanation'] = service.explanation_spec('shap', None, class_id, 1000, [reference])
+    runtime = KerasRuntime.__new__(KerasRuntime)
+    runtime.value, runtime.model, runtime.tf = template, model, tf
+    runtime.images = lambda samples: tf.stack([
+        tf.ones((8, 8, 3)) if sample == target else tf.zeros((8, 8, 3)) for sample in samples])
+    real_explainer = shap.GradientExplainer
+    observed = []
+
+    def explainer(view, background):
+        assert all(a is b for a, b in zip(view.weights, model.weights))
+        x = tf.ones((1, 8, 8, 3))
+        with tf.GradientTape(persistent=True) as tape:
+            tape.watch(x)
+            original = model([x] if structure == 'list' else x, training=False)
+            adapted = view([x], training=False)
+        np.testing.assert_array_equal(original.numpy(), adapted.numpy())
+        np.testing.assert_array_equal(tape.gradient(original, x), tape.gradient(adapted, x))
+        observed.append(view)
+        return real_explainer(view, background)
+
+    monkeypatch.setattr(shap, 'GradientExplainer', explainer)
+    heat, _, result = runtime.explain(target)
+    assert len(observed) == 1 and result['class'] == class_id
+    # Linear model: each of three channels contributes weight * (target - reference).
+    np.testing.assert_allclose(heat, .003 * (1 if class_id else -1), rtol=1e-5)
+    for old, new in zip(original_weights, model.weights):
+        np.testing.assert_array_equal(old, new.numpy())

@@ -78,6 +78,7 @@ como auditoría histórica; el informe de cierre está en la sección `# Cierre 
 | Resolución transversal TRAIN/EVALUATE/EXPLAIN | [Contrato y evidencia Docker/macOS](engineering/governed_dataset_resolution.md) (`CURRENT_DOC`, 2026-10-08) |
 | Linaje TRAIN → EVALUATE E6 | [Representación, estados y validación](engineering/e6_frontend_lineage.md) (`CURRENT_DOC`, 2026-10-08) |
 | Auditoría de lectura EXPLAIN E6 | [CELL-EXPLAIN-01: PostgreSQL → API → Frontend](audits/cell_explain_01_readback_audit.md) (`HISTORICAL_AUDIT`, 2026-10-08; diagnóstico sin implementación) |
+| Certificación focalizada de reportes | [CAPSTONE-REPORTS-01A: estado actual EXPLAIN y navegación](audits/capstone_reports_01a_current_state.md) (`HISTORICAL_AUDIT`, 2026-10-13; SELECT/GET actuales y planes 01B/01C, sin implementación) |
 | Elegibilidad de Etapa 2 con E6 | [Diagnóstico previo a la activación](engineering/stage2_e6_eligibility.md) (`HISTORICAL_AUDIT`, 2026-10-08) |
 | Activación para Clasificación celular | [Contrato, migraciones, flujo de crops y validación](engineering/cell_model_activation.md) (`CURRENT_DOC`, 2026-10-08) |
 | Entrenamiento productivo Stage 2 | [Tarjeta productiva Stage 2](stage2_productive_training_card.md) |
