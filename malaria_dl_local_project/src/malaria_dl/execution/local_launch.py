@@ -1,4 +1,4 @@
-"""Host bootstrap for `python run_train_all_models.py --campaign-id <UUID>`.
+"""Host bootstrap for `python -m src.train --campaign-id <UUID>`.
 
 Inside Docker nothing changes. On the host (macOS) it checks the dedicated
 virtualenv and points DATABASE_URL at the Docker Compose PostgreSQL published on

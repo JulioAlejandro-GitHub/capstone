@@ -1,5 +1,9 @@
 # Dataset explícito — Etapa 1
 
+> Estado documental: `SUPERSEDED` (2026-10-13). Los comandos de este documento
+> son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](../../docs/audits/capstone_cli_01_parameter_certification.md).
+> Se conserva el cuerpo original como evidencia de la etapa descrita.
+
 Contrato de uso para nuevas ejecuciones. No acredita el estado actual de una
 versión operativa; el UUID debe ser designado por el responsable de la ejecución.
 

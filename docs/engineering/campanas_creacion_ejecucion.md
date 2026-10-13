@@ -1,5 +1,9 @@
 # Campañas: creación, configuración de modelos y ejecución (Docker y local)
 
+> Estado documental: `SUPERSEDED` (2026-10-13). Los comandos de este documento
+> son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](../audits/capstone_cli_01_parameter_certification.md).
+> Se conserva el cuerpo original como evidencia de la etapa descrita.
+
 Referencia técnica de cómo se crea una campaña, de dónde vienen sus datos, cómo se leen
 y configuran los tres modelos habilitados (CustomCNN, VGG16, DenseNet121), y cómo se
 ejecuta el TRAIN resultante — en el coordinador Docker y en el agente local (Mac) — y

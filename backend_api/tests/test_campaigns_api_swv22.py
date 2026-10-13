@@ -184,7 +184,7 @@ def test_list_reports_created_campaigns_with_states_and_dataset(client, monkeypa
     assert first["members_by_state"] == {"pending": 4, "excluded": 2}
     assert first["frozen_at"].startswith("2026-09-30T22:41")
     assert first["command"] == (
-        f"python run_train_all_models.py --campaign-id {first['campaign_id']}")
+        f"python -m src.train --campaign-id {first['campaign_id']}")
     assert "configuration" not in first  # detail-only; the report stays lightweight
 
 

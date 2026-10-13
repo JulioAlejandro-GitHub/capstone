@@ -8,7 +8,6 @@ from types import SimpleNamespace
 from contextlib import nullcontext
 from uuid import uuid4
 import pytest
-import run_train_all_models as batch
 from src.malaria_dl.models import registry as reg
 from src.malaria_dl.models.configuration import resolve_config
 from src.malaria_dl.models.optimizers import OPTIMIZER_DEFAULTS, optimizer_config
@@ -69,9 +68,7 @@ def test_discovery_and_descriptor_errors(monkeypatch, tmp_path):
     # A new model exists only with a public.models row; simulate that row here.
     rows = reg.model_catalog()
     monkeypatch.setattr(reg, "model_catalog", lambda: rows + ({"name": "synthetic", "architecture": None, "model_type": "classification", "framework": "tensorflow/keras"},))
-    matrix = batch.build_matrix(batch.parse_args(["--dataset-version-id", UUID]))
-    assert len(matrix) == 16
-    assert {m for m, _, _ in matrix} == set(reg.enabled_models())
+    assert set(reg.enabled_models()) == {"custom_cnn", "vgg16", "densenet121", "synthetic"}
     assert (
         parse_args(["--model", "synthetic", "--dataset-version-id", UUID]).model
         == "synthetic"
@@ -110,29 +107,6 @@ def test_discovery_and_descriptor_errors(monkeypatch, tmp_path):
             reg.register(d)
 
 
-def test_matrix_and_identical_child_resolution():
-    matrix = batch.build_matrix(batch.parse_args(["--dataset-version-id", UUID]))
-    assert len(matrix) == 12
-    assert ("vgg16", "sgd") in [(m, o) for m, o, _ in matrix]
-    for model, opt, cmd in matrix:
-        child = parse_args(cmd[3:])
-        assert (
-            child.model == model
-            and child.optimizer == opt
-            and child.dataset_version_id == UUID
-        )
-        assert child.max_epochs == 100
-    args = batch.parse_args(
-        [
-            "--dataset-version-id",
-            UUID,
-            "--models",
-            "vgg16_transfer_learning",
-            "--optimizers",
-            "sgd",
-        ]
-    )
-    assert [(m, o) for m, o, _ in batch.build_matrix(args)] == [("vgg16", "sgd")]
 
 
 @pytest.mark.parametrize(
@@ -396,16 +370,6 @@ def test_f2_and_monitor_semantics():
     assert selection["threshold"] == 0.5
 
 
-def test_matrix_invalid_combination_rejected_before_preflight(monkeypatch):
-    from unittest.mock import Mock
-
-    args = batch.parse_args(["--dataset-version-id", UUID, "--batch-size", "0"])
-    monkeypatch.setattr(batch, "parse_args", lambda: args)
-    verify = Mock()
-    monkeypatch.setattr(batch, "verify_dataset_for_execution", verify)
-    with pytest.raises(ValueError):
-        batch.main()
-    verify.assert_not_called()
 
 
 def test_clinical_target_independent_of_technical_selection():

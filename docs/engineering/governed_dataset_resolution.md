@@ -1,6 +1,10 @@
 # Resolución y aislamiento físico del dataset gobernado
 
-Estado documental: `CURRENT_DOC`.
+> Estado documental: `SUPERSEDED` (2026-10-13). Los comandos de este documento
+> son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](../audits/capstone_cli_01_parameter_certification.md).
+> Se conserva el cuerpo original como evidencia de la etapa descrita.
+
+Estado documental: `SUPERSEDED`.
 Fecha de verificación: 2026-10-08.
 Rama de trabajo: `refactor/unified-dataset-resolution`; sin integración en `main`.
 

@@ -1,11 +1,10 @@
-"""SWV2.2 CLI contract of run_train_all_models.py: --campaign-id resolves a plan; TRAIN never starts."""
+"""SWV2.2 CLI contract of -m src.train: --campaign-id resolves a plan; TRAIN never starts."""
 import json
 from contextlib import contextmanager
 from uuid import uuid4
 
 import pytest
 
-import run_train_all_models as entry
 from src.malaria_dl.campaigns import configuration as cc
 from src.malaria_dl.campaigns.contracts import CampaignError
 from src.malaria_dl.campaigns.plan import execution_command, execution_readiness, resolve_plan
@@ -77,9 +76,6 @@ def test_campaign_id_is_required_and_modes_are_exclusive():
     assert args.plan and args.dataset_version_id is None
 
 
-def test_entry_point_delegates_to_the_campaign_executor():
-    import inspect
-    assert "execution.campaign import main as execute_campaign" in inspect.getsource(entry.main)
 
 
 def test_plan_resolves_without_execution(monkeypatch, capsys):
@@ -93,7 +89,7 @@ def test_plan_resolves_without_execution(monkeypatch, capsys):
     plan = json.loads(capsys.readouterr().out)
     assert plan["campaign_id"] == row["id"] and plan["dataset_version_id"] == DATASET
     assert plan["total_experiments"] == result["summary"]["total_experiments"] == 4
-    assert plan["command"] == f"python run_train_all_models.py --campaign-id {row['id']}"
+    assert plan["command"] == f"python -m src.train --campaign-id {row['id']}"
     assert [c for c in repo.calls if c[0] != "get"] == []
 
 
@@ -156,7 +152,7 @@ def test_draft_campaign_has_no_plan():
 
 def test_command_uses_only_the_campaign_id():
     campaign_id = str(uuid4())
-    assert execution_command(campaign_id) == f"python run_train_all_models.py --campaign-id {campaign_id}"
+    assert execution_command(campaign_id) == f"python -m src.train --campaign-id {campaign_id}"
     assert "--dataset-version-id" not in execution_command(campaign_id)
     with pytest.raises(CampaignError):
         execution_command("not-a-uuid")
@@ -234,3 +230,11 @@ def test_configure_rejects_blank_identity_before_writing_dataset_evidence(field)
         CampaignService(repository=NoDatabase(), verifier=verifier, environment=dict).configure(
             campaign_id=str(uuid4()), dataset_version_id=DATASET, request=result["request"],
             protocol=result["protocol"], **values)
+
+
+@pytest.fixture(autouse=True)
+def synthetic_catalog(monkeypatch):
+    from src.malaria_dl.models import registry
+    monkeypatch.setattr(registry, "model_catalog", lambda: tuple(
+        {"name": name, "architecture": name, "model_type": "classification", "framework": "tensorflow/keras"}
+        for name in registry.MODEL_REGISTRY))
