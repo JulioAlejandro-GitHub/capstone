@@ -2,8 +2,10 @@
 
 import importlib.metadata
 from pathlib import Path
+from typing import Any
 
 from ..campaigns.contracts import digest
+from ..campaigns.repository import execute, identifier
 from ..campaigns.service import planning_environment
 from ..execution.artifacts import file_identity
 from .contracts import (
@@ -25,14 +27,16 @@ def explanation_spec(method, layer, class_id, num_samples, background):
         and class_id in (0, 1),
         "EXPLANATION_METHOD_INVALID",
     )
+    if method in ("lime", "shap") and num_samples is None:
+        num_samples = 1000
     require(
         (method == "gradcam" and num_samples is None)
-        or (method != "gradcam" and type(num_samples) is int and num_samples > 0),
+        or (method != "gradcam" and type(num_samples) is int and 1000 <= num_samples <= 5000),
         "EXPLANATION_PARAMETERS_INVALID",
     )
     require(
-        method != "gradcam" or isinstance(layer, str) and bool(layer),
-        "TARGET_LAYER_REQUIRED",
+        layer is None or isinstance(layer, str) and bool(layer),
+        "TARGET_LAYER_INVALID",
     )
     require(method == "gradcam" or layer is None, "UNUSED_TARGET_LAYER")
     require(
@@ -51,6 +55,61 @@ def explanation_spec(method, layer, class_id, num_samples, background):
     }
 
 
+def inference_options(repository: Any, training_run_id: str, seed: int | str,
+                      batch_size: int | None, operation: str) -> tuple[int, int]:
+    """Use the persisted operation profile, then the TRAIN execution profile.
+
+    Current model configurations have no separate inference profile. Keeping the
+    persisted execution batch is the minimal fallback; never impose a global 64.
+    """
+    if seed == "auto" or batch_size is None:
+        with repository.transaction(readonly=True) as connection:
+            configuration = execute(connection, """
+                SELECT execution_parameters->'model_configuration_e2'->'configuration'
+                FROM runs WHERE id=CAST(:id AS uuid) AND run_type='training'
+            """, id=identifier(training_run_id)).scalar_one_or_none()
+        require(isinstance(configuration, dict), "TRAIN_CONFIGURATION_REQUIRED")
+        resolved = configuration.get("resolved", {})
+        execution = resolved.get("execution", {})
+        if seed == "auto":
+            seed = execution.get("seed")
+        if batch_size is None:
+            batch_size = resolved.get(operation, {}).get("batch_size")
+            if batch_size is None:
+                batch_size = resolved.get("inference", {}).get("batch_size")
+            if batch_size is None:
+                batch_size = execution.get("batch_size")
+    require(type(seed) is int and type(batch_size) is int and batch_size > 0,
+            "INFERENCE_OPTIONS_INVALID")
+    return seed, batch_size
+
+
+def select_explanation_samples(repository: Any, dataset: dict, split: str, samples: list[dict],
+                               max_images: int | str, sample_id: str | None) -> tuple[list[dict], dict]:
+    """Select authorized targets in SQL before constructing the scientific identity."""
+    require(max_images == "all" or type(max_images) is int and max_images > 0,
+            "MAX_IMAGES_INVALID")
+    require(sample_id is None or max_images == "all", "SAMPLE_SELECTION_CONFLICT")
+    selected = samples
+    if sample_id is not None or max_images != "all":
+        with repository.transaction(readonly=True) as connection:
+            ids = list(execute(connection, """
+                SELECT source_record_id FROM dataset_split_assignments
+                WHERE dataset_version_id=CAST(:dataset AS uuid) AND split_name=:split
+                  AND (CAST(:sample AS uuid) IS NULL OR source_record_id=CAST(:sample AS uuid))
+                ORDER BY source_record_id LIMIT :limit
+            """, dataset=dataset["dataset_version_id"], split=split,
+                sample=identifier(sample_id) if sample_id else None,
+                limit=None if max_images == "all" else max_images).scalars())
+        by_id = {sample["sample_id"]: sample for sample in samples}
+        require(bool(ids) and all(str(item) in by_id for item in ids), "EXPLANATION_SAMPLE_SELECTION_EMPTY")
+        selected = [by_id[str(item)] for item in ids]
+    require(bool(selected), "EXPLANATION_SAMPLE_SELECTION_EMPTY")
+    return selected, {"eligible_count": len(samples), "requested_max_images": max_images,
+                      "requested_sample_id": sample_id, "selected_count": len(selected),
+                      "sample_ids": [sample["sample_id"] for sample in selected]}
+
+
 def prepare(
     repository,
     *,
@@ -67,6 +126,8 @@ def prepare(
     batch_size,
     explanation=None,
     evaluation_id=None,
+    max_images="all",
+    sample_id=None,
     inspection=False,
     input_override=None,
     verification=None,
@@ -86,11 +147,13 @@ def prepare(
         input_override is None or binding["input_contract"] == input_override,
         "INPUT_OVERRIDE_CONFLICT",
     )
+    seed, batch_size = inference_options(repository, binding["training_run_id"], seed, batch_size,
+                                         "explain" if explanation else "test" if split == "test" else "evaluate")
     decision = threshold(requested_threshold, protocol, calibration)
     samples = dataset_samples(
         repository, dataset, split, dataset_version_id, inspection=inspection,
         training_run_id=binding["training_run_id"], dataset_dir=dataset_dir,
-        verification=verification,
+        verification=verification, metadata_only=inspection and split == "test",
     )
     evaluation = None
     if evaluation_id:
@@ -126,6 +189,10 @@ def prepare(
             require(
                 len(explanation["background"]) == len(ids), "BACKGROUND_NOT_ACCREDITED"
             )
+    if explanation:
+        samples, selection = select_explanation_samples(
+            repository, dataset, split, samples, max_images, sample_id)
+        explanation["selection"] = selection
     value = identity(
         binding,
         dataset,

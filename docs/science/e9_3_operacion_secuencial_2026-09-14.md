@@ -1,5 +1,9 @@
 # E9.3: operación secuencial global preparada
 
+> Estado documental: `SUPERSEDED` (2026-10-13). Los comandos de este documento
+> son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](../audits/capstone_cli_01_parameter_certification.md).
+> Se conserva el cuerpo original como evidencia de la etapa descrita.
+
 Decisión del usuario del 14/09/2026: un experimento global en ejecución y avance automático de la campaña; la optimización de memoria no es requisito previo. Esta preparación no autoriza activar la campaña.
 
 Campaña: `3acf89b7-dc42-4b7a-8e2a-ca6ea024c344`. Dataset único: `d8c0cab5-09dd-597f-9de7-7ca01aee2ec2`. Se conservan matriz, split, hashes, semillas y configuración científica. TEST permanece cerrado. E9.2 parcial; no se inicia E9.4.

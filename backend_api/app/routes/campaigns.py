@@ -1,7 +1,7 @@
 """SWV2.2 Modelo IA -> Campaña: configure, validate and save campaigns.
 
 Deliberately no execution endpoint: the saved campaign is run by the operator from a console with
-``python run_train_all_models.py --campaign-id <UUID>``.
+``python -m src.train --campaign-id <UUID>``.
 """
 import json
 from uuid import UUID

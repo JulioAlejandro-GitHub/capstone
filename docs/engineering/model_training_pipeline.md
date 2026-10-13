@@ -1,5 +1,9 @@
 # Pipeline de entrenamiento de modelos (`run_train_all_models.py`)
 
+> Estado documental: `SUPERSEDED` (2026-10-13). Los comandos de este documento
+> son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](../audits/capstone_cli_01_parameter_certification.md).
+> Se conserva el cuerpo original como evidencia de la etapa descrita.
+
 Fecha: 2026-09-08
 Rama: `main` · HEAD `f44f8063`
 Autor: revisión asistida (Claude Code), rol arquitecto de software senior — pipelines de ML

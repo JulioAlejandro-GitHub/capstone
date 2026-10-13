@@ -1,6 +1,6 @@
 # Índice y estado de la documentación
 
-Última revisión: 2026-08-24
+Última revisión: 2026-10-13
 
 Estado documental: `CURRENT_DOC` — índice canónico.
 
@@ -23,8 +23,14 @@ Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
 
 ## Fuentes operativas canónicas
 
+CAPSTONE-CLI-01 — [Certificación de parámetros científicos](audits/capstone_cli_01_parameter_certification.md)
+(`CURRENT_DOC`, 2026-10-13): cuatro módulos oficiales, selección por campaña/TRAIN,
+EXPLAIN parcial e individual, defaults persistidos y retiro de los cuatro ejecutores legacy.
+El informe delimita pruebas, evidencia y pendientes; no se ejecutaron campañas reales.
+
 CAPSTONE EXEC.1 — [Contrato de ejecución e historial](exec1_execution_contract.md)
-(`CURRENT_DOC`, 2026-10-12): ocho entradas comunes, TEST independiente, persistencia sintética verificada, historial y selección explícita SCC. Migración PostgreSQL aplicada sin cambiar evidencia histórica. El umbral predeterminado se recupera del TRAIN, incluso si su calibración estaba desactivada.
+(`HISTORICAL_AUDIT`, 2026-10-12): conserva la evidencia de implementación, migración
+y pruebas de esa etapa. Su interfaz pública fue sustituida por CAPSTONE-CLI-01.
 
 CAPSTONE-DB-02C — [Ejecución de campañas independiente de Alembic](audits/capstone_db_02c_alembic_execution.md)
 (`CURRENT_DOC`, 2026-10-12): implementación técnica en `fix/capstone-db-02c`;
@@ -152,3 +158,16 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 - [Consultas y transformaciones B1](../results/benchmarks/cpu_historical/SQL_B1.md) — `HISTORICAL_AUDIT`, 2026-10-04. SQL ejecutado, JOIN, conteos, fórmulas y diagnóstico de fuentes incompletas.
 
 - [Scientific Parameter Registry — C2.11.7](scientific_parameters.md) — `CURRENT_DOC`: diccionario, matriz de dependencias, consumidores y consulta de snapshots efectivos; generado automáticamente.
+
+## Guías sustituidas por CAPSTONE-CLI-01 (2026-10-13)
+
+- [guia_entrenamiento_patient_split](guia_entrenamiento_patient_split.md): `SUPERSEDED`; conserva el texto de su etapa.
+- [governed_dataset_resolution](engineering/governed_dataset_resolution.md): `SUPERSEDED`; conserva el texto de su etapa.
+- [campanas_creacion_ejecucion](engineering/campanas_creacion_ejecucion.md): `SUPERSEDED`; conserva el texto de su etapa.
+- [model_training_pipeline](engineering/model_training_pipeline.md): `SUPERSEDED`; conserva el texto de su etapa.
+- [operacion_e9](science/operacion_e9.md): `SUPERSEDED`; conserva el texto de su etapa.
+- [e9_3_operacion_secuencial_2026-09-14](science/e9_3_operacion_secuencial_2026-09-14.md): `SUPERSEDED`; conserva el texto de su etapa.
+- [plan_reanudacion_e9_1_2026-09-14](science/plan_reanudacion_e9_1_2026-09-14.md): `SUPERSEDED`; conserva el texto de su etapa.
+- [dataset_explicit_contract](../malaria_dl_local_project/docs/dataset_explicit_contract.md): `SUPERSEDED`; conserva el texto de su etapa.
+- [model_registry_e2](../malaria_dl_local_project/docs/model_registry_e2.md): `SUPERSEDED`; conserva el texto de su etapa.
+- [README ML](../malaria_dl_local_project/README.md): sección inicial `CURRENT_DOC`; cuerpo anterior `HISTORICAL_AUDIT`.

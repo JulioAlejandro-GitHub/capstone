@@ -39,7 +39,7 @@ def normalize_database_url(database_url):
 
     if not hostname:
         raise RuntimeError("DATABASE_URL debe incluir el hostname db")
-    # The local TRAIN launcher (run_train_all_models.py on the host) reaches the
+    # The local TRAIN launcher (-m src.train on the host) reaches the
     # same Compose service through its loopback-only published port. Opt-in only:
     # without the launcher flag a stray localhost URL keeps being rejected.
     local = os.getenv("CAPSTONE_LOCAL_TRAIN") == "1" and hostname == "127.0.0.1"

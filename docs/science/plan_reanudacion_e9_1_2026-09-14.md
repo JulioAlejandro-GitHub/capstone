@@ -1,5 +1,9 @@
 # E9.1 — Plan preparado, sin ejecutar reanudación
 
+> Estado documental: `SUPERSEDED` (2026-10-13). Los comandos de este documento
+> son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](../audits/capstone_cli_01_parameter_certification.md).
+> Se conserva el cuerpo original como evidencia de la etapa descrita.
+
 Campaña a conservar: `3acf89b7-dc42-4b7a-8e2a-ca6ea024c344`. Al snapshot 2026-09-14 09:24:39 America/Santiago: 1 activo y 35 pendientes. Actividad confirmada; **no ejecutar ahora un segundo coordinador, ni siquiera con --resume**. La antecesora `ec442763-7eea-499d-a94f-9a3ddfb7c0f0` sigue pausada, con fuente incompatible: no reanudarla.
 
 | Condición de entrada | Acción preparada | Efecto esperado | Control posterior | Riesgo de duplicación | Dependencias |

@@ -1,5 +1,9 @@
 # Registro de modelos y configuración E2
 
+> Estado documental: `SUPERSEDED` (2026-10-13). Los comandos de este documento
+> son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](../../docs/audits/capstone_cli_01_parameter_certification.md).
+> Se conserva el cuerpo original como evidencia de la etapa descrita.
+
 TRAIN y `run_train_all_models.py` consumen `src/malaria_dl/models/registry.py`. Los IDs canónicos son `custom_cnn`, `vgg16` y `densenet121`; `vgg16_transfer_learning` es alias explícito de `vgg16`. Los nuevos TRAIN registran el ID canónico. No se renombran registros históricos.
 
 ## Cómo agregar y habilitar un modelo

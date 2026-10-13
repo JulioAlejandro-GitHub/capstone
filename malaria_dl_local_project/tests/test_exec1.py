@@ -15,8 +15,7 @@ from test_assessment_e6 import value, MemoryRepository, Runtime
 ROOT = Path(__file__).resolve().parents[1]
 ENTRIES = [
     ['-m', 'src.' + kind] for kind in ('train', 'evaluate', 'explain', 'test')
-] + [[name] for name in ('run_train_all_models.py', 'run_evaluate_all_trainings.py',
-                         'run_explain_all_trainings.py', 'run_test_all_models.py')]
+]
 
 
 @pytest.mark.parametrize('entry', ENTRIES)
@@ -47,9 +46,8 @@ def test_same_orchestrator_fixed_split(kind, split, purpose, selectors, monkeypa
         return {}
     monkeypatch.setattr(cli, 'prepare', prepare)
     monkeypatch.setattr(cli, 'run', lambda *a: dict(id=uuid4(), state='verified', verification={}))
-    for batch in (False, True):
-        assert cli._execute(kind, cli.parser(kind,batch).parse_args(args)) == 0
-    assert calls[0] == calls[1]
+    assert cli._execute(kind, cli.parser(kind).parse_args(args)) == 0
+    assert len(calls) == 1
     assert calls[0]['split'] == split and calls[0]['purpose'] == purpose
     assert calls[0]['seed'] == 11 and calls[0]['requested_threshold'] == '.4'
     with pytest.raises(SystemExit):
@@ -158,7 +156,14 @@ def test_test_campaign_without_threshold_uses_training_evidence(monkeypatch):
         return {'decision': decision}
     monkeypatch.setattr(cli, 'prepare', prepare)
     monkeypatch.setattr(cli, 'run', lambda *a: dict(id=str(uuid4()),state='verified',verification={}))
-    for batch in (False, True):
-        args = cli.parser('test',batch).parse_args(['--campaign-id',campaign])
-        assert cli._execute('test',args) == 0
-    assert len(observed) == 2 and all(d['effective'] == .5 for d in observed)
+    args = cli.parser('test').parse_args(['--campaign-id',campaign])
+    assert cli._execute('test',args) == 0
+    assert len(observed) == 1 and all(d['effective'] == .5 for d in observed)
+
+
+@pytest.fixture(autouse=True)
+def synthetic_catalog(monkeypatch):
+    from src.malaria_dl.models import registry
+    monkeypatch.setattr(registry, "model_catalog", lambda: tuple(
+        {"name": name, "architecture": name, "model_type": "classification", "framework": "tensorflow/keras"}
+        for name in registry.MODEL_REGISTRY))

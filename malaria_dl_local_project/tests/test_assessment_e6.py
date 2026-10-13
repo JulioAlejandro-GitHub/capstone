@@ -488,7 +488,7 @@ def test_cli_rejects_legacy_implicit_batch():
     from src.malaria_dl.assessment.cli import main
 
     with pytest.raises(SystemExit):
-        main("evaluate", batch=True, argv=
+        main("evaluate", argv=
             ["--dataset-version-id", str(uuid4())]
         )
 
@@ -506,6 +506,7 @@ def test_legacy_multiple_versions_rejected():
         ).resolve(source_training_run_id=str(uuid4()))
 
 
+@pytest.mark.filterwarnings("error::sklearn.exceptions.UndefinedMetricWarning")
 @pytest.mark.parametrize("method", ["lime", "shap"])
 def test_minimal_attribution_methods_preserve_raw_domain(tmp_path, method):
     import numpy as np
@@ -526,7 +527,7 @@ def test_minimal_attribution_methods_preserve_raw_domain(tmp_path, method):
     Image.fromarray(rgb).save(path)
     sample["sha256"] = file_identity(path)["sha256"]
     v["explanation"] = explanation_spec(
-        method, None, 1, 8, [sample] if method == "shap" else []
+        method, None, 1, 1000, [sample] if method == "shap" else []
     )
     heat, overlay, result = KerasRuntime(v).explain(sample)
     assert (

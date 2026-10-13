@@ -1,6 +1,10 @@
 # Guía de Entrenamiento y Evaluación con Patient-Disjoint Split
 
-> **Estado documental: CURRENT_DOC / GUÍA CIENTÍFICA.** Toda ejecución ocurre dentro
+> Estado documental: `SUPERSEDED` (2026-10-13). Los comandos de este documento
+> son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](audits/capstone_cli_01_parameter_certification.md).
+> Se conserva el cuerpo original como evidencia de la etapa descrita.
+
+> **Estado documental: SUPERSEDED / GUÍA CIENTÍFICA HISTÓRICA.** Toda ejecución ocurre dentro
 > del servicio Compose `backend`, que recibe `DATABASE_URL` hacia `db:5432`.
 > El contrato operativo canónico es [PostgreSQL Docker-only](engineering/postgresql_docker_single_instance.md).
 

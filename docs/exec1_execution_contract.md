@@ -1,6 +1,10 @@
 # CAPSTONE EXEC.1 — Ejecución independiente e historial
 
-Estado documental: `CURRENT_DOC`.
+> Estado documental: `HISTORICAL_AUDIT` (2026-10-13). Los comandos de este documento
+> son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](audits/capstone_cli_01_parameter_certification.md).
+> Se conserva el cuerpo original como evidencia de la etapa descrita.
+
+Estado documental: `HISTORICAL_AUDIT`.
 Fecha: 2026-10-12.
 Estado técnico: implementado; validación con fixtures sintéticos. No acredita desempeño clínico.
 

@@ -33,13 +33,16 @@ def training_plan(repository: ExecutionRepository, campaign_id: str | None,
                  source_training_run_id=None) for m in campaign["members"]]
 
 
-def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="EXEC.1 TRAIN: creates new runs from campaign configurations or a source TRAIN")
+def parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(allow_abbrev=False, description="EXEC.1 TRAIN: creates new runs from campaign configurations or a source TRAIN")
     p.add_argument("--campaign-id", type=identifier)
     p.add_argument("--source-training-run-id", type=identifier)
-    p.add_argument("--dataset-version-id", type=identifier, help="Optional assertion against PostgreSQL")
-    p.add_argument("--artifact-root", default="outputs/train_runs")
     p.add_argument("--dry-run", "--plan", "--inspect", dest="inspect", action="store_true")
+    return p
+
+
+def main(argv: list[str] | None = None) -> int:
+    p = parser()
     args = p.parse_args(argv)
     if not (args.campaign_id or args.source_training_run_id):
         p.error("Se requiere --campaign-id y/o --source-training-run-id")
@@ -47,9 +50,6 @@ def main(argv: list[str] | None = None) -> int:
     bootstrap()
     try:
         plan = training_plan(ExecutionRepository(), args.campaign_id, args.source_training_run_id)
-        for item in plan:
-            require(args.dataset_version_id is None or args.dataset_version_id == item["dataset_version_id"],
-                    "DATASET_OVERRIDE_CONFLICT")
         if args.inspect:
             print(json.dumps(plan, default=str))
             return 0
@@ -61,7 +61,7 @@ def main(argv: list[str] | None = None) -> int:
                 result = standalone(SimpleNamespace(
                     **item, model_configuration=item["configuration"], model=item["configuration"]["model_id"],
                     evaluate_best_on_test=False, threshold_output_json=None, dataset_dir=None,
-                    data_source="physical", output_dir=args.artifact_root))
+                    data_source="physical", output_dir="outputs/train_runs"))
                 entry.update(run_id=str(result["run_id"]), state=result["state"])
             except Exception as exc:
                 entry.update(state="failed", error=str(exc) if isinstance(exc, CampaignError) else "TRAIN_OPERATION_FAILED")

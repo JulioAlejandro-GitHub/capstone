@@ -163,7 +163,7 @@ def test_campaign_membership_and_all_runs_without_freezing(postgres):
             ExecutionRepository._create_run(c,train,config,v['dataset'],{},campaign_id=campaign)
     assert {str(r['id']) for r in select_trainings(repo,campaign,None)} == set(trains)
     assert [str(r['id']) for r in select_trainings(repo,campaign,trains[0])] == [trains[0]]
-    with pytest.raises(CampaignError,match='CAMPAIGN_MISMATCH'):
+    with pytest.raises(CampaignError,match='CAMPAIGN_SELECTION_EMPTY'):
         select_trainings(repo,other,trains[0])
     with pytest.raises(CampaignError,match='REQUIRED'):
         select_trainings(repo,None,None)

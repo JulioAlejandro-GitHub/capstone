@@ -100,13 +100,12 @@ def process_identity(pid):
 def managed_execution(args):
     words = [arg.decode(errors='replace') if isinstance(arg, bytes) else arg for arg in args]
     names = {Path(word).name for word in words if word}
-    if 'run_train_all_models.py' in names:
-        return not any(flag in words for flag in ('--inspect', '--result', '--dry-run'))
+    if set(words) & {'src.train', 'src.evaluate', 'src.explain', 'src.test'}:
+        return not any(flag in words for flag in ('--help', '-h', '--inspect', '--plan', '--dry-run'))
     if 'src.malaria_dl.execution.controlled' in words:
         return any(operation in words for operation in ('execute', 'recover'))
-    return bool(names & {'run_evaluate_all_trainings.py', 'run_explain_all_trainings.py', 'train.py'}
-                or set(words) & {'src.malaria_dl.execution.worker', 'src.train',
-                                 'src.malaria_dl.training.cli', 'src.evaluate', 'src.explain'})
+    return bool(names & {'train.py'}
+                or set(words) & {'src.malaria_dl.execution.worker', 'src.malaria_dl.training.cli'})
 
 
 def process_absent(identity, table=None):
@@ -115,6 +114,7 @@ def process_absent(identity, table=None):
     table = process_table() if table is None else table
     actual = table.get(identity['pid'])
     return actual is None or (identity.get('start_ticks') is not None
+                              and actual.get('start_ticks') is not None
                               and actual['start_ticks'] != identity['start_ticks'])
 
 
@@ -168,7 +168,10 @@ def verify_retained_processes(evidence):
     for sid in evidence.get('sessions', []):
         if any(p['session'] == sid for p in table.values()):
             raise CampaignError('PREVIOUS_EXPERIMENT_DESCENDANTS_STILL_ALIVE')
-    if evidence.get('release_confirmed') is False:
+    # A failed release records what was observed at shutdown, not a permanent
+    # veto. On this host the checks above establish current absence of every
+    # retained process and session. Without identities there is no such proof.
+    if evidence.get('release_confirmed') is False and not evidence.get('identities'):
         raise CampaignError('PROCESS_TREE_RELEASE_UNPROVEN')
 
 

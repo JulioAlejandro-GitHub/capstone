@@ -1,5 +1,39 @@
 # Malaria Parasite Detection — Entorno local con Python
 
+Estado documental: `CURRENT_DOC` para la sección «Comandos científicos vigentes».
+
+## Comandos científicos vigentes — CAPSTONE-CLI-01
+
+Desde este directorio, con el entorno Python 3.12 del proyecto:
+
+```bash
+source .venv-local-train/bin/activate
+python -m src.train --campaign-id "$CAMPAIGN_ID" --plan
+python -m src.evaluate --source-training-run-id "$TRAIN_ID" --inspect
+python -m src.explain --source-training-run-id "$TRAIN_ID" --method lime --max-images 1 --inspect
+python -m src.test --source-training-run-id "$TRAIN_ID" --inspect
+```
+
+Retirar `--inspect` o `--plan` inicia una nueva ejecución científica. Cada invocación
+crea evidencia independiente; TRAIN por campaña conserva las configuraciones y semillas
+persistidas, y TRAIN por referencia crea otro RUN. Dataset y checkpoint se resuelven
+en PostgreSQL. Threshold y seed usan `auto`; batch size usa la configuración persistida.
+LIME/SHAP usan 1000 muestras internas por defecto (rango 1000–5000).
+`--max-images N|all` limita objetivos; `--sample-id` selecciona una célula de VAL.
+SHAP requiere `--background-sample-id`, independiente del objetivo. Grad-CAM es el
+método predeterminado y resuelve automáticamente su capa.
+
+Contrato completo, matriz de parámetros, ejemplos y evidencia:
+[certificación CAPSTONE-CLI-01](../docs/audits/capstone_cli_01_parameter_certification.md).
+Los cuatro scripts `run_*` científicos se retiraron sin aliases ni wrappers.
+
+## Referencia histórica del proyecto
+
+Estado de las secciones siguientes: `HISTORICAL_AUDIT`. Se conserva su contenido
+sobre instalación, experimentos y evolución del sistema; sus comandos científicos
+y flags antiguos no son instrucciones operativas vigentes. Use el contrato anterior.
+
+
 La arquitectura canónica reside en `src/malaria_dl/`. Los imports y comandos
 históricos `src.*` continúan soportados mediante adaptadores sin lógica
 duplicada. Véanse `docs/architecture_after_refactor.md` y
