@@ -1,6 +1,6 @@
 # Índice y estado de la documentación
 
-Última revisión: 2026-10-13
+Última revisión: 2026-10-14
 
 Estado documental: `CURRENT_DOC` — índice canónico.
 
@@ -20,6 +20,12 @@ ejecutarse en el entorno actual.
 | `SUPERSEDED` / `OBSOLETE_DOC` | Fue reemplazado por otra fuente | No ejecutar; seguir el reemplazo indicado |
 
 Los banners dentro de cada documento prevalecen sobre su nombre o ubicación.
+
+CAPSTONE-DATA-01A — [Auditoría de materialización e identidad de datasets](audits/capstone_data_01a_dataset_materialization_audit.md)
+(`HISTORICAL_AUDIT`, 2026-10-14): contraste de código, PostgreSQL y archivos de
+Single-cell y Full Smear. Dictámenes A2 (retiro condicionado del split antiguo) y
+B3 (trazabilidad insuficiente de preparación/entrenamiento YOLO). Incluye planes
+01B/01C; no autoriza eliminación ni implementa cambios funcionales.
 
 ## Fuentes operativas canónicas
 
