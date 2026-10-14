@@ -15,19 +15,19 @@ from fastapi.concurrency import run_in_threadpool
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, Field
 
-from .inference import DEFAULT_CHECKPOINT, RUNTIME_VERSION, DetectionResponse, InferenceOptions, YoloRuntime
+from .inference import selected_checkpoint, RUNTIME_VERSION, DetectionResponse, InferenceOptions, YoloRuntime
 
 
 class RuntimeSettings(BaseModel):
     token: str = Field(min_length=32, repr=False)
-    checkpoint: Path = DEFAULT_CHECKPOINT
+    checkpoint: Path = Field(default_factory=selected_checkpoint)
     max_upload_bytes: int = Field(default=20_971_520, gt=0)
     max_image_pixels: int = Field(default=25_000_000, gt=0)
 
     @classmethod
     def from_env(cls) -> RuntimeSettings:
         return cls(token=os.environ.get("YOLO_RUNTIME_TOKEN", ""),
-                   checkpoint=Path(os.environ.get("YOLO_RUNTIME_CHECKPOINT", str(DEFAULT_CHECKPOINT))),
+                   checkpoint=selected_checkpoint(),
                    max_upload_bytes=int(os.environ.get("YOLO_RUNTIME_MAX_UPLOAD_BYTES", "20971520")),
                    max_image_pixels=int(os.environ.get("YOLO_RUNTIME_MAX_IMAGE_PIXELS", "25000000")))
 

@@ -10,7 +10,7 @@ CAPSTONE_ROOT = Path(__file__).resolve().parents[3]
 CELL_SOURCE = 'https://data.lhncbc.nlm.nih.gov/public/Malaria/cell_images.zip'
 SMEAR_SOURCE = 'https://data.lhncbc.nlm.nih.gov/public/Malaria/NIH-NLM-ThinBloodSmearsPf/index.html'
 SMEAR_ROOT = 'malaria_dl_local_project/data/NIH-NLM-ThinBloodSmearsPf'
-CURRENT_SPLIT_ROOT = 'malaria_dl_local_project/data/malaria_physical_split'
+CURRENT_SPLIT_ROOT = 'malaria_dl_local_project/data/malaria_dataset_versions'
 
 
 @dataclass(frozen=True)
