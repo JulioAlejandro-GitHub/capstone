@@ -20,7 +20,19 @@ DETECTOR_KEY = "yolo26_seg_v1"
 DETECTOR_VERSION = "1.0.0"
 RUNTIME_VERSION = "1.0.0"
 ALGORITHM_VERSION = "yolo26-seg-tiling-global-nms-1.0.0"
-DEFAULT_CHECKPOINT = Path(__file__).resolve().parents[2] / "runs/yolo26_seg/yolo26n_rbc_1024_v1/weights/best.pt"
+
+
+def selected_checkpoint() -> Path:
+    from dotenv import dotenv_values
+    from .checkpoints import checkpoint_reference, resolve_checkpoint
+
+    project_root = Path(__file__).resolve().parents[2]
+    environment = {**dotenv_values(project_root / ".env"), **os.environ}
+    # Legacy override is only effective when no run selector is configured.
+    reference = (checkpoint_reference(environment) if "YOLO_RUN_UUID" in environment
+                 or not environment.get("YOLO_RUNTIME_CHECKPOINT")
+                 else Path(environment["YOLO_RUNTIME_CHECKPOINT"]))
+    return resolve_checkpoint(reference, project_root.parent)
 
 
 class InferenceOptions(BaseModel):
@@ -129,7 +141,7 @@ def global_detection(xyxy: list[float], confidence: float, polygon: np.ndarray |
 
 
 class YoloRuntime:
-    def __init__(self, checkpoint: Path = DEFAULT_CHECKPOINT) -> None:
+    def __init__(self, checkpoint: Path | None = None) -> None:
         if os.environ.get("PYTORCH_ENABLE_MPS_FALLBACK") == "1":
             raise RuntimeError("CPU fallback must be disabled")
         import torch
@@ -137,7 +149,7 @@ class YoloRuntime:
 
         if platform.system() != "Darwin" or not torch.backends.mps.is_available():
             raise RuntimeError("YOLO Runtime requires macOS with available MPS")
-        checkpoint = checkpoint.resolve(strict=True)
+        checkpoint = (checkpoint if checkpoint is not None else selected_checkpoint()).resolve(strict=True)
         self.checkpoint = str(checkpoint)
         self.checkpoint_sha256 = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
         self.model = YOLO(str(checkpoint))

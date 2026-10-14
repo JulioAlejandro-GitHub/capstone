@@ -46,6 +46,8 @@ from malaria_split.persistence.materialization import (
 from malaria_split.governance.freeze import freeze_dataset_version
 from malaria_split.families import DatasetFamily, SOURCES, get_source
 
+from malaria_split.source_config import resolve_source_config
+
 
 def _project_root() -> Path:
     return Path(__file__).resolve().parents[2]
@@ -71,11 +73,7 @@ def _csv_tuple(value: str) -> tuple[str, ...]:
 
 def audit_current_split(config_path: Path, root_override: str | None = None) -> int:
     config = _read_simple_config(config_path)
-    from malaria_split.source_config import resolve_source_config
-
-    configured_root = root_override or resolve_source_config(
-        current_split_default=config["current_physical_split_root"]
-    ).current_split_root
+    configured_root = root_override or config["current_physical_split_root"]
     root = Path(configured_root).expanduser()
     if not root.is_absolute():
         root = _capstone_root() / root
@@ -503,7 +501,8 @@ def materialize_patient_split_v1(config_path: Path) -> int:
         raise RuntimeError("DATABASE_URL is required")
     config = _read_simple_config(config_path)
     source_root = _configured_path(config["tfds_original_images_root"])
-    versions_root = _capstone_root() / "malaria_dl_local_project/data/malaria_dataset_versions"
+    versions_root = resolve_source_config().current_split_root
+
     engine = create_postgresql_engine(database_url)
     try:
         with engine.connect() as connection:

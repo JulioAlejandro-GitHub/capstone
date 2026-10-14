@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlparse
 
+from smear_segmentation.checkpoints import checkpoint_reference, resolve_checkpoint
+
 from app.database_safety import validate_database_url
 
 
@@ -119,6 +121,7 @@ class Settings:
     allowed_microscopy_formats: tuple[str, ...]
     quality_analysis_max_dimension: int
     cell_detector_key: str
+    yolo_model_checkpoint: Path
     yolo_runtime_url: str
     yolo_runtime_token: str = field(repr=False)
     yolo_runtime_timeout_seconds: float
@@ -131,6 +134,13 @@ class Settings:
     include_stacktrace: bool
     sql_logging: bool
     request_logging: bool
+
+    @property
+    def yolo_checkpoint_path(self) -> Path:
+        root = Path(__file__).resolve().parents[1]
+        if root.name == "backend_api":
+            root = root.parent
+        return resolve_checkpoint(self.yolo_model_checkpoint, root)
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -198,6 +208,7 @@ class Settings:
             ),
             quality_analysis_max_dimension=_int("QUALITY_ANALYSIS_MAX_DIMENSION", 2048, 64),
             cell_detector_key=os.getenv("CELL_DETECTOR_KEY", "connected_components_v1"),
+            yolo_model_checkpoint=checkpoint_reference(os.environ),
             yolo_runtime_url=validate_yolo_runtime_url(
                 os.getenv("YOLO_RUNTIME_URL", "http://host.docker.internal:8765")
             ),

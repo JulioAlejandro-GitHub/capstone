@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from uuid import UUID
 
 import yaml
-from ultralytics import YOLO
+from dotenv import dotenv_values
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -32,11 +35,20 @@ def resolve_repository_path(value: str) -> Path:
     return (REPOSITORY_ROOT / path).resolve()
 
 
-def prepare_config(config: dict) -> dict:
+def prepare_config(config: dict, dataset_version_id: UUID, effective_yaml: Path) -> dict:
     resolved = dict(config)
 
-    resolved["data"] = str(resolve_repository_path(config["data"]))
-    resolved["project"] = str(resolve_repository_path(config["project"]))
+    environment = {**dotenv_values(PROJECT_ROOT / ".env"), **os.environ}
+    dataset_root = resolve_repository_path(
+        environment.get("YOLO_DATASET_ROOT", "smear_segmentation_project/data")
+    ) / str(dataset_version_id)
+    dataset_config = load_config(resolve_repository_path(config["data"]))
+    dataset_config["path"] = str(dataset_root)
+    effective_yaml.write_text(yaml.safe_dump(dataset_config, sort_keys=False), encoding="utf-8")
+    resolved["data"] = str(effective_yaml)
+    resolved["project"] = str(resolve_repository_path(
+        environment.get("YOLO_RUNS_ROOT", config["project"])
+    ))
 
     model_path = resolve_repository_path(config["model"])
     if model_path.is_file():
@@ -96,11 +108,21 @@ def print_contract(config_path: Path, config: dict) -> bool:
     data_ok = data_path.is_file()
     project_absolute = project_path.is_absolute()
     project_inside_repository = project_path.is_relative_to(REPOSITORY_ROOT)
+    dataset_config = load_config(data_path)
+    dataset_root = Path(dataset_config["path"])
+    missing_directories = [
+        dataset_root / kind / split
+        for kind in ("images", "labels") for split in ("train", "val", "test")
+        if not (dataset_root / kind / split).is_dir()
+    ]
 
     print("=== YOLO DETECTOR TRAIN ===")
     print("config:", config_path)
     print("model:", config["model"])
-    print("data:", config["data"])
+    print("dataset_version_id:", dataset_root.name)
+    print("dataset_root:", dataset_root)
+    print("data (temporary effective YAML):", config["data"])
+    print("results_directory:", project_path / config["name"])
     print("project:", config["project"])
     print("task:", config["task"])
     print("device:", config["device"])
@@ -119,9 +141,10 @@ def print_contract(config_path: Path, config: dict) -> bool:
     contract_ok = (
         data_ok
         and project_absolute
-        and project_inside_repository
+        and not missing_directories
     )
 
+    print("missing_dataset_directories:", [str(path) for path in missing_directories])
     print("contract_check:", contract_ok)
 
     return contract_ok
@@ -140,6 +163,12 @@ def main() -> None:
         action="store_true",
         help="Validate and print the resolved configuration without training",
     )
+    parser.add_argument(
+        "--dataset-version-id",
+        required=True,
+        type=UUID,
+        help="UUID científico del dataset Full Smear registrado en PostgreSQL",
+    )
     args = parser.parse_args()
 
     config_path = args.config.resolve()
@@ -147,29 +176,32 @@ def main() -> None:
     config = load_config(config_path)
     validate_config(config)
 
-    resolved = prepare_config(config)
+    with TemporaryDirectory(prefix="capstone-yolo-") as temporary_root:
+        resolved = prepare_config(config, args.dataset_version_id, Path(temporary_root) / "dataset.yaml")
 
-    if not print_contract(config_path, resolved):
-        raise SystemExit(1)
+        if not print_contract(config_path, resolved):
+            raise SystemExit(1)
 
-    if args.dry_run:
+        if args.dry_run:
+            print()
+            print("TRAIN: NOT STARTED (--dry-run)")
+            return
+
         print()
-        print("TRAIN: NOT STARTED (--dry-run)")
-        return
+        print("Starting YOLO Detector Train...")
 
-    print()
-    print("Starting YOLO Detector Train...")
+        from ultralytics import YOLO
 
-    model = YOLO(resolved["model"])
+        model = YOLO(resolved["model"])
 
-    train_args = dict(resolved)
-    train_args.pop("model")
+        train_args = dict(resolved)
+        train_args.pop("model")
 
-    results = model.train(**train_args)
+        results = model.train(**train_args)
 
-    print()
-    print("=== YOLO DETECTOR TRAIN COMPLETED ===")
-    print("save_dir:", results.save_dir)
+        print()
+        print("=== YOLO DETECTOR TRAIN COMPLETED ===")
+        print("save_dir:", results.save_dir)
 
 
 if __name__ == "__main__":

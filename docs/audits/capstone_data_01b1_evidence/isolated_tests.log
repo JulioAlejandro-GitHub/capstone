@@ -1,0 +1,24 @@
+ Network capstone-data01b1-audit_default Creating 
+ Network capstone-data01b1-audit_default Created 
+ Container capstone-data01b1-audit-audit-db-1 Creating 
+ Container capstone-data01b1-audit-audit-db-1 Created 
+ Container capstone-data01b1-audit-audit-db-1 Starting 
+ Container capstone-data01b1-audit-audit-db-1 Started 
+ Container capstone-data01b1-audit-audit-db-1 Waiting 
+ Container capstone-data01b1-audit-audit-db-1 Healthy 
+ set_config 
+------------
+ 
+(1 row)
+
+ Container capstone-data01b1-audit-audit-tests-run-9fe089166ced Creating 
+ audit-tests The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested 
+ Container capstone-data01b1-audit-audit-tests-run-9fe089166ced Created 
+.................                                                        [100%]
+17 passed in 3.65s
+ Container capstone-data01b1-audit-audit-db-1 Stopping 
+ Container capstone-data01b1-audit-audit-db-1 Stopped 
+ Container capstone-data01b1-audit-audit-db-1 Removing 
+ Container capstone-data01b1-audit-audit-db-1 Removed 
+ Network capstone-data01b1-audit_default Removing 
+ Network capstone-data01b1-audit_default Removed 

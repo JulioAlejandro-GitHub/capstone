@@ -145,3 +145,50 @@ def test_tiled_inference_translates_and_consolidates() -> None:
     assert result.consolidated_detection_count == 1
     assert result.detections[0].bbox.x == 800
     assert "MASK_UNAVAILABLE_BBOX_GEOMETRY" in result.warnings
+
+
+@pytest.mark.parametrize("run", ["yolo26n_rbc_1024_v1", "123e4567-e89b-42d3-a456-426614174000"])
+def test_checkpoint_selection_is_shared_and_independent_of_cwd(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, run: str) -> None:
+    from smear_segmentation.checkpoints import checkpoint_reference, resolve_checkpoint
+    from smear_segmentation.inference import selected_checkpoint
+    monkeypatch.setenv("YOLO_RUN_UUID", run)
+    monkeypatch.setenv("YOLO_RUNS_ROOT", "smear_segmentation_project/runs/yolo26_seg")
+    monkeypatch.setenv("YOLO_RUNTIME_CHECKPOINT", "/ignored/weights/best.pt")
+    monkeypatch.setenv("YOLO_RUNTIME_TOKEN", TOKEN)
+    monkeypatch.chdir(tmp_path)
+    import os
+    root = Path(__file__).resolve().parents[2]
+    expected = resolve_checkpoint(checkpoint_reference(os.environ), root)
+    assert selected_checkpoint() == RuntimeSettings.from_env().checkpoint == expected
+    assert expected == root / "smear_segmentation_project/runs/yolo26_seg" / run / "weights/best.pt"
+
+
+@pytest.mark.parametrize("run", ["", " ", ".", "..", "../other", "/tmp/run", "a/b", "a\\b", "C:run"])
+def test_unsafe_run_is_rejected(monkeypatch: pytest.MonkeyPatch, run: str) -> None:
+    monkeypatch.setenv("YOLO_RUN_UUID", run)
+    monkeypatch.setenv("YOLO_RUNTIME_TOKEN", TOKEN)
+    with pytest.raises(ValueError, match="YOLO_RUN_UUID"):
+        RuntimeSettings.from_env()
+
+
+def test_dotenv_precedence_and_legacy_checkpoint(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from smear_segmentation.inference import selected_checkpoint
+    monkeypatch.delenv("YOLO_RUN_UUID", raising=False)
+    monkeypatch.delenv("YOLO_RUNS_ROOT", raising=False)
+    monkeypatch.setenv("YOLO_RUNTIME_CHECKPOINT", str(tmp_path / "legacy.pt"))
+    monkeypatch.setattr("dotenv.dotenv_values", lambda _: {"YOLO_RUN_UUID": "file-run", "YOLO_RUNS_ROOT": str(tmp_path)})
+    assert selected_checkpoint() == tmp_path / "file-run/weights/best.pt"
+    monkeypatch.setenv("YOLO_RUN_UUID", "process-run")
+    assert selected_checkpoint() == tmp_path / "process-run/weights/best.pt"
+    monkeypatch.delenv("YOLO_RUN_UUID")
+    monkeypatch.setattr("dotenv.dotenv_values", lambda _: {})
+    assert selected_checkpoint() == tmp_path / "legacy.pt"
+
+
+def test_checkpoint_symlink_cannot_escape_root(tmp_path: Path) -> None:
+    from smear_segmentation.checkpoints import resolve_checkpoint
+    root = tmp_path / "runs"
+    root.mkdir()
+    (root / "run").symlink_to(tmp_path / "outside")
+    with pytest.raises(ValueError, match="escapes"):
+        resolve_checkpoint(root / "run/weights/best.pt", tmp_path)
