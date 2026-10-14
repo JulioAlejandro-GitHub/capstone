@@ -1,0 +1,89 @@
+{
+  "first_read": {
+    "database": "malaria_experiments",
+    "tables": {
+      "datasets": {
+        "rows": 4,
+        "sha256": "62d8cfcd51143979ede227b18f5ae77bea9e01ea302c0891c4e063690ebc6756"
+      },
+      "clinical_identities": {
+        "rows": 394,
+        "sha256": "3d7e55d54b2b1646e5d937fce1f430402a36f07f57fc8ed4f55ff116dc61ab10"
+      },
+      "dataset_source_records": {
+        "rows": 28523,
+        "sha256": "d9a710250d19b62d84d394491cc808ea701d8464a2557d01f4b8190783587d7f"
+      },
+      "identity_evidence": {
+        "rows": 28523,
+        "sha256": "0f4b819fcf1225d59e8d229e37cfd6203bea89d46cb9e3acec6a5590cae13990"
+      },
+      "dataset_versions": {
+        "rows": 2,
+        "sha256": "a9ed3cca3d3079ab01edcd29bb406aca86b8842824151252f7ca5cfa2c43b7b1"
+      },
+      "dataset_version_sources": {
+        "rows": 3,
+        "sha256": "3d93a1b13b21d6abd3ff7598ef386e934061014aa802e0158ef6d7f4fe6f3a25"
+      },
+      "dataset_split_assignments": {
+        "rows": 28523,
+        "sha256": "ab10da9d5e84b30ee7d603f34f8c791c0218780d076600fe3be523aaa59b02a4"
+      },
+      "dataset_split_validation_checks": {
+        "rows": 29,
+        "sha256": "5cc0803609840ee59a5cdd849bbfe6e49a2915f7241dc13b2b3ed936c334824e"
+      },
+      "dataset_split_statistics": {
+        "rows": 2,
+        "sha256": "9c247c7736edd7a9d8128b66c9f1f305178bc63bc674f60788c4ae4e61460ca4"
+      },
+      "dataset_materializations": {
+        "rows": 1,
+        "sha256": "fd8eebbd4b2b5b3c379019e8cea8f083cd3b0fd9fb79ebf19de383815b373e43"
+      },
+      "dataset_materialization_activations": {
+        "rows": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "versions": [
+      {
+        "id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "name": "Malaria Patient Split v1",
+        "status": "FROZEN",
+        "source_record_count": 27558
+      },
+      {
+        "id": "f0c1f636-715c-54e2-8e46-ed150f9d8791",
+        "name": "Thin Blood Smear Patient Split",
+        "status": "FROZEN",
+        "source_record_count": 965
+      }
+    ],
+    "materialization": {
+      "id": "e15dc166-1c4b-558e-b77b-727b1783430c",
+      "relative_root": "malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "status": "READY",
+      "reconciliation_status": "PASS"
+    },
+    "default_generation_result": "Split generation requires DRAFT or matching GENERATED state",
+    "in_memory_optimizer": {
+      "patients": 201,
+      "records": 27558,
+      "seed42_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f",
+      "seed43_digest": "052197d4d88b7c82d37c138c61d60d6483c9664076889d23402a6ecf86d58150",
+      "changed_patient_assignments": 70,
+      "seed42_violations": [],
+      "seed43_violations": [],
+      "persisted": false
+    },
+    "reference_files": {
+      "count": 27558,
+      "bytes": 331987597,
+      "sha256_inventory": "85538a4f2c443864697c952407e26007d7aa72aac73c9d5a43a2cc4a2ff012c8"
+    }
+  },
+  "second_read_equals_first": true,
+  "schema_export_sha256": "15fc8a3fc59d90645dcd230f967e8848383531c5070d722cf20beabe0aa7ec62"
+}

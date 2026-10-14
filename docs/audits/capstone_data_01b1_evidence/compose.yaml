@@ -1,0 +1,32 @@
+# Isolated audit fixtures only. No production network, ports, volumes or credentials.
+services:
+  audit-db:
+    image: postgres:17.9
+    environment:
+      POSTGRES_USER: audit_fixture
+      POSTGRES_PASSWORD: audit_fixture_only
+      POSTGRES_DB: audit_fixture
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U audit_fixture -d audit_fixture']
+      interval: 1s
+      timeout: 2s
+      retries: 30
+  audit-tests:
+    image: capstone-malaria-backend
+    working_dir: /audit
+    environment:
+      DATABASE_URL: postgresql+psycopg://audit_fixture:audit_fixture_only@audit-db:5432/audit_fixture
+      PYTHONPATH: /split/src
+      PYTHONDONTWRITEBYTECODE: '1'
+    volumes:
+      - type: bind
+        source: ../../../malaria_dataset_split_project
+        target: /split
+        read_only: true
+        bind:
+          create_host_path: false
+      - .:/audit:ro
+    entrypoint: [python, -m, pytest]
+    command: [-q, -p, 'no:cacheprovider', /split/tests/unit/test_materialization.py, /audit/test_certification.py]

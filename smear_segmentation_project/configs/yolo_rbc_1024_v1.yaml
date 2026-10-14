@@ -1,5 +1,3 @@
-path: smear_segmentation_project/data/yolo_rbc_1024_v1
-
 train: images/train
 val: images/val
 test: images/test
