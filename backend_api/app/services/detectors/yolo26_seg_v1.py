@@ -10,15 +10,23 @@ import httpx
 from PIL import Image, ImageOps
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
+from smear_segmentation.checkpoints import HISTORICAL_RUN
+
 from app.config import get_settings, validate_yolo_runtime_url
 from app.models.cell_detection import BoundingBox, ComponentStatus, ConnectedComponent, DetectionResult
 
 DETECTOR_KEY = "yolo26_seg_v1"
 DETECTOR_VERSION = "1.0.0"
 ALGORITHM_VERSION = "yolo26-seg-tiling-global-nms-1.0.0"
-# Frozen identity validated in 76.3A. A new checkpoint requires a versioned adapter.
+# Independent identity validated in 76.3A; new runs need a trusted expected hash.
 CHECKPOINT_SHA256 = "1a64bc34d188a48b7ed4fcd3276a41aa61d4ab7c037e360ac4beab3e24c31c26"
-MODEL_CHECKPOINT = "smear_segmentation_project/runs/yolo26_seg/yolo26n_rbc_1024_v1/weights/best.pt"
+
+
+def model_checkpoint() -> str:
+    checkpoint = get_settings().yolo_model_checkpoint
+    if checkpoint.parent.parent.name != HISTORICAL_RUN:
+        raise ValueError("YOLO checkpoint has no independently trusted SHA-256")
+    return checkpoint.as_posix()
 
 
 class YoloRuntimeError(RuntimeError):
@@ -44,7 +52,7 @@ class _Profile(_Options):
     detector_version: Literal["1.0.0"] = DETECTOR_VERSION
     algorithm_version: Literal["yolo26-seg-tiling-global-nms-1.0.0"] = ALGORITHM_VERSION
     runtime_version: Literal["1.0.0"] = "1.0.0"
-    model_checkpoint: Literal[MODEL_CHECKPOINT] = MODEL_CHECKPOINT
+    model_checkpoint: str = Field(default_factory=model_checkpoint)
     checkpoint_sha256: Literal[CHECKPOINT_SHA256] = CHECKPOINT_SHA256
     device: Literal["mps"] = "mps"
     tile_size: Literal[1024] = 1024
@@ -59,6 +67,12 @@ class _Profile(_Options):
     geometric_metrics_policy: Literal["unavailable_as_null"] = "unavailable_as_null"
     area_policy: Literal["runtime_area_ceil"] = "runtime_area_ceil"
     component_order: Literal["confidence_desc_tile_bbox"] = "confidence_desc_tile_bbox"
+
+    @model_validator(mode="after")
+    def validate_checkpoint(self) -> Self:
+        if self.model_checkpoint != model_checkpoint():
+            raise ValueError("Unexpected checkpoint path")
+        return self
 
 
 def profile_snapshot(overrides: dict | None = None) -> dict:
@@ -147,8 +161,10 @@ class _Response(_StrictModel):
     @model_validator(mode="after")
     def validate_result(self) -> Self:
         checkpoint = PurePosixPath(self.model_checkpoint)
-        if (not checkpoint.is_absolute() or ".." in checkpoint.parts
-                or not self.model_checkpoint.endswith("/" + MODEL_CHECKPOINT)):
+        expected = PurePosixPath(model_checkpoint())
+        matches = (checkpoint == expected if expected.is_absolute()
+                   else self.model_checkpoint.endswith("/" + expected.as_posix()))
+        if (not checkpoint.is_absolute() or ".." in checkpoint.parts or not matches):
             raise ValueError("Unexpected checkpoint path")
         if (self.final_detection_count != len(self.detections)
                 or self.raw_detection_count != self.invalid_detection_count

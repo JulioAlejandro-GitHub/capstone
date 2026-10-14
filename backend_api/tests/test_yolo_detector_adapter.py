@@ -5,6 +5,7 @@ import json
 from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import asdict
+from pathlib import Path
 
 import httpx
 import pytest
@@ -23,7 +24,7 @@ def payload() -> dict:
     return {
         "detector_key": "yolo26_seg_v1", "detector_version": "1.0.0",
         "algorithm_version": "yolo26-seg-tiling-global-nms-1.0.0", "runtime_version": "1.0.0",
-        "model_checkpoint": "/host/" + yolo.MODEL_CHECKPOINT,
+        "model_checkpoint": "/host/" + "smear_segmentation_project/runs/yolo26_seg/yolo26n_rbc_1024_v1/weights/best.pt",
         "checkpoint_sha256": yolo.CHECKPOINT_SHA256, "device": "mps",
         "image_width": 80, "image_height": 100, "tile_size": 1024, "tile_overlap": 256,
         "coordinate_space": "original_image_pixels", "orientation_policy": "exif_transpose",
@@ -310,3 +311,41 @@ def test_nonfinite_geometry_is_rejected(transport: Callable, field: str, value: 
     transport(lambda request: httpx.Response(200, content=json.dumps(data).encode()))
     with pytest.raises(yolo.YoloRuntimeError, match="YOLO_RUNTIME_INVALID_RESPONSE"):
         yolo.detect_image(source())
+
+
+@pytest.mark.parametrize("run", ["", " ", ".", "..", "../other", "/tmp/run", "a/b", "a\\b"])
+def test_settings_reject_unsafe_run(monkeypatch: pytest.MonkeyPatch, run: str) -> None:
+    monkeypatch.setenv("YOLO_RUN_UUID", run)
+    with pytest.raises(ValueError, match="YOLO_RUN_UUID"):
+        Settings.from_env()
+
+
+def test_new_run_resolves_but_cannot_reuse_historical_hash(transport: Callable, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    run = "123e4567-e89b-42d3-a456-426614174000"
+    monkeypatch.setenv("YOLO_RUN_UUID", run)
+    monkeypatch.setenv("CELL_DETECTOR_KEY", "yolo26_seg_v1")
+    monkeypatch.setenv("YOLO_RUNS_ROOT", "smear_segmentation_project/runs/yolo26_seg")
+    settings = Settings.from_env()
+    expected = settings.yolo_checkpoint_path
+    monkeypatch.chdir(tmp_path)
+    assert Settings.from_env().yolo_checkpoint_path == expected
+    assert expected.is_absolute()
+    assert expected.parts[-3:] == (run, "weights", "best.pt")
+    assert settings.cell_detector_key == yolo.DETECTOR_KEY == "yolo26_seg_v1"
+    with pytest.raises(ValueError, match="independently trusted SHA-256"):
+        yolo.profile_snapshot()
+    with pytest.raises(ValueError):
+        yolo._Response.model_validate(payload())
+
+
+def test_configured_absolute_root_needs_no_local_checkpoint(transport: Callable, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("YOLO_RUNS_ROOT", "/runtime-only/runs")
+    monkeypatch.setenv("YOLO_RUN_UUID", "yolo26n_rbc_1024_v1")
+    expected = "/runtime-only/runs/yolo26n_rbc_1024_v1/weights/best.pt"
+    assert yolo.profile_snapshot()["model_checkpoint"] == expected
+    data = payload()
+    data["model_checkpoint"] = expected
+    transport(lambda request: httpx.Response(200, json=data))
+    assert len(yolo.detect_image(source()).components) == 1
+    with pytest.raises(ValueError):
+        yolo.profile_snapshot({"model_checkpoint": "/wrong/best.pt"})

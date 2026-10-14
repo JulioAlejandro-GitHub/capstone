@@ -41,6 +41,7 @@ ENV PYTHONPATH="/app/malaria_dataset_split_project/src:/app/malaria_dl_local_pro
 
 # Copy the backend API files
 COPY backend_api/app /app/app
+COPY smear_segmentation_project/src/smear_segmentation /app/smear_segmentation
 COPY alembic /app/alembic
 COPY alembic.ini /app/alembic.ini
 COPY scripts/storage/reset_smear_analysis.py /app/scripts/storage/reset_smear_analysis.py
