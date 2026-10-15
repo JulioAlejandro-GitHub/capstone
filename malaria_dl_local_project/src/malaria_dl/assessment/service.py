@@ -4,6 +4,7 @@ import importlib.metadata
 from pathlib import Path
 from typing import Any
 
+from ..data.sample_repository import select_dataset_sample_ids
 from ..campaigns.contracts import digest
 from ..campaigns.repository import execute, identifier
 from ..campaigns.service import planning_environment
@@ -93,14 +94,11 @@ def select_explanation_samples(repository: Any, dataset: dict, split: str, sampl
     selected = samples
     if sample_id is not None or max_images != "all":
         with repository.transaction(readonly=True) as connection:
-            ids = list(execute(connection, """
-                SELECT source_record_id FROM dataset_split_assignments
-                WHERE dataset_version_id=CAST(:dataset AS uuid) AND split_name=:split
-                  AND (CAST(:sample AS uuid) IS NULL OR source_record_id=CAST(:sample AS uuid))
-                ORDER BY source_record_id LIMIT :limit
-            """, dataset=dataset["dataset_version_id"], split=split,
-                sample=identifier(sample_id) if sample_id else None,
-                limit=None if max_images == "all" else max_images).scalars())
+            ids = select_dataset_sample_ids(
+                connection, dataset["dataset_version_id"], split,
+                identifier(sample_id) if sample_id else None,
+                None if max_images == "all" else max_images,
+            )
         by_id = {sample["sample_id"]: sample for sample in samples}
         require(bool(ids) and all(str(item) in by_id for item in ids), "EXPLANATION_SAMPLE_SELECTION_EMPTY")
         selected = [by_id[str(item)] for item in ids]

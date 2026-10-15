@@ -166,3 +166,9 @@
         --ds-control-height: 40px;
     }
 }
+
+/* SCC-XAI.1 FIX: compact report previews; expanded viewer keeps scientific scale. */
+.ds-report {
+    --ds-xai-thumbnail-height: 112px;
+    --ds-xai-compact-column: 144px;
+}

@@ -201,3 +201,13 @@ test-scc-art:
 	docker compose exec -T backend python -m pytest -q tests/test_scc_art.py tests/test_artifacts_api.py tests/test_local_storage_contract.py tests/test_explainability_api.py
 	$(MAKE) test-scc-core
 	docker compose exec -T frontend node --test tests/scc-art.test.mjs tests/e6-lineage.test.mjs tests/run-detail-explainability.test.mjs tests/auth-foundation.test.mjs
+
+.PHONY: test-scc-xai-fix test-scc-xai-original test-scc-xai-selection
+# -k runs frontend even if an existing scientific regression suite fails.
+test-scc-xai-fix: test-scc-xai-original test-scc-xai-selection test-exec1-frontend
+
+test-scc-xai-original:
+	docker compose exec -T backend python -m pytest -q tests/test_scc_xai_original.py tests/test_scc_art.py tests/test_artifacts_api.py tests/test_local_storage_contract.py
+
+test-scc-xai-selection:
+	docker compose exec -T -w /app/malaria_dl_local_project backend python -m pytest -q tests/test_sample_repository.py tests/test_cli01.py tests/test_assessment_e6.py tests/test_dataset_split_isolation.py tests/test_dataset_resolution.py tests/test_dataset_stage1.py tests/test_governed_dataset_contract.py

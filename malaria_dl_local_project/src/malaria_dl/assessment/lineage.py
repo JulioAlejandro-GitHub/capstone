@@ -14,6 +14,7 @@ from ..data.governed_dataset import (
     training_dataset_metadata,
     validate_dataset_location,
 )
+from ..data.sample_repository import select_dataset_sample_records
 from ..data.input_contract import resolve_checkpoint_input, validate_input_contract
 from ..execution.artifacts import file_identity, verify_session
 from ..execution.repository import ExecutionRepository
@@ -178,15 +179,7 @@ def dataset_samples(
     assert_run_dataset_snapshot_unchanged(snapshot, inherited)
     validate_dataset_location(snapshot, dataset_dir)
     with repository.transaction(readonly=True) as c:
-        rows = list(
-            execute(
-                c,
-                """SELECT a.source_record_id,a.clinical_identity_id,a.split_name,r.class_name,r.source_filename,r.source_file_sha256
-          FROM dataset_split_assignments a JOIN dataset_source_records r ON r.id=a.source_record_id
-          WHERE a.dataset_version_id=CAST(:id AS uuid) ORDER BY a.source_record_id""",
-                id=inherited["dataset_version_id"],
-            ).mappings()
-        )
+        rows = select_dataset_sample_records(c, inherited["dataset_version_id"])
     collisions = Counter(
         (r["split_name"], r["class_name"], r["source_filename"]) for r in rows
     )

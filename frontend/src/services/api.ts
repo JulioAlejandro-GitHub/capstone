@@ -433,7 +433,8 @@ async function requestBlob(path: string, externalSignal?: AbortSignal) {
         ARTIFACT_CONTENT_MISSING: 'El artefacto está registrado, pero falta el archivo físico.',
         ARTIFACT_INTEGRITY_FAILED: 'El archivo no coincide con su integridad registrada.',
         ARTIFACT_NOT_REGISTERED: 'El artefacto no está registrado.',
-        ARTIFACT_RELATION_MISMATCH: 'El artefacto no pertenece al recurso solicitado.',
+        ARTIFACT_RELATION_MISMATCH: 'La imagen o artefacto no pertenece al recurso solicitado.',
+        ARTIFACT_DATASET_EVIDENCE_INVALID: 'La evidencia del dataset gobernado no coincide con la registrada para el TRAIN.',
       };
       const fallback = response.status === 401 ? 'Error de autorización: inicia sesión nuevamente.'
         : response.status === 403 ? 'Error de autorización: no tienes permiso para leer este artefacto.'
@@ -666,6 +667,15 @@ export const api = {
       datasource: options.datasource ?? DEFAULT_DATASOURCE});
     if (options.attemptId) params.set('attempt_id', options.attemptId);
     if (options.trainingRunId) params.set('training_run_id', options.trainingRunId);
+    return requestBlob(`/artifacts/file?${params}`, signal);
+  },
+
+  getDatasetSampleBlob(options: {
+    trainingRunId: string; sampleId: string; datasetVersionId: string; attemptId: string; datasource?: string;
+  }, signal?: AbortSignal) {
+    const params = new URLSearchParams({source: 'dataset_sample', training_run_id: options.trainingRunId,
+      sample_id: options.sampleId, dataset_version_id: options.datasetVersionId, attempt_id: options.attemptId,
+      datasource: options.datasource ?? DEFAULT_DATASOURCE});
     return requestBlob(`/artifacts/file?${params}`, signal);
   },
 

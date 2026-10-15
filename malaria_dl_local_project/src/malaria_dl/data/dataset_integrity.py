@@ -11,6 +11,7 @@ from collections import Counter
 from pathlib import Path
 
 from sqlalchemy import text
+from .sample_repository import select_dataset_sample_records
 
 VERIFIER_VERSION = "ml_dataset_integrity_v2"
 
@@ -120,19 +121,7 @@ def verify_integrity(connection, version_id, root, contract, *, required_splits=
             "DATASET_CLINICAL_IDENTITY_MISMATCH",
         )
         require(split in {"train", "val", "test"}, "DATASET_SPLIT_INVALID")
-    rows = (
-        connection.execute(
-            text("""
-        SELECT a.source_record_id,a.clinical_identity_id,a.split_name,r.class_name,
-               r.source_filename,r.source_file_sha256
-        FROM dataset_split_assignments a JOIN dataset_source_records r ON r.id=a.source_record_id
-        WHERE a.dataset_version_id=:id ORDER BY a.source_record_id
-    """),
-            params,
-        )
-        .mappings()
-        .all()
-    )
+    rows = select_dataset_sample_records(connection, version_id)
     require(len(rows) == len(assignments), "DATASET_CONTENT_REFERENCE_MISSING")
     collisions = Counter(
         (r["split_name"], r["class_name"], r["source_filename"]) for r in rows

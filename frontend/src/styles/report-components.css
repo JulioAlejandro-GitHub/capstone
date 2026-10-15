@@ -1581,3 +1581,97 @@
 }
 
 .ds-report .report-viewer::backdrop { background: var(--ds-modal-backdrop); }
+
+/* SCC-XAI.1: four fixed scientific positions, scoped to opted-in reports. */
+.ds-report.xai-viewer,
+.ds-report.xai-comparison-browser,
+.ds-report .xai-content {
+  min-width: 0;
+  display: grid;
+  gap: var(--ds-space-5);
+  color: var(--ds-fg-default);
+}
+
+.ds-report .xai-scroll { overflow-x: auto; }
+.ds-report .xai-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(var(--ds-artifact-min-width), 1fr));
+  gap: var(--ds-space-4);
+}
+.ds-report .xai-panel {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+  border: var(--ds-border-width) solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-bg-subtle);
+  overflow-wrap: anywhere;
+}
+.ds-report .xai-panel h4 { margin: 0; }
+.ds-report .xai-image-frame {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  background: var(--ds-bg-surface);
+}
+.ds-report .xai-image-button {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+.ds-report .xai-image-frame .report-scientific-image {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  box-sizing: border-box;
+}
+.ds-report .xai-panel-status { display: grid; align-content: start; gap: var(--ds-space-3); }
+.ds-report .xai-panel-status p { margin: 0; font-size: var(--ds-text-sm); }
+.ds-report .xai-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-3); }
+.ds-report .xai-metadata { white-space: pre-wrap; font-size: var(--ds-text-xs); }
+.ds-report .xai-scroll:focus-visible,
+.ds-report .xai-image-button:focus-visible {
+  outline: var(--ds-focus-width) solid var(--ds-focus-color);
+  outline-offset: var(--ds-focus-offset);
+}
+.ds-report .xai-modal { width: calc(100% - var(--ds-space-6) * 2); }
+
+/* Same XAI presentation, with compact thumbnails inside the TRAIN report. */
+.ds-report .xai-content[data-density="compact"] { gap: var(--ds-space-3); }
+.ds-report .xai-content[data-density="compact"] .xai-grid {
+  grid-template-columns: repeat(4, minmax(var(--ds-xai-compact-column), 1fr));
+  gap: var(--ds-space-3);
+}
+.ds-report .xai-content[data-density="compact"] .xai-panel {
+  padding: var(--ds-space-3);
+  gap: var(--ds-space-3);
+  grid-template-rows: auto var(--ds-xai-thumbnail-height) 1fr;
+}
+.ds-report .xai-content[data-density="compact"] .xai-image-frame {
+  aspect-ratio: auto;
+  height: var(--ds-xai-thumbnail-height);
+}
+/* Explicit child heights avoid intrinsic image/button size overflowing the grid row. */
+.ds-report .xai-content[data-density="compact"] .xai-image-button,
+.ds-report .xai-content[data-density="compact"] .xai-image-frame .report-scientific-image {
+  display: block;
+  min-height: 0;
+  height: var(--ds-xai-thumbnail-height);
+  max-height: var(--ds-xai-thumbnail-height);
+  aspect-ratio: auto;
+}
+.ds-report .xai-context {
+  display: grid;
+  gap: var(--ds-space-4);
+  margin-block: var(--ds-space-4);
+}
+.ds-report .xai-content[data-density="compact"] .xai-panel h4 { font-size: var(--ds-text-sm); }
+.ds-report .xai-content[data-density="compact"] .xai-panel-status { font-size: var(--ds-text-xs); }
+.ds-report .xai-expand { justify-self: start; }

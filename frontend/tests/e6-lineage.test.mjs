@@ -207,6 +207,7 @@ test('EXPLAIN detail preserves evidence and artifact reference when the file is 
   const detailLoader = loader({
     '../../hooks/useAssessmentArtifacts': {useAssessmentArtifacts: () => ({items: [{artifact_id: 'artifact-fixture', role: 'overlay', path: 'outputs/missing.png', sha256: 'c'.repeat(64)}], loading: false, error: null})},
     '../../services/api': {api: {artifactUrl: () => '/missing.png'}},
+    '../services/api': {api: {}},
   });
   const {AssessmentExplanationDetail} = detailLoader('components/reports/AssessmentExplanationDetail.tsx');
   const html = render(React.createElement(AssessmentExplanationDetail, {datasource: 'malaria', data: {
@@ -238,9 +239,10 @@ test('pagination requests the second hundred while keeping total counts', () => 
 
 test('missing artifact is an artifact error and keeps the EXPLAIN detail', () => {
   const detailLoader = loader({
-    '../cell-review/AuthenticatedCellImage': {useAuthenticatedObjectUrl: () => ({url: null, loading: false, error: true})},
+    '../components/cell-review/AuthenticatedCellImage': {useAuthenticatedObjectUrl: () => ({url: null, loading: false, error: true})},
     '../../hooks/useAssessmentArtifacts': {useAssessmentArtifacts: () => ({items: [{artifact_id: 'missing', role: 'overlay', path: 'outputs/missing.png', sha256: 'c'.repeat(64)}], loading: false, error: null})},
     '../../services/api': {api: {artifactUrl: () => '/missing.png'}},
+    '../services/api': {api: {}},
   });
   const {AssessmentExplanationDetail} = detailLoader('components/reports/AssessmentExplanationDetail.tsx');
   const html = render(React.createElement(AssessmentExplanationDetail, {datasource: 'malaria', data: {

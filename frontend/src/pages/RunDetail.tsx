@@ -1,4 +1,5 @@
 import { useTrainingExplanations } from '../hooks/useTrainingExplanations';
+import { TrainingXAIComparison } from '../components/reports/TrainingXAIComparison';
 import { TrainingExplanationAttempt } from '../components/reports/TrainingExplanationAttempt';
 import { ScientificArtifact } from '../components/reports/ScientificArtifact';
 import { LegacyArtifactMedia } from '../components/reports/LegacyArtifactMedia';
@@ -443,6 +444,7 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
   const [explainabilityLoading, setExplainabilityLoading] = useState(false);
   const [explainabilityError, setExplainabilityError] = useState<string | null>(null);
   const [explainabilityRequestVersion, setExplainabilityRequestVersion] = useState(0);
+  const [trainingEvidenceView, setTrainingEvidenceView] = useState<'comparison' | 'history'>('comparison');
   const assessmentExplanations = useTrainingExplanations(detail?.run.run_type === 'training' && detail.run.id === runId ? runId : null, datasource, explainabilityRequestVersion);
   const [selectedExplainabilityCase, setSelectedExplainabilityCase] = useState<ExplainabilityCase | null>(null);
   const [predictionFilters, setPredictionFilters] = useState<PredictionFilters>({
@@ -1030,8 +1032,20 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
             <p>{assessmentExplanations.error}</p>
             <button type="button" onClick={() => setExplainabilityRequestVersion(current => current + 1)}>Reintentar intentos EXPLAIN</button>
           </div>}
+          {assessmentExplanations.items.length > 0 && <div className="ds-report" data-surface="workbench">
+            <div className="xai-actions" role="group" aria-label="Vista de explicabilidad">
+              <button className="ds-button" type="button" aria-pressed={trainingEvidenceView === 'comparison'} onClick={() => setTrainingEvidenceView('comparison')}>Comparación por muestra</button>
+              <button className="ds-button" type="button" aria-pressed={trainingEvidenceView === 'history'} onClick={() => setTrainingEvidenceView('history')}>Historial de intentos y artefactos</button>
+            </div>
+          </div>}
+          {trainingEvidenceView === 'comparison' && assessmentExplanations.items.length > 0 && <TrainingXAIComparison
+            key={`${runId}:${explainabilityRequestVersion}`} assessments={assessmentExplanations.items}
+            trainingRunId={runId!} datasource={datasource} />}
+          {trainingEvidenceView === 'history' && <div>
+          <h3>Historial de intentos y artefactos</h3>
           {assessmentExplanations.items.map(assessment => <TrainingExplanationAttempt
             key={`${runId}:${assessment.attempt_id}`} assessment={assessment} datasource={datasource} />)}
+          </div>}
           {explainabilityLoading ? (
             <div className="empty-state" role="status">Cargando explicabilidad por caso…</div>
           ) : explainabilityError ? (

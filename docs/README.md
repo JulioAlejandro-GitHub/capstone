@@ -35,6 +35,12 @@ B3 (trazabilidad insuficiente de preparación/entrenamiento YOLO). Incluye plane
 
 ## Fuentes operativas canónicas
 
+SCC-XAI.1 — [Visor unificado de explicabilidad científica](contracts/scc_xai_1.md)
+(`CURRENT_DOC`, 2026-10-15): visor compartido inline/modal con cuatro cuadros,
+agrupación por identidad y recuperación SCC-ART.1. FIX: original gobernado por
+source_record_id y SQL compartido; visor compacto. Backend/frontend aprobados,
+cinco fallos preexistentes en regresión ampliada; confirmación visual autenticada pendiente.
+
 CAPSTONE-UI-TOKENS.1 — [Política CSS de reportes científicos](contracts/capstone_ui_css_policy.md)
 (`CURRENT_DOC`, 2026-10-15): contrato opt-in basado en Ejecuciones; sin migración de
 pantallas ni cambios en frotis. Validación técnica registrada; cierre visual pendiente.

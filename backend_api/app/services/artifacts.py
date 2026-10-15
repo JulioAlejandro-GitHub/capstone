@@ -53,6 +53,7 @@ ALLOWED_EXTENSIONS = frozenset(IMAGE_MIME_BY_EXTENSION)
 class ServedArtifact:
     path: Path
     media_type: str
+    headers: dict[str, str] | None = None
 
 
 def resolve_artifact_path(path: str) -> Path:

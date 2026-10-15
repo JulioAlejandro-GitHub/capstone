@@ -136,8 +136,8 @@ test('ScientificArtifact automatically enables authenticated object URL and rend
   let enabled, call;
   const load = loader({
     react: {...React, useState: initial => [initial === '' ? 'image/png' : initial, () => {}]},
-    '../../services/api': {api:{getArtifactBlob: async (...args) => {call=args; return new Blob(['png'],{type:'image/png'});}}},
-    '../cell-review/AuthenticatedCellImage': {useAuthenticatedObjectUrl: (load, active) => {
+    '../services/api': {api:{getArtifactBlob: async (...args) => {call=args; return new Blob(['png'],{type:'image/png'});}}},
+    '../components/cell-review/AuthenticatedCellImage': {useAuthenticatedObjectUrl: (load, active) => {
       enabled=active; load(new AbortController().signal);
       return {url:'blob:authenticated', loading:false, error:false};
     }},
@@ -151,9 +151,9 @@ test('ScientificArtifact automatically enables authenticated object URL and rend
 
 test('registered missing image is rendered as an error rather than absent evidence', () => {
   const load = loader({
-    react: {...React, useState: initial => [initial === 'Artefacto no disponible.' ? 'El artefacto está registrado, pero falta el archivo físico.' : initial, () => {}]},
-    '../../services/api': {api:{}},
-    '../cell-review/AuthenticatedCellImage': {useAuthenticatedObjectUrl: () => ({url:null,loading:false,error:true})},
+    react: {...React, useState: initial => [initial === null ? {availability:'missing', message:'El artefacto está registrado, pero falta el archivo físico.'} : initial, () => {}]},
+    '../services/api': {api:{}},
+    '../components/cell-review/AuthenticatedCellImage': {useAuthenticatedObjectUrl: () => ({url:null,loading:false,error:true})},
   });
   const {ScientificArtifact} = load('components/reports/ScientificArtifact.tsx');
   const html = renderToStaticMarkup(React.createElement(ScientificArtifact, {artifactId:'registered',source:'assessment',label:'LIME',preview:true,autoLoad:true}));
@@ -229,3 +229,26 @@ test('TRAIN evidence rejects a detail belonging to another parent before listing
   const html=renderToStaticMarkup(React.createElement(TrainingExplanationEvidence,{attemptId:shapAttempt,trainingRunId:shapTrain,datasource:'malaria'}));
   assert.match(html,/no corresponde al TRAIN/); assert.doesNotMatch(html,/<img/);
 });
+
+test('original dataset sample uses authenticated shared blob transport with separate identities', async () => {
+  let sent;
+  const c = client(async (url, options) => {sent={url,options};return new Response(new Blob(['original'],{type:'image/png'}));});
+  c.setAccessToken('fixture-token');
+  const blob=await c.api.getDatasetSampleBlob({trainingRunId:shapTrain,attemptId:shapAttempt,
+    datasetVersionId:'d8c0cab5-09dd-597f-9de7-7ca01aee2ec2',sampleId:'000f6007-9330-5085-972a-247631c541c6'});
+  assert.equal(sent.options.headers.get('Authorization'),'Bearer fixture-token');
+  assert.equal(sent.url.pathname,'/artifacts/file');
+  assert.equal(sent.url.searchParams.get('source'),'dataset_sample');
+  assert.equal(sent.url.searchParams.get('training_run_id'),shapTrain);
+  assert.equal(sent.url.searchParams.get('attempt_id'),shapAttempt);
+  assert.equal(sent.url.searchParams.get('sample_id'),'000f6007-9330-5085-972a-247631c541c6');
+  assert.equal(sent.url.searchParams.get('dataset_version_id'),'d8c0cab5-09dd-597f-9de7-7ca01aee2ec2');
+  for(const field of ['artifact_id','image_id','path']) assert.equal(sent.url.searchParams.has(field),false);
+  assert.equal(await blob.text(),'original');
+});
+for (const [status,code] of [[403,'FORBIDDEN'],[410,'ARTIFACT_CONTENT_MISSING'],[409,'ARTIFACT_INTEGRITY_FAILED'],[409,'ARTIFACT_DATASET_EVIDENCE_INVALID']]) {
+  test(`original sample preserves failure ${code}`, async()=>{
+    const c=client(async()=>new Response(JSON.stringify({error:{code}}),{status}));
+    await assert.rejects(c.api.getDatasetSampleBlob({trainingRunId:shapTrain,attemptId:shapAttempt,sampleId:'sample',datasetVersionId:'dataset'}),error=>error.status===status && error.code===code);
+  });
+}
