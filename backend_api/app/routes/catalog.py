@@ -1,4 +1,8 @@
-from fastapi import APIRouter, Query
+from typing import Annotated, Any, Literal
+
+from fastapi import APIRouter, Depends, Query
+from app.services.catalog import CatalogService, get_catalog_service
+from app.schemas.scientific_read import ModelCatalog
 
 from app.db import fetch_all
 from app.services.serialization import rows_to_list
@@ -7,27 +11,13 @@ from app.services.serialization import rows_to_list
 router = APIRouter(tags=["catalog"])
 
 
-@router.get("/models")
-def models(datasource: str | None = Query(default="malaria")):
-    rows = fetch_all(
-        datasource,
-        """
-        SELECT
-            s.*,
-            m.framework,
-            m.architecture,
-            m.input_shape,
-            m.output_shape,
-            m.pretrained,
-            m.pretrained_source,
-            m.created_at,
-            m.metadata
-        FROM vw_model_run_summary s
-        LEFT JOIN models m ON m.id = s.model_id
-        ORDER BY s.total_runs DESC, s.model_name
-        """,
-    )
-    return {"items": rows_to_list(rows)}
+@router.get("/models", response_model=ModelCatalog)
+def models(
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+    datasource: str | None = Query(default="malaria"),
+    view: Literal["existing", "traceability"] = "existing",
+) -> dict[str, Any]:
+    return service.models(datasource, view == "traceability")
 
 
 @router.get("/models/comparison")

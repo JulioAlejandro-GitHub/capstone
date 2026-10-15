@@ -1,3 +1,4 @@
+import type { ScientificTraceability, ModelCatalog, ScientificModelCatalog } from "../types/scientificRead";
 import type { ScientificResult } from '../components/ScientificResults';
 import type {
   AssessmentDetail,
@@ -16,7 +17,6 @@ import type {
   ExplainabilityRow,
   GroupedRunLineageResponse,
   JsonRecord,
-  ModelSummary,
   ModelVersionRow,
   DeploymentRow,
   DeploymentReadiness,
@@ -618,6 +618,11 @@ function withDatasource(datasource: string) {
 }
 
 export const api = {
+  scientificTraceability(trainingRunId: string, datasource: string) {
+    return request<ScientificTraceability>(`/runs/${encodeURIComponent(trainingRunId)}/scientific-results`, {
+      datasource, view: 'traceability',
+    });
+  },
   scientificResults(runId: string, datasource: string) {
     return request<ScientificResult>(`/runs/${encodeURIComponent(runId)}/scientific-results`, { datasource });
   },
@@ -1279,8 +1284,11 @@ export const api = {
     });
   },
 
+  getScientificModels(datasource: string) {
+    return request<ScientificModelCatalog>('/models', { datasource, view: 'traceability' });
+  },
   getModels(datasource: string) {
-    return request<{ items: ModelSummary[] }>('/models', withDatasource(datasource));
+    return request<ModelCatalog>('/models', withDatasource(datasource));
   },
 
   getModelVersions(datasource: string) {

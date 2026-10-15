@@ -190,3 +190,8 @@ test-exec1-train-regression:
 .PHONY: test-cli01
 test-cli01:
 	cd malaria_dl_local_project && PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. DATABASE_URL=postgresql://cli01:fixture@invalid/cli01 "$(abspath $(SOURCE_PYTHON))" -m pytest -q -p no:cacheprovider -k "not byte_exact_canonical_rules_match_upstream_sources and not test_process_identity_is_stable_on_this_host and not test_remote_released_evidence_is_accepted_unreleased_is_not and not test_local_live_process_still_blocks" tests/test_cli01.py tests/test_exec1.py tests/test_assessment_e6.py tests/test_dataset_split_isolation.py tests/test_dataset_stage1.py tests/test_governed_dataset_contract.py tests/test_campaign_cli_plan_swv22.py tests/test_local_train_launcher.py
+
+.PHONY: test-scc-core
+test-scc-core:
+	docker compose exec -T backend python -m pytest -q tests/test_scc_core.py tests/test_scientific_results_v2.py tests/test_model_comparison_api.py tests/test_e6_lineage_read_only.py tests/test_run_detail_api.py tests/test_grouped_run_lineage_api.py tests/test_lineage_children_api.py tests/test_foundation_config.py
+	docker compose exec -T frontend npx tsc --noEmit --incremental false -p tsconfig.json

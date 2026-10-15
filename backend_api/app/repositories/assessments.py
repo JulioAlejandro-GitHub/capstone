@@ -9,12 +9,12 @@ from app.db import read_only_transaction
 
 class AssessmentReadRepository:
     def list(self, training_run_id: UUID | None, campaign_id: UUID | None,
-             limit: int, offset: int) -> list[dict[str, Any]]:
+             limit: int | None, offset: int) -> list[dict[str, Any]]:
         with read_only_transaction("malaria") as c:
             rows = c.execute(text("""
-                SELECT i.id,i.identity_hash,i.training_run_id,i.kind,a.id AS attempt_id,a.state,a.ordinal,
+                SELECT i.id,i.id AS identity_id,r.model_id,i.identity_hash,i.training_run_id,i.kind,a.id AS attempt_id,a.state,a.ordinal,
                        i.identity->>'split' AS split,i.identity->>'purpose' AS purpose,
-                       a.started_at,a.finished_at,i.identity#>>'{dataset,dataset_version_id}' AS dataset_version_id,
+                       a.started_at,a.finished_at,a.verification,i.identity#>>'{dataset,dataset_version_id}' AS dataset_version_id,
                        i.identity#>>'{model,checkpoint_artifact_id}' AS checkpoint_artifact_id,
                        (i.identity#>>'{decision,effective}')::float8 AS threshold
                 FROM assessment_identities i JOIN assessment_attempts a ON a.identity_id=i.id
@@ -31,8 +31,9 @@ class AssessmentReadRepository:
 
     def detail(self, attempt_id: UUID) -> dict[str, Any] | None:
         with read_only_transaction("malaria") as c:
-            row = c.execute(text("""SELECT a.*,i.identity,i.identity_hash,i.training_run_id,i.kind
+            row = c.execute(text("""SELECT a.*,a.id AS attempt_id,r.model_id,i.identity,i.identity_hash,i.training_run_id,i.kind
                 FROM assessment_attempts a JOIN assessment_identities i ON i.id=a.identity_id
+                JOIN runs r ON r.id=i.training_run_id
                 WHERE a.id=CAST(:id AS uuid)"""), dict(id=str(attempt_id))).mappings().one_or_none()
         if row is None:
             return None

@@ -184,3 +184,5 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 - [dataset_explicit_contract](../malaria_dl_local_project/docs/dataset_explicit_contract.md): `SUPERSEDED`; conserva el texto de su etapa.
 - [model_registry_e2](../malaria_dl_local_project/docs/model_registry_e2.md): `SUPERSEDED`; conserva el texto de su etapa.
 - [README ML](../malaria_dl_local_project/README.md): sección inicial `CURRENT_DOC`; cuerpo anterior `HISTORICAL_AUDIT`.
+
+SCC-CORE.1 — [Contrato compartido de trazabilidad científica](contracts/scc_core_1.md) (`CURRENT_DOC`, 2026-10-15; catálogo dinámico, configuración y lectura por TRAIN/intento).

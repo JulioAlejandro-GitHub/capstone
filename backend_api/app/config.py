@@ -134,6 +134,7 @@ class Settings:
     include_stacktrace: bool
     sql_logging: bool
     request_logging: bool
+    scc_max_comparison_runs: int = field(default_factory=lambda: _int("SCC_MAX_COMPARISON_RUNS", 4, minimum=1))
 
     @property
     def yolo_checkpoint_path(self) -> Path:

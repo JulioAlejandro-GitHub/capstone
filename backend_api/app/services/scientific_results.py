@@ -1,45 +1,51 @@
-"""Read the canonical v2 scientific records without legacy metric fallbacks."""
-from sqlalchemy import text
+"""Shared scientific reading, preserving existing report responses."""
+from typing import Annotated, Any
+from uuid import UUID
+from fastapi import Depends, HTTPException
+from app.repositories.scientific_results import (
+    ScientificReadRepository, metric_dto as metric_dto, read_scientific_results as read_scientific_results,
+)
+from app.repositories.assessments import AssessmentReadRepository
+from app.services.scientific_public import public_evidence, assessment_projection
 
 
+class ScientificReadService:
+    def __init__(self, repository: ScientificReadRepository, assessments: AssessmentReadRepository) -> None:
+        self.repository = repository
+        self.assessments = assessments
 
-def metric_dto(row):
-    values = dict(row)
-    aliases = {'recall': 'recall_parasitized', 'specificity': 'specificity',
-               'precision': 'precision_parasitized', 'f1': 'f1_parasitized',
-               'f2': 'f2_parasitized', 'roc_auc': 'roc_auc_parasitized',
-               'pr_auc': 'pr_auc_parasitized', 'balanced_accuracy': 'balanced_accuracy',
-               'accuracy': 'accuracy'}
-    return dict(values, metrics={
-        name: {'value': values[column], 'undefined_reason': (
-            values['auc_unavailability_reason'] if name in ('roc_auc', 'pr_auc')
-            else 'zero_denominator') if values[column] is None else None}
-        for name, column in aliases.items()
-    }, confusion_matrix_orientation={'rows': ['uninfected', 'parasitized'],
-                                      'columns': ['uninfected', 'parasitized']})
+    def read(self, training: UUID, datasource: str | None, traceability: bool, prediction_limit: int = 100, prediction_offset: int = 0) -> dict[str, Any]:
+        result = self.repository.read(training, datasource, traceability, prediction_limit, prediction_offset)
+        if result is None:
+            raise HTTPException(404, "Run no encontrado")
+        if not traceability:
+            return result
+        run = result.pop('training')
+        model = result.pop('model')
+        if run['run_type'] != 'training':
+            raise HTTPException(422, "training_run_id debe identificar un TRAIN")
+        if model is not None and model['model_type'] != 'classification':
+            raise HTTPException(422, "El contrato SCC requiere un modelo de clasificación")
+        result['artifacts'] = [{**artifact, 'artifact_id': artifact['id'],
+                                'file_availability': 'not_checked'}
+                               for artifact in result.get('artifacts', [])]
+        attempts = [assessment_projection(a) for a in self.assessments.list(training, None, None, 0)]
+        return dict(
+            contract_version='scc_core_1', training_run_id=training,
+            model=public_evidence(model), training=public_evidence(run),
+            evidence=public_evidence(result), assessments=attempts,
+            evidence_status={key: 'available' if value else 'not_persisted'
+                             for key, value in result.items() if isinstance(value, list)},
+            references={
+                'assessments': f'/assessments?training_run_id={training}&view=traceability',
+                'lineage': f'/runs/{training}/lineage-children?datasource=malaria',
+                'predictions': f'/runs/{training}/image-predictions?datasource=malaria&view=traceability',
+            },
+        )
 
 
-def read_scientific_results(connection, run_id):
-    params = {'run': run_id}
-    run = connection.execute(text('SELECT id, parameters, release_status FROM runs WHERE id=:run'), params).mappings().one_or_none()
-    if run is None:
-        return None
-    def rows(sql):
-        return [dict(r) for r in connection.execute(text(sql), params).mappings()]
-
-    evaluations = rows('SELECT * FROM evaluations WHERE run_id=:run ORDER BY created_at,id')
-    metrics = rows('SELECT * FROM run_clinical_metrics WHERE run_id=:run ORDER BY created_at,run_clinical_metric_id')
-    evidence_scope = 'SELECT id FROM xai_evidence WHERE run_id=:run'
-    return dict(
-        contract_version='scientific_results_v2', run_id=str(run_id), release_status=run['release_status'],
-        run_configurations=rows('SELECT * FROM run_configurations WHERE run_id=:run'),
-        evaluations=evaluations,
-        evaluation_ensemble_members=rows('SELECT m.* FROM evaluation_ensemble_members m JOIN evaluations e ON e.id=m.evaluation_id WHERE e.run_id=:run ORDER BY m.evaluation_id,m.ordinal'),
-        run_clinical_metrics=[metric_dto(r) for r in metrics],
-        training_history=rows('SELECT * FROM training_history WHERE run_id=:run ORDER BY phase,epoch'),
-        xai_evidence=rows('SELECT * FROM xai_evidence WHERE run_id=:run ORDER BY generated_at,id'),
-        xai_artifacts=rows(f'SELECT * FROM xai_artifacts WHERE evidence_id IN ({evidence_scope}) ORDER BY evidence_id,role,ordinal'),
-        xai_quantitative_evaluations=rows(f'SELECT * FROM xai_quantitative_evaluations WHERE id IN (SELECT evaluation_id FROM xai_evaluation_members WHERE xai_evidence_id IN ({evidence_scope})) ORDER BY evaluated_at,id'),
-        xai_interpretations=rows(f'SELECT * FROM xai_interpretations WHERE evidence_id IN ({evidence_scope}) ORDER BY created_at,id'),
-        xai_specialist_reviews=rows(f'SELECT r.* FROM xai_specialist_reviews r JOIN xai_interpretations i ON i.id=r.interpretation_id WHERE i.evidence_id IN ({evidence_scope}) ORDER BY r.reviewed_at,r.id'),
-    )
+def get_scientific_read_service(
+    repository: Annotated[ScientificReadRepository, Depends()],
+    assessments: Annotated[AssessmentReadRepository, Depends()],
+) -> ScientificReadService:
+    return ScientificReadService(repository, assessments)

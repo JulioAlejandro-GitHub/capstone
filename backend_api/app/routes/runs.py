@@ -1,8 +1,12 @@
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.db import fetch_all, fetch_one
+from app.schemas.scientific_read import ScientificRead
+from app.services.scientific_results import ScientificReadService, get_scientific_read_service
+from app.services.scientific_public import public_evidence
 from app.schemas.lineage_children import TrainingLineageChildren
 from app.schemas.training_summaries import TrainingSummaryCollection
 from app.services.explainability import enrich_explainability_items
@@ -19,15 +23,16 @@ from app.services.training_summaries import list_training_summaries
 router = APIRouter(tags=["runs"])
 
 
-@router.get('/runs/{run_id}/scientific-results')
-def scientific_results(run_id: UUID, datasource: str | None = Query(None)):
-    from app.db import read_only_transaction
-    from app.services.scientific_results import read_scientific_results
-    with read_only_transaction(datasource) as connection:
-        result = read_scientific_results(connection, run_id)
-    if result is None:
-        raise HTTPException(404, 'Run no encontrado')
-    return result
+@router.get('/runs/{run_id}/scientific-results', response_model=ScientificRead | dict[str, Any])
+def scientific_results(
+    run_id: UUID,
+    service: Annotated[ScientificReadService, Depends(get_scientific_read_service)],
+    datasource: str | None = Query(None),
+    view: Literal['existing', 'traceability'] = 'existing',
+    prediction_limit: int = Query(100, ge=1, le=1000),
+    prediction_offset: int = Query(0, ge=0),
+) -> dict[str, Any]:
+    return service.read(run_id, datasource, view == 'traceability', prediction_limit, prediction_offset)
 
 LABEL_MAPPING = {
     "0": "uninfected",
@@ -781,6 +786,7 @@ def get_run_artifacts_summary(
 def get_run_image_predictions(
     run_id: str,
     datasource: str | None = Query(default="malaria"),
+    view: Literal['existing', 'traceability'] = 'existing',
     split: str | None = Query(default=None),
     case_type: str | None = Query(default=None),
     class_name: str | None = Query(default=None),
@@ -827,7 +833,7 @@ def get_run_image_predictions(
         params,
     )
     total = int(row_to_dict(count_row)["total"]) if count_row else 0
-    return {"items": rows_to_list(rows), "total": total, "limit": limit, "offset": offset}
+    return {"items": public_evidence(rows_to_list(rows)) if view == "traceability" else rows_to_list(rows), "total": total, "limit": limit, "offset": offset}
 
 
 @router.get("/runs/{run_id}/io-records")
