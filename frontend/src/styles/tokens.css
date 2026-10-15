@@ -97,3 +97,72 @@
     --color-warning: var(--ds-amber-300);
     --color-error: var(--ds-red-300);
 }
+
+/* CAPSTONE-UI-TOKENS.1: adopción explícita; no cambia los fallbacks legacy.
+   Sólo decisiones visuales. No aplicar este ámbito a Análisis de frotis. */
+.ds-report {
+    --ds-space-1: 2px;
+    --ds-space-2: 4px;
+    --ds-space-3: 8px;
+    --ds-space-4: 12px;
+    --ds-space-5: 16px;
+    --ds-space-6: 24px;
+    --ds-gap-section: 22px;
+    --ds-gap-subsection: 24px;
+    --ds-pad-section: 16px;
+    --ds-pad-control-y: 7px;
+    --ds-pad-control-x: 11px;
+    --ds-page-padding: 28px;
+    --ds-border-width: 1px;
+    --ds-accent-width: 3px;
+    --ds-radius-sm: 4px;
+    --ds-radius-md: 6px;
+    --ds-radius-lg: 8px;
+    --ds-radius-card: 14px;
+    --ds-radius-modal: 16px;
+    --ds-radius-pill: 999px;
+    --ds-elevation-0: none;
+    --ds-shadow-card: 0 7px 20px rgba(18, 26, 47, .045);
+    --ds-shadow-modal: 0 28px 80px rgba(0, 0, 0, .28);
+    --ds-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --ds-text-xs: 12px;
+    --ds-text-sm: 13px;
+    --ds-text-lg: 16px;
+    --ds-text-title: 30px;
+    --ds-text-metric: 26px;
+    --ds-line-height: 1.45;
+    --ds-weight-medium: 500;
+    --ds-weight-semibold: 600;
+    --ds-control-height: 38px;
+    --ds-control-height-compact: 34px;
+    --ds-focus-width: 3px;
+    --ds-focus-offset: 2px;
+    --ds-focus-color: var(--ds-blue-500);
+    --ds-action-fg: var(--ds-blue-500);
+    --ds-action-hover: var(--ds-blue-100);
+    --ds-status-approved-fg: var(--ds-green-700);
+    --ds-status-approved-bg: var(--ds-green-100);
+    --ds-status-warning-fg: var(--ds-amber-700);
+    --ds-status-warning-bg: var(--ds-amber-100);
+    --ds-status-rejected-fg: var(--ds-red-700);
+    --ds-status-rejected-bg: var(--ds-red-100);
+    --ds-status-blocked-fg: var(--ds-violet-700);
+    --ds-status-blocked-bg: var(--ds-violet-100);
+    --ds-status-running-fg: var(--ds-blue-600);
+    --ds-status-running-bg: var(--ds-blue-100);
+    --ds-status-neutral-fg: var(--ds-slate-600);
+    --ds-status-neutral-bg: var(--ds-slate-100);
+    --ds-table-cell-padding: 12px;
+    --ds-artifact-min-width: 220px;
+    --ds-artifact-max-height: 480px;
+    --ds-modal-width: 760px;
+    --ds-modal-backdrop: rgba(16, 24, 43, .58);
+}
+
+/* Las media queries no admiten var(): umbral explícito compartido. */
+@media (max-width: 700px) {
+    .ds-report {
+        --ds-page-padding: 10px;
+        --ds-control-height: 40px;
+    }
+}

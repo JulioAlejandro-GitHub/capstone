@@ -1495,3 +1495,89 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+
+/* Contrato opt-in para futuros reportes. No sustituye las reglas legacy. */
+.ds-report .report-heading {
+  margin: 0;
+  font-size: var(--ds-text-title);
+  overflow-wrap: anywhere;
+}
+
+.ds-report .report-copy { color: var(--ds-fg-muted); }
+
+.ds-report .report-section,
+.ds-report .report-evidence,
+.ds-report .report-metric {
+  min-width: 0;
+  padding: var(--ds-pad-section);
+  border: var(--ds-border-width) solid var(--ds-border-default);
+  border-radius: var(--ds-radius-card);
+  background: var(--ds-bg-surface);
+  box-shadow: var(--ds-shadow-card);
+}
+
+.ds-report .report-metric {
+  display: grid;
+  gap: var(--ds-space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.ds-report .report-metric > strong { font-size: var(--ds-text-metric); }
+
+.ds-report .report-identifier {
+  font-family: var(--ds-font-mono);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.ds-report .report-table-scroll { overflow-x: auto; }
+
+.ds-report .report-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.ds-report .report-data-table th,
+.ds-report .report-data-table td {
+  padding: var(--ds-table-cell-padding);
+  border-bottom: var(--ds-border-width) solid var(--ds-border-default);
+  text-align: start;
+}
+
+.ds-report .report-data-table th { background: var(--ds-bg-subtle); }
+.ds-report .report-data-table tbody tr:hover { background: var(--ds-bg-hover); }
+
+.ds-report .report-artifact-gallery,
+.ds-report .report-comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ds-artifact-min-width)), 1fr));
+  gap: var(--ds-space-4);
+}
+
+.ds-report .report-scientific-image {
+  display: block;
+  width: 100%;
+  max-height: var(--ds-artifact-max-height);
+  object-fit: contain;
+  background: var(--ds-bg-subtle);
+  border: var(--ds-border-width) solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+}
+
+/* Sólo presentación de dialog nativo; el consumidor gestiona foco y cierre. */
+.ds-report .report-viewer {
+  width: min(var(--ds-modal-width), calc(100% - var(--ds-space-6)));
+  max-height: calc(100dvh - var(--ds-space-6));
+  overflow: auto;
+  padding: var(--ds-space-6);
+  border: var(--ds-border-width) solid var(--ds-border-default);
+  border-radius: var(--ds-radius-modal);
+  background: var(--ds-bg-surface);
+  color: var(--ds-fg-default);
+  box-shadow: var(--ds-shadow-modal);
+}
+
+.ds-report .report-viewer::backdrop { background: var(--ds-modal-backdrop); }

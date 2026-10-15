@@ -163,3 +163,108 @@
     color: var(--ds-status-neutral-fg);
     background: var(--ds-status-neutral-bg);
 }
+
+/* Adopción explícita de reportes; las primitivas anteriores siguen compatibles. */
+.ds-report.ds-page {
+    padding: var(--ds-page-padding);
+    line-height: var(--ds-line-height);
+}
+
+.ds-report .ds-button,
+.ds-report .ds-control,
+.ds-report .ds-nav-link {
+    min-height: var(--ds-control-height);
+    border: var(--ds-border-width) solid var(--ds-border-default);
+    border-radius: var(--ds-radius-lg);
+    background: var(--ds-bg-surface);
+    color: var(--ds-fg-default);
+    padding: var(--ds-pad-control-y) var(--ds-pad-control-x);
+    font: inherit;
+    font-size: var(--ds-text-xs);
+}
+
+.ds-report .ds-button,
+.ds-report .ds-nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ds-space-3);
+    color: var(--ds-action-fg);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: var(--ds-weight-semibold);
+}
+
+.ds-report .ds-button[data-variant="primary"] {
+    background: var(--ds-action-fg);
+    border-color: var(--ds-action-fg);
+    color: var(--ds-slate-0);
+}
+
+.ds-report .ds-button[data-variant="warning"] {
+    background: var(--ds-status-warning-bg);
+    color: var(--ds-status-warning-fg);
+    border-color: currentColor;
+}
+
+.ds-report .ds-button[data-size="compact"] {
+    min-height: var(--ds-control-height-compact);
+}
+
+.ds-report .ds-button:hover:not(:disabled):not([aria-disabled="true"]),
+.ds-report .ds-nav-link:hover,
+.ds-report .ds-nav-link[aria-current="page"] {
+    background: var(--ds-action-hover);
+    color: var(--ds-action-fg);
+    border-color: currentColor;
+}
+
+.ds-report .ds-control {
+    width: 100%;
+    min-width: 0;
+}
+
+.ds-report .ds-control[aria-invalid="true"] {
+    border-color: var(--ds-status-rejected-fg);
+}
+
+.ds-report .ds-button:disabled,
+.ds-report .ds-button[aria-disabled="true"],
+.ds-report .ds-control:disabled {
+    background: var(--ds-bg-hover);
+    color: var(--ds-fg-muted);
+    border-color: var(--ds-border-default);
+    cursor: not-allowed;
+}
+
+.ds-report .ds-button[aria-busy="true"] { cursor: progress; }
+
+.ds-report .ds-button:focus-visible,
+.ds-report .ds-control:focus-visible,
+.ds-report .ds-nav-link:focus-visible,
+.ds-report .ds-accordion > summary:focus-visible {
+    outline: var(--ds-focus-width) solid var(--ds-focus-color);
+    outline-offset: var(--ds-focus-offset);
+}
+
+.ds-report .ds-accordion {
+    border: var(--ds-border-width) solid var(--ds-border-default);
+    border-radius: var(--ds-radius-lg);
+    padding: var(--ds-space-4);
+    background: var(--ds-bg-surface);
+}
+
+.ds-report .ds-accordion > summary {
+    cursor: pointer;
+    font-weight: var(--ds-weight-semibold);
+}
+
+.ds-report .ds-callout[data-tone="approved"] {
+    color: var(--ds-status-approved-fg);
+    background: var(--ds-status-approved-bg);
+}
+
+.ds-report .ds-callout[data-tone="neutral"] {
+    color: var(--ds-status-neutral-fg);
+    background: var(--ds-status-neutral-bg);
+}

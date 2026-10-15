@@ -35,6 +35,10 @@ B3 (trazabilidad insuficiente de preparación/entrenamiento YOLO). Incluye plane
 
 ## Fuentes operativas canónicas
 
+CAPSTONE-UI-TOKENS.1 — [Política CSS de reportes científicos](contracts/capstone_ui_css_policy.md)
+(`CURRENT_DOC`, 2026-10-15): contrato opt-in basado en Ejecuciones; sin migración de
+pantallas ni cambios en frotis. Validación técnica registrada; cierre visual pendiente.
+
 CAPSTONE-CLI-01 — [Certificación de parámetros científicos](audits/capstone_cli_01_parameter_certification.md)
 (`CURRENT_DOC`, 2026-10-13): cuatro módulos oficiales, selección por campaña/TRAIN,
 EXPLAIN parcial e individual, defaults persistidos y retiro de los cuatro ejecutores legacy.
