@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import { ComparisonSelectionProvider } from './hooks/useComparisonSelection';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './auth';
 import { InvalidEntityId, NotFound, RouteEffects } from './components/RouteState';
@@ -82,7 +83,7 @@ function App() {
 
   return <>
     <RouteEffects />
-    <Routes>
+    <ComparisonSelectionProvider key={datasource}><Routes>
       <Route path="/login" element={<Login />} />
       <Route element={<ProtectedRoute><Layout datasource={datasource} datasources={datasources} onDatasourceChange={selectDatasource} /></ProtectedRoute>}>
         <Route path="/" element={<Navigate replace to={withAllowedQuery(routes.summary, { datasource })} />} />
@@ -119,7 +120,7 @@ function App() {
         <Route path="/deployments" element={<Navigate replace to={`${routes.deployments}${location.search}`} />} />
         <Route path="*" element={<NotFound />} />
       </Route>
-    </Routes>
+    </Routes></ComparisonSelectionProvider>
   </>;
 }
 

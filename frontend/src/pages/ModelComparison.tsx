@@ -1,121 +1,62 @@
-import { AssessmentComparison } from '../components/reports/AssessmentComparison';
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
+import { useComparisonCatalog } from '../hooks/useComparisonCatalog';
+import { useComparisonSelection } from '../hooks/useComparisonSelection';
+import { ComparisonRunCard } from '../components/reports/ComparisonRunCard';
+import { formatDate } from '../utils/format';
+import '../styles/ds-primitives.css';
+import '../styles/report-components.css';
 
-import { DataTable } from '../components/DataTable';
-import { Loading } from '../components/Loading';
-import { api } from '../services/api';
-import type { ClinicalRunSummary, ModelSummary } from '../types/api';
-import { formatDate, formatMetric } from '../utils/format';
-
-interface ModelComparisonProps {
-  datasource: string;
-}
-
-type SortKey =
-  | 'f2_parasitized'
-  | 'recall_parasitized'
-  | 'specificity'
-  | 'pr_auc_parasitized'
-  | 'balanced_accuracy';
-
-export function ModelComparison({ datasource }: ModelComparisonProps) {
-  const [models, setModels] = useState<ModelSummary[] | null>(null);
-  const [clinicalRows, setClinicalRows] = useState<ClinicalRunSummary[]>([]);
-  const [sortKey, setSortKey] = useState<SortKey>('f2_parasitized');
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setError(null);
-    Promise.all([api.getModels(datasource), api.getClinicalModelComparison(datasource)])
-      .then(([modelsResponse, clinicalResponse]) => {
-        setModels(modelsResponse.items);
-        setClinicalRows(clinicalResponse.items);
-      })
-      .catch((err: Error) => setError(err.message));
-  }, [datasource]);
-
-  if (error) return <section className="panel error">{error}</section>;
-  if (!models) return <Loading />;
-
-  const sortedClinicalRows = [...clinicalRows].sort(
-    (a, b) => Number(b[sortKey] ?? -1) - Number(a[sortKey] ?? -1),
-  );
-
-  return (
-    <section className="page">
-      <div className="page-title">
-        <div>
-          <h1>Comparacion de modelos</h1>
-          <p>Comparacion clinica experimental por run y resumen historico por modelo.</p>
-        </div>
-      </div>
-
-      <AssessmentComparison datasource={datasource} />
-
-      <section className="panel clinical-disclaimer">
-        <strong>Comparacion responsable</strong>
-        <p>
-          No compares modelos si fueron evaluados con splits, preprocessing o thresholds
-          distintos. La decision binaria usa probability_parasitized contra el threshold
-          registrado.
-        </p>
-      </section>
-
-      <section className="panel">
-        <div className="section-heading">
-          <h2>Comparacion clinica por run</h2>
-          <label className="inline-control">
-            Ordenar por
-            <select value={sortKey} onChange={(event) => setSortKey(event.target.value as SortKey)}>
-              <option value="f2_parasitized">F2-score</option>
-              <option value="recall_parasitized">Recall parasitized</option>
-              <option value="specificity">Specificity</option>
-              <option value="pr_auc_parasitized">PR-AUC</option>
-              <option value="balanced_accuracy">Balanced accuracy</option>
-            </select>
-          </label>
-        </div>
-        <DataTable<ClinicalRunSummary>
-          rows={sortedClinicalRows}
-          columns={[
-            { header: 'Modelo', render: (row) => row.model_name ?? '-' },
-            { header: 'Run ID', render: (row) => <code>{row.run_id}</code> },
-            { header: 'Policy', render: (row) => row.checkpoint_policy ?? '-' },
-            { header: 'Threshold source', render: (row) => row.threshold_source ?? '-' },
-            { header: 'Recall parasitized', render: (row) => formatMetric(row.recall_parasitized) },
-            { header: 'Specificity', render: (row) => formatMetric(row.specificity) },
-            { header: 'F2', render: (row) => formatMetric(row.f2_parasitized) },
-            { header: 'PR-AUC', render: (row) => formatMetric(row.pr_auc_parasitized) },
-            { header: 'ROC-AUC', render: (row) => formatMetric(row.roc_auc_parasitized) },
-            { header: 'Balanced acc.', render: (row) => formatMetric(row.balanced_accuracy) },
-            {
-              header: 'Collapse',
-              render: (row) => row.prediction_collapse_detected === true ? 'Si' : row.prediction_collapse_detected === false ? 'No' : '-',
-            },
-          ]}
-          getRowKey={(row) => row.run_id}
-        />
-      </section>
-
-      <section className="panel">
-        <h2>Resumen historico por modelo</h2>
-        <DataTable<ModelSummary>
-          rows={models}
-          columns={[
-            { header: 'Modelo', render: (row) => row.model_name },
-            { header: 'Tipo', render: (row) => row.model_type },
-            { header: 'Framework', render: (row) => row.framework ?? '-' },
-            { header: 'Runs', render: (row) => row.total_runs },
-            { header: 'Completadas', render: (row) => row.completed_runs },
-            { header: 'Fallidas', render: (row) => row.failed_runs },
-            { header: 'Accuracy', render: (row) => formatMetric(row.best_accuracy) },
-            { header: 'Recall', render: (row) => formatMetric(row.best_recall) },
-            { header: 'F1', render: (row) => formatMetric(row.best_f1_score) },
-            { header: 'AUC', render: (row) => formatMetric(row.best_auc) },
-            { header: 'Ultimo run', render: (row) => formatDate(row.last_run_at) },
-          ]}
-        />
-      </section>
-    </section>
-  );
+export function ModelComparison({ datasource }: { datasource: string }) {
+  const { catalog, error, retry } = useComparisonCatalog(datasource);
+  const { ids, add, remove } = useComparisonSelection();
+  const dialog = useRef<HTMLDialogElement>(null);
+  const trigger = useRef<HTMLButtonElement | null>(null);
+  const [query, setQuery] = useState('');
+  const maximum = catalog?.comparison.scc_max_comparison_runs;
+  const available = maximum === undefined ? 0 : Math.max(0, maximum - ids.length);
+  const choices = catalog?.items.flatMap(model => model.training_runs.map(run => ({ model, run }))) ?? [];
+  const filtered = choices.filter(({ model, run }) =>
+    `${model.model_name} ${model.architecture ?? ''} ${run.training_run_id} ${run.run_name ?? ''}`.toLowerCase().includes(query.toLowerCase()));
+  const openSelector = (button: HTMLButtonElement) => {
+    trigger.current = button;
+    setQuery('');
+    dialog.current?.showModal();
+  };
+  return <section className="ds-page ds-report scc-page">
+    <header className="ds-page-header">
+      <div className="scc-heading-copy"><h1 className="report-heading">Comparación Científica</h1><p className="report-copy">Análisis comparativo de ejecuciones, dinámica de aprendizaje, topología de representaciones y complementariedad de errores.</p></div>
+      <div className="report-metric" aria-live="polite"><span>Capacidad utilizada / máxima</span><strong>{ids.length} / {maximum ?? '—'}</strong></div>
+    </header>
+    {error && <div className="ds-callout" role="alert"><p>{error}</p><button className="ds-button" onClick={retry}>Reintentar consulta</button></div>}
+    {!catalog && !error && <p role="status">Cargando catálogo de TRAIN y capacidad…</p>}
+    <div className="ds-page-header"><h2>Ejecuciones seleccionadas</h2>
+      <button className="ds-button" data-variant="primary" disabled={!available} onClick={event => openSelector(event.currentTarget)}>Añadir RUN</button>
+    </div>
+    <p role="status">{ids.length < 2 ? 'Todavía no existe una comparación configurada. Selecciona al menos dos TRAIN.' : 'Selección preparada. El análisis científico estará disponible en una fase posterior.'}
+      {maximum !== undefined && !available ? ' Capacidad máxima alcanzada.' : ''}
+      {maximum !== undefined && ids.length > maximum ? ' La configuración cambió: quita ejecuciones para respetar el máximo actual.' : ''}</p>
+    <div className="report-comparison">
+      {ids.map((id, index) => {
+        const choice = choices.find(item => item.run.training_run_id === id);
+        return <ComparisonRunCard key={`${datasource}:${id}`} id={id} index={index} datasource={datasource}
+          modelName={choice?.model.model_name} architecture={choice?.model.architecture} onRemove={() => remove(id)} />;
+      })}
+      {Array.from({ length: available }, (_, index) => <button key={index} className="ds-button scc-empty-slot"
+        onClick={event => openSelector(event.currentTarget)}><strong>＋ Añadir RUN</strong><span>Espacio {ids.length + index + 1} disponible</span></button>)}
+    </div>
+    <dialog ref={dialog} className="report-viewer" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
+      <div className="ds-page-header"><h2 id="scc-selector-title">Seleccionar ejecuciones TRAIN</h2>
+        <button className="ds-button" onClick={() => dialog.current?.close()}>Cerrar</button></div>
+      <p>Seleccionadas: {ids.length} / {maximum ?? '—'}. Cada identificador corresponde a un TRAIN concreto.</p>
+      <label>Buscar modelo, arquitectura o identificador<input autoFocus className="ds-control" value={query} onChange={event => setQuery(event.target.value)} /></label>
+      <ul className="scc-choices">{filtered.map(({ model, run }) => <li key={run.training_run_id}>
+        <label><input type="checkbox" checked={ids.includes(run.training_run_id)} disabled={!ids.includes(run.training_run_id) && !available}
+          onChange={event => event.target.checked && maximum !== undefined ? add(run.training_run_id, maximum) : remove(run.training_run_id)} />
+          <span><strong>{model.model_name}</strong> · Arquitectura: {model.architecture ?? 'Sin evidencia'}<br />
+            <code className="report-identifier">{run.training_run_id}</code><br />
+            {run.run_name ?? 'Sin nombre'} · {run.status} · {formatDate(run.started_at)}</span>
+        </label></li>)}</ul>
+      {!filtered.length && <p>Sin ejecuciones TRAIN disponibles para esta búsqueda.</p>}
+    </dialog>
+  </section>;
 }

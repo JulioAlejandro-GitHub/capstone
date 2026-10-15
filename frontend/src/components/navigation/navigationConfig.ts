@@ -34,6 +34,7 @@ const modelAiGroups: NavigationGroup[] = [
     id: 'experimentation', label: 'Experimentación', items: [
       { id: 'runs', label: 'Ejecuciones', path: routes.runs, icon: 'activity' },
       { id: 'campaign', label: 'Campaña', path: routes.campaigns, icon: 'compare' },
+      { id: 'comparison', label: 'Comparar Modelos', path: routes.comparison, icon: 'compare' },
     ]
   },
   {
