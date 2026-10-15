@@ -212,9 +212,10 @@ test('EXPLAIN detail preserves evidence and artifact reference when the file is 
   const html = render(React.createElement(AssessmentExplanationDetail, {datasource: 'malaria', data: {
     ...assessment, id: attempt, identity: {explanation: {method: 'gradcam'}, model: {checkpoint_artifact_id: 'checkpoint-fixture'}},
   }}));
-  for(const value of ['gradcam', attempt, 'artifact-fixture', 'outputs/missing.png', 'checkpoint-fixture']) assert.ok(html.includes(value));
-  assert.ok(html.includes('Ver imagen'));
-  assert.ok(!html.includes('<img')); // No external content is checked on detail load.
+  for(const value of ['Grad-CAM', attempt, 'artifact-fixture', 'checkpoint-fixture']) assert.ok(html.includes(value));
+  assert.ok(!html.includes('outputs/missing.png'));
+  assert.ok(html.includes('Cargando artefacto'));
+  assert.ok(!html.includes('<img')); // Server rendering keeps the loading state until the authenticated effect runs.
 });
 
 test('pagination requests the second hundred while keeping total counts', () => {
@@ -237,7 +238,7 @@ test('pagination requests the second hundred while keeping total counts', () => 
 
 test('missing artifact is an artifact error and keeps the EXPLAIN detail', () => {
   const detailLoader = loader({
-    react: {useState: () => [true, () => {}]},
+    '../cell-review/AuthenticatedCellImage': {useAuthenticatedObjectUrl: () => ({url: null, loading: false, error: true})},
     '../../hooks/useAssessmentArtifacts': {useAssessmentArtifacts: () => ({items: [{artifact_id: 'missing', role: 'overlay', path: 'outputs/missing.png', sha256: 'c'.repeat(64)}], loading: false, error: null})},
     '../../services/api': {api: {artifactUrl: () => '/missing.png'}},
   });
@@ -245,7 +246,7 @@ test('missing artifact is an artifact error and keeps the EXPLAIN detail', () =>
   const html = render(React.createElement(AssessmentExplanationDetail, {datasource: 'malaria', data: {
     ...assessment, id: attempt, identity: {explanation: {method: 'gradcam'}, model: {checkpoint_artifact_id: 'checkpoint-fixture'}},
   }}));
-  assert.ok(html.includes('Error de artefacto'));
+  assert.ok(html.includes('Artefacto no disponible'));
   assert.ok(html.includes('La ejecución permanece registrada'));
   assert.ok(html.includes(attempt));
 });

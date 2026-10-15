@@ -414,9 +414,12 @@ export interface AssessmentExplanationChild extends Omit<AssessmentEvaluationChi
 }
 
 export interface AssessmentArtifact {
+  sample_id?: string | null;
+  attempt_id?: string;
+  training_run_id?: string;
   artifact_id: string;
   role: string;
-  path: string;
+  path?: string;
   sha256: string;
   bytes: number;
 }
@@ -429,7 +432,7 @@ export interface AssessmentDetail extends Omit<AssessmentEvaluationChild, 'sourc
     split: AssessmentEvaluationChild['split'];
     purpose: AssessmentEvaluationChild['purpose'];
     model: { model_version_id: string; checkpoint_artifact_id: string };
-    explanation?: { method: string };
+    explanation?: { method: string; background?: { sample_id: string }[] };
     dataset?: { dataset_version_id: string };
     decision?: { effective: number };
     seed?: number;

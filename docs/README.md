@@ -186,3 +186,5 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 - [README ML](../malaria_dl_local_project/README.md): sección inicial `CURRENT_DOC`; cuerpo anterior `HISTORICAL_AUDIT`.
 
 SCC-CORE.1 — [Contrato compartido de trazabilidad científica](contracts/scc_core_1.md) (`CURRENT_DOC`, 2026-10-15; catálogo dinámico, configuración y lectura por TRAIN/intento).
+
+SCC-ART.1 — [Contrato de acceso HTTP a artefactos científicos](contracts/scc_art_1.md) (`CURRENT_DOC`, 2026-10-15; implementación y pruebas, certificación operativa autenticada/navegador pendiente).

@@ -195,3 +195,9 @@ test-cli01:
 test-scc-core:
 	docker compose exec -T backend python -m pytest -q tests/test_scc_core.py tests/test_scientific_results_v2.py tests/test_model_comparison_api.py tests/test_e6_lineage_read_only.py tests/test_run_detail_api.py tests/test_grouped_run_lineage_api.py tests/test_lineage_children_api.py tests/test_foundation_config.py
 	docker compose exec -T frontend npx tsc --noEmit --incremental false -p tsconfig.json
+
+.PHONY: test-scc-art
+test-scc-art:
+	docker compose exec -T backend python -m pytest -q tests/test_scc_art.py tests/test_artifacts_api.py tests/test_local_storage_contract.py tests/test_explainability_api.py
+	$(MAKE) test-scc-core
+	docker compose exec -T frontend node --test tests/scc-art.test.mjs tests/e6-lineage.test.mjs tests/run-detail-explainability.test.mjs tests/auth-foundation.test.mjs

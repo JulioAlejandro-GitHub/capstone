@@ -1,3 +1,4 @@
+import { LegacyArtifactMedia } from '../reports/LegacyArtifactMedia';
 import { useCallback, useEffect, useState } from 'react';
 
 import { api } from '../../services/api';
@@ -76,6 +77,7 @@ function CaseMedia({ media, onUnavailable }: { media: ExplainabilityMedia; onUna
   if (media.kind === 'cell_crop') return <AuthenticatedCropImage crop={media.crop} alt={media.alt} eager />;
   if (media.kind === 'cell_explanation') return <CellExplanationImage media={media} onUnavailable={onUnavailable} />;
   if (!media.url || failed) return <div className="image-placeholder">Imagen no disponible.</div>;
+  if (media.url.includes('/artifacts/file?')) return <LegacyArtifactMedia url={media.url} label={media.alt} image />;
   return <img src={media.url} alt={media.alt} loading="lazy" decoding="async" onError={() => { setFailed(true); onUnavailable?.(); }} />;
 }
 

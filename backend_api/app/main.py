@@ -36,7 +36,10 @@ def error_response(status: int, code: str, message: str, details: dict | list | 
 async def http_error(_: Request, exc: HTTPException):
     codes = {401: "AUTHENTICATION_REQUIRED", 403: "FORBIDDEN", 404: "NOT_FOUND", 409: "CONFLICT", 503: "DATABASE_UNAVAILABLE"}
     message = exc.detail if isinstance(exc.detail, str) else "La operación no pudo completarse."
-    return error_response(exc.status_code, codes.get(exc.status_code, "REQUEST_ERROR"), message,
+    code = codes.get(exc.status_code, "REQUEST_ERROR")
+    if isinstance(exc.detail, dict) and str(exc.detail.get("code", "")).startswith("ARTIFACT_"):
+        code = exc.detail["code"]
+    return error_response(exc.status_code, code, message,
                           exc.detail if isinstance(exc.detail, dict) else {})
 
 

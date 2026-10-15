@@ -1,3 +1,7 @@
+import { useTrainingExplanations } from '../hooks/useTrainingExplanations';
+import { TrainingExplanationAttempt } from '../components/reports/TrainingExplanationAttempt';
+import { ScientificArtifact } from '../components/reports/ScientificArtifact';
+import { LegacyArtifactMedia } from '../components/reports/LegacyArtifactMedia';
 import { useEffect, useState } from 'react';
 
 import { ClinicalMetricsCards } from '../components/ClinicalMetricsCards';
@@ -439,6 +443,7 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
   const [explainabilityLoading, setExplainabilityLoading] = useState(false);
   const [explainabilityError, setExplainabilityError] = useState<string | null>(null);
   const [explainabilityRequestVersion, setExplainabilityRequestVersion] = useState(0);
+  const assessmentExplanations = useTrainingExplanations(detail?.run.run_type === 'training' && detail.run.id === runId ? runId : null, datasource, explainabilityRequestVersion);
   const [selectedExplainabilityCase, setSelectedExplainabilityCase] = useState<ExplainabilityCase | null>(null);
   const [predictionFilters, setPredictionFilters] = useState<PredictionFilters>({
     split: '',
@@ -450,7 +455,6 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
   const [predictionsError, setPredictionsError] = useState<string | null>(null);
   const [optionalLoadErrors, setOptionalLoadErrors] = useState<string[]>([]);
   const [optionalDataLoading, setOptionalDataLoading] = useState(false);
-  const [trainingCurvesLoadFailed, setTrainingCurvesLoadFailed] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   useEffect(() => {
@@ -465,7 +469,6 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
     setArtifacts([]);
     setOptionalLoadErrors([]);
     setOptionalDataLoading(true);
-    setTrainingCurvesLoadFailed(false);
     setCopyFeedback(null);
 
     api.getRun(datasource, runId)
@@ -886,26 +889,18 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
               <h2 id="training-curves-title">Curvas de entrenamiento</h2>
               <span>Accuracy y loss por época</span>
             </div>
-            {trainingCurvesUrl && !trainingCurvesLoadFailed ? (
-              <a className="run-detail-action-link" href={trainingCurvesUrl} target="_blank" rel="noreferrer">Abrir gráfico</a>
+            {trainingCurvesUrl ? (
+              <LegacyArtifactMedia url={trainingCurvesUrl} label="Abrir gráfico" />
             ) : null}
           </div>
-          {trainingCurvesUrl && !trainingCurvesLoadFailed ? (
+          {trainingCurvesUrl ? (
             <figure className="training-curves-figure">
-              <a href={trainingCurvesUrl} target="_blank" rel="noreferrer">
-                <img
-                  src={trainingCurvesUrl}
-                  alt="Curvas combinadas de accuracy y loss del entrenamiento"
-                  onError={() => setTrainingCurvesLoadFailed(true)}
-                />
-              </a>
-              <figcaption>{trainingCurvesPath}</figcaption>
+              <LegacyArtifactMedia url={trainingCurvesUrl} label="Curvas de entrenamiento" image />
+              <figcaption>Curvas de entrenamiento</figcaption>
             </figure>
           ) : (
             <p className="run-detail-empty-state">
-              {trainingCurvesLoadFailed
-                ? 'La curva está registrada, pero no fue posible cargar su imagen.'
-                : registeredTrainingCurvesArtifact && !artifactExists(registeredTrainingCurvesArtifact)
+              {registeredTrainingCurvesArtifact && !artifactExists(registeredTrainingCurvesArtifact)
                   ? 'La curva está registrada, pero figura como no disponible en metadata.'
                   : 'No hay curvas de entrenamiento registradas para esta ejecución.'}
             </p>
@@ -1002,7 +997,7 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
               { header: 'Threshold', render: (row) => formatMetric(row.threshold_used) },
               { header: 'Tipo de caso', render: (row) => <span className={`case-badge ${row.case_type ?? 'unknown'}`}>{caseTypeLabel(row.case_type)}</span> },
               { header: 'Correcta', render: (row) => booleanText(row.is_correct) },
-              { header: 'Imagen', render: (row) => row.relative_path ? <a href={api.artifactUrl(row.relative_path, { datasource })} target="_blank" rel="noreferrer">Abrir imagen</a> : '-' },
+              { header: 'Imagen', render: (row) => row.relative_path ? <LegacyArtifactMedia url={api.artifactUrl(row.relative_path, { datasource })} label="Abrir imagen" /> : '-' },
             ]}
             getRowKey={(row, index) => row.run_image_prediction_id ?? `${row.filename}-${index}`}
           />
@@ -1013,7 +1008,13 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
         <summary>
           <span>Explicabilidad por caso</span>
           <small>
-            {explainabilityLoading
+            {assessmentExplanations.loading
+              ? 'Cargando intentos EXPLAIN…'
+              : assessmentExplanations.error
+                ? 'Consulta de intentos EXPLAIN incompleta'
+                : assessmentExplanations.items.length > 0
+                  ? `${assessmentExplanations.items.length} intentos EXPLAIN E6 disponibles`
+                  : explainabilityLoading
               ? 'Cargando casos…'
               : explainabilityError
                 ? 'No fue posible cargar · detalle opcional'
@@ -1024,6 +1025,13 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
         </summary>
         <div className="run-detail-disclosure__content">
           <p className="muted-text">Explicación visual experimental para apoyar revisión de casos, no una conclusión clínica definitiva.</p>
+          {assessmentExplanations.loading && <p role="status">Cargando intentos EXPLAIN del TRAIN…</p>}
+          {assessmentExplanations.error && <div role="alert">
+            <p>{assessmentExplanations.error}</p>
+            <button type="button" onClick={() => setExplainabilityRequestVersion(current => current + 1)}>Reintentar intentos EXPLAIN</button>
+          </div>}
+          {assessmentExplanations.items.map(assessment => <TrainingExplanationAttempt
+            key={`${runId}:${assessment.attempt_id}`} assessment={assessment} datasource={datasource} />)}
           {explainabilityLoading ? (
             <div className="empty-state" role="status">Cargando explicabilidad por caso…</div>
           ) : explainabilityError ? (
@@ -1067,7 +1075,7 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
                 { header: 'Error', render: (row) => row.error_message ?? '-' },
                 { header: 'Auditar', render: (row) => <button className="audit-action-button" type="button" onClick={() => setSelectedExplainabilityCase(row)}>Ver detalle</button> },
               ]}
-              emptyText="No hay casos de explicabilidad registrados para esta ejecución."
+              emptyText="No hay casos en el catálogo histórico de explicabilidad."
               getRowKey={(row) => row.explainability_id}
             />
           )}
@@ -1110,16 +1118,17 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
                 columns={[
                   { header: 'Nombre', render: (row) => artifactName(row) },
                   { header: 'Tipo', render: (row) => row.artifact_type ?? 'No disponible' },
-                  { header: 'Ruta', render: (row) => artifactPath(row) ? <code>{artifactPath(row)}</code> : 'No disponible' },
+                  { header: 'Artefacto ID', render: (row) => artifactId(row) ? <code>{artifactId(row)}</code> : 'No disponible' },
                   {
                     header: 'Acciones',
                     render: (row) => {
                       const path = artifactPath(row);
-                      const key = `artifact-${path ?? artifactName(row)}`;
+                      const id = artifactId(row);
+                      const key = `artifact-${id ?? artifactName(row)}`;
                       return (
                         <div className="run-detail-artifact-actions">
-                          {path && artifactExists(row) && isImageArtifact(row) ? <a href={api.artifactUrl(path, { artifactId: artifactId(row), datasource })} target="_blank" rel="noreferrer">Abrir</a> : <span>{artifactExists(row) ? 'Vista no disponible' : 'Marcado no disponible en metadata'}</span>}
-                          <button type="button" aria-live="polite" disabled={!path} onClick={() => path && handleCopy(path, key)}>{copyFeedback === key ? 'Ruta copiada' : 'Copiar ruta'}</button>
+                          {id && path && /\.(png|jpe?g|webp|npy|json|csv)$/i.test(path) ? <ScientificArtifact artifactId={id} source="training" datasource={datasource} label={artifactName(row)} preview={isImageArtifact(row)} /> : path && artifactExists(row) && isImageArtifact(row) ? <LegacyArtifactMedia url={api.artifactUrl(path, { artifactId: artifactId(row), datasource })} label="Abrir" /> : <span>{artifactExists(row) ? 'Vista no disponible' : 'Marcado no disponible en metadata'}</span>}
+                          <button type="button" aria-live="polite" disabled={!id} onClick={() => id && handleCopy(id, key)}>{copyFeedback === key ? 'ID copiado' : 'Copiar ID'}</button>
                         </div>
                       );
                     },

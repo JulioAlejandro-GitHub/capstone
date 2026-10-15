@@ -1,11 +1,14 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from uuid import UUID
 
 from fastapi import HTTPException
 
-from app.db import fetch_one
+from app.config import get_settings
+from app.repositories.artifacts import ArtifactReadRepository
+from app.services.local_storage import (LocalStorage, StorageError, StorageContentMissingError,
+    StorageChecksumMismatchError, StorageSizeMismatchError, verify_regular_file)
 
 
 _SOURCE_CAPSTONE_ROOT = Path(__file__).resolve().parents[3]
@@ -106,24 +109,81 @@ def resolve_artifact_path(path: str) -> Path:
     return resolved
 
 
-def resolve_artifact_by_id(datasource: str | None, artifact_id: str) -> Path:
-    try:
-        parsed_artifact_id = UUID(artifact_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail="artifact_id invalido.") from exc
+def artifact_error(status: int, code: str) -> HTTPException:
+    return HTTPException(status, detail={"code": code})
 
-    row = fetch_one(
-        datasource,
-        """
-        SELECT id, path
-        FROM artifacts
-        WHERE id = CAST(:artifact_id AS uuid)
-        """,
-        {"artifact_id": str(parsed_artifact_id)},
-    )
+
+def scientific_artifact(
+    repository: ArtifactReadRepository, datasource: str | None, artifact_id: str,
+    source: str = "training", attempt_id: str | None = None,
+    training_run_id: str | None = None,
+) -> ServedArtifact:
+    if source not in {"training", "assessment"}:
+        raise artifact_error(400, "ARTIFACT_SOURCE_INVALID")
+    try:
+        artifact_id = str(UUID(artifact_id))
+        attempt_id = str(UUID(attempt_id)) if attempt_id else None
+        training_run_id = str(UUID(training_run_id)) if training_run_id else None
+    except ValueError as exc:
+        raise artifact_error(400, "ARTIFACT_ID_INVALID") from exc
+    row = repository.get(datasource, artifact_id, source)
     if row is None:
-        raise HTTPException(status_code=404, detail="Artefacto no encontrado.")
-    return resolve_artifact_path(row["path"])
+        raise artifact_error(404, "ARTIFACT_NOT_REGISTERED")
+    if (attempt_id and str(row.get("attempt_id")) != attempt_id) or (
+        training_run_id and str(row["training_run_id"]) != training_run_id
+    ):
+        raise artifact_error(404, "ARTIFACT_RELATION_MISMATCH")
+    try:
+        if source == "assessment":
+            payload = row["payload"]
+            attempt = str(row["attempt_id"])
+            raw = Path(payload["path"])
+            registered_root = Path(row["artifact_root"])
+            # Only the registered attempt subtree is translated; no host prefix mapping.
+            if ".." in raw.parts or ".." in registered_root.parts:
+                raise artifact_error(409, "ARTIFACT_LOCATION_INVALID")
+            relative = raw.relative_to(registered_root)
+            if registered_root.parts[-3:] != ("artifacts", "assessments", attempt):
+                raise artifact_error(409, "ARTIFACT_LOCATION_INVALID")
+            if str(payload.get("artifact_id")) != artifact_id or relative.stem != artifact_id:
+                raise artifact_error(409, "ARTIFACT_RELATION_MISMATCH")
+            if str(payload.get("sample_id")) != str(row["sample_id"]):
+                raise artifact_error(409, "ARTIFACT_RELATION_MISMATCH")
+            root = MALARIA_PROJECT_ROOT / "artifacts" / "assessments"
+            storage = LocalStorage(replace(get_settings(), storage_root=root))
+            key = f"{attempt}/{relative.as_posix()}"
+            checksum, size = payload.get("sha256"), payload.get("bytes")
+            resolved = storage.resolve(key, must_exist=True)
+        else:
+            checksum, size = row.get("checksum"), row.get("file_size_bytes")
+            try:
+                resolved = resolve_artifact_path(row["path"])
+            except HTTPException as exc:
+                if exc.status_code == 404:
+                    raise artifact_error(410, "ARTIFACT_CONTENT_MISSING") from exc
+                raise artifact_error(409, "ARTIFACT_LOCATION_INVALID") from exc
+        if checksum:
+            verify_regular_file(resolved, expected_size_bytes=size if size is not None else resolved.stat().st_size,
+                                expected_sha256=checksum)
+        suffix = resolved.suffix.lower()
+        downloads = {".npy": "application/octet-stream", ".json": "application/json", ".csv": "text/csv"}
+        if suffix in downloads:
+            if suffix == ".npy":
+                with resolved.open("rb") as stream:
+                    if stream.read(6) != b"\x93NUMPY":
+                        raise artifact_error(415, "ARTIFACT_MEDIA_INVALID")
+            return ServedArtifact(resolved, downloads[suffix])
+        if suffix not in ALLOWED_EXTENSIONS:
+            raise artifact_error(415, "ARTIFACT_MEDIA_INVALID")
+        return validate_served_artifact(resolved)
+    except StorageContentMissingError as exc:
+        raise artifact_error(410, "ARTIFACT_CONTENT_MISSING") from exc
+    except (StorageChecksumMismatchError, StorageSizeMismatchError) as exc:
+        raise artifact_error(409, "ARTIFACT_INTEGRITY_FAILED") from exc
+    except (StorageError, ValueError, KeyError) as exc:
+        raise artifact_error(409, "ARTIFACT_LOCATION_INVALID") from exc
+    except OSError as exc:
+        raise artifact_error(503, "ARTIFACT_STORAGE_UNAVAILABLE") from exc
 
 
 def resolve_artifact_reference(
@@ -132,7 +192,7 @@ def resolve_artifact_reference(
     path: str | None = None,
 ) -> ServedArtifact:
     if artifact_id:
-        resolved = resolve_artifact_by_id(datasource, artifact_id)
+        return scientific_artifact(ArtifactReadRepository(), datasource, artifact_id)
     elif path:
         resolved = resolve_artifact_path(path)
     else:

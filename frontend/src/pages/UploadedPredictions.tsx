@@ -1,3 +1,4 @@
+import { LegacyArtifactMedia } from '../components/reports/LegacyArtifactMedia';
 import { useEffect, useState } from 'react';
 
 import { DataTable } from '../components/DataTable';
@@ -272,10 +273,7 @@ export function UploadedPredictions({ datasource, onRunSelect, onExplainabilityO
                 if (!row.explainability_path) return 'No generada';
                 const explanationUrl = api.artifactUrl(row.explainability_path, { datasource });
                 return (
-                  <a className="uploaded-image-cell" href={explanationUrl} target="_blank" rel="noreferrer">
-                    <img src={explanationUrl} alt={row.explainability_method ?? 'Explicacion visual'} loading="lazy" decoding="async" />
-                    <small>{row.explainability_method ?? 'explicacion visual'}</small>
-                  </a>
+                  <LegacyArtifactMedia url={explanationUrl} label={row.explainability_method ?? "Explicación visual"} image />
                 );
               },
             },

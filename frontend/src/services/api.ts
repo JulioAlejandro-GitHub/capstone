@@ -424,7 +424,21 @@ async function requestBlob(path: string, externalSignal?: AbortSignal) {
       handleAuthenticationFailure();
     }
     if (!response.ok) {
-      throw new ApiError('Contenido autenticado no disponible.', response.status, 'http');
+      const payload: unknown = await response.json().catch(() => null);
+      const envelope = asObject(asObject(payload).error);
+      const detail = asObject(envelope.details);
+      const code = typeof envelope.code === 'string' ? envelope.code
+        : typeof detail.code === 'string' ? detail.code : null;
+      const messages: Record<string, string> = {
+        ARTIFACT_CONTENT_MISSING: 'El artefacto está registrado, pero falta el archivo físico.',
+        ARTIFACT_INTEGRITY_FAILED: 'El archivo no coincide con su integridad registrada.',
+        ARTIFACT_NOT_REGISTERED: 'El artefacto no está registrado.',
+        ARTIFACT_RELATION_MISMATCH: 'El artefacto no pertenece al recurso solicitado.',
+      };
+      const fallback = response.status === 401 ? 'Error de autorización: inicia sesión nuevamente.'
+        : response.status === 403 ? 'Error de autorización: no tienes permiso para leer este artefacto.'
+        : `Error HTTP ${response.status} al recuperar el artefacto.`;
+      throw new ApiError(code && messages[code] ? messages[code] : fallback, response.status, 'http', code);
     }
     return response.blob();
   } catch (error) {
@@ -634,6 +648,25 @@ export const api = {
     } catch {
       return null;
     }
+  },
+
+  getLegacyArtifactBlob(url: string, signal?: AbortSignal) {
+    const parsed = new URL(url, API_BASE_URL);
+    if (parsed.origin !== new URL(API_BASE_URL).origin || parsed.pathname !== '/artifacts/file') {
+      return Promise.reject(new Error('Referencia de artefacto inválida.'));
+    }
+    return requestBlob(`${parsed.pathname}${parsed.search}`, signal);
+  },
+
+  getArtifactBlob(artifactId: string, options: {
+    source: 'assessment' | 'training'; datasource?: string;
+    attemptId?: string; trainingRunId?: string;
+  }, signal?: AbortSignal) {
+    const params = new URLSearchParams({artifact_id: artifactId, source: options.source,
+      datasource: options.datasource ?? DEFAULT_DATASOURCE});
+    if (options.attemptId) params.set('attempt_id', options.attemptId);
+    if (options.trainingRunId) params.set('training_run_id', options.trainingRunId);
+    return requestBlob(`/artifacts/file?${params}`, signal);
   },
 
   artifactUrl(path: string | null | undefined, options: ArtifactUrlOptions = {}) {
@@ -1093,7 +1126,7 @@ export const api = {
   },
 
   getAssessmentArtifacts(attemptId: string, offset = 0, signal?: AbortSignal) {
-    return request<{items: AssessmentArtifact[]}>(`/assessments/${encodeURIComponent(attemptId)}/artifacts`, {limit: 100, offset}, {signal});
+    return request<{items: AssessmentArtifact[]}>(`/assessments/${encodeURIComponent(attemptId)}/artifacts`, {limit: 100, offset, view: 'traceability'}, {signal});
   },
 
   getAssessment(attemptId: string, signal?: AbortSignal) {
