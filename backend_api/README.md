@@ -28,3 +28,20 @@ con JWT, RBAC y auditoría atómica. `/api/v1/analysis` expone análisis microsc
 Las respuestas públicas no incluyen rutas físicas ni secretos.
 
 Contrato PostgreSQL: [documento canónico](../docs/engineering/postgresql_docker_single_instance.md).
+
+
+
+Para usar YOLO:
+
+1. YOLO_RUN_UUID: identificador utilizado para localizar el entrenamiento y sus pesos.
+2. CELL_DETECTOR_KEY: yolo26_seg_v1 (Iniciar el servicio YOLO-DETECTOR) ó connected_components_v1 :: selecciona el adaptador de detección que utiliza el backend.
+
+capstone % malaria_dl_local_project/.venv-metal/bin/python \
+  smear_segmentation_project/runtime_yolo.py \
+  --host 127.0.0.1 \
+  --port 8765
+
+En .env
+CELL_DETECTOR_KEY=connected_components_v1 / yolo26_seg_v1
+Después debes recrear el contenedor del backend para que cargue la nueva variable:
+docker compose up -d --force-recreate backend

@@ -16,3 +16,10 @@ backend_api/var/storage/**
 *.keras
 *.ckpt
 *.tfrecord*
+
+malaria_dl_local_project/data/
+smear_segmentation_project/data/
+malaria_dl_local_project/artifacts/
+malaria_dl_local_project/local_execution_artifacts/
+malaria_dl_local_project/releases/
+smear_segmentation_project/runs/
