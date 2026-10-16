@@ -98,6 +98,98 @@ Para B.2: usar una conexión de lectura con aislamiento explícito y reutilizar 
 
 El [comparador E7](../../malaria_dl_local_project/src/malaria_dl/science/comparison.py) es otro consumidor: `read_evaluation` usa un parámetro llamado evaluation_id que representa un attempt E6, verifica bytes/población y `compare` calcula estadísticas/selección. No reutilizarlo como orquestador PRE: impone dependencias físicas y cálculos fuera del alcance. [GET /models/comparison](../../backend_api/app/routes/catalog.py) solo lee vw_clinical_run_summary, máximo 500/default 100; tampoco implementa A1–A6.
 
+### V7 — Carga diferida, reutilización y persistencia de resultados
+
+Complemento documental SCC-PRE.1B.1-V7, 2026-10-16. Estrategia objetivo para SCC-PRE.1B.2/backend y SCC-PRE.1B.3/frontend; no implementación. La inspección siguiente es estática, acotada a Comparación Científica y sus dependencias de consulta. No acredita comportamiento en navegador, caché efectiva en despliegue ni disponibilidad de resultados científicos. V1–V6 y SCC-PRE.1A permanecen sin cambios.
+
+#### V7.1 — Carga objetivo y contraste con la página actual
+
+El **Preflight estará abierto por defecto y será el único módulo analítico que consulte automáticamente sus datos al ingresar al reporte**. Los demás módulos comenzarán colapsados: un módulo cerrado no iniciará consultas específicas, precargas, descargas de artefactos ni polling. El catálogo/selección necesario para configurar el reporte no constituye otro análisis; sus lecturas deberán limitarse a esa finalidad, sin traer historia, predicciones o XAI como efecto lateral.
+
+La primera apertura consultará exclusivamente la evidencia necesaria para el análisis y alcance seleccionado. Cerrar y reabrir reutilizará los datos ya obtenidos mientras sus entradas y evidencia sigan válidas. Cerrar no borrará los resultados válidos; suspenderá consultas adicionales y polling. Una petición ya iniciada podrá cancelarse o completar su entrada en memoria, sin aplicar su respuesta a otra selección ni cancelar una petición compartida requerida por otro consumidor. Se evitarán solicitudes idénticas simultáneas donde el cliente existente lo permita.
+
+Cada módulo conservará por separado estado no solicitado, carga, datos completos/parciales, ausencia de evidencia y error técnico; tendrá reintento local. El Preflight no montará ni invocará cargadores de los otros módulos. Sus consultas internas deben limitarse a la evidencia necesaria para A1–A6 y cobertura: reutilizar un repositorio no obliga a ejecutar toda su respuesta agregada. En particular, el lector scientific-results actual incluye historia, XAI y predicciones (§2); no usar ese agregado sin acotar como precarga indirecta de todos los análisis. Ninguna apertura iniciará procesos científicos.
+
+Contraste verificable en código:
+
+- [ModelComparison](../../frontend/src/pages/ModelComparison.tsx) consulta el catálogo mediante [useComparisonCatalog](../../frontend/src/hooks/useComparisonCatalog.ts) y monta tarjetas por TRAIN. Todavía no presenta los seis módulos de la matriz objetivo ni un Preflight abierto por defecto; anuncia análisis científico para una fase posterior.
+- [ComparisonRunCard](../../frontend/src/components/reports/ComparisonRunCard.tsx) usa [useComparisonRun](../../frontend/src/hooks/useComparisonRun.ts): consulta `api.getRun` al montar/cambiar datasource, id o revision. Aunque el hook conserva solo `data.run`, el endpoint trae también métricas, artefactos, historia y errores (§2). No existe aquí retención de resultados entre desmontajes.
+- La tarjeta monta `TrainingAssessmentXAI` de [AssessmentXAI](../../frontend/src/components/reports/AssessmentXAI.tsx). Su `<details>` comienza cerrado, pero sus efectos cargan todas las páginas de contextos, seleccionan `all[0]?.attempt_id` y consultan el detalle **sin depender de la apertura**. Es una selección implícita del primer resultado para ese visor; no trasladarla a la selección científica del Preflight. Este hallazgo complementa V1 sin modificar la descripción de AssessmentComparison, que es otro componente.
+- El mismo árbol puede montar [GeneratedXAIComparison](../../frontend/src/components/reports/GeneratedXAIComparison.tsx) y [useExplainGeneration](../../frontend/src/hooks/useExplainGeneration.ts). El hook consulta estado y programa polling cada 4 s cuando el contexto lo habilita; la generación se llama desde botones, no se observó que la apertura la ejecute automáticamente. Aun así, esas acciones de generación y consultas anticipadas no corresponden al reporte consultivo aprobado: B.3 deberá usar lectura de evidencia existente, sin montar el flujo generador. V7 no lo cambia.
+
+#### V7.2 — Tres niveles de reutilización
+
+**Nivel 1: memoria del frontend durante la navegación.** Conservar respuestas de Preflight, historial, métricas, páginas de predicciones y metadatos de artefactos en un estado de consulta por identidad, con vida independiente del montaje del acordeón. La selección de TRAIN ya vive en un Context con useState ([useComparisonSelection](../../frontend/src/hooks/useComparisonSelection.tsx)); conserva ids, no resultados científicos. Los hooks de catálogo/run tienen estado local y reintento por incremento de revision; no constituyen una caché compartida de respuestas. La futura retención debe ser acotada, liberar recursos al terminar su alcance y no persistir resultados en localStorage por defecto.
+
+**Nivel 2: consultas HTTP mediante el cliente existente.** [api.ts](../../frontend/src/services/api.ts) centraliza las consultas examinadas. [package.json](../../frontend/package.json) no declara una biblioteca de caché de consultas como TanStack Query o SWR. En este alcance se identificaron:
+
+| Mecanismo actual | Comportamiento estático | Consecuencia para B.2/B.3 |
+|---|---|---|
+| `inFlightGetRequests` | Map de promesas para GET sin `options.signal`; clave `GET + URL completa`, incluida query; elimina entrada tanto al resolver como al fallar | Deduplica solo solicitudes simultáneas elegibles; dos solicitudes sucesivas vuelven a red. No es caché de resultados ni clave científica |
+| Parámetros y cancelación | Un GET con signal queda fuera de esa deduplicación; el orden de serialización de query forma parte de la URL | Los cargadores XAI con AbortSignal no obtienen esa garantía. No suponer equivalencia entre URLs diferentes ni compartir cancelación sin consumidores independientes |
+| Preflight POST propuesto en §6 | El cliente actual solo deduplica GET | La retención/deduplicación de esa consulta requerirá una decisión explícita en la capa de consultas por cuerpo canónico e identidad; no afirmar soporte actual ni cambiar de endpoint solo para aprovechar el Map |
+| Errores y reintentos | `ApiError` distingue HTTP, parseo, red y cancelación/timeout; timeout por defecto 15 s. request no incorpora reintento automático general; catálogo/run ofrecen reintento local | Reutilizar el cliente y sus errores; diseñar reintento por módulo, sin repetir módulos sanos. El campo retryable del envelope debe comprobarse: el cliente lo extrae de detail, mientras el envelope backend lo sitúa en error (§2) |
+| Invalidación | Hooks reaccionan a dependencias/revision; no se identificó registro de query keys con invalidación compartida de resultados SCC | Falta retención e invalidación por dependencias científicas. No añadir otro cliente ni una biblioteca en esta tarea |
+
+[useScientificArtifact](../../frontend/src/hooks/useScientificArtifact.ts) ya construye una clave con fuente, artifact/sample, dataset, attempt, TRAIN y datasource, y admite enabled. Sin embargo, `useAuthenticatedObjectUrl` en [AuthenticatedCellImage](../../frontend/src/components/cell-review/AuthenticatedCellImage.tsx) revoca la URL y cancela al limpiar el efecto; no acredita retención al cerrar/reabrir. Ese archivo también contiene una caché LRU de blobs de crops, limitada a 80, con solicitudes compartidas y provider propio: es específica de imágenes de revisión celular, no una caché general aplicada al hook científico. No reutilizar su clave cropId como identidad de resultados SCC.
+
+El almacenamiento del token en localStorage no es persistencia de resultados. La entrega de `/artifacts/file` usa `Cache-Control: private, no-store` (§2/V2); no contar con caché HTTP del navegador para asegurar la reutilización objetivo. Las futuras entradas en memoria deben aislarse por sesión/autorización y datasource, eliminarse ante cierre/cambio de sesión y revalidarse ante denegación; ni el Map por URL ni una respuesta almacenada sustituyen permisos actuales.
+
+**Nivel 3: persistencia científica o derivada.** Historia por época, configuraciones TRAIN, métricas EVALUATE/TEST, predicciones, registros/checkpoints y artefactos EXPLAIN disponen de fuentes persistidas descritas en V1–V6. Esto acredita mecanismos, no completitud por ejecución ni presencia física. PostgreSQL y los mecanismos actuales de artefactos siguen siendo las fuentes de verdad; memoria frontend y deduplicación HTTP no son evidencia nueva ni persistencia científica.
+
+Curvas construidas, comparación de métricas, intersecciones/consensos y representaciones son resultados derivados distintos de sus entradas. No se acreditó una persistencia general de todos ellos. Una curva reconstruible eficientemente puede permanecer en memoria; un resultado costoso ya persistido puede reutilizarse solo si su identidad, parámetros, población y procedencia coinciden. No crear registros científicos únicamente para acelerar una vista. V7 no diseña tablas, cachés persistentes ni formatos nuevos de artefacto.
+
+#### V7.3 — Identidad efectiva e invalidación selectiva
+
+La clave de reutilización debe incluir versión del contrato/análisis, datasource, contexto de autorización y las entradas científicas **efectivamente usadas**, no solo run_id. Según el módulo: conjunto explícito de TRAIN; dataset_version_id; checkpoint artifact/model_version y hash acreditado; fuente e identidad de evaluación; intento seleccionado; split; población, alcance original/intersección/subconjunto y evidencia de completitud; método XAI, muestra, clase objetivo, configuración y background; capas de extracción, orden de muestras y parámetros de transformación. No rellenar identidades ausentes con defaults ni compartir una entrada ambigua entre intentos.
+
+Canonicalizar el conjunto de participantes solo para análisis invariantes al orden; conservar asignación de cada selección a su TRAIN, roles y orden de muestras cuando el método los use. Las páginas añaden filtros, cursor/offset, límite y referencia de revisión/snapshot cuando exista. Una página almacenada no representa toda la población ni puede concatenarse con otra revisión. Separar dependencias: una curva TRAIN no necesita invalidarse por un cambio de intento TEST si no usa esa evaluación; el consenso sí.
+
+| Evento | Invalidación y siguiente consulta |
+|---|---|
+| Cambio de selección científica | Marcar inválidos dictámenes y análisis dependientes del TRAIN/dataset/checkpoint/evaluación/intento/split/población alterados. La respuesta anterior puede quedar bajo su clave original, nunca presentarse como la nueva. Preflight abierto consulta su nuevo alcance; módulos cerrados esperan apertura |
+| Cambio de parámetros del análisis | Invalidar solo derivados que dependan del método/clase/configuración/capa/transformación cambiados; conservar datos originales aún válidos. Un cambio puramente visual puede redibujar desde memoria sin HTTP |
+| Nueva evidencia persistida | Revalidar inventarios, ausencias previas y dictámenes que dependan de disponibilidad cuando se conozca una revisión nueva o el usuario actualice. No sustituir el intento seleccionado por uno nuevo. Conservar entradas terminales exactas cuya evidencia siga válida |
+| Corrección o actualización de resultados | Invalidar por revisión/hash/procedencia afectada y sus dependientes; descartar páginas de otra revisión. No suponer timestamps de creación como versión universal. Para registros esperados inmutables, una discrepancia exige explicitar conflicto y revalidar, no sobrescribir silenciosamente |
+| Error de consulta | Conservar error separado y permitir reintento de esa clave/módulo. Un éxito anterior de la misma selección puede mostrarse identificado como lectura anterior/no actualizada; nunca como evidencia vigente de otra selección. Fallo no equivale a vacío ni incompatibilidad |
+
+No se identificó notificación universal de cambios ni token de revisión común entre estas fuentes. Por ello la detección automática de evidencia nueva/corregida queda pendiente: definir revalidación explícita por módulo y políticas de frescura según mutabilidad, sin inventar TTL ni hashes. Si no puede acreditarse vigencia, conservar observed_at/completitud y declararlo; la caché no convierte una lectura histórica en snapshot actual. Un módulo cerrado puede quedar marcado pendiente de revalidación sin efectuar consultas; al abrir, revalida solo si es necesario. Respuestas tardías deben escribirse únicamente en su clave original y no reemplazar la selección visible.
+
+#### V7.4 — Curvas y derivados costosos
+
+Para curvas TRAIN/VAL, recuperar la historia persistida (`training_history` mediante lectores existentes), conservar fase/época y nombre/definición de métrica, construir la serie y dibujarla localmente. Mantener datos consultados y visualización en memoria durante la navegación; reabrir reutiliza, y un cambio relevante de TRAIN, revisión de historia, serie o semántica invalida la parte afectada. No se necesita persistir PNG/SVG si la serie original permite reconstrucción eficiente. Historia incompleta se muestra con huecos y limitación; no interpolar como dato observado ni inventar épocas. Dibujar una curva no ejecuta TRAIN ni recalcula métricas científicas originales.
+
+Para comparaciones pareadas grandes, intersecciones/consensos y representaciones, buscar primero evidencia derivada existente mediante lectores/artefactos de dominio. Antes de recomendar persistencia adicional comprobar: existencia y recuperabilidad del artefacto; coincidencia exacta de entradas; parámetros y versión metodológica; población, cobertura y orden; procedencia y hashes/revisión; mecanismo de invalidación; costo real medido y frecuencia de reutilización. V7 no midió costos ni acreditó artefactos concretos, por lo que no justifica todavía persistencia nueva. La presencia de un .npy no certifica embeddings ni comparabilidad.
+
+Preflight puede informar condiciones/conteos de cobertura conforme a P4; no recalcula métricas ni ejecuta consenso, PCA/UMAP/CKA como efecto lateral. La reutilización de análisis pareados no autoriza omitir alineación ni mezclar poblaciones originales e intersección. PCA, UMAP, CKA y extracción de embeddings permanecen como consulta de evidencia existente; ausencia implica informar insuficiencia, sin generar resultados. No introducir creación de artefactos en el camino de lectura.
+
+#### V7.5 — Matriz de carga y reutilización objetivo
+
+| Módulo | Momento de consulta | Fuente principal | Reutilización preferida | Persistencia adicional |
+|---|---|---|---|---|
+| Preflight | Al ingresar, abierto por defecto; revalidar si cambia su alcance | TRAIN, dataset, evaluación/intento y checkpoint; evidencia acotada A1–A6 | Caché de consulta por selección científica y revisión | No prevista inicialmente |
+| Curvas TRAIN/VAL | Primera apertura; luego solo ante invalidación | Historia por época persistida | Datos y visualización en memoria | No prevista inicialmente; no requiere PNG/SVG |
+| Métricas VAL/TEST | Primera apertura | Resultados persistidos de evaluación/intento exactos | Caché de consulta con protocolo y población originales | No prevista inicialmente |
+| Consenso/desacuerdo | Primera apertura | Predicciones alineadas y evidencia de cobertura; derivados acreditados si existen | Caché por identidad científica, alcance y páginas consistentes | Evaluar solo si el costo real lo justifica |
+| XAI | Primera apertura; contenido de artefactos según visualización solicitada | Assessments y artefactos existentes con metadatos metodológicos | Reutilizar metadatos y artefactos por identidad exacta | No duplicar artefactos |
+| Embeddings/PCA/UMAP/CKA | Primera apertura para consultar evidencia existente | Evidencia derivada y metadatos de procedencia/metodología existentes | Reutilizar resultados acreditados; sin ejecución automática | Evaluar según disponibilidad, reproducibilidad y costo; sin diseño nuevo en V7 |
+
+Esta matriz es una estrategia acordada, no una certificación de la página actual. V7.1 identifica las cargas actuales de catálogo/run/XAI que deben ajustarse; V7.2 diferencia deduplicación presente de retención todavía pendiente.
+
+#### V7.6 — Límites heredados y decisiones para B.2/B.3
+
+V7 conserva las condiciones de V1–V6: evaluación/intento inequívocos; autorización efectiva pendiente de verificación; orden estable y cobertura de páginas; lecturas independientes que no acreditan snapshot; `artifacts-summary.exists` que no prueba disponibilidad/integridad; y error técnico separado del dictamen científico. Almacenar una respuesta no eleva su nivel de verificación ni subsana estas brechas. Los estados de disponibilidad física conservan fecha y alcance de la comprobación, no garantía permanente.
+
+**La página Comparación Científica es de consulta y análisis.** No puede iniciar automáticamente TRAIN, EVALUATE, TEST, EXPLAIN, extracción de embeddings, PCA, UMAP, CKA ni otros procesos que generen evidencia, al entrar, abrir, refrescar, reintentar o detectar ausencias. Conforme a SCC-PRE.1A, tampoco incorpora acciones de generación de otros visores. Puede visualizar, organizar y reutilizar evidencia disponible: transformar una serie persistida en una curva local es presentación, no una nueva ejecución científica.
+
+Decisiones de implementación a respetar:
+
+- **B.2:** lecturas de Preflight acotadas y de solo consulta, selección exacta, cobertura/consistencia declaradas y errores por alcance; preservar identificadores y procedencia que permitan claves e invalidación. Reutilizar repositorios de dominio sin traer automáticamente todos los datos de módulos cerrados; no persistir respuestas PRE para acelerar la pantalla.
+- **B.3:** separar apertura del montaje de cargadores, conservar resultados fuera del ciclo de vida del acordeón, usar el cliente HTTP actual y deduplicación compatible; diseñar retención por identidad y sesión, reintento local y descarte de respuestas tardías. No reutilizar el flujo generador XAI dentro del reporte consultivo.
+- **Verificación pendiente:** instrumentar posteriormente solicitudes en navegador para comprobar cero consultas específicas de módulos cerrados, reapertura sin red mientras los datos sigan válidos, deduplicación elegible, invalidación selectiva, cambio de sesión, respuestas fuera de orden y reintentos aislados. Verificar evidencia revisada/paginada en entorno controlado; no afirmar esas garantías por inspección estática ni ejecutar procesos científicos para probarlas.
+
+Este complemento solo añade V7 al informe. No implementa caché, persistencia, endpoints ni cambios funcionales; no modifica V1–V6, el contrato aprobado o el inventario, y no realiza commit ni push.
+
 ## 4. Matriz A1–A6
 
 Cobertura de la capacidad técnica existente; **todas las filas son verificadas estáticamente y no verificadas operativamente**, no dictámenes sobre TRAIN concretos.
