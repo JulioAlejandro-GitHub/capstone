@@ -66,12 +66,14 @@ def fetch_one(datasource: str | None, sql: str, params: dict | None = None):
 
 
 @contextmanager
-def read_only_transaction(datasource: str | None):
+def read_only_transaction(datasource: str | None, *, repeatable_read: bool = False):
     """Yield one bounded PostgreSQL transaction that cannot write."""
     key = resolve_datasource(datasource)
     with get_engine(key).connect() as connection:
         transaction = connection.begin()
         try:
+            if repeatable_read:
+                connection.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
             connection.execute(text("SET TRANSACTION READ ONLY"))
             connection.execute(
                 text(

@@ -22,6 +22,12 @@ def metric_dto(row: dict[str, Any]) -> dict[str, Any]:
                                       'columns': ['uninfected', 'parasitized']})
 
 
+def read_run_configurations(connection: Connection, run_id: UUID) -> list[dict[str, Any]]:
+    return [dict(row) for row in connection.execute(text(
+        'SELECT * FROM run_configurations WHERE run_id=:run'
+    ), {'run': run_id}).mappings()]
+
+
 def read_scientific_results(connection: Connection, run_id: UUID) -> dict[str, Any] | None:
     params = {'run': run_id}
     run = connection.execute(text('SELECT id, parameters, release_status FROM runs WHERE id=:run'), params).mappings().one_or_none()
@@ -35,7 +41,7 @@ def read_scientific_results(connection: Connection, run_id: UUID) -> dict[str, A
     evidence_scope = 'SELECT id FROM xai_evidence WHERE run_id=:run'
     return dict(
         contract_version='scientific_results_v2', run_id=str(run_id), release_status=run['release_status'],
-        run_configurations=rows('SELECT * FROM run_configurations WHERE run_id=:run'),
+        run_configurations=read_run_configurations(connection, run_id),
         evaluations=evaluations,
         evaluation_ensemble_members=rows('SELECT m.* FROM evaluation_ensemble_members m JOIN evaluations e ON e.id=m.evaluation_id WHERE e.run_id=:run ORDER BY m.evaluation_id,m.ordinal'),
         run_clinical_metrics=[metric_dto(r) for r in metrics],
@@ -86,3 +92,31 @@ class ScientificReadRepository:
                 'limit': prediction_limit, 'offset': prediction_offset,
             }
             return result
+
+    def preflight_training(self, connection: Connection, run_id: UUID) -> dict[str, Any] | None:
+        """Small projection; no history series, predictions or XAI contents."""
+        row = connection.execute(text("""
+            SELECT r.id,r.run_type,r.dataset_version_id,r.model_id,
+                   d.id IS NOT NULL AS dataset_registered
+            FROM runs r LEFT JOIN dataset_versions d ON d.id=r.dataset_version_id
+            WHERE r.id=:run
+        """), {'run': run_id}).mappings().one_or_none()
+        return dict(row) if row else None
+
+    def preflight_configuration(self, connection: Connection, run_id: UUID) -> dict[str, Any] | None:
+        # Same canonical configuration table used by read_scientific_results.
+        rows = read_run_configurations(connection, run_id)
+        return rows[0] if rows else None
+
+    def preflight_history(self, connection: Connection, run_id: UUID) -> dict[str, Any]:
+        return dict(connection.execute(text("""
+            SELECT count(*) AS rows, count(DISTINCT (phase,epoch)) AS unique_epochs,
+                   count(*) FILTER (WHERE phase IS NULL OR epoch IS NULL) AS unknown_axes
+            FROM training_history WHERE run_id=:run
+        """), {'run': run_id}).mappings().one())
+
+    def evaluation(self, connection: Connection, evaluation_id: UUID) -> dict[str, Any] | None:
+        row = connection.execute(text(
+            'SELECT * FROM evaluations WHERE id=:id'
+        ), {'id': evaluation_id}).mappings().one_or_none()
+        return dict(row) if row else None

@@ -46,3 +46,79 @@ class AssessmentReadRepository:
             return list(c.execute(text(f"SELECT payload FROM {table} WHERE attempt_id=CAST(:id AS uuid) "
                                        f"ORDER BY {order} LIMIT :limit OFFSET :offset"),
                                   dict(id=str(attempt_id),limit=limit,offset=offset)).scalars())
+
+    def preflight_detail(self, connection, attempt_id: UUID) -> dict[str, Any] | None:
+        """Exact attempt, without materializing samples or filesystem locators."""
+        row = connection.execute(text("""
+            SELECT a.id AS attempt_id,a.identity_id,a.state,a.ordinal,a.verification,
+                   i.training_run_id,i.identity_hash,i.kind,i.identity - 'samples' AS identity
+            FROM assessment_attempts a JOIN assessment_identities i ON i.id=a.identity_id
+            WHERE a.id=:id
+        """), {'id': attempt_id}).mappings().one_or_none()
+        return dict(row) if row else None
+
+    def preflight_candidates(self, connection, run_id: UUID) -> dict[str, Any]:
+        return dict(connection.execute(text("""
+            SELECT
+              (SELECT count(*) FROM assessment_identities i JOIN assessment_attempts a
+               ON a.identity_id=i.id WHERE i.training_run_id=:run AND i.kind='evaluate') AS attempts,
+              (SELECT count(*) FROM evaluations e WHERE e.training_run_id=:run) AS evaluations
+        """), {'run': run_id}).mappings().one())
+
+    def preflight_population(self, connection, attempt_ids: list[UUID]) -> list[dict[str, Any]]:
+        """Full SQL aggregates over exact attempts, never a page or diagnostic recalculation.
+
+        Declared and observed IDs are compared in both directions. Membership is
+        proved against governed assignments, not by assuming UUID namespaces match.
+        """
+        return [dict(row) for row in connection.execute(text("""
+            WITH selected AS (
+                SELECT a.id,a.state,a.verification,i.identity
+                FROM assessment_attempts a JOIN assessment_identities i ON i.id=a.identity_id
+                WHERE a.id=ANY(CAST(:ids AS uuid[]))
+            ), declared AS (
+                SELECT s.id,x->>'sample_id' AS sample_id,min(x->>'label') AS label,
+                       count(*) AS rows, count(DISTINCT x->>'label') AS labels
+                FROM selected s CROSS JOIN LATERAL jsonb_array_elements(s.identity->'samples') x
+                GROUP BY s.id,x->>'sample_id'
+            ), observed AS (
+                SELECT r.attempt_id AS id,r.sample_id::text AS sample_id,
+                       r.payload->>'label' AS label
+                FROM assessment_results r JOIN selected s ON s.id=r.attempt_id
+            ), common AS (
+                SELECT sample_id,count(DISTINCT id) AS participants,
+                       count(DISTINCT label) AS labels
+                FROM observed GROUP BY sample_id
+            ), aligned AS (
+                SELECT coalesce(d.id,o.id) AS id,
+                       coalesce(d.sample_id,o.sample_id) AS sample_id,
+                       d.rows AS declared_rows,d.label AS declared_label,d.labels AS declared_labels,
+                       o.label AS observed_label,d.sample_id IS NOT NULL AS declared,
+                       o.sample_id IS NOT NULL AS observed
+                FROM declared d FULL JOIN observed o USING(id,sample_id)
+            ), governed AS (
+                SELECT DISTINCT s.id,a.source_record_id::text AS sample_id,a.class_index::text AS label
+                FROM selected s JOIN dataset_split_assignments a
+                  ON a.dataset_version_id=CAST(s.identity#>>'{dataset,dataset_version_id}' AS uuid)
+                 AND a.split_name=s.identity->>'split'
+                JOIN dataset_source_records r ON r.id=a.source_record_id
+            )
+            SELECT s.id AS attempt_id,
+                coalesce(sum(t.declared_rows),0)::bigint AS expected_rows,
+                count(*) FILTER (WHERE t.declared) AS expected_unique,
+                count(*) FILTER (WHERE t.observed) AS retrieved_rows,
+                count(DISTINCT t.sample_id) FILTER (WHERE t.observed) AS retrieved_unique,
+                (SELECT count(*) FROM common WHERE participants=:participants) AS intersection_unique,
+                count(*) FILTER (WHERE t.observed AND c.labels>1) AS label_conflicts,
+                count(*) FILTER (WHERE t.observed AND t.observed_label IS NULL) AS missing_labels,
+                count(*) FILTER (WHERE t.declared AND NOT t.observed) AS missing_count,
+                count(*) FILTER (WHERE t.observed AND NOT t.declared) AS unexpected_count,
+                count(*) FILTER (WHERE t.declared AND t.observed AND
+                    (t.observed_label IS DISTINCT FROM t.declared_label OR t.declared_labels>1)) AS declared_label_conflicts,
+                count(*) FILTER (WHERE t.observed AND g.sample_id IS NULL) AS ungoverned_count,
+                s.state,s.verification->>'count' AS verified_count
+            FROM selected s LEFT JOIN aligned t ON t.id=s.id
+            LEFT JOIN common c ON c.sample_id=t.sample_id
+            LEFT JOIN governed g ON g.id=t.id AND g.sample_id=t.sample_id AND g.label=t.observed_label
+            GROUP BY s.id,s.state,s.verification ORDER BY s.id
+        """), {'ids': [str(i) for i in attempt_ids], 'participants': len(attempt_ids)}).mappings()]
