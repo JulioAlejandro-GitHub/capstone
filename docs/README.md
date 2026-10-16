@@ -202,4 +202,6 @@ de habilitación técnica; no agregan criterios científicos a la elegibilidad.
 
 SCC-CORE.1 — [Contrato compartido de trazabilidad científica](contracts/scc_core_1.md) (`CURRENT_DOC`, 2026-10-15; catálogo dinámico, configuración y lectura por TRAIN/intento).
 
+SCC-PRE.1A — [Contrato de Comparabilidad Científica](contracts/scc_pre_1a.md) (`CURRENT_DOC`, 2026-10-16; cierre documental de A1–A6, estados por análisis y precisiones P1–P5; implementación SCC-PRE.1B pendiente).
+
 SCC-ART.1 — [Contrato de acceso HTTP a artefactos científicos](contracts/scc_art_1.md) (`CURRENT_DOC`, 2026-10-15; implementación y pruebas, certificación operativa autenticada/navegador pendiente).
