@@ -250,3 +250,104 @@ test('HTTP 403 is preserved by the client and never becomes scientific incompati
   const errorElement = find(tree, n => typeof n.type === 'function' && n.type.name === 'ErrorMessage');
   const html = renderToStaticMarkup(errorElement); assert.match(html, /Error de autorización/); assert.doesNotMatch(html, /NO_COMPARABLE/); h.dispose();
 });
+
+for (const count of [2, 3, 4]) test(`UX matrix preserves ${count} aliases and exposes identities only in details`, () => {
+  const { PreflightEvidence } = loader({ '../../auth': {}, '../../services/api': {}, './AssessmentXAI': {} })('components/reports/ScientificPreflight.tsx');
+  const data = fixture(count);
+  const html = renderToStaticMarkup(React.createElement(PreflightEvidence, { data }));
+  const head = html.match(/<thead>(.*?)<\/thead>/s)[1];
+  assert.equal((head.match(/scope="col"/g) ?? []).length, count + 2);
+  data.selections.forEach((selection, index) => {
+    assert.ok(head.includes(`RUN ${String.fromCharCode(65 + index)}`));
+    assert.ok(!head.includes(selection.training_run_id));
+    assert.ok(html.includes(selection.training_run_id));
+  });
+  assert.match(html, /Semilla<\/th>.*?<td><div>0<\/div><\/td>/s);
+  assert.match(html, /Copiar UUID/);
+  assert.match(html, /Ver modelo en Python/);
+  assert.match(html, /Comparable con advertencias/);
+  assert.match(html, /COMPARABLE_CON_ADVERTENCIAS/);
+});
+
+test('warning grouping preserves all reasons and separates conditions, codes and kinds', () => {
+  const { groupWarnings } = loader({ '../../auth': {}, '../../services/api': {}, './AssessmentXAI': {} })('components/reports/ScientificPreflight.tsx');
+  const first = { reason_id: 'a', code: 'SPLIT_UNKNOWN', kind: 'missing', message: 'Partición no acreditada', condition: 'condition', affected_selection_ids: ['one'], evidence_ids: ['e1'] };
+  const second = { ...first, reason_id: 'b', affected_selection_ids: ['two'], evidence_ids: ['e2'] };
+  const groups = groupWarnings([first, second, { ...first, reason_id: 'c', condition: 'other' }, { ...first, reason_id: 'd', code: 'OTHER' }, { ...first, reason_id: 'e', kind: 'warning' }]);
+  assert.equal(groups.length, 4);
+  assert.deepEqual(Array.from(groups[0], item => item.reason_id), ['a', 'b']);
+  assert.deepEqual(Array.from(groups[0].flatMap(item => item.evidence_ids)), ['e1', 'e2']);
+});
+
+test('Python only projects available persisted parameters, preserving zero/false and excluding private or unknown fields', () => {
+  const { configurationCode, pythonLiteral } = loader()('components/reports/ComparisonPython.tsx');
+  const data = fixture();
+  data.evidence[0].value.value = { architecture: 'real_model', random_seed: 0, no_augment: false, learning_rate: null, optimizer: 'sgd', checkpoint_path: '/private/model.keras', injected: 'hp.Choice', dropout: 0 };
+  const code = configurationCode(data, data.selections[0].selection_id);
+  assert.match(code, /"random_seed": 0/);
+  assert.match(code, /"no_augment": False/);
+  assert.match(code, /"optimizer": "sgd"/);
+  assert.doesNotMatch(code, /learning_rate|checkpoint_path|\/private|hp\.Choice|Adam|keras|Dense/);
+  assert.equal(pythonLiteral('quote"\n'), '"quote\\"\\n"');
+  assert.equal(pythonLiteral([true, null, { key: false }]), '[True, None, {"key": False}]');
+  assert.match(configurationCode({ ...data, evidence: [] }, 'missing'), /Sin parámetros acreditados/);
+});
+
+test('Python RUN selector and reconstruction view use current evidence without executing or fetching models', () => {
+  const h = harness();
+  const { ComparisonPython } = loader({ react: h.react })('components/reports/ComparisonPython.tsx');
+  const data = fixture(); data.evidence[0].value.value.optimizer = 'adam'; data.evidence[1].value.value.optimizer = 'sgd';
+  let tree = h.render(() => ComparisonPython({ data }));
+  const controls = nodes(tree).filter(node => node.type === 'select');
+  controls[0].props.onChange({ target: { value: data.selections[1].selection_id } });
+  tree = h.render(() => ComparisonPython({ data }));
+  let copy = find(tree, node => node.props?.label === 'Copiar código');
+  assert.match(copy.props.text, /sgd/); assert.doesNotMatch(copy.props.text, /adam/);
+  controls[1].props.onChange({ target: { value: 'reconstruction' } });
+  tree = h.render(() => ComparisonPython({ data }));
+  copy = find(tree, node => node.props?.label === 'Copiar código');
+  assert.match(copy.props.text, /Reconstrucción no acreditada/);
+  assert.match(copy.props.text, /Nivel 2.*constructor/);
+  assert.match(copy.props.text, /Nivel 3.*integridad/);
+  assert.doesNotMatch(copy.props.text, /load_model|eval\(|exec\(/);
+  h.dispose();
+});
+
+test('copy button copies exact visible text and reports clipboard failures accessibly', async () => {
+  const h = harness(); let copied; let fail = false;
+  const { CopyText } = loader({ react: h.react }, { navigator: { clipboard: { writeText: async text => { if (fail) throw Error('denied'); copied = text; } } } })('components/reports/ComparisonPython.tsx');
+  const props = { text: '# visible\nconfig = {"seed": 0}', label: 'Copiar código' };
+  let tree = h.render(() => CopyText(props));
+  await find(tree, node => node.type === 'button').props.onClick();
+  assert.equal(copied, props.text);
+  tree = h.render(() => CopyText(props)); assert.equal(find(tree, node => node.props?.role === 'status').props.children, 'Copiado');
+  fail = true; await find(tree, node => node.type === 'button').props.onClick();
+  tree = h.render(() => CopyText(props)); assert.match(find(tree, node => node.props?.role === 'status').props.children, /No se pudo copiar/);
+  h.dispose();
+});
+
+test('friendly labels and experimental differences retain original backend findings without deriving verdicts', () => {
+  const { PreflightEvidence, findingLabel } = loader({ '../../auth': {}, '../../services/api': {}, './AssessmentXAI': {} })('components/reports/ScientificPreflight.tsx');
+  const data = fixture();
+  const finding = { reason_id: 'difference-original', code: 'CONFIGURATION_DIFFERENCE_OPTIMIZER', kind: 'warning', message: 'Original scientific reason', condition: 'Original condition', affected_selection_ids: ['train:0','train:1'], evidence_ids: ['ref-original'] };
+  data.dimensions[3].findings.push(finding);
+  data.evidence[0].value.value.optimizer = 'adam'; data.evidence[1].value.value.optimizer = 'sgd';
+  const html = renderToStaticMarkup(React.createElement(PreflightEvidence, { data }));
+  assert.match(html, /Diferencia experimental/);
+  for (const text of ['Original scientific reason', 'Original condition', 'CONFIGURATION_DIFFERENCE_OPTIMIZER', 'ref-original', 'Evidencia insuficiente']) assert.ok(html.includes(text));
+  assert.equal(findingLabel({ ...finding, code: 'SPLIT_UNKNOWN' }), 'Partición no acreditada');
+  assert.equal(findingLabel({ ...finding, code: 'UNRECOGNIZED' }), finding.message);
+});
+
+test('Python syntax spans preserve exact copy text and render persisted strings as text', () => {
+  const data = fixture(); data.evidence[0].value.value.architecture = '<script>alert("text")</script>';
+  const { ComparisonPython } = loader()('components/reports/ComparisonPython.tsx');
+  const html = renderToStaticMarkup(React.createElement(ComparisonPython, { data }));
+  assert.doesNotMatch(html, /<script>/);
+  assert.match(html, /&lt;script&gt;/);
+  const h = harness(); const { ComparisonPython: viewer } = loader({ react: h.react })('components/reports/ComparisonPython.tsx');
+  const tree = h.render(() => viewer({ data }));
+  const code = find(tree, node => node.type === 'pre').props.children;
+  assert.equal(code.props.children.map(span => span.props.children).join(''), find(tree, node => node.props?.label === 'Copiar código').props.text);
+  h.dispose();
+});

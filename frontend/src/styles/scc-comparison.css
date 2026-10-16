@@ -1,0 +1,60 @@
+/* SCC presentation only: stronger scope than shared report/global rules. */
+.ds-report.scc-page {
+  --scc-content-max: 1440px;
+  --scc-section-gap: 14px;
+  --scc-card-padding: var(--ds-space-4);
+  --scc-table-padding-y: var(--ds-pad-control-y);
+  --scc-table-padding-x: 10px;
+  --scc-title-size: 22px;
+  --scc-body-size: 14px;
+  --scc-meta-size: var(--ds-text-xs);
+  width: 100%; max-width: var(--scc-content-max); min-width: 0;
+  box-sizing: border-box; margin-inline: auto; gap: var(--scc-section-gap);
+  font-size: var(--scc-body-size); container-type: inline-size;
+}
+.ds-report.scc-page > * { min-width: 0; }
+.ds-report.scc-page .report-heading { font-size: var(--scc-title-size); }
+.ds-report.scc-page h2 { font-size: var(--ds-text-lg); margin-block: var(--ds-space-2); }
+.ds-report.scc-page p { margin-block: var(--ds-space-3); }
+.ds-report.scc-page .report-section,
+.ds-report.scc-page .report-evidence { padding: var(--scc-card-padding); }
+.ds-report.scc-page .report-metric { padding: var(--ds-space-3); }
+.ds-report.scc-page .report-metric strong { font-size: var(--scc-title-size); }
+.ds-report.scc-page .report-comparison { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: start; }
+.ds-report.scc-page .scc-run-card { min-width: 0; gap: var(--ds-space-3); }
+.ds-report.scc-page .scc-run-card h2 { white-space: normal; overflow-wrap: anywhere; }
+.ds-report.scc-page .scc-empty-slot { min-height: 120px; }
+.ds-report.scc-page .scc-analysis-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--ds-space-3); }
+.ds-report.scc-page .scc-analysis { border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-lg); padding: var(--ds-space-3); }
+.ds-report.scc-page .scc-analysis summary strong { display: block; margin-bottom: var(--ds-space-2); }
+.ds-report.scc-page .scc-verdict { display: inline-block; font-size: var(--scc-meta-size); padding: var(--ds-space-2) var(--ds-space-3); border-radius: var(--ds-radius-sm); color: var(--ds-status-neutral-fg); background: var(--ds-status-neutral-bg); }
+.ds-report.scc-page .scc-verdict[data-state="COMPARABLE"] { color: var(--ds-status-approved-fg); background: var(--ds-status-approved-bg); }
+.ds-report.scc-page .scc-verdict[data-state="COMPARABLE_CON_ADVERTENCIAS"] { color: var(--ds-status-warning-fg); background: var(--ds-status-warning-bg); }
+.ds-report.scc-page .scc-verdict[data-state="NO_COMPARABLE"],
+.ds-report.scc-page .scc-verdict[data-state="ERROR_DE_CONSULTA"] { color: var(--ds-status-rejected-fg); background: var(--ds-status-rejected-bg); }
+.ds-report.scc-page .scc-meta { font-size: var(--scc-meta-size); color: var(--ds-fg-muted); }
+.ds-report.scc-page .report-table-scroll { max-width: 100%; max-height: 70vh; overflow: auto; }
+.ds-report.scc-page .scc-preflight-table { font-size: var(--scc-body-size); width: 100%; }
+.ds-report.scc-page .scc-preflight-table th,
+.ds-report.scc-page .scc-preflight-table td { min-width: 150px; padding: var(--scc-table-padding-y) var(--scc-table-padding-x); font-variant-numeric: tabular-nums; }
+.ds-report.scc-page .scc-preflight-table thead th { z-index: 1; }
+.ds-report.scc-page .scc-dimension-row { border-top: 2px solid var(--ds-border-default); }
+.ds-report.scc-page details { min-width: 0; overflow-wrap: anywhere; }
+.ds-report.scc-page summary { cursor: pointer; padding-block: var(--ds-space-2); }
+.ds-report.scc-page :is(summary, pre, button, select, input, a):focus-visible { outline: var(--ds-focus-width) solid var(--ds-focus-color); outline-offset: var(--ds-focus-offset); }
+.ds-report.scc-page .scc-python-controls { display: flex; flex-wrap: wrap; align-items: end; gap: var(--ds-space-4); }
+.ds-report.scc-page .scc-copy { display: inline-flex; flex-wrap: wrap; gap: var(--ds-space-2); align-items: center; }
+.ds-report.scc-page .scc-python pre { padding: var(--ds-space-4); background: var(--ds-bg-subtle); border: 1px solid var(--ds-border-default); white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--ds-font-mono); font-size: var(--ds-text-sm); }
+.ds-report.scc-page .scc-code-comment { color: var(--ds-slate-600); }
+.ds-report.scc-page .scc-code-string { color: var(--ds-green-700); }
+.ds-report.scc-page .scc-code-value { color: var(--ds-violet-700); }
+@container (max-width: 1050px) {
+  .ds-report.scc-page .report-comparison,
+  .ds-report.scc-page .scc-analysis-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (max-width: 550px) {
+  .ds-report.scc-page .report-comparison,
+  .ds-report.scc-page .scc-analysis-grid { grid-template-columns: minmax(0, 1fr); }
+  .ds-report.scc-page :is(button, summary, select) { min-height: 44px; }
+  .ds-report.scc-page .ds-page-header { flex-wrap: wrap; }
+}

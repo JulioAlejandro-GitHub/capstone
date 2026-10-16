@@ -96,3 +96,18 @@ test('navigation reuses the public route immediately after campaign', () => {
   assert.equal(navigationItems[index + 1].label, 'Comparar Modelos');
   assert.equal(navigationItems[index + 1].path, '/modelo-ia/comparacion');
 });
+
+for (let index = 0; index < 4; index++) test(`compact card RUN ${String.fromCharCode(65 + index)} keeps UUID in closed technical details`, () => {
+  const load = loader({
+    '../../hooks/useComparisonRun': {useComparisonRun: () => ({run: {status: 'completed', model_name: 'Modelo', architecture: 'CNN', execution_parameters: {optimizer: 'sgd', learning_rate: 0.01}}, error: null})},
+    'react-router-dom': {Link: ({children, to}) => React.createElement('a', {href: to}, children)},
+  });
+  const id = 'a1234567-1234-1234-1234-a12345678901';
+  const html = renderToStaticMarkup(React.createElement(load('components/reports/ComparisonRunCard.tsx').ComparisonRunCard, {id, index, datasource: 'malaria', onRemove() {}}));
+  assert.match(html, new RegExp(`RUN ${String.fromCharCode(65 + index)}`));
+  assert.match(html, new RegExp(`<details><summary>Detalles técnicos</summary><code class="report-identifier">${id}</code>`));
+  assert.match(html, /Copiar UUID/);
+  const visible = html.replace(/<details>.*?<\/details>/gs, '').replace(/<[^>]+>/g, '');
+  assert.ok(!visible.includes(id));
+  assert.match(visible, /CNN/); assert.match(visible, /sgd/); assert.match(visible, /0.01/);
+});

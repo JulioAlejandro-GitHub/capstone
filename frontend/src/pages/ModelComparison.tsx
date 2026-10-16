@@ -6,6 +6,7 @@ import { ComparisonRunCard } from '../components/reports/ComparisonRunCard';
 import { formatDate } from '../utils/format';
 import '../styles/ds-primitives.css';
 import '../styles/report-components.css';
+import '../styles/scc-comparison.css';
 
 export function ModelComparison({ datasource }: { datasource: string }) {
   const { catalog, error, retry } = useComparisonCatalog(datasource);
