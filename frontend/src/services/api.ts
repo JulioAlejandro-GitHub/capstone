@@ -1,3 +1,4 @@
+import type { PreflightRequest, PreflightResponse } from '../types/scientificPreflight';
 import type { ExplainRequest, ExplainState, ExplainSubmission } from '../types/explainGeneration';
 import type { ScientificTraceability, ModelCatalog, ScientificModelCatalog } from "../types/scientificRead";
 import type { ScientificResult } from '../components/ScientificResults';
@@ -634,6 +635,11 @@ function withDatasource(datasource: string) {
 }
 
 export const api = {
+  getComparisonPreflight(datasource: string, body: PreflightRequest) {
+    return request<PreflightResponse>('/models/comparison/preflight', { datasource }, {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+    });
+  },
   getTrainingAssessments(trainingRunId: string, offset = 0, signal?: AbortSignal) {
     return request<{items: AssessmentChoice[]}>('/assessments', {training_run_id: trainingRunId, limit: 100, offset, view: 'traceability'}, {signal});
   },

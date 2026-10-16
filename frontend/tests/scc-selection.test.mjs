@@ -55,6 +55,7 @@ test('selection retains exact identities, order, capacity from server, removal a
 
 function page(ids, catalog, error = null) {
   const load = loader({
+    '../components/reports/ScientificPreflight': {ScientificPreflight: () => null},
     '../hooks/useComparisonCatalog': {useComparisonCatalog: () => ({catalog, error, retry() {}})},
     '../hooks/useComparisonSelection': {useComparisonSelection: () => ({ids, add() {}, remove() {}})},
     '../components/reports/ComparisonRunCard': {ComparisonRunCard: ({id}) => React.createElement('article', null, id)},

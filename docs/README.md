@@ -40,6 +40,10 @@ B3 (trazabilidad insuficiente de preparación/entrenamiento YOLO). Incluye plane
 
 ## Fuentes operativas canónicas
 
+SCC-PRE.1B.3 — [Preflight frontend y carga diferida](engineering/scc_pre_1b_3.md)
+(2026-10-16): resumen real, detalle A1–A6, selección explícita, retención por identidad
+y acordeones independientes. Pruebas/build aprobados; validación visual/E2E pendiente.
+
 SCC-XAI.1 — [Visor unificado de explicabilidad científica](contracts/scc_xai_1.md)
 (`CURRENT_DOC`, 2026-10-15): visor compartido inline/modal con cuatro cuadros,
 agrupación por identidad y recuperación SCC-ART.1. FIX: original gobernado por

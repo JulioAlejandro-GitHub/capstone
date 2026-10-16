@@ -1,3 +1,4 @@
+import { ScientificPreflight } from '../components/reports/ScientificPreflight';
 import { useRef, useState } from 'react';
 import { useComparisonCatalog } from '../hooks/useComparisonCatalog';
 import { useComparisonSelection } from '../hooks/useComparisonSelection';
@@ -32,7 +33,7 @@ export function ModelComparison({ datasource }: { datasource: string }) {
     <div className="ds-page-header"><h2>Ejecuciones seleccionadas</h2>
       <button className="ds-button" data-variant="primary" disabled={!available} onClick={event => openSelector(event.currentTarget)}>Añadir RUN</button>
     </div>
-    <p role="status">{ids.length < 2 ? 'Todavía no existe una comparación configurada. Selecciona al menos dos TRAIN.' : 'Selección preparada. El análisis científico estará disponible en una fase posterior.'}
+    <p role="status">{ids.length < 2 ? 'Todavía no existe una comparación configurada. Selecciona al menos dos TRAIN.' : 'Selección preparada para consultar evidencia científica.'}
       {maximum !== undefined && !available ? ' Capacidad máxima alcanzada.' : ''}
       {maximum !== undefined && ids.length > maximum ? ' La configuración cambió: quita ejecuciones para respetar el máximo actual.' : ''}</p>
     <div className="report-comparison">
@@ -44,6 +45,7 @@ export function ModelComparison({ datasource }: { datasource: string }) {
       {Array.from({ length: available }, (_, index) => <button key={index} className="ds-button scc-empty-slot"
         onClick={event => openSelector(event.currentTarget)}><strong>＋ Añadir RUN</strong><span>Espacio {ids.length + index + 1} disponible</span></button>)}
     </div>
+    <ScientificPreflight ids={ids} datasource={datasource} maximum={maximum} />
     <dialog ref={dialog} className="report-viewer" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
       <div className="ds-page-header"><h2 id="scc-selector-title">Seleccionar ejecuciones TRAIN</h2>
         <button className="ds-button" onClick={() => dialog.current?.close()}>Cerrar</button></div>

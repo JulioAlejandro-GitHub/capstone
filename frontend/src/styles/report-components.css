@@ -1700,3 +1700,16 @@
 .ds-report .scc-run-title-link { color: var(--ds-action-fg); text-decoration: none; }
 .ds-report .scc-run-title-link:hover { text-decoration: underline; }
 .ds-report .scc-run-title-link:focus-visible { outline: var(--ds-focus-width) solid var(--ds-focus-color); outline-offset: var(--ds-focus-offset); }
+
+/* SCC-PRE.1B.3: preserve scientific identities and wide comparison tables. */
+.ds-report .scc-preflight-table th,
+.ds-report .scc-preflight-table td {
+  min-width: 14rem;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.ds-report .scc-preflight-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--ds-bg-subtle);
+}

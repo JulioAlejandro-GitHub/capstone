@@ -14,7 +14,10 @@ export function explainFailure(failure: unknown): string {
   return message;
 }
 
-export function useExplainGeneration(comparison: XAIComparison) {
+export function useExplainGeneration(comparison: XAIComparison, active?: boolean, onEvidenceChange?: () => void) {
+  const evidenceCallback = useRef(onEvidenceChange);
+  evidenceCallback.current = onEvidenceChange;
+  const retained = useRef<{ key: string; running: boolean } | null>(null);
   const source = comparison.original?.attemptId;
   const sample = comparison.sampleId;
   const enabled = Boolean(source && sample && !comparison.comparabilityIssue && comparison.split === 'val' && comparison.purpose === 'development');
@@ -32,8 +35,13 @@ export function useExplainGeneration(comparison: XAIComparison) {
     if (value.training_run_id !== comparison.trainingRunId || value.dataset_version_id !== comparison.datasetVersionId || value.sample_id !== sample) {
       throw new Error('La respuesta XAI no corresponde al contexto seleccionado.');
     }
+    const running = value.methods.some(item => ['pending', 'running'].includes(item.state));
+    const completed = retained.current?.key === key && retained.current.running && !running;
+    retained.current = { key, running };
+    if (completed) evidenceCallback.current?.();
     setState({key, value});
   }, [source, sample, enabled, key, comparison.trainingRunId, comparison.datasetVersionId, targetClass]);
+  const running = state?.key === key && state.value.methods.some(item => ['pending', 'running'].includes(item.state));
   useEffect(() => {
     setError(null); setSubmitting(false);
     const controller = new AbortController();
@@ -41,11 +49,11 @@ export function useExplainGeneration(comparison: XAIComparison) {
     const poll = async () => {
       try { await refresh(controller.signal); }
       catch (failure: unknown) { if (!controller.signal.aborted) setError(explainFailure(failure)); }
-      if (!controller.signal.aborted && enabled) timer = setTimeout(() => { void poll(); }, 4000);
+      if (!controller.signal.aborted && enabled && active !== false && (active === undefined || retained.current?.running)) timer = setTimeout(() => { void poll(); }, 4000);
     };
-    if (enabled) void poll();
+    if (enabled && active !== false && (active === undefined || retained.current?.key !== key || retained.current.running)) void poll();
     return () => { controller.abort(); clearTimeout(timer); };
-  }, [refresh, enabled]);
+  }, [refresh, enabled, active, key, running]);
   const value = state?.key === key ? state.value : null;
   const execute = async (methods: XAIMethod[]) => {
     if (!enabled || !source || !sample || !value?.authorized || submitting) return;
@@ -56,6 +64,7 @@ export function useExplainGeneration(comparison: XAIComparison) {
       const failures = response.operations.filter(operation => operation.error);
       if (failures.length) setError(failures.map(operation => `${operation.method}: ${operation.error}`).join(' · '));
       await refresh();
+      onEvidenceChange?.();
     } catch (failure: unknown) {
       if (current.current === key) setError(explainFailure(failure));
     } finally { if (current.current === key) setSubmitting(false); }

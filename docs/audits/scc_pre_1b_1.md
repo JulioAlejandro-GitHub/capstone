@@ -102,6 +102,8 @@ El [comparador E7](../../malaria_dl_local_project/src/malaria_dl/science/compari
 
 Complemento documental SCC-PRE.1B.1-V7, 2026-10-16. Estrategia objetivo para SCC-PRE.1B.2/backend y SCC-PRE.1B.3/frontend; no implementación. La inspección siguiente es estática, acotada a Comparación Científica y sus dependencias de consulta. No acredita comportamiento en navegador, caché efectiva en despliegue ni disponibilidad de resultados científicos. V1–V6 y SCC-PRE.1A permanecen sin cambios.
 
+> **Precisión de presentación SCC-PRE.1B.3 (2026-10-16):** el resumen metodológico permanece visible y consulta inicialmente el Preflight con una selección válida; su detalle comienza **cerrado**. Historia de aprendizaje es el único acordeón inicialmente **abierto**, sin consultas de curvas en B.3; los demás comienzan cerrados. Esta precisión reemplaza únicamente las referencias a «Preflight abierto por defecto» en V7.1/V7.5 y no cambia A1–A6 ni el resto de V7. El texto original se conserva debajo como historial. Implementación y límites: [SCC-PRE.1B.3](../engineering/scc_pre_1b_3.md).
+
 #### V7.1 — Carga objetivo y contraste con la página actual
 
 El **Preflight estará abierto por defecto y será el único módulo analítico que consulte automáticamente sus datos al ingresar al reporte**. Los demás módulos comenzarán colapsados: un módulo cerrado no iniciará consultas específicas, precargas, descargas de artefactos ni polling. El catálogo/selección necesario para configurar el reporte no constituye otro análisis; sus lecturas deberán limitarse a esa finalidad, sin traer historia, predicciones o XAI como efecto lateral.
