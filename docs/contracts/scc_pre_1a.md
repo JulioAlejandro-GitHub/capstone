@@ -242,3 +242,8 @@ Identificar una operación no acredita su cobertura completa. Antes de reutiliza
 SCC-PRE.1A queda cerrado documentalmente con estas decisiones aprobadas. El cierre no significa que SCC-PRE.1B esté implementado ni que ejecuciones concretas sean comparables.
 
 Esta entrega solo crea el contrato y actualiza su entrada en el índice documental. No modifica el inventario descriptivo, skills, Python, SQL, TypeScript, React, CSS, tablas o migraciones; no ejecuta procesos científicos, no recalcula métricas y no realiza commit ni push. La revisión de referencias y código es estática; no se ejecutaron consultas operativas ni se certificaron artefactos físicos.
+
+
+## Adenda SCC-REPORT-SCI.1 — 2026-10-16
+
+La solicitud aprobada de SCC-REPORT-SCI.1 establece una política de navegación inicial: cada tarjeta selecciona la evaluación más reciente y conserva identidad exacta, checkpoint y split. No implica superioridad ni validación científica. Esta precisión sustituye únicamente la prohibición de selección inicial de P2; el backend recibe la identidad explícita y nunca selecciona por mejor desempeño. VALIDATION final histórica en `evaluations` puede acreditar métricas sin un intento `assessment`; no se fabrica ese vínculo. La población histórica puede verificarse por eventos `train_execution_records` de la época/fase seleccionada, con rol VAL y alineación por `sample`, sin equiparar esas claves con UUID de otros contratos. Implementación y límites: [SCC-REPORT-SCI.1](../engineering/scc_report_sci_1.md).

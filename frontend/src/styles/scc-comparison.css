@@ -58,3 +58,15 @@
   .ds-report.scc-page :is(button, summary, select) { min-height: 44px; }
   .ds-report.scc-page .ds-page-header { flex-wrap: wrap; }
 }
+
+.ds-report .scc-chart { height: 320px; min-width: 0; margin-block: var(--ds-space-5); }
+.ds-report .scc-series-controls, .ds-report .scc-highlights { display: flex; flex-wrap: wrap; gap: var(--ds-space-5); }
+.ds-report .scc-highlights > * { flex: 1 1 180px; }
+.ds-report .scc-evaluation-nav { width: 100%; min-width: 0; }
+.ds-report .scc-run-footer { flex-wrap: wrap; }
+.ds-report .scc-science-module { margin-block: var(--ds-space-5); }
+.ds-report .scc-expanded-row td { vertical-align: top; background: var(--ds-bg-subtle); }
+.ds-report .scc-evaluation-nav pre, .ds-report .scc-science-module pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ds-report .scc-evaluation-nav nav { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
+.ds-report .scc-evaluation-nav [aria-current="true"], .ds-report .scc-python [aria-selected="true"] { background: var(--ds-bg-selected); border-color: var(--ds-action-fg); }
+@media (max-width: 700px) { .ds-report .scc-chart { height: 280px; } }

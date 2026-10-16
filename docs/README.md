@@ -41,6 +41,8 @@ B3 (trazabilidad insuficiente de preparación/entrenamiento YOLO). Incluye plane
 ## Fuentes operativas canónicas
 
 SCC-PRE.1B.3 — [Preflight frontend y carga diferida](engineering/scc_pre_1b_3.md)
+
+SCC-REPORT-SCI.1 — [Reporte científico, evidencia PostgreSQL y validación](engineering/scc_report_sci_1.md)
 (2026-10-16): resumen real, detalle A1–A6, selección explícita, retención por identidad
 y acordeones independientes. Pruebas/build aprobados; validación visual/E2E pendiente.
 

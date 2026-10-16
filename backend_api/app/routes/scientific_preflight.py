@@ -6,8 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from app.db import resolve_datasource
 from app.observability import correlation_id_context
 from app.schemas.scientific_preflight import PreflightRequest, PreflightResponse
+from app.schemas.scientific_report import (
+    ScientificReportRequest,
+    ScientificReportResponse,
+)
 from app.security import Permission, Principal, require_permission
 from app.services.scientific_preflight import ScientificPreflightService
+from app.services.scientific_report import ScientificReportService
 
 router = APIRouter(tags=['models'])
 
@@ -34,3 +39,12 @@ def scientific_preflight(
     response.headers['Cache-Control'] = 'private, no-store'
     return ScientificPreflightService().read(
         body, resolve_datasource(datasource), correlation_id_context.get() or 'preflight')
+
+
+@router.post('/models/comparison/report', response_model=ScientificReportResponse)
+def scientific_report(
+    body: ScientificReportRequest, response: Response,
+    principal: Annotated[Principal, Depends(preflight_principal)], datasource: str | None = None,
+):
+    response.headers['Cache-Control'] = 'private, no-store'
+    return ScientificReportService().read(body, resolve_datasource(datasource))

@@ -56,6 +56,10 @@ def safe_configuration(config):
     execution = extension.get('execution') or {}
     augment = execution.get('no_augment')
     result['no_augment'] = augment if isinstance(augment, bool) else None
+    result['augmentation'] = (extension.get('recipe') or {}).get('augmentation')
+    result['checkpoint_policy'] = execution.get('checkpoint_policy')
+    result['clinical_objective'] = (extension.get('selection') or {}).get('clinical_objective')
+    result['optimizer_parameters'] = (extension.get('optimizer') or {}).get('parameters')
     return public_evidence(result)
 
 
@@ -117,7 +121,16 @@ class ScientificPreflightService:
                         raise HTTPException(404, 'TRAIN no encontrado.')
                     if train and train['run_type'] != 'training':
                         raise HTTPException(422, 'La selección debe identificar un TRAIN.')
-                    config, config_ref, _ = query(connection, 'A4', sid,
+                    if train and train.get('dataset'):
+                        evidence[-1]['value'] = known(train['dataset'], [train_ref])
+                        governance, gref, _ = query(connection, 'A2', sid,
+                            'ScientificReadRepository.comparison_governance',
+                            lambda: self.scientific.comparison_governance(connection, selected.training_run_id))
+                        if governance:
+                            evidence[-1]['value'] = known(public_evidence(governance), [gref])
+                            if any(check['status'] != 'PASS' for check in governance['checks']):
+                                finding('A2', 'GOVERNANCE_CHECK_WARNING', 'warning', 'El split oficial tiene controles sin PASS.', [sid], [gref])
+                    config, config_ref, config_errors = query(connection, 'A4', sid,
                         'ScientificReadRepository.preflight_configuration',
                         lambda selected=selected: self.scientific.preflight_configuration(connection, selected.training_run_id))
                     config = safe_configuration(config)
@@ -125,6 +138,9 @@ class ScientificPreflightService:
                     history, history_ref, herrors = query(connection, 'history', sid,
                         'ScientificReadRepository.preflight_history',
                         lambda selected=selected: self.scientific.preflight_history(connection, selected.training_run_id))
+                    if history and not herrors and not config_errors:
+                        config['executed_epochs'] = history['rows']
+                        next(e for e in evidence if e['evidence_id'] == config_ref)['value'] = known(config, [config_ref])
                     row = {'sid': sid, 'train': train, 'config': config, 'history': history,
                                'history_ref': history_ref, 'history_errors': herrors,
                                'attempt': None, 'identity': {}, 'evaluation_errors': [], 'refs': [train_ref, config_ref]}
@@ -162,9 +178,31 @@ class ScientificPreflightService:
                                     'source_assessment_attempt_id': historical['source_assessment_attempt_id']}, [href])
                             attempt_id = historical.get('source_assessment_attempt_id') if historical else None
                             if historical and not attempt_id:
-                                finding('A6', 'HISTORICAL_ATTEMPT_UNATTRIBUTED', 'missing',
-                                    'Evaluación histórica identificada; falta vínculo exacto al intento y su cobertura.',
-                                    [sid], [href])
+                                from app.services.scientific_report import ScientificReportService
+                                report = ScientificReportService(repository=self.scientific)
+                                metric, mref, merr = query(connection, 'A6', sid,
+                                    'ScientificReadRepository.comparison_metrics',
+                                    lambda: report.metrics(connection, selected))
+                                row['evaluation_errors'].extend(merr)
+                                row['historical_metric'] = metric
+                                if historical.get('split') == 'val':
+                                    finding('A6', 'DEVELOPMENT_VALIDATION', 'warning',
+                                        'VALIDATION final de desarrollo; no equivale a TEST independiente.', [sid], [href])
+                                if metric and metric['state'] == 'available':
+                                    evidence[-1]['value'] = known({'split': historical['split'],
+                                        'evaluation_role': historical['evaluation_role'], 'purpose': historical['purpose'],
+                                        'threshold': historical['threshold_used'], 'sample_count': metric['clinical']['sample_count'],
+                                        'metric_definition': historical['metric_definition']}, [mref])
+                                    population, pref, perr = query(connection, 'A3', sid,
+                                        'ScientificReadRepository.comparison_predictions',
+                                        lambda: report.prediction_population(connection, selected, metric))
+                                    if population:
+                                        row['historical_population'], row['population_issues'] = population
+                                    else:
+                                        row['population_issues'] = ['No se pudo consultar población.']
+                                elif not merr:
+                                    finding('A6', 'HISTORICAL_RESULTS_UNATTRIBUTED', 'missing',
+                                        'Métricas históricas ausentes o con atribución contradictoria.', [sid], [mref])
                         if attempt_id:
                             attempt, aref, aerr = query(connection, 'A6', sid,
                                 'AssessmentReadRepository.preflight_detail',
@@ -280,9 +318,15 @@ class ScientificPreflightService:
                         if row['attempt']['state'] != 'verified':
                             finding('A6', 'ATTEMPT_NOT_VERIFIED', 'missing',
                                     'El intento no acredita resultados terminales verificados.', [sid])
-                    elif ev is not None:
+                    elif ev is not None and not row.get('historical_metric'):
                         finding('A6', 'PROTOCOL_UNATTRIBUTED', 'missing',
                                 'No se recuperó protocolo completo con resultados atribuibles.', [sid])
+                    if row.get('historical_metric') and row['historical_metric'].get('checkpoint'):
+                        evidence.append({'evidence_id': f'evidence:{len(evidence)}', 'source': 'A5',
+                            'operation': 'ScientificReadRepository.comparison_checkpoint',
+                            'record_keys': {'training_run_id': str(selected.training_run_id)}, 'field': 'selected_checkpoint',
+                            'selection_ids': [sid], 'observed_at': started, 'verification': 'operational',
+                            'value': known(row['historical_metric']['checkpoint'])})
                     if row['evaluation_errors']:
                         effective = {'state': 'query_error', 'error_ids': row['evaluation_errors']}
                         for dim in ('A2', 'A3', 'A5'):
@@ -308,6 +352,31 @@ class ScientificPreflightService:
                             error['selection_ids'] = selection_ids
                     if coverage is not None:
                         populations.append(self._population(coverage, rows, pref, finding))
+                elif all(r.get('historical_population') is not None for r in rows):
+                    from app.services.scientific_report import population_coverage
+                    population = population_coverage([r['historical_population'] for r in rows])
+                    issues = [issue for r in rows for issue in r.get('population_issues', [])]
+                    complete = not issues and not population['label_conflicts'] and population['common_count'] > 0
+                    if issues or population.get('label_conflicts'):
+                        finding('A3', 'HISTORICAL_POPULATION_CONFLICT', 'incompatibility',
+                            '; '.join(issues) or 'Etiquetas contradictorias.', selection_ids)
+                    elif not complete:
+                        finding('A3', 'HISTORICAL_POPULATION_INCOMPLETE', 'missing', 'Población común no acreditada.', selection_ids)
+                    members = []
+                    for r, coverage in zip(rows, population['coverage']):
+                        n, common = coverage['population'], coverage['common']
+                        if n != common:
+                            finding('A3', 'PARTIAL_INTERSECTION', 'warning', 'Comparación limitada a la intersección.', [r['sid']])
+                        members.append(dict(selection_id=r['sid'], expected_unique=known(r['historical_metric']['clinical']['sample_count']),
+                            retrieved_rows=known(n), retrieved_unique=known(n), duplicate_count=known(0) if not issues else unknown('Revisar conflictos.'),
+                            label_conflict_count=known(population['label_conflicts']), missing_count=known(coverage['missing']),
+                            exclusive_count=known(coverage['exclusive']), numerator=known(common), denominator=known(n),
+                            ratio=known(coverage['ratio']), evidence_ids=[]))
+                    populations.append(dict(population_id='selected-training-validation', scope_id='A3:requested',
+                        alignment_key=known('train_execution_records.payload.samples.sample'), complete=known(complete),
+                        intersection_unique=known(population['common_count']), per_selection=members,
+                        identity_references=[str(r['historical']['id']) for r in rows],
+                        subset_rule='Intersección por sample y etiqueta; no acredita identidad binaria ni consumo TRAIN.'))
                 else:
                     finding('A3', 'POPULATION_UNATTRIBUTED', 'missing',
                         'No todos los participantes tienen un intento EVALUATE exacto con población verificable.', selection_ids)
@@ -415,6 +484,8 @@ class ScientificPreflightService:
                 availability = known(bool(r['history'] and r['history']['rows']))
             elif module == 'metrics' and r['attempt']:
                 availability = known(bool((r['attempt'].get('verification') or {}).get('metrics')))
+            elif module == 'metrics' and r.get('historical_metric'):
+                availability = known(r['historical_metric']['state'] == 'available')
             elif module in ('metrics', 'consensus'):
                 availability = unknown('Consultar resultados de la fuente y selección exactas.')
             else:
@@ -439,6 +510,10 @@ class ScientificPreflightService:
         for field in ('score_domain', 'positive_class'):
             compare('A6', 'DECISION_SEMANTICS_DIFFERENCE_' + field.upper(),
                     [(r['identity'].get('decision') or {}).get(field) for r in rows], 'incompatibility')
+        for field in ('protocol_hash', 'metric_definition', 'threshold_used', 'evaluation_role'):
+            compare('A6', 'HISTORICAL_PROTOCOL_DIFFERENCE_' + field.upper(),
+                    [(r.get('historical') or {}).get(field) for r in rows],
+                    'incompatibility' if field == 'metric_definition' else 'warning')
         for field in ('protocol', 'decision', 'metrics_definition'):
             compare('A6', f'PROTOCOL_DIFFERENCE_{field.upper()}', [r['identity'].get(field) for r in rows],
                     'incompatibility' if field == 'metrics_definition' else 'warning')

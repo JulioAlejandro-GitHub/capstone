@@ -55,6 +55,8 @@ test('selection retains exact identities, order, capacity from server, removal a
 
 function page(ids, catalog, error = null) {
   const load = loader({
+    '../auth': {useAuth: () => ({user: {id: 'test'}, status: 'authenticated'})},
+    '../components/reports/ScientificReport': {EvaluationNavigation: () => null},
     '../components/reports/ScientificPreflight': {ScientificPreflight: () => null},
     '../hooks/useComparisonCatalog': {useComparisonCatalog: () => ({catalog, error, retry() {}})},
     '../hooks/useComparisonSelection': {useComparisonSelection: () => ({ids, add() {}, remove() {}})},

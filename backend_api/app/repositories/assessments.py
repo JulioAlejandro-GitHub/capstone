@@ -122,3 +122,9 @@ class AssessmentReadRepository:
             LEFT JOIN governed g ON g.id=t.id AND g.sample_id=t.sample_id AND g.label=t.observed_label
             GROUP BY s.id,s.state,s.verification ORDER BY s.id
         """), {'ids': [str(i) for i in attempt_ids], 'participants': len(attempt_ids)}).mappings()]
+
+    def comparison_results(self, connection, attempt_id):
+        """Full exact-attempt population for server-side analysis, never sent as a browser array."""
+        return [dict(row) for row in connection.execute(text(
+            'SELECT sample_id,payload FROM assessment_results WHERE attempt_id=:id ORDER BY sample_id'
+        ), {'id': attempt_id}).mappings()]

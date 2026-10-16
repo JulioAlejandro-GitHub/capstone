@@ -1,3 +1,4 @@
+import type { ReportRequest, ReportResponse } from '../types/scientificReport';
 import type { PreflightRequest, PreflightResponse } from '../types/scientificPreflight';
 import type { ExplainRequest, ExplainState, ExplainSubmission } from '../types/explainGeneration';
 import type { ScientificTraceability, ModelCatalog, ScientificModelCatalog } from "../types/scientificRead";
@@ -635,6 +636,11 @@ function withDatasource(datasource: string) {
 }
 
 export const api = {
+  getComparisonReport<T>(datasource: string, body: ReportRequest) {
+    return request<ReportResponse<T>>('/models/comparison/report', { datasource }, {
+      init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+    });
+  },
   getComparisonPreflight(datasource: string, body: PreflightRequest) {
     return request<PreflightResponse>('/models/comparison/preflight', { datasource }, {
       init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },

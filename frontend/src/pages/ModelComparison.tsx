@@ -1,5 +1,8 @@
+import { EvaluationNavigation } from '../components/reports/ScientificReport';
+import type { RequestedSelection } from '../types/scientificPreflight';
+import { useAuth } from '../auth';
 import { ScientificPreflight } from '../components/reports/ScientificPreflight';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useComparisonCatalog } from '../hooks/useComparisonCatalog';
 import { useComparisonSelection } from '../hooks/useComparisonSelection';
 import { ComparisonRunCard } from '../components/reports/ComparisonRunCard';
@@ -8,9 +11,13 @@ import '../styles/ds-primitives.css';
 import '../styles/report-components.css';
 import '../styles/scc-comparison.css';
 
-export function ModelComparison({ datasource }: { datasource: string }) {
+function ComparisonPage({ datasource }: { datasource: string }) {
   const { catalog, error, retry } = useComparisonCatalog(datasource);
   const { ids, add, remove } = useComparisonSelection();
+  const [evaluations, setEvaluations] = useState<Record<string, RequestedSelection>>({});
+  const onEvaluation = useCallback((selection: RequestedSelection) => setEvaluations(previous =>
+    JSON.stringify(previous[selection.training_run_id]) === JSON.stringify(selection) ? previous : { ...previous, [selection.training_run_id]: selection }), []);
+  const selections = ids.map(id => evaluations[id] ?? { training_run_id: id });
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
   const [query, setQuery] = useState('');
@@ -41,12 +48,12 @@ export function ModelComparison({ datasource }: { datasource: string }) {
       {ids.map((id, index) => {
         const choice = choices.find(item => item.run.training_run_id === id);
         return <ComparisonRunCard key={`${datasource}:${id}`} id={id} index={index} datasource={datasource}
-          modelName={choice?.model.model_name} architecture={choice?.model.architecture} onRemove={() => remove(id)} />;
+          modelName={choice?.model.model_name} architecture={choice?.model.architecture} onRemove={() => remove(id)}><EvaluationNavigation id={id} datasource={datasource} onChange={onEvaluation} /></ComparisonRunCard>;
       })}
       {Array.from({ length: available }, (_, index) => <button key={index} className="ds-button scc-empty-slot"
         onClick={event => openSelector(event.currentTarget)}><strong>＋ Añadir RUN</strong><span>Espacio {ids.length + index + 1} disponible</span></button>)}
     </div>
-    <ScientificPreflight ids={ids} datasource={datasource} maximum={maximum} />
+    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} />
     <dialog ref={dialog} className="report-viewer" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
       <div className="ds-page-header"><h2 id="scc-selector-title">Seleccionar ejecuciones TRAIN</h2>
         <button className="ds-button" onClick={() => dialog.current?.close()}>Cerrar</button></div>
@@ -62,4 +69,9 @@ export function ModelComparison({ datasource }: { datasource: string }) {
       {!filtered.length && <p>Sin ejecuciones TRAIN disponibles para esta búsqueda.</p>}
     </dialog>
   </section>;
+}
+
+export function ModelComparison({ datasource }: { datasource: string }) {
+  const { user, status } = useAuth();
+  return <ComparisonPage key={JSON.stringify([user, status, datasource])} datasource={datasource} />;
 }

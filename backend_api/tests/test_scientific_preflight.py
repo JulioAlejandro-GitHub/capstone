@@ -365,8 +365,10 @@ def test_historical_exact_link_is_checked():
     assert result.selections[0].evaluation.value['source'] == 'evaluations'
     assert 'HISTORICAL_LINK_CONFLICT_SPLIT' in codes(result)
 
-def test_historical_without_attempt_is_not_aligned():
+def test_historical_without_metrics_is_not_aligned():
     e = Evidence()
+    e.comparison_metrics = lambda c, eid: []
+    e.comparison_checkpoint = lambda c, rid: None
     e.evaluation = lambda c, eid: {'id': eid, 'training_run_id': uid(1), 'run_id': uid(90),
         'source_assessment_attempt_id': None, 'split': 'val', 'checkpoint_artifact_id': uid(41),
         'dataset_version_id': uid(10), 'metric_definition': 'binary_counts_rates_v1'}
@@ -374,7 +376,7 @@ def test_historical_without_attempt_is_not_aligned():
     body['selections'][0]['evaluation'] = {'source': 'evaluations', 'evaluation_id': uid(80)}
     result = run(e, PreflightRequest.model_validate(body))
     assert states(result, 'metrics') == {'EVIDENCIA_INSUFICIENTE'}
-    assert 'HISTORICAL_ATTEMPT_UNATTRIBUTED' in codes(result)
+    assert 'HISTORICAL_RESULTS_UNATTRIBUTED' in codes(result)
 
 def test_checkpoint_metadata_does_not_verify_files_or_hashes():
     e = Evidence()

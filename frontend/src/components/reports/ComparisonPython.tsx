@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { PreflightResponse, JsonValue } from '../../types/scientificPreflight';
 
 export const configurationLabels: Record<string, string> = {
+  executed_epochs: 'Épocas ejecutadas', augmentation: 'Augmentación', checkpoint_policy: 'Política de checkpoint', clinical_objective: 'Objetivo clínico', optimizer_parameters: 'Parámetros del optimizador',
   architecture: 'Arquitectura', random_seed: 'Semilla', optimizer: 'Optimizador', learning_rate: 'Learning rate',
   batch_size: 'Tamaño de lote', loss_function: 'Función de pérdida', max_epochs: 'Épocas máximas',
   normalization: 'Normalización', internal_preprocessing: 'Preprocesamiento interno', no_augment: 'Sin aumento de datos',
@@ -24,7 +25,7 @@ export function pythonLiteral(value: JsonValue): string {
 export function configurationCode(data: PreflightResponse, selectionId: string): string {
   const blocks = configurationEvidence(data, selectionId).flatMap((ref, index) => {
     if (ref.value.state !== 'known' || !ref.value.value || typeof ref.value.value !== 'object' || Array.isArray(ref.value.value)) return [];
-    const entries = Object.entries(ref.value.value).filter(([key, value]) => key in configurationLabels && value !== null && typeof value !== 'object');
+    const entries = Object.entries(ref.value.value).filter(([key, value]) => key in configurationLabels && value !== null);
     return entries.length ? [`config_${index + 1} = {\n${entries.map(([key, value]) => `    ${JSON.stringify(key)}: ${pythonLiteral(value)},`).join('\n')}\n}`] : [];
   });
   // Separate records preserve conflicting evidence rather than silently overwriting values.
@@ -50,7 +51,7 @@ export function ComparisonPython({ data }: { data: PreflightResponse }) {
       ? [typeof value.architecture === 'string' ? value.architecture : 'Arquitectura sin evidencia', typeof value.optimizer === 'string' ? value.optimizer : 'Optimizador sin evidencia'] : [];
   });
   return <details className="ds-accordion scc-python"><summary>Ver modelo en Python</summary>
-    <div className="scc-python-controls"><label>TRAIN<select className="ds-control" value={selection.selection_id} onChange={event => setSelected(event.target.value)}>{data.selections.map((item, index) => <option key={item.selection_id} value={item.selection_id}>RUN {String.fromCharCode(65 + index)}</option>)}</select></label>
+    <div className="scc-python-controls"><div role="tablist" aria-label="RUN del visor Python">{data.selections.map((item, index) => <button type="button" className="ds-button" role="tab" aria-selected={selection.selection_id === item.selection_id} key={item.selection_id} onClick={() => setSelected(item.selection_id)}>RUN {String.fromCharCode(65 + index)}</button>)}</div>
       <label>Vista<select className="ds-control" value={view} onChange={event => setView(event.target.value)}><option value="configuration">Configuración</option><option value="reconstruction">Reconstrucción</option></select></label><CopyText key={code} text={code} label="Copiar código" /></div>
     <p>{descriptors.join(' · ') || 'Arquitectura y optimizador sin evidencia'}</p>
     <p>Procedencia: evidencia pública persistida A4. Los parámetros ausentes se omiten; no se completan con valores predeterminados.</p>

@@ -97,7 +97,8 @@ class ScientificReadRepository:
         """Small projection; no history series, predictions or XAI contents."""
         row = connection.execute(text("""
             SELECT r.id,r.run_type,r.dataset_version_id,r.model_id,
-                   d.id IS NOT NULL AS dataset_registered
+                   d.id IS NOT NULL AS dataset_registered,
+                   jsonb_build_object('name',d.name,'status',d.status,'grouping_strategy',d.grouping_strategy,'split_algorithm',d.split_algorithm,'random_seed',d.random_seed,'source_record_count',d.source_record_count) AS dataset
             FROM runs r LEFT JOIN dataset_versions d ON d.id=r.dataset_version_id
             WHERE r.id=:run
         """), {'run': run_id}).mappings().one_or_none()
@@ -106,13 +107,24 @@ class ScientificReadRepository:
     def preflight_configuration(self, connection: Connection, run_id: UUID) -> dict[str, Any] | None:
         # Same canonical configuration table used by read_scientific_results.
         rows = read_run_configurations(connection, run_id)
-        return rows[0] if rows else None
+        if rows:
+            return rows[0]
+        parameters = connection.execute(text('SELECT execution_parameters FROM runs WHERE id=:run'), {'run': run_id}).scalar_one_or_none() or {}
+        resolved = ((parameters.get('model_configuration_e2') or {}).get('configuration') or {}).get('resolved') or {}
+        if not resolved:
+            return None
+        execution, model, optimizer = (resolved.get(k) or {} for k in ('execution', 'model', 'optimizer'))
+        return dict(execution, architecture=(resolved.get('input_contract') or {}).get('architecture'),
+                    random_seed=execution.get('seed'), optimizer=optimizer.get('name'),
+                    learning_rate=(optimizer.get('parameters') or {}).get('learning_rate'),
+                    normalization=model.get('preprocessing'), dropout=model.get('dropout'), l2=model.get('l2'),
+                    loss_function=(resolved.get('recipe') or {}).get('loss'), extension_configuration=resolved)
 
     def preflight_history(self, connection: Connection, run_id: UUID) -> dict[str, Any]:
         return dict(connection.execute(text("""
-            SELECT count(*) AS rows, count(DISTINCT (phase,epoch)) AS unique_epochs,
-                   count(*) FILTER (WHERE phase IS NULL OR epoch IS NULL) AS unknown_axes
-            FROM training_history WHERE run_id=:run
+            SELECT count(*) AS rows, count(DISTINCT (phase,payload->>'epoch')) AS unique_epochs,
+                   count(*) FILTER (WHERE phase IS NULL OR payload->>'epoch' IS NULL) AS unknown_axes
+            FROM train_execution_records WHERE run_id=:run AND kind='epoch'
         """), {'run': run_id}).mappings().one())
 
     def evaluation(self, connection: Connection, evaluation_id: UUID) -> dict[str, Any] | None:
@@ -120,3 +132,95 @@ class ScientificReadRepository:
             'SELECT * FROM evaluations WHERE id=:id'
         ), {'id': evaluation_id}).mappings().one_or_none()
         return dict(row) if row else None
+
+    def comparison_catalog(self, connection, run_id):
+        """Historical evaluations and independent attempts, without inventing attempts."""
+        params = {'run': run_id}
+        return [dict(r) for r in connection.execute(text("""
+            SELECT e.id AS evaluation_id, e.training_run_id, e.checkpoint_artifact_id,
+                   e.split, e.evaluation_role, e.purpose, e.source_assessment_attempt_id AS attempt_id,
+                   a.identity_id, e.created_at
+            FROM evaluations e LEFT JOIN assessment_attempts a ON a.id=e.source_assessment_attempt_id
+            WHERE e.training_run_id=:run
+            UNION ALL
+            SELECT NULL, i.training_run_id,
+                   NULLIF(i.identity#>>'{model,checkpoint_artifact_id}', '')::uuid,
+                   i.identity->>'split', 'independent_evaluate', i.identity->>'purpose',
+                   a.id, i.id, a.started_at
+            FROM assessment_identities i JOIN assessment_attempts a ON a.identity_id=i.id
+            WHERE i.training_run_id=:run AND i.kind='evaluate'
+              AND NOT EXISTS (SELECT 1 FROM evaluations e WHERE e.source_assessment_attempt_id=a.id)
+            ORDER BY created_at DESC NULLS LAST, evaluation_id, attempt_id
+        """), params).mappings()]
+
+    def comparison_governance(self, connection, run_id):
+        params = {'run': run_id}
+        row = connection.execute(text("""
+            SELECT d.id,d.name,d.status,d.grouping_strategy,d.split_algorithm,d.random_seed,
+                   d.source_record_count, c.id AS campaign_id,c.dataset_version_id AS campaign_dataset_version_id,
+                   c.dataset_snapshot - 'dataset_root' AS campaign_snapshot,
+                   m.id AS materialization_id,m.status AS materialization_status,
+                   m.reconciliation_status,m.record_count,
+                   m.dataset_version_id=d.id AS materialization_dataset_matches
+            FROM runs r LEFT JOIN dataset_versions d ON d.id=r.dataset_version_id
+            LEFT JOIN experimental_campaigns c ON c.id=r.campaign_id
+            LEFT JOIN dataset_materializations m ON m.id::text=c.dataset_snapshot->>'dataset_materialization_id'
+            WHERE r.id=:run
+        """), params).mappings().one_or_none()
+        if not row:
+            return None
+        result = dict(row)
+        result['counts'] = dict(connection.execute(text("""
+            SELECT split_name,count(*) FROM dataset_split_assignments
+            WHERE dataset_version_id=(SELECT dataset_version_id FROM runs WHERE id=:run)
+            GROUP BY split_name
+        """), params).all())
+        result['checks'] = [dict(r) for r in connection.execute(text("""
+            SELECT check_name,status,observed_value,expected_value FROM dataset_split_validation_checks
+            WHERE dataset_version_id=(SELECT dataset_version_id FROM runs WHERE id=:run)
+            ORDER BY check_name
+        """), params).mappings()]
+        result['consumed_images'] = connection.execute(text(
+            'SELECT count(*) FROM run_dataset_images WHERE run_id=:run'), params).scalar_one()
+        return result
+
+    def comparison_epochs(self, connection, run_id):
+        return [dict(r) for r in connection.execute(text("""
+            SELECT phase,record_key,payload,event_id FROM train_execution_records
+            WHERE run_id=:run AND kind='epoch' ORDER BY event_sequence,created_at,record_key
+        """), {'run': run_id}).mappings()]
+
+    def comparison_checkpoint(self, connection, run_id):
+        row = connection.execute(text("""
+            SELECT a.id,a.run_id,a.checksum,a.metadata,
+                   s.payload - 'checkpoint_path' - 'selected_record' AS selection
+            FROM runs r
+            LEFT JOIN artifacts a ON a.id::text=r.execution_parameters#>>'{e10_v2_evaluation_context_v1,checkpoint_artifact_id}'
+                AND a.artifact_type='model_checkpoint'
+            LEFT JOIN LATERAL (
+                SELECT payload FROM train_execution_records WHERE run_id=r.id AND kind='selection'
+                ORDER BY event_sequence DESC NULLS LAST,created_at DESC,record_key DESC LIMIT 1
+            ) s ON true WHERE r.id=:run
+        """), {'run': run_id}).mappings().one_or_none()
+        return dict(row) if row else None
+
+    def comparison_metrics(self, connection, evaluation_id):
+        return [dict(r) for r in connection.execute(text(
+            'SELECT * FROM run_clinical_metrics WHERE evaluation_id=:id ORDER BY created_at,run_clinical_metric_id'
+        ), {'id': evaluation_id}).mappings()]
+
+    def comparison_predictions(self, connection, run_id, epoch, phase):
+        return list(connection.execute(text("""
+            SELECT payload FROM train_execution_records WHERE run_id=:run AND kind='predictions'
+                AND payload->>'epoch'=:epoch AND payload->>'role'='val'
+                AND phase IS NOT DISTINCT FROM :phase ORDER BY record_key
+        """), {'run': run_id, 'epoch': str(epoch), 'phase': phase}).scalars())
+
+    def comparison_representations(self, connection, run_id):
+        """Inventory existing artifact metadata; never compute a projection."""
+        return [dict(r) for r in connection.execute(text("""
+            SELECT id,artifact_type,metadata,checksum FROM artifacts WHERE run_id=:run
+              AND (lower(artifact_type) IN ('embedding','embeddings','pca','umap','cka')
+                   OR lower(metadata->>'method') IN ('pca','umap','cka'))
+            ORDER BY created_at,id
+        """), {'run': run_id}).mappings()]

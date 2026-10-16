@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { CopyText } from './ComparisonPython';
 import { Link } from 'react-router-dom';
 import { useComparisonRun } from '../../hooks/useComparisonRun';
@@ -12,8 +13,8 @@ function evidence(...values: unknown[]): string {
   return value === undefined ? 'Sin evidencia' : String(value);
 }
 
-export function ComparisonRunCard({ id, index, datasource, modelName, architecture, onRemove }: {
-  id: string; index: number; datasource: string; modelName?: string; architecture?: string | null; onRemove: () => void;
+export function ComparisonRunCard({ id, index, datasource, modelName, architecture, onRemove, children }: {
+  id: string; index: number; datasource: string; modelName?: string; architecture?: string | null; onRemove: () => void; children?: ReactNode;
 }) {
   const { run, error, retry } = useComparisonRun(datasource, id);
   const parameters = run ? normalizeExecutionParameters(run) : {};
@@ -42,6 +43,6 @@ export function ComparisonRunCard({ id, index, datasource, modelName, architectu
     {error && <div role="alert"><p>{error}</p><button className="ds-button" onClick={retry}>Reintentar</button></div>}
     <dl className="scc-run-facts">{fields.slice(0, 3).map(([label, value]) => <div key={label}><dt title={label === 'Épocas' ? 'Completadas / total' : undefined}>{label}</dt><dd>{value}</dd></div>)}</dl>
     <details><summary>Detalles técnicos</summary><code className="report-identifier">{id}</code><CopyText text={id} label="Copiar UUID" /><dl className="scc-run-facts">{fields.slice(3).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><p>Duración: {run ? getRunDuration(run.started_at, run.finished_at, run.duration_seconds, run.status) : 'Sin evidencia'}</p><p>Evaluación, intento y checkpoint: consultar la selección explícita y el detalle Preflight.</p></details>
-    <footer className="scc-run-footer"><StatusPill status={run?.status} label={run?.status ?? 'Sin evidencia'} /></footer>
+    <footer className="scc-run-footer"><StatusPill status={run?.status} label={run?.status ?? 'Sin evidencia'} />{children}</footer>
   </article>;
 }

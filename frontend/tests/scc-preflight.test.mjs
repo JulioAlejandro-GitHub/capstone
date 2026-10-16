@@ -21,6 +21,7 @@ function loader(mocks = {}, globals = {}) {
     }).outputText;
     runInNewContext(code, { exports: module.exports, AbortController, URL, URLSearchParams, Headers, DOMException, setTimeout, clearTimeout, ...globals,
       require: name => {
+        if (name.endsWith('.css')) return {};
         if (name in mocks) return mocks[name];
         if (!name.startsWith('.')) return require(name);
         const base = resolve(dirname(path), name);
@@ -67,7 +68,7 @@ function screen(api = {}, user = { id: 'user', permissions: ['read'] }) {
   const load = loader({ react: h.react, '../../auth': { useAuth: () => ({ user, status: 'authenticated' }) },
     '../../services/api': { api, ApiError: class extends Error {} }, './AssessmentXAI': { TrainingAssessmentXAI: () => null } });
   const component = load('components/reports/ScientificPreflight.tsx').ScientificPreflight;
-  const props = { ids: ['a', 'b'], datasource: 'malaria', maximum: 7 };
+  const props = { selections: [{training_run_id:'a'}, {training_run_id:'b'}], ids: ['a', 'b'], datasource: 'malaria', maximum: 7 };
   const session = component(props).props.children;
   return { h, load, component, props, render: () => h.render(() => session.type(props)) };
 }
@@ -109,13 +110,13 @@ test('initial summary loads once; opening and closing detail reuses it; refresh 
   const refresh = find(tree, n => n.type === 'button' && n.props.children === 'Actualizar evidencia');
   refresh.props.onClick(); s.render(); await flush(); s.render(); assert.equal(calls, 2); s.h.dispose();
 });
-test('initial modules are independent; history alone starts open and XAI is not mounted', () => {
+test('initial modules are closed and independent; XAI is not mounted', () => {
   const s = screen(); const tree = s.render(); const modules = find(tree, n => typeof n.type === 'function' && n.type.name === 'ComparisonModules');
   s.h.reset();
   const rendered = s.h.render(() => modules.type(modules.props));
   const details = nodes(rendered).filter(n => n.type === 'details');
-  assert.equal(details.filter(n => n.props.open).length, 1);
-  assert.match(details[0].props.children[0].props.children, /Historia de aprendizaje/);
+  assert.equal(details.filter(n => n.props.open).length, 0);
+  assert.match(details[0].props.children[0].props.children, /Explicabilidad XAI/);
   assert.equal(nodes(rendered).filter(n => typeof n.type === 'function').length, 0);
   assert.ok(details.every(n => !n.props.name)); s.h.dispose();
 });
@@ -182,23 +183,24 @@ test('closed retained hook does not fetch changed evidence until reopened', asyn
   h.render(() => useComparisonEvidence(cache, 'new', request, false)); h.render(() => useComparisonEvidence(cache, 'new', request, true)); await flush(); assert.equal(calls, 1); h.dispose();
 });
 
-test('evaluation control paginates, never defaults to latest, and applies the explicit identity and attempt', async () => {
-  const calls = []; let applied;
-  const detail = { id: 'attempt-1', identity_id: 'identity-1', training_run_id: 'a', kind: 'evaluate', identity: { split: 'val', model: { checkpoint_artifact_id: 'attributed-checkpoint' } } };
-  const s = screen({ getTrainingAssessments: async (id, offset) => { calls.push(['list', id, offset]); return { items: [{ attempt_id: 'attempt-1', training_run_id: 'a', kind: 'evaluate', split: 'val', state: 'verified' }] }; },
-    getAssessment: async attempt => { calls.push(['detail', attempt]); return detail; } });
-  const tree = s.render(); const selector = find(tree, n => typeof n.type === 'function' && n.type.name === 'EvaluationSelector');
-  s.h.reset(); const props = { ...selector.props, onChange: value => { applied = value; } };
-  const render = () => s.h.render(() => selector.type(props));
-  let selected = render(); await flush(); assert.equal(calls.length, 0);
-  find(selected, n => n.type === 'button').props.onClick(); render(); await flush(); selected = render();
-  assert.equal(calls.length, 1);
-  const select = find(selected, n => n.type === 'select'); assert.equal(select.props.value, '');
-  select.props.onChange({ target: { value: 'attempt-1' } }); render(); await flush(); selected = render();
-  find(selected, n => n.type === 'input').props.onChange({ target: { value: 'explicit-checkpoint' } });
-  const splits = nodes(selected).filter(n => n.type === 'select'); splits[1].props.onChange({ target: { value: 'test' } }); selected = render();
-  find(selected, n => n.type === 'form').props.onSubmit({ preventDefault() {} });
-  assert.deepEqual(JSON.parse(JSON.stringify(applied)), { training_run_id: 'a', evaluation: { source: 'assessment', identity_id: 'identity-1', attempt_id: 'attempt-1' }, split: 'test', checkpoint_artifact_id: 'explicit-checkpoint' }); s.h.dispose();
+test('evaluation navigation defaults to latest and retains historical identity without an invented attempt', async () => {
+  const h = harness(); const applied = [];
+  const evaluations = [1,2].map(n => ({evaluation_id: `e${n}`, training_run_id: 'a', checkpoint_artifact_id: `c${n}`, split: 'val', evaluation_role: 'training_validation_final', purpose: 'development', attempt_id: null, identity_id: null, created_at: '2026-10-16'}));
+  const catalog = {training_run_id: 'a', evaluations, governance: {name:'Dataset', checks:[], counts:{}}, checkpoint:{}};
+  let calls = 0;
+  const load = loader({react:h.react, '../../services/api':{api:{getComparisonReport:async () => {calls++; return {data:[catalog]};}}}});
+  const {EvaluationNavigation} = load('components/reports/ScientificReport.tsx');
+  const props = {id:'a', datasource:'malaria', onChange: s => applied.push(s)};
+  const render = () => h.render(() => EvaluationNavigation(props));
+  render(); await flush(); let tree = render();
+  assert.equal(applied[0].evaluation.evaluation_id, 'e1');
+  assert.equal(applied[0].evaluation.source, 'evaluations');
+  assert.equal(applied[0].evaluation.attempt_id, undefined);
+  const nav = find(tree, n => n.type === 'nav');
+  nodes(nav).filter(n => n.type === 'button')[1].props.onClick(); render();
+  assert.equal(applied.at(-1).evaluation.evaluation_id, 'e2');
+  assert.equal(applied.at(-1).checkpoint_artifact_id, 'c2'); assert.equal(calls,1);
+  h.dispose();
 });
 test('changed attempt, split and checkpoint reach a fresh Preflight request', async () => {
   const bodies = []; const s = screen({ getComparisonPreflight: async (_ds, body) => { bodies.push(JSON.parse(JSON.stringify(body))); return fixture(); } });
@@ -208,7 +210,7 @@ test('changed attempt, split and checkpoint reach a fresh Preflight request', as
     { training_run_id: 'a', evaluation: { source: 'assessment', identity_id: 'i', attempt_id: 'two' }, split: 'test' },
     { training_run_id: 'a', checkpoint_artifact_id: 'other' },
   ]) {
-    find(tree, n => typeof n.type === 'function' && n.type.name === 'EvaluationSelector').props.onChange(selection);
+    s.props.selections = [selection, {training_run_id:'b'}];
     tree = s.render(); await flush(); tree = s.render(); assert.deepEqual(bodies.at(-1).selections[0], selection);
   }
   assert.equal(bodies.length, 4); s.h.dispose();
@@ -262,7 +264,8 @@ for (const count of [2, 3, 4]) test(`UX matrix preserves ${count} aliases and ex
     assert.ok(!head.includes(selection.training_run_id));
     assert.ok(html.includes(selection.training_run_id));
   });
-  assert.match(html, /Semilla<\/th>.*?<td><div>0<\/div><\/td>/s);
+  assert.match(html, /random_seed: 0/);
+  assert.match(html, /Sin diferencias/);
   assert.match(html, /Copiar UUID/);
   assert.match(html, /Ver modelo en Python/);
   assert.match(html, /Comparable con advertencias/);
@@ -299,11 +302,11 @@ test('Python RUN selector and reconstruction view use current evidence without e
   const data = fixture(); data.evidence[0].value.value.optimizer = 'adam'; data.evidence[1].value.value.optimizer = 'sgd';
   let tree = h.render(() => ComparisonPython({ data }));
   const controls = nodes(tree).filter(node => node.type === 'select');
-  controls[0].props.onChange({ target: { value: data.selections[1].selection_id } });
+  nodes(tree).filter(node => node.props?.role === 'tab')[1].props.onClick();
   tree = h.render(() => ComparisonPython({ data }));
   let copy = find(tree, node => node.props?.label === 'Copiar código');
   assert.match(copy.props.text, /sgd/); assert.doesNotMatch(copy.props.text, /adam/);
-  controls[1].props.onChange({ target: { value: 'reconstruction' } });
+  controls[0].props.onChange({ target: { value: 'reconstruction' } });
   tree = h.render(() => ComparisonPython({ data }));
   copy = find(tree, node => node.props?.label === 'Copiar código');
   assert.match(copy.props.text, /Reconstrucción no acreditada/);
@@ -350,4 +353,70 @@ test('Python syntax spans preserve exact copy text and render persisted strings 
   const code = find(tree, node => node.type === 'pre').props.children;
   assert.equal(code.props.children.map(span => span.props.children).join(''), find(tree, node => node.props?.label === 'Copiar código').props.text);
   h.dispose();
+});
+
+test('scientific modules query on first opening, reuse cache and defer changed selections while closed', async () => {
+  const h = harness(); let calls = 0;
+  const load = loader({react:h.react, '../../services/api': {api: {getComparisonReport: async () => {calls++; return {module:'curves', data:[], warnings:[]};}}}});
+  const {LazyScientificModule} = load('components/reports/ScientificReport.tsx');
+  const props = {title:'Curvas', module:'curves', datasource:'malaria', selections:[{training_run_id:'a'}], cache:load('utils/comparisonCache.ts').createComparisonCache(), children: () => null};
+  const render = () => h.render(() => LazyScientificModule(props));
+  let tree = render(); await flush(); assert.equal(calls,0);
+  tree.props.onToggle({currentTarget:{open:true}}); render(); await flush(); tree=render(); assert.equal(calls,1);
+  tree.props.onToggle({currentTarget:{open:false}}); render();
+  tree.props.onToggle({currentTarget:{open:true}}); render(); await flush(); assert.equal(calls,1);
+  tree.props.onToggle({currentTarget:{open:false}}); render();
+  props.selections=[{training_run_id:'a',evaluation:{source:'evaluations',evaluation_id:'changed'}}];
+  tree=render(); await flush(); assert.equal(calls,1);
+  tree.props.onToggle({currentTarget:{open:true}}); render(); await flush(); assert.equal(calls,2); h.dispose();
+});
+
+test('one evaluation needs no pagination and absence is specific', async () => {
+  const h = harness();
+  const evaluation = {evaluation_id:'e', training_run_id:'a', split:'val', evaluation_role:'training_validation_final', purpose:'development', created_at:'2026-10-16'};
+  const load = loader({react:h.react, '../../services/api':{api:{getComparisonReport:async () => ({data:[{evaluations:[evaluation],governance:{checks:[],counts:{}}}]})}}});
+  const {EvaluationNavigation}=load('components/reports/ScientificReport.tsx');
+  const props={id:'a', datasource:'malaria', onChange() {}};
+  h.render(() => EvaluationNavigation(props)); await flush(); const tree=h.render(() => EvaluationNavigation(props));
+  assert.equal(find(tree,n => n.type === 'nav'),undefined); h.dispose();
+});
+
+test('a parameter expansion renders the entire row for every RUN and groups have requested defaults', () => {
+  const h=harness(); const data=fixture(4);
+  const {PreflightEvidence}=loader({react:h.react, '../../auth':{}, '../../services/api':{}, './AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
+  let tree=h.render(() => PreflightEvidence({data}));
+  const groups=nodes(tree).filter(n => n.type === 'button' && Array.isArray(n.props.children) && ['Con diferencias','Comparables','Sin diferencias'].includes(n.props.children[0]));
+  assert.deepEqual(groups.map(n=>n.props['aria-expanded']),[true,true,false]);
+  const parameter=find(tree,n=>n.type === 'button' && Array.isArray(n.props.children) && n.props.children.includes('Versión del dataset'));
+  parameter.props.onClick(); tree=h.render(() => PreflightEvidence({data}));
+  const row=find(tree,n=>n.props?.className === 'scc-expanded-row');
+  assert.equal(nodes(row).filter(n=>n.type === 'td').length,5);
+  assert.equal(nodes(row).filter(n=>n.type?.name === 'EvidenceCell').length,4); h.dispose();
+});
+
+test('Recharts curves retain missing values, distinguish TRAIN and VAL and reference selected epoch', () => {
+  const h=harness(); const load=loader({react:h.react});
+  const {TrainingCurves}=load('components/reports/ScientificReport.tsx');
+  const data=[{training_run_id:'a',epochs:[{epoch:1,phase:'base',values:{loss:.5,val_loss:.6,accuracy:.8,val_accuracy:.7}},{epoch:3,phase:'base',values:{loss:.2,val_loss:.4}}],executed_epochs:2,final_epoch:3,max_epochs:10,checkpoint:{selected_epoch:1,logical_lineage:true},issues:[]}];
+  let tree=h.render(()=>TrainingCurves({data}));
+  find(tree,n=>n.type === 'select').props.onChange({target:{value:'0'}}); tree=h.render(()=>TrainingCurves({data}));
+  assert.ok(nodes(tree).some(n=>n.props?.x === 1 && n.props?.label === 'Checkpoint RUN A'));
+  const chart=find(tree,n=>Array.isArray(n.props?.data) && n.props.data[0]?.epoch === 1);
+  assert.equal(chart.props.data[1].epoch,2); assert.equal(chart.props.data[1].r0_loss,undefined);
+  const lines=nodes(tree).filter(n=>n.props?.connectNulls === false);
+  assert.equal(lines.length,4); assert.ok(lines.some(n=>n.props.strokeDasharray)); assert.ok(lines.every(n=>n.props.isAnimationActive === false)); h.dispose();
+});
+
+test('clinical metrics preserve nulls, confusion orientation and backend highlights', () => {
+  const {ClinicalMetrics}=loader()('components/reports/ScientificReport.tsx');
+  const data={highlights:[{label:'Mayor sensibilidad observada',value:.9,runs:[0]}],comparable:true,runs:[{training_run_id:'a',state:'available',issues:[],evaluation:{split:'val'},clinical:{sample_count:10,threshold_used:.5,tn:4,fp:1,fn:2,tp:3,metrics:{accuracy:{value:.7},roc_auc:{value:null}}}}]};
+  const html=renderToStaticMarkup(React.createElement(ClinicalMetrics,{data}));
+  for(const expected of ['TN 4','FP 1','FN 2','TP 3','Sin evidencia','Mayor sensibilidad observada','RUN A','VAL']) assert.ok(html.includes(expected),expected);
+});
+
+test('consensus shows backend results and a bounded sample page without client calculations', () => {
+  const {ConsensusResults}=loader()('components/reports/ScientificReport.tsx');
+  const data={state:'available',common_count:3,union_count:3,label_conflicts:0,coverage:[{population:3,common:3,missing:0,exclusive:0}],oracle:{numerator:2,denominator:3,ratio:2/3},all_wrong:1,distribution:{CONSENSUS_FN:1},agreement:[[3]],error_overlap:[[1]],samples:[{sample:'val/example.png',label:1,category:'CONSENSUS_FN',runs:[{score:.1,prediction:0,correct:false}]}],total:1};
+  const html=renderToStaticMarkup(React.createElement(ConsensusResults,{data}));
+  for(const expected of ['Oracle descriptivo','no desplegable','example.png','CONSENSUS_FN','Error','N = 3']) assert.ok(html.includes(expected),expected);
 });
