@@ -1,3 +1,4 @@
+import { TrainingAssessmentXAI } from './AssessmentXAI';
 import { Link } from 'react-router-dom';
 import { useComparisonRun } from '../../hooks/useComparisonRun';
 import { routes, withAllowedQuery } from '../../router';
@@ -41,6 +42,7 @@ export function ComparisonRunCard({ id, index, datasource, modelName, architectu
     {!run && !error && <p role="status">Cargando TRAIN…</p>}
     {error && <div role="alert"><p>{error}</p><button className="ds-button" onClick={retry}>Reintentar</button></div>}
     <dl className="scc-run-facts">{fields.map(([label, value]) => <div key={label}><dt title={label === 'Épocas' ? 'Completadas / total' : undefined}>{label}</dt><dd>{value}</dd></div>)}</dl>
+    <TrainingAssessmentXAI trainingRunId={id} datasource={datasource} />
     <footer className="scc-run-footer"><StatusPill status={run?.status} label={run?.status ?? 'Sin evidencia'} /><span>{run ? getRunDuration(run.started_at, run.finished_at, run.duration_seconds, run.status) : 'Sin evidencia'}</span></footer>
   </article>;
 }

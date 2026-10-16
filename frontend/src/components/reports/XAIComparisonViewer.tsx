@@ -6,6 +6,7 @@ import '../../styles/report-components.css';
 
 export interface XAIGenerationAction {
   authorized: boolean;
+  reason?: string;
   execute: (comparison: XAIComparison, method: XAIMethod) => Promise<void>;
 }
 type Resources = Record<XAIMethod | 'original', XAIImageResource>;
@@ -48,7 +49,7 @@ function EvidencePanel({evidence, method, resource, sample, onExpand, generation
         catch (error: unknown) { setGenerationError(error instanceof Error ? error.message : 'No fue posible solicitar la generación.'); }
         finally { setGenerating(false); }
       }}>Generar {XAI_LABELS[method]}</button>}
-      {!evidence?.artifact && method !== 'original' && !generation?.authorized && <small>La generación todavía no está disponible.</small>}
+      {!evidence?.artifact && method !== 'original' && !generation?.authorized && <small>{generation?.reason ?? 'La generación todavía no está disponible.'}</small>}
       {generationError && <p role="alert">{generationError}</p>}
     </div>
   </section>;
@@ -133,7 +134,7 @@ export function XAIComparisonViewer({comparison, datasource, generation}: {
     <dialog ref={dialog} className="report-viewer xai-modal" aria-labelledby={titleId} onClose={() => { setExpanded(null); trigger.current?.focus(); }}>
       <h2 id={titleId}>{expanded ? `Vista ampliada · ${XAI_LABELS[expanded]}` : 'Comparación XAI'}</h2>
       <form method="dialog"><button className="ds-button" autoFocus>Cerrar comparación</button></form>
-      {expanded !== null && <XAIComparisonContent comparison={comparison} resources={resources} density="expanded" />}
+      {expanded !== null && <XAIComparisonContent comparison={comparison} resources={resources} density="expanded" generation={generation} />}
     </dialog>
   </section>;
 }

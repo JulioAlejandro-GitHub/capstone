@@ -1,3 +1,7 @@
+# Documento histórico — no normativo
+
+Este texto se conserva para trazabilidad. Las reglas actuales están en `SKILL.md` y las referencias actualizadas.
+
 ---
 name: ignorar-dataset-malaria
 display-name: Ignorar Dataset Malaria

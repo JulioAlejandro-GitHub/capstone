@@ -79,6 +79,7 @@ test('capacity stays unavailable while loading or when catalog query fails', () 
 
 test('card reads persisted E2 configuration and epochs, keeps zero seed and complete identity', () => {
   const load = loader({
+    './AssessmentXAI': {TrainingAssessmentXAI: () => null},
     '../../hooks/useComparisonRun': {useComparisonRun: () => ({run: {status: 'completed', model_name: 'Real', random_seed: 0, completed_epochs: 12, total_epochs: 20, duration_seconds: 60, execution_parameters: {runtime_environment: {device: 'CPU'}, model_configuration_e2: {configuration: {resolved: {optimizer: {name: 'sgd', parameters: {learning_rate: 0.02}}}}}}}, error: null})},
     'react-router-dom': {Link: ({children, to}) => React.createElement('a', {href: to}, children)},
   });

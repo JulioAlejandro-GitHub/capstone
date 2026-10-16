@@ -80,5 +80,6 @@ export const moduleForPath = (pathname: string) =>
 
 export const sectionForPath = (pathname: string) =>
   navigationItems.find((item) => pathMatches(pathname, item.path))
+  ?? (pathMatches(pathname, routes.evaluations) ? navigationItems.find((item) => item.id === 'runs') : undefined)
   // The configuration page belongs to the same section as the campaigns report.
   ?? (pathname === routes.campaign ? navigationItems.find((item) => item.id === 'campaign') : undefined);

@@ -252,3 +252,16 @@ for (const [status,code] of [[403,'FORBIDDEN'],[410,'ARTIFACT_CONTENT_MISSING'],
     await assert.rejects(c.api.getDatasetSampleBlob({trainingRunId:shapTrain,attemptId:shapAttempt,sampleId:'sample',datasetVersionId:'dataset'}),error=>error.status===status && error.code===code);
   });
 }
+
+test('EXPLAIN generation uses the shared bearer JSON client and exact single-cell body', async () => {
+  let sent;
+  const c = client(async (url, options) => {sent = {url, options}; return new Response(JSON.stringify({operations: []}), {headers: {'Content-Type':'application/json'}});});
+  c.setAccessToken('fixture-token');
+  const body={source_attempt_id:'attempt',sample_id:'sample',methods:['gradcam','lime','shap']};
+  await c.api.generateExplanation(body);
+  assert.equal(sent.url.pathname,'/explain-generations');
+  assert.equal(sent.options.headers.get('Authorization'),'Bearer fixture-token');
+  assert.equal(sent.options.headers.get('Content-Type'),'application/json');
+  assert.deepEqual(JSON.parse(sent.options.body),body);
+  assert.equal('max_images' in JSON.parse(sent.options.body),false);
+});

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAssessment } from '../../hooks/useAssessment';
 import { useAssessmentArtifacts } from '../../hooks/useAssessmentArtifacts';
 import type { AssessmentExplanationChild } from '../../types/api';
-import { XAIComparisonViewer } from './XAIComparisonViewer';
+import { GeneratedXAIComparison } from './GeneratedXAIComparison';
 import { groupXAIComparisons, XAI_LABELS, XAI_METHODS, type XAIAttemptPage, type XAIMethod } from './xai/comparison';
 
 function AttemptPage({attemptId, trainingRunId, method, onPage}: {
@@ -76,7 +76,7 @@ export function TrainingXAIComparison({assessments, trainingRunId, datasource}: 
     {XAI_METHODS.map(method => selected[method] && <AttemptPage key={selected[method]} method={method} attemptId={selected[method]}
       trainingRunId={trainingRunId} onPage={onPage} />)}
     {!rows.length && <p role="status">No hay muestras disponibles en las referencias cargadas. Consulta los estados de cada intento y su historial.</p>}
-    {visibleRows.map(row => <XAIComparisonViewer key={row.id} comparison={row} datasource={datasource} />)}
+    {visibleRows.map(row => <GeneratedXAIComparison key={row.id} comparison={row} datasource={datasource} />)}
     {rows.length > 0 && <nav className="xai-actions" aria-label="Páginas de muestras comparadas">
       <span>{rows.length} filas en las referencias cargadas · página {rowPage + 1} de {Math.ceil(rows.length / 5)}</span>
       <button className="ds-button" type="button" disabled={rowPage === 0} onClick={() => setRowPage(page => page - 1)}>Muestras anteriores</button>

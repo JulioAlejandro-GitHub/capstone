@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from ..data.governed_dataset import local_dataset_root
 from ..execution.artifacts import file_identity
+from ..execution.storage_paths import local_scientific_path
 from .contracts import require
 
 
@@ -21,7 +22,7 @@ class KerasRuntime:
         self.value = value
         self.dataset_root = local_dataset_root(value["dataset"]["dataset_root"])
         self.tf = tf
-        self.model = tf.keras.models.load_model(value["model"]["path"], compile=False)
+        self.model = tf.keras.models.load_model(local_scientific_path(value["model"]["path"]), compile=False)
         validate_model_input(self.model, value["model"]["input_contract"])
 
     def images(self, samples):

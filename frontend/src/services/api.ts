@@ -1,3 +1,4 @@
+import type { ExplainRequest, ExplainState, ExplainSubmission } from '../types/explainGeneration';
 import type { ScientificTraceability, ModelCatalog, ScientificModelCatalog } from "../types/scientificRead";
 import type { ScientificResult } from '../components/ScientificResults';
 import type {
@@ -633,6 +634,21 @@ function withDatasource(datasource: string) {
 }
 
 export const api = {
+  getTrainingAssessments(trainingRunId: string, offset = 0, signal?: AbortSignal) {
+    return request<{items: AssessmentChoice[]}>('/assessments', {training_run_id: trainingRunId, limit: 100, offset, view: 'traceability'}, {signal});
+  },
+  getExplainContext(attemptId: string, signal?: AbortSignal) {
+    return request<AssessmentDetail>(`/assessments/${encodeURIComponent(attemptId)}`, {view: 'traceability'}, {signal});
+  },
+  getExplainState(sourceAttemptId: string, sampleId: string, signal?: AbortSignal, classId: 0 | 1 = 1) {
+    return request<ExplainState>('/explain-generations', {source_attempt_id: sourceAttemptId, sample_id: sampleId, class_id: classId}, {signal});
+  },
+  prepareExplanation(body: ExplainRequest, signal?: AbortSignal) {
+    return request<{sample_id: string; training_run_id: string; methods: Array<{method: string; sample_ids: string[]; specification: JsonRecord}>}>('/explain-generations/prepare', {}, {signal, init: {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}});
+  },
+  generateExplanation(body: ExplainRequest, signal?: AbortSignal) {
+    return request<ExplainSubmission>('/explain-generations', {}, {signal, timeoutMs: 65000, init: {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}});
+  },
   scientificTraceability(trainingRunId: string, datasource: string) {
     return request<ScientificTraceability>(`/runs/${encodeURIComponent(trainingRunId)}/scientific-results`, {
       datasource, view: 'traceability',

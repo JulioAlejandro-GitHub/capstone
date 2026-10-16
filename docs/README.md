@@ -8,6 +8,11 @@ Este directorio contiene tanto documentación operativa vigente como decisiones 
 evidencia histórica. Que un archivo exista aquí no significa que sus comandos deban
 ejecutarse en el entorno actual.
 
+SCC-XAI.2 — [Catálogo y generación compartida](contracts/scc_xai_2.md)
+(`CURRENT_DOC`, 2026-10-16): generación real con assessments existentes,
+sin tablas ni migraciones; pruebas, catálogo, evidencia y límites documentados.
+La [propuesta de cola anterior](contracts/scc_xai_2_proposal.md) queda `SUPERSEDED`.
+
 ## Estados documentales
 
 | Estado | Significado | Uso |

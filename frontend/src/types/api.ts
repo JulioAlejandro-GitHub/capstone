@@ -432,7 +432,8 @@ export interface AssessmentDetail extends Omit<AssessmentEvaluationChild, 'sourc
     split: AssessmentEvaluationChild['split'];
     purpose: AssessmentEvaluationChild['purpose'];
     model: { model_version_id: string; checkpoint_artifact_id: string };
-    explanation?: { method: string; background?: { sample_id: string }[] };
+    samples?: { sample_id: string }[];
+    explanation?: { method: string; class?: 0 | 1; background?: { sample_id: string }[] };
     dataset?: { dataset_version_id: string };
     decision?: { effective: number };
     seed?: number;

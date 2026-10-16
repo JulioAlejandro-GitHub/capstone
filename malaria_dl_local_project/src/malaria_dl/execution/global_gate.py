@@ -113,9 +113,22 @@ def process_absent(identity, table=None):
         raise CampaignError('REMOTE_PROCESS_ABSENCE_UNPROVEN')
     table = process_table() if table is None else table
     actual = table.get(identity['pid'])
-    return actual is None or (identity.get('start_ticks') is not None
+    # A zombie has exited and cannot execute; independently check descendants below.
+    return actual is None or actual.get('state') in ('Z', 'zombie') or (identity.get('start_ticks') is not None
                               and actual.get('start_ticks') is not None
                               and actual['start_ticks'] != identity['start_ticks'])
+
+
+def local_process_terminated(pid: int) -> bool:
+    """Positive exit evidence for a caller that already established the same host."""
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return True
+    except PermissionError:
+        return False
+    observed = process_table().get(pid)
+    return observed is not None and observed.get('state') in ('Z', 'zombie')
 
 
 def descendants(table, parent):
@@ -166,7 +179,7 @@ def verify_retained_processes(evidence):
         if not process_absent(identity, table):
             raise CampaignError('PREVIOUS_EXPERIMENT_PROCESS_STILL_ALIVE')
     for sid in evidence.get('sessions', []):
-        if any(p['session'] == sid for p in table.values()):
+        if any(p['session'] == sid and p.get('state') not in ('Z', 'zombie') for p in table.values()):
             raise CampaignError('PREVIOUS_EXPERIMENT_DESCENDANTS_STILL_ALIVE')
     # A failed release records what was observed at shutdown, not a permanent
     # veto. On this host the checks above establish current absence of every

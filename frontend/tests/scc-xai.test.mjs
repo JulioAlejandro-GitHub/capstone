@@ -228,7 +228,7 @@ test('comparison browser bounds mounted viewers to five and advances without fet
   const state=[{}, {shap:page}, 0]; let index=0;
   function Viewer() {return null;}
   const load=loader({react:{...React,useState:()=>{const i=index++;return [state[i],value=>{state[i]=typeof value==='function'?value(state[i]):value;}];},useMemo:fn=>fn()},
-    '../../hooks/useAssessment':{},'../../hooks/useAssessmentArtifacts':{},'./XAIComparisonViewer':{XAIComparisonViewer:Viewer}});
+    '../../hooks/useAssessment':{},'../../hooks/useAssessmentArtifacts':{},'./GeneratedXAIComparison':{GeneratedXAIComparison:Viewer}});
   const {TrainingXAIComparison}=load('components/reports/TrainingXAIComparison.tsx');
   function render() {index=0;return TrainingXAIComparison({assessments:[{method:'shap',attempt_id:'attempt-shap'}],trainingRunId:'train',datasource:'malaria'});}
   const first=render(); const viewers=nodes(first,node=>node.type===Viewer);
@@ -269,4 +269,41 @@ test('compact thumbnails have bounded height while modal keeps expanded presenta
   assert.match(css,/data-density="compact"/);
   assert.match(css,/height: var\(--ds-xai-thumbnail-height\)/);
   assert.match(source,/density="expanded"/);
+});
+
+test('shared generation hook loads persisted evidence, submits missing methods and refreshes only its context', async () => {
+  const states=[]; let index=0,effect; const reference={current:null}; let calls=0;const sent=[];
+  const detail={...fixture('gradcam').detail,identity:{...fixture('gradcam').detail.identity,split:'val',purpose:'development'}};
+  const state={training_run_id:'train',dataset_version_id:'dataset',sample_id:'sample',authorized:true,
+    methods:[{method:'gradcam',state:'completed',detail,artifacts:fixture('gradcam').artifacts}]};
+  const react={useRef:()=>reference,useCallback:fn=>fn,useEffect:fn=>{effect=fn;},
+    useState:initial=>{const i=index++;if(!(i in states)) states[i]=initial;return [states[i],v=>{states[i]=typeof v==='function'?v(states[i]):v;}];}};
+  const load=loader({react,'../services/api':{api:{getExplainState:async()=>{calls++;return state;},generateExplanation:async body=>{sent.push(body);return {operations:[{method:'lime',attempt_id:'new-attempt'}]};}}}},
+    {setTimeout:()=>1,clearTimeout:()=>{}});
+  const hook=load('hooks/useExplainGeneration.ts').useExplainGeneration;
+  const comparison={...group([fixture()],'train')[0],split:'val',purpose:'development'};
+  const render=()=>{index=0;return hook(comparison);};
+  render();const cleanup=effect();await new Promise(r=>setImmediate(r));
+  const ready=render();assert.equal(ready.canGenerate,true);assert.equal(ready.comparison.methods.gradcam.artifact.artifactId,'artifact-gradcam');
+  await ready.generation.lime.execute();
+  assert.equal(sent.length,1);assert.equal(sent[0].sample_id,'sample');assert.deepEqual([...sent[0].methods],['lime']);
+  assert.equal(calls,2);cleanup();
+});
+
+test('pending backend method disables duplicate generation and remains distinct from completed evidence', async () => {
+  const states=[];let index=0,effect;const ref={current:null};
+  const load=loader({react:{useRef:()=>ref,useCallback:fn=>fn,useEffect:fn=>{effect=fn;},useState:initial=>{const i=index++;if(!(i in states))states[i]=initial;return [states[i],v=>states[i]=v];}},
+    '../services/api':{api:{getExplainState:async()=>({training_run_id:'train',dataset_version_id:'dataset',sample_id:'sample',authorized:true,methods:[{method:'shap',state:'pending',artifacts:[]}]})}}},
+    {setTimeout:()=>1,clearTimeout:()=>{}});
+  const hook=load('hooks/useExplainGeneration.ts').useExplainGeneration;
+  const comparison={...group([fixture()],'train')[0],split:'val',purpose:'development'};
+  hook(comparison);const cleanup=effect();await new Promise(r=>setImmediate(r));index=0;
+  const pending=hook(comparison);assert.equal(pending.canGenerate,false);assert.equal(pending.comparison.methods.shap.execution,'pending');assert.equal(pending.comparison.methods.shap.artifact,undefined);cleanup();
+});
+
+test('attributions for different target classes are never grouped as the same explanation', () => {
+  const first=fixture('gradcam');const second=fixture('lime');
+  first.detail.identity.explanation.class=0;second.detail.identity.explanation.class=1;
+  const rows=group([first,second],'train');
+  assert.equal(rows.length,2);assert.equal(rows[0].targetClass,0);assert.equal(rows[1].targetClass,1);
 });

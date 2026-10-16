@@ -1,3 +1,7 @@
+# Documento histórico — no normativo
+
+Este texto se conserva para trazabilidad. Las reglas actuales están en `SKILL.md` y las referencias actualizadas.
+
 ---
 name: hybrid-architecture-runtime
 description: Activa este skill al discutir cómo levantar servicios, ejecutar campañas de ML, testing, infraestructura o el diagrama de control/execution plane.

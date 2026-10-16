@@ -17,9 +17,8 @@ class DatasetSampleReadRepository:
                 FROM assessment_attempts a JOIN assessment_identities i ON i.id=a.identity_id
                 JOIN runs r ON r.id=i.training_run_id AND r.run_type='training'
                 WHERE a.id=CAST(:attempt AS uuid) AND i.training_run_id=CAST(:train AS uuid)
-                  AND i.kind='explain'
-                  AND EXISTS (SELECT 1 FROM assessment_artifacts aa
-                              WHERE aa.attempt_id=a.id AND aa.sample_id=CAST(:sample AS uuid))
+                  AND EXISTS (SELECT 1 FROM jsonb_array_elements(i.identity->'samples') s
+                              WHERE s->>'sample_id'=:sample)
             """), {"attempt": attempt_id, "train": training_run_id, "sample": sample_id}).mappings().one_or_none()
         return dict(row) if row is not None else None
 

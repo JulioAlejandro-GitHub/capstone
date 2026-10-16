@@ -198,16 +198,8 @@ class AssessmentRepository(CampaignRepository):
         a = self.attempt(attempt_id)
         require(a["state"] == "active", "ASSESSMENT_NOT_ACTIVE")
         require(a["host"] == socket.gethostname(), "ASSESSMENT_OWNER_LIVENESS_UNKNOWN")
-        try:
-            os.kill(a["pid"], 0)
-        except ProcessLookupError:
-            self.finish(
-                attempt_id,
-                a["owner"],
-                "interrupted",
-                cause="OWNER_PROCESS_ABSENT_RESTART_FULL_ATTEMPT",
-            )
+        from ..execution.global_gate import local_process_terminated
+        if local_process_terminated(a['pid']):
+            self.finish(attempt_id, a['owner'], 'interrupted', cause='OWNER_PROCESS_ABSENT_RESTART_FULL_ATTEMPT')
             return
-        except PermissionError:
-            pass
         require(False, "ASSESSMENT_OWNER_LIVENESS_UNKNOWN")

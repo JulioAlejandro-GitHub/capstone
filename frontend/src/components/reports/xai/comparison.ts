@@ -42,6 +42,7 @@ export interface XAIComparison {
   purpose?: string;
   prediction?: string;
   trueClass?: string;
+  targetClass?: 0 | 1;
   comparabilityIssue?: string;
   original?: XAIEvidence;
   methods: Partial<Record<XAIMethod, XAIEvidence>>;
@@ -87,18 +88,19 @@ export function groupXAIComparisons(pages: XAIAttemptPage[], trainingRunId: stri
         : !complete ? 'Identidad de muestra, modelo, checkpoint o contexto de datos incompleta; evidencia aislada.' : undefined;
       // Preserve additional producer context (preprocessing, decision policy, etc.).
       // Method-specific parameters/background are deliberately not equivalence keys.
-      const operationalKeys = new Set(['explanation', 'samples', 'campaign_id', 'execution_id', 'seed', 'batch_size', 'code', 'kind', 'schema', 'evaluation', 'metrics_definition']);
+      const operationalKeys = new Set(['explanation', 'samples', 'campaign_id', 'execution_id', 'seed', 'batch_size', 'code', 'kind', 'schema', 'evaluation', 'metrics_definition', 'http_request']);
       const context: Record<string, unknown> = Object.fromEntries(Object.entries(detail.identity).filter(([key]) => !operationalKeys.has(key)));
       // Storage locations are not scientific identities (Mac and Docker differ).
       context.model = Object.fromEntries(Object.entries(model).filter(([key]) => key !== 'path' && key !== 'source'));
       context.dataset = Object.fromEntries(Object.entries(detail.identity.dataset ?? {}).filter(([key]) => key !== 'dataset_root'));
-      const identityKey = JSON.stringify([canonicalContext(context), trainingRunId, model.model_version_id, model.checkpoint_artifact_id, sampleId, datasetVersionId, detail.identity.split, detail.identity.purpose]);
+      const targetClass = detail.identity.explanation?.class;
+      const identityKey = JSON.stringify([targetClass, canonicalContext(context), trainingRunId, model.model_version_id, model.checkpoint_artifact_id, sampleId, datasetVersionId, detail.identity.split, detail.identity.purpose]);
       let key = issue ? JSON.stringify([identityKey, detail.id, artifact?.artifact_id]) : identityKey;
       // Repeated evidence for one method is preserved as another row, never overwritten.
       if (groups.get(key)?.methods[method as XAIMethod]) key = JSON.stringify([key, detail.id, artifact?.artifact_id]);
       const row: XAIComparison = groups.get(key) ?? { id: key, trainingRunId, modelVersionId: model.model_version_id,
         checkpointArtifactId: model.checkpoint_artifact_id, sampleId, datasetVersionId,
-        split: detail.identity.split, purpose: detail.identity.purpose, comparabilityIssue: issue, methods: {} };
+        split: detail.identity.split, purpose: detail.identity.purpose, targetClass, comparabilityIssue: issue, methods: {} };
       if (!row.original && !relationMismatch && sampleId && datasetVersionId) {
         row.original = {
           method: 'original', execution: 'completed', availability: 'available',

@@ -85,6 +85,7 @@ test('E6 detail displays the API payload and links back to the original TRAIN', 
   const detailLoader = loader({
     'react-router-dom': { ...require('react-router-dom'), useParams: () => ({ attemptId: attempt }) },
     '../hooks/useAssessment': { useAssessment: () => ({ data: detail, error: null, loading: false }) },
+    '../components/reports/AssessmentXAI': {AssessmentSampleXAI: () => null},
     '../components/reports/AssessmentExplanationDetail': {AssessmentExplanationDetail: () => null},
   });
   const { AssessmentDetail } = detailLoader('pages/AssessmentDetail.tsx');

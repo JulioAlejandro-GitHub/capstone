@@ -1,3 +1,4 @@
+import { TrainingAssessmentXAI } from '../components/reports/AssessmentXAI';
 import { useTrainingExplanations } from '../hooks/useTrainingExplanations';
 import { TrainingXAIComparison } from '../components/reports/TrainingXAIComparison';
 import { TrainingExplanationAttempt } from '../components/reports/TrainingExplanationAttempt';
@@ -1038,6 +1039,7 @@ export function RunDetail({ datasource, runId }: RunDetailProps) {
               <button className="ds-button" type="button" aria-pressed={trainingEvidenceView === 'history'} onClick={() => setTrainingEvidenceView('history')}>Historial de intentos y artefactos</button>
             </div>
           </div>}
+          <TrainingAssessmentXAI trainingRunId={runId!} datasource={datasource} />
           {trainingEvidenceView === 'comparison' && assessmentExplanations.items.length > 0 && <TrainingXAIComparison
             key={`${runId}:${explainabilityRequestVersion}`} assessments={assessmentExplanations.items}
             trainingRunId={runId!} datasource={datasource} />}

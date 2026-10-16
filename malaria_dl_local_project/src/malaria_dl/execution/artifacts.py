@@ -4,10 +4,11 @@ import hashlib
 from pathlib import Path
 
 from ..campaigns.contracts import CampaignError, digest
+from .storage_paths import local_scientific_path
 
 
 def file_identity(path):
-    p = Path(path)
+    p = local_scientific_path(path)
     if not p.is_file() or p.is_symlink() or p.name.endswith(".partial"):
         raise CampaignError("CHECKPOINT_NOT_FINALIZED")
     h = hashlib.sha256()
@@ -102,7 +103,7 @@ def verify_checkpoint_file(session, artifact):
         raise CampaignError("CHECKPOINT_OWNERSHIP_CONFLICT")
     if file_identity(path) != {k: artifact[k] for k in ("sha256", "bytes")}:
         raise CampaignError("CHECKPOINT_CONTENT_CHANGED")
-    return path
+    return local_scientific_path(path)
 
 
 def keras_loader(path, contract):

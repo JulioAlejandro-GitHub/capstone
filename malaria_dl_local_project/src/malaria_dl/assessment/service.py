@@ -269,15 +269,28 @@ def verify(repository, attempt, value):
     return result
 
 
-def run(repository, value, artifact_root, runtime_factory=KerasRuntime):
-    # Each invocation is new evidence, even with identical scientific parameters.
+def reserve_execution(repository: Any, value: dict, artifact_root: str) -> tuple[dict, dict, bool]:
+    """Reserve in the executing process before HTTP acknowledges the attempt."""
     from uuid import uuid4
     value = {**value, "execution_id": str(uuid4())}
     attempt, created = repository.reserve(value, artifact_root)
+    return value, attempt, created
+
+
+def run(repository, value, artifact_root, runtime_factory=KerasRuntime):
+    value, attempt, created = reserve_execution(repository, value, artifact_root)
     if not created:
         if attempt["state"] == "verified":
             verify(repository, attempt, value)
         return attempt
+    return execute_reserved(repository, value, attempt, runtime_factory)
+
+
+def execute_reserved(repository: Any, value: dict, attempt: dict,
+                     runtime_factory: Any = KerasRuntime) -> dict:
+    """Same scientific execution for CLI and HTTP; no second algorithm pipeline."""
+    require(repository.identity(attempt["identity_id"]) == value, "ASSESSMENT_IDENTITY_CONFLICT")
+    require(attempt["state"] == "active", "ASSESSMENT_NOT_ACTIVE")
     try:
         require(
             file_identity(value["model"]["path"])

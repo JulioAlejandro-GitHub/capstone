@@ -28,6 +28,8 @@ services:
       # Este bind más específico mantiene el código en modo read-only y
       # habilita escritura únicamente en el directorio gobernado de releases.
       - ./malaria_dl_local_project/releases:/app/malaria_dl_local_project/releases
+      # EXPLAIN writes only registered assessment artifacts; ML source stays read-only.
+      - ./malaria_dl_local_project/artifacts/assessments:/app/malaria_dl_local_project/artifacts/assessments
       - ./malaria_dataset_split_project/src:/app/malaria_dataset_split_project/src:ro
       # TEMPORAL: raíz de artefactos compartida Mac<->backend para el intento local_python
       # (el backend necesita leer el checkpoint real para verify_session/load_checkpoint).

@@ -211,3 +211,10 @@ test-scc-xai-original:
 
 test-scc-xai-selection:
 	docker compose exec -T -w /app/malaria_dl_local_project backend python -m pytest -q tests/test_sample_repository.py tests/test_cli01.py tests/test_assessment_e6.py tests/test_dataset_split_isolation.py tests/test_dataset_resolution.py tests/test_dataset_stage1.py tests/test_governed_dataset_contract.py
+
+.PHONY: test-xai-shared
+test-xai-shared:
+	docker compose exec -T backend python -m pytest -q tests/test_explain_generation.py tests/test_scc_art.py tests/test_mutation_security_policy.py
+	docker compose exec -T -w /app/malaria_dl_local_project backend python -m pytest -q tests/test_sample_repository.py tests/test_assessment_e6.py tests/test_scientific_storage_paths.py
+	docker compose exec -T frontend npm test
+	docker compose exec -T frontend npm run build

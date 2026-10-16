@@ -1,3 +1,4 @@
+import { AssessmentSampleXAI } from '../components/reports/AssessmentXAI';
 import { AssessmentExplanationDetail } from '../components/reports/AssessmentExplanationDetail';
 import { Link, useParams } from 'react-router-dom';
 import { AssessmentEvaluationSummary } from '../components/reports/AssessmentEvaluationCard';
@@ -17,6 +18,7 @@ export function AssessmentDetail({ datasource }: { datasource: string }) {
   return <section className="page">
     <h1>{data.kind === 'explain' ? 'Explicación E6' : data.identity.split === 'test' ? 'TEST' : 'Evaluación E6'}</h1>
     <Link to={withAllowedQuery(routes.runDetail(data.training_run_id), { datasource })}>Ver TRAIN de origen</Link>
+    <AssessmentSampleXAI detail={data} datasource={datasource} />
     {data.kind === 'explain' ? <AssessmentExplanationDetail key={data.id} data={data} datasource={datasource} /> : <article className="lineage-child-card lineage-child-card--evaluation">
       <AssessmentEvaluationSummary assessment={{
         source_kind: 'assessment_e6', attempt_id: data.id,
