@@ -292,6 +292,17 @@ class ScientificPreflightService:
                     if checkpoint_id:
                         artifact, artref, arterr = query(connection, 'A5', sid, 'ArtifactReadRepository.get',
                             lambda checkpoint_id=checkpoint_id: self.artifacts.get(datasource, str(checkpoint_id), 'artifacts', connection=connection))
+                        if not artifact and not arterr and (model.get('source') or {}).get('kind') == 'e5_selected_record':
+                            def resolve_e5_checkpoint():
+                                from app.services.comparison_eligibility import checkpoint_binding
+                                registered, binding = checkpoint_binding(selected.training_run_id,
+                                    self.assessments.eligibility_training(connection, selected.training_run_id),
+                                    self.scientific.comparison_checkpoint(connection, selected.training_run_id))
+                                if registered and all(model.get(key) == value for key, value in binding.items()):
+                                    return {'training_run_id': selected.training_run_id, 'checksum': binding['sha256']}
+                                return None
+                            artifact, artref, arterr = query(connection, 'A5', sid,
+                                'checkpoint_binding.e5_selected_record', resolve_e5_checkpoint)
                         if artifact:
                             evidence[-1]['value'] = known({
                                 'artifact_id': checkpoint_id,
@@ -507,7 +518,13 @@ class ScientificPreflightService:
         def compare(dim, code, values, kind='warning'):
             present = [v for v in values if v is not None]
             if len(present) > 1 and any(v != present[0] for v in present[1:]):
-                finding(dim, code, kind, 'La evidencia persistida difiere entre participantes.',
+                message = 'La evidencia persistida difiere entre participantes.'
+                if code == 'PROTOCOL_DIFFERENCE_DECISION' and len({
+                    v.get('effective') for v in present
+                }) > 1:
+                    message = ('Umbrales efectivos diferentes: las métricas dependientes del umbral '
+                               'se interpretan bajo decisiones distintas; no se recalculan resultados.')
+                finding(dim, code, kind, message,
                         [r['sid'] for r in rows])
         compare('A1', 'TRAIN_DATASET_DIFFERENCE', [str(r['train']['dataset_version_id']) if r['train'] else None for r in rows])
         compare('A2', 'SPLIT_DIFFERENCE', [r['split'] for r in rows], 'incompatibility')

@@ -16,8 +16,9 @@ def models(
     service: Annotated[CatalogService, Depends(get_catalog_service)],
     datasource: str | None = Query(default="malaria"),
     view: Literal["existing", "traceability"] = "existing",
+    comparison: bool = False,
 ) -> dict[str, Any]:
-    return service.models(datasource, view == "traceability")
+    return service.models(datasource, view == "traceability", comparison=comparison)
 
 
 @router.get("/models/comparison")

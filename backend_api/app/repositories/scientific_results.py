@@ -192,7 +192,7 @@ class ScientificReadRepository:
 
     def comparison_checkpoint(self, connection, run_id):
         row = connection.execute(text("""
-            SELECT a.id,a.run_id,a.checksum,a.metadata,
+            SELECT a.id,a.run_id,a.checksum,a.metadata,a.path,a.file_size_bytes,
                    s.payload - 'checkpoint_path' - 'selected_record' AS selection
             FROM runs r
             LEFT JOIN artifacts a ON a.id::text=r.execution_parameters#>>'{e10_v2_evaluation_context_v1,checkpoint_artifact_id}'

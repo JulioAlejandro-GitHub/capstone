@@ -160,3 +160,41 @@ test('summary loader waits for opening and cancels obsolete read-only requests',
   cleanup();
   assert.equal(request.signal.aborted, true);
 });
+
+for (const stage of ['train', 'evaluate', 'explain', 'query', 'complete']) {
+  test(`eligibility ${stage}: visible stages and guarded selection`, () => {
+    const eligibility = {run_id: 'exact-uuid', eligible: stage === 'complete', train: true, evaluate: true, explain: true, reasons: [], evidence: {}};
+    if (stage === 'query') {
+      eligibility.train = eligibility.evaluate = eligibility.explain = null;
+      eligibility.reasons = [{stage: 'query', code: 'ERROR_DE_CONSULTA', message: 'Error de consulta de elegibilidad.'}];
+    } else if (stage !== 'complete') {
+      eligibility[stage] = false;
+      eligibility.reasons = [{stage, code: 'INVALID_EVIDENCE', message: `${stage.toUpperCase()} sin evidencia válida.`}];
+    }
+    const data = structuredClone(catalog);
+    data.items[0].training_runs[0].eligibility = eligibility;
+    const html = page([], data);
+    assert.match(html, /exact-uuid/);
+    assert.match(html, /TRAIN/);
+    assert.match(html, /EVALUATE/);
+    assert.match(html, /EXPLAIN/);
+    const checkbox = html.match(/<input type="checkbox"[^>]*>/)[0];
+    assert.equal(checkbox.includes('disabled'), stage !== 'complete');
+    if (stage === 'query') {
+      assert.match(html, /role="alert"/);
+      assert.doesNotMatch(html, /pendiente/);
+    }
+  });
+}
+
+test('additional missing analyses consolidate causes and affected RUNs', () => {
+  const { ScientificRepresentations } = loader({'../../services/api': {api: {}}, './XAIComparisonViewer': {}, '../../hooks/useComparisonEvidence': {}, './ComparisonPython': {}})('components/reports/ScientificReport.tsx');
+  const module = ScientificRepresentations({selections: [], datasource: 'malaria', cache: {}});
+  const html = renderToStaticMarkup(module.props.children([
+    {training_run_id: 'a', artifacts: []}, {training_run_id: 'b', artifacts: []},
+  ]));
+  assert.equal((html.match(/<h3>Sin evidencia<\/h3>/g) ?? []).length, 1);
+  assert.match(html, /RUN A/);
+  assert.match(html, /RUN B/);
+  assert.match(html, /EXPLAIN no acredita automáticamente embeddings ni CKA/);
+});

@@ -13,6 +13,7 @@ from app.schemas.scientific_report import (
 from app.security import Permission, Principal, require_permission
 from app.services.scientific_preflight import ScientificPreflightService
 from app.services.scientific_report import ScientificReportService
+from app.services.comparison_eligibility import ComparisonEligibilityService
 
 router = APIRouter(tags=['models'])
 
@@ -37,6 +38,7 @@ def scientific_preflight(
     principal: Annotated[Principal, Depends(preflight_principal)], datasource: str | None = None,
 ):
     response.headers['Cache-Control'] = 'private, no-store'
+    ComparisonEligibilityService().require(body.selections, resolve_datasource(datasource))
     return ScientificPreflightService().read(
         body, resolve_datasource(datasource), correlation_id_context.get() or 'preflight')
 
@@ -47,4 +49,5 @@ def scientific_report(
     principal: Annotated[Principal, Depends(preflight_principal)], datasource: str | None = None,
 ):
     response.headers['Cache-Control'] = 'private, no-store'
+    ComparisonEligibilityService().require(body.selections, resolve_datasource(datasource))
     return ScientificReportService().read(body, resolve_datasource(datasource))

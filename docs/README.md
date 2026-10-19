@@ -213,3 +213,5 @@ SCC-PRE.1A — [Contrato de Comparabilidad Científica](contracts/scc_pre_1a.md)
 SCC-ART.1 — [Contrato de acceso HTTP a artefactos científicos](contracts/scc_art_1.md) (`CURRENT_DOC`, 2026-10-15; implementación y pruebas, certificación operativa autenticada/navegador pendiente).
 
 - [SCC-UI-COMPARISON-01 — Agrupación de la sección 01](engineering/scc_ui_comparison_01.md): implementación, proyección de evidencia y validación automatizada (2026-10-19).
+
+- [SCC-ELIGIBILITY.1 — Elegibilidad TRAIN → EVALUATE → EXPLAIN](engineering/scc_eligibility_1.md): contrato, implementación y auditoría PostgreSQL.

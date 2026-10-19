@@ -1,7 +1,17 @@
 import type { ModelSummary } from './api';
 
 export type ScientificRecord = Record<string, unknown>;
+export interface ComparisonEligibility {
+  run_id: string;
+  eligible: boolean;
+  train: boolean | null;
+  evaluate: boolean | null;
+  explain: boolean | null;
+  reasons: { stage: string; code: string; message: string }[];
+  evidence: Record<string, { identity_id: string; attempt_id: string }[]>;
+}
 export interface TrainingReference {
+  eligibility?: ComparisonEligibility | null;
   training_run_id: string;
   status: string;
   run_name: string | null;

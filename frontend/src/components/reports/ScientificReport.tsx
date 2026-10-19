@@ -132,8 +132,11 @@ export function ScientificQuestions(props: ModuleProps) {
 
 export function ScientificRepresentations(props: ModuleProps) {
   return <LazyScientificModule<{training_run_id: string; artifacts: {id: string; artifact_type: string; metadata: unknown}[]}[]> {...props} title="Embeddings y representaciones · PCA / UMAP / CKA" module="representations">{data => <>
-    {data.every(r => r.artifacts.length === 0) ? <p>No hay embeddings disponibles para esta selección.</p> : data.map((r,i) => <div key={r.training_run_id}><h3>{runLabel(i)}</h3>{r.artifacts.map(a => <details key={a.id}><summary>{a.artifact_type} · referencia persistida</summary><p>La referencia requiere un contrato de capa, dimensionalidad y población para acreditar una comparación.</p><pre>{JSON.stringify(a, null, 2)}</pre></details>)}</div>)}
-    <p>PCA / UMAP: sin proyección atribuible disponible en el contrato actual. CKA: requiere representaciones y metodología compatibles. No se ejecutan cálculos al abrir este módulo.</p>
+    {data.map((r,i) => <div key={r.training_run_id}>{r.artifacts.length > 0 && <h3>{runLabel(i)}</h3>}{r.artifacts.map(a => <details key={a.id}><summary>{a.artifact_type} · referencia persistida</summary><p>La referencia requiere un contrato de capa, dimensionalidad y población para acreditar una comparación.</p><pre>{JSON.stringify(a, null, 2)}</pre></details>)}</div>)}
+    <section aria-label="Sin evidencia"><h3>Sin evidencia</h3>
+    {data.map((r,i) => <p key={r.training_run_id}>{runLabel(i)}: {r.artifacts.length === 0 ? 'No hay embeddings disponibles para esta selección. ' : ''}PCA / UMAP: sin proyección atribuible; CKA: sin análisis acreditado por el contrato actual.</p>)}
+    <p>EXPLAIN no acredita automáticamente embeddings ni CKA.</p></section>
+    <p>No se ejecutan cálculos al abrir este módulo.</p>
   </>}</LazyScientificModule>;
 }
 

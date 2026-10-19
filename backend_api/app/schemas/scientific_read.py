@@ -8,7 +8,24 @@ class ComparisonConfiguration(BaseModel):
     scc_max_comparison_runs: int = Field(ge=1)
 
 
+class EligibilityReason(BaseModel):
+    stage: str
+    code: str
+    message: str
+
+
+class ComparisonEligibility(BaseModel):
+    run_id: UUID
+    eligible: bool
+    train: bool | None
+    evaluate: bool | None
+    explain: bool | None
+    reasons: list[EligibilityReason]
+    evidence: dict[str, list[dict[str, str]]]
+
+
 class TrainingReference(BaseModel):
+    eligibility: ComparisonEligibility | None = None
     training_run_id: UUID
     status: str
     run_name: str | None = None

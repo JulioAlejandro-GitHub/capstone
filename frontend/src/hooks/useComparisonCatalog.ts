@@ -10,7 +10,7 @@ export function useComparisonCatalog(datasource: string) {
     let active = true;
     setCatalog(null);
     setError(null);
-    api.getScientificModels(datasource).then(data => {
+    api.getScientificModels(datasource, true).then(data => {
       if (active) setCatalog(data);
     }).catch((cause: Error) => { if (active) setError(cause.message); });
     return () => { active = false; };

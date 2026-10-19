@@ -1,3 +1,4 @@
+import { ComparisonEligibilityStatus } from '../components/reports/ComparisonEligibilityStatus';
 import { EvaluationNavigation } from '../components/reports/ScientificReport';
 import type { RequestedSelection } from '../types/scientificPreflight';
 import { useAuth } from '../auth';
@@ -67,13 +68,18 @@ function ComparisonPage({ datasource }: { datasource: string }) {
       <label>Buscar modelo, arquitectura o identificador<input autoFocus className="ds-control" value={query} onChange={event => setQuery(event.target.value)} /></label>
       {summariesError && <div role="alert"><p>{summariesError}</p><button className="ds-button" onClick={retrySummaries}>Reintentar carga</button></div>}
       {!summaries && !summariesError && <p role="status">Cargando resúmenes de Ejecuciones…</p>}
-      <ul className="scc-choices">{filtered.map(run => <li key={run.run_id} data-selected={ids.includes(run.run_id)}>
-        <label><input type="checkbox" checked={ids.includes(run.run_id)} disabled={!ids.includes(run.run_id) && !available}
-          onChange={event => event.target.checked && maximum !== undefined ? add(run.run_id, maximum) : remove(run.run_id)} />
+      <ul className="scc-choices">{filtered.map(run => {
+        const eligibility = choices.find(choice => choice.run.training_run_id === run.run_id)?.run.eligibility;
+        return <li key={run.run_id} data-selected={ids.includes(run.run_id)}>
+        <label><input type="checkbox" checked={ids.includes(run.run_id)} disabled={!ids.includes(run.run_id) && (!available || !eligibility?.eligible)}
+          onChange={event => event.target.checked && eligibility?.eligible && maximum !== undefined ? add(run.run_id, maximum) : remove(run.run_id)} />
           {ids.includes(run.run_id) ? 'Seleccionado' : 'Seleccionar'}: {run.model_name || run.run_name || run.run_id}
         </label>
+        <ComparisonEligibilityStatus eligibility={eligibility} />
+        {eligibility?.reasons.some(reason => reason.code === 'ERROR_DE_CONSULTA') &&
+          <button className="ds-button" onClick={retry}>Reintentar elegibilidad</button>}
         <RunSummaryRow run={run} processKind="training" variant="compact" onRunSelect={() => {}} />
-      </li>)}</ul>
+      </li>; })}</ul>
       {summaries && !filtered.length && <p>Sin ejecuciones TRAIN disponibles para esta búsqueda.</p>}
       {summaries && summaries.count >= summaries.limit && <p role="status">Se muestran hasta {summaries.limit} entrenamientos recientes.</p>}
     </dialog>

@@ -1355,8 +1355,8 @@ export const api = {
     });
   },
 
-  getScientificModels(datasource: string) {
-    return request<ScientificModelCatalog>('/models', { datasource, view: 'traceability' });
+  getScientificModels(datasource: string, comparison = false) {
+    return request<ScientificModelCatalog>('/models', { datasource, view: 'traceability', comparison });
   },
   getModels(datasource: string) {
     return request<ModelCatalog>('/models', withDatasource(datasource));

@@ -232,6 +232,8 @@ async def test_http_permissions(monkeypatch, permissions, insecure, expected):
         called.append(True)
         return run()
     monkeypatch.setattr(scientific_preflight, 'ScientificPreflightService', lambda: type('Service', (), {'read': read})())
+    monkeypatch.setattr(scientific_preflight, 'ComparisonEligibilityService',
+                        lambda: type('Admission', (), {'require': lambda *args: None})())
     try:
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
             response = await client.post('/models/comparison/preflight', json=request().model_dump(mode='json'))

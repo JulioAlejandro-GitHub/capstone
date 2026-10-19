@@ -128,3 +128,25 @@ class AssessmentReadRepository:
         return [dict(row) for row in connection.execute(text(
             'SELECT sample_id,payload FROM assessment_results WHERE attempt_id=:id ORDER BY sample_id'
         ), {'id': attempt_id}).mappings()]
+
+    def eligibility_training(self, connection, run_id):
+        row = connection.execute(text("""
+            SELECT r.status,r.run_type,s.state AS session_state,s.verification,
+                   s.configuration#>'{resolved,input_contract}' AS input_contract
+            FROM runs r LEFT JOIN train_execution_sessions s ON s.run_id=r.id
+            WHERE r.id=:run
+        """), {'run': run_id}).mappings().one_or_none()
+        return dict(row) if row else None
+
+    def eligibility_attempts(self, connection, run_id):
+        """Counts belong to one attempt; identities without attempts remain visible."""
+        return [dict(row) for row in connection.execute(text("""
+            SELECT i.id AS identity_id,i.kind,i.identity - 'samples' AS identity,
+                   jsonb_array_length(i.identity->'samples') AS expected_count,
+                   a.id AS attempt_id,a.state,a.finished_at,a.verification,
+                   (SELECT count(*) FROM assessment_results r WHERE r.attempt_id=a.id) AS result_count,
+                   (SELECT count(*) FROM assessment_artifacts f WHERE f.attempt_id=a.id) AS artifact_count
+            FROM assessment_identities i LEFT JOIN assessment_attempts a ON a.identity_id=i.id
+            WHERE i.training_run_id=:run
+            ORDER BY i.created_at DESC,i.id,a.ordinal DESC
+        """), {'run': run_id}).mappings()]

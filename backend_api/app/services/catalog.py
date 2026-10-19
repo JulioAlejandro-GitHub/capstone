@@ -10,12 +10,19 @@ class CatalogService:
         self.repository = repository
         self.settings = settings
 
-    def models(self, datasource: str | None, traceability: bool = False) -> dict[str, Any]:
+    def models(self, datasource: str | None, traceability: bool = False, comparison: bool = False) -> dict[str, Any]:
         items = self.repository.models(datasource)
         if traceability:
             items = [public_evidence({key: value for key, value in item.items()
                                       if not key.startswith('best_')})
                      for item in items if item['model_type'] == 'classification']
+        if comparison:
+            from app.services.comparison_eligibility import ComparisonEligibilityService
+            runs = [r for item in items for r in item['training_runs']]
+            eligibility = ComparisonEligibilityService().read(
+                [r['training_run_id'] for r in runs], datasource)
+            for run in runs:
+                run['eligibility'] = eligibility[str(run['training_run_id'])]
         for item in items:
             item['training_evidence_status'] = 'available' if item['training_runs'] else 'not_generated'
             item['has_training_runs'] = bool(item['training_runs'])
