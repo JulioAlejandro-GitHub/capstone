@@ -1,0 +1,102 @@
+<article aria-label="Entrenamiento custom_cnn:adam:seed11" class="run-lineage-group training-card ">
+    <div class="report-row">
+        <section aria-label="RUN" class="report-cell report-run-cell" data-label="RUN"><span
+                class="run-process-badge run-process-badge--training">TRAIN</span><strong
+                class="report-run-name">custom_cnn:adam:seed11</strong><span class="report-muted"
+                title="338136db-a207-47fc-bbf3-d17ce85c0dc2">Run ID: 338136db…</span><span class="report-muted"
+                title="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2">dataset-version-id:
+                d8c0cab5-09dd-597f-9de7-7ca01aee2ec2</span>
+            <div class="report-inline-facts"><span class="status status-completed">completed</span><span
+                    class="report-duration">Duración: 00:10:01</span></div>
+        </section>
+        <section aria-label="Modelo" class="report-cell report-model-cell" data-label="Modelo"><strong
+                class="report-primary-value">custom_cnn</strong><span class="report-muted">Optimizer:
+                <strong>adam</strong></span>
+            <div class="run-scientific-parameters" role="region" aria-label="Parámetros científicos" tabindex="0">
+                <dl>
+                    <div class="run-scientific-parameters__entry">
+                        <dt title="target_recall: Sensibilidad clínica objetivo">Sensibilidad objetivo</dt>
+                        <dd>0.98</dd>
+                    </div>
+                    <div class="run-scientific-parameters__entry">
+                        <dt title="min_recall: Sensibilidad mínima para selección">Sensibilidad mínima</dt>
+                        <dd>0.98</dd>
+                    </div>
+                    <div class="run-scientific-parameters__entry">
+                        <dt title="calibrate_threshold: Habilita calibración del umbral">Calibrar umbral</dt>
+                        <dd>false</dd>
+                    </div>
+                    <div class="run-scientific-parameters__entry">
+                        <dt title="threshold: Umbral aplicado en VALIDATION">Umbral VALIDATION</dt>
+                        <dd>0.5</dd>
+                    </div>
+                    <div class="run-scientific-parameters__entry">
+                        <dt title="early_stopping_patience: Épocas de paciencia">Paciencia (épocas)</dt>
+                        <dd>12</dd>
+                    </div>
+                    <div class="run-scientific-parameters__entry">
+                        <dt title="early_stopping_min_delta: Mejora mínima requerida">Mejora mínima</dt>
+                        <dd>0.0001</dd>
+                    </div>
+                    <div class="run-scientific-parameters__entry">
+                        <dt title="min_class_fraction: Fracción mínima por clase (colapso)">Fracción mínima por clase
+                        </dt>
+                        <dd>0.05</dd>
+                    </div>
+                    <div class="run-scientific-parameters__entry">
+                        <dt title="reject_prediction_collapse: Rechazar predicciones colapsadas">Rechazar colapso de
+                            predicción</dt>
+                        <dd>true</dd>
+                    </div>
+                    <div class="run-scientific-parameters__entry">
+                        <dt title="val_f2_parasitized: F2 clínico del checkpoint seleccionado">F2 VALIDATION</dt>
+                        <dd>0.9383052902834622</dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+        <section aria-label="Resultados" class="report-cell report-results-cell" data-label="Resultados">
+            <div class="mini-confusion-matrix">
+                <table aria-label="Matriz de confusión resumida">
+                    <caption class="report-sr-only">Filas de clase real y columnas de clase predicha</caption>
+                    <thead>
+                        <tr>
+                            <th aria-hidden="true"></th>
+                            <th scope="col">Pred U</th>
+                            <th scope="col">Pred P</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Real U</th>
+                            <td class="mini-confusion-matrix__cell mini-confusion-matrix__cell--correct">
+                                <span>TN</span><strong>1.309</strong></td>
+                            <td class="mini-confusion-matrix__cell mini-confusion-matrix__cell--error">
+                                <span>FP</span><strong>59</strong></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Real P</th>
+                            <td class="mini-confusion-matrix__cell mini-confusion-matrix__cell--error">
+                                <span>FN</span><strong>87</strong></td>
+                            <td class="mini-confusion-matrix__cell mini-confusion-matrix__cell--correct">
+                                <span>TP</span><strong>1.238</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="metric-grid">
+                <div class="metric-chip"><span>Recall</span><strong>0.9343</strong></div>
+                <div class="metric-chip"><span>Specificity</span><strong>0.9569</strong></div>
+                <div class="metric-chip"><span>F2</span><strong>0.9383</strong></div>
+                <div class="metric-chip"><span>AUC</span><strong>0.9817</strong></div>
+            </div>
+        </section>
+        <section aria-label="Análisis automático" class="report-cell report-analysis-cell"
+            data-label="Análisis automático">
+            <div class="report-analysis"><span class="report-badge report-badge-danger">Riesgo por falsos
+                    negativos</span>
+                <p>Se observan falsos negativos que requieren revisión prioritaria.</p>
+            </div>
+        </section>
+    </div>
+</article>

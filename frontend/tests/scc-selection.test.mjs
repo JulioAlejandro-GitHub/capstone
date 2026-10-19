@@ -20,7 +20,7 @@ function loader(mocks = {}) {
     const code = ts.transpileModule(readFileSync(path, 'utf8'), {
       compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
     }).outputText;
-    runInNewContext(code, { exports: module.exports, URLSearchParams, AbortController,
+    runInNewContext(code, { exports: module.exports, URLSearchParams, AbortController, window: {setTimeout, clearTimeout},
       require: (name) => {
         if (name in mocks) return mocks[name];
         if (name.endsWith('.css')) return {};
@@ -55,6 +55,7 @@ test('selection retains exact identities, order, capacity from server, removal a
 
 function page(ids, catalog, error = null) {
   const load = loader({
+    '../hooks/useComparisonTrainingSummaries': {useComparisonTrainingSummaries: () => ({summaries: catalog ? {items: catalog.items.flatMap(model => model.training_runs.map(run => ({...run, run_id: run.training_run_id, model_name: model.model_name}))), count: 1, limit: 500} : null, error: null, retry() {}})},
     '../auth': {useAuth: () => ({user: {id: 'test'}, status: 'authenticated'})},
     '../components/reports/ScientificReport': {EvaluationNavigation: () => null},
     '../components/reports/ScientificPreflight': {ScientificPreflight: () => null},
@@ -112,4 +113,50 @@ for (let index = 0; index < 4; index++) test(`compact card RUN ${String.fromChar
   const visible = html.replace(/<details>.*?<\/details>/gs, '').replace(/<[^>]+>/g, '');
   assert.ok(!visible.includes(id));
   assert.match(visible, /CNN/); assert.match(visible, /sgd/); assert.match(visible, /0.01/);
+});
+
+
+test('selector reuses the report row, preserving full report secondary sections', () => {
+  const load = loader();
+  const run = {run_id: '12345678-full-uuid', run_name: 'Ensayo', model_name: 'CNN', status: 'completed', command: '--learning-rate 0.02 --max-epochs 20', evaluation_count: 0, explainability_count: 0};
+  const Row = load('components/reports/RunSummaryRow.tsx').RunSummaryRow;
+  const compact = renderToStaticMarkup(React.createElement(Row, {run, processKind: 'training', variant: 'compact', onRunSelect() {}}));
+  const full = renderToStaticMarkup(React.createElement(Row, {run, processKind: 'training', onRunSelect() {}}));
+  assert.match(compact, /report-row--compact/);
+  assert.match(compact, /Consultar UUID completo/);
+  assert.match(compact, /12345678-full-uuid/);
+  assert.match(compact, /0.02/);
+  assert.match(compact, /run-scientific-parameters/);
+  assert.doesNotMatch(compact, /stage2-release-summary|Lectura automática exploratoria|run-lineage-group__children/);
+  assert.match(full, /stage2-release-summary/);
+  assert.match(full, /Lectura automática exploratoria/);
+  const Group = load('components/reports/TrainingRunGroupCard.tsx').TrainingRunGroupCard;
+  const group = renderToStaticMarkup(React.createElement(Group, {training: run, childrenState: {data: null, status: 'idle'}, datasource: 'malaria'}));
+  assert.match(group, /run-lineage-group__children/);
+});
+
+test('summary loader waits for opening and cancels obsolete read-only requests', async () => {
+  let effect;
+  let request;
+  const writes = [];
+  const load = loader({
+    react: {...React, useState: initial => [initial, value => writes.push(value)], useEffect: callback => { effect = callback; }},
+    '../services/api': {api: {getTrainingSummaries: options => { request = options; return Promise.resolve({items: [], count: 0, limit: 500}); }}},
+  });
+  const hook = load('hooks/useComparisonTrainingSummaries.ts').useComparisonTrainingSummaries;
+  hook('malaria', false);
+  assert.equal(effect(), undefined);
+  assert.equal(request, undefined);
+  hook('malaria', true);
+  const cleanupBeforeStart = effect();
+  cleanupBeforeStart();
+  await new Promise(resolve => setTimeout(resolve, 5));
+  assert.equal(request, undefined);
+  const cleanup = effect();
+  await new Promise(resolve => setTimeout(resolve, 5));
+  assert.equal(request.datasource, 'malaria');
+  assert.equal(request.limit, 500);
+  assert.equal(writes.at(-1).count, 0);
+  cleanup();
+  assert.equal(request.signal.aborted, true);
 });

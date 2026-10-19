@@ -6,7 +6,8 @@ import { useCallback, useRef, useState } from 'react';
 import { useComparisonCatalog } from '../hooks/useComparisonCatalog';
 import { useComparisonSelection } from '../hooks/useComparisonSelection';
 import { ComparisonRunCard } from '../components/reports/ComparisonRunCard';
-import { formatDate } from '../utils/format';
+import { RunSummaryRow } from '../components/reports/RunSummaryRow';
+import { useComparisonTrainingSummaries } from '../hooks/useComparisonTrainingSummaries';
 import '../styles/ds-primitives.css';
 import '../styles/report-components.css';
 import '../styles/scc-comparison.css';
@@ -21,14 +22,19 @@ function ComparisonPage({ datasource }: { datasource: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
   const [query, setQuery] = useState('');
+  const [selectorLoaded, setSelectorLoaded] = useState(false);
+  const { summaries, error: summariesError, retry: retrySummaries } = useComparisonTrainingSummaries(datasource, selectorLoaded);
   const maximum = catalog?.comparison.scc_max_comparison_runs;
   const available = maximum === undefined ? 0 : Math.max(0, maximum - ids.length);
   const choices = catalog?.items.flatMap(model => model.training_runs.map(run => ({ model, run }))) ?? [];
-  const filtered = choices.filter(({ model, run }) =>
-    `${model.model_name} ${model.architecture ?? ''} ${run.training_run_id} ${run.run_name ?? ''}`.toLowerCase().includes(query.toLowerCase()));
+  const filtered = summaries?.items.filter(run => {
+    const model = choices.find(choice => choice.run.training_run_id === run.run_id)?.model;
+    return `${run.model_name ?? ''} ${model?.architecture ?? ''} ${run.run_id} ${run.run_name ?? ''}`.toLowerCase().includes(query.toLowerCase());
+  }) ?? [];
   const openSelector = (button: HTMLButtonElement) => {
     trigger.current = button;
     setQuery('');
+    setSelectorLoaded(true);
     dialog.current?.showModal();
   };
   return <section className="ds-page ds-report scc-page">
@@ -54,19 +60,22 @@ function ComparisonPage({ datasource }: { datasource: string }) {
         onClick={event => openSelector(event.currentTarget)}><strong>＋ Añadir RUN</strong><span>Espacio {ids.length + index + 1} disponible</span></button>)}
     </div>
     <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} />
-    <dialog ref={dialog} className="report-viewer" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
+    <dialog ref={dialog} className="report-viewer scc-run-selector" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
       <div className="ds-page-header"><h2 id="scc-selector-title">Seleccionar ejecuciones TRAIN</h2>
         <button className="ds-button" onClick={() => dialog.current?.close()}>Cerrar</button></div>
       <p>Seleccionadas: {ids.length} / {maximum ?? '—'}. Cada identificador corresponde a un TRAIN concreto.</p>
       <label>Buscar modelo, arquitectura o identificador<input autoFocus className="ds-control" value={query} onChange={event => setQuery(event.target.value)} /></label>
-      <ul className="scc-choices">{filtered.map(({ model, run }) => <li key={run.training_run_id}>
-        <label><input type="checkbox" checked={ids.includes(run.training_run_id)} disabled={!ids.includes(run.training_run_id) && !available}
-          onChange={event => event.target.checked && maximum !== undefined ? add(run.training_run_id, maximum) : remove(run.training_run_id)} />
-          <span><strong>{model.model_name}</strong> · Arquitectura: {model.architecture ?? 'Sin evidencia'}<br />
-            <code className="report-identifier">{run.training_run_id}</code><br />
-            {run.run_name ?? 'Sin nombre'} · {run.status} · {formatDate(run.started_at)}</span>
-        </label></li>)}</ul>
-      {!filtered.length && <p>Sin ejecuciones TRAIN disponibles para esta búsqueda.</p>}
+      {summariesError && <div role="alert"><p>{summariesError}</p><button className="ds-button" onClick={retrySummaries}>Reintentar carga</button></div>}
+      {!summaries && !summariesError && <p role="status">Cargando resúmenes de Ejecuciones…</p>}
+      <ul className="scc-choices">{filtered.map(run => <li key={run.run_id} data-selected={ids.includes(run.run_id)}>
+        <label><input type="checkbox" checked={ids.includes(run.run_id)} disabled={!ids.includes(run.run_id) && !available}
+          onChange={event => event.target.checked && maximum !== undefined ? add(run.run_id, maximum) : remove(run.run_id)} />
+          {ids.includes(run.run_id) ? 'Seleccionado' : 'Seleccionar'}: {run.model_name || run.run_name || run.run_id}
+        </label>
+        <RunSummaryRow run={run} processKind="training" variant="compact" onRunSelect={() => {}} />
+      </li>)}</ul>
+      {summaries && !filtered.length && <p>Sin ejecuciones TRAIN disponibles para esta búsqueda.</p>}
+      {summaries && summaries.count >= summaries.limit && <p role="status">Se muestran hasta {summaries.limit} entrenamientos recientes.</p>}
     </dialog>
   </section>;
 }

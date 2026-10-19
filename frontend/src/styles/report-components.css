@@ -142,7 +142,7 @@
 .run-scientific-parameters {
   min-width: 0;
   max-width: 100%;
-  max-height: 180px;
+  max-height: 88px;
   overflow-y: auto;
   overflow-x: hidden;
   border: 1px solid #edf0f6;

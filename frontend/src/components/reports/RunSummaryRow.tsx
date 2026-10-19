@@ -1,6 +1,6 @@
 import { StatusBadge } from '../StatusBadge';
 import type { RunDashboard, TrainingSummary } from '../../types/api';
-import { getRunDuration } from '../../utils/format';
+import { formatDate, getRunDuration } from '../../utils/format';
 import {
   generateRunAutoAnalysis,
   resolveRunConfusion,
@@ -14,6 +14,7 @@ import { MiniConfusionMatrix } from './MiniConfusionMatrix';
 import { RunProcessBadge, type RunProcessKind } from './RunProcessBadge';
 
 interface RunSummaryRowProps {
+  variant?: 'full' | 'compact';
   run: RunDashboard | TrainingSummary;
   onRunSelect: (runId: string) => void;
   processKind?: RunProcessKind;
@@ -26,6 +27,7 @@ function truncatedRunId(runId: string): string {
 
 export function RunSummaryRow({
   run,
+  variant = 'full',
   onRunSelect,
   processKind,
   stage2Active = false, stage2Expanded = false, stage2ControlsId, onStage2Toggle,
@@ -35,7 +37,7 @@ export function RunSummaryRow({
   const analysis = generateRunAutoAnalysis(run);
 
   return (
-    <div className="report-row">
+    <div className={`report-row${variant === 'compact' ? ' report-row--compact' : ''}`}>
       <section aria-label="RUN" className="report-cell report-run-cell" data-label="RUN">
         {processKind ? <RunProcessBadge kind={processKind} /> : null}
         <strong className="report-run-name">
@@ -44,6 +46,11 @@ export function RunSummaryRow({
         <span className="report-muted" title={run.run_id}>
           Run ID: {truncatedRunId(run.run_id)}
         </span>
+        {variant === 'compact' ? <>
+          <details><summary>Consultar UUID completo</summary><code className="report-identifier">{run.run_id}</code></details>
+          <span className="report-muted">Inicio: {formatDate(run.started_at)}</span>
+          <span className="report-muted">Dataset: {run.dataset_name || 'No registrado'}</span>
+        </> : null}
         {processKind === 'training' ? (
           <span className="report-muted" title={run.dataset_version_id ?? undefined}>
             dataset-version-id: {run.dataset_version_id || 'No registrado'}
@@ -67,13 +74,14 @@ export function RunSummaryRow({
         <span className="report-muted">
           Optimizer: <strong>{run.optimizer?.trim() || 'No registrado 4'}</strong>
         </span>
-        <CommandChips command={run.command} />
+        <CommandChips command={run.command} params={variant === 'compact' ? ['model', 'max-epochs', 'optimizer', 'learning-rate', 'checkpoint-monitor'] : undefined} />
         {processKind === 'training' ? (
           <ScientificParameters parameters={'scientific_parameters' in run ? run.scientific_parameters : undefined} />
         ) : null}
       </section>
 
       <section aria-label="Resultados" className="report-cell report-results-cell" data-label="Resultados">
+        {variant === 'compact' && 'metrics_split' in run && run.metrics_split ? <span className="report-muted">Split de métricas: {run.metrics_split}</span> : null}
         <MiniConfusionMatrix counts={counts} />
         <div className="metric-grid">
           <MetricChip label="Recall" value={metrics.recall} />
@@ -88,7 +96,7 @@ export function RunSummaryRow({
         className="report-cell report-analysis-cell"
         data-label="Análisis automático"
       >
-        <AutoAnalysisBadge analysis={analysis} />
+        <AutoAnalysisBadge analysis={analysis} showExploratoryNote={variant !== 'compact'} />
         {processKind !== 'training' ? <button
           aria-label={`Ver detalle de ${run.run_name?.trim() || run.run_id}`}
           className="report-detail-button"
@@ -97,7 +105,7 @@ export function RunSummaryRow({
         >
           Ver detalle
         </button> : null}
-        {processKind === 'training' ? <div className="stage2-release-summary">
+        {processKind === 'training' && variant !== 'compact' ? <div className="stage2-release-summary">
           <button aria-controls={stage2ControlsId} aria-expanded={stage2Expanded}
             className="report-detail-button stage2-detail-link"
             onClick={onStage2Toggle} type="button">
