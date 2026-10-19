@@ -170,6 +170,10 @@ class ScientificPreflightService:
                             if historical is None and not herr:
                                 raise HTTPException(404, 'Evaluación no encontrada.')
                             if historical:
+                                evidence[-1]['value'] = known(public_evidence({key: historical.get(key) for key in (
+                                    'evaluation_role', 'purpose', 'protocol_hash',
+                                    'metric_definition', 'split',
+                                )}), [href])
                                 if str(historical['training_run_id']) != str(selected.training_run_id):
                                     raise HTTPException(404, 'Evaluación no encontrada para este TRAIN.')
                                 row['historical'] = historical
@@ -288,6 +292,11 @@ class ScientificPreflightService:
                     if checkpoint_id:
                         artifact, artref, arterr = query(connection, 'A5', sid, 'ArtifactReadRepository.get',
                             lambda checkpoint_id=checkpoint_id: self.artifacts.get(datasource, str(checkpoint_id), 'artifacts', connection=connection))
+                        if artifact:
+                            evidence[-1]['value'] = known({
+                                'artifact_id': checkpoint_id,
+                                'checksum_registered': artifact.get('checksum'),
+                            }, [artref])
                         lineage = bool(artifact and str(artifact['training_run_id']) == str(selected.training_run_id))
                         obs = {'state': 'query_error', 'error_ids': arterr} if arterr else known(lineage, [artref])
                         checkpoints.append({'selection_id': sid, 'artifact_id': checkpoint_id,

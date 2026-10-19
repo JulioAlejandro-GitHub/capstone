@@ -211,3 +211,5 @@ SCC-CORE.1 — [Contrato compartido de trazabilidad científica](contracts/scc_c
 SCC-PRE.1A — [Contrato de Comparabilidad Científica](contracts/scc_pre_1a.md) (`CURRENT_DOC`, 2026-10-16; cierre documental de A1–A6, estados por análisis y precisiones P1–P5; implementación SCC-PRE.1B pendiente).
 
 SCC-ART.1 — [Contrato de acceso HTTP a artefactos científicos](contracts/scc_art_1.md) (`CURRENT_DOC`, 2026-10-15; implementación y pruebas, certificación operativa autenticada/navegador pendiente).
+
+- [SCC-UI-COMPARISON-01 — Agrupación de la sección 01](engineering/scc_ui_comparison_01.md): implementación, proyección de evidencia y validación automatizada (2026-10-19).

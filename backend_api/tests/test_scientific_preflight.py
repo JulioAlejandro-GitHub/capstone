@@ -385,6 +385,11 @@ def test_checkpoint_metadata_does_not_verify_files_or_hashes():
     assert all(c.lineage.value and c.registered.value for c in result.checkpoints)
     assert all(c.availability == c.integrity == 'not_checked' for c in result.checkpoints)
     assert '/private/model.keras' not in result.model_dump_json()
+    refs = [ref for ref in result.evidence if ref.source == 'A5' and ref.operation == 'ArtifactReadRepository.get']
+    assert len(refs) == 2
+    assert all(ref.value.value['checksum_registered'] == 'a' * 64 for ref in refs)
+    assert {ref.value.value['artifact_id'] for ref in refs} == {str(uid(41)), str(uid(42))}
+    assert all(ref.value.evidence_ids == [ref.evidence_id] for ref in refs)
 
 def test_missing_and_wrong_train_checkpoint():
     e = Evidence()
@@ -410,3 +415,24 @@ def test_proven_split_conflict_survives_auxiliary_sql_error():
     assert result.technical_errors
     assert all(err.scope_ids for err in result.technical_errors)
     assert len(result.technical_errors[0].selection_ids) == 2
+
+
+def test_historical_projection_preserves_role_protocol_and_missing_attempt():
+    e = Evidence()
+    e.comparison_metrics = lambda c, eid: []
+    e.comparison_checkpoint = lambda c, rid: None
+    e.evaluation = lambda c, eid: {'id': eid, 'training_run_id': uid(1), 'run_id': uid(90),
+        'source_assessment_attempt_id': None, 'split': 'val', 'checkpoint_artifact_id': uid(41),
+        'dataset_version_id': uid(10), 'metric_definition': 'binary_counts_rates_v1',
+        'evaluation_role': 'training_validation_final', 'purpose': 'development',
+        'protocol_hash': 'persisted-protocol', 'path': '/private/not-public'}
+    body = request().model_dump()
+    body['selections'][0]['evaluation'] = {'source': 'evaluations', 'evaluation_id': uid(80)}
+    result = run(e, PreflightRequest.model_validate(body))
+    ref = next(ref for ref in result.evidence if ref.operation == 'ScientificReadRepository.evaluation')
+    assert ref.value.value['protocol_hash'] == 'persisted-protocol'
+    assert ref.value.value['evaluation_role'] == 'training_validation_final'
+    assert ref.value.value['purpose'] == 'development'
+    assert ref.value.evidence_ids == [ref.evidence_id]
+    assert result.selections[0].evaluation.value['source_assessment_attempt_id'] is None
+    assert '/private/not-public' not in result.model_dump_json()

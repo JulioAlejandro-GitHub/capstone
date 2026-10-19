@@ -82,3 +82,21 @@
 @media (max-width: 700px) {
   .ds-report.scc-page .report-row--compact { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Section 01 only: equality is descriptive, not a scientific verdict. */
+.ds-report.scc-page .scc-parameter-group { margin-block: var(--ds-space-5); }
+.ds-report.scc-page .scc-dimension-summary { display: flex; flex-wrap: wrap; gap: var(--ds-space-3); }
+.ds-report.scc-page .scc-parameter-table { table-layout: fixed; }
+.ds-report.scc-page .scc-parameter-table th,
+.ds-report.scc-page .scc-parameter-table td { vertical-align: top; overflow-wrap: anywhere; min-width: 150px; }
+.ds-report.scc-page .scc-parameter-table { min-width: 650px; }
+.ds-report.scc-page .scc-parameter-table tbody tr:nth-child(even) { background: var(--ds-bg-subtle); }
+.ds-report.scc-page .scc-parameter-table td[data-match-tone="0"] { background: var(--ds-blue-100); color: var(--ds-slate-900); }
+.ds-report.scc-page .scc-parameter-table td[data-match-tone="1"] { background: var(--ds-violet-100); color: var(--ds-slate-900); }
+.ds-report.scc-page .scc-parameter-table td[data-match-tone="2"] { background: var(--ds-slate-100); color: var(--ds-slate-900); }
+.ds-report.scc-page .scc-equal,
+.ds-report.scc-page .scc-module-badge { display: inline-block; margin-inline: var(--ds-space-3); padding: var(--ds-space-2) var(--ds-space-3); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-sm); font-size: var(--ds-text-xs); }
+.ds-report.scc-page .scc-parameter-table th[scope="rowgroup"] small { display: block; }
+.ds-report.scc-page .scc-row-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--ds-space-4); }
+.ds-report.scc-page .scc-compact-id { display: inline-block; }
+.ds-report.scc-page .scc-findings { font-size: var(--ds-text-sm); }

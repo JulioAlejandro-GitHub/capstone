@@ -1,0 +1,1982 @@
+<details class="ds-accordion" open="">
+    <summary>01 — ¿Qué estamos comparando?</summary>
+    <p>Las diferencias experimentales no implican incompatibilidad. “Comparables” reúne parámetros cuya comparación
+        requiere advertencias o evidencia adicional; cada celda conserva su estado.</p>
+    <p>4 RUN seleccionados · RUN A: custom_cnn · RUN B: custom_cnn · RUN C: custom_cnn · RUN D: vgg16</p>
+    <div class="scc-dimension-summary"><span>A1 · <span class="scc-verdict"
+                data-state="COMPARABLE">Comparable</span></span><span>A2 · <span class="scc-verdict"
+                data-state="NO_COMPARABLE">No comparable</span></span><span>A2 · <span class="scc-verdict"
+                data-state="EVIDENCIA_INSUFICIENTE">Evidencia insuficiente</span></span><span>A3 · <span
+                class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia insuficiente</span></span><span>A4 ·
+            <span class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia insuficiente</span></span><span>A5 ·
+            <span class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia insuficiente</span></span><span>A6 ·
+            <span class="scc-verdict" data-state="COMPARABLE_CON_ADVERTENCIAS">Comparable con advertencias</span></span>
+    </div>
+    <div class="scc-findings">
+        <details>
+            <summary>Diferencias experimentales detectadas · 10 parámetros · afecta a RUN A, RUN B, RUN C, RUN D
+            </summary>
+            <ul>
+                <li>Regularización L2: diferencia experimental</li>
+                <li>Dropout: diferencia experimental</li>
+                <li>Learning rate de ajuste fino: diferencia experimental</li>
+                <li>Épocas de ajuste fino: diferencia experimental</li>
+                <li>Épocas máximas: diferencia experimental</li>
+                <li>Learning rate: diferencia experimental</li>
+                <li>Optimizador: diferencia experimental</li>
+                <li>Normalización: diferencia experimental</li>
+                <li>Semilla: diferencia experimental</li>
+                <li>Arquitectura: diferencia experimental</li>
+            </ul>
+        </details>
+        <div>
+            <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+        </div>
+        <div>
+            <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+        </div>
+        <div>
+            <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+        </div>
+        <div>
+            <p>VALIDATION final de desarrollo; no equivale a TEST independiente. · afecta a RUN C, RUN D</p>
+        </div>
+        <div>
+            <p>Checkpoint sin registro recuperable. · afecta a RUN A, RUN B</p>
+        </div>
+        <div>
+            <p>Configuración no acreditada: internal_preprocessing · afecta a RUN A, RUN B, RUN C, RUN D</p>
+        </div>
+        <div>
+            <p>No todos los participantes tienen un intento EVALUATE exacto con población verificable. · afecta a RUN A,
+                RUN B, RUN C, RUN D</p>
+        </div>
+        <div>
+            <p>El nombre de split no acredita su pertenencia poblacional. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+        </div>
+        <div>
+            <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+        </div>
+    </div>
+    <section class="scc-parameter-group"><button class="ds-button" aria-expanded="true">Con diferencias · 19</button>
+        <div class="report-table-scroll" tabindex="0" role="region" aria-label="Con diferencias A1–A6">
+            <table class="report-data-table scc-preflight-table scc-parameter-table">
+                <caption>Con diferencias · parámetros de los RUN seleccionados</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Parámetro</th>
+                        <th scope="col">RUN A<br><small>custom_cnn</small></th>
+                        <th scope="col">RUN B<br><small>custom_cnn</small></th>
+                        <th scope="col">RUN C<br><small>custom_cnn</small></th>
+                        <th scope="col">RUN D<br><small>vgg16</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row"><button class="ds-button" aria-expanded="false">A2 · Partición
+                                evaluada</button><small> · Diferencia de procedencia</small></th>
+                        <td>test</td>
+                        <td data-match="BCD" data-match-tone="0" title="Coinciden: B=C=D">val</td>
+                        <td data-match="BCD" data-match-tone="0" title="Coinciden: B=C=D">val</td>
+                        <td data-match="BCD" data-match-tone="0" title="Coinciden: B=C=D">val</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:1</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:7</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:13</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:22</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <th scope="row">A4 · Épocas ejecutadas</th>
+                        <td>16</td>
+                        <td data-match="BC" data-match-tone="0" title="Coinciden: B=C">3</td>
+                        <td data-match="BC" data-match-tone="0" title="Coinciden: B=C">3</td>
+                        <td>27</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Arquitectura</th>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">custom_cnn</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">custom_cnn</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">custom_cnn</td>
+                        <td>vgg16</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Semilla</th>
+                        <td>11</td>
+                        <td data-match="BCD" data-match-tone="0" title="Coinciden: B=C=D">47</td>
+                        <td data-match="BCD" data-match-tone="0" title="Coinciden: B=C=D">47</td>
+                        <td data-match="BCD" data-match-tone="0" title="Coinciden: B=C=D">47</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Optimizador</th>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">adam</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">adam</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">adam</td>
+                        <td>sgd</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Learning rate</th>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0.0001</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0.0001</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0.0001</td>
+                        <td>0.001</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Épocas máximas</th>
+                        <td>40</td>
+                        <td data-match="BC" data-match-tone="0" title="Coinciden: B=C">3</td>
+                        <td data-match="BC" data-match-tone="0" title="Coinciden: B=C">3</td>
+                        <td>100</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Normalización</th>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">rescale_0_1</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">rescale_0_1</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">rescale_0_1</td>
+                        <td>vgg16_imagenet</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Épocas de ajuste fino</th>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0</td>
+                        <td>20</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Learning rate de ajuste fino</th>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0.00001</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0.00001</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0.00001</td>
+                        <td>0.0001</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Dropout</th>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0.4</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0.4</td>
+                        <td data-match="ABC" data-match-tone="0" title="Coinciden: A=B=C">0.4</td>
+                        <td>0.5</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Regularización L2</th>
+                        <td>0.001</td>
+                        <td data-match="BC" data-match-tone="0" title="Coinciden: B=C">0.0001</td>
+                        <td data-match="BC" data-match-tone="0" title="Coinciden: B=C">0.0001</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:2</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:8</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:14</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:23</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <th scope="row">A5 · Checkpoint atribuido</th>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="5e5a7884-61d0-571a-9cb0-4385c55e2b01">5e5a7884…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">5e5a7884-61d0-571a-9cb0-4385c55e2b01</code>
+                                </details>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="4294d2b2-690b-5884-a3cb-fc7f0eb3653d">4294d2b2…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">4294d2b2-690b-5884-a3cb-fc7f0eb3653d</code>
+                                </details>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="a73e3674-b924-5e1e-baeb-e1c538e5a0a0">a73e3674…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">a73e3674-b924-5e1e-baeb-e1c538e5a0a0</code>
+                                </details>
+                            </div><small> · época 2</small><small> · fase base</small>
+                        </td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="102a0f63-3bfa-5c78-887d-b70c9c556bb5">102a0f63…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">102a0f63-3bfa-5c78-887d-b70c9c556bb5</code>
+                                </details>
+                            </div><small> · época 1</small><small> · fase base</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A5 · Época seleccionada</th>
+                        <td><span>Sin evidencia</span></td>
+                        <td><span>Sin evidencia</span></td>
+                        <td>2</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A5 · Checksum registrado (sin verificación física)</th>
+                        <td><span>Sin evidencia</span></td>
+                        <td><span>Sin evidencia</span></td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="b695ceb9fb2bc36283c762295ddbd9af97c58823be546c1faaf0646348345911">b695ceb9…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">b695ceb9fb2bc36283c762295ddbd9af97c58823be546c1faaf0646348345911</code>
+                                </details>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="2ae5479da4f0ce51a38645986f1a51f06feaa8dd094b310ef00c765faddd041b">2ae5479d…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">2ae5479da4f0ce51a38645986f1a51f06feaa8dd094b310ef00c765faddd041b</code>
+                                </details>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A5 · Registro de checkpoint</th>
+                        <td data-match="AB" data-match-tone="0" title="Coinciden: A=B">No</td>
+                        <td data-match="AB" data-match-tone="0" title="Coinciden: A=B">No</td>
+                        <td data-match="CD" data-match-tone="1" title="Coinciden: C=D">Sí</td>
+                        <td data-match="CD" data-match-tone="1" title="Coinciden: C=D">Sí</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A5 · Linaje</th>
+                        <td data-match="AB" data-match-tone="0" title="Coinciden: A=B">No</td>
+                        <td data-match="AB" data-match-tone="0" title="Coinciden: A=B">No</td>
+                        <td data-match="CD" data-match-tone="1" title="Coinciden: C=D">Sí</td>
+                        <td data-match="CD" data-match-tone="1" title="Coinciden: C=D">Sí</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:5</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:11</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:19</button><button
+                                        class="ds-button">evidence:20</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:28</button><button
+                                        class="ds-button">evidence:29</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <th scope="row">A6 · Evaluación e intento</th>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="272dff33-bdd2-4d5c-bae7-2e443dc4307c">272dff33…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">272dff33-bdd2-4d5c-bae7-2e443dc4307c</code>
+                                </details>
+                            </div>
+                            <div class="scc-meta">Assessment · Intento: <div class="scc-compact-id"><code
+                                        title="67e4631e-f8f3-4013-bf88-9d03874cdcc2">67e4631e…</code><span
+                                        class="scc-copy"><button type="button" class="ds-button"
+                                            data-size="compact">Copiar identificador</button><span
+                                            role="status"></span></span>
+                                    <details>
+                                        <summary>Valor completo</summary><code
+                                            class="report-identifier">67e4631e-f8f3-4013-bf88-9d03874cdcc2</code>
+                                    </details>
+                                </div>
+                            </div><span>Sin evidencia</span>
+                        </td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="9aa0bef7-a699-4ca2-9f45-a50a562ea205">9aa0bef7…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">9aa0bef7-a699-4ca2-9f45-a50a562ea205</code>
+                                </details>
+                            </div>
+                            <div class="scc-meta">Assessment · Intento: <div class="scc-compact-id"><code
+                                        title="dded6222-12ae-407a-82c6-601e265e3f7d">dded6222…</code><span
+                                        class="scc-copy"><button type="button" class="ds-button"
+                                            data-size="compact">Copiar identificador</button><span
+                                            role="status"></span></span>
+                                    <details>
+                                        <summary>Valor completo</summary><code
+                                            class="report-identifier">dded6222-12ae-407a-82c6-601e265e3f7d</code>
+                                    </details>
+                                </div>
+                            </div><span>Sin evidencia</span>
+                        </td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="cafc3dd8-b0fe-5d42-bd73-04545275b360">cafc3dd8…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">cafc3dd8-b0fe-5d42-bd73-04545275b360</code>
+                                </details>
+                            </div>
+                            <div class="scc-meta">Evaluación · Intento: No vinculado (ver nota)</div>
+                            training_validation_final
+                        </td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="f4cddf36-a933-5fdc-8b0a-7a1ca0ca159a">f4cddf36…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">f4cddf36-a933-5fdc-8b0a-7a1ca0ca159a</code>
+                                </details>
+                            </div>
+                            <div class="scc-meta">Evaluación · Intento: No vinculado (ver nota)</div>
+                            training_validation_final
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A6 · Huella de protocolo</th>
+                        <td><span>Sin evidencia</span></td>
+                        <td><span>Sin evidencia</span></td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="cb278427440aacf9d6f6681837911386d80f5af31d1d3fe18a349e9e8c1fa285">cb278427…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">cb278427440aacf9d6f6681837911386d80f5af31d1d3fe18a349e9e8c1fa285</code>
+                                </details>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="354bc55cf986a246fbb8194974b18ee6e57fbc3bf4eb2e29e609dddb532f1499">354bc55c…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">354bc55cf986a246fbb8194974b18ee6e57fbc3bf4eb2e29e609dddb532f1499</code>
+                                </details>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:4</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:10</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:16</button><button
+                                        class="ds-button">evidence:17</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:25</button><button
+                                        class="ds-button">evidence:26</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="scc-meta">El checksum registrado no acredita verificación física. La época seleccionada corresponde al
+            checkpoint, no al total ejecutado. Una evaluación VALIDATION histórica puede no tener intento independiente
+            vinculado; VALIDATION final no equivale a TEST independiente.</p>
+    </section>
+    <section class="scc-parameter-group"><button class="ds-button" aria-expanded="true">Comparables · 5</button>
+        <div class="report-table-scroll" tabindex="0" role="region" aria-label="Comparables A1–A6">
+            <table class="report-data-table scc-preflight-table scc-parameter-table">
+                <caption>Comparables · parámetros de los RUN seleccionados</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Parámetro</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">RUN A<br><small>custom_cnn</small></th>
+                        <th scope="col">RUN B<br><small>custom_cnn</small></th>
+                        <th scope="col">RUN C<br><small>custom_cnn</small></th>
+                        <th scope="col">RUN D<br><small>vgg16</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">A4 · Parámetros del optimizador</th>
+                        <td>Evidencia parcial</td>
+                        <td>
+                            <div class="scc-composite-value">beta_1: 0.9 · beta_2: 0.999 · amsgrad: No · epsilon: 1e-7 ·
+                                use_ema: No · clipnorm: Sin evidencia · clipvalue: Sin evidencia · ema_momentum: 0.99 ·
+                                weight_decay: Sin evidencia · learning_rate: 0.0001 · global_clipnorm: Sin evidencia ·
+                                loss_scale_factor: Sin evidencia · ema_overwrite_frequency: Sin evidencia ·
+                                gradient_accumulation_steps: Sin evidencia</div>
+                        </td>
+                        <td>
+                            <div class="scc-composite-value">beta_1: 0.9 · beta_2: 0.999 · amsgrad: No · epsilon: 1e-7 ·
+                                use_ema: No · clipnorm: Sin evidencia · clipvalue: Sin evidencia · ema_momentum: 0.99 ·
+                                weight_decay: Sin evidencia · learning_rate: 0.0001 · global_clipnorm: Sin evidencia ·
+                                loss_scale_factor: Sin evidencia · ema_overwrite_frequency: Sin evidencia ·
+                                gradient_accumulation_steps: Sin evidencia</div>
+                        </td>
+                        <td>
+                            <div class="scc-composite-value">beta_1: 0.9 · beta_2: 0.999 · amsgrad: No · epsilon: 1e-7 ·
+                                use_ema: No · clipnorm: Sin evidencia · clipvalue: Sin evidencia · ema_momentum: 0.99 ·
+                                weight_decay: Sin evidencia · learning_rate: 0.0001 · global_clipnorm: Sin evidencia ·
+                                loss_scale_factor: Sin evidencia · ema_overwrite_frequency: Sin evidencia ·
+                                gradient_accumulation_steps: Sin evidencia</div>
+                        </td>
+                        <td>
+                            <div class="scc-composite-value">use_ema: No · clipnorm: Sin evidencia · momentum: 0.9 ·
+                                nesterov: No · clipvalue: Sin evidencia · ema_momentum: 0.99 · weight_decay: Sin
+                                evidencia · learning_rate: 0.001 · global_clipnorm: Sin evidencia · loss_scale_factor:
+                                Sin evidencia · ema_overwrite_frequency: Sin evidencia · gradient_accumulation_steps:
+                                Sin evidencia</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Preprocesamiento interno</th>
+                        <td>Evidencia parcial</td>
+                        <td colspan="4">Sin evidencia suficiente en los 4 RUN</td>
+                    </tr>
+                    <tr>
+                        <td colspan="6">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:2</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:8</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:14</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:23</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <th scope="row">A5 · Política de selección</th>
+                        <td>Evidencia parcial</td>
+                        <td><span>Sin evidencia</span></td>
+                        <td><span>Sin evidencia</span></td>
+                        <td data-match="CD" data-match-tone="0" title="Coinciden: C=D">auc_with_min_recall</td>
+                        <td data-match="CD" data-match-tone="0" title="Coinciden: C=D">auc_with_min_recall</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A5 · Métrica de selección</th>
+                        <td>Evidencia parcial</td>
+                        <td><span>Sin evidencia</span></td>
+                        <td><span>Sin evidencia</span></td>
+                        <td data-match="CD" data-match-tone="0" title="Coinciden: C=D">val_f2_parasitized</td>
+                        <td data-match="CD" data-match-tone="0" title="Coinciden: C=D">val_f2_parasitized</td>
+                    </tr>
+                    <tr>
+                        <td colspan="6">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:5</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:11</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:19</button><button
+                                        class="ds-button">evidence:20</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:28</button><button
+                                        class="ds-button">evidence:29</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <th scope="row"><button class="ds-button" aria-expanded="false">A6 · Protocolo y regla de
+                                decisión</button></th>
+                        <td>Evidencia parcial</td>
+                        <td colspan="4">
+                            <div class="scc-consolidated-detail">
+                                <table class="report-data-table">
+                                    <caption>Diferencias y evidencia parcial por RUN</caption>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Campo</th>
+                                            <th scope="col">RUN A</th>
+                                            <th scope="col">RUN B</th>
+                                            <th scope="col">RUN C</th>
+                                            <th scope="col">RUN D</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">evaluation_role</th>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td data-match="CD">training_validation_final</td>
+                                            <td data-match="CD">training_validation_final</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">purpose</th>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td data-match="CD">development</td>
+                                            <td data-match="CD">development</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">threshold</th>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td data-match="CD">0.5</td>
+                                            <td data-match="CD">0.5</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">sample_count</th>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td data-match="CD">2693</td>
+                                            <td data-match="CD">2693</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">metric_definition</th>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td><span>Sin evidencia</span></td>
+                                            <td data-match="CD">binary_nullable_v2</td>
+                                            <td data-match="CD">binary_nullable_v2</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="6">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:4</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:10</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:16</button><button
+                                        class="ds-button">evidence:17</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:25</button><button
+                                        class="ds-button">evidence:26</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="scc-meta">La ausencia uniforme de evidencia no discrimina entre RUN, pero limita la comparación de
+            este parámetro. Los errores de consulta conservan su condición técnica.</p>
+    </section>
+    <section class="scc-parameter-group"><button class="ds-button" aria-expanded="true">Sin diferencias · 35</button>
+        <div class="report-table-scroll" tabindex="0" role="region" aria-label="Sin diferencias A1–A6">
+            <table class="report-data-table scc-preflight-table scc-parameter-table">
+                <caption>Sin diferencias · parámetros de los RUN seleccionados</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Módulo</th>
+                        <th scope="col">Parámetro</th>
+                        <th scope="col">Valor compartido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="rowgroup" rowspan="8"><span class="scc-module-badge">A1</span><small>Dataset</small>
+                        </th>
+                        <th scope="row">A1 · Versión del dataset</th>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="d8c0cab5-09dd-597f-9de7-7ca01aee2ec2">d8c0cab5…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">d8c0cab5-09dd-597f-9de7-7ca01aee2ec2</code>
+                                </details>
+                            </div><span class="scc-equal">A=B=C=D</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A1 · Dataset</th>
+                        <td>Malaria Patient Split v1<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A1 · Estado del dataset</th>
+                        <td>FROZEN<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A1 · Estrategia</th>
+                        <td>patient_group<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A1 · Algoritmo de split</th>
+                        <td>patient_group_stratified_v1<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A1 · Semilla de split</th>
+                        <td>42<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A1 · Registros oficiales</th>
+                        <td>27558<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:0</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:6</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:12</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:21</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <th scope="rowgroup" rowspan="13"><span
+                                class="scc-module-badge">A2</span><small>Partición</small></th>
+                        <th scope="row">A2 · Particiones oficiales</th>
+                        <td>
+                            <div class="scc-composite-value">train: 22180 · val: 2693 · test: 2685</div><span
+                                class="scc-equal">A=B=C=D</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Controles de validación del split</th>
+                        <td>
+                            <div class="scc-composite-value">
+                                <div class="scc-composite-value">check_name: assignment_count · status: PASS ·
+                                    observed_value: 27558 · expected_value: 27558</div> · <div
+                                    class="scc-composite-value">check_name: class_presence_test · status: PASS ·
+                                    observed_value: both · expected_value: both</div> · <div
+                                    class="scc-composite-value">check_name: class_presence_train · status: PASS ·
+                                    observed_value: both · expected_value: both</div> · <div
+                                    class="scc-composite-value">check_name: class_presence_val · status: PASS ·
+                                    observed_value: both · expected_value: both</div> · <div
+                                    class="scc-composite-value">check_name: duplicate_cross_split_overlap · status: PASS
+                                    · observed_value: 0 · expected_value: 0</div> · <div class="scc-composite-value">
+                                    check_name: identity_conflicts · status: PASS · observed_value: 0 · expected_value:
+                                    0</div> · <div class="scc-composite-value">check_name: identity_coverage · status:
+                                    PASS · observed_value: 27558 · expected_value: 27558</div> · <div
+                                    class="scc-composite-value">check_name: patient_train_test_overlap · status: PASS ·
+                                    observed_value: 0 · expected_value: 0</div> · <div class="scc-composite-value">
+                                    check_name: patient_train_val_overlap · status: PASS · observed_value: 0 ·
+                                    expected_value: 0</div> · <div class="scc-composite-value">check_name:
+                                    patient_val_test_overlap · status: PASS · observed_value: 0 · expected_value: 0
+                                </div> · <div class="scc-composite-value">check_name: source_record_count · status: PASS
+                                    · observed_value: 27558 · expected_value: 27558</div> · <div
+                                    class="scc-composite-value">check_name: split_completeness · status: PASS ·
+                                    observed_value: complete · expected_value: complete</div>
+                            </div><span class="scc-equal">A=B=C=D</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Materialización</th>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="e15dc166-1c4b-558e-b77b-727b1783430c">e15dc166…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">e15dc166-1c4b-558e-b77b-727b1783430c</code>
+                                </details>
+                            </div><span class="scc-equal">A=B=C=D</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Estado de materialización</th>
+                        <td>READY<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Reconciliación</th>
+                        <td>PASS<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Registros materializados</th>
+                        <td>27558<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Materialización de la misma versión</th>
+                        <td>Sí<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Huella de identidad clínica</th>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59">d4bd79cb…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59</code>
+                                </details>
+                            </div><span class="scc-equal">A=B=C=D</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Huella de asignación de registros</th>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2">9709ce48…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2</code>
+                                </details>
+                            </div><span class="scc-equal">A=B=C=D</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Huella de población fuente</th>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0">eef647ce…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0</code>
+                                </details>
+                            </div><span class="scc-equal">A=B=C=D</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Huella de asignación de pacientes</th>
+                        <td>
+                            <div class="scc-compact-id"><code
+                                    title="cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f">cbe7a7b8…</code><span
+                                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                                        identificador</button><span role="status"></span></span>
+                                <details>
+                                    <summary>Valor completo</summary><code
+                                        class="report-identifier">cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f</code>
+                                </details>
+                            </div><span class="scc-equal">A=B=C=D</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A2 · Consumo registrado de imágenes</th>
+                        <td>0<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:1</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:7</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:13</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:22</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <th scope="rowgroup" rowspan="17"><span class="scc-module-badge">A4</span><small>Configuración
+                                experimental</small></th>
+                        <th scope="row">A4 · Augmentación</th>
+                        <td>
+                            <div class="scc-composite-value">flip: horizontal_and_vertical · zoom: 0.2 · contrast: 0.3 ·
+                                rotation: 0.07 · translation: 0.2</div><span class="scc-equal">A=B=C=D</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Política de checkpoint</th>
+                        <td>auc_with_min_recall<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Objetivo clínico</th>
+                        <td>min_recall; assessed independently of technical completion<span
+                                class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Tamaño de lote</th>
+                        <td>64<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Función de pérdida</th>
+                        <td>binary_crossentropy<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Sin aumento de datos</th>
+                        <td>No<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Monitor de checkpoint</th>
+                        <td>val_f2_parasitized<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Modo de checkpoint</th>
+                        <td>max<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Parada temprana</th>
+                        <td>Sí<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Paciencia</th>
+                        <td>12<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Monitor de parada</th>
+                        <td>val_f2_parasitized<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Modo de parada</th>
+                        <td>max<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Restaurar mejores pesos</th>
+                        <td>Sí<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Alto de entrada</th>
+                        <td>200<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Ancho de entrada</th>
+                        <td>200<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A4 · Canales de entrada</th>
+                        <td>3<span class="scc-equal">A=B=C=D</span></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div class="scc-meta">Evidencia: <span> RUN A: <button
+                                        class="ds-button">evidence:2</button></span><span> RUN B: <button
+                                        class="ds-button">evidence:8</button></span><span> RUN C: <button
+                                        class="ds-button">evidence:14</button></span><span> RUN D: <button
+                                        class="ds-button">evidence:23</button></span></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="scc-meta">Valores acreditados compartidos entre los RUN seleccionados. Un consumo registrado de cero
+            indica que no hay registros de consumo individual en la fuente consultada; no demuestra ausencia de
+            entrenamiento.</p>
+    </section>
+    <details class="ds-accordion scc-python" open="">
+        <summary>Ver modelo en Python</summary>
+        <div class="scc-python-controls">
+            <div role="tablist" aria-label="RUN del visor Python"><button type="button" class="ds-button" role="tab"
+                    aria-selected="true">RUN A</button><button type="button" class="ds-button" role="tab"
+                    aria-selected="false">RUN B</button><button type="button" class="ds-button" role="tab"
+                    aria-selected="false">RUN C</button><button type="button" class="ds-button" role="tab"
+                    aria-selected="false">RUN D</button></div><label>Vista<select class="ds-control">
+                    <option value="configuration">Configuración</option>
+                    <option value="reconstruction">Reconstrucción</option>
+                </select></label><span class="scc-copy"><button type="button" class="ds-button"
+                    data-size="compact">Copiar código</button><span role="status"></span></span>
+        </div>
+        <p>custom_cnn · adam</p>
+        <p>Procedencia: evidencia pública persistida A4. Los parámetros ausentes se omiten; no se completan con valores
+            predeterminados.</p>
+        <pre tabindex="0" aria-label="Código Python"><code><span></span><span class="scc-code-comment"># Configuración persistida · proyección pública A4</span><span>
+</span><span class="scc-code-comment"># No acredita por sí sola la ejecución efectiva ni reconstruye capas.</span><span>
+config_1 = {
+    </span><span class="scc-code-string">"architecture"</span><span>: </span><span class="scc-code-string">"custom_cnn"</span><span>,
+    </span><span class="scc-code-string">"random_seed"</span><span>: </span><span class="scc-code-value">11</span><span>,
+    </span><span class="scc-code-string">"normalization"</span><span>: </span><span class="scc-code-string">"rescale_0_1"</span><span>,
+    </span><span class="scc-code-string">"optimizer"</span><span>: </span><span class="scc-code-string">"adam"</span><span>,
+    </span><span class="scc-code-string">"learning_rate"</span><span>: </span><span class="scc-code-value">0.0001</span><span>,
+    </span><span class="scc-code-string">"batch_size"</span><span>: </span><span class="scc-code-value">64</span><span>,
+    </span><span class="scc-code-string">"loss_function"</span><span>: </span><span class="scc-code-string">"binary_crossentropy"</span><span>,
+    </span><span class="scc-code-string">"checkpoint_monitor"</span><span>: </span><span class="scc-code-string">"val_f2_parasitized"</span><span>,
+    </span><span class="scc-code-string">"checkpoint_mode"</span><span>: </span><span class="scc-code-string">"max"</span><span>,
+    </span><span class="scc-code-string">"early_stopping"</span><span>: </span><span class="scc-code-value">True</span><span>,
+    </span><span class="scc-code-string">"max_epochs"</span><span>: </span><span class="scc-code-value">40</span><span>,
+    </span><span class="scc-code-string">"fine_tune_epochs"</span><span>: </span><span class="scc-code-value">0</span><span>,
+    </span><span class="scc-code-string">"fine_tune_learning_rate"</span><span>: </span><span class="scc-code-value">0.00001</span><span>,
+    </span><span class="scc-code-string">"early_stopping_patience"</span><span>: </span><span class="scc-code-value">12</span><span>,
+    </span><span class="scc-code-string">"early_stopping_monitor"</span><span>: </span><span class="scc-code-string">"val_f2_parasitized"</span><span>,
+    </span><span class="scc-code-string">"early_stopping_mode"</span><span>: </span><span class="scc-code-string">"max"</span><span>,
+    </span><span class="scc-code-string">"restore_best_weights"</span><span>: </span><span class="scc-code-value">True</span><span>,
+    </span><span class="scc-code-string">"dropout"</span><span>: </span><span class="scc-code-value">0.4</span><span>,
+    </span><span class="scc-code-string">"l2"</span><span>: </span><span class="scc-code-value">0.001</span><span>,
+    </span><span class="scc-code-string">"input_height"</span><span>: </span><span class="scc-code-value">200</span><span>,
+    </span><span class="scc-code-string">"input_width"</span><span>: </span><span class="scc-code-value">200</span><span>,
+    </span><span class="scc-code-string">"input_channels"</span><span>: </span><span class="scc-code-value">3</span><span>,
+    </span><span class="scc-code-string">"no_augment"</span><span>: </span><span class="scc-code-value">False</span><span>,
+    </span><span class="scc-code-string">"augmentation"</span><span>: {</span><span class="scc-code-string">"flip"</span><span>: </span><span class="scc-code-string">"horizontal_and_vertical"</span><span>, </span><span class="scc-code-string">"zoom"</span><span>: </span><span class="scc-code-value">0.2</span><span>, </span><span class="scc-code-string">"contrast"</span><span>: </span><span class="scc-code-value">0.3</span><span>, </span><span class="scc-code-string">"rotation"</span><span>: </span><span class="scc-code-value">0.07</span><span>, </span><span class="scc-code-string">"translation"</span><span>: </span><span class="scc-code-value">0.2</span><span>},
+    </span><span class="scc-code-string">"checkpoint_policy"</span><span>: </span><span class="scc-code-string">"auc_with_min_recall"</span><span>,
+    </span><span class="scc-code-string">"clinical_objective"</span><span>: </span><span class="scc-code-string">"min_recall; assessed independently of technical completion"</span><span>,
+    </span><span class="scc-code-string">"optimizer_parameters"</span><span>: {</span><span class="scc-code-string">"beta_1"</span><span>: </span><span class="scc-code-value">0.9</span><span>, </span><span class="scc-code-string">"beta_2"</span><span>: </span><span class="scc-code-value">0.999</span><span>, </span><span class="scc-code-string">"amsgrad"</span><span>: </span><span class="scc-code-value">False</span><span>, </span><span class="scc-code-string">"epsilon"</span><span>: </span><span class="scc-code-value">1e-7</span><span>, </span><span class="scc-code-string">"use_ema"</span><span>: </span><span class="scc-code-value">False</span><span>, </span><span class="scc-code-string">"clipnorm"</span><span>: </span><span class="scc-code-value">None</span><span>, </span><span class="scc-code-string">"clipvalue"</span><span>: </span><span class="scc-code-value">None</span><span>, </span><span class="scc-code-string">"ema_momentum"</span><span>: </span><span class="scc-code-value">0.99</span><span>, </span><span class="scc-code-string">"weight_decay"</span><span>: </span><span class="scc-code-value">None</span><span>, </span><span class="scc-code-string">"learning_rate"</span><span>: </span><span class="scc-code-value">0.0001</span><span>, </span><span class="scc-code-string">"global_clipnorm"</span><span>: </span><span class="scc-code-value">None</span><span>, </span><span class="scc-code-string">"loss_scale_factor"</span><span>: </span><span class="scc-code-value">None</span><span>, </span><span class="scc-code-string">"ema_overwrite_frequency"</span><span>: </span><span class="scc-code-value">None</span><span>, </span><span class="scc-code-string">"gradient_accumulation_steps"</span><span>: </span><span class="scc-code-value">None</span><span>},
+    </span><span class="scc-code-string">"executed_epochs"</span><span>: </span><span class="scc-code-value">16</span><span>,
+}</span></code></pre>
+        <details open="">
+            <summary>Procedencia y evidencia faltante</summary><code
+                class="report-identifier">338136db-a207-47fc-bbf3-d17ce85c0dc2</code>
+            <p>ScientificReadRepository.preflight_configuration · evidence:2 · 2026-10-19T12:34:36.173028Z · operational
+            </p>
+            <p>Los campos ausentes o nulos no se incluyen en el código.</p>
+            <p>Este contrato no separa configuración declarada de ejecución efectiva ni acredita la arquitectura
+                serializada.</p>
+        </details>
+    </details>
+    <details class="ds-accordion" open="">
+        <summary>Detalle técnico y trazabilidad</summary>
+        <details open="">
+            <summary>Identificadores y fuentes A1–A6</summary>
+            <div><code class="report-identifier">338136db-a207-47fc-bbf3-d17ce85c0dc2</code><span
+                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                        UUID</button><span role="status"></span></span>
+                <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-A1" tabindex="-1">
+                    <h4>A1 — Dataset</h4>
+                    <p>dataset_version_id: d8c0cab5-09dd-597f-9de7-7ca01aee2ec2</p>
+                    <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-evidence%3A0" tabindex="-1">
+                        <p>name: Malaria Patient Split v1 · status: FROZEN · random_seed: 42 · split_algorithm:
+                            patient_group_stratified_v1 · grouping_strategy: patient_group · source_record_count: 27558
+                        </p><small>ScientificReadRepository.preflight_training · evidence:0 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-A2" tabindex="-1">
+                    <h4>A2 — Partición</h4>
+                    <p>Partición: test</p>
+                    <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-evidence%3A1" tabindex="-1">
+                        <p>id: d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · name: Malaria Patient Split v1 · status: FROZEN ·
+                            grouping_strategy: patient_group · split_algorithm: patient_group_stratified_v1 ·
+                            random_seed: 42 · source_record_count: 27558 · campaign_id:
+                            4b5a9626-ddb7-4f48-a93e-b29b8085b349 · campaign_dataset_version_id:
+                            d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · campaign_snapshot: counts: val: 2693 · test: 2685 ·
+                            train: 22180 · selection_unit: dataset_version_id · dataset_version_id:
+                            d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · dataset_materialization_id:
+                            e15dc166-1c4b-558e-b77b-727b1783430c · clinical_identity_fingerprint:
+                            d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59 ·
+                            record_assignment_fingerprint:
+                            9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2 ·
+                            source_population_fingerprint:
+                            eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0 ·
+                            patient_assignment_fingerprint:
+                            cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f · materialization_id:
+                            e15dc166-1c4b-558e-b77b-727b1783430c · materialization_status: READY ·
+                            reconciliation_status: PASS · record_count: 27558 · materialization_dataset_matches: Sí ·
+                            counts: train: 22180 · val: 2693 · test: 2685 · checks: check_name: assignment_count ·
+                            status: PASS · observed_value: 27558 · expected_value: 27558, check_name:
+                            class_presence_test · status: PASS · observed_value: both · expected_value: both,
+                            check_name: class_presence_train · status: PASS · observed_value: both · expected_value:
+                            both, check_name: class_presence_val · status: PASS · observed_value: both · expected_value:
+                            both, check_name: duplicate_cross_split_overlap · status: PASS · observed_value: 0 ·
+                            expected_value: 0, check_name: identity_conflicts · status: PASS · observed_value: 0 ·
+                            expected_value: 0, check_name: identity_coverage · status: PASS · observed_value: 27558 ·
+                            expected_value: 27558, check_name: patient_train_test_overlap · status: PASS ·
+                            observed_value: 0 · expected_value: 0, check_name: patient_train_val_overlap · status: PASS
+                            · observed_value: 0 · expected_value: 0, check_name: patient_val_test_overlap · status: PASS
+                            · observed_value: 0 · expected_value: 0, check_name: source_record_count · status: PASS ·
+                            observed_value: 27558 · expected_value: 27558, check_name: split_completeness · status: PASS
+                            · observed_value: complete · expected_value: complete · consumed_images: 0</p>
+                        <small>ScientificReadRepository.comparison_governance · evidence:1 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-A3" tabindex="-1">
+                    <h4>A3 — Muestras</h4>
+                    <p>Sin evidencia</p>
+                </div>
+                <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-A4" tabindex="-1">
+                    <h4>A4 — Configuración experimental</h4>
+                    <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-evidence%3A2" tabindex="-1">
+                        <p>architecture: custom_cnn · random_seed: 11 · normalization: rescale_0_1 ·
+                            internal_preprocessing: Sin evidencia · optimizer: adam · learning_rate: 0.0001 ·
+                            batch_size: 64 · loss_function: binary_crossentropy · checkpoint_monitor: val_f2_parasitized
+                            · checkpoint_mode: max · early_stopping: Sí · max_epochs: 40 · fine_tune_epochs: 0 ·
+                            fine_tune_learning_rate: 0.00001 · early_stopping_patience: 12 · early_stopping_monitor:
+                            val_f2_parasitized · early_stopping_mode: max · restore_best_weights: Sí · dropout: 0.4 ·
+                            l2: 0.001 · input_height: 200 · input_width: 200 · input_channels: 3 · no_augment: No ·
+                            augmentation: flip: horizontal_and_vertical · zoom: 0.2 · contrast: 0.3 · rotation: 0.07 ·
+                            translation: 0.2 · checkpoint_policy: auc_with_min_recall · clinical_objective: min_recall;
+                            assessed independently of technical completion · optimizer_parameters: beta_1: 0.9 · beta_2:
+                            0.999 · amsgrad: No · epsilon: 1e-7 · use_ema: No · clipnorm: Sin evidencia · clipvalue: Sin
+                            evidencia · ema_momentum: 0.99 · weight_decay: Sin evidencia · learning_rate: 0.0001 ·
+                            global_clipnorm: Sin evidencia · loss_scale_factor: Sin evidencia · ema_overwrite_frequency:
+                            Sin evidencia · gradient_accumulation_steps: Sin evidencia · executed_epochs: 16</p>
+                        <small>ScientificReadRepository.preflight_configuration · evidence:2 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-A5" tabindex="-1">
+                    <h4>A5 — Checkpoint</h4>
+                    <p>Checkpoint seleccionado: 5e5a7884-61d0-571a-9cb0-4385c55e2b01</p>
+                    <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-evidence%3A5" tabindex="-1">
+                        <p>Sin evidencia · Registro ausente.</p><small>ArtifactReadRepository.get · evidence:5 ·
+                            Evidencia operacional · 2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <div>
+                        <p>Registro: No · Linaje: No</p>
+                        <p>Verificación física: No verificado · SHA-256: No verificado</p>
+                    </div>
+                    <p>Época y política: consulte el módulo de curvas. El checksum registrado no acredita verificación
+                        física.</p>
+                </div>
+                <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-A6" tabindex="-1">
+                    <h4>A6 — Evaluación</h4>
+                    <p>Identidad de evaluación: source: assessment · identity_id: 272dff33-bdd2-4d5c-bae7-2e443dc4307c ·
+                        attempt_id: 67e4631e-f8f3-4013-bf88-9d03874cdcc2 · identity_hash:
+                        39379000fd7a5e9854088c029d9e82211a95a4f783ed54997005f026cda6ac64 · attempt_state: verified</p>
+                    <div id="scc-evidence-train%3A338136db-a207-47fc-bbf3-d17ce85c0dc2-evidence%3A4" tabindex="-1">
+                        <p>identity_id: 272dff33-bdd2-4d5c-bae7-2e443dc4307c · attempt_id:
+                            67e4631e-f8f3-4013-bf88-9d03874cdcc2 · identity_hash:
+                            39379000fd7a5e9854088c029d9e82211a95a4f783ed54997005f026cda6ac64 · attempt_state: verified ·
+                            split: test · metrics_definition: binary_counts_rates_v1 · batch_size: 64 · protocol:
+                            version: exec1 · splits: test · purposes: final · allowed_numeric_thresholds: No disponible
+                            · decision: effective: 0.5 · score_domain: raw · positive_class: 1 · comparison: &gt;=</p>
+                        <small>AssessmentReadRepository.preflight_detail · evidence:4 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <p>Selección explícita del cliente. · Split: test · Checkpoint: 5e5a7884-61d0-571a-9cb0-4385c55e2b01
+                    </p>
+                </div>
+            </div>
+            <div><code class="report-identifier">bbbd5b60-afaa-4034-a504-a60ed642aafe</code><span
+                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                        UUID</button><span role="status"></span></span>
+                <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-A1" tabindex="-1">
+                    <h4>A1 — Dataset</h4>
+                    <p>dataset_version_id: d8c0cab5-09dd-597f-9de7-7ca01aee2ec2</p>
+                    <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-evidence%3A6" tabindex="-1">
+                        <p>name: Malaria Patient Split v1 · status: FROZEN · random_seed: 42 · split_algorithm:
+                            patient_group_stratified_v1 · grouping_strategy: patient_group · source_record_count: 27558
+                        </p><small>ScientificReadRepository.preflight_training · evidence:6 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-A2" tabindex="-1">
+                    <h4>A2 — Partición</h4>
+                    <p>Partición: val</p>
+                    <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-evidence%3A7" tabindex="-1">
+                        <p>id: d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · name: Malaria Patient Split v1 · status: FROZEN ·
+                            grouping_strategy: patient_group · split_algorithm: patient_group_stratified_v1 ·
+                            random_seed: 42 · source_record_count: 27558 · campaign_id:
+                            2ffeca5d-11e9-4c18-9b25-22a55a8e90ac · campaign_dataset_version_id:
+                            d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · campaign_snapshot: counts: val: 2693 · test: 2685 ·
+                            train: 22180 · selection_unit: dataset_version_id · dataset_version_id:
+                            d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · dataset_materialization_id:
+                            e15dc166-1c4b-558e-b77b-727b1783430c · clinical_identity_fingerprint:
+                            d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59 ·
+                            record_assignment_fingerprint:
+                            9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2 ·
+                            source_population_fingerprint:
+                            eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0 ·
+                            patient_assignment_fingerprint:
+                            cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f · materialization_id:
+                            e15dc166-1c4b-558e-b77b-727b1783430c · materialization_status: READY ·
+                            reconciliation_status: PASS · record_count: 27558 · materialization_dataset_matches: Sí ·
+                            counts: train: 22180 · val: 2693 · test: 2685 · checks: check_name: assignment_count ·
+                            status: PASS · observed_value: 27558 · expected_value: 27558, check_name:
+                            class_presence_test · status: PASS · observed_value: both · expected_value: both,
+                            check_name: class_presence_train · status: PASS · observed_value: both · expected_value:
+                            both, check_name: class_presence_val · status: PASS · observed_value: both · expected_value:
+                            both, check_name: duplicate_cross_split_overlap · status: PASS · observed_value: 0 ·
+                            expected_value: 0, check_name: identity_conflicts · status: PASS · observed_value: 0 ·
+                            expected_value: 0, check_name: identity_coverage · status: PASS · observed_value: 27558 ·
+                            expected_value: 27558, check_name: patient_train_test_overlap · status: PASS ·
+                            observed_value: 0 · expected_value: 0, check_name: patient_train_val_overlap · status: PASS
+                            · observed_value: 0 · expected_value: 0, check_name: patient_val_test_overlap · status: PASS
+                            · observed_value: 0 · expected_value: 0, check_name: source_record_count · status: PASS ·
+                            observed_value: 27558 · expected_value: 27558, check_name: split_completeness · status: PASS
+                            · observed_value: complete · expected_value: complete · consumed_images: 0</p>
+                        <small>ScientificReadRepository.comparison_governance · evidence:7 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-A3" tabindex="-1">
+                    <h4>A3 — Muestras</h4>
+                    <p>Sin evidencia</p>
+                </div>
+                <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-A4" tabindex="-1">
+                    <h4>A4 — Configuración experimental</h4>
+                    <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-evidence%3A8" tabindex="-1">
+                        <p>architecture: custom_cnn · random_seed: 47 · normalization: rescale_0_1 ·
+                            internal_preprocessing: Sin evidencia · optimizer: adam · learning_rate: 0.0001 ·
+                            batch_size: 64 · loss_function: binary_crossentropy · checkpoint_monitor: val_f2_parasitized
+                            · checkpoint_mode: max · early_stopping: Sí · max_epochs: 3 · fine_tune_epochs: 0 ·
+                            fine_tune_learning_rate: 0.00001 · early_stopping_patience: 12 · early_stopping_monitor:
+                            val_f2_parasitized · early_stopping_mode: max · restore_best_weights: Sí · dropout: 0.4 ·
+                            l2: 0.0001 · input_height: 200 · input_width: 200 · input_channels: 3 · no_augment: No ·
+                            augmentation: flip: horizontal_and_vertical · zoom: 0.2 · contrast: 0.3 · rotation: 0.07 ·
+                            translation: 0.2 · checkpoint_policy: auc_with_min_recall · clinical_objective: min_recall;
+                            assessed independently of technical completion · optimizer_parameters: beta_1: 0.9 · beta_2:
+                            0.999 · amsgrad: No · epsilon: 1e-7 · use_ema: No · clipnorm: Sin evidencia · clipvalue: Sin
+                            evidencia · ema_momentum: 0.99 · weight_decay: Sin evidencia · learning_rate: 0.0001 ·
+                            global_clipnorm: Sin evidencia · loss_scale_factor: Sin evidencia · ema_overwrite_frequency:
+                            Sin evidencia · gradient_accumulation_steps: Sin evidencia · executed_epochs: 3</p>
+                        <small>ScientificReadRepository.preflight_configuration · evidence:8 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-A5" tabindex="-1">
+                    <h4>A5 — Checkpoint</h4>
+                    <p>Checkpoint seleccionado: 4294d2b2-690b-5884-a3cb-fc7f0eb3653d</p>
+                    <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-evidence%3A11" tabindex="-1">
+                        <p>Sin evidencia · Registro ausente.</p><small>ArtifactReadRepository.get · evidence:11 ·
+                            Evidencia operacional · 2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <div>
+                        <p>Registro: No · Linaje: No</p>
+                        <p>Verificación física: No verificado · SHA-256: No verificado</p>
+                    </div>
+                    <p>Época y política: consulte el módulo de curvas. El checksum registrado no acredita verificación
+                        física.</p>
+                </div>
+                <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-A6" tabindex="-1">
+                    <h4>A6 — Evaluación</h4>
+                    <p>Identidad de evaluación: source: assessment · identity_id: 9aa0bef7-a699-4ca2-9f45-a50a562ea205 ·
+                        attempt_id: dded6222-12ae-407a-82c6-601e265e3f7d · identity_hash:
+                        601fc935273a79ab24d3096719e8e9b86ddbf5b8390a96a934336117055d3ba2 · attempt_state: verified</p>
+                    <div id="scc-evidence-train%3Abbbd5b60-afaa-4034-a504-a60ed642aafe-evidence%3A10" tabindex="-1">
+                        <p>identity_id: 9aa0bef7-a699-4ca2-9f45-a50a562ea205 · attempt_id:
+                            dded6222-12ae-407a-82c6-601e265e3f7d · identity_hash:
+                            601fc935273a79ab24d3096719e8e9b86ddbf5b8390a96a934336117055d3ba2 · attempt_state: verified ·
+                            split: val · metrics_definition: binary_counts_rates_v1 · batch_size: 64 · protocol:
+                            version: c213_val_evaluation_v1 · splits: val · purposes: development ·
+                            allowed_numeric_thresholds: 0.5 · decision: effective: 0.5 · score_domain: raw ·
+                            positive_class: 1 · comparison: &gt;=</p><small>AssessmentReadRepository.preflight_detail ·
+                            evidence:10 · Evidencia operacional · 2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <p>Selección explícita del cliente. · Split: val · Checkpoint: 4294d2b2-690b-5884-a3cb-fc7f0eb3653d
+                    </p>
+                </div>
+            </div>
+            <div><code class="report-identifier">e9eb63f4-44a0-469f-a358-69df27071faf</code><span
+                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                        UUID</button><span role="status"></span></span>
+                <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-A1" tabindex="-1">
+                    <h4>A1 — Dataset</h4>
+                    <p>dataset_version_id: d8c0cab5-09dd-597f-9de7-7ca01aee2ec2</p>
+                    <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-evidence%3A12" tabindex="-1">
+                        <p>name: Malaria Patient Split v1 · status: FROZEN · random_seed: 42 · split_algorithm:
+                            patient_group_stratified_v1 · grouping_strategy: patient_group · source_record_count: 27558
+                        </p><small>ScientificReadRepository.preflight_training · evidence:12 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-A2" tabindex="-1">
+                    <h4>A2 — Partición</h4>
+                    <p>Partición: val</p>
+                    <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-evidence%3A13" tabindex="-1">
+                        <p>id: d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · name: Malaria Patient Split v1 · status: FROZEN ·
+                            grouping_strategy: patient_group · split_algorithm: patient_group_stratified_v1 ·
+                            random_seed: 42 · source_record_count: 27558 · campaign_id:
+                            900bbe8f-46b5-46bc-a64a-092b5c998afe · campaign_dataset_version_id:
+                            d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · campaign_snapshot: counts: val: 2693 · test: 2685 ·
+                            train: 22180 · selection_unit: dataset_version_id · dataset_version_id:
+                            d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · dataset_materialization_id:
+                            e15dc166-1c4b-558e-b77b-727b1783430c · clinical_identity_fingerprint:
+                            d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59 ·
+                            record_assignment_fingerprint:
+                            9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2 ·
+                            source_population_fingerprint:
+                            eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0 ·
+                            patient_assignment_fingerprint:
+                            cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f · materialization_id:
+                            e15dc166-1c4b-558e-b77b-727b1783430c · materialization_status: READY ·
+                            reconciliation_status: PASS · record_count: 27558 · materialization_dataset_matches: Sí ·
+                            counts: train: 22180 · val: 2693 · test: 2685 · checks: check_name: assignment_count ·
+                            status: PASS · observed_value: 27558 · expected_value: 27558, check_name:
+                            class_presence_test · status: PASS · observed_value: both · expected_value: both,
+                            check_name: class_presence_train · status: PASS · observed_value: both · expected_value:
+                            both, check_name: class_presence_val · status: PASS · observed_value: both · expected_value:
+                            both, check_name: duplicate_cross_split_overlap · status: PASS · observed_value: 0 ·
+                            expected_value: 0, check_name: identity_conflicts · status: PASS · observed_value: 0 ·
+                            expected_value: 0, check_name: identity_coverage · status: PASS · observed_value: 27558 ·
+                            expected_value: 27558, check_name: patient_train_test_overlap · status: PASS ·
+                            observed_value: 0 · expected_value: 0, check_name: patient_train_val_overlap · status: PASS
+                            · observed_value: 0 · expected_value: 0, check_name: patient_val_test_overlap · status: PASS
+                            · observed_value: 0 · expected_value: 0, check_name: source_record_count · status: PASS ·
+                            observed_value: 27558 · expected_value: 27558, check_name: split_completeness · status: PASS
+                            · observed_value: complete · expected_value: complete · consumed_images: 0</p>
+                        <small>ScientificReadRepository.comparison_governance · evidence:13 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-A3" tabindex="-1">
+                    <h4>A3 — Muestras</h4>
+                    <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-evidence%3A18" tabindex="-1">
+                        <p>Sí</p><small>ScientificReadRepository.comparison_predictions · evidence:18 · Evidencia
+                            operacional · 2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-A4" tabindex="-1">
+                    <h4>A4 — Configuración experimental</h4>
+                    <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-evidence%3A14" tabindex="-1">
+                        <p>architecture: custom_cnn · random_seed: 47 · normalization: rescale_0_1 ·
+                            internal_preprocessing: Sin evidencia · optimizer: adam · learning_rate: 0.0001 ·
+                            batch_size: 64 · loss_function: binary_crossentropy · checkpoint_monitor: val_f2_parasitized
+                            · checkpoint_mode: max · early_stopping: Sí · max_epochs: 3 · fine_tune_epochs: 0 ·
+                            fine_tune_learning_rate: 0.00001 · early_stopping_patience: 12 · early_stopping_monitor:
+                            val_f2_parasitized · early_stopping_mode: max · restore_best_weights: Sí · dropout: 0.4 ·
+                            l2: 0.0001 · input_height: 200 · input_width: 200 · input_channels: 3 · no_augment: No ·
+                            augmentation: flip: horizontal_and_vertical · zoom: 0.2 · contrast: 0.3 · rotation: 0.07 ·
+                            translation: 0.2 · checkpoint_policy: auc_with_min_recall · clinical_objective: min_recall;
+                            assessed independently of technical completion · optimizer_parameters: beta_1: 0.9 · beta_2:
+                            0.999 · amsgrad: No · epsilon: 1e-7 · use_ema: No · clipnorm: Sin evidencia · clipvalue: Sin
+                            evidencia · ema_momentum: 0.99 · weight_decay: Sin evidencia · learning_rate: 0.0001 ·
+                            global_clipnorm: Sin evidencia · loss_scale_factor: Sin evidencia · ema_overwrite_frequency:
+                            Sin evidencia · gradient_accumulation_steps: Sin evidencia · executed_epochs: 3</p>
+                        <small>ScientificReadRepository.preflight_configuration · evidence:14 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-A5" tabindex="-1">
+                    <h4>A5 — Checkpoint</h4>
+                    <p>Checkpoint seleccionado: a73e3674-b924-5e1e-baeb-e1c538e5a0a0</p>
+                    <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-evidence%3A19" tabindex="-1">
+                        <p>artifact_id: a73e3674-b924-5e1e-baeb-e1c538e5a0a0 · checksum_registered:
+                            b695ceb9fb2bc36283c762295ddbd9af97c58823be546c1faaf0646348345911</p>
+                        <small>ArtifactReadRepository.get · evidence:19 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-evidence%3A20" tabindex="-1">
+                        <p>artifact_id: a73e3674-b924-5e1e-baeb-e1c538e5a0a0 · selected_epoch: 2 · phase: base · metric:
+                            val_f2_parasitized · policy: auc_with_min_recall · logical_lineage: Sí ·
+                            checksum_registered: b695ceb9fb2bc36283c762295ddbd9af97c58823be546c1faaf0646348345911 ·
+                            file_availability: not_checked · physical_checksum: not_checked</p>
+                        <small>ScientificReadRepository.comparison_checkpoint · evidence:20 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <div>
+                        <p>Registro: Sí · Linaje: Sí</p>
+                        <p>Verificación física: No verificado · SHA-256: No verificado</p>
+                    </div>
+                    <p>Época y política: consulte el módulo de curvas. El checksum registrado no acredita verificación
+                        física.</p>
+                </div>
+                <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-A6" tabindex="-1">
+                    <h4>A6 — Evaluación</h4>
+                    <p>Identidad de evaluación: source: evaluations · evaluation_id:
+                        cafc3dd8-b0fe-5d42-bd73-04545275b360 · execution_run_id: e9eb63f4-44a0-469f-a358-69df27071faf ·
+                        source_assessment_attempt_id: Sin evidencia</p>
+                    <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-evidence%3A16" tabindex="-1">
+                        <p>evaluation_role: training_validation_final · purpose: development · protocol_hash:
+                            cb278427440aacf9d6f6681837911386d80f5af31d1d3fe18a349e9e8c1fa285 · metric_definition:
+                            binary_nullable_v2 · split: val</p><small>ScientificReadRepository.evaluation · evidence:16
+                            · Evidencia operacional · 2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <div id="scc-evidence-train%3Ae9eb63f4-44a0-469f-a358-69df27071faf-evidence%3A17" tabindex="-1">
+                        <p>split: val · evaluation_role: training_validation_final · purpose: development · threshold:
+                            0.5 · sample_count: 2693 · metric_definition: binary_nullable_v2</p>
+                        <small>ScientificReadRepository.comparison_metrics · evidence:17 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <p>Selección explícita del cliente. · Split: val · Checkpoint: a73e3674-b924-5e1e-baeb-e1c538e5a0a0
+                    </p>
+                </div>
+            </div>
+            <div><code class="report-identifier">0bbdd732-1a7a-4360-8f05-5bb9f0d50773</code><span
+                    class="scc-copy"><button type="button" class="ds-button" data-size="compact">Copiar
+                        UUID</button><span role="status"></span></span>
+                <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-A1" tabindex="-1">
+                    <h4>A1 — Dataset</h4>
+                    <p>dataset_version_id: d8c0cab5-09dd-597f-9de7-7ca01aee2ec2</p>
+                    <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-evidence%3A21" tabindex="-1">
+                        <p>name: Malaria Patient Split v1 · status: FROZEN · random_seed: 42 · split_algorithm:
+                            patient_group_stratified_v1 · grouping_strategy: patient_group · source_record_count: 27558
+                        </p><small>ScientificReadRepository.preflight_training · evidence:21 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-A2" tabindex="-1">
+                    <h4>A2 — Partición</h4>
+                    <p>Partición: val</p>
+                    <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-evidence%3A22" tabindex="-1">
+                        <p>id: d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · name: Malaria Patient Split v1 · status: FROZEN ·
+                            grouping_strategy: patient_group · split_algorithm: patient_group_stratified_v1 ·
+                            random_seed: 42 · source_record_count: 27558 · campaign_id:
+                            b54ea684-1b0c-421d-a4b2-9f12667bd619 · campaign_dataset_version_id:
+                            d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · campaign_snapshot: counts: val: 2693 · test: 2685 ·
+                            train: 22180 · selection_unit: dataset_version_id · dataset_version_id:
+                            d8c0cab5-09dd-597f-9de7-7ca01aee2ec2 · dataset_materialization_id:
+                            e15dc166-1c4b-558e-b77b-727b1783430c · clinical_identity_fingerprint:
+                            d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59 ·
+                            record_assignment_fingerprint:
+                            9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2 ·
+                            source_population_fingerprint:
+                            eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0 ·
+                            patient_assignment_fingerprint:
+                            cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f · materialization_id:
+                            e15dc166-1c4b-558e-b77b-727b1783430c · materialization_status: READY ·
+                            reconciliation_status: PASS · record_count: 27558 · materialization_dataset_matches: Sí ·
+                            counts: train: 22180 · val: 2693 · test: 2685 · checks: check_name: assignment_count ·
+                            status: PASS · observed_value: 27558 · expected_value: 27558, check_name:
+                            class_presence_test · status: PASS · observed_value: both · expected_value: both,
+                            check_name: class_presence_train · status: PASS · observed_value: both · expected_value:
+                            both, check_name: class_presence_val · status: PASS · observed_value: both · expected_value:
+                            both, check_name: duplicate_cross_split_overlap · status: PASS · observed_value: 0 ·
+                            expected_value: 0, check_name: identity_conflicts · status: PASS · observed_value: 0 ·
+                            expected_value: 0, check_name: identity_coverage · status: PASS · observed_value: 27558 ·
+                            expected_value: 27558, check_name: patient_train_test_overlap · status: PASS ·
+                            observed_value: 0 · expected_value: 0, check_name: patient_train_val_overlap · status: PASS
+                            · observed_value: 0 · expected_value: 0, check_name: patient_val_test_overlap · status: PASS
+                            · observed_value: 0 · expected_value: 0, check_name: source_record_count · status: PASS ·
+                            observed_value: 27558 · expected_value: 27558, check_name: split_completeness · status: PASS
+                            · observed_value: complete · expected_value: complete · consumed_images: 0</p>
+                        <small>ScientificReadRepository.comparison_governance · evidence:22 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-A3" tabindex="-1">
+                    <h4>A3 — Muestras</h4>
+                    <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-evidence%3A27" tabindex="-1">
+                        <p>Sí</p><small>ScientificReadRepository.comparison_predictions · evidence:27 · Evidencia
+                            operacional · 2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-A4" tabindex="-1">
+                    <h4>A4 — Configuración experimental</h4>
+                    <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-evidence%3A23" tabindex="-1">
+                        <p>architecture: vgg16 · random_seed: 47 · normalization: vgg16_imagenet ·
+                            internal_preprocessing: Sin evidencia · optimizer: sgd · learning_rate: 0.001 · batch_size:
+                            64 · loss_function: binary_crossentropy · checkpoint_monitor: val_f2_parasitized ·
+                            checkpoint_mode: max · early_stopping: Sí · max_epochs: 100 · fine_tune_epochs: 20 ·
+                            fine_tune_learning_rate: 0.0001 · early_stopping_patience: 12 · early_stopping_monitor:
+                            val_f2_parasitized · early_stopping_mode: max · restore_best_weights: Sí · dropout: 0.5 ·
+                            l2: 0 · input_height: 200 · input_width: 200 · input_channels: 3 · no_augment: No ·
+                            augmentation: flip: horizontal_and_vertical · zoom: 0.2 · contrast: 0.3 · rotation: 0.07 ·
+                            translation: 0.2 · checkpoint_policy: auc_with_min_recall · clinical_objective: min_recall;
+                            assessed independently of technical completion · optimizer_parameters: use_ema: No ·
+                            clipnorm: Sin evidencia · momentum: 0.9 · nesterov: No · clipvalue: Sin evidencia ·
+                            ema_momentum: 0.99 · weight_decay: Sin evidencia · learning_rate: 0.001 · global_clipnorm:
+                            Sin evidencia · loss_scale_factor: Sin evidencia · ema_overwrite_frequency: Sin evidencia ·
+                            gradient_accumulation_steps: Sin evidencia · executed_epochs: 27</p>
+                        <small>ScientificReadRepository.preflight_configuration · evidence:23 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                </div>
+                <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-A5" tabindex="-1">
+                    <h4>A5 — Checkpoint</h4>
+                    <p>Checkpoint seleccionado: 102a0f63-3bfa-5c78-887d-b70c9c556bb5</p>
+                    <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-evidence%3A28" tabindex="-1">
+                        <p>artifact_id: 102a0f63-3bfa-5c78-887d-b70c9c556bb5 · checksum_registered:
+                            2ae5479da4f0ce51a38645986f1a51f06feaa8dd094b310ef00c765faddd041b</p>
+                        <small>ArtifactReadRepository.get · evidence:28 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-evidence%3A29" tabindex="-1">
+                        <p>artifact_id: 102a0f63-3bfa-5c78-887d-b70c9c556bb5 · selected_epoch: 1 · phase: base · metric:
+                            val_f2_parasitized · policy: auc_with_min_recall · logical_lineage: Sí ·
+                            checksum_registered: 2ae5479da4f0ce51a38645986f1a51f06feaa8dd094b310ef00c765faddd041b ·
+                            file_availability: not_checked · physical_checksum: not_checked</p>
+                        <small>ScientificReadRepository.comparison_checkpoint · evidence:29 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <div>
+                        <p>Registro: Sí · Linaje: Sí</p>
+                        <p>Verificación física: No verificado · SHA-256: No verificado</p>
+                    </div>
+                    <p>Época y política: consulte el módulo de curvas. El checksum registrado no acredita verificación
+                        física.</p>
+                </div>
+                <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-A6" tabindex="-1">
+                    <h4>A6 — Evaluación</h4>
+                    <p>Identidad de evaluación: source: evaluations · evaluation_id:
+                        f4cddf36-a933-5fdc-8b0a-7a1ca0ca159a · execution_run_id: 0bbdd732-1a7a-4360-8f05-5bb9f0d50773 ·
+                        source_assessment_attempt_id: Sin evidencia</p>
+                    <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-evidence%3A25" tabindex="-1">
+                        <p>evaluation_role: training_validation_final · purpose: development · protocol_hash:
+                            354bc55cf986a246fbb8194974b18ee6e57fbc3bf4eb2e29e609dddb532f1499 · metric_definition:
+                            binary_nullable_v2 · split: val</p><small>ScientificReadRepository.evaluation · evidence:25
+                            · Evidencia operacional · 2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <div id="scc-evidence-train%3A0bbdd732-1a7a-4360-8f05-5bb9f0d50773-evidence%3A26" tabindex="-1">
+                        <p>split: val · evaluation_role: training_validation_final · purpose: development · threshold:
+                            0.5 · sample_count: 2693 · metric_definition: binary_nullable_v2</p>
+                        <small>ScientificReadRepository.comparison_metrics · evidence:26 · Evidencia operacional ·
+                            2026-10-19T12:34:36.173028Z</small>
+                    </div>
+                    <p>Selección explícita del cliente. · Split: val · Checkpoint: 102a0f63-3bfa-5c78-887d-b70c9c556bb5
+                    </p>
+                </div>
+            </div>
+        </details>
+        <details open="">
+            <summary>Diagnóstico técnico por análisis</summary>
+            <div class="scc-findings">
+                <div>
+                    <p>Se requiere selección y evidencia metodológica específica del módulo. · afecta a RUN A, RUN B,
+                        RUN C, RUN D</p>
+                    <p>P5</p><code
+                        class="report-identifier">METHODOLOGY_NOT_VERIFIED · Motivos: cka:methodology, umap:methodology, pca:methodology, embeddings:methodology, xai:methodology · Evidencia: </code>
+                    <ul>
+                        <li><code>cka:methodology</code> · RUN A, RUN B, RUN C, RUN D · <code></code></li>
+                        <li><code>umap:methodology</code> · RUN A, RUN B, RUN C, RUN D · <code></code></li>
+                        <li><code>pca:methodology</code> · RUN A, RUN B, RUN C, RUN D · <code></code></li>
+                        <li><code>embeddings:methodology</code> · RUN A, RUN B, RUN C, RUN D · <code></code></li>
+                        <li><code>xai:methodology</code> · RUN A, RUN B, RUN C, RUN D · <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>Checkpoint sin registro recuperable. · afecta a RUN A, RUN B</p>
+                    <p>CHECKPOINT_UNREGISTERED</p><code
+                        class="report-identifier">CHECKPOINT_UNREGISTERED · Motivos: A5:CHECKPOINT_UNREGISTERED:1, A5:CHECKPOINT_UNREGISTERED:0 · Evidencia: evidence:11, evidence:5</code>
+                    <ul>
+                        <li><code>A5:CHECKPOINT_UNREGISTERED:1</code> · RUN B · <code>evidence:11</code></li>
+                        <li><code>A5:CHECKPOINT_UNREGISTERED:0</code> · RUN A · <code>evidence:5</code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>No todos los participantes tienen un intento EVALUATE exacto con población verificable. · afecta
+                        a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>POPULATION_UNATTRIBUTED</p><code
+                        class="report-identifier">POPULATION_UNATTRIBUTED · Motivos: A3:POPULATION_UNATTRIBUTED:0 · Evidencia: </code>
+                    <ul>
+                        <li><code>A3:POPULATION_UNATTRIBUTED:0</code> · RUN A, RUN B, RUN C, RUN D · <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>PROTOCOL_DIFFERENCE_DECISION</p><code
+                        class="report-identifier">PROTOCOL_DIFFERENCE_DECISION · Motivos: A6:PROTOCOL_DIFFERENCE_DECISION:4 · Evidencia: </code>
+                    <ul>
+                        <li><code>A6:PROTOCOL_DIFFERENCE_DECISION:4</code> · RUN A, RUN B, RUN C, RUN D · <code></code>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>PROTOCOL_DIFFERENCE_PROTOCOL</p><code
+                        class="report-identifier">PROTOCOL_DIFFERENCE_PROTOCOL · Motivos: A6:PROTOCOL_DIFFERENCE_PROTOCOL:3 · Evidencia: </code>
+                    <ul>
+                        <li><code>A6:PROTOCOL_DIFFERENCE_PROTOCOL:3</code> · RUN A, RUN B, RUN C, RUN D · <code></code>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>HISTORICAL_PROTOCOL_DIFFERENCE_PROTOCOL_HASH</p><code
+                        class="report-identifier">HISTORICAL_PROTOCOL_DIFFERENCE_PROTOCOL_HASH · Motivos: A6:HISTORICAL_PROTOCOL_DIFFERENCE_PROTOCOL_HASH:2 · Evidencia: </code>
+                    <ul>
+                        <li><code>A6:HISTORICAL_PROTOCOL_DIFFERENCE_PROTOCOL_HASH:2</code> · RUN A, RUN B, RUN C, RUN D
+                            · <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>VALIDATION final de desarrollo; no equivale a TEST independiente. · afecta a RUN C, RUN D</p>
+                    <p>DEVELOPMENT_VALIDATION</p><code
+                        class="report-identifier">DEVELOPMENT_VALIDATION · Motivos: A6:DEVELOPMENT_VALIDATION:1, A6:DEVELOPMENT_VALIDATION:0 · Evidencia: evidence:25, evidence:16</code>
+                    <ul>
+                        <li><code>A6:DEVELOPMENT_VALIDATION:1</code> · RUN D · <code>evidence:25</code></li>
+                        <li><code>A6:DEVELOPMENT_VALIDATION:0</code> · RUN C · <code>evidence:16</code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>El nombre de split no acredita su pertenencia poblacional. · afecta a RUN A, RUN B, RUN C, RUN D
+                    </p>
+                    <p>SPLIT_MEMBERSHIP_UNVERIFIED</p><code
+                        class="report-identifier">SPLIT_MEMBERSHIP_UNVERIFIED · Motivos: A2:SPLIT_MEMBERSHIP_UNVERIFIED:0 · Evidencia: </code>
+                    <ul>
+                        <li><code>A2:SPLIT_MEMBERSHIP_UNVERIFIED:0</code> · RUN A, RUN B, RUN C, RUN D · <code></code>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>SPLIT_DIFFERENCE</p><code
+                        class="report-identifier">SPLIT_DIFFERENCE · Motivos: A2:SPLIT_DIFFERENCE:1 · Evidencia: </code>
+                    <ul>
+                        <li><code>A2:SPLIT_DIFFERENCE:1</code> · RUN A, RUN B, RUN C, RUN D · <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_L2</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_L2 · Motivos: A4:CONFIGURATION_DIFFERENCE_L2:13 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_L2:13</code> · RUN A, RUN B, RUN C, RUN D · <code></code>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_DROPOUT</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_DROPOUT · Motivos: A4:CONFIGURATION_DIFFERENCE_DROPOUT:12 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_DROPOUT:12</code> · RUN A, RUN B, RUN C, RUN D ·
+                            <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_FINE_TUNE_LEARNING_RATE</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_FINE_TUNE_LEARNING_RATE · Motivos: A4:CONFIGURATION_DIFFERENCE_FINE_TUNE_LEARNING_RATE:11 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_FINE_TUNE_LEARNING_RATE:11</code> · RUN A, RUN B, RUN C,
+                            RUN D · <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_FINE_TUNE_EPOCHS</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_FINE_TUNE_EPOCHS · Motivos: A4:CONFIGURATION_DIFFERENCE_FINE_TUNE_EPOCHS:10 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_FINE_TUNE_EPOCHS:10</code> · RUN A, RUN B, RUN C, RUN D ·
+                            <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_MAX_EPOCHS</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_MAX_EPOCHS · Motivos: A4:CONFIGURATION_DIFFERENCE_MAX_EPOCHS:9 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_MAX_EPOCHS:9</code> · RUN A, RUN B, RUN C, RUN D ·
+                            <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_LEARNING_RATE</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_LEARNING_RATE · Motivos: A4:CONFIGURATION_DIFFERENCE_LEARNING_RATE:8 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_LEARNING_RATE:8</code> · RUN A, RUN B, RUN C, RUN D ·
+                            <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_OPTIMIZER</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_OPTIMIZER · Motivos: A4:CONFIGURATION_DIFFERENCE_OPTIMIZER:7 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_OPTIMIZER:7</code> · RUN A, RUN B, RUN C, RUN D ·
+                            <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_NORMALIZATION</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_NORMALIZATION · Motivos: A4:CONFIGURATION_DIFFERENCE_NORMALIZATION:6 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_NORMALIZATION:6</code> · RUN A, RUN B, RUN C, RUN D ·
+                            <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_RANDOM_SEED</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_RANDOM_SEED · Motivos: A4:CONFIGURATION_DIFFERENCE_RANDOM_SEED:5 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_RANDOM_SEED:5</code> · RUN A, RUN B, RUN C, RUN D ·
+                            <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>La evidencia persistida difiere entre participantes. · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_DIFFERENCE_ARCHITECTURE</p><code
+                        class="report-identifier">CONFIGURATION_DIFFERENCE_ARCHITECTURE · Motivos: A4:CONFIGURATION_DIFFERENCE_ARCHITECTURE:4 · Evidencia: </code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_DIFFERENCE_ARCHITECTURE:4</code> · RUN A, RUN B, RUN C, RUN D ·
+                            <code></code></li>
+                    </ul>
+                </div>
+                <div>
+                    <p>Configuración no acreditada: internal_preprocessing · afecta a RUN A, RUN B, RUN C, RUN D</p>
+                    <p>CONFIGURATION_INCOMPLETE</p><code
+                        class="report-identifier">CONFIGURATION_INCOMPLETE · Motivos: A4:CONFIGURATION_INCOMPLETE:3, A4:CONFIGURATION_INCOMPLETE:2, A4:CONFIGURATION_INCOMPLETE:1, A4:CONFIGURATION_INCOMPLETE:0 · Evidencia: evidence:23, evidence:14, evidence:8, evidence:2</code>
+                    <ul>
+                        <li><code>A4:CONFIGURATION_INCOMPLETE:3</code> · RUN D · <code>evidence:23</code></li>
+                        <li><code>A4:CONFIGURATION_INCOMPLETE:2</code> · RUN C · <code>evidence:14</code></li>
+                        <li><code>A4:CONFIGURATION_INCOMPLETE:1</code> · RUN B · <code>evidence:8</code></li>
+                        <li><code>A4:CONFIGURATION_INCOMPLETE:0</code> · RUN A · <code>evidence:2</code></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="report-table-scroll" tabindex="0" role="region" aria-label="Disponibilidad por análisis">
+                <table class="report-data-table scc-preflight-table">
+                    <caption>Diagnóstico por análisis · participantes: RUN A, RUN B, RUN C, RUN D</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Análisis</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Advertencia principal</th>
+                            <th scope="col">RUN A</th>
+                            <th scope="col">RUN B</th>
+                            <th scope="col">RUN C</th>
+                            <th scope="col">RUN D</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Curvas de aprendizaje</th>
+                            <td><span class="scc-verdict" data-state="COMPARABLE_CON_ADVERTENCIAS">Comparable con
+                                    advertencias</span><code>COMPARABLE_CON_ADVERTENCIAS</code></td>
+                            <td>Configuración experimental incompleta · 11 causas (ver motivos técnicos)<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>curves: requested · Población: original</p>
+                                    <p>A4:CONFIGURATION_INCOMPLETE:0, A4:CONFIGURATION_INCOMPLETE:1,
+                                        A4:CONFIGURATION_INCOMPLETE:2, A4:CONFIGURATION_INCOMPLETE:3,
+                                        A4:CONFIGURATION_DIFFERENCE_ARCHITECTURE:4,
+                                        A4:CONFIGURATION_DIFFERENCE_RANDOM_SEED:5,
+                                        A4:CONFIGURATION_DIFFERENCE_NORMALIZATION:6,
+                                        A4:CONFIGURATION_DIFFERENCE_OPTIMIZER:7,
+                                        A4:CONFIGURATION_DIFFERENCE_LEARNING_RATE:8,
+                                        A4:CONFIGURATION_DIFFERENCE_MAX_EPOCHS:9,
+                                        A4:CONFIGURATION_DIFFERENCE_FINE_TUNE_EPOCHS:10,
+                                        A4:CONFIGURATION_DIFFERENCE_FINE_TUNE_LEARNING_RATE:11,
+                                        A4:CONFIGURATION_DIFFERENCE_DROPOUT:12, A4:CONFIGURATION_DIFFERENCE_L2:13</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:0, evidence:2, evidence:6, evidence:8, evidence:12,
+                                        evidence:14, evidence:21, evidence:23</p>
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Métricas VAL/TEST</th>
+                            <td><span class="scc-verdict" data-state="NO_COMPARABLE">No
+                                    comparable</span><code>NO_COMPARABLE</code></td>
+                            <td>La evidencia persistida difiere entre participantes.<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>metrics: incompatibilities · Población: original</p>
+                                    <p>A2:SPLIT_DIFFERENCE:1</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:0, evidence:1, evidence:4, evidence:5, evidence:6,
+                                        evidence:7, evidence:10, evidence:11, evidence:12, evidence:13, evidence:16,
+                                        evidence:17, evidence:18, evidence:19, evidence:20, evidence:21, evidence:22,
+                                        evidence:25, evidence:26, evidence:27, evidence:28, evidence:29</p>
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Métricas VAL/TEST</th>
+                            <td><span class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia
+                                    insuficiente</span><code>EVIDENCIA_INSUFICIENTE</code></td>
+                            <td>El nombre de split no acredita su pertenencia poblacional. · 7 causas (ver motivos
+                                técnicos)<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>metrics: missing_evidence · Población: original</p>
+                                    <p>A2:SPLIT_MEMBERSHIP_UNVERIFIED:0, A3:POPULATION_UNATTRIBUTED:0,
+                                        A5:CHECKPOINT_UNREGISTERED:0, A5:CHECKPOINT_UNREGISTERED:1,
+                                        A6:DEVELOPMENT_VALIDATION:0, A6:DEVELOPMENT_VALIDATION:1,
+                                        A6:HISTORICAL_PROTOCOL_DIFFERENCE_PROTOCOL_HASH:2,
+                                        A6:PROTOCOL_DIFFERENCE_PROTOCOL:3, A6:PROTOCOL_DIFFERENCE_DECISION:4</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:0, evidence:1, evidence:4, evidence:5, evidence:6,
+                                        evidence:7, evidence:10, evidence:11, evidence:12, evidence:13, evidence:16,
+                                        evidence:17, evidence:18, evidence:19, evidence:20, evidence:21, evidence:22,
+                                        evidence:25, evidence:26, evidence:27, evidence:28, evidence:29</p>
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td>Sí<details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Consenso y desacuerdo</th>
+                            <td><span class="scc-verdict" data-state="NO_COMPARABLE">No
+                                    comparable</span><code>NO_COMPARABLE</code></td>
+                            <td>La evidencia persistida difiere entre participantes.<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>consensus: incompatibilities · Población: intersection</p>
+                                    <p>A2:SPLIT_DIFFERENCE:1</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:1, evidence:4, evidence:5, evidence:7, evidence:10,
+                                        evidence:11, evidence:13, evidence:16, evidence:17, evidence:18, evidence:19,
+                                        evidence:20, evidence:22, evidence:25, evidence:26, evidence:27, evidence:28,
+                                        evidence:29</p>
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Consultar resultados de la fuente y selección exactas.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Consultar resultados de la fuente y selección exactas.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Consultar resultados de la fuente y selección exactas.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Consultar resultados de la fuente y selección exactas.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Consenso y desacuerdo</th>
+                            <td><span class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia
+                                    insuficiente</span><code>EVIDENCIA_INSUFICIENTE</code></td>
+                            <td>El nombre de split no acredita su pertenencia poblacional. · 7 causas (ver motivos
+                                técnicos)<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>consensus: missing_evidence · Población: intersection</p>
+                                    <p>A2:SPLIT_MEMBERSHIP_UNVERIFIED:0, A3:POPULATION_UNATTRIBUTED:0,
+                                        A5:CHECKPOINT_UNREGISTERED:0, A5:CHECKPOINT_UNREGISTERED:1,
+                                        A6:DEVELOPMENT_VALIDATION:0, A6:DEVELOPMENT_VALIDATION:1,
+                                        A6:HISTORICAL_PROTOCOL_DIFFERENCE_PROTOCOL_HASH:2,
+                                        A6:PROTOCOL_DIFFERENCE_PROTOCOL:3, A6:PROTOCOL_DIFFERENCE_DECISION:4</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:1, evidence:4, evidence:5, evidence:7, evidence:10,
+                                        evidence:11, evidence:13, evidence:16, evidence:17, evidence:18, evidence:19,
+                                        evidence:20, evidence:22, evidence:25, evidence:26, evidence:27, evidence:28,
+                                        evidence:29</p>
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Consultar resultados de la fuente y selección exactas.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Consultar resultados de la fuente y selección exactas.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Consultar resultados de la fuente y selección exactas.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Consultar resultados de la fuente y selección exactas.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">XAI</th>
+                            <td><span class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia
+                                    insuficiente</span><code>EVIDENCIA_INSUFICIENTE</code></td>
+                            <td>No todos los participantes tienen un intento EVALUATE exacto con población verificable.
+                                · 3 causas (ver motivos técnicos)<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>xai: requested · Población: original</p>
+                                    <p>A3:POPULATION_UNATTRIBUTED:0, A5:CHECKPOINT_UNREGISTERED:0,
+                                        A5:CHECKPOINT_UNREGISTERED:1, xai:methodology</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:5, evidence:11, evidence:18, evidence:19, evidence:20,
+                                        evidence:27, evidence:28, evidence:29</p>
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Embeddings</th>
+                            <td><span class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia
+                                    insuficiente</span><code>EVIDENCIA_INSUFICIENTE</code></td>
+                            <td>No todos los participantes tienen un intento EVALUATE exacto con población verificable.
+                                · 3 causas (ver motivos técnicos)<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>embeddings: requested · Población: original</p>
+                                    <p>A3:POPULATION_UNATTRIBUTED:0, A5:CHECKPOINT_UNREGISTERED:0,
+                                        A5:CHECKPOINT_UNREGISTERED:1, embeddings:methodology</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:5, evidence:11, evidence:18, evidence:19, evidence:20,
+                                        evidence:27, evidence:28, evidence:29</p>
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">PCA</th>
+                            <td><span class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia
+                                    insuficiente</span><code>EVIDENCIA_INSUFICIENTE</code></td>
+                            <td>No todos los participantes tienen un intento EVALUATE exacto con población verificable.
+                                · 3 causas (ver motivos técnicos)<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>pca: requested · Población: original</p>
+                                    <p>A3:POPULATION_UNATTRIBUTED:0, A5:CHECKPOINT_UNREGISTERED:0,
+                                        A5:CHECKPOINT_UNREGISTERED:1, pca:methodology</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:5, evidence:11, evidence:18, evidence:19, evidence:20,
+                                        evidence:27, evidence:28, evidence:29</p>
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">UMAP</th>
+                            <td><span class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia
+                                    insuficiente</span><code>EVIDENCIA_INSUFICIENTE</code></td>
+                            <td>No todos los participantes tienen un intento EVALUATE exacto con población verificable.
+                                · 3 causas (ver motivos técnicos)<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>umap: requested · Población: original</p>
+                                    <p>A3:POPULATION_UNATTRIBUTED:0, A5:CHECKPOINT_UNREGISTERED:0,
+                                        A5:CHECKPOINT_UNREGISTERED:1, umap:methodology</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:5, evidence:11, evidence:18, evidence:19, evidence:20,
+                                        evidence:27, evidence:28, evidence:29</p>
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">CKA</th>
+                            <td><span class="scc-verdict" data-state="EVIDENCIA_INSUFICIENTE">Evidencia
+                                    insuficiente</span><code>EVIDENCIA_INSUFICIENTE</code></td>
+                            <td>No todos los participantes tienen un intento EVALUATE exacto con población verificable.
+                                · 3 causas (ver motivos técnicos)<details>
+                                    <summary>Motivos técnicos</summary>
+                                    <p>cka: requested · Población: original</p>
+                                    <p>A3:POPULATION_UNATTRIBUTED:0, A5:CHECKPOINT_UNREGISTERED:0,
+                                        A5:CHECKPOINT_UNREGISTERED:1, cka:methodology</p>
+                                    <p>Las métricas originales no se recalculan sobre la intersección.</p>
+                                    <p>Disponibilidad física e integridad de checkpoints no comprobadas.</p>
+                                    <p>Referencias: evidence:5, evidence:11, evidence:18, evidence:19, evidence:20,
+                                        evidence:27, evidence:28, evidence:29</p>
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:0, evidence:2, evidence:4
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:6, evidence:8, evidence:10
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:12, evidence:14
+                                </details>
+                            </td>
+                            <td><span>Sin evidencia · Disponibilidad individual pendiente de consulta del módulo.</span>
+                                <details>
+                                    <summary>Referencias</summary>evidence:21, evidence:23
+                                </details>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </details>
+</details>

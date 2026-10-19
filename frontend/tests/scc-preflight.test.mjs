@@ -87,7 +87,7 @@ for (const count of [2, 3, 7]) test(`A1–A6 render ${count} TRAIN columns, part
   const load = loader({ '../../auth': {}, '../../services/api': {}, './AssessmentXAI': {} });
   const { PreflightEvidence } = load('components/reports/ScientificPreflight.tsx');
   const html = renderToStaticMarkup(React.createElement(PreflightEvidence, { data: fixture(count) }));
-  assert.equal((html.match(/scope="col"/g) ?? []).length, count + 2);
+  assert.equal((html.match(/scope="col"/g) ?? []).length, 3 * count + 6);
   for (const value of ['A1','A2','A3','A4','A5','A6','Curvas de aprendizaje','Métricas VAL/TEST','Consenso y desacuerdo','XAI','Embeddings','PCA','UMAP','CKA','Sin evidencia','No verificado','referencia-individual','random_seed: 0']) assert.ok(html.includes(value), value);
   assert.doesNotMatch(html, /Comparación controlada válida|Protocolo TESTED/);
 });
@@ -258,7 +258,7 @@ for (const count of [2, 3, 4]) test(`UX matrix preserves ${count} aliases and ex
   const data = fixture(count);
   const html = renderToStaticMarkup(React.createElement(PreflightEvidence, { data }));
   const head = html.match(/<thead>(.*?)<\/thead>/s)[1];
-  assert.equal((head.match(/scope="col"/g) ?? []).length, count + 2);
+  assert.equal((head.match(/scope="col"/g) ?? []).length, count + 1);
   data.selections.forEach((selection, index) => {
     assert.ok(head.includes(`RUN ${String.fromCharCode(65 + index)}`));
     assert.ok(!head.includes(selection.training_run_id));
@@ -336,7 +336,7 @@ test('friendly labels and experimental differences retain original backend findi
   data.dimensions[3].findings.push(finding);
   data.evidence[0].value.value.optimizer = 'adam'; data.evidence[1].value.value.optimizer = 'sgd';
   const html = renderToStaticMarkup(React.createElement(PreflightEvidence, { data }));
-  assert.match(html, /Diferencia experimental/);
+  assert.doesNotMatch(html, /<td>Diferencia experimental<\/td>/);
   for (const text of ['Original scientific reason', 'Original condition', 'CONFIGURATION_DIFFERENCE_OPTIMIZER', 'ref-original', 'Evidencia insuficiente']) assert.ok(html.includes(text));
   assert.equal(findingLabel({ ...finding, code: 'SPLIT_UNKNOWN' }), 'Partición no acreditada');
   assert.equal(findingLabel({ ...finding, code: 'UNRECOGNIZED' }), finding.message);
@@ -381,17 +381,15 @@ test('one evaluation needs no pagination and absence is specific', async () => {
   assert.equal(find(tree,n => n.type === 'nav'),undefined); h.dispose();
 });
 
-test('a parameter expansion renders the entire row for every RUN and groups have requested defaults', () => {
+test('scalar rows have no expansion and groups retain requested defaults', () => {
   const h=harness(); const data=fixture(4);
   const {PreflightEvidence}=loader({react:h.react, '../../auth':{}, '../../services/api':{}, './AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
-  let tree=h.render(() => PreflightEvidence({data}));
+  const tree=h.render(() => PreflightEvidence({data}));
   const groups=nodes(tree).filter(n => n.type === 'button' && Array.isArray(n.props.children) && ['Con diferencias','Comparables','Sin diferencias'].includes(n.props.children[0]));
   assert.deepEqual(groups.map(n=>n.props['aria-expanded']),[true,true,false]);
-  const parameter=find(tree,n=>n.type === 'button' && Array.isArray(n.props.children) && n.props.children.includes('Versión del dataset'));
-  parameter.props.onClick(); tree=h.render(() => PreflightEvidence({data}));
-  const row=find(tree,n=>n.props?.className === 'scc-expanded-row');
-  assert.equal(nodes(row).filter(n=>n.type === 'td').length,5);
-  assert.equal(nodes(row).filter(n=>n.type?.name === 'EvidenceCell').length,4); h.dispose();
+  assert.equal(find(tree,n=>n.type === 'button' && n.props.children?.includes('Versión del dataset')),undefined);
+  assert.equal(find(tree,n=>n.props?.className === 'scc-expanded-row'),undefined);
+  h.dispose();
 });
 
 test('Recharts curves retain missing values, distinguish TRAIN and VAL and reference selected epoch', () => {
@@ -419,4 +417,140 @@ test('consensus shows backend results and a bounded sample page without client c
   const data={state:'available',common_count:3,union_count:3,label_conflicts:0,coverage:[{population:3,common:3,missing:0,exclusive:0}],oracle:{numerator:2,denominator:3,ratio:2/3},all_wrong:1,distribution:{CONSENSUS_FN:1},agreement:[[3]],error_overlap:[[1]],samples:[{sample:'val/example.png',label:1,category:'CONSENSUS_FN',runs:[{score:.1,prediction:0,correct:false}]}],total:1};
   const html=renderToStaticMarkup(React.createElement(ConsensusResults,{data}));
   for(const expected of ['Oracle descriptivo','no desplegable','example.png','CONSENSUS_FN','Error','N = 3']) assert.ok(html.includes(expected),expected);
+});
+
+test('section 01 equality is structural, position independent and excludes missing evidence', () => {
+  const { compareValues } = loader()('utils/preflightPresentation.ts');
+  const check = values => compareValues(values.map(value => value === undefined ? undefined : known(value)));
+  for (const count of [2,3,4]) assert.equal(check(Array(count).fill(0)).group, 'Sin diferencias');
+  for (const values of [[1,1,2,2], [1,2,2,2], [1,2,3,4], [1,2,1,3]]) assert.equal(check(values).group, 'Con diferencias');
+  assert.equal(JSON.stringify(check([2,1,2,1]).matches), '["AC","BD","AC","BD"]');
+  assert.equal(JSON.stringify(check([1,2,3,4]).matches), '[null,null,null,null]');
+  assert.equal(check([{a:1,b:2},{b:2,a:1}]).group, 'Sin diferencias');
+  assert.equal(check([[1,2],[2,1]]).group, 'Con diferencias');
+  for (const values of [[null,null],[undefined,undefined],[1,undefined],[{},{}],[{a:null},{a:null}]]) assert.equal(check(values).group, 'Comparables');
+  assert.equal(compareValues([{state:'query_error',error_ids:['sql']},known(1)]).group, 'Comparables');
+});
+
+test('projection retains SQL errors and conflicting sources rather than selecting arbitrary evidence', () => {
+  const { projectField } = loader()('utils/preflightPresentation.ts');
+  const data = fixture();
+  data.evidence.push({...data.evidence[0], evidence_id:'conflict', value:known({architecture:'another'})});
+  assert.equal(projectField(data,'A4','train:0','architecture').state,'unknown');
+  data.evidence.push({...data.evidence[0], evidence_id:'failed',value:{state:'query_error',error_ids:['sql-1']}});
+  assert.equal(projectField(data,'A4','train:0','architecture').state,'query_error');
+});
+
+for (const count of [2,3,4]) test(`section 01 shared table, dynamic counts and no redundant expansion for ${count} participants`, () => {
+  const h = harness(); const data = fixture(count);
+  const {PreflightEvidence} = loader({react:h.react,'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
+  const render = () => h.render(() => PreflightEvidence({data}));
+  let tree = render();
+  const shared = find(tree,n => n.type === 'button' && n.props.children?.[0] === 'Sin diferencias');
+  shared.props.onClick(); tree = render();
+  const table = find(tree,n => n.type === 'table' && nodes(n).some(child => child.type === 'th' && child.props.children === 'Valor compartido'));
+  assert.equal(nodes(table).filter(n=>n.type === 'th' && n.props.scope === 'col').length,3);
+  assert.ok(nodes(table).some(n => n.props?.className === 'scc-equal' && n.props.children === Array.from({length:count},(_,i)=>String.fromCharCode(65+i)).join('=')));
+  assert.equal(find(table,n => n.type === 'button' && n.props.children?.includes('Arquitectura')),undefined);
+  assert.equal(find(tree,n=>n.props?.className === 'scc-expanded-row'),undefined);
+  const before = find(tree,n=>n.type === 'button' && n.props.children?.[0] === 'Con diferencias').props.children[2];
+  data.evidence[0].value.value.architecture = 'changed'; tree = render();
+  assert.equal(find(tree,n=>n.type === 'button' && n.props.children?.[0] === 'Con diferencias').props.children[2],before+1);
+  h.dispose();
+});
+
+test('concrete optimizer/checkpoint/evaluation evidence and consolidated warnings preserve traceability', () => {
+  const data = fixture(4);
+  data.selections.forEach((selection,i) => {
+    data.evidence[i].value.value.optimizer_parameters = {beta_1:0.9,epsilon:1e-7};
+    selection.checkpoint = known(`${i}2345678-1234-1234-1234-123456789012`);
+    selection.evaluation = known({source:'evaluations',evaluation_id:`${i}aaaaaaa-1234-1234-1234-123456789012`,source_assessment_attempt_id:null});
+    data.evidence.push({...data.evidence[i], evidence_id:`checkpoint-${i}`, source:'A5',value:known({selected_epoch:i+1,phase:'base',checksum_registered:'a'.repeat(63)+i})});
+    data.evidence.push({...data.evidence[i], evidence_id:`evaluation-${i}`, source:'A6',value:known({evaluation_role:'training_validation_final',protocol_hash:i%2 ? 'protocol-b' : 'protocol-a'})});
+    data.dimensions[5].findings.push({reason_id:`reason-${i}`,code:'DEVELOPMENT_VALIDATION',kind:'warning',message:'VALIDATION final de desarrollo; no equivale a TEST independiente.',condition:'historical',affected_selection_ids:[selection.selection_id],evidence_ids:[`evaluation-${i}`]});
+  });
+  const {PreflightEvidence} = loader({'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
+  const html = renderToStaticMarkup(React.createElement(PreflightEvidence,{data}));
+  assert.match(html,/época/); assert.match(html,/fase/); assert.match(html,/Valor completo/); assert.match(html,/Copiar identificador/);
+  assert.match(html,/afecta a RUN A, RUN B, RUN C, RUN D/);
+  assert.equal((html.match(/VALIDATION final de desarrollo;/g)||[]).length,2); // summary + secondary original cause
+  for (let i=0;i<4;i++) { assert.ok(html.includes(`reason-${i}`)); assert.ok(html.includes(`evaluation-${i}`)); }
+  assert.match(html,/Detalle técnico y trazabilidad/);
+  assert.doesNotMatch(html,/<td>Identidad registrada|<td>Configuración persistida/);
+});
+
+for (const count of [2,3,4]) test(`A6 consolidates structured fields and provenance for ${count} RUN`, () => {
+  const h = harness(); const data = fixture(count);
+  data.selections.forEach((selection,i) => {
+    selection.evaluation = known({source:'evaluations',evaluation_id:`evaluation-${i}`,source_assessment_attempt_id:null});
+    data.evidence.push({...data.evidence[i], source:'A6', evidence_id:`eval-ref-${i}`, value:known({evaluation_role:'training_validation_final',purpose:'development',threshold:0.5,sample_count:2693,metric_definition:'binary_nullable_v2',protocol_hash:i===count-1?'different':'shared'})});
+    data.evidence.push({...data.evidence[i], source:'A2', evidence_id:`split-ref-${i}`, value:known({campaign_id:`campaign-${i}`,campaign_snapshot:{counts:{train:10,val:2}}})});
+  });
+  const {PreflightEvidence} = loader({react:h.react,'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
+  const render = () => h.render(() => PreflightEvidence({data}));
+  let tree = render();
+  const toggle = find(tree,n=>n.type === 'button' && n.props.children?.includes('Protocolo y regla de decisión'));
+  assert.ok(toggle); toggle.props.onClick(); tree=render();
+  let row=find(tree,n=>n.props?.className === 'scc-expanded-row');
+  assert.equal(find(row,n=>n.type === 'td').props.colSpan,count+2);
+  assert.equal(nodes(row).filter(n=>n.type?.name === 'EvidenceCell').length,0);
+  let html=renderToStaticMarkup(row);
+  for (const field of ['protocol_hash','evaluation_id','checkpoint_artifact_id','source_assessment_attempt_id']) assert.ok(html.includes(field),field);
+  for (let i=0;i<count;i++) assert.ok(html.includes(`evaluation-${i}`));
+  find(tree,n=>n.type === 'button' && n.props.children?.[0]==='Sin diferencias').props.onClick();tree=render();
+  find(tree,n=>n.type === 'button' && n.props.children?.includes('Partición evaluada')).props.onClick();tree=render();
+  html=renderToStaticMarkup(React.createElement(React.Fragment,null,...nodes(tree).filter(n=>n.props?.className === 'scc-expanded-row')));
+  assert.ok(html.includes('campaign-0'));assert.ok(html.includes('procedencia'));
+  assert.ok(!html.includes('campaign_snapshot'));
+  data.selections[0]={...data.selections[0],evaluation:known({evaluation_id:'new-selection'})}; tree=render();
+  assert.equal(find(tree,n=>n.props?.className === 'scc-expanded-row'),undefined);
+  h.dispose();
+});
+
+test('equality partitions carry semantic aliases and distinguish type, absence and order', () => {
+  const {compareValues}=loader()('utils/preflightPresentation.ts');
+  for (const [values,expected] of [[[1,1,2,2],['AB','AB','CD','CD']],[[1,2,1,2],['AC','BD','AC','BD']],[[1,1,1,2],['ABC','ABC','ABC',null]],[[1,'1',null,null],[null,null,null,null]]]) {
+    assert.deepEqual(JSON.parse(JSON.stringify(compareValues(values.map(known)).matches)),expected);
+  }
+});
+
+test('evidence navigation opens every ancestor and focuses the exact target', () => {
+  const {openEvidenceTarget}=loader()('utils/preflightPresentation.ts');
+  const outer={tagName:'DETAILS',open:false,parentElement:null};
+  const inner={tagName:'DETAILS',open:false,parentElement:outer};
+  const calls=[]; const target={tagName:'DIV',parentElement:inner,scrollIntoView:()=>calls.push('scroll'),focus:()=>calls.push('focus')};
+  openEvidenceTarget(target); assert.equal(outer.open,true); assert.equal(inner.open,true); assert.deepEqual(calls,['scroll','focus']);
+  openEvidenceTarget(null);
+});
+
+test('availability matrix preserves backend verdicts, individual errors and missing evidence', () => {
+  const data=fixture(3);
+  data.analyses[0].individual_data[0].availability=known(false);
+  data.analyses[0].individual_data[1].availability={state:'query_error',error_ids:['failure']};
+  data.analyses[0].individual_data.pop();
+  const {PreflightEvidence}=loader({'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
+  const html=renderToStaticMarkup(React.createElement(PreflightEvidence,{data}));
+  const matrix=html.slice(html.indexOf('<caption>Diagnóstico por análisis'));
+  assert.equal((matrix.match(/<th scope="row">/g)||[]).length,8);
+  assert.match(matrix,/ERROR_DE_CONSULTA.*failure/); assert.match(matrix,/Sin evidencia/);assert.match(matrix,/Comparable con advertencias/);
+  assert.ok(!matrix.includes('train-0'));
+});
+
+test('evidence buttons resolve actual references to their RUN without fixed evidence indexes', () => {
+  const data=fixture(2); const targets=[];
+  data.evidence[0].evidence_id='arbitrary:reference/a';
+  data.evidence[1].evidence_id='arbitrary:reference/b';
+  const h=harness();
+  const {PreflightEvidence}=loader({react:h.react,'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}},{document:{getElementById:id=>{targets.push(id);return null;}}})('components/reports/ScientificPreflight.tsx');
+  const tree=h.render(()=>PreflightEvidence({data}));
+  const links=nodes(tree).filter(n=>n.type?.name==='EvidenceLinks' && n.props.dimension==='A4')[0];
+  const buttons=nodes(links.type(links.props)).filter(n=>n.type==='button');
+  buttons.forEach(button=>button.props.onClick());
+  const html=renderToStaticMarkup(React.createElement(PreflightEvidence,{data}));
+  for (let i=0;i<2;i++) {
+    assert.ok(targets[i].includes(encodeURIComponent(data.selections[i].selection_id)));
+    assert.ok(targets[i].includes(encodeURIComponent(data.evidence[i].evidence_id)));
+    assert.ok(html.includes(`id="${targets[i]}"`));
+  }
+  h.dispose();
 });
