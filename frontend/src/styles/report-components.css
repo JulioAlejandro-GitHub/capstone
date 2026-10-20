@@ -1713,3 +1713,21 @@
   top: 0;
   background: var(--ds-bg-subtle);
 }
+
+/* SCC-UI-PREFLIGHT.2: reusable structured values within scientific reports. */
+.ds-report .scc-composite-value { list-style: none; padding: 0; margin-block: var(--ds-space-2); }
+.ds-report .scc-composite-value .scc-key { color: var(--ds-action-fg); font-weight: var(--ds-weight-medium); }
+.ds-report .scc-val { color: var(--ds-fg-default); overflow-wrap: anywhere; }
+.ds-report .scc-composite-value li { padding: var(--ds-space-2) var(--ds-space-3); border-radius: var(--ds-radius-sm); border: var(--ds-border-width) solid transparent; transition: background-color .2s ease, border-color .2s ease; }
+.ds-report .scc-composite-value li:hover { background: var(--ds-bg-hover); border-color: var(--ds-border-default); }
+.ds-report .scc-partition-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--ds-space-4); }
+.ds-report .scc-partition-cards > section { min-width: 0; }
+.ds-report .scc-partition-cards h4 { margin-block: 0 var(--ds-space-3); }
+.ds-report .scc-partition-cards .ds-dl--rows { grid-template-columns: minmax(0, 1fr); }
+.ds-report.scc-page .scc-compact-id { display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--ds-space-2); }
+.ds-report .scc-copy .navigation-icon { width: var(--ds-text-lg); height: var(--ds-text-lg); }
+@media (prefers-reduced-motion: reduce) { .ds-report .scc-composite-value li { transition: none; } }
+.ds-report.scc-page .scc-methodology-state[data-state="ERROR_DE_CONSULTA"] { color: var(--ds-status-neutral-fg); background: var(--ds-status-neutral-bg); }
+
+.ds-report.scc-page .scc-compact-id > code { display: inline; margin: 0; }
+.ds-report .scc-composite-value li > .scc-val { display: inline; }

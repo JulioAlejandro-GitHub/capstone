@@ -1,12 +1,12 @@
 import { ScientificResults, ScientificQuestions, ScientificRepresentations, PersistedXAI } from './ScientificReport';
 import { ComparisonPython, configurationLabels, CopyText } from './ComparisonPython';
-import { Fragment, useMemo, useRef, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useAuth } from '../../auth';
 import { api, ApiError } from '../../services/api';
 import { useComparisonEvidence } from '../../hooks/useComparisonEvidence';
 import { createComparisonCache, type ComparisonCache } from '../../utils/comparisonCache';
 import type { Dimension, EffectiveSelection, Finding, JsonValue, PopulationMember, Module, Observation, PreflightResponse, RequestedSelection, Verdict } from '../../types/scientificPreflight';
-import { compareValues, projectField, evaluationComparison, classifyFields, evaluationDetails, openEvidenceTarget, type DetailField } from '../../utils/preflightPresentation';
+import { compareValues, projectField, classifyFields, evaluationDetails, type DetailField } from '../../utils/preflightPresentation';
 import { TrainingAssessmentXAI } from './AssessmentXAI';
 
 const dimensions: Record<Dimension, string> = { A1: 'Dataset', A2: 'Partición', A3: 'Muestras', A4: 'Configuración experimental', A5: 'Checkpoint', A6: 'Evaluación' };
@@ -59,8 +59,8 @@ function EvidenceCell({ data, selection, dimension }: { data: PreflightResponse;
   const refs = data.evidence.filter(ref => ref.source === dimension && ref.selection_ids.includes(selection.selection_id));
   const selected = dimension === 'A1' ? selection.dataset_version_id : dimension === 'A2' ? selection.split : dimension === 'A5' ? selection.checkpoint : dimension === 'A6' ? selection.evaluation : null;
   return <>
-    {selected && <p>{dimension === 'A1' ? 'dataset_version_id' : dimension === 'A2' ? 'Partición' : dimension === 'A5' ? 'Checkpoint seleccionado' : 'Identidad de evaluación'}: {observationText(selected)}</p>}
-    {refs.map(ref => <div key={ref.evidence_id} id={evidenceTarget(selection.selection_id, ref.evidence_id)} tabIndex={-1}><p>{observationText(ref.value)}</p><small>{ref.operation} · {ref.evidence_id} · {ref.verification === 'not_verified' ? 'No verificado' : 'Evidencia operacional'} · {ref.observed_at}</small></div>)}
+    {selected && <div>{dimension === 'A1' ? 'dataset_version_id' : dimension === 'A2' ? 'Partición' : dimension === 'A5' ? 'Checkpoint seleccionado' : 'Identidad de evaluación'}: <ParameterValue value={selected} /></div>}
+    {refs.map(ref => <div key={ref.evidence_id} id={evidenceTarget(selection.selection_id, ref.evidence_id)} tabIndex={-1}><ParameterValue value={ref.value} /><small>{ref.operation} · {ref.evidence_id} · {ref.verification === 'not_verified' ? 'No verificado' : 'Evidencia operacional'} · {ref.observed_at}</small></div>)}
     {!selected && !refs.length && <p>Sin evidencia</p>}
     {dimension === 'A2' && data.populations.map(population => <p key={population.population_id}>Identidad de población: {population.population_id} · Alineación: {observationText(population.alignment_key)} · {population.subset_rule ?? 'Sin regla de subconjunto acreditada'}</p>)}
     {dimension === 'A3' && data.populations.map(population => <div key={population.population_id}>
@@ -101,112 +101,36 @@ function parameterRows(data: PreflightResponse, dimension: Dimension): Parameter
   return [];
 }
 
-function CompactValue({ value }: { value: JsonValue }) {
-  if (typeof value === 'string' && (/^[a-f0-9-]{32,}$/i.test(value))) {
-    return (
-      <div className="scc-compact-id">
-        <code title={value}>{value.slice(0, 8)}…</code>
-        <CopyText key={value} text={value} label="Copiar identificador" />
-        <details>
-          <summary>Valor completo</summary>
-          <code className="report-identifier">{value}</code>
-        </details>
-      </div>
-    );
-  }
-
+export function CompactValue({ value }: { value: JsonValue }) {
+  if (typeof value === 'string' && /^[a-f0-9-]{32,}$/i.test(value)) return <span className="scc-compact-id">
+    <code title={value} aria-label={value}>{value.slice(0, 8)}…{value.slice(-6)}</code>
+    <CopyText key={value} text={value} label="Copiar identificador" iconOnly />
+  </span>;
   if (value && typeof value === 'object') {
-    // 1. Los strings aquí deben ir en minúsculas y sin espacios
-    const valoresVacios = [null, undefined, '', 'sin evidencia', 'n/a'];
-
-    // 2. Filtramos
-    const entriesFiltradas = Object.entries(value).filter(([_, item]) => {
-      const valorAComparar = typeof item === 'string' ? item.trim().toLowerCase() : item;
-
-      return !valoresVacios.includes(valorAComparar);
-    });
-
-    // Entradas que NO queremos mostrar (las que están vacías)
-    const entriesVacias = Object.entries(value).filter(([_, item]) => {
-      const valorAComparar = typeof item === 'string' ? item.trim().toLowerCase() : item;
-      return valoresVacios.includes(valorAComparar);
-    });
-
-    // Si después de filtrar no queda nada, no renderizamos nada (return null)
-    if (entriesFiltradas.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="scc-wrapper">
-        <ul className="scc-composite-value" style={{ listStyleType: 'none', paddingLeft: 0 }}>
-          {entriesFiltradas.map(([key, item]) => (
-            <li key={key}>
-              {Array.isArray(value) ? null : <span className="scc-key">{key}: </span>}
-              <span className="scc-val">
-                <CompactValue value={item} />
-              </span>
-            </li>
-          ))}
-        </ul>
-        {/* Colapsable con los valores ignorados */}
-        {entriesVacias.length > 0 && (
-          <details style={{ marginTop: entriesFiltradas.length > 0 ? '8px' : '0' }}>
-            <summary style={{ cursor: 'pointer', color: '#666', fontSize: '0.9em' }}>
-              Valores n/a ({entriesVacias.length})
-            </summary>
-            <ul className="scc-composite-value" style={{ listStyleType: 'none', paddingLeft: 0, marginTop: '4px' }}>
-              {entriesVacias.map(([key, item]) => (
-                <li key={key}>
-                  {Array.isArray(value) ? null : <span className="scc-key">{key}: </span>}
-                  <span className="scc-val">
-                    <CompactValue value={item} />
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-      </div>
-    );
+    const entries = Object.entries(value);
+    if (!entries.length) return <span>Sin evidencia (sin entradas)</span>;
+    const list = (items: typeof entries) => <ul className="scc-composite-value">{items.map(([key, item]) => <li key={key}>
+      {!Array.isArray(value) && <span className="scc-key">{key}: </span>}
+      <div className="scc-val"><CompactValue value={item} /></div>
+    </li>)}</ul>;
+    return <div>{list(entries.slice(0, 6))}{entries.length > 6 && <details><summary>Más datos ({entries.length - 6})</summary>{list(entries.slice(6))}</details>}</div>;
   }
-
-  return <>{jsonText(value)}</>;
+  return <span className="scc-val">{value === '' ? 'Sin evidencia (vacío)' : jsonText(value)}</span>;
 }
 function ParameterValue({ value }: { value: Observation | undefined }) {
   return value?.state === 'known' ? <CompactValue value={value.value} /> : <span>{value ? observationText(value) : 'Sin evidencia'}</span>;
 }
-function EvaluationValue({ value }: { value: Observation | undefined }) {
-  if (value?.state !== 'known' || !value.value || typeof value.value !== 'object' || Array.isArray(value.value)) return <ParameterValue value={value} />;
-  const identity = value.value;
-  const id = identity.evaluation_id ?? identity.identity_id;
-  const attempt = identity.attempt_id ?? identity.source_assessment_attempt_id;
-  return <><CompactValue value={id ?? null} /><div className="scc-meta">{identity.source === 'evaluations' ? 'Evaluación' : 'Assessment'} · Intento: {attempt ? <CompactValue value={attempt} /> : identity.source === 'evaluations' && identity.source_assessment_attempt_id === null ? 'No vinculado (ver nota)' : 'Sin evidencia'}</div></>;
-}
-function CheckpointContext({ data, selection }: { data: PreflightResponse; selection: EffectiveSelection }) {
-  const epoch = projectField(data, 'A5', selection.selection_id, 'selected_epoch');
-  const phase = projectField(data, 'A5', selection.selection_id, 'phase');
-  return <>{epoch && <small> · época <ParameterValue value={epoch} /></small>}{phase && <small> · fase <ParameterValue value={phase} /></small>}</>;
-}
-function ConsolidatedFindings({ data, technical = false }: { data: PreflightResponse; technical?: boolean }) {
-  const sourceFindings = [...data.dimensions.flatMap(result => result.findings), ...(technical ? data.analyses.flatMap(result => result.findings) : [])];
+function ConsolidatedFindings({ data }: { data: PreflightResponse }) {
+  const sourceFindings = [...data.dimensions.flatMap(result => result.findings), ...data.analyses.flatMap(result => result.findings)];
   const findings = [...new Map([...sourceFindings].reverse().map(finding => [finding.reason_id, finding])).values()];
-  const differences = findings.filter(finding => finding.code.startsWith('CONFIGURATION_DIFFERENCE_'));
   const affected = (items: Finding[]) => data.selections.flatMap((selection, index) => items.some(item => item.affected_selection_ids.includes(selection.selection_id)) ? [`RUN ${String.fromCharCode(65 + index)}`] : []).join(', ');
   return <div className="scc-findings">
-    {!technical && differences.length > 0 && <details><summary>Diferencias experimentales detectadas · {new Set(differences.map(item => item.code)).size} parámetros · afecta a {affected(differences)}</summary><ul>{[...new Map(differences.map(item => [item.code, item])).values()].map(item => <li key={item.code}>{findingLabel(item)}</li>)}</ul></details>}
-    {groupWarnings(technical ? findings : findings.filter(item => !differences.includes(item))).map(items => <div key={items[0].reason_id}><p>{items[0].message} · afecta a {affected(items) || 'alcance indicado en la evidencia'}</p>{technical && <><p>{items[0].condition}</p><code className="report-identifier">{items[0].code} · Motivos: {items.map(item => item.reason_id).join(', ')} · Evidencia: {[...new Set(items.flatMap(item => item.evidence_ids))].join(', ')}</code><ul>{items.map(item => <li key={item.reason_id}><code>{item.reason_id}</code> · {affected([item])} · <code>{item.evidence_ids.join(', ')}</code></li>)}</ul></>}</div>)}
+    {groupWarnings(findings).map(items => <div key={items[0].reason_id}><p>{items[0].message} · afecta a {affected(items) || 'alcance indicado en la evidencia'}</p><p>{items[0].condition}</p><code className="report-identifier">{items[0].code} · Motivos: {items.map(item => item.reason_id).join(', ')} · Evidencia: {[...new Set(items.flatMap(item => item.evidence_ids))].join(', ')}</code><ul>{items.map(item => <li key={item.reason_id}><code>{item.reason_id}</code> · {affected([item])} · <code>{item.evidence_ids.join(', ')}</code></li>)}</ul></div>)}
   </div>;
 }
 
 function evidenceTarget(selectionId: string, reference: string) {
   return `scc-evidence-${encodeURIComponent(selectionId)}-${encodeURIComponent(reference)}`;
-}
-function EvidenceLinks({ data, dimension }: { data: PreflightResponse; dimension: Dimension }) {
-  return <div className="scc-meta">Evidencia: {data.selections.map((selection, index) => {
-    const refs = data.evidence.filter(ref => ref.source === dimension && ref.selection_ids.includes(selection.selection_id));
-    return <span key={selection.selection_id}> RUN {String.fromCharCode(65 + index)}: {refs.length ? refs.map(ref => <button className="ds-button" key={ref.evidence_id} onClick={() => openEvidenceTarget(document.getElementById(evidenceTarget(selection.selection_id, ref.evidence_id)))}>{ref.evidence_id}</button>) : <button className="ds-button" onClick={() => openEvidenceTarget(document.getElementById(evidenceTarget(selection.selection_id, dimension)))}>Detalle técnico</button>}</span>;
-  })}</div>;
 }
 function ConsolidatedDetail({ fields, data }: { fields: DetailField[]; data: PreflightResponse }) {
   const classified = classifyFields(fields);
@@ -228,10 +152,61 @@ function ConsolidatedDetail({ fields, data }: { fields: DetailField[]; data: Pre
   }
   return <div className="scc-consolidated-detail">
     {shared.length > 0 && <dl className="ds-dl ds-dl--rows">{shared.map(field => <div key={field.label}><dt>{field.label}</dt><dd><ParameterValue value={field.values[0]} /></dd></div>)}</dl>}
-    {other.length > 0 && <table className="report-data-table"><caption>Diferencias y evidencia parcial por RUN</caption><thead><tr><th scope="col">Campo</th>{data.selections.map((selection, i) => <th scope="col" key={selection.selection_id}>RUN {String.fromCharCode(65 + i)}</th>)}</tr></thead><tbody>{other.map(field => <tr key={field.label}><th scope="row">{field.label}</th>{field.values.map((value, i) => <td key={data.selections[i].selection_id} data-match={field.matches[i]}><ParameterValue value={value} /></td>)}</tr>)}</tbody></table>}
+    {other.length > 0 && <div className="report-table-scroll" tabIndex={0} role="region" aria-label="Diferencias por RUN"><table className="report-data-table"><caption>Diferencias y evidencia parcial por RUN</caption><thead><tr><th scope="col">Campo</th>{data.selections.map((selection, i) => <th scope="col" key={selection.selection_id}>RUN {String.fromCharCode(65 + i)}</th>)}</tr></thead><tbody>{other.map(field => <tr key={field.label}><th scope="row">{field.label}</th>{field.values.map((value, i) => <td key={data.selections[i].selection_id} data-match={field.matches[i]}><ParameterValue value={value} /></td>)}</tr>)}</tbody></table></div>}
     {[...missingGroups].map(([key, missing]) => <p key={key}>{missing.fields.join(', ')}: {missing.text} · {missing.runs.join(', ')}</p>)}
   </div>;
 }
+export function PartitionCards({ data }: { data: PreflightResponse }) {
+  const field = (source: Dimension, key: string, label: string): DetailField => ({ label, values: data.selections.map(selection => projectField(data, source, selection.selection_id, key)) });
+  const dataset = parameterRows(data, 'A1');
+  const partition = parameterRows(data, 'A2');
+  const cards: { title: string; fields: DetailField[] }[] = [
+    { title: 'Dataset', fields: dataset.slice(0, 3) },
+    { title: 'Partición', fields: [...dataset.slice(3, 6), partition[0]] },
+    { title: 'Distribución', fields: [field('A2', 'counts.train', 'TRAIN'), field('A2', 'counts.val', 'VAL'), field('A2', 'counts.test', 'TEST'), dataset[6]] },
+    { title: 'Materialización', fields: partition.filter(row => ['Estado de materialización', 'Reconciliación', 'Registros materializados', 'Materialización de la misma versión'].includes(row.label)) },
+    { title: 'Integridad', fields: [{ label: 'Número de verificaciones', values: data.selections.map(selection => {
+      const checks = projectField(data, 'A2', selection.selection_id, 'checks');
+      return checks?.state === 'known' && Array.isArray(checks.value) ? { ...checks, value: checks.value.length } : checks;
+    }) }, { label: 'Resultados registrados', values: data.selections.map(selection => {
+      const checks = projectField(data, 'A2', selection.selection_id, 'checks');
+      if (checks?.state !== 'known' || !Array.isArray(checks.value)) return checks;
+      const counts = { PASS: 0, FAIL: 0, 'Evidencia insuficiente': 0 };
+      for (const check of checks.value) {
+        const status = check && typeof check === 'object' && !Array.isArray(check) ? check.status : null;
+        counts[status === 'PASS' || status === 'FAIL' ? status : 'Evidencia insuficiente']++;
+      }
+      return checks.value.length ? { ...checks, value: counts } : undefined;
+    }) }] },
+  ];
+  return <section aria-label="Dataset y partición"><h3>A1 · Dataset y A2 · Partición</h3>
+    <div className="scc-partition-cards">{cards.map(card => <section className="ds-section" key={card.title}><h4>{card.title} {['Dataset', 'Partición'].includes(card.title) && data.dimensions.filter(item => item.dimension === (card.title === 'Dataset' ? 'A1' : 'A2')).map(item => <VerdictBadge key={item.scope.scope_id} verdict={item.verdict} />)}</h4><ConsolidatedDetail fields={card.fields} data={data} />{card.title === 'Integridad' && <details><summary>Comprobaciones registradas</summary><ConsolidatedDetail fields={[partition[2]]} data={data} /></details>}</section>)}
+      <section className="ds-section"><h4>Trazabilidad</h4><details><summary>Identificadores y fingerprints</summary><ConsolidatedDetail data={data} fields={[
+        partition[3], ...partition.filter(row => row.label.startsWith('Huella')),
+        field('A2', 'campaign_id', 'Campaña · procedencia'), field('A2', 'campaign_dataset_version_id', 'Versión de dataset de campaña'),
+      ]} /></details><p>Fuentes completas en Detalle técnico y trazabilidad.</p></section>
+    </div>
+    <p>La partición gobernada no acredita por sí sola el consumo individual de imágenes durante TRAIN. La población de evaluación alineada se documenta en A3.</p>
+    <ConsolidatedDetail fields={[partition[partition.length - 1]]} data={data} />
+  </section>;
+}
+
+export function MethodologicalWarnings({ data, findings }: { data: PreflightResponse; findings: Finding[] }) {
+  // Presentation aggregate only; individual scientific verdicts remain authoritative.
+  const states: string[] = [...data.dimensions, ...data.analyses].map(item => verdictText(item.verdict));
+  const state = ['NO_COMPARABLE', 'ERROR_DE_CONSULTA', 'EVIDENCIA_INSUFICIENTE', 'COMPARABLE_CON_ADVERTENCIAS', 'COMPARABLE'].find(item => states.includes(item)) ?? 'EVIDENCIA_INSUFICIENTE';
+  const warnings = findings.filter(item => data.summary.warning_reason_ids.includes(item.reason_id) && item.code !== 'CONFIGURATION_INCOMPLETE');
+  return <details className="ds-accordion"><summary><span className="scc-verdict scc-methodology-state" data-state={state}>Advertencias metodológicas y diagnóstico · {stateLabels[state]}</span></summary>
+    {groupWarnings(warnings).map(group => {
+      const finding = group[0];
+      const field = finding.code.startsWith('CONFIGURATION_DIFFERENCE_') ? finding.code.slice('CONFIGURATION_DIFFERENCE_'.length).toLowerCase() : '';
+      return <div key={finding.reason_id}>{field ? <div>{configurationLabels[field] ?? field}{data.selections.map((selection, i) => <Fragment key={selection.selection_id}> · RUN {String.fromCharCode(65 + i)}: <ParameterValue value={projectField(data, 'A4', selection.selection_id, field)} /></Fragment>)}</div>
+        : <p>{finding.code === 'DEVELOPMENT_VALIDATION' ? 'La VALIDATION final de desarrollo indicada en la evidencia histórica no equivale a TEST independiente. Las evaluaciones independientes seleccionadas conservan su propio split, propósito y protocolo en A6.' : findingLabel(finding)}</p>}</div>;
+    })}
+    {data.selections.some(selection => selection.split.state === 'known' && selection.split.value === 'val') && !warnings.some(item => item.code === 'DEVELOPMENT_VALIDATION') && <p>Las evaluaciones seleccionadas sobre VAL, incluidas las independientes, no equivalen a TEST independiente. Su propósito y protocolo se conservan en A6.</p>}
+  </details>;
+}
+
 function AvailabilityMatrix({ data }: { data: PreflightResponse }) {
   return <div className="report-table-scroll" tabIndex={0} role="region" aria-label="Disponibilidad por análisis"><table className="report-data-table scc-preflight-table"><caption>Diagnóstico por análisis · participantes: {data.selections.map((_, i) => `RUN ${String.fromCharCode(65 + i)}`).join(', ')}</caption>
     <thead><tr><th scope="col">Análisis</th><th scope="col">Estado</th><th scope="col">Advertencia principal</th>{data.selections.map(selection => <th scope="col" key={selection.selection_id}>RUN {String.fromCharCode(65 + data.selections.indexOf(selection))}</th>)}</tr></thead>
@@ -254,17 +229,11 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
       label, technical: false,
       values: data.selections.map(selection => projectField(data, 'A4', selection.selection_id, field))
     })) : parameterRows(data, dimension);
-    if (dimension === 'A2' && params[0]) {
-      const campaign = { label: 'campaign_id · procedencia', values: data.selections.map(selection => projectField(data, 'A2', selection.selection_id, 'campaign_id')) };
-      if (compareValues(campaign.values).group === 'Con diferencias') params[0].details = [campaign];
-    }
-    return params.map((row, index) => ({ ...row, dimension, ...compareValues(row.label === 'Evaluación e intento' ? row.values.map(evaluationComparison) : row.values), key: `${selectionKey}:${dimension}:${index}` }));
+    return params.filter(row => dimension !== 'A1' && dimension !== 'A2' && !row.technical).map((row, index) => ({ ...row, dimension, ...compareValues(row.values), key: `${selectionKey}:${dimension}:${index}` }));
   });
   return <>
     <p>Las diferencias experimentales no implican incompatibilidad. “Comparables” reúne parámetros cuya comparación requiere advertencias o evidencia adicional; cada celda conserva su estado.</p>
-    <p>{data.selections.length} RUN seleccionados · {data.selections.map((selection, index) => `RUN ${String.fromCharCode(65 + index)}: ${architecture(data, selection)}`).join(' · ')}</p>
-    <div className="scc-dimension-summary">{data.dimensions.map(result => <span key={result.scope.scope_id}>{result.dimension} · <VerdictBadge verdict={result.verdict} /></span>)}</div>
-    <ConsolidatedFindings data={data} />
+    <PartitionCards data={data} />
     {['Con diferencias', 'Comparables', 'Sin diferencias'].map(group => {
       const shared = group === 'Sin diferencias';
       const partial = group === 'Comparables';
@@ -279,31 +248,30 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
             {(Object.keys(dimensions) as Dimension[]).map(dimension => {
               const moduleRows = groupRows.filter(row => row.dimension === dimension);
               return moduleRows.length > 0 && <tbody key={dimension}>{moduleRows.map((row, index) => <Fragment key={row.key}>
-                <tr>{shared && index === 0 && <th scope="rowgroup" rowSpan={moduleRows.length + 1 + moduleRows.filter(item => item.details && expanded.includes(item.key)).length}><span className="scc-module-badge">{dimension}</span><small>{dimensions[dimension]}</small></th>}
+                <tr>{shared && index === 0 && <th scope="rowgroup" rowSpan={moduleRows.length + moduleRows.filter(item => item.details && expanded.includes(item.key)).length}><span className="scc-module-badge">{dimension}</span><small>{dimensions[dimension]}</small></th>}
                   <th scope="row">{row.details ? <button className="ds-button" aria-expanded={expanded.includes(row.key)} onClick={() => setExpanded(old => old.includes(row.key) ? old.filter(k => k !== row.key) : [...old, row.key])}>{row.dimension} · {row.label}</button> : <>{row.dimension} · {row.label}</>}{row.dimension === 'A2' && row.details && <small> · Diferencia de procedencia</small>}</th>
                   {partial && <td>{row.values.some(value => value?.state === 'query_error') ? 'ERROR_DE_CONSULTA' : 'Evidencia parcial'}</td>}
                   {shared ? <td>{row.details && row.dimension === 'A6' ? <ConsolidatedDetail fields={row.details.slice(0, 5)} data={data} /> : <ParameterValue value={row.values[0]} />}<span className="scc-equal">{data.selections.map((_, i) => String.fromCharCode(65 + i)).join('=')}</span></td>
                     : row.details && row.dimension === 'A6' ? <td colSpan={data.selections.length}><ConsolidatedDetail fields={row.details.slice(0, 5)} data={data} /></td>
                       : row.values.every(value => !value || value.state === 'unknown' || (value.state === 'known' && value.value === null)) ? <td colSpan={data.selections.length}>Sin evidencia suficiente en los {data.selections.length} RUN</td>
-                        : row.values.map((value, i) => <td key={data.selections[i].selection_id} data-match={row.matches[i]} data-match-tone={row.matches[i] ? [...new Set(row.matches.filter(Boolean))].indexOf(row.matches[i]) % 2 : undefined} title={row.matches[i] ? `Coinciden: ${row.matches[i]!.split('').join('=')}` : undefined}>{row.label === 'Evaluación e intento' ? <EvaluationValue value={value} /> : <ParameterValue value={value} />}
-                          {row.label === 'Checkpoint atribuido' && <CheckpointContext data={data} selection={data.selections[i]} />}
-                          {row.label === 'Evaluación e intento' && <ParameterValue value={projectField(data, 'A6', data.selections[i].selection_id, 'evaluation_role')} />}
+                        : row.values.map((value, i) => <td key={data.selections[i].selection_id} data-match={row.matches[i]} data-match-tone={row.matches[i] ? [...new Set(row.matches.filter(Boolean))].indexOf(row.matches[i]) % 2 : undefined} title={row.matches[i] ? `Coinciden: ${row.matches[i]!.split('').join('=')}` : undefined}><ParameterValue value={value} />
+
                         </td>)}
                 </tr>
                 {row.details && expanded.includes(row.key) && <tr className="scc-expanded-row"><td colSpan={columns - (shared ? 1 : 0)}><ConsolidatedDetail fields={row.dimension === 'A6' ? row.details.slice(5) : row.details} data={data} /></td></tr>}
-              </Fragment>)}<tr><td colSpan={columns - (shared ? 1 : 0)}><EvidenceLinks data={data} dimension={dimension} /></td></tr></tbody>;
+              </Fragment>)}</tbody>;
             })}
           </table></div>
           {groupRows.length === 0 && <p>No hay parámetros en este grupo.</p>}
-          <p className="scc-meta">{shared ? 'Valores acreditados compartidos entre los RUN seleccionados. Un consumo registrado de cero indica que no hay registros de consumo individual en la fuente consultada; no demuestra ausencia de entrenamiento.' : partial ? 'La ausencia uniforme de evidencia no discrimina entre RUN, pero limita la comparación de este parámetro. Los errores de consulta conservan su condición técnica.' : 'El checksum registrado no acredita verificación física. La época seleccionada corresponde al checkpoint, no al total ejecutado. Una evaluación VALIDATION histórica puede no tener intento independiente vinculado; VALIDATION final no equivale a TEST independiente.'}</p>
+          <p className="scc-meta">{shared ? 'Valores acreditados compartidos entre los RUN seleccionados. Un consumo registrado de cero indica que no hay registros de consumo individual en la fuente consultada; no demuestra ausencia de entrenamiento.' : partial ? 'La ausencia uniforme de evidencia no discrimina entre RUN, pero limita la comparación de este parámetro. Los errores de consulta conservan su condición técnica.' : 'La época seleccionada corresponde al checkpoint, no al total ejecutado.'}</p>
         </>}
       </section>;
     })}
     <ComparisonPython data={data} />
-    <details className="ds-accordion"><summary>Detalle técnico y trazabilidad</summary>
-      <details><summary>Identificadores y fuentes A1–A6</summary>{data.selections.map(selection => <div key={selection.selection_id}><code className="report-identifier">{selection.training_run_id}</code><CopyText text={selection.training_run_id} label="Copiar UUID" />{(Object.keys(dimensions) as Dimension[]).map(dimension => <div key={dimension} id={evidenceTarget(selection.selection_id, dimension)} tabIndex={-1}><h4>{dimension} — {dimensions[dimension]}</h4><EvidenceCell data={data} selection={selection} dimension={dimension} /></div>)}</div>)}</details>
+    <details className="ds-accordion"><summary>Detalle técnico y trazabilidad</summary><p>Consulta: {data.generated_at}</p>{data.consistency.limitations.map(limit => <p key={limit}>{limit}</p>)}
+      <details><summary>Identificadores y fuentes A1–A6</summary>{data.selections.map((selection, index) => <section key={selection.selection_id}><h3>Trazabilidad técnica · RUN {String.fromCharCode(65 + index)}</h3><CompactValue value={selection.training_run_id} />{(Object.keys(dimensions) as Dimension[]).map(dimension => <div key={dimension} id={evidenceTarget(selection.selection_id, dimension)} tabIndex={-1}><h4>{dimension} — {dimensions[dimension]} {data.dimensions.filter(item => item.dimension === dimension).map(item => <VerdictBadge key={item.scope.scope_id} verdict={item.verdict} />)}</h4><EvidenceCell data={data} selection={selection} dimension={dimension} /></div>)}{data.evidence.filter(ref => !(ref.source in dimensions) && ref.selection_ids.includes(selection.selection_id)).map(ref => <div key={ref.evidence_id}><h4>{ref.source}</h4><ParameterValue value={ref.value} /><small>{ref.evidence_id} · {ref.operation} · {ref.verification} · {ref.observed_at}</small></div>)}</section>)}</details>
       <details><summary>Diagnóstico técnico por análisis</summary>
-        <ConsolidatedFindings data={data} technical />
+        <ConsolidatedFindings data={data} />
         <AvailabilityMatrix data={data} /></details>
       {data.technical_errors.map(error => <p key={error.error_id}>{error.error_id} · {error.message} · {error.operation}</p>)}
     </details>
@@ -327,7 +295,6 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections }: { i
   const [revision, setRevision] = useState(0);
   const [xaiRevision, setXaiRevision] = useState(0);
   const [detailOpen, setDetailOpen] = useState(false);
-  const detailRef = useRef<HTMLDetailsElement>(null);
   const key = maximum !== undefined && ids.length >= 2 && ids.length <= maximum ? JSON.stringify(['preflight', datasource, selections, revision]) : null;
   const { data, error, loading } = useComparisonEvidence(cache, key, () => api.getComparisonPreflight(datasource, { selections }));
   const refresh = () => { cache.clear(); setRevision(value => value + 1); setXaiRevision(value => value + 1); };
@@ -339,20 +306,16 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections }: { i
       {loading && <p role="status">Consultando Preflight…</p>}
       {error ? <ErrorMessage error={error} retry={refresh} /> : null}
       {data && <>
+        <p className="scc-meta">{data.evidence.length} referencias</p>
         <p>{data.selections.length} TRAIN participantes · {data.selections.map(selection => architecture(data, selection)).join(' / ')}</p>
         <p>{data.populations.find(p => p.complete.state === 'known' && p.complete.value === true)?.intersection_unique.state === 'known'
           ? `Población común acreditada para la selección. Consulte cobertura y resultados en cada módulo.`
           : 'La comparabilidad se determina por módulo; los resultados individuales permanecen disponibles.'}</p>
-        <details><summary>Advertencias metodológicas y diagnóstico</summary>
-          {groupWarnings(findings.filter(item => data.summary.warning_reason_ids.includes(item.reason_id))).map(group => <p key={group[0].reason_id}>{findingLabel(group[0])}</p>)}
-          {data.consistency.limitations.map(limit => <p key={limit}>{limit}</p>)}
-          <p>{data.evidence.length} referencias · Consulta: {data.generated_at}</p>
-        </details>
+        <MethodologicalWarnings data={data} findings={findings} />
         {data.technical_errors.map(item => <p role="alert" key={item.error_id}>ERROR_DE_CONSULTA · {item.message} · {item.operation} · {item.error_id}</p>)}
       </>}
-      <button className="ds-button" onClick={() => { setDetailOpen(true); detailRef.current?.querySelector('summary')?.focus(); }}>¿Qué estamos comparando?</button>
     </section>
-    <details ref={detailRef} className="ds-accordion" open={detailOpen} onToggle={event => setDetailOpen(event.currentTarget.open)}><summary>01 — ¿Qué estamos comparando?</summary>
+    <details className="ds-accordion" open={detailOpen} onToggle={event => setDetailOpen(event.currentTarget.open)}><summary>01 — ¿Qué estamos comparando?</summary>
       {data ? <PreflightEvidence data={data} /> : <p>El detalle utiliza la misma consulta del resumen metodológico.</p>}
     </details>
     <ScientificResults cache={cache} datasource={datasource} selections={selections} evidenceRevision={revision} />

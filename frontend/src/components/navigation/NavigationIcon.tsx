@@ -1,6 +1,7 @@
 import type { NavigationIconName } from './navigationConfig';
 
-const paths: Record<NavigationIconName, string[]> = {
+const paths: Record<NavigationIconName | 'copy', string[]> = {
+  copy: ['M9 9h11v11H9z', 'M5 15H4V4h11v1'],
   dashboard: ['M4 4h6v6H4z', 'M14 4h6v4h-6z', 'M14 12h6v8h-6z', 'M4 14h6v6H4z'],
   activity: ['M4 12h3l2-6 4 12 2-6h5'],
   evaluation: ['M5 4h14v16H5z', 'm8 9 2 2 4-5', 'M8 8h2', 'M8 16h7'],
@@ -15,7 +16,7 @@ const paths: Record<NavigationIconName, string[]> = {
   logs: ['M5 4h14v16H5z', 'M9 8h6', 'M9 12h6', 'M9 16h3'],
 };
 
-export function NavigationIcon({ name }: { name: NavigationIconName }) {
+export function NavigationIcon({ name }: { name: NavigationIconName | 'copy' }) {
   return <svg className="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     {paths[name].map((path, index) => <path key={index} d={path} />)}

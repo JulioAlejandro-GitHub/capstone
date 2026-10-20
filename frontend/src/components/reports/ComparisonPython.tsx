@@ -1,3 +1,4 @@
+import { NavigationIcon } from '../navigation/NavigationIcon';
 import { useState } from 'react';
 import type { PreflightResponse, JsonValue } from '../../types/scientificPreflight';
 
@@ -32,11 +33,11 @@ export function configurationCode(data: PreflightResponse, selectionId: string):
   return '# Configuración persistida · proyección pública A4\n# No acredita por sí sola la ejecución efectiva ni reconstruye capas.\n' + (blocks.join('\n\n') || '# Sin parámetros acreditados disponibles.');
 }
 
-export function CopyText({ text, label }: { text: string; label: string }) {
+export function CopyText({ text, label, iconOnly = false }: { text: string; label: string; iconOnly?: boolean }) {
   const [status, setStatus] = useState('');
-  return <span className="scc-copy"><button type="button" className="ds-button" data-size="compact" onClick={async () => {
+  return <span className="scc-copy"><button type="button" className="ds-button" data-size="compact" aria-label={label} title={label} onClick={async () => {
     try { await navigator.clipboard.writeText(text); setStatus('Copiado'); } catch { setStatus('No se pudo copiar. Selecciona el texto para copiarlo.'); }
-  }}>{label}</button><span role="status">{status}</span></span>;
+  }}>{iconOnly ? <NavigationIcon name="copy" /> : label}</button><span role="status">{status}</span>{iconOnly && status.startsWith('No se pudo') && <code className="report-identifier">{text}</code>}</span>;
 }
 export function ComparisonPython({ data }: { data: PreflightResponse }) {
   const [selected, setSelected] = useState(data.selections[0]?.selection_id ?? '');

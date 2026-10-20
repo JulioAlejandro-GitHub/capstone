@@ -8556,33 +8556,3 @@ a.uploaded-image-cell:hover small {
     white-space: normal;
   }
 }
-
-
-.scc-composite-value .scc-key {
-  color: var(--scc-key-color, #1f6feb);
-}
-
-.scc-composite-value .scc-val {
-  color: var(--scc-val-color, #222);
-}
-
-.scc-composite-value li {
-  cursor: pointer;
-  /* Cursor de mano */
-  padding: 4px 8px;
-  /* Espacio interno para que el hover se vea bien */
-  border-radius: 4px;
-  /* Bordes redondeados opcionales */
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-
-  /* Borde transparente por defecto para evitar que el texto "salte" 
-     cuando aparezca el borde en el hover */
-  border: 1px solid transparent;
-}
-
-.scc-composite-value li:hover {
-  background-color: #e2e8f0;
-  /* Color de fondo más oscuro (ajusta a tu gusto) */
-  border: 1px solid #94a3b8;
-  /* Color y grosor del borde */
-}

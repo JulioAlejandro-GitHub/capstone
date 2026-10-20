@@ -87,8 +87,8 @@ for (const count of [2, 3, 7]) test(`A1–A6 render ${count} TRAIN columns, part
   const load = loader({ '../../auth': {}, '../../services/api': {}, './AssessmentXAI': {} });
   const { PreflightEvidence } = load('components/reports/ScientificPreflight.tsx');
   const html = renderToStaticMarkup(React.createElement(PreflightEvidence, { data: fixture(count) }));
-  assert.equal((html.match(/scope="col"/g) ?? []).length, 3 * count + 6);
-  for (const value of ['A1','A2','A3','A4','A5','A6','Curvas de aprendizaje','Métricas VAL/TEST','Consenso y desacuerdo','XAI','Embeddings','PCA','UMAP','CKA','Sin evidencia','No verificado','referencia-individual','random_seed: 0']) assert.ok(html.includes(value), value);
+  assert.equal((html.match(/scope="col"/g) ?? []).length, 4 * count + 7);
+  for (const value of ['A1','A2','A3','A4','A5','A6','Curvas de aprendizaje','Métricas VAL/TEST','Consenso y desacuerdo','XAI','Embeddings','PCA','UMAP','CKA','Sin evidencia','No verificado','referencia-individual','random_seed: ']) assert.ok(html.includes(value), value);
   assert.doesNotMatch(html, /Comparación controlada válida|Protocolo TESTED/);
 });
 test('observation states preserve not_checked, unknown, non-applicable and query_error', () => {
@@ -264,9 +264,9 @@ for (const count of [2, 3, 4]) test(`UX matrix preserves ${count} aliases and ex
     assert.ok(!head.includes(selection.training_run_id));
     assert.ok(html.includes(selection.training_run_id));
   });
-  assert.match(html, /random_seed: 0/);
+  assert.match(html, /random_seed: /);
   assert.match(html, /Sin diferencias/);
-  assert.match(html, /Copiar UUID/);
+  assert.match(html, /Trazabilidad técnica/);
   assert.match(html, /Ver modelo en Python/);
   assert.match(html, /Comparable con advertencias/);
   assert.match(html, /COMPARABLE_CON_ADVERTENCIAS/);
@@ -471,11 +471,14 @@ test('concrete optimizer/checkpoint/evaluation evidence and consolidated warning
   });
   const {PreflightEvidence} = loader({'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
   const html = renderToStaticMarkup(React.createElement(PreflightEvidence,{data}));
-  assert.match(html,/época/); assert.match(html,/fase/); assert.match(html,/Valor completo/); assert.match(html,/Copiar identificador/);
+  assert.match(html,/época/); assert.match(html,/phase/); assert.doesNotMatch(html,/Valor completo/); assert.match(html,/Copiar identificador/);
   assert.match(html,/afecta a RUN A, RUN B, RUN C, RUN D/);
-  assert.equal((html.match(/VALIDATION final de desarrollo;/g)||[]).length,2); // summary + secondary original cause
+  assert.equal((html.match(/VALIDATION final de desarrollo;/g)||[]).length,1); // consolidated original cause in technical trace
   for (let i=0;i<4;i++) { assert.ok(html.includes(`reason-${i}`)); assert.ok(html.includes(`evaluation-${i}`)); }
   assert.match(html,/Detalle técnico y trazabilidad/);
+  const matrix=html.split('<summary>Detalle técnico y trazabilidad</summary>')[0];
+  assert.doesNotMatch(matrix, /A5 · Checkpoint atribuido|A5 · Checksum registrado|A6 · Evaluación e intento/);
+  for(let i=0;i<4;i++) assert.ok(html.includes(`${i}aaaaaaa-1234-1234-1234-123456789012`));
   assert.doesNotMatch(html,/<td>Identidad registrada|<td>Configuración persistida/);
 });
 
@@ -498,8 +501,8 @@ for (const count of [2,3,4]) test(`A6 consolidates structured fields and provena
   for (const field of ['protocol_hash','evaluation_id','checkpoint_artifact_id','source_assessment_attempt_id']) assert.ok(html.includes(field),field);
   for (let i=0;i<count;i++) assert.ok(html.includes(`evaluation-${i}`));
   find(tree,n=>n.type === 'button' && n.props.children?.[0]==='Sin diferencias').props.onClick();tree=render();
-  find(tree,n=>n.type === 'button' && n.props.children?.includes('Partición evaluada')).props.onClick();tree=render();
-  html=renderToStaticMarkup(React.createElement(React.Fragment,null,...nodes(tree).filter(n=>n.props?.className === 'scc-expanded-row')));
+  const cards = find(tree,n=>n.type?.name === 'PartitionCards');
+  html=renderToStaticMarkup(React.createElement(cards.type,cards.props));
   assert.ok(html.includes('campaign-0'));assert.ok(html.includes('procedencia'));
   assert.ok(!html.includes('campaign_snapshot'));
   data.selections[0]={...data.selections[0],evaluation:known({evaluation_id:'new-selection'})}; tree=render();
@@ -536,21 +539,109 @@ test('availability matrix preserves backend verdicts, individual errors and miss
   assert.ok(!matrix.includes('train-0'));
 });
 
-test('evidence buttons resolve actual references to their RUN without fixed evidence indexes', () => {
-  const data=fixture(2); const targets=[];
+test('technical registry preserves exact references and RUN associations after matrix links are removed', () => {
+  const data=fixture(2);
   data.evidence[0].evidence_id='arbitrary:reference/a';
   data.evidence[1].evidence_id='arbitrary:reference/b';
-  const h=harness();
-  const {PreflightEvidence}=loader({react:h.react,'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}},{document:{getElementById:id=>{targets.push(id);return null;}}})('components/reports/ScientificPreflight.tsx');
-  const tree=h.render(()=>PreflightEvidence({data}));
-  const links=nodes(tree).filter(n=>n.type?.name==='EvidenceLinks' && n.props.dimension==='A4')[0];
-  const buttons=nodes(links.type(links.props)).filter(n=>n.type==='button');
-  buttons.forEach(button=>button.props.onClick());
+  const {PreflightEvidence}=loader({'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
   const html=renderToStaticMarkup(React.createElement(PreflightEvidence,{data}));
+  const [matrix, trace] = html.split('<summary>Detalle técnico y trazabilidad</summary>');
+  assert.doesNotMatch(matrix, /Evidencia: RUN|scc-dimension-summary|[0-9] RUN seleccionados/);
   for (let i=0;i<2;i++) {
-    assert.ok(targets[i].includes(encodeURIComponent(data.selections[i].selection_id)));
-    assert.ok(targets[i].includes(encodeURIComponent(data.evidence[i].evidence_id)));
-    assert.ok(html.includes(`id="${targets[i]}"`));
+    assert.ok(trace.includes(`scc-evidence-${encodeURIComponent(data.selections[i].selection_id)}-${encodeURIComponent(data.evidence[i].evidence_id)}`));
+    assert.ok(trace.includes(data.evidence[i].operation));
   }
-  h.dispose();
+});
+
+const presentation = () => loader({'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
+const plain = html => html.replace(/<[^>]*>/g, '');
+
+test('methodological differences use real projected values for every participant; missing configuration stays in A4', () => {
+  const data = fixture(4);
+  const fields = {random_seed:[11,47,8,0], max_epochs:[40,3,20,8], l2:[.001,.0001,0,.1]};
+  const findings = Object.keys(fields).map(field => ({reason_id:field, code:`CONFIGURATION_DIFFERENCE_${field.toUpperCase()}`, kind:'difference', message:'generic',condition:'actual',affected_selection_ids:data.selections.map(s=>s.selection_id),evidence_ids:['original']}));
+  findings.push({reason_id:'missing',code:'CONFIGURATION_INCOMPLETE',kind:'missing',message:'Configuración no acreditada: internal_preprocessing',condition:'missing',affected_selection_ids:['train:0'],evidence_ids:['original']});
+  data.dimensions[3].findings = findings;
+  data.summary.warning_reason_ids = findings.map(f=>f.reason_id);
+  data.evidence.forEach((ref,i)=>Object.entries(fields).forEach(([field,values])=>ref.value.value[field]=values[i]));
+  const {MethodologicalWarnings,PreflightEvidence}=presentation();
+  const html = renderToStaticMarkup(React.createElement(MethodologicalWarnings,{data,findings}));
+  for (const [label, values] of [['Semilla',fields.random_seed],['Épocas máximas',fields.max_epochs],['Regularización L2',fields.l2]]) {
+    assert.ok(plain(html).includes(label+values.map((value,i)=>` · RUN ${String.fromCharCode(65+i)}: ${value}`).join('')));
+  }
+  assert.doesNotMatch(html,/Configuración experimental incompleta|diferencia experimental|Solamente existe/);
+  assert.match(html,/incluidas las independientes/);
+  const detail=renderToStaticMarkup(React.createElement(PreflightEvidence,{data}));
+  assert.match(detail,/Preprocesamiento interno/); assert.match(detail,/internal_preprocessing/);
+});
+
+for (const state of ['COMPARABLE','COMPARABLE_CON_ADVERTENCIAS','NO_COMPARABLE','EVIDENCIA_INSUFICIENTE','ERROR_DE_CONSULTA']) test(`methodological title preserves accessible state ${state}`,()=>{
+  const data=fixture();
+  [...data.dimensions,...data.analyses].forEach(item=>item.verdict={evaluation_status:state==='ERROR_DE_CONSULTA'?'not_evaluated':'evaluated',scientific_state:state==='ERROR_DE_CONSULTA'?null:state,error_ids:[]});
+  const html=renderToStaticMarkup(React.createElement(presentation().MethodologicalWarnings,{data,findings:[]}));
+  assert.ok(html.includes(`data-state="${state}"`)); assert.match(html,/<details[^>]*><summary>/);
+});
+
+test('structured values preserve nulls, false, zero, empty objects, long strings and collapsed list entries',()=>{
+  const {CompactValue}=presentation();
+  const value={missing:null, zero:0, disabled:false,empty:'',object:{},array:Array.from({length:12},(_,i)=>`entry-${i}`),long:'x'.repeat(400)};
+  const html=renderToStaticMarkup(React.createElement(CompactValue,{value}));
+  for(const text of ['missing:', 'Sin evidencia','zero:','disabled:','No','sin entradas','Más datos','entry-11','x'.repeat(400)]) assert.ok(html.includes(text),text);
+  assert.doesNotMatch(html,/style=|cursor|Valor completo/);
+});
+
+test('compact identifier copies the complete original with accessible icon, success and failure fallback',async()=>{
+  const id='338136db-a207-47fc-bbf3-d17ce85c0dc2';
+  const html=renderToStaticMarkup(React.createElement(presentation().CompactValue,{value:id}));
+  assert.ok(html.includes('338136db…5c0dc2')); assert.ok(html.includes(`title="${id}"`));
+  assert.match(html,/aria-label="Copiar identificador"/);assert.match(html,/<svg[^>]*aria-hidden="true"/);assert.doesNotMatch(html,/Valor completo/);
+  const h=harness();let copied;let fail=false;
+  const {CopyText}=loader({react:h.react},{navigator:{clipboard:{writeText:async text=>{if(fail)throw Error();copied=text;}}}})('components/reports/ComparisonPython.tsx');
+  const props={text:id,label:'Copiar identificador',iconOnly:true};
+  let tree=h.render(()=>CopyText(props));await find(tree,n=>n.type==='button').props.onClick();
+  assert.equal(copied,id);tree=h.render(()=>CopyText(props));assert.equal(find(tree,n=>n.props?.role==='status').props.children,'Copiado');
+  fail=true;await find(tree,n=>n.type==='button').props.onClick();tree=h.render(()=>CopyText(props));
+  assert.equal(find(tree,n=>n.type==='code').props.children,id);h.dispose();
+});
+
+function governedFixture() {
+  const data=fixture();
+  data.selections.forEach((s,i)=>{
+    s.dataset_version_id=known('11111111-2222-3333-4444-555555555555');
+    data.evidence.push({...data.evidence[i],source:'A1',evidence_id:`dataset-${i}`,value:known({name:'Shared governed dataset',status:'ready',random_seed:11,grouping_strategy:'patient',split_algorithm:'stratified',source_record_count:100})});
+    data.evidence.push({...data.evidence[i],source:'A2',evidence_id:`split-${i}`,value:known({counts:{train:70,val:20,test:10},checks:[{check_name:'identity',status:'PASS',observed_value:0,expected_value:0}],consumed_images:0})});
+  });
+  return data;
+}
+test('partition cards show common data once, structured checks and explicit dataset/split differences',()=>{
+  const {PartitionCards}=presentation();const data=governedFixture();
+  let html=renderToStaticMarkup(React.createElement(PartitionCards,{data}));
+  assert.equal((html.match(/Shared governed dataset/g)||[]).length,1);
+  for(const label of ['Dataset','Partición','Distribución','Materialización','Integridad','Trazabilidad','TRAIN','VAL','TEST','PASS','Número de verificaciones']) assert.ok(html.includes(label));
+  assert.match(html,/no acredita por sí sola el consumo/);assert.doesNotMatch(html,/\{"counts"/);
+  data.selections[1].dataset_version_id=known('different-dataset');data.selections[1].split=known('test');
+  html=renderToStaticMarkup(React.createElement(PartitionCards,{data}));
+  assert.match(html,/Diferencias y evidencia parcial por RUN/);assert.match(html,/RUN A/);assert.match(html,/RUN B/);assert.match(html,/different-dataset/);
+});
+test('missing and failed integrity checks never become PASS',()=>{
+  const data=fixture();
+  const {PartitionCards}=presentation();let html=renderToStaticMarkup(React.createElement(PartitionCards,{data}));
+  assert.doesNotMatch(html,/PASS/);assert.match(html,/Sin evidencia/);
+  data.evidence.push({...data.evidence[0],source:'A2',value:{state:'query_error',error_ids:['sql-error']}});
+  html=renderToStaticMarkup(React.createElement(PartitionCards,{data}));assert.match(html,/ERROR_DE_CONSULTA/);assert.match(html,/sql-error/);assert.doesNotMatch(html,/PASS/);
+});
+test('methodological summary retains dynamic references and refresh without duplicated navigation or SQL date',async()=>{
+  const data=fixture();data.consistency.limitations=['El snapshot SQL no verifica bytes de archivos.'];
+  const s=screen({getComparisonPreflight:async()=>data});s.render();await flush();const tree=s.render();
+  const summary=find(tree,n=>n.props?.['aria-label']==='Resumen metodológico');
+  const html=renderToStaticMarkup(summary);
+  assert.match(html,/2 referencias/);assert.match(html,/2 TRAIN participantes/);assert.match(html,/Actualizar evidencia/);
+  assert.doesNotMatch(html,/Consulta:|snapshot SQL|¿Qué estamos comparando\?/);s.h.dispose();
+});
+test('structured value CSS is scoped, tokenized, responsive and respects reduced motion',()=>{
+  const css=readFileSync(resolve(root,'styles/report-components.css'),'utf8').split('/* SCC-UI-PREFLIGHT.2:')[1];
+  assert.match(css,/repeat\(auto-fit, minmax\(min\(100%, 280px\), 1fr\)\)/);
+  assert.match(css,/prefers-reduced-motion: reduce/);assert.doesNotMatch(css,/#[a-f\d]{3,8}\b|cursor:\s*pointer/);
+  assert.doesNotMatch(readFileSync(resolve(root,'styles.css'),'utf8'),/^\.scc-composite-value/m);
+  for(const selector of ['.scc-key','.scc-val','li:hover'])assert.ok(css.includes(selector));
 });
