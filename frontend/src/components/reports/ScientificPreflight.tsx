@@ -82,8 +82,8 @@ interface ParameterRow { label: string; technical?: boolean; values: (Observatio
 function parameterRows(data: PreflightResponse, dimension: Dimension): ParameterRow[] {
   const selected = (label: string, field: 'dataset_version_id' | 'split' | 'checkpoint' | 'evaluation', technical = false) => ({ label, technical, values: data.selections.map(selection => selection[field]) });
   const projected = (source: Dimension, field: string, label: string) => ({ label, values: data.selections.map(selection => projectField(data, source, selection.selection_id, field)) });
-  if (dimension === 'A1') return [selected('Versión del dataset', 'dataset_version_id', true), ...Object.entries({name:'Dataset',status:'Estado del dataset',grouping_strategy:'Estrategia',split_algorithm:'Algoritmo de split',random_seed:'Semilla de split',source_record_count:'Registros oficiales'}).map(([field,label]) => projected('A1',field,label))];
-  if (dimension === 'A2') return [selected('Partición evaluada', 'split'), projected('A2','counts','Particiones oficiales'), projected('A2','checks','Controles de validación del split'), ...Object.entries({materialization_id: 'Materialización', materialization_status: 'Estado de materialización', reconciliation_status: 'Reconciliación', record_count: 'Registros materializados', materialization_dataset_matches: 'Materialización de la misma versión', 'campaign_snapshot.clinical_identity_fingerprint': 'Huella de identidad clínica', 'campaign_snapshot.record_assignment_fingerprint': 'Huella de asignación de registros', 'campaign_snapshot.source_population_fingerprint': 'Huella de población fuente', 'campaign_snapshot.patient_assignment_fingerprint': 'Huella de asignación de pacientes', consumed_images: 'Consumo registrado de imágenes'}).map(([field, label]) => projected('A2', field, label))];
+  if (dimension === 'A1') return [selected('Versión del dataset', 'dataset_version_id', true), ...Object.entries({ name: 'Dataset', status: 'Estado del dataset', grouping_strategy: 'Estrategia', split_algorithm: 'Algoritmo de split', random_seed: 'Semilla de split', source_record_count: 'Registros oficiales' }).map(([field, label]) => projected('A1', field, label))];
+  if (dimension === 'A2') return [selected('Partición evaluada', 'split'), projected('A2', 'counts', 'Particiones oficiales'), projected('A2', 'checks', 'Controles de validación del split'), ...Object.entries({ materialization_id: 'Materialización', materialization_status: 'Estado de materialización', reconciliation_status: 'Reconciliación', record_count: 'Registros materializados', materialization_dataset_matches: 'Materialización de la misma versión', 'campaign_snapshot.clinical_identity_fingerprint': 'Huella de identidad clínica', 'campaign_snapshot.record_assignment_fingerprint': 'Huella de asignación de registros', 'campaign_snapshot.source_population_fingerprint': 'Huella de población fuente', 'campaign_snapshot.patient_assignment_fingerprint': 'Huella de asignación de pacientes', consumed_images: 'Consumo registrado de imágenes' }).map(([field, label]) => projected('A2', field, label))];
   if (dimension === 'A6') {
     const fields = evaluationDetails(data);
     const scientific = fields.slice(0, 8);
@@ -94,16 +94,83 @@ function parameterRows(data: PreflightResponse, dimension: Dimension): Parameter
       return { state: 'known', value: Object.fromEntries(entries.map(([label, value]) => [label, value?.state === 'known' ? value.value : null])), evidence_ids: [] };
     });
     return [selected('Evaluación e intento', 'evaluation', true), projected('A6', 'protocol_hash', 'Huella de protocolo'),
-      { label: 'Protocolo y regla de decisión', values, details: fields }];
+    { label: 'Protocolo y regla de decisión', values, details: fields }];
   }
-  if (dimension === 'A5') return [selected('Checkpoint atribuido', 'checkpoint', true), ...Object.entries({selected_epoch:'Época seleccionada',policy:'Política de selección',metric:'Métrica de selección',checksum_registered:'Checksum registrado (sin verificación física)'}).map(([field,label]) => ({...projected('A5',field,label), technical: field === 'checksum_registered'})), ...(['registered', 'lineage'] as const).map(field => ({ label: field === 'registered' ? 'Registro de checkpoint' : 'Linaje', values: data.selections.map(selection => data.checkpoints.find(check => check.selection_id === selection.selection_id)?.[field]) }))];
+  if (dimension === 'A5') return [selected('Checkpoint atribuido', 'checkpoint', true), ...Object.entries({ selected_epoch: 'Época seleccionada', policy: 'Política de selección', metric: 'Métrica de selección', checksum_registered: 'Checksum registrado (sin verificación física)' }).map(([field, label]) => ({ ...projected('A5', field, label), technical: field === 'checksum_registered' })), ...(['registered', 'lineage'] as const).map(field => ({ label: field === 'registered' ? 'Registro de checkpoint' : 'Linaje', values: data.selections.map(selection => data.checkpoints.find(check => check.selection_id === selection.selection_id)?.[field]) }))];
   if (dimension === 'A3') return [...data.populations.flatMap((population, index) => Object.entries(populationLabels).map(([field, label]) => ({ label: `${data.populations.length > 1 ? `Población ${index + 1} · ` : ''}${label}`, values: data.selections.map(selection => field === 'intersection_unique' ? population.intersection_unique : field === 'complete' ? population.complete : population.per_selection.find(member => member.selection_id === selection.selection_id)?.[field as keyof typeof populationLabels & keyof PopulationMember]) })))];
   return [];
 }
 
 function CompactValue({ value }: { value: JsonValue }) {
-  if (typeof value === 'string' && (/^[a-f0-9-]{32,}$/i.test(value))) return <div className="scc-compact-id"><code title={value}>{value.slice(0, 8)}…</code><CopyText key={value} text={value} label="Copiar identificador" /><details><summary>Valor completo</summary><code className="report-identifier">{value}</code></details></div>;
-  if (value && typeof value === 'object') return <div className="scc-composite-value">{Object.entries(value).map(([key, item], index) => <Fragment key={key}>{index > 0 && ' · '}{Array.isArray(value) ? '' : `${key}: `}<CompactValue value={item} /></Fragment>)}</div>;
+  if (typeof value === 'string' && (/^[a-f0-9-]{32,}$/i.test(value))) {
+    return (
+      <div className="scc-compact-id">
+        <code title={value}>{value.slice(0, 8)}…</code>
+        <CopyText key={value} text={value} label="Copiar identificador" />
+        <details>
+          <summary>Valor completo</summary>
+          <code className="report-identifier">{value}</code>
+        </details>
+      </div>
+    );
+  }
+
+  if (value && typeof value === 'object') {
+    // 1. Los strings aquí deben ir en minúsculas y sin espacios
+    const valoresVacios = [null, undefined, '', 'sin evidencia', 'n/a'];
+
+    // 2. Filtramos
+    const entriesFiltradas = Object.entries(value).filter(([_, item]) => {
+      const valorAComparar = typeof item === 'string' ? item.trim().toLowerCase() : item;
+
+      return !valoresVacios.includes(valorAComparar);
+    });
+
+    // Entradas que NO queremos mostrar (las que están vacías)
+    const entriesVacias = Object.entries(value).filter(([_, item]) => {
+      const valorAComparar = typeof item === 'string' ? item.trim().toLowerCase() : item;
+      return valoresVacios.includes(valorAComparar);
+    });
+
+    // Si después de filtrar no queda nada, no renderizamos nada (return null)
+    if (entriesFiltradas.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="scc-wrapper">
+        <ul className="scc-composite-value" style={{ listStyleType: 'none', paddingLeft: 0 }}>
+          {entriesFiltradas.map(([key, item]) => (
+            <li key={key}>
+              {Array.isArray(value) ? null : <span className="scc-key">{key}: </span>}
+              <span className="scc-val">
+                <CompactValue value={item} />
+              </span>
+            </li>
+          ))}
+        </ul>
+        {/* Colapsable con los valores ignorados */}
+        {entriesVacias.length > 0 && (
+          <details style={{ marginTop: entriesFiltradas.length > 0 ? '8px' : '0' }}>
+            <summary style={{ cursor: 'pointer', color: '#666', fontSize: '0.9em' }}>
+              Valores n/a ({entriesVacias.length})
+            </summary>
+            <ul className="scc-composite-value" style={{ listStyleType: 'none', paddingLeft: 0, marginTop: '4px' }}>
+              {entriesVacias.map(([key, item]) => (
+                <li key={key}>
+                  {Array.isArray(value) ? null : <span className="scc-key">{key}: </span>}
+                  <span className="scc-val">
+                    <CompactValue value={item} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </div>
+    );
+  }
+
   return <>{jsonText(value)}</>;
 }
 function ParameterValue({ value }: { value: Observation | undefined }) {
@@ -183,13 +250,15 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
   const selectionKey = JSON.stringify([data.correlation_id, data.selections]);
   const rows = (Object.keys(dimensions) as Dimension[]).flatMap(dimension => {
 
-    const params: ParameterRow[] = dimension === 'A4' ? Object.entries(configurationLabels).map(([field, label]) => ({label, technical: false,
-      values: data.selections.map(selection => projectField(data, 'A4', selection.selection_id, field))})) : parameterRows(data, dimension);
+    const params: ParameterRow[] = dimension === 'A4' ? Object.entries(configurationLabels).map(([field, label]) => ({
+      label, technical: false,
+      values: data.selections.map(selection => projectField(data, 'A4', selection.selection_id, field))
+    })) : parameterRows(data, dimension);
     if (dimension === 'A2' && params[0]) {
       const campaign = { label: 'campaign_id · procedencia', values: data.selections.map(selection => projectField(data, 'A2', selection.selection_id, 'campaign_id')) };
       if (compareValues(campaign.values).group === 'Con diferencias') params[0].details = [campaign];
     }
-    return params.map((row, index) => ({...row, dimension, ...compareValues(row.label === 'Evaluación e intento' ? row.values.map(evaluationComparison) : row.values), key: `${selectionKey}:${dimension}:${index}`}));
+    return params.map((row, index) => ({ ...row, dimension, ...compareValues(row.label === 'Evaluación e intento' ? row.values.map(evaluationComparison) : row.values), key: `${selectionKey}:${dimension}:${index}` }));
   });
   return <>
     <p>Las diferencias experimentales no implican incompatibilidad. “Comparables” reúne parámetros cuya comparación requiere advertencias o evidencia adicional; cada celda conserva su estado.</p>
@@ -215,11 +284,11 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
                   {partial && <td>{row.values.some(value => value?.state === 'query_error') ? 'ERROR_DE_CONSULTA' : 'Evidencia parcial'}</td>}
                   {shared ? <td>{row.details && row.dimension === 'A6' ? <ConsolidatedDetail fields={row.details.slice(0, 5)} data={data} /> : <ParameterValue value={row.values[0]} />}<span className="scc-equal">{data.selections.map((_, i) => String.fromCharCode(65 + i)).join('=')}</span></td>
                     : row.details && row.dimension === 'A6' ? <td colSpan={data.selections.length}><ConsolidatedDetail fields={row.details.slice(0, 5)} data={data} /></td>
-                    : row.values.every(value => !value || value.state === 'unknown' || (value.state === 'known' && value.value === null)) ? <td colSpan={data.selections.length}>Sin evidencia suficiente en los {data.selections.length} RUN</td>
-                    : row.values.map((value, i) => <td key={data.selections[i].selection_id} data-match={row.matches[i]} data-match-tone={row.matches[i] ? [...new Set(row.matches.filter(Boolean))].indexOf(row.matches[i]) % 2 : undefined} title={row.matches[i] ? `Coinciden: ${row.matches[i]!.split('').join('=')}` : undefined}>{row.label === 'Evaluación e intento' ? <EvaluationValue value={value} /> : <ParameterValue value={value} />}
-                      {row.label === 'Checkpoint atribuido' && <CheckpointContext data={data} selection={data.selections[i]} />}
-                      {row.label === 'Evaluación e intento' && <ParameterValue value={projectField(data, 'A6', data.selections[i].selection_id, 'evaluation_role')} />}
-                    </td>)}
+                      : row.values.every(value => !value || value.state === 'unknown' || (value.state === 'known' && value.value === null)) ? <td colSpan={data.selections.length}>Sin evidencia suficiente en los {data.selections.length} RUN</td>
+                        : row.values.map((value, i) => <td key={data.selections[i].selection_id} data-match={row.matches[i]} data-match-tone={row.matches[i] ? [...new Set(row.matches.filter(Boolean))].indexOf(row.matches[i]) % 2 : undefined} title={row.matches[i] ? `Coinciden: ${row.matches[i]!.split('').join('=')}` : undefined}>{row.label === 'Evaluación e intento' ? <EvaluationValue value={value} /> : <ParameterValue value={value} />}
+                          {row.label === 'Checkpoint atribuido' && <CheckpointContext data={data} selection={data.selections[i]} />}
+                          {row.label === 'Evaluación e intento' && <ParameterValue value={projectField(data, 'A6', data.selections[i].selection_id, 'evaluation_role')} />}
+                        </td>)}
                 </tr>
                 {row.details && expanded.includes(row.key) && <tr className="scc-expanded-row"><td colSpan={columns - (shared ? 1 : 0)}><ConsolidatedDetail fields={row.dimension === 'A6' ? row.details.slice(5) : row.details} data={data} /></td></tr>}
               </Fragment>)}<tr><td colSpan={columns - (shared ? 1 : 0)}><EvidenceLinks data={data} dimension={dimension} /></td></tr></tbody>;
@@ -232,11 +301,11 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
     })}
     <ComparisonPython data={data} />
     <details className="ds-accordion"><summary>Detalle técnico y trazabilidad</summary>
-    <details><summary>Identificadores y fuentes A1–A6</summary>{data.selections.map(selection => <div key={selection.selection_id}><code className="report-identifier">{selection.training_run_id}</code><CopyText text={selection.training_run_id} label="Copiar UUID" />{(Object.keys(dimensions) as Dimension[]).map(dimension => <div key={dimension} id={evidenceTarget(selection.selection_id, dimension)} tabIndex={-1}><h4>{dimension} — {dimensions[dimension]}</h4><EvidenceCell data={data} selection={selection} dimension={dimension} /></div>)}</div>)}</details>
-    <details><summary>Diagnóstico técnico por análisis</summary>
-    <ConsolidatedFindings data={data} technical />
-    <AvailabilityMatrix data={data} /></details>
-    {data.technical_errors.map(error => <p key={error.error_id}>{error.error_id} · {error.message} · {error.operation}</p>)}
+      <details><summary>Identificadores y fuentes A1–A6</summary>{data.selections.map(selection => <div key={selection.selection_id}><code className="report-identifier">{selection.training_run_id}</code><CopyText text={selection.training_run_id} label="Copiar UUID" />{(Object.keys(dimensions) as Dimension[]).map(dimension => <div key={dimension} id={evidenceTarget(selection.selection_id, dimension)} tabIndex={-1}><h4>{dimension} — {dimensions[dimension]}</h4><EvidenceCell data={data} selection={selection} dimension={dimension} /></div>)}</div>)}</details>
+      <details><summary>Diagnóstico técnico por análisis</summary>
+        <ConsolidatedFindings data={data} technical />
+        <AvailabilityMatrix data={data} /></details>
+      {data.technical_errors.map(error => <p key={error.error_id}>{error.error_id} · {error.message} · {error.operation}</p>)}
     </details>
   </>;
 }
@@ -247,7 +316,7 @@ function ComparisonModules({ ids, datasource, selections, revision, onEvidenceCh
   const [xaiOpen, setXaiOpen] = useState(false);
   return <>
     <details className="ds-accordion" onToggle={event => { setScienceOpen(event.currentTarget.open); setXaiOpen(event.currentTarget.open); if (event.currentTarget.open) setXaiVisited(true); }}><summary>Explicabilidad XAI</summary>
-      {xaiVisited && ids.map((id, index) => <section key={id}><h3>RUN {String.fromCharCode(65+index)}</h3><PersistedXAI key={JSON.stringify([selections.find(s => s.training_run_id === id), revision])} selection={selections.find(s => s.training_run_id === id) ?? {training_run_id: id}} datasource={datasource} active={scienceOpen && xaiOpen} /><TrainingAssessmentXAI key={JSON.stringify([datasource, selections.find(selection => selection.training_run_id === id), revision])} trainingRunId={id} datasource={datasource} active={scienceOpen && xaiOpen} onEvidenceChange={onEvidenceChange} /></section>)}
+      {xaiVisited && ids.map((id, index) => <section key={id}><h3>RUN {String.fromCharCode(65 + index)}</h3><PersistedXAI key={JSON.stringify([selections.find(s => s.training_run_id === id), revision])} selection={selections.find(s => s.training_run_id === id) ?? { training_run_id: id }} datasource={datasource} active={scienceOpen && xaiOpen} /><TrainingAssessmentXAI key={JSON.stringify([datasource, selections.find(selection => selection.training_run_id === id), revision])} trainingRunId={id} datasource={datasource} active={scienceOpen && xaiOpen} onEvidenceChange={onEvidenceChange} /></section>)}
     </details>
 
   </>;

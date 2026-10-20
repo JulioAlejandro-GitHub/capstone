@@ -8050,6 +8050,7 @@ a.uploaded-image-cell:hover small {
     justify-content: space-between;
   }
 }
+
 /* SWV2.2 — Modelo IA → Campaña (single configuration page) */
 .campaign-layout {
   display: grid;
@@ -8202,7 +8203,7 @@ a.uploaded-image-cell:hover small {
   border-radius: 14px;
 }
 
-.campaign-variant > header {
+.campaign-variant>header {
   display: flex;
   gap: 12px;
   align-items: end;
@@ -8249,7 +8250,7 @@ a.uploaded-image-cell:hover small {
   margin: 0;
 }
 
-.campaign-summary dl > div {
+.campaign-summary dl>div {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -8372,7 +8373,7 @@ a.uploaded-image-cell:hover small {
   padding: 12px 8px;
 }
 
-.campaign-report-row + .campaign-report-row {
+.campaign-report-row+.campaign-report-row {
   border-top: 1px solid #eef1f6;
 }
 
@@ -8393,7 +8394,7 @@ a.uploaded-image-cell:hover small {
   color: #8a94ab;
 }
 
-.campaign-report-row > span {
+.campaign-report-row>span {
   min-width: 0;
   display: grid;
   gap: 2px;
@@ -8438,11 +8439,35 @@ a.uploaded-image-cell:hover small {
   white-space: nowrap;
 }
 
-.campaign-state-badge.is-frozen { background: #e8edfb; border-color: #c9d4f5; color: #1d4ed8; }
-.campaign-state-badge.is-active { background: #e6f6ec; border-color: #b3e2c4; color: #067647; }
-.campaign-state-badge.is-draft { background: #fff8e5; border-color: #f2dfa9; color: #92600a; }
-.campaign-state-badge.is-paused { background: #fff1e6; border-color: #f5cfb2; color: #b54708; }
-.campaign-state-badge.is-finalized { background: #f1f3f7; border-color: #d7deeb; color: #5d6475; }
+.campaign-state-badge.is-frozen {
+  background: #e8edfb;
+  border-color: #c9d4f5;
+  color: #1d4ed8;
+}
+
+.campaign-state-badge.is-active {
+  background: #e6f6ec;
+  border-color: #b3e2c4;
+  color: #067647;
+}
+
+.campaign-state-badge.is-draft {
+  background: #fff8e5;
+  border-color: #f2dfa9;
+  color: #92600a;
+}
+
+.campaign-state-badge.is-paused {
+  background: #fff1e6;
+  border-color: #f5cfb2;
+  color: #b54708;
+}
+
+.campaign-state-badge.is-finalized {
+  background: #f1f3f7;
+  border-color: #d7deeb;
+  color: #5d6475;
+}
 
 .campaign-report-empty {
   display: grid;
@@ -8514,7 +8539,7 @@ a.uploaded-image-cell:hover small {
     grid-column: 1 / -1;
   }
 
-  .campaign-report-row:not(.campaign-report-head) > span[data-label]::before {
+  .campaign-report-row:not(.campaign-report-head)>span[data-label]::before {
     content: attr(data-label);
     display: block;
     margin-bottom: 2px;
@@ -8530,4 +8555,34 @@ a.uploaded-image-cell:hover small {
   .campaign-report-row code {
     white-space: normal;
   }
+}
+
+
+.scc-composite-value .scc-key {
+  color: var(--scc-key-color, #1f6feb);
+}
+
+.scc-composite-value .scc-val {
+  color: var(--scc-val-color, #222);
+}
+
+.scc-composite-value li {
+  cursor: pointer;
+  /* Cursor de mano */
+  padding: 4px 8px;
+  /* Espacio interno para que el hover se vea bien */
+  border-radius: 4px;
+  /* Bordes redondeados opcionales */
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+
+  /* Borde transparente por defecto para evitar que el texto "salte" 
+     cuando aparezca el borde en el hover */
+  border: 1px solid transparent;
+}
+
+.scc-composite-value li:hover {
+  background-color: #e2e8f0;
+  /* Color de fondo más oscuro (ajusta a tu gusto) */
+  border: 1px solid #94a3b8;
+  /* Color y grosor del borde */
 }
