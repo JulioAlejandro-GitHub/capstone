@@ -1,3 +1,4 @@
+import { datasetCheckLabel } from '../utils/datasetChecks';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -11,20 +12,6 @@ import type {
 interface DatasetBrowserProps { datasource: string }
 
 const number = new Intl.NumberFormat('es-CL');
-const checkLabels: Record<string, string> = {
-  identity_coverage: 'Cobertura de identidad',
-  identity_conflicts: 'Conflictos de identidad',
-  patient_train_val_overlap: 'Pacientes compartidos TRAIN / VAL',
-  patient_train_test_overlap: 'Pacientes compartidos TRAIN / TEST',
-  patient_val_test_overlap: 'Pacientes compartidos VAL / TEST',
-  duplicate_cross_split_overlap: 'Duplicados entre conjuntos',
-  assignment_count: 'Asignaciones completas',
-  source_record_count: 'Registros fuente completos',
-  split_completeness: 'Completitud del split',
-  class_presence_train: 'Clases presentes en TRAIN',
-  class_presence_val: 'Clases presentes en VAL',
-  class_presence_test: 'Clases presentes en TEST',
-};
 
 function humanReason(reason: string) {
   return ({
@@ -129,7 +116,7 @@ function DatasetIntegrity({ detail }: { detail: DatasetVersionDetail }) {
 function DatasetValidation({ detail }: { detail: DatasetVersionDetail }) {
   const validation = detail.validation;
   return <details className="panel dataset-disclosure"><summary>Validación científica <small>{validation.pass_count}/{validation.required_count} PASS</small></summary>
-    <ul className="dataset-check-list">{validation.checks.map((check) => <li key={check.check_name}><span aria-hidden="true">{check.status === 'PASS' ? '✓' : '!'}</span><span><strong>{checkLabels[check.check_name] ?? check.check_name}</strong><small>{check.check_name}</small></span><b>{check.status}</b></li>)}</ul>
+    <ul className="dataset-check-list">{validation.checks.map((check) => <li key={check.check_name}><span aria-hidden="true">{check.status === 'PASS' ? '✓' : '!'}</span><span><strong>{datasetCheckLabel(check.check_name)}</strong><small>{check.check_name}</small></span><b>{check.status}</b></li>)}</ul>
   </details>;
 }
 

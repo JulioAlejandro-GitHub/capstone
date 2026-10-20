@@ -288,3 +288,13 @@ No Tailwind, frameworks, bibliotecas nuevas, CSS de Stitch, rutas, cambios de ne
 - No se encontró infraestructura Playwright/Puppeteer ni snapshots visuales en frontend. No hubo herramienta de navegador disponible en esta sesión. **No hay prueba de ausencia de regresiones en navegador ni cierre visual completo.**
 
 Archivos de esta entrega: las tres hojas CSS, este contrato y `docs/README.md` (indexación requerida). No se modifica React, `styles.css`, CSS de frotis, backend ni los archivos SCC-ART. No commits ni pushes. El contrato es reutilizable mediante adopción explícita; las pantallas actuales continúan usando sus estilos anteriores.
+
+## Patrón: resumen + detalle tabular de verificaciones
+
+Para colecciones homogéneas de comprobaciones científicas estructuradas:
+
+1. **Resultado:** resumen compacto del total y estados persistidos. PASS, FAIL, ausencia de estado, advertencias y estados no clasificados deben reconciliar con el total; nunca inferir PASS por igualdad de valores.
+2. **Evidencia:** tabla expandible, inicialmente cerrada, con comprobación, observado, esperado y estado. Reutilizar los datos recibidos sin consultas al abrir o cerrar. Preservar orden y distinguir cero, nulo y campo ausente.
+3. **Trazabilidad:** nombre técnico original, fuentes y contenido completo accesibles mediante detalle secundario. Usar etiquetas conocidas; conservar nombres y estados desconocidos sin reinterpretarlos.
+
+Aplicación SCC-UI-INTEGRITY.1: únicamente Integridad del dataset en A2. Una tabla compartida requiere identidad de dataset y lista ordenada de controles iguales; de otro modo se conserva el alcance por RUN. El resumen acredita los controles registrados, no todos los archivos o procesos posteriores. El patrón puede reutilizarse posteriormente para materialización, particiones, checkpoints, evaluaciones y artefactos, sin introducir una biblioteca genérica ni migrar esos módulos en esta entrega.

@@ -1,3 +1,4 @@
+import { DatasetIntegrity } from './DatasetIntegrity';
 import { ScientificResults, ScientificQuestions, ScientificRepresentations, PersistedXAI } from './ScientificReport';
 import { ComparisonPython, configurationLabels, CopyText } from './ComparisonPython';
 import { Fragment, useMemo, useState } from 'react';
@@ -163,33 +164,15 @@ export function PartitionCards({ data }: { data: PreflightResponse }) {
     { title: 'Partición', fields: [...dataset.slice(3, 6), partition[0]] },
     { title: 'Distribución', fields: [field('A2', 'counts.train', 'TRAIN'), field('A2', 'counts.val', 'VAL'), field('A2', 'counts.test', 'TEST'), dataset[6]] },
     { title: 'Materialización', fields: partition.filter(row => ['Estado de materialización', 'Reconciliación', 'Registros materializados', 'Materialización de la misma versión'].includes(row.label)) },
-    {
-      title: 'Integridad', fields: [{
-        label: 'Número de verificaciones', values: data.selections.map(selection => {
-          const checks = projectField(data, 'A2', selection.selection_id, 'checks');
-          return checks?.state === 'known' && Array.isArray(checks.value) ? { ...checks, value: checks.value.length } : checks;
-        })
-      }, {
-        label: 'Resultados registrados', values: data.selections.map(selection => {
-          const checks = projectField(data, 'A2', selection.selection_id, 'checks');
-          if (checks?.state !== 'known' || !Array.isArray(checks.value)) return checks;
-          const counts = { PASS: 0, FAIL: 0, 'Evidencia insuficiente': 0 };
-          for (const check of checks.value) {
-            const status = check && typeof check === 'object' && !Array.isArray(check) ? check.status : null;
-            counts[status === 'PASS' || status === 'FAIL' ? status : 'Evidencia insuficiente']++;
-          }
-          return checks.value.length ? { ...checks, value: counts } : undefined;
-        })
-      }]
-    },
   ];
-  return <section aria-label="Dataset y partición"><h3>A1 · Dataset y A2 · Partición</h3>
-    <div className="scc-partition-cards">{cards.map(card => <section className="ds-section" key={card.title}><h4>{card.title} {['Dataset', 'Partición'].includes(card.title) && data.dimensions.filter(item => item.dimension === (card.title === 'Dataset' ? 'A1' : 'A2')).map(item => <VerdictBadge key={item.scope.scope_id} verdict={item.verdict} />)}</h4><ConsolidatedDetail fields={card.fields} data={data} />{card.fields.some(field => compareValues(field.values).group === 'Con diferencias') && <p className="scc-meta">Diferencia de procedencia: consulte la población y el split de cada análisis antes de interpretar un contraste directo.</p>}{card.title === 'Integridad' && <details><summary>Comprobaciones registradas</summary><ConsolidatedDetail fields={[partition[2]]} data={data} /></details>}</section>)}
+  return <section aria-label="Dataset y partición"><details className="ds-accordion"><summary>A1 · Dataset y A2 · Partición</summary>
+    <div className="scc-partition-cards">{cards.map(card => <section className="ds-section" key={card.title}><h4>{card.title} {['Dataset', 'Partición'].includes(card.title) && data.dimensions.filter(item => item.dimension === (card.title === 'Dataset' ? 'A1' : 'A2')).map(item => <VerdictBadge key={item.scope.scope_id} verdict={item.verdict} />)}</h4><ConsolidatedDetail fields={card.fields} data={data} />{card.fields.some(field => compareValues(field.values).group === 'Con diferencias') && <p className="scc-meta">Diferencia de procedencia: consulte la población y el split de cada análisis antes de interpretar un contraste directo.</p>}</section>)}
+      <DatasetIntegrity data={data} />
       <section className="ds-section"><h4>Trazabilidad</h4><button className="ds-button" onClick={() => openEvidenceTarget(document.getElementById('scc-technical-registry'))}>Consultar identificadores y fuentes</button><p>Dataset, campaña y fingerprints conservan su procedencia en el registro técnico.</p></section>
     </div>
     <p>La partición gobernada no acredita por sí sola el consumo individual de imágenes durante TRAIN. La población de evaluación alineada se documenta en A3.</p>
     <ConsolidatedDetail fields={[partition[partition.length - 1]]} data={data} />
-  </section>;
+  </details></section>;
 }
 
 export function MethodologicalWarnings({ data, findings }: { data: PreflightResponse; findings: Finding[] }) {

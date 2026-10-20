@@ -741,3 +741,106 @@ test('CompactValue applies empty grouping recursively and avoids empty accordion
   assert.match(array.split('<details>')[0], /available/);
   assert.doesNotMatch(render(Array.from({length:12},(_,i)=>i)), /Más datos/);
 });
+
+const integrityNames = ['assignment_count','class_presence_test','class_presence_train','class_presence_val',
+  'duplicate_cross_split_overlap','identity_conflicts','identity_coverage','patient_train_test_overlap',
+  'patient_train_val_overlap','patient_val_test_overlap','source_record_count','split_completeness'];
+function integrityFixture(checks) {
+  const data=governedFixture();
+  for(const ref of data.evidence.filter(ref=>ref.source==='A2')) ref.value.value.checks=checks;
+  return data;
+}
+const integrityComponent = () => loader()('components/reports/DatasetIntegrity.tsx').DatasetIntegrity;
+
+test('dataset integrity: twelve persisted PASS checks reconcile, preserve order and use one shared closed table', () => {
+  const checks=integrityNames.map(check_name=>({check_name,status:'PASS',observed_value:27558,expected_value:27558}));
+  const data=integrityFixture(checks);
+  const before=JSON.stringify(data);
+  const html=renderToStaticMarkup(React.createElement(integrityComponent(),{data}));
+  assert.match(html,/12\/12 PASS/);
+  assert.match(html,/<dt>Aprobadas<\/dt><dd>12<\/dd>/);
+  for(const label of ['Fallidas','Sin evidencia']) assert.ok(html.includes(`<dt>${label}</dt><dd>0</dd>`));
+  assert.match(html,/<details class="ds-accordion"><summary>Comprobaciones registradas/);
+  assert.doesNotMatch(html,/<details[^>]*open/);
+  assert.match(html,/12 controles/);
+  assert.equal((html.match(/<th scope="row">/g)||[]).length,12);
+  assert.equal((html.match(/scope="col"/g)||[]).length,4);
+  assert.equal((html.match(/27\.558/g)||[]).length,24);
+  assert.match(html,/RUN A, RUN B/);
+  let previous=-1;
+  for(const name of integrityNames) {const position=html.indexOf(`title="${name}"`);assert.ok(position>previous);previous=position;}
+  assert.match(html,/Asignaciones completas/);
+  assert.match(html,/title="class_presence_train"/);
+  assert.match(html,/aria-label="Clases presentes en TRAIN · class_presence_train"/);
+  assert.doesNotMatch(html,/Identificador técnico/);
+  assert.doesNotMatch(html.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? '', /<details>/);
+  assert.equal(JSON.stringify(data),before);
+});
+
+test('dataset integrity: failed, missing, WARNING and unknown states reconcile without inferring PASS from equal values', () => {
+  const states=['PASS','FAIL',null,undefined,'WARNING','FUTURE_STATUS'];
+  const checks=states.map((status,index)=>({check_name:`custom_${index}`,status,observed_value:0,expected_value:0}));
+  const html=renderToStaticMarkup(React.createElement(integrityComponent(),{data:integrityFixture(checks)}));
+  assert.match(html,/1\/6 PASS/);
+  for(const [label,total] of [['Aprobadas',1],['Fallidas',1],['Sin evidencia',2],['Advertencias',1],['No clasificados',1]]) assert.ok(html.includes(`<dt>${label}</dt><dd>${total}</dd>`));
+  assert.match(html,/FUTURE_STATUS/);assert.match(html,/custom_5/);
+  assert.doesNotMatch(html,/Las 6 comprobaciones registradas del split tienen estado PASS/);
+});
+
+test('dataset integrity: values keep zero, null, absent fields, booleans and complete structured evidence', () => {
+  const checks=[
+    {check_name:'identity_conflicts',status:'PASS',observed_value:0,expected_value:null},
+    {check_name:'class_presence_val',status:'PASS',observed_value:'both',expected_value:'both'},
+    {check_name:'split_completeness',status:'WARNING',observed_value:'complete',expected_value:'complete'},
+    {check_name:'unknown_original_name',status:'FUTURE',observed_value:'both',expected_value:false},
+    {check_name:'partial',observed_value:{nested:[0,null,'kept']},expected_value:['x','y'],extra:'original-extra'},
+    null,
+  ];
+  const html=renderToStaticMarkup(React.createElement(integrityComponent(),{data:integrityFixture(checks)}));
+  for(const text of ['>0<','Nulo','Campo ausente','Ambas','Completo','>both<','>false<','Objeto · 1 campos','Arreglo · 2 elementos','kept','original-extra']) assert.ok(html.includes(text),text);
+  assert.match(html,/title="both"/);assert.match(html,/title="complete"/);
+  assert.match(html,/unknown_original_name/);
+  assert.equal((html.match(/<th scope="row">/g)||[]).length,6);
+});
+
+test('dataset integrity: empty, partial and query-error responses do not fabricate successful checks', () => {
+  const Component=integrityComponent();
+  const render=data=>renderToStaticMarkup(React.createElement(Component,{data}));
+  let html=render(integrityFixture([]));
+  assert.match(html,/0\/0 PASS/);assert.match(html,/No hay comprobaciones registradas/);
+  assert.doesNotMatch(html,/<th scope="row">/);
+  html=render(integrityFixture([{check_name:'partial'}]));
+  assert.match(html,/0\/1 PASS/);assert.match(html,/<dt>Sin evidencia<\/dt><dd>1<\/dd>/);
+  const data=integrityFixture([]);
+  data.evidence.filter(ref=>ref.source==='A2').forEach(ref=>ref.value={state:'query_error',error_ids:['query-error']});
+  html=render(data);assert.match(html,/ERROR_DE_CONSULTA.*query-error/);assert.doesNotMatch(html,/0\/0 PASS/);
+  data.evidence=data.evidence.filter(ref=>ref.source!=='A2');
+  assert.match(render(data),/Sin evidencia de comprobaciones/);
+});
+
+test('dataset integrity: different dataset identities or checks keep separate scopes; opening uses native details without queries', () => {
+  const Component=integrityComponent();
+  const data=integrityFixture([{check_name:'identity_conflicts',status:'PASS',observed_value:0,expected_value:0}]);
+  data.selections[1].dataset_version_id=known('another-dataset');
+  let tree=Component({data});
+  let html=renderToStaticMarkup(tree);
+  assert.equal((html.match(/1\/1 PASS/g)||[]).length,2);
+  data.selections[1].dataset_version_id=data.selections[0].dataset_version_id;
+  data.evidence.find(ref=>ref.source==='A2' && ref.selection_ids.includes('train:1')).value.value.checks=[{check_name:'other',status:'FAIL'}];
+  tree=Component({data});html=renderToStaticMarkup(tree);
+  assert.match(html,/1\/1 PASS/);assert.match(html,/0\/1 PASS/);
+  const checksTree=nodes(tree).find(node=>node.type?.name==='Checks');
+  const renderedChecks=checksTree.type(checksTree.props);
+  const accordion=find(renderedChecks,node=>node.type==='details' && node.props.className==='ds-accordion');
+  assert.equal(accordion.props.open,undefined);
+  assert.equal(accordion.props.onToggle,undefined);
+  assert.equal(accordion.props.onClick,undefined);
+  assert.match(renderToStaticMarkup(React.cloneElement(accordion,{open:true})),/<th scope="row">/);
+  assert.equal(renderToStaticMarkup(tree),html);
+});
+
+test('dataset check labels retain unknown technical identifiers, including object property names', () => {
+  const {datasetCheckLabel}=loader()('utils/datasetChecks.ts');
+  for(const name of integrityNames) assert.notEqual(datasetCheckLabel(name),name);
+  for(const name of ['new_unrecognized_check','__proto__','toString']) assert.equal(datasetCheckLabel(name),name);
+});
