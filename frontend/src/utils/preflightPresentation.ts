@@ -83,3 +83,38 @@ function evaluationField(data: PreflightResponse, selectionId: string, field: st
   }
   return undefined;
 }
+
+export interface MissingEvidence {
+  evidence: string[]; selectionIds: string[]; cause: string; state: string;
+  analyses: string[]; evidenceIds: string[]; errorIds: string[];
+}
+// Group only identical causes and states; retain the precise affected selections.
+export function missingEvidence(data: PreflightResponse, fields: DetailField[]): MissingEvidence[] {
+  const groups = new Map<string, MissingEvidence>();
+  const add = (entry: MissingEvidence) => {
+    const key = JSON.stringify([entry.state, entry.cause, [...entry.selectionIds].sort()]);
+    const previous = groups.get(key);
+    groups.set(key, previous ? { ...entry,
+      evidence: [...new Set([...previous.evidence, ...entry.evidence])],
+      analyses: [...new Set([...previous.analyses, ...entry.analyses])],
+      evidenceIds: [...new Set([...previous.evidenceIds, ...entry.evidenceIds])],
+      errorIds: [...new Set([...previous.errorIds, ...entry.errorIds])],
+    } : entry);
+  };
+  for (const field of fields) field.values.forEach((value, index) => {
+    if (value?.state === 'known' && completeValue(value.value)) return;
+    const ids = value && 'evidence_ids' in value ? value.evidence_ids : [];
+    const errors = value?.state === 'query_error' ? value.error_ids : [];
+    add({ evidence: [field.label], selectionIds: [data.selections[index].selection_id],
+      cause: value && 'reason' in value ? value.reason : errors.length ? errors.map(id => data.technical_errors.find(error => error.error_id === id)?.message ?? id).join('; ') : 'Dato no acreditado en la respuesta consultada.',
+      state: value?.state === 'query_error' ? 'Error de consulta' : value?.state === 'not_checked' ? (field.label === 'Disponibilidad e integridad física del checkpoint' ? 'No verificado físicamente' : 'No verificado') : value?.state === 'not_applicable' ? 'No aplicable' : 'Evidencia insuficiente',
+      analyses: data.analyses.filter(analysis => analysis.evidence_ids.some(id => ids.includes(id)) || analysis.verdict.error_ids.some(id => errors.includes(id))).map(analysis => analysis.analysis_id), evidenceIds: ids, errorIds: errors });
+  });
+  for (const result of [...data.dimensions, ...data.analyses]) for (const finding of result.findings) {
+    if (finding.kind !== 'missing') continue;
+    for (const selectionId of finding.affected_selection_ids.length ? finding.affected_selection_ids : ['']) add({ evidence: [finding.message], selectionIds: selectionId ? [selectionId] : [], cause: finding.condition,
+      state: 'Evidencia insuficiente', analyses: data.analyses.filter(analysis => analysis.findings.some(item => item.reason_id === finding.reason_id)).map(analysis => analysis.analysis_id), evidenceIds: finding.evidence_ids, errorIds: [] });
+  }
+  for (const error of data.technical_errors) for (const selectionId of error.selection_ids.length ? error.selection_ids : ['']) add({ evidence: [error.operation], selectionIds: selectionId ? [selectionId] : [], cause: error.message, state: 'Error de consulta', analyses: data.analyses.filter(analysis => error.scope_ids.includes(analysis.scope.scope_id) || analysis.verdict.error_ids.includes(error.error_id)).map(analysis => analysis.analysis_id), evidenceIds: [], errorIds: [error.error_id] });
+  return [...groups.values()];
+}

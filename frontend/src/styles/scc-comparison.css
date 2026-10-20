@@ -86,17 +86,24 @@
 /* Section 01 only: equality is descriptive, not a scientific verdict. */
 .ds-report.scc-page .scc-parameter-group { margin-block: var(--ds-space-5); }
 .ds-report.scc-page .scc-dimension-summary { display: flex; flex-wrap: wrap; gap: var(--ds-space-3); }
-.ds-report.scc-page .scc-parameter-table { table-layout: fixed; }
+.ds-report.scc-page .scc-parameter-table { table-layout: auto; border-collapse: separate; border-spacing: 0; }
 .ds-report.scc-page .scc-parameter-table th,
 .ds-report.scc-page .scc-parameter-table td { vertical-align: top; overflow-wrap: anywhere; min-width: 150px; }
 .ds-report.scc-page .scc-parameter-table { min-width: 650px; }
 .ds-report.scc-page .scc-parameter-table tbody tr:nth-child(even) { background: var(--ds-bg-subtle); }
-.ds-report.scc-page .scc-parameter-table td[data-match-tone="0"] { background: var(--ds-blue-100); color: var(--ds-slate-900); }
-.ds-report.scc-page .scc-parameter-table td[data-match-tone="1"] { background: var(--ds-violet-100); color: var(--ds-slate-900); }
-.ds-report.scc-page .scc-parameter-table td[data-match-tone="2"] { background: var(--ds-slate-100); color: var(--ds-slate-900); }
 .ds-report.scc-page .scc-equal,
 .ds-report.scc-page .scc-module-badge { display: inline-block; margin-inline: var(--ds-space-3); padding: var(--ds-space-2) var(--ds-space-3); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-sm); font-size: var(--ds-text-xs); }
 .ds-report.scc-page .scc-parameter-table th[scope="rowgroup"] small { display: block; }
 .ds-report.scc-page .scc-row-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--ds-space-4); }
 .ds-report.scc-page .scc-compact-id { display: inline-block; }
 .ds-report.scc-page .scc-findings { font-size: var(--ds-text-sm); }
+
+/* Keep the parameter and RUN headings visible within the same scroll region. */
+.ds-report.scc-page .scc-parameter-table .scc-parameter-label { position: sticky; left: 0; z-index: 2; background: var(--ds-bg-surface); min-width: 180px; max-width: 260px; }
+.ds-report.scc-page .scc-parameter-table thead th { z-index: 3; }
+.ds-report.scc-page .scc-parameter-table thead .scc-parameter-label { z-index: 4; background: var(--ds-bg-subtle); }
+.ds-report.scc-page .scc-impact { display: block; margin-top: var(--ds-space-2); font-weight: normal; text-transform: none; letter-spacing: normal; color: var(--ds-fg-muted); }
+.ds-report.scc-page .scc-methodological-synthesis { border-inline-start: 2px solid var(--ds-border-default); padding-inline-start: var(--ds-space-4); }
+.ds-report.scc-page .scc-parameter-table td[data-match-tone] { background: var(--ds-bg-subtle); color: var(--ds-fg-default); }
+.ds-report.scc-page .scc-parameter-table td[data-match-tone]::after { content: attr(title); display: block; font-size: var(--ds-text-xs); color: var(--ds-fg-muted); }
+.ds-report.scc-page .scc-parameter-table td[data-numeric="true"] { text-align: right; }
