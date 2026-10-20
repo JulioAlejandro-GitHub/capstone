@@ -705,7 +705,11 @@ test('partial protocol has no empty expansion; identifiers remain consultable an
     }
   }
   const html=renderToStaticMarkup(React.createElement(presentation().CompactValue,{value:'12345678-1234-1234-1234-123456789012'}));
-  assert.match(html,/<summary>Consultar identificador<\/summary><code[^>]*>12345678-1234-1234-1234-123456789012/);
+  assert.match(html,/title="12345678-1234-1234-1234-123456789012"/);
+  assert.match(html,/aria-label="12345678-1234-1234-1234-123456789012"/);
+  assert.match(html,/12345678…789012/);
+  assert.match(html,/aria-label="Copiar identificador"/);
+  assert.doesNotMatch(html,/<details>|Consultar identificador/);
   h.dispose();
 });
 

@@ -104,7 +104,7 @@ function parameterRows(data: PreflightResponse, dimension: Dimension): Parameter
 export function CompactValue({ value }: { value: JsonValue | undefined }) {
   if (typeof value === 'string' && /^[a-f0-9-]{32,}$/i.test(value)) return <span className="scc-compact-id">
     <code title={value} aria-label={value}>{value.slice(0, 8)}…{value.slice(-6)}</code>
-    <CopyText key={value} text={value} label="Copiar identificador" iconOnly /><details><summary>Consultar identificador</summary><code className="report-identifier">{value}</code></details>
+    <CopyText key={value} text={value} label="Copiar identificador" iconOnly />
   </span>;
 
   if (value && typeof value === 'object') {
