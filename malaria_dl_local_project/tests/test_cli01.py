@@ -202,10 +202,11 @@ def test_train_inspect_modes_no_execution(mode, monkeypatch, capsys):
     from src.malaria_dl.execution import local_launch, train
     monkeypatch.setattr(local_launch, 'bootstrap', lambda: None)
     monkeypatch.setattr(operations, 'ExecutionRepository', object)
-    plan = [dict(configuration={'resolved': {'execution': {'seed': s}}}) for s in (11, 19)]
+    plan = [dict(configuration={'resolved': {'execution': {'seed': 11}}})]
     monkeypatch.setattr(operations, 'training_plan', lambda *a: plan)
     monkeypatch.setattr(train, 'standalone', lambda *a: pytest.fail('no TRAIN'))
-    assert operations.main(['--campaign-id', str(uuid4()), mode]) == 0
+    # Campaign-only inspection is delegated to the coordinator (test_scc_evidence_fase0).
+    assert operations.main(['--source-training-run-id', str(uuid4()), mode]) == 0
     assert json.loads(capsys.readouterr().out) == plan
 
 

@@ -34,8 +34,8 @@ EVALUATE / TEST / EXPLAIN ── assessment_identities ── assessment_attempt
 | Raíz | Quién la fija | Ruta relativa al proyecto | Observaciones verificadas |
 |---|---|---|---|
 | Dataset materializado | `dataset_materializations.relative_root` | `data/malaria_dataset_versions/<dataset_version_id>/` | Las identidades guardan la ruta Docker `/app/malaria_dl_local_project/data/...`; `M/data/governed_dataset.py:local_dataset_root` la traslada al montaje local |
-| TRAIN por CLI | `M/execution/operations.py:64` (`output_dir="outputs/train_runs"`) | `outputs/train_runs/<run_id>/` | `ExecutionRepository.standalone` resuelve con `Path(root).resolve()`: **depende del directorio actual**. Ejecutar siempre desde `malaria_dl_local_project/` |
-| TRAIN por worker (Campaña 1 y anteriores) | `M/execution/campaign.py:406` | `outputs/campaign_runs/<run_id>/` | No es la entrada pública actual; los 15 RUN previos a `d3d42cf3` viven aquí |
+| TRAIN por campaña (`src.train --campaign-id`, coordinador) | `M/execution/campaign.py:406` | `outputs/campaign_runs/<run_id>/` | Absoluta (`PROJECT_ROOT`). Desde SCC-EVIDENCE Fase 0 (sin commit) es la ruta de `--campaign-id` sin TRAIN de referencia; los 15 RUN de worker previos a `d3d42cf3` también viven aquí |
+| TRAIN por referencia (`--source-training-run-id`) | `M/execution/operations.py` (`output_dir="outputs/train_runs"`) | `outputs/train_runs/<run_id>/` | `ExecutionRepository.standalone` resuelve con `Path(root).resolve()`: **depende del directorio actual**; ejecutar desde `malaria_dl_local_project/`. Sin E10 ni proyecciones SCC |
 | EVALUATE / EXPLAIN / TEST | `M/assessment/cli.py:104` (`"artifacts/assessments"`) | `artifacts/assessments/<attempt_id>/` | `AssessmentRepository.reserve` añade `<attempt_id>` y resuelve contra el directorio actual. Ninguno de los cuatro comandos acepta `--artifact-root` (retirado en CLI-01); sólo lo conservan los ejecutores internos de worker (`execution/campaign.py`, `execution/controlled.py`). EVALUATE y TEST registran la raíz pero **no crean archivos** |
 
 Traslado Mac ↔ Docker: `M/execution/storage_paths.py:local_scientific_path` sólo reescribe rutas bajo
@@ -56,9 +56,9 @@ tal cual. El backend Docker monta `malaria_dl_local_project` completo en `/app/m
 | Selección de checkpoint | `kind='selection'` y `completion.selection` | `record_key` = época de fase | Incluye `warning` cuando el monitor explícito difiere de la política |
 | Predicciones VAL por época | `kind='predictions'` (`payload.samples[]`: `sample` = ruta relativa, `label`, `score`) | ruta relativa | 2.693 por época; ruta ↔ `sample_id` derivable (Q8, §4) |
 | Predicciones VAL del checkpoint elegido y umbral | `kind='calibration'`, `phase='val'`, `record_key='selected'` | — | `result.enabled=false` (auto 0,5) o `threshold_source='validation_calibration'` (clinical) |
-| Eventos E10 | `kind='e10_event'` | `event_id` | **Sólo ruta worker** |
-| Checkpoint registrado para SCC | `artifacts` (`artifact_type='model_checkpoint'`) y `runs.execution_parameters.e10_v2_evaluation_context_v1` | `artifacts.id` | **Sólo ruta worker** (SCC-CAMPAIGN.1A H-01) |
-| Evaluación VAL final y métricas clínicas | `evaluations`, `run_clinical_metrics` | `evaluation_id` | **Sólo ruta worker** (H-01) |
+| Eventos E10 | `kind='e10_event'` | `event_id` | **Sólo ruta coordinador** (worker o `--campaign-id` tras Fase 0) |
+| Checkpoint registrado para SCC | `artifacts` (`artifact_type='model_checkpoint'`) y `runs.execution_parameters.e10_v2_evaluation_context_v1` | `artifacts.id` | **Sólo ruta coordinador**; ausente en RUN por referencia (H-01) |
+| Evaluación VAL final y métricas clínicas | `evaluations`, `run_clinical_metrics` | `evaluation_id` | **Sólo ruta coordinador** (H-01) |
 | Consumo individual en optimización | ninguna | — | **NO DEMOSTRADO** (TRACE-CLOSE-06/07); `run_dataset_images` = 0 filas y no es contador |
 
 ### 3.2 EVALUATE, TEST y EXPLAIN

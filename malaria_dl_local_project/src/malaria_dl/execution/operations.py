@@ -1,11 +1,18 @@
-"""TRAIN selection adapter: existing engine, new immutable run for every request."""
+"""TRAIN selection adapter: existing engines, new immutable run for every request.
+
+``--campaign-id`` alone runs the frozen campaign through the campaign coordinator
+(``execution.campaign``: claim -> worker -> E10 events), so attempts, members, the
+registered checkpoint and the VAL evaluation projections exist for every member and
+verified members are never retrained. ``--source-training-run-id`` creates one new
+standalone run from that TRAIN's configuration (optionally recorded in a campaign).
+"""
 import argparse
 import json
 from types import SimpleNamespace
 from typing import Any
 
 from ..assessment.contracts import require
-from ..campaigns.contracts import CampaignError, member_configuration
+from ..campaigns.contracts import CampaignError
 from ..campaigns.repository import identifier
 from .repository import ExecutionRepository
 from .selection import select_trainings
@@ -13,31 +20,32 @@ from .selection import select_trainings
 
 def training_plan(repository: ExecutionRepository, campaign_id: str | None,
                   training_run_id: str | None) -> list[dict[str, Any]]:
-    if training_run_id:
-        source = select_trainings(repository, campaign_id, training_run_id)[0]
-        configuration = source["configuration"]
-        require(isinstance(configuration, dict)
-                and {"model_id", "schema_version", "adapter_version", "resolved"} <= configuration.keys()
-                and isinstance(configuration["resolved"], dict)
-                and {"model", "optimizer", "execution", "selection", "input_contract", "recipe"}
-                    <= configuration["resolved"].keys(), "SOURCE_TRAINING_CONFIGURATION_UNAVAILABLE")
-        return [dict(configuration=source["configuration"], dataset_version_id=str(source["dataset_version_id"]),
-                     campaign_id=campaign_id or (str(source["campaign_id"]) if source["campaign_id"] else None),
-                     source_training_run_id=str(source["id"]))]
-    require(bool(campaign_id), "CAMPAIGN_OR_SOURCE_TRAINING_RUN_REQUIRED")
-    campaign = repository.get(campaign_id)
-    configs = {c["configuration_hash"]: c["configuration"] for c in campaign["configurations"]}
-    require(bool(campaign["members"]), "CAMPAIGN_CONFIGURATION_UNAVAILABLE")
-    return [dict(configuration=member_configuration(configs[m["configuration_hash"]], m["seed"]),
-                 dataset_version_id=str(campaign["dataset_version_id"]), campaign_id=str(campaign["id"]),
-                 source_training_run_id=None) for m in campaign["members"]]
+    require(bool(training_run_id), "SOURCE_TRAINING_RUN_REQUIRED")
+    source = select_trainings(repository, campaign_id, training_run_id)[0]
+    configuration = source["configuration"]
+    require(isinstance(configuration, dict)
+            and {"model_id", "schema_version", "adapter_version", "resolved"} <= configuration.keys()
+            and isinstance(configuration["resolved"], dict)
+            and {"model", "optimizer", "execution", "selection", "input_contract", "recipe"}
+                <= configuration["resolved"].keys(), "SOURCE_TRAINING_CONFIGURATION_UNAVAILABLE")
+    return [dict(configuration=source["configuration"], dataset_version_id=str(source["dataset_version_id"]),
+                 campaign_id=campaign_id or (str(source["campaign_id"]) if source["campaign_id"] else None),
+                 source_training_run_id=str(source["id"]))]
+
+
+def campaign_arguments(campaign_id: str, mode: str | None) -> list[str]:
+    """Coordinator arguments: --inspect/--plan resolve the frozen plan, --dry-run runs its preflight."""
+    return ["--campaign-id", campaign_id] + {"inspect": ["--plan"], "plan": ["--plan"],
+                                             "dry_run": ["--dry-run"]}.get(mode, [])
 
 
 def parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(allow_abbrev=False, description="EXEC.1 TRAIN: creates new runs from campaign configurations or a source TRAIN")
+    p = argparse.ArgumentParser(allow_abbrev=False, description="EXEC.1 TRAIN: runs a frozen campaign or creates a new run from a source TRAIN")
     p.add_argument("--campaign-id", type=identifier)
     p.add_argument("--source-training-run-id", type=identifier)
-    p.add_argument("--dry-run", "--plan", "--inspect", dest="inspect", action="store_true")
+    mode = p.add_mutually_exclusive_group()
+    for flag in ("--inspect", "--plan", "--dry-run"):
+        mode.add_argument(flag, dest="mode", action="store_const", const=flag[2:].replace("-", "_"))
     return p
 
 
@@ -49,8 +57,11 @@ def main(argv: list[str] | None = None) -> int:
     from .local_launch import bootstrap
     bootstrap()
     try:
+        if not args.source_training_run_id:
+            from . import campaign
+            return campaign.main(campaign_arguments(args.campaign_id, args.mode))
         plan = training_plan(ExecutionRepository(), args.campaign_id, args.source_training_run_id)
-        if args.inspect:
+        if args.mode:
             print(json.dumps(plan, default=str))
             return 0
         from .train import standalone

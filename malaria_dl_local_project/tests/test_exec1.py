@@ -96,17 +96,10 @@ def test_train_reference_keeps_configuration(monkeypatch):
         training_plan(object(), campaign, train)
 
 
-def test_campaign_training_preserves_configuration_and_each_seed():
-    from src.malaria_dl.models.configuration import resolve_config
-    from src.malaria_dl.campaigns.contracts import member_configuration
-    configuration = resolve_config('custom_cnn')
-    campaign = dict(id=str(uuid4()),dataset_version_id=str(uuid4()),state='draft',
-                    configurations=[dict(configuration_hash='config',configuration=configuration)],
-                    members=[dict(configuration_hash='config',seed=s) for s in (11,12)])
-    repo = SimpleNamespace(get=lambda campaign_id:campaign)
-    plan = training_plan(repo,campaign['id'],None)
-    assert [p['configuration'] for p in plan] == [member_configuration(configuration,s) for s in (11,12)]
-    assert all(p['campaign_id'] == campaign['id'] and p['dataset_version_id'] == campaign['dataset_version_id'] for p in plan)
+def test_campaign_members_are_not_expanded_by_the_standalone_plan():
+    # Campaign members are reserved by the coordinator claim, which applies each member's seed.
+    with pytest.raises(AssessmentError, match='SOURCE_TRAINING_RUN_REQUIRED'):
+        training_plan(object(), str(uuid4()), None)
 
 
 @pytest.mark.parametrize('stored', [0.0, 0.4, 0.5, 1.0])

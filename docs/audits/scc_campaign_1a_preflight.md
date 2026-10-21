@@ -275,6 +275,14 @@ EXPLAIN asociable a las mismas muestras que las predicciones: **PASS** por `samp
 | H-14 | Los archivos `.keras`/`.npy`/`.png` no tienen protección contra borrado. 5.386 artefactos del intento verificado `ceaa29af-…` faltan en disco (ya observado en REPORTS-01A) | FAIL | Conservación | §6.1 |
 | H-15 | El dispositivo de ejecución (CPU / GPU Metal) no se persiste; con la misma configuración, CPU y GPU dieron curvas distintas (`e9eb63f4` vs `bbbd5b60`) | Advertencia | Científica | `runs.gpu_devices=[]`; `train_execution_records` `epoch` |
 
+**Actualización 2026-10-21 — SCC-EVIDENCE Fase 0 (sin commit):** `python -m src.train --campaign-id` sin
+`--source-training-run-id` delega ahora en el coordinador de campaña (`claim` → worker con `RunEventEmitter`).
+Corrige en código **H-01** (proyecciones `artifacts`/`evaluations`/`run_clinical_metrics`/E10), **H-02** (intentos y
+miembros) y **H-07** (no reentrena miembros `verified`; reintenta fallidos dentro del presupuesto). Estado: PASS en
+pruebas sin PostgreSQL; **SIN EVIDENCIA operacional** hasta el piloto. Detalle en
+[scc_evidence_persistence_plan.md](../planning/scc_evidence_persistence_plan.md#fase-0--prerrequisito-proyecciones-de-train-por-cli-g-01-además-h-02h-07).
+Los RUN CLI ya verificados (`d3d42cf3`) no se pueden reparar.
+
 ## 9. Acciones mínimas antes de ejecutar
 
 1. **Decisión de protocolo (documental, obligatoria):** semillas por arquitectura (recomendado ≥3), un optimizador por arquitectura o matriz explícita, criterio de checkpoint único (resolver H-04), política de umbral (0,5 fijo o calibración VAL habilitada; H-05), y regla escrita: candidatos y umbral congelados antes de TEST (H-06).

@@ -453,3 +453,19 @@ La salida de ambas corridas se conserva en `capstone_cli_01_tests.txt`.
 
 **NO EJECUTADO:** EXPLAIN sobre datos operativos, lectura de imágenes TEST oficiales,
 modificación de PostgreSQL operativo o del intento ya verificado. Sin commit nuevo.
+
+## 16. Corrección posterior: TRAIN por campaña usa el coordinador (SCC-EVIDENCE Fase 0)
+
+Fecha: 2026-10-21. Sustituye el primer punto de §3 («TRAIN solo campaña … `ExecutionRepository.standalone`»).
+
+`python -m src.train --campaign-id <UUID>` sin `--source-training-run-id` delega en `execution.campaign.main`:
+`GlobalGate('campaign')`, reserva por `ExecutionRepository.claim` (crea `campaign_attempts`, actualiza
+`campaign_members`, omite miembros `verified`, respeta `max_attempts_per_member`), worker con `RunEventEmitter`
+y verificación de sesión. Así cada miembro produce `artifacts` (`model_checkpoint`), `evaluations` y
+`run_clinical_metrics`, que la ruta standalone no generaba (SCC-CAMPAIGN.1A H-01). `--inspect`/`--plan` se resuelven
+con el `--plan` del coordinador y `--dry-run` con su `--dry-run`; ninguno reserva ni entrena. La matriz pública de
+parámetros no cambia. `--source-training-run-id` conserva el comportamiento standalone descrito en §3.
+
+Diferencias observables: raíz `outputs/campaign_runs/<run_id>/`; parada en el primer miembro fallido (relanzar el
+mismo comando reintenta); salida de consola en lugar de JSON. Pruebas: `tests/test_scc_evidence_fase0.py`;
+`make test-cli01` 305 aprobadas. **NO EJECUTADO:** TRAIN real y suites `requires_docker_postgres`.

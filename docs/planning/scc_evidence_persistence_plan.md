@@ -66,6 +66,26 @@ Diseño resultante:
 emitir `CHECKPOINT_UNREGISTERED`; relanzar la campaña no duplica miembros verificados.
 **Pruebas:** unitarias con repositorio en memoria + integración en PostgreSQL desechable.
 
+**Estado (2026-10-21): IMPLEMENTADA, sin commit; verificación operativa pendiente.**
+
+- `M/execution/operations.py:main`: `--campaign-id` **sin** `--source-training-run-id` delega en el coordinador
+  existente `execution.campaign.main` (`GlobalGate('campaign')` → `execute_campaign(resume=True)` → `claim` →
+  `worker` con `RunEventEmitter` → `verify_session`). `--inspect`/`--plan` ⇒ `--plan` del coordinador (sólo lectura);
+  `--dry-run` ⇒ su `--dry-run`. No se duplicó lógica: `claim`, presupuesto, reconciliación y proyecciones ya existían y
+  son las que usó la Campaña 1. Coincide con `campaigns/plan.py:EXECUTION_BOUNDARY`.
+- `--source-training-run-id` (con o sin campaña) sigue siendo standalone en `outputs/train_runs` (D-06 pendiente).
+  `training_plan` sólo expande un TRAIN de referencia (`SOURCE_TRAINING_RUN_REQUIRED`).
+- Cambios de comportamiento: raíz `outputs/campaign_runs/<run_id>/` (absoluta, independiente del directorio actual);
+  la ejecución se detiene en el primer miembro fallido (exit 1) y relanzar el mismo comando lo reintenta dentro del
+  presupuesto; una campaña `paused` se reanuda; salida de consola humana en lugar de JSON.
+- Pruebas: `tests/test_scc_evidence_fase0.py` (13, fallan 8 con el código anterior); adaptadas `test_cli01.py` y
+  `test_exec1.py`. `make test-cli01`: 305 aprobadas. Suites del coordinador sin PostgreSQL: mismo resultado antes y
+  después (42 aprobadas; los fallos restantes requieren PostgreSQL).
+- **No ejecutado:** las suites `requires_docker_postgres` (`test_campaign_executor_postgres`, `test_docker_train_postgres`,
+  `test_train_run_persistence`): su fixture crea esquemas en el host `db`, que en este entorno es la BD operativa.
+  Ejecutarlas sólo contra un PostgreSQL desechable.
+- Pendiente operativo: en el piloto, comprobar Q1/Q7 y la consulta de `artifacts`/`evaluations` por RUN (§4 del mapa).
+
 ### Fase 1 — Sin DDL: condición de ejecución, XAI estructurada y EXPLAIN TEST
 
 **1a. G-02 Condición de ejecución.**
