@@ -175,6 +175,24 @@ TRAIN carga sólo `train` y `val` (`train.py:79`); `TEST_FORBIDDEN` y `E5_TRAIN_
 | EXPLAIN | `assessment_results` (spec, capa, clase) + `assessment_artifacts` (map/overlay, SHA-256) | — | Sí | PASS |
 | Representaciones internas | ninguna | No | No | FAIL (H-03) |
 
+### 6.1 Mapa de persistencia y trazabilidad de artefactos científicos
+
+El mapa permanente está en [capstone_scientific_artifacts_and_persistence.md](../architecture/capstone_scientific_artifacts_and_persistence.md):
+raíces físicas y qué las determina, tabla e identificador por evidencia, consultas SQL reproducibles, verificación de
+SHA-256 y política de conservación. Este preflight lo valida con estas observaciones:
+
+| Control | Resultado | Estado |
+|---|---|---|
+| Raíz TRAIN de `python -m src.train` | `outputs/train_runs/<run_id>/`, relativa al directorio actual (`operations.py:64`) | PASS; ejecutar desde `malaria_dl_local_project/` |
+| Raíz TRAIN de la Campaña 1 | `outputs/campaign_runs/<run_id>/` (worker, `campaign.py:406`) | PASS, histórico |
+| Raíz assessments | `artifacts/assessments/<attempt_id>/` (`assessment/cli.py:104`); sin `--artifact-root` público | PASS |
+| Consulta `artifacts WHERE artifact_type='model_checkpoint'` | 15 de 16 RUN; omite RUN de CLI | FAIL como fuente única (H-01); usar `train_execution_sessions.verification.artifact` |
+| Checkpoints seleccionados, SHA-256 + bytes | 16 / 16 | PASS |
+| Checkpoints de todas las épocas, existencia + bytes | 432 / 432 | PASS |
+| Artefactos EXPLAIN, SHA-256 + bytes | 13.578 / 18.964; 5.386 ausentes, todos del intento `ceaa29af-…` | FAIL histórico (H-14) |
+| Inmutabilidad de filas PostgreSQL | Guards sólo-INSERT / sin DELETE en `train_execution_*` y `assessment_*` | PASS |
+| Protección de archivos en disco | Ninguna | FAIL (H-14) |
+
 ## 7. Cobertura de preguntas científicas
 
 ### 7.1 Fase F — técnicas de explicación y representación
@@ -251,6 +269,9 @@ EXPLAIN asociable a las mismas muestras que las predicciones: **PASS** por `samp
 | H-10 | VGG16/DenseNet121 nunca recorridos por `python -m src.train` (sólo por worker en Campaña 1) | SIN EVIDENCIA | Operativo | §11 Q6 |
 | H-11 | Duración: VGG16 5,5–6,3 h, DenseNet121 2,2–3,5 h, Custom CNN 0,7–1,6 h por miembro (Campaña 1). Disco libre 363 GiB; `outputs/campaign_runs` = 15 GB (todas las épocas se guardan) | Riesgo de capacidad, no bloqueante | Operativo | `runs.duration_seconds`; `du`/`df` |
 | H-12 | EXPLAIN-UI-01/02 y certificación HTTP autenticada de artefactos (SCC-ART.1) siguen pendientes | SIN EVIDENCIA | Visualización | docs citados |
+| H-13 | `--threshold clinical` exigía `calibrate_threshold=true`, imposible de configurar en una campaña (`science/protocol.py:214`). **Corregido en `fa322be`:** el protocolo de campaña ofrece «Calibración del umbral (VAL)» con «auto 0,5» (`none`, por defecto) o «clinical» (`threshold_grid`). Los 16 TRAIN previos no se pueden recalibrar | PASS en pruebas; SIN EVIDENCIA operacional | Científica | `campaigns/configuration.py`; pruebas §11 |
+| H-14 | Los archivos `.keras`/`.npy`/`.png` no tienen protección contra borrado. 5.386 artefactos del intento verificado `ceaa29af-…` faltan en disco (ya observado en REPORTS-01A) | FAIL | Conservación | §6.1 |
+| H-15 | El dispositivo de ejecución (CPU / GPU Metal) no se persiste; con la misma configuración, CPU y GPU dieron curvas distintas (`e9eb63f4` vs `bbbd5b60`) | Advertencia | Científica | `runs.gpu_devices=[]`; `train_execution_records` `epoch` |
 
 ## 9. Acciones mínimas antes de ejecutar
 
@@ -259,6 +280,8 @@ EXPLAIN asociable a las mismas muestras que las predicciones: **PASS** por `samp
 3. **Decidir H-01** antes de la campaña: (a) corregir `src.train` para producir las mismas proyecciones que el worker (recomendado), o (b) aceptar que Comparación Científica no mostrará checkpoint/VAL histórica para estos RUN hasta una proyección posterior desde la evidencia persistida (sin reejecutar ciencia).
 4. **Inspección sin escritura** con los IDs reales: `src.train --campaign-id <C> --plan`; tras TRAIN, `--inspect` de los otros tres.
 5. Confirmar ausencia de sesiones `active`/`completed` y de intentos `active` inmediatamente antes de iniciar (Q8).
+6. Fijar un único entorno (`.venv-metal` recomendado) y registrar fuera del sistema `tf.config.list_physical_devices('GPU')` y la versión de `tensorflow-metal` (H-15).
+7. Respaldar `outputs/`, `artifacts/assessments/` y la BD al terminar, y ejecutar la verificación física del mapa de persistencia (§6.1) antes de cualquier reporte (H-14).
 
 ## 10. Plan de ejecución posterior (no ejecutado)
 
