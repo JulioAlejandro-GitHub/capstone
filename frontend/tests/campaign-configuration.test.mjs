@@ -69,6 +69,20 @@ test('controles adecuados por tipo de parámetro', () => {
   assert.match(page, /parameter\.editable/);
 });
 
+test('la calibración del umbral se elige desde el catálogo del protocolo, sin dominio duplicado', () => {
+  assert.match(types, /calibration: \{ algorithm: string \}/);
+  assert.match(types, /editable: Array<\{[^}]*choices\?: string\[\]/);
+  assert.match(page, /catalog\.protocol\.editable\.map/);
+  assert.match(page, /keyof CampaignConfigurationDocument\['protocol'\]/);
+  assert.doesNotMatch(page, /'early_stopping' \| 'budget'/);
+  assert.doesNotMatch(page + types, /threshold_grid|'clinical'|auto 0,5/);
+  assert.match(types, /choice_labels\?: Record<string, string>/);
+  assert.match(page, /<option key=\{choice\} value=\{choice\}>\{choiceLabel\(parameter, choice\)\}<\/option>/);
+  assert.match(page, /Default: \{choiceLabel\(parameter, parameter\.default\)\}/);
+  assert.doesNotMatch(page, /fixed\['calibration\.algorithm'\]/);
+  assert.match(page, /fixed\['calibration\.population'\]/);
+});
+
 test('guardar usa una clave idempotente y muestra campaign_id con el comando del backend', () => {
   assert.match(page, /crypto\.randomUUID\(\)/);
   assert.match(page, /campaign_id: campaignId/);

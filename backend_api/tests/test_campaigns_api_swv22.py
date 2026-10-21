@@ -125,6 +125,28 @@ def test_invalid_parameters_and_optimizers_are_rejected(client):
     assert preview(client, configuration).json()["valid"] is False
 
 
+def test_calibration_algorithm_is_selectable_with_none_default(client):
+    catalog, configuration = default_configuration(client)
+    spec = next(p for p in catalog["protocol"]["editable"] if p["key"] == "calibration.algorithm")
+    assert spec["choices"] == ["none", "threshold_grid"] and spec["default"] == "none"
+    assert spec["choice_labels"] == {"none": "auto 0,5", "threshold_grid": "clinical"}
+    assert configuration["protocol"]["calibration"] == {"algorithm": "none"}
+    from src.malaria_dl.campaigns.configuration import resolve
+    counts = {"train": 22180, "val": 2693, "test": 2685}
+    configuration["protocol"]["calibration"]["algorithm"] = "threshold_grid"
+    body = preview(client, configuration).json()
+    assert body["valid"] is True
+    assert resolve(configuration, counts)["protocol"]["calibration"]["algorithm"] == "threshold_grid"
+    # Documents that predate the choice are still accepted and keep the approved "none".
+    configuration["protocol"].pop("calibration")
+    assert preview(client, configuration).json()["valid"] is True
+    configuration["protocol"]["calibration"] = {"algorithm": "platt"}
+    body = preview(client, configuration).json()
+    assert {"field": "protocol.calibration.algorithm", "code": "INVALID_PARAMETER_VALUE"} in body["errors"]
+    configuration["protocol"]["calibration"] = {"algorithm": 1}  # strict JSON types, no coercion
+    assert preview(client, configuration).status_code == 422
+
+
 def test_dataset_must_exist_and_be_trainable(client):
     _, configuration = default_configuration(client)
     assert preview(client, configuration, dataset=None).json()["checks"][0]["errors"][0]["code"] == "DATASET_VERSION_REQUIRED"

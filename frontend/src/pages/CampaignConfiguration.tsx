@@ -98,6 +98,11 @@ function parseSeeds(text: string): number[] | null {
 // -------------------------------------------------------------------------
 // REFACTOR: Toggle component & unified ParameterControl
 // -------------------------------------------------------------------------
+// Display text comes from the backend catalog; the submitted value stays the contract value.
+function choiceLabel(parameter: CampaignParameter, value: ParameterValue) {
+  return parameter.choice_labels?.[String(value)] ?? String(value);
+}
+
 function ParameterControl({ parameter, value, error, onChange }: {
   parameter: CampaignParameter; value: ParameterValue; error?: string; onChange: (value: ParameterValue) => void;
 }) {
@@ -136,7 +141,7 @@ function ParameterControl({ parameter, value, error, onChange }: {
   let control;
   if (parameter.type === 'enum') {
     control = <select id={inputId} value={String(value)} onChange={(e) => onChange(e.target.value)}>
-      {(parameter.choices ?? []).map((choice) => <option key={choice} value={choice}>{choice}</option>)}
+      {(parameter.choices ?? []).map((choice) => <option key={choice} value={choice}>{choiceLabel(parameter, choice)}</option>)}
     </select>;
   } else {
     control = <input
@@ -159,7 +164,7 @@ function ParameterControl({ parameter, value, error, onChange }: {
     <label className="campaign-field-label" htmlFor={inputId}>{parameter.label}</label>
     {control}
     <small>
-      Default: {String(parameter.default)}
+      Default: {choiceLabel(parameter, parameter.default)}
       {parameter.minimum !== undefined ? ` · mín ${parameter.minimum}` : ''}
       {parameter.maximum !== undefined ? ` · ${parameter.exclusive_maximum ? '<' : 'máx'} ${parameter.maximum}` : ''}
     </small>
@@ -622,7 +627,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
             <legend>Métricas, Control y EarlyStopping</legend>
             <div className="campaign-parameter-grid">
               {catalog.protocol.editable.map((item) => {
-                const [section, leaf] = item.key.split('.') as ['early_stopping' | 'budget', string];
+                const [section, leaf] = item.key.split('.') as [keyof CampaignConfigurationDocument['protocol'], string];
                 const value = (configuration.protocol[section] as Record<string, ParameterValue>)[leaf];
                 return <ParameterControl
                   key={item.key}
@@ -642,7 +647,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
               <div><dt>Umbral de selección</dt><dd>{String(fixed['checkpoint.threshold'])}</dd></div>
               <div><dt>Objetivo de sensibilidad</dt><dd>{String(fixed.sensitivity_target)}</dd></div>
               <div><dt>Especificidad mínima</dt><dd>{String(fixed.specificity_minimum)}</dd></div>
-              <div><dt>Calibración</dt><dd>{String(fixed['calibration.algorithm'])}</dd></div>
+              <div><dt>Población de calibración</dt><dd>{String(fixed['calibration.population'])}</dd></div>
               <div><dt>Acceso a TEST</dt><dd>{String(fixed.test_access)}</dd></div>
             </dl>
             <small className="campaign-source" style={{ display: 'block', marginTop: '12px' }}>

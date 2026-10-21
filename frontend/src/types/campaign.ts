@@ -16,6 +16,8 @@ export interface CampaignParameter {
   maximum?: number;
   exclusive_maximum?: boolean;
   choices?: string[];
+  /** Optional display text per choice; the submitted value is always the choice itself. */
+  choice_labels?: Record<string, string>;
   note?: string;
   source: string;
 }
@@ -43,6 +45,7 @@ export interface CampaignOptimizer {
 export interface CampaignProtocolValues {
   early_stopping: { enabled: boolean; patience: number; min_delta: number; restore_best_weights: boolean };
   budget: { max_attempts_per_member: number };
+  calibration: { algorithm: string };
 }
 
 export interface CampaignVariant {
@@ -68,7 +71,7 @@ export interface CampaignCatalog {
     template_version: string;
     source: string;
     objective: string;
-    editable: Array<{ key: string; type: ParameterType; label: string; default: ParameterValue; minimum?: number }>;
+    editable: Array<{ key: string; type: ParameterType; label: string; default: ParameterValue; minimum?: number; choices?: string[]; choice_labels?: Record<string, string> }>;
     fixed: Record<string, ParameterValue | null>;
   };
   presets: Array<{ id: string; label: string; configuration: CampaignConfiguration }>;

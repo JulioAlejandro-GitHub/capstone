@@ -30,9 +30,15 @@ class BudgetConfiguration(_Strict):
     max_attempts_per_member: StrictInt
 
 
+class CalibrationConfiguration(_Strict):
+    algorithm: StrictStr
+
+
 class CampaignProtocolConfiguration(_Strict):
     early_stopping: EarlyStoppingConfiguration
     budget: BudgetConfiguration
+    # Omitted by documents predating the choice; the canonical module applies the template value.
+    calibration: CalibrationConfiguration | None = None
 
 
 class CampaignMatrixConfiguration(_Strict):

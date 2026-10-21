@@ -52,7 +52,17 @@ PROTOCOL_PARAMETERS = (
     ("early_stopping.min_delta", "number", "Mejora mínima (min_delta)", {"minimum": 0}),
     ("early_stopping.restore_best_weights", "boolean", "Restaurar mejores pesos", {}),
     ("budget.max_attempts_per_member", "integer", "Intentos máximos por experimento", {"minimum": 1}),
+    # The campaign contract and campaign_contract_valid accept exactly these two VAL algorithms.
+    # Labels use the --threshold nomenclature of EVALUATE/EXPLAIN/TEST: "none" makes TRAIN record
+    # the fixed 0.5 that --threshold auto recovers; threshold_grid is what --threshold clinical requires.
+    ("calibration.algorithm", "enum", "Calibración del umbral (VAL)",
+     {"choices": ["none", "threshold_grid"], "choice_labels": {"none": "auto 0,5", "threshold_grid": "clinical"}}),
 )
+# threshold_grid: TRAIN selects the target-recall threshold on the selected checkpoint's VAL
+# scores (evaluation.threshold_calibration); "none" keeps the approved template's description.
+THRESHOLD_GRID_CALIBRATION_VERSION = (
+    "threshold_grid: target-recall threshold selected by TRAIN on VAL scores of the selected "
+    "checkpoint; no probability calibration")
 CONFIGURATION_KEYS = {"version", "models", "optimizers", "seeds", "variants", "protocol"}
 
 
@@ -157,7 +167,8 @@ def _optimizers():
 def _protocol_values(protocol):
     return {"early_stopping": {k: protocol["early_stopping"][k]
                                for k in ("enabled", "patience", "min_delta", "restore_best_weights")},
-            "budget": {"max_attempts_per_member": protocol["budget"]["max_attempts_per_member"]}}
+            "budget": {"max_attempts_per_member": protocol["budget"]["max_attempts_per_member"]},
+            "calibration": {"algorithm": protocol["calibration"]["algorithm"]}}
 
 
 def _variant_parameters(models, by_model=None):
@@ -210,7 +221,7 @@ def catalog():
         "checkpoint.threshold": protocol["checkpoint"]["threshold"],
         "sensitivity_target": protocol["sensitivity_target"],
         "specificity_minimum": protocol["specificity_minimum"],
-        "calibration.algorithm": protocol["calibration"]["algorithm"],
+        "calibration.population": protocol["calibration"]["population"],
         "test_access": protocol["test_access"],
     }
     return dict(
@@ -349,10 +360,12 @@ def normalize(configuration):
     protocol = configuration.get("protocol")
     template = _protocol_values(protocol_template()[1])
     out_protocol = deepcopy(template)
-    if not isinstance(protocol, dict) or set(protocol) != {"early_stopping", "budget"} \
-            or not isinstance(protocol.get("early_stopping"), dict) or not isinstance(protocol.get("budget"), dict) \
-            or set(protocol["early_stopping"]) != set(template["early_stopping"]) \
-            or set(protocol["budget"]) != set(template["budget"]):
+    if isinstance(protocol, dict) and protocol.get("calibration") is None:
+        # Documents predating the calibration choice keep the approved template ("none").
+        protocol = {k: v for k, v in protocol.items() if k != "calibration"} | {
+            "calibration": deepcopy(template["calibration"])}
+    if not isinstance(protocol, dict) or set(protocol) != set(template) \
+            or any(not isinstance(protocol[k], dict) or set(protocol[k]) != set(template[k]) for k in template):
         _error(errors, "protocol", "INVALID_PROTOCOL_FIELDS")
     else:
         for key, kind, _label, extra in PROTOCOL_PARAMETERS:
@@ -431,7 +444,7 @@ def document_from_request(request, protocol):
 
 
 def build_protocol(normalized, expected_count):
-    """Approved protocol + the operator's EarlyStopping/budget values; budget sized to the matrix.
+    """Approved protocol + the operator's EarlyStopping/budget/calibration values; budget sized to the matrix.
 
     The version keeps the approved identifier only when the result is exactly the approved
     protocol; otherwise it is a content-derived identifier, so a derived protocol never claims
@@ -442,6 +455,8 @@ def build_protocol(normalized, expected_count):
     protocol["early_stopping"].update(normalized["protocol"]["early_stopping"])
     protocol["budget"] = dict(max_members=expected_count,
                               max_attempts_per_member=normalized["protocol"]["budget"]["max_attempts_per_member"])
+    if normalized["protocol"]["calibration"]["algorithm"] == "threshold_grid":
+        protocol["calibration"].update(algorithm="threshold_grid", version=THRESHOLD_GRID_CALIBRATION_VERSION)
     # PostgreSQL v2 run_configurations.clinical_target_recall: numeric NOT NULL, > 0 and <= 1.
     if not (_is_number(protocol["sensitivity_target"]) and 0 < protocol["sensitivity_target"] <= 1):
         raise CampaignError("SENSITIVITY_TARGET_OUTSIDE_V2_DOMAIN")

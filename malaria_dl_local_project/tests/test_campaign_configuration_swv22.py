@@ -77,7 +77,8 @@ def test_optimizers_are_the_closed_domain_of_the_factory(catalog):
 def test_early_stopping_contract_exposes_its_real_parameters(catalog):
     keys = [p["key"] for p in catalog["protocol"]["editable"]]
     assert keys == ["early_stopping.enabled", "early_stopping.patience", "early_stopping.min_delta",
-                    "early_stopping.restore_best_weights", "budget.max_attempts_per_member"]
+                    "early_stopping.restore_best_weights", "budget.max_attempts_per_member",
+                    "calibration.algorithm"]
     _request, protocol = cc.protocol_template()
     assert catalog["protocol"]["fixed"]["early_stopping.monitor"] == protocol["early_stopping"]["monitor"]
     assert catalog["protocol"]["fixed"]["sensitivity_target"] == load_protocol()["objective"]["value"]
@@ -166,6 +167,12 @@ def test_valid_parameters_are_accepted_and_preserved_per_model(catalog):
     (lambda c: c["protocol"]["early_stopping"].update(monitor="val_loss"), ("protocol", "INVALID_PROTOCOL_FIELDS")),
     (lambda c: c["protocol"]["budget"].update(max_attempts_per_member=0),
      ("protocol.budget.max_attempts_per_member", "INVALID_PARAMETER_VALUE")),
+    (lambda c: c["protocol"]["calibration"].update(algorithm="platt"),
+     ("protocol.calibration.algorithm", "INVALID_PARAMETER_VALUE")),
+    (lambda c: c["protocol"]["calibration"].update(algorithm=True),
+     ("protocol.calibration.algorithm", "INVALID_PARAMETER_VALUE")),
+    (lambda c: c["protocol"]["calibration"].update(population="test"), ("protocol", "INVALID_PROTOCOL_FIELDS")),
+    (lambda c: c["protocol"].update(calibration="threshold_grid"), ("protocol", "INVALID_PROTOCOL_FIELDS")),
 ])
 def test_invalid_configurations_are_rejected_by_field(catalog, mutate, expected):
     c = small(catalog)
@@ -240,6 +247,66 @@ def test_early_stopping_disabled_is_carried_to_every_configuration(catalog):
     assert result["valid"]
     assert all(i["configuration"]["resolved"]["execution"]["early_stopping"] is False
                for i in result["matrix"]["configurations"].values())
+
+
+def test_calibration_choice_defaults_to_the_approved_none(catalog):
+    spec = next(p for p in catalog["protocol"]["editable"] if p["key"] == "calibration.algorithm")
+    assert spec["type"] == "enum" and spec["choices"] == ["none", "threshold_grid"] and spec["default"] == "none"
+    # Display text follows the --threshold nomenclature; the stored value stays the contract value.
+    assert spec["choice_labels"] == {"none": "auto 0,5", "threshold_grid": "clinical"}
+    assert "calibration.algorithm" not in catalog["protocol"]["fixed"]
+    assert catalog["protocol"]["fixed"]["calibration.population"] == "val"
+    for p in catalog["presets"]:
+        assert p["configuration"]["protocol"]["calibration"] == {"algorithm": "none"}
+    result = cc.resolve(small(catalog), COUNTS)
+    assert result["valid"], result["errors"]
+    assert result["protocol"]["calibration"] == cc.protocol_template()[1]["calibration"]
+    assert all(i["configuration"]["resolved"]["execution"]["calibrate_threshold"] is False
+               for i in result["matrix"]["configurations"].values())
+
+
+@pytest.mark.parametrize("legacy", ["missing", None])
+def test_documents_without_calibration_keep_none(catalog, legacy):
+    c = small(catalog)
+    if legacy == "missing":
+        c["protocol"].pop("calibration")
+    else:
+        c["protocol"]["calibration"] = None
+    result = cc.resolve(c, COUNTS)
+    assert result["valid"], result["errors"]
+    assert result["protocol"] == cc.resolve(small(catalog), COUNTS)["protocol"]
+    assert result["normalized"]["protocol"]["calibration"] == {"algorithm": "none"}
+
+
+def test_threshold_grid_enables_val_calibration_in_every_configuration(catalog):
+    c = small(catalog)
+    c["protocol"]["calibration"]["algorithm"] = "threshold_grid"
+    result = cc.resolve(c, COUNTS)
+    assert result["valid"], result["errors"]
+    protocol = result["protocol"]
+    assert protocol["calibration"] == {"algorithm": "threshold_grid", "population": "val",
+                                       "version": cc.THRESHOLD_GRID_CALIBRATION_VERSION}
+    assert protocol["roles"]["calibration"] == "val" and protocol["limitations"]["independent_calibration"] is False
+    assert protocol["version"] != cc.resolve(small(catalog), COUNTS)["protocol"]["version"]
+    assert protocol["version"].startswith(cc.CONFIGURATION_VERSION + ":")
+    for item in result["matrix"]["configurations"].values():
+        e = item["configuration"]["resolved"]["execution"]
+        assert e["calibrate_threshold"] is True and e["evaluate_best_on_test"] is False
+        assert e["target_recall"] == protocol["sensitivity_target"]
+    # The frozen contract revalidates the protocol and every configuration against it.
+    again = expand_matrix(result["request"], protocol, frozen=True, dataset={"counts": COUNTS})
+    assert digest(again) == digest(result["matrix"])
+
+
+def test_threshold_grid_round_trips_through_the_stored_document(catalog):
+    c = small(catalog)
+    c["protocol"]["calibration"]["algorithm"] = "threshold_grid"
+    result = cc.resolve(c, COUNTS)
+    document = cc.document_from_request(result["request"], result["protocol"])
+    assert document["protocol"]["calibration"] == {"algorithm": "threshold_grid"}
+    normalized, errors = cc.normalize(document)
+    assert errors == []
+    assert cc.build_protocol(normalized, result["matrix"]["expected_count"]) == result["protocol"]
 
 
 def test_clinical_target_respects_the_v2_domain(monkeypatch, catalog):
