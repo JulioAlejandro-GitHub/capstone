@@ -72,6 +72,80 @@ tal cual. El backend Docker monta `malaria_dl_local_project` completo en `/app/m
 | Mapa y overlay EXPLAIN | `assessment_artifacts.payload` (`path`, `sha256`, `bytes`, `role`) + `artifacts/assessments/<attempt_id>/<artifact_id>.npy` / `.png` | `artifact_id` | Exactamente 2 por muestra (`map`, `overlay`), exigido por `assessment_attempt_guard` |
 | Métricas y confusión | `assessment_attempts.verification.metrics` (`binary_counts_rates_v1`) | `attempt_id` | Reconstruibles desde `assessment_results` |
 
+### 3.3 Requerimientos por pregunta científica
+
+Estados: **PERSISTE** (fuente operativa con datos), **DERIVABLE** (se calcula desde lo persistido; no tiene almacén ni
+linaje propio), **NO EXISTE** (sin productor), **NO DEMOSTRADO** (limitación aceptada). «Reporte A» = Aprendizaje del
+Modelo (un RUN); «Reporte B» = Comparación Científica (varios RUN).
+
+#### 3.3.1 Fuentes persistidas no listadas en §3.1–3.2
+
+| Dato | Fuente | Contenido verificado | Uso |
+|---|---|---|---|
+| Entorno y compilación por fase | `train_execution_records` `kind='runtime'`, `record_key='configuration'` | `optimizer` (hiperparámetros efectivos), `optimizer_class`, `optimizer_state`, `loss`, `compile`, `callbacks`, `trainable_layers`, `input_contract`, `output_contract`, `runtime_environment`, `started_at` | Diferencias de aprendizaje entre fases y arquitecturas; capas congeladas en fine-tuning |
+| Cierre de fase | `kind='phase'`, `record_key='completed'` | `epochs` ejecutadas, `early_stopping[].stopped_epoch/best_epoch` | Distinguir parada temprana de máximo de épocas |
+| Contrato de campaña | `experimental_campaigns` (`contract`, `canonical_contract`, `contract_hash`, `protocol`, `dataset_snapshot`) | Matriz, protocolo congelado y hash | Probar que los RUN comparados comparten protocolo |
+| Configuraciones y miembros | `campaign_configurations` (`configuration_hash`, `configuration`); `campaign_members` (`seed`, `position`, `state`) | Configuración por hash y semilla por miembro | Agrupar RUN por arquitectura/optimizador/semilla (miembros no avanzan con la CLI: H-02) |
+| Configuración comparable | `run_configurations` | Columnas normalizadas (arquitectura, optimizador, LR, épocas, EarlyStopping, checkpoint, dropout, L2, entrada, pesos, `calibration_enabled`, `clinical_target_recall`) + `extension_configuration`, `provenance_snapshot` | Tabla de diferencias de configuración (dimensión A4) |
+| Paciente y clase gobernados | `dataset_split_assignments` (`source_record_id`, `clinical_identity_id`, `split_name`, `class_name`) | 27.558 registros v1 | Análisis por paciente y bootstrap |
+| Tablas XAI cuantitativas | `xai_evidence`, `xai_artifacts`, `xai_region_attributions`, `xai_quantitative_evaluations`, `xai_interpretations`, `xai_specialist_reviews`, `xai_method_configurations`, `xai_evaluation_protocols`, `xai_evaluation_members` | **0 filas**; ningún comando las llena | Almacén previsto para evaluación cuantitativa y revisión experta de explicaciones |
+
+#### 3.3.2 Módulos de Comparación Científica y sus fuentes
+
+`backend_api/app/services/scientific_report.py:read` y `scientific_preflight.py` (dimensiones A1–A6, ver
+[SCC-REPORT-SCI.1](../engineering/scc_report_sci_1.md)).
+
+| Módulo | Fuente | RUN de worker | RUN de `python -m src.train` |
+|---|---|---|---|
+| `catalog` | `evaluations` ∪ `assessment_identities`/`attempts` (`comparison_catalog`); gobernanza (`dataset_versions`, `dataset_split_validation_checks`); checkpoint (`comparison_checkpoint`) | Completo | Intentos sí; checkpoint `CHECKPOINT_UNREGISTERED` (H-01) |
+| `curves` | `train_execution_records` `epoch` (`comparison_epochs`) + `run_configurations` | Completo | Curvas sí; checkpoint marcado no atribuido (H-01) |
+| `metrics` | Histórico: `evaluations` + `run_clinical_metrics`; independiente: `assessment_attempts.verification` | Ambos | Sólo intentos independientes |
+| `consensus` / `questions` | Histórico: `train_execution_records` `predictions` (por ruta); independiente: `assessment_results` (por `sample_id`) | Ambos; no mezcla espacios de identidad | Sólo `assessment_results` |
+| `representations` | `artifacts` con tipo/método `embedding`, `pca`, `umap`, `cka` (`comparison_representations`) | Vacío | Vacío |
+| Preflight A5 (checkpoint) | `artifacts` + `train_execution_sessions.verification` (`checkpoint_binding`) | PASS | Previsiblemente `CHECKPOINT_UNREGISTERED` (H-01) |
+
+#### 3.3.3 Reporte A — ¿Qué aprendió el modelo?
+
+| Pregunta | Evidencia requerida | Fuente | Estado |
+|---|---|---|---|
+| ¿Cómo evolucionó el aprendizaje? | Métricas TRAIN/VAL, LR y fase por época | `epoch`, `runtime`, `phase` | PERSISTE |
+| ¿Cuándo dejó de mejorar y por qué paró? | Épocas ejecutadas, `stopped_epoch`, `best_epoch`, EarlyStopping | `phase`, `selection` | PERSISTE |
+| ¿Qué checkpoint se eligió y con qué criterio? | Época, métrica, política, advertencia, SHA-256 | `selection`, `completion.selection`, `verification.artifact` | PERSISTE (conflicto política/monitor: H-04 de SCC-CAMPAIGN.1A) |
+| ¿Cómo cambiaron sus predicciones entre épocas? | Score VAL por muestra y época | `predictions` + Q8 | PERSISTE (por ruta; proyección a `sample_id` DERIVABLE) |
+| ¿Con qué umbral decide? | Evidencia de calibración VAL | `calibration/val/selected` | PERSISTE |
+| ¿Cómo rinde en VAL y TEST? | Resultados por muestra, métricas, confusión | `assessment_results`, `verification.metrics` | PERSISTE |
+| ¿Qué tan segura es y está calibrada? | `raw_score` + ECE, Brier, curva de fiabilidad | `assessment_results.raw_score` | DERIVABLE (`evaluation/probability_calibration.py` existe, sin almacén) |
+| ¿Dónde se equivoca y en qué pacientes? | Errores por muestra unidos a paciente | `assessment_results.patient_id`, `dataset_split_assignments` | DERIVABLE |
+| ¿Qué regiones influyen en la decisión? | Mapas por muestra, método, capa, checkpoint | `assessment_results` + `assessment_artifacts` (VAL) | PERSISTE (verificar integridad física, §5) |
+| ¿Por qué falla en TEST? | Explicaciones de errores TEST | — | NO EXISTE (EXPLAIN sólo VAL) |
+| ¿Mira al parásito? | Anotación de regiones o revisión experta contrastada con los mapas | `xai_region_attributions`, `xai_specialist_reviews` | NO EXISTE (tablas vacías, sin flujo) |
+| ¿Qué representaciones internas construyó? | Activaciones/embeddings por capa y muestra; PCA/UMAP | Checkpoints de todas las épocas + muestras gobernadas | NO EXISTE; DERIVABLE con implementación nueva |
+| ¿Qué imágenes procesó al optimizar? | Recibos de consumo | — | NO DEMOSTRADO |
+
+#### 3.3.4 Reporte B — Comparación Científica
+
+| Pregunta | Evidencia requerida | Fuente | Estado |
+|---|---|---|---|
+| ¿Son comparables los RUN? | Mismo dataset, fingerprints, split, protocolo, umbral, checkpoint verificable | `assessment_identities.identity`, contrato de campaña, `run_configurations` | PERSISTE; checkpoint en UI afectado por H-01 |
+| ¿Qué configuración difiere? | Configuración normalizada | `run_configurations` | PERSISTE |
+| ¿Cuál generaliza mejor? | TEST por muestra con umbral congelado antes de TEST | `assessment_results` (`test/final`) | PERSISTE |
+| ¿Cómo se comparan en VAL? | EVALUATE VAL por muestra | `assessment_results` (`val/development`) | PERSISTE (optimista: VAL selecciona checkpoint y umbral) |
+| ¿Qué errores comparten o complementan? | Intersección por `sample_id`, consenso, oracle | `assessment_results`; módulo `consensus` | PERSISTE; cálculo en consulta, sin almacén |
+| ¿Cuál es más confiable en su confianza? | ECE, Brier, fiabilidad por RUN | `raw_score` | DERIVABLE, sin almacén |
+| ¿Es la diferencia estadísticamente real? | Bootstrap por paciente, IC 95 % | `assessment_results` + paciente | DERIVABLE (especificado en `science/protocol.py`; TEST = 20 pacientes) |
+| ¿Varía con la semilla? | ≥3 semillas por configuración | `campaign_members.seed` | Depende del diseño de campaña |
+| ¿Miran regiones similares? | Mapas por muestra común; métrica de similitud entre mapas | `assessment_artifacts` | PERSISTE (mapas); métrica cuantitativa NO EXISTE (`xai_quantitative_evaluations` vacía) |
+| ¿Construyen representaciones similares? | CKA entre capas/arquitecturas | — | NO EXISTE |
+| ¿Corrieron en la misma condición? | Dispositivo CPU/GPU, `tensorflow-metal`, hash de pesos iniciales | — | NO EXISTE (H-15) |
+
+#### 3.3.5 Evidencia derivada sin almacén ni linaje
+
+Se puede calcular hoy fuera del sistema, pero el resultado no queda registrado con identidad, insumos ni hash:
+proyección ruta→`sample_id` de predicciones TRAIN-VAL; ECE/Brier/fiabilidad; bootstrap por paciente; consenso/oracle
+(el módulo lo calcula en cada consulta); análisis por paciente; métricas de similitud entre mapas; embeddings, PCA,
+UMAP y CKA. Hasta definir su contrato, un reporte que los use debe citar las consultas de origen (§4), los
+`attempt_id`/`run_id` de entrada y declararlos **derivados no persistidos**.
+
 ## 4. Consultas reproducibles (solo lectura)
 
 ```sql

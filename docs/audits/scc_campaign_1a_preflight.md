@@ -179,7 +179,9 @@ TRAIN carga sólo `train` y `val` (`train.py:79`); `TEST_FORBIDDEN` y `E5_TRAIN_
 
 El mapa permanente está en [capstone_scientific_artifacts_and_persistence.md](../architecture/capstone_scientific_artifacts_and_persistence.md):
 raíces físicas y qué las determina, tabla e identificador por evidencia, consultas SQL reproducibles, verificación de
-SHA-256 y política de conservación. Este preflight lo valida con estas observaciones:
+SHA-256 y política de conservación. Su §3.3 relaciona cada pregunta de «Aprendizaje del Modelo» y «Comparación
+Científica» con su evidencia, fuente y estado (PERSISTE / DERIVABLE / NO EXISTE / NO DEMOSTRADO), y cada módulo de
+Comparación Científica con la fuente que consulta. Este preflight lo valida con estas observaciones:
 
 | Control | Resultado | Estado |
 |---|---|---|
