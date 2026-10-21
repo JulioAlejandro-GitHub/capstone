@@ -211,6 +211,31 @@ def test_paused_campaign_is_executable_and_duplicate_catalog_rows_are_not(monkey
     assert not report["ready"]
 
 
+def test_default_dataset_resolver_checks_train_and_val_like_dry_run(monkeypatch):
+    """Without an injected resolver the readiness uses the governed resolver with explicit splits."""
+    from src.malaria_dl.data import governed_dataset
+    row, _ = frozen_row()
+    calls = []
+
+    class Snapshot:
+        def metadata(self):
+            return dict(row["dataset_snapshot"])
+
+    def resolve(version, *, required_splits=None, test_authorized=False):
+        calls.append((version, required_splits))
+        # The real resolver rejects a missing scope (DATASET_REQUIRED_SPLITS_REQUIRED).
+        governed_dataset.normalize_required_splits(required_splits, test_authorized=test_authorized)
+        return Snapshot()
+
+    monkeypatch.setattr(governed_dataset, "resolve_governed_dataset", resolve)
+    monkeypatch.setattr(governed_dataset, "assert_run_dataset_snapshot_unchanged", lambda a, b: None)
+    report = execution_readiness(FakeRepository(row), row, environment=lambda: dict(ENVIRONMENT))
+    status = {c["check"]: c for c in report["checks"]}
+    assert calls == [(str(row["dataset_version_id"]), ("train", "val"))]
+    assert status["dataset_snapshot_unchanged"] == dict(check="dataset_snapshot_unchanged", status="PASS", code=None)
+    assert report["ready"]
+
+
 @pytest.mark.parametrize("field", ["name", "purpose", "actor"])
 def test_configure_rejects_blank_identity_before_writing_dataset_evidence(field):
     from src.malaria_dl.campaigns.service import CampaignService

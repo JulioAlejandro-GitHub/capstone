@@ -115,7 +115,10 @@ def execution_readiness(repository, row, *, environment=None, dataset_resolver=N
     _check(checks, "frozen_adapters_available", adapters_ok, "FROZEN_ADAPTER_CONFLICT")
     _check(checks, "test_forbidden", test_ok, "TEST_FORBIDDEN")
     try:
-        snapshot = (dataset_resolver or resolve_governed_dataset)(str(row["dataset_version_id"]))
+        # Same scope as the executor's dry-run; resolving writes no dataset evidence.
+        resolver = dataset_resolver or (lambda version: resolve_governed_dataset(
+            version, required_splits=("train", "val")))
+        snapshot = resolver(str(row["dataset_version_id"]))
         assert_run_dataset_snapshot_unchanged(snapshot, row["dataset_snapshot"])
         _check(checks, "dataset_snapshot_unchanged", True)
     except Exception as exc:  # noqa: BLE001 -- governed dataset errors carry public codes only
