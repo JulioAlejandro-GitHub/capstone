@@ -98,3 +98,16 @@ test('guardar sólo se habilita con una validación backend vigente', () => {
   assert.match(page, /previewKey === requestKey/);
   assert.match(page, /disabled=\{!canSave\}/);
 });
+
+test('Configuración Global no oculta parámetros que algún modelo seleccionado admite', () => {
+  // Custom CNN (sin fine-tuning) era el primer modelo y fijaba "Épocas de fine-tuning" en 0 para todos.
+  assert.match(page, /if \(!current \|\| \(!current\.editable && p\.editable\)\) map\.set\(p\.key, p\)/);
+  assert.match(page, /Se aplica sólo a: \$\{labels\.join\(', '\)\}\./);
+  assert.doesNotMatch(page, /if \(!map\.has\(p\.key\)\) map\.set\(p\.key, p\)/);
+  // Sin valor global, cada modelo conserva el suyo y la pantalla lo muestra.
+  assert.match(page, /Valor actual por modelo: /);
+  assert.match(page, /parameter=\{withModelValues\(parameter\)\}/);
+  assert.match(page, /modelLabels=\{modelLabels\}/);
+  // Los parámetros sólo se envían a los modelos donde son editables.
+  assert.match(page, /if \(p\.editable\) \{\s*parameters\[modelId\]\[p\.key\] = v\.global_model_config\?\.\[p\.key\]/);
+});

@@ -228,9 +228,13 @@ class ExecutionRepository(CampaignRepository):
         started = datetime.fromisoformat(started_at) if started_at else None
         if started is not None and started.utcoffset() is None:
             raise CampaignError("TRAIN_TIMESTAMP_TIMEZONE_REQUIRED")
+        # Observed by the worker's accelerator guard; absent in historical payloads.
+        devices = (runtime.get("accelerator") or {}).get("gpu_devices")
         execute(c, """UPDATE runs SET host_name=:host, git_commit=:git_commit,
             python_version=:python, tensorflow_version=:tensorflow, keras_version=:keras,
             platform=:platform, machine=:machine, execution_type=:execution_mode,
+            gpu_available=COALESCE(CAST(:gpu_available AS boolean),gpu_available),
+            gpu_devices=COALESCE(CAST(:gpu_devices AS jsonb),gpu_devices),
             started_at=COALESCE(CAST(:started AS timestamptz),started_at),
             execution_parameters=execution_parameters || jsonb_build_object(
                 'runtime_environment',CAST(:runtime AS jsonb)) ||
@@ -241,6 +245,8 @@ class ExecutionRepository(CampaignRepository):
               AND NOT (execution_parameters ? 'training_started_at')""",
             id=str(run), runtime=canonical(runtime), started=started,
             keras=(runtime.get("packages") or {}).get("keras"),
+            gpu_available=None if devices is None else bool(devices),
+            gpu_devices=None if devices is None else canonical(devices),
             **{k: runtime.get(k) for k in ("host", "git_commit", "python", "tensorflow",
                                           "platform", "machine", "execution_mode")})
 

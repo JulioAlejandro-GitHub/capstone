@@ -103,6 +103,26 @@ emitir `CHECKPOINT_UNREGISTERED`; relanzar la campaña no duplica miembros verif
   `make test-cli01` 306 y `make test-scientific-parameters` 87 aprobadas.
 - El RUN `a137c67c` queda `failed` e inmutable; el miembro Custom CNN conserva 1 intento del presupuesto.
 
+**Reintento del piloto:** 3/3 `verified`, campaña `finalized`; intentos, E10, `artifacts`, `evaluations`
+(default/selected/final), `run_clinical_metrics`, `run_threshold_calibration` y umbral exacto en los tres RUN; SHA-256 de
+checkpoints correcto. **Fase 0 validada operacionalmente.**
+
+**Hallazgo posterior — GPU Metal (EVALUATE del piloto):** EVALUATE no reprodujo la VAL de TRAIN en Custom CNN (`cf66a654`) y
+VGG16 (`d1be1e59`) con el mismo checkpoint y umbral (diferencia por muestra hasta 0,999); DenseNet121 coincidió (≤6e-8).
+Diagnóstico reproducido: con `tensorflow-metal 1.2.0`, `relu(bias_add(matmul))` en modo grafo (el de `fit`/`predict`)
+difiere del cálculo directo y de CPU (error 5,0; gradientes 4,4). Afecta a toda `Dense(activation="relu")` oculta: Custom
+CNN y VGG16, no DenseNet121 (`head_units: 0`). Con el meta-optimizador de grafos desactivado el error es 0 en predicción y
+gradientes, con velocidad similar. RUN entrenados en GPU antes de la corrección (`bbbd5b60` productivo, `338136db`,
+`d3d42cf3`, `cf66a654`, `d1be1e59`) deben reentrenarse; Campaña 1 corrió en CPU (≈190 s/época) y no está afectada.
+
+**Implementación (sin commit):** `M/execution/accelerator.py` desactiva el meta-optimizador, exige GPU en ejecuciones
+locales y ejecuta un canario `Dense+ReLU` (entradas como argumentos para no plegarse en CPU) que detiene con
+`ACCELERATOR_GRAPH_DIVERGENCE`; se invoca en `train()` antes de datasets/modelo y en `KerasRuntime` (EVALUATE/EXPLAIN/TEST).
+El resultado queda en `runtime_environment.accelerator` y en `runs.gpu_available/gpu_devices` (cierra H-15 para TRAIN). El
+launcher local sólo acepta `.venv-metal`. «Configuración Global» deja editable un parámetro si algún modelo seleccionado lo
+admite («Se aplica sólo a: …») y muestra los valores por modelo cuando difieren. Pruebas: `tests/test_accelerator_guard.py`
+(incluye detección real del fallo en Metal sin la corrección) y `frontend/tests/campaign-configuration.test.mjs`.
+
 ### Fase 1 — Sin DDL: condición de ejecución, XAI estructurada y EXPLAIN TEST
 
 **1a. G-02 Condición de ejecución.**

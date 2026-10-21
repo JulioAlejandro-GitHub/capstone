@@ -16,7 +16,10 @@ class KerasRuntime:
         import tensorflow as tf
 
         from ..data.input_contract import validate_model_input
+        from ..execution.accelerator import configure
 
+        # Same graph semantics as TRAIN; SHAP/LIME and Grad-CAM also run in graph mode.
+        self.accelerator = configure(tf)
         tf.keras.utils.set_random_seed(value["seed"])
         tf.config.experimental.enable_op_determinism()
         self.value = value

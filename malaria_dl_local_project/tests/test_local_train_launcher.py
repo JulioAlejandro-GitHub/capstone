@@ -278,11 +278,11 @@ def test_wrong_virtualenv_is_rejected_before_database(monkeypatch, capsys):
         local_launch.bootstrap(environ, docker=False)
     assert stop.value.code == 2 and environ == {}
     err = capsys.readouterr().err
-    assert "LOCAL_ENVIRONMENT_INVALID" in err and "source .venv-local-train/bin/activate" in err
+    assert "LOCAL_ENVIRONMENT_INVALID" in err and "source .venv-metal/bin/activate" in err
 
 
 def test_environment_problem_detects_version_and_missing_packages():
-    venv = "/x/.venv-local-train"
+    venv = "/x/.venv-metal"
     assert local_launch.environment_problem(venv, "/usr", (3, 12), lambda m: object()) is None
     assert "3.11" in local_launch.environment_problem(venv, "/usr", (3, 11), lambda m: object())
     missing = local_launch.environment_problem(venv, "/usr", (3, 12),

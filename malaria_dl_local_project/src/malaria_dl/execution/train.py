@@ -42,6 +42,11 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
     """
     import tensorflow as tf
 
+    from .accelerator import configure
+
+    # Before any dataset/model graph: Metal graph execution must equal eager/CPU.
+    accelerator = configure(tf)
+
     from src.metrics import collect_predictions
 
     from ..data.loaders import (
@@ -241,7 +246,8 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
         ]
         if phase == "base":
             from .campaign import runtime_environment
-            runtime.update(runtime_environment=runtime_environment(), started_at=started_at)
+            runtime.update(runtime_environment={**runtime_environment(), "accelerator": accelerator},
+                           started_at=started_at)
         put("runtime", phase, "configuration", runtime)
         h = model.fit(
             datasets["train"],

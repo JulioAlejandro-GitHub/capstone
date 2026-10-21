@@ -132,6 +132,7 @@ function ParameterControl({ parameter, value, error, onChange }: {
           {value === true ? 'Sí' : 'No'}
         </button>
         <small>Default: {String(parameter.default)}</small>
+        {parameter.note ? <small>{parameter.note}</small> : null}
         {error ? <small className="campaign-error" role="alert">{message(error)}</small> : null}
       </div>
     );
@@ -168,6 +169,7 @@ function ParameterControl({ parameter, value, error, onChange }: {
       {parameter.minimum !== undefined ? ` · mín ${parameter.minimum}` : ''}
       {parameter.maximum !== undefined ? ` · ${parameter.exclusive_maximum ? '<' : 'máx'} ${parameter.maximum}` : ''}
     </small>
+    {parameter.note ? <small>{parameter.note}</small> : null}
     {error ? <small className="campaign-error" role="alert">{message(error)}</small> : null}
   </div>;
 }
@@ -175,9 +177,9 @@ function ParameterControl({ parameter, value, error, onChange }: {
 // -------------------------------------------------------------------------
 // REFACTOR: GlobalVariantConfiguration (Removido header de variante)
 // -------------------------------------------------------------------------
-function GlobalVariantConfiguration({ variant, index, globalParameters, fieldErrors, updateConfig }: {
-  variant: any; index: number; globalParameters: CampaignParameter[]; fieldErrors: Record<string, string>;
-  updateConfig: (key: string, value: ParameterValue) => void;
+function GlobalVariantConfiguration({ variant, index, globalParameters, modelLabels, fieldErrors, updateConfig }: {
+  variant: any; index: number; globalParameters: CampaignParameter[]; modelLabels: Map<string, string>;
+  fieldErrors: Record<string, string>; updateConfig: (key: string, value: ParameterValue) => void;
 }) {
   const sections = Object.keys(SECTION_LABELS)
     .map((section) => [section, globalParameters.filter((p) => p.section === section)] as const)
@@ -188,6 +190,17 @@ function GlobalVariantConfiguration({ variant, index, globalParameters, fieldErr
   const config = variant.global_model_config || (
     Object.values(variant.parameters || {}).reduce((acc: any, curr: any) => ({ ...acc, ...curr }), {})
   );
+
+  // Until a global value is set, each model keeps its own value: show them instead of one merged value.
+  const withModelValues = (parameter: CampaignParameter): CampaignParameter => {
+    if (variant.global_model_config?.[parameter.key] !== undefined) return parameter;
+    const values = Object.entries(variant.parameters || {})
+      .filter(([, params]: [string, any]) => params?.[parameter.key] !== undefined)
+      .map(([modelId, params]: [string, any]) => [modelLabels.get(modelId) ?? modelId, params[parameter.key]] as const);
+    if (new Set(values.map(([, value]) => String(value))).size < 2) return parameter;
+    const current = `Valor actual por modelo: ${values.map(([label, value]) => `${label} ${String(value)}`).join(' · ')}.`;
+    return { ...parameter, note: [parameter.note, current].filter(Boolean).join(' ') };
+  };
 
   // Mapeo inverso: Busca si FastAPI devolvió error para este parámetro en CUALQUIER modelo
   const getError = (key: string) => {
@@ -209,7 +222,7 @@ function GlobalVariantConfiguration({ variant, index, globalParameters, fieldErr
         <div className="campaign-parameter-grid">
           {items.map((parameter) => <ParameterControl
             key={parameter.key}
-            parameter={parameter}
+            parameter={withModelValues(parameter)}
             value={config[parameter.key] ?? parameter.default}
             error={getError(parameter.key)}
             onChange={(value) => updateConfig(parameter.key, value)}
@@ -332,6 +345,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
 
 
   const models = useMemo(() => new Map((catalog?.models ?? []).map((m) => [m.id, m])), [catalog]);
+  const modelLabels = useMemo(() => new Map((catalog?.models ?? []).map((m) => [m.id, m.label])), [catalog]);
 
   const getBackendNormalizedVariants = useCallback(() => {
     if (!configuration) return [];
@@ -361,13 +375,21 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
   const globalParameters = useMemo(() => {
     if (!catalog || !configuration) return [];
     const map = new Map<string, CampaignParameter>();
+    const editableIn = new Map<string, string[]>();
     configuration.models.forEach((modelId) => {
       const model = models.get(modelId);
       model?.parameters.forEach((p) => {
-        if (!map.has(p.key)) map.set(p.key, p);
+        if (p.editable) editableIn.set(p.key, [...(editableIn.get(p.key) ?? []), model.label]);
+        const current = map.get(p.key);
+        // The first model's fixed spec must not hide a parameter other selected models accept.
+        if (!current || (!current.editable && p.editable)) map.set(p.key, p);
       });
     });
-    return Array.from(map.values());
+    return Array.from(map.values()).map((p) => {
+      const labels = editableIn.get(p.key) ?? [];
+      return p.editable && labels.length < configuration.models.length
+        ? { ...p, note: `Se aplica sólo a: ${labels.join(', ')}.` } : p;
+    });
   }, [catalog, configuration?.models, models]);
 
   const selectedDataset = datasets.find((item) => item.dataset_version_id === datasetVersionId) ?? null;
@@ -615,6 +637,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
               variant={variant}
               index={index}
               globalParameters={globalParameters}
+              modelLabels={modelLabels}
               fieldErrors={fieldErrors}
               updateConfig={(key, value) => update((draft) => {
                 draft.variants[index].global_model_config = draft.variants[index].global_model_config || {};

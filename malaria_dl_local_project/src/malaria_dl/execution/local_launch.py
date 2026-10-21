@@ -12,14 +12,15 @@ import sys
 from pathlib import Path
 from urllib.parse import quote
 
+# Local executions run on the GPU (tensorflow-metal); CPU runs belong to Docker.
+# execution.accelerator re-checks the device and graph semantics inside TensorFlow.
 ALLOWED_VENVS = {
-    ".venv-local-train",
     ".venv-metal",
 }
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-VENV = ".venv-local-train"
+VENV = ".venv-metal"
 REQUIRED = ("tensorflow", "keras", "numpy", "sqlalchemy", "psycopg", "psutil", "dotenv")
 # Same role as docker-compose.yml backend.DATABASE_URL (certified non-superuser).
 RUNTIME_ROLE = "capstone_v2_runtime"

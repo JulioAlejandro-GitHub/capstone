@@ -283,6 +283,11 @@ pruebas sin PostgreSQL; **SIN EVIDENCIA operacional** hasta el piloto. Detalle e
 [scc_evidence_persistence_plan.md](../planning/scc_evidence_persistence_plan.md#fase-0--prerrequisito-proyecciones-de-train-por-cli-g-01-además-h-02h-07).
 Los RUN CLI ya verificados (`d3d42cf3`) no se pueden reparar.
 
+**Actualización 2026-10-21 — GPU Metal:** `tensorflow-metal 1.2.0` calcula mal `Dense+ReLU` en modo grafo; los RUN
+entrenados en GPU con capa Dense oculta (Custom CNN, VGG16) no reproducen sus métricas fuera de ese modo. **H-15 pasa a
+crítico** y se corrige en código (sin commit): meta-optimizador desactivado, canario previo, GPU obligatoria en local y
+registro del acelerador. Detalle en el plan SCC-EVIDENCE.
+
 ## 9. Acciones mínimas antes de ejecutar
 
 1. **Decisión de protocolo (documental, obligatoria):** semillas por arquitectura (recomendado ≥3), un optimizador por arquitectura o matriz explícita, criterio de checkpoint único (resolver H-04), política de umbral (0,5 fijo o calibración VAL habilitada; H-05), y regla escrita: candidatos y umbral congelados antes de TEST (H-06).
