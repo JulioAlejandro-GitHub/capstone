@@ -86,6 +86,23 @@ emitir `CHECKPOINT_UNREGISTERED`; relanzar la campaña no duplica miembros verif
   Ejecutarlas sólo contra un PostgreSQL desechable.
 - Pendiente operativo: en el piloto, comprobar Q1/Q7 y la consulta de `artifacts`/`evaluations` por RUN (§4 del mapa).
 
+**Piloto `0581c2ad-1288-488a-b200-9b5f9d67220b` (2026-10-21), primer miembro Custom CNN, RUN `a137c67c-…`:**
+
+- Funcionó la ruta del coordinador: intento y miembro, contexto E10, fila `artifacts` del checkpoint, 17 eventos E10,
+  checkpoints y predicciones VAL. La calibración clinical se calculó (umbral `0.3062586486339569`, recall objetivo
+  alcanzado).
+- Falló el evento 18 `calibration_completed` (primera emisión real: los 16 TRAIN previos tenían calibración apagada).
+  Worker con exit 2 sin diagnóstico.
+- Causa identificada: `v2_projection._insert` enlazaba floats como `float8`; el cast `float8 → numeric` conserva 15
+  dígitos (`0.306258648633957`), mientras `e04_assert_calibration` compara con el texto JSON del evento
+  (`0.3062586486339569`) ⇒ `E04_EVENT_PROVENANCE` / `E04_METRIC_PROVENANCE`. Comprobado con `SELECT` de solo lectura; no
+  se reprodujo la transacción completa. Las columnas ya son `numeric` sin límite: **no requiere DDL**.
+- Corrección (sin commit): `_exact()` enlaza floats como `Decimal(repr(x))` en todas las inserciones de la proyección y en
+  la búsqueda del umbral calibrado de `project_evaluation`; el worker imprime `TRAIN_CHILD_FAILED <clases>[<código de
+  guard>]` sin mensajes libres. Pruebas: `tests/test_v2_projection_exact_numeric.py` (18; 15 fallan sin la corrección).
+  `make test-cli01` 306 y `make test-scientific-parameters` 87 aprobadas.
+- El RUN `a137c67c` queda `failed` e inmutable; el miembro Custom CNN conserva 1 intento del presupuesto.
+
 ### Fase 1 — Sin DDL: condición de ejecución, XAI estructurada y EXPLAIN TEST
 
 **1a. G-02 Condición de ejecución.**

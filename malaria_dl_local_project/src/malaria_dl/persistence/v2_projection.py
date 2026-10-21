@@ -7,6 +7,7 @@ The database enforces checkpoint, calibration, event and dataset relationships.
 import hashlib
 import json
 import re
+from decimal import Decimal
 from uuid import uuid5
 import math
 
@@ -16,13 +17,24 @@ from ..campaigns.contracts import canonical
 from ..results.errors import ResultPersistenceError
 
 
+def _exact(value):
+    """Bind a float as the decimal its JSON evidence carries.
+
+    A float parameter travels as float8 and PostgreSQL's float8 -> numeric cast keeps
+    15 significant digits (0.3062586486339569 -> 0.306258648633957). The calibration
+    guards compare numeric columns with the event JSON text, so the stored value must
+    be the shortest round-trip repr that json.dumps wrote.
+    """
+    return Decimal(repr(value)) if isinstance(value, float) else value
+
+
 def _insert(connection, table, row):
     # Callers below construct every identifier; values always remain parameters.
     columns = ','.join(row)
     values = ','.join(f'CAST(:{k} AS jsonb)' if isinstance(v, (dict, list)) else f':{k}'
                       for k, v in row.items())
     connection.execute(text(f'INSERT INTO {table} ({columns}) VALUES ({values})'),
-                       {k: json.dumps(v, allow_nan=False) if isinstance(v, (dict, list)) else v
+                       {k: json.dumps(v, allow_nan=False) if isinstance(v, (dict, list)) else _exact(v)
                         for k, v in row.items()})
 
 
@@ -125,7 +137,7 @@ def project_evaluation(connection, event, result):
               AND s.source_kind='e10' AND s.evaluation_role='calibration_selected' '''),
             dict(run=event.run_id, checkpoint=context['checkpoint_artifact_id'],
                  protocol=context['protocol_hash'], population=context['population_hash'],
-                 input=context['input_contract_hash'], threshold=evaluation.threshold.value)).scalar_one()
+                 input=context['input_contract_hash'], threshold=_exact(evaluation.threshold.value))).scalar_one()
         context['calibration_id'] = match
     row = _evaluation_row(run, context, event, 'training_validation_final',
                           evaluation.threshold.value, evaluation.threshold.source)

@@ -2,7 +2,9 @@
 
 import argparse
 import os
+import re
 import signal
+import sys
 from uuid import UUID
 
 from ..campaigns.contracts import CampaignError, canonical, member_configuration
@@ -116,8 +118,24 @@ def main():
         return 0
     except (CampaignError, OSError):
         return 3
-    except (Exception, KeyboardInterrupt):  # noqa: BLE001 -- sanitized child category
+    except (Exception, KeyboardInterrupt) as exc:  # noqa: BLE001 -- sanitized child category
+        print("TRAIN_CHILD_FAILED " + failure_signature(exc), file=sys.stderr, flush=True)
         return 2
+
+
+def failure_signature(exc, depth=5):
+    """Exception classes along the chain plus database guard codes; never free-text messages."""
+    parts, seen = [], set()
+    while exc is not None and len(parts) < depth and id(exc) not in seen:
+        seen.add(id(exc))
+        part = type(exc).__name__
+        diag = getattr(getattr(exc, "orig", None), "diag", None)
+        code = getattr(diag, "message_primary", None)
+        if isinstance(code, str) and re.fullmatch(r"[A-Z][A-Z0-9_]{2,63}", code):
+            part += f"[{code}]"
+        parts.append(part)
+        exc = exc.__cause__ or exc.__context__
+    return " <- ".join(parts)
 
 
 if __name__ == "__main__":
