@@ -75,6 +75,7 @@ export function XAIOverlayView({ comparison, resources, datasource }: { comparis
   const update = (method: XAIMethod, change: Partial<{ on: boolean; opacity: number }>) =>
     setSettings(old => ({ ...old, [method]: { ...old[method], ...change } }));
   return <div className="xai-overlay">
+    <div className="xai-overlay-main">
     <figure className="xai-overlay-stage">
       <canvas ref={stage} width={width} height={height} role="img"
         aria-label={`Célula original${visible.map(method => ` con ${XAI_LABELS[method]} al ${settings[method].opacity} %`).join('')}`} />
@@ -86,7 +87,8 @@ export function XAIOverlayView({ comparison, resources, datasource }: { comparis
       <span><i className="xai-swatch" data-sign="positive" /> a favor · <i className="xai-swatch" data-sign="negative" /> en contra (LIME, SHAP)</span>
       <small>Cada mapa se normaliza por su propio máximo; las intensidades no son comparables entre métodos.</small>
     </div>
-    <ul className="xai-overlay-layers">
+    </div>
+    <ul className="xai-overlay-layers" aria-label="Capas de explicación">
       {XAI_METHODS.map((method, index) => {
         const evidence = comparison.methods[method];
         const layer = layers[method];
