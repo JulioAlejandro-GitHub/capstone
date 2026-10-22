@@ -364,3 +364,30 @@ test('generate missing locks on the click: one request, methods in flight before
   view=render();
   assert.equal(view.canGenerate,false);assert.deepEqual([...view.inFlight],['lime','shap']);
 });
+
+function npy(values, width, height, descr='<f4') {
+  const header = `{'descr': '${descr}', 'fortran_order': False, 'shape': (${height}, ${width}), }`.padEnd(118,' ')+'\n';
+  const head = new Uint8Array(10 + header.length); head.set([0x93,78,85,77,80,89,1,0]); new DataView(head.buffer).setUint16(8, header.length, true);
+  head.set(new TextEncoder().encode(header), 10);
+  const body = descr === '<f8' ? new Float64Array(values) : new Float32Array(values);
+  const out = new Uint8Array(head.length + body.byteLength); out.set(head); out.set(new Uint8Array(body.buffer), head.length); return out.buffer;
+}
+test('attribution maps decode NumPy and colour activation and signed attributions with magnitude alpha', () => {
+  const {parseNpy, attributionPixels} = loader()('utils/attributionMaps.ts');
+  const map = parseNpy(npy([0, 0.5, 1, 0.25], 2, 2));
+  assert.equal(map.width, 2); assert.equal(map.height, 2); assert.equal(map.values[2], 1);
+  assert.equal(parseNpy(npy([1,2], 2, 1, '<f8')).values[1], 2);
+  const cam = attributionPixels(map, false);
+  assert.equal(cam[3], 0); assert.equal(cam[11], 255); assert.ok(cam[8] > cam[10]);
+  const signed = attributionPixels(parseNpy(npy([-2, 1, 0, 2], 2, 2)), true);
+  assert.deepEqual([...signed.slice(0,4)], [31,119,180,255]);
+  assert.deepEqual([...signed.slice(4,8)], [214,39,40,128]);
+  assert.equal(signed[11], 0);
+  assert.throws(() => parseNpy(new ArrayBuffer(16)), /NumPy/);
+});
+test('grouping keeps the raw map of each method next to its overlay', () => {
+  const page = fixture('lime'); page.artifacts.push({artifact_id:'map-lime',role:'map',sample_id:'sample',attempt_id:page.detail.id,training_run_id:'train',sha256:'m',bytes:1});
+  const row = group([page],'train')[0];
+  assert.equal(row.methods.lime.artifact.artifactId,'artifact-lime');
+  assert.equal(row.methods.lime.mapArtifact.artifactId,'map-lime');
+});

@@ -24,6 +24,8 @@ export interface XAIEvidence {
   execution: XAIExecution;
   availability: XAIAvailability;
   artifact?: XAIArtifact;
+  // Raw attribution (NumPy float32, model input resolution) behind the overlay image.
+  mapArtifact?: XAIArtifact;
   originalSource?: XAIDatasetSample;
   attemptId?: string;
   assessmentIdentityId?: string;
@@ -84,6 +86,7 @@ export function groupXAIComparisons(pages: XAIAttemptPage[], trainingRunId: stri
       seen.add(duplicateKey);
       const relationMismatch = artifact && (artifact.attempt_id !== detail.id || artifact.training_run_id !== trainingRunId);
       const sampleId = artifact?.sample_id || undefined;
+      const map = sampleId ? artifacts.find(item => item.role === 'map' && item.sample_id === sampleId && item.attempt_id === detail.id) : undefined;
       const datasetVersionId = detail.identity.dataset?.dataset_version_id;
       const complete = sampleId && model.model_version_id && model.checkpoint_artifact_id && datasetVersionId && detail.identity.split && detail.identity.purpose;
       const issue = relationMismatch ? 'La referencia no acredita pertenencia al intento y TRAIN.'
@@ -121,6 +124,8 @@ export function groupXAIComparisons(pages: XAIAttemptPage[], trainingRunId: stri
         message: relationMismatch ? issue : detail.cause ?? (!artifact ? 'No hay overlay registrado en esta página del intento.' : undefined),
         artifact: artifact && !relationMismatch ? { artifactId: artifact.artifact_id, source: 'assessment',
           attemptId: detail.id, trainingRunId, sha256: artifact.sha256, bytes: artifact.bytes } : undefined,
+        mapArtifact: map && !relationMismatch ? { artifactId: map.artifact_id, source: 'assessment',
+          attemptId: detail.id, trainingRunId, sha256: map.sha256, bytes: map.bytes } : undefined,
         referenceSampleIds: method === 'shap' ? detail.identity.explanation?.background?.map(sample => sample.sample_id) : undefined,
         metadata: { identity: detail.identity, verification: detail.verification, state: detail.state } as JsonValue,
       };

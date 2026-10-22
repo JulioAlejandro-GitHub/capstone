@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { useScientificArtifact, type XAIImageResource } from '../../hooks/useScientificArtifact';
 import { XAI_LABELS, XAI_METHODS, type XAIComparison, type XAIEvidence, type XAIMethod } from './xai/comparison';
+import { XAIOverlayView } from './XAIOverlayView';
 import '../../styles/ds-primitives.css';
 import '../../styles/report-components.css';
 
@@ -150,6 +151,8 @@ export function XAIComparisonViewer({comparison, datasource, generation, actions
   const trigger = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState<XAIMethod | 'original' | null>(null);
+  // Alternative expanded view: layers over the original cell. Candidate main view pending specialist review.
+  const [view, setView] = useState<'comparison' | 'overlay'>('comparison');
   const titleId = useId();
   useEffect(() => {
     if (!host.current) return;
@@ -160,11 +163,13 @@ export function XAIComparisonViewer({comparison, datasource, generation, actions
     observer.observe(host.current);
     return () => observer.disconnect();
   }, []);
+  // Opening the expanded view also loads the images, even if the row never scrolled into view.
+  const load = visible || expanded !== null;
   const resources: Resources = {
-    original: useScientificArtifact(comparison.original?.originalSource ?? comparison.original?.artifact, datasource, visible),
-    gradcam: useScientificArtifact(comparison.methods.gradcam?.artifact, datasource, visible),
-    lime: useScientificArtifact(comparison.methods.lime?.artifact, datasource, visible),
-    shap: useScientificArtifact(comparison.methods.shap?.artifact, datasource, visible),
+    original: useScientificArtifact(comparison.original?.originalSource ?? comparison.original?.artifact, datasource, load),
+    gradcam: useScientificArtifact(comparison.methods.gradcam?.artifact, datasource, load),
+    lime: useScientificArtifact(comparison.methods.lime?.artifact, datasource, load),
+    shap: useScientificArtifact(comparison.methods.shap?.artifact, datasource, load),
   };
   useEffect(() => {
     if (expanded !== null) dialog.current?.showModal();
@@ -175,9 +180,17 @@ export function XAIComparisonViewer({comparison, datasource, generation, actions
       setExpanded(method);
     }} /></div>
     <dialog ref={dialog} className="report-viewer xai-modal" aria-labelledby={titleId} onClose={() => { setExpanded(null); trigger.current?.focus(); }}>
-      <h2 id={titleId}>{expanded ? `Vista ampliada · ${XAI_LABELS[expanded]}` : 'Comparación XAI'}</h2>
-      <form method="dialog"><button className="ds-button" autoFocus>Cerrar comparación</button></form>
-      {expanded !== null && <XAIComparisonContent comparison={comparison} resources={resources} density="expanded" generation={generation} />}
+      <h2 id={titleId}>{view === 'overlay' ? 'Vista ampliada · Superposición' : expanded ? `Vista ampliada · ${XAI_LABELS[expanded]}` : 'Comparación XAI'}</h2>
+      <div className="xai-modal-bar">
+        <div role="tablist" aria-label="Tipo de vista" className="xai-view-tabs">
+          {(['comparison', 'overlay'] as const).map(item => <button key={item} type="button" role="tab" className="ds-button" aria-selected={view === item}
+            onClick={() => setView(item)}>{item === 'comparison' ? 'Comparación' : 'Superposición'}</button>)}
+        </div>
+        <form method="dialog"><button className="ds-button" autoFocus>Cerrar comparación</button></form>
+      </div>
+      {expanded !== null && (view === 'overlay'
+        ? <XAIOverlayView comparison={comparison} resources={resources} datasource={datasource} />
+        : <XAIComparisonContent comparison={comparison} resources={resources} density="expanded" generation={generation} />)}
     </dialog>
   </section>;
 }
