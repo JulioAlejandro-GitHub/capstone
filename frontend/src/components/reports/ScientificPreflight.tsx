@@ -1,5 +1,6 @@
 import { DatasetIntegrity } from './DatasetIntegrity';
-import { ScientificResults, ScientificQuestions, ScientificRepresentations, PersistedXAI } from './ScientificReport';
+import { CurvesModule, MetricsModule, ConsensusModule, ScientificQuestions, ScientificRepresentations, PersistedXAI } from './ScientificReport';
+import { AnalysisPanel, AnalysisSectionNav, analysisSections, defaultAnalysisSection, useVisitedSections, type AnalysisSection } from './AnalysisWorkspace';
 import { ComparisonPython, configurationLabels, CopyText } from './ComparisonPython';
 import { Fragment, useMemo, useState } from 'react';
 import { useAuth } from '../../auth';
@@ -293,51 +294,87 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
   </>;
 }
 
-function ComparisonModules({ ids, datasource, selections, revision, onEvidenceChange }: { ids: string[]; datasource: string; selections: RequestedSelection[]; revision: number; onEvidenceChange: () => void }) {
-  const [xaiVisited, setXaiVisited] = useState(false);
-  const [scienceOpen, setScienceOpen] = useState(false);
-  const [xaiOpen, setXaiOpen] = useState(false);
-  return <>
-    <details className="ds-accordion" onToggle={event => { setScienceOpen(event.currentTarget.open); setXaiOpen(event.currentTarget.open); if (event.currentTarget.open) setXaiVisited(true); }}><summary>Explicabilidad XAI</summary>
-      {xaiVisited && ids.map((id, index) => <section key={id}><h3>RUN {String.fromCharCode(65 + index)}</h3><PersistedXAI key={JSON.stringify([selections.find(s => s.training_run_id === id), revision])} selection={selections.find(s => s.training_run_id === id) ?? { training_run_id: id }} datasource={datasource} active={scienceOpen && xaiOpen} /><TrainingAssessmentXAI key={JSON.stringify([datasource, selections.find(selection => selection.training_run_id === id), revision])} trainingRunId={id} datasource={datasource} active={scienceOpen && xaiOpen} onEvidenceChange={onEvidenceChange} /></section>)}
-    </details>
-
-  </>;
+function ComparisonModules({ ids, datasource, selections, revision, active, onEvidenceChange }: { ids: string[]; datasource: string; selections: RequestedSelection[]; revision: number; active: boolean; onEvidenceChange: () => void }) {
+  return <section className="scc-science-module" aria-label="Explicabilidad XAI"><h3>Explicabilidad XAI</h3>
+    {ids.map((id, index) => <section key={id}><h4>RUN {String.fromCharCode(65 + index)}</h4><PersistedXAI key={JSON.stringify([selections.find(s => s.training_run_id === id), revision])} selection={selections.find(s => s.training_run_id === id) ?? { training_run_id: id }} datasource={datasource} active={active} /><TrainingAssessmentXAI key={JSON.stringify([datasource, selections.find(selection => selection.training_run_id === id), revision])} trainingRunId={id} datasource={datasource} active={active} onEvidenceChange={onEvidenceChange} /></section>)}
+  </section>;
 }
 
-function ComparisonEvidenceSession({ ids, datasource, maximum, selections }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] }) {
+const sectionModules: Partial<Record<AnalysisSection, Module[]>> = { aprendizaje: ['curves'], desempeno: ['metrics'], errores: ['consensus'], explicabilidad: ['xai'], representaciones: ['embeddings', 'pca', 'umap', 'cka'] };
+const statePriority: string[] = ['ERROR_DE_CONSULTA', 'NO_COMPARABLE', 'EVIDENCIA_INSUFICIENTE', 'COMPARABLE_CON_ADVERTENCIAS', 'COMPARABLE'];
+// A section shows its least favourable analysis verdict; the full matrix stays in Trazabilidad.
+export function sectionStates(data: PreflightResponse | undefined) {
+  if (!data) return {};
+  return Object.fromEntries(Object.entries(sectionModules).flatMap(([section, moduleIds]) => {
+    const states: string[] = data.analyses.filter(analysis => moduleIds!.includes(analysis.module_id)).map(analysis => verdictText(analysis.verdict));
+    const state = statePriority.find(item => states.includes(item));
+    return state ? [[section, { state, label: stateLabels[state] }]] : [];
+  })) as Partial<Record<AnalysisSection, { state: string; label: string }>>;
+}
+
+function AnalysisContextBar({ data, ids }: { data?: PreflightResponse; ids: string[] }) {
+  const dataset = data?.selections[0] ? projectField(data, 'A1', data.selections[0].selection_id, 'name') : undefined;
+  const splits = data ? [...new Set(data.selections.map(selection => selection.split.state === 'known' ? String(selection.split.value).toUpperCase() : 'Partición sin evidencia'))] : [];
+  return <div className="scc-context-bar" aria-label="Contexto del análisis">
+    <strong>{ids.length === 1 ? 'Qué aprendió el modelo' : 'Comparación científica'}</strong>
+    {dataset?.state === 'known' && <span>{jsonText(dataset.value)}</span>}
+    {splits.length > 0 && <span>{splits.join(' · ')}</span>}
+    <ul className="scc-run-chips">{ids.map((id, index) => <li key={id} data-run={index}>RUN {String.fromCharCode(65 + index)}{data?.selections[index] && <small>{architecture(data, data.selections[index])}</small>}</li>)}</ul>
+  </div>;
+}
+
+function SectionMap({ states, onSelect }: { states: ReturnType<typeof sectionStates>; onSelect: (section: AnalysisSection) => void }) {
+  return <nav className="scc-section-map" aria-label="Mapa del análisis">{analysisSections.filter(item => item.id !== 'resumen').map(item => <button key={item.id} type="button" className="scc-section-card" onClick={() => onSelect(item.id)}>
+    <strong>{item.label}</strong><span>{item.question}</span>{states[item.id] && <span className="scc-verdict" data-state={states[item.id]!.state}>{states[item.id]!.label}</span>}
+  </button>)}</nav>;
+}
+
+type SectionProps = { section?: AnalysisSection; onSectionChange?: (section: AnalysisSection) => void };
+function ComparisonEvidenceSession({ ids, datasource, maximum, selections, section: requested, onSectionChange }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
   const cache = useMemo(createComparisonCache, []);
   const [revision, setRevision] = useState(0);
   const [xaiRevision, setXaiRevision] = useState(0);
-  const [detailOpen, setDetailOpen] = useState(false);
+  const [localSection, setLocalSection] = useState<AnalysisSection>(defaultAnalysisSection);
+  const section = requested ?? localSection;
+  const select = (next: AnalysisSection) => { setLocalSection(next); onSectionChange?.(next); };
+  const visited = useVisitedSections(section);
   const key = maximum !== undefined && ids.length >= 2 && ids.length <= maximum ? JSON.stringify(['preflight', datasource, selections, revision]) : null;
   const { data, error, loading } = useComparisonEvidence(cache, key, () => api.getComparisonPreflight(datasource, { selections }));
   const refresh = () => { cache.clear(); setRevision(value => value + 1); setXaiRevision(value => value + 1); };
   const findings = data ? [...new Map([...data.dimensions.flatMap(item => item.findings), ...data.analyses.flatMap(item => item.findings)].map(item => [item.reason_id, item])).values()] : [];
+  const states = sectionStates(data);
+  const moduleProps = { cache, datasource, selections, evidenceRevision: revision };
   return <>
-    <section className="report-section" aria-label="Resumen metodológico" aria-busy={loading}>
-      <div className="ds-page-header"><h2>Resumen metodológico</h2><button className="ds-button" onClick={refresh}>Actualizar evidencia</button></div>
-      {!key && <p>Selecciona entre dos TRAIN y el máximo configurado para consultar el Preflight.</p>}
-      {loading && <p role="status">Consultando Preflight…</p>}
-      {error ? <ErrorMessage error={error} retry={refresh} /> : null}
-      {data && <>
-        <p className="scc-meta">{data.evidence.length} referencias</p>
-        <p>{data.selections.length} TRAIN participantes · {data.selections.map(selection => architecture(data, selection)).join(' / ')}</p>
-        <MethodologicalWarnings data={data} findings={findings} />
-        {data.technical_errors.map(item => <p role="alert" key={item.error_id}>ERROR_DE_CONSULTA · {item.message} · {item.operation} · {item.error_id}</p>)}
-      </>}
-    </section>
-    <details className="ds-accordion" open={detailOpen} onToggle={event => setDetailOpen(event.currentTarget.open)}><summary>01 — ¿Qué estamos comparando?</summary>
-      {data ? <PreflightEvidence data={data} /> : <p>{ids.length === 1 ? 'RUN individual seleccionado. Sus resultados permanecen disponibles; el preflight comparativo requiere al menos dos TRAIN.' : 'El detalle utiliza la misma consulta del resumen metodológico.'}</p>}
-    </details>
-    <ScientificResults cache={cache} datasource={datasource} selections={selections} evidenceRevision={revision} />
-    <ComparisonModules selections={selections} revision={xaiRevision} ids={ids} datasource={datasource} onEvidenceChange={() => { cache.clear(); setRevision(value => value + 1); }} />
-    <ScientificRepresentations cache={cache} datasource={datasource} selections={selections} evidenceRevision={revision} />
-    <ScientificQuestions cache={cache} datasource={datasource} selections={selections} evidenceRevision={revision} />
+    <div className="scc-sticky-head">
+      {ids.length > 0 && <AnalysisContextBar data={data} ids={ids} />}
+      <AnalysisSectionNav section={section} onSelect={select} states={states} />
+    </div>
+    <AnalysisPanel id="resumen" section={section} visited={visited}><>
+      <section className="report-section" aria-label="Resumen metodológico" aria-busy={loading}>
+        <div className="ds-page-header"><h3>Resumen metodológico</h3><button className="ds-button" onClick={refresh}>Actualizar evidencia</button></div>
+        {!key && <p>{ids.length === 1 ? 'RUN individual seleccionado: sus resultados están disponibles en cada sección; el preflight comparativo requiere al menos dos TRAIN.' : 'Selecciona entre dos TRAIN y el máximo configurado para consultar el Preflight.'}</p>}
+        {loading && <p role="status">Consultando Preflight…</p>}
+        {error ? <ErrorMessage error={error} retry={refresh} /> : null}
+        {data && <>
+          <p className="scc-meta">{data.evidence.length} referencias</p>
+          <p>{data.selections.length} TRAIN participantes · {data.selections.map(selection => architecture(data, selection)).join(' / ')}</p>
+          <MethodologicalWarnings data={data} findings={findings} />
+          {data.technical_errors.map(item => <p role="alert" key={item.error_id}>ERROR_DE_CONSULTA · {item.message} · {item.operation} · {item.error_id}</p>)}
+        </>}
+      </section>
+      {ids.length > 0 && <SectionMap states={states} onSelect={select} />}
+      {ids.length > 0 && <ScientificQuestions {...moduleProps} active={section === 'resumen'} />}
+    </></AnalysisPanel>
+    <AnalysisPanel id="aprendizaje" section={section} visited={visited}><CurvesModule {...moduleProps} active={section === 'aprendizaje'} /></AnalysisPanel>
+    <AnalysisPanel id="desempeno" section={section} visited={visited}><MetricsModule {...moduleProps} active={section === 'desempeno'} /></AnalysisPanel>
+    <AnalysisPanel id="errores" section={section} visited={visited}><ConsensusModule {...moduleProps} active={section === 'errores'} /></AnalysisPanel>
+    <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} onEvidenceChange={() => { cache.clear(); setRevision(value => value + 1); }} /></AnalysisPanel>
+    <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} active={section === 'representaciones'} /></AnalysisPanel>
+    <AnalysisPanel id="trazabilidad" section={section} visited={visited}>{data ? <PreflightEvidence data={data} /> : <p>{ids.length === 1 ? 'RUN individual seleccionado. Sus resultados permanecen disponibles; el preflight comparativo requiere al menos dos TRAIN.' : 'El detalle utiliza la misma consulta del resumen metodológico.'}</p>}</AnalysisPanel>
   </>;
 }
 
-export function ScientificPreflight(props: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] }) {
+export function ScientificPreflight(props: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
   const { user, status } = useAuth();
   // Remount all retained evidence on a change of user, permissions, datasource or TRAIN set.
   const scope = JSON.stringify([user, status, props.datasource, props.ids]);

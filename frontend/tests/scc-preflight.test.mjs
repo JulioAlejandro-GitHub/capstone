@@ -97,28 +97,40 @@ test('observation states preserve not_checked, unknown, non-applicable and query
   for (const [state, label] of [['not_checked','No verificado'], ['unknown','Sin evidencia'], ['not_applicable','No disponible']]) assert.match(observationText({ state, reason: 'motivo', evidence_ids: [] }), new RegExp(label));
   assert.match(observationText({ state: 'query_error', error_ids: ['error-1'] }), /ERROR_DE_CONSULTA.*error-1/);
 });
-test('initial summary loads once; opening and closing detail reuses it; refresh queries again', async () => {
+test('initial summary loads once; switching sections reuses it; refresh queries again', async () => {
   let calls = 0;
   const s = screen({ getComparisonPreflight: async () => { calls++; return fixture(); } });
   let tree = s.render(); await flush(); tree = s.render();
   assert.equal(calls, 1);
   assert.ok(find(tree, n => n.props?.['aria-label'] === 'Resumen metodológico'));
-  const detail = find(tree, n => n.type === 'details' && n.props.open === false);
-  assert.ok(detail); detail.props.onToggle({ currentTarget: { open: true } }); tree = s.render();
-  find(tree, n => n.type === 'details' && n.props.open === true).props.onToggle({ currentTarget: { open: false } });
-  s.render(); await flush(); assert.equal(calls, 1);
+  const nav = () => find(tree, n => typeof n.type === 'function' && n.type.name === 'AnalysisSectionNav');
+  nav().props.onSelect('trazabilidad'); tree = s.render();
+  assert.equal(nav().props.section, 'trazabilidad');
+  assert.ok(find(tree, n => typeof n.type === 'function' && n.type.name === 'PreflightEvidence'));
+  nav().props.onSelect('resumen'); tree = s.render(); await flush(); assert.equal(calls, 1);
   const refresh = find(tree, n => n.type === 'button' && n.props.children === 'Actualizar evidencia');
   refresh.props.onClick(); s.render(); await flush(); s.render(); assert.equal(calls, 2); s.h.dispose();
 });
-test('initial modules are closed and independent; XAI is not mounted', () => {
-  const s = screen(); const tree = s.render(); const modules = find(tree, n => typeof n.type === 'function' && n.type.name === 'ComparisonModules');
-  s.h.reset();
-  const rendered = s.h.render(() => modules.type(modules.props));
-  const details = nodes(rendered).filter(n => n.type === 'details');
-  assert.equal(details.filter(n => n.props.open).length, 0);
-  assert.match(details[0].props.children[0].props.children, /Explicabilidad XAI/);
-  assert.equal(nodes(rendered).filter(n => typeof n.type === 'function').length, 0);
-  assert.ok(details.every(n => !n.props.name)); s.h.dispose();
+test('sections mount on first visit and only the visible section is active; XAI starts unmounted', () => {
+  const s = screen(); let tree = s.render();
+  const panel = id => find(tree, n => typeof n.type === 'function' && n.type.name === 'AnalysisPanel' && n.props.id === id);
+  assert.deepEqual(Array.from(panel('explicabilidad').props.visited), ['resumen']);
+  assert.equal(panel('explicabilidad').props.children.props.active, false);
+  find(tree, n => typeof n.type === 'function' && n.type.name === 'AnalysisSectionNav').props.onSelect('explicabilidad'); tree = s.render(); tree = s.render();
+  assert.ok(panel('explicabilidad').props.visited.includes('explicabilidad'));
+  assert.equal(panel('explicabilidad').props.children.props.active, true);
+  assert.equal(panel('aprendizaje').props.children.props.active, false); s.h.dispose();
+});
+test('analysis panel renders nothing before its first visit and hides retained sections', () => {
+  const { AnalysisPanel } = loader()('components/reports/AnalysisWorkspace.tsx');
+  assert.equal(AnalysisPanel({ id: 'errores', section: 'resumen', visited: ['resumen'], children: 'contenido' }), null);
+  const html = renderToStaticMarkup(React.createElement(AnalysisPanel, { id: 'errores', section: 'resumen', visited: ['resumen', 'errores'] }, 'contenido'));
+  assert.match(html, /role="tabpanel"/); assert.match(html, /hidden=""/); assert.match(html, /Errores y consenso/);
+});
+test('evidence stays inline without the traceability drawer provider', () => {
+  const { EvidenceButton } = loader()('components/reports/AnalysisWorkspace.tsx');
+  const html = renderToStaticMarkup(React.createElement(EvidenceButton, { title: 'Protocolo' }, 'json'));
+  assert.match(html, /<details><summary>Protocolo<\/summary>json<\/details>/);
 });
 test('no initial query with insufficient selection or selection exceeding configured capacity', async () => {
   let calls = 0; const s = screen({ getComparisonPreflight: async () => { calls++; return fixture(); } });

@@ -8,6 +8,7 @@ import { createComparisonCache, type ComparisonCache } from '../../utils/compari
 import type { RequestedSelection } from '../../types/scientificPreflight';
 import type { CatalogEvidence, CurveEvidence, MetricsEvidence, ConsensusEvidence, ReportModule, EvaluationChoice } from '../../types/scientificReport';
 import { CopyText } from './ComparisonPython';
+import { EvidenceButton } from './AnalysisWorkspace';
 
 const runLabel = (index: number) => `RUN ${String.fromCharCode(65 + index)}`;
 const value = (n: number | null | undefined) => n == null ? 'Sin evidencia' : n.toLocaleString('es-CL', {maximumFractionDigits: 6});
@@ -35,7 +36,7 @@ export function EvaluationNavigation({id, datasource, onChange}: {id: string; da
         <p>{new Date(selected.created_at).toLocaleString('es-CL')} · {selected.purpose}</p>
         {catalog.evaluations.length > 1 && <nav aria-label="Evaluaciones del RUN">{catalog.evaluations.map((item, i) => <button className="ds-button" type="button" key={item.evaluation_id ?? item.attempt_id} aria-current={i === index ? 'true' : undefined} title={`${item.split} · ${item.evaluation_role} · ${item.created_at}`} onClick={() => setIndex(i)}>{i+1}</button>)}</nav>}
         <small>Inicio: la más reciente; el orden no indica superioridad científica.</small>
-        <details><summary>Identidad de evaluación</summary><p className="report-identifier">Evaluación: {selected.evaluation_id ?? 'No registrada'}<br />Intento: {selected.attempt_id ?? 'No aplica a VAL histórica'}<br />Checkpoint: {selected.checkpoint_artifact_id ?? 'Sin evidencia'}</p><CopyText text={JSON.stringify(evaluationSelection(selected))} label="Copiar identidad" /></details>
+        <EvidenceButton title="Identidad de evaluación" label="Identidad de evaluación"><p className="report-identifier">Evaluación: {selected.evaluation_id ?? 'No registrada'}<br />Intento: {selected.attempt_id ?? 'No aplica a VAL histórica'}<br />Checkpoint: {selected.checkpoint_artifact_id ?? 'Sin evidencia'}</p><CopyText text={JSON.stringify(evaluationSelection(selected))} label="Copiar identidad" /></EvidenceButton>
       </> : <p>Sin evaluaciones persistidas para este RUN.</p>}
       <details><summary>Dataset y partición gobernada</summary>
         <p>{catalog.governance.split_algorithm} · Semilla {catalog.governance.random_seed} · {value(catalog.governance.source_record_count)} registros</p>
@@ -43,26 +44,30 @@ export function EvaluationNavigation({id, datasource, onChange}: {id: string; da
         <p>Controles PASS: {catalog.governance.checks.filter(c => c.status === 'PASS').length} / {catalog.governance.checks.length}</p>
         <p>Materialización: {catalog.governance.materialization_status ?? 'Sin evidencia'} · Reconciliación: {catalog.governance.reconciliation_status ?? 'Sin evidencia'} · {value(catalog.governance.record_count)} registros</p>
         <p>Coincidencia de versión: {catalog.governance.materialization_dataset_matches === true ? 'Sí' : 'No acreditada'}. Consumo individual TRAIN: {catalog.governance.consumed_images ? `${catalog.governance.consumed_images} imágenes registradas` : 'Sin evidencia individual; el snapshot acredita la referencia de campaña.'}</p>
-        <details><summary>Controles y snapshot de campaña</summary><pre>{JSON.stringify({checks: catalog.governance.checks, snapshot: catalog.governance.campaign_snapshot}, null, 2)}</pre></details>
+        <EvidenceButton title="Controles y snapshot de campaña" label="Controles y snapshot"><pre>{JSON.stringify({checks: catalog.governance.checks, snapshot: catalog.governance.campaign_snapshot}, null, 2)}</pre></EvidenceButton>
       </details>
     </>}
   </div>;
 }
 
-type ModuleProps = {cache: ComparisonCache; datasource: string; selections: RequestedSelection[]; evidenceRevision?: number};
+// active: section mode (Análisis de Modelos); omitted: standalone disclosure opened by the reader.
+type ModuleProps = {cache: ComparisonCache; datasource: string; selections: RequestedSelection[]; evidenceRevision?: number; active?: boolean};
 // Consensus verifies every governed sample of each attempt (3 x 2.685 TEST rows took 22 s before the
 // population query fix); the default 15 s would report a query error for a valid answer.
 const MODULE_TIMEOUT_MS: Partial<Record<ReportModule, number>> = {consensus: 60000, questions: 60000};
-export function LazyScientificModule<T>({title, module, cache, datasource, selections, evidenceRevision = 0, children, params = {}}: ModuleProps & {title: string; module: ReportModule; params?: {offset?: number; category?: string}; children: (data: T) => ReactNode}) {
+export function LazyScientificModule<T>({title, module, cache, datasource, selections, evidenceRevision = 0, active, children, params = {}}: ModuleProps & {title: string; module: ReportModule; params?: {offset?: number; category?: string}; children: (data: T) => ReactNode}) {
   const [open, setOpen] = useState(false);
   const [revision, setRevision] = useState(0);
   const key = selections.length ? JSON.stringify([module, datasource, selections, params, revision, evidenceRevision]) : null;
-  const result = useComparisonEvidence(cache, key, () => api.getComparisonReport<T>(datasource, {module, selections, ...params}, MODULE_TIMEOUT_MS[module]), open);
+  const enabled = active ?? open;
+  const result = useComparisonEvidence(cache, key, () => api.getComparisonReport<T>(datasource, {module, selections, ...params}, MODULE_TIMEOUT_MS[module]), enabled);
+  const body = <>{!selections.length && <p>Selecciona RUN para consultar este módulo.</p>}{result.loading && <p role="status">Consultando resultados…</p>}
+    {result.error ? <p role="alert">Error de consulta. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}
+    {result.data && <>{result.data.warnings.map(w => <p className="ds-callout" data-tone="warning" key={w}>{w}</p>)}{children(result.data.data)}</>}
+  </>;
+  if (active !== undefined) return <section className="scc-science-module" aria-label={title} aria-busy={result.loading}><h3>{title}</h3>{body}</section>;
   return <details className="ds-accordion scc-science-module" onToggle={event => setOpen(event.currentTarget.open)}><summary>{title}</summary>
-    {open && <>{!selections.length && <p>Selecciona RUN para consultar este módulo.</p>}{result.loading && <p role="status">Consultando resultados…</p>}
-      {result.error ? <p role="alert">Error de consulta. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}
-      {result.data && <>{result.data.warnings.map(w => <p className="ds-callout" data-tone="warning" key={w}>{w}</p>)}{children(result.data.data)}</>}
-    </>}
+    {open && body}
   </details>;
 }
 
@@ -92,7 +97,7 @@ export function TrainingCurves({data}: {data: CurveEvidence[]}) {
       </section>;
     })}
     <p>TRAIN: línea continua. VAL: discontinua. Valores originales, sin rellenar épocas ausentes.</p>
-    <details><summary>Definiciones y linaje</summary>{data.map((r,i) => <div key={r.training_run_id}><p>{runLabel(i)} · Loss: {r.loss_definition ?? 'Sin evidencia'} · Métricas: {r.metrics_definition ?? 'Sin evidencia'}</p>{r.issues.map(issue => <p key={issue}>{issue}</p>)}<pre>{JSON.stringify(r.checkpoint, null, 2)}</pre></div>)}</details>
+    <EvidenceButton title="Definiciones y linaje de las curvas" label="Definiciones y linaje">{data.map((r,i) => <div key={r.training_run_id}><p>{runLabel(i)} · Loss: {r.loss_definition ?? 'Sin evidencia'} · Métricas: {r.metrics_definition ?? 'Sin evidencia'}</p>{r.issues.map(issue => <p key={issue}>{issue}</p>)}<pre>{JSON.stringify(r.checkpoint, null, 2)}</pre></div>)}</EvidenceButton>
   </>;
 }
 const metricLabels: Record<string,string> = {accuracy:'Accuracy', precision:'Precision', recall:'Sensibilidad', specificity:'Especificidad', f1:'F1', f2:'F2', roc_auc:'ROC-AUC', pr_auc:'PR-AUC', balanced_accuracy:'Balanced accuracy'};
@@ -104,7 +109,7 @@ export function ClinicalMetrics({data}: {data: MetricsEvidence}) {
       {(['sample_count','threshold_used'] as const).map(key => <tr key={key}><th scope="row">{key === 'sample_count' ? 'Muestras' : 'Umbral'}</th>{data.runs.map(r => <td key={r.training_run_id}>{value(r.clinical?.[key])}</td>)}</tr>)}
     </tbody></table></div>
     <div className="scc-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={data.runs.filter(r => r.state === 'available').map(r => ({name: `${runLabel(data.runs.indexOf(r))} ${r.evaluation?.split.toUpperCase()}`, ...Object.fromEntries(Object.entries(r.clinical?.metrics ?? {}).map(([k,v]) => [k,v.value]))}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis domain={[0,1]} /><Tooltip /><Legend />{['recall','specificity','f2'].map((k,i) => <Bar key={k} dataKey={k} name={metricLabels[k]} fill={colors[i]} isAnimationActive={false} />)}</BarChart></ResponsiveContainer></div>
-    <h3>Matrices de confusión</h3><div className="report-comparison">{data.runs.map((r,i) => <section key={r.training_run_id} className="report-evidence"><h4>{runLabel(i)} · {r.evaluation?.split.toUpperCase()}</h4>{r.state === 'available' && r.clinical ? <table className="report-data-table"><caption>Filas reales / columnas predichas</caption><thead><tr><th>Real</th><th>No parasitada</th><th>Parasitada</th></tr></thead><tbody><tr><th>No parasitada</th><td>TN {r.clinical.tn}</td><td>FP {r.clinical.fp}</td></tr><tr><th>Parasitada</th><td>FN {r.clinical.fn}</td><td>TP {r.clinical.tp}</td></tr></tbody></table> : <p>{r.issues.join(' ') || 'Sin métricas clínicas para esta evaluación.'}</p>}<details><summary>Protocolo y atribución</summary><pre>{JSON.stringify(r.evaluation, null, 2)}</pre><pre>{JSON.stringify(r.checkpoint, null, 2)}</pre></details></section>)}</div>
+    <h3>Matrices de confusión</h3><div className="report-comparison">{data.runs.map((r,i) => <section key={r.training_run_id} className="report-evidence"><h4>{runLabel(i)} · {r.evaluation?.split.toUpperCase()}</h4>{r.state === 'available' && r.clinical ? <table className="report-data-table"><caption>Filas reales / columnas predichas</caption><thead><tr><th>Real</th><th>No parasitada</th><th>Parasitada</th></tr></thead><tbody><tr><th>No parasitada</th><td>TN {r.clinical.tn}</td><td>FP {r.clinical.fp}</td></tr><tr><th>Parasitada</th><td>FN {r.clinical.fn}</td><td>TP {r.clinical.tp}</td></tr></tbody></table> : <p>{r.issues.join(' ') || 'Sin métricas clínicas para esta evaluación.'}</p>}<EvidenceButton title={`Protocolo y atribución · ${runLabel(i)}`} label="Protocolo y atribución"><pre>{JSON.stringify(r.evaluation, null, 2)}</pre><pre>{JSON.stringify(r.checkpoint, null, 2)}</pre></EvidenceButton></section>)}</div>
     <p>Los valores describen esta población y este umbral; no identifican un ganador clínico universal.</p>
   </>;
 }
@@ -116,21 +121,26 @@ export function ConsensusResults({data}: {data: ConsensusEvidence}) {
     <div className="scc-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={Object.entries(data.distribution ?? {}).map(([category,count]) => ({category,count}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="category" tick={{fontSize: 11}} /><YAxis /><Tooltip /><Bar dataKey="count" name="Muestras" fill={colors[0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
     {([['Acuerdo: predicciones iguales / N común', data.agreement], ['Solapamiento de errores: conteos sobre N común', data.error_overlap]] as const).map(([title, matrix]) => <div className="report-table-scroll" key={title}><table className="report-data-table"><caption>{title}; N = {data.common_count}</caption><thead><tr><th>RUN</th>{matrix?.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{matrix?.map((row,i) => <tr key={i}><th scope="row">{runLabel(i)}</th>{row.map((n,j) => <td key={j}>{n} / {data.common_count}</td>)}</tr>)}</tbody></table></div>)}
     <div className="report-table-scroll"><table className="report-data-table"><caption>Cobertura y complementariedad por RUN</caption><thead><tr><th>RUN</th><th>Población</th><th>Comunes</th><th>Faltantes</th><th>Exclusivas</th><th>Errores exclusivos</th><th>Aciertos exclusivos</th></tr></thead><tbody>{data.coverage?.map((c,i) => <tr key={i}><th>{runLabel(i)}</th><td>{c.population}</td><td>{c.common}</td><td>{c.missing}</td><td>{c.exclusive}</td><td>{data.exclusive_errors?.[i]}</td><td>{data.exclusive_correct?.[i]}</td></tr>)}</tbody></table></div>
-    <details><summary>Fórmulas y denominadores</summary>{Object.entries(data.definitions ?? {}).map(([k,v]) => <p key={k}>{v}</p>)}</details>
+    <EvidenceButton title="Fórmulas y denominadores del consenso" label="Fórmulas y denominadores">{Object.entries(data.definitions ?? {}).map(([k,v]) => <p key={k}>{v}</p>)}</EvidenceButton>
     <div className="report-table-scroll" tabIndex={0}><table className="report-data-table"><caption>Muestras · {data.total} resultados del filtro</caption><thead><tr><th>Muestra</th><th>Clase real</th><th>Categoría</th>{data.coverage?.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{data.samples?.map(s => <tr key={s.sample}><th scope="row"><details><summary>{s.sample.split('/').pop()}</summary><code>{s.sample}</code><CopyText text={s.sample} label="Copiar muestra" /></details></th><td>{s.label === 1 ? 'Parasitada' : 'No parasitada'}</td><td>{s.category}</td>{s.runs.map((r,i) => <td key={i}>{value(r.score)} · {r.correct ? 'Acierto' : 'Error'} · clase {r.prediction}</td>)}</tr>)}</tbody></table></div>
   </>;
 }
-export function ScientificResults(props: ModuleProps) {
+export function CurvesModule(props: ModuleProps) {
+  return <LazyScientificModule<CurveEvidence[]> {...props} selections={props.selections.map(s => ({training_run_id: s.training_run_id}))} title="Curvas TRAIN / VAL" module="curves">{data => <TrainingCurves data={data} />}</LazyScientificModule>;
+}
+export function MetricsModule(props: ModuleProps) {
+  return <LazyScientificModule<MetricsEvidence> {...props} title="Métricas clínicas y matrices de confusión" module="metrics">{data => <ClinicalMetrics data={data} />}</LazyScientificModule>;
+}
+export function ConsensusModule(props: ModuleProps) {
   const [offset, setOffset] = useState(0);
   const [category, setCategory] = useState('disagreement');
-  return <>
-    <LazyScientificModule<CurveEvidence[]> {...props} selections={props.selections.map(s => ({training_run_id: s.training_run_id}))} title="Curvas TRAIN / VAL" module="curves">{data => <TrainingCurves data={data} />}</LazyScientificModule>
-    <LazyScientificModule<MetricsEvidence> {...props} title="Métricas clínicas y matrices de confusión" module="metrics">{data => <ClinicalMetrics data={data} />}</LazyScientificModule>
-    <LazyScientificModule<ConsensusEvidence> {...props} title="Consenso y desacuerdos" module="consensus" params={{offset, category}}>{data => <><label>Filtrar muestras<select className="ds-control" value={category} onChange={e => {setCategory(e.target.value); setOffset(0);}}>{['all','disagreement','CONSENSUS_TP','CONSENSUS_TN','CONSENSUS_FP','CONSENSUS_FN','high_confidence_error','low_confidence'].map(c => <option key={c}>{c}</option>)}</select></label><ConsensusResults data={data} />{data.state === 'available' && <nav aria-label="Páginas de muestras"><button className="ds-button" disabled={offset === 0} onClick={() => setOffset(n => Math.max(0,n-25))}>Anterior</button><span>Página {Math.floor(offset/25)+1}</span><button className="ds-button" disabled={offset+25 >= (data.total ?? 0)} onClick={() => setOffset(n => n+25)}>Siguiente</button></nav>}</>}</LazyScientificModule>
-  </>;
+  return <LazyScientificModule<ConsensusEvidence> {...props} title="Consenso y desacuerdos" module="consensus" params={{offset, category}}>{data => <><label>Filtrar muestras<select className="ds-control" value={category} onChange={e => {setCategory(e.target.value); setOffset(0);}}>{['all','disagreement','CONSENSUS_TP','CONSENSUS_TN','CONSENSUS_FP','CONSENSUS_FN','high_confidence_error','low_confidence'].map(c => <option key={c}>{c}</option>)}</select></label><ConsensusResults data={data} />{data.state === 'available' && <nav aria-label="Páginas de muestras"><button className="ds-button" disabled={offset === 0} onClick={() => setOffset(n => Math.max(0,n-25))}>Anterior</button><span>Página {Math.floor(offset/25)+1}</span><button className="ds-button" disabled={offset+25 >= (data.total ?? 0)} onClick={() => setOffset(n => n+25)}>Siguiente</button></nav>}</>}</LazyScientificModule>;
+}
+export function ScientificResults(props: ModuleProps) {
+  return <><CurvesModule {...props} /><MetricsModule {...props} /><ConsensusModule {...props} /></>;
 }
 export function ScientificQuestions(props: ModuleProps) {
-  return <section><h2>Preguntas científicas</h2>{['¿Dónde se complementan los modelos?', '¿Podemos inferir superioridad clínica?', '¿Qué evidencia explica las predicciones?'].map((q,i) => <LazyScientificModule<{answers: string[]}> key={q} {...props} title={q} module="questions">{data => <p>{data.answers[i]}</p>}</LazyScientificModule>)}</section>;
+  return <section className="scc-questions"><h3>Preguntas científicas</h3><div className="scc-question-grid">{['¿Dónde se complementan los modelos?', '¿Podemos inferir superioridad clínica?', '¿Qué evidencia explica las predicciones?'].map((q,i) => <LazyScientificModule<{answers: string[]}> key={q} {...props} title={q} module="questions">{data => <p>{data.answers[i]}</p>}</LazyScientificModule>)}</div></section>;
 }
 
 export function ScientificRepresentations(props: ModuleProps) {

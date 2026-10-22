@@ -45,6 +45,11 @@ function LegacyRunRedirect() {
     : <InvalidEntityId kind="ejecución" listPath={routes.runs} />;
 }
 
+function LegacyComparisonRedirect() {
+  const location = useLocation();
+  return <Navigate replace to={`${routes.comparison}${location.search}`} />;
+}
+
 function LegacySmearRedirect() {
   const location = useLocation();
   return <Navigate replace to={`${routes.smearWorkflow}${location.search}`} />;
@@ -97,6 +102,7 @@ function App() {
         <Route path={`${routes.evaluations}/e6/:attemptId`} element={<AssessmentDetail {...common} />} />
         <Route path={routes.evaluations} element={<ClinicalEvaluation {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
         <Route path={routes.comparison} element={<ModelComparison {...common} />} />
+        <Route path={routes.legacyComparison} element={<LegacyComparisonRedirect />} />
         <Route path={routes.modelVersions} element={<ModelVersionsRoute datasource={datasource} go={go} />} />
         <Route path={`${routes.modelVersions}/:modelVersionId`} element={<ModelVersionsRoute datasource={datasource} go={go} />} />
         <Route path={routes.deployments} element={<DeploymentsRoute datasource={datasource} go={go} />} />

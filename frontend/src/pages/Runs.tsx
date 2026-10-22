@@ -409,7 +409,7 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
           <p>Linaje read-only de cada entrenamiento y sus procesos derivados.</p>
         </div>
       </div>
-      <Link className="report-detail-button" to={withAllowedQuery(routes.comparison, { datasource })}>Comparar Modelos</Link>
+      <Link className="report-detail-button" to={withAllowedQuery(routes.comparison, { datasource })}>Análisis de Modelos</Link>
       <section className="panel report-panel">
         <ReportFilters
           hasActiveFilters={hasActiveFilters}

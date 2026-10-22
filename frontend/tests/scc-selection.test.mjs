@@ -62,6 +62,7 @@ function page(ids, catalog, error = null) {
     '../hooks/useComparisonCatalog': {useComparisonCatalog: () => ({catalog, error, retry() {}})},
     '../hooks/useComparisonSelection': {useComparisonSelection: () => ({ids, add() {}, remove() {}})},
     '../components/reports/ComparisonRunCard': {ComparisonRunCard: ({id}) => React.createElement('article', null, id)},
+    'react-router-dom': {useSearchParams: () => [new URLSearchParams(), () => {}]},
   });
   return renderToStaticMarkup(React.createElement(load('pages/ModelComparison.tsx').ModelComparison, {datasource: 'malaria'}));
 }
@@ -96,8 +97,8 @@ test('navigation reuses the public route immediately after campaign', () => {
   const load = loader();
   const {navigationItems} = load('components/navigation/navigationConfig.ts');
   const index = navigationItems.findIndex(item => item.id === 'campaign');
-  assert.equal(navigationItems[index + 1].label, 'Comparar Modelos');
-  assert.equal(navigationItems[index + 1].path, '/modelo-ia/comparacion');
+  assert.equal(navigationItems[index + 1].label, 'Análisis de Modelos');
+  assert.equal(navigationItems[index + 1].path, '/modelo-ia/analisis');
 });
 
 for (let index = 0; index < 4; index++) test(`compact card RUN ${String.fromCharCode(65 + index)} keeps UUID in closed technical details`, () => {

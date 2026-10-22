@@ -127,3 +127,46 @@
 .ds-report.scc-page .scc-integrity-table tbody tr:hover > td,
 .ds-report.scc-page .scc-integrity-table tbody tr:focus-within > th,
 .ds-report.scc-page .scc-integrity-table tbody tr:focus-within > td { background: var(--ds-bg-hover); }
+
+/* Análisis de Modelos: context bar, section tabs and traceability drawer. */
+.ds-report.scc-page .scc-sticky-head { position: sticky; top: 0; z-index: 5; display: grid; gap: var(--ds-space-2); padding-top: var(--ds-space-2); background: var(--ds-bg-canvas, #f6f7fb); }
+.ds-report.scc-page .scc-context-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2) var(--ds-space-4); padding: var(--ds-space-3) var(--ds-space-4); background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-lg); box-shadow: var(--ds-shadow-card); }
+.ds-report.scc-page .scc-context-bar > span { color: var(--ds-fg-muted); font-size: var(--ds-text-sm); }
+.ds-report.scc-page .scc-run-chips { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); margin: 0 0 0 auto; padding: 0; list-style: none; }
+.ds-report.scc-page .scc-run-chips li { display: inline-flex; align-items: baseline; gap: var(--ds-space-2); padding: var(--ds-space-1, 2px) var(--ds-space-3); border: 1px solid var(--ds-border-default); border-radius: 999px; font-size: var(--ds-text-sm); font-weight: 600; }
+.ds-report.scc-page .scc-run-chips li small { font-weight: normal; color: var(--ds-fg-muted); }
+.ds-report.scc-page .scc-run-chips li[data-run="0"] { border-color: var(--ds-blue-500); }
+.ds-report.scc-page .scc-run-chips li[data-run="1"] { border-color: var(--ds-green-700); }
+.ds-report.scc-page .scc-run-chips li[data-run="2"] { border-color: var(--ds-violet-700); }
+.ds-report.scc-page .scc-run-chips li[data-run="3"] { border-color: var(--ds-amber-700); }
+.ds-report.scc-page .scc-section-nav { border-bottom: 1px solid var(--ds-border-default); overflow-x: auto; }
+.ds-report.scc-page .scc-section-nav [role="tablist"] { display: flex; gap: var(--ds-space-1, 2px); min-width: max-content; }
+.ds-report.scc-page .scc-section-tab { display: inline-flex; align-items: center; gap: var(--ds-space-2); padding: var(--ds-space-3) var(--ds-space-4); border: 0; border-bottom: 3px solid transparent; background: none; color: var(--ds-fg-muted); font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.ds-report.scc-page .scc-section-tab:hover { color: var(--ds-fg-default); background: var(--ds-bg-hover); }
+.ds-report.scc-page .scc-section-tab[aria-selected="true"] { color: var(--ds-action-fg); border-bottom-color: var(--ds-action-fg); }
+.ds-report.scc-page .scc-section-tab:focus-visible { outline: var(--ds-focus-width) solid var(--ds-focus-color); outline-offset: calc(-1 * var(--ds-focus-width)); }
+.ds-report.scc-page .scc-state-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ds-status-neutral-fg); }
+.ds-report.scc-page .scc-state-dot[data-state="COMPARABLE"] { background: var(--ds-status-approved-fg); }
+.ds-report.scc-page .scc-state-dot[data-state="COMPARABLE_CON_ADVERTENCIAS"] { background: var(--ds-status-warning-fg); }
+.ds-report.scc-page .scc-state-dot:is([data-state="NO_COMPARABLE"], [data-state="ERROR_DE_CONSULTA"]) { background: var(--ds-status-rejected-fg); }
+.ds-report.scc-page .scc-section-panel { min-width: 0; }
+.ds-report.scc-page .scc-section-panel[hidden] { display: none; }
+.ds-report.scc-page .scc-section-header h2 { margin-bottom: 0; }
+.ds-report.scc-page .scc-section-header p { margin-top: var(--ds-space-1, 2px); }
+.ds-report.scc-page .scc-section-map,
+.ds-report.scc-page .scc-question-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--ds-space-3); margin-block: var(--ds-space-4); }
+.ds-report.scc-page .scc-section-card { display: flex; flex-direction: column; align-items: flex-start; gap: var(--ds-space-2); padding: var(--ds-space-4); text-align: left; font: inherit; color: inherit; background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-lg); cursor: pointer; }
+.ds-report.scc-page .scc-section-card:hover { border-color: var(--ds-action-fg); }
+.ds-report.scc-page .scc-section-card > span:not(.scc-verdict) { color: var(--ds-fg-muted); font-size: var(--ds-text-sm); }
+.ds-report.scc-page .scc-question-grid .scc-science-module { margin: 0; padding: var(--ds-space-4); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-lg); background: var(--ds-bg-surface); }
+.ds-report.scc-page .scc-question-grid h3 { font-size: var(--ds-text-md, 15px); margin-top: 0; }
+.ds-report.scc-page .scc-tray-actions { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
+.ds-report.scc-page .report-comparison[hidden] { display: none; }
+.ds-report .scc-evidence-button { margin-block: var(--ds-space-2); }
+.ds-report.scc-trace-drawer { width: min(640px, 100%); max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0 0 0 auto; padding: 0; border: 0; border-left: 1px solid var(--ds-border-default); background: var(--ds-bg-surface); color: var(--ds-fg-default); box-shadow: var(--ds-shadow-modal); box-sizing: border-box; }
+.ds-report.scc-trace-drawer::backdrop { background: var(--ds-modal-backdrop); }
+.ds-report.scc-trace-drawer .scc-trace-header { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: flex-start; gap: var(--ds-space-4); padding: var(--ds-space-4) var(--ds-space-5, 20px); background: var(--ds-bg-surface); border-bottom: 1px solid var(--ds-border-default); }
+.ds-report.scc-trace-drawer .scc-trace-header h2 { margin: 0; font-size: var(--ds-text-lg); }
+.ds-report.scc-trace-drawer .scc-trace-body { padding: var(--ds-space-4) var(--ds-space-5, 20px); overflow-wrap: anywhere; }
+.ds-report.scc-trace-drawer pre { padding: var(--ds-space-4); background: var(--ds-bg-subtle); border: 1px solid var(--ds-border-default); white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--ds-font-mono); font-size: var(--ds-text-sm); }
+.ds-report.scc-trace-drawer .scc-meta { font-size: var(--ds-text-xs); color: var(--ds-fg-muted); text-transform: uppercase; letter-spacing: .04em; }

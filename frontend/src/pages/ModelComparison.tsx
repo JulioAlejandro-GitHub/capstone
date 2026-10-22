@@ -4,6 +4,8 @@ import type { RequestedSelection } from '../types/scientificPreflight';
 import { useAuth } from '../auth';
 import { ScientificPreflight } from '../components/reports/ScientificPreflight';
 import { useCallback, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { TraceabilityProvider, defaultAnalysisSection, isAnalysisSection, type AnalysisSection } from '../components/reports/AnalysisWorkspace';
 import { useComparisonCatalog } from '../hooks/useComparisonCatalog';
 import { useComparisonSelection } from '../hooks/useComparisonSelection';
 import { ComparisonRunCard } from '../components/reports/ComparisonRunCard';
@@ -24,6 +26,16 @@ function ComparisonPage({ datasource }: { datasource: string }) {
   const trigger = useRef<HTMLButtonElement | null>(null);
   const [query, setQuery] = useState('');
   const [selectorLoaded, setSelectorLoaded] = useState(false);
+  const [trayOpen, setTrayOpen] = useState(true);
+  const [search, setSearch] = useSearchParams();
+  const requested = search.get('seccion');
+  const section: AnalysisSection = isAnalysisSection(requested) ? requested : defaultAnalysisSection;
+  // Only the section is written; datasource and any other allowed query value are preserved.
+  const selectSection = useCallback((next: AnalysisSection) => setSearch(previous => {
+    const params = new URLSearchParams(previous);
+    if (next === defaultAnalysisSection) params.delete('seccion'); else params.set('seccion', next);
+    return params;
+  }, { replace: true }), [setSearch]);
   const { summaries, error: summariesError, retry: retrySummaries } = useComparisonTrainingSummaries(datasource, selectorLoaded);
   const maximum = catalog?.comparison.scc_max_comparison_runs;
   const available = maximum === undefined ? 0 : Math.max(0, maximum - ids.length);
@@ -38,20 +50,24 @@ function ComparisonPage({ datasource }: { datasource: string }) {
     setSelectorLoaded(true);
     dialog.current?.showModal();
   };
-  return <section className="ds-page ds-report scc-page">
+  return <TraceabilityProvider><section className="ds-page ds-report scc-page">
     <header className="ds-page-header">
-      <div className="scc-heading-copy"><h1 className="report-heading">Comparación Científica</h1><p className="report-copy">Análisis comparativo de ejecuciones, dinámica de aprendizaje, topología de representaciones y complementariedad de errores.</p></div>
+      <div className="scc-heading-copy"><h1 className="report-heading">Análisis de Modelos</h1><p className="report-copy">{ids.length === 1
+        ? '¿Qué aprendió el modelo? Dinámica de aprendizaje, desempeño clínico, errores y explicabilidad de un TRAIN.'
+        : ids.length > 1 ? 'Comparación científica: dinámica de aprendizaje, desempeño, complementariedad de errores y explicabilidad entre TRAIN.'
+          : 'Selecciona un TRAIN para analizar qué aprendió el modelo, o varios para compararlos científicamente.'}</p></div>
       <div className="report-metric" aria-live="polite"><span>Capacidad utilizada / máxima</span><strong>{ids.length} / {maximum ?? '—'}</strong></div>
     </header>
     {error && <div className="ds-callout" role="alert"><p>{error}</p><button className="ds-button" onClick={retry}>Reintentar consulta</button></div>}
     {!catalog && !error && <p role="status">Cargando catálogo de TRAIN y capacidad…</p>}
     <div className="ds-page-header"><h2>Ejecuciones seleccionadas</h2>
-      <button className="ds-button" data-variant="primary" disabled={!available} onClick={event => openSelector(event.currentTarget)}>Añadir RUN</button>
+      <div className="scc-tray-actions">{ids.length > 0 && <button type="button" className="ds-button" aria-expanded={trayOpen} aria-controls="scc-run-tray" onClick={() => setTrayOpen(open => !open)}>{trayOpen ? 'Ocultar tarjetas' : 'Mostrar tarjetas'}</button>}
+        <button className="ds-button" data-variant="primary" disabled={!available} onClick={event => openSelector(event.currentTarget)}>Añadir RUN</button></div>
     </div>
-    <p role="status">{ids.length < 2 ? 'Todavía no existe una comparación configurada. Selecciona al menos dos TRAIN.' : 'Selección preparada para consultar evidencia científica.'}
+    <p role="status">{ids.length < 2 ? ids.length === 1 ? 'Todavía no existe una comparación configurada: con un TRAIN se analiza qué aprendió el modelo; añade otro para comparar.' : 'Todavía no existe una comparación configurada. Selecciona al menos dos TRAIN.' : 'Selección preparada para consultar evidencia científica.'}
       {maximum !== undefined && !available ? ' Capacidad máxima alcanzada.' : ''}
       {maximum !== undefined && ids.length > maximum ? ' La configuración cambió: quita ejecuciones para respetar el máximo actual.' : ''}</p>
-    <div className="report-comparison">
+    <div className="report-comparison" id="scc-run-tray" hidden={!trayOpen}>
       {ids.map((id, index) => {
         const choice = choices.find(item => item.run.training_run_id === id);
         return <ComparisonRunCard key={`${datasource}:${id}`} id={id} index={index} datasource={datasource}
@@ -60,7 +76,7 @@ function ComparisonPage({ datasource }: { datasource: string }) {
       {Array.from({ length: available }, (_, index) => <button key={index} className="ds-button scc-empty-slot"
         onClick={event => openSelector(event.currentTarget)}><strong>＋ Añadir RUN</strong><span>Espacio {ids.length + index + 1} disponible</span></button>)}
     </div>
-    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} />
+    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} />
     <dialog ref={dialog} className="report-viewer scc-run-selector" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
       <div className="ds-page-header"><h2 id="scc-selector-title">Seleccionar ejecuciones TRAIN</h2>
         <button className="ds-button" onClick={() => dialog.current?.close()}>Cerrar</button></div>
@@ -83,7 +99,7 @@ function ComparisonPage({ datasource }: { datasource: string }) {
       {summaries && !filtered.length && <p>Sin ejecuciones TRAIN disponibles para esta búsqueda.</p>}
       {summaries && summaries.count >= summaries.limit && <p role="status">Se muestran hasta {summaries.limit} entrenamientos recientes.</p>}
     </dialog>
-  </section>;
+  </section></TraceabilityProvider>;
 }
 
 export function ModelComparison({ datasource }: { datasource: string }) {
