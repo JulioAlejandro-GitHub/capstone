@@ -636,9 +636,10 @@ function withDatasource(datasource: string) {
 }
 
 export const api = {
-  getComparisonReport<T>(datasource: string, body: ReportRequest) {
+  getComparisonReport<T>(datasource: string, body: ReportRequest, timeoutMs?: number) {
     return request<ReportResponse<T>>('/models/comparison/report', { datasource }, {
       init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+      timeoutMs,
     });
   },
   getComparisonPreflight(datasource: string, body: PreflightRequest) {

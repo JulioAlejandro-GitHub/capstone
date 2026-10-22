@@ -50,11 +50,14 @@ export function EvaluationNavigation({id, datasource, onChange}: {id: string; da
 }
 
 type ModuleProps = {cache: ComparisonCache; datasource: string; selections: RequestedSelection[]; evidenceRevision?: number};
+// Consensus verifies every governed sample of each attempt (3 x 2.685 TEST rows took 22 s before the
+// population query fix); the default 15 s would report a query error for a valid answer.
+const MODULE_TIMEOUT_MS: Partial<Record<ReportModule, number>> = {consensus: 60000, questions: 60000};
 export function LazyScientificModule<T>({title, module, cache, datasource, selections, evidenceRevision = 0, children, params = {}}: ModuleProps & {title: string; module: ReportModule; params?: {offset?: number; category?: string}; children: (data: T) => ReactNode}) {
   const [open, setOpen] = useState(false);
   const [revision, setRevision] = useState(0);
   const key = selections.length ? JSON.stringify([module, datasource, selections, params, revision, evidenceRevision]) : null;
-  const result = useComparisonEvidence(cache, key, () => api.getComparisonReport<T>(datasource, {module, selections, ...params}), open);
+  const result = useComparisonEvidence(cache, key, () => api.getComparisonReport<T>(datasource, {module, selections, ...params}, MODULE_TIMEOUT_MS[module]), open);
   return <details className="ds-accordion scc-science-module" onToggle={event => setOpen(event.currentTarget.open)}><summary>{title}</summary>
     {open && <>{!selections.length && <p>Selecciona RUN para consultar este módulo.</p>}{result.loading && <p role="status">Consultando resultados…</p>}
       {result.error ? <p role="alert">Error de consulta. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}

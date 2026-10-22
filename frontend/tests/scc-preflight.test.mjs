@@ -844,3 +844,12 @@ test('dataset check labels retain unknown technical identifiers, including objec
   for(const name of integrityNames) assert.notEqual(datasetCheckLabel(name),name);
   for(const name of ['new_unrecognized_check','__proto__','toString']) assert.equal(datasetCheckLabel(name),name);
 });
+
+test('consenso usa un timeout mayor que el valor por defecto de 15 s', () => {
+  const report = readFileSync(new URL('../src/components/reports/ScientificReport.tsx', import.meta.url), 'utf8');
+  const apiSource = readFileSync(new URL('../src/services/api.ts', import.meta.url), 'utf8');
+  assert.match(report, /MODULE_TIMEOUT_MS: Partial<Record<ReportModule, number>> = \{consensus: 60000, questions: 60000\}/);
+  assert.match(report, /api\.getComparisonReport<T>\(datasource, \{module, selections, \.\.\.params\}, MODULE_TIMEOUT_MS\[module\]\)/);
+  assert.match(apiSource, /getComparisonReport<T>\(datasource: string, body: ReportRequest, timeoutMs\?: number\)/);
+  assert.match(apiSource, /body: JSON\.stringify\(body\) \},\s*timeoutMs,/);
+});

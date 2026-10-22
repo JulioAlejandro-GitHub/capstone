@@ -72,8 +72,12 @@ class AssessmentReadRepository:
         proved against governed assignments, not by assuming UUID namespaces match.
         """
         return [dict(row) for row in connection.execute(text("""
-            WITH selected AS (
-                SELECT a.id,a.state,a.verification,i.identity
+            WITH selected AS MATERIALIZED (
+                -- Scalars are read once: referencing identity per governed row re-parses the
+                -- whole JSONB (all samples, ~1 MB) for each assignment (~7.5 s per attempt).
+                SELECT a.id,a.state,a.verification,i.identity,
+                       CAST(i.identity#>>'{dataset,dataset_version_id}' AS uuid) AS dataset_version_id,
+                       i.identity->>'split' AS split
                 FROM assessment_attempts a JOIN assessment_identities i ON i.id=a.identity_id
                 WHERE a.id=ANY(CAST(:ids AS uuid[]))
             ), declared AS (
@@ -99,8 +103,8 @@ class AssessmentReadRepository:
             ), governed AS (
                 SELECT DISTINCT s.id,a.source_record_id::text AS sample_id,a.class_index::text AS label
                 FROM selected s JOIN dataset_split_assignments a
-                  ON a.dataset_version_id=CAST(s.identity#>>'{dataset,dataset_version_id}' AS uuid)
-                 AND a.split_name=s.identity->>'split'
+                  ON a.dataset_version_id=s.dataset_version_id
+                 AND a.split_name=s.split
                 JOIN dataset_source_records r ON r.id=a.source_record_id
             )
             SELECT s.id AS attempt_id,
