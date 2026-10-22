@@ -35,6 +35,10 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [started, setStarted] = useState<string | null>(null);
+  // Methods requested from this screen are shown as in flight from the click until the backend state confirms them.
+  const [requested, setRequested] = useState<{key: string; methods: XAIMethod[]} | null>(null);
+  // Synchronous guard: a second click can arrive before React re-renders the disabled button.
+  const locked = useRef(false);
   const polling = !options.lazy || started === key;
   const refresh = useCallback(async (signal?: AbortSignal) => {
     if (!source || !sample || !enabled) return;
@@ -50,8 +54,8 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
     setState({key, value});
   }, [source, sample, enabled, key, comparison.trainingRunId, comparison.datasetVersionId, targetClass]);
   const running = state?.key === key && state.value.methods.some(item => ['pending', 'running'].includes(item.state));
+  useEffect(() => { setError(null); setSubmitting(false); setRequested(null); locked.current = false; }, [key]);
   useEffect(() => {
-    setError(null); setSubmitting(false);
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
     const poll = async () => {
@@ -65,8 +69,9 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
   const value = state?.key === key ? state.value : null;
   const authorized = !options.blocked && (value ? value.authorized : Boolean(options.lazy && options.authorized));
   const execute = async (methods: XAIMethod[]) => {
-    if (!enabled || !source || !sample || !authorized || submitting) return;
-    setSubmitting(true); setError(null); setStarted(key);
+    if (locked.current || !enabled || !source || !sample || !authorized || submitting) return;
+    locked.current = true;
+    setSubmitting(true); setError(null); setStarted(key); setRequested({key, methods});
     try {
       const response = await api.generateExplanation({source_attempt_id: source, sample_id: sample, methods, class_id: targetClass});
       if (current.current !== key) return;
@@ -76,7 +81,11 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
       onEvidenceChange?.();
     } catch (failure: unknown) {
       if (current.current === key) setError(explainFailure(failure));
-    } finally { if (current.current === key) setSubmitting(false); }
+    } finally {
+      // From here the backend state (pending/running) keeps the methods locked.
+      if (current.current === key) { setSubmitting(false); setRequested(null); }
+      locked.current = false;
+    }
   };
   const updated: XAIComparison = {...comparison, methods: {...comparison.methods}};
   for (const method of value?.methods ?? []) {
@@ -101,8 +110,10 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
     execute: async () => execute([method]),
   }]));
   // Only methods without evidence or a live execution are requested; the worker re-checks reuse under the global gate.
-  const missing = XAI_METHODS.filter(method => !updated.methods[method]?.artifact && !['pending', 'running', 'completed'].includes(updated.methods[method]?.execution ?? 'not_executed'));
-  const inFlight = XAI_METHODS.filter(method => !updated.methods[method]?.artifact && ['pending', 'running'].includes(updated.methods[method]?.execution ?? 'not_executed'));
+  const asked = requested?.key === key ? requested.methods : [];
+  const missing = XAI_METHODS.filter(method => !updated.methods[method]?.artifact && !asked.includes(method) && !['pending', 'running', 'completed'].includes(updated.methods[method]?.execution ?? 'not_executed'));
+  const inFlight = XAI_METHODS.filter(method => !updated.methods[method]?.artifact && (['pending', 'running'].includes(updated.methods[method]?.execution ?? 'not_executed')
+    || (asked.includes(method) && !['completed', 'failed'].includes(updated.methods[method]?.execution ?? 'not_executed'))));
   return {comparison: updated, generation, error, submitting, missing, inFlight,
     canGenerate: Boolean(enabled && authorized && !submitting && missing.length && !value?.methods.some(item => ['pending', 'running'].includes(item.state))),
     generateAll: () => missing.length ? execute(missing) : Promise.resolve()};

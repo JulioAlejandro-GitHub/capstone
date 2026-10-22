@@ -47,8 +47,15 @@ def test_recent_heartbeat_queues_once_per_method_set():
 
 
 class AgentQueue:
-    def __init__(self, claimed=()):
+    def __init__(self, claimed=(), state='claimed'):
         self.finished, self.acknowledged, self.claimed = [], [], list(claimed)
+        self.state, self.children = state, []
+
+    def attach_child(self, request_id, child):
+        self.children.append((request_id, child))
+
+    def job(self, request_id):
+        return {'id': request_id, 'state': self.finished[-1][1] if self.finished else self.state}
 
     def acknowledge(self, request_id, operations):
         self.acknowledged.append((request_id, operations))
@@ -80,13 +87,45 @@ def test_serve_one_always_closes_the_request():
 
 def test_recovery_closes_only_proven_absent_processes():
     alive, gone, foreign = ({'pid': 1}, {'pid': 2}, {'pid': 3})
-    queue = AgentQueue([{'id': 'a', 'claimed_by': alive}, {'id': 'b', 'claimed_by': gone}, {'id': 'c', 'claimed_by': foreign}])
+    child_alive = {'pid': 2, 'child': {'pid': 1}}
+    queue = AgentQueue([{'id': 'a', 'claimed_by': alive}, {'id': 'b', 'claimed_by': gone},
+                        {'id': 'c', 'claimed_by': foreign}, {'id': 'd', 'claimed_by': child_alive}])
     def absent(identity):
         if identity is foreign:
             raise CampaignError('REMOTE_PROCESS_ABSENCE_UNPROVEN')
-        return identity is gone
+        return identity['pid'] == 2
     assert explain_agent.recover(queue, 'mac', absent) == 1
     assert queue.finished == [('b', 'failed', 'EXPLAIN_HOST_EXECUTOR_INTERRUPTED')]
+
+
+class Child:
+    def __init__(self, code, queue=None, finish=None):
+        self.pid, self.code, self.queue, self.finish, self.terminated = 99, code, queue, finish, False
+
+    def wait(self, timeout=None):
+        if self.finish:
+            self.queue.finish('job', *self.finish)
+        return self.code
+
+    def terminate(self):
+        self.terminated = True
+
+
+def test_each_request_runs_in_its_own_child_so_the_gate_never_sees_a_live_coordinator():
+    queue = AgentQueue()
+    spawned = []
+    def spawn(request_id):
+        spawned.append(request_id)
+        return Child(0, queue, ('completed',))
+    for _ in range(2):
+        assert explain_agent.dispatch(queue, {'id': 'job'}, spawn, lambda pid: {'pid': pid}) == 'completed'
+    assert spawned == ['job', 'job'] and queue.children == [('job', {'pid': 99})] * 2
+
+
+def test_a_child_that_dies_without_closing_its_request_is_failed():
+    queue = AgentQueue()
+    assert explain_agent.dispatch(queue, {'id': 'job'}, lambda _: Child(-9), lambda pid: {'pid': pid}) == 'failed'
+    assert queue.finished == [('job', 'failed', 'EXPLAIN_HOST_EXECUTOR_INTERRUPTED')]
 
 
 @pytest.mark.requires_docker_postgres

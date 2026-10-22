@@ -273,17 +273,18 @@ test('compact thumbnails have bounded height while modal keeps expanded presenta
 });
 
 test('shared generation hook loads persisted evidence, submits missing methods and refreshes only its context', async () => {
-  const states=[]; let index=0,effect; const reference={current:null}; let calls=0;const sent=[];
+  const states=[]; let index=0,effect; const refs=[]; let refIndex=0; let calls=0;const sent=[];
   const detail={...fixture('gradcam').detail,identity:{...fixture('gradcam').detail.identity,split:'val',purpose:'development'}};
   const state={training_run_id:'train',dataset_version_id:'dataset',sample_id:'sample',authorized:true,
     methods:[{method:'gradcam',state:'completed',detail,artifacts:fixture('gradcam').artifacts}]};
-  const react={useRef:()=>reference,useCallback:fn=>fn,useEffect:fn=>{effect=fn;},
+  // One object per useRef call, as React does; a shared object would mix the hook's independent refs.
+  const react={useRef:initial=>{const i=refIndex++;return refs[i]??=({current:initial});},useCallback:fn=>fn,useEffect:fn=>{effect=fn;},
     useState:initial=>{const i=index++;if(!(i in states)) states[i]=initial;return [states[i],v=>{states[i]=typeof v==='function'?v(states[i]):v;}];}};
   const load=loader({react,'../services/api':{api:{getExplainState:async()=>{calls++;return state;},generateExplanation:async body=>{sent.push(body);return {operations:[{method:'lime',attempt_id:'new-attempt'}]};}}}},
     {setTimeout:()=>1,clearTimeout:()=>{}});
   const hook=load('hooks/useExplainGeneration.ts').useExplainGeneration;
   const comparison={...group([fixture()],'train')[0],split:'val',purpose:'development'};
-  const render=()=>{index=0;return hook(comparison);};
+  const render=()=>{index=0;refIndex=0;return hook(comparison);};
   render();const cleanup=effect();await new Promise(r=>setImmediate(r));
   const ready=render();assert.equal(ready.canGenerate,true);assert.equal(ready.comparison.methods.gradcam.artifact.artifactId,'artifact-gradcam');
   await ready.generation.lime.execute();
@@ -341,4 +342,25 @@ test('executor label explains an absent GPU agent and how to start it; generatio
   assert.match(executorLabel({executor:'host_gpu',available:true,host:'mac',tensorflow_metal:'1.2.0'}),/GPU del host · mac · tensorflow-metal 1.2.0/);
   const html=presentation(group([fixture('gradcam')],'train')[0],resources,{lime:{authorized:false,reason:'Agente de GPU no activo.',execute:async()=>{}}});
   assert.match(html,/<button[^>]*disabled=""[^>]*title="Agente de GPU no activo."[^>]*>Generar LIME/);
+});
+
+test('generate missing locks on the click: one request, methods in flight before the backend answers', async () => {
+  const states=[];let index=0;const refs=[];let refIndex=0;const effects=[];
+  const react={useRef:initial=>{const i=refIndex++;return refs[i]??=({current:initial});},useCallback:fn=>fn,useEffect:fn=>{effects.push(fn);},
+    useState:initial=>{const i=index++;if(!(i in states))states[i]=initial;return [states[i],v=>{states[i]=typeof v==='function'?v(states[i]):v;}];}};
+  let calls=0;let release;
+  const load=loader({react,'../services/api':{api:{generateExplanation:()=>{calls++;return new Promise(r=>{release=r;});},getExplainState:async()=>({training_run_id:'train',dataset_version_id:'dataset',sample_id:'sample',authorized:true,methods:[{method:'lime',state:'pending',artifacts:[]},{method:'shap',state:'pending',artifacts:[]}]})}}},{setTimeout:()=>1,clearTimeout:()=>{}});
+  const hook=load('hooks/useExplainGeneration.ts').useExplainGeneration;
+  const comparison={...group([fixture('gradcam')],'train')[0],split:'val',purpose:'development'};
+  const render=()=>{index=0;refIndex=0;return hook(comparison,true,undefined,{lazy:true,authorized:true});};
+  let view=render();
+  assert.deepEqual([...view.missing],['lime','shap']);assert.equal(view.canGenerate,true);
+  const first=view.generateAll();view.generateAll();
+  view=render();
+  assert.equal(calls,1);
+  assert.equal(view.canGenerate,false);
+  assert.deepEqual([...view.inFlight],['lime','shap']);assert.deepEqual([...view.missing],[]);
+  release({operations:[{method:'lime',state:'pending'},{method:'shap',state:'pending'}]});await first;
+  view=render();
+  assert.equal(view.canGenerate,false);assert.deepEqual([...view.inFlight],['lime','shap']);
 });

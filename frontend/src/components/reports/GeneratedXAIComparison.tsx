@@ -11,7 +11,7 @@ export function GeneratedXAIComparison({comparison, datasource, active, onEviden
     <XAIComparisonViewer comparison={generation.comparison} datasource={datasource} generation={generation.generation}
       actions={pending.length > 0 && <button className="ds-button" data-variant="primary" type="button" disabled={!generation.canGenerate}
         title={generation.canGenerate ? undefined : generation.generation[pending[0]].reason} onClick={() => { void generation.generateAll(); }}>
-        {generation.submitting ? 'Preparando EXPLAIN…' : generation.inFlight.length ? `Generando ${generation.inFlight.map(method => XAI_LABELS[method]).join(' y ')}…` : `Generar faltantes: ${generation.missing.map(method => XAI_LABELS[method]).join(' y ')}`}
+        {generation.inFlight.length ? `Generando ${generation.inFlight.map(method => XAI_LABELS[method]).join(' y ')}…` : `Generar faltantes: ${generation.missing.map(method => XAI_LABELS[method]).join(' y ')}`}
       </button>} />
   </section>;
 }

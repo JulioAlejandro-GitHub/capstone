@@ -1,12 +1,16 @@
 """Host GPU executor for EXPLAIN requested from the report (launchd label cl.capstone.explain-agent).
 
 Runs on macOS with `.venv-metal`: the same bootstrap as the local TRAIN launcher (PostgreSQL on loopback,
-GPU required, accelerator canary), then claims `explain_requests` with SKIP LOCKED and executes them with
-the batch logic shared with the Docker worker. It never talks HTTP and never decides a process died by time.
+GPU required, accelerator canary), then claims `explain_requests` with SKIP LOCKED. Each request runs in a
+short-lived child (`--job <id>`) that owns GlobalGate and exits, like the Docker worker: the gate records its
+coordinator as the previous process, so a long-lived coordinator would block every later experiment.
+It never talks HTTP and never decides a process died by time.
 """
 import json
 import signal
 import socket
+import subprocess
+import sys
 import threading
 import time
 from typing import Any, Callable
@@ -59,6 +63,17 @@ class ExplainQueue:
             c.execute(text("""UPDATE explain_requests SET state=:state, cause=:cause, finished_at=clock_timestamp()
                 WHERE id=:id AND state='claimed'"""), dict(id=str(request_id), state=state, cause=cause))
 
+    def attach_child(self, request_id: str, child: dict) -> None:
+        with self.engine.begin() as c:
+            c.execute(text("""UPDATE explain_requests SET claimed_by=claimed_by || jsonb_build_object('child', CAST(:child AS jsonb))
+                WHERE id=:id AND state='claimed'"""), dict(id=str(request_id), child=json.dumps(child)))
+
+    def job(self, request_id: str) -> dict[str, Any] | None:
+        with self.engine.begin() as c:
+            row = c.execute(text("SELECT id, request, actor, state FROM explain_requests WHERE id=:id"),
+                            dict(id=str(request_id))).mappings().one_or_none()
+            return dict(row) if row else None
+
     def claimed_on(self, host: str) -> list[dict[str, Any]]:
         with self.engine.begin() as c:
             return [dict(row) for row in c.execute(text("""SELECT id, claimed_by FROM explain_requests
@@ -70,7 +85,9 @@ def recover(queue: ExplainQueue, host: str, absent: Callable[[dict], bool]) -> i
     closed = 0
     for row in queue.claimed_on(host):
         try:
-            gone = absent(row['claimed_by'])
+            # Both the claiming agent and its job child (if recorded) must be proven absent.
+            identities = [row['claimed_by'], *([row['claimed_by']['child']] if row['claimed_by'].get('child') else [])]
+            gone = all(absent(identity) for identity in identities)
         except ValueError:
             continue  # REMOTE_PROCESS_ABSENCE_UNPROVEN: another boot or host; never guess.
         if gone:
@@ -95,6 +112,34 @@ def serve_one(queue: ExplainQueue, job: dict[str, Any], execute: Callable[..., N
     return 'completed'
 
 
+def dispatch(queue: ExplainQueue, job: dict[str, Any], spawn: Callable[[str], Any], identity: Callable[[int], dict]) -> str:
+    """Run one claimed request in a child process; the row is closed even if the child dies."""
+    child = spawn(str(job['id']))
+    try:
+        queue.attach_child(job['id'], identity(child.pid))
+        code = child.wait()
+    except InterruptedError:
+        child.terminate()
+        try:
+            child.wait(timeout=60)
+        except subprocess.TimeoutExpired:
+            child.kill()
+            child.wait()
+        raise
+    finally:
+        current = queue.job(job['id'])
+        if current and current['state'] == 'claimed':
+            queue.finish(job['id'], 'failed', 'EXPLAIN_HOST_EXECUTOR_INTERRUPTED')
+    current = queue.job(job['id'])
+    return current['state'] if current else ('completed' if code == 0 else 'failed')
+
+
+def spawn_job(request_id: str) -> subprocess.Popen:
+    # Own session, as GlobalGate expects for managed processes; environment (DATABASE_URL, flags) is inherited.
+    return subprocess.Popen([sys.executable, '-m', 'app.services.explain_agent', '--job', request_id],
+                            start_new_session=True)
+
+
 class Heartbeat(threading.Thread):
     def __init__(self, queue: ExplainQueue, host: str, process: dict, device: dict) -> None:
         super().__init__(name='explain-heartbeat', daemon=True)
@@ -114,33 +159,46 @@ def _stop(signum: int, frame: Any) -> None:
     raise InterruptedError('EXPLAIN_HOST_EXECUTOR_INTERRUPTED')
 
 
-def main() -> None:
-    import os
+def run_job(request_id: str) -> int:
+    """Child: own GlobalGate for exactly one request, then exit."""
     from src.malaria_dl.execution.local_launch import bootstrap
-    bootstrap()  # .venv-metal, Python 3.12, DATABASE_URL on loopback, CAPSTONE_LOCAL_TRAIN=1 (GPU required)
-    import tensorflow as tf
-    from src.malaria_dl.execution.accelerator import configure
-    from src.malaria_dl.execution.global_gate import process_absent, process_identity
+    bootstrap()
     from src.malaria_dl.execution.storage_paths import PROJECT_ROOT
     from src.malaria_dl.persistence.database import get_engine
     from app.repositories.explain_queries import ExplainQueries
     from app.services.explain_codes import safe_code
     from app.services.explain_execution import run_batch
     from app.services.explain_generation import ExplainService
+    signal.signal(signal.SIGTERM, _stop)
+    queue = ExplainQueue(get_engine())
+    job = queue.job(request_id)
+    if not job or job['state'] != 'claimed':
+        return 0
+    service = ExplainService(ExplainQueries())
+    root = str(PROJECT_ROOT / 'artifacts/assessments')
+    result = serve_one(queue, job, lambda request, actor, acknowledge: run_batch(request, service, actor, acknowledge, root), safe_code)
+    return 0 if result == 'completed' else 1
+
+
+def main() -> None:
+    import os
+    if len(sys.argv) == 3 and sys.argv[1] == '--job':
+        sys.exit(run_job(sys.argv[2]))
+    from src.malaria_dl.execution.local_launch import bootstrap
+    bootstrap()  # .venv-metal, Python 3.12, DATABASE_URL on loopback, CAPSTONE_LOCAL_TRAIN=1 (GPU required)
+    import tensorflow as tf
+    from src.malaria_dl.execution.accelerator import configure
+    from src.malaria_dl.execution.global_gate import process_absent, process_identity
+    from src.malaria_dl.persistence.database import get_engine
 
     device = {**configure(tf, require_gpu=True), 'tensorflow': tf.__version__}
     host = socket.gethostname()
     process = process_identity(os.getpid())
     queue = ExplainQueue(get_engine())
-    service = ExplainService(ExplainQueries())
-    root = str(PROJECT_ROOT / 'artifacts/assessments')
     print(f'explain-agent: {host} · {", ".join(device["gpu_devices"])} · recovered {recover(queue, host, process_absent)}', flush=True)
     heartbeat = Heartbeat(queue, host, process, device)
     heartbeat.start()
     signal.signal(signal.SIGTERM, _stop)
-
-    def execute(request, actor, acknowledge):
-        run_batch(request, service, actor, acknowledge, root)
 
     try:
         while True:
@@ -148,7 +206,7 @@ def main() -> None:
             if not job:
                 time.sleep(POLL_SECONDS)
                 continue
-            print(f'explain-agent: {job["id"]} {serve_one(queue, job, execute, safe_code)}', flush=True)
+            print(f'explain-agent: {job["id"]} {dispatch(queue, job, spawn_job, process_identity)}', flush=True)
     except (InterruptedError, KeyboardInterrupt):
         pass
     finally:
