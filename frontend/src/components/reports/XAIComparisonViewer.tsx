@@ -180,13 +180,16 @@ export function XAIComparisonViewer({comparison, datasource, generation, actions
       setExpanded(method);
     }} /></div>
     <dialog ref={dialog} className="report-viewer xai-modal" aria-labelledby={titleId} onClose={() => { setExpanded(null); trigger.current?.focus(); }}>
+      <form method="dialog" className="xai-modal-close"><button type="submit" className="ds-button" aria-label="Cerrar vista ampliada" title="Cerrar" autoFocus>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+      </button></form>
       <h2 id={titleId}>{view === 'overlay' ? 'Vista ampliada · Superposición' : expanded ? `Vista ampliada · ${XAI_LABELS[expanded]}` : 'Comparación XAI'}</h2>
       <div className="xai-modal-bar">
         <div role="tablist" aria-label="Tipo de vista" className="xai-view-tabs">
           {(['comparison', 'overlay'] as const).map(item => <button key={item} type="button" role="tab" className="ds-button" aria-selected={view === item}
             onClick={() => setView(item)}>{item === 'comparison' ? 'Comparación' : 'Superposición'}</button>)}
         </div>
-        <form method="dialog"><button className="ds-button" autoFocus>Cerrar comparación</button></form>
+
       </div>
       {expanded !== null && (view === 'overlay'
         ? <XAIOverlayView comparison={comparison} resources={resources} datasource={datasource} />
