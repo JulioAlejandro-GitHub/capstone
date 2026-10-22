@@ -1,7 +1,7 @@
 """Read immutable assessment attempts and their individual evidence."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Sequence
 from uuid import UUID
 from sqlalchemy import text
 from app.db import read_only_transaction
@@ -39,13 +39,17 @@ class AssessmentReadRepository:
             return None
         return {k:v for k,v in row.items() if k not in ('owner','host','pid')}
 
-    def payloads(self, attempt_id: UUID, kind: str, limit: int, offset: int) -> list[dict[str, Any]]:
+    def payloads(self, attempt_id: UUID, kind: str, limit: int, offset: int,
+                 sample_ids: Sequence[UUID] | None = None) -> list[dict[str, Any]]:
         table, order = {'results': ('assessment_results','sample_id'),
                         'artifacts': ('assessment_artifacts','sample_id,role')}[kind]
+        # sample_ids lets a viewer combine one cell across EXPLAIN attempts without paging the whole population.
+        samples = " AND sample_id=ANY(CAST(:samples AS uuid[]))" if sample_ids else ""
         with read_only_transaction("malaria") as c:
-            return list(c.execute(text(f"SELECT payload FROM {table} WHERE attempt_id=CAST(:id AS uuid) "
+            return list(c.execute(text(f"SELECT payload FROM {table} WHERE attempt_id=CAST(:id AS uuid){samples} "
                                        f"ORDER BY {order} LIMIT :limit OFFSET :offset"),
-                                  dict(id=str(attempt_id),limit=limit,offset=offset)).scalars())
+                                  dict(id=str(attempt_id),limit=limit,offset=offset,
+                                       samples=[str(s) for s in sample_ids or []])).scalars())
 
     def preflight_detail(self, connection, attempt_id: UUID) -> dict[str, Any] | None:
         """Exact attempt, without materializing samples or filesystem locators."""

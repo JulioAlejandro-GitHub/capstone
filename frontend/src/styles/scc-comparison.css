@@ -217,3 +217,22 @@
 .ds-report.scc-page .scc-protocol label span { display: grid; }
 .ds-report.scc-page .scc-protocol small { color: var(--ds-fg-muted); }
 .ds-report.scc-page .scc-protocol .scc-meta { flex-basis: 100%; margin: 0; }
+
+/* XAI cell traceability: explained summary first, identifiers last. */
+.ds-report .xai-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ds-report .xai-panel[data-state="empty"] .xai-image-frame { border: 1px dashed var(--ds-border-default); background: var(--ds-bg-subtle); }
+.ds-report .xai-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-3); }
+.ds-report .scc-slot-explain { display: grid; gap: 2px; min-width: 0; }
+.ds-report .xai-trace-summary { margin: var(--ds-space-3) 0; font-size: var(--ds-text-md, 15px); }
+.ds-report .xai-trace-facts { display: grid; gap: var(--ds-space-2); margin: 0 0 var(--ds-space-4); }
+.ds-report .xai-trace-facts > div { display: grid; grid-template-columns: minmax(120px, 180px) minmax(0, 1fr); gap: var(--ds-space-3); }
+.ds-report .xai-trace-facts dt { color: var(--ds-fg-muted); }
+.ds-report .xai-trace-facts dd { margin: 0; overflow-wrap: anywhere; }
+.ds-report .xai-trace-facts small { display: block; color: var(--ds-fg-muted); font-size: var(--ds-text-xs); }
+.ds-report .xai-trace-method { padding: var(--ds-space-3) var(--ds-space-4); margin-bottom: var(--ds-space-3); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-sm); }
+.ds-report .xai-trace-method ul { margin: var(--ds-space-2) 0; padding-inline-start: var(--ds-space-5, 20px); }
+.ds-report .xai-trace-raw { margin-top: var(--ds-space-3); font-size: var(--ds-text-sm); }
+.ds-report .xai-trace-raw dd { overflow-wrap: anywhere; }
+@media (max-width: 700px) { .ds-report .xai-trace-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+.ds-report.scc-page .scc-executor { margin: 0 0 var(--ds-space-3); padding: var(--ds-space-2) var(--ds-space-3); border-radius: var(--ds-radius-sm); font-size: var(--ds-text-sm); color: var(--ds-status-warning-fg); background: var(--ds-status-warning-bg); }
+.ds-report.scc-page .scc-executor[data-available="true"] { color: var(--ds-status-approved-fg); background: var(--ds-status-approved-bg); }

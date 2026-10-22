@@ -441,3 +441,5 @@ CREATE INDEX ix_xai_metric_protocol ON public.xai_quantitative_evaluations (prot
 
 CREATE INDEX ix_xai_reference_annotation ON public.xai_quantitative_evaluations (reference_annotation_id);
 
+CREATE UNIQUE INDEX explain_requests_one_pending ON public.explain_requests (request_key) WHERE state = ANY (ARRAY['queued', 'claimed']);
+CREATE INDEX explain_requests_queue ON public.explain_requests (created_at) WHERE state = 'queued';

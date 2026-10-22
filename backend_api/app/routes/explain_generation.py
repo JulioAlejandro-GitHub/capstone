@@ -4,7 +4,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.audit import audited_permission
 from app.repositories.explain_generation import ExplainRepository
-from app.schemas.explain_generation import ExplainRequest, ExplainState, ExplainSubmission, ExplainPreparation
+import os
+from app.repositories.explain_queue import ExplainQueueRepository
+from app.schemas.explain_generation import ExplainExecutor, ExplainRequest, ExplainState, ExplainSubmission, ExplainPreparation
+from app.services.explain_host import HostQueueLauncher, executor_status
 from app.security import Permission, Principal, require_permission
 from app.services.explain_generation import ExplainService
 from app.services.explain_launcher import ExplainLauncher
@@ -20,8 +23,24 @@ def get_service(repository: Annotated[ExplainRepository, Depends()]) -> ExplainS
 
 
 Service = Annotated[ExplainService, Depends(get_service)]
+
+
+def docker_cpu() -> bool:
+    # Explicit environment choice only; without it EXPLAIN never falls back silently to the container CPU.
+    return os.getenv('EXPLAIN_EXECUTOR', 'host_gpu') == 'docker_cpu'
+
+
+def get_launcher() -> ExplainLauncher | HostQueueLauncher:
+    return ExplainLauncher() if docker_cpu() else HostQueueLauncher(ExplainQueueRepository())
 Reader = Annotated[Principal, Depends(require_permission(Permission.RUNS_READ))]
 Writer = Annotated[Principal, Depends(audited_permission(Permission.SCIENTIFIC_CELL_CLASSIFICATION_EXPLAIN, 'scientific.explain.request'))]
+
+
+@router.get('/executor', response_model=ExplainExecutor)
+def executor(principal: Reader) -> dict[str, Any]:
+    if docker_cpu():
+        return {'executor': 'docker_cpu', 'available': True}
+    return executor_status(ExplainQueueRepository())
 
 
 @router.get('', response_model=ExplainState)
@@ -46,7 +65,7 @@ def prepare(request: ExplainRequest, service: Service, principal: Writer) -> dic
 
 @router.post('', response_model=ExplainSubmission, status_code=202)
 def generate(request: ExplainRequest, service: Service, principal: Writer,
-             launcher: Annotated[ExplainLauncher, Depends()]) -> dict[str, Any]:
+             launcher: Annotated[ExplainLauncher | HostQueueLauncher, Depends(get_launcher)]) -> dict[str, Any]:
     try:
         return service.submit(request, launcher, principal.user_id)
     except CampaignError as exc:

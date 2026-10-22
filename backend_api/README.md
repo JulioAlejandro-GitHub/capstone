@@ -45,3 +45,7 @@ En .env
 CELL_DETECTOR_KEY=connected_components_v1 / yolo26_seg_v1
 Después debes recrear el contenedor del backend para que cargue la nueva variable:
 docker compose up -d --force-recreate backend
+
+Ahora el servicio Es automatico, se dio acceso python del entorno .venv-metal.
+Al ejecutar frontend Explain o CELL_DETECTOR_KEY=yolo26_seg_v1
+Para entrenar YOL, si necesita el servicio.

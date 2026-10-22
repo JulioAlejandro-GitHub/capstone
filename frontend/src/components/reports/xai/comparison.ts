@@ -43,6 +43,8 @@ export interface XAIComparison {
   prediction?: string;
   trueClass?: string;
   targetClass?: 0 | 1;
+  // Governed record of the explained cell, read once from any identity that lists it.
+  sampleRecord?: { relativePath?: string; label?: number };
   comparabilityIssue?: string;
   original?: XAIEvidence;
   methods: Partial<Record<XAIMethod, XAIEvidence>>;
@@ -109,6 +111,8 @@ export function groupXAIComparisons(pages: XAIAttemptPage[], trainingRunId: stri
           metadata: {provenance: 'dataset_split_assignments.source_record_id', datasetVersionId, sampleId, split: detail.identity.split},
         };
       }
+      const listed = (detail.identity.samples as {sample_id: string; relative_path?: string; label?: number}[] | undefined)?.find(item => item.sample_id === sampleId);
+      if (listed && !row.sampleRecord?.relativePath) row.sampleRecord = {relativePath: listed.relative_path, label: listed.label};
       const methods: XAIComparison['methods'] = row.methods;
       methods[method as XAIMethod] = {
         method: method as XAIMethod, execution: execution(detail.state),

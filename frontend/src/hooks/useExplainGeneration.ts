@@ -3,6 +3,8 @@ import { api } from '../services/api';
 import type { ExplainState } from '../types/explainGeneration';
 import { groupXAIComparisons, XAI_METHODS, type XAIComparison, type XAIMethod } from '../components/reports/xai/comparison';
 
+export const executorUnavailable = 'Agente de GPU no activo. Inícialo en el host con scripts/host_services.sh start explain.';
+
 export function explainFailure(failure: unknown): string {
   let message = failure instanceof Error ? failure.message : 'No fue posible consultar EXPLAIN.';
   try {
@@ -11,10 +13,14 @@ export function explainFailure(failure: unknown): string {
         && 'message' in parsed.error && typeof parsed.error.message === 'string') message = parsed.error.message;
   } catch { /* The shared client can also return plain error messages. */ }
   if (message === 'GLOBAL_EXPERIMENT_BUSY') return 'Hay otra operación científica en ejecución. Reintenta cuando termine.';
+  if (message === 'EXPLAIN_HOST_EXECUTOR_UNAVAILABLE') return executorUnavailable;
   return message;
 }
 
-export function useExplainGeneration(comparison: XAIComparison, active?: boolean, onEvidenceChange?: () => void) {
+// lazy: the state query (it verifies the whole EXPLAIN population) starts only after a request; until then
+// missing methods come from the persisted comparison and authorization from the user's permission.
+// blocked: an external precondition (no GPU agent) that overrides any authorization.
+export function useExplainGeneration(comparison: XAIComparison, active?: boolean, onEvidenceChange?: () => void, options: {lazy?: boolean; authorized?: boolean; blocked?: string | null} = {}) {
   const evidenceCallback = useRef(onEvidenceChange);
   evidenceCallback.current = onEvidenceChange;
   const retained = useRef<{ key: string; running: boolean } | null>(null);
@@ -28,6 +34,8 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
   const [state, setState] = useState<{key: string; value: ExplainState} | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [started, setStarted] = useState<string | null>(null);
+  const polling = !options.lazy || started === key;
   const refresh = useCallback(async (signal?: AbortSignal) => {
     if (!source || !sample || !enabled) return;
     const value = await api.getExplainState(source, sample, signal, targetClass);
@@ -51,13 +59,14 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
       catch (failure: unknown) { if (!controller.signal.aborted) setError(explainFailure(failure)); }
       if (!controller.signal.aborted && enabled && active !== false && (active === undefined || retained.current?.running)) timer = setTimeout(() => { void poll(); }, 4000);
     };
-    if (enabled && active !== false && (active === undefined || retained.current?.key !== key || retained.current.running)) void poll();
+    if (polling && enabled && active !== false && (active === undefined || retained.current?.key !== key || retained.current.running)) void poll();
     return () => { controller.abort(); clearTimeout(timer); };
-  }, [refresh, enabled, active, key, running]);
+  }, [refresh, enabled, active, key, running, polling]);
   const value = state?.key === key ? state.value : null;
+  const authorized = !options.blocked && (value ? value.authorized : Boolean(options.lazy && options.authorized));
   const execute = async (methods: XAIMethod[]) => {
-    if (!enabled || !source || !sample || !value?.authorized || submitting) return;
-    setSubmitting(true); setError(null);
+    if (!enabled || !source || !sample || !authorized || submitting) return;
+    setSubmitting(true); setError(null); setStarted(key);
     try {
       const response = await api.generateExplanation({source_attempt_id: source, sample_id: sample, methods, class_id: targetClass});
       if (current.current !== key) return;
@@ -71,6 +80,8 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
   };
   const updated: XAIComparison = {...comparison, methods: {...comparison.methods}};
   for (const method of value?.methods ?? []) {
+    // Persisted evidence already on screen is never replaced by the state projection.
+    if (comparison.methods[method.method]?.artifact) continue;
     if (method.state === 'completed' && method.detail) {
       const rows = groupXAIComparisons([{detail: method.detail, artifacts: method.artifacts}], comparison.trainingRunId);
       const row = rows.find(row => row.sampleId === sample && !row.comparabilityIssue
@@ -85,11 +96,14 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
     }
   }
   const generation = Object.fromEntries(XAI_METHODS.map(method => [method, {
-    authorized: Boolean(value?.authorized && enabled && !submitting && !value.methods.some(item => ['pending', 'running'].includes(item.state))),
-    reason: submitting ? 'Preparando EXPLAIN…' : value?.methods.some(item => ['pending', 'running'].includes(item.state)) ? 'Hay una generación en curso.' : !enabled ? 'El contexto no admite generación EXPLAIN.' : !value ? 'Consultando disponibilidad…' : 'Permiso de generación requerido.',
+    authorized: Boolean(authorized && enabled && !submitting && !value?.methods.some(item => ['pending', 'running'].includes(item.state))),
+    reason: options.blocked ? options.blocked : submitting ? 'Preparando EXPLAIN…' : value?.methods.some(item => ['pending', 'running'].includes(item.state)) ? 'Hay una generación en curso.' : !enabled ? 'El contexto no admite generación EXPLAIN.' : !value && !options.lazy ? 'Consultando disponibilidad…' : 'Permiso de generación requerido.',
     execute: async () => execute([method]),
   }]));
-  return {comparison: updated, generation, error, submitting,
-    canGenerate: Boolean(enabled && value?.authorized && !submitting && !value.methods.some(item => ['pending', 'running'].includes(item.state))),
-    generateAll: () => execute([...XAI_METHODS])};
+  // Only methods without evidence or a live execution are requested; the worker re-checks reuse under the global gate.
+  const missing = XAI_METHODS.filter(method => !updated.methods[method]?.artifact && !['pending', 'running', 'completed'].includes(updated.methods[method]?.execution ?? 'not_executed'));
+  const inFlight = XAI_METHODS.filter(method => !updated.methods[method]?.artifact && ['pending', 'running'].includes(updated.methods[method]?.execution ?? 'not_executed'));
+  return {comparison: updated, generation, error, submitting, missing, inFlight,
+    canGenerate: Boolean(enabled && authorized && !submitting && missing.length && !value?.methods.some(item => ['pending', 'running'].includes(item.state))),
+    generateAll: () => missing.length ? execute(missing) : Promise.resolve()};
 }

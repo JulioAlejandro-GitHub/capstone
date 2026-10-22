@@ -6,6 +6,7 @@ import { ScientificPreflight } from '../components/reports/ScientificPreflight';
 import { useCallback, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { defaultEvaluationSlot, evaluationSlots, type EvaluationSlot } from '../utils/lineageSlots';
+const isEvaluationSlot = (value: string | null): value is EvaluationSlot => evaluationSlots.some(slot => slot.id === value);
 import { TraceabilityProvider, defaultAnalysisSection, isAnalysisSection, type AnalysisSection } from '../components/reports/AnalysisWorkspace';
 import { useComparisonCatalog } from '../hooks/useComparisonCatalog';
 import { useComparisonSelection } from '../hooks/useComparisonSelection';
@@ -28,13 +29,21 @@ function ComparisonPage({ datasource }: { datasource: string }) {
   const [query, setQuery] = useState('');
   const [selectorLoaded, setSelectorLoaded] = useState(false);
   const [trayOpen, setTrayOpen] = useState(true);
-  const [protocol, setProtocol] = useState<EvaluationSlot>(defaultEvaluationSlot);
+  const [lineageRevision, setLineageRevision] = useState(0);
+  const onGenerated = useCallback(() => setLineageRevision(value => value + 1), []);
   const [explains, setExplains] = useState<Record<string, string[]>>({});
   const onExplain = useCallback((id: string, attemptIds: string[]) => setExplains(previous =>
     previous[id]?.join(',') === attemptIds.join(',') ? previous : { ...previous, [id]: attemptIds }), []);
   const [search, setSearch] = useSearchParams();
   const requested = search.get('seccion');
   const section: AnalysisSection = isAnalysisSection(requested) ? requested : defaultAnalysisSection;
+  const requestedProtocol = search.get('evaluacion');
+  const protocol: EvaluationSlot = isEvaluationSlot(requestedProtocol) ? requestedProtocol : defaultEvaluationSlot;
+  const setProtocol = useCallback((next: EvaluationSlot) => setSearch(previous => {
+    const params = new URLSearchParams(previous);
+    if (next === defaultEvaluationSlot) params.delete('evaluacion'); else params.set('evaluacion', next);
+    return params;
+  }, { replace: true }), [setSearch]);
   // Only the section is written; datasource and any other allowed query value are preserved.
   const selectSection = useCallback((next: AnalysisSection) => setSearch(previous => {
     const params = new URLSearchParams(previous);
@@ -80,12 +89,12 @@ function ComparisonPage({ datasource }: { datasource: string }) {
       {ids.map((id, index) => {
         const choice = choices.find(item => item.run.training_run_id === id);
         return <ComparisonRunCard key={`${datasource}:${id}`} id={id} index={index} datasource={datasource}
-          modelName={choice?.model.model_name} architecture={choice?.model.architecture} onRemove={() => remove(id)}><EvaluationNavigation id={id} datasource={datasource} protocol={protocol} onChange={onEvaluation} onExplainChange={onExplain} /></ComparisonRunCard>;
+          modelName={choice?.model.model_name} architecture={choice?.model.architecture} onRemove={() => remove(id)}><EvaluationNavigation id={id} datasource={datasource} protocol={protocol} lineageRevision={lineageRevision} onChange={onEvaluation} onExplainChange={onExplain} /></ComparisonRunCard>;
       })}
       {Array.from({ length: available }, (_, index) => <button key={index} className="ds-button scc-empty-slot"
         onClick={event => openSelector(event.currentTarget)}><strong>＋ Añadir RUN</strong><span>Espacio {ids.length + index + 1} disponible</span></button>)}
     </div>
-    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} explains={explains} />
+    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} explains={explains} onGenerated={onGenerated} />
     <dialog ref={dialog} className="report-viewer scc-run-selector" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
       <div className="ds-page-header"><h2 id="scc-selector-title">Seleccionar ejecuciones TRAIN</h2>
         <button className="ds-button" onClick={() => dialog.current?.close()}>Cerrar</button></div>

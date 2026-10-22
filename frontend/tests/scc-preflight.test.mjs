@@ -901,3 +901,10 @@ test('lineage slots apply the analysis protocol, fall back when a RUN lacks it a
   assert.equal(explains.gradcam.map(c => c.attempt_id).join(), ['new','old'].join());
   assert.equal(explains.shap.map(c => c.attempt_id).join(), ['s'].join());
 });
+
+test('per-cell EXPLAIN are always included and population EXPLAIN stay selectable', () => {
+  const { splitExplanations } = loader()('utils/lineageSlots.ts');
+  const parts = splitExplanations([{attempt_id:'pop', result_count:2693}, {attempt_id:'c1', result_count:1}, {attempt_id:'c2', result_count:1}]);
+  assert.equal(parts.population.map(c => c.attempt_id).join(), 'pop');
+  assert.equal(parts.cells.map(c => c.attempt_id).join(), 'c1,c2');
+});

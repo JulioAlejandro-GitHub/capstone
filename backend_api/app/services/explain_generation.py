@@ -2,11 +2,12 @@
 import re
 import socket
 from typing import Any
-from app.repositories.explain_generation import ExplainRepository
+from app.repositories.explain_queries import ExplainQueries
 from app.schemas.explain_generation import ExplainRequest
 from app.services.scientific_public import assessment_projection, public_evidence
 from src.malaria_dl.assessment.contracts import require
 from src.malaria_dl.assessment.service import explanation_spec, prepare, verify
+from src.malaria_dl.data.governed_dataset import governed_relative_root
 
 METHODS = ('gradcam', 'lime', 'shap')
 
@@ -19,11 +20,18 @@ def owner_absent(row: dict[str, Any]) -> bool:
 
 
 def scientific_context(value: dict[str, Any]) -> dict[str, Any]:
-    return {key: value.get(key) for key in ('model', 'dataset', 'split', 'purpose', 'protocol', 'decision')}
+    context = {key: value.get(key) for key in ('model', 'dataset', 'split', 'purpose', 'protocol', 'decision')}
+    # Locations differ between Docker (/app/...) and the host checkout (GPU agent); the governed location under
+    # <project>/data and the checkpoint content (sha256, bytes) identify them, as in TRAIN snapshots.
+    if isinstance(context['dataset'], dict) and context['dataset'].get('dataset_root'):
+        context['dataset'] = {**context['dataset'], 'dataset_root': list(governed_relative_root(context['dataset']['dataset_root']))}
+    if isinstance(context['model'], dict):
+        context['model'] = {key: item for key, item in context['model'].items() if key != 'path'}
+    return context
 
 
 class ExplainService:
-    def __init__(self, repository: ExplainRepository) -> None:
+    def __init__(self, repository: ExplainQueries) -> None:
         self.repository = repository
 
     def submit(self, request: ExplainRequest, launcher: Any, actor: str) -> dict[str, Any]:
@@ -127,16 +135,23 @@ class ExplainService:
                    and row['identity'].get('http_request', {}).get('request', {}).get('num_samples') == request.num_samples
                    and row['identity'].get('http_request', {}).get('request', {}).get('background_sample_id')
                        == (str(request.background_sample_id) if request.background_sample_id else None)]
+        same = lambda queued: (queued.get('class_id', 1) == request.class_id and queued.get('num_samples', 1000) == request.num_samples
+                               and queued.get('background_sample_id') == (str(request.background_sample_id) if request.background_sample_id else None))
+        queued = [row for row in self.repository.requests_for(str(request.source_attempt_id), str(request.sample_id))
+                  if same(row['request'])]
         for method in METHODS:
             try:
                 rows = self.matching(request, source, method)
-                row = self.reusable(request, source, method) or next(iter(rows), None)
+                reused = self.reusable(request, source, method)
+                row = reused or next(iter(rows), None)
                 state: dict[str, Any] = {'method': method, 'state': 'not_executed'}
                 if row:
                     state.update(attempt_id=str(row['id']), identity_id=str(row['identity_id']),
                                  state={'active': 'running', 'verified': 'completed'}.get(row['state'], 'failed'))
                     if row['state'] == 'verified':
-                        verify(self.repository, row, row['identity'])
+                        # reusable() already verified it; a second full-population pass doubles the cost.
+                        if row is not reused:
+                            verify(self.repository, row, row['identity'])
                         state['detail'] = assessment_projection({**row, 'kind': 'explain',
                             'training_run_id': source['model']['training_run_id'], 'attempt_id': row['id']})
                         state['artifacts'] = [{**public_evidence(a), 'attempt_id': str(row['id']),
@@ -147,6 +162,13 @@ class ExplainService:
                     elif row['state'] != 'active':
                         cause = row.get('cause')
                         state['error'] = cause if isinstance(cause, str) and re.fullmatch('[A-Z][A-Z0-9_]+', cause) else 'ASSESSMENT_EXECUTION_FAILED'
+                latest = next((row for row in queued if method in row['request'].get('methods', [])), None)
+                if state['state'] == 'not_executed' and latest and latest['state'] in ('queued', 'claimed'):
+                    state.update(state='pending', operation_id=str(latest['id']))
+                elif state['state'] == 'not_executed' and latest and latest['state'] == 'failed':
+                    cause = latest.get('cause')
+                    state.update(state='failed', operation_id=str(latest['id']),
+                                 error=cause if isinstance(cause, str) and re.fullmatch('[A-Z][A-Z0-9_]+', cause) else 'EXPLAIN_HOST_EXECUTION_FAILED')
                 if state['state'] == 'not_executed':
                     batch = next((batch for batch in batches if method in batch['identity']['http_request']['request']['methods']), None)
                     if batch:

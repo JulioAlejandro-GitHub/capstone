@@ -383,3 +383,5 @@ CREATE UNIQUE INDEX uq_run_threshold_calibration_id_version ON public.run_thresh
 
 CREATE UNIQUE INDEX uq_stage2_model_publications_id_version ON public.stage2_model_publications (id, model_version_id);
 
+ALTER TABLE public.explain_requests ADD CONSTRAINT explain_requests_pkey PRIMARY KEY (id);
+ALTER TABLE public.executor_heartbeats ADD CONSTRAINT executor_heartbeats_pkey PRIMARY KEY (executor, host);

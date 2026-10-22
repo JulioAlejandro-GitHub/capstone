@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { useScientificArtifact, type XAIImageResource } from '../../hooks/useScientificArtifact';
 import { XAI_LABELS, XAI_METHODS, type XAIComparison, type XAIEvidence, type XAIMethod } from './xai/comparison';
 import '../../styles/ds-primitives.css';
@@ -10,6 +10,72 @@ export interface XAIGenerationAction {
   execute: (comparison: XAIComparison, method: XAIMethod) => Promise<void>;
 }
 type Resources = Record<XAIMethod | 'original', XAIImageResource>;
+const record = (value: unknown): Record<string, unknown> | undefined => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+const classLabel = (value: unknown) => value === 1 || value === '1' ? 'Parasitada (1)' : value === 0 || value === '0' ? 'No parasitada (0)' : 'No registrada';
+const identityOf = (entry?: XAIEvidence) => record(record(entry?.metadata)?.identity);
+// The identity repeats the whole population (thousands of samples) for every method; only its size is informative here.
+export function compactMetadata(metadata: XAIEvidence['metadata']) {
+  const identity = record(record(metadata)?.identity);
+  if (!identity || !Array.isArray(identity.samples)) return metadata;
+  return {...record(metadata), identity: {...identity, samples: `${identity.samples.length} muestras en la identidad (lista omitida)`}};
+}
+function downloadJson(name: string, value: unknown) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], {type: 'application/json'}));
+  const link = document.createElement('a');
+  link.href = url; link.download = name; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+// Only the inputs that change the attribution map, in words; identifiers and hashes stay in Identificadores.
+export function methodSettings(entry: XAIEvidence): string[] {
+  const explanation = record(identityOf(entry)?.explanation) ?? {};
+  const lines = [`Clase explicada: ${classLabel(explanation.class)}${explanation.class === 1 ? ': resalta lo que aumenta la probabilidad de parásito.' : '.'}`];
+  if (entry.method === 'gradcam') lines.push(`Capa: ${typeof explanation.layer === 'string' && explanation.layer ? explanation.layer : 'última capa convolucional (por defecto)'}.`);
+  if (explanation.score_explained) lines.push(`Puntaje explicado: ${explanation.score_explained === 'raw' ? 'salida del modelo sin calibrar (sigmoide)' : String(explanation.score_explained)}.`);
+  if (explanation.num_samples != null) lines.push(`Perturbaciones: ${Number(explanation.num_samples).toLocaleString('es-CL')} muestras.`);
+  if (entry.method === 'shap') lines.push(`Referencia (background): ${entry.referenceSampleIds?.join(', ') || 'No registrada'}, distinta de la célula explicada.`);
+  const seed = identityOf(entry)?.seed;
+  if (entry.method !== 'gradcam' && seed != null) lines.push(`Semilla: ${String(seed)}.`);
+  if (explanation.version) lines.push(`Versión del método: ${String(explanation.version)}.`);
+  return lines;
+}
+const methodPurpose: Record<XAIMethod, string> = {
+  gradcam: 'Grad-CAM pondera los mapas de activación de una capa convolucional por el gradiente de la clase explicada.',
+  lime: 'LIME perturba superpíxeles de la célula y ajusta un modelo lineal local.',
+  shap: 'SHAP reparte la predicción entre regiones comparándola con una imagen de referencia.',
+};
+function CellTrace({comparison}: {comparison: XAIComparison}) {
+  const generated = XAI_METHODS.flatMap(method => comparison.methods[method] ? [comparison.methods[method]!] : []);
+  // Any method's identity carries the cell record; single-cell and population attempts share the same fields.
+  const samplesOf = (entry: XAIEvidence) => { const value = identityOf(entry)?.samples; return Array.isArray(value) ? value as Record<string, unknown>[] : []; };
+  const source = generated.find(entry => samplesOf(entry).some(item => item.sample_id === comparison.sampleId)) ?? generated[0];
+  const identity = identityOf(source);
+  const listed = source ? samplesOf(source).find(item => item.sample_id === comparison.sampleId) : undefined;
+  const sample = {relative_path: comparison.sampleRecord?.relativePath ?? listed?.relative_path, label: comparison.sampleRecord?.label ?? listed?.label};
+  const model = record(identity?.model);
+  const input = record(model?.input_contract);
+  const external = record(input?.external);
+  const epoch = record(model?.source)?.epoch;
+  const shape = Array.isArray(input?.shape) ? input!.shape.slice(1, 3).join('×') : null;
+  return <details className="ds-accordion xai-trace"><summary>Trazabilidad de la célula</summary>
+    <dl className="xai-trace-facts">
+      <div><dt>Célula original</dt><dd><code>{String(sample?.relative_path ?? 'Ruta no registrada')}</code><small>Ruta relativa en la versión del dataset: partición / clase / archivo.</small></dd></div>
+      <div><dt>Clase real</dt><dd>{classLabel(sample?.label)}</dd></div>
+      <div><dt>Modelo</dt><dd>{String(input?.architecture ?? 'Arquitectura no registrada')} · checkpoint de la época {epoch != null ? String(epoch) : 'sin registro'}</dd></div>
+      <div><dt>Entrada del modelo</dt><dd>{shape ? `${shape} px` : 'Tamaño no registrado'} · {String(input?.source_order ?? 'RGB')}{external?.output_order && external.output_order !== input?.source_order ? `→${String(external.output_order)}` : ''} · preprocesamiento {String(external?.mode ?? 'no registrado')}</dd></div>
+    </dl>
+    {generated.map(entry => <section key={entry.method} className="xai-trace-method"><h4 className="ds-subsection-title">{XAI_LABELS[entry.method]}</h4>
+      <p className="scc-meta">{methodPurpose[entry.method as XAIMethod]}</p>
+      <ul>{methodSettings(entry).map(line => <li key={line}>{line}</li>)}</ul>
+      <button type="button" className="ds-button" data-size="compact" onClick={() => downloadJson(`${entry.method}-${comparison.sampleId ?? 'muestra'}.json`, {artifact: entry.artifact, metadata: entry.metadata})}>Descargar JSON completo</button>
+    </section>)}
+    <details className="xai-trace-raw"><summary>Identificadores</summary><dl className="ds-dl">
+      <div><dt>Muestra</dt><dd><code className="report-identifier">{comparison.sampleId ?? 'No identificada'}</code></dd></div>
+      <div><dt>TRAIN · versión de modelo · checkpoint</dt><dd><code className="report-identifier">{comparison.trainingRunId}</code> · <code className="report-identifier">{comparison.modelVersionId ?? 'No registrada'}</code> · <code className="report-identifier">{comparison.checkpointArtifactId ?? 'No registrado'}</code></dd></div>
+      <div><dt>Dataset · partición · propósito</dt><dd><code className="report-identifier">{comparison.datasetVersionId ?? 'No registrado'}</code> · {comparison.split ?? '—'} · {comparison.purpose ?? '—'}</dd></div>
+      {generated.map(entry => <div key={entry.method}><dt>{XAI_LABELS[entry.method]}</dt><dd>Intento <code className="report-identifier" title={entry.attemptId}>{entry.attemptId ?? 'No registrado'}</code> · identidad <code className="report-identifier">{entry.assessmentIdentityId ?? 'No registrada'}</code> · artefacto <code className="report-identifier">{entry.artifact?.artifactId ?? 'No registrado'}</code>{entry.artifact?.sha256 && <> · SHA-256 <code className="report-identifier">{entry.artifact.sha256}</code></>}{entry.attemptId === comparison.original?.attemptId && <small> · la célula original proviene del mismo intento</small>}</dd></div>)}
+    </dl></details>
+  </details>;
+}
 const availabilityLabels = { available: 'Disponible', no_evidence: 'Sin evidencia', missing: 'Archivo no disponible',
   denied: 'Acceso denegado', integrity_failed: 'Integridad fallida', not_comparable: 'No comparable', error: 'Error de recuperación' };
 
@@ -29,78 +95,55 @@ function EvidencePanel({evidence, method, resource, sample, onExpand, generation
   const error = resource.error || failedDecode || evidence?.execution === 'failed' || ['missing', 'denied', 'integrity_failed', 'error', 'not_comparable'].includes(availability);
   const image = resource.url && !failedDecode ? <img className="report-scientific-image" src={resource.url}
     alt={`${XAI_LABELS[method]} · muestra ${sample.sampleId ?? 'no identificada'}`} onError={() => setDecodeError(resource.url)} /> : null;
-  return <section className="xai-panel" aria-label={XAI_LABELS[method]}>
+  // A visible image is its own status; only loading, running, pending and failures need words.
+  const notice = !image && (resource.loading || evidence?.artifact || evidence?.originalSource || evidence?.execution === 'running' || evidence?.execution === 'pending' || error) ? state : null;
+  return <section className="xai-panel" aria-label={XAI_LABELS[method]} data-state={image ? 'available' : notice ? (error ? 'error' : 'busy') : 'empty'}>
     <h4 className="ds-subsection-title">{XAI_LABELS[method]}</h4>
     <div className="xai-image-frame">
       {image ? onExpand ? <button className="xai-image-button" type="button" onClick={() => onExpand(method)} aria-label={`Ampliar ${XAI_LABELS[method]}`}>{image}</button> : image
-        : <p role={error ? 'alert' : 'status'}>{state}</p>}
+        : notice ? <p role={error ? 'alert' : 'status'}>{notice}</p> : <span className="xai-sr-only">{method === 'original' ? 'Sin imagen original trazable' : 'No generada'}</span>}
     </div>
     <div className="xai-panel-status">
-      <span className="ds-status" data-tone={error ? 'rejected' : resource.url ? 'approved' : 'neutral'}>{state}</span>
-      {evidence && method !== 'original' && <small>Ejecución: {evidence.execution === 'completed' ? 'Completada' : evidence.execution === 'running' ? 'Ejecutándose' : evidence.execution === 'failed' ? 'Fallida' : evidence.execution === 'pending' ? 'Pendiente' : 'No ejecutado'}</small>}
+      {notice && !image && error && <span className="ds-status" data-tone="rejected">{notice}</span>}
       {resource.failure?.message && <p>{resource.failure.message}</p>}
-      {evidence?.message && <p>{evidence.message}</p>}
-      {!evidence && <p>{method === 'original' ? 'No hay una imagen original autorizada y trazable registrada.' : 'Sin evidencia en esta selección.'}</p>}
+      {evidence?.message && error && <p>{evidence.message}</p>}
+      {!evidence && method === 'original' && <p>No hay una imagen original autorizada y trazable registrada.</p>}
       {resource.url && <a className="ds-button" href={resource.url} download={`${evidence?.originalSource?.sampleId ?? evidence?.artifact?.artifactId}${resource.extension}`}>Descargar {XAI_LABELS[method]}</a>}
-      {!evidence?.artifact && method !== 'original' && <button className="ds-button" type="button" disabled={!generation?.authorized || generating} onClick={async () => {
+      {!evidence?.artifact && method !== 'original' && <button className="ds-button" type="button" disabled={!generation?.authorized || generating}
+        title={generation?.authorized ? undefined : generation?.reason ?? 'La generación todavía no está disponible.'} onClick={async () => {
         if (!generation?.authorized) return;
         setGenerating(true); setGenerationError(null);
         try { await generation.execute(sample, method); }
         catch (error: unknown) { setGenerationError(error instanceof Error ? error.message : 'No fue posible solicitar la generación.'); }
         finally { setGenerating(false); }
       }}>Generar {XAI_LABELS[method]}</button>}
-      {!evidence?.artifact && method !== 'original' && !generation?.authorized && <small>{generation?.reason ?? 'La generación todavía no está disponible.'}</small>}
       {generationError && <p role="alert">{generationError}</p>}
     </div>
   </section>;
 }
 
 /** Pure shared presentation: neither modal nor inline starts a second image request. */
-export function XAIComparisonContent({comparison, resources, onExpand, generation, density = 'compact'}: {
-  density?: 'compact' | 'expanded';
+export function XAIComparisonContent({comparison, resources, onExpand, generation, actions, density = 'compact'}: {
+  density?: 'compact' | 'expanded'; actions?: ReactNode;
   comparison: XAIComparison; resources: Resources; onExpand?: (method: XAIMethod | 'original') => void;
   generation?: Partial<Record<XAIMethod, XAIGenerationAction>>;
 }) {
-  const scrollHint = useId();
   return <div className="xai-content" data-density={density}>
-    {onExpand && <button className="ds-button xai-expand" type="button" onClick={() => onExpand('original')}>Ampliar comparación</button>}
+    {(onExpand || actions) && <div className="xai-toolbar">{onExpand && <button className="ds-button xai-expand" type="button" onClick={() => onExpand('original')}>Ampliar comparación</button>}{actions}</div>}
     {comparison.comparabilityIssue && <p className="ds-callout" data-tone="warning">No comparable: {comparison.comparabilityIssue}</p>}
-    <div className="xai-scroll" tabIndex={0} role="region" aria-label="Comparación de cuatro cuadros" aria-describedby={scrollHint}>
+    <div className="xai-scroll" tabIndex={0} role="region" aria-label="Comparación de cuatro cuadros: original, Grad-CAM, LIME y SHAP">
       <div className="xai-grid">
         {(['original', ...XAI_METHODS] as const).map(method => <EvidencePanel key={method} method={method} sample={comparison}
           evidence={method === 'original' ? comparison.original : comparison.methods[method]} resource={resources[method]}
           onExpand={onExpand} generation={method === 'original' ? undefined : generation?.[method]} />)}
       </div>
     </div>
-    <details className="ds-accordion"><summary>Trazabilidad y metadatos (identificadores completos seleccionables)</summary>
-      <div className="xai-context">
-        <h3 className="ds-subsection-title">Muestra <code className="report-identifier">{comparison.sampleId ?? 'No identificada'}</code></h3>
-        <dl className="ds-dl">
-          <div><dt>Modelo</dt><dd className="report-identifier">{comparison.modelVersionId ?? 'No registrado'}</dd></div>
-          <div><dt>TRAIN</dt><dd className="report-identifier">{comparison.trainingRunId}</dd></div>
-          <div><dt>Predicción / Clase real</dt><dd>{comparison.prediction ?? 'No registrada'} / {comparison.trueClass ?? 'No registrada'}</dd></div>
-        </dl>
-        <p className="report-copy" id={scrollHint}>Original → Grad-CAM → LIME → SHAP. En pantallas estrechas, desplaza horizontalmente la comparación; con teclado, enfoca la fila y usa las flechas.</p>
-      </div>
-      <dl className="ds-dl">
-        <div><dt>Checkpoint</dt><dd className="report-identifier">{comparison.checkpointArtifactId ?? 'No registrado'}</dd></div>
-        <div><dt>Dataset / split / propósito</dt><dd className="report-identifier">{comparison.datasetVersionId ?? 'No registrado'} / {comparison.split ?? 'No registrado'} / {comparison.purpose ?? 'No registrado'}</dd></div>
-        {([comparison.original, ...XAI_METHODS.map(method => comparison.methods[method])]).filter((entry): entry is XAIEvidence => Boolean(entry)).map(entry => <div key={entry.method}>
-          <dt>{XAI_LABELS[entry.method]}</dt><dd>
-            <p>Intento: <code className="report-identifier">{entry.attemptId ?? 'No registrado'}</code></p>
-            <p>Identidad: <code className="report-identifier">{entry.assessmentIdentityId ?? 'No registrada'}</code></p>
-            <p>Artefacto: <code className="report-identifier">{entry.originalSource ? 'No aplica: muestra del dataset gobernado' : entry.artifact?.artifactId ?? 'No registrado'}</code></p>
-            {entry.method === 'shap' && <p>Referencia SHAP (background, distinta de la muestra explicada): <code className="report-identifier">{entry.referenceSampleIds?.join(', ') || 'No registrada'}</code></p>}
-            <pre className="report-identifier xai-metadata">{JSON.stringify({artifact: entry.artifact, originalSource: entry.originalSource, metadata: entry.metadata}, null, 2)}</pre>
-          </dd>
-        </div>)}
-      </dl>
-    </details>
+    <CellTrace comparison={comparison} />
   </div>;
 }
 
-export function XAIComparisonViewer({comparison, datasource, generation}: {
-  comparison: XAIComparison; datasource: string; generation?: Partial<Record<XAIMethod, XAIGenerationAction>>;
+export function XAIComparisonViewer({comparison, datasource, generation, actions}: {
+  comparison: XAIComparison; datasource: string; generation?: Partial<Record<XAIMethod, XAIGenerationAction>>; actions?: ReactNode;
 }) {
   const host = useRef<HTMLElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -127,7 +170,7 @@ export function XAIComparisonViewer({comparison, datasource, generation}: {
     if (expanded !== null) dialog.current?.showModal();
   }, [expanded]);
   return <section ref={host} className="ds-report xai-viewer" data-surface="workbench">
-    <div className="report-section"><XAIComparisonContent comparison={comparison} resources={resources} generation={generation} onExpand={method => {
+    <div className="report-section"><XAIComparisonContent comparison={comparison} resources={resources} generation={generation} actions={actions} onExpand={method => {
       trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setExpanded(method);
     }} /></div>

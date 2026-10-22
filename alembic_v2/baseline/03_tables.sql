@@ -207,3 +207,5 @@ CREATE TABLE public.xai_evaluation_protocols (id uuid DEFAULT gen_random_uuid(),
 
 CREATE TABLE public.xai_evaluation_members (evaluation_id uuid NOT NULL, xai_evidence_id uuid NOT NULL, member_role text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
 
+CREATE TABLE public.explain_requests (id uuid DEFAULT gen_random_uuid() NOT NULL, request jsonb NOT NULL, request_key text NOT NULL, actor text NOT NULL, executor text NOT NULL, state text DEFAULT 'queued' NOT NULL, claimed_by jsonb, operations jsonb DEFAULT '[]'::jsonb NOT NULL, cause text, created_at timestamp with time zone DEFAULT clock_timestamp() NOT NULL, claimed_at timestamp with time zone, finished_at timestamp with time zone);
+CREATE TABLE public.executor_heartbeats (executor text NOT NULL, host text NOT NULL, process jsonb NOT NULL, device jsonb NOT NULL, started_at timestamp with time zone NOT NULL, last_seen timestamp with time zone DEFAULT clock_timestamp() NOT NULL);

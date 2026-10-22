@@ -31,6 +31,7 @@ def setup():
     repository.source.return_value = {'identity': value}
     repository.samples.side_effect = lambda dataset, sample=None, limit=None: [sample or str(uuid4())]
     repository.candidates.return_value = []
+    repository.requests_for.return_value = []
     service = ExplainService(repository)
     request = ExplainRequest(source_attempt_id=source_id, sample_id=sample, methods=['gradcam', 'lime', 'shap'])
     return service, request, value
@@ -210,3 +211,32 @@ def test_bad_shap_reference_does_not_prevent_other_methods_submission(setup):
     launcher = Mock()
     service.submit(request, launcher, 'actor')
     launcher.launch.assert_called_once_with(request, 'actor')
+
+
+def test_host_and_docker_locations_are_the_same_context(setup):
+    """The GPU agent runs on the host checkout; only the storage prefix differs from Docker."""
+    service, request, source = setup
+    spec = service.specification(request, source, 'gradcam')
+    candidate = deepcopy(source)
+    candidate['explanation'] = spec
+    candidate['dataset'] = {**candidate['dataset'], 'dataset_root': '/Users/someone/capstone/malaria_dl_local_project/data/malaria_dataset_versions/v1'}
+    source['dataset'] = {**source['dataset'], 'dataset_root': '/app/malaria_dl_local_project/data/malaria_dataset_versions/v1'}
+    candidate['model'] = {**candidate['model'], 'path': '/Users/someone/capstone/malaria_dl_local_project/outputs/campaign_runs/x/epoch_2.keras'}
+    assert service.compatible({'identity': candidate}, source, request, spec)
+    candidate['dataset'] = {**candidate['dataset'], 'dataset_root': '/Users/someone/capstone/malaria_dl_local_project/data/malaria_dataset_versions/v2'}
+    assert not service.compatible({'identity': candidate}, source, request, spec)
+
+
+def test_queued_host_request_is_pending_and_failed_one_reports_its_cause(setup):
+    service, request, source = setup
+    queued = {'id': uuid4(), 'state': 'queued', 'cause': None,
+              'request': {'methods': ['lime'], 'class_id': 1, 'num_samples': 1000, 'background_sample_id': None}}
+    failed = {'id': uuid4(), 'state': 'failed', 'cause': 'LOCAL_GPU_REQUIRED',
+              'request': {'methods': ['shap'], 'class_id': 1, 'num_samples': 1000, 'background_sample_id': None}}
+    other_class = {'id': uuid4(), 'state': 'queued', 'cause': None,
+                   'request': {'methods': ['gradcam'], 'class_id': 0, 'num_samples': 1000, 'background_sample_id': None}}
+    service.repository.requests_for.return_value = [queued, failed, other_class]
+    states = {item['method']: item for item in service.state(request, True)['methods']}
+    assert states['lime']['state'] == 'pending' and states['lime']['operation_id'] == str(queued['id'])
+    assert states['shap']['state'] == 'failed' and states['shap']['error'] == 'LOCAL_GPU_REQUIRED'
+    assert states['gradcam']['state'] == 'not_executed'

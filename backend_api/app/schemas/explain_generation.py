@@ -64,3 +64,15 @@ class ExplainPreparation(BaseModel):
     sample_id: UUID
     training_run_id: UUID
     methods: list[PreparedMethod]
+
+
+class ExplainExecutor(BaseModel):
+    executor: Literal['host_gpu', 'docker_cpu']
+    available: bool
+    host: str | None = None
+    gpu_devices: list[str] = Field(default_factory=list)
+    tensorflow_metal: str | None = None
+    last_seen: Any = None
+    age_seconds: float | None = None
+    reason: str | None = None
+    start_command: str | None = None

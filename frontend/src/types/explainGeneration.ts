@@ -25,3 +25,14 @@ export interface ExplainState {
 export interface ExplainSubmission {
   operations: Array<{method: XAIMethod; operation_id?: string; attempt_id?: string; state?: 'pending' | 'running' | 'completed'; error?: string}>;
 }
+
+export interface ExplainExecutor {
+  executor: 'host_gpu' | 'docker_cpu';
+  available: boolean;
+  host?: string | null;
+  gpu_devices?: string[];
+  tensorflow_metal?: string | null;
+  age_seconds?: number | null;
+  reason?: string | null;
+  start_command?: string | null;
+}

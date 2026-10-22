@@ -10,6 +10,7 @@ import { createComparisonCache, type ComparisonCache } from '../../utils/compari
 import type { Dimension, EffectiveSelection, Finding, JsonValue, PopulationMember, Module, Observation, PreflightResponse, RequestedSelection, Verdict } from '../../types/scientificPreflight';
 import { equalityKey, compareValues, projectField, classifyFields, evaluationDetails, missingEvidence, openEvidenceTarget, type DetailField } from '../../utils/preflightPresentation';
 import { TrainingAssessmentXAI } from './AssessmentXAI';
+import { executorLabel, useExplainExecutor } from '../../hooks/useExplainExecutor';
 
 const dimensions: Record<Dimension, string> = { A1: 'Dataset', A2: 'Partición', A3: 'Muestras', A4: 'Configuración experimental', A5: 'Checkpoint', A6: 'Evaluación' };
 const modules: Record<Module, string> = { curves: 'Curvas de aprendizaje', metrics: 'Métricas VAL/TEST', consensus: 'Consenso y desacuerdo', xai: 'XAI', embeddings: 'Embeddings', pca: 'PCA', umap: 'UMAP', cka: 'CKA' };
@@ -294,9 +295,11 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
   </>;
 }
 
-function ComparisonModules({ ids, datasource, selections, explains, revision, active, onEvidenceChange }: { ids: string[]; datasource: string; selections: RequestedSelection[]; explains?: Record<string, string[]>; revision: number; active: boolean; onEvidenceChange: () => void }) {
+function ComparisonModules({ ids, datasource, selections, explains, canGenerate, onGenerated, revision, active, onEvidenceChange }: { ids: string[]; datasource: string; selections: RequestedSelection[]; explains?: Record<string, string[]>; canGenerate?: boolean; onGenerated?: () => void; revision: number; active: boolean; onEvidenceChange: () => void }) {
+  const { executor, blocked } = useExplainExecutor(active && Boolean(canGenerate));
   return <section className="scc-science-module" aria-label="Explicabilidad XAI"><h3>Explicabilidad XAI</h3>
-    {ids.map((id, index) => <section key={id}><h4>RUN {String.fromCharCode(65 + index)}</h4><PersistedXAI key={JSON.stringify([selections.find(s => s.training_run_id === id), revision])} selection={selections.find(s => s.training_run_id === id) ?? { training_run_id: id }} datasource={datasource} active={active} attemptIds={explains?.[id]} /><TrainingAssessmentXAI key={JSON.stringify([datasource, selections.find(selection => selection.training_run_id === id), revision])} trainingRunId={id} datasource={datasource} active={active} onEvidenceChange={onEvidenceChange} /></section>)}
+    {canGenerate && <p className="scc-executor" data-available={executor?.available ?? false} role="status">{executorLabel(executor)}{executor && !executor.available && executor.executor === 'host_gpu' && <> · Inícialo en el host: <code>{executor.start_command ?? 'scripts/host_services.sh start explain'}</code></>}</p>}
+    {ids.map((id, index) => <section key={id}><h4>RUN {String.fromCharCode(65 + index)}</h4><PersistedXAI key={JSON.stringify([selections.find(s => s.training_run_id === id), revision])} selection={selections.find(s => s.training_run_id === id) ?? { training_run_id: id }} datasource={datasource} active={active} attemptIds={explains?.[id]} canGenerate={canGenerate} blocked={blocked} onGenerated={onGenerated} /><TrainingAssessmentXAI key={JSON.stringify([datasource, selections.find(selection => selection.training_run_id === id), revision])} trainingRunId={id} datasource={datasource} active={active} onEvidenceChange={onEvidenceChange} /></section>)}
   </section>;
 }
 
@@ -329,8 +332,8 @@ function SectionMap({ states, onSelect }: { states: ReturnType<typeof sectionSta
   </button>)}</nav>;
 }
 
-type SectionProps = { section?: AnalysisSection; onSectionChange?: (section: AnalysisSection) => void; explains?: Record<string, string[]> };
-function ComparisonEvidenceSession({ ids, datasource, maximum, selections, section: requested, onSectionChange, explains }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
+type SectionProps = { section?: AnalysisSection; onSectionChange?: (section: AnalysisSection) => void; explains?: Record<string, string[]>; canGenerate?: boolean; onGenerated?: () => void };
+function ComparisonEvidenceSession({ ids, datasource, maximum, selections, section: requested, onSectionChange, explains, canGenerate, onGenerated }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
   const cache = useMemo(createComparisonCache, []);
   const [revision, setRevision] = useState(0);
   const [xaiRevision, setXaiRevision] = useState(0);
@@ -368,7 +371,7 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
     <AnalysisPanel id="aprendizaje" section={section} visited={visited}><CurvesModule {...moduleProps} active={section === 'aprendizaje'} /></AnalysisPanel>
     <AnalysisPanel id="desempeno" section={section} visited={visited}><MetricsModule {...moduleProps} active={section === 'desempeno'} /></AnalysisPanel>
     <AnalysisPanel id="errores" section={section} visited={visited}><ConsensusModule {...moduleProps} active={section === 'errores'} /></AnalysisPanel>
-    <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} explains={explains} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} onEvidenceChange={() => { cache.clear(); setRevision(value => value + 1); }} /></AnalysisPanel>
+    <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} explains={explains} canGenerate={canGenerate} onGenerated={onGenerated} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} onEvidenceChange={() => { cache.clear(); setRevision(value => value + 1); }} /></AnalysisPanel>
     <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} active={section === 'representaciones'} /></AnalysisPanel>
     <AnalysisPanel id="trazabilidad" section={section} visited={visited}>{data ? <PreflightEvidence data={data} /> : <p>{ids.length === 1 ? 'RUN individual seleccionado. Sus resultados permanecen disponibles; el preflight comparativo requiere al menos dos TRAIN.' : 'El detalle utiliza la misma consulta del resumen metodológico.'}</p>}</AnalysisPanel>
   </>;
@@ -378,5 +381,5 @@ export function ScientificPreflight(props: { ids: string[]; datasource: string; 
   const { user, status } = useAuth();
   // Remount all retained evidence on a change of user, permissions, datasource or TRAIN set.
   const scope = JSON.stringify([user, status, props.datasource, props.ids]);
-  return <Fragment key={scope}><ComparisonEvidenceSession {...props} /></Fragment>;
+  return <Fragment key={scope}><ComparisonEvidenceSession {...props} canGenerate={Boolean(user?.permissions?.includes('scientific.cell_classification.explain'))} /></Fragment>;
 }

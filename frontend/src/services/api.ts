@@ -1,6 +1,6 @@
 import type { ReportRequest, ReportResponse } from '../types/scientificReport';
 import type { PreflightRequest, PreflightResponse } from '../types/scientificPreflight';
-import type { ExplainRequest, ExplainState, ExplainSubmission } from '../types/explainGeneration';
+import type { ExplainExecutor, ExplainRequest, ExplainState, ExplainSubmission } from '../types/explainGeneration';
 import type { ScientificTraceability, ModelCatalog, ScientificModelCatalog } from "../types/scientificRead";
 import type { ScientificResult } from '../components/ScientificResults';
 import type {
@@ -281,7 +281,8 @@ export class ApiError extends Error {
   }
 }
 
-type QueryValue = string | number | boolean | undefined;
+// Arrays repeat the key (FastAPI list query parameters).
+type QueryValue = string | number | boolean | string[] | undefined;
 type RequestOptions = {
   init?: RequestInit;
   timeoutMs?: number;
@@ -304,7 +305,8 @@ async function request<T>(
 ): Promise<T> {
   const url = new URL(path, API_BASE_URL);
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined) {
+    if (Array.isArray(value)) value.forEach(item => url.searchParams.append(key, item));
+    else if (value !== undefined) {
       url.searchParams.set(key, String(value));
     }
   });
@@ -654,7 +656,11 @@ export const api = {
     return request<AssessmentDetail>(`/assessments/${encodeURIComponent(attemptId)}`, {view: 'traceability'}, {signal});
   },
   getExplainState(sourceAttemptId: string, sampleId: string, signal?: AbortSignal, classId: 0 | 1 = 1) {
-    return request<ExplainState>('/explain-generations', {source_attempt_id: sourceAttemptId, sample_id: sampleId, class_id: classId}, {signal});
+    // State verifies the whole EXPLAIN population (thousands of artifacts) before reporting one cell.
+    return request<ExplainState>('/explain-generations', {source_attempt_id: sourceAttemptId, sample_id: sampleId, class_id: classId}, {signal, timeoutMs: 60000});
+  },
+  getExplainExecutor(signal?: AbortSignal) {
+    return request<ExplainExecutor>('/explain-generations/executor', {}, {signal});
   },
   prepareExplanation(body: ExplainRequest, signal?: AbortSignal) {
     return request<{sample_id: string; training_run_id: string; methods: Array<{method: string; sample_ids: string[]; specification: JsonRecord}>}>('/explain-generations/prepare', {}, {signal, init: {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}});
@@ -1164,8 +1170,8 @@ export const api = {
     return request<{items: AssessmentChoice[]}>(`/assessments`, {limit: 100, offset}, {signal});
   },
 
-  getAssessmentArtifacts(attemptId: string, offset = 0, signal?: AbortSignal) {
-    return request<{items: AssessmentArtifact[]}>(`/assessments/${encodeURIComponent(attemptId)}/artifacts`, {limit: 100, offset, view: 'traceability'}, {signal});
+  getAssessmentArtifacts(attemptId: string, offset = 0, signal?: AbortSignal, sampleIds?: string[]) {
+    return request<{items: AssessmentArtifact[]}>(`/assessments/${encodeURIComponent(attemptId)}/artifacts`, {limit: 100, offset, view: 'traceability', sample_id: sampleIds?.length ? sampleIds : undefined}, {signal});
   },
 
   getAssessment(attemptId: string, signal?: AbortSignal) {

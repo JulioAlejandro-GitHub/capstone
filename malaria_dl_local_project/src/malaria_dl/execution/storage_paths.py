@@ -3,7 +3,8 @@ from pathlib import Path
 from ..campaigns.contracts import CampaignError
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-ALLOWED_TREES = (('outputs', 'train_runs'), ('artifacts', 'assessments'))
+# campaign_runs holds checkpoints of campaign-launched TRAIN; same <tree>/<run uuid>/<file> layout.
+ALLOWED_TREES = (('outputs', 'train_runs'), ('outputs', 'campaign_runs'), ('artifacts', 'assessments'))
 
 
 def local_scientific_path(value: str | Path) -> Path:

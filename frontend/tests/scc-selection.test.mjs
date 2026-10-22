@@ -189,7 +189,7 @@ for (const stage of ['train', 'evaluate', 'explain', 'query', 'complete']) {
 }
 
 test('additional missing analyses consolidate causes and affected RUNs', () => {
-  const { ScientificRepresentations } = loader({'../../services/api': {api: {}}, './XAIComparisonViewer': {}, '../../hooks/useComparisonEvidence': {}, './ComparisonPython': {}})('components/reports/ScientificReport.tsx');
+  const { ScientificRepresentations } = loader({'../../services/api': {api: {}}, './XAIComparisonViewer': {}, './GeneratedXAIComparison': {}, '../../hooks/useComparisonEvidence': {}, './ComparisonPython': {}})('components/reports/ScientificReport.tsx');
   const module = ScientificRepresentations({selections: [], datasource: 'malaria', cache: {}});
   const html = renderToStaticMarkup(module.props.children([
     {training_run_id: 'a', artifacts: []}, {training_run_id: 'b', artifacts: []},

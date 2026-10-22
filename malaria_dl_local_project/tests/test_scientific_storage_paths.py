@@ -15,6 +15,13 @@ def test_historical_checkpoint_same_bytes_and_no_database_rewrite(tmp_path, monk
     assert registered.startswith('/absent/Mac/')
 
 
+def test_campaign_checkpoint_same_bytes(tmp_path, monkeypatch):
+    monkeypatch.setattr(storage_paths, 'PROJECT_ROOT', tmp_path)
+    suffix = f'outputs/campaign_runs/{uuid4()}/epoch_2.keras'
+    local = tmp_path / suffix; local.parent.mkdir(parents=True); local.write_bytes(b'checkpoint')
+    assert file_identity('/absent/Mac/malaria_dl_local_project/' + suffix) == file_identity(local)
+
+
 def test_assessment_same_bytes(tmp_path, monkeypatch):
     monkeypatch.setattr(storage_paths, 'PROJECT_ROOT', tmp_path)
     suffix = f'artifacts/assessments/{uuid4()}/{uuid4()}.png'
@@ -22,7 +29,7 @@ def test_assessment_same_bytes(tmp_path, monkeypatch):
     assert file_identity('/absent/malaria_dl_local_project/' + suffix) == file_identity(local)
 
 
-@pytest.mark.parametrize('suffix', ['outputs/train_runs/../secret', 'outputs/train_runs/not-a-uuid/image', 'artifacts/assessments/../secret'])
+@pytest.mark.parametrize('suffix', ['outputs/train_runs/../secret', 'outputs/train_runs/not-a-uuid/image', 'outputs/campaign_runs/not-a-uuid/epoch_2.keras', 'artifacts/assessments/../secret'])
 def test_invalid_scientific_locations(suffix):
     with pytest.raises(ValueError): storage_paths.local_scientific_path('/absent/malaria_dl_local_project/' + suffix)
 

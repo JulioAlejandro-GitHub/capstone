@@ -66,7 +66,8 @@ test('SHAP-only and unexplained samples keep four panels, without generating an 
   for (const comparison of [row,{id:'empty',trainingRunId:'train',sampleId:'empty',methods:{}}]) {
     const html = presentation(comparison);
     assert.equal((html.match(/class="xai-panel"/g)||[]).length,4);
-    assert.match(html,/Sin evidencia/);
+    assert.match(html,/No generada/);
+    assert.doesNotMatch(html,/Sin evidencia en esta selección|<small>La generación todavía no está disponible/);
     assert.match(html,/<button[^>]*disabled=""[^>]*>Generar LIME/);
     assert.doesNotMatch(html,/<img/);
   }
@@ -115,7 +116,7 @@ test('required SHAP PK survives independently of unrelated Grad-CAM', () => {
   assert.equal(rows[0].methods.shap.artifact.artifactId,artifact);
   assert.match(presentation(rows[0],{...resources,shap:{...emptyResource,url:'blob:shap'}}),/download="2b4f68d6-2826-489c-980b-69f686223b11.png"/);
 });
-for (const [execution,label] of [['pending','Pendiente'],['running','Ejecutándose'],['failed','Fallido'],['completed','Sin evidencia'],['not_executed','Sin evidencia']]) {
+for (const [execution,label] of [['pending','Pendiente'],['running','Ejecutándose'],['failed','Fallido'],['completed','No generada'],['not_executed','No generada']]) {
   test(`execution ${execution} is represented independently of missing evidence`, () => {
     const row={id:'row',trainingRunId:'train',methods:{shap:{method:'shap',execution,availability:'no_evidence'}}};
     assert.ok(presentation(row).includes(label));
@@ -248,7 +249,7 @@ test('original and SHAP render side by side with disabled generation and compact
   assert.match(html,/Ampliar comparación/);
   assert.match(html,/<button[^>]*disabled=""[^>]*>Generar Grad-CAM/);
   assert.match(html,/<button[^>]*disabled=""[^>]*>Generar LIME/);
-  assert.match(html,/No aplica: muestra del dataset gobernado/);
+  assert.doesNotMatch(html,/Ejecución: Completada|>Disponible</);
   assert.match(html,/download="sample.png"/);
   assert.match(html,/background-not-original/);
 });
@@ -296,9 +297,12 @@ test('pending backend method disables duplicate generation and remains distinct 
     '../services/api':{api:{getExplainState:async()=>({training_run_id:'train',dataset_version_id:'dataset',sample_id:'sample',authorized:true,methods:[{method:'shap',state:'pending',artifacts:[]}]})}}},
     {setTimeout:()=>1,clearTimeout:()=>{}});
   const hook=load('hooks/useExplainGeneration.ts').useExplainGeneration;
-  const comparison={...group([fixture()],'train')[0],split:'val',purpose:'development'};
+  // Grad-CAM is persisted on screen; SHAP only exists as a pending backend execution.
+  const comparison={...group([fixture('gradcam')],'train')[0],split:'val',purpose:'development'};
   hook(comparison);const cleanup=effect();await new Promise(r=>setImmediate(r));index=0;
-  const pending=hook(comparison);assert.equal(pending.canGenerate,false);assert.equal(pending.comparison.methods.shap.execution,'pending');assert.equal(pending.comparison.methods.shap.artifact,undefined);cleanup();
+  const pending=hook(comparison);assert.equal(pending.canGenerate,false);assert.equal(pending.comparison.methods.shap.execution,'pending');assert.equal(pending.comparison.methods.shap.artifact,undefined);
+  assert.equal(pending.comparison.methods.gradcam.artifact.artifactId,'artifact-gradcam');
+  assert.deepEqual([...pending.inFlight],['shap']);cleanup();
 });
 
 test('attributions for different target classes are never grouped as the same explanation', () => {
@@ -306,4 +310,35 @@ test('attributions for different target classes are never grouped as the same ex
   first.detail.identity.explanation.class=0;second.detail.identity.explanation.class=1;
   const rows=group([first,second],'train');
   assert.equal(rows.length,2);assert.equal(rows[0].targetClass,0);assert.equal(rows[1].targetClass,1);
+});
+
+test('traceability explains the inputs of each method and keeps identifiers apart', () => {
+  const samples=[{sample_id:'sample',label:0,relative_path:'val/uninfected/cell_44.png'},...Array.from({length:2692},(_,i)=>({sample_id:`s${i}`}))];
+  const identity=method=>({...fixture(method).detail.identity, seed:47, samples, model:{model_version_id:'model',checkpoint_artifact_id:'checkpoint',source:{epoch:2},input_contract:{architecture:'vgg16',shape:[null,200,200,3],source_order:'RGB',external:{mode:'vgg16_imagenet',output_order:'BGR'}}},
+    explanation:{method,class:1,layer:null,score_explained:'raw',version:'e6_attribution_v1',num_samples:method==='gradcam'?undefined:1000,background:[{sample_id:'background-not-original'}]}});
+  const rows = group(['gradcam','shap'].map(method=>fixture(method,{identity:identity(method)})),'train');
+  const html = presentation(rows[0]);
+  for (const text of ['Trazabilidad de la célula','val/uninfected/cell_44.png','No parasitada (0)','vgg16','época 2','200×200 px','RGB→BGR','vgg16_imagenet','última capa convolucional (por defecto)','salida del modelo sin calibrar','Perturbaciones: 1.000 muestras','Semilla: 47','Descargar JSON completo','Identificadores','attempt-shap','artifact-shap','hash']) assert.ok(html.includes(text), text);
+  assert.doesNotMatch(html,/"sample_id": "s2691"/);
+  assert.doesNotMatch(html,/fingerprint|Metadatos completos/);
+  const {compactMetadata}=loader({'../../hooks/useScientificArtifact':{}})('components/reports/XAIComparisonViewer.tsx');
+  assert.match(JSON.stringify(compactMetadata({identity:{samples:samples}})),/2693 muestras en la identidad/);
+});
+
+test('the explained cell record survives grouping across attempts and the scroll hint is gone', () => {
+  const population=fixture('gradcam',{identity:{...fixture('gradcam').detail.identity, samples:[{sample_id:'sample',relative_path:'val/parasitized/cell.png',label:1}]}});
+  const single=fixture('lime');
+  const row=group([population,single],'train')[0];
+  assert.equal(row.sampleRecord.relativePath,'val/parasitized/cell.png');
+  const html=presentation({...row, methods:{lime:row.methods.lime}});
+  assert.match(html,/val\/parasitized\/cell\.png/);
+  assert.doesNotMatch(html,/En pantallas estrechas|Ruta no registrada/);
+});
+
+test('executor label explains an absent GPU agent and how to start it; generation is blocked', () => {
+  const {executorLabel}=loader({'../services/api':{api:{}}})('hooks/useExplainExecutor.ts');
+  assert.match(executorLabel({executor:'host_gpu',available:false,age_seconds:42}),/no activo · último latido hace 42 s/);
+  assert.match(executorLabel({executor:'host_gpu',available:true,host:'mac',tensorflow_metal:'1.2.0'}),/GPU del host · mac · tensorflow-metal 1.2.0/);
+  const html=presentation(group([fixture('gradcam')],'train')[0],resources,{lime:{authorized:false,reason:'Agente de GPU no activo.',execute:async()=>{}}});
+  assert.match(html,/<button[^>]*disabled=""[^>]*title="Agente de GPU no activo."[^>]*>Generar LIME/);
 });

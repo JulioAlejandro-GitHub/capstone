@@ -1,5 +1,5 @@
-import { groupXAIComparisons } from './xai/comparison';
-import { XAIComparisonViewer } from './XAIComparisonViewer';
+import { groupXAIComparisons, type XAIComparison } from './xai/comparison';
+import { GeneratedXAIComparison } from './GeneratedXAIComparison';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, BarChart, Bar, ScatterChart, Scatter, LabelList, Cell } from 'recharts';
 import { api } from '../../services/api';
@@ -10,7 +10,7 @@ import type { CatalogEvidence, ClinicalEvidence, CurveEvidence, MetricsEvidence,
 import { CopyText } from './ComparisonPython';
 import { EvidenceButton, Kpi, SectionAnswer } from './AnalysisWorkspace';
 import { consensusSummary, curveSummary, intensity, metricRange } from '../../utils/analysisSummaries';
-import { choiceKey, defaultEvaluationSlot, effectiveSlot, evaluationSlots, explainMethods, groupEvaluations, groupExplanations, isAssessmentExplanation, roleLabels, type EvaluationSlot } from '../../utils/lineageSlots';
+import { choiceKey, defaultEvaluationSlot, effectiveSlot, evaluationSlots, explainMethods, groupEvaluations, groupExplanations, isAssessmentExplanation, roleLabels, splitExplanations, type EvaluationSlot } from '../../utils/lineageSlots';
 import type { AssessmentExplanationChild } from '../../types/api';
 
 const runLabel = (index: number) => `RUN ${String.fromCharCode(65 + index)}`;
@@ -28,7 +28,7 @@ export function evaluationSelection(item: EvaluationChoice): RequestedSelection 
 const when = (iso: string) => new Date(iso).toLocaleString('es-CL', {dateStyle: 'short', timeStyle: 'short'});
 const choiceText = (choice: EvaluationChoice, index: number) => choice.evaluation_role === 'independent_evaluate'
   ? `#${index + 1} · ${when(choice.created_at)} · ${choice.purpose}` : `${roleLabels[choice.evaluation_role] ?? choice.evaluation_role} · ${when(choice.created_at)}`;
-const explanationText = (child: AssessmentExplanationChild) => `#${child.ordinal} · ${child.split.toUpperCase()} · ${when(child.started_at)} · ${child.state}${child.result_count != null ? ` · ${value(child.result_count)} resultados` : ''}`;
+const explanationText = (child: AssessmentExplanationChild) => `#${child.ordinal} · ${child.split.toUpperCase()} · ${when(child.started_at)} · ${child.state}${child.result_count != null ? ` · ${value(child.result_count)} ${child.result_count === 1 ? 'resultado' : 'resultados'}` : ''}`;
 function SlotChoice<T>({label, items, current, keyOf, text, onPick}: {label: string; items: T[]; current?: T; keyOf: (item: T) => string; text: (item: T, index: number) => string; onPick: (key: string) => void}) {
   if (!items.length) return <span className="scc-meta">Sin ejecución</span>;
   if (items.length === 1) return <span className="scc-slot-value">{text(items[0], 0)}</span>;
@@ -36,14 +36,14 @@ function SlotChoice<T>({label, items, current, keyOf, text, onPick}: {label: str
     {items.map((item, index) => <option key={keyOf(item)} value={keyOf(item)}>{text(item, index)}</option>)}
   </select>;
 }
-export function EvaluationNavigation({id, datasource, protocol = defaultEvaluationSlot, onChange, onExplainChange}: {id: string; datasource: string; protocol?: EvaluationSlot; onChange: (selection: RequestedSelection) => void; onExplainChange?: (id: string, attemptIds: string[]) => void}) {
+export function EvaluationNavigation({id, datasource, protocol = defaultEvaluationSlot, lineageRevision = 0, onChange, onExplainChange}: {id: string; datasource: string; protocol?: EvaluationSlot; lineageRevision?: number; onChange: (selection: RequestedSelection) => void; onExplainChange?: (id: string, attemptIds: string[]) => void}) {
   const cache = useMemo(createComparisonCache, [id, datasource]);
   const [revision, setRevision] = useState(0);
   const [override, setOverride] = useState<EvaluationSlot | null>(null);
   const [picked, setPicked] = useState<Partial<Record<EvaluationSlot, string>>>({});
   const [explainPicked, setExplainPicked] = useState<Record<string, string>>({});
   const {data, error, loading} = useComparisonEvidence(cache, JSON.stringify(['catalog', id, datasource, revision]), () => api.getComparisonReport<CatalogEvidence[]>(datasource, {module: 'catalog', selections: [{training_run_id: id}]}));
-  const lineage = useComparisonEvidence(cache, JSON.stringify(['lineage', id, datasource, revision]), async () => api.getTrainingLineageChildren({trainingRunId: id, datasource}));
+  const lineage = useComparisonEvidence(cache, JSON.stringify(['lineage', id, datasource, revision, lineageRevision]), async () => api.getTrainingLineageChildren({trainingRunId: id, datasource}));
   const catalog = data?.data[0];
   const groups = useMemo(() => groupEvaluations(catalog?.evaluations ?? []), [catalog]);
   // A new analysis protocol resets per-card overrides.
@@ -53,8 +53,9 @@ export function EvaluationNavigation({id, datasource, protocol = defaultEvaluati
   const selected = slot ? currentOf(slot) : undefined;
   useEffect(() => { if (selected) onChange(evaluationSelection(selected)); }, [selected, onChange]);
   const explanations = useMemo(() => groupExplanations((lineage.data?.explainabilities ?? []).filter(isAssessmentExplanation)), [lineage.data]);
-  const explainOf = (method: string) => explanations[method]?.find(child => child.attempt_id === explainPicked[method]) ?? explanations[method]?.[0];
-  const explainIds = explainMethods.flatMap(method => explainOf(method.id) ? [explainOf(method.id)!.attempt_id] : []).join(',');
+  const explainParts = (method: string) => splitExplanations(explanations[method]);
+  const explainOf = (method: string) => { const {population} = explainParts(method); return population.find(child => child.attempt_id === explainPicked[method]) ?? population[0]; };
+  const explainIds = explainMethods.flatMap(method => [...(explainOf(method.id) ? [explainOf(method.id)!.attempt_id] : []), ...explainParts(method.id).cells.map(child => child.attempt_id)]).join(',');
   useEffect(() => { if (lineage.data) onExplainChange?.(id, explainIds ? explainIds.split(',') : []); }, [id, explainIds, lineage.data, onExplainChange]);
   return <div className="scc-evaluation-nav">
     {loading && <p role="status">Consultando evaluaciones…</p>}
@@ -70,7 +71,9 @@ export function EvaluationNavigation({id, datasource, protocol = defaultEvaluati
           {lineage.loading && <span className="scc-meta" role="status">Consultando EXPLAIN…</span>}
           {lineage.error ? <span role="alert">Error al consultar EXPLAIN. <button className="ds-button" data-size="compact" onClick={() => setRevision(n => n+1)}>Reintentar</button></span> : null}
           {lineage.data && <ul>{explainMethods.map(method => <li key={method.id} data-empty={!explanations[method.id]?.length}><span>{method.label}</span>
-            <SlotChoice label={`EXPLAIN ${method.label}`} items={explanations[method.id] ?? []} current={explainOf(method.id)} keyOf={child => child.attempt_id} text={explanationText} onPick={key => setExplainPicked(old => ({...old, [method.id]: key}))} />
+            <span className="scc-slot-explain">{explainParts(method.id).population.length > 0 || !explainParts(method.id).cells.length
+              ? <SlotChoice label={`EXPLAIN ${method.label}`} items={explainParts(method.id).population} current={explainOf(method.id)} keyOf={child => child.attempt_id} text={explanationText} onPick={key => setExplainPicked(old => ({...old, [method.id]: key}))} /> : null}
+              {explainParts(method.id).cells.length > 0 && <small className="scc-meta">{explainParts(method.id).population.length ? '+ ' : ''}{explainParts(method.id).cells.length} {explainParts(method.id).cells.length === 1 ? 'célula generada' : 'células generadas'} desde el reporte</small>}</span>
           </li>)}</ul>}
         </li>
       </ol>
@@ -255,8 +258,9 @@ export function ScientificRepresentations(props: ModuleProps) {
   </>}</LazyScientificModule>;
 }
 
-// attemptIds: EXPLAIN chosen in the RUN card; they are shown even when their split or checkpoint identifier differs, with a notice.
-export function PersistedXAI({selection, datasource, active, attemptIds}: {selection: RequestedSelection; datasource: string; active: boolean; attemptIds?: string[]}) {
+// attemptIds: EXPLAIN chosen in the RUN card (one per method). They are combined per cell, shown even when their
+// split or checkpoint identifier differs (with a notice), and kept on screen while a refresh is in flight.
+export function PersistedXAI({selection, datasource, active, attemptIds, canGenerate = false, blocked, onGenerated}: {selection: RequestedSelection; datasource: string; active: boolean; attemptIds?: string[]; canGenerate?: boolean; blocked?: string | null; onGenerated?: () => void}) {
   const cache = useMemo(createComparisonCache, [datasource, selection.training_run_id]);
   const [revision, setRevision] = useState(0);
   const [attempt, setAttempt] = useState('');
@@ -274,24 +278,52 @@ export function PersistedXAI({selection, datasource, active, attemptIds}: {selec
       if (response.items.length < 100) return all;
     }
   }, active);
-  const selected = choices.data?.find(r => r.attempt_id === attempt) ?? choices.data?.[0];
-  const detail = useComparisonEvidence(cache, selected ? JSON.stringify(['xai-detail', selected.attempt_id, revision]) : null, async () => {
-    const response = await api.getAssessment(selected!.attempt_id);
-    if (response.training_run_id !== selection.training_run_id || response.id !== selected!.attempt_id || response.kind !== 'explain' || (!attemptIds && response.identity.model.checkpoint_artifact_id !== selection.checkpoint_artifact_id)) throw new Error('Linaje incompatible');
-    return response;
+  const lastChoices = useRef<import('../../types/api').AssessmentChoice[] | undefined>(undefined);
+  if (choices.data) lastChoices.current = choices.data;
+  const listed = choices.data ?? (choices.loading ? lastChoices.current : undefined);
+  const selected = listed?.find(r => r.attempt_id === attempt) ?? listed?.[0];
+  const picked = attemptIds ? listed ?? [] : selected ? [selected] : [];
+  const composed = useComparisonEvidence(cache, picked.length ? JSON.stringify(['xai-composed', picked.map(c => c.attempt_id), offset, revision]) : null, async () => {
+    const details = await Promise.all(picked.map(async choice => {
+      const response = await api.getAssessment(choice.attempt_id);
+      if (response.training_run_id !== selection.training_run_id || response.id !== choice.attempt_id || response.kind !== 'explain' || (!attemptIds && response.identity.model.checkpoint_artifact_id !== selection.checkpoint_artifact_id)) throw new Error('Linaje incompatible');
+      return response;
+    }));
+    const size = (detail: typeof details[number]) => detail.identity.samples?.length ?? 0;
+    // The largest attempt is paged; single-cell attempts are read whole and their cells are read from the large one.
+    const [primary, ...others] = [...details].sort((a, b) => size(b) - size(a));
+    const primaryPage = (await api.getAssessmentArtifacts(primary.id, offset)).items;
+    const pageSamples = [...new Set(primaryPage.flatMap(item => item.sample_id ? [item.sample_id] : []))];
+    const pages = [{detail: primary, artifacts: primaryPage}];
+    const focus = new Set<string>();
+    for (const other of others) {
+      const items = (await api.getAssessmentArtifacts(other.id, 0, undefined, size(other) <= 50 ? undefined : pageSamples)).items;
+      items.forEach(item => { if (item.sample_id && !pageSamples.includes(item.sample_id)) focus.add(item.sample_id); });
+      pages.push({detail: other, artifacts: items});
+    }
+    if (focus.size) pages[0] = {detail: primary, artifacts: [...primaryPage, ...(await api.getAssessmentArtifacts(primary.id, 0, undefined, [...focus].slice(0, 100))).items]};
+    return {pages, primaryCount: primaryPage.length, focus: [...focus]};
   }, active);
-  const artifacts = useComparisonEvidence(cache, detail.data ? JSON.stringify(['xai-artifacts', detail.data.id, offset, revision]) : null,
-    () => api.getAssessmentArtifacts(detail.data!.id, offset), active);
-  const rows = useMemo(() => detail.data && artifacts.data ? groupXAIComparisons([{detail: detail.data, artifacts: artifacts.data.items}], selection.training_run_id) : [], [detail.data, artifacts.data, selection.training_run_id]);
+  const fresh = useMemo(() => {
+    if (!composed.data) return undefined;
+    const grouped = groupXAIComparisons(composed.data.pages, selection.training_run_id);
+    const focus = new Set(composed.data.focus);
+    // Cells explained outside the current page (recently generated) come first.
+    return [...grouped.filter(row => row.sampleId && focus.has(row.sampleId)), ...grouped.filter(row => !row.sampleId || !focus.has(row.sampleId))];
+  }, [composed.data, selection.training_run_id]);
+  const lastRows = useRef<XAIComparison[]>([]);
+  if (fresh) lastRows.current = fresh;
+  const rows = fresh ?? (composed.loading || choices.loading ? lastRows.current : []);
+  const splits = [...new Set(picked.map(choice => choice.split))].filter(split => selection.split && split !== selection.split);
   return <section>
-    {choices.loading || detail.loading || artifacts.loading ? <p role="status">Consultando explicaciones persistidas…</p> : null}
-    {choices.error || detail.error || artifacts.error ? <p role="alert">Error al consultar explicaciones. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}
-    {choices.data?.length === 0 && <p>{attemptIds ? 'Este RUN no tiene EXPLAIN registrado.' : 'No hay explicaciones compatibles para esta selección.'}</p>}
-    {selected && selection.split && selected.split !== selection.split && <p className="ds-callout" data-tone="warning">EXPLAIN sobre {selected.split.toUpperCase()}; la evaluación del análisis es {selection.split.toUpperCase()}. Las explicaciones describen el mismo TRAIN, pero no la población evaluada.</p>}
-    {selected && selection.checkpoint_artifact_id && selected.checkpoint_artifact_id !== selection.checkpoint_artifact_id && <p className="ds-callout" data-tone="warning">El EXPLAIN registra otro identificador de checkpoint que la evaluación seleccionada; verifica el SHA-256 en Trazabilidad antes de atribuirlo al mismo archivo.</p>}
-    {choices.data && choices.data.length > 0 && <label>Explicación persistida<select className="ds-control" value={selected?.attempt_id ?? ''} onChange={e => {setAttempt(e.target.value); setOffset(0); setRowPage(0);}}>{choices.data.map((c,i) => <option value={c.attempt_id} key={c.attempt_id}>{i+1} · {c.split.toUpperCase()} · {c.state} · {new Date(c.started_at).toLocaleString('es-CL')}</option>)}</select></label>}
-    {active && rows.slice(rowPage*5,rowPage*5+5).map(row => <XAIComparisonViewer key={row.id} comparison={row} datasource={datasource} />)}
+    {choices.loading || composed.loading ? <p role="status">Consultando explicaciones persistidas…</p> : null}
+    {choices.error || composed.error ? <p role="alert">Error al consultar explicaciones. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}
+    {listed?.length === 0 && <p>{attemptIds ? 'Este RUN no tiene EXPLAIN registrado.' : 'No hay explicaciones compatibles para esta selección.'}</p>}
+    {splits.length > 0 && <p className="ds-callout" data-tone="warning">EXPLAIN sobre {splits.map(split => split.toUpperCase()).join(', ')}; la evaluación del análisis es {selection.split!.toUpperCase()}. Las explicaciones describen el mismo TRAIN, pero no la población evaluada.</p>}
+    {selection.checkpoint_artifact_id && picked.some(choice => choice.checkpoint_artifact_id !== selection.checkpoint_artifact_id) && <p className="ds-callout" data-tone="warning">El EXPLAIN registra otro identificador de checkpoint que la evaluación seleccionada; verifica el SHA-256 en Trazabilidad antes de atribuirlo al mismo archivo.</p>}
+    {!attemptIds && listed && listed.length > 0 && <label>Explicación persistida<select className="ds-control" value={selected?.attempt_id ?? ''} onChange={e => {setAttempt(e.target.value); setOffset(0); setRowPage(0);}}>{listed.map((c,i) => <option value={c.attempt_id} key={c.attempt_id}>{i+1} · {c.split.toUpperCase()} · {c.state} · {new Date(c.started_at).toLocaleString('es-CL')}</option>)}</select></label>}
+    {active && rows.slice(rowPage*5,rowPage*5+5).map(row => <GeneratedXAIComparison key={row.id} comparison={row} datasource={datasource} active={active} lazy authorized={canGenerate} blocked={blocked} onEvidenceChange={() => { setRevision(n => n+1); onGenerated?.(); }} />)}
     {rows.length > 5 && <nav aria-label="Muestras XAI"><button className="ds-button" disabled={!rowPage} onClick={() => setRowPage(n => n-1)}>Muestras anteriores</button><button className="ds-button" disabled={(rowPage+1)*5 >= rows.length} onClick={() => setRowPage(n => n+1)}>Muestras siguientes</button></nav>}
-    {artifacts.data && (offset > 0 || artifacts.data.items.length === 100) && <nav aria-label="Páginas de explicaciones"><button className="ds-button" disabled={offset === 0} onClick={() => {setOffset(n => n-100); setRowPage(0);}}>Anterior</button><span>Página {offset/100+1}</span><button className="ds-button" disabled={artifacts.data.items.length < 100} onClick={() => {setOffset(n => n+100); setRowPage(0);}}>Siguiente</button></nav>}
+    {composed.data && (offset > 0 || composed.data.primaryCount === 100) && <nav aria-label="Páginas de explicaciones"><button className="ds-button" disabled={offset === 0} onClick={() => {setOffset(n => n-100); setRowPage(0);}}>Anterior</button><span>Página {offset/100+1}</span><button className="ds-button" disabled={composed.data.primaryCount < 100} onClick={() => {setOffset(n => n+100); setRowPage(0);}}>Siguiente</button></nav>}
   </section>;
 }

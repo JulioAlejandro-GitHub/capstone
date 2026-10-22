@@ -609,3 +609,5 @@ REVOKE ALL ON FUNCTION public.dbv21_xai_evaluation_complete() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION public.dbv21_xai_evaluation_complete() TO capstone_v2_runtime;
 
+GRANT SELECT, INSERT, UPDATE ON TABLE public.explain_requests TO capstone_v2_runtime;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.executor_heartbeats TO capstone_v2_runtime;

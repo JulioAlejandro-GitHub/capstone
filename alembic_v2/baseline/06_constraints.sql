@@ -1537,3 +1537,11 @@ ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT ck_xai_details_tu
 
 ALTER TABLE public.xai_quantitative_evaluations ADD CONSTRAINT ck_xai_membership_hash CHECK (membership_hash ~ '^[0-9a-f]{64}$');
 
+ALTER TABLE public.explain_requests ADD CONSTRAINT explain_requests_executor_check CHECK (executor = 'host_gpu');
+ALTER TABLE public.explain_requests ADD CONSTRAINT explain_requests_state_check CHECK (state = ANY (ARRAY['queued', 'claimed', 'completed', 'failed', 'cancelled']));
+ALTER TABLE public.explain_requests ADD CONSTRAINT explain_requests_key_check CHECK (request_key ~ '^[a-f0-9]{64}$');
+ALTER TABLE public.explain_requests ADD CONSTRAINT explain_requests_claim_check CHECK ((state = 'queued') = (claimed_by IS NULL AND claimed_at IS NULL) OR state = 'cancelled');
+ALTER TABLE public.explain_requests ADD CONSTRAINT explain_requests_finished_check CHECK ((state = ANY (ARRAY['completed', 'failed', 'cancelled'])) = (finished_at IS NOT NULL));
+ALTER TABLE public.explain_requests ADD CONSTRAINT explain_requests_operations_check CHECK (jsonb_typeof(operations) = 'array');
+ALTER TABLE public.executor_heartbeats ADD CONSTRAINT executor_heartbeats_executor_check CHECK (executor = 'host_gpu');
+ALTER TABLE public.executor_heartbeats ADD CONSTRAINT executor_heartbeats_seen_check CHECK (last_seen >= started_at);

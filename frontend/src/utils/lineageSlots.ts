@@ -53,3 +53,10 @@ export function groupExplanations(children: AssessmentExplanationChild[]) {
   }
   return groups;
 }
+
+// Population EXPLAIN (a split) is chosen in the card; per-cell EXPLAIN generated from the report is always
+// included, since each one covers a different cell.
+export const isCellExplanation = (child: AssessmentExplanationChild) => child.result_count === 1;
+export function splitExplanations(children: AssessmentExplanationChild[] = []) {
+  return { population: children.filter(child => !isCellExplanation(child)), cells: children.filter(isCellExplanation) };
+}
