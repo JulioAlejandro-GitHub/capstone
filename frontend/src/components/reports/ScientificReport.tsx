@@ -1,12 +1,15 @@
 import { groupXAIComparisons, type XAIComparison } from './xai/comparison';
 import { GeneratedXAIComparison } from './GeneratedXAIComparison';
+import { cellComparison } from './AssessmentXAI';
+import { ConsensusSamplesTable } from './ConsensusSamplesTable';
+import type { MRT_PaginationState } from 'material-react-table';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, BarChart, Bar, ScatterChart, Scatter, LabelList, Cell } from 'recharts';
 import { api } from '../../services/api';
 import { useComparisonEvidence } from '../../hooks/useComparisonEvidence';
 import { createComparisonCache, type ComparisonCache } from '../../utils/comparisonCache';
 import type { RequestedSelection } from '../../types/scientificPreflight';
-import type { CatalogEvidence, ClinicalEvidence, CurveEvidence, MetricsEvidence, ConsensusEvidence, ReportModule, EvaluationChoice } from '../../types/scientificReport';
+import type { CatalogEvidence, ClinicalEvidence, CurveEvidence, MetricsEvidence, ConsensusEvidence, ReportModule, ReportResponse, EvaluationChoice } from '../../types/scientificReport';
 import { CopyText } from './ComparisonPython';
 import { EvidenceButton, Kpi, SectionAnswer } from './AnalysisWorkspace';
 import { consensusSummary, curveSummary, intensity, metricRange } from '../../utils/analysisSummaries';
@@ -97,15 +100,19 @@ type ModuleProps = {cache: ComparisonCache; datasource: string; selections: Requ
 // Consensus verifies every governed sample of each attempt (3 x 2.685 TEST rows took 22 s before the
 // population query fix); the default 15 s would report a query error for a valid answer.
 const MODULE_TIMEOUT_MS: Partial<Record<ReportModule, number>> = {consensus: 60000, questions: 60000};
-export function LazyScientificModule<T>({title, module, cache, datasource, selections, evidenceRevision = 0, active, children, params = {}}: ModuleProps & {title: string; module: ReportModule; params?: {offset?: number; category?: string}; children: (data: T) => ReactNode}) {
+export function LazyScientificModule<T>({title, module, cache, datasource, selections, evidenceRevision = 0, active, children, params = {}}: ModuleProps & {title: string; module: ReportModule; params?: {offset?: number; limit?: number; category?: string}; children: (data: T, loading: boolean) => ReactNode}) {
   const [open, setOpen] = useState(false);
   const [revision, setRevision] = useState(0);
   const key = selections.length ? JSON.stringify([module, datasource, selections, params, revision, evidenceRevision]) : null;
   const enabled = active ?? open;
   const result = useComparisonEvidence(cache, key, () => api.getComparisonReport<T>(datasource, {module, selections, ...params}, MODULE_TIMEOUT_MS[module]), enabled);
-  const body = <>{!selections.length && <p>Selecciona RUN para consultar este módulo.</p>}{result.loading && <p role="status">Consultando resultados…</p>}
+  // While a new page or filter loads, the previous answer stays on screen (no flicker, table state kept).
+  const previous = useRef<{key: string; data: ReportResponse<T>} | null>(null);
+  if (result.data && key) previous.current = {key, data: result.data};
+  const shown = result.data ?? (result.loading && previous.current && JSON.stringify(JSON.parse(previous.current.key).slice(0, 3)) === JSON.stringify(key ? JSON.parse(key).slice(0, 3) : null) ? previous.current.data : undefined);
+  const body = <>{!selections.length && <p>Selecciona RUN para consultar este módulo.</p>}{result.loading && !shown && <p role="status">Consultando resultados…</p>}
     {result.error ? <p role="alert">Error de consulta. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}
-    {result.data && <>{result.data.warnings.map(w => <p className="ds-callout" data-tone="warning" key={w}>{w}</p>)}{children(result.data.data)}</>}
+    {shown && <>{shown.warnings.map(w => <p className="ds-callout" data-tone="warning" key={w}>{w}</p>)}{children(shown.data, result.loading)}</>}
   </>;
   if (active !== undefined) return <section className="scc-science-module" aria-label={title} aria-busy={result.loading}><h3>{title}</h3>{body}</section>;
   return <details className="ds-accordion scc-science-module" onToggle={event => setOpen(event.currentTarget.open)}><summary>{title}</summary>
@@ -196,28 +203,41 @@ export function ClinicalMetrics({data}: {data: MetricsEvidence}) {
     <p className="scc-meta">Los valores describen esta población y este umbral; no identifican un ganador clínico universal.</p>
   </>;
 }
+// One RUN: the same categories are that model's own confusion cells; there is nothing to disagree with.
+const singleRunCategories: Record<string, string> = {all: 'Todas', CONSENSUS_TP: 'Verdadero positivo', CONSENSUS_TN: 'Verdadero negativo', CONSENSUS_FP: 'Falso positivo', CONSENSUS_FN: 'Falso negativo', high_confidence_error: 'Error de alta confianza', low_confidence: 'Cerca del umbral'};
 const consensusCategories: Record<string, string> = {all: 'Todas', disagreement: 'Desacuerdo', CONSENSUS_TP: 'Todos aciertan · parasitada', CONSENSUS_TN: 'Todos aciertan · no parasitada', CONSENSUS_FP: 'Todos fallan · FP', CONSENSUS_FN: 'Todos fallan · FN', high_confidence_error: 'Error de alta confianza', low_confidence: 'Cerca del umbral'};
 function PairHeatmap({title, matrix, n, diagonalTotal}: {title: string; matrix: number[][]; n: number; diagonalTotal?: boolean}) {
   return <div className="report-table-scroll"><table className="report-data-table scc-heatmap"><caption>{title}; N = {n}</caption><thead><tr><th>RUN</th>{matrix.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{matrix.map((row,i) => <tr key={i}><th scope="row">{runLabel(i)}</th>{row.map((count,j) => <td key={j} data-diagonal={i === j} style={{'--scc-heat': intensity(count, diagonalTotal ? Math.max(...matrix.map((r, k) => r[k])) : n)} as CSSProperties}>{count} / {n}<small>{percent(n ? count / n : null)}</small></td>)}</tr>)}</tbody></table></div>;
 }
-export function ConsensusResults({data, onCategory}: {data: ConsensusEvidence; onCategory?: (category: string) => void}) {
+// onExplain opens the cell in Explicabilidad; explainBlocked says why it cannot (EXPLAIN is accredited for VAL only).
+export function ConsensusResults({data, onCategory, onExplain, explainBlocked, pagination, onPagination, loading}: {data: ConsensusEvidence; onCategory?: (category: string) => void; onExplain?: (sample: string) => void; explainBlocked?: string | null;
+  pagination?: MRT_PaginationState; onPagination?: (next: MRT_PaginationState) => void; loading?: boolean}) {
   if (data.state !== 'available') return <p>{data.state === 'incompatible' ? 'Incompatibilidad metodológica. ' : 'Sin evidencia suficiente para este análisis. '}{data.issues?.join(' ')}</p>;
   const summary = consensusSummary(data);
   const runs = data.coverage?.length ?? 0;
+  const labels = runs === 1 ? singleRunCategories : consensusCategories;
+  const distribution = Object.entries(data.distribution ?? {}).filter(([category]) => labels[category]);
   return <>
-    <SectionAnswer indicators={<>
+    {runs === 1 ? <SectionAnswer indicators={<>
+      <Kpi label="Aciertos" value={percent(data.oracle?.ratio)} detail={`${data.oracle?.numerator} / ${data.oracle?.denominator} muestras`} />
+      <Kpi label="Falsos negativos" value={data.distribution?.CONSENSUS_FN ?? 0} detail="Parasitadas no detectadas" />
+      <Kpi label="Falsos positivos" value={data.distribution?.CONSENSUS_FP ?? 0} detail="Sanas marcadas como parasitadas" />
+      <Kpi label="Errores de alta confianza" value={data.high_confidence_errors} detail={`${data.low_confidence} cerca del umbral`} />
+    </>}>
+      N = {data.common_count} muestras evaluadas. El modelo falla en {data.all_wrong} ({percent(data.common_count ? (data.all_wrong ?? 0) / data.common_count : null)}); los errores de alta confianza y los cercanos al umbral son los primeros candidatos a revisar en Explicabilidad.
+    </SectionAnswer> : <SectionAnswer indicators={<>
       <Kpi label="Oracle descriptivo" value={percent(data.oracle?.ratio)} detail={`${data.oracle?.numerator} / ${data.oracle?.denominator}; no desplegable`} />
       <Kpi label="Todos fallan" value={data.all_wrong} detail="Candidatas a revisión de etiqueta o imagen" />
       <Kpi label="Errores de alta confianza" value={data.high_confidence_errors} />
       <Kpi label="Cerca del umbral" value={data.low_confidence} />
     </>}>
       N común = {data.common_count} muestras de {data.union_count} distintas · {data.label_conflicts} conflictos de etiquetas.{runs > 1 && summary.agreementRange && <> Los RUN coinciden en {percent(summary.agreementRange.min)}–{percent(summary.agreementRange.max)} de las predicciones.</>}{summary.fewestSharedErrors && <> El par con menos errores compartidos es {runLabel(summary.fewestSharedErrors.i)}–{runLabel(summary.fewestSharedErrors.j)} ({summary.fewestSharedErrors.count} muestras): es el par más complementario.</>}
-    </SectionAnswer>
+    </SectionAnswer>}
     <div className="scc-chart-grid">
       <section aria-label="Distribución por categoría"><h4>Distribución por categoría</h4>
-        <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={Object.entries(data.distribution ?? {}).map(([category,count]) => ({category, label: consensusCategories[category] ?? category, count}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" tick={{fontSize: 11}} interval={0} /><YAxis /><Tooltip /><Bar dataKey="count" name="Muestras" fill={colors[0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
-        {onCategory && <div className="scc-category-chips" role="group" aria-label="Filtrar muestras por categoría">{Object.entries(data.distribution ?? {}).map(([category, count]) => <button key={category} type="button" className="ds-button" data-size="compact" onClick={() => onCategory(category)}>{consensusCategories[category] ?? category} · {count}</button>)}</div>}</section>
-      {runs > 0 && <section aria-label="Aciertos y errores exclusivos"><h4>Aciertos y errores exclusivos por RUN</h4>
+        <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={distribution.map(([category,count]) => ({category, label: labels[category], count}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" tick={{fontSize: 11}} interval={0} /><YAxis /><Tooltip /><Bar dataKey="count" name="Muestras" fill={colors[0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
+        {onCategory && <div className="scc-category-chips" role="group" aria-label="Filtrar muestras por categoría">{distribution.map(([category, count]) => <button key={category} type="button" className="ds-button" data-size="compact" onClick={() => onCategory(category)}>{labels[category]} · {count}</button>)}</div>}</section>
+      {runs > 1 && <section aria-label="Aciertos y errores exclusivos"><h4>Aciertos y errores exclusivos por RUN</h4>
         <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={(data.coverage ?? []).map((_, i) => ({name: runLabel(i), correct: data.exclusive_correct?.[i] ?? 0, errors: data.exclusive_errors?.[i] ?? 0}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Legend /><Bar dataKey="correct" name="Aciertos exclusivos" fill={colors[1]} isAnimationActive={false} /><Bar dataKey="errors" name="Errores exclusivos" fill={colors[3]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
         <p className="scc-meta">Acierto exclusivo: solo ese RUN acierta. Error exclusivo: solo ese RUN falla.</p></section>}
     </div>
@@ -225,9 +245,11 @@ export function ConsensusResults({data, onCategory}: {data: ConsensusEvidence; o
       {data.agreement && <PairHeatmap title="Acuerdo: predicciones iguales / N común" matrix={data.agreement} n={data.common_count ?? 0} />}
       {data.error_overlap && <PairHeatmap title="Solapamiento de errores: conteos sobre N común" matrix={data.error_overlap} n={data.common_count ?? 0} diagonalTotal />}
     </div>}
-    <EvidenceButton title="Cobertura y complementariedad por RUN" label="Cobertura por RUN"><div className="report-table-scroll"><table className="report-data-table"><caption>Cobertura y complementariedad por RUN</caption><thead><tr><th>RUN</th><th>Población</th><th>Comunes</th><th>Faltantes</th><th>Exclusivas</th><th>Errores exclusivos</th><th>Aciertos exclusivos</th></tr></thead><tbody>{data.coverage?.map((c,i) => <tr key={i}><th>{runLabel(i)}</th><td>{c.population}</td><td>{c.common}</td><td>{c.missing}</td><td>{c.exclusive}</td><td>{data.exclusive_errors?.[i]}</td><td>{data.exclusive_correct?.[i]}</td></tr>)}</tbody></table></div></EvidenceButton>
+    {runs > 1 && <EvidenceButton title="Cobertura y complementariedad por RUN" label="Cobertura por RUN"><div className="report-table-scroll"><table className="report-data-table"><caption>Cobertura y complementariedad por RUN</caption><thead><tr><th>RUN</th><th>Población</th><th>Comunes</th><th>Faltantes</th><th>Exclusivas</th><th>Errores exclusivos</th><th>Aciertos exclusivos</th></tr></thead><tbody>{data.coverage?.map((c,i) => <tr key={i}><th>{runLabel(i)}</th><td>{c.population}</td><td>{c.common}</td><td>{c.missing}</td><td>{c.exclusive}</td><td>{data.exclusive_errors?.[i]}</td><td>{data.exclusive_correct?.[i]}</td></tr>)}</tbody></table></div></EvidenceButton>}
     <EvidenceButton title="Fórmulas y denominadores del consenso" label="Fórmulas y denominadores">{Object.entries(data.definitions ?? {}).map(([k,v]) => <p key={k}>{v}</p>)}</EvidenceButton>
-    <div className="report-table-scroll" tabIndex={0}><table className="report-data-table"><caption>Muestras · {data.total} resultados del filtro</caption><thead><tr><th>Muestra</th><th>Clase real</th><th>Categoría</th>{data.coverage?.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{data.samples?.map(s => <tr key={s.sample}><th scope="row"><details><summary>{s.sample.split('/').pop()}</summary><code>{s.sample}</code><CopyText text={s.sample} label="Copiar muestra" /></details></th><td>{s.label === 1 ? 'Parasitada' : 'No parasitada'}</td><td>{s.category}</td>{s.runs.map((r,i) => <td key={i} data-correct={r.correct}>{value(r.score)} · {r.correct ? 'Acierto' : 'Error'} · clase {r.prediction}</td>)}</tr>)}</tbody></table></div>
+    <ConsensusSamplesTable data={data} labels={labels} loading={loading}
+      pagination={pagination ?? {pageIndex: Math.floor((data.offset ?? 0) / (data.limit || 25)), pageSize: data.limit || 25}}
+      onPagination={onPagination ?? (() => {})} onExplain={onExplain} explainBlocked={explainBlocked} />
   </>;
 }
 export function CurvesModule(props: ModuleProps) {
@@ -236,10 +258,22 @@ export function CurvesModule(props: ModuleProps) {
 export function MetricsModule(props: ModuleProps) {
   return <LazyScientificModule<MetricsEvidence> {...props} title="Métricas clínicas y matrices de confusión" module="metrics">{data => <ClinicalMetrics data={data} />}</LazyScientificModule>;
 }
-export function ConsensusModule(props: ModuleProps) {
-  const [offset, setOffset] = useState(0);
-  const [category, setCategory] = useState('disagreement');
-  return <LazyScientificModule<ConsensusEvidence> {...props} title="Consenso y desacuerdos" module="consensus" params={{offset, category}}>{data => <><label>Filtrar muestras<select className="ds-control" value={category} onChange={e => {setCategory(e.target.value); setOffset(0);}}>{Object.entries(consensusCategories).map(([c, label]) => <option key={c} value={c}>{label}</option>)}</select></label><ConsensusResults data={data} onCategory={c => {setCategory(c); setOffset(0);}} />{data.state === 'available' && <nav aria-label="Páginas de muestras"><button className="ds-button" disabled={offset === 0} onClick={() => setOffset(n => Math.max(0,n-25))}>Anterior</button><span>Página {Math.floor(offset/25)+1}</span><button className="ds-button" disabled={offset+25 >= (data.total ?? 0)} onClick={() => setOffset(n => n+25)}>Siguiente</button></nav>}</>}</LazyScientificModule>;
+export function ConsensusModule({onExplain, onUseValidation, ...props}: ModuleProps & {onExplain?: (sample: string) => void; onUseValidation?: () => void}) {
+  const explainBlocked = props.selections.some(selection => selection.split && selection.split !== 'val')
+    ? 'EXPLAIN solo está acreditado para VAL (development): cambia la evaluación del análisis a EVALUATE · VAL.' : null;
+  const single = props.selections.length === 1;
+  const [pagination, setPagination] = useState<MRT_PaginationState>({pageIndex: 0, pageSize: 25});
+  // One RUN has no disagreements: start on its errors instead.
+  const [category, setCategory] = useState(single ? 'CONSENSUS_FN' : 'disagreement');
+  const labels = single ? singleRunCategories : consensusCategories;
+  const choose = (next: string) => { setCategory(next); setPagination(old => ({...old, pageIndex: 0})); };
+  return <LazyScientificModule<ConsensusEvidence> {...props} title={single ? 'Errores del modelo' : 'Consenso y desacuerdos'} module="consensus"
+    params={{offset: pagination.pageIndex * pagination.pageSize, limit: pagination.pageSize, category}}>{(data, loading) => <>
+      {explainBlocked && onExplain && <p className="ds-callout" data-tone="warning">La explicabilidad por célula solo está acreditada para VAL (development); con la evaluación actual «Explicar» queda desactivado.
+        {onUseValidation && <> <button type="button" className="ds-button" data-size="compact" onClick={onUseValidation}>Usar EVALUATE · VAL</button></>}</p>}
+      <label>Filtrar muestras<select className="ds-control" value={category} onChange={e => choose(e.target.value)}>{Object.entries(labels).map(([c, label]) => <option key={c} value={c}>{label}</option>)}</select></label>
+      <ConsensusResults data={data} onCategory={choose} onExplain={onExplain} explainBlocked={explainBlocked} pagination={pagination} onPagination={setPagination} loading={loading} />
+    </>}</LazyScientificModule>;
 }
 export function ScientificResults(props: ModuleProps) {
   return <><CurvesModule {...props} /><MetricsModule {...props} /><ConsensusModule {...props} /></>;
@@ -260,7 +294,9 @@ export function ScientificRepresentations(props: ModuleProps) {
 
 // attemptIds: EXPLAIN chosen in the RUN card (one per method). They are combined per cell, shown even when their
 // split or checkpoint identifier differs (with a notice), and kept on screen while a refresh is in flight.
-export function PersistedXAI({selection, datasource, active, attemptIds, canGenerate = false, blocked, onGenerated}: {selection: RequestedSelection; datasource: string; active: boolean; attemptIds?: string[]; canGenerate?: boolean; blocked?: string | null; onGenerated?: () => void}) {
+// focusSample: one cell chosen in Errores (or searched); its explanations are read across every chosen EXPLAIN, and
+// when none exists yet the cell is built from a VAL context containing it so it can be generated.
+export function PersistedXAI({selection, datasource, active, attemptIds, canGenerate = false, blocked, onGenerated, focusSample}: {selection: RequestedSelection; datasource: string; active: boolean; attemptIds?: string[]; canGenerate?: boolean; blocked?: string | null; onGenerated?: () => void; focusSample?: string | null}) {
   const cache = useMemo(createComparisonCache, [datasource, selection.training_run_id]);
   const [revision, setRevision] = useState(0);
   const [attempt, setAttempt] = useState('');
@@ -283,13 +319,24 @@ export function PersistedXAI({selection, datasource, active, attemptIds, canGene
   const listed = choices.data ?? (choices.loading ? lastChoices.current : undefined);
   const selected = listed?.find(r => r.attempt_id === attempt) ?? listed?.[0];
   const picked = attemptIds ? listed ?? [] : selected ? [selected] : [];
-  const composed = useComparisonEvidence(cache, picked.length ? JSON.stringify(['xai-composed', picked.map(c => c.attempt_id), offset, revision]) : null, async () => {
+  const composed = useComparisonEvidence(cache, picked.length || (focusSample && listed) ? JSON.stringify(['xai-composed', picked.map(c => c.attempt_id), offset, focusSample, revision]) : null, async () => {
     const details = await Promise.all(picked.map(async choice => {
       const response = await api.getAssessment(choice.attempt_id);
       if (response.training_run_id !== selection.training_run_id || response.id !== choice.attempt_id || response.kind !== 'explain' || (!attemptIds && response.identity.model.checkpoint_artifact_id !== selection.checkpoint_artifact_id)) throw new Error('Linaje incompatible');
       return response;
     }));
     const size = (detail: typeof details[number]) => detail.identity.samples?.length ?? 0;
+    if (focusSample) {
+      const pages = await Promise.all(details.map(async detail => ({detail, artifacts: (await api.getAssessmentArtifacts(detail.id, 0, undefined, [focusSample])).items})));
+      const contains = (detail: typeof details[number]) => detail.identity.split === 'val' && detail.identity.purpose === 'development' && Boolean(detail.identity.samples?.some(item => item.sample_id === focusSample));
+      let source = details.find(contains);
+      // No EXPLAIN lists the cell: the selected EVALUATE VAL attempt is an accredited generation context.
+      if (!source && selection.evaluation?.source === 'assessment') {
+        const evaluation = await api.getAssessment(selection.evaluation.attempt_id);
+        if (evaluation.training_run_id === selection.training_run_id && contains(evaluation)) source = evaluation;
+      }
+      return {pages, primaryCount: 0, focus: [focusSample], source: source ?? null};
+    }
     // The largest attempt is paged; single-cell attempts are read whole and their cells are read from the large one.
     const [primary, ...others] = [...details].sort((a, b) => size(b) - size(a));
     const primaryPage = (await api.getAssessmentArtifacts(primary.id, offset)).items;
@@ -302,15 +349,19 @@ export function PersistedXAI({selection, datasource, active, attemptIds, canGene
       pages.push({detail: other, artifacts: items});
     }
     if (focus.size) pages[0] = {detail: primary, artifacts: [...primaryPage, ...(await api.getAssessmentArtifacts(primary.id, 0, undefined, [...focus].slice(0, 100))).items]};
-    return {pages, primaryCount: primaryPage.length, focus: [...focus]};
+    return {pages, primaryCount: primaryPage.length, focus: [...focus], source: null};
   }, active);
   const fresh = useMemo(() => {
     if (!composed.data) return undefined;
     const grouped = groupXAIComparisons(composed.data.pages, selection.training_run_id);
+    if (focusSample) {
+      const rows = grouped.filter(row => row.sampleId === focusSample);
+      return rows.length ? rows : composed.data.source ? [cellComparison(composed.data.source, focusSample)] : [];
+    }
     const focus = new Set(composed.data.focus);
     // Cells explained outside the current page (recently generated) come first.
     return [...grouped.filter(row => row.sampleId && focus.has(row.sampleId)), ...grouped.filter(row => !row.sampleId || !focus.has(row.sampleId))];
-  }, [composed.data, selection.training_run_id]);
+  }, [composed.data, selection.training_run_id, focusSample]);
   const lastRows = useRef<XAIComparison[]>([]);
   if (fresh) lastRows.current = fresh;
   const rows = fresh ?? (composed.loading || choices.loading ? lastRows.current : []);
@@ -318,12 +369,15 @@ export function PersistedXAI({selection, datasource, active, attemptIds, canGene
   return <section>
     {choices.loading || composed.loading ? <p role="status">Consultando explicaciones persistidas…</p> : null}
     {choices.error || composed.error ? <p role="alert">Error al consultar explicaciones. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}
-    {listed?.length === 0 && <p>{attemptIds ? 'Este RUN no tiene EXPLAIN registrado.' : 'No hay explicaciones compatibles para esta selección.'}</p>}
+    {!focusSample && listed?.length === 0 && <p>{attemptIds ? 'Este RUN no tiene EXPLAIN registrado.' : 'No hay explicaciones compatibles para esta selección.'}</p>}
+    {focusSample && composed.data && !rows.length && <p className="ds-callout" data-tone="warning">{selection.split && selection.split !== 'val'
+      ? `La célula pertenece a la evaluación ${selection.split.toUpperCase()}; EXPLAIN solo está acreditado para VAL (development). Cambia la evaluación del análisis a EVALUATE · VAL para explicarla.`
+      : 'Ningún contexto VAL (development) de este RUN contiene la célula; no puede explicarse aquí.'}</p>}
     {splits.length > 0 && <p className="ds-callout" data-tone="warning">EXPLAIN sobre {splits.map(split => split.toUpperCase()).join(', ')}; la evaluación del análisis es {selection.split!.toUpperCase()}. Las explicaciones describen el mismo TRAIN, pero no la población evaluada.</p>}
     {selection.checkpoint_artifact_id && picked.some(choice => choice.checkpoint_artifact_id !== selection.checkpoint_artifact_id) && <p className="ds-callout" data-tone="warning">El EXPLAIN registra otro identificador de checkpoint que la evaluación seleccionada; verifica el SHA-256 en Trazabilidad antes de atribuirlo al mismo archivo.</p>}
-    {!attemptIds && listed && listed.length > 0 && <label>Explicación persistida<select className="ds-control" value={selected?.attempt_id ?? ''} onChange={e => {setAttempt(e.target.value); setOffset(0); setRowPage(0);}}>{listed.map((c,i) => <option value={c.attempt_id} key={c.attempt_id}>{i+1} · {c.split.toUpperCase()} · {c.state} · {new Date(c.started_at).toLocaleString('es-CL')}</option>)}</select></label>}
+    {!attemptIds && !focusSample && listed && listed.length > 0 && <label>Explicación persistida<select className="ds-control" value={selected?.attempt_id ?? ''} onChange={e => {setAttempt(e.target.value); setOffset(0); setRowPage(0);}}>{listed.map((c,i) => <option value={c.attempt_id} key={c.attempt_id}>{i+1} · {c.split.toUpperCase()} · {c.state} · {new Date(c.started_at).toLocaleString('es-CL')}</option>)}</select></label>}
     {active && rows.slice(rowPage*5,rowPage*5+5).map(row => <GeneratedXAIComparison key={row.id} comparison={row} datasource={datasource} active={active} lazy authorized={canGenerate} blocked={blocked} onEvidenceChange={() => { setRevision(n => n+1); onGenerated?.(); }} />)}
-    {rows.length > 5 && <nav aria-label="Muestras XAI"><button className="ds-button" disabled={!rowPage} onClick={() => setRowPage(n => n-1)}>Muestras anteriores</button><button className="ds-button" disabled={(rowPage+1)*5 >= rows.length} onClick={() => setRowPage(n => n+1)}>Muestras siguientes</button></nav>}
-    {composed.data && (offset > 0 || composed.data.primaryCount === 100) && <nav aria-label="Páginas de explicaciones"><button className="ds-button" disabled={offset === 0} onClick={() => {setOffset(n => n-100); setRowPage(0);}}>Anterior</button><span>Página {offset/100+1}</span><button className="ds-button" disabled={composed.data.primaryCount < 100} onClick={() => {setOffset(n => n+100); setRowPage(0);}}>Siguiente</button></nav>}
+    {!focusSample && rows.length > 5 && <nav aria-label="Muestras XAI"><button className="ds-button" disabled={!rowPage} onClick={() => setRowPage(n => n-1)}>Muestras anteriores</button><button className="ds-button" disabled={(rowPage+1)*5 >= rows.length} onClick={() => setRowPage(n => n+1)}>Muestras siguientes</button></nav>}
+    {!focusSample && composed.data && (offset > 0 || composed.data.primaryCount === 100) && <nav aria-label="Páginas de explicaciones"><button className="ds-button" disabled={offset === 0} onClick={() => {setOffset(n => n-100); setRowPage(0);}}>Anterior</button><span>Página {offset/100+1}</span><button className="ds-button" disabled={composed.data.primaryCount < 100} onClick={() => {setOffset(n => n+100); setRowPage(0);}}>Siguiente</button></nav>}
   </section>;
 }

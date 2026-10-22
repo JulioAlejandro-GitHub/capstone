@@ -433,7 +433,11 @@ test('consensus shows backend results and a bounded sample page without client c
   const {ConsensusResults}=loader()('components/reports/ScientificReport.tsx');
   const data={state:'available',common_count:3,union_count:3,label_conflicts:0,coverage:[{population:3,common:3,missing:0,exclusive:0}],oracle:{numerator:2,denominator:3,ratio:2/3},all_wrong:1,distribution:{CONSENSUS_FN:1},agreement:[[3]],error_overlap:[[1]],samples:[{sample:'val/example.png',label:1,category:'CONSENSUS_FN',runs:[{score:.1,prediction:0,correct:false}]}],total:1};
   const html=renderToStaticMarkup(React.createElement(ConsensusResults,{data}));
-  for(const expected of ['Oracle descriptivo','no desplegable','example.png','CONSENSUS_FN','Error','N común = 3']) assert.ok(html.includes(expected),expected);
+  // One RUN: the model's own errors, no comparison indicators.
+  for(const expected of ['Aciertos','Falsos negativos','example.png','Falso negativo','Error','N = 3 muestras evaluadas','Muestras · 1 resultados']) assert.ok(html.includes(expected),expected);
+  assert.doesNotMatch(html,/Oracle descriptivo|Aciertos y errores exclusivos/);
+  const pair=renderToStaticMarkup(React.createElement(ConsensusResults,{data:{...data,coverage:[...data.coverage,...data.coverage],agreement:[[3,2],[2,3]],error_overlap:[[1,0],[0,1]],exclusive_errors:[1,0],exclusive_correct:[0,1],samples:[{...data.samples[0],runs:[...data.samples[0].runs,...data.samples[0].runs]}]}}));
+  for(const expected of ['Oracle descriptivo','no desplegable','Todos fallan · FN','N común = 3']) assert.ok(pair.includes(expected),expected);
 });
 
 test('section 01 equality is structural, position independent and excludes missing evidence', () => {
@@ -907,4 +911,14 @@ test('per-cell EXPLAIN are always included and population EXPLAIN stay selectabl
   const parts = splitExplanations([{attempt_id:'pop', result_count:2693}, {attempt_id:'c1', result_count:1}, {attempt_id:'c2', result_count:1}]);
   assert.equal(parts.population.map(c => c.attempt_id).join(), 'pop');
   assert.equal(parts.cells.map(c => c.attempt_id).join(), 'c1,c2');
+});
+
+test('consensus sample rows open the cell in Explicabilidad and explain why TEST cells cannot', () => {
+  const {ConsensusResults}=loader()('components/reports/ScientificReport.tsx');
+  const data={state:'available',common_count:1,union_count:1,label_conflicts:0,coverage:[{population:1,common:1,missing:0,exclusive:0}],oracle:{numerator:1,denominator:1,ratio:1},all_wrong:0,distribution:{},agreement:[[1]],error_overlap:[[0]],samples:[{sample:'00407b51-0603-5260-a0db-1ab700451f9f',label:1,category:'CONSENSUS_TP',runs:[{score:.9,prediction:1,correct:true}]}],total:1};
+  const open=renderToStaticMarkup(React.createElement(ConsensusResults,{data,onExplain(){}}));
+  assert.match(open,/>XAI</); assert.match(open,/<button[^>]*title="Ver y generar[^"]*"[^>]*>Explicar/); assert.doesNotMatch(open,/disabled=""[^>]*>Explicar/);
+  const blocked=renderToStaticMarkup(React.createElement(ConsensusResults,{data,onExplain(){},explainBlocked:'EXPLAIN solo está acreditado para VAL'}));
+  assert.match(blocked,/disabled=""[^>]*title="EXPLAIN solo está acreditado para VAL"[^>]*>Explicar/);
+  assert.doesNotMatch(renderToStaticMarkup(React.createElement(ConsensusResults,{data})),/Explicar/);
 });

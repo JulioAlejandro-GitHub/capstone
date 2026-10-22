@@ -37,6 +37,13 @@ function ComparisonPage({ datasource }: { datasource: string }) {
   const [search, setSearch] = useSearchParams();
   const requested = search.get('seccion');
   const section: AnalysisSection = isAnalysisSection(requested) ? requested : defaultAnalysisSection;
+  const focusSample = search.get('muestra');
+  const onFocusSample = useCallback((sample: string | null, next?: AnalysisSection) => setSearch(previous => {
+    const params = new URLSearchParams(previous);
+    if (sample) params.set('muestra', sample); else params.delete('muestra');
+    if (next) { if (next === defaultAnalysisSection) params.delete('seccion'); else params.set('seccion', next); }
+    return params;
+  }, { replace: true }), [setSearch]);
   const requestedProtocol = search.get('evaluacion');
   const protocol: EvaluationSlot = isEvaluationSlot(requestedProtocol) ? requestedProtocol : defaultEvaluationSlot;
   const setProtocol = useCallback((next: EvaluationSlot) => setSearch(previous => {
@@ -94,7 +101,7 @@ function ComparisonPage({ datasource }: { datasource: string }) {
       {Array.from({ length: available }, (_, index) => <button key={index} className="ds-button scc-empty-slot"
         onClick={event => openSelector(event.currentTarget)}><strong>＋ Añadir RUN</strong><span>Espacio {ids.length + index + 1} disponible</span></button>)}
     </div>
-    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} explains={explains} onGenerated={onGenerated} />
+    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} explains={explains} onGenerated={onGenerated} focusSample={focusSample} onFocusSample={onFocusSample} onUseValidation={() => setProtocol('val')} />
     <dialog ref={dialog} className="report-viewer scc-run-selector" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
       <div className="ds-page-header"><h2 id="scc-selector-title">Seleccionar ejecuciones TRAIN</h2>
         <button className="ds-button" onClick={() => dialog.current?.close()}>Cerrar</button></div>

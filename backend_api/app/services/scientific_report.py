@@ -83,9 +83,10 @@ def consensus(populations, thresholds, offset=0, limit=25, category='all'):
     base = population_coverage(populations)
     common = set.intersection(*(set(p) for p in populations)) if populations else set()
     conflicts = base['label_conflicts']
-    if conflicts or not common or len(populations) < 2:
-        return dict(base, state='incompatible' if conflicts or not common else 'missing',
-                    issues=['Etiquetas contradictorias.' if conflicts else 'Se requiere población común de al menos dos RUN.'])
+    # One RUN is the "qué aprendió el modelo" case: categories are its own TP/TN/FP/FN and nothing is compared.
+    if conflicts or not common:
+        return dict(base, state='incompatible' if conflicts or populations else 'missing',
+                    issues=['Etiquetas contradictorias.' if conflicts else 'Sin población de predicciones.'])
     distribution = dict.fromkeys(['CONSENSUS_TP', 'CONSENSUS_TN', 'CONSENSUS_FP', 'CONSENSUS_FN', 'disagreement'], 0)
     agreement = [[0 for _ in populations] for _ in populations]
     overlap = [[0 for _ in populations] for _ in populations]
@@ -335,7 +336,8 @@ class ScientificReportService:
                         data = {'state': 'incompatible' if any(m['state'] == 'incompatible' for m in metrics) or any(populations) else 'missing', 'issues': issues} if issues else consensus(populations, thresholds, request.offset, request.limit, request.category)
                         if request.module == 'questions':
                             data = {'consensus': data, 'answers': [
-                                'El oracle cubre ' + str(data['oracle']['numerator']) + ' de ' + str(data['oracle']['denominator']) + ' muestras comunes; no es un modelo desplegable.' if data.get('oracle') else 'Faltan predicciones compatibles y reconciliadas para medir complementariedad.',
+                                ('Con un solo RUN no hay complementariedad que medir; los errores del modelo están en Errores.' if len(request.selections) == 1 else
+                                 'El oracle cubre ' + str(data['oracle']['numerator']) + ' de ' + str(data['oracle']['denominator']) + ' muestras comunes; no es un modelo desplegable.') if data.get('oracle') else 'Faltan predicciones compatibles y reconciliadas para medir complementariedad.',
                                 superiority_answer(split_set),
                                 'Las explicaciones visuales requieren artefactos atribuidos a muestra, método y checkpoint.']}
         except SQLAlchemyError:

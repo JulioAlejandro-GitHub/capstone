@@ -240,3 +240,16 @@ def test_superiority_answer_matches_evaluated_split():
     assert superiority_answer({'val'}) == 'No se infiere generalización TEST ni superioridad estadística desde VALIDATION.'
     assert 'VALIDATION' in superiority_answer({'val', 'test'})
     assert 'Sin evaluación atribuible común' in superiority_answer(set())
+
+
+def test_single_run_consensus_is_that_model_errors():
+    population = {'a': {'label': 1, 'score': .9, 'prediction': 1, 'correct': True},
+                  'b': {'label': 0, 'score': .7, 'prediction': 1, 'correct': False},
+                  'c': {'label': 1, 'score': .2, 'prediction': 0, 'correct': False},
+                  'd': {'label': 0, 'score': .05, 'prediction': 0, 'correct': True}}
+    result = consensus([population], [.5], category='CONSENSUS_FP')
+    assert result['state'] == 'available'
+    assert result['distribution'] == {'CONSENSUS_TP': 1, 'CONSENSUS_TN': 1, 'CONSENSUS_FP': 1, 'CONSENSUS_FN': 1, 'disagreement': 0}
+    assert [s['sample'] for s in result['samples']] == ['b'] and result['total'] == 1
+    assert result['oracle']['numerator'] == 2 and result['agreement'] == [[4]]
+    assert consensus([], [])['state'] == 'missing'

@@ -391,3 +391,11 @@ test('grouping keeps the raw map of each method next to its overlay', () => {
   assert.equal(row.methods.lime.artifact.artifactId,'artifact-lime');
   assert.equal(row.methods.lime.mapArtifact.artifactId,'map-lime');
 });
+
+test('a cell without explanations is built from its VAL context so it can be generated', () => {
+  const {cellComparison}=loader({'../../services/api':{api:{}},'./GeneratedXAIComparison':{}})('components/reports/AssessmentXAI.tsx');
+  const detail={id:'evaluate-val',training_run_id:'train',identity_id:'identity',identity:{split:'val',purpose:'development',model:{model_version_id:'model',checkpoint_artifact_id:'checkpoint'},dataset:{dataset_version_id:'dataset'},samples:[{sample_id:'cell',relative_path:'val/parasitized/cell.png',label:1}]}};
+  const row=cellComparison(detail,'cell');
+  assert.equal(row.original.attemptId,'evaluate-val'); assert.equal(row.original.originalSource.sampleId,'cell');
+  assert.equal(row.sampleRecord.relativePath,'val/parasitized/cell.png'); assert.equal(row.split,'val'); assert.deepEqual({...row.methods},{});
+});

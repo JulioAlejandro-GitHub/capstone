@@ -6,24 +6,31 @@ import { createComparisonCache } from '../../utils/comparisonCache';
 import { useComparisonEvidence } from '../../hooks/useComparisonEvidence';
 import type { XAIComparison } from './xai/comparison';
 
-export function AssessmentSampleXAI({detail, datasource, active, onEvidenceChange}: {detail: AssessmentDetail; datasource: string; active?: boolean; onEvidenceChange?: () => void}) {
-  const samples = detail.identity.samples ?? [];
-  const [selection, setSelection] = useState('');
-  const sample = samples.some(row => row.sample_id === selection) ? selection : samples[0]?.sample_id;
-  const comparison = useMemo<XAIComparison>(() => ({
+// A cell of an EVALUATE/EXPLAIN context with no explanation yet: the original image and the generation source.
+export function cellComparison(detail: AssessmentDetail, sample: string | undefined): XAIComparison {
+  const listed = (detail.identity.samples as {sample_id: string; relative_path?: string; label?: number}[] | undefined)?.find(row => row.sample_id === sample);
+  return {
     id: `${detail.id}:${sample}`, trainingRunId: detail.training_run_id,
     datasetVersionId: detail.identity.dataset?.dataset_version_id,
     checkpointArtifactId: detail.identity.model.checkpoint_artifact_id,
     modelVersionId: detail.identity.model.model_version_id,
     targetClass: detail.identity.explanation?.class ?? 1,
     split: detail.identity.split, purpose: detail.identity.purpose, sampleId: sample,
+    sampleRecord: listed ? {relativePath: listed.relative_path, label: listed.label} : undefined,
     methods: {}, original: sample && detail.identity.dataset ? {
       method: 'original', execution: 'completed', availability: 'available', attemptId: detail.id,
       assessmentIdentityId: detail.identity_id,
       originalSource: {source: 'dataset_sample', trainingRunId: detail.training_run_id,
         datasetVersionId: detail.identity.dataset.dataset_version_id, sampleId: sample, attemptId: detail.id},
     } : undefined,
-  }), [detail, sample]);
+  };
+}
+
+export function AssessmentSampleXAI({detail, datasource, active, onEvidenceChange}: {detail: AssessmentDetail; datasource: string; active?: boolean; onEvidenceChange?: () => void}) {
+  const samples = detail.identity.samples ?? [];
+  const [selection, setSelection] = useState('');
+  const sample = samples.some(row => row.sample_id === selection) ? selection : samples[0]?.sample_id;
+  const comparison = useMemo<XAIComparison>(() => cellComparison(detail, sample), [detail, sample]);
   if (detail.identity.split !== 'val' || detail.identity.purpose !== 'development') {
     return <p>La generación por caso requiere el contexto autorizado VAL / development.</p>;
   }

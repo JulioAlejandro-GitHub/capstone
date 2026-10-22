@@ -18,10 +18,10 @@ const identityOf = (entry?: XAIEvidence) => record(record(entry?.metadata)?.iden
 export function compactMetadata(metadata: XAIEvidence['metadata']) {
   const identity = record(record(metadata)?.identity);
   if (!identity || !Array.isArray(identity.samples)) return metadata;
-  return {...record(metadata), identity: {...identity, samples: `${identity.samples.length} muestras en la identidad (lista omitida)`}};
+  return { ...record(metadata), identity: { ...identity, samples: `${identity.samples.length} muestras en la identidad (lista omitida)` } };
 }
 function downloadJson(name: string, value: unknown) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], {type: 'application/json'}));
+  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' }));
   const link = document.createElement('a');
   link.href = url; link.download = name; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 0);
@@ -29,7 +29,8 @@ function downloadJson(name: string, value: unknown) {
 // Only the inputs that change the attribution map, in words; identifiers and hashes stay in Identificadores.
 export function methodSettings(entry: XAIEvidence): string[] {
   const explanation = record(identityOf(entry)?.explanation) ?? {};
-  const lines = [`Clase explicada: ${classLabel(explanation.class)}${explanation.class === 1 ? ': resalta lo que aumenta la probabilidad de parásito.' : '.'}`];
+  // const lines = [`Clase explicada: ${classLabel(explanation.class)}${explanation.class === 1 ? ': resalta lo que aumenta la probabilidad de parásito.' : '.'}`];
+  const lines: string[] = [];
   if (entry.method === 'gradcam') lines.push(`Capa: ${typeof explanation.layer === 'string' && explanation.layer ? explanation.layer : 'última capa convolucional (por defecto)'}.`);
   if (explanation.score_explained) lines.push(`Puntaje explicado: ${explanation.score_explained === 'raw' ? 'salida del modelo sin calibrar (sigmoide)' : String(explanation.score_explained)}.`);
   if (explanation.num_samples != null) lines.push(`Perturbaciones: ${Number(explanation.num_samples).toLocaleString('es-CL')} muestras.`);
@@ -44,14 +45,14 @@ const methodPurpose: Record<XAIMethod, string> = {
   lime: 'LIME perturba superpíxeles de la célula y ajusta un modelo lineal local.',
   shap: 'SHAP reparte la predicción entre regiones comparándola con una imagen de referencia.',
 };
-function CellTrace({comparison}: {comparison: XAIComparison}) {
+function CellTrace({ comparison }: { comparison: XAIComparison }) {
   const generated = XAI_METHODS.flatMap(method => comparison.methods[method] ? [comparison.methods[method]!] : []);
   // Any method's identity carries the cell record; single-cell and population attempts share the same fields.
   const samplesOf = (entry: XAIEvidence) => { const value = identityOf(entry)?.samples; return Array.isArray(value) ? value as Record<string, unknown>[] : []; };
   const source = generated.find(entry => samplesOf(entry).some(item => item.sample_id === comparison.sampleId)) ?? generated[0];
   const identity = identityOf(source);
   const listed = source ? samplesOf(source).find(item => item.sample_id === comparison.sampleId) : undefined;
-  const sample = {relative_path: comparison.sampleRecord?.relativePath ?? listed?.relative_path, label: comparison.sampleRecord?.label ?? listed?.label};
+  const sample = { relative_path: comparison.sampleRecord?.relativePath ?? listed?.relative_path, label: comparison.sampleRecord?.label ?? listed?.label };
   const model = record(identity?.model);
   const input = record(model?.input_contract);
   const external = record(input?.external);
@@ -67,7 +68,7 @@ function CellTrace({comparison}: {comparison: XAIComparison}) {
     {generated.map(entry => <section key={entry.method} className="xai-trace-method"><h4 className="ds-subsection-title">{XAI_LABELS[entry.method]}</h4>
       <p className="scc-meta">{methodPurpose[entry.method as XAIMethod]}</p>
       <ul>{methodSettings(entry).map(line => <li key={line}>{line}</li>)}</ul>
-      <button type="button" className="ds-button" data-size="compact" onClick={() => downloadJson(`${entry.method}-${comparison.sampleId ?? 'muestra'}.json`, {artifact: entry.artifact, metadata: entry.metadata})}>Descargar JSON completo</button>
+      <button type="button" className="ds-button" data-size="compact" onClick={() => downloadJson(`${entry.method}-${comparison.sampleId ?? 'muestra'}.json`, { artifact: entry.artifact, metadata: entry.metadata })}>Descargar JSON completo</button>
     </section>)}
     <details className="xai-trace-raw"><summary>Identificadores</summary><dl className="ds-dl">
       <div><dt>Muestra</dt><dd><code className="report-identifier">{comparison.sampleId ?? 'No identificada'}</code></dd></div>
@@ -77,10 +78,12 @@ function CellTrace({comparison}: {comparison: XAIComparison}) {
     </dl></details>
   </details>;
 }
-const availabilityLabels = { available: 'Disponible', no_evidence: 'Sin evidencia', missing: 'Archivo no disponible',
-  denied: 'Acceso denegado', integrity_failed: 'Integridad fallida', not_comparable: 'No comparable', error: 'Error de recuperación' };
+const availabilityLabels = {
+  available: 'Disponible', no_evidence: 'Sin evidencia', missing: 'Archivo no disponible',
+  denied: 'Acceso denegado', integrity_failed: 'Integridad fallida', not_comparable: 'No comparable', error: 'Error de recuperación'
+};
 
-function EvidencePanel({evidence, method, resource, sample, onExpand, generation}: {
+function EvidencePanel({ evidence, method, resource, sample, onExpand, generation }: {
   evidence?: XAIEvidence; method: XAIMethod | 'original'; resource: XAIImageResource; sample: XAIComparison;
   onExpand?: (method: XAIMethod | 'original') => void; generation?: XAIGenerationAction;
 }) {
@@ -91,8 +94,8 @@ function EvidencePanel({evidence, method, resource, sample, onExpand, generation
   const availability = resource.failure?.availability ?? (resource.error ? 'error' : evidence?.availability ?? 'no_evidence');
   const state = resource.loading ? 'Cargando imagen…' : failedDecode ? 'Imagen no decodificable' : resource.url ? 'Disponible'
     : availability !== 'no_evidence' && availability !== 'available' ? availabilityLabels[availability]
-    : evidence?.execution === 'running' ? 'Ejecutándose' : evidence?.execution === 'pending' ? 'Pendiente'
-    : evidence?.execution === 'failed' ? 'Fallido' : availability === 'available' ? 'Imagen pendiente de carga' : 'Sin evidencia';
+      : evidence?.execution === 'running' ? 'Ejecutándose' : evidence?.execution === 'pending' ? 'Pendiente'
+        : evidence?.execution === 'failed' ? 'Fallido' : availability === 'available' ? 'Imagen pendiente de carga' : 'Sin evidencia';
   const error = resource.error || failedDecode || evidence?.execution === 'failed' || ['missing', 'denied', 'integrity_failed', 'error', 'not_comparable'].includes(availability);
   const image = resource.url && !failedDecode ? <img className="report-scientific-image" src={resource.url}
     alt={`${XAI_LABELS[method]} · muestra ${sample.sampleId ?? 'no identificada'}`} onError={() => setDecodeError(resource.url)} /> : null;
@@ -112,19 +115,19 @@ function EvidencePanel({evidence, method, resource, sample, onExpand, generation
       {resource.url && <a className="ds-button" href={resource.url} download={`${evidence?.originalSource?.sampleId ?? evidence?.artifact?.artifactId}${resource.extension}`}>Descargar {XAI_LABELS[method]}</a>}
       {!evidence?.artifact && method !== 'original' && <button className="ds-button" type="button" disabled={!generation?.authorized || generating}
         title={generation?.authorized ? undefined : generation?.reason ?? 'La generación todavía no está disponible.'} onClick={async () => {
-        if (!generation?.authorized) return;
-        setGenerating(true); setGenerationError(null);
-        try { await generation.execute(sample, method); }
-        catch (error: unknown) { setGenerationError(error instanceof Error ? error.message : 'No fue posible solicitar la generación.'); }
-        finally { setGenerating(false); }
-      }}>Generar {XAI_LABELS[method]}</button>}
+          if (!generation?.authorized) return;
+          setGenerating(true); setGenerationError(null);
+          try { await generation.execute(sample, method); }
+          catch (error: unknown) { setGenerationError(error instanceof Error ? error.message : 'No fue posible solicitar la generación.'); }
+          finally { setGenerating(false); }
+        }}>Generar {XAI_LABELS[method]}</button>}
       {generationError && <p role="alert">{generationError}</p>}
     </div>
   </section>;
 }
 
 /** Pure shared presentation: neither modal nor inline starts a second image request. */
-export function XAIComparisonContent({comparison, resources, onExpand, generation, actions, density = 'compact'}: {
+export function XAIComparisonContent({ comparison, resources, onExpand, generation, actions, density = 'compact' }: {
   density?: 'compact' | 'expanded'; actions?: ReactNode;
   comparison: XAIComparison; resources: Resources; onExpand?: (method: XAIMethod | 'original') => void;
   generation?: Partial<Record<XAIMethod, XAIGenerationAction>>;
@@ -143,7 +146,7 @@ export function XAIComparisonContent({comparison, resources, onExpand, generatio
   </div>;
 }
 
-export function XAIComparisonViewer({comparison, datasource, generation, actions}: {
+export function XAIComparisonViewer({ comparison, datasource, generation, actions }: {
   comparison: XAIComparison; datasource: string; generation?: Partial<Record<XAIMethod, XAIGenerationAction>>; actions?: ReactNode;
 }) {
   const host = useRef<HTMLElement>(null);
