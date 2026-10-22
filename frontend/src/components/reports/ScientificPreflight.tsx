@@ -294,9 +294,9 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
   </>;
 }
 
-function ComparisonModules({ ids, datasource, selections, revision, active, onEvidenceChange }: { ids: string[]; datasource: string; selections: RequestedSelection[]; revision: number; active: boolean; onEvidenceChange: () => void }) {
+function ComparisonModules({ ids, datasource, selections, explains, revision, active, onEvidenceChange }: { ids: string[]; datasource: string; selections: RequestedSelection[]; explains?: Record<string, string[]>; revision: number; active: boolean; onEvidenceChange: () => void }) {
   return <section className="scc-science-module" aria-label="Explicabilidad XAI"><h3>Explicabilidad XAI</h3>
-    {ids.map((id, index) => <section key={id}><h4>RUN {String.fromCharCode(65 + index)}</h4><PersistedXAI key={JSON.stringify([selections.find(s => s.training_run_id === id), revision])} selection={selections.find(s => s.training_run_id === id) ?? { training_run_id: id }} datasource={datasource} active={active} /><TrainingAssessmentXAI key={JSON.stringify([datasource, selections.find(selection => selection.training_run_id === id), revision])} trainingRunId={id} datasource={datasource} active={active} onEvidenceChange={onEvidenceChange} /></section>)}
+    {ids.map((id, index) => <section key={id}><h4>RUN {String.fromCharCode(65 + index)}</h4><PersistedXAI key={JSON.stringify([selections.find(s => s.training_run_id === id), revision])} selection={selections.find(s => s.training_run_id === id) ?? { training_run_id: id }} datasource={datasource} active={active} attemptIds={explains?.[id]} /><TrainingAssessmentXAI key={JSON.stringify([datasource, selections.find(selection => selection.training_run_id === id), revision])} trainingRunId={id} datasource={datasource} active={active} onEvidenceChange={onEvidenceChange} /></section>)}
   </section>;
 }
 
@@ -329,8 +329,8 @@ function SectionMap({ states, onSelect }: { states: ReturnType<typeof sectionSta
   </button>)}</nav>;
 }
 
-type SectionProps = { section?: AnalysisSection; onSectionChange?: (section: AnalysisSection) => void };
-function ComparisonEvidenceSession({ ids, datasource, maximum, selections, section: requested, onSectionChange }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
+type SectionProps = { section?: AnalysisSection; onSectionChange?: (section: AnalysisSection) => void; explains?: Record<string, string[]> };
+function ComparisonEvidenceSession({ ids, datasource, maximum, selections, section: requested, onSectionChange, explains }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
   const cache = useMemo(createComparisonCache, []);
   const [revision, setRevision] = useState(0);
   const [xaiRevision, setXaiRevision] = useState(0);
@@ -368,7 +368,7 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
     <AnalysisPanel id="aprendizaje" section={section} visited={visited}><CurvesModule {...moduleProps} active={section === 'aprendizaje'} /></AnalysisPanel>
     <AnalysisPanel id="desempeno" section={section} visited={visited}><MetricsModule {...moduleProps} active={section === 'desempeno'} /></AnalysisPanel>
     <AnalysisPanel id="errores" section={section} visited={visited}><ConsensusModule {...moduleProps} active={section === 'errores'} /></AnalysisPanel>
-    <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} onEvidenceChange={() => { cache.clear(); setRevision(value => value + 1); }} /></AnalysisPanel>
+    <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} explains={explains} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} onEvidenceChange={() => { cache.clear(); setRevision(value => value + 1); }} /></AnalysisPanel>
     <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} active={section === 'representaciones'} /></AnalysisPanel>
     <AnalysisPanel id="trazabilidad" section={section} visited={visited}>{data ? <PreflightEvidence data={data} /> : <p>{ids.length === 1 ? 'RUN individual seleccionado. Sus resultados permanecen disponibles; el preflight comparativo requiere al menos dos TRAIN.' : 'El detalle utiliza la misma consulta del resumen metodológico.'}</p>}</AnalysisPanel>
   </>;

@@ -170,3 +170,50 @@
 .ds-report.scc-trace-drawer .scc-trace-body { padding: var(--ds-space-4) var(--ds-space-5, 20px); overflow-wrap: anywhere; }
 .ds-report.scc-trace-drawer pre { padding: var(--ds-space-4); background: var(--ds-bg-subtle); border: 1px solid var(--ds-border-default); white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--ds-font-mono); font-size: var(--ds-text-sm); }
 .ds-report.scc-trace-drawer .scc-meta { font-size: var(--ds-text-xs); color: var(--ds-fg-muted); text-transform: uppercase; letter-spacing: .04em; }
+
+/* Fase 2: answer first, then charts; heat cells keep their numbers. */
+.ds-report.scc-page .scc-answer { display: grid; gap: var(--ds-space-3); margin-block: var(--ds-space-3) var(--ds-space-5, 20px); padding: var(--ds-space-4); background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-inline-start: 4px solid var(--ds-action-fg); border-radius: var(--ds-radius-lg); }
+.ds-report.scc-page .scc-answer-text { margin: 0; font-size: var(--ds-text-md, 15px); line-height: 1.5; }
+.ds-report.scc-page .scc-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--ds-space-3); }
+.ds-report.scc-page .scc-kpi { display: flex; flex-direction: column; gap: var(--ds-space-1, 2px); padding: var(--ds-space-3); background: var(--ds-bg-subtle); border-radius: var(--ds-radius-sm); border-top: 3px solid var(--ds-border-default); min-width: 0; }
+.ds-report.scc-page .scc-kpi[data-run="0"] { border-top-color: var(--ds-blue-500); }
+.ds-report.scc-page .scc-kpi[data-run="1"] { border-top-color: var(--ds-green-700); }
+.ds-report.scc-page .scc-kpi[data-run="2"] { border-top-color: var(--ds-violet-700); }
+.ds-report.scc-page .scc-kpi[data-run="3"] { border-top-color: var(--ds-amber-700); }
+.ds-report.scc-page .scc-kpi > span { font-size: var(--ds-text-xs); color: var(--ds-fg-muted); text-transform: uppercase; letter-spacing: .03em; }
+.ds-report.scc-page .scc-kpi > strong { font-size: var(--ds-text-lg); font-variant-numeric: tabular-nums; }
+.ds-report.scc-page .scc-kpi > strong small { font-size: var(--ds-text-xs); font-weight: normal; color: var(--ds-fg-muted); }
+.ds-report.scc-page .scc-kpi > small { color: var(--ds-fg-muted); font-size: var(--ds-text-sm); overflow-wrap: anywhere; }
+.ds-report.scc-page .scc-chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: var(--ds-space-4); align-items: start; }
+.ds-report.scc-page .scc-chart-grid h4 { margin-block: var(--ds-space-3) 0; }
+.ds-report.scc-page .scc-chart--compact { height: 260px; margin-block: var(--ds-space-3); }
+.ds-report.scc-page .scc-chart-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: var(--ds-space-3); margin-top: var(--ds-space-4); }
+.ds-report.scc-page .scc-segmented { display: flex; flex-wrap: wrap; gap: var(--ds-space-1, 2px); }
+.ds-report.scc-page .scc-segmented [aria-selected="true"] { background: var(--ds-bg-selected); border-color: var(--ds-action-fg); color: var(--ds-action-fg); }
+.ds-report.scc-page :is(.scc-heatmap, .scc-confusion) td { position: relative; text-align: center; font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--ds-blue-500) calc(var(--scc-heat, 0) * 55%), transparent); }
+.ds-report.scc-page .scc-confusion td[data-correct="false"] { background: color-mix(in srgb, var(--ds-amber-700) calc(var(--scc-heat, 0) * 70%), transparent); }
+.ds-report.scc-page .scc-heatmap td[data-diagonal="true"] { background: var(--ds-bg-subtle); color: var(--ds-fg-muted); }
+.ds-report.scc-page :is(.scc-heatmap, .scc-confusion) td small { display: block; font-size: var(--ds-text-xs); color: var(--ds-fg-muted); }
+.ds-report.scc-page .scc-confusion-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.ds-report.scc-page .scc-confusion-grid h5 { margin: 0 0 var(--ds-space-2); font-size: var(--ds-text-sm); }
+.ds-report.scc-page td[data-correct="false"] { color: var(--ds-status-rejected-fg); }
+.ds-report.scc-page .scc-category-chips { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
+
+/* RUN lineage: TRAIN → EVALUATE VAL / EVALUATE TEST / EXPLAIN, with a menu when a slot has several executions. */
+.ds-report .scc-lineage-slots { display: grid; gap: var(--ds-space-2); margin: var(--ds-space-3) 0; padding: 0; list-style: none; }
+.ds-report .scc-lineage-slots > li { display: grid; gap: var(--ds-space-1, 2px); padding: var(--ds-space-2) var(--ds-space-3); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-sm); }
+.ds-report .scc-lineage-slots > li[data-active="true"] { border-color: var(--ds-action-fg); background: var(--ds-bg-selected); }
+.ds-report .scc-lineage-slots > li[data-empty="true"] { opacity: .7; }
+.ds-report .scc-lineage-slots > li + li { position: relative; }
+.ds-report .scc-lineage-slots ul { display: grid; gap: var(--ds-space-1, 2px); margin: 0; padding: 0; list-style: none; }
+.ds-report .scc-lineage-slots ul li { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: var(--ds-space-2); font-size: var(--ds-text-sm); }
+.ds-report .scc-slot-use { display: flex; align-items: center; gap: var(--ds-space-2); cursor: pointer; }
+.ds-report .scc-slot-value { font-size: var(--ds-text-sm); color: var(--ds-fg-muted); overflow-wrap: anywhere; }
+.ds-report .scc-lineage-slots select { width: 100%; min-width: 0; font-size: var(--ds-text-sm); }
+.ds-report .scc-slot-warning { margin: 0; padding: var(--ds-space-2) var(--ds-space-3); font-size: var(--ds-text-sm); color: var(--ds-status-warning-fg); background: var(--ds-status-warning-bg); border-radius: var(--ds-radius-sm); }
+.ds-report.scc-page .scc-protocol { display: flex; flex-wrap: wrap; gap: var(--ds-space-2) var(--ds-space-4); margin: 0; padding: var(--ds-space-3) var(--ds-space-4); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-lg); background: var(--ds-bg-surface); }
+.ds-report.scc-page .scc-protocol legend { padding-inline: var(--ds-space-2); font-weight: 600; }
+.ds-report.scc-page .scc-protocol label { display: flex; align-items: flex-start; gap: var(--ds-space-2); cursor: pointer; }
+.ds-report.scc-page .scc-protocol label span { display: grid; }
+.ds-report.scc-page .scc-protocol small { color: var(--ds-fg-muted); }
+.ds-report.scc-page .scc-protocol .scc-meta { flex-basis: 100%; margin: 0; }

@@ -1,51 +1,90 @@
 import { groupXAIComparisons } from './xai/comparison';
 import { XAIComparisonViewer } from './XAIComparisonViewer';
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, BarChart, Bar } from 'recharts';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, BarChart, Bar, ScatterChart, Scatter, LabelList, Cell } from 'recharts';
 import { api } from '../../services/api';
 import { useComparisonEvidence } from '../../hooks/useComparisonEvidence';
 import { createComparisonCache, type ComparisonCache } from '../../utils/comparisonCache';
 import type { RequestedSelection } from '../../types/scientificPreflight';
-import type { CatalogEvidence, CurveEvidence, MetricsEvidence, ConsensusEvidence, ReportModule, EvaluationChoice } from '../../types/scientificReport';
+import type { CatalogEvidence, ClinicalEvidence, CurveEvidence, MetricsEvidence, ConsensusEvidence, ReportModule, EvaluationChoice } from '../../types/scientificReport';
 import { CopyText } from './ComparisonPython';
-import { EvidenceButton } from './AnalysisWorkspace';
+import { EvidenceButton, Kpi, SectionAnswer } from './AnalysisWorkspace';
+import { consensusSummary, curveSummary, intensity, metricRange } from '../../utils/analysisSummaries';
+import { choiceKey, defaultEvaluationSlot, effectiveSlot, evaluationSlots, explainMethods, groupEvaluations, groupExplanations, isAssessmentExplanation, roleLabels, type EvaluationSlot } from '../../utils/lineageSlots';
+import type { AssessmentExplanationChild } from '../../types/api';
 
 const runLabel = (index: number) => `RUN ${String.fromCharCode(65 + index)}`;
 const value = (n: number | null | undefined) => n == null ? 'Sin evidencia' : n.toLocaleString('es-CL', {maximumFractionDigits: 6});
 const colors = ['var(--ds-blue-500)', 'var(--ds-green-700)', 'var(--ds-violet-700)', 'var(--ds-amber-700)'];
+const percent = (n: number | null | undefined) => n == null ? 'Sin evidencia' : `${(n * 100).toLocaleString('es-CL', {maximumFractionDigits: 1})} %`;
+const listText = (items: string[]) => items.length > 1 ? `${items.slice(0, -1).join(', ')} y ${items.at(-1)}` : items[0] ?? '';
+const short = (n: number | null | undefined) => n == null ? '—' : n.toLocaleString('es-CL', {maximumFractionDigits: 3});
 export function evaluationSelection(item: EvaluationChoice): RequestedSelection {
   return { training_run_id: item.training_run_id, split: item.split,
     ...(item.checkpoint_artifact_id ? {checkpoint_artifact_id: item.checkpoint_artifact_id} : {}),
     ...(item.evaluation_id ? {evaluation: {source: 'evaluations' as const, evaluation_id: item.evaluation_id}}
       : item.attempt_id && item.identity_id ? {evaluation: {source: 'assessment' as const, attempt_id: item.attempt_id, identity_id: item.identity_id}} : {}) };
 }
-export function EvaluationNavigation({id, datasource, onChange}: {id: string; datasource: string; onChange: (selection: RequestedSelection) => void}) {
+const when = (iso: string) => new Date(iso).toLocaleString('es-CL', {dateStyle: 'short', timeStyle: 'short'});
+const choiceText = (choice: EvaluationChoice, index: number) => choice.evaluation_role === 'independent_evaluate'
+  ? `#${index + 1} · ${when(choice.created_at)} · ${choice.purpose}` : `${roleLabels[choice.evaluation_role] ?? choice.evaluation_role} · ${when(choice.created_at)}`;
+const explanationText = (child: AssessmentExplanationChild) => `#${child.ordinal} · ${child.split.toUpperCase()} · ${when(child.started_at)} · ${child.state}${child.result_count != null ? ` · ${value(child.result_count)} resultados` : ''}`;
+function SlotChoice<T>({label, items, current, keyOf, text, onPick}: {label: string; items: T[]; current?: T; keyOf: (item: T) => string; text: (item: T, index: number) => string; onPick: (key: string) => void}) {
+  if (!items.length) return <span className="scc-meta">Sin ejecución</span>;
+  if (items.length === 1) return <span className="scc-slot-value">{text(items[0], 0)}</span>;
+  return <select className="ds-control" aria-label={`${label}: ejecución`} value={current ? keyOf(current) : ''} onChange={event => onPick(event.target.value)}>
+    {items.map((item, index) => <option key={keyOf(item)} value={keyOf(item)}>{text(item, index)}</option>)}
+  </select>;
+}
+export function EvaluationNavigation({id, datasource, protocol = defaultEvaluationSlot, onChange, onExplainChange}: {id: string; datasource: string; protocol?: EvaluationSlot; onChange: (selection: RequestedSelection) => void; onExplainChange?: (id: string, attemptIds: string[]) => void}) {
   const cache = useMemo(createComparisonCache, [id, datasource]);
   const [revision, setRevision] = useState(0);
-  const [index, setIndex] = useState(0);
+  const [override, setOverride] = useState<EvaluationSlot | null>(null);
+  const [picked, setPicked] = useState<Partial<Record<EvaluationSlot, string>>>({});
+  const [explainPicked, setExplainPicked] = useState<Record<string, string>>({});
   const {data, error, loading} = useComparisonEvidence(cache, JSON.stringify(['catalog', id, datasource, revision]), () => api.getComparisonReport<CatalogEvidence[]>(datasource, {module: 'catalog', selections: [{training_run_id: id}]}));
+  const lineage = useComparisonEvidence(cache, JSON.stringify(['lineage', id, datasource, revision]), async () => api.getTrainingLineageChildren({trainingRunId: id, datasource}));
   const catalog = data?.data[0];
-  const selected = catalog?.evaluations[index];
+  const groups = useMemo(() => groupEvaluations(catalog?.evaluations ?? []), [catalog]);
+  // A new analysis protocol resets per-card overrides.
+  useEffect(() => { setOverride(null); }, [protocol]);
+  const slot = effectiveSlot(groups, protocol, override);
+  const currentOf = (target: EvaluationSlot) => groups[target].find(choice => choiceKey(choice) === picked[target]) ?? groups[target][0];
+  const selected = slot ? currentOf(slot) : undefined;
   useEffect(() => { if (selected) onChange(evaluationSelection(selected)); }, [selected, onChange]);
+  const explanations = useMemo(() => groupExplanations((lineage.data?.explainabilities ?? []).filter(isAssessmentExplanation)), [lineage.data]);
+  const explainOf = (method: string) => explanations[method]?.find(child => child.attempt_id === explainPicked[method]) ?? explanations[method]?.[0];
+  const explainIds = explainMethods.flatMap(method => explainOf(method.id) ? [explainOf(method.id)!.attempt_id] : []).join(',');
+  useEffect(() => { if (lineage.data) onExplainChange?.(id, explainIds ? explainIds.split(',') : []); }, [id, explainIds, lineage.data, onExplainChange]);
   return <div className="scc-evaluation-nav">
     {loading && <p role="status">Consultando evaluaciones…</p>}
     {error ? <p role="alert">Error al consultar evaluaciones. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}
     {catalog && <>
       <p><strong>{catalog.governance.name ?? 'Dataset sin evidencia'}</strong><br />{catalog.governance.status} · {catalog.governance.grouping_strategy}</p>
-      {selected ? <><strong>{selected.split.toUpperCase()} · {selected.evaluation_role === 'training_validation_final' ? 'VALIDATION final del checkpoint' : 'Evaluación independiente'}</strong>
-        <p>{new Date(selected.created_at).toLocaleString('es-CL')} · {selected.purpose}</p>
-        {catalog.evaluations.length > 1 && <nav aria-label="Evaluaciones del RUN">{catalog.evaluations.map((item, i) => <button className="ds-button" type="button" key={item.evaluation_id ?? item.attempt_id} aria-current={i === index ? 'true' : undefined} title={`${item.split} · ${item.evaluation_role} · ${item.created_at}`} onClick={() => setIndex(i)}>{i+1}</button>)}</nav>}
-        <small>Inicio: la más reciente; el orden no indica superioridad científica.</small>
-        <EvidenceButton title="Identidad de evaluación" label="Identidad de evaluación"><p className="report-identifier">Evaluación: {selected.evaluation_id ?? 'No registrada'}<br />Intento: {selected.attempt_id ?? 'No aplica a VAL histórica'}<br />Checkpoint: {selected.checkpoint_artifact_id ?? 'Sin evidencia'}</p><CopyText text={JSON.stringify(evaluationSelection(selected))} label="Copiar identidad" /></EvidenceButton>
-      </> : <p>Sin evaluaciones persistidas para este RUN.</p>}
-      <details><summary>Dataset y partición gobernada</summary>
+      <ol className="scc-lineage-slots" aria-label="Linaje del TRAIN">
+        {evaluationSlots.map(meta => <li key={meta.id} data-active={slot === meta.id} data-empty={!groups[meta.id].length}>
+          <label className="scc-slot-use" title={meta.detail}><input type="radio" name={`scc-evaluation-${id}`} checked={slot === meta.id} disabled={!groups[meta.id].length} onChange={() => setOverride(meta.id)} /><strong>{meta.label}</strong></label>
+          <SlotChoice label={meta.label} items={groups[meta.id]} current={currentOf(meta.id)} keyOf={choiceKey} text={choiceText} onPick={key => { setPicked(old => ({...old, [meta.id]: key})); setOverride(meta.id); }} />
+        </li>)}
+        <li data-slot="explain"><strong>EXPLAIN</strong>
+          {lineage.loading && <span className="scc-meta" role="status">Consultando EXPLAIN…</span>}
+          {lineage.error ? <span role="alert">Error al consultar EXPLAIN. <button className="ds-button" data-size="compact" onClick={() => setRevision(n => n+1)}>Reintentar</button></span> : null}
+          {lineage.data && <ul>{explainMethods.map(method => <li key={method.id} data-empty={!explanations[method.id]?.length}><span>{method.label}</span>
+            <SlotChoice label={`EXPLAIN ${method.label}`} items={explanations[method.id] ?? []} current={explainOf(method.id)} keyOf={child => child.attempt_id} text={explanationText} onPick={key => setExplainPicked(old => ({...old, [method.id]: key}))} />
+          </li>)}</ul>}
+        </li>
+      </ol>
+      {slot && slot !== protocol && <p className="scc-slot-warning" role="note">Distinta al análisis: este RUN usa {evaluationSlots.find(item => item.id === slot)!.label}{groups[protocol].length ? '' : ` porque no tiene ${evaluationSlots.find(item => item.id === protocol)!.label}`}.</p>}
+      {selected ? <EvidenceButton title="Identidad de evaluación" label="Identidad de evaluación"><p className="report-identifier">Evaluación: {selected.evaluation_id ?? 'No registrada'}<br />Intento: {selected.attempt_id ?? 'No aplica a VAL histórica'}<br />Checkpoint: {selected.checkpoint_artifact_id ?? 'Sin evidencia'}</p><CopyText text={JSON.stringify(evaluationSelection(selected))} label="Copiar identidad" /></EvidenceButton>
+        : <p>Sin evaluaciones persistidas para este RUN.</p>}
+      <EvidenceButton title="Dataset y partición gobernada" label="Dataset y partición">
         <p>{catalog.governance.split_algorithm} · Semilla {catalog.governance.random_seed} · {value(catalog.governance.source_record_count)} registros</p>
         <p>{Object.entries(catalog.governance.counts).map(([split, count]) => `${split.toUpperCase()}: ${value(count)}`).join(' · ')}</p>
         <p>Controles PASS: {catalog.governance.checks.filter(c => c.status === 'PASS').length} / {catalog.governance.checks.length}</p>
         <p>Materialización: {catalog.governance.materialization_status ?? 'Sin evidencia'} · Reconciliación: {catalog.governance.reconciliation_status ?? 'Sin evidencia'} · {value(catalog.governance.record_count)} registros</p>
         <p>Coincidencia de versión: {catalog.governance.materialization_dataset_matches === true ? 'Sí' : 'No acreditada'}. Consumo individual TRAIN: {catalog.governance.consumed_images ? `${catalog.governance.consumed_images} imágenes registradas` : 'Sin evidencia individual; el snapshot acredita la referencia de campaña.'}</p>
-        <EvidenceButton title="Controles y snapshot de campaña" label="Controles y snapshot"><pre>{JSON.stringify({checks: catalog.governance.checks, snapshot: catalog.governance.campaign_snapshot}, null, 2)}</pre></EvidenceButton>
-      </details>
+        <details><summary>Controles y snapshot de campaña</summary><pre>{JSON.stringify({checks: catalog.governance.checks, snapshot: catalog.governance.campaign_snapshot}, null, 2)}</pre></details>
+      </EvidenceButton>
     </>}
   </div>;
 }
@@ -71,58 +110,121 @@ export function LazyScientificModule<T>({title, module, cache, datasource, selec
   </details>;
 }
 
+const curveMetricLabels: Record<string, string> = {loss: 'Loss', accuracy: 'Accuracy', auc: 'ROC-AUC', pr_auc: 'PR-AUC', recall: 'Sensibilidad', specificity: 'Especificidad', f2_parasitized: 'F2 parasitada'};
+const epochsText = (executed: number, configured: number | null) => `${executed} / ${configured ?? '—'}`;
 export function TrainingCurves({data}: {data: CurveEvidence[]}) {
   const [hidden, setHidden] = useState<string[]>([]);
   const [reference, setReference] = useState('');
+  const [metric, setMetric] = useState('loss');
   const toggle = (key: string) => setHidden(old => old.includes(key) ? old.filter(v => v !== key) : [...old, key]);
   const optional = ['auc', 'pr_auc', 'recall', 'specificity', 'f2_parasitized'].filter(metric => data.some(r => r.metrics_definition && r.epochs.some(e => e.values[metric] != null || e.values[`val_${metric}`] != null)));
-  const metrics = ['loss', 'accuracy', ...optional];
+  const metrics = ['loss', 'accuracy', ...optional].filter(m => data.some(r => r.epochs.some(e => e.values[m] != null || e.values[`val_${m}`] != null)));
+  const shown = metrics.includes(metric) ? metric : metrics[0];
   const epochs = [...new Set(data.flatMap(r => r.epochs.map(e => e.epoch)))].sort((a,b) => a-b);
   // Explicit gaps keep Recharts from joining epochs absent from every run.
   const axis = epochs.length ? Array.from({length: epochs[epochs.length-1] - epochs[0] + 1}, (_, i) => epochs[0]+i) : [];
   const rows = axis.map(epoch => Object.fromEntries([['epoch', epoch], ...data.flatMap((r,i) => Object.entries(r.epochs.find(e => e.epoch === epoch)?.values ?? {}).map(([k,v]) => [`r${i}_${k}`, v]))]));
   if (!epochs.length) return <p>No hay eventos de época válidos para esta selección. {data.flatMap(r => r.issues).join(' ')}</p>;
+  const summaries = data.map(curveSummary);
+  const series = shown ? data.flatMap((r,i) => ['', 'val_'].flatMap(prefix => r.epochs.some(e => e.values[`${prefix}${shown}`] != null) ? [{key: `r${i}_${prefix}${shown}`, name: `${runLabel(i)} ${prefix ? 'VAL' : 'TRAIN'}`, i, prefix}] : [])) : [];
+  const fineTuneStart = data.map(r => r.epochs.find(e => e.phase === 'fine_tuning')?.epoch).find(epoch => epoch != null);
   return <>
-    <div className="report-table-scroll"><table className="report-data-table"><caption>Épocas ejecutadas y checkpoint</caption><thead><tr><th>RUN</th><th>Ejecutadas</th><th>Máximo configurado</th><th>Final</th><th>Seleccionada</th><th>Política / métrica</th></tr></thead><tbody>{data.map((r,i) => <tr key={r.training_run_id}><th scope="row">{runLabel(i)}</th><td>{r.executed_epochs}</td><td>{value(r.max_epochs)}</td><td>{value(r.final_epoch)}</td><td>{value(r.checkpoint.selected_epoch)}</td><td>{r.checkpoint.policy ?? 'Sin evidencia'} / {r.checkpoint.metric ?? 'Sin evidencia'}</td></tr>)}</tbody></table></div>
-    <label>Referencia de checkpoint<select className="ds-control" value={reference} onChange={e => setReference(e.target.value)}><option value="">Sin referencia vertical</option>{data.map((r,i) => <option key={r.training_run_id} value={i}>{runLabel(i)} · época {r.checkpoint.selected_epoch ?? 'sin evidencia'}</option>)}</select></label>
-    {metrics.map(metric => {
-      const series = data.flatMap((r,i) => ['', 'val_'].flatMap(prefix => r.epochs.some(e => e.values[`${prefix}${metric}`] != null) ? [{key: `r${i}_${prefix}${metric}`, name: `${runLabel(i)} ${prefix ? 'VAL' : 'TRAIN'}`, i, prefix}] : []));
-      if (!series.length) return null;
-      return <section key={metric}><h3>{metric === 'loss' ? 'Loss' : metric === 'accuracy' ? 'Accuracy' : metric}</h3>
-        <div className="scc-series-controls">{series.map(s => <label key={s.key}><input type="checkbox" checked={!hidden.includes(s.key)} onChange={() => toggle(s.key)} />{s.name}</label>)}</div>
-        <div className="scc-chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={rows}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="epoch" type="number" domain={['dataMin', 'dataMax']} allowDecimals={false} /><YAxis /><Tooltip /><Legend />
-          {series.filter(s => !hidden.includes(s.key)).map(s => <Line key={s.key} dataKey={s.key} name={s.name} stroke={colors[s.i % colors.length]} strokeDasharray={s.prefix ? '6 3' : undefined} type="linear" dot={false} connectNulls={false} isAnimationActive={false} />)}
-          {reference !== '' && data[Number(reference)]?.checkpoint.logical_lineage && data[Number(reference)].checkpoint.selected_epoch != null && <ReferenceLine x={data[Number(reference)].checkpoint.selected_epoch!} stroke={colors[Number(reference) % colors.length]} label={`Checkpoint ${runLabel(Number(reference))}`} />}
-        </LineChart></ResponsiveContainer></div>
-      </section>;
-    })}
-    <p>TRAIN: línea continua. VAL: discontinua. Valores originales, sin rellenar épocas ausentes.</p>
+    <SectionAnswer indicators={summaries.map((s, i) => <Kpi key={data[i].training_run_id} run={i} label={`${runLabel(i)} · checkpoint`}
+      value={s.checkpointEpoch == null ? 'Sin evidencia' : `Época ${s.checkpointEpoch} de ${s.baseExecuted + s.fineExecuted}`}
+      detail={<>{s.checkpointPhase === 'fine_tuning' ? 'Ajuste fino' : s.checkpointPhase ? 'Fase base' : 'Fase sin evidencia'} · VAL loss {short(s.valLoss)}{s.gap != null && <> · VAL−TRAIN loss {short(s.gap)}</>}</>} />)}>
+      {summaries.some(s => s.baseCheckpointAfterFineTuning)
+        ? `En ${summaries.every(s => s.baseCheckpointAfterFineTuning) ? 'todos los RUN' : listText(summaries.flatMap((s, i) => s.baseCheckpointAfterFineTuning ? [runLabel(i)] : []))} el checkpoint quedó en la fase base: las épocas de ajuste fino no superaron la política de selección.`
+        : 'El checkpoint de cada RUN corresponde a la época que maximizó su política de selección sobre VAL.'}
+    </SectionAnswer>
+    <div className="report-table-scroll"><table className="report-data-table"><caption>Épocas ejecutadas / configuradas y checkpoint</caption><thead><tr><th>RUN</th><th>Base</th><th>Ajuste fino</th><th>Total</th><th>Checkpoint</th><th>Política / métrica</th></tr></thead><tbody>{data.map((r,i) => { const s = summaries[i]; return <tr key={r.training_run_id}><th scope="row">{runLabel(i)}</th><td>{epochsText(s.baseExecuted, s.baseConfigured)}</td><td>{s.fineExecuted || s.fineConfigured ? epochsText(s.fineExecuted, s.fineConfigured) : 'No aplica'}</td><td>{epochsText(s.baseExecuted + s.fineExecuted, s.configuredTotal)}</td><td>{value(r.checkpoint.selected_epoch)}{r.checkpoint.phase ? ` · ${r.checkpoint.phase === 'fine_tuning' ? 'ajuste fino' : 'base'}` : ''}</td><td>{r.checkpoint.policy ?? 'Sin evidencia'} / {r.checkpoint.metric ?? 'Sin evidencia'}</td></tr>; })}</tbody></table></div>
+    <div className="scc-chart-toolbar">
+      <div role="tablist" aria-label="Métrica de la curva" className="scc-segmented">{metrics.map(m => <button key={m} type="button" role="tab" aria-selected={m === shown} className="ds-button" data-size="compact" onClick={() => setMetric(m)}>{curveMetricLabels[m] ?? m}</button>)}</div>
+      <label>Referencia de checkpoint<select className="ds-control" value={reference} onChange={e => setReference(e.target.value)}><option value="">Sin referencia vertical</option>{data.map((r,i) => <option key={r.training_run_id} value={i}>{runLabel(i)} · época {r.checkpoint.selected_epoch ?? 'sin evidencia'}</option>)}</select></label>
+    </div>
+    {shown && <section aria-label={`Curva ${curveMetricLabels[shown] ?? shown}`}>
+      <div className="scc-series-controls">{series.map(s => <label key={s.key}><input type="checkbox" checked={!hidden.includes(s.key)} onChange={() => toggle(s.key)} />{s.name}</label>)}</div>
+      <div className="scc-chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={rows}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="epoch" type="number" domain={['dataMin', 'dataMax']} allowDecimals={false} /><YAxis /><Tooltip /><Legend />
+        {series.filter(s => !hidden.includes(s.key)).map(s => <Line key={s.key} dataKey={s.key} name={s.name} stroke={colors[s.i % colors.length]} strokeDasharray={s.prefix ? '6 3' : undefined} type="linear" dot={false} connectNulls={false} isAnimationActive={false} />)}
+        {fineTuneStart != null && <ReferenceLine x={fineTuneStart - 0.5} stroke="var(--ds-border-strong, #94a3b8)" strokeDasharray="2 4" label="Inicio ajuste fino" />}
+        {reference !== '' && data[Number(reference)]?.checkpoint.logical_lineage && data[Number(reference)].checkpoint.selected_epoch != null && <ReferenceLine x={data[Number(reference)].checkpoint.selected_epoch!} stroke={colors[Number(reference) % colors.length]} label={`Checkpoint ${runLabel(Number(reference))}`} />}
+      </LineChart></ResponsiveContainer></div>
+    </section>}
+    <p className="scc-meta">TRAIN: línea continua. VAL: discontinua. Valores originales, sin rellenar épocas ausentes.</p>
     <EvidenceButton title="Definiciones y linaje de las curvas" label="Definiciones y linaje">{data.map((r,i) => <div key={r.training_run_id}><p>{runLabel(i)} · Loss: {r.loss_definition ?? 'Sin evidencia'} · Métricas: {r.metrics_definition ?? 'Sin evidencia'}</p>{r.issues.map(issue => <p key={issue}>{issue}</p>)}<pre>{JSON.stringify(r.checkpoint, null, 2)}</pre></div>)}</EvidenceButton>
   </>;
 }
 const metricLabels: Record<string,string> = {accuracy:'Accuracy', precision:'Precision', recall:'Sensibilidad', specificity:'Especificidad', f1:'F1', f2:'F2', roc_auc:'ROC-AUC', pr_auc:'PR-AUC', balanced_accuracy:'Balanced accuracy'};
+function ConfusionHeatmap({clinical}: {clinical: NonNullable<ClinicalEvidence['clinical']>}) {
+  const negatives = clinical.tn + clinical.fp, positives = clinical.fn + clinical.tp;
+  const cell = (label: string, count: number, total: number, correct: boolean) => <td data-correct={correct} style={{'--scc-heat': intensity(count, total)} as CSSProperties} title={`${count} de ${total} (${percent(total ? count / total : null)} de la fila)`}>{label} {count}<small>{percent(total ? count / total : null)}</small></td>;
+  return <table className="report-data-table scc-confusion"><caption>Filas reales / columnas predichas</caption><thead><tr><th>Real</th><th>No parasitada</th><th>Parasitada</th></tr></thead><tbody>
+    <tr><th>No parasitada</th>{cell('TN', clinical.tn, negatives, true)}{cell('FP', clinical.fp, negatives, false)}</tr>
+    <tr><th>Parasitada</th>{cell('FN', clinical.fn, positives, false)}{cell('TP', clinical.tp, positives, true)}</tr>
+  </tbody></table>;
+}
 export function ClinicalMetrics({data}: {data: MetricsEvidence}) {
+  const available = data.runs.filter(r => r.state === 'available' && r.clinical);
+  const recall = metricRange(data.runs, 'recall'), specificity = metricRange(data.runs, 'specificity');
+  const thresholds = [...new Set(available.map(r => r.clinical!.threshold_used))];
+  const tradeoff = available.map(r => ({name: runLabel(data.runs.indexOf(r)), index: data.runs.indexOf(r), fpr: 1 - (r.clinical!.metrics.specificity?.value ?? NaN), recall: r.clinical!.metrics.recall?.value ?? null})).filter(p => Number.isFinite(p.fpr) && p.recall != null);
   return <>
-    <div className="scc-highlights">{data.highlights.map(h => <div className="report-metric" key={h.label}><span>{h.label}</span><strong>{value(h.value)}</strong><span>{h.runs.map(runLabel).join(', ')}</span></div>)}</div>
-    <div className="report-table-scroll" tabIndex={0}><table className="report-data-table"><caption>Métricas persistidas de la evaluación seleccionada</caption><thead><tr><th>Métrica</th>{data.runs.map((r,i) => <th key={r.training_run_id}>{runLabel(i)} · {r.evaluation?.split.toUpperCase() ?? 'Sin evaluación'}</th>)}</tr></thead><tbody>
-      {Object.entries(metricLabels).map(([key,label]) => <tr key={key}><th scope="row">{label}</th>{data.runs.map(r => <td key={r.training_run_id}>{r.state === 'available' ? value(r.clinical?.metrics[key]?.value) : 'Sin evidencia atribuible'}</td>)}</tr>)}
-      {(['sample_count','threshold_used'] as const).map(key => <tr key={key}><th scope="row">{key === 'sample_count' ? 'Muestras' : 'Umbral'}</th>{data.runs.map(r => <td key={r.training_run_id}>{value(r.clinical?.[key])}</td>)}</tr>)}
-    </tbody></table></div>
-    <div className="scc-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={data.runs.filter(r => r.state === 'available').map(r => ({name: `${runLabel(data.runs.indexOf(r))} ${r.evaluation?.split.toUpperCase()}`, ...Object.fromEntries(Object.entries(r.clinical?.metrics ?? {}).map(([k,v]) => [k,v.value]))}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis domain={[0,1]} /><Tooltip /><Legend />{['recall','specificity','f2'].map((k,i) => <Bar key={k} dataKey={k} name={metricLabels[k]} fill={colors[i]} isAnimationActive={false} />)}</BarChart></ResponsiveContainer></div>
-    <h3>Matrices de confusión</h3><div className="report-comparison">{data.runs.map((r,i) => <section key={r.training_run_id} className="report-evidence"><h4>{runLabel(i)} · {r.evaluation?.split.toUpperCase()}</h4>{r.state === 'available' && r.clinical ? <table className="report-data-table"><caption>Filas reales / columnas predichas</caption><thead><tr><th>Real</th><th>No parasitada</th><th>Parasitada</th></tr></thead><tbody><tr><th>No parasitada</th><td>TN {r.clinical.tn}</td><td>FP {r.clinical.fp}</td></tr><tr><th>Parasitada</th><td>FN {r.clinical.fn}</td><td>TP {r.clinical.tp}</td></tr></tbody></table> : <p>{r.issues.join(' ') || 'Sin métricas clínicas para esta evaluación.'}</p>}<EvidenceButton title={`Protocolo y atribución · ${runLabel(i)}`} label="Protocolo y atribución"><pre>{JSON.stringify(r.evaluation, null, 2)}</pre><pre>{JSON.stringify(r.checkpoint, null, 2)}</pre></EvidenceButton></section>)}</div>
-    <p>Los valores describen esta población y este umbral; no identifican un ganador clínico universal.</p>
+    <SectionAnswer indicators={data.runs.map((r,i) => r.state === 'available' && r.clinical ? <Kpi key={r.training_run_id} run={i} label={`${runLabel(i)} · ${r.evaluation?.split.toUpperCase() ?? ''}`}
+      value={<>{percent(r.clinical.metrics.recall?.value)} <small>sens.</small> · {percent(r.clinical.metrics.specificity?.value)} <small>espec.</small></>}
+      detail={`FN ${r.clinical.fn} · FP ${r.clinical.fp} · umbral ${short(r.clinical.threshold_used)}`} /> : <Kpi key={r.training_run_id} run={i} label={runLabel(i)} value="Sin evidencia" detail={r.issues.join(' ')} />)}>
+      {available.length ? <>Sensibilidad {recall && recall.min !== recall.max ? `entre ${percent(recall.min)} y ${percent(recall.max)}` : percent(recall?.min)} y especificidad {specificity && specificity.min !== specificity.max ? `entre ${percent(specificity.min)} y ${percent(specificity.max)}` : percent(specificity?.min)} sobre {value(available[0].clinical!.sample_count)} muestras{thresholds.length > 1 ? '; cada RUN decide con su propio umbral calibrado, por lo que las métricas dependientes del umbral no son una comparación a igual punto de operación.' : '.'}</> : 'Sin métricas clínicas atribuibles en esta selección.'}
+    </SectionAnswer>
+    {data.highlights.length > 0 && <div className="scc-highlights">{data.highlights.map(h => <div className="report-metric" key={h.label}><span>{h.label}</span><strong>{value(h.value)}</strong><span>{h.runs.map(runLabel).join(', ')}</span></div>)}</div>}
+    <div className="scc-chart-grid">
+      <section aria-label="Punto de operación"><h4>Punto de operación: sensibilidad vs falsos positivos</h4>
+        <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><ScatterChart margin={{top: 16, right: 24, bottom: 8, left: 0}}><CartesianGrid strokeDasharray="3 3" /><XAxis type="number" dataKey="fpr" name="1 − especificidad" domain={[0, 'auto']} tickFormatter={v => percent(v)} /><YAxis type="number" dataKey="recall" name="Sensibilidad" domain={['auto', 1]} tickFormatter={v => percent(v)} /><Tooltip formatter={v => percent(typeof v === 'number' ? v : null)} />
+          <Scatter data={tradeoff} isAnimationActive={false}>{tradeoff.map(p => <Cell key={p.name} fill={colors[p.index % colors.length]} />)}<LabelList dataKey="name" position="top" /></Scatter>
+        </ScatterChart></ResponsiveContainer></div>
+        <p className="scc-meta">Arriba a la izquierda: más sensibilidad con menos falsos positivos. Cada punto usa el umbral de su RUN.</p></section>
+      <section aria-label="Sensibilidad, especificidad y F2"><h4>Sensibilidad, especificidad y F2</h4>
+        <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={available.map(r => ({name: `${runLabel(data.runs.indexOf(r))} ${r.evaluation?.split.toUpperCase()}`, ...Object.fromEntries(Object.entries(r.clinical?.metrics ?? {}).map(([k,v]) => [k,v.value]))}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis domain={[0,1]} /><Tooltip /><Legend />{['recall','specificity','f2'].map((k,i) => <Bar key={k} dataKey={k} name={metricLabels[k]} fill={colors[i]} isAnimationActive={false} />)}</BarChart></ResponsiveContainer></div></section>
+    </div>
+    <h4>Matrices de confusión</h4><div className="report-comparison scc-confusion-grid">{data.runs.map((r,i) => <section key={r.training_run_id} className="report-evidence"><h5>{runLabel(i)} · {r.evaluation?.split.toUpperCase()}</h5>{r.state === 'available' && r.clinical ? <ConfusionHeatmap clinical={r.clinical} /> : <p>{r.issues.join(' ') || 'Sin métricas clínicas para esta evaluación.'}</p>}<EvidenceButton title={`Protocolo y atribución · ${runLabel(i)}`} label="Protocolo y atribución"><pre>{JSON.stringify(r.evaluation, null, 2)}</pre><pre>{JSON.stringify(r.checkpoint, null, 2)}</pre></EvidenceButton></section>)}</div>
+    <details className="ds-accordion"><summary>Tabla completa de métricas persistidas</summary>
+      <div className="report-table-scroll" tabIndex={0}><table className="report-data-table"><caption>Métricas persistidas de la evaluación seleccionada</caption><thead><tr><th>Métrica</th>{data.runs.map((r,i) => <th key={r.training_run_id}>{runLabel(i)} · {r.evaluation?.split.toUpperCase() ?? 'Sin evaluación'}</th>)}</tr></thead><tbody>
+        {Object.entries(metricLabels).map(([key,label]) => <tr key={key}><th scope="row">{label}</th>{data.runs.map(r => <td key={r.training_run_id}>{r.state === 'available' ? value(r.clinical?.metrics[key]?.value) : 'Sin evidencia atribuible'}</td>)}</tr>)}
+        {(['sample_count','threshold_used'] as const).map(key => <tr key={key}><th scope="row">{key === 'sample_count' ? 'Muestras' : 'Umbral'}</th>{data.runs.map(r => <td key={r.training_run_id}>{value(r.clinical?.[key])}</td>)}</tr>)}
+      </tbody></table></div>
+    </details>
+    <p className="scc-meta">Los valores describen esta población y este umbral; no identifican un ganador clínico universal.</p>
   </>;
 }
-export function ConsensusResults({data}: {data: ConsensusEvidence}) {
+const consensusCategories: Record<string, string> = {all: 'Todas', disagreement: 'Desacuerdo', CONSENSUS_TP: 'Todos aciertan · parasitada', CONSENSUS_TN: 'Todos aciertan · no parasitada', CONSENSUS_FP: 'Todos fallan · FP', CONSENSUS_FN: 'Todos fallan · FN', high_confidence_error: 'Error de alta confianza', low_confidence: 'Cerca del umbral'};
+function PairHeatmap({title, matrix, n, diagonalTotal}: {title: string; matrix: number[][]; n: number; diagonalTotal?: boolean}) {
+  return <div className="report-table-scroll"><table className="report-data-table scc-heatmap"><caption>{title}; N = {n}</caption><thead><tr><th>RUN</th>{matrix.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{matrix.map((row,i) => <tr key={i}><th scope="row">{runLabel(i)}</th>{row.map((count,j) => <td key={j} data-diagonal={i === j} style={{'--scc-heat': intensity(count, diagonalTotal ? Math.max(...matrix.map((r, k) => r[k])) : n)} as CSSProperties}>{count} / {n}<small>{percent(n ? count / n : null)}</small></td>)}</tr>)}</tbody></table></div>;
+}
+export function ConsensusResults({data, onCategory}: {data: ConsensusEvidence; onCategory?: (category: string) => void}) {
   if (data.state !== 'available') return <p>{data.state === 'incompatible' ? 'Incompatibilidad metodológica. ' : 'Sin evidencia suficiente para este análisis. '}{data.issues?.join(' ')}</p>;
+  const summary = consensusSummary(data);
+  const runs = data.coverage?.length ?? 0;
   return <>
-    <p>{data.common_count} muestras comunes de {data.union_count} distintas · {data.label_conflicts} conflictos de etiquetas.</p>
-    <div className="scc-highlights"><div className="report-metric"><span>Oracle descriptivo</span><strong>{value((data.oracle?.ratio ?? 0)*100)} %</strong><span>{data.oracle?.numerator} / {data.oracle?.denominator}; no desplegable</span></div><div className="report-metric"><span>Todos fallan</span><strong>{data.all_wrong}</strong></div><div className="report-metric"><span>Errores de alta confianza</span><strong>{data.high_confidence_errors}</strong></div><div className="report-metric"><span>Cerca del umbral</span><strong>{data.low_confidence}</strong></div></div>
-    <div className="scc-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={Object.entries(data.distribution ?? {}).map(([category,count]) => ({category,count}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="category" tick={{fontSize: 11}} /><YAxis /><Tooltip /><Bar dataKey="count" name="Muestras" fill={colors[0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
-    {([['Acuerdo: predicciones iguales / N común', data.agreement], ['Solapamiento de errores: conteos sobre N común', data.error_overlap]] as const).map(([title, matrix]) => <div className="report-table-scroll" key={title}><table className="report-data-table"><caption>{title}; N = {data.common_count}</caption><thead><tr><th>RUN</th>{matrix?.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{matrix?.map((row,i) => <tr key={i}><th scope="row">{runLabel(i)}</th>{row.map((n,j) => <td key={j}>{n} / {data.common_count}</td>)}</tr>)}</tbody></table></div>)}
-    <div className="report-table-scroll"><table className="report-data-table"><caption>Cobertura y complementariedad por RUN</caption><thead><tr><th>RUN</th><th>Población</th><th>Comunes</th><th>Faltantes</th><th>Exclusivas</th><th>Errores exclusivos</th><th>Aciertos exclusivos</th></tr></thead><tbody>{data.coverage?.map((c,i) => <tr key={i}><th>{runLabel(i)}</th><td>{c.population}</td><td>{c.common}</td><td>{c.missing}</td><td>{c.exclusive}</td><td>{data.exclusive_errors?.[i]}</td><td>{data.exclusive_correct?.[i]}</td></tr>)}</tbody></table></div>
+    <SectionAnswer indicators={<>
+      <Kpi label="Oracle descriptivo" value={percent(data.oracle?.ratio)} detail={`${data.oracle?.numerator} / ${data.oracle?.denominator}; no desplegable`} />
+      <Kpi label="Todos fallan" value={data.all_wrong} detail="Candidatas a revisión de etiqueta o imagen" />
+      <Kpi label="Errores de alta confianza" value={data.high_confidence_errors} />
+      <Kpi label="Cerca del umbral" value={data.low_confidence} />
+    </>}>
+      N común = {data.common_count} muestras de {data.union_count} distintas · {data.label_conflicts} conflictos de etiquetas.{runs > 1 && summary.agreementRange && <> Los RUN coinciden en {percent(summary.agreementRange.min)}–{percent(summary.agreementRange.max)} de las predicciones.</>}{summary.fewestSharedErrors && <> El par con menos errores compartidos es {runLabel(summary.fewestSharedErrors.i)}–{runLabel(summary.fewestSharedErrors.j)} ({summary.fewestSharedErrors.count} muestras): es el par más complementario.</>}
+    </SectionAnswer>
+    <div className="scc-chart-grid">
+      <section aria-label="Distribución por categoría"><h4>Distribución por categoría</h4>
+        <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={Object.entries(data.distribution ?? {}).map(([category,count]) => ({category, label: consensusCategories[category] ?? category, count}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" tick={{fontSize: 11}} interval={0} /><YAxis /><Tooltip /><Bar dataKey="count" name="Muestras" fill={colors[0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
+        {onCategory && <div className="scc-category-chips" role="group" aria-label="Filtrar muestras por categoría">{Object.entries(data.distribution ?? {}).map(([category, count]) => <button key={category} type="button" className="ds-button" data-size="compact" onClick={() => onCategory(category)}>{consensusCategories[category] ?? category} · {count}</button>)}</div>}</section>
+      {runs > 0 && <section aria-label="Aciertos y errores exclusivos"><h4>Aciertos y errores exclusivos por RUN</h4>
+        <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={(data.coverage ?? []).map((_, i) => ({name: runLabel(i), correct: data.exclusive_correct?.[i] ?? 0, errors: data.exclusive_errors?.[i] ?? 0}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Legend /><Bar dataKey="correct" name="Aciertos exclusivos" fill={colors[1]} isAnimationActive={false} /><Bar dataKey="errors" name="Errores exclusivos" fill={colors[3]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
+        <p className="scc-meta">Acierto exclusivo: solo ese RUN acierta. Error exclusivo: solo ese RUN falla.</p></section>}
+    </div>
+    {runs > 1 && <div className="scc-chart-grid">
+      {data.agreement && <PairHeatmap title="Acuerdo: predicciones iguales / N común" matrix={data.agreement} n={data.common_count ?? 0} />}
+      {data.error_overlap && <PairHeatmap title="Solapamiento de errores: conteos sobre N común" matrix={data.error_overlap} n={data.common_count ?? 0} diagonalTotal />}
+    </div>}
+    <EvidenceButton title="Cobertura y complementariedad por RUN" label="Cobertura por RUN"><div className="report-table-scroll"><table className="report-data-table"><caption>Cobertura y complementariedad por RUN</caption><thead><tr><th>RUN</th><th>Población</th><th>Comunes</th><th>Faltantes</th><th>Exclusivas</th><th>Errores exclusivos</th><th>Aciertos exclusivos</th></tr></thead><tbody>{data.coverage?.map((c,i) => <tr key={i}><th>{runLabel(i)}</th><td>{c.population}</td><td>{c.common}</td><td>{c.missing}</td><td>{c.exclusive}</td><td>{data.exclusive_errors?.[i]}</td><td>{data.exclusive_correct?.[i]}</td></tr>)}</tbody></table></div></EvidenceButton>
     <EvidenceButton title="Fórmulas y denominadores del consenso" label="Fórmulas y denominadores">{Object.entries(data.definitions ?? {}).map(([k,v]) => <p key={k}>{v}</p>)}</EvidenceButton>
-    <div className="report-table-scroll" tabIndex={0}><table className="report-data-table"><caption>Muestras · {data.total} resultados del filtro</caption><thead><tr><th>Muestra</th><th>Clase real</th><th>Categoría</th>{data.coverage?.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{data.samples?.map(s => <tr key={s.sample}><th scope="row"><details><summary>{s.sample.split('/').pop()}</summary><code>{s.sample}</code><CopyText text={s.sample} label="Copiar muestra" /></details></th><td>{s.label === 1 ? 'Parasitada' : 'No parasitada'}</td><td>{s.category}</td>{s.runs.map((r,i) => <td key={i}>{value(r.score)} · {r.correct ? 'Acierto' : 'Error'} · clase {r.prediction}</td>)}</tr>)}</tbody></table></div>
+    <div className="report-table-scroll" tabIndex={0}><table className="report-data-table"><caption>Muestras · {data.total} resultados del filtro</caption><thead><tr><th>Muestra</th><th>Clase real</th><th>Categoría</th>{data.coverage?.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{data.samples?.map(s => <tr key={s.sample}><th scope="row"><details><summary>{s.sample.split('/').pop()}</summary><code>{s.sample}</code><CopyText text={s.sample} label="Copiar muestra" /></details></th><td>{s.label === 1 ? 'Parasitada' : 'No parasitada'}</td><td>{s.category}</td>{s.runs.map((r,i) => <td key={i} data-correct={r.correct}>{value(r.score)} · {r.correct ? 'Acierto' : 'Error'} · clase {r.prediction}</td>)}</tr>)}</tbody></table></div>
   </>;
 }
 export function CurvesModule(props: ModuleProps) {
@@ -134,7 +236,7 @@ export function MetricsModule(props: ModuleProps) {
 export function ConsensusModule(props: ModuleProps) {
   const [offset, setOffset] = useState(0);
   const [category, setCategory] = useState('disagreement');
-  return <LazyScientificModule<ConsensusEvidence> {...props} title="Consenso y desacuerdos" module="consensus" params={{offset, category}}>{data => <><label>Filtrar muestras<select className="ds-control" value={category} onChange={e => {setCategory(e.target.value); setOffset(0);}}>{['all','disagreement','CONSENSUS_TP','CONSENSUS_TN','CONSENSUS_FP','CONSENSUS_FN','high_confidence_error','low_confidence'].map(c => <option key={c}>{c}</option>)}</select></label><ConsensusResults data={data} />{data.state === 'available' && <nav aria-label="Páginas de muestras"><button className="ds-button" disabled={offset === 0} onClick={() => setOffset(n => Math.max(0,n-25))}>Anterior</button><span>Página {Math.floor(offset/25)+1}</span><button className="ds-button" disabled={offset+25 >= (data.total ?? 0)} onClick={() => setOffset(n => n+25)}>Siguiente</button></nav>}</>}</LazyScientificModule>;
+  return <LazyScientificModule<ConsensusEvidence> {...props} title="Consenso y desacuerdos" module="consensus" params={{offset, category}}>{data => <><label>Filtrar muestras<select className="ds-control" value={category} onChange={e => {setCategory(e.target.value); setOffset(0);}}>{Object.entries(consensusCategories).map(([c, label]) => <option key={c} value={c}>{label}</option>)}</select></label><ConsensusResults data={data} onCategory={c => {setCategory(c); setOffset(0);}} />{data.state === 'available' && <nav aria-label="Páginas de muestras"><button className="ds-button" disabled={offset === 0} onClick={() => setOffset(n => Math.max(0,n-25))}>Anterior</button><span>Página {Math.floor(offset/25)+1}</span><button className="ds-button" disabled={offset+25 >= (data.total ?? 0)} onClick={() => setOffset(n => n+25)}>Siguiente</button></nav>}</>}</LazyScientificModule>;
 }
 export function ScientificResults(props: ModuleProps) {
   return <><CurvesModule {...props} /><MetricsModule {...props} /><ConsensusModule {...props} /></>;
@@ -153,7 +255,8 @@ export function ScientificRepresentations(props: ModuleProps) {
   </>}</LazyScientificModule>;
 }
 
-export function PersistedXAI({selection, datasource, active}: {selection: RequestedSelection; datasource: string; active: boolean}) {
+// attemptIds: EXPLAIN chosen in the RUN card; they are shown even when their split or checkpoint identifier differs, with a notice.
+export function PersistedXAI({selection, datasource, active, attemptIds}: {selection: RequestedSelection; datasource: string; active: boolean; attemptIds?: string[]}) {
   const cache = useMemo(createComparisonCache, [datasource, selection.training_run_id]);
   const [revision, setRevision] = useState(0);
   const [attempt, setAttempt] = useState('');
@@ -161,20 +264,20 @@ export function PersistedXAI({selection, datasource, active}: {selection: Reques
   const [rowPage, setRowPage] = useState(0);
   const visible = useRef(active);
   visible.current = active;
-  const choices = useComparisonEvidence(cache, JSON.stringify(['xai-list', datasource, selection, revision]), async () => {
+  const choices = useComparisonEvidence(cache, JSON.stringify(['xai-list', datasource, selection, attemptIds, revision]), async () => {
     const all: import('../../types/api').AssessmentChoice[] = [];
     for (let page = 0; ; page += 100) {
       if (!visible.current) throw new Error('Consulta pausada al cerrar XAI.');
       const response = await api.getTrainingAssessments(selection.training_run_id, page);
       if (response.items.some(r => r.training_run_id !== selection.training_run_id)) throw new Error('Linaje incompatible');
-      all.push(...response.items.filter(r => r.kind === 'explain' && r.checkpoint_artifact_id === selection.checkpoint_artifact_id && (!selection.split || r.split === selection.split)));
+      all.push(...response.items.filter(r => r.kind === 'explain' && (attemptIds ? attemptIds.includes(r.attempt_id) : r.checkpoint_artifact_id === selection.checkpoint_artifact_id && (!selection.split || r.split === selection.split))));
       if (response.items.length < 100) return all;
     }
   }, active);
   const selected = choices.data?.find(r => r.attempt_id === attempt) ?? choices.data?.[0];
   const detail = useComparisonEvidence(cache, selected ? JSON.stringify(['xai-detail', selected.attempt_id, revision]) : null, async () => {
     const response = await api.getAssessment(selected!.attempt_id);
-    if (response.training_run_id !== selection.training_run_id || response.id !== selected!.attempt_id || response.kind !== 'explain' || response.identity.model.checkpoint_artifact_id !== selection.checkpoint_artifact_id) throw new Error('Linaje incompatible');
+    if (response.training_run_id !== selection.training_run_id || response.id !== selected!.attempt_id || response.kind !== 'explain' || (!attemptIds && response.identity.model.checkpoint_artifact_id !== selection.checkpoint_artifact_id)) throw new Error('Linaje incompatible');
     return response;
   }, active);
   const artifacts = useComparisonEvidence(cache, detail.data ? JSON.stringify(['xai-artifacts', detail.data.id, offset, revision]) : null,
@@ -183,7 +286,9 @@ export function PersistedXAI({selection, datasource, active}: {selection: Reques
   return <section>
     {choices.loading || detail.loading || artifacts.loading ? <p role="status">Consultando explicaciones persistidas…</p> : null}
     {choices.error || detail.error || artifacts.error ? <p role="alert">Error al consultar explicaciones. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}
-    {choices.data?.length === 0 && <p>No hay explicaciones compatibles para esta selección.</p>}
+    {choices.data?.length === 0 && <p>{attemptIds ? 'Este RUN no tiene EXPLAIN registrado.' : 'No hay explicaciones compatibles para esta selección.'}</p>}
+    {selected && selection.split && selected.split !== selection.split && <p className="ds-callout" data-tone="warning">EXPLAIN sobre {selected.split.toUpperCase()}; la evaluación del análisis es {selection.split.toUpperCase()}. Las explicaciones describen el mismo TRAIN, pero no la población evaluada.</p>}
+    {selected && selection.checkpoint_artifact_id && selected.checkpoint_artifact_id !== selection.checkpoint_artifact_id && <p className="ds-callout" data-tone="warning">El EXPLAIN registra otro identificador de checkpoint que la evaluación seleccionada; verifica el SHA-256 en Trazabilidad antes de atribuirlo al mismo archivo.</p>}
     {choices.data && choices.data.length > 0 && <label>Explicación persistida<select className="ds-control" value={selected?.attempt_id ?? ''} onChange={e => {setAttempt(e.target.value); setOffset(0); setRowPage(0);}}>{choices.data.map((c,i) => <option value={c.attempt_id} key={c.attempt_id}>{i+1} · {c.split.toUpperCase()} · {c.state} · {new Date(c.started_at).toLocaleString('es-CL')}</option>)}</select></label>}
     {active && rows.slice(rowPage*5,rowPage*5+5).map(row => <XAIComparisonViewer key={row.id} comparison={row} datasource={datasource} />)}
     {rows.length > 5 && <nav aria-label="Muestras XAI"><button className="ds-button" disabled={!rowPage} onClick={() => setRowPage(n => n-1)}>Muestras anteriores</button><button className="ds-button" disabled={(rowPage+1)*5 >= rows.length} onClick={() => setRowPage(n => n+1)}>Muestras siguientes</button></nav>}

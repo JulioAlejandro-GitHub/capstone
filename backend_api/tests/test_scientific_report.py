@@ -13,6 +13,7 @@ from app.services.scientific_report import (
     checkpoint_evidence,
     consensus,
     population_coverage,
+    superiority_answer,
     validate_samples,
 )
 from fastapi import HTTPException
@@ -231,3 +232,11 @@ async def test_report_permission_failure_happens_before_read(monkeypatch):
         assert response.status_code == 403
     finally:
         app.dependency_overrides.pop(current_principal, None)
+
+
+def test_superiority_answer_matches_evaluated_split():
+    assert 'Las métricas TEST' in superiority_answer({'test'})
+    assert 'McNemar' in superiority_answer({'test'})
+    assert superiority_answer({'val'}) == 'No se infiere generalización TEST ni superioridad estadística desde VALIDATION.'
+    assert 'VALIDATION' in superiority_answer({'val', 'test'})
+    assert 'Sin evaluación atribuible común' in superiority_answer(set())

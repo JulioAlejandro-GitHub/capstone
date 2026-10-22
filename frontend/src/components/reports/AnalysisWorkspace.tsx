@@ -81,3 +81,11 @@ export function EvidenceButton({ title, label = 'Evidencia', children }: { title
   return <button type="button" className="ds-button scc-evidence-button" data-size="compact" aria-haspopup="dialog"
     title={title} onClick={event => open({ title, content: children }, event.currentTarget)}>ⓘ {label}</button>;
 }
+
+// Answer first: one sentence and a few indicators before charts and tables.
+export function SectionAnswer({ children, indicators }: { children: ReactNode; indicators?: ReactNode }) {
+  return <div className="scc-answer" role="note"><p className="scc-answer-text">{children}</p>{indicators && <div className="scc-kpis">{indicators}</div>}</div>;
+}
+export function Kpi({ label, value, detail, run }: { label: string; value: ReactNode; detail?: ReactNode; run?: number }) {
+  return <div className="scc-kpi" data-run={run}><span>{label}</span><strong>{value}</strong>{detail && <small>{detail}</small>}</div>;
+}

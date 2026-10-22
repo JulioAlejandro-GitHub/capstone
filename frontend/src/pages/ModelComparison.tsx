@@ -5,6 +5,7 @@ import { useAuth } from '../auth';
 import { ScientificPreflight } from '../components/reports/ScientificPreflight';
 import { useCallback, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { defaultEvaluationSlot, evaluationSlots, type EvaluationSlot } from '../utils/lineageSlots';
 import { TraceabilityProvider, defaultAnalysisSection, isAnalysisSection, type AnalysisSection } from '../components/reports/AnalysisWorkspace';
 import { useComparisonCatalog } from '../hooks/useComparisonCatalog';
 import { useComparisonSelection } from '../hooks/useComparisonSelection';
@@ -27,6 +28,10 @@ function ComparisonPage({ datasource }: { datasource: string }) {
   const [query, setQuery] = useState('');
   const [selectorLoaded, setSelectorLoaded] = useState(false);
   const [trayOpen, setTrayOpen] = useState(true);
+  const [protocol, setProtocol] = useState<EvaluationSlot>(defaultEvaluationSlot);
+  const [explains, setExplains] = useState<Record<string, string[]>>({});
+  const onExplain = useCallback((id: string, attemptIds: string[]) => setExplains(previous =>
+    previous[id]?.join(',') === attemptIds.join(',') ? previous : { ...previous, [id]: attemptIds }), []);
   const [search, setSearch] = useSearchParams();
   const requested = search.get('seccion');
   const section: AnalysisSection = isAnalysisSection(requested) ? requested : defaultAnalysisSection;
@@ -67,16 +72,20 @@ function ComparisonPage({ datasource }: { datasource: string }) {
     <p role="status">{ids.length < 2 ? ids.length === 1 ? 'Todavía no existe una comparación configurada: con un TRAIN se analiza qué aprendió el modelo; añade otro para comparar.' : 'Todavía no existe una comparación configurada. Selecciona al menos dos TRAIN.' : 'Selección preparada para consultar evidencia científica.'}
       {maximum !== undefined && !available ? ' Capacidad máxima alcanzada.' : ''}
       {maximum !== undefined && ids.length > maximum ? ' La configuración cambió: quita ejecuciones para respetar el máximo actual.' : ''}</p>
+    {ids.length > 0 && <fieldset className="scc-protocol"><legend>Evaluación del análisis</legend>
+      {evaluationSlots.map(slot => <label key={slot.id}><input type="radio" name="scc-protocol" checked={protocol === slot.id} onChange={() => setProtocol(slot.id)} /><span><strong>{slot.label}</strong><small>{slot.detail}</small></span></label>)}
+      <p className="scc-meta">Se aplica a todos los RUN; en cada tarjeta puedes elegir otra ejecución, que queda marcada como distinta al análisis.</p>
+    </fieldset>}
     <div className="report-comparison" id="scc-run-tray" hidden={!trayOpen}>
       {ids.map((id, index) => {
         const choice = choices.find(item => item.run.training_run_id === id);
         return <ComparisonRunCard key={`${datasource}:${id}`} id={id} index={index} datasource={datasource}
-          modelName={choice?.model.model_name} architecture={choice?.model.architecture} onRemove={() => remove(id)}><EvaluationNavigation id={id} datasource={datasource} onChange={onEvaluation} /></ComparisonRunCard>;
+          modelName={choice?.model.model_name} architecture={choice?.model.architecture} onRemove={() => remove(id)}><EvaluationNavigation id={id} datasource={datasource} protocol={protocol} onChange={onEvaluation} onExplainChange={onExplain} /></ComparisonRunCard>;
       })}
       {Array.from({ length: available }, (_, index) => <button key={index} className="ds-button scc-empty-slot"
         onClick={event => openSelector(event.currentTarget)}><strong>＋ Añadir RUN</strong><span>Espacio {ids.length + index + 1} disponible</span></button>)}
     </div>
-    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} />
+    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} explains={explains} />
     <dialog ref={dialog} className="report-viewer scc-run-selector" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
       <div className="ds-page-header"><h2 id="scc-selector-title">Seleccionar ejecuciones TRAIN</h2>
         <button className="ds-button" onClick={() => dialog.current?.close()}>Cerrar</button></div>

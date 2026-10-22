@@ -208,8 +208,9 @@ test('evaluation navigation defaults to latest and retains historical identity w
   assert.equal(applied[0].evaluation.evaluation_id, 'e1');
   assert.equal(applied[0].evaluation.source, 'evaluations');
   assert.equal(applied[0].evaluation.attempt_id, undefined);
-  const nav = find(tree, n => n.type === 'nav');
-  nodes(nav).filter(n => n.type === 'button')[1].props.onClick(); render();
+  const menu = find(tree, n => typeof n.type === 'function' && n.type.name === 'SlotChoice' && n.props.label === 'TRAIN · VAL');
+  assert.equal(menu.props.items.length, 2);
+  menu.props.onPick('e2'); render();
   assert.equal(applied.at(-1).evaluation.evaluation_id, 'e2');
   assert.equal(applied.at(-1).checkpoint_artifact_id, 'c2'); assert.equal(calls,1);
   h.dispose();
@@ -390,7 +391,7 @@ test('one evaluation needs no pagination and absence is specific', async () => {
   const {EvaluationNavigation}=load('components/reports/ScientificReport.tsx');
   const props={id:'a', datasource:'malaria', onChange() {}};
   h.render(() => EvaluationNavigation(props)); await flush(); const tree=h.render(() => EvaluationNavigation(props));
-  assert.equal(find(tree,n => n.type === 'nav'),undefined); h.dispose();
+  assert.equal(find(tree,n => typeof n.type === 'function' && n.type.name === 'SlotChoice' && n.props.label === 'TRAIN · VAL').props.items.length,1); h.dispose();
 });
 
 test('scalar rows have no expansion and groups retain requested defaults', () => {
@@ -413,8 +414,12 @@ test('Recharts curves retain missing values, distinguish TRAIN and VAL and refer
   assert.ok(nodes(tree).some(n=>n.props?.x === 1 && n.props?.label === 'Checkpoint RUN A'));
   const chart=find(tree,n=>Array.isArray(n.props?.data) && n.props.data[0]?.epoch === 1);
   assert.equal(chart.props.data[1].epoch,2); assert.equal(chart.props.data[1].r0_loss,undefined);
-  const lines=nodes(tree).filter(n=>n.props?.connectNulls === false);
-  assert.equal(lines.length,4); assert.ok(lines.some(n=>n.props.strokeDasharray)); assert.ok(lines.every(n=>n.props.isAnimationActive === false)); h.dispose();
+  let lines=nodes(tree).filter(n=>n.props?.connectNulls === false);
+  assert.equal(lines.length,2); assert.ok(lines.some(n=>n.props.strokeDasharray)); assert.ok(lines.every(n=>n.props.isAnimationActive === false));
+  assert.deepEqual(lines.map(n=>n.props.dataKey),['r0_loss','r0_val_loss']);
+  find(tree,n=>n.type === 'button' && n.props.role === 'tab' && n.props.children === 'Accuracy').props.onClick(); tree=h.render(()=>TrainingCurves({data}));
+  lines=nodes(tree).filter(n=>n.props?.connectNulls === false);
+  assert.deepEqual(lines.map(n=>n.props.dataKey),['r0_accuracy','r0_val_accuracy']); h.dispose();
 });
 
 test('clinical metrics preserve nulls, confusion orientation and backend highlights', () => {
@@ -428,7 +433,7 @@ test('consensus shows backend results and a bounded sample page without client c
   const {ConsensusResults}=loader()('components/reports/ScientificReport.tsx');
   const data={state:'available',common_count:3,union_count:3,label_conflicts:0,coverage:[{population:3,common:3,missing:0,exclusive:0}],oracle:{numerator:2,denominator:3,ratio:2/3},all_wrong:1,distribution:{CONSENSUS_FN:1},agreement:[[3]],error_overlap:[[1]],samples:[{sample:'val/example.png',label:1,category:'CONSENSUS_FN',runs:[{score:.1,prediction:0,correct:false}]}],total:1};
   const html=renderToStaticMarkup(React.createElement(ConsensusResults,{data}));
-  for(const expected of ['Oracle descriptivo','no desplegable','example.png','CONSENSUS_FN','Error','N = 3']) assert.ok(html.includes(expected),expected);
+  for(const expected of ['Oracle descriptivo','no desplegable','example.png','CONSENSUS_FN','Error','N común = 3']) assert.ok(html.includes(expected),expected);
 });
 
 test('section 01 equality is structural, position independent and excludes missing evidence', () => {
@@ -864,4 +869,35 @@ test('consenso usa un timeout mayor que el valor por defecto de 15 s', () => {
   assert.match(report, /api\.getComparisonReport<T>\(datasource, \{module, selections, \.\.\.params\}, MODULE_TIMEOUT_MS\[module\]\)/);
   assert.match(apiSource, /getComparisonReport<T>\(datasource: string, body: ReportRequest, timeoutMs\?: number\)/);
   assert.match(apiSource, /body: JSON\.stringify\(body\) \},\s*timeoutMs,/);
+});
+
+test('analysis summaries split base and fine-tuning epochs and find the most complementary pair', () => {
+  const { curveSummary, consensusSummary, metricRange } = loader()('utils/analysisSummaries.ts');
+  const run = {training_run_id:'a', executed_epochs:6, final_epoch:6, max_epochs:3, fine_tune_epochs:3, issues:[],
+    epochs:[1,2,3].map(epoch=>({epoch, phase:'base', values:{loss:.5, val_loss:.7}})).concat([4,5,6].map(epoch=>({epoch, phase:'fine_tuning', values:{loss:.2, val_loss:.6}}))),
+    checkpoint:{selected_epoch:2, phase:'base', logical_lineage:true}};
+  const summary = curveSummary(run);
+  assert.equal(summary.baseExecuted,3); assert.equal(summary.fineExecuted,3); assert.equal(summary.configuredTotal,6);
+  assert.equal(summary.baseCheckpointAfterFineTuning,true); assert.ok(Math.abs(summary.gap-.2) < 1e-9);
+  const consensus = consensusSummary({common_count:10, agreement:[[10,8,9],[8,10,7],[9,7,10]], error_overlap:[[3,2,1],[2,4,2],[1,2,3]]});
+  assert.deepEqual({...consensus.fewestSharedErrors}, {i:0,j:2,count:1});
+  assert.deepEqual({...consensus.agreementRange}, {min:.7,max:.9});
+  assert.deepEqual({...metricRange([{state:'available',clinical:{metrics:{recall:{value:.9}}}},{state:'missing'},{state:'available',clinical:{metrics:{recall:{value:.95}}}}],'recall')}, {min:.9,max:.95});
+});
+
+test('lineage slots apply the analysis protocol, fall back when a RUN lacks it and group EXPLAIN by method', () => {
+  const { groupEvaluations, effectiveSlot, groupExplanations } = loader()('utils/lineageSlots.ts');
+  const choice = (split, role, id) => ({evaluation_id: role === 'independent_evaluate' ? null : id, attempt_id: role === 'independent_evaluate' ? id : null, split, evaluation_role: role, created_at: '2026-10-21'});
+  const groups = groupEvaluations([choice('test','independent_evaluate','t1'), choice('val','independent_evaluate','v1'), choice('val','training_validation_final','h1'), choice('val','calibration_default','h2')]);
+  assert.equal(groups.test.map(c => c.attempt_id).join(), ['t1'].join());
+  assert.equal(groups.val.map(c => c.attempt_id).join(), ['v1'].join());
+  assert.equal(groups.train.map(c => c.evaluation_id).join(), ['h1','h2'].join());
+  assert.equal(effectiveSlot(groups, 'test', null), 'test');
+  assert.equal(effectiveSlot(groups, 'test', 'train'), 'train');
+  const noTest = groupEvaluations([choice('val','independent_evaluate','v1')]);
+  assert.equal(effectiveSlot(noTest, 'test', null), 'val');
+  assert.equal(effectiveSlot(groupEvaluations([]), 'test', null), null);
+  const explains = groupExplanations([{attempt_id:'old', method:'gradcam', started_at:'2026-10-20'}, {attempt_id:'new', method:'Grad-CAM', started_at:'2026-10-21'}, {attempt_id:'s', method:'shap', started_at:'2026-10-21'}]);
+  assert.equal(explains.gradcam.map(c => c.attempt_id).join(), ['new','old'].join());
+  assert.equal(explains.shap.map(c => c.attempt_id).join(), ['s'].join());
 });

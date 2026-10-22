@@ -133,6 +133,16 @@ def consensus(populations, thresholds, offset=0, limit=25, category='all'):
                     'coverage': 'N común / muestras únicas de cada RUN; faltantes relativos a la unión.'})
 
 
+def superiority_answer(splits: set) -> str:
+    # The answer must match the evaluated population: TEST is descriptive, VAL also selected the checkpoint.
+    if splits == {'test'}:
+        return ('Las métricas TEST describen esta población y estos umbrales; sin una prueba pareada acreditada '
+                '(p. ej. McNemar o bootstrap) no se infiere superioridad clínica ni estadística.')
+    if 'val' in splits:
+        return 'No se infiere generalización TEST ni superioridad estadística desde VALIDATION.'
+    return 'Sin evaluación atribuible común: no se infiere superioridad clínica.'
+
+
 class ScientificReportService:
     def __init__(self, repository=None, transaction=None):
         self.repository = repository or ScientificReadRepository()
@@ -282,7 +292,7 @@ class ScientificReportService:
                         config = repo.preflight_configuration(connection, s.training_run_id) or {}
                         data.append({'training_run_id': s.training_run_id, 'epochs': sorted(epochs, key=lambda e: e['epoch']) if not issues else [],
                                          'executed_epochs': len(events), 'final_epoch': max(seen) if seen else None,
-                                         'max_epochs': config.get('max_epochs'), 'loss_definition': config.get('loss_function'),
+                                         'max_epochs': config.get('max_epochs'), 'fine_tune_epochs': config.get('fine_tune_epochs'), 'loss_definition': config.get('loss_function'),
                                          'metrics_definition': ((config.get('extension_configuration') or {}).get('recipe') or {}).get('metrics'),
                                          'checkpoint': checkpoint_evidence(repo.comparison_checkpoint(connection, s.training_run_id), s.training_run_id), 'issues': issues})
                 else:
@@ -326,7 +336,7 @@ class ScientificReportService:
                         if request.module == 'questions':
                             data = {'consensus': data, 'answers': [
                                 'El oracle cubre ' + str(data['oracle']['numerator']) + ' de ' + str(data['oracle']['denominator']) + ' muestras comunes; no es un modelo desplegable.' if data.get('oracle') else 'Faltan predicciones compatibles y reconciliadas para medir complementariedad.',
-                                'No se infiere generalización TEST ni superioridad estadística desde VALIDATION.',
+                                superiority_answer(split_set),
                                 'Las explicaciones visuales requieren artefactos atribuidos a muestra, método y checkpoint.']}
         except SQLAlchemyError:
             raise HTTPException(503, 'Error de consulta de evidencia científica; puede reintentar.') from None
