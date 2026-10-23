@@ -1,4 +1,4 @@
-"""Host GPU executor for EXPLAIN requested from the report (launchd label cl.capstone.explain-agent).
+"""Host GPU executor for EXPLAIN (and REPRESENT) requested from the report (launchd label cl.capstone.explain-agent).
 
 Runs on macOS with `.venv-metal`: the same bootstrap as the local TRAIN launcher (PostgreSQL on loopback,
 GPU required, accelerator canary), then claims `explain_requests` with SKIP LOCKED. Each request runs in a
@@ -99,8 +99,11 @@ def recover(queue: ExplainQueue, host: str, absent: Callable[[dict], bool]) -> i
 def serve_one(queue: ExplainQueue, job: dict[str, Any], execute: Callable[..., None], safe_code: Callable[[BaseException], str]) -> str:
     """Execute one claimed request; the request row always ends completed or failed."""
     from app.schemas.explain_generation import ExplainRequest
+    from app.schemas.representation_generation import RepresentRequest
     try:
-        request = ExplainRequest.model_validate(job['request'])
+        # REPRESENT rows share the queue; EXPLAIN requests forbid the extra 'operation' field.
+        model = RepresentRequest if job['request'].get('operation') == 'represent' else ExplainRequest
+        request = model.model_validate(job['request'])
         execute(request, job['actor'], lambda operations: queue.acknowledge(job['id'], operations))
     except InterruptedError:
         queue.finish(job['id'], 'failed', 'EXPLAIN_HOST_EXECUTOR_INTERRUPTED')
@@ -169,6 +172,9 @@ def run_job(request_id: str) -> int:
     from app.services.explain_codes import safe_code
     from app.services.explain_execution import run_batch
     from app.services.explain_generation import ExplainService
+    from app.repositories.representation_queries import RepresentQueries
+    from app.schemas.representation_generation import RepresentRequest
+    from app.services.representation_generation import RepresentService, run_represent
     signal.signal(signal.SIGTERM, _stop)
     queue = ExplainQueue(get_engine())
     job = queue.job(request_id)
@@ -176,7 +182,13 @@ def run_job(request_id: str) -> int:
         return 0
     service = ExplainService(ExplainQueries())
     root = str(PROJECT_ROOT / 'artifacts/assessments')
-    result = serve_one(queue, job, lambda request, actor, acknowledge: run_batch(request, service, actor, acknowledge, root), safe_code)
+
+    def execute(request: Any, actor: str, acknowledge: Callable[[list[dict]], None]) -> None:
+        if isinstance(request, RepresentRequest):
+            run_represent(request, RepresentService(RepresentQueries()), actor, acknowledge, root)
+        else:
+            run_batch(request, service, actor, acknowledge, root)
+    result = serve_one(queue, job, execute, safe_code)
     return 0 if result == 'completed' else 1
 
 

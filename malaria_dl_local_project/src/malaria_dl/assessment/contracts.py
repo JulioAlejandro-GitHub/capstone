@@ -119,8 +119,10 @@ def identity(
     batch_size,
     explanation=None,
     evaluation=None,
+    representation=None,
 ):
     validate_split_protocol(split, purpose, protocol)
+    require(explanation is None or representation is None, "REPRESENTATION_EXPLANATION_CONFLICT")
     require(
         type(seed) is int and type(batch_size) is int and batch_size > 0,
         "INFERENCE_OPTIONS_INVALID",
@@ -143,7 +145,7 @@ def identity(
         )
     result = {
         "schema": "assessment_identity_v1",
-        "kind": "explain" if explanation else "evaluate",
+        "kind": "explain" if explanation else "represent" if representation else "evaluate",
         "model": deepcopy(binding),
         "dataset": deepcopy(dataset),
         "samples": ordered,
@@ -158,6 +160,9 @@ def identity(
         "explanation": explanation,
         "evaluation": evaluation,
     }
+    if representation:
+        # Only REPRESENT carries the key: historical EVALUATE/EXPLAIN identities and hashes stay unchanged.
+        result["representation"] = deepcopy(representation)
     # File location remains evidence, not a reason to reuse a different binary/sample population.
     canonical(result)  # rejects non-finite JSON
     return result

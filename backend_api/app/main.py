@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.observability import configure_logging, correlation_id_context, request_context_middleware
-from app.routes import scientific_preflight, explain_generation, campaigns, local_execution, assessments, analysis, artifacts, auth, catalog, cell_analysis, cell_classification, dashboard, dataset, dataset_versions, explainability, governance, health, metrics, observability, predictions, runs, scientific, scientific_validation, users
+from app.routes import scientific_preflight, explain_generation, representation_generation, campaigns, local_execution, assessments, analysis, artifacts, auth, catalog, cell_analysis, cell_classification, dashboard, dataset, dataset_versions, explainability, governance, health, metrics, observability, predictions, runs, scientific, scientific_validation, users
 
 
 settings = get_settings()
@@ -53,7 +53,7 @@ async def internal_error(_: Request, __: Exception):
     return error_response(500, "INTERNAL_ERROR", "Error interno.")
 
 
-for router in (scientific_preflight.router, explain_generation.router, campaigns.router, local_execution.router, assessments.router, health.router, auth.router,
+for router in (scientific_preflight.router, explain_generation.router, representation_generation.router, campaigns.router, local_execution.router, assessments.router, health.router, auth.router,
                users.me_router, users.router, dashboard.router, runs.router, catalog.router, dataset.router,
                dataset_versions.router,
                metrics.router, explainability.router, predictions.router, observability.router,

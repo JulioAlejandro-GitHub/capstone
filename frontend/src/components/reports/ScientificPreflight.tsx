@@ -1,5 +1,6 @@
 import { DatasetIntegrity } from './DatasetIntegrity';
-import { CurvesModule, MetricsModule, ConsensusModule, ScientificQuestions, ScientificRepresentations, PersistedXAI } from './ScientificReport';
+import { CurvesModule, MetricsModule, ConsensusModule, ScientificQuestions, PersistedXAI } from './ScientificReport';
+import { ScientificRepresentations } from './ScientificRepresentations';
 import { AnalysisPanel, AnalysisSectionNav, analysisSections, defaultAnalysisSection, useVisitedSections, type AnalysisSection } from './AnalysisWorkspace';
 import { ComparisonPython, configurationLabels, CopyText } from './ComparisonPython';
 import { Fragment, useMemo, useState } from 'react';
@@ -394,7 +395,7 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
     <AnalysisPanel id="desempeno" section={section} visited={visited}><MetricsModule {...moduleProps} active={section === 'desempeno'} /></AnalysisPanel>
     <AnalysisPanel id="errores" section={section} visited={visited}><ConsensusModule {...moduleProps} active={section === 'errores'} onExplain={sample => focus(sample, 'explicabilidad')} /></AnalysisPanel>
     <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} explains={explains} canGenerate={canGenerate} onGenerated={onGenerated} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} focusSample={focusSample} onFocus={sample => focus(sample)} /></AnalysisPanel>
-    <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} active={section === 'representaciones'} /></AnalysisPanel>
+    <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} canGenerate={canGenerate} active={section === 'representaciones'} /></AnalysisPanel>
     <AnalysisPanel id="trazabilidad" section={section} visited={visited}>{data ? <PreflightEvidence data={data} /> : <p>{ids.length === 1 ? 'RUN individual seleccionado. Sus resultados permanecen disponibles; el preflight comparativo requiere al menos dos TRAIN.' : 'El detalle utiliza la misma consulta del resumen metodológico.'}</p>}</AnalysisPanel>
   </>;
 }

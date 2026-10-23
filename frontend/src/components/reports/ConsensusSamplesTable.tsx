@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { MaterialReactTable, useMaterialReactTable, type MRT_ColumnDef, type MRT_PaginationState, type MRT_SortingState } from 'material-react-table';
+import { MaterialReactTable, useMaterialReactTable, type MRT_ColumnDef, type MRT_PaginationState, type MRT_SortingState, type MRT_ColumnFiltersState } from 'material-react-table';
 import { MRT_Localization_ES } from 'material-react-table/locales/es';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ConsensusEvidence } from '../../types/scientificReport';
@@ -14,27 +14,73 @@ const score = (value: number) => value.toLocaleString('es-CL', { maximumFraction
 
 const VISIBLE_ROWS = 10;
 
+// 1. En el componente Padre, asegúrate de tener este estado:
+// const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([]);
+
+
+
+
 /**
  * Server-side page of consensus samples: the backend filters by category, sorts the whole filtered population and
  * pages it; the table adds column hiding, resizing and density, and the per-cell XAI action.
  * The body is exactly as tall as 10 rows (sticky header); it only scrolls when a larger page is chosen.
  */
-export function ConsensusSamplesTable({ data, labels, pagination, onPagination, sorting, onSorting, loading, onExplain, explainBlocked }: {
-  data: ConsensusEvidence; labels: Record<string, string>; pagination: MRT_PaginationState;
-  onPagination: (next: MRT_PaginationState) => void; sorting: MRT_SortingState; onSorting: (next: MRT_SortingState) => void; loading?: boolean;
-  onExplain?: (sample: string) => void; explainBlocked?: string | null;
+export function ConsensusSamplesTable({
+  data, 
+  labels, 
+  pagination, 
+  onPagination, 
+  sorting, 
+  onSorting, 
+  loading, 
+  onExplain, 
+  explainBlocked, 
+  columnFilters, 
+  onColumnFilters  
+}: {
+  data: ConsensusEvidence; 
+  labels: Record<string, string>; 
+  pagination: MRT_PaginationState;
+  onPagination: (next: MRT_PaginationState) => void; 
+  sorting: MRT_SortingState; 
+  onSorting: (next: MRT_SortingState) => void; 
+  loading?: boolean;
+  onExplain?: (sample: string) => void; 
+  explainBlocked?: string | null;
+  columnFilters: MRT_ColumnFiltersState;
+  onColumnFilters: (next: MRT_ColumnFiltersState) => void;
 }) {
   const runs = data.coverage?.length ?? 0;
   const columns = useMemo<MRT_ColumnDef<Sample>[]>(() => [
     { id: 'sample', header: 'Muestra', accessorKey: 'sample', size: 230,
       Cell: ({ row }) => <span className="scc-sample-id"><code title={row.original.sample}>{shortSample(row.original.sample)}</code><CopyText text={row.original.sample} label="Copiar muestra" iconOnly /></span> },
     { id: 'label', header: 'Clase real', accessorFn: row => row.label === 1 ? 'Parasitada' : 'No parasitada', size: 130 },
-    { id: 'category', header: 'Categoría', accessorFn: row => labels[row.category] ?? row.category, size: 190 },
+    { id: 'category', header: 'Categoría', size: 190,
+      accessorFn: row => labels[row.category] ?? row.category, 
+      filterVariant: 'select',
+      filterSelectOptions: Object.values(labels).map(label => ({ 
+        text: label,  // Lo que ve el usuario en el menú desplegable
+        value: label  // El valor real con el que Material React Table comparará la fila
+      })),
+    },
     ...Array.from({ length: runs }, (_, index): MRT_ColumnDef<Sample> => ({
-      id: `run-${index}`, header: runLabel(index), size: 170, accessorFn: row => row.runs[index]?.score,
+      id: `run-${index}`, header: runLabel(index), size: 170,
+      // accessorFn: row => row.runs[index]?.score,
+      accessorFn: (row) => {
+        const result = row?.runs?.[index];
+        return result && typeof result.score === 'number' ? result.score : 0;
+      },
       Cell: ({ row }) => {
         const result = row.original.runs[index];
         return result ? <span className="scc-run-result" data-correct={result.correct}>{result.correct ? 'Acierto' : 'Error'} · clase {result.prediction}<small>score {score(result.score)}</small></span> : '—';
+      },
+      filterVariant: 'range-slider',
+      filterFn: 'betweenInclusive', // default (or between)
+      muiFilterSliderProps: {
+        marks: true,
+        max: 1, //custom max (as opposed to faceted max)
+        min: 0, //custom min (as opposed to faceted min)
+        step: 0.0001
       },
     })),
     ...(onExplain ? [{ id: 'xai', header: 'XAI', size: 120, enableHiding: false, enableSorting: false,
@@ -52,15 +98,48 @@ export function ConsensusSamplesTable({ data, labels, pagination, onPagination, 
     if (last && head) setMaxHeight(head.offsetHeight + last.offsetTop + last.offsetHeight - (body[0] as HTMLElement).offsetTop);
   }, [rows, data.samples]);
   const table = useMaterialReactTable({
-    columns, data: data.samples ?? [],
+    columns, 
+    data: data.samples ?? [],
     localization: MRT_Localization_ES,
-    manualPagination: true, manualSorting: true, rowCount: data.total ?? 0,
-    state: { pagination, sorting, isLoading: Boolean(loading && !data.samples?.length), showProgressBars: Boolean(loading) },
+    manualPagination: true, 
+    manualSorting: true, 
+    manualFiltering: true, // Mantiene el modo servidor activo
+    rowCount: data.total ?? 0,
+    state: { 
+      pagination, 
+      sorting, 
+      columnFilters, // Pasa los filtros que vienen del padre
+      isLoading: Boolean(loading && !data.samples?.length), 
+      showProgressBars: Boolean(loading) 
+    },
     onPaginationChange: updater => onPagination(typeof updater === 'function' ? updater(pagination) : updater),
     onSortingChange: updater => onSorting(typeof updater === 'function' ? updater(sorting) : updater),
-    enableSorting: true, enableMultiSort: false, enableSortingRemoval: true, enableStickyHeader: true,
-    enableColumnFilters: false, enableGlobalFilter: false, enableColumnActions: false,
-    enableColumnResizing: true, enableDensityToggle: true, enableFullScreenToggle: false, enableTopToolbar: true,
+    
+    // 🚀 SOLUCIÓN: Una única línea limpia que delega la actualización de forma segura al componente padre
+    onColumnFiltersChange: (updater) => {
+      // 🚀 Validamos si la función realmente existe antes de llamarla
+      if (typeof onColumnFilters === 'function') {
+        if (typeof updater === 'function') {
+          onColumnFilters(updater(columnFilters));
+        } else {
+          onColumnFilters(updater);
+        }
+      } else {
+        console.warn("ConsensusSamplesTable: 'onColumnFilters' no fue provista por el componente padre.");
+      }
+    },
+
+    enableSorting: true, 
+    enableMultiSort: false, 
+    enableSortingRemoval: true, 
+    enableStickyHeader: true,
+    enableColumnFilters: true, 
+    enableGlobalFilter: false, 
+    enableColumnActions: false,
+    enableColumnResizing: true, 
+    enableDensityToggle: true, 
+    enableFullScreenToggle: false, 
+    enableTopToolbar: true,
     initialState: { density: 'compact' },
     getRowId: row => row.sample,
     muiPaginationProps: { rowsPerPageOptions: [VISIBLE_ROWS, 25, 50, 100] },

@@ -1,6 +1,6 @@
 import type { ReportRequest, ReportResponse } from '../types/scientificReport';
 import type { PreflightRequest, PreflightResponse } from '../types/scientificPreflight';
-import type { ExplainExecutor, ExplainRequest, ExplainState, ExplainSubmission } from '../types/explainGeneration';
+import type { ExplainExecutor, ExplainRequest, ExplainState, ExplainSubmission, RepresentState, RepresentSubmission } from '../types/explainGeneration';
 import type { ScientificTraceability, ModelCatalog, ScientificModelCatalog } from "../types/scientificRead";
 import type { ScientificResult } from '../components/ScientificResults';
 import type {
@@ -667,6 +667,13 @@ export const api = {
   },
   generateExplanation(body: ExplainRequest, signal?: AbortSignal) {
     return request<ExplainSubmission>('/explain-generations', {}, {signal, timeoutMs: 65000, init: {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}});
+  },
+  getRepresentationState(sourceAttemptId: string, signal?: AbortSignal) {
+    return request<RepresentState>('/representation-generations', {source_attempt_id: sourceAttemptId}, {signal});
+  },
+  generateRepresentation(sourceAttemptId: string, signal?: AbortSignal) {
+    // Reusing a verified REPRESENT hashes the checkpoint before answering.
+    return request<RepresentSubmission>('/representation-generations', {}, {signal, timeoutMs: 65000, init: {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({source_attempt_id: sourceAttemptId})}});
   },
   scientificTraceability(trainingRunId: string, datasource: string) {
     return request<ScientificTraceability>(`/runs/${encodeURIComponent(trainingRunId)}/scientific-results`, {

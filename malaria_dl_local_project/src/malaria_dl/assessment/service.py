@@ -12,13 +12,15 @@ from ..execution.artifacts import file_identity
 from .contracts import (
     identity,
     prediction,
+    probability,
     require,
     threshold,
     validate_split_protocol,
     verify_rows,
 )
 from .lineage import dataset_samples, resolve
-from .runtime import KerasRuntime, save_artifacts
+from .representation import ROLES
+from .runtime import KerasRuntime, save_artifacts, save_arrays
 
 
 def explanation_spec(method, layer, class_id, num_samples, background):
@@ -129,8 +131,11 @@ def prepare(
     inspection=False,
     input_override=None,
     verification=None,
+    representation=None,
 ):
     validate_split_protocol(split, purpose, protocol)
+    require(representation is None or (explanation is None and evaluation_id is None and max_images == "all"
+                                        and sample_id is None), "REPRESENTATION_SELECTION_CONFLICT")
     binding, dataset, calibration = resolve(
         repository, training_run_id, model_version_id
     )
@@ -146,7 +151,8 @@ def prepare(
         "INPUT_OVERRIDE_CONFLICT",
     )
     seed, batch_size = inference_options(repository, binding["training_run_id"], seed, batch_size,
-                                         "explain" if explanation else "test" if split == "test" else "evaluate")
+                                         "explain" if explanation else "represent" if representation
+                                         else "test" if split == "test" else "evaluate")
     decision = threshold(requested_threshold, protocol, calibration)
     samples = dataset_samples(
         repository, dataset, split, dataset_version_id, inspection=inspection,
@@ -199,11 +205,12 @@ def prepare(
         purpose=purpose,
         protocol=protocol,
         decision=decision,
-        code=inference_environment(explanation),
+        code=inference_environment(explanation, representation),
         seed=seed,
         batch_size=batch_size,
         explanation=explanation,
         evaluation=evaluation,
+        representation=representation,
     )
     return value
 
@@ -223,6 +230,8 @@ def verify(repository, attempt, value):
     if value["kind"] == "evaluate":
         require(not artifacts, "UNEXPECTED_EVALUATION_ARTIFACT")
         result = verify_rows(value, rows)
+    elif value["kind"] == "represent":
+        result = verify_representation(value, attempt, rows, artifacts)
     else:
         expected = {s["sample_id"] for s in value["samples"]}
         require(
@@ -269,6 +278,67 @@ def verify(repository, attempt, value):
     return result
 
 
+def verify_representation(value, attempt, rows, artifacts):
+    """Rows follow the ordered population; the four matrices exist, are intact and have its length."""
+    import numpy as np
+
+    from ..execution.storage_paths import local_scientific_path
+
+    samples = value["samples"]
+    by_id = {r["sample_id"]: r for r in rows}
+    require(len(rows) == len(samples) and set(by_id) == {s["sample_id"] for s in samples},
+            "REPRESENTATIONS_INCOMPLETE")
+    roles = {a["role"]: a for a in artifacts}
+    require(len(artifacts) == len(ROLES) and set(roles) == set(ROLES)
+            and all(a["sample_id"] == samples[0]["sample_id"] for a in artifacts),
+            "REPRESENTATION_ARTIFACTS_INCOMPLETE")
+    for index, s in enumerate(samples):
+        r = by_id[s["sample_id"]]
+        require(r["specification"] == value["representation"] and r["label"] == s["label"]
+                and r["patient_id"] == s["patient_id"] and r["result"]["row"] == index
+                and r["result"]["predicted"] == int(r["result"]["raw_score"] >= value["decision"]["effective"])
+                and sorted(r["artifacts"]) == sorted(a["artifact_id"] for a in artifacts),
+                "REPRESENTATION_RESULT_CONFLICT")
+    for a in artifacts:
+        require(
+            Path(a["path"]).resolve().is_relative_to(Path(attempt["artifact_root"]).resolve())
+            and file_identity(a["path"]) == {k: a[k] for k in ("sha256", "bytes")},
+            "ASSESSMENT_ARTIFACT_CHANGED",
+        )
+        shape = np.load(local_scientific_path(a["path"]), mmap_mode="r", allow_pickle=False).shape
+        require(list(shape) == a["shape"] and (a["role"] == "pca_variance" or shape[0] == len(samples)),
+                "REPRESENTATION_SHAPE_CONFLICT")
+    return {"count": len(rows), "sha256": digest(sorted(rows, key=lambda r: r["sample_id"])),
+            "artifacts_hash": digest(artifacts), "dimension": roles["embeddings"]["shape"][1]}
+
+
+def represent_reserved(repository, value, attempt, runtime):
+    """One forward pass per batch, projections over the whole population, then rows that cite them."""
+    import numpy as np
+
+    from .representation import project
+
+    samples, features, scores = value["samples"], [], []
+    for start in range(0, len(samples), value["batch_size"]):
+        pooled, raw = runtime.represent(samples[start : start + value["batch_size"]])
+        features.append(pooled)
+        scores += raw
+    features = np.concatenate(features)
+    require(features.shape[0] == len(samples) == len(scores), "REPRESENTATION_COUNT_CONFLICT")
+    arrays = {"embeddings": features, **project(features, value["representation"], value["seed"])}
+    artifacts = save_arrays(attempt["artifact_root"], samples[0]["sample_id"], arrays)
+    for artifact in artifacts:
+        repository.artifact(attempt["id"], attempt["owner"], artifact)
+    ids = [a["artifact_id"] for a in artifacts]
+    rows = [{"sample_id": s["sample_id"], "patient_id": s["patient_id"], "label": s["label"],
+             "specification": value["representation"],
+             "result": {"row": index, "raw_score": probability(score), "layer": runtime.layer.name,
+                        "predicted": int(score >= value["decision"]["effective"])},
+             "artifacts": ids} for index, (s, score) in enumerate(zip(samples, scores))]
+    for start in range(0, len(rows), 500):
+        repository.write_batch(attempt["id"], attempt["owner"], rows[start : start + 500])
+
+
 def reserve_execution(repository: Any, value: dict, artifact_root: str) -> tuple[dict, dict, bool]:
     """Reserve in the executing process before HTTP acknowledges the attempt."""
     from uuid import uuid4
@@ -301,7 +371,9 @@ def execute_reserved(repository: Any, value: dict, attempt: dict,
             value
         )
         samples = value["samples"]
-        for start in range(0, len(samples), value["batch_size"]):
+        if value["kind"] == "represent":
+            represent_reserved(repository, value, attempt, runtime)
+        for start in range(0, len(samples) if value["kind"] != "represent" else 0, value["batch_size"]):
             batch = samples[start : start + value["batch_size"]]
             if value["kind"] == "evaluate":
                 scores = runtime.predict(batch)
@@ -353,9 +425,11 @@ def execute_reserved(repository: Any, value: dict, attempt: dict,
         raise
 
 
-def inference_environment(explanation=None):
+def inference_environment(explanation=None, representation=None):
     result = planning_environment()
     packages = ["Pillow"]
+    if representation:
+        packages += ["scikit-learn", "umap-learn"]
     if explanation:
         packages += ["matplotlib"]
         if explanation["method"] == "lime":

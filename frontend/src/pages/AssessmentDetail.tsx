@@ -16,10 +16,11 @@ export function AssessmentDetail({ datasource }: { datasource: string }) {
   if (loading) return <Loading />;
   if (error || !data) return <div role="alert">{error || 'Evaluación no encontrada.'}</div>;
   return <section className="page">
-    <h1>{data.kind === 'explain' ? 'Explicación E6' : data.identity.split === 'test' ? 'TEST' : 'Evaluación E6'}</h1>
+    <h1>{data.kind === 'explain' ? 'Explicación E6' : data.kind === 'represent' ? 'Representaciones' : data.identity.split === 'test' ? 'TEST' : 'Evaluación E6'}</h1>
     <Link to={withAllowedQuery(routes.runDetail(data.training_run_id), { datasource })}>Ver TRAIN de origen</Link>
     <AssessmentSampleXAI detail={data} datasource={datasource} />
-    {data.kind === 'explain' ? <AssessmentExplanationDetail key={data.id} data={data} datasource={datasource} /> : <article className="lineage-child-card lineage-child-card--evaluation">
+    {data.kind === 'represent' ? <p>Embeddings, PCA y UMAP de {data.verification?.count ?? '—'} células · dimensión {data.verification?.dimension ?? '—'}. Se consultan en Análisis de Modelos → Representaciones.</p>
+      : data.kind === 'explain' ? <AssessmentExplanationDetail key={data.id} data={data} datasource={datasource} /> : <article className="lineage-child-card lineage-child-card--evaluation">
       <AssessmentEvaluationSummary assessment={{
         source_kind: 'assessment_e6', attempt_id: data.id,
         identity_id: data.identity_id, training_run_id: data.training_run_id,

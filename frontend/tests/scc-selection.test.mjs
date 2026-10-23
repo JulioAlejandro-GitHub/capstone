@@ -188,14 +188,22 @@ for (const stage of ['train', 'evaluate', 'explain', 'query', 'complete']) {
   });
 }
 
-test('additional missing analyses consolidate causes and affected RUNs', () => {
-  const { ScientificRepresentations } = loader({'../../services/api': {api: {}}, './XAIComparisonViewer': {}, './GeneratedXAIComparison': {}, '../../hooks/useComparisonEvidence': {}, './ComparisonPython': {}})('components/reports/ScientificReport.tsx');
-  const module = ScientificRepresentations({selections: [], datasource: 'malaria', cache: {}});
-  const html = renderToStaticMarkup(module.props.children([
-    {training_run_id: 'a', artifacts: []}, {training_run_id: 'b', artifacts: []},
-  ]));
-  assert.equal((html.match(/<h3>Sin evidencia<\/h3>/g) ?? []).length, 1);
-  assert.match(html, /RUN A/);
-  assert.match(html, /RUN B/);
-  assert.match(html, /EXPLAIN no acredita automáticamente embeddings ni CKA/);
+test('representations show persisted projections, CKA and why a RUN has none', () => {
+  const { RepresentationResults } = loader({'../../services/api': {api: {}}, './ScientificReport': {}, '../../hooks/useExplainExecutor': {}})('components/reports/ScientificRepresentations.tsx');
+  const available = {training_run_id: 'a', state: 'available', issues: [], source_attempt_id: 'e1', attempt_id: 'r1', split: 'val', count: 2, dimension: 256,
+    layer: 'global_avg_pool', samples: ['s1', 's2'], labels: [0, 1], predicted: [0, 0], scores: [0.1, 0.4],
+    pca: [[0, 1], [1, 0]], umap: [[0, 1], [1, 0]], variance: [0.7, 0.3], cumulative_variance: [0.7, 1]};
+  const data = {runs: [available,
+    {training_run_id: 'b', state: 'missing', issues: ['Sin representaciones generadas para esta evaluación.'], source_attempt_id: 'e2'},
+    {training_run_id: 'c', state: 'missing', issues: ['Selecciona una EVALUATE independiente.'], source_attempt_id: null}],
+    cka: {values: [[1, null, null], [null, null, null], [null, null, null]], common: [[2, 0, 0], [0, 0, 0], [0, 0, 0]]},
+    definitions: {umap: 'UMAP def', pca: 'PCA def', cka: 'CKA def', representation: 'REP def'}};
+  const html = renderToStaticMarkup(React.createElement(RepresentationResults, {data, canGenerate: true, blocked: null, onGenerated: () => {}}));
+  assert.match(html, /RUN A · dimensión/);
+  assert.match(html, /global_avg_pool/);
+  assert.equal((html.match(/Generar representaciones/g) ?? []).length, 1);
+  assert.match(html, /RUN C: Selecciona una EVALUATE independiente/);
+  assert.match(html, /CKA lineal sobre las muestras comunes/);
+  assert.match(html, /N = 2/);
+  assert.doesNotMatch(html, /EXPLAIN no acredita/);
 });

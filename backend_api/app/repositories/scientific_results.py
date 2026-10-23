@@ -1,4 +1,5 @@
 """Read the canonical v2 scientific records without legacy metric fallbacks."""
+import json
 from typing import Any
 from uuid import UUID
 from sqlalchemy import text
@@ -216,11 +217,30 @@ class ScientificReadRepository:
                 AND phase IS NOT DISTINCT FROM :phase ORDER BY record_key
         """), {'run': run_id, 'epoch': str(epoch), 'phase': phase}).scalars())
 
-    def comparison_representations(self, connection, run_id):
-        """Inventory existing artifact metadata; never compute a projection."""
-        return [dict(r) for r in connection.execute(text("""
-            SELECT id,artifact_type,metadata,checksum FROM artifacts WHERE run_id=:run
-              AND (lower(artifact_type) IN ('embedding','embeddings','pca','umap','cka')
-                   OR lower(metadata->>'method') IN ('pca','umap','cka'))
-            ORDER BY created_at,id
-        """), {'run': run_id}).mappings()]
+    def comparison_representation(self, connection, run_id, source_attempt_id, specification):
+        """Latest verified REPRESENT of exactly this EVALUATE model, population and decision; never computes one."""
+        row = connection.execute(text("""
+            SELECT a.id AS attempt_id,a.identity_id,a.verification,a.artifact_root,a.finished_at,
+                   i.identity->>'split' AS split,jsonb_array_length(i.identity->'samples') AS sample_count
+            FROM assessment_attempts sa JOIN assessment_identities si ON si.id=sa.identity_id
+            JOIN assessment_identities i ON i.training_run_id=si.training_run_id AND i.kind='represent'
+            JOIN assessment_attempts a ON a.identity_id=i.id AND a.state='verified'
+            WHERE sa.id=:source AND sa.state='verified' AND si.kind='evaluate' AND si.training_run_id=:run
+              AND i.identity->'samples'=si.identity->'samples' AND i.identity->'decision'=si.identity->'decision'
+              AND i.identity->>'split'=si.identity->>'split' AND i.identity->>'purpose'=si.identity->>'purpose'
+              AND i.identity#>'{model,checkpoint_artifact_id}'=si.identity#>'{model,checkpoint_artifact_id}'
+              AND i.identity#>'{model,sha256}'=si.identity#>'{model,sha256}'
+              AND i.identity#>'{dataset,dataset_version_id}'=si.identity#>'{dataset,dataset_version_id}'
+              AND i.identity->'representation'=CAST(:spec AS jsonb)
+            ORDER BY a.finished_at DESC,a.id LIMIT 1
+        """), {'run': run_id, 'source': source_attempt_id, 'spec': json.dumps(specification)}).mappings().one_or_none()
+        return dict(row) if row else None
+
+    def comparison_representation_rows(self, connection, attempt_id):
+        return list(connection.execute(text("""
+            SELECT payload FROM assessment_results WHERE attempt_id=:id ORDER BY (payload#>>'{result,row}')::int
+        """), {'id': attempt_id}).scalars())
+
+    def comparison_representation_artifacts(self, connection, attempt_id):
+        return list(connection.execute(text(
+            'SELECT payload FROM assessment_artifacts WHERE attempt_id=:id ORDER BY role'), {'id': attempt_id}).scalars())

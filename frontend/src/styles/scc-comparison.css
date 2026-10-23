@@ -309,3 +309,10 @@
 .ds-report .xai-outcome dd small { font-weight: normal; color: var(--ds-fg-muted); }
 .ds-report .xai-outcome > div[data-correct="false"] { border-color: var(--ds-status-rejected-fg); color: var(--ds-status-rejected-fg); }
 .ds-report .xai-outcome > div[data-correct="true"] { border-color: var(--ds-status-approved-fg); }
+
+/* Representaciones: generation status per RUN and scatter tooltip. */
+.ds-report.scc-page .scc-represent-missing { display: grid; gap: var(--ds-space-2); margin-block: var(--ds-space-3); }
+.ds-report.scc-page .scc-represent-missing h4 { margin: 0; }
+.ds-report.scc-page .scc-represent-run { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-3); }
+.ds-report.scc-page .scc-tooltip { max-width: 320px; padding: var(--ds-space-2) var(--ds-space-3); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-sm); background: var(--ds-bg-surface, var(--ds-slate-0)); font-size: var(--ds-text-xs); }
+.ds-report.scc-page .scc-tooltip code { word-break: break-all; }

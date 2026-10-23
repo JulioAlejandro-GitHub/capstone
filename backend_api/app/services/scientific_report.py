@@ -6,6 +6,7 @@ from app.repositories.assessments import AssessmentReadRepository
 from app.repositories.scientific_results import ScientificReadRepository, metric_dto
 from app.schemas.scientific_report import ScientificReportResponse
 from app.services.scientific_public import public_evidence
+from app.services.scientific_representations import representations
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.exc import SQLAlchemyError
@@ -280,8 +281,8 @@ class ScientificReportService:
                                  'governance': public_evidence(repo.comparison_governance(connection, s.training_run_id)),
                                  'checkpoint': checkpoint_evidence(repo.comparison_checkpoint(connection, s.training_run_id), s.training_run_id)} for s in request.selections]
                 elif request.module == 'representations':
-                    data = [{'training_run_id': s.training_run_id,
-                        'artifacts': public_evidence(repo.comparison_representations(connection, s.training_run_id))} for s in request.selections]
+                    data, notes = representations(repo, connection, request.selections)
+                    warnings += notes
                 elif request.module == 'curves':
                     data = []
                     for s in request.selections:

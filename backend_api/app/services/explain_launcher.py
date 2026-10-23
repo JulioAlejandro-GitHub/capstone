@@ -11,11 +11,15 @@ from src.malaria_dl.campaigns.contracts import CampaignError
 
 
 class ExplainLauncher:
+    # REPRESENT reuses the same handshake with its own fixed worker module.
+    def __init__(self, module: str = 'app.services.explain_worker') -> None:
+        self.module = module
+
     def launch(self, request: ExplainRequest, actor: str) -> dict[str, Any]:
         read_fd, write_fd = os.pipe()
         process = None
         try:
-            process = subprocess.Popen([sys.executable, '-m', 'app.services.explain_worker'],
+            process = subprocess.Popen([sys.executable, '-m', self.module],
                 stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 env={**os.environ, 'CAPSTONE_EXPLAIN_RESULT_FD': str(write_fd)},
                 pass_fds=(write_fd,), start_new_session=True, text=True)

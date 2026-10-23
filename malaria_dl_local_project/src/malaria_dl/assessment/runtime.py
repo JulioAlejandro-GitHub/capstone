@@ -64,6 +64,23 @@ class KerasRuntime:
         require(output.shape == (len(samples), 1), "MODEL_OUTPUT_SHAPE_CONFLICT")
         return output[:, 0].tolist()
 
+    def represent(self, samples):
+        """Pooled features and raw scores from one forward pass of the same graph."""
+        import numpy as np
+
+        from .representation import pooling_layer
+
+        if not hasattr(self, "features"):
+            self.layer = pooling_layer(self.model)
+            self.features = self.tf.keras.Model(inputs=self.model.inputs,
+                                                outputs=[self.layer.output, self.model.outputs[0]])
+        pooled, output = self.features(self.images(samples), training=False)
+        pooled, output = np.asarray(pooled), np.asarray(output)
+        require(pooled.ndim == 2 and pooled.shape[0] == len(samples)
+                and output.shape == (len(samples), 1), "MODEL_OUTPUT_SHAPE_CONFLICT")
+        require(np.isfinite(pooled).all(), "REPRESENTATION_NONFINITE")
+        return pooled.astype("float32"), output[:, 0].tolist()
+
     def explain(self, sample):
         import numpy as np
 
@@ -144,6 +161,29 @@ class KerasRuntime:
         color = np.stack([magnitude, np.zeros_like(magnitude), 1 - magnitude], axis=-1)
         overlay = np.clip(0.6 * rgb + 0.4 * color, 0, 1)
         return heat, overlay, {"score_explained": "raw", "class": spec["class"]}
+
+
+def save_arrays(root, sample_id, arrays):
+    """Population matrices of REPRESENT, with the same exclusive creation as EXPLAIN artifacts."""
+    import numpy as np
+
+    root = Path(root)
+    root.mkdir(parents=True, exist_ok=True)
+    payloads = []
+    for role, data in arrays.items():
+        require(np.isfinite(data).all(), "REPRESENTATION_NONFINITE")
+        artifact = str(uuid4())
+        path = root / (artifact + ".npy")
+        temporary = root / (artifact + ".npy.partial")
+        with temporary.open("xb") as stream:
+            np.save(stream, np.asarray(data), allow_pickle=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary, path)
+        temporary.unlink()
+        payloads.append({"artifact_id": artifact, "sample_id": sample_id, "role": role, "path": str(path),
+                         "state": "finalized", "shape": list(np.shape(data)), **file_identity(path)})
+    return payloads
 
 
 def save_artifacts(root, sample_id, heat, overlay):

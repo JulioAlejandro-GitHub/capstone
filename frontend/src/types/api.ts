@@ -363,7 +363,7 @@ export interface ExplainabilityLineageChild extends LineageChildBase {
 }
 
 export interface AssessmentChoice {
-  attempt_id: string; training_run_id: string; kind: "evaluate" | "explain";
+  attempt_id: string; training_run_id: string; kind: "evaluate" | "explain" | "represent";
   split: "train" | "val" | "test"; purpose: string; state: string; started_at: string;
   threshold: number | null; dataset_version_id: string; checkpoint_artifact_id: string;
 }
@@ -389,6 +389,8 @@ export interface AssessmentVerification {
   sha256: string;
   metrics?: AssessmentMetrics;
   artifacts_hash?: string;
+  // REPRESENT: width of the pooled embedding.
+  dimension?: number;
 }
 
 export interface AssessmentEvaluationChild {
@@ -426,7 +428,7 @@ export interface AssessmentArtifact {
 
 export interface AssessmentDetail extends Omit<AssessmentEvaluationChild, 'source_kind' | 'attempt_id' | 'split' | 'purpose'> {
   id: string;
-  kind: 'evaluate' | 'explain';
+  kind: 'evaluate' | 'explain' | 'represent';
   cause: string | null;
   identity: {
     split: AssessmentEvaluationChild['split'];

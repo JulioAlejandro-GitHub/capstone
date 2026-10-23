@@ -15,7 +15,7 @@ function SelectedEvidence({ id, datasource }: { id: string; datasource: string }
     {data.kind === 'evaluate' ? <AssessmentEvaluationSummary assessment={{
       ...data, source_kind: 'assessment_e6', attempt_id: data.id,
       split: data.identity.split, purpose: data.identity.purpose,
-    }} /> : <p>EXPLAIN · {data.id} · {data.state}</p>}
+    }} /> : <p>{data.kind === 'represent' ? 'REPRESENT' : 'EXPLAIN'} · {data.id} · {data.state}</p>}
     <Link to={withAllowedQuery(routes.assessmentDetail(id), { datasource })}>Consultar esta ejecución</Link>
   </article>;
 }
@@ -33,7 +33,7 @@ export function AssessmentComparison({ datasource }: { datasource: string }) {
         <label><input type="checkbox" checked={selected.includes(item.attempt_id)}
           onChange={event => setSelected(current => event.target.checked
             ? [...current, item.attempt_id] : current.filter(id => id !== item.attempt_id))} />
-          {item.kind === 'explain' ? 'EXPLAIN' : item.split === 'test' ? 'TEST' : 'EVALUATE'} · {item.attempt_id} · TRAIN {item.training_run_id} · {item.state} · {new Date(item.started_at).toLocaleString('es-CL')}
+          {item.kind === 'explain' ? 'EXPLAIN' : item.kind === 'represent' ? 'REPRESENT' : item.split === 'test' ? 'TEST' : 'EVALUATE'} · {item.attempt_id} · TRAIN {item.training_run_id} · {item.state} · {new Date(item.started_at).toLocaleString('es-CL')}
         </label>
       </li>)}</ul>}
     <button disabled={loading || offset === 0} onClick={() => setOffset(current => Math.max(0,current-100))}>Anteriores</button>

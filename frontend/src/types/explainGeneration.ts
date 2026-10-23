@@ -36,3 +36,14 @@ export interface ExplainExecutor {
   reason?: string | null;
   start_command?: string | null;
 }
+
+export interface RepresentState {
+  source_attempt_id: string;
+  training_run_id: string;
+  authorized: boolean;
+  state: 'not_executed' | 'pending' | 'running' | 'completed' | 'failed';
+  attempt_id?: string | null;
+  operation_id?: string | null;
+  error?: string | null;
+}
+export interface RepresentSubmission { state: 'pending' | 'running' | 'completed'; attempt_id?: string | null; operation_id?: string | null }
