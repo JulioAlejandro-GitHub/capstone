@@ -1,5 +1,5 @@
 """Read-only, module-scoped report requests. Identity contract shared with Preflight."""
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import Field, JsonValue
 
@@ -14,6 +14,10 @@ class ScientificReportRequest(PreflightRequest):
     # Consensus samples are ordered over the whole filtered population before paging (a page-local sort would lie).
     sort_by: str | None = Field(default=None, pattern=r'^(sample|label|category|run-[0-9])$')
     sort_desc: bool = False
+    # Column filters of the samples table, applied to the whole population before sorting and paging.
+    sample_query: str | None = Field(default=None, max_length=200)
+    label: Literal[0, 1] | None = None
+    score_ranges: dict[Annotated[int, Field(ge=0, le=9)], tuple[float | None, float | None]] = Field(default_factory=dict)
 
 
 class ScientificReportResponse(Contract):

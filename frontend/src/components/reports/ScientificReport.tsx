@@ -2,15 +2,16 @@ import { groupXAIComparisons, type XAIComparison } from './xai/comparison';
 import { GeneratedXAIComparison } from './GeneratedXAIComparison';
 import { cellComparison } from './AssessmentXAI';
 import { ConsensusSamplesTable } from './ConsensusSamplesTable';
-import type { MRT_PaginationState, MRT_SortingState } from 'material-react-table';
+import type { MRT_ColumnFiltersState, MRT_PaginationState, MRT_SortingState } from 'material-react-table';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, BarChart, Bar, ScatterChart, Scatter, LabelList, Cell } from 'recharts';
 import { api } from '../../services/api';
 import { useComparisonEvidence } from '../../hooks/useComparisonEvidence';
 import { createComparisonCache, type ComparisonCache } from '../../utils/comparisonCache';
 import type { RequestedSelection } from '../../types/scientificPreflight';
-import type { CatalogEvidence, ClinicalEvidence, CurveEvidence, MetricsEvidence, ConsensusEvidence, ReportModule, ReportResponse, EvaluationChoice } from '../../types/scientificReport';
+import type { CatalogEvidence, ClinicalEvidence, CurveEvidence, MetricsEvidence, ConsensusEvidence, ReportModule, ReportRequest, ReportResponse, EvaluationChoice } from '../../types/scientificReport';
 import { CopyText } from './ComparisonPython';
+import { useExplainExecutor } from '../../hooks/useExplainExecutor';
 import { EvidenceButton, Kpi, SectionAnswer } from './AnalysisWorkspace';
 import { consensusSummary, curveSummary, intensity, metricRange } from '../../utils/analysisSummaries';
 import { choiceKey, defaultEvaluationSlot, effectiveSlot, evaluationSlots, explainMethods, groupEvaluations, groupExplanations, isAssessmentExplanation, roleLabels, splitExplanations, type EvaluationSlot } from '../../utils/lineageSlots';
@@ -100,7 +101,7 @@ export type ModuleProps = {cache: ComparisonCache; datasource: string; selection
 // Consensus verifies every governed sample of each attempt (3 x 2.685 TEST rows took 22 s before the
 // population query fix); the default 15 s would report a query error for a valid answer.
 const MODULE_TIMEOUT_MS: Partial<Record<ReportModule, number>> = {consensus: 60000, questions: 60000};
-export function LazyScientificModule<T>({title, module, cache, datasource, selections, evidenceRevision = 0, active, children, params = {}}: ModuleProps & {title: string; module: ReportModule; params?: {offset?: number; limit?: number; category?: string; sort_by?: string; sort_desc?: boolean}; children: (data: T, loading: boolean) => ReactNode}) {
+export function LazyScientificModule<T>({title, module, cache, datasource, selections, evidenceRevision = 0, active, children, params = {}}: ModuleProps & {title: string; module: ReportModule; params?: Omit<ReportRequest, 'module' | 'selections'>; children: (data: T, loading: boolean) => ReactNode}) {
   const [open, setOpen] = useState(false);
   const [revision, setRevision] = useState(0);
   const key = selections.length ? JSON.stringify([module, datasource, selections, params, revision, evidenceRevision]) : null;
@@ -209,9 +210,10 @@ const consensusCategories: Record<string, string> = {all: 'Todas', disagreement:
 function PairHeatmap({title, matrix, n, diagonalTotal}: {title: string; matrix: number[][]; n: number; diagonalTotal?: boolean}) {
   return <div className="report-table-scroll"><table className="report-data-table scc-heatmap"><caption>{title}; N = {n}</caption><thead><tr><th>RUN</th>{matrix.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{matrix.map((row,i) => <tr key={i}><th scope="row">{runLabel(i)}</th>{row.map((count,j) => <td key={j} data-diagonal={i === j} style={{'--scc-heat': intensity(count, diagonalTotal ? Math.max(...matrix.map((r, k) => r[k])) : n)} as CSSProperties}>{count} / {n}<small>{percent(n ? count / n : null)}</small></td>)}</tr>)}</tbody></table></div>;
 }
-// onExplain opens the cell in Explicabilidad; explainBlocked says why it cannot (EXPLAIN is accredited for VAL only).
-export function ConsensusResults({data, onCategory, onExplain, explainBlocked, pagination, onPagination, sorting, onSorting, loading}: {data: ConsensusEvidence; onCategory?: (category: string) => void; onExplain?: (sample: string) => void; explainBlocked?: string | null;
-  pagination?: MRT_PaginationState; onPagination?: (next: MRT_PaginationState) => void; sorting?: MRT_SortingState; onSorting?: (next: MRT_SortingState) => void; loading?: boolean}) {
+// onExplain opens the cell (its original image is the table's XAI column) in the «Vista ampliada».
+export function ConsensusResults({data, datasource, onExplain, pagination, onPagination, sorting, onSorting, columnFilters, onColumnFilters, loading}: {data: ConsensusEvidence; datasource?: string; onExplain?: (sample: string) => void;
+  pagination?: MRT_PaginationState; onPagination?: (next: MRT_PaginationState) => void; sorting?: MRT_SortingState; onSorting?: (next: MRT_SortingState) => void;
+  columnFilters?: MRT_ColumnFiltersState; onColumnFilters?: (next: MRT_ColumnFiltersState) => void; loading?: boolean}) {
   if (data.state !== 'available') return <p>{data.state === 'incompatible' ? 'Incompatibilidad metodológica. ' : 'Sin evidencia suficiente para este análisis. '}{data.issues?.join(' ')}</p>;
   const summary = consensusSummary(data);
   const runs = data.coverage?.length ?? 0;
@@ -235,8 +237,7 @@ export function ConsensusResults({data, onCategory, onExplain, explainBlocked, p
     </SectionAnswer>}
     <div className="scc-chart-grid">
       <section aria-label="Distribución por categoría"><h4>Distribución por categoría</h4>
-        <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={distribution.map(([category,count]) => ({category, label: labels[category], count}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" tick={{fontSize: 11}} interval={0} /><YAxis /><Tooltip /><Bar dataKey="count" name="Muestras" fill={colors[0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
-        {onCategory && <div className="scc-category-chips" role="group" aria-label="Filtrar muestras por categoría">{distribution.map(([category, count]) => <button key={category} type="button" className="ds-button" data-size="compact" onClick={() => onCategory(category)}>{labels[category]} · {count}</button>)}</div>}</section>
+        <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={distribution.map(([category,count]) => ({category, label: labels[category], count}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" tick={{fontSize: 11}} interval={0} /><YAxis /><Tooltip /><Bar dataKey="count" name="Muestras" fill={colors[0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div></section>
       {runs > 1 && <section aria-label="Aciertos y errores exclusivos"><h4>Aciertos y errores exclusivos por RUN</h4>
         <div className="scc-chart scc-chart--compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={(data.coverage ?? []).map((_, i) => ({name: runLabel(i), correct: data.exclusive_correct?.[i] ?? 0, errors: data.exclusive_errors?.[i] ?? 0}))}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Legend /><Bar dataKey="correct" name="Aciertos exclusivos" fill={colors[1]} isAnimationActive={false} /><Bar dataKey="errors" name="Errores exclusivos" fill={colors[3]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div>
         <p className="scc-meta">Acierto exclusivo: solo ese RUN acierta. Error exclusivo: solo ese RUN falla.</p></section>}
@@ -247,9 +248,10 @@ export function ConsensusResults({data, onCategory, onExplain, explainBlocked, p
     </div>}
     {runs > 1 && <EvidenceButton title="Cobertura y complementariedad por RUN" label="Cobertura por RUN"><div className="report-table-scroll"><table className="report-data-table"><caption>Cobertura y complementariedad por RUN</caption><thead><tr><th>RUN</th><th>Población</th><th>Comunes</th><th>Faltantes</th><th>Exclusivas</th><th>Errores exclusivos</th><th>Aciertos exclusivos</th></tr></thead><tbody>{data.coverage?.map((c,i) => <tr key={i}><th>{runLabel(i)}</th><td>{c.population}</td><td>{c.common}</td><td>{c.missing}</td><td>{c.exclusive}</td><td>{data.exclusive_errors?.[i]}</td><td>{data.exclusive_correct?.[i]}</td></tr>)}</tbody></table></div></EvidenceButton>}
     <EvidenceButton title="Fórmulas y denominadores del consenso" label="Fórmulas y denominadores">{Object.entries(data.definitions ?? {}).map(([k,v]) => <p key={k}>{v}</p>)}</EvidenceButton>
-    <ConsensusSamplesTable data={data} labels={labels} loading={loading}
+    <ConsensusSamplesTable data={data} labels={labels} loading={loading} datasource={datasource}
       pagination={pagination ?? {pageIndex: Math.floor((data.offset ?? 0) / (data.limit || 10)), pageSize: data.limit || 10}}
-      onPagination={onPagination ?? (() => {})} sorting={sorting ?? []} onSorting={onSorting ?? (() => {})} onExplain={onExplain} explainBlocked={explainBlocked} />
+      onPagination={onPagination ?? (() => {})} sorting={sorting ?? []} onSorting={onSorting ?? (() => {})}
+      columnFilters={columnFilters ?? []} onColumnFilters={onColumnFilters ?? (() => {})} onExplain={onExplain} />
   </>;
 }
 export function CurvesModule(props: ModuleProps) {
@@ -258,21 +260,59 @@ export function CurvesModule(props: ModuleProps) {
 export function MetricsModule(props: ModuleProps) {
   return <LazyScientificModule<MetricsEvidence> {...props} title="Métricas clínicas y matrices de confusión" module="metrics">{data => <ClinicalMetrics data={data} />}</LazyScientificModule>;
 }
-export function ConsensusModule({onExplain, ...props}: ModuleProps & {onExplain?: (sample: string) => void}) {
+const filterNumber = (value: unknown) => value === '' || value == null || !Number.isFinite(Number(value)) ? null : Number(value);
+// MRT column filters → request fields: Muestra (contains), Clase real (0/1), Categoría (key), RUN n ([min, max] score).
+function consensusFilterParams(filters: MRT_ColumnFiltersState): Omit<ReportRequest, 'module' | 'selections'> {
+  const value = (id: string) => filters.find(f => f.id === id)?.value;
+  const sample = String(value('sample') ?? '').trim(), label = filterNumber(value('label')), category = value('category');
+  const score_ranges = Object.fromEntries(filters.filter(f => f.id.startsWith('run-') && Array.isArray(f.value))
+    .map(f => [f.id.slice(4), (f.value as unknown[]).slice(0, 2).map(filterNumber) as [number | null, number | null]])
+    .filter(([, [lo, hi]]) => lo != null || hi != null));
+  return {category: typeof category === 'string' && category ? category : 'all', ...(sample ? {sample_query: sample} : {}),
+    ...(label === 0 || label === 1 ? {label} : {}), ...(Object.keys(score_ranges).length ? {score_ranges} : {})};
+}
+const shortId = (sample: string) => /^[0-9a-f-]{36}$/i.test(sample) ? `${sample.slice(0, 8)}…` : sample.split('/').pop() ?? sample;
+type XAIAccess = {explains?: Record<string, string[]>; canGenerate?: boolean; onGenerated?: () => void};
+// The «Vista ampliada» of a table cell: one RUN at a time, with the same generation and views as Explicabilidad.
+function ConsensusCellModal({sample, selections, datasource, explains, canGenerate, onGenerated, onClose, onExplain}: XAIAccess & {
+  sample: string; selections: RequestedSelection[]; datasource: string; onClose: () => void; onExplain?: (sample: string) => void}) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const [run, setRun] = useState(0);
+  const {blocked} = useExplainExecutor(Boolean(canGenerate));
+  useEffect(() => { dialog.current?.showModal(); }, []);
+  const selection = selections[run];
+  return <dialog ref={dialog} className="report-viewer xai-modal" aria-label={`Vista ampliada · célula ${sample}`} onClose={onClose}>
+    <form method="dialog" className="xai-modal-close"><button type="submit" className="ds-button" aria-label="Cerrar vista ampliada" title="Cerrar" autoFocus>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+    </button></form>
+    <h2>Vista ampliada · célula <code title={sample}>{shortId(sample)}</code></h2>
+    <div className="xai-modal-bar">
+      {selections.length > 1 && <div role="tablist" aria-label="RUN" className="xai-view-tabs">{selections.map((s, i) => <button key={s.training_run_id} type="button" role="tab"
+        className="ds-button" aria-selected={run === i} onClick={() => setRun(i)}>{runLabel(i)}</button>)}</div>}
+      <CopyText text={sample} label="Copiar muestra" />
+      {onExplain && <button type="button" className="ds-button" onClick={() => { dialog.current?.close(); onExplain(sample); }}>Abrir en Explicabilidad</button>}
+    </div>
+    {selection && <PersistedXAI key={JSON.stringify(selection)} selection={selection} datasource={datasource} active attemptIds={explains?.[selection.training_run_id]}
+      canGenerate={canGenerate} blocked={blocked} onGenerated={onGenerated} focusSample={sample} variant="expanded" />}
+  </dialog>;
+}
+export function ConsensusModule({onExplain, explains, canGenerate, onGenerated, ...props}: ModuleProps & XAIAccess & {onExplain?: (sample: string) => void}) {
   const single = props.selections.length === 1;
   const [pagination, setPagination] = useState<MRT_PaginationState>({pageIndex: 0, pageSize: 10});
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
   const sorted = (next: MRT_SortingState) => { setSorting(next); setPagination(old => ({...old, pageIndex: 0})); };
-  // One RUN has no disagreements: start on its errors instead.
-  const [category, setCategory] = useState(single ? 'CONSENSUS_FN' : 'disagreement');
-  const labels = single ? singleRunCategories : consensusCategories;
-  const choose = (next: string) => { setCategory(next); setPagination(old => ({...old, pageIndex: 0})); };
-  return <LazyScientificModule<ConsensusEvidence> {...props} title={single ? 'Errores del modelo' : 'Consenso y desacuerdos'} module="consensus"
-    params={{offset: pagination.pageIndex * pagination.pageSize, limit: pagination.pageSize, category,
-      ...(sorting[0] ? {sort_by: sorting[0].id, sort_desc: sorting[0].desc} : {})}}>{(data, loading) => <>
-      <label>Filtrar muestras<select className="ds-control" value={category} onChange={e => choose(e.target.value)}>{Object.entries(labels).map(([c, label]) => <option key={c} value={c}>{label}</option>)}</select></label>
-      <ConsensusResults data={data} onCategory={choose} onExplain={onExplain} pagination={pagination} onPagination={setPagination} sorting={sorting} onSorting={sorted} loading={loading} />
-    </>}</LazyScientificModule>;
+  // The table starts on the whole population; its column filters are applied server-side before sorting and paging.
+  const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([]);
+  const filtered = (next: MRT_ColumnFiltersState) => { setColumnFilters(next); setPagination(old => ({...old, pageIndex: 0})); };
+  const [opened, setOpened] = useState<string | null>(null);
+  return <><LazyScientificModule<ConsensusEvidence> {...props} title={single ? 'Errores del modelo' : 'Consenso y desacuerdos'} module="consensus"
+    params={{offset: pagination.pageIndex * pagination.pageSize, limit: pagination.pageSize, ...consensusFilterParams(columnFilters),
+      ...(sorting[0] ? {sort_by: sorting[0].id, sort_desc: sorting[0].desc} : {})}}>{(data, loading) =>
+      <ConsensusResults data={data} datasource={props.datasource} onExplain={setOpened} pagination={pagination} onPagination={setPagination} sorting={sorting} onSorting={sorted}
+        columnFilters={columnFilters} onColumnFilters={filtered} loading={loading} />}</LazyScientificModule>
+    {opened && <ConsensusCellModal key={opened} sample={opened} selections={props.selections} datasource={props.datasource} explains={explains}
+      canGenerate={canGenerate} onGenerated={onGenerated} onClose={() => setOpened(null)} onExplain={onExplain} />}
+  </>;
 }
 export function ScientificResults(props: ModuleProps) {
   return <><CurvesModule {...props} /><MetricsModule {...props} /><ConsensusModule {...props} /></>;
@@ -285,7 +325,7 @@ export function ScientificQuestions(props: ModuleProps) {
 // split or checkpoint identifier differs (with a notice), and kept on screen while a refresh is in flight.
 // focusSample: one cell chosen in Errores (or searched); its explanations are read across every chosen EXPLAIN, and
 // when none exists yet the cell is built from a VAL context containing it so it can be generated.
-export function PersistedXAI({selection, datasource, active, attemptIds, canGenerate = false, blocked, onGenerated, focusSample}: {selection: RequestedSelection; datasource: string; active: boolean; attemptIds?: string[]; canGenerate?: boolean; blocked?: string | null; onGenerated?: () => void; focusSample?: string | null}) {
+export function PersistedXAI({selection, datasource, active, attemptIds, canGenerate = false, blocked, onGenerated, focusSample, variant}: {selection: RequestedSelection; datasource: string; active: boolean; attemptIds?: string[]; canGenerate?: boolean; blocked?: string | null; onGenerated?: () => void; focusSample?: string | null; variant?: 'inline' | 'expanded'}) {
   const cache = useMemo(createComparisonCache, [datasource, selection.training_run_id]);
   const [revision, setRevision] = useState(0);
   const [attempt, setAttempt] = useState('');
@@ -399,7 +439,7 @@ export function PersistedXAI({selection, datasource, active, attemptIds, canGene
     {splits.length > 0 && <p className="ds-callout" data-tone="warning">EXPLAIN sobre {splits.map(split => split.toUpperCase()).join(', ')}; la evaluación del análisis es {selection.split!.toUpperCase()}. Las explicaciones describen el mismo TRAIN, pero no la población evaluada.</p>}
     {selection.checkpoint_artifact_id && picked.some(choice => choice.checkpoint_artifact_id !== selection.checkpoint_artifact_id) && <p className="ds-callout" data-tone="warning">El EXPLAIN registra otro identificador de checkpoint que la evaluación seleccionada; verifica el SHA-256 en Trazabilidad antes de atribuirlo al mismo archivo.</p>}
     {!attemptIds && !focusSample && listed && listed.length > 0 && <label>Explicación persistida<select className="ds-control" value={selected?.attempt_id ?? ''} onChange={e => {setAttempt(e.target.value); setOffset(0); setRowPage(0);}}>{listed.map((c,i) => <option value={c.attempt_id} key={c.attempt_id}>{i+1} · {c.split.toUpperCase()} · {c.state} · {new Date(c.started_at).toLocaleString('es-CL')}</option>)}</select></label>}
-    {active && withOutcome(rows.slice(rowPage*5,rowPage*5+5)).map(row => <GeneratedXAIComparison key={row.id} comparison={row} datasource={datasource} active={active} lazy authorized={canGenerate} blocked={blocked} onEvidenceChange={() => { setRevision(n => n+1); onGenerated?.(); }} />)}
+    {active && withOutcome(rows.slice(rowPage*5,rowPage*5+5)).map(row => <GeneratedXAIComparison key={row.id} comparison={row} datasource={datasource} active={active} lazy authorized={canGenerate} blocked={blocked} variant={variant} onEvidenceChange={() => { setRevision(n => n+1); onGenerated?.(); }} />)}
     {!focusSample && rows.length > 5 && <nav aria-label="Muestras XAI"><button className="ds-button" disabled={!rowPage} onClick={() => setRowPage(n => n-1)}>Muestras anteriores</button><button className="ds-button" disabled={(rowPage+1)*5 >= rows.length} onClick={() => setRowPage(n => n+1)}>Muestras siguientes</button></nav>}
     {!focusSample && composed.data && (offset > 0 || composed.data.primaryCount === 100) && <nav aria-label="Páginas de explicaciones"><button className="ds-button" disabled={offset === 0} onClick={() => {setOffset(n => n-100); setRowPage(0);}}>Anterior</button><span>Página {offset/100+1}</span><button className="ds-button" disabled={composed.data.primaryCount < 100} onClick={() => {setOffset(n => n+100); setRowPage(0);}}>Siguiente</button></nav>}
   </section>;

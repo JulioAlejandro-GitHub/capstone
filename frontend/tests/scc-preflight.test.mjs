@@ -913,12 +913,13 @@ test('per-cell EXPLAIN are always included and population EXPLAIN stay selectabl
   assert.equal(parts.cells.map(c => c.attempt_id).join(), 'c1,c2');
 });
 
-test('consensus sample rows open the cell in Explicabilidad and explain why TEST cells cannot', () => {
+test('consensus sample rows show the original cell, which opens its expanded XAI view', () => {
   const {ConsensusResults}=loader()('components/reports/ScientificReport.tsx');
   const data={state:'available',common_count:1,union_count:1,label_conflicts:0,coverage:[{population:1,common:1,missing:0,exclusive:0}],oracle:{numerator:1,denominator:1,ratio:1},all_wrong:0,distribution:{},agreement:[[1]],error_overlap:[[0]],samples:[{sample:'00407b51-0603-5260-a0db-1ab700451f9f',label:1,category:'CONSENSUS_TP',runs:[{score:.9,prediction:1,correct:true}]}],total:1};
-  const open=renderToStaticMarkup(React.createElement(ConsensusResults,{data,onExplain(){}}));
-  assert.match(open,/>XAI</); assert.match(open,/<button[^>]*title="Ver y generar[^"]*"[^>]*>Explicar/); assert.doesNotMatch(open,/disabled=""[^>]*>Explicar/);
-  const blocked=renderToStaticMarkup(React.createElement(ConsensusResults,{data,onExplain(){},explainBlocked:'EXPLAIN solo está acreditado para VAL'}));
-  assert.match(blocked,/disabled=""[^>]*title="EXPLAIN solo está acreditado para VAL"[^>]*>Explicar/);
-  assert.doesNotMatch(renderToStaticMarkup(React.createElement(ConsensusResults,{data})),/Explicar/);
+  const sources=[{training_run_id:'00000000-0000-0000-0000-000000000001',attempt_id:'00000000-0000-0000-0000-000000000002',dataset_version_id:'00000000-0000-0000-0000-000000000003',split:'val'}];
+  const open=renderToStaticMarkup(React.createElement(ConsensusResults,{data:{...data,sources},onExplain(){}}));
+  assert.match(open,/>XAI</); assert.match(open,/class="xai-image-frame scc-sample-thumb"><button[^>]*aria-label="Ver célula 00407b51-0603-5260-a0db-1ab700451f9f y su explicabilidad"/);
+  assert.doesNotMatch(open,/>Explicar</);
+  assert.match(renderToStaticMarkup(React.createElement(ConsensusResults,{data,onExplain(){}})),/Sin linaje/);
+  assert.doesNotMatch(renderToStaticMarkup(React.createElement(ConsensusResults,{data})),/scc-sample-thumb"><button/);
 });

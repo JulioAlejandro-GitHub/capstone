@@ -209,7 +209,6 @@
 .ds-report.scc-page .scc-confusion-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
 .ds-report.scc-page .scc-confusion-grid h5 { margin: 0 0 var(--ds-space-2); font-size: var(--ds-text-sm); }
 .ds-report.scc-page td[data-correct="false"] { color: var(--ds-status-rejected-fg); }
-.ds-report.scc-page .scc-category-chips { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
 
 /* RUN lineage: TRAIN → EVALUATE VAL / EVALUATE TEST / EXPLAIN, with a menu when a slot has several executions. */
 .ds-report .scc-lineage-slots { display: grid; gap: var(--ds-space-2); margin: var(--ds-space-3) 0; padding: 0; list-style: none; }
@@ -250,6 +249,9 @@
 .ds-report.scc-page .scc-executor[data-available="true"] { color: var(--ds-status-approved-fg); background: var(--ds-status-approved-bg); }
 
 /* Expanded XAI: Comparación / Superposición tabs and the layered overlay view. */
+/* Errores y consenso: original cell thumbnail in the samples table (same frame as the XAI panels). */
+.ds-report .xai-image-frame.scc-sample-thumb { aspect-ratio: 1; width: 64px; height: 64px; }
+.ds-report .scc-sample-thumb .report-scientific-image { display: block; }
 .ds-report .xai-modal-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-3); margin-bottom: var(--ds-space-4); }
 .ds-report .xai-modal { position: relative; }
 .ds-report .xai-modal-close { position: absolute; top: var(--ds-space-4); right: var(--ds-space-4); margin: 0; }

@@ -4,6 +4,7 @@ import { MRT_Localization_ES } from 'material-react-table/locales/es';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ConsensusEvidence } from '../../types/scientificReport';
 import { CopyText } from './ComparisonPython';
+import { useScientificArtifact } from '../../hooks/useScientificArtifact';
 
 type Sample = NonNullable<ConsensusEvidence['samples']>[number];
 const runLabel = (index: number) => `RUN ${String.fromCharCode(65 + index)}`;
@@ -14,79 +15,54 @@ const score = (value: number) => value.toLocaleString('es-CL', { maximumFraction
 
 const VISIBLE_ROWS = 10;
 
-// 1. En el componente Padre, asegúrate de tener este estado:
-// const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([]);
-
-
-
+type Source = NonNullable<ConsensusEvidence['sources']>[number];
+// Original cell served under the EVALUATE lineage of the first RUN that has one; opens the cell's «Vista ampliada».
+function SampleThumbnail({ sample, source, datasource, onOpen }: { sample: string; source: Source; datasource?: string; onOpen?: (sample: string) => void }) {
+  const resource = useScientificArtifact(source ? { source: 'dataset_sample', trainingRunId: source.training_run_id, datasetVersionId: source.dataset_version_id,
+    sampleId: sample, attemptId: source.attempt_id } : undefined, datasource, Boolean(source));
+  const image = resource.url ? <img className="report-scientific-image" src={resource.url} alt={`Célula original ${sample}`} />
+    : <small className="scc-meta">{resource.loading ? 'Cargando…' : source ? 'Sin imagen' : 'Sin linaje'}</small>;
+  return <div className="xai-image-frame scc-sample-thumb">
+    {onOpen ? <button type="button" className="xai-image-button" onClick={() => onOpen(sample)} aria-label={`Ver célula ${sample} y su explicabilidad`}
+      title="Vista ampliada: célula original y explicabilidad por RUN">{image}</button> : image}
+  </div>;
+}
 
 /**
- * Server-side page of consensus samples: the backend filters by category, sorts the whole filtered population and
- * pages it; the table adds column hiding, resizing and density, and the per-cell XAI action.
+ * Server-side page of consensus samples: the column filters (sample, real class, category, score range per RUN) are
+ * sent to the backend, which filters and sorts the whole population before paging; the table adds column hiding,
+ * resizing and density, and the per-cell XAI action.
  * The body is exactly as tall as 10 rows (sticky header); it only scrolls when a larger page is chosen.
  */
 export function ConsensusSamplesTable({
-  data, 
-  labels, 
-  pagination, 
-  onPagination, 
-  sorting, 
-  onSorting, 
-  loading, 
-  onExplain, 
-  explainBlocked, 
-  columnFilters, 
-  onColumnFilters  
-}: {
-  data: ConsensusEvidence; 
-  labels: Record<string, string>; 
-  pagination: MRT_PaginationState;
-  onPagination: (next: MRT_PaginationState) => void; 
-  sorting: MRT_SortingState; 
-  onSorting: (next: MRT_SortingState) => void; 
-  loading?: boolean;
-  onExplain?: (sample: string) => void; 
-  explainBlocked?: string | null;
-  columnFilters: MRT_ColumnFiltersState;
-  onColumnFilters: (next: MRT_ColumnFiltersState) => void;
+data, labels, pagination, onPagination, sorting, onSorting, columnFilters, onColumnFilters, loading, datasource, onExplain}: {
+  data: ConsensusEvidence; labels: Record<string, string>; pagination: MRT_PaginationState;
+  onPagination: (next: MRT_PaginationState) => void; sorting: MRT_SortingState; onSorting: (next: MRT_SortingState) => void;
+  columnFilters: MRT_ColumnFiltersState; onColumnFilters: (next: MRT_ColumnFiltersState) => void;
+  loading?: boolean; datasource?: string; onExplain?: (sample: string) => void;
 }) {
   const runs = data.coverage?.length ?? 0;
+  const source = data.sources?.find(Boolean) ?? null;
   const columns = useMemo<MRT_ColumnDef<Sample>[]>(() => [
     { id: 'sample', header: 'Muestra', accessorKey: 'sample', size: 230,
       Cell: ({ row }) => <span className="scc-sample-id"><code title={row.original.sample}>{shortSample(row.original.sample)}</code><CopyText text={row.original.sample} label="Copiar muestra" iconOnly /></span> },
-    { id: 'label', header: 'Clase real', accessorFn: row => row.label === 1 ? 'Parasitada' : 'No parasitada', size: 130 },
-    { id: 'category', header: 'Categoría', size: 190,
-      accessorFn: row => labels[row.category] ?? row.category, 
-      filterVariant: 'select',
-      filterSelectOptions: Object.values(labels).map(label => ({ 
-        text: label,  // Lo que ve el usuario en el menú desplegable
-        value: label  // El valor real con el que Material React Table comparará la fila
-      })),
-    },
+    // Filter values are what the backend expects: label 0/1 and the category key ('all' is the empty filter).
+    { id: 'label', header: 'Clase real', accessorFn: row => row.label === 1 ? 'Parasitada' : 'No parasitada', size: 150,
+      filterVariant: 'select', filterSelectOptions: [{ text: 'Parasitada', value: '1' }, { text: 'No parasitada', value: '0' }] },
+    { id: 'category', header: 'Categoría', accessorFn: row => labels[row.category] ?? row.category, size: 210,
+      filterVariant: 'select', filterSelectOptions: Object.entries(labels).filter(([key]) => key !== 'all').map(([value, text]) => ({ text, value })) },
     ...Array.from({ length: runs }, (_, index): MRT_ColumnDef<Sample> => ({
-      id: `run-${index}`, header: runLabel(index), size: 170,
-      // accessorFn: row => row.runs[index]?.score,
-      accessorFn: (row) => {
-        const result = row?.runs?.[index];
-        return result && typeof result.score === 'number' ? result.score : 0;
-      },
+      id: `run-${index}`, header: runLabel(index), size: 190, accessorFn: row => row.runs[index]?.score ?? null,
       Cell: ({ row }) => {
         const result = row.original.runs[index];
         return result ? <span className="scc-run-result" data-correct={result.correct}>{result.correct ? 'Acierto' : 'Error'} · clase {result.prediction}<small>score {score(result.score)}</small></span> : '—';
       },
-      filterVariant: 'range-slider',
-      filterFn: 'betweenInclusive', // default (or between)
-      muiFilterSliderProps: {
-        marks: true,
-        max: 1, //custom max (as opposed to faceted max)
-        min: 0, //custom min (as opposed to faceted min)
-        step: 0.0001
-      },
+      // Score range over the whole population: fixed [0, 1] bounds instead of the faceted bounds of the current page.
+      filterVariant: 'range-slider', muiFilterSliderProps: { min: 0, max: 1, step: 0.01, valueLabelDisplay: 'auto' },
     })),
-    ...(onExplain ? [{ id: 'xai', header: 'XAI', size: 120, enableHiding: false, enableSorting: false,
-      Cell: ({ row }) => <button type="button" className="ds-button" data-size="compact" disabled={Boolean(explainBlocked)}
-        title={explainBlocked ?? 'Ver y generar la explicabilidad de esta célula en cada RUN'} onClick={() => onExplain(row.original.sample)}>Explicar</button> } as MRT_ColumnDef<Sample>] : []),
-  ], [runs, labels, onExplain, explainBlocked]);
+    { id: 'xai', header: 'XAI', size: 110, enableHiding: false, enableSorting: false, enableColumnFilter: false,
+      Cell: ({ row }) => <SampleThumbnail sample={row.original.sample} source={source} datasource={datasource} onOpen={onExplain} /> },
+  ], [runs, labels, source, datasource, onExplain]);
   const container = useRef<HTMLDivElement>(null);
   const [maxHeight, setMaxHeight] = useState<number | undefined>(undefined);
   const rows = data.samples?.length ?? 0;
@@ -98,48 +74,15 @@ export function ConsensusSamplesTable({
     if (last && head) setMaxHeight(head.offsetHeight + last.offsetTop + last.offsetHeight - (body[0] as HTMLElement).offsetTop);
   }, [rows, data.samples]);
   const table = useMaterialReactTable({
-    columns, 
-    data: data.samples ?? [],
-    localization: MRT_Localization_ES,
-    manualPagination: true, 
-    manualSorting: true, 
-    manualFiltering: true, // Mantiene el modo servidor activo
-    rowCount: data.total ?? 0,
-    state: { 
-      pagination, 
-      sorting, 
-      columnFilters, // Pasa los filtros que vienen del padre
-      isLoading: Boolean(loading && !data.samples?.length), 
-      showProgressBars: Boolean(loading) 
-    },
+    columns, data: data.samples ?? [], localization: MRT_Localization_ES,
+    manualPagination: true, manualSorting: true, manualFiltering: true, rowCount: data.total ?? 0,
+    state: { pagination, sorting, columnFilters, isLoading: Boolean(loading && !data.samples?.length), showProgressBars: Boolean(loading) },
     onPaginationChange: updater => onPagination(typeof updater === 'function' ? updater(pagination) : updater),
     onSortingChange: updater => onSorting(typeof updater === 'function' ? updater(sorting) : updater),
-    
-    // 🚀 SOLUCIÓN: Una única línea limpia que delega la actualización de forma segura al componente padre
-    onColumnFiltersChange: (updater) => {
-      // 🚀 Validamos si la función realmente existe antes de llamarla
-      if (typeof onColumnFilters === 'function') {
-        if (typeof updater === 'function') {
-          onColumnFilters(updater(columnFilters));
-        } else {
-          onColumnFilters(updater);
-        }
-      } else {
-        console.warn("ConsensusSamplesTable: 'onColumnFilters' no fue provista por el componente padre.");
-      }
-    },
-
-    enableSorting: true, 
-    enableMultiSort: false, 
-    enableSortingRemoval: true, 
-    enableStickyHeader: true,
-    enableColumnFilters: true, 
-    enableGlobalFilter: false, 
-    enableColumnActions: false,
-    enableColumnResizing: true, 
-    enableDensityToggle: true, 
-    enableFullScreenToggle: false, 
-    enableTopToolbar: true,
+    onColumnFiltersChange: updater => onColumnFilters(typeof updater === 'function' ? updater(columnFilters) : updater),
+    enableSorting: true, enableMultiSort: false, enableSortingRemoval: true, enableStickyHeader: true,
+    enableColumnFilters: true, enableGlobalFilter: false, enableColumnActions: false, enableFacetedValues: false,
+    enableColumnResizing: true, enableDensityToggle: true, enableFullScreenToggle: false, enableTopToolbar: true,
     initialState: { density: 'compact' },
     getRowId: row => row.sample,
     muiPaginationProps: { rowsPerPageOptions: [VISIBLE_ROWS, 25, 50, 100] },

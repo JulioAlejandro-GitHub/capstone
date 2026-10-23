@@ -79,7 +79,8 @@ def population_coverage(populations):
     return {'common_count': len(common), 'union_count': len(union), 'label_conflicts': conflicts, 'coverage': coverage}
 
 
-def consensus(populations, thresholds, offset=0, limit=25, category='all', sort_by=None, sort_desc=False):
+def consensus(populations, thresholds, offset=0, limit=25, category='all', sort_by=None, sort_desc=False,
+              sample_query=None, label=None, score_ranges=None):
     """All ratios use the explicitly identified common population."""
     base = population_coverage(populations)
     common = set.intersection(*(set(p) for p in populations)) if populations else set()
@@ -96,6 +97,7 @@ def consensus(populations, thresholds, offset=0, limit=25, category='all', sort_
     all_wrong = 0
     matches = []
     high_count = low_count = 0
+    query, label_filter = (sample_query or '').strip().lower(), label
     for sample in sorted(common):
         values = [p[sample] for p in populations]
         correct = [v['correct'] for v in values]
@@ -115,7 +117,11 @@ def consensus(populations, thresholds, offset=0, limit=25, category='all', sort_
             for j, w in enumerate(values):
                 agreement[i][j] += v['prediction'] == w['prediction']
                 overlap[i][j] += not v['correct'] and not w['correct']
-        if category in ('all', kind) or (category == 'high_confidence_error' and high) or (category == 'low_confidence' and low):
+        in_category = category in ('all', kind) or (category == 'high_confidence_error' and high) or (category == 'low_confidence' and low)
+        in_columns = ((not query or query in sample.lower()) and (label_filter is None or label == label_filter)
+                      and all(i < len(values) and (lo is None or values[i]['score'] >= lo) and (hi is None or values[i]['score'] <= hi)
+                              for i, (lo, hi) in (score_ranges or {}).items()))
+        if in_category and in_columns:
             matches.append({'sample': sample, 'label': label, 'category': kind, 'runs': values,
                                 'high_confidence_error': high, 'low_confidence': low})
     if sort_by:
@@ -341,7 +347,14 @@ class ScientificReportService:
                         namespaces = {bool(m.get('evaluation', {}).get('source_assessment_attempt_id')) for m in metrics}
                         if len(namespaces) > 1:
                             issues.append('Identidades sample relativas y sample_id no tienen correspondencia acreditada.')
-                        data = {'state': 'incompatible' if any(m['state'] == 'incompatible' for m in metrics) or any(populations) else 'missing', 'issues': issues} if issues else consensus(populations, thresholds, request.offset, request.limit, request.category, request.sort_by, request.sort_desc)
+                        data = {'state': 'incompatible' if any(m['state'] == 'incompatible' for m in metrics) or any(populations) else 'missing', 'issues': issues} if issues else consensus(populations, thresholds, request.offset, request.limit, request.category, request.sort_by, request.sort_desc,
+                            request.sample_query, request.label, request.score_ranges)
+                        if data.get('state') == 'available':
+                            # EVALUATE attempt of each RUN: the lineage under which a sample's original image is served.
+                            data['sources'] = [{'training_run_id': str(s.training_run_id), 'attempt_id': str(e['source_assessment_attempt_id']),
+                                                'dataset_version_id': str(e['dataset_version_id']), 'split': e.get('split')}
+                                               if (e := m.get('evaluation') or {}).get('source_assessment_attempt_id') and e.get('dataset_version_id') else None
+                                               for s, m in zip(request.selections, metrics)]
                         if request.module == 'questions':
                             data = {'consensus': data, 'answers': [
                                 ('Con un solo RUN no hay complementariedad que medir; los errores del modelo están en Errores.' if len(request.selections) == 1 else

@@ -265,3 +265,15 @@ def test_consensus_sorts_the_whole_filtered_population_before_paging():
     assert [s['sample'] for s in consensus([population], [.5], sort_by='label')['samples']] == ['b', 'd', 'a', 'c']
     with pytest.raises(ValueError):
         ScientificReportRequest(module='consensus', selections=[{'training_run_id': UUID(int=1)}], sort_by='score; drop')
+
+
+def test_consensus_column_filters_apply_to_the_whole_population_before_paging():
+    population = {name: {'label': label, 'score': score, 'prediction': int(score >= .5), 'correct': int(score >= .5) == label}
+                  for name, label, score in [('img_a', 1, .9), ('img_b', 0, .7), ('cell_c', 1, .2), ('cell_d', 0, .05)]}
+    assert [s['sample'] for s in consensus([population], [.5], sample_query='CELL')['samples']] == ['cell_c', 'cell_d']
+    assert [s['sample'] for s in consensus([population], [.5], label=0)['samples']] == ['cell_d', 'img_b']
+    page = consensus([population], [.5], limit=1, score_ranges={0: (.1, None)}, sort_by='run-0')
+    assert [s['sample'] for s in page['samples']] == ['cell_c'] and page['total'] == 3
+    assert consensus([population], [.5], label=1, score_ranges={0: (None, .5)})['total'] == 1
+    with pytest.raises(ValueError):
+        ScientificReportRequest(module='consensus', selections=[{'training_run_id': UUID(int=1)}], score_ranges={10: (0, 1)})
