@@ -364,6 +364,41 @@ export function PersistedXAI({selection, datasource, active, attemptIds, canGene
   const lastRows = useRef<XAIComparison[]>([]);
   if (fresh) lastRows.current = fresh;
   const rows = fresh ?? (composed.loading || choices.loading ? lastRows.current : []);
+  // EVALUATE attempts of this TRAIN give each visible cell its real class, predicted class and score.
+  const evaluations = useComparisonEvidence(cache, JSON.stringify(['xai-evaluations', datasource, selection.training_run_id, revision]), async () => {
+    const all: import('../../types/api').AssessmentChoice[] = [];
+    for (let page = 0; ; page += 100) {
+      const response = await api.getTrainingAssessments(selection.training_run_id, page);
+      all.push(...response.items.filter(r => r.kind === 'evaluate' && r.training_run_id === selection.training_run_id && r.state === 'verified'));
+      if (response.items.length < 100) return all;
+    }
+  }, active);
+  const visibleRows = rows.slice(rowPage*5, rowPage*5+5);
+  const evaluateFor = (split?: string) => {
+    if (!split) return undefined;
+    if (selection.evaluation?.source === 'assessment' && selection.split === split) return selection.evaluation.attempt_id;
+    return evaluations.data?.filter(choice => choice.split === split).sort((a, b) => b.started_at.localeCompare(a.started_at))[0]?.attempt_id;
+  };
+  const wanted = [...new Set(visibleRows.flatMap(row => row.sampleId && evaluateFor(row.split) ? [`${evaluateFor(row.split)}|${row.split}|${row.sampleId}`] : []))].sort();
+  const outcomes = useComparisonEvidence(cache, wanted.length ? JSON.stringify(['xai-outcomes', wanted]) : null, async () => {
+    const byAttempt = new Map<string, {split: string; samples: string[]}>();
+    for (const item of wanted) {
+      const [attempt, split, sample] = item.split('|');
+      const entry = byAttempt.get(attempt) ?? {split, samples: []};
+      entry.samples.push(sample); byAttempt.set(attempt, entry);
+    }
+    const found: Record<string, NonNullable<XAIComparison['outcome']>> = {};
+    for (const [attempt, {split, samples}] of byAttempt) {
+      for (const item of (await api.getAssessmentResults(attempt, samples)).items) {
+        found[`${split}|${item.sample_id}`] = {label: item.label, predicted: item.predicted, score: item.raw_score, threshold: item.threshold, split, attemptId: attempt};
+      }
+    }
+    return found;
+  }, active);
+  const withOutcome = (items: XAIComparison[]) => items.map(row => {
+    const outcome = row.sampleId && row.split ? outcomes.data?.[`${row.split}|${row.sampleId}`] : undefined;
+    return outcome ? {...row, outcome} : row;
+  });
   // Compare the split of what is actually shown (a focused TEST cell comes from its TEST context, not from VAL EXPLAIN).
   const splits = [...new Set(rows.flatMap(row => row.split ? [row.split] : []))].filter(split => selection.split && split !== selection.split);
   return <section>
@@ -374,7 +409,7 @@ export function PersistedXAI({selection, datasource, active, attemptIds, canGene
     {splits.length > 0 && <p className="ds-callout" data-tone="warning">EXPLAIN sobre {splits.map(split => split.toUpperCase()).join(', ')}; la evaluación del análisis es {selection.split!.toUpperCase()}. Las explicaciones describen el mismo TRAIN, pero no la población evaluada.</p>}
     {selection.checkpoint_artifact_id && picked.some(choice => choice.checkpoint_artifact_id !== selection.checkpoint_artifact_id) && <p className="ds-callout" data-tone="warning">El EXPLAIN registra otro identificador de checkpoint que la evaluación seleccionada; verifica el SHA-256 en Trazabilidad antes de atribuirlo al mismo archivo.</p>}
     {!attemptIds && !focusSample && listed && listed.length > 0 && <label>Explicación persistida<select className="ds-control" value={selected?.attempt_id ?? ''} onChange={e => {setAttempt(e.target.value); setOffset(0); setRowPage(0);}}>{listed.map((c,i) => <option value={c.attempt_id} key={c.attempt_id}>{i+1} · {c.split.toUpperCase()} · {c.state} · {new Date(c.started_at).toLocaleString('es-CL')}</option>)}</select></label>}
-    {active && rows.slice(rowPage*5,rowPage*5+5).map(row => <GeneratedXAIComparison key={row.id} comparison={row} datasource={datasource} active={active} lazy authorized={canGenerate} blocked={blocked} onEvidenceChange={() => { setRevision(n => n+1); onGenerated?.(); }} />)}
+    {active && withOutcome(rows.slice(rowPage*5,rowPage*5+5)).map(row => <GeneratedXAIComparison key={row.id} comparison={row} datasource={datasource} active={active} lazy authorized={canGenerate} blocked={blocked} onEvidenceChange={() => { setRevision(n => n+1); onGenerated?.(); }} />)}
     {!focusSample && rows.length > 5 && <nav aria-label="Muestras XAI"><button className="ds-button" disabled={!rowPage} onClick={() => setRowPage(n => n-1)}>Muestras anteriores</button><button className="ds-button" disabled={(rowPage+1)*5 >= rows.length} onClick={() => setRowPage(n => n+1)}>Muestras siguientes</button></nav>}
     {!focusSample && composed.data && (offset > 0 || composed.data.primaryCount === 100) && <nav aria-label="Páginas de explicaciones"><button className="ds-button" disabled={offset === 0} onClick={() => {setOffset(n => n-100); setRowPage(0);}}>Anterior</button><span>Página {offset/100+1}</span><button className="ds-button" disabled={composed.data.primaryCount < 100} onClick={() => {setOffset(n => n+100); setRowPage(0);}}>Siguiente</button></nav>}
   </section>;

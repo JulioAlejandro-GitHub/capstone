@@ -42,8 +42,9 @@ def assessment(attempt_id: UUID, service: Service, view: Literal['existing', 'tr
 
 @router.get("/{attempt_id}/results", response_model=AssessmentPayloads)
 def results(attempt_id: UUID, service: Service, limit: int = Query(100, ge=1, le=1000),
-            offset: int = Query(0, ge=0), view: Literal['existing', 'traceability'] = 'existing') -> dict[str, Any]:
-    return service.payloads(attempt_id,"results",limit,offset, view == "traceability")
+            offset: int = Query(0, ge=0), view: Literal['existing', 'traceability'] = 'existing',
+            sample_id: Annotated[list[UUID] | None, Query(max_length=100)] = None) -> dict[str, Any]:
+    return service.payloads(attempt_id,"results",limit,offset, view == "traceability", sample_id)
 
 
 @router.get("/{attempt_id}/artifacts", response_model=AssessmentPayloads)

@@ -218,7 +218,7 @@ test('visible observer defers image hooks; image action opens native modal and c
   const inline=nodes(first,node=>typeof node.props.onExpand==='function')[0];
   inline.props.onExpand('shap'); assert.equal(state[1],'shap');
   const modalTree=render(); effects[1](); assert.equal(shown,1);
-  const contents=nodes(modalTree,node=>node.props.comparison===comparison);
+  const contents=nodes(modalTree,node=>node.props.comparison===comparison && node.props.resources);
   assert.equal(contents.length,2); assert.equal(contents[0].props.resources,contents[1].props.resources);
   nodes(modalTree,node=>node.type==='dialog')[0].props.onClose();
   assert.equal(state[1],null); assert.equal(focused,1); cleanup(); assert.ok(disconnected>=1);
@@ -410,4 +410,13 @@ test('overlay offers per-layer generation next to the title and keeps generated 
   assert.match(html,/<button[^>]*title="Generar LIME para esta célula"[^>]*>Generar LIME/);
   assert.match(html,/<button[^>]*disabled=""[^>]*title="Agente de GPU no activo."[^>]*>Generar SHAP/);
   assert.doesNotMatch(renderToStaticMarkup(React.createElement(XAIOverlayView,{comparison:row,resources,datasource:'malaria'})),/Generar/);
+});
+
+test('cell outcome shows real class, the model category and its score against the threshold', () => {
+  const {CellOutcome}=loader({'../../hooks/useScientificArtifact':{}})('components/reports/XAIComparisonViewer.tsx');
+  const html=renderToStaticMarkup(React.createElement(CellOutcome,{comparison:{id:'x',trainingRunId:'t',methods:{},outcome:{label:1,predicted:0,score:0.0020457,threshold:0.0861628,split:'test',attemptId:'a'}}}));
+  for (const text of ['Clase real','Parasitada','Categoría','Falso negativo','Score','0,002','umbral 0,0862']) assert.ok(html.includes(text),text);
+  assert.match(html,/data-correct="false"/);
+  assert.match(renderToStaticMarkup(React.createElement(CellOutcome,{comparison:{id:'x',trainingRunId:'t',methods:{},sampleRecord:{label:0}}})),/No parasitada/);
+  assert.equal(renderToStaticMarkup(React.createElement(CellOutcome,{comparison:{id:'x',trainingRunId:'t',methods:{}}})),'');
 });

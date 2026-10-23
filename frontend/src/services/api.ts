@@ -1170,6 +1170,9 @@ export const api = {
     return request<{items: AssessmentChoice[]}>(`/assessments`, {limit: 100, offset}, {signal});
   },
 
+  getAssessmentResults(attemptId: string, sampleIds: string[], signal?: AbortSignal) {
+    return request<{items: {sample_id: string; label: number; predicted: number; raw_score: number; threshold: number}[]}>(`/assessments/${encodeURIComponent(attemptId)}/results`, {limit: 100, sample_id: sampleIds}, {signal});
+  },
   getAssessmentArtifacts(attemptId: string, offset = 0, signal?: AbortSignal, sampleIds?: string[]) {
     return request<{items: AssessmentArtifact[]}>(`/assessments/${encodeURIComponent(attemptId)}/artifacts`, {limit: 100, offset, view: 'traceability', sample_id: sampleIds?.length ? sampleIds : undefined}, {signal});
   },

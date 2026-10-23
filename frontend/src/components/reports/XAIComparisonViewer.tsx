@@ -126,6 +126,21 @@ function EvidencePanel({ evidence, method, resource, sample, onExpand, generatio
   </section>;
 }
 
+const outcomeCategory = (label: number, predicted: number) =>
+  label === 1 ? (predicted === 1 ? 'Verdadero positivo' : 'Falso negativo') : (predicted === 1 ? 'Falso positivo' : 'Verdadero negativo');
+const decimal = (value: number) => value.toLocaleString('es-CL', { maximumFractionDigits: 4 });
+/** Real class, the model's category for this cell and its score against the decision threshold. */
+export function CellOutcome({ comparison }: { comparison: XAIComparison }) {
+  const outcome = comparison.outcome;
+  const label = outcome?.label ?? comparison.sampleRecord?.label;
+  if (label == null && !outcome) return null;
+  return <dl className="xai-outcome" aria-label="Resultado del modelo en esta célula">
+    <div><dt>Clase real</dt><dd>{label === 1 ? 'Parasitada' : label === 0 ? 'No parasitada' : 'No registrada'}</dd></div>
+    {outcome && <div data-correct={outcome.label === outcome.predicted}><dt>Categoría</dt><dd>{outcomeCategory(outcome.label, outcome.predicted)}</dd></div>}
+    {outcome && <div><dt>Score</dt><dd title={`EVALUATE ${outcome.split.toUpperCase()} · intento ${outcome.attemptId}`}>{decimal(outcome.score)} <small>umbral {decimal(outcome.threshold)}</small></dd></div>}
+  </dl>;
+}
+
 /** Pure shared presentation: neither modal nor inline starts a second image request. */
 export function XAIComparisonContent({ comparison, resources, onExpand, generation, actions, density = 'compact' }: {
   density?: 'compact' | 'expanded'; actions?: ReactNode;
@@ -133,7 +148,7 @@ export function XAIComparisonContent({ comparison, resources, onExpand, generati
   generation?: Partial<Record<XAIMethod, XAIGenerationAction>>;
 }) {
   return <div className="xai-content" data-density={density}>
-    {(onExpand || actions) && <div className="xai-toolbar">{onExpand && <button className="ds-button xai-expand" type="button" onClick={() => onExpand('original')}>Ampliar comparación</button>}{actions}</div>}
+    {(onExpand || actions) && <div className="xai-toolbar">{onExpand && <button className="ds-button xai-expand" type="button" onClick={() => onExpand('original')}>Ampliar comparación</button>}<CellOutcome comparison={comparison} />{actions}</div>}
     {comparison.comparabilityIssue && <p className="ds-callout" data-tone="warning">No comparable: {comparison.comparabilityIssue}</p>}
     <div className="xai-scroll" tabIndex={0} role="region" aria-label="Comparación de cuatro cuadros: original, Grad-CAM, LIME y SHAP">
       <div className="xai-grid">
@@ -192,6 +207,7 @@ export function XAIComparisonViewer({ comparison, datasource, generation, action
           {(['comparison', 'overlay'] as const).map(item => <button key={item} type="button" role="tab" className="ds-button" aria-selected={view === item}
             onClick={() => setView(item)}>{item === 'comparison' ? 'Comparación' : 'Superposición'}</button>)}
         </div>
+        <CellOutcome comparison={comparison} />
 
       </div>
       {expanded !== null && (view === 'overlay'

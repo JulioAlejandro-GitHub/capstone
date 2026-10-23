@@ -74,6 +74,18 @@
 .ds-report.scc-page .scc-run-selector { width: min(1340px, calc(100% - var(--ds-space-6))); box-sizing: border-box; }
 .ds-report.scc-page .scc-choices > li { min-width: 0; border: 2px solid var(--ds-border-default); border-radius: var(--ds-radius-lg); }
 .ds-report.scc-page .scc-choices > li[data-selected="true"] { border-color: var(--ds-action-fg); background: var(--ds-bg-selected); }
+.ds-report.scc-page .scc-choices > li:hover { background: var(--ds-bg-hover); }
+
+.ds-report.scc-page .scc-choices>li label input[type="checkbox"]:not(:disabled),
+.ds-report.scc-page .scc-choices>li>label:has(input[type="checkbox"]:not(:disabled)) {
+  cursor: pointer;
+}
+
+.ds-report.scc-page .scc-choices>li label input[type="checkbox"]:disabled,
+.ds-report.scc-page .scc-choices>li>label:has(input[type="checkbox"]:disabled) {
+  cursor: not-allowed;
+}
+
 .ds-report.scc-page .report-row--compact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.3fr) minmax(0, 1fr); box-shadow: none; }
 .ds-report.scc-page .report-row--compact .report-cell { padding: var(--ds-space-3); gap: var(--ds-space-3); overflow-wrap: anywhere; }
 @media (max-width: 1000px) {
@@ -290,3 +302,10 @@
 .ds-report .xai-overlay-thumb[data-running="true"] { animation: xai-pulse 1.4s ease-in-out infinite; }
 @keyframes xai-pulse { 50% { opacity: .5; } }
 @media (prefers-reduced-motion: reduce) { .ds-report .xai-overlay-thumb[data-running="true"] { animation: none; } }
+.ds-report .xai-outcome { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2); margin: 0; }
+.ds-report .xai-outcome > div { display: inline-flex; align-items: baseline; gap: var(--ds-space-1, 4px); padding: var(--ds-space-1, 4px) var(--ds-space-3); border: 1px solid var(--ds-border-default); border-radius: 999px; background: var(--ds-bg-subtle); font-size: var(--ds-text-sm); }
+.ds-report .xai-outcome dt { color: var(--ds-fg-muted); font-size: var(--ds-text-xs); }
+.ds-report .xai-outcome dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ds-report .xai-outcome dd small { font-weight: normal; color: var(--ds-fg-muted); }
+.ds-report .xai-outcome > div[data-correct="false"] { border-color: var(--ds-status-rejected-fg); color: var(--ds-status-rejected-fg); }
+.ds-report .xai-outcome > div[data-correct="true"] { border-color: var(--ds-status-approved-fg); }

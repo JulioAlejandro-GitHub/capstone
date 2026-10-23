@@ -47,6 +47,8 @@ export interface XAIComparison {
   targetClass?: 0 | 1;
   // Governed record of the explained cell, read once from any identity that lists it.
   sampleRecord?: { relativePath?: string; label?: number };
+  // The model's decision on this cell, from the EVALUATE of the same split (label, predicted class, raw score).
+  outcome?: { label: number; predicted: number; score: number; threshold: number; split: string; attemptId: string };
   comparabilityIssue?: string;
   original?: XAIEvidence;
   methods: Partial<Record<XAIMethod, XAIEvidence>>;
