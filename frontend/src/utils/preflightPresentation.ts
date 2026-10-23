@@ -63,12 +63,15 @@ export function evaluationDetails(data: PreflightResponse): DetailField[] {
 export function openEvidenceTarget(target: HTMLElement | null) {
   if (!target) return;
   let ancestor: HTMLElement | null = target;
+  let tab: HTMLElement | null = null;
   while (ancestor) {
     if (ancestor.tagName === 'DETAILS') (ancestor as HTMLDetailsElement).open = true;
+    // A hidden tab panel is revealed through its own tab, so the owning component keeps the selection.
+    if (ancestor.hidden && ancestor.getAttribute('role') === 'tabpanel') tab = document.getElementById(ancestor.getAttribute('aria-labelledby') ?? '') ?? tab;
     ancestor = ancestor.parentElement;
   }
-  target.scrollIntoView({ block: 'center' });
-  target.focus({ preventScroll: true });
+  const reveal = () => { target.scrollIntoView({ block: 'center' }); target.focus({ preventScroll: true }); };
+  if (tab) { tab.click(); requestAnimationFrame(reveal); } else reveal();
 }
 
 function evaluationField(data: PreflightResponse, selectionId: string, field: string): Observation | undefined {

@@ -318,3 +318,36 @@
 .ds-report.scc-page .scc-represent-run { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-3); }
 .ds-report.scc-page .scc-tooltip { max-width: 320px; padding: var(--ds-space-2) var(--ds-space-3); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-sm); background: var(--ds-bg-surface, var(--ds-slate-0)); font-size: var(--ds-text-xs); }
 .ds-report.scc-page .scc-tooltip code { word-break: break-all; }
+
+/* Trazabilidad: answer, provenance chain chart, then detail tabs instead of one long scroll. */
+.ds-report.scc-page .scc-coverage { margin: 0 0 var(--ds-space-5, 20px); padding: var(--ds-space-4); background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-lg); }
+.ds-report.scc-page .scc-coverage figcaption { display: grid; gap: var(--ds-space-1, 2px); margin-bottom: var(--ds-space-3); }
+.ds-report.scc-page .scc-coverage-table { width: 100%; min-width: 720px; border-collapse: separate; border-spacing: var(--ds-space-2); table-layout: fixed; }
+.ds-report.scc-page .scc-coverage-table thead th { font-size: var(--ds-text-xs); font-weight: 600; color: var(--ds-fg-muted); text-align: left; vertical-align: bottom; }
+.ds-report.scc-page .scc-coverage-table thead th:first-child,
+.ds-report.scc-page .scc-coverage-table tbody th,
+.ds-report.scc-page .scc-coverage-table tfoot th { width: 150px; }
+.ds-report.scc-page .scc-coverage-table thead .scc-module-badge { display: block; inline-size: fit-content; margin: 0 0 var(--ds-space-1, 2px); }
+.ds-report.scc-page .scc-coverage-table tbody th { text-align: left; font-weight: 600; border-inline-start: 3px solid var(--ds-border-default); padding-inline-start: var(--ds-space-3); }
+.ds-report.scc-page .scc-coverage-table tbody th small { display: block; font-weight: normal; color: var(--ds-fg-muted); }
+.ds-report.scc-page .scc-coverage-table tbody th[data-run="0"] { border-inline-start-color: var(--ds-blue-500); }
+.ds-report.scc-page .scc-coverage-table tbody th[data-run="1"] { border-inline-start-color: var(--ds-green-700); }
+.ds-report.scc-page .scc-coverage-table tbody th[data-run="2"] { border-inline-start-color: var(--ds-violet-700); }
+.ds-report.scc-page .scc-coverage-table tbody th[data-run="3"] { border-inline-start-color: var(--ds-amber-700); }
+.ds-report.scc-page .scc-coverage-table tfoot th { font-size: var(--ds-text-xs); font-weight: 600; color: var(--ds-fg-muted); text-align: left; }
+.ds-report.scc-page .scc-coverage-cell { display: grid; gap: var(--ds-space-1, 2px); inline-size: 100%; padding: var(--ds-space-2) var(--ds-space-3); text-align: left; font: inherit; color: var(--ds-status-neutral-fg); background: var(--ds-status-neutral-bg); border: 1px solid transparent; border-radius: var(--ds-radius-md); cursor: pointer; }
+.ds-report.scc-page .scc-coverage-cell[data-tone="approved"] { color: var(--ds-status-approved-fg); background: var(--ds-status-approved-bg); }
+.ds-report.scc-page .scc-coverage-cell[data-tone="warning"] { color: var(--ds-status-warning-fg); background: var(--ds-status-warning-bg); }
+.ds-report.scc-page .scc-coverage-cell[data-tone="rejected"] { color: var(--ds-status-rejected-fg); background: var(--ds-status-rejected-bg); }
+.ds-report.scc-page .scc-coverage-cell:hover { border-color: currentColor; }
+.ds-report.scc-page .scc-coverage-cell:focus-visible { outline: var(--ds-focus-width) solid var(--ds-focus-color); outline-offset: 2px; }
+.ds-report.scc-page .scc-coverage-cell strong { font-size: var(--ds-text-md, 15px); font-variant-numeric: tabular-nums; color: var(--ds-fg-default); }
+.ds-report.scc-page .scc-coverage-cell small { font-size: var(--ds-text-xs); }
+.ds-report.scc-page .scc-coverage-bar { display: block; block-size: 6px; border-radius: 999px; background: color-mix(in srgb, currentColor 18%, transparent); overflow: hidden; }
+.ds-report.scc-page .scc-coverage-bar > span { display: block; block-size: 100%; background: currentColor; border-radius: inherit; }
+.ds-report.scc-page .scc-methodological-synthesis h4 { margin: 0 0 var(--ds-space-2); }
+.ds-report.scc-page .scc-verdict-list { display: grid; gap: var(--ds-space-2); margin: 0 0 var(--ds-space-3); padding: 0; list-style: none; }
+.ds-report.scc-page .scc-trace-tabs { margin-block: var(--ds-space-5, 20px) var(--ds-space-4); scroll-margin-top: 160px; }
+.ds-report.scc-page .scc-tab-count { padding: 0 var(--ds-space-2); border-radius: 999px; background: var(--ds-bg-subtle); color: var(--ds-fg-muted); font-size: var(--ds-text-xs); font-variant-numeric: tabular-nums; }
+.ds-report.scc-page .scc-trace-panel[hidden] { display: none; }
+.ds-report.scc-page .scc-trace-panel h4 .scc-module-badge { margin-inline: 0 var(--ds-space-2); }

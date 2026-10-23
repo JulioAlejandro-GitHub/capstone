@@ -87,7 +87,8 @@ for (const count of [2, 3, 7]) test(`A1–A6 render ${count} TRAIN columns, part
   const load = loader({ '../../auth': {}, '../../services/api': {}, './AssessmentXAI': {} });
   const { PreflightEvidence } = load('components/reports/ScientificPreflight.tsx');
   const html = renderToStaticMarkup(React.createElement(PreflightEvidence, { data: fixture(count) }));
-  assert.equal((html.match(/scope="col"/g) ?? []).length, 4 * count + 12);
+  // 7 = provenance chart header (RUN + A1–A6); the rest are parameter, inventory and diagnosis columns.
+  assert.equal((html.match(/scope="col"/g) ?? []).length, 4 * count + 12 + 7);
   for (const value of ['A1','A2','A3','A4','A5','A6','Curvas de aprendizaje','Métricas VAL/TEST','Consenso y desacuerdo','XAI','Embeddings','PCA','UMAP','CKA','Sin evidencia','No verificado','referencia-individual','random_seed: ']) assert.ok(html.includes(value), value);
   assert.doesNotMatch(html, /Comparación controlada válida|Protocolo TESTED/);
 });
@@ -132,10 +133,11 @@ test('evidence stays inline without the traceability drawer provider', () => {
   const html = renderToStaticMarkup(React.createElement(EvidenceButton, { title: 'Protocolo' }, 'json'));
   assert.match(html, /<details><summary>Protocolo<\/summary>json<\/details>/);
 });
-test('no initial query with insufficient selection or selection exceeding configured capacity', async () => {
+test('no initial query with an empty selection or one exceeding configured capacity; one RUN is queried', async () => {
   let calls = 0; const s = screen({ getComparisonPreflight: async () => { calls++; return fixture(); } });
-  for (const ids of [[], ['a'], ['a','b','c','d','e','f','g','h']]) { s.props.ids = ids; s.render(); await flush(); }
-  assert.equal(calls, 0); s.h.dispose();
+  for (const ids of [[], ['a','b','c','d','e','f','g','h']]) { s.props.ids = ids; s.render(); await flush(); }
+  assert.equal(calls, 0);
+  s.props.ids = ['a']; s.render(); await flush(); assert.equal(calls, 1); s.h.dispose();
 });
 test('cache deduplicates concurrent calls, retains success, evicts failure, and isolates contexts', async () => {
   const { createComparisonCache } = loader()('utils/comparisonCache.ts');
@@ -270,7 +272,7 @@ for (const count of [2, 3, 4]) test(`UX matrix preserves ${count} aliases and ex
   const { PreflightEvidence } = loader({ '../../auth': {}, '../../services/api': {}, './AssessmentXAI': {} })('components/reports/ScientificPreflight.tsx');
   const data = fixture(count);
   const html = renderToStaticMarkup(React.createElement(PreflightEvidence, { data }));
-  const head = html.match(/<thead>(.*?)<\/thead>/s)[1];
+  const head = html.split('scc-parameter-table')[1].match(/<thead>(.*?)<\/thead>/s)[1];
   assert.equal((head.match(/scope="col"/g) ?? []).length, count + 1);
   data.selections.forEach((selection, index) => {
     assert.ok(head.includes(`RUN ${String.fromCharCode(65 + index)}`));
@@ -715,7 +717,7 @@ test('missing inventory merges identical causes per RUN, preserves errors, non-a
 test('partial protocol has no empty expansion; identifiers remain consultable and groups retain initial state', () => {
   const h=harness();
   const {PreflightEvidence}=loader({react:h.react,'../../auth':{},'../../services/api':{},'./AssessmentXAI':{}})('components/reports/ScientificPreflight.tsx');
-  for (const count of [1,2,7]) {
+  for (const count of [2,7]) {
     h.reset();
     const tree=h.render(()=>PreflightEvidence({data:fixture(count)}));
     assert.equal(find(tree,n=>n.type==='button' && n.props.children?.includes('Protocolo y regla de decisión')),undefined);
@@ -922,4 +924,31 @@ test('consensus sample rows show the original cell, which opens its expanded XAI
   assert.doesNotMatch(open,/>Explicar</);
   assert.match(renderToStaticMarkup(React.createElement(ConsensusResults,{data,onExplain(){}})),/Sin linaje/);
   assert.doesNotMatch(renderToStaticMarkup(React.createElement(ConsensusResults,{data})),/scc-sample-thumb"><button/);
+});
+
+test('traceability opens with an answer, a provenance chart per RUN and detail tabs', () => {
+  const data = fixture(2);
+  data.evidence[1].value.value.architecture = 'Otra arquitectura';
+  const html = renderToStaticMarkup(React.createElement(presentation().PreflightEvidence, { data }));
+  const overview = html.split('role="tablist"')[0];
+  assert.match(overview, /scc-answer/); assert.match(plain(overview), /2 TRAIN \(Arquitectura real \/ Otra arquitectura\)/);
+  assert.match(plain(overview), /Difieren en Arquitectura/);
+  assert.match(overview, /Cadena de procedencia por RUN/); assert.match(overview, /Dictamen comparativo/);
+  assert.equal((overview.match(/class="scc-coverage-cell"/g) ?? []).length, 2 * 6);
+  for (const label of ['Parámetros', 'Dataset y partición', 'Evidencia pendiente', 'Registro técnico']) assert.ok(html.includes(`>${label}<`), label);
+  assert.equal((html.match(/role="tabpanel"[^>]*hidden=""/g) ?? []).length, 3);
+});
+test('one RUN shows its provenance without comparative verdicts or contrast groups', () => {
+  const h = harness(); const data = fixture(1);
+  const { PreflightEvidence, lineageCoverage } = loader({ react: h.react, '../../auth': {}, '../../services/api': {}, './AssessmentXAI': {} })('components/reports/ScientificPreflight.tsx');
+  const tree = h.render(() => PreflightEvidence({ data }));
+  assert.equal(find(tree, n => n.type === 'button' && n.props.children?.[0] === 'Con diferencias'), undefined);
+  assert.ok(find(tree, n => n.type?.name === 'SingleRunParameters'));
+  const html = renderToStaticMarkup(React.createElement(presentation().PreflightEvidence, { data }));
+  const overview = html.split('role="tablist"')[0];
+  assert.match(plain(overview), /requieren al menos dos TRAIN/);
+  assert.doesNotMatch(overview, /Dictamen comparativo|scc-verdict/);
+  const coverage = lineageCoverage(data);
+  assert.equal(coverage.A4[0].known, 2); assert.equal(coverage.A3[0].total, 0);
+  h.dispose();
 });

@@ -1,9 +1,9 @@
 import { DatasetIntegrity } from './DatasetIntegrity';
 import { CurvesModule, MetricsModule, ConsensusModule, ScientificQuestions, PersistedXAI } from './ScientificReport';
 import { ScientificRepresentations } from './ScientificRepresentations';
-import { AnalysisPanel, AnalysisSectionNav, analysisSections, defaultAnalysisSection, useVisitedSections, type AnalysisSection } from './AnalysisWorkspace';
+import { AnalysisPanel, AnalysisSectionNav, Kpi, SectionAnswer, analysisSections, defaultAnalysisSection, useVisitedSections, type AnalysisSection } from './AnalysisWorkspace';
 import { ComparisonPython, configurationLabels, CopyText } from './ComparisonPython';
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useMemo, useState, type KeyboardEvent } from 'react';
 import { useAuth } from '../../auth';
 import { api, ApiError } from '../../services/api';
 import { useComparisonEvidence } from '../../hooks/useComparisonEvidence';
@@ -148,7 +148,8 @@ function evidenceTarget(selectionId: string, reference: string) {
 }
 function ConsolidatedDetail({ fields, data }: { fields: DetailField[]; data: PreflightResponse }) {
   const classified = classifyFields(fields);
-  const shared = classified.filter(field => field.group === 'Sin diferencias');
+  // A single RUN has nothing to contrast: every accredited value is listed once.
+  const shared = classified.filter(field => field.group === 'Sin diferencias' || (data.selections.length === 1 && field.values[0]?.state === 'known'));
   const other = classified.filter(field => field.group !== 'Sin diferencias' && field.values.some(value => value?.state === 'known'));
   const absent = classified.filter(field => !shared.includes(field) && !other.includes(field));
   return <div className="scc-consolidated-detail">
@@ -167,14 +168,14 @@ export function PartitionCards({ data }: { data: PreflightResponse }) {
     { title: 'Distribución', fields: [field('A2', 'counts.train', 'TRAIN'), field('A2', 'counts.val', 'VAL'), field('A2', 'counts.test', 'TEST'), dataset[6]] },
     { title: 'Materialización', fields: partition.filter(row => ['Estado de materialización', 'Reconciliación', 'Registros materializados', 'Materialización de la misma versión'].includes(row.label)) },
   ];
-  return <section aria-label="Dataset y partición"><details className="ds-accordion"><summary>A1 · Dataset y A2 · Partición</summary>
-    <div className="scc-partition-cards">{cards.map(card => <section className="ds-section" key={card.title}><h4>{card.title} {['Dataset', 'Partición'].includes(card.title) && data.dimensions.filter(item => item.dimension === (card.title === 'Dataset' ? 'A1' : 'A2')).map(item => <VerdictBadge key={item.scope.scope_id} verdict={item.verdict} />)}</h4><ConsolidatedDetail fields={card.fields} data={data} />{card.fields.some(field => compareValues(field.values).group === 'Con diferencias') && <p className="scc-meta">Diferencia de procedencia: consulte la población y el split de cada análisis antes de interpretar un contraste directo.</p>}</section>)}
+  return <section aria-label="Dataset y partición">
+    <div className="scc-partition-cards">{cards.map(card => <section className="ds-section" key={card.title}><h4>{card.title} {['Dataset', 'Partición'].includes(card.title) && data.selections.length > 1 && data.dimensions.filter(item => item.dimension === (card.title === 'Dataset' ? 'A1' : 'A2')).map(item => <VerdictBadge key={item.scope.scope_id} verdict={item.verdict} />)}</h4><ConsolidatedDetail fields={card.fields} data={data} />{card.fields.some(field => compareValues(field.values).group === 'Con diferencias') && <p className="scc-meta">Diferencia de procedencia: consulte la población y el split de cada análisis antes de interpretar un contraste directo.</p>}</section>)}
       <DatasetIntegrity data={data} />
       <section className="ds-section"><h4>Trazabilidad</h4><button className="ds-button" onClick={() => openEvidenceTarget(document.getElementById('scc-technical-registry'))}>Consultar identificadores y fuentes</button><p>Dataset, campaña y fingerprints conservan su procedencia en el registro técnico.</p></section>
     </div>
     <p>La partición gobernada no acredita por sí sola el consumo individual de imágenes durante TRAIN. La población de evaluación alineada se documenta en A3.</p>
     <ConsolidatedDetail fields={[partition[partition.length - 1]]} data={data} />
-  </details></section>;
+  </section>;
 }
 
 export function MethodologicalWarnings({ data, findings }: { data: PreflightResponse; findings: Finding[] }) {
@@ -206,13 +207,14 @@ function AvailabilityMatrix({ data }: { data: PreflightResponse }) {
 export function MethodologicalSynthesis({ data }: { data: PreflightResponse }) {
   const states = Object.keys(stateLabels).flatMap(state => {
     const analyses = data.analyses.filter(analysis => verdictText(analysis.verdict) === state);
-    return analyses.length ? [`${stateLabels[state]}: ${[...new Set(analyses.map(analysis => modules[analysis.module_id]))].join(', ')} (${analyses.length} ${analyses.length === 1 ? 'alcance' : 'alcances'})`] : [];
+    return analyses.length ? [{ state, modules: [...new Set(analyses.map(analysis => modules[analysis.module_id]))], count: analyses.length }] : [];
   });
   const differences = data.dimensions.filter(item => item.findings.some(finding => finding.kind === 'difference'));
   return <div className="scc-methodological-synthesis" aria-label="Síntesis de la comparación">
-    <p>{states.join(' · ') || 'No hay dictámenes por análisis en esta respuesta.'}</p>
-    <p>{differences.length ? `Diferencias documentadas: ${[...new Set(differences.map(item => `${item.dimension} · ${dimensions[item.dimension]}`))].join(', ')}. ` : ''}La configuración TRAIN describe variables experimentales; EVALUATE conserva su split y protocolo. La cobertura de EXPLAIN depende de los métodos y artefactos acreditados.</p>
-    <button className="ds-button" onClick={() => openEvidenceTarget(document.getElementById('scc-analysis-diagnostics'))}>Consultar alcances y límites por análisis</button>
+    <h4>¿Qué análisis se pueden comparar?</h4>
+    {states.length ? <ul className="scc-verdict-list">{states.map(item => <li key={item.state}><span className="scc-verdict" data-state={item.state}>{stateLabels[item.state]}</span>: {item.modules.join(', ')} <small className="scc-meta">({item.count} {item.count === 1 ? 'alcance' : 'alcances'})</small></li>)}</ul> : <p>No hay dictámenes por análisis en esta respuesta.</p>}
+    <p className="scc-meta">{differences.length ? `Diferencias documentadas: ${[...new Set(differences.map(item => `${item.dimension} · ${dimensions[item.dimension]}`))].join(', ')}. ` : ''}La configuración TRAIN describe variables experimentales; EVALUATE conserva su split y protocolo.</p>
+    <button className="ds-button" data-size="compact" onClick={() => openEvidenceTarget(document.getElementById('scc-analysis-diagnostics'))}>Consultar alcances y límites por análisis</button>
   </div>;
 }
 
@@ -224,32 +226,161 @@ function EvidenceLinks({ data, ids }: { data: PreflightResponse; ids: string[] }
   })}</>;
 }
 
-export function EvidenceInventory({ data, fields }: { data: PreflightResponse; fields: DetailField[] }) {
-  const entries = missingEvidence(data, fields);
-  return <details className="ds-accordion" id="scc-missing-evidence"><summary>Inventario de evidencia pendiente y errores · {entries.length} causas por RUN</summary>
-    <p>La ausencia de un dato no acredita que no se haya ejecutado o persistido. Los impactos se vinculan únicamente a los análisis referenciados por el preflight.</p>
-    <div className="report-table-scroll" role="region" aria-label="Evidencia pendiente" tabIndex={0}><table className="report-data-table"><thead><tr>{['Evidencia', 'RUN', 'Causa', 'Impacto', 'Estado'].map(label => <th scope="col" key={label}>{label}</th>)}</tr></thead>
-      <tbody>{entries.map((entry, index) => <tr key={index}><th scope="row">{entry.evidence.join(' · ')}<EvidenceLinks data={data} ids={entry.evidenceIds} /></th><td>{entry.selectionIds.map(id => `RUN ${String.fromCharCode(65 + data.selections.findIndex(selection => selection.selection_id === id))}`).join(', ') || 'Alcance de la consulta'}</td><td>{entry.cause}{entry.errorIds.length > 0 && <code className="report-identifier">{entry.errorIds.join(', ')}</code>}</td><td>{entry.analyses.map(id => { const analysis = data.analyses.find(item => item.analysis_id === id); return analysis ? `${modules[analysis.module_id]}: ${analysis.scope.question}` : id; }).join(' · ') || 'No se puede acreditar este dato; impacto por análisis no especificado.'}</td><td>{entry.state}</td></tr>)}</tbody>
-    </table></div>{!entries.length && <p>Sin carencias registradas en los campos consultados.</p>}
-  </details>;
+// Causes identical in every RUN are listed once with all affected RUN, instead of one row per RUN.
+export function pendingEvidence(data: PreflightResponse, fields: DetailField[]) {
+  const groups = new Map<string, ReturnType<typeof missingEvidence>[number]>();
+  for (const entry of missingEvidence(data, fields)) {
+    const key = JSON.stringify([entry.state, entry.cause, [...entry.evidence].sort(), entry.errorIds]);
+    const previous = groups.get(key);
+    groups.set(key, previous ? { ...previous, selectionIds: [...new Set([...previous.selectionIds, ...entry.selectionIds])],
+      analyses: [...new Set([...previous.analyses, ...entry.analyses])], evidenceIds: [...new Set([...previous.evidenceIds, ...entry.evidenceIds])] } : entry);
+  }
+  return [...groups.values()];
 }
+export function EvidenceInventory({ data, fields }: { data: PreflightResponse; fields: DetailField[] }) {
+  const entries = pendingEvidence(data, fields);
+  const run = (id: string) => `RUN ${String.fromCharCode(65 + data.selections.findIndex(selection => selection.selection_id === id))}`;
+  return <section id="scc-missing-evidence" tabIndex={-1} aria-label="Evidencia pendiente y errores">
+    <p className="scc-meta">{entries.length} {entries.length === 1 ? 'causa' : 'causas'} · La ausencia de un dato no acredita que no se haya ejecutado o persistido. Los impactos se vinculan únicamente a los análisis referenciados por el preflight.</p>
+    <div className="report-table-scroll" role="region" aria-label="Evidencia pendiente" tabIndex={0}><table className="report-data-table"><thead><tr>{['Evidencia', 'RUN', 'Causa', 'Impacto', 'Estado'].map(label => <th scope="col" key={label}>{label}</th>)}</tr></thead>
+      <tbody>{entries.map((entry, index) => <tr key={index}><th scope="row">{entry.evidence.join(' · ')}<EvidenceLinks data={data} ids={entry.evidenceIds} /></th><td>{entry.selectionIds.map(run).join(', ') || 'Alcance de la consulta'}</td><td>{entry.cause}{entry.errorIds.length > 0 && <code className="report-identifier">{entry.errorIds.join(', ')}</code>}</td><td>{[...new Set(entry.analyses.map(id => { const analysis = data.analyses.find(item => item.analysis_id === id); return analysis ? modules[analysis.module_id] : id; }))].join(', ') || 'No se puede acreditar este dato; impacto por análisis no especificado.'}</td><td>{entry.state}</td></tr>)}</tbody>
+    </table></div>{!entries.length && <p>Sin carencias registradas en los campos consultados.</p>}
+  </section>;
+}
+
+const lineage = Object.keys(dimensions) as Dimension[];
+const runLabel = (index: number) => `RUN ${String.fromCharCode(65 + index)}`;
+// Every field a dimension projects, technical identifiers included, so coverage counts the whole lineage link.
+function dimensionFields(data: PreflightResponse, dimension: Dimension): ParameterRow[] {
+  return dimension === 'A4' ? Object.entries(configurationLabels).map(([field, label]) => ({ label, values: data.selections.map(selection => projectField(data, 'A4', selection.selection_id, field)) })) : parameterRows(data, dimension);
+}
+const accredited = (value: Observation | undefined) => value?.state === 'known' && value.value !== null && value.value !== '';
+type Coverage = { known: number; total: number; errors: number };
+export function lineageCoverage(data: PreflightResponse): Record<Dimension, Coverage[]> {
+  return Object.fromEntries(lineage.map(dimension => {
+    const fields = dimensionFields(data, dimension);
+    return [dimension, data.selections.map((_, index) => ({ total: fields.length, known: fields.filter(field => accredited(field.values[index])).length, errors: fields.filter(field => field.values[index]?.state === 'query_error').length }))];
+  })) as Record<Dimension, Coverage[]>;
+}
+function coverageTone({ known, total, errors }: Coverage) {
+  if (errors) return { tone: 'rejected', label: 'Error de consulta' };
+  if (!total) return { tone: 'neutral', label: 'Sin campos' };
+  if (known === total) return { tone: 'approved', label: 'Completo' };
+  return known ? { tone: 'warning', label: 'Parcial' } : { tone: 'neutral', label: 'Sin evidencia' };
+}
+function plainObject(value: Observation | undefined): value is { state: 'known'; value: { [key: string]: JsonValue }; evidence_ids: string[] } {
+  return value?.state === 'known' && Boolean(value.value) && typeof value.value === 'object' && !Array.isArray(value.value);
+}
+// Object parameters (optimizer, augmentation…) are split by key so shared keys appear once.
+function objectFields(values: (Observation | undefined)[]): DetailField[] | undefined {
+  if (values.length < 2 || !values.every(plainObject)) return undefined;
+  const keys = [...new Set(values.flatMap(value => Object.keys(value.value)))];
+  return keys.map(key => ({ label: key, values: values.map(value => ({ state: 'known' as const, value: value.value[key] ?? null, evidence_ids: value.evidence_ids })) }));
+}
+
+const dimensionTab = (dimension: Dimension) => dimension === 'A1' || dimension === 'A2' ? 'dataset' : 'parametros';
+function CoverageChart({ data, coverage, onOpen }: { data: PreflightResponse; coverage: Record<Dimension, Coverage[]>; onOpen: (dimension: Dimension) => void }) {
+  return <figure className="scc-coverage">
+    <figcaption><strong>Cadena de procedencia por RUN</strong><span className="scc-meta">Campos acreditados en cada eslabón, del dataset a la evaluación. Selecciona una celda para ver su detalle.</span></figcaption>
+    <div className="report-table-scroll" tabIndex={0} role="region" aria-label="Cadena de procedencia por RUN"><table className="scc-coverage-table">
+      <thead><tr><th scope="col">RUN</th>{lineage.map(dimension => <th scope="col" key={dimension}><span className="scc-module-badge">{dimension}</span>{dimensions[dimension]}</th>)}</tr></thead>
+      <tbody>{data.selections.map((selection, index) => <tr key={selection.selection_id}>
+        <th scope="row" data-run={index}>{runLabel(index)}<small>{architecture(data, selection)}</small></th>
+        {lineage.map(dimension => {
+          const cell = coverage[dimension][index];
+          const { tone, label } = coverageTone(cell);
+          return <td key={dimension}><button type="button" className="scc-coverage-cell" data-tone={tone} aria-label={`${runLabel(index)} · ${dimensions[dimension]}: ${cell.known} de ${cell.total} campos · ${label}`} onClick={() => onOpen(dimension)}>
+            <span className="scc-coverage-bar" aria-hidden="true"><span style={{ inlineSize: `${cell.total ? Math.round(100 * cell.known / cell.total) : 0}%` }} /></span>
+            <strong>{cell.total ? `${cell.known}/${cell.total}` : '—'}</strong><small>{label}</small>
+          </button></td>;
+        })}
+      </tr>)}</tbody>
+      {data.selections.length > 1 && <tfoot><tr><th scope="row">Dictamen comparativo</th>{lineage.map(dimension => <td key={dimension}>{data.dimensions.filter(item => item.dimension === dimension).map(item => <VerdictBadge key={item.scope.scope_id} verdict={item.verdict} />)}</td>)}</tr></tfoot>}
+    </table></div>
+  </figure>;
+}
+
+function TraceabilityOverview({ data, coverage, differences, pending, onOpen }: { data: PreflightResponse; coverage: Record<Dimension, Coverage[]>; differences: string[]; pending: number; onOpen: (dimension: Dimension) => void }) {
+  const single = data.selections.length === 1;
+  const first = data.selections[0];
+  const dataset = projectField(data, 'A1', first.selection_id, 'name');
+  const datasetName = dataset?.state === 'known' ? jsonText(dataset.value) : 'dataset sin evidencia';
+  const splits = [...new Set(data.selections.map(selection => selection.split.state === 'known' ? String(selection.split.value).toUpperCase() : 'partición sin evidencia'))].join(' / ');
+  const cells = lineage.flatMap(dimension => coverage[dimension]);
+  const known = cells.reduce((sum, cell) => sum + cell.known, 0);
+  const total = cells.reduce((sum, cell) => sum + cell.total, 0);
+  const complete = cells.filter(cell => cell.total > 0 && cell.known === cell.total).length;
+  const links = cells.filter(cell => cell.total > 0).length;
+  const checks = projectField(data, 'A2', first.selection_id, 'checks');
+  const passed = checks?.state === 'known' && Array.isArray(checks.value) ? checks.value.filter(check => check && typeof check === 'object' && !Array.isArray(check) && check.status === 'PASS').length : undefined;
+  const registered = data.checkpoints.filter(check => check.registered.state === 'known' && check.registered.value === true).length;
+  const comparable = data.analyses.filter(analysis => ['COMPARABLE', 'COMPARABLE_CON_ADVERTENCIAS'].includes(verdictText(analysis.verdict))).length;
+  const listed = differences.slice(0, 3).join(', ') + (differences.length > 3 ? ` y ${differences.length - 3} más` : '');
+  return <>
+    <SectionAnswer indicators={<>
+      <Kpi label="Procedencia acreditada" value={total ? `${Math.round(100 * known / total)}%` : '—'} detail={`${known}/${total} campos · ${complete}/${links} eslabones completos`} />
+      <Kpi label="Comparabilidad" value={single ? '—' : `${comparable}/${data.analyses.length}`} detail={single ? 'Requiere al menos dos TRAIN' : 'análisis comparables (con o sin advertencias)'} />
+      <Kpi label="Integridad del split" value={passed === undefined || checks?.state !== 'known' || !Array.isArray(checks.value) ? 'Sin evidencia' : `${passed}/${checks.value.length} PASS`} detail="Controles registrados de la partición" />
+      <Kpi label="Checkpoint" value={`${registered}/${data.selections.length} registrados`} detail="SHA-256 físico no verificado" />
+      <Kpi label="Evidencia pendiente" value={pending} detail={pending === 1 ? 'causa documentada' : 'causas documentadas'} />
+    </>}>
+      {single
+        ? <>{runLabel(0)} ({architecture(data, first)}) proviene de {datasetName} y se evaluó en {splits}. {known} de {total} campos de procedencia están acreditados; los dictámenes de comparabilidad requieren al menos dos TRAIN.</>
+        : <>{data.selections.length} TRAIN ({data.selections.map(selection => architecture(data, selection)).join(' / ')}) sobre {datasetName}, evaluados en {splits}. {differences.length ? `Difieren en ${listed}` : 'No hay diferencias de configuración acreditadas'}; {comparable} de {data.analyses.length} análisis son comparables.</>}
+    </SectionAnswer>
+    <CoverageChart data={data} coverage={coverage} onOpen={onOpen} />
+    {!single && <MethodologicalSynthesis data={data} />}
+  </>;
+}
+
+// One RUN: no contrast columns; accredited values first, absences listed once per dimension.
+function SingleRunParameters({ rows }: { rows: (ParameterRow & { dimension: Dimension })[] }) {
+  return <div className="scc-partition-cards">{lineage.map(dimension => {
+    const items = rows.filter(row => row.dimension === dimension);
+    if (!items.length) return null;
+    const present = items.filter(row => row.values[0]?.state === 'known' || row.values[0]?.state === 'query_error');
+    const absent = items.filter(row => !present.includes(row));
+    return <section className="ds-section" key={dimension}><h4><span className="scc-module-badge">{dimension}</span>{dimensions[dimension]} <span className="scc-meta">{items.filter(row => accredited(row.values[0])).length}/{items.length}</span></h4>
+      {present.length > 0 && <dl className="ds-dl ds-dl--rows">{present.map(row => <div key={row.label}><dt>{row.label}</dt><dd><ParameterValue value={row.values[0]} /></dd></div>)}</dl>}
+      {absent.length > 0 && <p className="scc-meta">Sin evidencia: {absent.map(row => row.label).join(', ')}</p>}
+    </section>;
+  })}</div>;
+}
+
+const traceTabs = [{ id: 'parametros', label: 'Parámetros' }, { id: 'dataset', label: 'Dataset y partición' }, { id: 'pendiente', label: 'Evidencia pendiente' }, { id: 'registro', label: 'Registro técnico' }] as const;
+type TraceTab = typeof traceTabs[number]['id'];
 
 export function PreflightEvidence({ data }: { data: PreflightResponse }) {
   const [expanded, setExpanded] = useState<string[]>([]);
   const [groups, setGroups] = useState(['Con diferencias', 'Comparables']);
+  const [tab, setTab] = useState<TraceTab>('parametros');
+  const single = data.selections.length === 1;
   const selectionKey = JSON.stringify([data.correlation_id, data.selections]);
-  const rows = (Object.keys(dimensions) as Dimension[]).flatMap(dimension => {
-
-    const params: ParameterRow[] = dimension === 'A4' ? Object.entries(configurationLabels).map(([field, label]) => ({
-      label, technical: false,
-      values: data.selections.map(selection => projectField(data, 'A4', selection.selection_id, field))
-    })) : parameterRows(data, dimension);
-    return params.filter(row => dimension !== 'A1' && dimension !== 'A2' && !row.technical).map((row, index) => ({ ...row, dimension, ...compareValues(row.values), domId: `scc-row-${dimension}-${index}`, key: `${selectionKey}:${dimension}:${index}` }));
-  });
+  const rows = lineage.flatMap(dimension => (dimension === 'A4' ? dimensionFields(data, dimension) : parameterRows(data, dimension))
+    .filter(row => dimension !== 'A1' && dimension !== 'A2' && !row.technical).map((row, index) => ({ ...row, dimension, ...compareValues(row.values), domId: `scc-row-${dimension}-${index}`, key: `${selectionKey}:${dimension}:${index}` })));
+  const inventory = [...lineage.flatMap(dimension => dimension === 'A4' ? rows.filter(row => row.dimension === dimension) : parameterRows(data, dimension)), ...evaluationDetails(data), { label: 'Disponibilidad e integridad física del checkpoint', values: data.selections.map(selection => data.checkpoints.some(check => check.selection_id === selection.selection_id) ? { state: 'not_checked' as const, reason: 'El contrato consultado no comprueba el archivo ni su SHA-256 físico.', evidence_ids: data.checkpoints.filter(check => check.selection_id === selection.selection_id).flatMap(check => check.evidence_ids) } : undefined) }];
+  const pending = pendingEvidence(data, inventory).length;
+  const differences = rows.filter(row => row.group === 'Con diferencias');
+  const open = (next: TraceTab) => { setTab(next); requestAnimationFrame(() => document.getElementById(`scc-trace-tab-${next}`)?.scrollIntoView({ block: 'nearest' })); };
+  const counts: Record<TraceTab, string> = { parametros: single ? `${rows.length}` : `${differences.length} difieren`, dataset: '', pendiente: `${pending}`, registro: '' };
+  const move = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const index = traceTabs.findIndex(item => item.id === tab);
+    const next = event.key === 'ArrowRight' ? index + 1 : event.key === 'ArrowLeft' ? index - 1 : null;
+    if (next === null) return;
+    event.preventDefault();
+    const target = traceTabs[(next + traceTabs.length) % traceTabs.length].id;
+    setTab(target); document.getElementById(`scc-trace-tab-${target}`)?.focus();
+  };
+  const panel = (id: TraceTab) => ({ role: 'tabpanel', id: `scc-trace-panel-${id}`, 'aria-labelledby': `scc-trace-tab-${id}`, hidden: tab !== id, className: 'scc-trace-panel' });
   return <>
-    <MethodologicalSynthesis data={data} />
-    <p>Las diferencias experimentales no implican incompatibilidad. “Comparables” reúne parámetros cuya comparación requiere advertencias o evidencia adicional; cada celda conserva su estado.</p>
-    <PartitionCards data={data} />
+    <TraceabilityOverview data={data} coverage={lineageCoverage(data)} differences={differences.map(row => row.label)} pending={pending} onOpen={dimension => open(dimensionTab(dimension))} />
+    <nav className="scc-section-nav scc-trace-tabs" aria-label="Detalle de trazabilidad"><div role="tablist" aria-label="Detalle de trazabilidad">
+      {traceTabs.map(item => <button key={item.id} id={`scc-trace-tab-${item.id}`} type="button" role="tab" className="scc-section-tab" aria-selected={tab === item.id} aria-controls={`scc-trace-panel-${item.id}`}
+        tabIndex={tab === item.id ? 0 : -1} onKeyDown={move} onClick={() => setTab(item.id)}>{item.label}{counts[item.id] && <span className="scc-tab-count">{counts[item.id]}</span>}</button>)}
+    </div></nav>
+    <section {...panel('parametros')}>
+      {single ? <SingleRunParameters rows={rows} /> : <>
+      <p className="scc-meta">Las diferencias experimentales no implican incompatibilidad. “Comparables” reúne parámetros cuya comparación requiere advertencias o evidencia adicional; cada celda conserva su estado.</p>
     {['Con diferencias', 'Comparables', 'Sin diferencias'].map(group => {
       const shared = group === 'Sin diferencias';
       const partial = group === 'Comparables';
@@ -270,9 +401,8 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
                   {shared ? <td>{row.dimension === 'A6' ? <ConsolidatedDetail fields={evaluationDetails(data).slice(0, 5)} data={data} /> : <ParameterValue value={row.values[0]} />}<span className="scc-equal">{data.selections.map((_, i) => String.fromCharCode(65 + i)).join('=')}</span></td>
                     : row.dimension === 'A6' ? <td colSpan={data.selections.length}><ConsolidatedDetail fields={evaluationDetails(data).slice(0, 5)} data={data} /></td>
                       : row.values.every(value => !value || value.state === 'unknown' || (value.state === 'known' && value.value === null)) ? <td colSpan={data.selections.length}>Sin evidencia suficiente en los {data.selections.length} RUN</td>
-                        : row.values.map((value, i) => <td key={data.selections[i].selection_id} data-numeric={value?.state === 'known' && typeof value.value === 'number'} data-match={row.matches[i]} data-match-tone={row.matches[i] ? [...new Set(row.matches.filter(Boolean))].indexOf(row.matches[i]) % 2 : undefined} title={row.matches[i] ? `Coinciden: ${row.matches[i]!.split('').join('=')}` : undefined}><ParameterValue value={value} />
-
-                        </td>)}
+                      : objectFields(row.values) ? <td colSpan={data.selections.length}><ConsolidatedDetail fields={objectFields(row.values)!} data={data} /></td>
+                        : row.values.map((value, i) => <td key={data.selections[i].selection_id} data-numeric={value?.state === 'known' && typeof value.value === 'number'} data-match={row.matches[i]} data-match-tone={row.matches[i] ? [...new Set(row.matches.filter(Boolean))].indexOf(row.matches[i]) % 2 : undefined} title={row.matches[i] ? `Coinciden: ${row.matches[i]!.split('').join('=')}` : undefined}><ParameterValue value={value} /></td>)}
                 </tr>
                 {row.details && expanded.includes(row.key) && <tr className="scc-expanded-row" id={row.domId}><td colSpan={columns - (shared ? 1 : 0)}><ConsolidatedDetail fields={row.dimension === 'A6' ? row.details.slice(5) : row.details} data={data} /></td></tr>}
               </Fragment>)}</tbody>;
@@ -283,15 +413,19 @@ export function PreflightEvidence({ data }: { data: PreflightResponse }) {
         </>}
       </section>;
     })}
-    <EvidenceInventory data={data} fields={[...(Object.keys(dimensions) as Dimension[]).flatMap(dimension => dimension === 'A4' ? rows.filter(row => row.dimension === dimension) : parameterRows(data, dimension)), ...evaluationDetails(data), { label: 'Disponibilidad e integridad física del checkpoint', values: data.selections.map(selection => data.checkpoints.some(check => check.selection_id === selection.selection_id) ? { state: 'not_checked' as const, reason: 'El contrato consultado no comprueba el archivo ni su SHA-256 físico.', evidence_ids: data.checkpoints.filter(check => check.selection_id === selection.selection_id).flatMap(check => check.evidence_ids) } : undefined) }]} />
+      </>}
+    </section>
+    <section {...panel('dataset')}><PartitionCards data={data} /></section>
+    <section {...panel('pendiente')}><EvidenceInventory data={data} fields={inventory} /></section>
+    <section {...panel('registro')}>
     <ComparisonPython data={data} />
-    <details className="ds-accordion"><summary>Detalle técnico y trazabilidad</summary><p>Consulta: {data.generated_at}</p>{data.consistency.limitations.map(limit => <p key={limit}>{limit}</p>)}
+    <details className="ds-accordion" open><summary>Detalle técnico y trazabilidad</summary><p>Consulta: {data.generated_at}</p>{data.consistency.limitations.map(limit => <p key={limit}>{limit}</p>)}
       <details id="scc-technical-registry" tabIndex={-1}><summary>Identificadores y fuentes A1–A6</summary><p>TRAIN → checkpoint → identidad EVALUATE/EXPLAIN → intento → resultados y artefactos. Cada vínculo se conserva según la fuente disponible; un intento fallido o incompleto no se presenta como verificado.</p><p>identity_hash identifica la identidad del assessment; protocol_hash identifica el protocolo; SHA-256 registrado identifica el contenido esperado del checkpoint y no acredita una comprobación física actual.</p>{data.selections.map((selection, index) => <section key={selection.selection_id}><h3>Trazabilidad técnica · RUN {String.fromCharCode(65 + index)}</h3><p>run_id · TRAIN de origen: <CompactValue value={selection.training_run_id} /></p>{(Object.keys(dimensions) as Dimension[]).map(dimension => <div key={dimension} id={evidenceTarget(selection.selection_id, dimension)} tabIndex={-1}><h4>{dimension} — {dimensions[dimension]} {data.dimensions.filter(item => item.dimension === dimension).map(item => <VerdictBadge key={item.scope.scope_id} verdict={item.verdict} />)}</h4><EvidenceCell data={data} selection={selection} dimension={dimension} /></div>)}{data.evidence.filter(ref => !(ref.source in dimensions) && ref.selection_ids.includes(selection.selection_id)).map(ref => <div key={ref.evidence_id} id={evidenceTarget(selection.selection_id, ref.evidence_id)} tabIndex={-1}><h4>{ref.source}</h4><ParameterValue value={ref.value} /><small>{ref.evidence_id} · {ref.operation} · {ref.verification} · {ref.observed_at}</small></div>)}</section>)}</details>
       <details id="scc-analysis-diagnostics" tabIndex={-1}><summary>Diagnóstico técnico por análisis</summary>
         <ConsolidatedFindings data={data} />
         <AvailabilityMatrix data={data} /></details>
-
     </details>
+    </section>
   </>;
 }
 
@@ -364,11 +498,14 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
     if (onFocusSample) onFocusSample(sample, next); else if (next) select(next);
   };
   const visited = useVisitedSections(section);
-  const key = maximum !== undefined && ids.length >= 2 && ids.length <= maximum ? JSON.stringify(['preflight', datasource, selections, revision]) : null;
+  // One TRAIN also queries the preflight: its provenance is useful even without a contrast.
+  const key = maximum !== undefined && ids.length >= 1 && ids.length <= maximum ? JSON.stringify(['preflight', datasource, selections, revision]) : null;
   const { data, error, loading } = useComparisonEvidence(cache, key, () => api.getComparisonPreflight(datasource, { selections }));
   const refresh = () => { cache.clear(); setRevision(value => value + 1); setXaiRevision(value => value + 1); };
   const findings = data ? [...new Map([...data.dimensions.flatMap(item => item.findings), ...data.analyses.flatMap(item => item.findings)].map(item => [item.reason_id, item])).values()] : [];
-  const states = sectionStates(data);
+  // Verdicts compare TRAIN; with one RUN they would only report missing contrast.
+  const comparative = (data?.selections.length ?? 0) > 1;
+  const states = comparative ? sectionStates(data) : {};
   const moduleProps = { cache, datasource, selections, evidenceRevision: revision };
   return <>
     <div className="scc-sticky-head">
@@ -378,13 +515,13 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
     <AnalysisPanel id="resumen" section={section} visited={visited}><>
       <section className="report-section" aria-label="Resumen metodológico" aria-busy={loading}>
         <div className="ds-page-header"><h3>Resumen metodológico</h3><button className="ds-button" onClick={refresh}>Actualizar evidencia</button></div>
-        {!key && <p>{ids.length === 1 ? 'RUN individual seleccionado: sus resultados están disponibles en cada sección; el preflight comparativo requiere al menos dos TRAIN.' : 'Selecciona entre dos TRAIN y el máximo configurado para consultar el Preflight.'}</p>}
+        {!key && <p>Selecciona entre uno y el máximo configurado de TRAIN para consultar el Preflight.</p>}
         {loading && <p role="status">Consultando Preflight…</p>}
         {error ? <ErrorMessage error={error} retry={refresh} /> : null}
         {data && <>
           <p className="scc-meta">{data.evidence.length} referencias</p>
           <p>{data.selections.length} TRAIN participantes · {data.selections.map(selection => architecture(data, selection)).join(' / ')}</p>
-          <MethodologicalWarnings data={data} findings={findings} />
+          {comparative ? <MethodologicalWarnings data={data} findings={findings} /> : <p>RUN individual: los dictámenes de comparabilidad requieren al menos dos TRAIN. Su procedencia completa está en Trazabilidad.</p>}
           {data.technical_errors.map(item => <p role="alert" key={item.error_id}>ERROR_DE_CONSULTA · {item.message} · {item.operation} · {item.error_id}</p>)}
         </>}
       </section>
@@ -396,7 +533,7 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
     <AnalysisPanel id="errores" section={section} visited={visited}><ConsensusModule {...moduleProps} active={section === 'errores'} explains={explains} canGenerate={canGenerate} onGenerated={onGenerated} onExplain={sample => focus(sample, 'explicabilidad')} /></AnalysisPanel>
     <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} explains={explains} canGenerate={canGenerate} onGenerated={onGenerated} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} focusSample={focusSample} onFocus={sample => focus(sample)} /></AnalysisPanel>
     <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} canGenerate={canGenerate} active={section === 'representaciones'} /></AnalysisPanel>
-    <AnalysisPanel id="trazabilidad" section={section} visited={visited}>{data ? <PreflightEvidence data={data} /> : <p>{ids.length === 1 ? 'RUN individual seleccionado. Sus resultados permanecen disponibles; el preflight comparativo requiere al menos dos TRAIN.' : 'El detalle utiliza la misma consulta del resumen metodológico.'}</p>}</AnalysisPanel>
+    <AnalysisPanel id="trazabilidad" section={section} visited={visited}>{data ? <PreflightEvidence data={data} /> : error ? <ErrorMessage error={error} retry={refresh} /> : loading ? <p role="status">Consultando trazabilidad…</p> : <p>Selecciona al menos un TRAIN para consultar su procedencia.</p>}</AnalysisPanel>
   </>;
 }
 
