@@ -16,9 +16,9 @@ class ExplainQueries(AssessmentRepository):
                 WHERE a.id=CAST(:id AS uuid) AND r.status='completed' ''', id=attempt_id).mappings().one_or_none()
             return dict(row) if row else None
 
-    def samples(self, dataset: str, sample: str | None = None, limit: int | None = None) -> list[str]:
+    def samples(self, dataset: str, sample: str | None = None, limit: int | None = None, split: str = 'val') -> list[str]:
         with self.transaction(readonly=True) as connection:
-            return [str(value) for value in select_dataset_sample_ids(connection, dataset, 'val', sample, limit)]
+            return [str(value) for value in select_dataset_sample_ids(connection, dataset, split, sample, limit)]
 
     def candidates(self, training: str, sample: str) -> list[dict[str, Any]]:
         with self.transaction(readonly=True) as connection:

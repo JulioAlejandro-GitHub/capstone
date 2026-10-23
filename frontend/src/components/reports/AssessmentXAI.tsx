@@ -31,9 +31,6 @@ export function AssessmentSampleXAI({detail, datasource, active, onEvidenceChang
   const [selection, setSelection] = useState('');
   const sample = samples.some(row => row.sample_id === selection) ? selection : samples[0]?.sample_id;
   const comparison = useMemo<XAIComparison>(() => cellComparison(detail, sample), [detail, sample]);
-  if (detail.identity.split !== 'val' || detail.identity.purpose !== 'development') {
-    return <p>La generación por caso requiere el contexto autorizado VAL / development.</p>;
-  }
   return <section className="ds-report">
     <label>Célula del contexto seleccionado<select className="ds-control" value={sample ?? ''} onChange={event => setSelection(event.target.value)}>
       {samples.map(row => <option key={row.sample_id} value={row.sample_id}>{row.sample_id}</option>)}
@@ -63,7 +60,7 @@ function TrainingAssessmentXAIContent({trainingRunId, datasource, active, onEvid
       if (!visible.current) throw new Error('Consulta pausada al cerrar XAI.');
       const page = await api.getTrainingAssessments(trainingRunId, offset);
       if (page.items.some(item => item.training_run_id !== trainingRunId)) throw new Error('Linaje TRAIN incompatible.');
-      all.push(...page.items.filter(item => item.split === 'val' && item.purpose === 'development'));
+      all.push(...page.items);
       if (page.items.length < 100) return all;
     }
   }, active);
@@ -76,7 +73,7 @@ function TrainingAssessmentXAIContent({trainingRunId, datasource, active, onEvid
   return <section>
     {(choices.error || detail.error) ? <div role="alert"><p>No se pudo consultar el contexto XAI.</p><button className="ds-button" onClick={refresh}>Reintentar XAI</button></div> : null}
     {(choices.loading || detail.loading) && <p role="status">Cargando contextos científicos…</p>}
-    {choices.data && !choices.data.length && <p>Se requiere un contexto EVALUATE o EXPLAIN de VAL registrado para seleccionar una célula.</p>}
+    {choices.data && !choices.data.length && <p>Se requiere un contexto EVALUATE o EXPLAIN registrado para seleccionar una célula.</p>}
     {choices.data && choices.data.length > 0 && <label>Contexto científico<select className="ds-control" value={selected} onChange={event => setSelected(event.target.value)}>
       <option value="">Selecciona un intento explícitamente</option>
       {choices.data.map(choice => <option key={choice.attempt_id} value={choice.attempt_id}>{choice.kind} · {choice.attempt_id}</option>)}

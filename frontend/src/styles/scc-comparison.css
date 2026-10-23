@@ -285,3 +285,8 @@
 .ds-report .scc-run-result { display: grid; }
 .ds-report .scc-run-result small { color: var(--ds-fg-muted); font-size: var(--ds-text-xs); }
 .ds-report .scc-run-result[data-correct="false"] { color: var(--ds-status-rejected-fg); }
+.ds-report .xai-overlay-head { flex-wrap: wrap; }
+.ds-report .xai-overlay-head output { margin-left: auto; }
+.ds-report .xai-overlay-thumb[data-running="true"] { animation: xai-pulse 1.4s ease-in-out infinite; }
+@keyframes xai-pulse { 50% { opacity: .5; } }
+@media (prefers-reduced-motion: reduce) { .ds-report .xai-overlay-thumb[data-running="true"] { animation: none; } }

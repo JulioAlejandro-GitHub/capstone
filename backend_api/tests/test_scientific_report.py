@@ -253,3 +253,15 @@ def test_single_run_consensus_is_that_model_errors():
     assert [s['sample'] for s in result['samples']] == ['b'] and result['total'] == 1
     assert result['oracle']['numerator'] == 2 and result['agreement'] == [[4]]
     assert consensus([], [])['state'] == 'missing'
+
+
+def test_consensus_sorts_the_whole_filtered_population_before_paging():
+    population = {name: {'label': label, 'score': score, 'prediction': int(score >= .5), 'correct': int(score >= .5) == label}
+                  for name, label, score in [('a', 1, .9), ('b', 0, .7), ('c', 1, .2), ('d', 0, .05)]}
+    page = consensus([population], [.5], offset=0, limit=2, sort_by='run-0', sort_desc=True)
+    assert [s['sample'] for s in page['samples']] == ['a', 'b'] and page['total'] == 4
+    page = consensus([population], [.5], offset=2, limit=2, sort_by='run-0', sort_desc=True)
+    assert [s['sample'] for s in page['samples']] == ['c', 'd']
+    assert [s['sample'] for s in consensus([population], [.5], sort_by='label')['samples']] == ['b', 'd', 'a', 'c']
+    with pytest.raises(ValueError):
+        ScientificReportRequest(module='consensus', selections=[{'training_run_id': UUID(int=1)}], sort_by='score; drop')

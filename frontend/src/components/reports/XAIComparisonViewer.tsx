@@ -195,7 +195,7 @@ export function XAIComparisonViewer({ comparison, datasource, generation, action
 
       </div>
       {expanded !== null && (view === 'overlay'
-        ? <XAIOverlayView comparison={comparison} resources={resources} datasource={datasource} />
+        ? <XAIOverlayView comparison={comparison} resources={resources} datasource={datasource} generation={generation} />
         : <XAIComparisonContent comparison={comparison} resources={resources} density="expanded" generation={generation} />)}
     </dialog>
   </section>;

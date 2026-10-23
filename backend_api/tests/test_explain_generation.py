@@ -29,7 +29,7 @@ def setup():
              'decision': {'requested': 'auto'}, 'seed': 42, 'batch_size': 1}
     repository = Mock()
     repository.source.return_value = {'identity': value}
-    repository.samples.side_effect = lambda dataset, sample=None, limit=None: [sample or str(uuid4())]
+    repository.samples.side_effect = lambda dataset, sample=None, limit=None, split='val': [sample or str(uuid4())]
     repository.candidates.return_value = []
     repository.requests_for.return_value = []
     service = ExplainService(repository)
@@ -54,11 +54,11 @@ def test_preparation_calls_canonical_single_cell_service(setup, monkeypatch, met
 def test_background_uses_canonical_first_val_without_target_filter(setup):
     service, request, source = setup
     background = str(uuid4())
-    service.repository.samples.side_effect = lambda dataset, sample=None, limit=None: [sample or background]
+    service.repository.samples.side_effect = lambda dataset, sample=None, limit=None, split='val': [sample or background]
     spec = service.specification(request, source, 'shap')
     assert spec['background'] == [background]
     assert background != str(request.sample_id)
-    service.repository.samples.assert_any_call(source['dataset']['dataset_version_id'], limit=1)
+    service.repository.samples.assert_any_call(source['dataset']['dataset_version_id'], limit=1, split='val')
 
 
 def test_invalid_explicit_background_never_falls_back(setup):
@@ -240,3 +240,14 @@ def test_queued_host_request_is_pending_and_failed_one_reports_its_cause(setup):
     assert states['lime']['state'] == 'pending' and states['lime']['operation_id'] == str(queued['id'])
     assert states['shap']['state'] == 'failed' and states['shap']['error'] == 'LOCAL_GPU_REQUIRED'
     assert states['gradcam']['state'] == 'not_executed'
+
+
+@pytest.mark.parametrize('split,purpose', [('test', 'final'), ('train', 'development')])
+def test_any_governed_split_of_the_train_can_be_explained(setup, split, purpose):
+    service, request, source = setup
+    source.update(split=split, purpose=purpose)
+    asked = []
+    service.repository.samples.side_effect = lambda dataset, sample=None, limit=None, split='val': asked.append(split) or [sample or str(uuid4())]
+    assert service.context(request) is source
+    service.specification(request, source, 'shap')
+    assert set(asked) == {split}

@@ -26,7 +26,8 @@ export function useExplainGeneration(comparison: XAIComparison, active?: boolean
   const retained = useRef<{ key: string; running: boolean } | null>(null);
   const source = comparison.original?.attemptId;
   const sample = comparison.sampleId;
-  const enabled = Boolean(source && sample && !comparison.comparabilityIssue && comparison.split === 'val' && comparison.purpose === 'development');
+  // Any cell of a governed context of the TRAIN can be explained; the backend validates split and protocol.
+  const enabled = Boolean(source && sample && !comparison.comparabilityIssue && comparison.split);
   const targetClass = comparison.targetClass ?? 1;
   const key = `${source}:${sample}:${targetClass}`;
   const current = useRef(key);

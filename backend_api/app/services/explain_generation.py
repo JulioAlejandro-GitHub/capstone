@@ -64,20 +64,23 @@ class ExplainService:
         source = self.repository.source(str(request.source_attempt_id))
         require(source is not None, 'EXPLAIN_SOURCE_NOT_FOUND')
         value = source['identity']
-        require(value.get('split') == 'val' and value.get('purpose') == 'development', 'EXPLAIN_CONTEXT_UNSUPPORTED')
+        # Any cell of a governed context of this TRAIN (TRAIN, VAL or TEST) can be explained; split and purpose
+        # are validated against the context's own protocol by prepare(). The cell and the SHAP reference must
+        # belong to that split.
+        require(value.get('split') in ('train', 'val', 'test'), 'EXPLAIN_CONTEXT_UNSUPPORTED')
         sample = str(request.sample_id)
         require(any(row['sample_id'] == sample for row in value['samples']), 'EXPLANATION_SAMPLE_NOT_IN_CONTEXT')
         dataset = value['dataset']['dataset_version_id']
-        require(self.repository.samples(dataset, sample, 1) == [sample], 'EXPLANATION_SAMPLE_SELECTION_EMPTY')
+        require(self.repository.samples(dataset, sample, 1, value['split']) == [sample], 'EXPLANATION_SAMPLE_SELECTION_EMPTY')
         return value
 
     def specification(self, request: ExplainRequest, value: dict[str, Any], method: str) -> dict[str, Any]:
         background: list[str] = []
         if method == 'shap':
             background = ([str(request.background_sample_id)] if request.background_sample_id
-                          else self.repository.samples(value['dataset']['dataset_version_id'], limit=1))
+                          else self.repository.samples(value['dataset']['dataset_version_id'], limit=1, split=value['split']))
             require(bool(background), 'BACKGROUND_CONTRACT_REQUIRED')
-            require(self.repository.samples(value['dataset']['dataset_version_id'], background[0], 1) == background,
+            require(self.repository.samples(value['dataset']['dataset_version_id'], background[0], 1, value['split']) == background,
                     'BACKGROUND_NOT_ACCREDITED')
         return explanation_spec(method, None, request.class_id,
                                 request.num_samples if method != 'gradcam' else None, background)

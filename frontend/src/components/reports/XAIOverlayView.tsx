@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useScientificArtifact, type XAIImageResource } from '../../hooks/useScientificArtifact';
 import { attributionPixels, parseNpy } from '../../utils/attributionMaps';
 import { XAI_LABELS, XAI_METHODS, type XAIArtifact, type XAIComparison, type XAIMethod } from './xai/comparison';
+import type { XAIGenerationAction } from './XAIComparisonViewer';
 
 type Layer = { canvas: HTMLCanvasElement | null; loading: boolean; error: string | null };
 const signedMethods: Record<XAIMethod, boolean> = { gradcam: false, lime: true, shap: true };
@@ -47,7 +48,7 @@ function useLoadedImage(url: string | null | undefined) {
 }
 
 /** Original cell as base; each attribution map drawn on top with its own opacity (0–100 %). */
-export function XAIOverlayView({ comparison, resources, datasource }: { comparison: XAIComparison; resources: Record<XAIMethod | 'original', XAIImageResource>; datasource: string }) {
+export function XAIOverlayView({ comparison, resources, datasource, generation }: { comparison: XAIComparison; resources: Record<XAIMethod | 'original', XAIImageResource>; datasource: string; generation?: Partial<Record<XAIMethod, XAIGenerationAction>> }) {
   const [settings, setSettings] = useState(() => Object.fromEntries(XAI_METHODS.map(method => [method, { on: true, opacity: defaultOpacity[method] }])) as Record<XAIMethod, { on: boolean; opacity: number }>);
   const layers: Record<XAIMethod, Layer> = {
     gradcam: useAttributionLayer(comparison.methods.gradcam?.mapArtifact, datasource, Boolean(comparison.methods.gradcam?.mapArtifact), signedMethods.gradcam),
@@ -74,6 +75,27 @@ export function XAIOverlayView({ comparison, resources, datasource }: { comparis
   });
   const update = (method: XAIMethod, change: Partial<{ on: boolean; opacity: number }>) =>
     setSettings(old => ({ ...old, [method]: { ...old[method], ...change } }));
+  // Generation from this view: once the new map is readable, its layer is switched on so the result is seen at once.
+  const [requested, setRequested] = useState<XAIMethod[]>([]);
+  const [failures, setFailures] = useState<Partial<Record<XAIMethod, string>>>({});
+  const ready = XAI_METHODS.map(method => Boolean(comparison.methods[method]?.mapArtifact && layers[method].canvas)).join();
+  useEffect(() => {
+    const done = requested.filter(method => comparison.methods[method]?.mapArtifact && layers[method].canvas);
+    if (!done.length) return;
+    setSettings(old => ({ ...old, ...Object.fromEntries(done.map(method => [method, { on: true, opacity: Math.max(old[method].opacity, 50) }])) }));
+    setRequested(old => old.filter(method => !done.includes(method)));
+  }, [ready]);  // eslint-disable-line react-hooks/exhaustive-deps
+  const generate = async (method: XAIMethod) => {
+    const action = generation?.[method];
+    if (!action?.authorized || requested.includes(method)) return;
+    setRequested(old => [...old, method]);
+    setFailures(old => ({ ...old, [method]: undefined }));
+    try { await action.execute(comparison, method); }
+    catch (error: unknown) {
+      setRequested(old => old.filter(item => item !== method));
+      setFailures(old => ({ ...old, [method]: error instanceof Error ? error.message : 'No fue posible solicitar la generación.' }));
+    }
+  };
   return <div className="xai-overlay">
     <div className="xai-overlay-main">
     <figure className="xai-overlay-stage">
@@ -93,19 +115,27 @@ export function XAIOverlayView({ comparison, resources, datasource }: { comparis
         const evidence = comparison.methods[method];
         const layer = layers[method];
         const usable = Boolean(evidence?.mapArtifact && layer.canvas);
+        const running = requested.includes(method) || evidence?.execution === 'pending' || evidence?.execution === 'running';
+        const action = generation?.[method];
         return <li key={method} data-method={method} data-usable={usable}>
-          <div className="xai-overlay-thumb">{resources[method].url ? <img src={resources[method].url!} alt="" /> : <span aria-hidden="true">—</span>}</div>
+          <div className="xai-overlay-thumb" data-running={running}>{resources[method].url ? <img src={resources[method].url!} alt={`${XAI_LABELS[method]} · miniatura`} />
+            : <span aria-hidden="true">{running ? '…' : '—'}</span>}</div>
           <div className="xai-overlay-control">
             <div className="xai-overlay-head">
               <label><input type="checkbox" checked={settings[method].on} disabled={!usable} onChange={event => update(method, { on: event.target.checked })} />
                 <strong>{String(index + 1).padStart(2, '0')} · {XAI_LABELS[method]}</strong></label>
+              {!evidence?.artifact && generation && <button type="button" className="ds-button" data-size="compact" disabled={running || !action?.authorized}
+                title={running ? undefined : action?.authorized ? `Generar ${XAI_LABELS[method]} para esta célula` : action?.reason} onClick={() => { void generate(method); }}>
+                {running ? 'Generando…' : `Generar ${XAI_LABELS[method]}`}</button>}
               <output>{settings[method].opacity} %</output>
             </div>
             <div className="xai-slider"><span>0 %</span>
               <input type="range" min={0} max={100} step={1} value={settings[method].opacity} disabled={!usable || !settings[method].on}
                 aria-label={`Opacidad de ${XAI_LABELS[method]}`} onChange={event => update(method, { opacity: Number(event.target.value) })} />
               <span>100 %</span></div>
-            <small>{!evidence ? 'Sin explicación generada para esta célula.' : !evidence.mapArtifact ? 'Sin mapa de atribución registrado.'
+            <small>{failures[method] ? <span role="alert">{failures[method]}</span> : running ? 'Generando en la GPU del host; la capa se activará al terminar.'
+              : evidence?.execution === 'failed' ? `Generación fallida${evidence.message ? `: ${evidence.message}` : ''}.`
+              : !evidence ? 'Sin explicación generada para esta célula.' : !evidence.mapArtifact ? 'Sin mapa de atribución registrado.'
               : layer.error ? `Mapa no disponible: ${layer.error}` : layer.loading || !layer.canvas ? 'Cargando mapa…' : descriptions[method]}</small>
           </div>
         </li>;

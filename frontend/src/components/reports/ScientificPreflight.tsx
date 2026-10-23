@@ -347,8 +347,8 @@ function SectionMap({ states, onSelect }: { states: ReturnType<typeof sectionSta
 }
 
 type SectionProps = { section?: AnalysisSection; onSectionChange?: (section: AnalysisSection) => void; explains?: Record<string, string[]>; canGenerate?: boolean; onGenerated?: () => void;
-  focusSample?: string | null; onFocusSample?: (sample: string | null, section?: AnalysisSection) => void; onUseValidation?: () => void };
-function ComparisonEvidenceSession({ ids, datasource, maximum, selections, section: requested, onSectionChange, explains, canGenerate, onGenerated, focusSample: requestedFocus, onFocusSample, onUseValidation }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
+  focusSample?: string | null; onFocusSample?: (sample: string | null, section?: AnalysisSection) => void };
+function ComparisonEvidenceSession({ ids, datasource, maximum, selections, section: requested, onSectionChange, explains, canGenerate, onGenerated, focusSample: requestedFocus, onFocusSample }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
   const cache = useMemo(createComparisonCache, []);
   const [revision, setRevision] = useState(0);
   const [xaiRevision, setXaiRevision] = useState(0);
@@ -392,7 +392,7 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
     </></AnalysisPanel>
     <AnalysisPanel id="aprendizaje" section={section} visited={visited}><CurvesModule {...moduleProps} active={section === 'aprendizaje'} /></AnalysisPanel>
     <AnalysisPanel id="desempeno" section={section} visited={visited}><MetricsModule {...moduleProps} active={section === 'desempeno'} /></AnalysisPanel>
-    <AnalysisPanel id="errores" section={section} visited={visited}><ConsensusModule {...moduleProps} active={section === 'errores'} onExplain={sample => focus(sample, 'explicabilidad')} onUseValidation={onUseValidation} /></AnalysisPanel>
+    <AnalysisPanel id="errores" section={section} visited={visited}><ConsensusModule {...moduleProps} active={section === 'errores'} onExplain={sample => focus(sample, 'explicabilidad')} /></AnalysisPanel>
     <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} explains={explains} canGenerate={canGenerate} onGenerated={onGenerated} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} focusSample={focusSample} onFocus={sample => focus(sample)} /></AnalysisPanel>
     <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} active={section === 'representaciones'} /></AnalysisPanel>
     <AnalysisPanel id="trazabilidad" section={section} visited={visited}>{data ? <PreflightEvidence data={data} /> : <p>{ids.length === 1 ? 'RUN individual seleccionado. Sus resultados permanecen disponibles; el preflight comparativo requiere al menos dos TRAIN.' : 'El detalle utiliza la misma consulta del resumen metodológico.'}</p>}</AnalysisPanel>

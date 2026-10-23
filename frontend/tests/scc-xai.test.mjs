@@ -399,3 +399,15 @@ test('a cell without explanations is built from its VAL context so it can be gen
   assert.equal(row.original.attemptId,'evaluate-val'); assert.equal(row.original.originalSource.sampleId,'cell');
   assert.equal(row.sampleRecord.relativePath,'val/parasitized/cell.png'); assert.equal(row.split,'val'); assert.deepEqual({...row.methods},{});
 });
+
+test('overlay offers per-layer generation next to the title and keeps generated layers usable', () => {
+  const load=loader({'../../hooks/useScientificArtifact':{useScientificArtifact:()=>({url:null,loading:false,error:false,failure:null})}});
+  const {XAIOverlayView}=load('components/reports/XAIOverlayView.tsx');
+  const row=group([fixture('gradcam')],'train')[0];
+  const action=(authorized)=>({authorized,reason:'Agente de GPU no activo.',execute:async()=>{}});
+  const html=renderToStaticMarkup(React.createElement(XAIOverlayView,{comparison:row,resources,datasource:'malaria',generation:{gradcam:action(true),lime:action(true),shap:action(false)}}));
+  assert.doesNotMatch(html,/>Generar Grad-CAM</);
+  assert.match(html,/<button[^>]*title="Generar LIME para esta célula"[^>]*>Generar LIME/);
+  assert.match(html,/<button[^>]*disabled=""[^>]*title="Agente de GPU no activo."[^>]*>Generar SHAP/);
+  assert.doesNotMatch(renderToStaticMarkup(React.createElement(XAIOverlayView,{comparison:row,resources,datasource:'malaria'})),/Generar/);
+});

@@ -2,7 +2,7 @@ import { groupXAIComparisons, type XAIComparison } from './xai/comparison';
 import { GeneratedXAIComparison } from './GeneratedXAIComparison';
 import { cellComparison } from './AssessmentXAI';
 import { ConsensusSamplesTable } from './ConsensusSamplesTable';
-import type { MRT_PaginationState } from 'material-react-table';
+import type { MRT_PaginationState, MRT_SortingState } from 'material-react-table';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, BarChart, Bar, ScatterChart, Scatter, LabelList, Cell } from 'recharts';
 import { api } from '../../services/api';
@@ -100,7 +100,7 @@ type ModuleProps = {cache: ComparisonCache; datasource: string; selections: Requ
 // Consensus verifies every governed sample of each attempt (3 x 2.685 TEST rows took 22 s before the
 // population query fix); the default 15 s would report a query error for a valid answer.
 const MODULE_TIMEOUT_MS: Partial<Record<ReportModule, number>> = {consensus: 60000, questions: 60000};
-export function LazyScientificModule<T>({title, module, cache, datasource, selections, evidenceRevision = 0, active, children, params = {}}: ModuleProps & {title: string; module: ReportModule; params?: {offset?: number; limit?: number; category?: string}; children: (data: T, loading: boolean) => ReactNode}) {
+export function LazyScientificModule<T>({title, module, cache, datasource, selections, evidenceRevision = 0, active, children, params = {}}: ModuleProps & {title: string; module: ReportModule; params?: {offset?: number; limit?: number; category?: string; sort_by?: string; sort_desc?: boolean}; children: (data: T, loading: boolean) => ReactNode}) {
   const [open, setOpen] = useState(false);
   const [revision, setRevision] = useState(0);
   const key = selections.length ? JSON.stringify([module, datasource, selections, params, revision, evidenceRevision]) : null;
@@ -210,8 +210,8 @@ function PairHeatmap({title, matrix, n, diagonalTotal}: {title: string; matrix: 
   return <div className="report-table-scroll"><table className="report-data-table scc-heatmap"><caption>{title}; N = {n}</caption><thead><tr><th>RUN</th>{matrix.map((_,i) => <th key={i}>{runLabel(i)}</th>)}</tr></thead><tbody>{matrix.map((row,i) => <tr key={i}><th scope="row">{runLabel(i)}</th>{row.map((count,j) => <td key={j} data-diagonal={i === j} style={{'--scc-heat': intensity(count, diagonalTotal ? Math.max(...matrix.map((r, k) => r[k])) : n)} as CSSProperties}>{count} / {n}<small>{percent(n ? count / n : null)}</small></td>)}</tr>)}</tbody></table></div>;
 }
 // onExplain opens the cell in Explicabilidad; explainBlocked says why it cannot (EXPLAIN is accredited for VAL only).
-export function ConsensusResults({data, onCategory, onExplain, explainBlocked, pagination, onPagination, loading}: {data: ConsensusEvidence; onCategory?: (category: string) => void; onExplain?: (sample: string) => void; explainBlocked?: string | null;
-  pagination?: MRT_PaginationState; onPagination?: (next: MRT_PaginationState) => void; loading?: boolean}) {
+export function ConsensusResults({data, onCategory, onExplain, explainBlocked, pagination, onPagination, sorting, onSorting, loading}: {data: ConsensusEvidence; onCategory?: (category: string) => void; onExplain?: (sample: string) => void; explainBlocked?: string | null;
+  pagination?: MRT_PaginationState; onPagination?: (next: MRT_PaginationState) => void; sorting?: MRT_SortingState; onSorting?: (next: MRT_SortingState) => void; loading?: boolean}) {
   if (data.state !== 'available') return <p>{data.state === 'incompatible' ? 'Incompatibilidad metodológica. ' : 'Sin evidencia suficiente para este análisis. '}{data.issues?.join(' ')}</p>;
   const summary = consensusSummary(data);
   const runs = data.coverage?.length ?? 0;
@@ -248,8 +248,8 @@ export function ConsensusResults({data, onCategory, onExplain, explainBlocked, p
     {runs > 1 && <EvidenceButton title="Cobertura y complementariedad por RUN" label="Cobertura por RUN"><div className="report-table-scroll"><table className="report-data-table"><caption>Cobertura y complementariedad por RUN</caption><thead><tr><th>RUN</th><th>Población</th><th>Comunes</th><th>Faltantes</th><th>Exclusivas</th><th>Errores exclusivos</th><th>Aciertos exclusivos</th></tr></thead><tbody>{data.coverage?.map((c,i) => <tr key={i}><th>{runLabel(i)}</th><td>{c.population}</td><td>{c.common}</td><td>{c.missing}</td><td>{c.exclusive}</td><td>{data.exclusive_errors?.[i]}</td><td>{data.exclusive_correct?.[i]}</td></tr>)}</tbody></table></div></EvidenceButton>}
     <EvidenceButton title="Fórmulas y denominadores del consenso" label="Fórmulas y denominadores">{Object.entries(data.definitions ?? {}).map(([k,v]) => <p key={k}>{v}</p>)}</EvidenceButton>
     <ConsensusSamplesTable data={data} labels={labels} loading={loading}
-      pagination={pagination ?? {pageIndex: Math.floor((data.offset ?? 0) / (data.limit || 25)), pageSize: data.limit || 25}}
-      onPagination={onPagination ?? (() => {})} onExplain={onExplain} explainBlocked={explainBlocked} />
+      pagination={pagination ?? {pageIndex: Math.floor((data.offset ?? 0) / (data.limit || 10)), pageSize: data.limit || 10}}
+      onPagination={onPagination ?? (() => {})} sorting={sorting ?? []} onSorting={onSorting ?? (() => {})} onExplain={onExplain} explainBlocked={explainBlocked} />
   </>;
 }
 export function CurvesModule(props: ModuleProps) {
@@ -258,21 +258,20 @@ export function CurvesModule(props: ModuleProps) {
 export function MetricsModule(props: ModuleProps) {
   return <LazyScientificModule<MetricsEvidence> {...props} title="Métricas clínicas y matrices de confusión" module="metrics">{data => <ClinicalMetrics data={data} />}</LazyScientificModule>;
 }
-export function ConsensusModule({onExplain, onUseValidation, ...props}: ModuleProps & {onExplain?: (sample: string) => void; onUseValidation?: () => void}) {
-  const explainBlocked = props.selections.some(selection => selection.split && selection.split !== 'val')
-    ? 'EXPLAIN solo está acreditado para VAL (development): cambia la evaluación del análisis a EVALUATE · VAL.' : null;
+export function ConsensusModule({onExplain, ...props}: ModuleProps & {onExplain?: (sample: string) => void}) {
   const single = props.selections.length === 1;
-  const [pagination, setPagination] = useState<MRT_PaginationState>({pageIndex: 0, pageSize: 25});
+  const [pagination, setPagination] = useState<MRT_PaginationState>({pageIndex: 0, pageSize: 10});
+  const [sorting, setSorting] = useState<MRT_SortingState>([]);
+  const sorted = (next: MRT_SortingState) => { setSorting(next); setPagination(old => ({...old, pageIndex: 0})); };
   // One RUN has no disagreements: start on its errors instead.
   const [category, setCategory] = useState(single ? 'CONSENSUS_FN' : 'disagreement');
   const labels = single ? singleRunCategories : consensusCategories;
   const choose = (next: string) => { setCategory(next); setPagination(old => ({...old, pageIndex: 0})); };
   return <LazyScientificModule<ConsensusEvidence> {...props} title={single ? 'Errores del modelo' : 'Consenso y desacuerdos'} module="consensus"
-    params={{offset: pagination.pageIndex * pagination.pageSize, limit: pagination.pageSize, category}}>{(data, loading) => <>
-      {explainBlocked && onExplain && <p className="ds-callout" data-tone="warning">La explicabilidad por célula solo está acreditada para VAL (development); con la evaluación actual «Explicar» queda desactivado.
-        {onUseValidation && <> <button type="button" className="ds-button" data-size="compact" onClick={onUseValidation}>Usar EVALUATE · VAL</button></>}</p>}
+    params={{offset: pagination.pageIndex * pagination.pageSize, limit: pagination.pageSize, category,
+      ...(sorting[0] ? {sort_by: sorting[0].id, sort_desc: sorting[0].desc} : {})}}>{(data, loading) => <>
       <label>Filtrar muestras<select className="ds-control" value={category} onChange={e => choose(e.target.value)}>{Object.entries(labels).map(([c, label]) => <option key={c} value={c}>{label}</option>)}</select></label>
-      <ConsensusResults data={data} onCategory={choose} onExplain={onExplain} explainBlocked={explainBlocked} pagination={pagination} onPagination={setPagination} loading={loading} />
+      <ConsensusResults data={data} onCategory={choose} onExplain={onExplain} pagination={pagination} onPagination={setPagination} sorting={sorting} onSorting={sorted} loading={loading} />
     </>}</LazyScientificModule>;
 }
 export function ScientificResults(props: ModuleProps) {
@@ -328,9 +327,9 @@ export function PersistedXAI({selection, datasource, active, attemptIds, canGene
     const size = (detail: typeof details[number]) => detail.identity.samples?.length ?? 0;
     if (focusSample) {
       const pages = await Promise.all(details.map(async detail => ({detail, artifacts: (await api.getAssessmentArtifacts(detail.id, 0, undefined, [focusSample])).items})));
-      const contains = (detail: typeof details[number]) => detail.identity.split === 'val' && detail.identity.purpose === 'development' && Boolean(detail.identity.samples?.some(item => item.sample_id === focusSample));
+      const contains = (detail: typeof details[number]) => Boolean(detail.identity.samples?.some(item => item.sample_id === focusSample));
       let source = details.find(contains);
-      // No EXPLAIN lists the cell: the selected EVALUATE VAL attempt is an accredited generation context.
+      // No EXPLAIN lists the cell: the selected EVALUATE attempt (VAL or TEST) is its generation context.
       if (!source && selection.evaluation?.source === 'assessment') {
         const evaluation = await api.getAssessment(selection.evaluation.attempt_id);
         if (evaluation.training_run_id === selection.training_run_id && contains(evaluation)) source = evaluation;
@@ -365,14 +364,13 @@ export function PersistedXAI({selection, datasource, active, attemptIds, canGene
   const lastRows = useRef<XAIComparison[]>([]);
   if (fresh) lastRows.current = fresh;
   const rows = fresh ?? (composed.loading || choices.loading ? lastRows.current : []);
-  const splits = [...new Set(picked.map(choice => choice.split))].filter(split => selection.split && split !== selection.split);
+  // Compare the split of what is actually shown (a focused TEST cell comes from its TEST context, not from VAL EXPLAIN).
+  const splits = [...new Set(rows.flatMap(row => row.split ? [row.split] : []))].filter(split => selection.split && split !== selection.split);
   return <section>
     {choices.loading || composed.loading ? <p role="status">Consultando explicaciones persistidas…</p> : null}
     {choices.error || composed.error ? <p role="alert">Error al consultar explicaciones. <button className="ds-button" onClick={() => setRevision(n => n+1)}>Reintentar</button></p> : null}
     {!focusSample && listed?.length === 0 && <p>{attemptIds ? 'Este RUN no tiene EXPLAIN registrado.' : 'No hay explicaciones compatibles para esta selección.'}</p>}
-    {focusSample && composed.data && !rows.length && <p className="ds-callout" data-tone="warning">{selection.split && selection.split !== 'val'
-      ? `La célula pertenece a la evaluación ${selection.split.toUpperCase()}; EXPLAIN solo está acreditado para VAL (development). Cambia la evaluación del análisis a EVALUATE · VAL para explicarla.`
-      : 'Ningún contexto VAL (development) de este RUN contiene la célula; no puede explicarse aquí.'}</p>}
+    {focusSample && composed.data && !rows.length && <p className="ds-callout" data-tone="warning">Ninguna evaluación ni explicación registrada de este RUN contiene la célula; selecciona en la tarjeta una EVALUATE que la incluya.</p>}
     {splits.length > 0 && <p className="ds-callout" data-tone="warning">EXPLAIN sobre {splits.map(split => split.toUpperCase()).join(', ')}; la evaluación del análisis es {selection.split!.toUpperCase()}. Las explicaciones describen el mismo TRAIN, pero no la población evaluada.</p>}
     {selection.checkpoint_artifact_id && picked.some(choice => choice.checkpoint_artifact_id !== selection.checkpoint_artifact_id) && <p className="ds-callout" data-tone="warning">El EXPLAIN registra otro identificador de checkpoint que la evaluación seleccionada; verifica el SHA-256 en Trazabilidad antes de atribuirlo al mismo archivo.</p>}
     {!attemptIds && !focusSample && listed && listed.length > 0 && <label>Explicación persistida<select className="ds-control" value={selected?.attempt_id ?? ''} onChange={e => {setAttempt(e.target.value); setOffset(0); setRowPage(0);}}>{listed.map((c,i) => <option value={c.attempt_id} key={c.attempt_id}>{i+1} · {c.split.toUpperCase()} · {c.state} · {new Date(c.started_at).toLocaleString('es-CL')}</option>)}</select></label>}

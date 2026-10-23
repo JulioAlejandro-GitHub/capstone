@@ -1,7 +1,7 @@
 import type { RequestedSelection } from './scientificPreflight';
 export type ReportModule = 'catalog' | 'curves' | 'metrics' | 'consensus' | 'questions' | 'representations';
 export type ReportResponse<T> = { module: ReportModule; data: T; warnings: string[] };
-export type ReportRequest = { module: ReportModule; selections: RequestedSelection[]; offset?: number; limit?: number; category?: string };
+export type ReportRequest = { module: ReportModule; selections: RequestedSelection[]; offset?: number; limit?: number; category?: string; sort_by?: string; sort_desc?: boolean };
 export type CheckpointEvidence = { artifact_id: string | null; selected_epoch: number | null; phase: string | null; metric: string | null; policy: string | null; logical_lineage: boolean; checksum_registered: string | null; file_availability: string; physical_checksum: string };
 export type EvaluationChoice = { evaluation_id: string | null; training_run_id: string; checkpoint_artifact_id: string | null; split: 'train' | 'val' | 'test'; evaluation_role: string; purpose: string; attempt_id: string | null; identity_id: string | null; created_at: string };
 export type CatalogEvidence = { training_run_id: string; evaluations: EvaluationChoice[]; checkpoint: CheckpointEvidence; governance: { name: string | null; status: string; grouping_strategy: string; split_algorithm: string; random_seed: number; source_record_count: number; counts: Record<string, number>; checks: {check_name: string; status: string; observed_value: unknown}[]; materialization_status: string | null; reconciliation_status: string | null; record_count: number | null; materialization_dataset_matches: boolean | null; campaign_snapshot: unknown; consumed_images: number } };

@@ -78,7 +78,7 @@ def population_coverage(populations):
     return {'common_count': len(common), 'union_count': len(union), 'label_conflicts': conflicts, 'coverage': coverage}
 
 
-def consensus(populations, thresholds, offset=0, limit=25, category='all'):
+def consensus(populations, thresholds, offset=0, limit=25, category='all', sort_by=None, sort_desc=False):
     """All ratios use the explicitly identified common population."""
     base = population_coverage(populations)
     common = set.intersection(*(set(p) for p in populations)) if populations else set()
@@ -117,6 +117,13 @@ def consensus(populations, thresholds, offset=0, limit=25, category='all'):
         if category in ('all', kind) or (category == 'high_confidence_error' and high) or (category == 'low_confidence' and low):
             matches.append({'sample': sample, 'label': label, 'category': kind, 'runs': values,
                                 'high_confidence_error': high, 'low_confidence': low})
+    if sort_by:
+        if sort_by.startswith('run-'):
+            index = int(sort_by[4:])
+            key = lambda item: (item['runs'][index]['score'] if index < len(item['runs']) else float('-inf'), item['sample'])
+        else:
+            key = lambda item: (item[sort_by], item['sample'])
+        matches.sort(key=key, reverse=sort_desc)
     return dict(base, state='available', distribution=distribution, agreement=agreement,
                 error_overlap=overlap, exclusive_errors=exclusive_errors, exclusive_correct=exclusive_correct,
                 oracle={'numerator': oracle, 'denominator': len(common), 'ratio': oracle/len(common)},
@@ -333,7 +340,7 @@ class ScientificReportService:
                         namespaces = {bool(m.get('evaluation', {}).get('source_assessment_attempt_id')) for m in metrics}
                         if len(namespaces) > 1:
                             issues.append('Identidades sample relativas y sample_id no tienen correspondencia acreditada.')
-                        data = {'state': 'incompatible' if any(m['state'] == 'incompatible' for m in metrics) or any(populations) else 'missing', 'issues': issues} if issues else consensus(populations, thresholds, request.offset, request.limit, request.category)
+                        data = {'state': 'incompatible' if any(m['state'] == 'incompatible' for m in metrics) or any(populations) else 'missing', 'issues': issues} if issues else consensus(populations, thresholds, request.offset, request.limit, request.category, request.sort_by, request.sort_desc)
                         if request.module == 'questions':
                             data = {'consensus': data, 'answers': [
                                 ('Con un solo RUN no hay complementariedad que medir; los errores del modelo están en Errores.' if len(request.selections) == 1 else
