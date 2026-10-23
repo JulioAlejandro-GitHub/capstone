@@ -104,7 +104,9 @@ function ComparisonPage({ datasource }: { datasource: string }) {
     <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} explains={explains} onGenerated={onGenerated} focusSample={focusSample} onFocusSample={onFocusSample} />
     <dialog ref={dialog} className="report-viewer scc-run-selector" aria-labelledby="scc-selector-title" onClose={() => trigger.current?.focus()}>
       <div className="ds-page-header"><h2 id="scc-selector-title">Seleccionar ejecuciones TRAIN</h2>
-        <button className="ds-button" onClick={() => dialog.current?.close()}>Cerrar</button></div>
+      <form method="dialog" className="xai-modal-close"><button type="submit" className="ds-button" aria-label="Cerrar vista ampliada" title="Cerrar" autoFocus>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+      </button></form></div>
       <p>Seleccionadas: {ids.length} / {maximum ?? '—'}. Cada identificador corresponde a un TRAIN concreto.</p>
       <label>Buscar modelo, arquitectura o identificador<input autoFocus className="ds-control" value={query} onChange={event => setQuery(event.target.value)} /></label>
       {summariesError && <div role="alert"><p>{summariesError}</p><button className="ds-button" onClick={retrySummaries}>Reintentar carga</button></div>}
