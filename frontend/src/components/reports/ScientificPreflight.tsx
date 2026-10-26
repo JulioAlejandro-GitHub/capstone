@@ -591,7 +591,7 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
     <AnalysisPanel id="desempeno" section={section} visited={visited}><MetricsModule {...moduleProps} active={section === 'desempeno'} /></AnalysisPanel>
     <AnalysisPanel id="errores" section={section} visited={visited}><ConsensusModule {...moduleProps} active={section === 'errores'} explains={explains} canGenerate={canGenerate} onGenerated={onGenerated} onExplain={sample => focus(sample, 'explicabilidad')} /></AnalysisPanel>
     <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} explains={explains} canGenerate={canGenerate} onGenerated={onGenerated} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} focusSample={focusSample} onFocus={sample => focus(sample)} /></AnalysisPanel>
-    <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} canGenerate={canGenerate} active={section === 'representaciones'} /></AnalysisPanel>
+    <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} canGenerate={canGenerate} active={section === 'representaciones'} explains={explains} onGenerated={onGenerated} onExplain={sample => focus(sample, 'explicabilidad')} /></AnalysisPanel>
     <AnalysisPanel id="trazabilidad" section={section} visited={visited}>{data ? <PreflightEvidence data={data} /> : error ? <ErrorMessage error={error} retry={refresh} /> : loading ? <p role="status">Consultando trazabilidad…</p> : <p>Selecciona al menos un TRAIN para consultar su procedencia.</p>}</AnalysisPanel>
   </>;
 }

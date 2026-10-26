@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ResponsiveContainer, ScatterChart, Scatter, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ZAxis } from 'recharts';
 import { api } from '../../services/api';
 import { executorLabel, useExplainExecutor } from '../../hooks/useExplainExecutor';
@@ -6,7 +6,7 @@ import { intensity } from '../../utils/analysisSummaries';
 import type { RepresentState } from '../../types/explainGeneration';
 import type { RepresentationEvidence, RepresentationRun } from '../../types/scientificReport';
 import { EvidenceButton, Kpi, SectionAnswer } from './AnalysisWorkspace';
-import { LazyScientificModule, type ModuleProps } from './ScientificReport';
+import { ConsensusCellModal, LazyScientificModule, type ModuleProps, type XAIAccess } from './ScientificReport';
 import { CopyText } from './ComparisonPython';
 
 const runLabel = (index: number) => `RUN ${String.fromCharCode(65 + index)}`;
@@ -70,10 +70,36 @@ function RepresentGeneration({run, index, canGenerate, blocked, onGenerated}: {r
   </div>;
 }
 
-function ProjectionChart({run, index, projection, colorBy}: {run: RepresentationRun; index: number; projection: Projection; colorBy: ColorBy}) {
+type Point = {x: number; y: number; sample: string; label: number; predicted: number; score: number};
+
+// Copy and «Vista ampliada» only make sense once pinned: the hover tooltip ignores the pointer.
+function PointDetails({point, pinned, onOpen}: {point: Point; pinned?: boolean; onOpen?: (sample: string) => void}) {
+  return <dl className="xai-outcome xai-tooltip">
+    <div data-correct={0 == point.label}>
+      <dt>Clase real</dt>
+      <dd>{point.label === 1 ? 'Parasitada' : point.label === 0 ? 'No parasitada' : 'No registrada'}</dd>
+    </div>
+    <br />
+    <div data-correct={0 === point.predicted}><dt>Predicha</dt><dd>{point.predicted ? 'Parasitada' : 'No parasitada'}</dd></div>
+    <br />
+    <div>
+      <dt>Score</dt>
+      <dd>{decimal(point.score)}</dd>
+    </div>
+    <span className="scc-sample-id">
+      <code title={point.sample}>{shortSample(point.sample)}</code>
+      {pinned && <CopyText text={point.sample} label="Copiar muestra" iconOnly />}
+    </span>
+    {pinned && onOpen && <button type="button" className="ds-button scc-tooltip-link" data-size="compact" onClick={() => onOpen(point.sample)}>Vista ampliada</button>}
+  </dl>;
+}
+
+// Hover shows the Recharts tooltip; a click pins the point in a panel that stays put so its ID can be copied and the
+// «Vista ampliada» opened. Escape, the close button or a click outside the panel releases it.
+function ProjectionChart({run, index, projection, colorBy, onOpen}: {run: RepresentationRun; index: number; projection: Projection; colorBy: ColorBy; onOpen?: (sample: string, run: number) => void}) {
   const series = useMemo(() => {
     const points = run[projection] ?? [];
-    const groups = groupsBy[colorBy].map(group => ({...group, points: [] as {x: number; y: number; sample: string; label: number; predicted: number; score: number}[]}));
+    const groups = groupsBy[colorBy].map(group => ({...group, points: [] as Point[]}));
     points.forEach(([x, y], k) => {
       const label = run.labels![k], predicted = run.predicted![k];
       const key = colorBy === 'label' ? String(label) : outcome(label, predicted);
@@ -81,42 +107,40 @@ function ProjectionChart({run, index, projection, colorBy}: {run: Representation
     });
     return groups;
   }, [run, projection, colorBy]);
+  const [pinned, setPinned] = useState<{point: Point; left: number; top: number; flip: boolean} | null>(null);
+  const frame = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  useEffect(() => { setPinned(null); }, [series]);
+  useEffect(() => {
+    if (!pinned) return;
+    const release = (event: PointerEvent) => { if (!panel.current?.contains(event.target as Node)) setPinned(null); };
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setPinned(null); };
+    document.addEventListener('pointerdown', release);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', release); document.removeEventListener('keydown', escape); };
+  }, [pinned]);
+  const pin = (entry: {cx?: number; cy?: number; payload?: Point}) => {
+    if (!entry.payload || entry.cx == null || entry.cy == null) return;
+    setPinned({point: entry.payload, left: entry.cx, top: entry.cy, flip: entry.cx > (frame.current?.clientWidth ?? 0) / 2});
+  };
+  const open = onOpen && ((sample: string) => { setPinned(null); onOpen(sample, index); });
   return <section aria-label={`${projectionLabels[projection]} · ${runLabel(index)}`}><h4>{runLabel(index)} · {run.split?.toUpperCase()} · {run.count} células</h4>
-    <div className="scc-chart"><ResponsiveContainer width="100%" height="100%"><ScatterChart margin={{top: 8, right: 16, bottom: 8, left: 0}}>
+    <div className="scc-chart scc-chart--pinnable" ref={frame}><ResponsiveContainer width="100%" height="100%"><ScatterChart margin={{top: 8, right: 16, bottom: 8, left: 0}}>
       <CartesianGrid strokeDasharray="3 3" /><XAxis type="number" dataKey="x" name="Eje 1" tick={false} domain={['auto', 'auto']} /><YAxis type="number" dataKey="y" name="Eje 2" tick={false} width={8} domain={['auto', 'auto']} />
       <ZAxis range={[10, 10]} />
-      <Tooltip cursor={{strokeDasharray: '3 3'}} content={({payload}) => {
-        const point = payload?.[0]?.payload as {sample: string; label: number; predicted: number; score: number} | undefined;
-        return point ? 
-        <div className="scc-tooltip">
-          {/* <span className="ds-status" data-tone="approved"><span aria-hidden="true">✓</span>completed</span>
-          <code>{point.sample}</code>
-          <br />Real {point.label ? 'parasitada' : 'no parasitada'} · predicha {point.predicted ? 'parasitada' : 'no parasitada'} · score {decimal(point.score)} */}
-          <dl className="xai-outcome xai-tooltip">
-            <div data-correct={0 ==point.label}>
-              <dt>Clase real</dt>
-              <dd>{point.label === 1 ? 'Parasitada' : point.label === 0 ? 'No parasitada' : 'No registrada'}</dd>
-            </div>
-            <br />
-            <div data-correct={0 === point.predicted}><dt>Predicha</dt><dd>{point.predicted ? 'Parasitada' : 'No parasitada'}</dd></div>
-            <br />
-            <div>
-              <dt>Score</dt>
-              <dd>{decimal(point.score)}</dd>
-            </div>
-            
-            <span className="scc-sample-id">
-              <code title={point.sample}>{shortSample(point.sample)}</code>
-              <CopyText text={point.sample} label="Copiar muestra" iconOnly />
-            </span>
-
-
-          </dl>
-        </div> : null;
+      <Tooltip active={pinned ? false : undefined} cursor={{strokeDasharray: '3 3'}} isAnimationActive={false} content={({payload}) => {
+        const point = payload?.[0]?.payload as Point | undefined;
+        return point ? <div className="scc-tooltip"><PointDetails point={point} /><small className="scc-meta">Click para fijar</small></div> : null;
       }} />
       <Legend />
-      {series.map(group => <Scatter key={group.id} name={`${group.name} (${group.points.length})`} data={group.points} fill={group.color} fillOpacity={colorBy === 'outcome' && (group.id === 'TP' || group.id === 'TN') ? 0.35 : 0.8} isAnimationActive={false} />)}
-    </ScatterChart></ResponsiveContainer></div></section>;
+      {series.map(group => <Scatter key={group.id} name={`${group.name} (${group.points.length})`} data={group.points} fill={group.color} fillOpacity={colorBy === 'outcome' && (group.id === 'TP' || group.id === 'TN') ? 0.35 : 0.8} isAnimationActive={false}
+        onClick={entry => pin(entry as {cx?: number; cy?: number; payload?: Point})} />)}
+    </ScatterChart></ResponsiveContainer>
+      {pinned && <div ref={panel} className="scc-tooltip scc-tooltip--pinned" data-flip={pinned.flip} style={{left: pinned.left, top: pinned.top}} role="dialog" aria-label={`Célula ${pinned.point.sample}`}>
+        <button type="button" className="scc-tooltip-close" aria-label="Soltar punto" title="Cerrar" onClick={() => setPinned(null)}>×</button>
+        <PointDetails point={pinned.point} pinned onOpen={open} />
+      </div>}
+    </div></section>;
 }
 
 function VarianceChart({runs}: {runs: {run: RepresentationRun; index: number}[]}) {
@@ -139,7 +163,7 @@ function CkaHeatmap({data}: {data: RepresentationEvidence}) {
         {score == null ? 'Sin evidencia' : decimal(score)}<small>N = {common[i][j]}</small></td>)}</tr>)}</tbody></table></div></section>;
 }
 
-export function RepresentationResults({data, canGenerate, blocked, onGenerated}: {data: RepresentationEvidence; canGenerate: boolean; blocked: string | null; onGenerated: () => void}) {
+export function RepresentationResults({data, canGenerate, blocked, onGenerated, onOpen}: {data: RepresentationEvidence; canGenerate: boolean; blocked: string | null; onGenerated: () => void; onOpen?: (sample: string, run: number) => void}) {
   const [projection, setProjection] = useState<Projection>('umap');
   const [colorBy, setColorBy] = useState<ColorBy>('outcome');
   const available = data.runs.map((run, index) => ({run, index})).filter(({run}) => run.state === 'available');
@@ -164,7 +188,7 @@ export function RepresentationResults({data, canGenerate, blocked, onGenerated}:
         <div role="tablist" aria-label="Proyección" className="scc-segmented">{(Object.keys(projectionLabels) as Projection[]).map(item => <button key={item} type="button" role="tab" aria-selected={item === projection} className="ds-button" data-size="compact" onClick={() => setProjection(item)}>{projectionLabels[item]}</button>)}</div>
         <div role="tablist" aria-label="Color" className="scc-segmented">{([['outcome', 'Acierto / error'], ['label', 'Clase real']] as [ColorBy, string][]).map(([item, label]) => <button key={item} type="button" role="tab" aria-selected={item === colorBy} className="ds-button" data-size="compact" onClick={() => setColorBy(item)}>{label}</button>)}</div>
       </div>
-      <div className="scc-chart-grid">{available.map(({run, index}) => <ProjectionChart key={run.training_run_id} run={run} index={index} projection={projection} colorBy={colorBy} />)}</div>
+      <div className="scc-chart-grid">{available.map(({run, index}) => <ProjectionChart key={run.training_run_id} run={run} index={index} projection={projection} colorBy={colorBy} onOpen={onOpen} />)}</div>
       <p className="scc-meta">{data.definitions[projection]}</p>
       <div className="scc-chart-grid">
         <VarianceChart runs={available} />
@@ -180,13 +204,18 @@ export function RepresentationResults({data, canGenerate, blocked, onGenerated}:
   </>;
 }
 
-export function ScientificRepresentations({canGenerate = false, ...props}: ModuleProps & {canGenerate?: boolean}) {
+// onExplain and the XAI access are the ones of Errores: a pinned point opens the same «Vista ampliada» of the cell.
+export function ScientificRepresentations({canGenerate = false, explains, onGenerated: onXAIGenerated, onExplain, ...props}: ModuleProps & XAIAccess & {onExplain?: (sample: string) => void}) {
   const [generated, setGenerated] = useState(0);
+  const [opened, setOpened] = useState<{sample: string; run: number} | null>(null);
   const {executor, blocked} = useExplainExecutor(Boolean(props.active && canGenerate));
   const onGenerated = useMemo(() => () => setGenerated(n => n + 1), []);
-  return <LazyScientificModule<RepresentationEvidence> {...props} evidenceRevision={(props.evidenceRevision ?? 0) + generated}
+  return <><LazyScientificModule<RepresentationEvidence> {...props} evidenceRevision={(props.evidenceRevision ?? 0) + generated}
     title="Embeddings y representaciones · PCA / UMAP / CKA" module="representations">{data => <>
       {canGenerate && data.runs.some(run => run.state !== 'available') && <p className="scc-executor" data-available={executor?.available ?? false} role="status">{executorLabel(executor)}{executor && !executor.available && executor.executor === 'host_gpu' && <> · Inícialo en el host: <code>{executor.start_command ?? 'scripts/host_services.sh start explain'}</code></>}</p>}
-      <RepresentationResults data={data} canGenerate={canGenerate} blocked={blocked} onGenerated={onGenerated} />
-    </>}</LazyScientificModule>;
+      <RepresentationResults data={data} canGenerate={canGenerate} blocked={blocked} onGenerated={onGenerated} onOpen={(sample, run) => setOpened({sample, run})} />
+    </>}</LazyScientificModule>
+    {opened && <ConsensusCellModal key={opened.sample} sample={opened.sample} initialRun={opened.run} selections={props.selections} datasource={props.datasource} explains={explains}
+      canGenerate={canGenerate} onGenerated={onXAIGenerated} onClose={() => setOpened(null)} onExplain={onExplain} />}
+  </>;
 }

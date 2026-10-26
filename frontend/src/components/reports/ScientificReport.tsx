@@ -272,12 +272,12 @@ function consensusFilterParams(filters: MRT_ColumnFiltersState): Omit<ReportRequ
     ...(label === 0 || label === 1 ? {label} : {}), ...(Object.keys(score_ranges).length ? {score_ranges} : {})};
 }
 const shortId = (sample: string) => /^[0-9a-f-]{36}$/i.test(sample) ? `${sample.slice(0, 8)}…` : sample.split('/').pop() ?? sample;
-type XAIAccess = {explains?: Record<string, string[]>; canGenerate?: boolean; onGenerated?: () => void};
+export type XAIAccess = {explains?: Record<string, string[]>; canGenerate?: boolean; onGenerated?: () => void};
 // The «Vista ampliada» of a table cell: one RUN at a time, with the same generation and views as Explicabilidad.
-function ConsensusCellModal({sample, selections, datasource, explains, canGenerate, onGenerated, onClose, onExplain}: XAIAccess & {
-  sample: string; selections: RequestedSelection[]; datasource: string; onClose: () => void; onExplain?: (sample: string) => void}) {
+export function ConsensusCellModal({sample, selections, datasource, explains, canGenerate, onGenerated, onClose, onExplain, initialRun = 0}: XAIAccess & {
+  sample: string; selections: RequestedSelection[]; datasource: string; onClose: () => void; onExplain?: (sample: string) => void; initialRun?: number}) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const [run, setRun] = useState(0);
+  const [run, setRun] = useState(initialRun);
   const {blocked} = useExplainExecutor(Boolean(canGenerate));
   useEffect(() => { dialog.current?.showModal(); }, []);
   const selection = selections[run];
