@@ -7,12 +7,15 @@ import type { RepresentState } from '../../types/explainGeneration';
 import type { RepresentationEvidence, RepresentationRun } from '../../types/scientificReport';
 import { EvidenceButton, Kpi, SectionAnswer } from './AnalysisWorkspace';
 import { LazyScientificModule, type ModuleProps } from './ScientificReport';
+import { CopyText } from './ComparisonPython';
 
 const runLabel = (index: number) => `RUN ${String.fromCharCode(65 + index)}`;
 const colors = ['var(--ds-blue-500)', 'var(--ds-green-700)', 'var(--ds-violet-700)', 'var(--ds-amber-700)'];
 const percent = (n: number | null | undefined) => n == null ? 'Sin evidencia' : `${(n * 100).toLocaleString('es-CL', {maximumFractionDigits: 1})} %`;
 const decimal = (n: number | null | undefined) => n == null ? '—' : n.toLocaleString('es-CL', {maximumFractionDigits: 3});
 const POLL_MS = 5000;
+
+const shortSample = (sample: string) => /^[0-9a-f-]{36}$/i.test(sample) ? `${sample.slice(0, 8)}…` : sample.split('/').pop() ?? sample;
 
 type Projection = 'umap' | 'pca';
 type ColorBy = 'label' | 'outcome';
@@ -101,6 +104,13 @@ function ProjectionChart({run, index, projection, colorBy}: {run: Representation
               <dt>Score</dt>
               <dd>{decimal(point.score)}</dd>
             </div>
+            
+            <span className="scc-sample-id">
+              <code title={point.sample}>{shortSample(point.sample)}</code>
+              <CopyText text={point.sample} label="Copiar muestra" iconOnly />
+            </span>
+
+
           </dl>
         </div> : null;
       }} />
