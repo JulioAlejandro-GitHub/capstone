@@ -84,7 +84,25 @@ function ProjectionChart({run, index, projection, colorBy}: {run: Representation
       <ZAxis range={[10, 10]} />
       <Tooltip cursor={{strokeDasharray: '3 3'}} content={({payload}) => {
         const point = payload?.[0]?.payload as {sample: string; label: number; predicted: number; score: number} | undefined;
-        return point ? <div className="scc-tooltip"><code>{point.sample}</code><br />Real {point.label ? 'parasitada' : 'no parasitada'} · predicha {point.predicted ? 'parasitada' : 'no parasitada'} · score {decimal(point.score)}</div> : null;
+        return point ? 
+        <div className="scc-tooltip">
+          {/* <span className="ds-status" data-tone="approved"><span aria-hidden="true">✓</span>completed</span>
+          <code>{point.sample}</code>
+          <br />Real {point.label ? 'parasitada' : 'no parasitada'} · predicha {point.predicted ? 'parasitada' : 'no parasitada'} · score {decimal(point.score)} */}
+          <dl className="xai-outcome xai-tooltip">
+            <div data-correct={0 ==point.label}>
+              <dt>Clase real</dt>
+              <dd>{point.label === 1 ? 'Parasitada' : point.label === 0 ? 'No parasitada' : 'No registrada'}</dd>
+            </div>
+            <br />
+            <div data-correct={0 === point.predicted}><dt>Predicha</dt><dd>{point.predicted ? 'Parasitada' : 'No parasitada'}</dd></div>
+            <br />
+            <div>
+              <dt>Score</dt>
+              <dd>{decimal(point.score)}</dd>
+            </div>
+          </dl>
+        </div> : null;
       }} />
       <Legend />
       {series.map(group => <Scatter key={group.id} name={`${group.name} (${group.points.length})`} data={group.points} fill={group.color} fillOpacity={colorBy === 'outcome' && (group.id === 'TP' || group.id === 'TN') ? 0.35 : 0.8} isAnimationActive={false} />)}
