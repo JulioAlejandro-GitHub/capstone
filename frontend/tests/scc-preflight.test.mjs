@@ -952,3 +952,46 @@ test('one RUN shows its provenance without comparative verdicts or contrast grou
   assert.equal(coverage.A4[0].known, 2); assert.equal(coverage.A3[0].total, 0);
   h.dispose();
 });
+
+test('assessment evaluations map their own field names; historical-only fields are not applicable', () => {
+  const data = fixture(1);
+  data.selections[0].evaluation = known({ source: 'assessment', identity_id: 'i', attempt_id: 'a' });
+  data.evidence.push({ ...data.evidence[0], evidence_id: 'eval', source: 'A6', value: known({ metrics_definition: 'binary_counts_rates_v1', decision: { effective: 0.08 }, protocol: { purposes: ['final'] } }) });
+  const { evaluationDetails } = loader()('utils/preflightPresentation.ts');
+  const value = label => evaluationDetails(data).find(field => field.label === label).values[0];
+  assert.equal(value('threshold').value, 0.08);
+  assert.equal(value('metric_definition').value, 'binary_counts_rates_v1');
+  assert.deepEqual(Array.from(value('purpose').value), ['final']);
+  for (const label of ['evaluation_role', 'protocol_hash', 'evaluation_id']) assert.equal(value(label).state, 'not_applicable');
+});
+test('disabled optimizer options are recorded values, so equal optimizers have no differences', () => {
+  const h = harness(); const data = fixture(2);
+  data.evidence.forEach(ref => { ref.value.value.optimizer_parameters = { beta_1: 0.9, clipnorm: null }; });
+  const { PreflightEvidence } = loader({ react: h.react, '../../auth': {}, '../../services/api': {}, './AssessmentXAI': {} })('components/reports/ScientificPreflight.tsx');
+  const tree = h.render(() => PreflightEvidence({ data }));
+  const shared = find(tree, n => n.type === 'button' && n.props.children?.[0] === 'Sin diferencias');
+  const before = shared.props.children[2];
+  data.evidence[1].value.value.optimizer_parameters = { beta_1: 0.5, clipnorm: null };
+  const changed = find(h.render(() => PreflightEvidence({ data })), n => n.type === 'button' && n.props.children?.[0] === 'Sin diferencias');
+  assert.equal(changed.props.children[2], before - 1);
+  h.dispose();
+});
+test('pending evidence is grouped by cause with meaning and action; not-applicable is not counted', () => {
+  const { pendingCategory, pendingCount, EvidenceInventory } = presentation();
+  const entry = (state, codes = []) => ({ state, codes, evidence: ['x'], selectionIds: [], cause: 'c', analyses: [], evidenceIds: [], errorIds: [] });
+  assert.equal(pendingCategory(entry('Error de consulta')), 'error');
+  assert.equal(pendingCategory(entry('No verificado físicamente')), 'verificacion');
+  assert.equal(pendingCategory(entry('No aplicable')), 'no_aplica');
+  assert.equal(pendingCategory(entry('Evidencia insuficiente', ['METHODOLOGY_NOT_VERIFIED'])), 'modulo');
+  assert.equal(pendingCategory(entry('Evidencia insuficiente', ['EVALUATION_SELECTION_REQUIRED'])), 'seleccion');
+  assert.equal(pendingCategory(entry('Evidencia insuficiente')), 'no_registrado');
+  assert.equal(pendingCount([entry('No aplicable'), entry('Evidencia insuficiente')]), 1);
+  const html = renderToStaticMarkup(React.createElement(EvidenceInventory, { data: fixture(2), fields: [{ label: 'Campo', values: [missing, missing] }] }));
+  assert.match(html, /¿Por qué faltan datos\?/); assert.match(html, /No registrado/); assert.match(html, /Cómo obtenerlo/);
+  assert.match(plain(html), /CampoRUN A, RUN B/);
+});
+test('traceability headings name dimensions without A1–A6 codes', () => {
+  const html = renderToStaticMarkup(React.createElement(presentation().PreflightEvidence, { data: fixture(2) }));
+  assert.doesNotMatch(plain(html), /\bA[1-6] [·—]|A1–A6|scc-module-badge">A[1-6]</);
+  assert.match(plain(html), /Configuración experimental/);
+});

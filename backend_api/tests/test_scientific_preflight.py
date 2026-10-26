@@ -72,6 +72,9 @@ class Evidence:
     def preflight_population(self, c, attempts):
         self.check('population')
         return self.coverage
+    def comparison_checkpoint(self, c, run):
+        self.check('checkpoint')
+        return None
     def get(self, datasource, artifact_id, source, *, connection):
         self.check('artifact')
         return {'training_run_id': uid(int(UUID(artifact_id))-40), 'path': '/private/model.keras', 'checksum': 'a'*64}
@@ -438,3 +441,30 @@ def test_historical_projection_preserves_role_protocol_and_missing_attempt():
     assert ref.value.evidence_ids == [ref.evidence_id]
     assert result.selections[0].evaluation.value['source_assessment_attempt_id'] is None
     assert '/private/not-public' not in result.model_dump_json()
+
+
+def test_train_selection_record_is_attributed_to_the_evaluated_checkpoint():
+    e = Evidence()
+    e.comparison_checkpoint = lambda c, run: {'id': uid(int(UUID(str(run))) + 40), 'run_id': run, 'checksum': 'a'*64,
+        'metadata': {'epoch': 2, 'phase': 'base'},
+        'selection': {'selected_epoch': 2, 'phase': 'base', 'policy': 'auc_with_min_recall', 'selected_metric': 'val_f2_parasitized'}}
+    result = run(e)
+    chosen = [ref for ref in result.evidence if ref.source == 'A5' and ref.field == 'selected_checkpoint']
+    assert len(chosen) == 2
+    assert chosen[0].value.value == {'selected_epoch': 2, 'phase': 'base', 'policy': 'auc_with_min_recall', 'metric': 'val_f2_parasitized'}
+
+def test_train_selection_for_another_checkpoint_is_not_attributed():
+    e = Evidence()
+    e.comparison_checkpoint = lambda c, run: {'id': uid(99), 'run_id': run, 'checksum': 'a'*64,
+        'metadata': {'epoch': 2, 'phase': 'base'}, 'selection': {'selected_epoch': 2, 'phase': 'base'}}
+    result = run(e)
+    assert not [ref for ref in result.evidence if ref.field == 'selected_checkpoint']
+
+def test_declared_absence_of_internal_preprocessing_is_not_missing():
+    e = Evidence()
+    e.config = dict(e.config, internal_preprocessing=None, extension_configuration={
+        'execution': {'no_augment': False}, 'input_contract': {'internal': {'mode': None, 'location': 'none'}}})
+    result = run(e)
+    assert 'CONFIGURATION_INCOMPLETE' not in codes(result)
+    e.config['extension_configuration'] = {'execution': {'no_augment': False}}
+    assert 'CONFIGURATION_INCOMPLETE' in codes(run(e))

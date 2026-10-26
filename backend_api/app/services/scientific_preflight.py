@@ -60,6 +60,10 @@ def safe_configuration(config):
     result['checkpoint_policy'] = execution.get('checkpoint_policy')
     result['clinical_objective'] = (extension.get('selection') or {}).get('clinical_objective')
     result['optimizer_parameters'] = (extension.get('optimizer') or {}).get('parameters')
+    # An input contract that declares no internal step records "none"; it is not missing evidence.
+    internal = (extension.get('input_contract') or {}).get('internal') or {}
+    if result['internal_preprocessing'] is None and internal.get('location') == 'none' and internal.get('mode') is None:
+        result['internal_preprocessing'] = 'none'
     return public_evidence(result)
 
 
@@ -314,6 +318,19 @@ class ScientificPreflightService:
                             'registered': {'state': 'query_error', 'error_ids': arterr} if arterr else known(artifact is not None, [artref]),
                             'lineage': obs, 'availability': 'not_checked', 'integrity': 'not_checked',
                             'checked_at': None, 'evidence_ids': [artref], 'error_ids': arterr})
+                        if artifact and lineage and not row.get('historical_metric'):
+                            # The TRAIN selection record (epoch, policy, metric) is only projected by the
+                            # historical path; attribute it here when it describes this same checkpoint.
+                            from app.services.scientific_report import checkpoint_evidence
+                            chosen, cref, cerr = query(connection, 'A5', sid, 'ScientificReadRepository.comparison_checkpoint',
+                                lambda: checkpoint_evidence(self.scientific.comparison_checkpoint(connection, selected.training_run_id), selected.training_run_id))
+                            bound = chosen and (str(chosen['artifact_id']) == str(checkpoint_id)
+                                or (model.get('source') or {}).get('kind') == 'e5_selected_record')
+                            if bound and chosen['selected_epoch']:
+                                evidence[-1]['field'] = 'selected_checkpoint'
+                                evidence[-1]['value'] = known({key: chosen[key] for key in ('selected_epoch', 'phase', 'policy', 'metric')}, [cref])
+                            elif not cerr:
+                                evidence[-1]['value'] = unknown('La selección registrada en TRAIN no corresponde al checkpoint evaluado.')
                         if artifact and not lineage:
                             finding('A5', 'CHECKPOINT_LINEAGE_CONFLICT', 'incompatibility',
                                 'El checkpoint está registrado para otro TRAIN.', [sid], [artref])

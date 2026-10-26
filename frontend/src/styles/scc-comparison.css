@@ -351,3 +351,32 @@
 .ds-report.scc-page .scc-tab-count { padding: 0 var(--ds-space-2); border-radius: 999px; background: var(--ds-bg-subtle); color: var(--ds-fg-muted); font-size: var(--ds-text-xs); font-variant-numeric: tabular-nums; }
 .ds-report.scc-page .scc-trace-panel[hidden] { display: none; }
 .ds-report.scc-page .scc-trace-panel h4 .scc-module-badge { margin-inline: 0 var(--ds-space-2); }
+
+/* Evidencia pendiente: causes grouped by how the datum can be obtained. */
+.ds-report.scc-page .scc-pending-chart { margin: 0 0 var(--ds-space-4); padding: var(--ds-space-4); background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-lg); }
+.ds-report.scc-page .scc-pending-chart figcaption { display: grid; gap: var(--ds-space-1, 2px); margin-bottom: var(--ds-space-3); }
+.ds-report.scc-page .scc-pending-bar { display: flex; gap: 2px; block-size: 14px; border-radius: 999px; overflow: hidden; background: var(--ds-bg-subtle); }
+.ds-report.scc-page .scc-pending-bar > span { flex-basis: 0; min-inline-size: 4px; background: var(--ds-status-neutral-fg); }
+.ds-report.scc-page .scc-pending-bar > span[data-tone="approved"],
+.ds-report.scc-page .scc-pending-legend li[data-tone="approved"]::before { background: var(--ds-status-approved-fg); }
+.ds-report.scc-page .scc-pending-bar > span[data-tone="warning"],
+.ds-report.scc-page .scc-pending-legend li[data-tone="warning"]::before { background: var(--ds-status-warning-fg); }
+.ds-report.scc-page .scc-pending-bar > span[data-tone="rejected"],
+.ds-report.scc-page .scc-pending-legend li[data-tone="rejected"]::before { background: var(--ds-status-rejected-fg); }
+.ds-report.scc-page .scc-pending-legend { display: flex; flex-wrap: wrap; gap: var(--ds-space-2) var(--ds-space-5, 20px); margin: var(--ds-space-3) 0 0; padding: 0; list-style: none; font-size: var(--ds-text-sm); }
+.ds-report.scc-page .scc-pending-legend li { display: inline-flex; align-items: baseline; gap: var(--ds-space-2); }
+.ds-report.scc-page .scc-pending-legend li::before { content: ""; inline-size: 10px; block-size: 10px; border-radius: 2px; background: var(--ds-status-neutral-fg); align-self: center; }
+.ds-report.scc-page .scc-pending-legend button { padding: 0; border: 0; background: none; font: inherit; color: var(--ds-action-fg); text-decoration: underline; cursor: pointer; }
+.ds-report.scc-page .scc-pending-legend strong { font-variant-numeric: tabular-nums; }
+.ds-report.scc-page .scc-pending-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: var(--ds-space-3); margin-bottom: var(--ds-space-4); }
+.ds-report.scc-page .scc-pending-group { margin: 0; border-inline-start: 4px solid var(--ds-status-neutral-fg); scroll-margin-top: 160px; }
+.ds-report.scc-page .scc-pending-group[data-tone="approved"] { border-inline-start-color: var(--ds-status-approved-fg); }
+.ds-report.scc-page .scc-pending-group[data-tone="warning"] { border-inline-start-color: var(--ds-status-warning-fg); }
+.ds-report.scc-page .scc-pending-group[data-tone="rejected"] { border-inline-start-color: var(--ds-status-rejected-fg); }
+.ds-report.scc-page .scc-pending-group h4 { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--ds-space-2); margin-top: 0; }
+.ds-report.scc-page .scc-pending-explain { display: grid; gap: var(--ds-space-2); margin: 0 0 var(--ds-space-3); font-size: var(--ds-text-sm); }
+.ds-report.scc-page .scc-pending-explain dt { font-size: var(--ds-text-xs); font-weight: 600; color: var(--ds-fg-muted); text-transform: uppercase; letter-spacing: .03em; }
+.ds-report.scc-page .scc-pending-explain dd { margin: 0; }
+.ds-report.scc-page .scc-pending-items { display: grid; gap: var(--ds-space-2); margin: 0; padding: 0; list-style: none; }
+.ds-report.scc-page .scc-pending-items li { display: grid; gap: var(--ds-space-1, 2px); padding: var(--ds-space-2) var(--ds-space-3); background: var(--ds-bg-subtle); border-radius: var(--ds-radius-sm); overflow-wrap: anywhere; }
+.ds-report.scc-page .scc-pending-items small { color: var(--ds-fg-muted); }

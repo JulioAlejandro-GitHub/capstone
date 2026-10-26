@@ -30,7 +30,7 @@ export function configurationCode(data: PreflightResponse, selectionId: string):
     return entries.length ? [`config_${index + 1} = {\n${entries.map(([key, value]) => `    ${JSON.stringify(key)}: ${pythonLiteral(value)},`).join('\n')}\n}`] : [];
   });
   // Separate records preserve conflicting evidence rather than silently overwriting values.
-  return '# Configuración persistida · proyección pública A4\n# No acredita por sí sola la ejecución efectiva ni reconstruye capas.\n' + (blocks.join('\n\n') || '# Sin parámetros acreditados disponibles.');
+  return '# Configuración persistida · proyección pública de la configuración experimental\n# No acredita por sí sola la ejecución efectiva ni reconstruye capas.\n' + (blocks.join('\n\n') || '# Sin parámetros acreditados disponibles.');
 }
 
 export function CopyText({ text, label, iconOnly = false }: { text: string; label: string; iconOnly?: boolean }) {
@@ -55,7 +55,7 @@ export function ComparisonPython({ data }: { data: PreflightResponse }) {
     <div className="scc-python-controls"><div role="tablist" aria-label="RUN del visor Python">{data.selections.map((item, index) => <button type="button" className="ds-button" role="tab" aria-selected={selection.selection_id === item.selection_id} key={item.selection_id} onClick={() => setSelected(item.selection_id)}>RUN {String.fromCharCode(65 + index)}</button>)}</div>
       <label>Vista<select className="ds-control" value={view} onChange={event => setView(event.target.value)}><option value="configuration">Configuración</option><option value="reconstruction">Reconstrucción</option></select></label><CopyText key={code} text={code} label="Copiar código" /></div>
     <p>{descriptors.join(' · ') || 'Arquitectura y optimizador sin evidencia'}</p>
-    <p>Procedencia: evidencia pública persistida A4. Los parámetros ausentes se omiten; no se completan con valores predeterminados.</p>
+    <p>Procedencia: evidencia pública persistida de la configuración experimental. Los parámetros ausentes se omiten; no se completan con valores predeterminados.</p>
     <pre tabIndex={0} aria-label="Código Python"><code>{code.split(/(#[^\n]*|"(?:\\.|[^"\\])*"|\b(?:True|False|None)\b|\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b)/g).map((part, index) => <span key={index} className={part.startsWith('#') ? 'scc-code-comment' : part.startsWith('"') ? 'scc-code-string' : /^(True|False|None|\d)/.test(part) ? 'scc-code-value' : undefined}>{part}</span>)}</code></pre>
     <details><summary>Procedencia y evidencia faltante</summary><code className="report-identifier">{selection.training_run_id}</code>{refs.map(ref => <p key={ref.evidence_id}>{ref.operation} · {ref.evidence_id} · {ref.observed_at} · {ref.verification}{ref.value.state !== 'known' && 'reason' in ref.value ? ` · ${ref.value.reason}` : ''}</p>)}<p>{refs.length ? 'Los campos ausentes o nulos no se incluyen en el código.' : 'Sin evidencia A4 para este TRAIN.'}</p><p>Este contrato no separa configuración declarada de ejecución efectiva ni acredita la arquitectura serializada.</p></details>
   </details>;

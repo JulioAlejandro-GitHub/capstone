@@ -74,6 +74,10 @@ export function openEvidenceTarget(target: HTMLElement | null) {
   if (tab) { tab.click(); requestAnimationFrame(reveal); } else reveal();
 }
 
+// An independent EVALUATE (assessment) records the same semantics under its identity's own names.
+const assessmentAliases: Record<string, string> = { threshold: 'decision.effective', metric_definition: 'metrics_definition', purpose: 'protocol.purposes' };
+// Fields of the historical `evaluations` table; an assessment is identified by identity_hash instead.
+const historicalOnly = ['evaluation_role', 'evaluation_id', 'source_assessment_attempt_id', 'protocol_hash'];
 function evaluationField(data: PreflightResponse, selectionId: string, field: string): Observation | undefined {
   const projected = projectField(data, 'A6', selectionId, field);
   if (projected) return projected;
@@ -81,6 +85,16 @@ function evaluationField(data: PreflightResponse, selectionId: string, field: st
   if (field === 'checkpoint_artifact_id') return selection.checkpoint;
   const identity = selection.evaluation;
   if (identity.state !== 'known') return identity;
+  const assessment = identity.value && typeof identity.value === 'object' && !Array.isArray(identity.value) && identity.value.source === 'assessment';
+  if (assessment && assessmentAliases[field]) {
+    const alias = projectField(data, 'A6', selectionId, assessmentAliases[field]);
+    if (alias) return alias;
+  }
+  if (assessment && field === 'sample_count') {
+    const member = data.populations.flatMap(population => population.per_selection).find(item => item.selection_id === selectionId);
+    if (member?.expected_unique.state === 'known') return member.expected_unique;
+  }
+  if (assessment && historicalOnly.includes(field)) return { state: 'not_applicable', reason: 'Campo de evaluaciones históricas; la evaluación independiente se identifica por identity_hash.', evidence_ids: [] };
   if (identity.value && typeof identity.value === 'object' && !Array.isArray(identity.value) && field in identity.value) {
     return { ...identity, value: identity.value[field] };
   }
@@ -89,7 +103,7 @@ function evaluationField(data: PreflightResponse, selectionId: string, field: st
 
 export interface MissingEvidence {
   evidence: string[]; selectionIds: string[]; cause: string; state: string;
-  analyses: string[]; evidenceIds: string[]; errorIds: string[];
+  analyses: string[]; evidenceIds: string[]; errorIds: string[]; codes?: string[];
 }
 // Group only identical causes and states; retain the precise affected selections.
 export function missingEvidence(data: PreflightResponse, fields: DetailField[]): MissingEvidence[] {
@@ -102,6 +116,7 @@ export function missingEvidence(data: PreflightResponse, fields: DetailField[]):
       analyses: [...new Set([...previous.analyses, ...entry.analyses])],
       evidenceIds: [...new Set([...previous.evidenceIds, ...entry.evidenceIds])],
       errorIds: [...new Set([...previous.errorIds, ...entry.errorIds])],
+      codes: [...new Set([...(previous.codes ?? []), ...(entry.codes ?? [])])],
     } : entry);
   };
   for (const field of fields) field.values.forEach((value, index) => {
@@ -116,7 +131,7 @@ export function missingEvidence(data: PreflightResponse, fields: DetailField[]):
   for (const result of [...data.dimensions, ...data.analyses]) for (const finding of result.findings) {
     if (finding.kind !== 'missing') continue;
     for (const selectionId of finding.affected_selection_ids.length ? finding.affected_selection_ids : ['']) add({ evidence: [finding.message], selectionIds: selectionId ? [selectionId] : [], cause: finding.condition,
-      state: 'Evidencia insuficiente', analyses: data.analyses.filter(analysis => analysis.findings.some(item => item.reason_id === finding.reason_id)).map(analysis => analysis.analysis_id), evidenceIds: finding.evidence_ids, errorIds: [] });
+      state: 'Evidencia insuficiente', analyses: data.analyses.filter(analysis => analysis.findings.some(item => item.reason_id === finding.reason_id)).map(analysis => analysis.analysis_id), evidenceIds: finding.evidence_ids, errorIds: [], codes: [finding.code] });
   }
   for (const error of data.technical_errors) for (const selectionId of error.selection_ids.length ? error.selection_ids : ['']) add({ evidence: [error.operation], selectionIds: selectionId ? [selectionId] : [], cause: error.message, state: 'Error de consulta', analyses: data.analyses.filter(analysis => error.scope_ids.includes(analysis.scope.scope_id) || analysis.verdict.error_ids.includes(error.error_id)).map(analysis => analysis.analysis_id), evidenceIds: [], errorIds: [error.error_id] });
   return [...groups.values()];
