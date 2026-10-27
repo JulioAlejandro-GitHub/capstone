@@ -15,14 +15,10 @@ with get_primary_engine().connect() as connection:
         text("SELECT current_database(), current_user, version()")
     ).one()
     assert_capstone_database(settings, row[0])
-    revision = connection.execute(
-        text("SELECT version_num FROM alembic_version")
-    ).scalar_one_or_none()
 
 print("Servicio: db")
 print("Estado de conexión: OK")
 print(f"Base: {row[0]}")
 print(f"Usuario: {row[1]}")
 print(f"Versión PostgreSQL: {row[2].splitlines()[0]}")
-print(f"Alembic current: {revision or 'no disponible'}")
 PY

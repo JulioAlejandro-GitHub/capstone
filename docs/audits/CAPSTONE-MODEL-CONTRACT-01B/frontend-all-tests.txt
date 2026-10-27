@@ -1,0 +1,2666 @@
+
+> capstone-experiments-frontend@0.1.0 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: login y me usan el cliente HTTP central y persisten solamente el bearer
+ok 1 - login y me usan el cliente HTTP central y persisten solamente el bearer
+  ---
+  duration_ms: 2.013292
+  type: 'test'
+  ...
+# Subtest: 401 elimina la sesión persistida y logout cancela solicitudes pendientes
+ok 2 - 401 elimina la sesión persistida y logout cancela solicitudes pendientes
+  ---
+  duration_ms: 0.2995
+  type: 'test'
+  ...
+# Subtest: las rutas existentes están protegidas y login permanece público
+ok 3 - las rutas existentes están protegidas y login permanece público
+  ---
+  duration_ms: 0.062625
+  type: 'test'
+  ...
+# Subtest: la inicialización restaura el token y valida la sesión con el backend
+ok 4 - la inicialización restaura el token y valida la sesión con el backend
+  ---
+  duration_ms: 0.162208
+  type: 'test'
+  ...
+# Subtest: la guarda espera la validación y conserva la URL solicitada completa
+ok 5 - la guarda espera la validación y conserva la URL solicitada completa
+  ---
+  duration_ms: 0.0795
+  type: 'test'
+  ...
+# Subtest: login espera restauración y vuelve a la ruta protegida solicitada
+ok 6 - login espera restauración y vuelve a la ruta protegida solicitada
+  ---
+  duration_ms: 0.141583
+  type: 'test'
+  ...
+# Subtest: Modelo IA → Campaña aparece inmediatamente debajo de Ejecuciones y apunta al reporte
+ok 7 - Modelo IA → Campaña aparece inmediatamente debajo de Ejecuciones y apunta al reporte
+  ---
+  duration_ms: 0.598834
+  type: 'test'
+  ...
+# Subtest: una sola página contiene las seis secciones de configuración
+ok 8 - una sola página contiene las seis secciones de configuración
+  ---
+  duration_ms: 0.18625
+  type: 'test'
+  ...
+# Subtest: no existe ninguna acción de ejecución en React
+ok 9 - no existe ninguna acción de ejecución en React
+  ---
+  duration_ms: 0.15375
+  type: 'test'
+  ...
+# Subtest: usa la terminología Total de Experimentos y no Miembros de campaña
+ok 10 - usa la terminología Total de Experimentos y no Miembros de campaña
+  ---
+  duration_ms: 0.121291
+  type: 'test'
+  ...
+# Subtest: el total proviene del backend, sin un segundo algoritmo en el frontend
+ok 11 - el total proviene del backend, sin un segundo algoritmo en el frontend
+  ---
+  duration_ms: 0.156833
+  type: 'test'
+  ...
+# Subtest: modelos, parámetros y defaults se descubren desde el catálogo backend
+ok 12 - modelos, parámetros y defaults se descubren desde el catálogo backend
+  ---
+  duration_ms: 0.156458
+  type: 'test'
+  ...
+# Subtest: dataset version se elige con selector desde las versiones gobernadas
+ok 13 - dataset version se elige con selector desde las versiones gobernadas
+  ---
+  duration_ms: 0.148416
+  type: 'test'
+  ...
+# Subtest: controles adecuados por tipo de parámetro
+ok 14 - controles adecuados por tipo de parámetro
+  ---
+  duration_ms: 0.101792
+  type: 'test'
+  ...
+# Subtest: la calibración del umbral se elige desde el catálogo del protocolo, sin dominio duplicado
+ok 15 - la calibración del umbral se elige desde el catálogo del protocolo, sin dominio duplicado
+  ---
+  duration_ms: 0.441083
+  type: 'test'
+  ...
+# Subtest: guardar usa una clave idempotente y muestra campaign_id con el comando del backend
+ok 16 - guardar usa una clave idempotente y muestra campaign_id con el comando del backend
+  ---
+  duration_ms: 0.300583
+  type: 'test'
+  ...
+# Subtest: guardar sólo se habilita con una validación backend vigente
+ok 17 - guardar sólo se habilita con una validación backend vigente
+  ---
+  duration_ms: 0.10375
+  type: 'test'
+  ...
+# Subtest: Configuración Global no oculta parámetros que algún modelo seleccionado admite
+ok 18 - Configuración Global no oculta parámetros que algún modelo seleccionado admite
+  ---
+  duration_ms: 0.100792
+  type: 'test'
+  ...
+# Subtest: la ruta /modelo-ia/campanas existe en el router y App renderiza el reporte
+ok 19 - la ruta /modelo-ia/campanas existe en el router y App renderiza el reporte
+  ---
+  duration_ms: 0.485375
+  type: 'test'
+  ...
+# Subtest: el menú "Campaña" apunta al reporte (campanas), no a la página de configuración
+ok 20 - el menú "Campaña" apunta al reporte (campanas), no a la página de configuración
+  ---
+  duration_ms: 0.053291
+  type: 'test'
+  ...
+# Subtest: el reporte lista las campañas creadas desde el endpoint de lista del backend
+ok 21 - el reporte lista las campañas creadas desde el endpoint de lista del backend
+  ---
+  duration_ms: 0.143667
+  type: 'test'
+  ...
+# Subtest: el reporte muestra dataset, modelos, Total de Experimentos, estado y congelación
+ok 22 - el reporte muestra dataset, modelos, Total de Experimentos, estado y congelación
+  ---
+  duration_ms: 0.100458
+  type: 'test'
+  ...
+# Subtest: "Nueva Campaña" abre la configuración vacía; "Editar" la rellena con la campaña
+ok 23 - "Nueva Campaña" abre la configuración vacía; "Editar" la rellena con la campaña
+  ---
+  duration_ms: 0.049542
+  type: 'test'
+  ...
+# Subtest: la fila resaltada corresponde a la campaña abierta en edición (?campaignId=…)
+ok 24 - la fila resaltada corresponde a la campaña abierta en edición (?campaignId=…)
+  ---
+  duration_ms: 0.043208
+  type: 'test'
+  ...
+# Subtest: el reporte nunca ejecuta: sin acciones de ejecución en la página ni en la API de campaña
+ok 25 - el reporte nunca ejecuta: sin acciones de ejecución en la página ni en la API de campaña
+  ---
+  duration_ms: 0.127791
+  type: 'test'
+  ...
+# Subtest: el reporte documenta la inmutabilidad FROZEN y el comportamiento de "Editar"
+ok 26 - el reporte documenta la inmutabilidad FROZEN y el comportamiento de "Editar"
+  ---
+  duration_ms: 0.038541
+  type: 'test'
+  ...
+# Subtest: workflow incorpora Clasificación IA sin agregarla a Modelo IA
+ok 27 - workflow incorpora Clasificación IA sin agregarla a Modelo IA
+  ---
+  duration_ms: 0.730458
+  type: 'test'
+  ...
+# Subtest: detección terminada resuelve elegibilidad e inicia clasificación productiva
+ok 28 - detección terminada resuelve elegibilidad e inicia clasificación productiva
+  ---
+  duration_ms: 0.551959
+  type: 'test'
+  ...
+# Subtest: cliente no puede elegir modelo, checkpoint, mapping ni threshold
+ok 29 - cliente no puede elegir modelo, checkpoint, mapping ni threshold
+  ---
+  duration_ms: 0.272959
+  type: 'test'
+  ...
+# Subtest: cliente preserva error HTTP estructurado y distingue abort, red y parseo
+ok 30 - cliente preserva error HTTP estructurado y distingue abort, red y parseo
+  ---
+  duration_ms: 0.13025
+  type: 'test'
+  ...
+# Subtest: ausencia de modelo detiene el flujo sin fallback y retry es manual
+ok 31 - ausencia de modelo detiene el flujo sin fallback y retry es manual
+  ---
+  duration_ms: 0.204
+  type: 'test'
+  ...
+# Subtest: URL canónica reconstruye classification y selección sólo mediante GET
+ok 32 - URL canónica reconstruye classification y selección sólo mediante GET
+  ---
+  duration_ms: 0.109375
+  type: 'test'
+  ...
+# Subtest: workspace presenta modelo, threshold, predicciones y filtros científicos
+ok 33 - workspace presenta modelo, threshold, predicciones y filtros científicos
+  ---
+  duration_ms: 0.226417
+  type: 'test'
+  ...
+# Subtest: crop y bbox permanecen sincronizados y el overlay cambia por tres modos
+ok 34 - crop y bbox permanecen sincronizados y el overlay cambia por tres modos
+  ---
+  duration_ms: 0.078583
+  type: 'test'
+  ...
+# Subtest: detalle conserva predicción automática inmutable y clasificación humana separada
+ok 35 - detalle conserva predicción automática inmutable y clasificación humana separada
+  ---
+  duration_ms: 0.460417
+  type: 'test'
+  ...
+# Subtest: Grad-CAM se genera sólo por acción explícita y retry failed se declara
+ok 36 - Grad-CAM se genera sólo por acción explícita y retry failed se declara
+  ---
+  duration_ms: 0.402583
+  type: 'test'
+  ...
+# Subtest: un POST Grad-CAM rechazado no consulta una explicación inexistente
+ok 37 - un POST Grad-CAM rechazado no consulta una explicación inexistente
+  ---
+  duration_ms: 0.151375
+  type: 'test'
+  ...
+# Subtest: modal audita exactamente una célula con crop, predicción y Grad-CAM
+ok 38 - modal audita exactamente una célula con crop, predicción y Grad-CAM
+  ---
+  duration_ms: 0.157042
+  type: 'test'
+  ...
+# Subtest: clasificación humana usa dos labels, comentario opcional y edición directa
+ok 39 - clasificación humana usa dos labels, comentario opcional y edición directa
+  ---
+  duration_ms: 0.172709
+  type: 'test'
+  ...
+# Subtest: resultado agregado usa terminología experimental y disclaimers
+ok 40 - resultado agregado usa terminología experimental y disclaimers
+  ---
+  duration_ms: 0.253125
+  type: 'test'
+  ...
+# Subtest: RBAC separa execute, read, explain y review
+ok 41 - RBAC separa execute, read, explain y review
+  ---
+  duration_ms: 0.086833
+  type: 'test'
+  ...
+# Subtest: historial reutiliza la vista inmersiva con capabilities humanas granulares
+ok 42 - historial reutiliza la vista inmersiva con capabilities humanas granulares
+  ---
+  duration_ms: 0.140833
+  type: 'test'
+  ...
+# Subtest: artefactos explicativos usan blobs autenticados y object URLs revocables
+ok 43 - artefactos explicativos usan blobs autenticados y object URLs revocables
+  ---
+  duration_ms: 0.281334
+  type: 'test'
+  ...
+# Subtest: Revisión celular conserva la ruta legacy dentro del workflow único
+ok 44 - Revisión celular conserva la ruta legacy dentro del workflow único
+  ---
+  duration_ms: 0.588833
+  type: 'test'
+  ...
+# Subtest: lista elegibles, inicia manualmente y abre ejecuciones persistidas
+ok 45 - lista elegibles, inicia manualmente y abre ejecuciones persistidas
+  ---
+  duration_ms: 1.98925
+  type: 'test'
+  ...
+# Subtest: usa permisos efectivos para lectura, ejecución y revisión
+ok 46 - usa permisos efectivos para lectura, ejecución y revisión
+  ---
+  duration_ms: 0.159959
+  type: 'test'
+  ...
+# Subtest: workspace prioriza el canvas central, overlays flotantes y cuatro pestañas móviles
+ok 47 - workspace prioriza el canvas central, overlays flotantes y cuatro pestañas móviles
+  ---
+  duration_ms: 0.431417
+  type: 'test'
+  ...
+# Subtest: workspace admite cierre contextual y sincronización segura de selección
+ok 48 - workspace admite cierre contextual y sincronización segura de selección
+  ---
+  duration_ms: 0.411208
+  type: 'test'
+  ...
+# Subtest: tablet conserva galería y visor en dos columnas con resumen colapsable
+ok 49 - tablet conserva galería y visor en dos columnas con resumen colapsable
+  ---
+  duration_ms: 0.11225
+  type: 'test'
+  ...
+# Subtest: filtros de detección consultan estados reales y conservan términos no clínicos
+ok 50 - filtros de detección consultan estados reales y conservan términos no clínicos
+  ---
+  duration_ms: 0.565875
+  type: 'test'
+  ...
+# Subtest: crops son lazy, autenticados y revocan todos los object URLs
+ok 51 - crops son lazy, autenticados y revocan todos los object URLs
+  ---
+  duration_ms: 0.11175
+  type: 'test'
+  ...
+# Subtest: imagen original usa blob cell-analysis autenticado y nombres seguros
+ok 52 - imagen original usa blob cell-analysis autenticado y nombres seguros
+  ---
+  duration_ms: 0.338
+  type: 'test'
+  ...
+# Subtest: overlay SVG comparte viewBox y usa directamente bbox xywh
+ok 53 - overlay SVG comparte viewBox y usa directamente bbox xywh
+  ---
+  duration_ms: 0.357541
+  type: 'test'
+  ...
+# Subtest: selección es bidireccional, enfoca y conserva la tarjeta visible
+ok 54 - selección es bidireccional, enfoca y conserva la tarjeta visible
+  ---
+  duration_ms: 0.124209
+  type: 'test'
+  ...
+# Subtest: visor implementa zoom, fit, pan, reset y toggles accesibles
+ok 55 - visor implementa zoom, fit, pan, reset y toggles accesibles
+  ---
+  duration_ms: 0.114917
+  type: 'test'
+  ...
+# Subtest: búsqueda localiza células reales por código, ID o coordenadas y centra la selección
+ok 56 - búsqueda localiza células reales por código, ID o coordenadas y centra la selección
+  ---
+  duration_ms: 0.081625
+  type: 'test'
+  ...
+# Subtest: minimapa y progreso derivan imagen, geometría, viewport y conteos reales
+ok 57 - minimapa y progreso derivan imagen, geometría, viewport y conteos reales
+  ---
+  duration_ms: 0.077334
+  type: 'test'
+  ...
+# Subtest: navegación de detecciones incluye anterior, siguiente y siguiente sin revisar
+ok 58 - navegación de detecciones incluye anterior, siguiente y siguiente sin revisar
+  ---
+  duration_ms: 0.054708
+  type: 'test'
+  ...
+# Subtest: detalle corresponde a la selección y separa resultado automático de revisión humana
+ok 59 - detalle corresponde a la selección y separa resultado automático de revisión humana
+  ---
+  duration_ms: 0.337125
+  type: 'test'
+  ...
+# Subtest: revisión append-only valida comentarios y confirma rechazo
+ok 60 - revisión append-only valida comentarios y confirma rechazo
+  ---
+  duration_ms: 0.304208
+  type: 'test'
+  ...
+# Subtest: paginación separa metadata de overlay de la descarga lazy de crops
+ok 61 - paginación separa metadata de overlay de la descarga lazy de crops
+  ---
+  duration_ms: 0.131417
+  type: 'test'
+  ...
+# Subtest: estados vacíos y errores nunca dejan paneles silenciosos
+ok 62 - estados vacíos y errores nunca dejan paneles silenciosos
+  ---
+  duration_ms: 0.205958
+  type: 'test'
+  ...
+# Subtest: controles de crops y cajas soportan teclado y estados no basados solo en color
+ok 63 - controles de crops y cajas soportan teclado y estados no basados solo en color
+  ---
+  duration_ms: 0.14325
+  type: 'test'
+  ...
+# Subtest: usa History API con un único BrowserRouter y rutas anidadas
+ok 64 - usa History API con un único BrowserRouter y rutas anidadas
+  ---
+  duration_ms: 0.515
+  type: 'test'
+  ...
+# Subtest: centraliza rutas canónicas limpias y detalles gobernados
+ok 65 - centraliza rutas canónicas limpias y detalles gobernados
+  ---
+  duration_ms: 0.141792
+  type: 'test'
+  ...
+# Subtest: valida UUID antes de renderizar páginas que consultan API
+ok 66 - valida UUID antes de renderizar páginas que consultan API
+  ---
+  duration_ms: 0.056584
+  type: 'test'
+  ...
+# Subtest: preserva datasource y genera URL compartible sin host hardcodeado
+ok 67 - preserva datasource y genera URL compartible sin host hardcodeado
+  ---
+  duration_ms: 0.048167
+  type: 'test'
+  ...
+# Subtest: menú usa enlaces nativos y estado activo derivado de URL
+ok 68 - menú usa enlaces nativos y estado activo derivado de URL
+  ---
+  duration_ms: 0.047375
+  type: 'test'
+  ...
+# Subtest: run, model version y deployment exponen Copiar enlace canónico
+ok 69 - run, model version y deployment exponen Copiar enlace canónico
+  ---
+  duration_ms: 0.049
+  type: 'test'
+  ...
+# Subtest: deployment abre y cierra su revisión mediante navegación real
+ok 70 - deployment abre y cierra su revisión mediante navegación real
+  ---
+  duration_ms: 0.038834
+  type: 'test'
+  ...
+# Subtest: incluye 404, error de ID y redirects legacy con replace
+ok 71 - incluye 404, error de ID y redirects legacy con replace
+  ---
+  duration_ms: 0.071709
+  type: 'test'
+  ...
+# Subtest: las rutas públicas no exponen paths o archivos internos
+ok 72 - las rutas públicas no exponen paths o archivos internos
+  ---
+  duration_ms: 0.277041
+  type: 'test'
+  ...
+# Subtest: network, timeout, scientific 422 and internal 500 remain distinct and safe
+ok 73 - network, timeout, scientific 422 and internal 500 remain distinct and safe
+  ---
+  duration_ms: 0.503208
+  type: 'test'
+  ...
+# Subtest: DataTable inserta una única fila expandida inmediatamente después de su fila
+ok 74 - DataTable inserta una única fila expandida inmediatamente después de su fila
+  ---
+  duration_ms: 0.454042
+  type: 'test'
+  ...
+# Subtest: la página no conserva un panel global y alterna la selección
+ok 75 - la página no conserva un panel global y alterna la selección
+  ---
+  duration_ms: 0.182875
+  type: 'test'
+  ...
+# Subtest: selectedDeploymentId abre, desplaza y enfoca la revisión contextual
+ok 76 - selectedDeploymentId abre, desplaza y enfoca la revisión contextual
+  ---
+  duration_ms: 0.070875
+  type: 'test'
+  ...
+# Subtest: el modelo permanece identificado con versión, ambiente, alias e IDs
+ok 77 - el modelo permanece identificado con versión, ambiente, alias e IDs
+  ---
+  duration_ms: 0.123291
+  type: 'test'
+  ...
+# Subtest: refresh y operaciones conservan selectedId y vuelven a consultar readiness
+ok 78 - refresh y operaciones conservan selectedId y vuelven a consultar readiness
+  ---
+  duration_ms: 0.057166
+  type: 'test'
+  ...
+# Subtest: smoke PASS y FAIL muestran mensajes específicos junto al modelo
+ok 79 - smoke PASS y FAIL muestran mensajes específicos junto al modelo
+  ---
+  duration_ms: 0.087959
+  type: 'test'
+  ...
+# Subtest: readiness de model version gobierna la acción y smoke queda dentro de producción
+ok 80 - readiness de model version gobierna la acción y smoke queda dentro de producción
+  ---
+  duration_ms: 0.100417
+  type: 'test'
+  ...
+# Subtest: producción abre un modal y la secuencia confirmada activa con true
+ok 81 - producción abre un modal y la secuencia confirmada activa con true
+  ---
+  duration_ms: 0.050917
+  type: 'test'
+  ...
+# Subtest: el modal identifica champion reemplazado, Escape y focus trap
+ok 82 - el modal identifica champion reemplazado, Escape y focus trap
+  ---
+  duration_ms: 0.242875
+  type: 'test'
+  ...
+# Subtest: el resumen distingue champion activo de ausencia de producción
+ok 83 - el resumen distingue champion activo de ausencia de producción
+  ---
+  duration_ms: 0.257834
+  type: 'test'
+  ...
+# Subtest: la lista está ordenada y separada sin duplicar registros
+ok 84 - la lista está ordenada y separada sin duplicar registros
+  ---
+  duration_ms: 0.1455
+  type: 'test'
+  ...
+# Subtest: la revisión funciona como tarjeta contextual en mobile y no expone paths
+ok 85 - la revisión funciona como tarjeta contextual en mobile y no expone paths
+  ---
+  duration_ms: 0.134584
+  type: 'test'
+  ...
+# Subtest: Despliegues carga la imagen auxiliar con page=1 y page_size permitido
+ok 86 - Despliegues carga la imagen auxiliar con page=1 y page_size permitido
+  ---
+  duration_ms: 0.408792
+  type: 'test'
+  ...
+# Subtest: el tamaño auxiliar por defecto pertenece al contrato del backend
+ok 87 - el tamaño auxiliar por defecto pertenece al contrato del backend
+  ---
+  duration_ms: 0.050542
+  type: 'test'
+  ...
+# Subtest: un error de paginación es legible y el reintento es manual
+ok 88 - un error de paginación es legible y el reintento es manual
+  ---
+  duration_ms: 0.09025
+  type: 'test'
+  ...
+# Subtest: E6 renders persisted metrics and links to the attempt detail, never a RUN
+ok 89 - E6 renders persisted metrics and links to the attempt detail, never a RUN
+  ---
+  duration_ms: 10.755708
+  type: 'test'
+  ...
+# Subtest: active remains visible without claiming verified scientific metrics
+ok 90 - active remains visible without claiming verified scientific metrics
+  ---
+  duration_ms: 0.74575
+  type: 'test'
+  ...
+# Subtest: failed remains visible without claiming verified scientific metrics
+ok 91 - failed remains visible without claiming verified scientific metrics
+  ---
+  duration_ms: 0.50825
+  type: 'test'
+  ...
+# Subtest: interrupted remains visible without claiming verified scientific metrics
+ok 92 - interrupted remains visible without claiming verified scientific metrics
+  ---
+  duration_ms: 0.427833
+  type: 'test'
+  ...
+# Subtest: E6 detail displays the API payload and links back to the original TRAIN
+ok 93 - E6 detail displays the API payload and links back to the original TRAIN
+  ---
+  duration_ms: 53.579708
+  type: 'test'
+  ...
+# Subtest: detail loader requests the assessment endpoint, preserves errors and aborts on unmount
+ok 94 - detail loader requests the assessment endpoint, preserves errors and aborts on unmount
+  ---
+  duration_ms: 5.840042
+  type: 'test'
+  ...
+# Subtest: failed detail request is visible; an invalid UUID does not request data
+ok 95 - failed detail request is visible; an invalid UUID does not request data
+  ---
+  duration_ms: 7.994875
+  type: 'test'
+  ...
+# Subtest: group dispatches E6 and legacy separately, preserving EXPLAIN and filter identity
+ok 96 - group dispatches E6 and legacy separately, preserving EXPLAIN and filter identity
+  ---
+  duration_ms: 0.50975
+  type: 'test'
+  ...
+# Subtest: E6 count enables expansion; an empty TRAIN does not invoke the loader
+ok 97 - E6 count enables expansion; an empty TRAIN does not invoke the loader
+  ---
+  duration_ms: 67.859875
+  type: 'test'
+  ...
+# Subtest: expanded TRAIN renders the E6 card using the shared lineage response
+ok 98 - expanded TRAIN renders the E6 card using the shared lineage response
+  ---
+  duration_ms: 39.528917
+  type: 'test'
+  ...
+# Subtest: EXPLAIN E6 retains attempt identity and links to its detail without a run
+ok 99 - EXPLAIN E6 retains attempt identity and links to its detail without a run
+  ---
+  duration_ms: 2.876
+  type: 'test'
+  ...
+# Subtest: EXPLAIN detail preserves evidence and artifact reference when the file is unavailable
+ok 100 - EXPLAIN detail preserves evidence and artifact reference when the file is unavailable
+  ---
+  duration_ms: 23.814541
+  type: 'test'
+  ...
+# Subtest: pagination requests the second hundred while keeping total counts
+ok 101 - pagination requests the second hundred while keeping total counts
+  ---
+  duration_ms: 42.126541
+  type: 'test'
+  ...
+# Subtest: missing artifact is an artifact error and keeps the EXPLAIN detail
+ok 102 - missing artifact is an artifact error and keeps the EXPLAIN detail
+  ---
+  duration_ms: 12.102791
+  type: 'test'
+  ...
+# Subtest: TEST histories keep their own IDs and scientific metrics
+ok 103 - TEST histories keep their own IDs and scientific metrics
+  ---
+  duration_ms: 2.281542
+  type: 'test'
+  ...
+# Subtest: comparison starts without implicit scientific selection
+ok 104 - comparison starts without implicit scientific selection
+  ---
+  duration_ms: 20.619834
+  type: 'test'
+  ...
+# Subtest: comparison toggles the exact execution ID while retaining other selections
+ok 105 - comparison toggles the exact execution ID while retaining other selections
+  ---
+  duration_ms: 13.737709
+  type: 'test'
+  ...
+# Subtest: TRAIN muestra el dataset-version-id persistido
+ok 106 - TRAIN muestra el dataset-version-id persistido
+  ---
+  duration_ms: 0.386834
+  type: 'test'
+  ...
+# Subtest: 1 carga inicial usa un solo método propio training-summaries
+ok 107 - 1 carga inicial usa un solo método propio training-summaries
+  ---
+  duration_ms: 1.6925
+  type: 'test'
+  ...
+# Subtest: 2 carga inicial excluye grouped, Stage 2, productivo e hijos
+ok 108 - 2 carga inicial excluye grouped, Stage 2, productivo e hijos
+  ---
+  duration_ms: 0.145167
+  type: 'test'
+  ...
+# Subtest: 3 colección controlada representa 24 TRAIN y la página itera sus items
+ok 109 - 3 colección controlada representa 24 TRAIN y la página itera sus items
+  ---
+  duration_ms: 0.075667
+  type: 'test'
+  ...
+# Subtest: 4 filtros, URL y navegación de detalle se conservan
+ok 110 - 4 filtros, URL y navegación de detalle se conservan
+  ---
+  duration_ms: 0.122583
+  type: 'test'
+  ...
+# Subtest: 5 los estados internos de liberación no se exponen en el resumen
+ok 111 - 5 los estados internos de liberación no se exponen en el resumen
+  ---
+  duration_ms: 0.075917
+  type: 'test'
+  ...
+# Subtest: 6 la acción de TRAIN usa el texto de clasificación celular
+ok 112 - 6 la acción de TRAIN usa el texto de clasificación celular
+  ---
+  duration_ms: 0.052917
+  type: 'test'
+  ...
+# Subtest: 7 un modelo activo se identifica sin ofrecer activación redundante
+ok 113 - 7 un modelo activo se identifica sin ofrecer activación redundante
+  ---
+  duration_ms: 0.089542
+  type: 'test'
+  ...
+# Subtest: 8 errores del estado canónico no muestran un resumen productivo obsoleto
+ok 114 - 8 errores del estado canónico no muestran un resumen productivo obsoleto
+  ---
+  duration_ms: 0.052458
+  type: 'test'
+  ...
+# Subtest: 9 tarjeta activa prioriza disponibilidad canónica sobre el resumen persistido
+ok 115 - 9 tarjeta activa prioriza disponibilidad canónica sobre el resumen persistido
+  ---
+  duration_ms: 0.24725
+  type: 'test'
+  ...
+# Subtest: 10 acción de TRAIN conserva la expansión accesible sin publicar directamente
+ok 116 - 10 acción de TRAIN conserva la expansión accesible sin publicar directamente
+  ---
+  duration_ms: 0.260625
+  type: 'test'
+  ...
+# Subtest: 11 el resumen no infiere Liberación desde contratos Stage 2
+ok 117 - 11 el resumen no infiere Liberación desde contratos Stage 2
+  ---
+  duration_ms: 0.114375
+  type: 'test'
+  ...
+# Subtest: 12 hijos y panel Stage 2 comienzan colapsados
+ok 118 - 12 hijos y panel Stage 2 comienzan colapsados
+  ---
+  duration_ms: 0.066708
+  type: 'test'
+  ...
+# Subtest: 13 header inicial muestra ambos contadores y total sin depender de hijos
+ok 119 - 13 header inicial muestra ambos contadores y total sin depender de hijos
+  ---
+  duration_ms: 0.04625
+  type: 'test'
+  ...
+# Subtest: 14 primera expansión consulta exactamente el endpoint lazy tipado
+ok 120 - 14 primera expansión consulta exactamente el endpoint lazy tipado
+  ---
+  duration_ms: 0.035291
+  type: 'test'
+  ...
+# Subtest: 15 expandir un TRAIN conserva identidad independiente y no carga otro
+ok 121 - 15 expandir un TRAIN conserva identidad independiente y no carga otro
+  ---
+  duration_ms: 0.026084
+  type: 'test'
+  ...
+# Subtest: 16 success o loaded evita repetir GET al reabrir
+ok 122 - 16 success o loaded evita repetir GET al reabrir
+  ---
+  duration_ms: 0.026709
+  type: 'test'
+  ...
+# Subtest: 17 loading bloquea requests duplicados durante clics repetidos
+ok 123 - 17 loading bloquea requests duplicados durante clics repetidos
+  ---
+  duration_ms: 0.023292
+  type: 'test'
+  ...
+# Subtest: 18 error se almacena en la entrada datasource más TRAIN
+ok 124 - 18 error se almacena en la entrada datasource más TRAIN
+  ---
+  duration_ms: 0.027708
+  type: 'test'
+  ...
+# Subtest: 19 reintento explícito sólo vuelve a cargar la tarjeta afectada
+ok 125 - 19 reintento explícito sólo vuelve a cargar la tarjeta afectada
+  ---
+  duration_ms: 0.03075
+  type: 'test'
+  ...
+# Subtest: 20 abort no se convierte en error visible
+ok 126 - 20 abort no se convierte en error visible
+  ---
+  duration_ms: 0.023875
+  type: 'test'
+  ...
+# Subtest: 21 cambio de datasource aborta y limpia cachés anteriores
+ok 127 - 21 cambio de datasource aborta y limpia cachés anteriores
+  ---
+  duration_ms: 3.748792
+  type: 'test'
+  ...
+# Subtest: 22 respuesta con training_run_id diferente se rechaza localmente
+ok 128 - 22 respuesta con training_run_id diferente se rechaza localmente
+  ---
+  duration_ms: 0.071708
+  type: 'test'
+  ...
+# Subtest: 23 conteos concurrentes se reconcilian sin alterar Liberación
+ok 129 - 23 conteos concurrentes se reconcilian sin alterar Liberación
+  ---
+  duration_ms: 0.041792
+  type: 'test'
+  ...
+# Subtest: 24 respuesta paginada muestra N, posición y total M
+ok 130 - 24 respuesta paginada muestra N, posición y total M
+  ---
+  duration_ms: 0.032708
+  type: 'test'
+  ...
+# Subtest: 25 TRAIN sin hijos deshabilita expansión y no llama al loader
+ok 131 - 25 TRAIN sin hijos deshabilita expansión y no llama al loader
+  ---
+  duration_ms: 0.029291
+  type: 'test'
+  ...
+# Subtest: 26 EVALUATE se renderiza desde la respuesta lazy
+ok 132 - 26 EVALUATE se renderiza desde la respuesta lazy
+  ---
+  duration_ms: 0.025708
+  type: 'test'
+  ...
+# Subtest: 27 EXPLAIN respeta el nombre backend explainabilities
+ok 133 - 27 EXPLAIN respeta el nombre backend explainabilities
+  ---
+  duration_ms: 0.045834
+  type: 'test'
+  ...
+# Subtest: 28 hijos mantienen navegación a detalle
+ok 134 - 28 hijos mantienen navegación a detalle
+  ---
+  duration_ms: 0.026375
+  type: 'test'
+  ...
+# Subtest: 29 render de hijos no emite consultas individuales
+ok 135 - 29 render de hijos no emite consultas individuales
+  ---
+  duration_ms: 0.061291
+  type: 'test'
+  ...
+# Subtest: 30 publicación y readiness no se precargan al montar
+ok 136 - 30 publicación y readiness no se precargan al montar
+  ---
+  duration_ms: 0.053417
+  type: 'test'
+  ...
+# Subtest: 31 abrir Activar consulta readiness sólo del TRAIN elegido
+ok 137 - 31 abrir Activar consulta readiness sólo del TRAIN elegido
+  ---
+  duration_ms: 0.026875
+  type: 'test'
+  ...
+# Subtest: 32 estado productivo global no forma parte de la carga del panel
+ok 138 - 32 estado productivo global no forma parte de la carga del panel
+  ---
+  duration_ms: 0.032167
+  type: 'test'
+  ...
+# Subtest: 33 flujo mutante conserva endpoints, payload y reemplazo existentes
+ok 139 - 33 flujo mutante conserva endpoints, payload y reemplazo existentes
+  ---
+  duration_ms: 0.042916
+  type: 'test'
+  ...
+# Subtest: 34 control de hijos expone aria-expanded
+ok 140 - 34 control de hijos expone aria-expanded
+  ---
+  duration_ms: 0.02275
+  type: 'test'
+  ...
+# Subtest: 35 aria-controls referencia el id estable del panel
+ok 141 - 35 aria-controls referencia el id estable del panel
+  ---
+  duration_ms: 0.0825
+  type: 'test'
+  ...
+# Subtest: 36 expansión usa button nativo operable con Enter y Espacio
+ok 142 - 36 expansión usa button nativo operable con Enter y Espacio
+  ---
+  duration_ms: 0.052417
+  type: 'test'
+  ...
+# Subtest: 37 modelo activo comunica su estado mediante texto
+ok 143 - 37 modelo activo comunica su estado mediante texto
+  ---
+  duration_ms: 0.022125
+  type: 'test'
+  ...
+# Subtest: contratos y cliente propagan AbortSignal sin duplicar base URL
+ok 144 - contratos y cliente propagan AbortSignal sin duplicar base URL
+  ---
+  duration_ms: 0.143792
+  type: 'test'
+  ...
+# Subtest: TRAIN concentra la acción Activar para clasificación celular
+ok 145 - TRAIN concentra la acción Activar para clasificación celular
+  ---
+  duration_ms: 0.523875
+  type: 'test'
+  ...
+# Subtest: estado activo prioriza disponibilidad canónica y estiliza toda la tarjeta
+ok 146 - estado activo prioriza disponibilidad canónica y estiliza toda la tarjeta
+  ---
+  duration_ms: 0.1345
+  type: 'test'
+  ...
+# Subtest: estado no depende solo del color
+ok 147 - estado no depende solo del color
+  ---
+  duration_ms: 0.042125
+  type: 'test'
+  ...
+# Subtest: Liberación visible no vuelve a inferir elegibilidad
+ok 148 - Liberación visible no vuelve a inferir elegibilidad
+  ---
+  duration_ms: 0.113292
+  type: 'test'
+  ...
+# Subtest: Activar abre el acordeón y la vista anterior permanece compatible
+ok 149 - Activar abre el acordeón y la vista anterior permanece compatible
+  ---
+  duration_ms: 0.049791
+  type: 'test'
+  ...
+# Subtest: acordeón activa y confirma reemplazos inline
+ok 150 - acordeón activa y confirma reemplazos inline
+  ---
+  duration_ms: 0.052625
+  type: 'test'
+  ...
+# Subtest: detalle publica mediante confirmación y bloquea doble clic
+ok 151 - detalle publica mediante confirmación y bloquea doble clic
+  ---
+  duration_ms: 0.099833
+  type: 'test'
+  ...
+# Subtest: detalle muestra TRAIN EVALUATE EXPLAIN opcional y model version
+ok 152 - detalle muestra TRAIN EVALUATE EXPLAIN opcional y model version
+  ---
+  duration_ms: 0.047375
+  type: 'test'
+  ...
+# Subtest: API utiliza estado y publicación de producción técnica
+ok 153 - API utiliza estado y publicación de producción técnica
+  ---
+  duration_ms: 0.274333
+  type: 'test'
+  ...
+# Subtest: no expone rutas físicas ni usa checkpoint como identidad
+ok 154 - no expone rutas físicas ni usa checkpoint como identidad
+  ---
+  duration_ms: 0.558792
+  type: 'test'
+  ...
+# Subtest: renders nine absent values without scientific defaults
+ok 155 - renders nine absent values without scientific defaults
+  ---
+  duration_ms: 5.012375
+  type: 'test'
+  ...
+# Subtest: preserves false, zero, small decimals and per-run F2
+ok 156 - preserves false, zero, small decimals and per-run F2
+  ---
+  duration_ms: 0.843583
+  type: 'test'
+  ...
+# Subtest: renderiza exactamente cuatro pasos y smoke no es un quinto paso
+ok 157 - renderiza exactamente cuatro pasos y smoke no es un quinto paso
+  ---
+  duration_ms: 0.402209
+  type: 'test'
+  ...
+# Subtest: contrato presenta evidencia y bloquea valores ambiguos o ausentes
+ok 158 - contrato presenta evidencia y bloquea valores ambiguos o ausentes
+  ---
+  duration_ms: 0.137667
+  type: 'test'
+  ...
+# Subtest: validación aprobación y producción siguen estados explícitos
+ok 159 - validación aprobación y producción siguen estados explícitos
+  ---
+  duration_ms: 0.108833
+  type: 'test'
+  ...
+# Subtest: producción usa el orquestador y exige smoke, active e inferencia disponible
+ok 160 - producción usa el orquestador y exige smoke, active e inferencia disponible
+  ---
+  duration_ms: 0.08375
+  type: 'test'
+  ...
+# Subtest: API tipada expone candidatos contrato y readiness sin cliente duplicado
+ok 161 - API tipada expone candidatos contrato y readiness sin cliente duplicado
+  ---
+  duration_ms: 0.156125
+  type: 'test'
+  ...
+# Subtest: reutiliza Dataset y consume Dataset Versions gobernadas por FastAPI
+ok 162 - reutiliza Dataset y consume Dataset Versions gobernadas por FastAPI
+  ---
+  duration_ms: 1.081084
+  type: 'test'
+  ...
+# Subtest: renderiza estado, trainability, población y distribución gobernada
+ok 163 - renderiza estado, trainability, población y distribución gobernada
+  ---
+  duration_ms: 0.262791
+  type: 'test'
+  ...
+# Subtest: muestra validation, READY PASS, lineage y vacío de runs
+ok 164 - muestra validation, READY PASS, lineage y vacío de runs
+  ---
+  duration_ms: 0.181292
+  type: 'test'
+  ...
+# Subtest: incluye loading independiente, error reintentable y empty states
+ok 165 - incluye loading independiente, error reintentable y empty states
+  ---
+  duration_ms: 0.231125
+  type: 'test'
+  ...
+# Subtest: FROZEN es consulta inmutable sin configuración científica
+ok 166 - FROZEN es consulta inmutable sin configuración científica
+  ---
+  duration_ms: 0.211583
+  type: 'test'
+  ...
+# Subtest: History propaga las mismas capabilities humanas mediante RBAC explícito
+ok 167 - History propaga las mismas capabilities humanas mediante RBAC explícito
+  ---
+  duration_ms: 0.651333
+  type: 'test'
+  ...
+# Subtest: formulario de anotaciones compone los primitives canónicos
+ok 168 - formulario de anotaciones compone los primitives canónicos
+  ---
+  duration_ms: 0.107917
+  type: 'test'
+  ...
+# Subtest: History reutiliza un único formulario para CÉLULA y MUESTRA
+ok 169 - History reutiliza un único formulario para CÉLULA y MUESTRA
+  ---
+  duration_ms: 0.169917
+  type: 'test'
+  ...
+# Subtest: optimistic locking, recarga y deep link no activan el pipeline
+ok 170 - optimistic locking, recarga y deep link no activan el pipeline
+  ---
+  duration_ms: 0.133542
+  type: 'test'
+  ...
+# Subtest: renderiza en Modelo IA sólo las entradas visibles configuradas
+ok 171 - renderiza en Modelo IA sólo las entradas visibles configuradas
+  ---
+  duration_ms: 0.519167
+  type: 'test'
+  ...
+# Subtest: separa la operación en un único módulo Análisis de frotis
+ok 172 - separa la operación en un único módulo Análisis de frotis
+  ---
+  duration_ms: 0.175708
+  type: 'test'
+  ...
+# Subtest: soporta expansión, persistencia, teclado y ARIA
+ok 173 - soporta expansión, persistencia, teclado y ARIA
+  ---
+  duration_ms: 0.071792
+  type: 'test'
+  ...
+# Subtest: usa configuración tipada, grupos e iconografía SVG única
+ok 174 - usa configuración tipada, grupos e iconografía SVG única
+  ---
+  duration_ms: 0.109208
+  type: 'test'
+  ...
+# Subtest: desktop expandido y contraído usan tokens sin márgenes rígidos
+ok 175 - desktop expandido y contraído usan tokens sin márgenes rígidos
+  ---
+  duration_ms: 0.051292
+  type: 'test'
+  ...
+# Subtest: mobile implementa drawer overlay, Escape, focus trap y retorno de foco
+ok 176 - mobile implementa drawer overlay, Escape, focus trap y retorno de foco
+  ---
+  duration_ms: 0.922125
+  type: 'test'
+  ...
+# Subtest: tooltips funcionan por hover y focus en modo contraído
+ok 177 - tooltips funcionan por hover y focus en modo contraído
+  ---
+  duration_ms: 0.121875
+  type: 'test'
+  ...
+# Subtest: ruta activa usa prefijos con límite de segmento y expande su módulo
+ok 178 - ruta activa usa prefijos con límite de segmento y expande su módulo
+  ---
+  duration_ms: 0.052833
+  type: 'test'
+  ...
+# Subtest: datasource permanece fuera del menú y se conserva en enlaces
+ok 179 - datasource permanece fuera del menú y se conserva en enlaces
+  ---
+  duration_ms: 0.291375
+  type: 'test'
+  ...
+# Subtest: registra las páginas existentes como rutas reales
+ok 180 - registra las páginas existentes como rutas reales
+  ---
+  duration_ms: 0.309917
+  type: 'test'
+  ...
+# Subtest: registra las rutas gobernadas de lista y detalle
+ok 181 - registra las rutas gobernadas de lista y detalle
+  ---
+  duration_ms: 0.113583
+  type: 'test'
+  ...
+# Subtest: model versions incluye filtros, loading, vacío y error
+ok 182 - model versions incluye filtros, loading, vacío y error
+  ---
+  duration_ms: 0.043708
+  type: 'test'
+  ...
+# Subtest: deployments conecta smoke, activación confirmada y rollback inmutable
+ok 183 - deployments conecta smoke, activación confirmada y rollback inmutable
+  ---
+  duration_ms: 0.045292
+  type: 'test'
+  ...
+# Subtest: deployments muestra diagnóstico contextual y una sola expansión
+ok 184 - deployments muestra diagnóstico contextual y una sola expansión
+  ---
+  duration_ms: 0.05425
+  type: 'test'
+  ...
+# Subtest: navegación no incluye rutas físicas o archivos internos
+ok 185 - navegación no incluye rutas físicas o archivos internos
+  ---
+  duration_ms: 0.163958
+  type: 'test'
+  ...
+# Subtest: API consume modelos disponibles mediante identidad gobernada
+ok 186 - API consume modelos disponibles mediante identidad gobernada
+  ---
+  duration_ms: 0.061291
+  type: 'test'
+  ...
+# Subtest: cola forma parte del workflow y usa prioridad normal 50
+ok 187 - cola forma parte del workflow y usa prioridad normal 50
+  ---
+  duration_ms: 0.444
+  type: 'test'
+  ...
+# Subtest: ejecución, actualización y reintento permanecen manuales
+ok 188 - ejecución, actualización y reintento permanecen manuales
+  ---
+  duration_ms: 0.241459
+  type: 'test'
+  ...
+# Subtest: cliente usa endpoints persistentes de cola sin encadenar retry y execute
+ok 189 - cliente usa endpoints persistentes de cola sin encadenar retry y execute
+  ---
+  duration_ms: 0.184917
+  type: 'test'
+  ...
+# Subtest: RunDetail abre localmente el CaseDetail con el caso seleccionado
+ok 190 - RunDetail abre localmente el CaseDetail con el caso seleccionado
+  ---
+  duration_ms: 0.54375
+  type: 'test'
+  ...
+# Subtest: el detalle prefiere el Grad-CAM hermano ya generado para la misma predicción
+ok 191 - el detalle prefiere el Grad-CAM hermano ya generado para la misma predicción
+  ---
+  duration_ms: 0.169083
+  type: 'test'
+  ...
+# Subtest: la explicabilidad tiene timeout extendido, carga independiente y reintento visible
+ok 192 - la explicabilidad tiene timeout extendido, carga independiente y reintento visible
+  ---
+  duration_ms: 0.769417
+  type: 'test'
+  ...
+# Subtest: cambiar el run cierra el detalle antes de cargar sus datos
+ok 193 - cambiar el run cierra el detalle antes de cargar sus datos
+  ---
+  duration_ms: 0.282375
+  type: 'test'
+  ...
+# Subtest: Modelo IA y frotis reutilizan la vista canónica de explicabilidad
+ok 194 - Modelo IA y frotis reutilizan la vista canónica de explicabilidad
+  ---
+  duration_ms: 0.685
+  type: 'test'
+  ...
+# Subtest: la tríada XAI arma paneles LIME/SHAP a partir de casos hermanos y expone controles por columna
+ok 195 - la tríada XAI arma paneles LIME/SHAP a partir de casos hermanos y expone controles por columna
+  ---
+  duration_ms: 0.12175
+  type: 'test'
+  ...
+# Subtest: la ruta de detalle ya no navega a Explainability desde la fila
+ok 196 - la ruta de detalle ya no navega a Explainability desde la fila
+  ---
+  duration_ms: 0.062916
+  type: 'test'
+  ...
+# Subtest: resolver compartido distingue Grad-CAM, LIME y artefactos faltantes
+ok 197 - resolver compartido distingue Grad-CAM, LIME y artefactos faltantes
+  ---
+  duration_ms: 0.090083
+  type: 'test'
+  ...
+# Subtest: generación Grad-CAM manual y síncrona vive en el render canónico
+ok 198 - generación Grad-CAM manual y síncrona vive en el render canónico
+  ---
+  duration_ms: 0.244334
+  type: 'test'
+  ...
+# Subtest: scientific blob uses bearer and explicit source/relationships without path
+ok 199 - scientific blob uses bearer and explicit source/relationships without path
+  ---
+  duration_ms: 127.473334
+  type: 'test'
+  ...
+# Subtest: missing physical content rejects instead of generating a preview
+ok 200 - missing physical content rejects instead of generating a preview
+  ---
+  duration_ms: 60.338833
+  type: 'test'
+  ...
+# Subtest: legacy client never forwards bearer to a different origin
+ok 201 - legacy client never forwards bearer to a different origin
+  ---
+  duration_ms: 43.941333
+  type: 'test'
+  ...
+# Subtest: EXPLAIN renders multiple registered images with method, explained sample and separate SHAP reference
+ok 202 - EXPLAIN renders multiple registered images with method, explained sample and separate SHAP reference
+  ---
+  duration_ms: 15.375917
+  type: 'test'
+  ...
+# Subtest: report distinguishes empty evidence, loading and list errors
+ok 203 - report distinguishes empty evidence, loading and list errors
+  ---
+  duration_ms: 30.527209
+  type: 'test'
+  ...
+# Subtest: artifact list requests the attempt and public projection with authentication
+ok 204 - artifact list requests the attempt and public projection with authentication
+  ---
+  duration_ms: 31.594375
+  type: 'test'
+  ...
+# Subtest: artifact HTTP 409 is distinguished
+ok 205 - artifact HTTP 409 is distinguished
+  ---
+  duration_ms: 25.33375
+  type: 'test'
+  ...
+# Subtest: artifact HTTP 403 is distinguished
+ok 206 - artifact HTTP 403 is distinguished
+  ---
+  duration_ms: 22.277667
+  type: 'test'
+  ...
+# Subtest: artifact HTTP 500 is distinguished
+ok 207 - artifact HTTP 500 is distinguished
+  ---
+  duration_ms: 18.280042
+  type: 'test'
+  ...
+# Subtest: TRAIN retains explicit source and authenticated download
+ok 208 - TRAIN retains explicit source and authenticated download
+  ---
+  duration_ms: 23.58
+  type: 'test'
+  ...
+# Subtest: ScientificArtifact automatically enables authenticated object URL and renders PNG/download
+ok 209 - ScientificArtifact automatically enables authenticated object URL and renders PNG/download
+  ---
+  duration_ms: 7.178917
+  type: 'test'
+  ...
+# Subtest: registered missing image is rendered as an error rather than absent evidence
+ok 210 - registered missing image is rendered as an error rather than absent evidence
+  ---
+  duration_ms: 5.658959
+  type: 'test'
+  ...
+# Subtest: TRAIN loads E6 EXPLAIN across mixed lineage pages, retaining exact attempt
+ok 211 - TRAIN loads E6 EXPLAIN across mixed lineage pages, retaining exact attempt
+  ---
+  duration_ms: 7.025958
+  type: 'test'
+  ...
+# Subtest: TRAIN refuses unrelated attempts and surfaces lineage errors
+ok 212 - TRAIN refuses unrelated attempts and surfaces lineage errors
+  ---
+  duration_ms: 3.164125
+  type: 'test'
+  ...
+# Subtest: SHAP acceptance fixture opens the registered PNG inside TRAIN using assessment source
+ok 213 - SHAP acceptance fixture opens the registered PNG inside TRAIN using assessment source
+  ---
+  duration_ms: 6.822541
+  type: 'test'
+  ...
+# Subtest: TRAIN evidence rejects a detail belonging to another parent before listing artifacts
+ok 214 - TRAIN evidence rejects a detail belonging to another parent before listing artifacts
+  ---
+  duration_ms: 5.490583
+  type: 'test'
+  ...
+# Subtest: original dataset sample uses authenticated shared blob transport with separate identities
+ok 215 - original dataset sample uses authenticated shared blob transport with separate identities
+  ---
+  duration_ms: 22.092958
+  type: 'test'
+  ...
+# Subtest: original sample preserves failure FORBIDDEN
+ok 216 - original sample preserves failure FORBIDDEN
+  ---
+  duration_ms: 19.477459
+  type: 'test'
+  ...
+# Subtest: original sample preserves failure ARTIFACT_CONTENT_MISSING
+ok 217 - original sample preserves failure ARTIFACT_CONTENT_MISSING
+  ---
+  duration_ms: 18.129959
+  type: 'test'
+  ...
+# Subtest: original sample preserves failure ARTIFACT_INTEGRITY_FAILED
+ok 218 - original sample preserves failure ARTIFACT_INTEGRITY_FAILED
+  ---
+  duration_ms: 15.413959
+  type: 'test'
+  ...
+# Subtest: original sample preserves failure ARTIFACT_DATASET_EVIDENCE_INVALID
+ok 219 - original sample preserves failure ARTIFACT_DATASET_EVIDENCE_INVALID
+  ---
+  duration_ms: 16.51675
+  type: 'test'
+  ...
+# Subtest: EXPLAIN generation uses the shared bearer JSON client and exact single-cell body
+ok 220 - EXPLAIN generation uses the shared bearer JSON client and exact single-cell body
+  ---
+  duration_ms: 20.204625
+  type: 'test'
+  ...
+# Subtest: HTTP POST uses the real shared client, bearer, datasource and exact scientific identities
+ok 221 - HTTP POST uses the real shared client, bearer, datasource and exact scientific identities
+  ---
+  duration_ms: 92.646917
+  type: 'test'
+  ...
+# Subtest: A1–A6 render 2 TRAIN columns, partial evidence and all analyses
+ok 222 - A1–A6 render 2 TRAIN columns, partial evidence and all analyses
+  ---
+  duration_ms: 815.733542
+  type: 'test'
+  ...
+# Subtest: A1–A6 render 3 TRAIN columns, partial evidence and all analyses
+ok 223 - A1–A6 render 3 TRAIN columns, partial evidence and all analyses
+  ---
+  duration_ms: 158.905542
+  type: 'test'
+  ...
+# Subtest: A1–A6 render 7 TRAIN columns, partial evidence and all analyses
+ok 224 - A1–A6 render 7 TRAIN columns, partial evidence and all analyses
+  ---
+  duration_ms: 127.409792
+  type: 'test'
+  ...
+# Subtest: observation states preserve not_checked, unknown, non-applicable and query_error
+ok 225 - observation states preserve not_checked, unknown, non-applicable and query_error
+  ---
+  duration_ms: 98.046875
+  type: 'test'
+  ...
+# Subtest: initial summary loads once; switching sections reuses it; refresh queries again
+ok 226 - initial summary loads once; switching sections reuses it; refresh queries again
+  ---
+  duration_ms: 99.5875
+  type: 'test'
+  ...
+# Subtest: sections mount on first visit and only the visible section is active; XAI starts unmounted
+ok 227 - sections mount on first visit and only the visible section is active; XAI starts unmounted
+  ---
+  duration_ms: 90.221791
+  type: 'test'
+  ...
+# Subtest: analysis panel renders nothing before its first visit and hides retained sections
+ok 228 - analysis panel renders nothing before its first visit and hides retained sections
+  ---
+  duration_ms: 2.472792
+  type: 'test'
+  ...
+# Subtest: evidence stays inline without the traceability drawer provider
+ok 229 - evidence stays inline without the traceability drawer provider
+  ---
+  duration_ms: 2.626709
+  type: 'test'
+  ...
+# Subtest: no initial query with an empty selection or one exceeding configured capacity; one RUN is queried
+ok 230 - no initial query with an empty selection or one exceeding configured capacity; one RUN is queried
+  ---
+  duration_ms: 90.279416
+  type: 'test'
+  ...
+# Subtest: cache deduplicates concurrent calls, retains success, evicts failure, and isolates contexts
+ok 231 - cache deduplicates concurrent calls, retains success, evicts failure, and isolates contexts
+  ---
+  duration_ms: 1.538333
+  type: 'test'
+  ...
+# Subtest: late responses cannot replace current TRAIN, attempt, checkpoint, split or datasource
+ok 232 - late responses cannot replace current TRAIN, attempt, checkpoint, split or datasource
+  ---
+  duration_ms: 2.044375
+  type: 'test'
+  ...
+# Subtest: HTTP errors remain errors and a new revision retries successfully
+ok 233 - HTTP errors remain errors and a new revision retries successfully
+  ---
+  duration_ms: 88.070042
+  type: 'test'
+  ...
+# Subtest: authorization, permission, datasource and TRAIN changes remount the evidence scope
+ok 234 - authorization, permission, datasource and TRAIN changes remount the evidence scope
+  ---
+  duration_ms: 274.072292
+  type: 'test'
+  ...
+# Subtest: XAI first opening mounts once; closing preserves content and disables background work
+ok 235 - XAI first opening mounts once; closing preserves content and disables background work
+  ---
+  duration_ms: 5.196417
+  type: 'test'
+  ...
+# Subtest: closed retained hook does not fetch changed evidence until reopened
+ok 236 - closed retained hook does not fetch changed evidence until reopened
+  ---
+  duration_ms: 1.852084
+  type: 'test'
+  ...
+# Subtest: evaluation navigation defaults to latest and retains historical identity without an invented attempt
+ok 237 - evaluation navigation defaults to latest and retains historical identity without an invented attempt
+  ---
+  duration_ms: 60.430792
+  type: 'test'
+  ...
+# Subtest: changed attempt, split and checkpoint reach a fresh Preflight request
+ok 238 - changed attempt, split and checkpoint reach a fresh Preflight request
+  ---
+  duration_ms: 85.657209
+  type: 'test'
+  ...
+# Subtest: retained XAI polling stops when closed and idle reopening reuses the response
+ok 239 - retained XAI polling stops when closed and idle reopening reuses the response
+  ---
+  duration_ms: 6.524875
+  type: 'test'
+  ...
+# Subtest: mixed summary retains valid individual evidence alongside a technical failure
+ok 240 - mixed summary retains valid individual evidence alongside a technical failure
+  ---
+  duration_ms: 95.550709
+  type: 'test'
+  ...
+# Subtest: a stale failed request cannot evict a newer successful cache entry after refresh
+ok 241 - a stale failed request cannot evict a newer successful cache entry after refresh
+  ---
+  duration_ms: 1.331667
+  type: 'test'
+  ...
+# Subtest: HTTP 403 is preserved by the client and never becomes scientific incompatibility
+ok 242 - HTTP 403 is preserved by the client and never becomes scientific incompatibility
+  ---
+  duration_ms: 92.146542
+  type: 'test'
+  ...
+# Subtest: UX matrix preserves 2 aliases and exposes identities only in details
+ok 243 - UX matrix preserves 2 aliases and exposes identities only in details
+  ---
+  duration_ms: 96.508583
+  type: 'test'
+  ...
+# Subtest: UX matrix preserves 3 aliases and exposes identities only in details
+ok 244 - UX matrix preserves 3 aliases and exposes identities only in details
+  ---
+  duration_ms: 94.025209
+  type: 'test'
+  ...
+# Subtest: UX matrix preserves 4 aliases and exposes identities only in details
+ok 245 - UX matrix preserves 4 aliases and exposes identities only in details
+  ---
+  duration_ms: 96.216125
+  type: 'test'
+  ...
+# Subtest: warning grouping preserves all reasons and separates conditions, codes and kinds
+ok 246 - warning grouping preserves all reasons and separates conditions, codes and kinds
+  ---
+  duration_ms: 84.85
+  type: 'test'
+  ...
+# Subtest: Python only projects available persisted parameters, preserving zero/false and excluding private or unknown fields
+ok 247 - Python only projects available persisted parameters, preserving zero/false and excluding private or unknown fields
+  ---
+  duration_ms: 2.54975
+  type: 'test'
+  ...
+# Subtest: Python RUN selector and reconstruction view use current evidence without executing or fetching models
+ok 248 - Python RUN selector and reconstruction view use current evidence without executing or fetching models
+  ---
+  duration_ms: 5.495209
+  type: 'test'
+  ...
+# Subtest: copy button copies exact visible text and reports clipboard failures accessibly
+ok 249 - copy button copies exact visible text and reports clipboard failures accessibly
+  ---
+  duration_ms: 2.545417
+  type: 'test'
+  ...
+# Subtest: friendly labels and experimental differences retain original backend findings without deriving verdicts
+ok 250 - friendly labels and experimental differences retain original backend findings without deriving verdicts
+  ---
+  duration_ms: 94.513959
+  type: 'test'
+  ...
+# Subtest: Python syntax spans preserve exact copy text and render persisted strings as text
+ok 251 - Python syntax spans preserve exact copy text and render persisted strings as text
+  ---
+  duration_ms: 7.604667
+  type: 'test'
+  ...
+# Subtest: scientific modules query on first opening, reuse cache and defer changed selections while closed
+ok 252 - scientific modules query on first opening, reuse cache and defer changed selections while closed
+  ---
+  duration_ms: 57.9065
+  type: 'test'
+  ...
+# Subtest: one evaluation needs no pagination and absence is specific
+ok 253 - one evaluation needs no pagination and absence is specific
+  ---
+  duration_ms: 61.743458
+  type: 'test'
+  ...
+# Subtest: scalar rows have no expansion and groups retain requested defaults
+ok 254 - scalar rows have no expansion and groups retain requested defaults
+  ---
+  duration_ms: 95.591584
+  type: 'test'
+  ...
+# Subtest: Recharts curves retain missing values, distinguish TRAIN and VAL and reference selected epoch
+ok 255 - Recharts curves retain missing values, distinguish TRAIN and VAL and reference selected epoch
+  ---
+  duration_ms: 60.2365
+  type: 'test'
+  ...
+# Subtest: clinical metrics preserve nulls, confusion orientation and backend highlights
+ok 256 - clinical metrics preserve nulls, confusion orientation and backend highlights
+  ---
+  duration_ms: 60.492541
+  type: 'test'
+  ...
+# Subtest: consensus shows backend results and a bounded sample page without client calculations
+ok 257 - consensus shows backend results and a bounded sample page without client calculations
+  ---
+  duration_ms: 124.939542
+  type: 'test'
+  ...
+# Subtest: section 01 equality is structural, position independent and excludes missing evidence
+ok 258 - section 01 equality is structural, position independent and excludes missing evidence
+  ---
+  duration_ms: 4.79325
+  type: 'test'
+  ...
+# Subtest: projection retains SQL errors and conflicting sources rather than selecting arbitrary evidence
+ok 259 - projection retains SQL errors and conflicting sources rather than selecting arbitrary evidence
+  ---
+  duration_ms: 2.931375
+  type: 'test'
+  ...
+# Subtest: section 01 shared table, dynamic counts and no redundant expansion for 2 participants
+ok 260 - section 01 shared table, dynamic counts and no redundant expansion for 2 participants
+  ---
+  duration_ms: 92.240792
+  type: 'test'
+  ...
+# Subtest: section 01 shared table, dynamic counts and no redundant expansion for 3 participants
+ok 261 - section 01 shared table, dynamic counts and no redundant expansion for 3 participants
+  ---
+  duration_ms: 95.407042
+  type: 'test'
+  ...
+# Subtest: section 01 shared table, dynamic counts and no redundant expansion for 4 participants
+ok 262 - section 01 shared table, dynamic counts and no redundant expansion for 4 participants
+  ---
+  duration_ms: 93.718666
+  type: 'test'
+  ...
+# Subtest: concrete optimizer/checkpoint/evaluation evidence and consolidated warnings preserve traceability
+ok 263 - concrete optimizer/checkpoint/evaluation evidence and consolidated warnings preserve traceability
+  ---
+  duration_ms: 102.790459
+  type: 'test'
+  ...
+# Subtest: A6 consolidates structured fields and provenance for 2 RUN
+ok 264 - A6 consolidates structured fields and provenance for 2 RUN
+  ---
+  duration_ms: 104.176083
+  type: 'test'
+  ...
+# Subtest: A6 consolidates structured fields and provenance for 3 RUN
+ok 265 - A6 consolidates structured fields and provenance for 3 RUN
+  ---
+  duration_ms: 98.829792
+  type: 'test'
+  ...
+# Subtest: A6 consolidates structured fields and provenance for 4 RUN
+ok 266 - A6 consolidates structured fields and provenance for 4 RUN
+  ---
+  duration_ms: 96.351625
+  type: 'test'
+  ...
+# Subtest: equality partitions carry semantic aliases and distinguish type, absence and order
+ok 267 - equality partitions carry semantic aliases and distinguish type, absence and order
+  ---
+  duration_ms: 2.971625
+  type: 'test'
+  ...
+# Subtest: evidence navigation opens every ancestor and focuses the exact target
+ok 268 - evidence navigation opens every ancestor and focuses the exact target
+  ---
+  duration_ms: 2.402542
+  type: 'test'
+  ...
+# Subtest: availability matrix preserves backend verdicts, individual errors and missing evidence
+ok 269 - availability matrix preserves backend verdicts, individual errors and missing evidence
+  ---
+  duration_ms: 87.691666
+  type: 'test'
+  ...
+# Subtest: technical registry preserves exact references and RUN associations after matrix links are removed
+ok 270 - technical registry preserves exact references and RUN associations after matrix links are removed
+  ---
+  duration_ms: 92.73225
+  type: 'test'
+  ...
+# Subtest: methodological differences use real projected values for every participant; missing configuration stays in A4
+ok 271 - methodological differences use real projected values for every participant; missing configuration stays in A4
+  ---
+  duration_ms: 91.604083
+  type: 'test'
+  ...
+# Subtest: methodological analyses preserve accessible state COMPARABLE
+ok 272 - methodological analyses preserve accessible state COMPARABLE
+  ---
+  duration_ms: 85.889667
+  type: 'test'
+  ...
+# Subtest: methodological analyses preserve accessible state COMPARABLE_CON_ADVERTENCIAS
+ok 273 - methodological analyses preserve accessible state COMPARABLE_CON_ADVERTENCIAS
+  ---
+  duration_ms: 85.784667
+  type: 'test'
+  ...
+# Subtest: methodological analyses preserve accessible state NO_COMPARABLE
+ok 274 - methodological analyses preserve accessible state NO_COMPARABLE
+  ---
+  duration_ms: 94.669375
+  type: 'test'
+  ...
+# Subtest: methodological analyses preserve accessible state EVIDENCIA_INSUFICIENTE
+ok 275 - methodological analyses preserve accessible state EVIDENCIA_INSUFICIENTE
+  ---
+  duration_ms: 93.6185
+  type: 'test'
+  ...
+# Subtest: methodological analyses preserve accessible state ERROR_DE_CONSULTA
+ok 276 - methodological analyses preserve accessible state ERROR_DE_CONSULTA
+  ---
+  duration_ms: 82.49975
+  type: 'test'
+  ...
+# Subtest: structured values preserve nulls, false, zero, empty objects, long strings and collapsed list entries
+ok 277 - structured values preserve nulls, false, zero, empty objects, long strings and collapsed list entries
+  ---
+  duration_ms: 85.238791
+  type: 'test'
+  ...
+# Subtest: compact identifier copies the complete original with accessible icon, success and failure fallback
+ok 278 - compact identifier copies the complete original with accessible icon, success and failure fallback
+  ---
+  duration_ms: 83.352459
+  type: 'test'
+  ...
+# Subtest: partition cards show common data once, structured checks and explicit dataset/split differences
+ok 279 - partition cards show common data once, structured checks and explicit dataset/split differences
+  ---
+  duration_ms: 86.916583
+  type: 'test'
+  ...
+# Subtest: missing and failed integrity checks never become PASS
+ok 280 - missing and failed integrity checks never become PASS
+  ---
+  duration_ms: 82.330542
+  type: 'test'
+  ...
+# Subtest: methodological summary retains dynamic references and refresh without duplicated navigation or SQL date
+ok 281 - methodological summary retains dynamic references and refresh without duplicated navigation or SQL date
+  ---
+  duration_ms: 84.446208
+  type: 'test'
+  ...
+# Subtest: structured value CSS is scoped, tokenized, responsive and respects reduced motion
+ok 282 - structured value CSS is scoped, tokenized, responsive and respects reduced motion
+  ---
+  duration_ms: 0.419542
+  type: 'test'
+  ...
+# Subtest: SCC synthesis preserves mixed scopes and updates with selected evidence without global precedence
+ok 283 - SCC synthesis preserves mixed scopes and updates with selected evidence without global precedence
+  ---
+  duration_ms: 82.0635
+  type: 'test'
+  ...
+# Subtest: missing inventory merges identical causes per RUN, preserves errors, non-applicability and evidence links
+ok 284 - missing inventory merges identical causes per RUN, preserves errors, non-applicability and evidence links
+  ---
+  duration_ms: 86.763084
+  type: 'test'
+  ...
+# Subtest: partial protocol has no empty expansion; identifiers remain consultable and groups retain initial state
+ok 285 - partial protocol has no empty expansion; identifiers remain consultable and groups retain initial state
+  ---
+  duration_ms: 179.72925
+  type: 'test'
+  ...
+# Subtest: CompactValue displays every populated entry and collapses only normalized empty values
+ok 286 - CompactValue displays every populated entry and collapses only normalized empty values
+  ---
+  duration_ms: 80.709583
+  type: 'test'
+  ...
+# Subtest: CompactValue applies empty grouping recursively and avoids empty accordions
+ok 287 - CompactValue applies empty grouping recursively and avoids empty accordions
+  ---
+  duration_ms: 82.027125
+  type: 'test'
+  ...
+# Subtest: dataset integrity: twelve persisted PASS checks reconcile, preserve order and use one shared closed table
+ok 288 - dataset integrity: twelve persisted PASS checks reconcile, preserve order and use one shared closed table
+  ---
+  duration_ms: 8.822459
+  type: 'test'
+  ...
+# Subtest: dataset integrity: failed, missing, WARNING and unknown states reconcile without inferring PASS from equal values
+ok 289 - dataset integrity: failed, missing, WARNING and unknown states reconcile without inferring PASS from equal values
+  ---
+  duration_ms: 6.315917
+  type: 'test'
+  ...
+# Subtest: dataset integrity: values keep zero, null, absent fields, booleans and complete structured evidence
+ok 290 - dataset integrity: values keep zero, null, absent fields, booleans and complete structured evidence
+  ---
+  duration_ms: 7.882
+  type: 'test'
+  ...
+# Subtest: dataset integrity: empty, partial and query-error responses do not fabricate successful checks
+ok 291 - dataset integrity: empty, partial and query-error responses do not fabricate successful checks
+  ---
+  duration_ms: 6.467083
+  type: 'test'
+  ...
+# Subtest: dataset integrity: different dataset identities or checks keep separate scopes; opening uses native details without queries
+ok 292 - dataset integrity: different dataset identities or checks keep separate scopes; opening uses native details without queries
+  ---
+  duration_ms: 9.261083
+  type: 'test'
+  ...
+# Subtest: dataset check labels retain unknown technical identifiers, including object property names
+ok 293 - dataset check labels retain unknown technical identifiers, including object property names
+  ---
+  duration_ms: 0.595208
+  type: 'test'
+  ...
+# Subtest: consenso usa un timeout mayor que el valor por defecto de 15 s
+ok 294 - consenso usa un timeout mayor que el valor por defecto de 15 s
+  ---
+  duration_ms: 0.214042
+  type: 'test'
+  ...
+# Subtest: analysis summaries split base and fine-tuning epochs and find the most complementary pair
+ok 295 - analysis summaries split base and fine-tuning epochs and find the most complementary pair
+  ---
+  duration_ms: 1.05975
+  type: 'test'
+  ...
+# Subtest: lineage slots apply the analysis protocol, fall back when a RUN lacks it and group EXPLAIN by method
+ok 296 - lineage slots apply the analysis protocol, fall back when a RUN lacks it and group EXPLAIN by method
+  ---
+  duration_ms: 1.273417
+  type: 'test'
+  ...
+# Subtest: per-cell EXPLAIN are always included and population EXPLAIN stay selectable
+ok 297 - per-cell EXPLAIN are always included and population EXPLAIN stay selectable
+  ---
+  duration_ms: 0.819958
+  type: 'test'
+  ...
+# Subtest: consensus sample rows show the original cell, which opens its expanded XAI view
+ok 298 - consensus sample rows show the original cell, which opens its expanded XAI view
+  ---
+  duration_ms: 101.73
+  type: 'test'
+  ...
+# Subtest: traceability opens with an answer, a provenance chart per RUN and detail tabs
+ok 299 - traceability opens with an answer, a provenance chart per RUN and detail tabs
+  ---
+  duration_ms: 89.884333
+  type: 'test'
+  ...
+# Subtest: one RUN shows its provenance without comparative verdicts or contrast groups
+ok 300 - one RUN shows its provenance without comparative verdicts or contrast groups
+  ---
+  duration_ms: 168.922709
+  type: 'test'
+  ...
+# Subtest: assessment evaluations map their own field names; historical-only fields are not applicable
+ok 301 - assessment evaluations map their own field names; historical-only fields are not applicable
+  ---
+  duration_ms: 3.073834
+  type: 'test'
+  ...
+# Subtest: disabled optimizer options are recorded values, so equal optimizers have no differences
+ok 302 - disabled optimizer options are recorded values, so equal optimizers have no differences
+  ---
+  duration_ms: 85.513292
+  type: 'test'
+  ...
+# Subtest: pending evidence is grouped by cause with meaning and action; not-applicable is not counted
+ok 303 - pending evidence is grouped by cause with meaning and action; not-applicable is not counted
+  ---
+  duration_ms: 89.266292
+  type: 'test'
+  ...
+# Subtest: traceability headings name dimensions without A1–A6 codes
+ok 304 - traceability headings name dimensions without A1–A6 codes
+  ---
+  duration_ms: 90.183667
+  type: 'test'
+  ...
+# Subtest: selection retains exact identities, order, capacity from server, removal and replacement
+ok 305 - selection retains exact identities, order, capacity from server, removal and replacement
+  ---
+  duration_ms: 32.159542
+  type: 'test'
+  ...
+# Subtest: selection page renders 0 selected runs
+ok 306 - selection page renders 0 selected runs
+  ---
+  duration_ms: 121.56725
+  type: 'test'
+  ...
+# Subtest: selection page renders 1 selected runs
+ok 307 - selection page renders 1 selected runs
+  ---
+  duration_ms: 64.484292
+  type: 'test'
+  ...
+# Subtest: selection page renders 2 selected runs
+ok 308 - selection page renders 2 selected runs
+  ---
+  duration_ms: 57.4385
+  type: 'test'
+  ...
+# Subtest: capacity stays unavailable while loading or when catalog query fails
+ok 309 - capacity stays unavailable while loading or when catalog query fails
+  ---
+  duration_ms: 117.428541
+  type: 'test'
+  ...
+# Subtest: card reads persisted E2 configuration and epochs, keeps zero seed and complete identity
+ok 310 - card reads persisted E2 configuration and epochs, keeps zero seed and complete identity
+  ---
+  duration_ms: 31.809583
+  type: 'test'
+  ...
+# Subtest: navigation reuses the public route immediately after campaign
+ok 311 - navigation reuses the public route immediately after campaign
+  ---
+  duration_ms: 3.829625
+  type: 'test'
+  ...
+# Subtest: compact card RUN A keeps UUID in closed technical details
+ok 312 - compact card RUN A keeps UUID in closed technical details
+  ---
+  duration_ms: 24.734584
+  type: 'test'
+  ...
+# Subtest: compact card RUN B keeps UUID in closed technical details
+ok 313 - compact card RUN B keeps UUID in closed technical details
+  ---
+  duration_ms: 24.920833
+  type: 'test'
+  ...
+# Subtest: compact card RUN C keeps UUID in closed technical details
+ok 314 - compact card RUN C keeps UUID in closed technical details
+  ---
+  duration_ms: 21.664958
+  type: 'test'
+  ...
+# Subtest: compact card RUN D keeps UUID in closed technical details
+ok 315 - compact card RUN D keeps UUID in closed technical details
+  ---
+  duration_ms: 23.112583
+  type: 'test'
+  ...
+# Subtest: selector reuses the report row, preserving full report secondary sections
+ok 316 - selector reuses the report row, preserving full report secondary sections
+  ---
+  duration_ms: 49.895625
+  type: 'test'
+  ...
+# Subtest: summary loader waits for opening and cancels obsolete read-only requests
+ok 317 - summary loader waits for opening and cancels obsolete read-only requests
+  ---
+  duration_ms: 12.064541
+  type: 'test'
+  ...
+# Subtest: eligibility train: visible stages and guarded selection
+ok 318 - eligibility train: visible stages and guarded selection
+  ---
+  duration_ms: 42.672375
+  type: 'test'
+  ...
+# Subtest: eligibility evaluate: visible stages and guarded selection
+ok 319 - eligibility evaluate: visible stages and guarded selection
+  ---
+  duration_ms: 31.162708
+  type: 'test'
+  ...
+# Subtest: eligibility explain: visible stages and guarded selection
+ok 320 - eligibility explain: visible stages and guarded selection
+  ---
+  duration_ms: 32.407292
+  type: 'test'
+  ...
+# Subtest: eligibility query: visible stages and guarded selection
+ok 321 - eligibility query: visible stages and guarded selection
+  ---
+  duration_ms: 31.400583
+  type: 'test'
+  ...
+# Subtest: eligibility complete: visible stages and guarded selection
+ok 322 - eligibility complete: visible stages and guarded selection
+  ---
+  duration_ms: 32.742167
+  type: 'test'
+  ...
+# Subtest: representations show persisted projections, CKA and why a RUN has none
+ok 323 - representations show persisted projections, CKA and why a RUN has none
+  ---
+  duration_ms: 119.346666
+  type: 'test'
+  ...
+# Subtest: same TRAIN/checkpoint/sample/context combines three methods and preserves each identity
+ok 324 - same TRAIN/checkpoint/sample/context combines three methods and preserves each identity
+  ---
+  duration_ms: 83.322
+  type: 'test'
+  ...
+# Subtest: SHAP-only and unexplained samples keep four panels, without generating an original from background
+ok 325 - SHAP-only and unexplained samples keep four panels, without generating an original from background
+  ---
+  duration_ms: 100.104333
+  type: 'test'
+  ...
+# Subtest: incompatible train never joins another attempt
+ok 326 - incompatible train never joins another attempt
+  ---
+  duration_ms: 0.183541
+  type: 'test'
+  ...
+# Subtest: incompatible checkpoint never joins another attempt
+ok 327 - incompatible checkpoint never joins another attempt
+  ---
+  duration_ms: 0.082292
+  type: 'test'
+  ...
+# Subtest: incompatible model never joins another attempt
+ok 328 - incompatible model never joins another attempt
+  ---
+  duration_ms: 0.138167
+  type: 'test'
+  ...
+# Subtest: incompatible sample never joins another attempt
+ok 329 - incompatible sample never joins another attempt
+  ---
+  duration_ms: 0.060042
+  type: 'test'
+  ...
+# Subtest: incompatible dataset never joins another attempt
+ok 330 - incompatible dataset never joins another attempt
+  ---
+  duration_ms: 0.105834
+  type: 'test'
+  ...
+# Subtest: incompatible split never joins another attempt
+ok 331 - incompatible split never joins another attempt
+  ---
+  duration_ms: 0.057542
+  type: 'test'
+  ...
+# Subtest: incompatible purpose never joins another attempt
+ok 332 - incompatible purpose never joins another attempt
+  ---
+  duration_ms: 0.255667
+  type: 'test'
+  ...
+# Subtest: incompatible preprocessing never joins another attempt
+ok 333 - incompatible preprocessing never joins another attempt
+  ---
+  duration_ms: 0.341833
+  type: 'test'
+  ...
+# Subtest: incompatible missing never joins another attempt
+ok 334 - incompatible missing never joins another attempt
+  ---
+  duration_ms: 0.197041
+  type: 'test'
+  ...
+# Subtest: conflicting artifact relationships are non-comparable and cannot trigger a download
+ok 335 - conflicting artifact relationships are non-comparable and cannot trigger a download
+  ---
+  duration_ms: 27.417833
+  type: 'test'
+  ...
+# Subtest: unknown sample is isolated, duplicate method preserved and duplicate artifact removed
+ok 336 - unknown sample is isolated, duplicate method preserved and duplicate artifact removed
+  ---
+  duration_ms: 0.162542
+  type: 'test'
+  ...
+# Subtest: required SHAP PK survives independently of unrelated Grad-CAM
+ok 337 - required SHAP PK survives independently of unrelated Grad-CAM
+  ---
+  duration_ms: 25.543459
+  type: 'test'
+  ...
+# Subtest: execution pending is represented independently of missing evidence
+ok 338 - execution pending is represented independently of missing evidence
+  ---
+  duration_ms: 23.929583
+  type: 'test'
+  ...
+# Subtest: execution running is represented independently of missing evidence
+ok 339 - execution running is represented independently of missing evidence
+  ---
+  duration_ms: 22.961417
+  type: 'test'
+  ...
+# Subtest: execution failed is represented independently of missing evidence
+ok 340 - execution failed is represented independently of missing evidence
+  ---
+  duration_ms: 20.503459
+  type: 'test'
+  ...
+# Subtest: execution completed is represented independently of missing evidence
+ok 341 - execution completed is represented independently of missing evidence
+  ---
+  duration_ms: 19.202417
+  type: 'test'
+  ...
+# Subtest: execution not_executed is represented independently of missing evidence
+ok 342 - execution not_executed is represented independently of missing evidence
+  ---
+  duration_ms: 18.5
+  type: 'test'
+  ...
+# Subtest: missing retrieval failure is not absence of execution
+ok 343 - missing retrieval failure is not absence of execution
+  ---
+  duration_ms: 21.181542
+  type: 'test'
+  ...
+# Subtest: denied retrieval failure is not absence of execution
+ok 344 - denied retrieval failure is not absence of execution
+  ---
+  duration_ms: 19.055875
+  type: 'test'
+  ...
+# Subtest: integrity_failed retrieval failure is not absence of execution
+ok 345 - integrity_failed retrieval failure is not absence of execution
+  ---
+  duration_ms: 17.508167
+  type: 'test'
+  ...
+# Subtest: not_comparable retrieval failure is not absence of execution
+ok 346 - not_comparable retrieval failure is not absence of execution
+  ---
+  duration_ms: 18.535167
+  type: 'test'
+  ...
+# Subtest: error retrieval failure is not absence of execution
+ok 347 - error retrieval failure is not absence of execution
+  ---
+  duration_ms: 17.916625
+  type: 'test'
+  ...
+# Subtest: generation stays disabled without a real authorized callback
+ok 348 - generation stays disabled without a real authorized callback
+  ---
+  duration_ms: 35.558958
+  type: 'test'
+  ...
+# Subtest: image hook reuses authenticated SCC-ART access and preserves all relationship restrictions
+ok 349 - image hook reuses authenticated SCC-ART access and preserves all relationship restrictions
+  ---
+  duration_ms: 2.69425
+  type: 'test'
+  ...
+# Subtest: structured artifact errors distinguish authorization, missing, integrity and other HTTP failures
+ok 350 - structured artifact errors distinguish authorization, missing, integrity and other HTTP failures
+  ---
+  duration_ms: 2.154625
+  type: 'test'
+  ...
+# Subtest: existing object URL lifecycle revokes on unmount and ignores late responses
+ok 351 - existing object URL lifecycle revokes on unmount and ignores late responses
+  ---
+  duration_ms: 11.760334
+  type: 'test'
+  ...
+# Subtest: modal shares presentation/resources, native keyboard dialog and scoped four-column overflow
+ok 352 - modal shares presentation/resources, native keyboard dialog and scoped four-column overflow
+  ---
+  duration_ms: 0.294833
+  type: 'test'
+  ...
+# Subtest: storage paths, sample selections and execution IDs do not substitute scientific identity
+ok 353 - storage paths, sample selections and execution IDs do not substitute scientific identity
+  ---
+  duration_ms: 0.133583
+  type: 'test'
+  ...
+# Subtest: visible observer defers image hooks; image action opens native modal and close restores focus
+ok 354 - visible observer defers image hooks; image action opens native modal and close restores focus
+  ---
+  duration_ms: 21.2535
+  type: 'test'
+  ...
+# Subtest: comparison browser bounds mounted viewers to five and advances without fetching every PNG
+ok 355 - comparison browser bounds mounted viewers to five and advances without fetching every PNG
+  ---
+  duration_ms: 9.345917
+  type: 'test'
+  ...
+# Subtest: original and SHAP render side by side with disabled generation and compact inline density
+ok 356 - original and SHAP render side by side with disabled generation and compact inline density
+  ---
+  duration_ms: 19.034625
+  type: 'test'
+  ...
+# Subtest: original source hook shares URL lifecycle while using sample rather than artifact identity
+ok 357 - original source hook shares URL lifecycle while using sample rather than artifact identity
+  ---
+  duration_ms: 1.815083
+  type: 'test'
+  ...
+# Subtest: compact thumbnails have bounded height while modal keeps expanded presentation
+ok 358 - compact thumbnails have bounded height while modal keeps expanded presentation
+  ---
+  duration_ms: 0.14975
+  type: 'test'
+  ...
+# Subtest: shared generation hook loads persisted evidence, submits missing methods and refreshes only its context
+ok 359 - shared generation hook loads persisted evidence, submits missing methods and refreshes only its context
+  ---
+  duration_ms: 9.272917
+  type: 'test'
+  ...
+# Subtest: pending backend method disables duplicate generation and remains distinct from completed evidence
+ok 360 - pending backend method disables duplicate generation and remains distinct from completed evidence
+  ---
+  duration_ms: 7.131709
+  type: 'test'
+  ...
+# Subtest: attributions for different target classes are never grouped as the same explanation
+ok 361 - attributions for different target classes are never grouped as the same explanation
+  ---
+  duration_ms: 0.0895
+  type: 'test'
+  ...
+# Subtest: traceability explains the inputs of each method and keeps identifiers apart
+ok 362 - traceability explains the inputs of each method and keeps identifiers apart
+  ---
+  duration_ms: 37.468375
+  type: 'test'
+  ...
+# Subtest: the explained cell record survives grouping across attempts and the scroll hint is gone
+ok 363 - the explained cell record survives grouping across attempts and the scroll hint is gone
+  ---
+  duration_ms: 15.893042
+  type: 'test'
+  ...
+# Subtest: executor label explains an absent GPU agent and how to start it; generation is blocked
+ok 364 - executor label explains an absent GPU agent and how to start it; generation is blocked
+  ---
+  duration_ms: 28.52825
+  type: 'test'
+  ...
+# Subtest: generate missing locks on the click: one request, methods in flight before the backend answers
+ok 365 - generate missing locks on the click: one request, methods in flight before the backend answers
+  ---
+  duration_ms: 6.3825
+  type: 'test'
+  ...
+# Subtest: attribution maps decode NumPy and colour activation and signed attributions with magnitude alpha
+ok 366 - attribution maps decode NumPy and colour activation and signed attributions with magnitude alpha
+  ---
+  duration_ms: 2.641625
+  type: 'test'
+  ...
+# Subtest: grouping keeps the raw map of each method next to its overlay
+ok 367 - grouping keeps the raw map of each method next to its overlay
+  ---
+  duration_ms: 0.07525
+  type: 'test'
+  ...
+# Subtest: a cell without explanations is built from its VAL context so it can be generated
+ok 368 - a cell without explanations is built from its VAL context so it can be generated
+  ---
+  duration_ms: 6.294833
+  type: 'test'
+  ...
+# Subtest: overlay offers per-layer generation next to the title and keeps generated layers usable
+ok 369 - overlay offers per-layer generation next to the title and keeps generated layers usable
+  ---
+  duration_ms: 13.836125
+  type: 'test'
+  ...
+# Subtest: cell outcome shows real class, the model category and its score against the threshold
+ok 370 - cell outcome shows real class, the model category and its score against the threshold
+  ---
+  duration_ms: 17.367
+  type: 'test'
+  ...
+# Subtest: v2 renders undefined reasons, real zero, orientation, lineage and specialist review
+ok 371 - v2 renders undefined reasons, real zero, orientation, lineage and specialist review
+  ---
+  duration_ms: 4.627584
+  type: 'test'
+  ...
+# Subtest: legacy does not claim typed v2 evidence
+ok 372 - legacy does not claim typed v2 evidence
+  ---
+  duration_ms: 0.147584
+  type: 'test'
+  ...
+# Subtest: 9.2C reutiliza el detalle existente sin modal ni formulario paralelo
+ok 373 - 9.2C reutiliza el detalle existente sin modal ni formulario paralelo
+  ---
+  duration_ms: 1.289792
+  type: 'test'
+  ...
+# Subtest: predicción y clasificación humana son visibles, editables y separadas
+ok 374 - predicción y clasificación humana son visibles, editables y separadas
+  ---
+  duration_ms: 0.357541
+  type: 'test'
+  ...
+# Subtest: anotaciones de célula y muestra soportan altas, edición, varias notas e historial
+ok 375 - anotaciones de célula y muestra soportan altas, edición, varias notas e historial
+  ---
+  duration_ms: 0.162875
+  type: 'test'
+  ...
+# Subtest: selección, carrusel, siguiente sin revisar y modo histórico comparten estado
+ok 376 - selección, carrusel, siguiente sin revisar y modo histórico comparten estado
+  ---
+  duration_ms: 0.111792
+  type: 'test'
+  ...
+# Subtest: RBAC, accesibilidad y responsive se preservan sin CSS global nuevo
+ok 377 - RBAC, accesibilidad y responsive se preservan sin CSS global nuevo
+  ---
+  duration_ms: 0.142167
+  type: 'test'
+  ...
+# Subtest: Historial de análisis está bajo Análisis de frotis y fuera de Modelo IA
+ok 378 - Historial de análisis está bajo Análisis de frotis y fuera de Modelo IA
+  ---
+  duration_ms: 0.470167
+  type: 'test'
+  ...
+# Subtest: listado usa una fila por analysis run con filtros, orden backend y paginación
+ok 379 - listado usa una fila por analysis run con filtros, orden backend y paginación
+  ---
+  duration_ms: 0.137875
+  type: 'test'
+  ...
+# Subtest: detalle es deep link validado y reutiliza la presentación del workflow
+ok 380 - detalle es deep link validado y reutiliza la presentación del workflow
+  ---
+  duration_ms: 0.173584
+  type: 'test'
+  ...
+# Subtest: detalle histórico conserva y reconstruye selección en query params
+ok 381 - detalle histórico conserva y reconstruye selección en query params
+  ---
+  duration_ms: 0.185833
+  type: 'test'
+  ...
+# Subtest: hook histórico y su API realizan exclusivamente consultas GET
+ok 382 - hook histórico y su API realizan exclusivamente consultas GET
+  ---
+  duration_ms: 0.181708
+  type: 'test'
+  ...
+# Subtest: modo histórico separa acciones humanas de mutaciones automáticas
+ok 383 - modo histórico separa acciones humanas de mutaciones automáticas
+  ---
+  duration_ms: 0.1095
+  type: 'test'
+  ...
+# Subtest: live e history comparten una sola composición React de resultados
+ok 384 - live e history comparten una sola composición React de resultados
+  ---
+  duration_ms: 0.500459
+  type: 'test'
+  ...
+# Subtest: composición y CSS reproducen el workspace inmersivo aprobado sin alterar page global
+ok 385 - composición y CSS reproducen el workspace inmersivo aprobado sin alterar page global
+  ---
+  duration_ms: 2.593
+  type: 'test'
+  ...
+# Subtest: filtros son reales, incluyen cell_code y excluyen categorías ficticias
+ok 386 - filtros son reales, incluyen cell_code y excluyen categorías ficticias
+  ---
+  duration_ms: 1.682708
+  type: 'test'
+  ...
+# Subtest: responsive usa cuatro pestañas y conserva reduced motion
+ok 387 - responsive usa cuatro pestañas y conserva reduced motion
+  ---
+  duration_ms: 0.347333
+  type: 'test'
+  ...
+# Subtest: resultado mantiene disclaimer experimental y no presenta diagnóstico
+ok 388 - resultado mantiene disclaimer experimental y no presenta diagnóstico
+  ---
+  duration_ms: 0.422459
+  type: 'test'
+  ...
+# Subtest: mantiene la fila contextual funcional y la compacta sólo en el workflow de frotis
+ok 389 - mantiene la fila contextual funcional y la compacta sólo en el workflow de frotis
+  ---
+  duration_ms: 0.806792
+  type: 'test'
+  ...
+# Subtest: preparación expone datos reales, límites, motivos de bloqueo y una única acción
+ok 390 - preparación expone datos reales, límites, motivos de bloqueo y una única acción
+  ---
+  duration_ms: 0.276708
+  type: 'test'
+  ...
+# Subtest: adapta las etapas persistidas a la máquina clínica mínima solicitada
+ok 391 - adapta las etapas persistidas a la máquina clínica mínima solicitada
+  ---
+  duration_ms: 0.080417
+  type: 'test'
+  ...
+# Subtest: calidad visual se deriva de métricas y códigos persistidos sin temporizadores
+ok 392 - calidad visual se deriva de métricas y códigos persistidos sin temporizadores
+  ---
+  duration_ms: 0.230042
+  type: 'test'
+  ...
+# Subtest: escaneo usa la imagen real, acompaña cualquier etapa de procesamiento y respeta reduced motion
+ok 393 - escaneo usa la imagen real, acompaña cualquier etapa de procesamiento y respeta reduced motion
+  ---
+  duration_ms: 1.386167
+  type: 'test'
+  ...
+# Subtest: al completar navega con replace al detalle y preserva selección y datasource
+ok 394 - al completar navega con replace al detalle y preserva selección y datasource
+  ---
+  duration_ms: 0.127041
+  type: 'test'
+  ...
+# Subtest: declara una máquina de estados central y conserva todos los identificadores
+ok 395 - declara una máquina de estados central y conserva todos los identificadores
+  ---
+  duration_ms: 0.528292
+  type: 'test'
+  ...
+# Subtest: la acción única encadena recursos reales y la cola normal antes del quality gate
+ok 396 - la acción única encadena recursos reales y la cola normal antes del quality gate
+  ---
+  duration_ms: 0.1605
+  type: 'test'
+  ...
+# Subtest: bloquea doble envío antes del rerender y no usa procesamiento automático
+ok 397 - bloquea doble envío antes del rerender y no usa procesamiento automático
+  ---
+  duration_ms: 0.372875
+  type: 'test'
+  ...
+# Subtest: preview local es inmediata, reemplazable y revoca object URLs
+ok 398 - preview local es inmediata, reemplazable y revoca object URLs
+  ---
+  duration_ms: 0.734791
+  type: 'test'
+  ...
+# Subtest: setup Liquid Glass conserva datos reales y estructura 4/8
+ok 399 - setup Liquid Glass conserva datos reales y estructura 4/8
+  ---
+  duration_ms: 0.82825
+  type: 'test'
+  ...
+# Subtest: dropzone admite clic, teclado, drag and drop y rechazo de formatos
+ok 400 - dropzone admite clic, teclado, drag and drop y rechazo de formatos
+  ---
+  duration_ms: 0.204125
+  type: 'test'
+  ...
+# Subtest: preview muestra metadatos y usa el microscopio local adjunto
+ok 401 - preview muestra metadatos y usa el microscopio local adjunto
+  ---
+  duration_ms: 0.368166
+  type: 'test'
+  ...
+# Subtest: URL conserva IDs y recuperación sólo ejecuta lecturas
+ok 402 - URL conserva IDs y recuperación sólo ejecuta lecturas
+  ---
+  duration_ms: 0.574583
+  type: 'test'
+  ...
+# Subtest: pass continúa; warning y fail detienen; warning aprobado continúa
+ok 403 - pass continúa; warning y fail detienen; warning aprobado continúa
+  ---
+  duration_ms: 0.317042
+  type: 'test'
+  ...
+# Subtest: errores conservan recursos y ofrecen retry desde la etapa fallida
+ok 404 - errores conservan recursos y ofrecen retry desde la etapa fallida
+  ---
+  duration_ms: 0.28875
+  type: 'test'
+  ...
+# Subtest: detección completada reutiliza SmearAnalysisImmersiveView y persiste selección
+ok 405 - detección completada reutiliza SmearAnalysisImmersiveView y persiste selección
+  ---
+  duration_ms: 0.206541
+  type: 'test'
+  ...
+# Subtest: ruta canónica y aliases legacy comparten el workflow sin tocar Modelo IA
+ok 406 - ruta canónica y aliases legacy comparten el workflow sin tocar Modelo IA
+  ---
+  duration_ms: 0.160291
+  type: 'test'
+  ...
+# Subtest: muestra imagen, etapas y sub-hitos con actividad real sin porcentajes de proceso inventados
+ok 407 - muestra imagen, etapas y sub-hitos con actividad real sin porcentajes de proceso inventados
+  ---
+  duration_ms: 0.127
+  type: 'test'
+  ...
+# Subtest: RBAC gobierna ejecución, warnings y revisión celular
+ok 408 - RBAC gobierna ejecución, warnings y revisión celular
+  ---
+  duration_ms: 0.114208
+  type: 'test'
+  ...
+# Subtest: estilos del workflow son scoped, responsive y respetan reduced motion
+ok 409 - estilos del workflow son scoped, responsive y respetan reduced motion
+  ---
+  duration_ms: 0.205
+  type: 'test'
+  ...
+# Subtest: activación aparece sólo en TRAIN y reutiliza los endpoints existentes
+ok 410 - activación aparece sólo en TRAIN y reutiliza los endpoints existentes
+  ---
+  duration_ms: 2.1685
+  type: 'test'
+  ...
+# Subtest: Activar controla un acordeón accesible con confirmaciones inline
+ok 411 - Activar controla un acordeón accesible con confirmaciones inline
+  ---
+  duration_ms: 0.330667
+  type: 'test'
+  ...
+# Subtest: el resumen muestra sólo la acción o Modelo en Estado Activo, sin indicadores de elegibilidad
+ok 412 - el resumen muestra sólo la acción o Modelo en Estado Activo, sin indicadores de elegibilidad
+  ---
+  duration_ms: 0.125625
+  type: 'test'
+  ...
+# Subtest: Despliegues identifica el modelo productivo Etapa 2 y preserva producción formal
+ok 413 - Despliegues identifica el modelo productivo Etapa 2 y preserva producción formal
+  ---
+  duration_ms: 0.185542
+  type: 'test'
+  ...
+# Subtest: completed TRAIN and verified evaluation enable activation without prior registration
+ok 414 - completed TRAIN and verified evaluation enable activation without prior registration
+  ---
+  duration_ms: 16.388291
+  type: 'test'
+  ...
+# Subtest: original seven fields, labels, dates and column grid are restored
+ok 415 - original seven fields, labels, dates and column grid are restored
+  ---
+  duration_ms: 0.679708
+  type: 'test'
+  ...
+# Subtest: unfinished TRAIN displays the pending backend condition without recomputing eligibility
+ok 416 - unfinished TRAIN displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 4.419041
+  type: 'test'
+  ...
+# Subtest: absent evaluation displays the pending backend condition without recomputing eligibility
+ok 417 - absent evaluation displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 0.864958
+  type: 'test'
+  ...
+# Subtest: failed evaluation displays the pending backend condition without recomputing eligibility
+ok 418 - failed evaluation displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 0.581083
+  type: 'test'
+  ...
+# Subtest: unverified evaluation displays the pending backend condition without recomputing eligibility
+ok 419 - unverified evaluation displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 0.388542
+  type: 'test'
+  ...
+# Subtest: verified without valid link displays the pending backend condition without recomputing eligibility
+ok 420 - verified without valid link displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 0.404417
+  type: 'test'
+  ...
+# Subtest: missing operational registration never changes the displayed eligibility result
+ok 421 - missing operational registration never changes the displayed eligibility result
+  ---
+  duration_ms: 0.367541
+  type: 'test'
+  ...
+# Subtest: EXPLAIN counts and existing explanation evidence remain informational
+ok 422 - EXPLAIN counts and existing explanation evidence remain informational
+  ---
+  duration_ms: 1.488792
+  type: 'test'
+  ...
+# Subtest: conditional fields not listed for removal remain in the original grid
+ok 423 - conditional fields not listed for removal remain in the original grid
+  ---
+  duration_ms: 0.808625
+  type: 'test'
+  ...
+# Subtest: API failure has a generic error and retry without leaking backend details
+ok 424 - API failure has a generic error and retry without leaking backend details
+  ---
+  duration_ms: 0.166666
+  type: 'test'
+  ...
+# Subtest: loading does not offer an activation decision
+ok 425 - loading does not offer an activation decision
+  ---
+  duration_ms: 0.101417
+  type: 'test'
+  ...
+# Subtest: ready candidate without EXPLAIN can activate regardless of descriptive fields or low metrics
+ok 426 - ready candidate without EXPLAIN can activate regardless of descriptive fields or low metrics
+  ---
+  duration_ms: 0.350625
+  type: 'test'
+  ...
+# Subtest: not ready is checked during activation, never as an eligibility prerequisite
+ok 427 - not ready is checked during activation, never as an eligibility prerequisite
+  ---
+  duration_ms: 0.334084
+  type: 'test'
+  ...
+# Subtest: unknown readiness is checked during activation, never as an eligibility prerequisite
+ok 428 - unknown readiness is checked during activation, never as an eligibility prerequisite
+  ---
+  duration_ms: 0.316583
+  type: 'test'
+  ...
+# Subtest: missing version is checked during activation, never as an eligibility prerequisite
+ok 429 - missing version is checked during activation, never as an eligibility prerequisite
+  ---
+  duration_ms: 0.313375
+  type: 'test'
+  ...
+# Subtest: operational blocker is checked during activation, never as an eligibility prerequisite
+ok 430 - operational blocker is checked during activation, never as an eligibility prerequisite
+  ---
+  duration_ms: 0.3135
+  type: 'test'
+  ...
+# Subtest: activation errors remain visible and do not claim success
+ok 431 - activation errors remain visible and do not claim success
+  ---
+  duration_ms: 4.473291
+  type: 'test'
+  ...
+# Subtest: active model shows Modelo activo and never offers redundant activation
+ok 432 - active model shows Modelo activo and never offers redundant activation
+  ---
+  duration_ms: 0.4355
+  type: 'test'
+  ...
+# Subtest: publication alone does not claim that the model receives crops
+ok 433 - publication alone does not claim that the model receives crops
+  ---
+  duration_ms: 0.354916
+  type: 'test'
+  ...
+# Subtest: activation requires the user click; replacement adds its own confirmation
+ok 434 - activation requires the user click; replacement adds its own confirmation
+  ---
+  duration_ms: 5.328833
+  type: 'test'
+  ...
+# Subtest: no active model activates on the user click without an additional approval step
+ok 435 - no active model activates on the user click without an additional approval step
+  ---
+  duration_ms: 1.792417
+  type: 'test'
+  ...
+# Subtest: a pending replacement cannot activate a model whose eligibility changed
+ok 436 - a pending replacement cannot activate a model whose eligibility changed
+  ---
+  duration_ms: 1.267334
+  type: 'test'
+  ...
+# Subtest: no active model uses existing publication service then reloads canonical availability
+ok 437 - no active model uses existing publication service then reloads canonical availability
+  ---
+  duration_ms: 11.532125
+  type: 'test'
+  ...
+# Subtest: another active model requires confirmation before using the existing replacement payload
+ok 438 - another active model requires confirmation before using the existing replacement payload
+  ---
+  duration_ms: 16.203125
+  type: 'test'
+  ...
+# Subtest: already active model refreshes state without redundant publication
+ok 439 - already active model refreshes state without redundant publication
+  ---
+  duration_ms: 10.312458
+  type: 'test'
+  ...
+# Subtest: replacement confirmation rechecks whether this model has already become active
+ok 440 - replacement confirmation rechecks whether this model has already become active
+  ---
+  duration_ms: 4.831375
+  type: 'test'
+  ...
+# Subtest: ineligible candidate cannot call the activation service even outside the panel
+ok 441 - ineligible candidate cannot call the activation service even outside the panel
+  ---
+  duration_ms: 4.234375
+  type: 'test'
+  ...
+# Subtest: the page consumes one canonical release response and clears stale status on errors
+ok 442 - the page consumes one canonical release response and clears stale status on errors
+  ---
+  duration_ms: 0.288417
+  type: 'test'
+  ...
+1..442
+# tests 442
+# suites 0
+# pass 442
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6584.9765

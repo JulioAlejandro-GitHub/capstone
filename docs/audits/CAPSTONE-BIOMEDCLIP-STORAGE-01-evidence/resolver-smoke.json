@@ -1,0 +1,22 @@
+{
+  "model_id_version": "3fd16a84-b5c7-442b-916b-e0438bb0f3e5",
+  "artifact_id": "e5e67ccf-6403-4dfa-b472-31920f4f2346",
+  "framework": "pytorch_openclip",
+  "device": "cpu",
+  "shared_resolver_matches": true,
+  "original_transform_equal": true,
+  "snapshot_unchanged": true,
+  "dependency_ids": [
+    "c7949e20-f933-4dcd-b34d-c6a924b7f8b5",
+    "2595973d-35e4-44eb-91b9-d5b84d29ae29",
+    "e6174c50-faf7-42aa-a713-81ea7fb10811",
+    "8d18ee56-9655-4232-9677-da9efd6c9272"
+  ],
+  "synthetic_scores": [
+    [
+      0.5048878788948059,
+      0.4951120615005493
+    ]
+  ],
+  "database_read_only": true
+}

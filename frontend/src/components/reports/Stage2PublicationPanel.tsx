@@ -34,9 +34,12 @@ export function Stage2PublicationPanel({
 }: Props) {
   const [confirm, setConfirm] = useState<'replace' | null>(null);
   const active = status?.is_stage2_available === true && status.available_for_inference === true;
+  const publishedUnavailable = status?.published === true && !active;
+  // A zero-shot model already active can still adopt a newer VAL-calibrated threshold.
+  const thresholdUpdate = active && status?.threshold_update_available === true;
   const publishable = status?.eligible === true;
   const execute = async (replaceExisting = false) => {
-    if (loading || active || !publishable) return;
+    if (loading || (active && !thresholdUpdate) || !publishable) return;
     const result = await onPublish(replaceExisting);
     if (result === 'replacement-required') { setConfirm('replace'); return; }
     if (result === 'failed') return;
@@ -54,26 +57,31 @@ export function Stage2PublicationPanel({
   </section>;
 
   const confirming = !active && publishable;
-  const trainLabel = completionLabel(status.eligibility?.train_completed, status.train_status);
+  const trainLabel = status.training_performed === false ? 'Incorporación lógica, sin entrenamiento' : completionLabel(status.eligibility?.train_completed, status.train_status);
   const evaluateLabel = status.evaluation_status
     ? completionLabel(status.eligibility?.evaluate_completed, status.evaluation_status)
-    : 'Sin evaluación asociada';
+    : 'Sin evidencia de evaluación';
   return <section aria-label="Clasificación celular" className="stage2-publication-panel" id={id}>
     <header>
       <h3>Regla de liberación</h3>
       {active ? <strong role="status">Modelo en Estado Activo</strong> : null}
+      {publishedUnavailable ? <strong role="status">Publicado, no disponible para inferencia</strong> : null}
     </header>
+    {publishedUnavailable ? <p className="run-promotion-error" role="alert">
+      El modelo está publicado, pero el backend no puede servirlo:{' '}
+      {status.technical_blockers?.length
+        ? status.technical_blockers.map((item) => item.message).join(' · ')
+        : 'el deployment no está operativo.'}
+    </p> : null}
     <div className="stage2-publication-grid">
       <span className="stage2-release-rule">Regla
-        <strong>TRAIN completed + EVALUATE completed</strong>
+        <strong>Versión y checkpoint con capacidad técnica verificada</strong>
         <span className="stage2-release-states">TRAIN: {trainLabel}. · EVALUATE: {evaluateLabel}.</span>
         {status.eligible
           ? <strong role="status">Cumple la regla de liberación para clasificación celular</strong>
           : <span className="stage2-missing-condition" role="status">
             {status.eligibility ? <>
-              {!status.eligibility.train_completed ? 'Pendiente: TRAIN debe estar completado. ' : ''}
-              {!status.eligibility.evaluate_completed
-                ? 'Pendiente: EVALUATE debe estar completado y vinculado a este TRAIN.' : ''}
+              {status.eligibility.missing_conditions?.join(' · ')}
             </> : 'No se pudo confirmar el cumplimiento de la regla de liberación.'}
           </span>}
       </span>
@@ -106,9 +114,10 @@ export function Stage2PublicationPanel({
           onClick={() => void execute(true)} type="button">Continuar y reemplazar</button>
         <button disabled={loading} onClick={() => setConfirm(null)} type="button">Cancelar</button>
       </div>
-    </div> : <button className={active ? '' : 'primary-action'} disabled={loading || active || !publishable}
+    </div> : <button className={active && !thresholdUpdate ? '' : 'primary-action'}
+      disabled={loading || (active && !thresholdUpdate) || !publishable}
       onClick={() => void execute()} type="button">
-      Activar para clasificación celular
+      {thresholdUpdate ? 'Aplicar umbral calibrado en VAL' : 'Activar para clasificación celular'}
     </button>}
   </section>;
 }

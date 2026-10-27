@@ -27,6 +27,7 @@ class DeploymentReadiness(BaseModel):
 class Stage2Status(BaseModel):
     training_run_id: UUID
     train_status: str
+    training_performed: bool | None = None
     train_started_at: datetime | None = None
     train_finished_at: datetime | None = None
     evaluation_source_kind: Literal["run", "assessment_e6"] | None = None
@@ -74,5 +75,6 @@ class Stage2Status(BaseModel):
     smoke_status: str | None = None
     blockers: list[Stage2Condition]
     technical_blockers: list[Stage2Condition]
+    threshold_update_available: bool = False
     warnings: list[str]
     package: dict[str, JsonValue] | None = None

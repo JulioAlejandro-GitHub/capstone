@@ -58,17 +58,17 @@ export function Stage2ReleaseDetail({ datasource }: { datasource: string }) {
     <div className="panel stage2-release-detail">
       <div className="facts-grid">
         <span>Training run<strong>{trainingRunId}</strong></span>
-        <span>TRAIN<strong>{status.train_status ?? 'No disponible'}</strong></span>
+        <span>TRAIN<strong>{status.training_performed === false ? 'Incorporación lógica, sin entrenamiento' : status.train_status ?? 'No disponible'}</strong></span>
         <span>Evaluation utilizada {status.evaluation_source_kind==='assessment_e6'?'· intento E6':''}<strong>{status.evaluation_attempt_id ?? status.evaluation_run_id ?? 'Sin evidencia'}</strong></span>
-        <span>EVALUATE<strong>{status.evaluation_status ?? 'No disponible'}</strong></span>
+        <span>EVALUATE<strong>{status.evaluation_status ?? 'Sin evidencia de evaluación'}</strong></span>
         <span>EXPLAIN<strong>{status.explainability_run_ids?.length ?? 0} asociados · opcional</strong></span>
         <span>Model version<strong>{status.model_version_id ?? 'Pendiente de preparación'}</strong></span>
         <span>Destino<strong>production / champion</strong></span>
         <span>Scope<strong>stage2_technical</strong></span>
       </div>
       {status.eligible ? <div className="deployment-readiness deployment-readiness--ready" role="status">
-        <div><strong>TRAIN y EVALUATE completados</strong><p>Cumple la regla técnica; la preparación para despliegue se comprueba por separado.</p></div><span>Elegible</span>
-      </div> : <div className="warning-panel" role="status"><strong>No se puede publicar</strong><p>Se requiere un TRAIN completado y un EVALUATE completado asociado.</p></div>}
+        <div><strong>Linaje registrado</strong><p>Cumple la regla técnica; la preparación para despliegue se comprueba por separado.</p></div><span>Elegible</span>
+      </div> : <div className="warning-panel" role="status"><strong>No se puede publicar</strong><p>Se requiere una versión con checkpoint y adaptador celular compatibles.</p></div>}
       {status.technical_blockers?.length ? <div className="warning-panel"><strong>Preparación técnica pendiente</strong>
         <ul>{status.technical_blockers.map((item)=><li key={item.code}>{item.message}</li>)}</ul></div> : null}
       {error ? <div className="warning-panel" role="alert">{error}</div> : null}

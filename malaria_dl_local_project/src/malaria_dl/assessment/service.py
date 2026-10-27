@@ -20,7 +20,8 @@ from .contracts import (
 )
 from .lineage import dataset_samples, resolve
 from .representation import ROLES
-from .runtime import KerasRuntime, save_artifacts, save_arrays
+from .openclip import calibration as zero_shot_calibration, decision as zero_shot_decision, is_openclip
+from .runtime import runtime_for, save_artifacts, save_arrays
 
 
 def explanation_spec(method, layer, class_id, num_samples, background):
@@ -137,8 +138,9 @@ def prepare(
     require(representation is None or (explanation is None and evaluation_id is None and max_images == "all"
                                         and sample_id is None), "REPRESENTATION_SELECTION_CONFLICT")
     binding, dataset, calibration = resolve(
-        repository, training_run_id, model_version_id
+        repository, training_run_id, model_version_id, dataset_version_id
     )
+    zero_shot = is_openclip(binding)
     if model is not None:
         from ..models.registry import MODEL_REGISTRY
 
@@ -150,13 +152,24 @@ def prepare(
         input_override is None or binding["input_contract"] == input_override,
         "INPUT_OVERRIDE_CONFLICT",
     )
-    seed, batch_size = inference_options(repository, binding["training_run_id"], seed, batch_size,
-                                         "explain" if explanation else "represent" if representation
-                                         else "test" if split == "test" else "evaluate")
-    decision = threshold(requested_threshold, protocol, calibration)
+    if zero_shot:
+        # A logical TRAIN persisted no execution profile to inherit seed or batch from.
+        require(type(seed) is int and type(batch_size) is int and batch_size > 0,
+                "SEED_AND_BATCH_SIZE_REQUIRED_FOR_LOGICAL_TRAIN")
+        require(explanation is None or explanation["method"] in ("lime", "shap"),
+                "EXPLANATION_METHOD_UNSUPPORTED_FOR_FRAMEWORK")
+        decision = zero_shot_decision(
+            requested_threshold, protocol, binding["input_contract"],
+            zero_shot_calibration(repository, binding, dataset) if requested_threshold == "clinical" else None)
+    else:
+        seed, batch_size = inference_options(repository, binding["training_run_id"], seed, batch_size,
+                                             "explain" if explanation else "represent" if representation
+                                             else "test" if split == "test" else "evaluate")
+        decision = threshold(requested_threshold, protocol, calibration)
     samples = dataset_samples(
         repository, dataset, split, dataset_version_id, inspection=inspection,
-        training_run_id=binding["training_run_id"], dataset_dir=dataset_dir,
+        # The dataset of a logical TRAIN is the explicit selection, not TRAIN evidence.
+        training_run_id=None if zero_shot else binding["training_run_id"], dataset_dir=dataset_dir,
         verification=verification, metadata_only=inspection and split == "test",
     )
     evaluation = None
@@ -205,7 +218,7 @@ def prepare(
         purpose=purpose,
         protocol=protocol,
         decision=decision,
-        code=inference_environment(explanation, representation),
+        code=inference_environment(explanation, representation, zero_shot),
         seed=seed,
         batch_size=batch_size,
         explanation=explanation,
@@ -347,7 +360,7 @@ def reserve_execution(repository: Any, value: dict, artifact_root: str) -> tuple
     return value, attempt, created
 
 
-def run(repository, value, artifact_root, runtime_factory=KerasRuntime):
+def run(repository, value, artifact_root, runtime_factory=runtime_for):
     value, attempt, created = reserve_execution(repository, value, artifact_root)
     if not created:
         if attempt["state"] == "verified":
@@ -357,7 +370,7 @@ def run(repository, value, artifact_root, runtime_factory=KerasRuntime):
 
 
 def execute_reserved(repository: Any, value: dict, attempt: dict,
-                     runtime_factory: Any = KerasRuntime) -> dict:
+                     runtime_factory: Any = runtime_for) -> dict:
     """Same scientific execution for CLI and HTTP; no second algorithm pipeline."""
     require(repository.identity(attempt["identity_id"]) == value, "ASSESSMENT_IDENTITY_CONFLICT")
     require(attempt["state"] == "active", "ASSESSMENT_NOT_ACTIVE")
@@ -425,9 +438,11 @@ def execute_reserved(repository: Any, value: dict, attempt: dict,
         raise
 
 
-def inference_environment(explanation=None, representation=None):
+def inference_environment(explanation=None, representation=None, zero_shot=False):
     result = planning_environment()
     packages = ["Pillow"]
+    if zero_shot:
+        packages += ["torch", "open_clip_torch", "transformers", "tokenizers", "timm"]
     if representation:
         packages += ["scikit-learn", "umap-learn"]
     if explanation:

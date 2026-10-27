@@ -30,7 +30,8 @@ SELECT 'assessment_e6' AS evaluation_source_kind, NULL::uuid AS evaluation_run_i
        (v.verification IS NOT NULL) AS evaluation_verified_evidence,
        v.identity->'model' AS model_binding,
        v.identity#>>'{model,model_version_id}' AS model_version_id,
-       v.identity#>>'{model,checkpoint_artifact_id}' AS checkpoint_artifact_id
+       v.identity#>>'{model,checkpoint_artifact_id}' AS checkpoint_artifact_id,
+       v.identity#>>'{decision,source,version}' AS evaluation_decision_source
 FROM visible_assessments v
 UNION ALL
 SELECT DISTINCT 'run', child.id, NULL::uuid, NULL::uuid, child.status,
@@ -41,7 +42,7 @@ SELECT DISTINCT 'run', child.id, NULL::uuid, NULL::uuid, child.status,
              AND other.relationship_type='evaluates_checkpoint_from'
              AND other.parent_run_id<>lineage.parent_run_id
        ), false, NULL::jsonb, lineage.model_version_id::text,
-       lineage.checkpoint_artifact_id::text
+       lineage.checkpoint_artifact_id::text, NULL::text
 FROM eligible_run_lineage lineage JOIN runs child ON child.id=lineage.child_run_id
 WHERE child.run_type='evaluation'
 ORDER BY evaluation_finished_at DESC NULLS LAST, evaluation_started_at DESC NULLS LAST,

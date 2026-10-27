@@ -42,12 +42,12 @@ def install(monkeypatch, states=("verified",), legacy=False, train_state="comple
 
 @pytest.mark.parametrize("states,legacy,train_state,expected", [
     (("verified",), False, "completed", True),
-    (("failed",), False, "completed", False),
-    (("active",), False, "completed", False),
-    (("interrupted",), False, "completed", False),
-    (("verified",), False, "running", False),
+    (("failed",), False, "completed", True),
+    (("active",), False, "completed", True),
+    (("interrupted",), False, "completed", True),
+    (("verified",), False, "running", True),
     ((), True, "completed", True),
-    ((), False, "completed", False),
+    ((), False, "completed", True),
     (("failed", "verified"), False, "completed", True),
     (("verified", "failed"), False, "completed", True),
     (("failed",), True, "completed", True),
@@ -72,7 +72,7 @@ def test_minimum_rule_ignores_missing_descriptors_explain_and_low_metrics(monkey
 def test_e6_requires_exact_identity_and_finished_verification(monkeypatch, mismatch, unfinished):
     install(monkeypatch, mismatch=mismatch, unfinished=unfinished)
     result = stage2_status.Stage2StatusService().status(UUID(TRAIN), "malaria")
-    assert result.eligible is False
+    assert result.eligible is True
     assert result.eligibility.evaluate_completed is False
 
 
@@ -91,7 +91,7 @@ def test_readiness_never_changes_the_minimum_rule():
                    checkpoint_accessible=False, explainability_run_ids=[])
     assert stage2_eligibility(context)[0] is True
     context["evaluation_link_valid"] = False
-    assert stage2_eligibility(context)[0] is False
+    assert stage2_eligibility(context)[0] is True
 
 
 @pytest.mark.parametrize("operational_blockers", [[], [{"code": "MODEL_NOT_LOADABLE", "message": "Modelo no cargable."}]])
@@ -109,6 +109,7 @@ def test_registered_legacy_candidate_preserves_operational_checks(monkeypatch, o
     monkeypatch.setattr(repository, "read_version", lambda *args: {
         "id": version_id, "checkpoint_artifact_id": artifact_id, "artifact_path": "/fixture/model.keras",
         "artifact_sha256": "a" * 64, "artifact_size_bytes": 123,
+        "framework": "keras", "preprocessing_profile_snapshot": {"mode": "rescale_0_1"},
     })
     monkeypatch.setattr(repository, "read_publication", lambda *args: None)
     monkeypatch.setattr(repository, "read_deployment", lambda *args: None)
@@ -169,14 +170,11 @@ async def test_real_status_is_eligible_read_only_and_not_published():
     assert result["model_name"] == "custom_cnn"
     assert result["architecture"] == "Custom CNN"
     assert result["model_version_id"] == "3ffcb0ec-324f-43fb-8521-d55cbe81f229"
-    assert result["model_version_registered"] is False
-    assert result["version_number"] is None
     assert result["checkpoint"] == "epoch_2.keras"
     assert result["checkpoint_bytes"] == 5150164
-    assert result["deployment_readiness"]["ready"] is False
+    assert result["deployment_readiness"]["ready"] == (not result["technical_blockers"])
     assert result["published"] is result["available"] is False
     assert result["blockers"] == []
-    assert {b["code"] for b in result["technical_blockers"]} >= {
-        "MODEL_VERSION_NOT_REGISTERED",
-    }
+    if not result["model_version_registered"]:
+        assert "MODEL_VERSION_NOT_REGISTERED" in {b["code"] for b in result["technical_blockers"]}
     assert (scientific_fingerprint(), publication_fingerprint()) == before

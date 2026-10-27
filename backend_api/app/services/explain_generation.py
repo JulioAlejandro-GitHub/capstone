@@ -121,6 +121,7 @@ class ExplainService:
 
     def prepare(self, request: ExplainRequest, source: dict[str, Any], method: str, inspection: bool = False) -> dict[str, Any]:
         value = prepare(self.repository, training_run_id=source['model']['training_run_id'],
+                        dataset_version_id=source['dataset']['dataset_version_id'],
                         split=source['split'], purpose=source['purpose'], protocol=source['protocol'],
                         requested_threshold=source['decision']['requested'], seed=source['seed'],
                         batch_size=source['batch_size'], explanation=self.specification(request, source, method),

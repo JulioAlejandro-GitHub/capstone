@@ -235,6 +235,8 @@ def test_consumer_tensor_and_prediction_equivalence(mode, tmp_path, monkeypatch)
     np.testing.assert_allclose(batch[0], expected, rtol=0, atol=1e-5)
     pp, ins, outs, mapping = stored(c)
     resolved = SimpleNamespace(
+        framework="tensorflow/keras",
+        architecture="vgg16",
         preprocessing=pp,
         input_signature=ins,
         output_signature=outs,

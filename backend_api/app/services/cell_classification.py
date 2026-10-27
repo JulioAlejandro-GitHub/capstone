@@ -707,6 +707,9 @@ class CellClassificationService:
                         "dtype",
                         "activation",
                         "from_logits",
+                        "meaning",
+                        "score_name",
+                        "class_order",
                     )
                     if key in signature
                 }
@@ -1695,6 +1698,9 @@ class CellClassificationService:
         if self.preprocessor is not None:
             return self.preprocessor(item, resolved)
         self._ml_project_root()
+        if resolved.framework == "pytorch_openclip":
+            from src.malaria_dl.models.openclip_inference import transform_bytes
+            return transform_bytes(self._verified_crop_bytes(item), resolved.runtime_preprocessing or resolved.preprocessing)
         from src.malaria_dl.data.input_contract import transform_bytes
 
         contract = self._resolved_input_contract(resolved)

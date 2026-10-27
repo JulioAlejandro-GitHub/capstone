@@ -30,13 +30,14 @@ EXPECTED_LABEL_MAPPING = {
     "positive_label": "parasitized",
 }
 SUPPORTED_FRAMEWORKS = {
+    "pytorch_openclip",
     "keras",
     "tensorflow",
     "tensorflow.keras",
     "tf.keras",
     "tensorflow/keras",
 }
-SUPPORTED_PREPROCESSING = {"rescale_0_1", "rescale", "vgg16_imagenet"}
+SUPPORTED_PREPROCESSING = {"openclip_original", "rescale_0_1", "rescale", "vgg16_imagenet"}
 PRODUCTIVE_MODEL_UNAVAILABLE = (
     "No existe un modelo productivo válido para Etapa 2. "
     "Publique un modelo desde Modelo IA antes de continuar."
@@ -92,6 +93,7 @@ class ResolvedProductiveModel:
     production_status: str
     deployment_metadata: dict[str, Any]
     source_evaluation_attempt_id: str | None = None
+    runtime_preprocessing: dict[str, Any] | None = None
 
     @property
     def cache_key(self) -> tuple[str, str]:
@@ -311,7 +313,8 @@ class ProductiveModelResolver:
             self.ml_project_root / "releases",
             self.ml_project_root / "outputs",
         )
-        self.allowed_roots = tuple(Path(root).resolve() for root in roots)
+        configured_roots = [Path(value) for value in os.getenv("CAPSTONE_MODEL_ARTIFACT_ROOTS", "").split(os.pathsep) if value]
+        self.allowed_roots = tuple(Path(root).resolve() for root in (*roots, *configured_roots))
 
     @staticmethod
     def _keras_loader(path: Path) -> Any:
@@ -347,12 +350,20 @@ class ProductiveModelResolver:
               mv.artifact_sha256 model_sha256,
               mv.artifact_size_bytes model_size_bytes,mv.framework,
               mv.framework_version,mv.input_signature,mv.output_signature,
+              model.framework declared_framework,model.model_type,
               mv.preprocessing_profile_snapshot model_preprocessing,
               mv.class_mapping model_mapping,mv.metadata model_metadata,
               artifact.path artifact_path,artifact.checksum artifact_checksum,
               artifact.run_id::text artifact_run_id,
               artifact.file_size_bytes artifact_size_bytes,
               artifact.artifact_status,
+              (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                  'artifact_id', dep.id, 'run_id', dep.run_id,
+                  'role', dep.metadata->>'role', 'path', dep.path,
+                  'sha256', dep.checksum, 'bytes', dep.file_size_bytes,
+                  'status', dep.artifact_status)), '[]'::jsonb)
+               FROM artifacts dep WHERE dep.run_id=mv.training_run_id
+                 AND dep.artifact_type='model_dependency') registered_dependencies,
               publication.id::text publication_id,
               publication.evaluation_run_id::text source_evaluation_run_id,
               publication.evaluation_attempt_id::text source_evaluation_attempt_id,
@@ -393,6 +404,7 @@ class ProductiveModelResolver:
                )
              )
             JOIN model_versions mv ON mv.id=publication.model_version_id
+            JOIN models model ON model.id=mv.model_id
             JOIN artifacts artifact
               ON artifact.id=publication.checkpoint_artifact_id
             JOIN runs training ON training.id=mv.training_run_id
@@ -535,10 +547,13 @@ class ProductiveModelResolver:
             raise ProductiveModelError(
                 "PRODUCTIVE_PUBLICATION_INACTIVE", reason="publicación no activa"
             )
-        # TRAIN + EVALUATE are the publication service's only eligibility
-        # conditions.  Once that publication is active, inference must not
-        # reinterpret lifecycle, lineage, metrics or model-version status.
+        # Operational readiness is independent of scientific evaluation history.
         framework = str(row.get("framework") or "").strip().lower()
+        declared = str(row.get("declared_framework") or framework).strip().lower()
+        keras_aliases = SUPPORTED_FRAMEWORKS - {"pytorch_openclip"}
+        same_framework = declared == framework or (declared in keras_aliases and framework in keras_aliases)
+        if not same_framework:
+            raise ProductiveModelError("PRODUCTIVE_FRAMEWORK_UNSUPPORTED", reason="framework difiere de la identidad del modelo")
         if framework not in SUPPORTED_FRAMEWORKS:
             raise ProductiveModelError(
                 "PRODUCTIVE_FRAMEWORK_UNSUPPORTED", reason="framework no soportado"
@@ -579,6 +594,17 @@ class ProductiveModelResolver:
             )
         if mode == "rescale":
             mode = "rescale_0_1"
+        if (framework == "pytorch_openclip") != (mode == "openclip_original"):
+            raise ProductiveModelError("PRODUCTIVE_PREPROCESSING_INVALID", reason="preprocessing incompatible con el adaptador")
+        runtime_preprocessing = None
+        if framework == "pytorch_openclip":
+            from src.malaria_dl.pretrained.registration import resolve_dependencies
+            try:
+                runtime_preprocessing = resolve_dependencies(
+                    preprocessing, row.get("registered_dependencies") or [], self._artifact_path)
+            except (ValueError, OSError, KeyError) as exc:
+                raise ProductiveModelError(
+                    "MODEL_DEPENDENCY_INVALID", reason=getattr(exc, "reason", None) or str(exc)) from exc
         preprocessing["mode"] = mode
 
         mapping = _mapping(row.get("label_mapping_snapshot"))
@@ -600,7 +626,14 @@ class ProductiveModelResolver:
         assessment_threshold = row.get("threshold_assessment_attempt_id")
         if assessment_threshold and str(assessment_threshold) != str(row.get("source_evaluation_attempt_id")):
             raise ProductiveModelError("PRODUCTIVE_THRESHOLD_INVALID", reason="threshold no corresponde a la evaluación publicada")
-        if not (row.get("threshold_calibration_id") or assessment_threshold) or not threshold_snapshot:
+        configured = threshold_snapshot.get("source") == "configured_decision"
+        if configured:
+            if row.get("threshold_calibration_id") or assessment_threshold:
+                raise ProductiveModelError("PRODUCTIVE_THRESHOLD_INVALID", reason="configured decision cannot claim calibration")
+            row = dict(row, calibration_threshold=threshold_snapshot.get("value"),
+                       calibration_status="configured", calibration_positive_label="parasitized",
+                       calibration_score_name=row.get("score_name"), calibration_threshold_source="configured_decision")
+        if not (row.get("threshold_calibration_id") or assessment_threshold or configured) or not threshold_snapshot:
             raise ProductiveModelError(
                 "PRODUCTIVE_THRESHOLD_MISSING", reason="threshold snapshot ausente"
             )
@@ -641,11 +674,16 @@ class ProductiveModelResolver:
             or row.get("calibration_threshold_source")
             or ""
         ).strip()
+        # PostgreSQL keeps the legacy probability_parasitized column name; an OpenCLIP
+        # assessment states the actual meaning of its relative two-prompt score instead.
+        score_name_matches = row.get("calibration_score_name") == row.get("score_name") or (
+            framework == "pytorch_openclip" and row.get("score_name") == "probability_parasitized"
+            and row.get("calibration_score_name") == "relative_similarity_not_clinically_calibrated")
         if (
             not threshold_source
-            or row.get("calibration_status") not in ({"verified"} if assessment_threshold else {"recorded", "validated"})
+            or row.get("calibration_status") not in ({"configured"} if configured else {"verified"} if assessment_threshold else {"recorded", "validated"})
             or row.get("calibration_positive_label") != "parasitized"
-            or row.get("calibration_score_name") != "probability_parasitized"
+            or not score_name_matches
         ):
             raise ProductiveModelError(
                 "PRODUCTIVE_THRESHOLD_INVALID",
@@ -752,6 +790,7 @@ class ProductiveModelResolver:
             input_signature=input_signature,
             output_signature=output_signature,
             preprocessing=preprocessing,
+            runtime_preprocessing=runtime_preprocessing,
             label_mapping=mapping,
             positive_label="parasitized",
             positive_class_index=1,
@@ -1064,98 +1103,26 @@ class ProductiveModelResolver:
                     reason="stage2/default cambió antes de congelar la ejecución",
                 )
             return current
-        if resolved.source_evaluation_attempt_id:
-            connection.execute(text("SELECT pg_advisory_xact_lock_shared(hashtext('stage2-selection:malaria'))"))
-            locked = connection.execute(text("""
-              SELECT d.id FROM deployed_model_versions d
-              JOIN stage2_model_publications p ON p.model_version_id=d.model_version_id
-                AND p.checkpoint_artifact_id=d.checkpoint_artifact_id
-              JOIN model_versions mv ON mv.id=d.model_version_id
-              JOIN artifacts artifact ON artifact.id=d.checkpoint_artifact_id
-              JOIN runs training ON training.id=mv.training_run_id
-              JOIN assessment_attempts a ON a.id=p.evaluation_attempt_id
-              WHERE d.id=CAST(:deployment AS uuid) AND p.id=CAST(:publication AS uuid)
-                AND d.status='active' AND p.is_active AND p.status='active'
-                AND d.threshold_assessment_attempt_id=a.id AND a.state='verified'
-                AND training.status='completed'
-              FOR SHARE OF d,p,mv,artifact,training,a
-            """), {'deployment': resolved.deployment_id, 'publication': resolved.publication_id}).first()
-            if not locked:
-                raise ProductiveModelError('PRODUCTIVE_MODEL_CHANGED', reason='El modelo activo cambió antes de crear la clasificación.')
-            rows = self._fetch_candidates(connection=connection)
-            if len(rows) != 1:
-                raise ProductiveModelError('PRODUCTIVE_MODEL_NOT_UNIQUE')
-            current = self._safe_validate(rows[0], require_active=True)
-            if not self._same_identity(resolved, current):
-                raise ProductiveModelError('PRODUCTIVE_MODEL_CHANGED')
-            return current
-        locked = connection.execute(
-            text(
-                """
-                SELECT d.id
-                FROM deployed_model_versions d
-                JOIN model_versions mv ON mv.id=d.model_version_id
-                JOIN artifacts artifact ON artifact.id=d.checkpoint_artifact_id
-                JOIN stage2_model_publications publication
-                  ON publication.id=CAST(:publication_id AS uuid)
-                 AND publication.model_version_id=d.model_version_id
-                 AND publication.training_run_id=mv.training_run_id
-                 AND publication.checkpoint_artifact_id=d.checkpoint_artifact_id
-                 AND publication.scope='stage2'
-                JOIN run_threshold_calibration calibration
-                  ON calibration.run_threshold_calibration_id=
-                    d.threshold_calibration_id
-                 AND calibration.model_version_id=d.model_version_id
-                JOIN runs training ON training.id=mv.training_run_id
-                JOIN runs evaluation
-                  ON evaluation.id=publication.evaluation_run_id
-                JOIN run_lineage lineage
-                  ON lineage.parent_run_id=mv.training_run_id
-                 AND lineage.child_run_id=publication.evaluation_run_id
-                 AND lineage.model_version_id=mv.id
-                 AND lineage.checkpoint_artifact_id=d.checkpoint_artifact_id
-                 AND lineage.relationship_type='evaluates_checkpoint_from'
-                WHERE d.id=CAST(:deployment_id AS uuid)
-                  AND d.model_version_id=CAST(:model_version_id AS uuid)
-                  AND d.checkpoint_artifact_id=CAST(:artifact_id AS uuid)
-                  AND d.environment=:environment
-                  AND d.alias=:alias
-                  AND d.status='active'
-                  AND publication.status='active'
-                  AND publication.is_active=true
-                  AND mv.status IN (
-                    'candidate','validated','approved','deployed'
-                  )
-                  AND mv.lineage_status='resolved'
-                  AND artifact.artifact_status='available'
-                  AND artifact.checksum=:checkpoint_sha256
-                  AND artifact.file_size_bytes=:checkpoint_size_bytes
-                  AND d.artifact_sha256=:checkpoint_sha256
-                  AND d.artifact_size_bytes=:checkpoint_size_bytes
-                  AND training.run_type='training'
-                  AND training.status='completed'
-                  AND evaluation.run_type='evaluation'
-                  AND evaluation.status='completed'
-                  AND calibration.calibration_status IN ('recorded','validated')
-                  AND calibration.threshold_selected=:threshold
-                  AND calibration.threshold_source=:threshold_source
-                FOR SHARE OF
-                  d,mv,artifact,publication,calibration,training,evaluation,lineage
-                """
-            ),
-            {
-                "deployment_id": resolved.deployment_id,
-                "publication_id": resolved.publication_id,
-                "model_version_id": resolved.model_version_id,
-                "artifact_id": resolved.checkpoint_artifact_id,
-                "environment": STAGE2_ENVIRONMENT,
-                "alias": STAGE2_ALIAS,
-                "checkpoint_sha256": resolved.checkpoint_sha256,
-                "checkpoint_size_bytes": resolved.checkpoint_size_bytes,
-                "threshold": resolved.threshold,
-                "threshold_source": resolved.threshold_source,
-            },
-        ).first()
+        connection.execute(text("SELECT pg_advisory_xact_lock_shared(hashtext('stage2-selection:malaria'))"))
+        locked = connection.execute(text("""
+            SELECT d.id FROM deployed_model_versions d
+            JOIN model_versions mv ON mv.id=d.model_version_id
+            JOIN artifacts artifact ON artifact.id=d.checkpoint_artifact_id
+                AND artifact.run_id=mv.training_run_id
+            JOIN stage2_model_publications publication
+                ON publication.id=CAST(:publication_id AS uuid)
+                AND publication.model_version_id=mv.id
+                AND publication.training_run_id=mv.training_run_id
+                AND publication.checkpoint_artifact_id=artifact.id
+            JOIN runs training ON training.id=mv.training_run_id
+            WHERE d.id=CAST(:deployment_id AS uuid)
+                AND d.model_version_id=CAST(:model_version_id AS uuid)
+                AND d.checkpoint_artifact_id=CAST(:artifact_id AS uuid)
+                AND d.status='active' AND publication.is_active AND publication.status='active'
+                AND training.run_type='training'
+            FOR SHARE OF d,mv,artifact,publication,training
+        """), {"deployment_id":resolved.deployment_id, "publication_id":resolved.publication_id,
+               "model_version_id":resolved.model_version_id, "artifact_id":resolved.checkpoint_artifact_id}).first()
         if not locked:
             raise ProductiveModelError(
                 "PRODUCTIVE_MODEL_CHANGED",
@@ -1259,4 +1226,8 @@ class ProductiveModelResolver:
                 temporary_path.unlink(missing_ok=True)
 
     def load(self, resolved: ResolvedProductiveModel) -> Any:
+        if resolved.framework == "pytorch_openclip":
+            from src.malaria_dl.models.openclip_inference import OpenCLIPClassifier
+            return self.cache.get_or_load(resolved, lambda item: OpenCLIPClassifier(
+                item.checkpoint_path, item.runtime_preprocessing or item.preprocessing, item.checkpoint_sha256))
         return self.cache.get_or_load(resolved, self._load_verified_copy)

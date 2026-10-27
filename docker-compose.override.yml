@@ -9,7 +9,14 @@ services:
       CAPSTONE_LOCAL_STORAGE_ROOTS: >-
         {"dataset":"/app/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
         "artifacts":"/app/var/local_artifacts"}
+      # Registered external (zero-shot) model files live outside the repo; their
+      # artifacts.path is absolute, so mount them read-only at the identical path.
+      CAPSTONE_MODEL_ARTIFACT_ROOTS: ${CAPSTONE_EXTERNAL_MODEL_ROOT:?Set CAPSTONE_EXTERNAL_MODEL_ROOT in .env}
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      TOKENIZERS_PARALLELISM: "false"
     volumes:
+      - ${CAPSTONE_EXTERNAL_MODEL_ROOT}:${CAPSTONE_EXTERNAL_MODEL_ROOT}:ro
       - ./backend_api/app:/app/app
       - ./backend_api/tests:/app/tests
       # Los tests de contrato (test_docker_postgres_contract_guard, test_smear_reset_tool)

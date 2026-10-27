@@ -49,6 +49,7 @@ class RepresentService:
 
     def prepare(self, source: dict[str, Any]) -> dict[str, Any]:
         value = prepare(self.repository, training_run_id=source['model']['training_run_id'],
+                        dataset_version_id=source['dataset']['dataset_version_id'],
                         split=source['split'], purpose=source['purpose'], protocol=source['protocol'],
                         requested_threshold=source['decision']['requested'], seed=source['seed'],
                         batch_size=source['batch_size'], representation=representation_spec())

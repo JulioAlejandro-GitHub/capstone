@@ -24,7 +24,7 @@ def training_plan(repository: ExecutionRepository, campaign_id: str | None,
     from ..pretrained.training import omit_training
     plan = []
     for source in select_trainings(repository, campaign_id, training_run_id):
-        if omit_training(source.get("model_name")):
+        if omit_training(source.get("model_name"), source.get("model_metadata") or {}):
             continue
         configuration = source["configuration"]
         require(isinstance(configuration, dict)

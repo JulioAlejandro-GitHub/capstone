@@ -38,9 +38,9 @@ EVALUATE / TEST / EXPLAIN ── assessment_identities ── assessment_attempt
 | TRAIN por referencia (`--source-training-run-id`) | `M/execution/operations.py` (`output_dir="outputs/train_runs"`) | `outputs/train_runs/<run_id>/` | `ExecutionRepository.standalone` resuelve con `Path(root).resolve()`: **depende del directorio actual**; ejecutar desde `malaria_dl_local_project/`. Sin E10 ni proyecciones SCC |
 | EVALUATE / EXPLAIN / TEST | `M/assessment/cli.py:104` (`"artifacts/assessments"`) | `artifacts/assessments/<attempt_id>/` | `AssessmentRepository.reserve` añade `<attempt_id>` y resuelve contra el directorio actual. Ninguno de los cuatro comandos acepta `--artifact-root` (retirado en CLI-01); sólo lo conservan los ejecutores internos de worker (`execution/campaign.py`, `execution/controlled.py`). EVALUATE y TEST registran la raíz pero **no crean archivos** |
 
-Traslado Mac ↔ Docker: `M/execution/storage_paths.py:local_scientific_path` sólo reescribe rutas bajo
-`outputs/train_runs` y `artifacts/assessments` (`ALLOWED_TREES`). Rutas `outputs/campaign_runs` se resuelven sólo si existen
-tal cual. El backend Docker monta `malaria_dl_local_project` completo en `/app/malaria_dl_local_project`.
+Traslado Mac ↔ Docker (reverificado 2026-10-27):
+`M/execution/storage_paths.py:local_scientific_path` admite `outputs/train_runs`,
+`outputs/campaign_runs` y `artifacts/assessments` (`ALLOWED_TREES`). El backend Docker monta `malaria_dl_local_project` completo en `/app/malaria_dl_local_project`.
 
 ## 3. Mapa por operación
 
@@ -268,3 +268,25 @@ Política operativa derivada:
 Complementario para parámetros y umbrales: [Scientific Parameter Registry](../scientific_parameters.md) (generado;
 cadena `experimental_campaigns` → `campaign_configurations` → `runs` → `run_configurations` y destino de
 `threshold_selected`/`threshold_used`). Su frase «el catálogo público sigue fijando none» es anterior a `fa322be`.
+
+
+## 9. Incorporaciones lógicas Zero-Shot (2026-10-27)
+
+Extensión verificada en [CAPSTONE-BIOMEDCLIP-STORAGE-01](../audits/CAPSTONE-BIOMEDCLIP-STORAGE-01.md).
+El TRAIN lógico usa `runs.run_type=training`, status completed, training_performed=false,
+cero épocas y dataset NULL. No tiene épocas ni resultados ficticios y no debe exigírsele
+una sesión de entrenamiento computacional. Reutiliza models, runs, artifacts y model_versions.
+
+Las incorporaciones nuevas copian los originales verificados al árbol existente
+`outputs/train_runs/<run_id>/` y registran sus rutas finales. Los snapshots históricos
+permanecen inmutables; los resolvedores consultan artifacts para ubicación e integridad.
+Un rollback SQL puede dejar archivos nuevos sin referencias: conservarlos hasta reconciliación.
+La caché externa no equivale a una raíz compartida accesible desde Docker.
+
+El BiomedCLIP operativo aún referencia caché externa: normalizar su versión requiere una
+sustitución autorizada, no alterar paths protegidos. Cinco directorios de ensayo pertenecen
+a bases aisladas y deben conservarse. Ver el inventario y la propuesta SQL en la auditoría.
+
+La carga celular OpenCLIP no habilita por sí sola los assessments científicos, que siguen
+usando KerasRuntime. Publicación técnica no acredita evaluación clínica. Procedimiento,
+frameworks, preprocesamiento y SQL: [incorporación Zero-Shot](../operations/zero_shot_incorporation.md).

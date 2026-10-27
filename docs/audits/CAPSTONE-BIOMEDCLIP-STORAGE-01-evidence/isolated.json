@@ -1,0 +1,745 @@
+{
+  "biomedclip_01c1": {
+    "runs": [
+      {
+        "id": "7b667ee5-edf0-4766-b77e-eec8a9add54c",
+        "status": "completed",
+        "metadata": {},
+        "run_type": "training"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "e6002fa3-6925-4dec-92f4-79bf72aad753",
+        "name": "text/vocab.txt",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/text/vocab.txt",
+        "run_id": "7b667ee5-edf0-4766-b77e-eec8a9add54c",
+        "checksum": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+        "metadata": {
+          "component": "text/vocab.txt",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:12:54.835388+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/text/vocab.txt",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 225062
+      },
+      {
+        "id": "97969278-9b38-480e-b890-9a0eaa01efef",
+        "name": "open_clip_pytorch_model.bin",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/open_clip_pytorch_model.bin",
+        "run_id": "7b667ee5-edf0-4766-b77e-eec8a9add54c",
+        "checksum": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+        "metadata": {
+          "component": "open_clip_pytorch_model.bin",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:12:54.835388+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/open_clip_pytorch_model.bin",
+        "artifact_type": "model_checkpoint",
+        "artifact_status": "available",
+        "file_size_bytes": 783705670
+      },
+      {
+        "id": "b01cdc5f-7317-43c4-8d62-602df56bb113",
+        "name": "open_clip_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/open_clip_config.json",
+        "run_id": "7b667ee5-edf0-4766-b77e-eec8a9add54c",
+        "checksum": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+        "metadata": {
+          "component": "open_clip_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:12:54.835388+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/open_clip_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 707
+      },
+      {
+        "id": "a65d0a7e-4f80-4e38-bbf8-2ee231360952",
+        "name": "text/config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/text/config.json",
+        "run_id": "7b667ee5-edf0-4766-b77e-eec8a9add54c",
+        "checksum": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+        "metadata": {
+          "component": "text/config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:12:54.835388+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/text/config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 385
+      },
+      {
+        "id": "50fefe68-1a0e-4575-af91-08ad2b1a5d1f",
+        "name": "text/tokenizer_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/text/tokenizer_config.json",
+        "run_id": "7b667ee5-edf0-4766-b77e-eec8a9add54c",
+        "checksum": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+        "metadata": {
+          "component": "text/tokenizer_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:12:54.835388+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/text/tokenizer_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 28
+      }
+    ]
+  },
+  "biomedclip_01c1_final": {
+    "runs": [
+      {
+        "id": "89f2cfd1-8987-4131-821f-d797e02daf9b",
+        "status": "completed",
+        "metadata": {},
+        "run_type": "training"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "5a6f3914-df97-4da1-b146-588cf974ea8c",
+        "name": "text/vocab.txt",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/text/vocab.txt",
+        "run_id": "89f2cfd1-8987-4131-821f-d797e02daf9b",
+        "checksum": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+        "metadata": {
+          "component": "text/vocab.txt",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:16:27.08822+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/text/vocab.txt",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 225062
+      },
+      {
+        "id": "085e9487-c53f-4d71-a9ec-817bed39f57c",
+        "name": "open_clip_pytorch_model.bin",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/open_clip_pytorch_model.bin",
+        "run_id": "89f2cfd1-8987-4131-821f-d797e02daf9b",
+        "checksum": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+        "metadata": {
+          "component": "open_clip_pytorch_model.bin",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:16:27.08822+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/open_clip_pytorch_model.bin",
+        "artifact_type": "model_checkpoint",
+        "artifact_status": "available",
+        "file_size_bytes": 783705670
+      },
+      {
+        "id": "74d6c6c1-7dcf-45a2-9bb2-7489542f1f5d",
+        "name": "open_clip_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/open_clip_config.json",
+        "run_id": "89f2cfd1-8987-4131-821f-d797e02daf9b",
+        "checksum": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+        "metadata": {
+          "component": "open_clip_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:16:27.08822+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/open_clip_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 707
+      },
+      {
+        "id": "5b06a13f-b22f-4a4e-b5c8-1ab440868812",
+        "name": "text/config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/text/config.json",
+        "run_id": "89f2cfd1-8987-4131-821f-d797e02daf9b",
+        "checksum": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+        "metadata": {
+          "component": "text/config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:16:27.08822+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/text/config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 385
+      },
+      {
+        "id": "ce0e9a58-9b3c-406d-a799-c22e5c811475",
+        "name": "text/tokenizer_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/text/tokenizer_config.json",
+        "run_id": "89f2cfd1-8987-4131-821f-d797e02daf9b",
+        "checksum": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+        "metadata": {
+          "component": "text/tokenizer_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:16:27.08822+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/text/tokenizer_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 28
+      }
+    ]
+  },
+  "biomedclip_01c1_concurrent": {
+    "runs": [
+      {
+        "id": "0616b9d7-aa13-4b2b-94a7-19d393324253",
+        "status": "completed",
+        "metadata": {},
+        "run_type": "training"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "6ef78aa4-2c4a-4efe-af42-50fb15146748",
+        "name": "text/vocab.txt",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/text/vocab.txt",
+        "run_id": "0616b9d7-aa13-4b2b-94a7-19d393324253",
+        "checksum": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+        "metadata": {
+          "component": "text/vocab.txt",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:18:25.12881+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/text/vocab.txt",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 225062
+      },
+      {
+        "id": "493ff2d5-edf5-4dda-921f-f80d9f80d1c1",
+        "name": "open_clip_pytorch_model.bin",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/open_clip_pytorch_model.bin",
+        "run_id": "0616b9d7-aa13-4b2b-94a7-19d393324253",
+        "checksum": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+        "metadata": {
+          "component": "open_clip_pytorch_model.bin",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:18:25.12881+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/open_clip_pytorch_model.bin",
+        "artifact_type": "model_checkpoint",
+        "artifact_status": "available",
+        "file_size_bytes": 783705670
+      },
+      {
+        "id": "23d936bf-6283-4bc1-916b-151892ea8ec3",
+        "name": "open_clip_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/open_clip_config.json",
+        "run_id": "0616b9d7-aa13-4b2b-94a7-19d393324253",
+        "checksum": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+        "metadata": {
+          "component": "open_clip_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:18:25.12881+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/open_clip_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 707
+      },
+      {
+        "id": "ac84bbe0-ae1c-4e2f-8c3f-63796794a449",
+        "name": "text/config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/text/config.json",
+        "run_id": "0616b9d7-aa13-4b2b-94a7-19d393324253",
+        "checksum": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+        "metadata": {
+          "component": "text/config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:18:25.12881+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/text/config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 385
+      },
+      {
+        "id": "df8608ce-61f0-4a93-81c3-1945845ae97f",
+        "name": "text/tokenizer_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/text/tokenizer_config.json",
+        "run_id": "0616b9d7-aa13-4b2b-94a7-19d393324253",
+        "checksum": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+        "metadata": {
+          "component": "text/tokenizer_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "207c70ff25e4a25e9c9655e630e67a6aaeb3c219226f3b0d4284adaba6293b5c"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:18:25.12881+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/text/tokenizer_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 28
+      }
+    ]
+  },
+  "biomedclip_01c1_verified": {
+    "runs": [
+      {
+        "id": "91e3f4ca-266c-4621-bee3-d1d35e2f99f1",
+        "status": "completed",
+        "metadata": {},
+        "run_type": "training"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "8cc3bb8b-4c90-4b70-a04d-6dd4013b78ab",
+        "name": "text/vocab.txt",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/text/vocab.txt",
+        "run_id": "91e3f4ca-266c-4621-bee3-d1d35e2f99f1",
+        "checksum": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+        "metadata": {
+          "component": "text/vocab.txt",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:21:20.291679+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/text/vocab.txt",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 225062
+      },
+      {
+        "id": "47f8c318-29bc-41fd-a597-d854d7d1c951",
+        "name": "open_clip_pytorch_model.bin",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/open_clip_pytorch_model.bin",
+        "run_id": "91e3f4ca-266c-4621-bee3-d1d35e2f99f1",
+        "checksum": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+        "metadata": {
+          "component": "open_clip_pytorch_model.bin",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:21:20.291679+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/open_clip_pytorch_model.bin",
+        "artifact_type": "model_checkpoint",
+        "artifact_status": "available",
+        "file_size_bytes": 783705670
+      },
+      {
+        "id": "e433b6e2-80e7-421b-927c-e3225bca4289",
+        "name": "open_clip_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/open_clip_config.json",
+        "run_id": "91e3f4ca-266c-4621-bee3-d1d35e2f99f1",
+        "checksum": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+        "metadata": {
+          "component": "open_clip_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:21:20.291679+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/open_clip_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 707
+      },
+      {
+        "id": "c25b6ac0-9595-46e7-bcb3-d8391c9c21c8",
+        "name": "text/config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/text/config.json",
+        "run_id": "91e3f4ca-266c-4621-bee3-d1d35e2f99f1",
+        "checksum": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+        "metadata": {
+          "component": "text/config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:21:20.291679+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/text/config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 385
+      },
+      {
+        "id": "fa320d96-55b6-4b14-9abf-5650e5a66ced",
+        "name": "text/tokenizer_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/text/tokenizer_config.json",
+        "run_id": "91e3f4ca-266c-4621-bee3-d1d35e2f99f1",
+        "checksum": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+        "metadata": {
+          "component": "text/tokenizer_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:21:20.291679+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/text/tokenizer_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 28
+      }
+    ]
+  },
+  "biomedclip_01c1_race": {
+    "runs": [],
+    "artifacts": []
+  },
+  "biomedclip_01c1_runtime": {
+    "runs": [
+      {
+        "id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+        "status": "completed",
+        "metadata": {},
+        "run_type": "training"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "3447e207-b272-464e-8ff1-4f6f5cb8bedc",
+        "name": "text/vocab.txt",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/text/vocab.txt",
+        "run_id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+        "checksum": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+        "metadata": {
+          "component": "text/vocab.txt",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:24:45.279563+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/text/vocab.txt",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 225062
+      },
+      {
+        "id": "9170d6e0-832a-46e6-894e-aa3c8936cb0d",
+        "name": "open_clip_pytorch_model.bin",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/open_clip_pytorch_model.bin",
+        "run_id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+        "checksum": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+        "metadata": {
+          "component": "open_clip_pytorch_model.bin",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:24:45.279563+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/open_clip_pytorch_model.bin",
+        "artifact_type": "model_checkpoint",
+        "artifact_status": "available",
+        "file_size_bytes": 783705670
+      },
+      {
+        "id": "54e91856-12b2-483b-a71a-4e565dba3612",
+        "name": "open_clip_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/open_clip_config.json",
+        "run_id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+        "checksum": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+        "metadata": {
+          "component": "open_clip_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:24:45.279563+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/open_clip_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 707
+      },
+      {
+        "id": "5ea46203-e077-4ffd-8426-5cf6611be6a1",
+        "name": "text/config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/text/config.json",
+        "run_id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+        "checksum": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+        "metadata": {
+          "component": "text/config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:24:45.279563+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/text/config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 385
+      },
+      {
+        "id": "cbb2e078-ece7-488b-9830-9b8fe2fa91e4",
+        "name": "text/tokenizer_config.json",
+        "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/text/tokenizer_config.json",
+        "run_id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+        "checksum": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+        "metadata": {
+          "component": "text/tokenizer_config.json",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "mode": "zero_shot",
+            "schema": "pretrained_origin_v1",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+            "architecture": "biomedclip_zero_shot",
+            "model_repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "training_performed": false
+          },
+          "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e"
+        },
+        "mime_type": null,
+        "created_at": "2026-10-27T00:24:45.279563+00:00",
+        "archived_at": null,
+        "artifact_uri": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/text/tokenizer_config.json",
+        "artifact_type": "model_component",
+        "artifact_status": "available",
+        "file_size_bytes": 28
+      }
+    ]
+  },
+  "contract01b_test": {
+    "runs": [],
+    "artifacts": []
+  }
+}

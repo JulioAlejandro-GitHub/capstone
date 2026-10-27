@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+pytest.importorskip("alembic.config", reason="Historical Alembic tooling is optional")
+
 _CANDIDATES = (
     Path(__file__).resolve().parents[2] / "scripts/db/check_alembic_linearity.py",
     Path("/app/scripts/db/check_alembic_linearity.py"),

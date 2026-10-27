@@ -36,10 +36,14 @@ def parser(kind: str) -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(allow_abbrev=False, description=f"EXEC.1 {kind.upper()}: Campaign-ID and/or Source-Training-Run-ID")
     p.add_argument("--campaign-id", type=identifier)
     p.add_argument("--source-training-run-id", type=identifier)
+    p.add_argument("--dataset-version-id", type=identifier,
+                   help="Required for a logical (zero-shot) TRAIN; otherwise must equal the TRAIN dataset")
     p.add_argument("--inspect", action="store_true")
     p.add_argument("--threshold", default="auto", help="auto: recover the threshold recorded by TRAIN; clinical: require VAL calibration; or an explicit number")
-    p.add_argument("--seed", type=seed_arg, default="auto")
-    p.add_argument("--batch-size", type=positive_int, default=None)
+    p.add_argument("--seed", type=seed_arg, default="auto",
+                   help="auto: TRAIN profile; a logical (zero-shot) TRAIN requires an explicit integer")
+    p.add_argument("--batch-size", type=positive_int, default=None,
+                   help="Defaults to the TRAIN profile; required for a logical (zero-shot) TRAIN")
     if kind == "explain":
         p.add_argument("--method", choices=("gradcam", "lime", "shap"), default="gradcam")
         p.add_argument("--layer")
@@ -91,7 +95,7 @@ def _execute(kind: str, args: argparse.Namespace) -> int:
                 require(item["status"] == "completed", "TRAIN_NOT_COMPLETED")
                 proof = {}
                 value = prepare(repository, training_run_id=str(item["id"]),
-                    split=split, purpose=purpose,
+                    dataset_version_id=args.dataset_version_id, split=split, purpose=purpose,
                     protocol=protocol, requested_threshold=args.threshold, seed=args.seed,
                     batch_size=args.batch_size, explanation=spec,
                     max_images=getattr(args, "max_images", "all"),

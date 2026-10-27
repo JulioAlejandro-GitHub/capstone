@@ -1,0 +1,132 @@
+{
+  "name": "biomedclip_zero_shot",
+  "model_type": "zero_shot",
+  "architecture": "biomedclip_zero_shot",
+  "framework": "pytorch_openclip",
+  "metadata": {
+    "training_mode": "logical",
+    "modality": "zero_shot",
+    "scientific_origin": {
+      "kind": "pretrained_external",
+      "repo_id": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+      "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+    }
+  },
+  "files": [
+    {
+      "name": "open_clip_config.json",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_config.json",
+      "bytes": 707,
+      "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+      "upstream_lfs_sha256": null,
+      "role": "model_config"
+    },
+    {
+      "name": "open_clip_pytorch_model.bin",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_pytorch_model.bin",
+      "bytes": 783705670,
+      "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+      "upstream_lfs_sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+      "role": "checkpoint"
+    },
+    {
+      "name": "config.json",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/config.json",
+      "bytes": 385,
+      "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+      "upstream_lfs_sha256": null,
+      "role": "text_config"
+    },
+    {
+      "name": "tokenizer_config.json",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/tokenizer_config.json",
+      "bytes": 28,
+      "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+      "upstream_lfs_sha256": null,
+      "role": "tokenizer_config"
+    },
+    {
+      "name": "vocab.txt",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/vocab.txt",
+      "bytes": 225062,
+      "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+      "upstream_lfs_sha256": null,
+      "role": "vocabulary"
+    }
+  ],
+  "preprocessing": {
+    "mode": "openclip_original",
+    "dependencies": [
+      {
+        "name": "open_clip_config.json",
+        "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_config.json",
+        "bytes": 707,
+        "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+        "upstream_lfs_sha256": null,
+        "role": "model_config"
+      },
+      {
+        "name": "config.json",
+        "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/config.json",
+        "bytes": 385,
+        "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+        "upstream_lfs_sha256": null,
+        "role": "text_config"
+      },
+      {
+        "name": "tokenizer_config.json",
+        "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/tokenizer_config.json",
+        "bytes": 28,
+        "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+        "upstream_lfs_sha256": null,
+        "role": "tokenizer_config"
+      },
+      {
+        "name": "vocab.txt",
+        "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/vocab.txt",
+        "bytes": 225062,
+        "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+        "upstream_lfs_sha256": null,
+        "role": "vocabulary"
+      }
+    ],
+    "class_order": [
+      "uninfected",
+      "parasitized"
+    ],
+    "prompts": [
+      "a microscopy image of an uninfected red blood cell.",
+      "a microscopy image of a red blood cell infected with malaria parasites."
+    ],
+    "normalization": "L2 image and text features; exp(logit_scale) cosine similarity; softmax"
+  },
+  "class_mapping": {
+    "0": "uninfected",
+    "1": "parasitized",
+    "positive_class": 1,
+    "positive_label": "parasitized"
+  },
+  "input_signature": {
+    "shape": [
+      null,
+      224,
+      224,
+      3
+    ],
+    "dtype": "uint8",
+    "adapter_layout": "NCHW"
+  },
+  "output_signature": {
+    "shape": [
+      null,
+      2
+    ],
+    "activation": "softmax",
+    "score_name": "score_parasitized",
+    "meaning": "relative_similarity_not_clinically_calibrated",
+    "class_order": [
+      "uninfected",
+      "parasitized"
+    ]
+  }
+}

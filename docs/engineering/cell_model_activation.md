@@ -1,5 +1,9 @@
 # Activación de modelos para Clasificación celular
 
+> Actualización 2026-10-27: las referencias a upgrades, revisiones y gates Alembic
+> de este documento son históricas. No son prerrequisitos operativos.
+> Consultar [configuración vigente](configuration.md).
+
 Estado documental: `CURRENT_DOC`. Fecha: 2026-10-08.
 
 ## Regla y causa del bloqueo anterior

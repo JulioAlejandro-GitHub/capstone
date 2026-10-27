@@ -1,5 +1,6 @@
 import os
 from contextlib import contextmanager
+from contextvars import ContextVar
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
@@ -8,6 +9,19 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 
 from src.malaria_dl.common.paths import PROJECT_ROOT
+
+
+_shared_connection = ContextVar("persistence_connection", default=None)
+
+
+@contextmanager
+def transaction_scope(connection):
+    """Compose generic repositories in one caller-owned atomic transaction."""
+    token = _shared_connection.set(connection)
+    try:
+        yield connection
+    finally:
+        _shared_connection.reset(token)
 
 
 def load_environment():
@@ -69,6 +83,10 @@ def get_engine(echo=False):
 
 @contextmanager
 def get_connection():
+    shared = _shared_connection.get()
+    if shared is not None:
+        yield shared
+        return
     engine = get_engine()
     try:
         with engine.begin() as connection:

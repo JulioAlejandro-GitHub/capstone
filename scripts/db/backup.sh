@@ -103,7 +103,6 @@ chmod 600 "$temporary_path"
 
 restore_list="$(compose exec -T db pg_restore --list < "$temporary_path")"
 required_tables=(
-  alembic_version
   runs
   run_lineage
   model_versions

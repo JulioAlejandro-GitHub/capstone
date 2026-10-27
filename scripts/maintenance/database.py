@@ -3,16 +3,11 @@
 Imported only in Docker. No historical guard is disabled; no existing table is
 truncated/deleted. Backups and the previous logical database are always retained.
 """
-import importlib.util
-from pathlib import Path
 
 from sqlalchemy import create_engine, text
-from alembic import command
-from alembic.config import Config
 from scripts.reset.reset1b.common import fingerprint, catalog, qi
 from scripts.maintenance.protected_resources import PROTECTED_TABLES, HISTORY_TABLES, EXPECTED_TABLES
 from scripts.maintenance.verification import require, normalized_catalog, write_json
-from src.malaria_dl.execution.schema import require_e10_schema
 
 LOCK_KEY = (901973, 3)  # maintenance only; deliberately unrelated to GlobalGate
 
@@ -50,8 +45,6 @@ def check_idle(connection, *, artifact_only=False):
 def snapshot(connection):
     tables = set(connection.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public'")).scalars())
     require(tables == EXPECTED_TABLES, 'UNREVIEWED_TABLE_POLICY')
-    require(list(connection.execute(text('SELECT version_num FROM alembic_version')).scalars()) == ['20260922_01'], 'UNREVIEWED_ALEMBIC_REVISION')
-    require_e10_schema(connection)
     schemas = list(connection.execute(text("SELECT nspname FROM pg_namespace WHERE nspname !~ '^pg_' AND nspname<>'information_schema' ORDER BY nspname")).scalars())
     return {
         'schemas': {s: fingerprint(connection, s) for s in schemas},
@@ -88,23 +81,8 @@ def verify_clean(connection, original):
 
 
 def bootstrap(connection):
-    """Same official legacy DDL + Alembic path as RESET.3; no illustrative seed."""
-    require(connection.execute(text("SELECT count(*) FROM pg_tables WHERE schemaname='public'")).scalar_one() == 0, 'CANDIDATE_NOT_EMPTY')
-    path = Path('/app/malaria_dl_local_project/scripts/init_db.py')
-    spec = importlib.util.spec_from_file_location('maintenance_legacy', path)
-    legacy = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(legacy)
-    legacy.ensure_migration_ledger(connection)
-    for file in legacy.SQL_FILES:
-        if file.name == '004_seed.sql':
-            continue
-        with connection.connection.driver_connection.cursor() as cursor:
-            cursor.execute(file.read_text())
-        legacy.record_migration(connection, file, legacy.migration_checksum(file), len(legacy.split_sql_statements(file.read_text())))
-    config = Config('/app/alembic.ini')
-    config.set_main_option('script_location', '/app/alembic')
-    config.attributes['connection'] = connection
-    command.upgrade(config, '20260922_01')
+    """The historical rebuild is retired; its original remains in Git history."""
+    raise RuntimeError('Historical schema rebuild retired; use reviewed current-schema SQL')
 
 
 def import_protected(source, destination):

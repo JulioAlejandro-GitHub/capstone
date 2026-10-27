@@ -18,3 +18,14 @@ está vacío o es relativo; no resuelve rutas desde el cwd ni crea directorios a
 validar configuración.
 
 Véase [PostgreSQL Docker](postgresql_docker_single_instance.md).
+
+
+### PostgreSQL actual y registro Zero-Shot (2026-10-27)
+
+Alembic no es una dependencia operativa ni un gate de CI. `db-status` consulta identidad
+y disponibilidad, no una revisión. Los targets de migración y la reconstrucción histórica
+`limpiar-experimentos-bd`/`limpiar-experimentos` están retirados; no se modifican constraints
+ni datos para eludirlos. El historial Alembic permanece para consulta.
+
+El registro Zero-Shot reutiliza el almacenamiento TRAIN y los repositorios existentes.
+Ver [procedimiento y limitaciones](../operations/zero_shot_incorporation.md).

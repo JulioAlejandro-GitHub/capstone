@@ -1,0 +1,944 @@
+{
+  "model": {
+    "runs": [
+      {
+        "id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+        "notes": null,
+        "status": "completed",
+        "command": null,
+        "machine": "arm64",
+        "metadata": {
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "repo_id": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+          },
+          "training_performed": false
+        },
+        "model_id": "1cf3e462-c0f7-4f72-92fe-306b8aaaa203",
+        "platform": "macOS-26.7.1-arm64-arm-64bit",
+        "run_name": "biomedclip_zero_shot external ingestion",
+        "run_type": "training",
+        "host_name": "MacBook-Pro-de-Julio.local",
+        "processor": "arm",
+        "user_name": "julio",
+        "best_epoch": null,
+        "created_at": "2026-10-27T10:22:02.04112+00:00",
+        "dataset_id": null,
+        "git_branch": "main",
+        "git_commit": "b71ed1e0f0b17a88fca4452f591ef2861f0a4467",
+        "max_epochs": null,
+        "parameters": {},
+        "started_at": "2026-10-27T10:22:02.04112+00:00",
+        "updated_at": "2026-10-27T10:22:02.04112+00:00",
+        "campaign_id": null,
+        "finished_at": "2026-10-27T10:22:02.04112+00:00",
+        "gpu_devices": [
+          "/physical_device:GPU:0"
+        ],
+        "random_seed": null,
+        "script_name": null,
+        "total_epochs": 0,
+        "configuration": null,
+        "error_message": null,
+        "experiment_id": null,
+        "gpu_available": true,
+        "stopped_epoch": null,
+        "execution_type": "local_python",
+        "python_version": "3.12.13 (main, Mar  3 2026, 12:39:30) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "release_reason": "Activaci\u00f3n para clasificaci\u00f3n celular",
+        "release_status": "productive_stage2",
+        "backend_version": null,
+        "checkpoint_mode": null,
+        "completed_epochs": 0,
+        "duration_seconds": 0.0,
+        "pipeline_version": null,
+        "working_directory": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone",
+        "checkpoint_monitor": null,
+        "dataset_version_id": null,
+        "release_changed_by": "CAPSTONE-MODEL-CONTRACT-01B",
+        "release_updated_at": "2026-10-27T10:25:09.51077+00:00",
+        "restore_best_weights": null,
+        "best_validation_value": null,
+        "peak_cpu_memory_bytes": null,
+        "peak_gpu_memory_bytes": null,
+        "early_stopping_enabled": null,
+        "early_stopping_patience": null,
+        "fine_tuning_start_epoch": null,
+        "early_stopping_min_delta": null
+      }
+    ],
+    "models": [
+      {
+        "id": "1cf3e462-c0f7-4f72-92fe-306b8aaaa203",
+        "name": "biomedclip_zero_shot",
+        "metadata": {
+          "modality": "zero_shot",
+          "training_mode": "logical",
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "repo_id": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+          }
+        },
+        "framework": "pytorch_openclip",
+        "created_at": "2026-10-27T10:22:02.04112+00:00",
+        "model_type": "zero_shot",
+        "pretrained": true,
+        "description": null,
+        "input_shape": null,
+        "architecture": "biomedclip_zero_shot",
+        "output_shape": null,
+        "num_parameters": null,
+        "pretrained_source": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224"
+      }
+    ],
+    "versions": [
+      {
+        "id": "3fd16a84-b5c7-442b-916b-e0438bb0f3e5",
+        "status": "candidate",
+        "metadata": {
+          "architecture": "biomedclip_zero_shot",
+          "dependencies": [
+            {
+              "name": "open_clip_config.json",
+              "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_config.json",
+              "role": "model_config",
+              "bytes": 707,
+              "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+              "artifact_id": "c7949e20-f933-4dcd-b34d-c6a924b7f8b5",
+              "upstream_lfs_sha256": null
+            },
+            {
+              "name": "open_clip_pytorch_model.bin",
+              "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_pytorch_model.bin",
+              "role": "checkpoint",
+              "bytes": 783705670,
+              "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+              "artifact_id": "e5e67ccf-6403-4dfa-b472-31920f4f2346",
+              "upstream_lfs_sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+            },
+            {
+              "name": "config.json",
+              "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/config.json",
+              "role": "text_config",
+              "bytes": 385,
+              "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+              "artifact_id": "2595973d-35e4-44eb-91b9-d5b84d29ae29",
+              "upstream_lfs_sha256": null
+            },
+            {
+              "name": "tokenizer_config.json",
+              "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/tokenizer_config.json",
+              "role": "tokenizer_config",
+              "bytes": 28,
+              "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+              "artifact_id": "e6174c50-faf7-42aa-a713-81ea7fb10811",
+              "upstream_lfs_sha256": null
+            },
+            {
+              "name": "vocab.txt",
+              "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/vocab.txt",
+              "role": "vocabulary",
+              "bytes": 225062,
+              "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+              "artifact_id": "8d18ee56-9655-4232-9677-da9efd6c9272",
+              "upstream_lfs_sha256": null
+            }
+          ],
+          "scientific_origin": {
+            "kind": "pretrained_external",
+            "repo_id": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+            "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+          },
+          "training_performed": false
+        },
+        "model_id": "1cf3e462-c0f7-4f72-92fe-306b8aaaa203",
+        "framework": "pytorch_openclip",
+        "created_at": "2026-10-27T10:22:02.04112+00:00",
+        "model_name": "biomedclip_zero_shot",
+        "retired_at": null,
+        "approved_at": null,
+        "artifact_uri": null,
+        "validated_at": null,
+        "version_name": "1",
+        "class_mapping": {
+          "0": "uninfected",
+          "1": "parasitized",
+          "positive_class": 1,
+          "positive_label": "parasitized"
+        },
+        "lineage_status": "resolved",
+        "version_number": 1,
+        "artifact_sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+        "best_model_path": null,
+        "checkpoint_path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_pytorch_model.bin",
+        "input_signature": {
+          "dtype": "uint8",
+          "shape": [
+            null,
+            224,
+            224,
+            3
+          ],
+          "adapter_layout": "NCHW"
+        },
+        "training_run_id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+        "final_model_path": null,
+        "output_signature": {
+          "shape": [
+            null,
+            2
+          ],
+          "meaning": "relative_similarity_not_clinically_calibrated",
+          "activation": "softmax",
+          "score_name": "score_parasitized",
+          "class_order": [
+            "uninfected",
+            "parasitized"
+          ]
+        },
+        "framework_version": null,
+        "artifact_size_bytes": 783705670,
+        "checkpoint_artifact_id": "e5e67ccf-6403-4dfa-b472-31920f4f2346",
+        "preprocessing_profile_snapshot": {
+          "mode": "openclip_original",
+          "prompts": [
+            "a microscopy image of an uninfected red blood cell.",
+            "a microscopy image of a red blood cell infected with malaria parasites."
+          ],
+          "class_order": [
+            "uninfected",
+            "parasitized"
+          ],
+          "dependencies": [
+            {
+              "name": "open_clip_config.json",
+              "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_config.json",
+              "role": "model_config",
+              "bytes": 707,
+              "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+              "upstream_lfs_sha256": null
+            },
+            {
+              "name": "config.json",
+              "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/config.json",
+              "role": "text_config",
+              "bytes": 385,
+              "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+              "upstream_lfs_sha256": null
+            },
+            {
+              "name": "tokenizer_config.json",
+              "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/tokenizer_config.json",
+              "role": "tokenizer_config",
+              "bytes": 28,
+              "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+              "upstream_lfs_sha256": null
+            },
+            {
+              "name": "vocab.txt",
+              "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/vocab.txt",
+              "role": "vocabulary",
+              "bytes": 225062,
+              "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+              "upstream_lfs_sha256": null
+            }
+          ],
+          "normalization": "L2 image and text features; exp(logit_scale) cosine similarity; softmax"
+        },
+        "artifact_hash_reuse_justification": null
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "c7949e20-f933-4dcd-b34d-c6a924b7f8b5",
+      "name": "open_clip_config.json",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_config.json",
+      "run_id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+      "checksum": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+      "metadata": {
+        "role": "model_config",
+        "format": ".json",
+        "scientific_origin": {
+          "kind": "pretrained_external",
+          "repo_id": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+          "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+        },
+        "training_performed": false
+      },
+      "mime_type": null,
+      "created_at": "2026-10-27T10:22:02.04112+00:00",
+      "archived_at": null,
+      "artifact_uri": null,
+      "artifact_type": "model_dependency",
+      "artifact_status": "available",
+      "file_size_bytes": 707,
+      "physical": {
+        "exists": true,
+        "symlink": false,
+        "bytes": 707,
+        "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+      },
+      "matches": true
+    },
+    {
+      "id": "e5e67ccf-6403-4dfa-b472-31920f4f2346",
+      "name": "open_clip_pytorch_model.bin",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_pytorch_model.bin",
+      "run_id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+      "checksum": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+      "metadata": {
+        "role": "checkpoint",
+        "format": ".bin",
+        "scientific_origin": {
+          "kind": "pretrained_external",
+          "repo_id": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+          "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+        },
+        "training_performed": false
+      },
+      "mime_type": null,
+      "created_at": "2026-10-27T10:22:02.04112+00:00",
+      "archived_at": null,
+      "artifact_uri": null,
+      "artifact_type": "model_checkpoint",
+      "artifact_status": "available",
+      "file_size_bytes": 783705670,
+      "physical": {
+        "exists": true,
+        "symlink": false,
+        "bytes": 783705670,
+        "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+      },
+      "matches": true
+    },
+    {
+      "id": "2595973d-35e4-44eb-91b9-d5b84d29ae29",
+      "name": "config.json",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/config.json",
+      "run_id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+      "checksum": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+      "metadata": {
+        "role": "text_config",
+        "format": ".json",
+        "scientific_origin": {
+          "kind": "pretrained_external",
+          "repo_id": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+          "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+        },
+        "training_performed": false
+      },
+      "mime_type": null,
+      "created_at": "2026-10-27T10:22:02.04112+00:00",
+      "archived_at": null,
+      "artifact_uri": null,
+      "artifact_type": "model_dependency",
+      "artifact_status": "available",
+      "file_size_bytes": 385,
+      "physical": {
+        "exists": true,
+        "symlink": false,
+        "bytes": 385,
+        "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+      },
+      "matches": true
+    },
+    {
+      "id": "e6174c50-faf7-42aa-a713-81ea7fb10811",
+      "name": "tokenizer_config.json",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/tokenizer_config.json",
+      "run_id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+      "checksum": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+      "metadata": {
+        "role": "tokenizer_config",
+        "format": ".json",
+        "scientific_origin": {
+          "kind": "pretrained_external",
+          "repo_id": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+          "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+        },
+        "training_performed": false
+      },
+      "mime_type": null,
+      "created_at": "2026-10-27T10:22:02.04112+00:00",
+      "archived_at": null,
+      "artifact_uri": null,
+      "artifact_type": "model_dependency",
+      "artifact_status": "available",
+      "file_size_bytes": 28,
+      "physical": {
+        "exists": true,
+        "symlink": false,
+        "bytes": 28,
+        "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+      },
+      "matches": true
+    },
+    {
+      "id": "8d18ee56-9655-4232-9677-da9efd6c9272",
+      "name": "vocab.txt",
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/vocab.txt",
+      "run_id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+      "checksum": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+      "metadata": {
+        "role": "vocabulary",
+        "format": ".txt",
+        "scientific_origin": {
+          "kind": "pretrained_external",
+          "repo_id": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+          "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e"
+        },
+        "training_performed": false
+      },
+      "mime_type": null,
+      "created_at": "2026-10-27T10:22:02.04112+00:00",
+      "archived_at": null,
+      "artifact_uri": null,
+      "artifact_type": "model_dependency",
+      "artifact_status": "available",
+      "file_size_bytes": 225062,
+      "physical": {
+        "exists": true,
+        "symlink": false,
+        "bytes": 225062,
+        "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+      },
+      "matches": true
+    }
+  ],
+  "directories": [
+    {
+      "id": "7b667ee5-edf0-4766-b77e-eec8a9add54c",
+      "exists": true,
+      "files": [
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/open_clip_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 707,
+          "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/open_clip_pytorch_model.bin",
+          "exists": true,
+          "symlink": false,
+          "bytes": 783705670,
+          "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/text/config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 385,
+          "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/text/tokenizer_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 28,
+          "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/7b667ee5-edf0-4766-b77e-eec8a9add54c/text/vocab.txt",
+          "exists": true,
+          "symlink": false,
+          "bytes": 225062,
+          "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+        }
+      ],
+      "artifact_refs": [],
+      "other_refs": {
+        "model_versions": [],
+        "train_execution_sessions": [],
+        "runs": []
+      }
+    },
+    {
+      "id": "56dc2663-b0a1-49c2-9691-a5b7fce260cc",
+      "exists": true,
+      "files": [
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/56dc2663-b0a1-49c2-9691-a5b7fce260cc/open_clip_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 707,
+          "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/56dc2663-b0a1-49c2-9691-a5b7fce260cc/open_clip_pytorch_model.bin",
+          "exists": true,
+          "symlink": false,
+          "bytes": 783705670,
+          "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/56dc2663-b0a1-49c2-9691-a5b7fce260cc/text/config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 385,
+          "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/56dc2663-b0a1-49c2-9691-a5b7fce260cc/text/tokenizer_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 28,
+          "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/56dc2663-b0a1-49c2-9691-a5b7fce260cc/text/vocab.txt",
+          "exists": true,
+          "symlink": false,
+          "bytes": 225062,
+          "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+        }
+      ],
+      "artifact_refs": [],
+      "other_refs": {
+        "model_versions": [],
+        "train_execution_sessions": [],
+        "runs": []
+      }
+    },
+    {
+      "id": "89f2cfd1-8987-4131-821f-d797e02daf9b",
+      "exists": true,
+      "files": [
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/open_clip_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 707,
+          "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/open_clip_pytorch_model.bin",
+          "exists": true,
+          "symlink": false,
+          "bytes": 783705670,
+          "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/text/config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 385,
+          "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/text/tokenizer_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 28,
+          "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/89f2cfd1-8987-4131-821f-d797e02daf9b/text/vocab.txt",
+          "exists": true,
+          "symlink": false,
+          "bytes": 225062,
+          "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+        }
+      ],
+      "artifact_refs": [],
+      "other_refs": {
+        "model_versions": [],
+        "train_execution_sessions": [],
+        "runs": []
+      }
+    },
+    {
+      "id": "91e3f4ca-266c-4621-bee3-d1d35e2f99f1",
+      "exists": true,
+      "files": [
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/open_clip_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 707,
+          "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/open_clip_pytorch_model.bin",
+          "exists": true,
+          "symlink": false,
+          "bytes": 783705670,
+          "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/text/config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 385,
+          "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/text/tokenizer_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 28,
+          "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/91e3f4ca-266c-4621-bee3-d1d35e2f99f1/text/vocab.txt",
+          "exists": true,
+          "symlink": false,
+          "bytes": 225062,
+          "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+        }
+      ],
+      "artifact_refs": [],
+      "other_refs": {
+        "model_versions": [],
+        "train_execution_sessions": [],
+        "runs": []
+      }
+    },
+    {
+      "id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+      "exists": true,
+      "files": [
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/open_clip_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 707,
+          "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/open_clip_pytorch_model.bin",
+          "exists": true,
+          "symlink": false,
+          "bytes": 783705670,
+          "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/text/config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 385,
+          "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/text/tokenizer_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 28,
+          "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/310bfe08-0a27-4cf7-a00c-4404f7284d75/text/vocab.txt",
+          "exists": true,
+          "symlink": false,
+          "bytes": 225062,
+          "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+        }
+      ],
+      "artifact_refs": [],
+      "other_refs": {
+        "model_versions": [],
+        "train_execution_sessions": [],
+        "runs": []
+      }
+    },
+    {
+      "id": "0560b627-1282-41cc-afcf-3542c1b63d17",
+      "exists": true,
+      "files": [
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0560b627-1282-41cc-afcf-3542c1b63d17/open_clip_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 707,
+          "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0560b627-1282-41cc-afcf-3542c1b63d17/open_clip_pytorch_model.bin",
+          "exists": true,
+          "symlink": false,
+          "bytes": 783705670,
+          "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0560b627-1282-41cc-afcf-3542c1b63d17/text/config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 385,
+          "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0560b627-1282-41cc-afcf-3542c1b63d17/text/tokenizer_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 28,
+          "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0560b627-1282-41cc-afcf-3542c1b63d17/text/vocab.txt",
+          "exists": true,
+          "symlink": false,
+          "bytes": 225062,
+          "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+        }
+      ],
+      "artifact_refs": [],
+      "other_refs": {
+        "model_versions": [],
+        "train_execution_sessions": [],
+        "runs": []
+      }
+    },
+    {
+      "id": "0616b9d7-aa13-4b2b-94a7-19d393324253",
+      "exists": true,
+      "files": [
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/open_clip_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 707,
+          "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/open_clip_pytorch_model.bin",
+          "exists": true,
+          "symlink": false,
+          "bytes": 783705670,
+          "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/text/config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 385,
+          "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/text/tokenizer_config.json",
+          "exists": true,
+          "symlink": false,
+          "bytes": 28,
+          "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+        },
+        {
+          "path": "malaria_dl_local_project/outputs/train_runs/0616b9d7-aa13-4b2b-94a7-19d393324253/text/vocab.txt",
+          "exists": true,
+          "symlink": false,
+          "bytes": 225062,
+          "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+        }
+      ],
+      "artifact_refs": [],
+      "other_refs": {
+        "model_versions": [],
+        "train_execution_sessions": [],
+        "runs": []
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "name": "artifacts_pkey",
+      "table": "artifacts",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "model_versions_pkey",
+      "table": "model_versions",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "models_pkey",
+      "table": "models",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "runs_pkey",
+      "table": "runs",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "stage2_model_publications_pkey",
+      "table": "stage2_model_publications",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "chk_artifacts_governance_status",
+      "table": "artifacts",
+      "definition": "CHECK ((artifact_status = ANY (ARRAY['unknown'::text, 'available'::text, 'missing'::text, 'mutated'::text, 'archived'::text])))"
+    },
+    {
+      "name": "ck_publication_evaluation_source",
+      "table": "stage2_model_publications",
+      "definition": "CHECK ((num_nonnulls(evaluation_run_id, evaluation_attempt_id) <= 1))"
+    },
+    {
+      "name": "chk_model_versions_artifact_requires_training",
+      "table": "model_versions",
+      "definition": "CHECK (((checkpoint_artifact_id IS NULL) OR (training_run_id IS NOT NULL)))"
+    },
+    {
+      "name": "chk_model_versions_artifact_size",
+      "table": "model_versions",
+      "definition": "CHECK (((artifact_size_bytes IS NULL) OR (artifact_size_bytes >= 0)))"
+    },
+    {
+      "name": "chk_model_versions_governed_hash",
+      "table": "model_versions",
+      "definition": "CHECK (((status <> ALL (ARRAY['candidate'::text, 'validated'::text, 'approved'::text, 'deployed'::text, 'rejected'::text, 'retired'::text])) OR ((checkpoint_artifact_id IS NOT NULL) AND (artifact_sha256 IS NOT NULL))))"
+    },
+    {
+      "name": "chk_model_versions_lineage_status",
+      "table": "model_versions",
+      "definition": "CHECK ((lineage_status = ANY (ARRAY['unresolved'::text, 'resolved'::text, 'ambiguous'::text, 'artifact_missing'::text, 'checksum_mismatch'::text, 'legacy_unresolved'::text])))"
+    },
+    {
+      "name": "chk_model_versions_profile_objects",
+      "table": "model_versions",
+      "definition": "CHECK (((jsonb_typeof(preprocessing_profile_snapshot) = 'object'::text) AND (jsonb_typeof(class_mapping) = 'object'::text) AND (jsonb_typeof(input_signature) = 'object'::text) AND (jsonb_typeof(output_signature) = 'object'::text)))"
+    },
+    {
+      "name": "chk_model_versions_resolved_training",
+      "table": "model_versions",
+      "definition": "CHECK (((lineage_status <> 'resolved'::text) OR (training_run_id IS NOT NULL)))"
+    },
+    {
+      "name": "chk_model_versions_sha256",
+      "table": "model_versions",
+      "definition": "CHECK (((artifact_sha256 IS NULL) OR (artifact_sha256 ~ '^[0-9a-f]{64}$'::text)))"
+    },
+    {
+      "name": "chk_model_versions_status",
+      "table": "model_versions",
+      "definition": "CHECK ((status = ANY (ARRAY['discovered'::text, 'candidate'::text, 'validated'::text, 'approved'::text, 'deployed'::text, 'rejected'::text, 'retired'::text])))"
+    },
+    {
+      "name": "chk_model_versions_version_number",
+      "table": "model_versions",
+      "definition": "CHECK (((version_number IS NULL) OR (version_number > 0)))"
+    },
+    {
+      "name": "chk_runs_configuration_object",
+      "table": "runs",
+      "definition": "CHECK (((configuration IS NULL) OR (jsonb_typeof(configuration) = 'object'::text)))"
+    },
+    {
+      "name": "ck_runs_release_status_requires_timestamp",
+      "table": "runs",
+      "definition": "CHECK (((release_status IS NULL) OR (release_updated_at IS NOT NULL)))"
+    },
+    {
+      "name": "ck_runs_release_status_training_vocabulary",
+      "table": "runs",
+      "definition": "CHECK (((release_status IS NULL) OR ((run_type = 'training'::text) AND (release_status = ANY (ARRAY['not_available'::text, 'available_to_publish'::text, 'productive_stage2'::text])))))"
+    },
+    {
+      "name": "chk_stage2_publication_metadata",
+      "table": "stage2_model_publications",
+      "definition": "CHECK ((jsonb_typeof(metadata) = 'object'::text))"
+    },
+    {
+      "name": "chk_stage2_publication_scope",
+      "table": "stage2_model_publications",
+      "definition": "CHECK ((scope = 'stage2'::text))"
+    },
+    {
+      "name": "chk_stage2_publication_state",
+      "table": "stage2_model_publications",
+      "definition": "CHECK ((((status = 'active'::text) AND is_active AND (deactivated_at IS NULL)) OR ((status = 'inactive'::text) AND (NOT is_active) AND (deactivated_at IS NOT NULL))))"
+    },
+    {
+      "name": "chk_stage2_publication_status",
+      "table": "stage2_model_publications",
+      "definition": "CHECK ((status = ANY (ARRAY['active'::text, 'inactive'::text])))"
+    },
+    {
+      "name": "artifacts_run_id_fkey",
+      "table": "artifacts",
+      "definition": "FOREIGN KEY (run_id) REFERENCES runs(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "fk_model_versions_checkpoint_artifact_owner",
+      "table": "model_versions",
+      "definition": "FOREIGN KEY (checkpoint_artifact_id, training_run_id) REFERENCES artifacts(id, run_id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "model_versions_model_id_fkey",
+      "table": "model_versions",
+      "definition": "FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "model_versions_training_run_id_fkey",
+      "table": "model_versions",
+      "definition": "FOREIGN KEY (training_run_id) REFERENCES runs(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "runs_campaign_id_fkey",
+      "table": "runs",
+      "definition": "FOREIGN KEY (campaign_id) REFERENCES experimental_campaigns(id)"
+    },
+    {
+      "name": "runs_dataset_id_fkey",
+      "table": "runs",
+      "definition": "FOREIGN KEY (dataset_id) REFERENCES datasets(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "runs_dataset_version_id_fkey",
+      "table": "runs",
+      "definition": "FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "runs_experiment_id_fkey",
+      "table": "runs",
+      "definition": "FOREIGN KEY (experiment_id) REFERENCES experiments(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "runs_model_id_fkey",
+      "table": "runs",
+      "definition": "FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "fk_stage2_publication_evaluation",
+      "table": "stage2_model_publications",
+      "definition": "FOREIGN KEY (evaluation_run_id) REFERENCES runs(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "fk_stage2_publication_training",
+      "table": "stage2_model_publications",
+      "definition": "FOREIGN KEY (training_run_id) REFERENCES runs(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "fk_stage2_publication_version_artifact",
+      "table": "stage2_model_publications",
+      "definition": "FOREIGN KEY (model_version_id, checkpoint_artifact_id) REFERENCES model_versions(id, checkpoint_artifact_id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "fk_stage2_publication_model_training",
+      "table": "stage2_model_publications",
+      "definition": "FOREIGN KEY (model_version_id, training_run_id) REFERENCES model_versions(id, training_run_id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "ck_v2_no_result_json",
+      "table": "runs",
+      "definition": "CHECK ((NOT (parameters ? 'training_results'::text)))"
+    },
+    {
+      "name": "v2_runs_check_275ea92559ec",
+      "table": "runs",
+      "definition": "CHECK ((peak_cpu_memory_bytes >= 0))"
+    },
+    {
+      "name": "v2_runs_check_080968ed1984",
+      "table": "runs",
+      "definition": "CHECK ((peak_gpu_memory_bytes >= 0))"
+    },
+    {
+      "name": "stage2_model_publications_evaluation_attempt_id_fkey",
+      "table": "stage2_model_publications",
+      "definition": "FOREIGN KEY (evaluation_attempt_id) REFERENCES assessment_attempts(id) ON DELETE RESTRICT"
+    }
+  ]
+}

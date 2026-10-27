@@ -22,7 +22,7 @@ from ..persistence.dataset_evidence import verify_dataset_for_execution
 from .contracts import require
 
 
-def resolve(repository, training_run_id=None, model_version_id=None):
+def resolve(repository, training_run_id=None, model_version_id=None, dataset_version_id=None):
     require(training_run_id or model_version_id, "EXPLICIT_MODEL_IDENTITY_REQUIRED")
     with repository.transaction(readonly=True) as c:
         if training_run_id:
@@ -112,6 +112,13 @@ def resolve(repository, training_run_id=None, model_version_id=None):
             .mappings()
             .one_or_none()
         )
+        model = execute(c, """
+            SELECT m.framework, m.metadata->>'training_mode' AS training_mode
+            FROM runs r JOIN models m ON m.id=r.model_id WHERE r.id=CAST(:id AS uuid)
+        """, id=identifier(old.source_training_run_id)).mappings().one()
+    # A logical TRAIN has no learned evidence or dataset; only registered zero-shot origins qualify.
+    logical = model["training_mode"] == "logical"
+    require(not logical or model["framework"] == "pytorch_openclip", "LOGICAL_TRAIN_FRAMEWORK_UNSUPPORTED")
     require(
         a is not None and str(a["run_id"]) == old.source_training_run_id,
         "CHECKPOINT_ARTIFACT_OWNERSHIP_CONFLICT",
@@ -123,6 +130,8 @@ def resolve(repository, training_run_id=None, model_version_id=None):
         == {"sha256": a["checksum"], "bytes": a["file_size_bytes"]},
         "CHECKPOINT_ARTIFACT_CONTENT_CONFLICT",
     )
+    if logical:
+        return logical_train_binding(repository, old, a, dataset_version_id)
     contract = resolve_checkpoint_input(
         old.preprocessing,
         old.input_signature,
@@ -144,6 +153,30 @@ def resolve(repository, training_run_id=None, model_version_id=None):
         training_dataset_metadata(old.source_training_run_id),
         None,
     )
+
+
+def logical_train_binding(repository, old, artifact, dataset_version_id):
+    """Zero-shot origin: frozen protocol from the version, dataset chosen explicitly (never inherited)."""
+    from . import openclip
+
+    require(dataset_version_id is not None, "DATASET_VERSION_REQUIRED_FOR_LOGICAL_TRAIN")
+    with repository.transaction(readonly=True) as c:
+        dependencies = openclip.registered_dependencies(c, old.source_training_run_id, old.preprocessing)
+    binding = {
+        "training_run_id": old.source_training_run_id,
+        "model_version_id": old.model_version_id,
+        "checkpoint_artifact_id": old.checkpoint_artifact_id,
+        "path": str(old.checkpoint_path),
+        "sha256": old.checkpoint_sha256,
+        "bytes": artifact["file_size_bytes"],
+        "input_contract": openclip.input_contract(old.model_name, old.preprocessing, old.class_mapping,
+                                                  old.input_signature, old.output_signature),
+        "dependencies": dependencies,
+        "source": {"kind": openclip.SOURCE_KIND, "framework": openclip.FRAMEWORK,
+                   "dataset_selection": "explicit"},
+    }
+    dataset = resolve_governed_dataset(identifier(dataset_version_id), required_splits=()).metadata()
+    return binding, dataset, None
 
 
 def dataset_samples(

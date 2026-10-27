@@ -147,6 +147,9 @@ def execute(mode, transport, report, previous=None):
 
 
 def main(mode):
+    if mode in ("db", "all"):
+        print("Retirado: reconstrucción histórica Alembic; usar SQL revisado del esquema actual.", file=sys.stderr)
+        return 2
     from scripts.maintenance.docker_transport import DockerTransport
     project=Path(__file__).resolve().parents[2]
     root=project/'var'/'maintenance'

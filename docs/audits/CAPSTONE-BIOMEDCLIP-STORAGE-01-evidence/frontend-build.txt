@@ -1,0 +1,19 @@
+
+> capstone-experiments-frontend@0.1.0 build
+> tsc --noEmit --incremental false -p tsconfig.json && tsc --noEmit --incremental false -p tsconfig.node.json && vite build
+
+vite v7.3.5 building client environment for production...
+transforming...
+✓ 1671 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                0.41 kB │ gzip:   0.28 kB
+dist/assets/smear-microscope-DZGdsHj_.jpg    105.47 kB
+dist/assets/index-DibSFkNC.css               266.02 kB │ gzip:  44.94 kB
+dist/assets/index-CUHfo7C5.js              2,050.34 kB │ gzip: 596.14 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.19s

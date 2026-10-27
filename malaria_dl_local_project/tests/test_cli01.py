@@ -13,7 +13,8 @@ from src.malaria_dl.execution import operations, selection
 from test_assessment_e6 import MemoryRepository, Runtime, value
 
 COMMON = {'--campaign-id', '--source-training-run-id', '--inspect'}
-INFERENCE = {'--threshold', '--seed', '--batch-size'}
+# --dataset-version-id returns only for assessments: a logical (zero-shot) TRAIN inherits no dataset.
+INFERENCE = {'--threshold', '--seed', '--batch-size', '--dataset-version-id'}
 EXPLAIN = {'--method', '--layer', '--class-id', '--num-samples', '--max-images',
            '--sample-id', '--background-sample-id'}
 
@@ -26,8 +27,8 @@ def test_exact_public_matrix(kind):
     if kind == 'explain':
         expected |= EXPLAIN
     assert actual == expected
-    for removed in ('--model-version-id', '--dataset-version-id', '--model', '--dataset-dir',
-                    '--artifact-root', '--evaluation-id'):
+    removed_options = ('--model-version-id', '--model', '--dataset-dir', '--artifact-root', '--evaluation-id')
+    for removed in removed_options + (('--dataset-version-id',) if kind == 'train' else ()):
         with pytest.raises(SystemExit):
             parser.parse_args([removed, 'unused'])
     with pytest.raises(SystemExit):

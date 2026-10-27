@@ -3,7 +3,6 @@ from contextlib import contextmanager
 from copy import deepcopy
 from pathlib import Path
 from uuid import uuid4
-import importlib.util
 import os
 
 import pytest
@@ -23,15 +22,10 @@ pytestmark = pytest.mark.requires_docker_postgres
 def postgres(tmp_path):
     # Fixed test-only endpoint: no fallback to operational DATABASE_URL.
     engine = create_engine('postgresql+psycopg://exec1_fixture:exec1_fixture_only@exec1-postgres:5432/exec1_fixture')
-    migration_path = Path('/scripts/../alembic_v2/versions/20261012_01_exec1.py')
-    if not migration_path.exists():
-        migration_path = Path('/tmp/exec1_migration.py')
-    spec = importlib.util.spec_from_file_location('exec1_migration', migration_path)
-    migration = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(migration)
-    with engine.begin() as c:
+    # prepare_exec1_postgres initializes this fixture from the current schema.
+    # No historical migration or DDL is applied by the runtime test.
+    with engine.connect() as c:
         assert c.execute(text('SELECT current_database()')).scalar_one() == 'exec1_fixture'
-        c.execute(text(migration.SQL))
     gate = engine.connect()
     gate.execute(text('SELECT pg_advisory_lock(120994,1)'))
     gate.commit()

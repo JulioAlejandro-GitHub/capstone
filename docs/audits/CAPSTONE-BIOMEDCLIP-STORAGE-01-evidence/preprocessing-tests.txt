@@ -1,0 +1,21 @@
+..                                                                       [100%]
+=============================== warnings summary ===============================
+<frozen importlib._bootstrap>:488
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+<frozen importlib._bootstrap>:488
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[vgg16_imagenet]
+malaria_dl_local_project/tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[vgg16_imagenet]
+malaria_dl_local_project/tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[vgg16_imagenet]
+malaria_dl_local_project/tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[vgg16_imagenet]
+malaria_dl_local_project/tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[rescale_0_1]
+malaria_dl_local_project/tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[rescale_0_1]
+malaria_dl_local_project/tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[rescale_0_1]
+malaria_dl_local_project/tests/test_input_contract_e3.py::test_consumer_tensor_and_prediction_equivalence[rescale_0_1]
+  /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/.venv-metal/lib/python3.12/site-packages/keras/src/utils/python_utils.py:190: DeprecationWarning: Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)
+    value = float(value)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+2 passed, 10 warnings in 3.45s

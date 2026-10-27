@@ -1,4 +1,5 @@
 """Activation writes share the request's single transaction and existing identities."""
+from decimal import Decimal
 from uuid import UUID
 import json
 from sqlalchemy import text
@@ -30,7 +31,8 @@ def register_evidence(connection: Connection, training: dict, binding: dict, con
               'train': str(training['training_run_id']), 'path': path, 'size': binding['bytes'],
               'sha': binding['sha256'], 'model': training.get('model_name') or contract['architecture'],
               'preprocessing': json.dumps(contract['external']), 'mapping': json.dumps(contract['label_mapping']),
-              'input': json.dumps({'shape': contract['shape']}),
+              # A zero-shot contract keeps its registered input signature instead of a Keras shape.
+              'input': json.dumps(contract['input'] if 'input' in contract else {'shape': contract['shape']}),
               'output': json.dumps(contract['output']), 'metadata': json.dumps({'architecture': contract['architecture'],
                 'assessment_checkpoint_identity_id': binding['checkpoint_artifact_id']})}
     # The assessment checkpoint identity may precede the physical artifact registry.
@@ -69,20 +71,24 @@ def register_evidence(connection: Connection, training: dict, binding: dict, con
     return {**binding, 'checkpoint_artifact_id': params['artifact']}
 
 
-def create_deployment(connection: Connection, binding: dict, attempt: str, decision: dict,
+def create_deployment(connection: Connection, binding: dict, attempt: str | None, decision: dict,
                       contract: dict, actor: str) -> str:
     return str(connection.execute(text("""
       INSERT INTO deployed_model_versions(model_version_id,checkpoint_artifact_id,
         threshold_assessment_attempt_id,deployment_name,environment,alias,artifact_sha256,
         artifact_size_bytes,threshold_value,threshold_profile_snapshot,preprocessing_profile_snapshot,
-        label_mapping_snapshot,status,metadata)
+        label_mapping_snapshot,score_name,status,metadata)
       VALUES(:version,:artifact,:attempt,'malaria-stage2-classifier','stage2','default',:sha,:size,
         :threshold,CAST(:threshold_snapshot AS jsonb),CAST(:preprocessing AS jsonb),CAST(:mapping AS jsonb),
-        'pending',CAST(:metadata AS jsonb)) RETURNING id
+        :score_name,'pending',CAST(:metadata AS jsonb)) RETURNING id
     """), {'version': binding['model_version_id'], 'artifact': binding['checkpoint_artifact_id'],
             'attempt': attempt, 'sha': binding['sha256'], 'size': binding['bytes'],
-            'threshold': decision['effective'], 'threshold_snapshot': json.dumps({
-                'value': decision['effective'], 'source': 'assessment_decision',
+            # PostgreSQL retains this legacy field name; output_signature carries score semantics.
+            'score_name': 'probability_parasitized',
+            # threshold_value is numeric: a float8 parameter would be rounded to 15 digits and no
+            # longer equal the evaluated decision, which the reference trigger compares exactly.
+            'threshold': Decimal(repr(decision['effective'])), 'threshold_snapshot': json.dumps({
+                'value': decision['effective'], 'source': 'assessment_decision' if attempt else 'configured_decision',
                 'assessment_attempt_id': attempt, 'decision': decision}),
             'preprocessing': json.dumps(contract['external']), 'mapping': json.dumps(contract['label_mapping']),
             'metadata': json.dumps({'production_scope': 'stage2_experimental', 'stage2': {'eligible': True},
@@ -101,7 +107,7 @@ def activate_deployment(connection: Connection, deployment: str, actor: str, rea
             'smoke': json.dumps({'technical_smoke_test': {'status': 'PASS', 'method': 'loaded_checkpoint_predict'}})})
 
 
-def publish_assessment(connection: Connection, training: str, binding: dict, attempt: str,
+def publish_assessment(connection: Connection, training: str, binding: dict, attempt: str | None,
                        datasource: str, actor: str, reason: str) -> dict:
     # Keep previous publication IDs and payloads intact for historical crop snapshots.
     previous = active_publications(connection, datasource)

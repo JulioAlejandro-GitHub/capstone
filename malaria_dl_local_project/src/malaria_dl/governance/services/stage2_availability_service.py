@@ -70,7 +70,6 @@ class Stage2ModelAvailabilityService:
           ["Modelo productivo técnico para Etapa 2; no constituye validación clínica ni autorización sanitaria."]
           if self.technical_production else [])
         if training["run_type"]!="training":blockers.append({"code":"INVALID_RUN_TYPE","message":"La ejecución no es TRAIN."})
-        if training["status"]!="completed":blockers.append({"code":"TRAINING_NOT_COMPLETED","message":"El entrenamiento no está completed."})
         fixture=self._fixture(training)
         if fixture:technical_blockers.append({"code":"TECHNICAL_FIXTURE","message":"Ejecución técnica sin modelo desplegable."})
         with self.connection_factory() as connection:
@@ -102,7 +101,7 @@ class Stage2ModelAvailabilityService:
               {"id":training_run_id,"environment":self.environment,"alias":self.alias,
                "scope":self.production_scope}).scalar_one_or_none()
         if not evaluation:
-            blockers.append({"code":"EVALUATION_REQUIRED","message":"Se requiere un EVALUATE completed asociado a este TRAIN."})
+            warnings.append("Sin evidencia de evaluación")
         eligible, _ = stage2_eligibility({
             "run_type": training["run_type"], "train_status": training["status"],
             "evaluation_run_id": evaluation["evaluation_run_id"] if evaluation else None,

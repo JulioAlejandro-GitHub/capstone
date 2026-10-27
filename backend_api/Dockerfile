@@ -21,11 +21,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy dependencies from both the ML project and the backend API
 COPY backend_api/requirements.txt /app/backend_requirements.txt
 COPY malaria_dl_local_project/requirements.txt /app/ml_requirements.txt
+COPY malaria_dl_local_project/requirements-biomedclip-registration.txt /app/openclip_requirements.txt
 
 # Optimizing ML libraries installation and standardizing dependencies
 # We use --no-cache-dir to avoid bloated image sizes.
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r /app/ml_requirements.txt -r /app/backend_requirements.txt
+    pip install --no-cache-dir -r /app/ml_requirements.txt -r /app/backend_requirements.txt && \
+    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r /app/openclip_requirements.txt
 
 # Create necessary directories for local application functioning and run under a non-root user for security
 RUN addgroup --system capstone && adduser --system --ingroup capstone capstone

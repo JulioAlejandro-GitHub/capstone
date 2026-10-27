@@ -127,7 +127,9 @@ def identity(
         type(seed) is int and type(batch_size) is int and batch_size > 0,
         "INFERENCE_OPTIONS_INVALID",
     )
-    validate_input_contract(binding["input_contract"])
+    from .openclip import is_openclip, validate_input_contract as validate_openclip_contract
+
+    (validate_openclip_contract if is_openclip(binding) else validate_input_contract)(binding["input_contract"])
     ordered = sorted(deepcopy(samples), key=lambda s: s["sample_id"])
     require(
         ordered and len({s["sample_id"] for s in ordered}) == len(ordered),

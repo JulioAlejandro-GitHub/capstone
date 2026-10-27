@@ -32,19 +32,8 @@ db-status:
 	./scripts/db/status.sh
 db-backup:
 	./scripts/db/backup.sh
-db-migrate-check:
-	docker compose exec -T -e CAPSTONE_ROOT=/app backend python - < scripts/db/verify_alembic_adoption.py
-	docker compose exec -T backend python -m alembic current
-	docker compose exec -T backend python -m alembic heads
-db-migrate:
-	./scripts/db/migrate.sh
-check-alembic-linearity:
-	@# Gate estático de CI reproducible en local antes de hacer push: deriva el head del
-	@# ScriptDirectory del repo y exige una única línea recta (un head, sin branch/merge
-	@# points). No hay ningún head hardcodeado. Usa el intérprete de backend_api/.venv si
-	@# existe (trae alembic); si no, `python` del PATH.
-	@PY="$(CURDIR)/backend_api/.venv/bin/python"; [ -x "$$PY" ] || PY=python; \
-	  "$$PY" scripts/db/check_alembic_linearity.py
+db-migrate-check db-migrate check-alembic-linearity:
+	@echo "Retirado: PostgreSQL actual es el único contrato; Alembic no es requisito operativo."; exit 2
 db-purge-plan:
 	@test -n "$(FLAGS)" || (echo 'Uso: make db-purge-plan FLAGS="--dataset --run --cell"' >&2; exit 2)
 	./scripts/db/purge.sh $(FLAGS)
@@ -173,7 +162,6 @@ test-exec1-frontend:
 
 .PHONY: test-exec1-postgres
 test-exec1-postgres:
-	docker compose cp alembic_v2/versions/20261012_01_exec1.py backend:/tmp/exec1_migration.py
 	docker compose exec -T -w /app/malaria_dl_local_project backend python -m pytest -q tests/test_exec1_postgres.py
 
 .PHONY: test-exec1-backend

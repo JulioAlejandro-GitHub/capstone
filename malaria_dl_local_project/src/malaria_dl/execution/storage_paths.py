@@ -32,3 +32,33 @@ def local_scientific_path(value: str | Path) -> Path:
     if not candidate.resolve().is_relative_to(root):
         raise CampaignError('SCIENTIFIC_PATH_INVALID')
     return candidate
+
+
+def incorporate_training_files(run_id, files):
+    """Copy verified external files to the existing standalone TRAIN tree.
+
+    No overwrite or cleanup: failed transactions leave inspectable files, never
+    remove potentially scientific evidence. The caller registers the final paths.
+    """
+    import os
+    import shutil
+    from uuid import UUID
+    from ..pretrained.registration import verified_file
+
+    run = str(UUID(str(run_id)))
+    sources = [verified_file(item) for item in files]
+    common = Path(os.path.commonpath([str(Path(item['path']).parent) for item in sources]))
+    root = PROJECT_ROOT / 'outputs' / 'train_runs' / run
+    if any(parent.is_symlink() for parent in root.parents):
+        raise ValueError('Symlink in TRAIN artifact root')
+    root.mkdir(parents=True, exist_ok=False)
+    result = []
+    for item in sources:
+        target = root / Path(item['path']).relative_to(common)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with Path(item['path']).open('rb') as source, target.open('xb') as destination:
+            shutil.copyfileobj(source, destination)
+            destination.flush()
+            os.fsync(destination.fileno())
+        result.append(verified_file({**item, 'path': str(target)}))
+    return result

@@ -34,22 +34,8 @@ class KerasRuntime:
         tf = self.tf
         contract = self.value["model"]["input_contract"]
         images = []
-        allowed = self.value["samples"] + (self.value.get("explanation") or {}).get("background", [])
         for s in samples:
-            require(s in allowed, "SAMPLE_NOT_AUTHORIZED")
-            require(s["split"] == self.value["split"], "SAMPLE_NOT_AUTHORIZED")
-            path = self.dataset_root / s["relative_path"]
-            require(
-                path.resolve().is_relative_to(self.dataset_root.resolve())
-                and Path(s["relative_path"]).parts[0] == s["split"],
-                "SAMPLE_PATH_CONFLICT",
-            )
-            require(path.is_file() and not path.is_symlink(), "SAMPLE_FILE_INVALID")
-            contents = path.read_bytes()
-            require(
-                hashlib.sha256(contents).hexdigest() == s["sha256"],
-                "SAMPLE_CONTENT_CHANGED",
-            )
+            contents = verified_sample_bytes(self.value, self.dataset_root, s)
             rgb = tf.io.decode_image(contents, channels=3, expand_animations=False)
             rgb = tf.image.resize(
                 rgb, contract["shape"][1:3], method="bilinear", antialias=False
@@ -156,11 +142,43 @@ class KerasRuntime:
             require(values.shape == tensor.shape, "SHAP_OUTPUT_CONFLICT")
             heat = values.sum(axis=-1) * (1 if spec["class"] == 1 else -1)
         require(np.isfinite(heat).all(), "ATTRIBUTION_NONFINITE")
-        magnitude = np.abs(heat)
-        magnitude = magnitude / magnitude.max() if magnitude.max() else magnitude
-        color = np.stack([magnitude, np.zeros_like(magnitude), 1 - magnitude], axis=-1)
-        overlay = np.clip(0.6 * rgb + 0.4 * color, 0, 1)
-        return heat, overlay, {"score_explained": "raw", "class": spec["class"]}
+        return heat, attribution_overlay(rgb, heat), {"score_explained": "raw", "class": spec["class"]}
+
+
+def verified_sample_bytes(value, dataset_root, sample):
+    """Authorized sample of this identity, inside the governed root, with its recorded bytes."""
+    allowed = value["samples"] + (value.get("explanation") or {}).get("background", [])
+    require(sample in allowed, "SAMPLE_NOT_AUTHORIZED")
+    require(sample["split"] == value["split"], "SAMPLE_NOT_AUTHORIZED")
+    path = dataset_root / sample["relative_path"]
+    require(
+        path.resolve().is_relative_to(dataset_root.resolve())
+        and Path(sample["relative_path"]).parts[0] == sample["split"],
+        "SAMPLE_PATH_CONFLICT",
+    )
+    require(path.is_file() and not path.is_symlink(), "SAMPLE_FILE_INVALID")
+    contents = path.read_bytes()
+    require(
+        hashlib.sha256(contents).hexdigest() == sample["sha256"],
+        "SAMPLE_CONTENT_CHANGED",
+    )
+    return contents
+
+
+def attribution_overlay(rgb, heat):
+    import numpy as np
+
+    magnitude = np.abs(heat)
+    magnitude = magnitude / magnitude.max() if magnitude.max() else magnitude
+    color = np.stack([magnitude, np.zeros_like(magnitude), 1 - magnitude], axis=-1)
+    return np.clip(0.6 * rgb + 0.4 * color, 0, 1)
+
+
+def runtime_for(value):
+    """Dispatch on the frozen input contract of the identity, never on the model name."""
+    from .openclip import OpenCLIPRuntime, is_openclip
+
+    return (OpenCLIPRuntime if is_openclip(value["model"]) else KerasRuntime)(value)
 
 
 def save_arrays(root, sample_id, arrays):

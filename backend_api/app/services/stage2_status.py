@@ -8,7 +8,7 @@ from uuid import UUID
 from app.db import read_only_transaction
 from app.repositories import stage2_status as repository
 from app.schemas.stage2_status import Stage2Status
-from src.malaria_dl.governance.eligibility import evaluation_completed, stage2_eligibility
+from src.malaria_dl.governance.eligibility import evaluation_completed, is_zero_shot, select_evaluation, stage2_eligibility
 from src.malaria_dl.governance.services.deployment_service import _project_path
 from src.malaria_dl.governance.services.stage2_availability_service import Stage2ModelAvailabilityService
 
@@ -40,7 +40,7 @@ class Stage2StatusService:
             if training is None:
                 raise Stage2TrainingNotFound(str(training_run_id))
             candidates = repository.read_evaluations(connection, training_run_id)
-            evaluation = next((item for item in candidates if evaluation_completed(item)), candidates[0] if candidates else {})
+            evaluation = select_evaluation(candidates) or (candidates[0] if candidates else {})
             explanations = repository.read_explanations(connection, training_run_id)
             session = training.get("session_verification") or {}
             selected_artifact = session.get("artifact") or {}
@@ -68,7 +68,7 @@ class Stage2StatusService:
             technical.append({"code": "CHECKPOINT_UNAVAILABLE", "message": "El checkpoint no está accesible desde el backend de despliegue."})
         elif not verified:
             technical.append({"code": "CHECKPOINT_UNVERIFIED", "message": "No se pudo confirmar tamaño y SHA-256 del checkpoint."})
-        if evaluation.get("evaluation_source_kind") != "assessment_e6" and version:
+        if evaluation_completed(evaluation) and evaluation.get("evaluation_source_kind") != "assessment_e6" and version:
             # Preserve the existing operational package checks for traditional candidates.
             # Every DB access of this preview is forced read-only; enable() is never called.
             preview = Stage2ModelAvailabilityService(lambda: read_only_transaction(datasource)).preview(str(training_run_id))
@@ -77,15 +77,33 @@ class Stage2StatusService:
             warnings.extend(preview.get("warnings", []))
             if preview.get("model_version_id") != version_id:
                 technical.append({"code": "MODEL_VERSION_SELECTION_CONFLICT", "message": "El paquete operativo no corresponde a la versión evaluada."})
+        if not evaluation_completed(evaluation):
+            warnings.append("Sin evidencia de evaluación")
+        if version:
+            from app.services.productive_model import SUPPORTED_FRAMEWORKS, SUPPORTED_PREPROCESSING
+            if version.get("framework") not in SUPPORTED_FRAMEWORKS:
+                technical.append({"code": "FRAMEWORK_UNSUPPORTED", "message": "Framework sin adaptador celular."})
+            if (version.get("preprocessing_profile_snapshot") or {}).get("mode") not in SUPPORTED_PREPROCESSING:
+                technical.append({"code": "PREPROCESSING_UNSUPPORTED", "message": "Preprocesamiento celular no disponible."})
+            if version.get("framework") == "pytorch_openclip":
+                import importlib.util
+                if any(importlib.util.find_spec(name) is None for name in ("torch", "open_clip")):
+                    technical.append({"code": "ADAPTER_UNAVAILABLE", "message": "El entorno requiere PyTorch y OpenCLIP."})
         ready = not technical
         published = bool(publication and publication["is_active"])
-        available = bool(published and deployment.get("deployment_status") == "active" and deployment.get("smoke_status") == "PASS")
+        # The served decision is the published evaluation; a newer selection means a pending update.
+        threshold_update = bool(published and is_zero_shot(evaluation) and evaluation_completed(evaluation)
+                                and str(publication.get("evaluation_attempt_id") or "")
+                                != str(evaluation.get("evaluation_attempt_id") or ""))
+        # An active publication whose files the backend cannot read is not serving inference.
+        available = bool(published and ready and deployment.get("deployment_status") == "active" and deployment.get("smoke_status") == "PASS")
         input_contract = binding.get("input_contract") or (training.get("session_configuration") or {}).get("resolved", {}).get("input_contract", {})
         public_evaluation = {key: value for key, value in evaluation.items() if key.startswith("evaluation_")}
         return Stage2Status.model_validate({
             **{key: value for key, value in training.items() if key.startswith("train_")},
             **public_evaluation, **deployment,
             "training_run_id": training_run_id,
+            "training_performed": (training.get("metadata") or {}).get("training_performed"),
             "eligible": eligible, "eligible_for_stage2_production": eligible, "eligibility": eligibility,
             "explainability_run_ids": [item["run_id"] for item in explanations],
             "explanations": json.loads(json.dumps(explanations, default=str)),
@@ -104,6 +122,7 @@ class Stage2StatusService:
             "deployment_readiness": {"ready": ready, "status": "ready" if ready else "blocked", "checkpoint_accessible": accessible, "checkpoint_verified": verified},
             "blockers": [{"code": "STAGE2_CONDITION_MISSING", "message": message} for message in eligibility["missing_conditions"]],
             "technical_blockers": technical,
+            "threshold_update_available": threshold_update,
             "warnings": warnings,
             "package": package,
         })

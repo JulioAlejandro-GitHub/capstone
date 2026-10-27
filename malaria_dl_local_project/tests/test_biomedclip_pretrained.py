@@ -31,7 +31,7 @@ def test_pretrained_uses_common_model_catalog(monkeypatch):
 def test_train_skips_and_continues_without_registration(monkeypatch, capsys):
     from src.malaria_dl.execution import operations
     base = dict(id=str(uuid4()), dataset_version_id=DATASET, campaign_id=None)
-    zero = dict(base, model_name=ARCHITECTURE, configuration=None)
+    zero = dict(base, model_name=ARCHITECTURE, model_metadata={"training_mode":"logical"}, configuration=None)
     config = {'model_id':'custom_cnn','schema_version':'test','adapter_version':'test',
               'resolved':dict.fromkeys(('model','optimizer','execution','selection','input_contract','recipe'), {})}
     trained = dict(base, id=str(uuid4()), model_name='custom_cnn', configuration=config)
@@ -51,7 +51,7 @@ def test_train_main_continues_trainable_sources(monkeypatch, capsys):
     source = str(uuid4())
     config = {'model_id':'custom_cnn','schema_version':'test','adapter_version':'test',
               'resolved':dict.fromkeys(('model','optimizer','execution','selection','input_contract','recipe'), {})}
-    rows = [dict(id=str(uuid4()),model_name=ARCHITECTURE,configuration=None),
+    rows = [dict(id=str(uuid4()),model_name=ARCHITECTURE,model_metadata={"training_mode":"logical"},configuration=None),
             dict(id=source,model_name='custom_cnn',configuration=config,campaign_id=None,dataset_version_id=DATASET)]
     monkeypatch.setattr(local_launch,'bootstrap',lambda:None)
     monkeypatch.setattr(operations,'select_trainings',lambda *a:rows)

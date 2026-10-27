@@ -1,0 +1,264 @@
+{
+  "model_snapshot": {
+    "schema_version": 1,
+    "model_registry_id": "3fd16a84-b5c7-442b-916b-e0438bb0f3e5",
+    "production_model_id": "ee60a055-ce19-48af-aa55-609a7f352bb4",
+    "stage2_publication_id": "2ab60a9b-f7a6-45a8-a6cc-45ca44b804a5",
+    "model_name": "biomedclip_zero_shot",
+    "model_version": "1",
+    "source_training_run_id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+    "source_evaluation_run_id": null,
+    "source_evaluation_attempt_id": null,
+    "checkpoint_artifact_id": "e5e67ccf-6403-4dfa-b472-31920f4f2346",
+    "checkpoint_sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+    "checkpoint_size_bytes": 783705670,
+    "framework": "pytorch_openclip",
+    "framework_version": null,
+    "architecture": "biomedclip_zero_shot",
+    "input_width": 224,
+    "input_height": 224,
+    "input_channels": 3,
+    "input_signature": {
+      "dtype": "uint8",
+      "shape": [
+        null,
+        224,
+        224,
+        3
+      ],
+      "adapter_layout": "NCHW"
+    },
+    "output_signature": {
+      "shape": [
+        null,
+        2
+      ],
+      "meaning": "relative_similarity_not_clinically_calibrated",
+      "activation": "softmax",
+      "score_name": "score_parasitized",
+      "class_order": [
+        "uninfected",
+        "parasitized"
+      ]
+    },
+    "preprocessing": {
+      "mode": "openclip_original",
+      "prompts": [
+        "a microscopy image of an uninfected red blood cell.",
+        "a microscopy image of a red blood cell infected with malaria parasites."
+      ],
+      "class_order": [
+        "uninfected",
+        "parasitized"
+      ],
+      "dependencies": [
+        {
+          "name": "open_clip_config.json",
+          "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_config.json",
+          "role": "model_config",
+          "bytes": 707,
+          "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+          "upstream_lfs_sha256": null
+        },
+        {
+          "name": "config.json",
+          "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/config.json",
+          "role": "text_config",
+          "bytes": 385,
+          "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+          "upstream_lfs_sha256": null
+        },
+        {
+          "name": "tokenizer_config.json",
+          "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/tokenizer_config.json",
+          "role": "tokenizer_config",
+          "bytes": 28,
+          "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+          "upstream_lfs_sha256": null
+        },
+        {
+          "name": "vocab.txt",
+          "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/vocab.txt",
+          "role": "vocabulary",
+          "bytes": 225062,
+          "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+          "upstream_lfs_sha256": null
+        }
+      ],
+      "normalization": "L2 image and text features; exp(logit_scale) cosine similarity; softmax"
+    },
+    "label_mapping": {
+      "0": "uninfected",
+      "1": "parasitized",
+      "positive_class": 1,
+      "positive_label": "parasitized"
+    },
+    "positive_label": "parasitized",
+    "positive_class_index": 1,
+    "threshold": 0.5,
+    "threshold_source": "configured_decision",
+    "calibration_metadata": {
+      "threshold_calibration_id": null,
+      "threshold_assessment_attempt_id": null,
+      "threshold_policy": null,
+      "calibration_split": null,
+      "calibration_status": "configured",
+      "metadata": {}
+    },
+    "published_at": "2026-10-27T10:25:09.510770+00:00",
+    "production_status": "active",
+    "stage2_default": {
+      "deployment_name": "malaria-stage2-classifier",
+      "environment": "stage2",
+      "alias": "default",
+      "production_scope": "stage2_experimental",
+      "deployment_id": "ee60a055-ce19-48af-aa55-609a7f352bb4"
+    },
+    "loader_version": "productive-model-loader-v1",
+    "inference_version": "CAPSTONE-MODEL-CONTRACT-01B",
+    "batch_size": 1,
+    "review_margin": 0.05,
+    "explainability_policy": {
+      "version": "cell-gradcam-manual-v1",
+      "method": "gradcam",
+      "scope": "single_cell_on_demand",
+      "automatic_generation": false,
+      "manual_retry_required": true,
+      "bulk_generation": false,
+      "priority_hints": [
+        "parasitized",
+        "near_threshold"
+      ]
+    }
+  },
+  "predictions": [
+    {
+      "sample": {
+        "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "sample_id": "0000ca7d-31f5-560a-b35b-8cb262eef8f3",
+        "patient_id": "f14167f4-f928-5219-b0e4-b6d4c5c0795f",
+        "split_name": "train",
+        "class_name": "parasitized",
+        "source_filename": "C186P147NThinF_IMG_20151203_150859_cell_164.png",
+        "sha256": "f5deb3b0d2898fb49c92e155d8885c9ee3cc38c4f74f06ff4750b6fb488281db",
+        "collisions": 1,
+        "n": 1,
+        "path": "malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2/train/parasitized/C186P147NThinF_IMG_20151203_150859_cell_164.png",
+        "label": 1
+      },
+      "scores": [
+        [
+          0.4507918953895569,
+          0.5492081046104431
+        ]
+      ],
+      "normalized": [
+        {
+          "raw_output": [
+            0.4507918953895569,
+            0.5492081046104431
+          ],
+          "probability_parasitized": 0.5492081046104431,
+          "probability_uninfected": 0.4507918953895569
+        }
+      ],
+      "meaning": "relative_similarity_not_clinically_calibrated"
+    },
+    {
+      "sample": {
+        "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "sample_id": "0008c6fa-f4af-59e6-b618-6aeb604aef46",
+        "patient_id": "eee52a82-e8f7-5f24-a226-392bef433fce",
+        "split_name": "train",
+        "class_name": "parasitized",
+        "source_filename": "C116P77ThinF_IMG_20150930_171448_cell_125.png",
+        "sha256": "df9ec70f3049faf7ade352cb79d26713ef0146c42a84e05c40d80699edc0d1a9",
+        "collisions": 1,
+        "n": 2,
+        "path": "malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2/train/parasitized/C116P77ThinF_IMG_20150930_171448_cell_125.png",
+        "label": 1
+      },
+      "scores": [
+        [
+          0.8274951577186584,
+          0.17250484228134155
+        ]
+      ],
+      "normalized": [
+        {
+          "raw_output": [
+            0.8274951577186584,
+            0.17250484228134155
+          ],
+          "probability_parasitized": 0.17250484228134155,
+          "probability_uninfected": 0.8274951577186584
+        }
+      ],
+      "meaning": "relative_similarity_not_clinically_calibrated"
+    },
+    {
+      "sample": {
+        "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "sample_id": "000ae32b-95da-5ac5-b694-576cf8d579e1",
+        "patient_id": "3d551793-706b-574f-b05e-8bc4cb4b7daf",
+        "split_name": "train",
+        "class_name": "parasitized",
+        "source_filename": "C182P143NThinF_IMG_20151201_172524_cell_205.png",
+        "sha256": "9d5f950ff69d545b64e27e7993fe4e8cdd787ee7a424b8c8b6c27984da975f48",
+        "collisions": 1,
+        "n": 3,
+        "path": "malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2/train/parasitized/C182P143NThinF_IMG_20151201_172524_cell_205.png",
+        "label": 1
+      },
+      "scores": [
+        [
+          0.8222192525863647,
+          0.17778074741363525
+        ]
+      ],
+      "normalized": [
+        {
+          "raw_output": [
+            0.8222192525863647,
+            0.17778074741363525
+          ],
+          "probability_parasitized": 0.17778074741363525,
+          "probability_uninfected": 0.8222192525863647
+        }
+      ],
+      "meaning": "relative_similarity_not_clinically_calibrated"
+    },
+    {
+      "sample": {
+        "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "sample_id": "001559c9-2005-5c2a-be67-10a34fb0b2c2",
+        "patient_id": "84fd744a-6834-5d76-aa41-20888c548fd4",
+        "split_name": "train",
+        "class_name": "parasitized",
+        "source_filename": "C118P79ThinF_IMG_20151002_105346_cell_155.png",
+        "sha256": "e7a51e14345beb693b9992fbf872a04b54219d052c97833334c63a75bf2aa560",
+        "collisions": 1,
+        "n": 4,
+        "path": "malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2/train/parasitized/C118P79ThinF_IMG_20151002_105346_cell_155.png",
+        "label": 1
+      },
+      "scores": [
+        [
+          0.43733155727386475,
+          0.5626684427261353
+        ]
+      ],
+      "normalized": [
+        {
+          "raw_output": [
+            0.43733155727386475,
+            0.5626684427261353
+          ],
+          "probability_parasitized": 0.5626684427261353,
+          "probability_uninfected": 0.43733155727386475
+        }
+      ],
+      "meaning": "relative_similarity_not_clinically_calibrated"
+    }
+  ]
+}

@@ -1473,7 +1473,7 @@ export function CellReviewWorkspace({
               <div><dt>Próximas al threshold</dt><dd>{classificationSummary.near_threshold_count}</dd></div>
               <div><dt>Fallidas</dt><dd>{classificationSummary.failed_prediction_count}</dd></div>
               <div><dt>Fracción experimental</dt><dd>{classificationSummary.parasitized_candidate_fraction == null ? '—' : `${(classificationSummary.parasitized_candidate_fraction * 100).toFixed(1)} %`}</dd></div>
-              <div><dt>Probabilidad máxima</dt><dd>{optionalMetric(classificationSummary.maximum_probability_parasitized)}</dd></div>
+              <div><dt>{classificationRun?.model_snapshot.framework === 'pytorch_openclip' ? 'Score máximo' : 'Probabilidad máxima'}</dt><dd>{optionalMetric(classificationSummary.maximum_probability_parasitized)}</dd></div>
             </>
           ) : null}
           {classificationRun ? (
@@ -1483,6 +1483,9 @@ export function CellReviewWorkspace({
             </>
           ) : null}
         </dl>
+        {classificationRun?.model_snapshot.framework === 'pytorch_openclip' ? (
+          <p>Scores relativos de similitud entre imagen y texto; no son probabilidades clínicas calibradas.</p>
+        ) : null}
         {classificationSummary ? (
           <div className="cell-summary-comparison">
             <strong>Resumen automático ≠ Resumen revisado</strong>
@@ -1731,6 +1734,7 @@ export function CellReviewWorkspace({
                     detection={detection}
                     prediction={predictionByDetectionId.get(detection.id) ?? null}
                     classificationExpected={Boolean(classificationRun)}
+                    framework={classificationRun?.model_snapshot.framework}
                     humanLabel={humanByPredictionId[predictionByDetectionId.get(detection.id)?.id ?? '']?.label
                       ?? inferredHumanLabel(predictionByDetectionId.get(detection.id) ?? null)}
                     annotationCount={annotationCountByCell[detection.id] ?? 0}
@@ -1873,6 +1877,7 @@ const DetectionCard = memo(function DetectionCard({
   detection,
   prediction,
   classificationExpected,
+  framework,
   humanLabel,
   annotationCount,
   selected,
@@ -1882,6 +1887,7 @@ const DetectionCard = memo(function DetectionCard({
   detection: CellDetectionSummary;
   prediction: CellPredictionSummary | null;
   classificationExpected: boolean;
+  framework?: string;
   humanLabel: CanonicalCellLabel | null;
   annotationCount: number;
   selected: boolean;
@@ -1915,7 +1921,7 @@ const DetectionCard = memo(function DetectionCard({
                   : `${prediction.predicted_label === 'parasitized' ? 'P' : 'U'} ${prediction.predicted_label}`}
               </span>
               <small>
-                P(parasitized) {optionalMetric(prediction.probability_parasitized)}
+                {framework === 'pytorch_openclip' ? 'Score parasitized' : 'P(parasitized)'} {optionalMetric(prediction.probability_parasitized)}
                 {prediction.near_threshold ? ' · ≈ Próxima al threshold' : ''}
               </small>
               <small>
@@ -2090,8 +2096,8 @@ function CellDetailPanel({
               {prediction ? (
                 <>
                   <dl className="cell-detail-facts classification-facts">
-                    <div><dt>P(parasitized)</dt><dd>{optionalMetric(prediction.probability_parasitized)}</dd></div>
-                    <div><dt>P(uninfected)</dt><dd>{optionalMetric(prediction.probability_uninfected)}</dd></div>
+                    <div><dt>{classificationRun?.model_snapshot.framework === 'pytorch_openclip' ? 'Score parasitized' : 'P(parasitized)'}</dt><dd>{optionalMetric(prediction.probability_parasitized)}</dd></div>
+                    <div><dt>{classificationRun?.model_snapshot.framework === 'pytorch_openclip' ? 'Score uninfected' : 'P(uninfected)'}</dt><dd>{optionalMetric(prediction.probability_uninfected)}</dd></div>
                     <div><dt>Threshold</dt><dd>{optionalMetric(prediction.threshold_used)}</dd></div>
                     <div><dt>Fuente threshold</dt><dd>{prediction.threshold_source}</dd></div>
                     <div><dt>Margen de decisión</dt><dd>{optionalMetric(prediction.decision_margin)}</dd></div>

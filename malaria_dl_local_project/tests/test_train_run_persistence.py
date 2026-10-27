@@ -16,9 +16,7 @@ from src.malaria_dl.execution.train import train
 from src.malaria_dl.persistence.result_repository import _PostgresScope, _decode
 from src.malaria_dl.results.models import AcceptanceState
 from src.malaria_dl.results.service import ResultService
-from test_campaigns_postgres import isolated  # noqa: F401
-from test_result_repository_postgres import apply
-from e10_schema_fixture import install_e10
+from current_training_fixture import isolated  # noqa: F401
 from docker_train_fixture import install_science
 
 pytestmark = pytest.mark.requires_docker_postgres
@@ -31,16 +29,6 @@ RUNTIME = dict(host='synthetic-worker', python='3.12.13', tensorflow='2.20.0',
 @pytest.fixture
 def training(isolated, tmp_path):
     x = isolated
-    for revision in ('20260912_01_train_execution', '20260912_02_assessments',
-                     '20260914_01_controlled_train', '20260914_02_global_execution',
-                     '20260915_01_local_execution'):
-        apply(x.c, revision)
-    install_e10(x.c)
-    for table in ("run_configurations", "evaluations", "run_clinical_metrics"):
-        x.c.execute(text(
-            f"CREATE TABLE {table} (LIKE public.{table} "
-            "INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)"
-        ))
     from test_campaigns_e4 import request, protocol
     requested = request()
     requested['models'] = ['vgg16']
@@ -159,7 +147,6 @@ def test_late_runtime_event_and_duplicate_are_atomic(training):
                                  dict(id=ctx.run_id)).scalar_one()
                 scope = _PostgresScope(c, event, AcceptanceState(existing_event=_decode(old),
                     sequence_event=None, last_sequence=int(last)))
-                scope.revision = '20260922_01'
                 yield scope
                 scope.active = False
 
@@ -178,9 +165,10 @@ def test_late_runtime_event_and_duplicate_are_atomic(training):
 
 def test_v2_creation_uses_real_constraints_and_rolls_back(training):
     """Only new UUIDs in public, all writes rolled back; existing rows are read only."""
-    from src.malaria_dl.persistence.database import get_engine
+    import os
+    from sqlalchemy import create_engine
     from copy import deepcopy
-    engine = get_engine()
+    engine = create_engine(os.environ["CONTRACT_TEST_DATABASE_URL"])
     run, dataset, version, experiment = (uuid4() for _ in range(4))
     try:
         with engine.connect() as c:
@@ -220,10 +208,8 @@ def test_v2_creation_uses_real_constraints_and_rolls_back(training):
 
 
 def test_selected_artifact_retains_run_attempt_and_selection(training, monkeypatch):
-    from src.malaria_dl.execution import schema
     from src.malaria_dl.execution.artifacts import file_identity
     t = training
-    t.x.c.execute(text('CREATE TABLE artifacts (LIKE public.artifacts INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)'))
     monkeypatch.setattr("src.malaria_dl.execution.accelerator.gpu_required", lambda: False)
     descriptor, _ = install_science(monkeypatch, first_epoch_best=True)
     original_finish = t.repo.finish
@@ -231,9 +217,7 @@ def test_selected_artifact_retains_run_attempt_and_selection(training, monkeypat
     def finish(run, owner, state, evidence=None, cause=None):
         # Exercise the v2 writer with synthetic campaign/session parents in this
         # rollback schema. The real v2 catalog gate is exercised separately above.
-        with monkeypatch.context() as patch:
-            patch.setattr(schema, 'require_e10_schema', lambda c: {'revision': schema.V2_REVISION})
-            t.repo.bind_evaluation_context(run, owner, evidence['selection']['selected_epoch'])
+        t.repo.bind_evaluation_context(run, owner, evidence['selection']['selected_epoch'])
         original_finish(run, owner, state, evidence, cause)
 
     monkeypatch.setattr(t.repo, 'finish', finish)

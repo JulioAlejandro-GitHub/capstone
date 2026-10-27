@@ -1,0 +1,268 @@
+TAP version 13
+# Subtest: TRAIN concentra la acción Activar para clasificación celular
+ok 1 - TRAIN concentra la acción Activar para clasificación celular
+  ---
+  duration_ms: 0.498792
+  type: 'test'
+  ...
+# Subtest: estado activo prioriza disponibilidad canónica y estiliza toda la tarjeta
+ok 2 - estado activo prioriza disponibilidad canónica y estiliza toda la tarjeta
+  ---
+  duration_ms: 0.181375
+  type: 'test'
+  ...
+# Subtest: estado no depende solo del color
+ok 3 - estado no depende solo del color
+  ---
+  duration_ms: 0.064208
+  type: 'test'
+  ...
+# Subtest: Liberación visible no vuelve a inferir elegibilidad
+ok 4 - Liberación visible no vuelve a inferir elegibilidad
+  ---
+  duration_ms: 0.134916
+  type: 'test'
+  ...
+# Subtest: Activar abre el acordeón y la vista anterior permanece compatible
+ok 5 - Activar abre el acordeón y la vista anterior permanece compatible
+  ---
+  duration_ms: 0.051959
+  type: 'test'
+  ...
+# Subtest: acordeón activa y confirma reemplazos inline
+ok 6 - acordeón activa y confirma reemplazos inline
+  ---
+  duration_ms: 0.054541
+  type: 'test'
+  ...
+# Subtest: detalle publica mediante confirmación y bloquea doble clic
+ok 7 - detalle publica mediante confirmación y bloquea doble clic
+  ---
+  duration_ms: 0.106292
+  type: 'test'
+  ...
+# Subtest: detalle muestra TRAIN EVALUATE EXPLAIN opcional y model version
+ok 8 - detalle muestra TRAIN EVALUATE EXPLAIN opcional y model version
+  ---
+  duration_ms: 0.050792
+  type: 'test'
+  ...
+# Subtest: API utiliza estado y publicación de producción técnica
+ok 9 - API utiliza estado y publicación de producción técnica
+  ---
+  duration_ms: 0.269709
+  type: 'test'
+  ...
+# Subtest: no expone rutas físicas ni usa checkpoint como identidad
+ok 10 - no expone rutas físicas ni usa checkpoint como identidad
+  ---
+  duration_ms: 0.455917
+  type: 'test'
+  ...
+# Subtest: activación aparece sólo en TRAIN y reutiliza los endpoints existentes
+ok 11 - activación aparece sólo en TRAIN y reutiliza los endpoints existentes
+  ---
+  duration_ms: 1.104542
+  type: 'test'
+  ...
+# Subtest: Activar controla un acordeón accesible con confirmaciones inline
+ok 12 - Activar controla un acordeón accesible con confirmaciones inline
+  ---
+  duration_ms: 0.278375
+  type: 'test'
+  ...
+# Subtest: el resumen muestra sólo la acción o Modelo en Estado Activo, sin indicadores de elegibilidad
+ok 13 - el resumen muestra sólo la acción o Modelo en Estado Activo, sin indicadores de elegibilidad
+  ---
+  duration_ms: 0.115625
+  type: 'test'
+  ...
+# Subtest: Despliegues identifica el modelo productivo Etapa 2 y preserva producción formal
+ok 14 - Despliegues identifica el modelo productivo Etapa 2 y preserva producción formal
+  ---
+  duration_ms: 0.792125
+  type: 'test'
+  ...
+# Subtest: completed TRAIN and verified evaluation enable activation without prior registration
+ok 15 - completed TRAIN and verified evaluation enable activation without prior registration
+  ---
+  duration_ms: 18.884584
+  type: 'test'
+  ...
+# Subtest: original seven fields, labels, dates and column grid are restored
+ok 16 - original seven fields, labels, dates and column grid are restored
+  ---
+  duration_ms: 1.259916
+  type: 'test'
+  ...
+# Subtest: unfinished TRAIN displays the pending backend condition without recomputing eligibility
+ok 17 - unfinished TRAIN displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 0.511084
+  type: 'test'
+  ...
+# Subtest: absent evaluation displays the pending backend condition without recomputing eligibility
+ok 18 - absent evaluation displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 0.3365
+  type: 'test'
+  ...
+# Subtest: failed evaluation displays the pending backend condition without recomputing eligibility
+ok 19 - failed evaluation displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 0.484958
+  type: 'test'
+  ...
+# Subtest: unverified evaluation displays the pending backend condition without recomputing eligibility
+ok 20 - unverified evaluation displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 0.355916
+  type: 'test'
+  ...
+# Subtest: verified without valid link displays the pending backend condition without recomputing eligibility
+ok 21 - verified without valid link displays the pending backend condition without recomputing eligibility
+  ---
+  duration_ms: 0.380042
+  type: 'test'
+  ...
+# Subtest: missing operational registration never changes the displayed eligibility result
+ok 22 - missing operational registration never changes the displayed eligibility result
+  ---
+  duration_ms: 0.33825
+  type: 'test'
+  ...
+# Subtest: EXPLAIN counts and existing explanation evidence remain informational
+ok 23 - EXPLAIN counts and existing explanation evidence remain informational
+  ---
+  duration_ms: 1.468167
+  type: 'test'
+  ...
+# Subtest: conditional fields not listed for removal remain in the original grid
+ok 24 - conditional fields not listed for removal remain in the original grid
+  ---
+  duration_ms: 0.810083
+  type: 'test'
+  ...
+# Subtest: API failure has a generic error and retry without leaking backend details
+ok 25 - API failure has a generic error and retry without leaking backend details
+  ---
+  duration_ms: 0.164083
+  type: 'test'
+  ...
+# Subtest: loading does not offer an activation decision
+ok 26 - loading does not offer an activation decision
+  ---
+  duration_ms: 0.093708
+  type: 'test'
+  ...
+# Subtest: ready candidate without EXPLAIN can activate regardless of descriptive fields or low metrics
+ok 27 - ready candidate without EXPLAIN can activate regardless of descriptive fields or low metrics
+  ---
+  duration_ms: 0.3595
+  type: 'test'
+  ...
+# Subtest: not ready is checked during activation, never as an eligibility prerequisite
+ok 28 - not ready is checked during activation, never as an eligibility prerequisite
+  ---
+  duration_ms: 0.366667
+  type: 'test'
+  ...
+# Subtest: unknown readiness is checked during activation, never as an eligibility prerequisite
+ok 29 - unknown readiness is checked during activation, never as an eligibility prerequisite
+  ---
+  duration_ms: 0.359167
+  type: 'test'
+  ...
+# Subtest: missing version is checked during activation, never as an eligibility prerequisite
+ok 30 - missing version is checked during activation, never as an eligibility prerequisite
+  ---
+  duration_ms: 0.35125
+  type: 'test'
+  ...
+# Subtest: operational blocker is checked during activation, never as an eligibility prerequisite
+ok 31 - operational blocker is checked during activation, never as an eligibility prerequisite
+  ---
+  duration_ms: 0.344833
+  type: 'test'
+  ...
+# Subtest: activation errors remain visible and do not claim success
+ok 32 - activation errors remain visible and do not claim success
+  ---
+  duration_ms: 4.584584
+  type: 'test'
+  ...
+# Subtest: active model shows Modelo activo and never offers redundant activation
+ok 33 - active model shows Modelo activo and never offers redundant activation
+  ---
+  duration_ms: 0.430833
+  type: 'test'
+  ...
+# Subtest: publication alone does not claim that the model receives crops
+ok 34 - publication alone does not claim that the model receives crops
+  ---
+  duration_ms: 0.356084
+  type: 'test'
+  ...
+# Subtest: activation requires the user click; replacement adds its own confirmation
+ok 35 - activation requires the user click; replacement adds its own confirmation
+  ---
+  duration_ms: 2.650125
+  type: 'test'
+  ...
+# Subtest: no active model activates on the user click without an additional approval step
+ok 36 - no active model activates on the user click without an additional approval step
+  ---
+  duration_ms: 0.952791
+  type: 'test'
+  ...
+# Subtest: a pending replacement cannot activate a model whose eligibility changed
+ok 37 - a pending replacement cannot activate a model whose eligibility changed
+  ---
+  duration_ms: 1.26925
+  type: 'test'
+  ...
+# Subtest: no active model uses existing publication service then reloads canonical availability
+ok 38 - no active model uses existing publication service then reloads canonical availability
+  ---
+  duration_ms: 10.398167
+  type: 'test'
+  ...
+# Subtest: another active model requires confirmation before using the existing replacement payload
+ok 39 - another active model requires confirmation before using the existing replacement payload
+  ---
+  duration_ms: 5.877541
+  type: 'test'
+  ...
+# Subtest: already active model refreshes state without redundant publication
+ok 40 - already active model refreshes state without redundant publication
+  ---
+  duration_ms: 6.385084
+  type: 'test'
+  ...
+# Subtest: replacement confirmation rechecks whether this model has already become active
+ok 41 - replacement confirmation rechecks whether this model has already become active
+  ---
+  duration_ms: 4.375542
+  type: 'test'
+  ...
+# Subtest: ineligible candidate cannot call the activation service even outside the panel
+ok 42 - ineligible candidate cannot call the activation service even outside the panel
+  ---
+  duration_ms: 3.932292
+  type: 'test'
+  ...
+# Subtest: the page consumes one canonical release response and clears stale status on errors
+ok 43 - the page consumes one canonical release response and clears stale status on errors
+  ---
+  duration_ms: 0.28775
+  type: 'test'
+  ...
+1..43
+# tests 43
+# suites 0
+# pass 43
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 324.530417

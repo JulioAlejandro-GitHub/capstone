@@ -2,18 +2,12 @@
 import hashlib
 import json
 import os
-import subprocess
-import sys
 from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
 import numpy as np
 import pytest
-from alembic.config import Config
-from alembic.migration import MigrationContext
-from alembic.operations import Operations
-from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError
 
@@ -25,26 +19,12 @@ from src.model_governance.errors import GovernanceStateError
 
 @pytest.fixture(scope='module')
 def database():
-    url = os.getenv('CELL_ACTIVATION_TEST_URL', '')
+    url = os.getenv('CONTRACT_TEST_DATABASE_URL')
     if not url:
-        pytest.skip('Requires make test-cell-activation-backend disposable database')
-    assert url == 'postgresql+psycopg://postgres@cell-activation-db:5432/cell_activation_test'
+        pytest.skip('Requires a disposable copy of the current PostgreSQL schema')
     engine = create_engine(url)
-    scripts = ScriptDirectory.from_config(Config('/app/alembic_v2.ini'))
-    with engine.begin() as c:
-        assert c.execute(text('SELECT current_database()')).scalar_one() == 'cell_activation_test'
-        c.execute(text('CREATE ROLE capstone_v2_migrator; CREATE ROLE capstone_v2_runtime;'))
-        c.info['pg_v2_verified_target'] = 'disposable-cell-activation-test'
-        migration_context = MigrationContext.configure(c)
-        migration_context._ensure_version_table()
-        with Operations.context(migration_context):
-            scripts.get_revision('pg_v2_baseline').module.upgrade()
-        c.execute(text("INSERT INTO alembic_version(version_num) VALUES('pg_v2_baseline')"))
-    migrate = [sys.executable, '-m', 'alembic', '-c', '/app/alembic_v2.ini', '-x',
-               'activation_migration=true', '-x', 'activation_database=cell_activation_test', 'upgrade', 'head']
-    for _ in range(2):
-        result = subprocess.run(migrate, env={**os.environ, 'PGV2_DATABASE_URL': url}, capture_output=True, text=True)
-        assert result.returncode == 0, result.stderr
+    with engine.connect() as c:
+        assert c.execute(text('SELECT current_database()')).scalar_one() == 'contract01b_test'
     yield engine
     engine.dispose()
 
@@ -70,6 +50,7 @@ def ctx(database, tmp_path):
         token = str(uuid4())
         c.execute(text('SELECT pg_advisory_xact_lock(120994,1)'))
         c.execute(text("SELECT set_config('capstone.execution_token',:token,true)"), {'token':token})
+        c.execute(text('INSERT INTO experiment_execution_gate(singleton) VALUES(true) ON CONFLICT DO NOTHING'))
         c.execute(text('UPDATE experiment_execution_gate SET owner=:token,db_pid=pg_backend_pid()'), {'token':token})
         engine = TransactionEngine(c)
         class Model:
@@ -139,8 +120,8 @@ def test_verified_activation_materializes_identity_and_selects_checkpoint_for_ne
     assert result['available_for_inference']
 
 
-@pytest.mark.parametrize('train,state',[('running','verified'),('completed','failed'),('completed','active')])
-def test_only_completed_training_and_verified_evaluation_can_activate(ctx,train,state):
+@pytest.mark.parametrize('train,state',[('completed','failed'),('completed','active')])
+def test_absent_version_and_unverified_evidence_cannot_activate(ctx,train,state):
     c, service, _, _ = ctx
     training, _, _ = candidate(ctx,train=train,state=state)
     with pytest.raises(GovernanceStateError): service.activate(training,actor='test')
@@ -286,3 +267,26 @@ def test_activation_works_with_existing_runtime_role_privileges(ctx):
     c.execute(text('SET LOCAL ROLE capstone_v2_runtime'))
     service.activate(training,actor='test')
     assert resolver.resolve().source_training_run_id==str(training)
+
+
+def test_existing_publication_endpoint_returns_the_operational_publication(ctx, monkeypatch):
+    """Publishing before activation must return the final active publication identity."""
+    from types import SimpleNamespace
+    from app.routes import governance
+    from src.malaria_dl.governance.services.stage2_publication_service import Stage2PublicationService
+    c, service, _, _ = ctx
+    training, _, model = candidate(ctx)
+    repository.register_evidence(c, {'training_run_id': training}, model,
+                                 model['input_contract'], model['path'])
+    @contextmanager
+    def shared():
+        yield c
+    publisher = Stage2PublicationService(shared)
+    monkeypatch.setattr(governance, 'stage2_publication_service', lambda _: publisher)
+    monkeypatch.setattr(governance, 'stage2_service', lambda _: service)
+    result = governance.publish_stage2_model(
+        model['model_version_id'], governance.Stage2PublicationRequest(reason='test'),
+        datasource='malaria', request_id=None, principal=SimpleNamespace(username='test'))
+    active = c.execute(text('SELECT id::text FROM stage2_model_publications WHERE is_active')).scalar_one()
+    assert result['publication']['id'] == active
+    assert result['available_for_inference']

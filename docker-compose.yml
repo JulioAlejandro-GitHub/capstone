@@ -37,7 +37,7 @@ services:
       STORAGE_PROVIDER: local
       STORAGE_ROOT: /app/var/storage
     volumes:
-      - scientific_storage:/app/var/storage
+      - ./var/storage:/app/var/storage
       - ./backups:/app/backups:ro
     depends_on:
       db:
@@ -60,4 +60,3 @@ volumes:
   postgres_data:
     external: true
     name: capstone_v2_isolated_persistent_data
-  scientific_storage:

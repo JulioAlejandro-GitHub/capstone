@@ -193,8 +193,9 @@ def test_status_migration_and_cleanup_are_backend_docker_only():
         keyword in status.upper()
         for keyword in ("INSERT ", "UPDATE ", "DELETE ", "TRUNCATE ", "DROP ", "CREATE ")
     )
-    assert "compose exec -T backend python -m alembic current" in migration
-    assert "compose exec -T backend python -m alembic heads" in migration
+    assert "exit 2" in migration
+    assert "python -m alembic" not in migration
+    assert "alembic_version" not in status
     assert "python_bin" not in migration
     assert "TEST_EXECUTION=true" in cleanup
     assert "assert_safe_temporary_schema" in cleanup

@@ -1,0 +1,10 @@
+# Original external assets are mounted read-only, without copying or converting weights.
+services:
+  backend:
+    environment:
+      CAPSTONE_MODEL_ARTIFACT_ROOTS: ${CAPSTONE_EXTERNAL_MODEL_ROOT:?Set the absolute external model asset root}
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      TOKENIZERS_PARALLELISM: "false"
+    volumes:
+      - ${CAPSTONE_EXTERNAL_MODEL_ROOT}:${CAPSTONE_EXTERNAL_MODEL_ROOT}:ro

@@ -69,17 +69,30 @@ class ModelVersionResolver:
         except ValueError as exc: raise ModelVersionNotFoundError("model_version_id inválido") from exc
         with self.connection_factory() as c:
             row=c.execute(text("""SELECT mv.id::text model_version_id,mv.training_run_id::text source_training_run_id,
-                mv.checkpoint_artifact_id::text checkpoint_artifact_id,mv.checkpoint_path,mv.artifact_sha256,
+                mv.checkpoint_artifact_id::text checkpoint_artifact_id,a.path checkpoint_path,mv.artifact_sha256,
+                a.checksum registered_sha256,a.file_size_bytes,a.artifact_status,
                 mv.model_name,mv.status,mv.lineage_status,mv.preprocessing_profile_snapshot,mv.class_mapping,
                 mv.input_signature,mv.output_signature,r.run_type
-              FROM model_versions mv JOIN runs r ON r.id=mv.training_run_id WHERE mv.id=:id"""),{"id":normalized}).mappings().one_or_none()
+              FROM model_versions mv JOIN runs r ON r.id=mv.training_run_id
+              JOIN artifacts a ON a.id=mv.checkpoint_artifact_id AND a.run_id=mv.training_run_id
+              WHERE mv.id=:id"""),{"id":normalized}).mappings().one_or_none()
         if not row: raise ModelVersionNotFoundError(f"No existe la model version {normalized}.")
         if row["run_type"]!="training" or (source_training_run_id and str(row["source_training_run_id"])!=str(source_training_run_id)):
             raise ModelVersionIntegrityError("training run inconsistente con la model version")
         if row["lineage_status"]!="resolved" or row["status"] in {"rejected","retired"}:
             raise ModelVersionIntegrityError("model version no utilizable por estado o linaje")
-        path=Path(row["checkpoint_path"]).expanduser().resolve()
+        from ...execution.storage_paths import local_scientific_path
+        raw_path = local_scientific_path(Path(row["checkpoint_path"]).expanduser())
+        if raw_path.is_symlink() or any(parent.is_symlink() for parent in raw_path.parents):
+            raise ModelVersionIntegrityError("checkpoint symlink no permitido")
+        path = raw_path.resolve()
+        if row['artifact_status'] != 'available':
+            raise ModelVersionIntegrityError("checkpoint artifact no disponible")
+        if row['registered_sha256'] != row['artifact_sha256']:
+            raise ModelVersionIntegrityError("SHA-256 del artifact y versión no coincide")
         if not path.is_file(): raise ModelVersionIntegrityError(f"checkpoint inexistente: {path}")
+        if path.stat().st_size != row['file_size_bytes']:
+            raise ModelVersionIntegrityError("tamaño del checkpoint no coincide")
         actual=sha256_file(path)
         if actual!=row["artifact_sha256"]: raise ModelVersionIntegrityError("SHA-256 del checkpoint no coincide")
         mapping=dict(row["class_mapping"] or {})

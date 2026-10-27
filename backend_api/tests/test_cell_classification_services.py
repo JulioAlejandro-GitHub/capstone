@@ -376,7 +376,7 @@ def test_productive_resolver_accepts_canonical_tensorflow_keras_framework(tmp_pa
     model_path = ml_root / "outputs" / "run" / "model.keras"
     model_path.parent.mkdir(parents=True)
     model_path.write_bytes(b"controlled-model")
-    candidate = {**_candidate(model_path), "framework": "tensorflow.keras"}
+    candidate = {**_candidate(model_path), "framework": "tensorflow.keras", "declared_framework": "tensorflow/keras"}
 
     resolved = ProductiveModelResolver(
         candidate_loader=lambda: [candidate],
@@ -1611,3 +1611,99 @@ def test_reconciler_reports_empty_staging_directories(tmp_path: Path):
         "staging_residue",
         ".staging/cell-explanations/classification/empty",
     ) in issues
+
+
+def test_openclip_dispatch_uses_registered_dependencies_without_rewriting_snapshot(tmp_path, monkeypatch):
+    from src.malaria_dl.models import openclip_inference
+    root = tmp_path / 'ml'
+    path = root / 'outputs' / 'run' / 'weights.bin'
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b'weights')
+    config = path.with_name('config.json')
+    config.write_bytes(b'{}')
+    dependency = dict(role='model_config', path='/stale/cache/config.json', bytes=2,
+                      sha256=hashlib.sha256(b'{}').hexdigest())
+    profile = dict(mode='openclip_original', dependencies=[dependency])
+    row = {**_candidate(path), 'framework':'pytorch_openclip',
+           'declared_framework':'pytorch_openclip', 'preprocessing_profile_snapshot':profile,
+           'registered_dependencies':[{**dependency, 'path':str(config), 'artifact_id':'dep-id', 'status':'available'}]}
+    seen = []
+    monkeypatch.setattr(openclip_inference, 'OpenCLIPClassifier', lambda *args: seen.append(args) or object())
+    resolver = ProductiveModelResolver(candidate_loader=lambda:[row], ml_project_root=root)
+    resolved = resolver.resolve()
+    resolver.load(resolved)
+    assert seen[0][1]['dependencies'][0]['path'] == str(config)
+    assert seen[0][1]['dependencies'][0]['artifact_id'] == 'dep-id'
+    assert resolved.preprocessing == profile
+    config.write_bytes(b'changed')
+    with pytest.raises(ProductiveModelError) as failure:
+        resolver.resolve()
+    assert failure.value.code == 'MODEL_DEPENDENCY_INVALID'
+
+
+def test_declared_framework_conflict_is_rejected(tmp_path):
+    root = tmp_path / 'ml'
+    path = root / 'outputs' / 'run' / 'model.keras'
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b'model')
+    row = {**_candidate(path), 'declared_framework':'pytorch_openclip'}
+    with pytest.raises(ProductiveModelError) as failure:
+        ProductiveModelResolver(candidate_loader=lambda:[row], ml_project_root=root).resolve()
+    assert failure.value.code == 'PRODUCTIVE_FRAMEWORK_UNSUPPORTED'
+
+
+def _openclip_assessment_row(tmp_path, score_name):
+    root = tmp_path / 'ml'
+    path = root / 'outputs' / 'run' / 'weights.bin'
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b'weights')
+    config = path.with_name('config.json')
+    config.write_bytes(b'{}')
+    dependency = dict(role='model_config', path=str(config), bytes=2,
+                      sha256=hashlib.sha256(b'{}').hexdigest())
+    attempt, threshold = str(uuid4()), 0.015104713849723339
+    row = {**_candidate(path), 'framework': 'pytorch_openclip', 'declared_framework': 'pytorch_openclip',
+           'preprocessing_profile_snapshot': dict(mode='openclip_original', dependencies=[dependency]),
+           'registered_dependencies': [{**dependency, 'artifact_id': 'dep-id', 'status': 'available'}],
+           'source_evaluation_run_id': None, 'source_evaluation_attempt_id': attempt,
+           'threshold_assessment_attempt_id': attempt, 'threshold_value': threshold,
+           'threshold_profile_snapshot': {'value': threshold, 'source': 'assessment_decision',
+                                          'assessment_attempt_id': attempt},
+           'calibration_threshold': threshold, 'calibration_threshold_source': 'assessment_decision',
+           'calibration_status': 'verified', 'calibration_score_name': score_name}
+    return row, root
+
+
+def test_openclip_assessment_threshold_accepts_its_relative_score_meaning(tmp_path):
+    row, root = _openclip_assessment_row(tmp_path, 'relative_similarity_not_clinically_calibrated')
+    resolved = ProductiveModelResolver(candidate_loader=lambda: [row], ml_project_root=root).resolve()
+    assert resolved.threshold == 0.015104713849723339
+    assert resolved.source_evaluation_attempt_id == row['source_evaluation_attempt_id']
+
+
+def test_relative_score_meaning_is_not_accepted_for_keras(tmp_path):
+    row, root = _openclip_assessment_row(tmp_path, 'relative_similarity_not_clinically_calibrated')
+    row.update(framework='keras', declared_framework='keras',
+               preprocessing_profile_snapshot={'mode': 'rescale_0_1'})
+    with pytest.raises(ProductiveModelError) as failure:
+        ProductiveModelResolver(candidate_loader=lambda: [row], ml_project_root=root).resolve()
+    assert failure.value.code == 'PRODUCTIVE_THRESHOLD_INVALID'
+
+
+def test_deployment_threshold_is_sent_with_the_exact_evaluated_digits():
+    from decimal import Decimal
+    from app.repositories import cell_activation as activation_repository
+
+    seen = {}
+
+    class Connection:
+        def execute(self, statement, params):
+            seen.update(params)
+            return SimpleNamespace(scalar_one=lambda: 'deployment-id')
+
+    binding = {'model_version_id': 'v', 'checkpoint_artifact_id': 'a', 'sha256': 's', 'bytes': 1}
+    contract = {'external': {}, 'label_mapping': {}, 'architecture': 'biomedclip_zero_shot'}
+    activation_repository.create_deployment(Connection(), binding, 'attempt',
+                                            {'effective': 0.015104713849723339}, contract, 'actor')
+    # A float8 parameter would be stored as 0.0151047138497233 and fail the exact reference check.
+    assert seen['threshold'] == Decimal('0.015104713849723339')

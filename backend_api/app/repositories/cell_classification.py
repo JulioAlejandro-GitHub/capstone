@@ -225,7 +225,7 @@ class CellClassificationRepository:
                   AND publication.status='active'
                   AND publication.is_active=true
                 JOIN runs training ON training.id=version.training_run_id
-                JOIN runs evaluation
+                LEFT JOIN runs evaluation
                   ON evaluation.id=publication.evaluation_run_id
                 LEFT JOIN run_threshold_calibration threshold
                   ON threshold.run_threshold_calibration_id=

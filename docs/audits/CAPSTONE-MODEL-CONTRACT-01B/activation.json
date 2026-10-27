@@ -1,0 +1,7 @@
+{
+  "training_run_id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+  "model_version_id": "3fd16a84-b5c7-442b-916b-e0438bb0f3e5",
+  "deployment_id": "ee60a055-ce19-48af-aa55-609a7f352bb4",
+  "available_for_inference": true,
+  "idempotent": false
+}

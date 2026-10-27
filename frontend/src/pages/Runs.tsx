@@ -252,7 +252,8 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
     });
     try {
       const current = await api.getProductiveModelAvailability(datasource);
-      if (current.available && current.model?.model_version_id === modelVersionId) {
+      if (current.available && current.model?.model_version_id === modelVersionId
+        && !candidate.threshold_update_available) {
         await loadStage2(runId, true);
         return 'published';
       }

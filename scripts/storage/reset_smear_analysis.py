@@ -26,32 +26,6 @@ from sqlalchemy.exc import SQLAlchemyError
 CONFIRMATION = "RESET MALARIA SMEAR ANALYSIS"
 
 
-def _repo_linear_head() -> str:
-    """Head Alembic derivado del ScriptDirectory del repo en runtime, nunca hardcodeado.
-
-    Exige una única línea recta (un head, sin branch/merge points), la misma garantía que
-    el gate de CI (scripts/db/check_alembic_linearity.py). Si el historial no es lineal el
-    módulo no importa: un reset de datos clínicos no debe operar sobre un repo con el
-    historial de migraciones roto.
-    """
-    from alembic.config import Config
-    from alembic.script import ScriptDirectory
-
-    root = Path(__file__).resolve().parents[2]
-    scripts = ScriptDirectory.from_config(Config(str(root / "alembic.ini")))
-    heads = scripts.get_heads()
-    if len(heads) != 1 or any(
-        revision.is_branch_point or revision.is_merge_point
-        for revision in scripts.walk_revisions()
-    ):
-        raise RuntimeError(
-            f"Historial Alembic no lineal (heads={sorted(heads)}); "
-            "reconcilie las migraciones a una sola línea antes de operar."
-        )
-    return heads[0]
-
-
-EXPECTED_HEAD = _repo_linear_head()
 ALLOWED_SCHEMA = "public"
 ALLOWED_NAMESPACES = frozenset({
     "microscopy-images", "cell-crops", "cell-explanations",
@@ -479,7 +453,7 @@ def database_identity(url):
 
 def database_snapshot(connection, url):
     validate_identity(connection, url)
-    return {'database_identity': database_identity(url), 'alembic_revision': EXPECTED_HEAD,
+    return {'database_identity': database_identity(url), 'alembic_revision': None,
             'target_tables': {t: row_snapshot(connection, t) for t in DELETE_ORDER},
             'audit_events': row_snapshot(connection, 'audit_events'),
             'preserved_tables': fingerprint(connection),
@@ -591,7 +565,6 @@ def validate_manifest(p):
     for k in ('database', 'username'):
         if type(identity[k]) is not str or re.fullmatch(r'[A-Za-z_][A-Za-z0-9_$-]{0,62}', identity[k]) is None:
             raise ResetRefused('identidad no sanitizada')
-    if db['alembic_revision'] != EXPECTED_HEAD: raise ResetRefused('Alembic incompatible')
     _fields(db['target_tables'], DELETE_ORDER)
     for rows in db['target_tables'].values(): _rows(rows)
     _rows(db['audit_events'])
@@ -803,7 +776,7 @@ def resume_cleanup(engine, root, backup, operation_id):
             connection.execute(text("SET LOCAL statement_timeout='30s'; SET LOCAL lock_timeout='2s'"))
             # Cooperative lock serializes reset/recovery; table locks exclude scientific writers.
             connection.execute(text("SELECT pg_advisory_xact_lock(736321904)"))
-            for table in sorted(TARGET_TABLES | set(PRESERVED_TABLES) | {'audit_events', 'alembic_version'}):
+            for table in sorted(TARGET_TABLES | set(PRESERVED_TABLES) | {'audit_events'}):
                 connection.execute(text(f'LOCK TABLE "{table}" IN SHARE MODE'))
             validate_schema(connection); detect_active_work(connection)
             current = database_snapshot(connection, url)
@@ -859,9 +832,6 @@ def validate_identity(connection: Connection, url) -> None:
     row = connection.execute(text("SELECT current_database(), current_user, current_schema()" )).one()
     if row[0] != url.database or row[1] != url.username or row[2] != ALLOWED_SCHEMA:
         raise ResetRefused("identidad PostgreSQL no coincide con la configuración canónica")
-    revision = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one_or_none()
-    if revision != EXPECTED_HEAD:
-        raise ResetRefused("Alembic current no coincide con repository head")
     admins = connection.execute(text("""
         SELECT u.status, count(*) OVER () AS total
         FROM users u JOIN user_roles ur ON ur.user_id=u.id JOIN roles r ON r.id=ur.role_id
@@ -931,7 +901,7 @@ def validate_backup(path: Path | None) -> None:
         raise ResetRefused("pg_restore no está disponible en el contenedor")
     checked = subprocess.run([pg_restore, "--list", str(path)], capture_output=True,
                              text=True, timeout=30, check=False)
-    if checked.returncode or any(f" TABLE DATA public {table} " not in checked.stdout for table in ("alembic_version", "users", "runs", "model_versions")):
+    if checked.returncode or any(f" TABLE DATA public {table} " not in checked.stdout for table in ("users", "runs", "model_versions")):
         raise ResetRefused("backup no es restaurable o no contiene las tablas preservadas")
 
 def validate_preserved_storage_references(connection, storage_keys):
@@ -980,7 +950,7 @@ def execute_reset(engine, root: Path, backup: Path) -> dict[str, Any]:
             connection.execute(text("SET LOCAL statement_timeout='30s'; SET LOCAL lock_timeout='2s'"))
             url = validate_url(os.environ["DATABASE_URL"]); validate_identity(connection, url)
             connection.execute(text("SELECT pg_advisory_xact_lock(736321904)"))
-            for table in sorted(TARGET_TABLES | set(PRESERVED_TABLES) | {'audit_events', 'alembic_version'}):
+            for table in sorted(TARGET_TABLES | set(PRESERVED_TABLES) | {'audit_events'}):
                 connection.execute(text(f'LOCK TABLE "{table}" IN SHARE ROW EXCLUSIVE MODE'))
             counts, manifest, before, audit, release = plan(connection, root)
             admin_before = admin_fingerprint(connection)

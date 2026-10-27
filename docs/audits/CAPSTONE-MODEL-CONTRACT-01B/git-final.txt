@@ -1,0 +1,32 @@
+ M backend_api/Dockerfile
+ M backend_api/app/database_safety.py
+ M backend_api/app/repositories/cell_activation.py
+ M backend_api/app/repositories/cell_classification.py
+ M backend_api/app/routes/governance.py
+ M backend_api/app/services/cell_activation.py
+ M backend_api/app/services/cell_classification.py
+ M backend_api/app/services/productive_model.py
+ M backend_api/app/services/stage2_status.py
+ M backend_api/tests/test_cell_activation.py
+ M backend_api/tests/test_stage2_status_read_only.py
+ M frontend/src/components/cell-review/CellReviewWorkspace.tsx
+ M frontend/src/components/reports/Stage2PublicationPanel.tsx
+ M frontend/src/pages/Stage2ReleaseDetail.tsx
+ M frontend/tests/stage2-status.test.mjs
+ M malaria_dl_local_project/requirements-biomedclip-registration.txt
+ M malaria_dl_local_project/src/malaria_dl/execution/operations.py
+ M malaria_dl_local_project/src/malaria_dl/execution/selection.py
+ M malaria_dl_local_project/src/malaria_dl/governance/eligibility.py
+ M malaria_dl_local_project/src/malaria_dl/governance/services/stage2_availability_service.py
+ M malaria_dl_local_project/src/malaria_dl/persistence/database.py
+ M malaria_dl_local_project/src/malaria_dl/pretrained/training.py
+ M malaria_dl_local_project/tests/test_artifact_tracking.py
+ M malaria_dl_local_project/tests/test_biomedclip_pretrained.py
+ M malaria_dl_local_project/tests/test_train_run_persistence.py
+?? docker-compose.openclip.yml
+?? docs/audits/CAPSTONE-MODEL-CONTRACT-01B/
+?? malaria_dl_local_project/src/malaria_dl/models/openclip_inference.py
+?? malaria_dl_local_project/src/malaria_dl/pretrained/registration.py
+?? malaria_dl_local_project/tests/current_training_fixture.py
+?? malaria_dl_local_project/tests/test_external_model_registration.py
+?? scripts/sql/

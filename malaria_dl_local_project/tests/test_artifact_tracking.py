@@ -136,7 +136,7 @@ class ArtifactTrackingTests(unittest.TestCase):
         )
 
     def test_artifact_record_includes_existence_and_size(self):
-        path = PROJECT_ROOT / "README_2.md"
+        path = PROJECT_ROOT / "README.md"
 
         record = artifact_record(path, artifact_type="documentation")
 

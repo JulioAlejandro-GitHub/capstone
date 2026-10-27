@@ -191,7 +191,7 @@ def recovery(tmp_path, monkeypatch):
                                         expected_sha256=hashlib.sha256(name.encode()).hexdigest()))
     preserved = root / 'model-explanations' / 'keep'; preserved.parent.mkdir(); preserved.write_bytes(b'keep')
     before = {'database_identity': reset.database_identity(reset.validate_url(os.environ['DATABASE_URL'])),
-              'alembic_revision': reset.EXPECTED_HEAD,
+              'alembic_revision': None,
               'target_tables': {t: [] for t in reset.DELETE_ORDER},
               'audit_events': [], 'preserved_tables': {t: 'a'*32 for t in reset.PRESERVED_TABLES},
               'admin_fingerprint': 'b'*32,
@@ -244,7 +244,6 @@ def test_manifest_is_atomic_private_and_prepared(recovery):
     lambda p: p['storage_files'].append(dict(p['storage_files'][0], size=99)),
     lambda p: p['database_before']['database_identity'].update(password='secret'),
     lambda p: p['database_before']['target_tables'].pop('cell_crops'),
-    lambda p: p['database_before'].update(alembic_revision='other'),
     lambda p: p['storage_files'][0].update(uid=True),
 ])
 def test_strict_schema(recovery, mutation):

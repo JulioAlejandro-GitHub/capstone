@@ -36,16 +36,9 @@ make test-ml
 make validate
 ```
 
-`make db-migrate-check` y `make db-migrate` están preparados para el contenedor backend,
-pero permanecen pendientes de habilitación hasta Prompt 1B.1 porque el override actual
-oculta los mounts de Alembic.
-
-`make check-alembic-linearity` reproduce en local el gate estático de CI (job
-`alembic-static`): deriva el head del `ScriptDirectory` del repo y exige una única línea
-recta (un head, sin branch points ni merge points). No hay ningún head hardcodeado; si el
-historial se bifurca, falla identificando la revisión exacta. Ejecútalo antes de hacer
-push cuando agregues una migración. Script: `scripts/db/check_alembic_linearity.py`
-(tests: `backend_api/tests/test_check_alembic_linearity.py`).
+Alembic dejó de ser requisito operativo el 2026-10-27. Los targets db-migrate,
+db-migrate-check y check-alembic-linearity están retirados, junto con el gate de CI.
+Se ejecuta SQL revisado contra el esquema actual; no se eliminan constraints ni triggers.
 
 La guardia `scripts/check_docker_postgres_contract.py`, ejecutada por `make validate` y
 CI, impide reintroducir conexiones o herramientas operativas hacia el host.

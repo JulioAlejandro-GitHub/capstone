@@ -100,6 +100,18 @@ class AssessmentRepository(CampaignRepository):
                 id=identifier(identity_id),
             ).scalar_one()
 
+    def verified_evaluations(self, training_run_id):
+        """Verified EVALUATE attempts of one TRAIN; callers match the full identity."""
+        with self.transaction(readonly=True) as c:
+            return [dict(r) for r in execute(
+                c,
+                """SELECT a.* FROM assessment_attempts a
+                   JOIN assessment_identities i ON i.id=a.identity_id
+                   WHERE i.training_run_id=CAST(:id AS uuid) AND i.kind='evaluate' AND a.state='verified'
+                   ORDER BY a.id""",
+                id=identifier(training_run_id),
+            ).mappings()]
+
     def results(self, attempt_id):
         with self.transaction(readonly=True) as c:
             return list(

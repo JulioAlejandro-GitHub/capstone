@@ -1,5 +1,9 @@
 # Campañas: creación, configuración de modelos y ejecución (Docker y local)
 
+> Actualización 2026-10-27: las referencias a upgrades, revisiones y gates Alembic
+> de este documento son históricas. No son prerrequisitos operativos.
+> Consultar [configuración vigente](configuration.md).
+
 > Estado documental: `SUPERSEDED` (2026-10-13). Los comandos de este documento
 > son referencia histórica; contrato operativo vigente: [CAPSTONE-CLI-01](../audits/capstone_cli_01_parameter_certification.md).
 > Se conserva el cuerpo original como evidencia de la etapa descrita.

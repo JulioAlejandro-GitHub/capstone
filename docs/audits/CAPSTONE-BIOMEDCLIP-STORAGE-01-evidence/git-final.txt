@@ -1,0 +1,70 @@
+ M .github/workflows/ci.yml
+ M Makefile
+ M backend_api/Dockerfile
+ M backend_api/app/database_safety.py
+ M backend_api/app/repositories/cell_activation.py
+ M backend_api/app/repositories/cell_classification.py
+ M backend_api/app/routes/governance.py
+ M backend_api/app/schemas/stage2_status.py
+ M backend_api/app/services/cell_activation.py
+ M backend_api/app/services/cell_classification.py
+ M backend_api/app/services/productive_model.py
+ M backend_api/app/services/stage2_status.py
+ M backend_api/requirements.txt
+ M backend_api/tests/test_cell_activation.py
+ M backend_api/tests/test_cell_classification_services.py
+ M backend_api/tests/test_check_alembic_linearity.py
+ M backend_api/tests/test_db_purge_tool.py
+ M backend_api/tests/test_docker_postgres_tooling.py
+ M backend_api/tests/test_smear_reset_tool.py
+ M backend_api/tests/test_stage2_status_read_only.py
+ M docker-compose.yml
+ M docs/architecture/capstone_scientific_artifacts_and_persistence.md
+ M docs/engineering/alembic_simple_policy.md
+ M docs/engineering/alembic_transition.md
+ M docs/engineering/campanas_creacion_ejecucion.md
+ M docs/engineering/cell_model_activation.md
+ M docs/engineering/configuration.md
+ M docs/engineering/docker_postgres_validation.md
+ M docs/engineering/postgresql_docker_single_instance.md
+ M docs/operations/smear_analysis_reset.md
+ M frontend/src/components/cell-review/CellReviewWorkspace.tsx
+ M frontend/src/components/reports/Stage2PublicationPanel.tsx
+ M frontend/src/pages/Stage2ReleaseDetail.tsx
+ M frontend/src/types/api.ts
+ M frontend/tests/stage2-status.test.mjs
+ M malaria_dl_local_project/requirements-biomedclip-registration.txt
+ M malaria_dl_local_project/requirements-local-train.txt
+ M malaria_dl_local_project/requirements.txt
+ M malaria_dl_local_project/src/malaria_dl/execution/operations.py
+ M malaria_dl_local_project/src/malaria_dl/execution/selection.py
+ M malaria_dl_local_project/src/malaria_dl/execution/storage_paths.py
+ M malaria_dl_local_project/src/malaria_dl/governance/eligibility.py
+ M malaria_dl_local_project/src/malaria_dl/governance/services/model_version_resolver.py
+ M malaria_dl_local_project/src/malaria_dl/governance/services/stage2_availability_service.py
+ M malaria_dl_local_project/src/malaria_dl/persistence/database.py
+ M malaria_dl_local_project/src/malaria_dl/pretrained/training.py
+ M malaria_dl_local_project/tests/test_artifact_tracking.py
+ M malaria_dl_local_project/tests/test_biomedclip_pretrained.py
+ M malaria_dl_local_project/tests/test_exec1_postgres.py
+ M malaria_dl_local_project/tests/test_input_contract_e3.py
+ M malaria_dl_local_project/tests/test_model_version_resolver.py
+ M malaria_dl_local_project/tests/test_train_run_persistence.py
+ M scripts/db/backup.sh
+ M scripts/db/migrate.sh
+ M scripts/db/purge.py
+ M scripts/db/status.sh
+ M scripts/maintenance/database.py
+ M scripts/maintenance/orchestrator.py
+ M scripts/storage/reset_smear_analysis.py
+?? docker-compose.openclip.yml
+?? docs/audits/CAPSTONE-BIOMEDCLIP-STORAGE-01-evidence/
+?? docs/audits/CAPSTONE-BIOMEDCLIP-STORAGE-01.md
+?? docs/audits/CAPSTONE-MODEL-CONTRACT-01B/
+?? docs/operations/zero_shot_incorporation.md
+?? malaria_dl_local_project/src/malaria_dl/models/openclip_inference.py
+?? malaria_dl_local_project/src/malaria_dl/pretrained/registration.py
+?? malaria_dl_local_project/tests/current_training_fixture.py
+?? malaria_dl_local_project/tests/test_external_model_registration.py
+?? malaria_dl_local_project/tests/test_zero_shot_storage.py
+?? scripts/sql/

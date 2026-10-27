@@ -21,7 +21,7 @@ def factory(conn):
 
 class ResolverTests(unittest.TestCase):
     def setUp(self):
-        self.tmp=tempfile.TemporaryDirectory(); self.path=Path(self.tmp.name)/"m.keras"; self.path.write_bytes(b"model")
+        self.tmp=tempfile.TemporaryDirectory(); self.path=Path(self.tmp.name).resolve()/"m.keras"; self.path.write_bytes(b"model")
         self.mv=str(uuid4()); self.run=str(uuid4()); self.artifact=str(uuid4())
     def tearDown(self): self.tmp.cleanup()
     def row(self,**changes):
@@ -29,7 +29,8 @@ class ResolverTests(unittest.TestCase):
           "checkpoint_path":str(self.path),"artifact_sha256":hashlib.sha256(b"model").hexdigest(),"model_name":"custom_cnn",
           "status":"candidate","lineage_status":"resolved","preprocessing_profile_snapshot":{"mode":"rescale_0_1"},
           "class_mapping":{"0":"uninfected","1":"parasitized","positive_class":1,"positive_label":"parasitized"},
-          "input_signature":{},"output_signature":{},"run_type":"training"}
+          "input_signature":{},"output_signature":{},"run_type":"training",
+          "registered_sha256":hashlib.sha256(b"model").hexdigest(),"file_size_bytes":5,"artifact_status":"available"}
         row.update(changes); return row
     def test_resolves_model_version(self):
         resolved=ModelVersionResolver(factory(Conn(self.row()))).resolve(model_version_id=self.mv,require_lineage=True)

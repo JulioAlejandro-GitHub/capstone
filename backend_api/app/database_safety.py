@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import os
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
@@ -36,7 +37,8 @@ def validate_database_url(url: str | None) -> str:
 
     if not hostname:
         raise ValueError("DATABASE_URL debe incluir el hostname db")
-    if hostname != "db":
+    local = os.getenv("CAPSTONE_LOCAL_TRAIN") == "1" and hostname == "127.0.0.1"
+    if hostname != "db" and not local:
         raise ValueError("DATABASE_URL solo permite el hostname db")
     if port is not None and port != 5432:
         raise ValueError("DATABASE_URL solo permite el puerto PostgreSQL 5432")

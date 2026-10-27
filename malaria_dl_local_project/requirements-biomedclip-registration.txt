@@ -1,5 +1,5 @@
 # Validated on Python 3.12 / Apple Silicon in BIOMEDCLIP-01B.
-# Install in an isolated venv; registration reads package versions without performing inference.
+# Used by external registration and offline cellular inference (host or backend CPU).
 # Existing application dependencies (SQLAlchemy, psycopg, python-dotenv) remain required.
 torch==2.14.1
 torchvision==0.29.1

@@ -59,7 +59,7 @@ test('original seven fields, labels, dates and column grid are restored', () => 
     'EXPLAIN', 'Arquitectura', 'Modelo / checkpoint']) {
     assert.ok(html.includes(`>${label}`), label);
   }
-  for (const value of ['TRAIN completed + EVALUATE completed', 'TRAIN: Completado.', 'EVALUATE: Completado.',
+  for (const value of ['Versión y checkpoint con capacidad técnica verificada', 'TRAIN: Completado.', 'EVALUATE: Completado.',
     'train-fixture', 'VAL', 'Custom CNN', 'custom_cnn · epoch_2.keras', 'N/A · opcional, sin ejecución asociada']) {
     assert.ok(html.includes(value), value);
   }
@@ -76,7 +76,7 @@ for (const [name, override, pending] of [
   ['verified without valid link', { eligibility: { train_completed: true, evaluate_completed: false } }, 'EVALUATE'],
 ]) {
   test(`${name} displays the pending backend condition without recomputing eligibility`, () => {
-    const html = render({ status: { ...ready, ...override, eligible: false } });
+    const html = render({ status: { ...ready, ...override, eligible: false, eligibility: { ...override.eligibility, missing_conditions: [`Pendiente: ${pending}`] } } });
     assert.ok(html.includes(`Pendiente: ${pending}`));
     assert.ok(!html.includes('Cumple la regla de liberación'));
     assert.ok(!html.includes('Activación pendiente.'));
@@ -284,4 +284,10 @@ test('the page consumes one canonical release response and clears stale status o
   assert.match(load, /delete next\[runId\]/);
   assert.doesNotMatch(load, /eligible:\s*false/);
   assert.match(read('components/reports/TrainingRunGroupCard.tsx'), /onRetry=\{onStage2Open\}/);
+});
+
+test('logical TRAIN explicitly reports incorporation without computational training', () => {
+  const html = render({ status: { ...ready, training_performed: false } });
+  assert.ok(html.includes('Incorporación lógica, sin entrenamiento'));
+  assert.ok(!html.includes('TRAIN: Completado.'));
 });

@@ -106,7 +106,7 @@ Todos los objetos rechazan campos desconocidos o ausentes y claves JSON duplicad
 | `created_at`, `updated_at` | Timestamps UTC ordenados |
 | `backup` | `path`, `size`, `sha256` |
 | `database_before.database_identity` | Host `db`, puerto `5432`, base, usuario y schema `public`; sin DSN |
-| `database_before.alembic_revision` | Revisión esperada del repositorio |
+| `database_before.alembic_revision` | Campo histórico, NULL en manifiestos nuevos; sin validación de revisión |
 | `database_before.target_tables` | Conjunto exacto de tablas; listas ordenadas de `{id, sha256}` por fila. El conteo es la longitud de cada lista. Para filas sin columna `id`, el digest completo identifica la fila |
 | `database_before.audit_events` | IDs y SHA-256 de **todos** los eventos, incluidos los preservados |
 | `database_before.preserved_tables` | Fingerprint de cada tabla preservada, incluidas todas las filas administrativas |
@@ -184,3 +184,10 @@ Las menciones de roots históricos sólo en documentación y casos de rechazo pr
 B.3B debe verificar el comportamiento con PostgreSQL desechable y fallos de proceso reales, además de validar la durabilidad del mount del backup y la exclusión de escritores del filesystem. Los locks PostgreSQL no bloquean procesos que escriben directamente en storage: debe existir quiescencia operacional durante cleanup. POSIX no ofrece un unlink condicional por inode; la comparación inmediatamente anterior al unlink reduce la ventana pero no sustituye esa exclusión. La suite simula caídas y fsync; no demuestra resistencia física a cortes de energía. El inventario y los fingerprints completos tienen un costo proporcional al volumen de datos.
 
 El administrador `admin@capstone.local` se valida como único, activo y con rol `administrator` antes y dentro de la transacción. Sus tablas forman parte del fingerprint preservado. Un clon limpio sigue usando `scripts/create_admin.py`; este reset no cambia ese bootstrap.
+
+
+Actualización 2026-10-27: el reset ya no consulta ni exige una revisión Alembic. Mantiene
+identidad PostgreSQL, autorización, backups, clasificación de tablas, FK e integridad.
+El montaje observado actual de STORAGE_ROOT es `./var/storage:/app/var/storage`; la
+referencia anterior a scientific_storage describe la configuración histórica. No se cambió
+el montaje ni se ejecutó reset durante CAPSTONE-BIOMEDCLIP-STORAGE-01.

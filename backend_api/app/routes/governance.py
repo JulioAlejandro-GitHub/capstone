@@ -125,11 +125,7 @@ def contract_service(datasource:str|None):
 
 def stage2_service(datasource:str|None):
     key=resolve_datasource(datasource)
-    @contextmanager
-    def connection_factory():
-        with mutation_connection(get_engine(key)) as connection:
-            yield connection
-    return Stage2ModelAvailabilityService(connection_factory,cache=MODEL_CACHE)
+    return CellActivationService(get_engine(key), key)
 
 def technical_production_service(datasource:str|None):
     key=resolve_datasource(datasource)
@@ -257,6 +253,10 @@ def publish_stage2_model(
           publication["training_run_id"],actor=actor,reason=reason,
           confirm_stage2_enablement=True,
         )
+        publication = {
+          **stage2_publication_service(datasource).status(uid(model_version_id)),
+          "idempotent": publication["idempotent"],
+        }
         publication.update({
           "deployment_id":deployment["deployment_id"],
           "environment":deployment["environment"],
