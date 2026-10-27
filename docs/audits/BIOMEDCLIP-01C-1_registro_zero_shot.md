@@ -1,3 +1,5 @@
+> Informe histórico de una implementación retirada. Los comandos de registro e instalación de este informe ya no son operativos. Los resultados y evidencias enlazados se conservan; no describen la arquitectura vigente. Véase [estado actual](CAPSTONE-MODEL-CONTRACT-01.md).
+
 # BIOMEDCLIP-01C-1 — Contratos científicos y registro Zero-shot
 
 Fecha: 2026-10-26, America/Santiago (cierre de evidencia: 2026-10-27 UTC).
@@ -66,7 +68,7 @@ El snapshot corresponde al **dataset objetivo**, no a datos empleados para preen
 
 | Componente | Cambio |
 |---|---|
-| `src/malaria_dl/pretrained/contracts.py` | Origen, protocolo cerrado, componentes y `PretrainedCompletionContractV1` |
+| Contrato especial retirado | Origen, protocolo cerrado, componentes y `PretrainedCompletionContractV1` |
 | `pretrained/repository.py` | Persistencia transaccional y recuperación verificable sobre las tablas existentes |
 | `pretrained/service.py` | Resolución gobernada, hashes reales, exclusión concurrente e idempotencia |
 | `pretrained/training.py` | Omisión operativa de descriptores no entrenables, sin registro |
@@ -77,14 +79,14 @@ El snapshot corresponde al **dataset objetivo**, no a datos empleados para preen
 | `execution/artifacts.py` | Error explícito `PRETRAINED_ASSESSMENT_NOT_IMPLEMENTED` ante el verificador convencional |
 | `frontend/src/pages/CampaignConfiguration.tsx`, `types/campaign.ts` | Checkbox deshabilitado y motivo exacto |
 | `requirements-biomedclip-registration.txt` | Dependencias principales fijadas de la pila validada; no se instalaron en producción |
-| `scripts/sql/biomedclip_01c1.sql` | SQL explícito del catálogo y los contratos actuales |
+| Instalación especial retirada | SQL explícito del catálogo y los contratos actuales |
 | `tests/test_biomedclip_pretrained.py` | Pruebas nuevas, incluidas escrituras en clon actual y binarios reales |
 
 Las rutas Python de la tabla son relativas a `malaria_dl_local_project/`. Se reutilizan `ExecutionRepository`, `CampaignRepository`, `execute`, `canonical`, `digest`, `file_identity`, `local_scientific_path`, `GlobalGate` y el resolvedor del dataset. No se crearon endpoints ni otro almacén científico.
 
 ## 4. SQL y restricciones adaptadas
 
-[SQL de instalación](../../scripts/sql/biomedclip_01c1.sql), transaccional `BEGIN/COMMIT`, probado mediante `psql -v ON_ERROR_STOP=1`. Es una instalación explícita única contra el esquema actual; no incluye detección de versiones ni fallback.
+SQL histórico de instalación (retirado), transaccional `BEGIN/COMMIT`, probado mediante `psql -v ON_ERROR_STOP=1`. Es una instalación explícita única contra el esquema actual; no incluye detección de versiones ni fallback.
 
 - `v2_run_configuration_required`: TRAIN convencional conserva su exigencia de `run_configurations`. Zero-shot exige al cierre de transacción configuración válida, sesión `verified`, completion íntegro y RUN `completed`. Un RUN incompleto no puede quedar confirmado.
 - `train_session_guard`: conserva identidad, propietario, fencing y transiciones. Añade la rama de registro que exige `pretrained_completion_valid`; la rama convencional sigue exigiendo épocas, artefacto y hashes de records.
@@ -96,7 +98,7 @@ Las rutas Python de la tabla son relativas a `malaria_dl_local_project/`. Se reu
 
 No se eliminaron PK, FK, UNIQUE, CHECK, NOT NULL ni triggers. Se conserva la FK compuesta de versión a `(checkpoint_artifact_id,training_run_id)`. No se desactivaron triggers ni se cambió `session_replication_role`.
 
-Las dos definiciones sustituidas se conservaron para revisión en [original_guards.sql](../../scripts/sql/biomedclip_01c1_original_guards.sql). No es un rollback automático: restaurarlas después de registrar orígenes dejaría consumidores incompatibles. Recuperación segura en §13.
+Las dos definiciones sustituidas se conservaron para revisión en definiciones históricas de guards (retiradas). No es un rollback automático: restaurarlas después de registrar orígenes dejaría consumidores incompatibles. Recuperación segura en §13.
 
 ## 5. Diseño de la operación de registro
 
@@ -274,7 +276,7 @@ for target in biomedclip_01c1_replay biomedclip_01c1_replay_race; do
   docker exec -i capstone_biomedclip_01c1_db pg_restore -U postgres -d "$target" \
     --no-owner --no-privileges --exit-on-error < /ruta/segura/current.dump
   docker exec -i capstone_biomedclip_01c1_db psql -X -U postgres -d "$target" \
-    -v ON_ERROR_STOP=1 < scripts/sql/biomedclip_01c1.sql
+    # Instalación especial retirada; este procedimiento histórico no debe ejecutarse.
 done
 ```
 
