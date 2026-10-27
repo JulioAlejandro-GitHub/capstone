@@ -326,6 +326,9 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
 
 
 def standalone(args):
+    from ..pretrained.training import omit_training
+    if omit_training(args.model):
+        return {"state": "omitted"}
     from .global_gate import GlobalGate
     with GlobalGate('standalone-train'):
         return _standalone(args)

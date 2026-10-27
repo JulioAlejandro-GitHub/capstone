@@ -1,0 +1,1350 @@
+;
+; Archive created at 2026-10-27 10:18:32 -03
+;     dbname: malaria_experiments
+;     TOC Entries: 1340
+;     Compression: gzip
+;     Dump Version: 1.16-0
+;     Format: CUSTOM
+;     Integer: 4 bytes
+;     Offset: 8 bytes
+;     Dumped from database version: 17.9 (Debian 17.9-1.pgdg13+1)
+;     Dumped by pg_dump version: 17.9 (Debian 17.9-1.pgdg13+1)
+;
+;
+; Selected TOC Entries:
+;
+6087; 0 0 ACL - SCHEMA public pg_database_owner
+2; 3079 16392 EXTENSION - pgcrypto 
+6088; 0 0 COMMENT - EXTENSION pgcrypto 
+6089; 0 0 ACL pg_catalog FUNCTION pg_control_system(OUT pg_control_version integer, OUT catalog_version_no integer, OUT system_identifier bigint, OUT pg_control_last_modified timestamp with time zone) postgres
+394; 1255 17276 FUNCTION public assessment_attempt_guard() capstone_v2_migrator
+6090; 0 0 ACL public FUNCTION assessment_attempt_guard() capstone_v2_migrator
+422; 1255 16429 FUNCTION public assessment_canonical(jsonb) capstone_v2_migrator
+6091; 0 0 ACL public FUNCTION assessment_canonical(v jsonb) capstone_v2_migrator
+415; 1255 17277 FUNCTION public assessment_consumer_guard() capstone_v2_migrator
+6092; 0 0 ACL public FUNCTION assessment_consumer_guard() capstone_v2_migrator
+448; 1255 17278 FUNCTION public assessment_identity_guard() capstone_v2_migrator
+6093; 0 0 ACL public FUNCTION assessment_identity_guard() capstone_v2_migrator
+436; 1255 17279 FUNCTION public assessment_immutable() capstone_v2_migrator
+6094; 0 0 ACL public FUNCTION assessment_immutable() capstone_v2_migrator
+409; 1255 17280 FUNCTION public assessment_result_guard() capstone_v2_migrator
+6095; 0 0 ACL public FUNCTION assessment_result_guard() capstone_v2_migrator
+427; 1255 16430 FUNCTION public assessment_structural_hash(jsonb) capstone_v2_migrator
+6096; 0 0 ACL public FUNCTION assessment_structural_hash(v jsonb) capstone_v2_migrator
+469; 1255 17344 FUNCTION public campaign_attempt_guard() capstone_v2_migrator
+6097; 0 0 ACL public FUNCTION campaign_attempt_guard() capstone_v2_migrator
+381; 1255 17281 FUNCTION public campaign_attempt_state() capstone_v2_migrator
+6098; 0 0 ACL public FUNCTION campaign_attempt_state() capstone_v2_migrator
+421; 1255 17282 FUNCTION public campaign_audit() capstone_v2_migrator
+6099; 0 0 ACL public FUNCTION campaign_audit() capstone_v2_migrator
+424; 1255 17283 FUNCTION public campaign_catalog_identity_guard() capstone_v2_migrator
+6100; 0 0 ACL public FUNCTION campaign_catalog_identity_guard() capstone_v2_migrator
+486; 1255 17284 FUNCTION public campaign_configuration_guard() capstone_v2_migrator
+6101; 0 0 ACL public FUNCTION campaign_configuration_guard() capstone_v2_migrator
+375; 1255 17345 FUNCTION public campaign_configuration_valid(jsonb) capstone_v2_migrator
+6102; 0 0 ACL public FUNCTION campaign_configuration_valid(v jsonb) capstone_v2_migrator
+388; 1255 17352 FUNCTION public campaign_contract_valid(jsonb) capstone_v2_migrator
+6103; 0 0 ACL public FUNCTION campaign_contract_valid(v jsonb) capstone_v2_migrator
+440; 1255 17285 FUNCTION public campaign_environment_identity(jsonb) capstone_v2_migrator
+6104; 0 0 ACL public FUNCTION campaign_environment_identity(v jsonb) capstone_v2_migrator
+458; 1255 17286 FUNCTION public campaign_guard() capstone_v2_migrator
+6105; 0 0 ACL public FUNCTION campaign_guard() capstone_v2_migrator
+480; 1255 17288 FUNCTION public campaign_json_integer(jsonb, numeric) capstone_v2_migrator
+6106; 0 0 ACL public FUNCTION campaign_json_integer(v jsonb, minimum_value numeric) capstone_v2_migrator
+471; 1255 17289 FUNCTION public campaign_json_object(jsonb, text[]) capstone_v2_migrator
+6107; 0 0 ACL public FUNCTION campaign_json_object(v jsonb, required_keys text[]) capstone_v2_migrator
+431; 1255 17290 FUNCTION public campaign_json_string(jsonb) capstone_v2_migrator
+6108; 0 0 ACL public FUNCTION campaign_json_string(v jsonb) capstone_v2_migrator
+432; 1255 17291 FUNCTION public campaign_member_guard() capstone_v2_migrator
+6109; 0 0 ACL public FUNCTION campaign_member_guard() capstone_v2_migrator
+399; 1255 17292 FUNCTION public campaign_model_matches(uuid, uuid) capstone_v2_migrator
+6110; 0 0 ACL public FUNCTION campaign_model_matches(run_id uuid, member uuid) capstone_v2_migrator
+392; 1255 17347 FUNCTION public campaign_run_identity_guard() capstone_v2_migrator
+6111; 0 0 ACL public FUNCTION campaign_run_identity_guard() capstone_v2_migrator
+407; 1255 17348 FUNCTION public campaign_technical_guard() capstone_v2_migrator
+6112; 0 0 ACL public FUNCTION campaign_technical_guard() capstone_v2_migrator
+482; 1255 17293 FUNCTION public controlled_binding_guard() capstone_v2_migrator
+6113; 0 0 ACL public FUNCTION controlled_binding_guard() capstone_v2_migrator
+460; 1255 17294 FUNCTION public controlled_pause_guard() capstone_v2_migrator
+6114; 0 0 ACL public FUNCTION controlled_pause_guard() capstone_v2_migrator
+446; 1255 17295 FUNCTION public controlled_run_guard() capstone_v2_migrator
+6115; 0 0 ACL public FUNCTION controlled_run_guard() capstone_v2_migrator
+365; 1255 17354 FUNCTION public dbv21_xai_configuration_guard() capstone_v2_migrator
+6116; 0 0 ACL public FUNCTION dbv21_xai_configuration_guard() capstone_v2_migrator
+443; 1255 17355 FUNCTION public dbv21_xai_evaluation_complete() capstone_v2_migrator
+6117; 0 0 ACL public FUNCTION dbv21_xai_evaluation_complete() capstone_v2_migrator
+425; 1255 17296 FUNCTION public e04_assert_calibration(uuid) capstone_v2_migrator
+6118; 0 0 ACL public FUNCTION e04_assert_calibration(member_id uuid) capstone_v2_migrator
+437; 1255 17349 FUNCTION public e04_calibration_complete() capstone_v2_migrator
+6119; 0 0 ACL public FUNCTION e04_calibration_complete() capstone_v2_migrator
+364; 1255 17297 FUNCTION public e04_calibration_immutable() capstone_v2_migrator
+6120; 0 0 ACL public FUNCTION e04_calibration_immutable() capstone_v2_migrator
+403; 1255 17298 FUNCTION public e04_legacy_admission() capstone_v2_migrator
+6121; 0 0 ACL public FUNCTION e04_legacy_admission() capstone_v2_migrator
+489; 1255 17299 FUNCTION public enforce_activation_materialization_consistency() capstone_v2_migrator
+6122; 0 0 ACL public FUNCTION enforce_activation_materialization_consistency() capstone_v2_migrator
+417; 1255 17300 FUNCTION public enforce_dataset_assignment_consistency() capstone_v2_migrator
+6123; 0 0 ACL public FUNCTION enforce_dataset_assignment_consistency() capstone_v2_migrator
+435; 1255 17301 FUNCTION public enforce_dataset_version_lifecycle() capstone_v2_migrator
+6124; 0 0 ACL public FUNCTION enforce_dataset_version_lifecycle() capstone_v2_migrator
+477; 1255 17302 FUNCTION public enforce_model_version_governance() capstone_v2_migrator
+6125; 0 0 ACL public FUNCTION enforce_model_version_governance() capstone_v2_migrator
+465; 1255 17303 FUNCTION public enforce_run_lineage_governance() capstone_v2_migrator
+6126; 0 0 ACL public FUNCTION enforce_run_lineage_governance() capstone_v2_migrator
+411; 1255 17304 FUNCTION public execution_event_immutable() capstone_v2_migrator
+6127; 0 0 ACL public FUNCTION execution_event_immutable() capstone_v2_migrator
+474; 1255 17305 FUNCTION public experiment_require_owner() capstone_v2_migrator
+6128; 0 0 ACL public FUNCTION experiment_require_owner() capstone_v2_migrator
+414; 1255 17350 FUNCTION public experiment_reservation_guard() capstone_v2_migrator
+6129; 0 0 ACL public FUNCTION experiment_reservation_guard() capstone_v2_migrator
+363; 1255 17306 FUNCTION public prevent_audit_event_mutation() capstone_v2_migrator
+6130; 0 0 ACL public FUNCTION prevent_audit_event_mutation() capstone_v2_migrator
+397; 1255 17307 FUNCTION public prevent_stage2_publication_event_mutation() capstone_v2_migrator
+6131; 0 0 ACL public FUNCTION prevent_stage2_publication_event_mutation() capstone_v2_migrator
+410; 1255 17308 FUNCTION public prevent_validation_annotation_event_mutation() capstone_v2_migrator
+6132; 0 0 ACL public FUNCTION prevent_validation_annotation_event_mutation() capstone_v2_migrator
+379; 1255 17309 FUNCTION public prevent_validation_membership_mutation() capstone_v2_migrator
+6133; 0 0 ACL public FUNCTION prevent_validation_membership_mutation() capstone_v2_migrator
+383; 1255 17310 FUNCTION public protect_cell_classification_run() capstone_v2_migrator
+6134; 0 0 ACL public FUNCTION protect_cell_classification_run() capstone_v2_migrator
+484; 1255 17311 FUNCTION public protect_cell_detection_run_identity() capstone_v2_migrator
+6135; 0 0 ACL public FUNCTION protect_cell_detection_run_identity() capstone_v2_migrator
+378; 1255 17312 FUNCTION public protect_cell_explanation() capstone_v2_migrator
+6136; 0 0 ACL public FUNCTION protect_cell_explanation() capstone_v2_migrator
+445; 1255 17313 FUNCTION public protect_deployed_model_version_payload() capstone_v2_migrator
+6137; 0 0 ACL public FUNCTION protect_deployed_model_version_payload() capstone_v2_migrator
+462; 1255 17314 FUNCTION public protect_frozen_dataset_assignment_updates() capstone_v2_migrator
+6138; 0 0 ACL public FUNCTION protect_frozen_dataset_assignment_updates() capstone_v2_migrator
+372; 1255 17315 FUNCTION public protect_frozen_dataset_assignments() capstone_v2_migrator
+6139; 0 0 ACL public FUNCTION protect_frozen_dataset_assignments() capstone_v2_migrator
+454; 1255 17316 FUNCTION public protect_frozen_dataset_version_sources() capstone_v2_migrator
+6140; 0 0 ACL public FUNCTION protect_frozen_dataset_version_sources() capstone_v2_migrator
+428; 1255 17317 FUNCTION public protect_governed_artifact_identity() capstone_v2_migrator
+6141; 0 0 ACL public FUNCTION protect_governed_artifact_identity() capstone_v2_migrator
+390; 1255 17318 FUNCTION public protect_validation_annotation() capstone_v2_migrator
+6142; 0 0 ACL public FUNCTION protect_validation_annotation() capstone_v2_migrator
+429; 1255 17319 FUNCTION public protect_validation_snapshot() capstone_v2_migrator
+6143; 0 0 ACL public FUNCTION protect_validation_snapshot() capstone_v2_migrator
+416; 1255 17320 FUNCTION public reject_cell_analysis_row_mutation() capstone_v2_migrator
+6144; 0 0 ACL public FUNCTION reject_cell_analysis_row_mutation() capstone_v2_migrator
+463; 1255 17321 FUNCTION public reject_cell_classification_row_mutation() capstone_v2_migrator
+6145; 0 0 ACL public FUNCTION reject_cell_classification_row_mutation() capstone_v2_migrator
+371; 1255 17351 FUNCTION public train_event_guard() capstone_v2_migrator
+6146; 0 0 ACL public FUNCTION train_event_guard() capstone_v2_migrator
+385; 1255 17322 FUNCTION public train_record_guard() capstone_v2_migrator
+6147; 0 0 ACL public FUNCTION train_record_guard() capstone_v2_migrator
+481; 1255 17323 FUNCTION public train_revision_binding_guard() capstone_v2_migrator
+6148; 0 0 ACL public FUNCTION train_revision_binding_guard() capstone_v2_migrator
+453; 1255 17324 FUNCTION public train_session_guard() capstone_v2_migrator
+6149; 0 0 ACL public FUNCTION train_session_guard() capstone_v2_migrator
+426; 1255 17325 FUNCTION public v2_binary_metric_guard() capstone_v2_migrator
+6150; 0 0 ACL public FUNCTION v2_binary_metric_guard() capstone_v2_migrator
+384; 1255 17326 FUNCTION public v2_calibration_pair_guard() capstone_v2_migrator
+6151; 0 0 ACL public FUNCTION v2_calibration_pair_guard() capstone_v2_migrator
+452; 1255 17327 FUNCTION public v2_configuration_guard() capstone_v2_migrator
+6152; 0 0 ACL public FUNCTION v2_configuration_guard() capstone_v2_migrator
+404; 1255 17328 FUNCTION public v2_evaluation_complete() capstone_v2_migrator
+6153; 0 0 ACL public FUNCTION v2_evaluation_complete() capstone_v2_migrator
+478; 1255 17329 FUNCTION public v2_immutable() capstone_v2_migrator
+6154; 0 0 ACL public FUNCTION v2_immutable() capstone_v2_migrator
+438; 1255 17330 FUNCTION public v2_run_configuration_required() capstone_v2_migrator
+6155; 0 0 ACL public FUNCTION v2_run_configuration_required() capstone_v2_migrator
+472; 1255 17331 FUNCTION public v2_xai_artifact_guard() capstone_v2_migrator
+6156; 0 0 ACL public FUNCTION v2_xai_artifact_guard() capstone_v2_migrator
+441; 1255 17332 FUNCTION public v2_xai_artifact_source_guard() capstone_v2_migrator
+6157; 0 0 ACL public FUNCTION v2_xai_artifact_source_guard() capstone_v2_migrator
+459; 1255 17333 FUNCTION public v2_xai_lineage_guard() capstone_v2_migrator
+6158; 0 0 ACL public FUNCTION v2_xai_lineage_guard() capstone_v2_migrator
+393; 1255 147046 FUNCTION public validate_cell_assessment_reference() capstone_v2_migrator
+386; 1255 17334 FUNCTION public validate_cell_classification_input_snapshot() capstone_v2_migrator
+6159; 0 0 ACL public FUNCTION validate_cell_classification_input_snapshot() capstone_v2_migrator
+376; 1255 17335 FUNCTION public validate_cell_classification_insert_state() capstone_v2_migrator
+6160; 0 0 ACL public FUNCTION validate_cell_classification_insert_state() capstone_v2_migrator
+420; 1255 17336 FUNCTION public validate_cell_classification_review() capstone_v2_migrator
+6161; 0 0 ACL public FUNCTION validate_cell_classification_review() capstone_v2_migrator
+405; 1255 17337 FUNCTION public validate_cell_classification_run_snapshot() capstone_v2_migrator
+6162; 0 0 ACL public FUNCTION validate_cell_classification_run_snapshot() capstone_v2_migrator
+412; 1255 17338 FUNCTION public validate_cell_explanation_contract() capstone_v2_migrator
+6163; 0 0 ACL public FUNCTION validate_cell_explanation_contract() capstone_v2_migrator
+487; 1255 17339 FUNCTION public validate_cell_prediction_input() capstone_v2_migrator
+6164; 0 0 ACL public FUNCTION validate_cell_prediction_input() capstone_v2_migrator
+439; 1255 17340 FUNCTION public validate_deployed_model_version() capstone_v2_migrator
+6165; 0 0 ACL public FUNCTION validate_deployed_model_version() capstone_v2_migrator
+419; 1255 17341 FUNCTION public validate_image_analysis_job() capstone_v2_migrator
+6166; 0 0 ACL public FUNCTION validate_image_analysis_job() capstone_v2_migrator
+450; 1255 17342 FUNCTION public validate_run_model_deployment() capstone_v2_migrator
+6167; 0 0 ACL public FUNCTION validate_run_model_deployment() capstone_v2_migrator
+488; 1255 17343 FUNCTION public validate_smear_analysis_summary() capstone_v2_migrator
+6168; 0 0 ACL public FUNCTION validate_smear_analysis_summary() capstone_v2_migrator
+222; 1259 16387 TABLE public alembic_version capstone_v2_migrator
+6169; 0 0 ACL public TABLE alembic_version capstone_v2_migrator
+223; 1259 16431 TABLE public artifacts capstone_v2_migrator
+6170; 0 0 ACL public TABLE artifacts capstone_v2_migrator
+224; 1259 16440 TABLE public assessment_artifacts capstone_v2_migrator
+6171; 0 0 ACL public TABLE assessment_artifacts capstone_v2_migrator
+225; 1259 16445 TABLE public assessment_attempts capstone_v2_migrator
+6172; 0 0 ACL public TABLE assessment_attempts capstone_v2_migrator
+226; 1259 16452 TABLE public assessment_campaign_consumers capstone_v2_migrator
+6173; 0 0 ACL public TABLE assessment_campaign_consumers capstone_v2_migrator
+227; 1259 16455 TABLE public assessment_final_locks capstone_v2_migrator
+6174; 0 0 ACL public TABLE assessment_final_locks capstone_v2_migrator
+228; 1259 16461 TABLE public assessment_identities capstone_v2_migrator
+6175; 0 0 ACL public TABLE assessment_identities capstone_v2_migrator
+229; 1259 16468 TABLE public assessment_results capstone_v2_migrator
+6176; 0 0 ACL public TABLE assessment_results capstone_v2_migrator
+230; 1259 16473 TABLE public audit_events capstone_v2_migrator
+6177; 0 0 ACL public TABLE audit_events capstone_v2_migrator
+231; 1259 16480 TABLE public blood_samples capstone_v2_migrator
+6178; 0 0 ACL public TABLE blood_samples capstone_v2_migrator
+232; 1259 16491 TABLE public campaign_attempts capstone_v2_migrator
+6179; 0 0 ACL public TABLE campaign_attempts capstone_v2_migrator
+233; 1259 16497 TABLE public campaign_configurations capstone_v2_migrator
+6180; 0 0 ACL public TABLE campaign_configurations capstone_v2_migrator
+234; 1259 16502 TABLE public campaign_controlled_requests capstone_v2_migrator
+6181; 0 0 ACL public TABLE campaign_controlled_requests capstone_v2_migrator
+235; 1259 16508 TABLE public campaign_execution_events capstone_v2_migrator
+6182; 0 0 ACL public TABLE campaign_execution_events capstone_v2_migrator
+236; 1259 16515 TABLE public campaign_members capstone_v2_migrator
+6183; 0 0 ACL public TABLE campaign_members capstone_v2_migrator
+237; 1259 16521 TABLE public campaign_technical_revisions capstone_v2_migrator
+6184; 0 0 ACL public TABLE campaign_technical_revisions capstone_v2_migrator
+238; 1259 16527 TABLE public cell_classification_events capstone_v2_migrator
+6185; 0 0 ACL public TABLE cell_classification_events capstone_v2_migrator
+239; 1259 16534 TABLE public cell_classification_inputs capstone_v2_migrator
+6186; 0 0 ACL public TABLE cell_classification_inputs capstone_v2_migrator
+240; 1259 16538 TABLE public cell_classification_reviews capstone_v2_migrator
+6187; 0 0 ACL public TABLE cell_classification_reviews capstone_v2_migrator
+241; 1259 16544 TABLE public cell_classification_runs capstone_v2_migrator
+6188; 0 0 ACL public TABLE cell_classification_runs capstone_v2_migrator
+242; 1259 16556 TABLE public cell_crops capstone_v2_migrator
+6189; 0 0 ACL public TABLE cell_crops capstone_v2_migrator
+243; 1259 16562 TABLE public cell_detection_events capstone_v2_migrator
+6190; 0 0 ACL public TABLE cell_detection_events capstone_v2_migrator
+244; 1259 16569 TABLE public cell_detection_runs capstone_v2_migrator
+6191; 0 0 ACL public TABLE cell_detection_runs capstone_v2_migrator
+245; 1259 16581 TABLE public cell_detections capstone_v2_migrator
+6192; 0 0 ACL public TABLE cell_detections capstone_v2_migrator
+246; 1259 16585 TABLE public cell_explanations capstone_v2_migrator
+6193; 0 0 ACL public TABLE cell_explanations capstone_v2_migrator
+247; 1259 16591 TABLE public cell_predictions capstone_v2_migrator
+6194; 0 0 ACL public TABLE cell_predictions capstone_v2_migrator
+290; 1259 16960 TABLE public run_clinical_metrics capstone_v2_migrator
+6195; 0 0 ACL public TABLE run_clinical_metrics capstone_v2_migrator
+328; 1259 19723 VIEW public classification_reports capstone_v2_migrator
+6196; 0 0 ACL public TABLE classification_reports capstone_v2_migrator
+248; 1259 16598 TABLE public clinical_identities capstone_v2_migrator
+6197; 0 0 ACL public TABLE clinical_identities capstone_v2_migrator
+329; 1259 19728 VIEW public confusion_matrices capstone_v2_migrator
+6198; 0 0 ACL public TABLE confusion_matrices capstone_v2_migrator
+249; 1259 16607 TABLE public dataset_materialization_activations capstone_v2_migrator
+6199; 0 0 ACL public TABLE dataset_materialization_activations capstone_v2_migrator
+250; 1259 16615 TABLE public dataset_materializations capstone_v2_migrator
+6200; 0 0 ACL public TABLE dataset_materializations capstone_v2_migrator
+251; 1259 16627 TABLE public dataset_source_records capstone_v2_migrator
+6201; 0 0 ACL public TABLE dataset_source_records capstone_v2_migrator
+252; 1259 16636 TABLE public dataset_split_assignments capstone_v2_migrator
+6202; 0 0 ACL public TABLE dataset_split_assignments capstone_v2_migrator
+253; 1259 16644 TABLE public dataset_split_images capstone_v2_migrator
+6203; 0 0 ACL public TABLE dataset_split_images capstone_v2_migrator
+254; 1259 16653 TABLE public dataset_split_statistics capstone_v2_migrator
+6204; 0 0 ACL public TABLE dataset_split_statistics capstone_v2_migrator
+255; 1259 16660 TABLE public dataset_split_validation_checks capstone_v2_migrator
+6205; 0 0 ACL public TABLE dataset_split_validation_checks capstone_v2_migrator
+256; 1259 16670 TABLE public dataset_splits capstone_v2_migrator
+6206; 0 0 ACL public TABLE dataset_splits capstone_v2_migrator
+257; 1259 16679 TABLE public dataset_version_sources capstone_v2_migrator
+6207; 0 0 ACL public TABLE dataset_version_sources capstone_v2_migrator
+258; 1259 16685 TABLE public dataset_versions capstone_v2_migrator
+6208; 0 0 ACL public TABLE dataset_versions capstone_v2_migrator
+259; 1259 16696 TABLE public datasets capstone_v2_migrator
+6209; 0 0 ACL public TABLE datasets capstone_v2_migrator
+260; 1259 16705 TABLE public deployed_model_versions capstone_v2_migrator
+6210; 0 0 ACL public TABLE deployed_model_versions capstone_v2_migrator
+261; 1259 16720 TABLE public environment_packages capstone_v2_migrator
+6211; 0 0 ACL public TABLE environment_packages capstone_v2_migrator
+262; 1259 16727 TABLE public errors capstone_v2_migrator
+6212; 0 0 ACL public TABLE errors capstone_v2_migrator
+263; 1259 16735 TABLE public evaluation_ensemble_members capstone_v2_migrator
+6213; 0 0 ACL public TABLE evaluation_ensemble_members capstone_v2_migrator
+264; 1259 16740 TABLE public evaluations capstone_v2_migrator
+6214; 0 0 ACL public TABLE evaluations capstone_v2_migrator
+265; 1259 16748 TABLE public execution_logs capstone_v2_migrator
+6215; 0 0 ACL public TABLE execution_logs capstone_v2_migrator
+362; 1259 167803 TABLE public executor_heartbeats capstone_v2_migrator
+6216; 0 0 ACL public TABLE executor_heartbeats capstone_v2_migrator
+267; 1259 16757 TABLE public experiment_execution_events capstone_v2_migrator
+6217; 0 0 ACL public TABLE experiment_execution_events capstone_v2_migrator
+266; 1259 16756 SEQUENCE public experiment_execution_events_id_seq capstone_v2_migrator
+6218; 0 0 ACL public SEQUENCE experiment_execution_events_id_seq capstone_v2_migrator
+268; 1259 16763 TABLE public experiment_execution_gate capstone_v2_migrator
+6219; 0 0 ACL public TABLE experiment_execution_gate capstone_v2_migrator
+269; 1259 16771 TABLE public experimental_campaigns capstone_v2_migrator
+6220; 0 0 ACL public TABLE experimental_campaigns capstone_v2_migrator
+270; 1259 16780 TABLE public experiments capstone_v2_migrator
+6221; 0 0 ACL public TABLE experiments capstone_v2_migrator
+361; 1259 167784 TABLE public explain_requests capstone_v2_migrator
+6222; 0 0 ACL public TABLE explain_requests capstone_v2_migrator
+271; 1259 16789 TABLE public explainability_results capstone_v2_migrator
+6223; 0 0 ACL public TABLE explainability_results capstone_v2_migrator
+272; 1259 16799 TABLE public identity_evidence capstone_v2_migrator
+6224; 0 0 ACL public TABLE identity_evidence capstone_v2_migrator
+273; 1259 16807 TABLE public image_analysis_jobs capstone_v2_migrator
+6225; 0 0 ACL public TABLE image_analysis_jobs capstone_v2_migrator
+274; 1259 16820 TABLE public image_connected_components capstone_v2_migrator
+6226; 0 0 ACL public TABLE image_connected_components capstone_v2_migrator
+275; 1259 16827 TABLE public image_ingestion_batches capstone_v2_migrator
+6227; 0 0 ACL public TABLE image_ingestion_batches capstone_v2_migrator
+276; 1259 16837 TABLE public image_quality_assessments capstone_v2_migrator
+6228; 0 0 ACL public TABLE image_quality_assessments capstone_v2_migrator
+297; 1259 17038 TABLE public run_model_deployments capstone_v2_migrator
+6229; 0 0 ACL public TABLE run_model_deployments capstone_v2_migrator
+299; 1259 17066 TABLE public runs capstone_v2_migrator
+6230; 0 0 ACL public TABLE runs capstone_v2_migrator
+330; 1259 19732 VIEW public inference_runs capstone_v2_migrator
+6231; 0 0 ACL public TABLE inference_runs capstone_v2_migrator
+284; 1259 16909 TABLE public predictions capstone_v2_migrator
+6232; 0 0 ACL public TABLE predictions capstone_v2_migrator
+331; 1259 19737 VIEW public legacy_cell_predictions capstone_v2_migrator
+6233; 0 0 ACL public TABLE legacy_cell_predictions capstone_v2_migrator
+277; 1259 16849 TABLE public local_execution_jobs capstone_v2_migrator
+6234; 0 0 ACL public TABLE local_execution_jobs capstone_v2_migrator
+278; 1259 16856 TABLE public microscopy_analysis_events capstone_v2_migrator
+6235; 0 0 ACL public TABLE microscopy_analysis_events capstone_v2_migrator
+279; 1259 16862 TABLE public microscopy_analysis_run_images capstone_v2_migrator
+6236; 0 0 ACL public TABLE microscopy_analysis_run_images capstone_v2_migrator
+280; 1259 16867 TABLE public microscopy_analysis_runs capstone_v2_migrator
+6237; 0 0 ACL public TABLE microscopy_analysis_runs capstone_v2_migrator
+281; 1259 16875 TABLE public microscopy_images capstone_v2_migrator
+6238; 0 0 ACL public TABLE microscopy_images capstone_v2_migrator
+282; 1259 16886 TABLE public model_versions capstone_v2_migrator
+6239; 0 0 ACL public TABLE model_versions capstone_v2_migrator
+283; 1259 16900 TABLE public models capstone_v2_migrator
+6240; 0 0 ACL public TABLE models capstone_v2_migrator
+285; 1259 16919 TABLE public quality_assessment_queue_items capstone_v2_migrator
+6241; 0 0 ACL public TABLE quality_assessment_queue_items capstone_v2_migrator
+286; 1259 16930 TABLE public quality_gate_decisions capstone_v2_migrator
+6242; 0 0 ACL public TABLE quality_gate_decisions capstone_v2_migrator
+287; 1259 16936 TABLE public research_subjects capstone_v2_migrator
+6243; 0 0 ACL public TABLE research_subjects capstone_v2_migrator
+288; 1259 16945 TABLE public roles capstone_v2_migrator
+6244; 0 0 ACL public TABLE roles capstone_v2_migrator
+289; 1259 16951 TABLE public run_checkpoint_policy capstone_v2_migrator
+6245; 0 0 ACL public TABLE run_checkpoint_policy capstone_v2_migrator
+291; 1259 16975 TABLE public run_configurations capstone_v2_migrator
+6246; 0 0 ACL public TABLE run_configurations capstone_v2_migrator
+292; 1259 16985 TABLE public run_dataset_images capstone_v2_migrator
+6247; 0 0 ACL public TABLE run_dataset_images capstone_v2_migrator
+293; 1259 16996 TABLE public run_image_predictions capstone_v2_migrator
+6248; 0 0 ACL public TABLE run_image_predictions capstone_v2_migrator
+294; 1259 17005 TABLE public run_io_records capstone_v2_migrator
+6249; 0 0 ACL public TABLE run_io_records capstone_v2_migrator
+295; 1259 17021 TABLE public run_lineage capstone_v2_migrator
+6250; 0 0 ACL public TABLE run_lineage capstone_v2_migrator
+296; 1259 17030 TABLE public run_metrics capstone_v2_migrator
+6251; 0 0 ACL public TABLE run_metrics capstone_v2_migrator
+298; 1259 17048 TABLE public run_threshold_calibration capstone_v2_migrator
+6252; 0 0 ACL public TABLE run_threshold_calibration capstone_v2_migrator
+300; 1259 17079 TABLE public scientific_cases capstone_v2_migrator
+6253; 0 0 ACL public TABLE scientific_cases capstone_v2_migrator
+301; 1259 17089 TABLE public scientific_reviews capstone_v2_migrator
+6254; 0 0 ACL public TABLE scientific_reviews capstone_v2_migrator
+302; 1259 17095 TABLE public scientific_validation_annotation_events capstone_v2_migrator
+6255; 0 0 ACL public TABLE scientific_validation_annotation_events capstone_v2_migrator
+303; 1259 17101 TABLE public scientific_validation_annotations capstone_v2_migrator
+6256; 0 0 ACL public TABLE scientific_validation_annotations capstone_v2_migrator
+304; 1259 17109 TABLE public scientific_validation_classification_runs capstone_v2_migrator
+6257; 0 0 ACL public TABLE scientific_validation_classification_runs capstone_v2_migrator
+305; 1259 17113 TABLE public scientific_validation_detection_runs capstone_v2_migrator
+6258; 0 0 ACL public TABLE scientific_validation_detection_runs capstone_v2_migrator
+306; 1259 17117 TABLE public scientific_validation_images capstone_v2_migrator
+6259; 0 0 ACL public TABLE scientific_validation_images capstone_v2_migrator
+307; 1259 17121 TABLE public scientific_validation_sessions capstone_v2_migrator
+6260; 0 0 ACL public TABLE scientific_validation_sessions capstone_v2_migrator
+308; 1259 17129 TABLE public smear_analysis_summaries capstone_v2_migrator
+6261; 0 0 ACL public TABLE smear_analysis_summaries capstone_v2_migrator
+309; 1259 17135 TABLE public smear_slides capstone_v2_migrator
+6262; 0 0 ACL public TABLE smear_slides capstone_v2_migrator
+310; 1259 17144 TABLE public stage2_model_publication_events capstone_v2_migrator
+6263; 0 0 ACL public TABLE stage2_model_publication_events capstone_v2_migrator
+311; 1259 17152 TABLE public stage2_model_publications capstone_v2_migrator
+6264; 0 0 ACL public TABLE stage2_model_publications capstone_v2_migrator
+312; 1259 17165 TABLE public synthetic_data_runs capstone_v2_migrator
+6265; 0 0 ACL public TABLE synthetic_data_runs capstone_v2_migrator
+313; 1259 17175 TABLE public train_execution_records capstone_v2_migrator
+6266; 0 0 ACL public TABLE train_execution_records capstone_v2_migrator
+314; 1259 17181 TABLE public train_execution_revisions capstone_v2_migrator
+6267; 0 0 ACL public TABLE train_execution_revisions capstone_v2_migrator
+315; 1259 17185 TABLE public train_execution_sessions capstone_v2_migrator
+6268; 0 0 ACL public TABLE train_execution_sessions capstone_v2_migrator
+316; 1259 17193 TABLE public training_history capstone_v2_migrator
+6269; 0 0 ACL public TABLE training_history capstone_v2_migrator
+317; 1259 17202 TABLE public user_roles capstone_v2_migrator
+6270; 0 0 ACL public TABLE user_roles capstone_v2_migrator
+318; 1259 17206 TABLE public users capstone_v2_migrator
+6271; 0 0 ACL public TABLE users capstone_v2_migrator
+332; 1259 19742 VIEW public vw_case_level_explainability capstone_v2_migrator
+6272; 0 0 ACL public TABLE vw_case_level_explainability capstone_v2_migrator
+353; 1259 19842 VIEW public vw_case_type_summary capstone_v2_migrator
+6273; 0 0 ACL public TABLE vw_case_type_summary capstone_v2_migrator
+333; 1259 19747 VIEW public vw_checkpoint_policy_summary capstone_v2_migrator
+6274; 0 0 ACL public TABLE vw_checkpoint_policy_summary capstone_v2_migrator
+347; 1259 19812 VIEW public vw_uploaded_predictions capstone_v2_migrator
+6275; 0 0 ACL public TABLE vw_uploaded_predictions capstone_v2_migrator
+354; 1259 19846 VIEW public vw_clinical_inference_predictions capstone_v2_migrator
+6276; 0 0 ACL public TABLE vw_clinical_inference_predictions capstone_v2_migrator
+334; 1259 19751 VIEW public vw_clinical_run_summary capstone_v2_migrator
+6277; 0 0 ACL public TABLE vw_clinical_run_summary capstone_v2_migrator
+335; 1259 19756 VIEW public vw_dataset_browser_images capstone_v2_migrator
+6278; 0 0 ACL public TABLE vw_dataset_browser_images capstone_v2_migrator
+336; 1259 19761 VIEW public vw_dataset_browser_summary capstone_v2_migrator
+6279; 0 0 ACL public TABLE vw_dataset_browser_summary capstone_v2_migrator
+337; 1259 19766 VIEW public vw_dataset_split_images_summary capstone_v2_migrator
+6280; 0 0 ACL public TABLE vw_dataset_split_images_summary capstone_v2_migrator
+345; 1259 19803 VIEW public vw_run_lineage capstone_v2_migrator
+6281; 0 0 ACL public TABLE vw_run_lineage capstone_v2_migrator
+355; 1259 19851 VIEW public vw_evaluation_lineage capstone_v2_migrator
+6282; 0 0 ACL public TABLE vw_evaluation_lineage capstone_v2_migrator
+356; 1259 19856 VIEW public vw_explainability_gallery capstone_v2_migrator
+6283; 0 0 ACL public TABLE vw_explainability_gallery capstone_v2_migrator
+357; 1259 19861 VIEW public vw_explainability_lineage capstone_v2_migrator
+6284; 0 0 ACL public TABLE vw_explainability_lineage capstone_v2_migrator
+338; 1259 19771 VIEW public vw_explainability_summary capstone_v2_migrator
+6285; 0 0 ACL public TABLE vw_explainability_summary capstone_v2_migrator
+358; 1259 19866 VIEW public vw_false_negative_cases capstone_v2_migrator
+6286; 0 0 ACL public TABLE vw_false_negative_cases capstone_v2_migrator
+359; 1259 19871 VIEW public vw_false_positive_cases capstone_v2_migrator
+6287; 0 0 ACL public TABLE vw_false_positive_cases capstone_v2_migrator
+360; 1259 19876 VIEW public vw_low_confidence_cases capstone_v2_migrator
+6288; 0 0 ACL public TABLE vw_low_confidence_cases capstone_v2_migrator
+339; 1259 19775 VIEW public vw_model_run_summary capstone_v2_migrator
+6289; 0 0 ACL public TABLE vw_model_run_summary capstone_v2_migrator
+340; 1259 19780 VIEW public vw_run_artifacts_summary capstone_v2_migrator
+6290; 0 0 ACL public TABLE vw_run_artifacts_summary capstone_v2_migrator
+341; 1259 19784 VIEW public vw_run_dashboard capstone_v2_migrator
+6291; 0 0 ACL public TABLE vw_run_dashboard capstone_v2_migrator
+342; 1259 19789 VIEW public vw_run_dataset_usage_summary capstone_v2_migrator
+6292; 0 0 ACL public TABLE vw_run_dataset_usage_summary capstone_v2_migrator
+343; 1259 19794 VIEW public vw_run_image_predictions_summary capstone_v2_migrator
+6293; 0 0 ACL public TABLE vw_run_image_predictions_summary capstone_v2_migrator
+344; 1259 19798 VIEW public vw_run_io_summary capstone_v2_migrator
+6294; 0 0 ACL public TABLE vw_run_io_summary capstone_v2_migrator
+346; 1259 19808 VIEW public vw_threshold_calibration_summary capstone_v2_migrator
+6295; 0 0 ACL public TABLE vw_threshold_calibration_summary capstone_v2_migrator
+348; 1259 19817 VIEW public vw_v2_external_evidence capstone_v2_migrator
+6296; 0 0 ACL public TABLE vw_v2_external_evidence capstone_v2_migrator
+349; 1259 19822 VIEW public vw_v2_model_comparison capstone_v2_migrator
+6297; 0 0 ACL public TABLE vw_v2_model_comparison capstone_v2_migrator
+350; 1259 19827 VIEW public vw_v2_run_metrics capstone_v2_migrator
+6298; 0 0 ACL public TABLE vw_v2_run_metrics capstone_v2_migrator
+319; 1259 17214 TABLE public xai_artifacts capstone_v2_migrator
+6299; 0 0 ACL public TABLE xai_artifacts capstone_v2_migrator
+320; 1259 17222 TABLE public xai_evidence capstone_v2_migrator
+6300; 0 0 ACL public TABLE xai_evidence capstone_v2_migrator
+324; 1259 17250 TABLE public xai_method_configurations capstone_v2_migrator
+6301; 0 0 ACL public TABLE xai_method_configurations capstone_v2_migrator
+351; 1259 19832 VIEW public vw_v2_xai_comparison capstone_v2_migrator
+6302; 0 0 ACL public TABLE vw_v2_xai_comparison capstone_v2_migrator
+352; 1259 19837 VIEW public vw_visual_explainability_audit capstone_v2_migrator
+6303; 0 0 ACL public TABLE vw_visual_explainability_audit capstone_v2_migrator
+327; 1259 17270 TABLE public xai_evaluation_members capstone_v2_migrator
+6304; 0 0 ACL public TABLE xai_evaluation_members capstone_v2_migrator
+326; 1259 17263 TABLE public xai_evaluation_protocols capstone_v2_migrator
+6305; 0 0 ACL public TABLE xai_evaluation_protocols capstone_v2_migrator
+321; 1259 17229 TABLE public xai_interpretations capstone_v2_migrator
+6306; 0 0 ACL public TABLE xai_interpretations capstone_v2_migrator
+322; 1259 17236 TABLE public xai_quantitative_evaluations capstone_v2_migrator
+6307; 0 0 ACL public TABLE xai_quantitative_evaluations capstone_v2_migrator
+325; 1259 17257 TABLE public xai_region_attributions capstone_v2_migrator
+6308; 0 0 ACL public TABLE xai_region_attributions capstone_v2_migrator
+323; 1259 17243 TABLE public xai_specialist_reviews capstone_v2_migrator
+6309; 0 0 ACL public TABLE xai_specialist_reviews capstone_v2_migrator
+5972; 0 16387 TABLE DATA public alembic_version capstone_v2_migrator
+5973; 0 16431 TABLE DATA public artifacts capstone_v2_migrator
+5974; 0 16440 TABLE DATA public assessment_artifacts capstone_v2_migrator
+5975; 0 16445 TABLE DATA public assessment_attempts capstone_v2_migrator
+5976; 0 16452 TABLE DATA public assessment_campaign_consumers capstone_v2_migrator
+5977; 0 16455 TABLE DATA public assessment_final_locks capstone_v2_migrator
+5978; 0 16461 TABLE DATA public assessment_identities capstone_v2_migrator
+5979; 0 16468 TABLE DATA public assessment_results capstone_v2_migrator
+5980; 0 16473 TABLE DATA public audit_events capstone_v2_migrator
+5981; 0 16480 TABLE DATA public blood_samples capstone_v2_migrator
+5982; 0 16491 TABLE DATA public campaign_attempts capstone_v2_migrator
+5983; 0 16497 TABLE DATA public campaign_configurations capstone_v2_migrator
+5984; 0 16502 TABLE DATA public campaign_controlled_requests capstone_v2_migrator
+5985; 0 16508 TABLE DATA public campaign_execution_events capstone_v2_migrator
+5986; 0 16515 TABLE DATA public campaign_members capstone_v2_migrator
+5987; 0 16521 TABLE DATA public campaign_technical_revisions capstone_v2_migrator
+5988; 0 16527 TABLE DATA public cell_classification_events capstone_v2_migrator
+5989; 0 16534 TABLE DATA public cell_classification_inputs capstone_v2_migrator
+5990; 0 16538 TABLE DATA public cell_classification_reviews capstone_v2_migrator
+5991; 0 16544 TABLE DATA public cell_classification_runs capstone_v2_migrator
+5992; 0 16556 TABLE DATA public cell_crops capstone_v2_migrator
+5993; 0 16562 TABLE DATA public cell_detection_events capstone_v2_migrator
+5994; 0 16569 TABLE DATA public cell_detection_runs capstone_v2_migrator
+5995; 0 16581 TABLE DATA public cell_detections capstone_v2_migrator
+5996; 0 16585 TABLE DATA public cell_explanations capstone_v2_migrator
+5997; 0 16591 TABLE DATA public cell_predictions capstone_v2_migrator
+5998; 0 16598 TABLE DATA public clinical_identities capstone_v2_migrator
+5999; 0 16607 TABLE DATA public dataset_materialization_activations capstone_v2_migrator
+6000; 0 16615 TABLE DATA public dataset_materializations capstone_v2_migrator
+6001; 0 16627 TABLE DATA public dataset_source_records capstone_v2_migrator
+6002; 0 16636 TABLE DATA public dataset_split_assignments capstone_v2_migrator
+6003; 0 16644 TABLE DATA public dataset_split_images capstone_v2_migrator
+6004; 0 16653 TABLE DATA public dataset_split_statistics capstone_v2_migrator
+6005; 0 16660 TABLE DATA public dataset_split_validation_checks capstone_v2_migrator
+6006; 0 16670 TABLE DATA public dataset_splits capstone_v2_migrator
+6007; 0 16679 TABLE DATA public dataset_version_sources capstone_v2_migrator
+6008; 0 16685 TABLE DATA public dataset_versions capstone_v2_migrator
+6009; 0 16696 TABLE DATA public datasets capstone_v2_migrator
+6010; 0 16705 TABLE DATA public deployed_model_versions capstone_v2_migrator
+6011; 0 16720 TABLE DATA public environment_packages capstone_v2_migrator
+6012; 0 16727 TABLE DATA public errors capstone_v2_migrator
+6013; 0 16735 TABLE DATA public evaluation_ensemble_members capstone_v2_migrator
+6014; 0 16740 TABLE DATA public evaluations capstone_v2_migrator
+6015; 0 16748 TABLE DATA public execution_logs capstone_v2_migrator
+6079; 0 167803 TABLE DATA public executor_heartbeats capstone_v2_migrator
+6017; 0 16757 TABLE DATA public experiment_execution_events capstone_v2_migrator
+6018; 0 16763 TABLE DATA public experiment_execution_gate capstone_v2_migrator
+6019; 0 16771 TABLE DATA public experimental_campaigns capstone_v2_migrator
+6020; 0 16780 TABLE DATA public experiments capstone_v2_migrator
+6078; 0 167784 TABLE DATA public explain_requests capstone_v2_migrator
+6021; 0 16789 TABLE DATA public explainability_results capstone_v2_migrator
+6022; 0 16799 TABLE DATA public identity_evidence capstone_v2_migrator
+6023; 0 16807 TABLE DATA public image_analysis_jobs capstone_v2_migrator
+6024; 0 16820 TABLE DATA public image_connected_components capstone_v2_migrator
+6025; 0 16827 TABLE DATA public image_ingestion_batches capstone_v2_migrator
+6026; 0 16837 TABLE DATA public image_quality_assessments capstone_v2_migrator
+6027; 0 16849 TABLE DATA public local_execution_jobs capstone_v2_migrator
+6028; 0 16856 TABLE DATA public microscopy_analysis_events capstone_v2_migrator
+6029; 0 16862 TABLE DATA public microscopy_analysis_run_images capstone_v2_migrator
+6030; 0 16867 TABLE DATA public microscopy_analysis_runs capstone_v2_migrator
+6031; 0 16875 TABLE DATA public microscopy_images capstone_v2_migrator
+6032; 0 16886 TABLE DATA public model_versions capstone_v2_migrator
+6033; 0 16900 TABLE DATA public models capstone_v2_migrator
+6034; 0 16909 TABLE DATA public predictions capstone_v2_migrator
+6035; 0 16919 TABLE DATA public quality_assessment_queue_items capstone_v2_migrator
+6036; 0 16930 TABLE DATA public quality_gate_decisions capstone_v2_migrator
+6037; 0 16936 TABLE DATA public research_subjects capstone_v2_migrator
+6038; 0 16945 TABLE DATA public roles capstone_v2_migrator
+6039; 0 16951 TABLE DATA public run_checkpoint_policy capstone_v2_migrator
+6040; 0 16960 TABLE DATA public run_clinical_metrics capstone_v2_migrator
+6041; 0 16975 TABLE DATA public run_configurations capstone_v2_migrator
+6042; 0 16985 TABLE DATA public run_dataset_images capstone_v2_migrator
+6043; 0 16996 TABLE DATA public run_image_predictions capstone_v2_migrator
+6044; 0 17005 TABLE DATA public run_io_records capstone_v2_migrator
+6045; 0 17021 TABLE DATA public run_lineage capstone_v2_migrator
+6046; 0 17030 TABLE DATA public run_metrics capstone_v2_migrator
+6047; 0 17038 TABLE DATA public run_model_deployments capstone_v2_migrator
+6048; 0 17048 TABLE DATA public run_threshold_calibration capstone_v2_migrator
+6049; 0 17066 TABLE DATA public runs capstone_v2_migrator
+6050; 0 17079 TABLE DATA public scientific_cases capstone_v2_migrator
+6051; 0 17089 TABLE DATA public scientific_reviews capstone_v2_migrator
+6052; 0 17095 TABLE DATA public scientific_validation_annotation_events capstone_v2_migrator
+6053; 0 17101 TABLE DATA public scientific_validation_annotations capstone_v2_migrator
+6054; 0 17109 TABLE DATA public scientific_validation_classification_runs capstone_v2_migrator
+6055; 0 17113 TABLE DATA public scientific_validation_detection_runs capstone_v2_migrator
+6056; 0 17117 TABLE DATA public scientific_validation_images capstone_v2_migrator
+6057; 0 17121 TABLE DATA public scientific_validation_sessions capstone_v2_migrator
+6058; 0 17129 TABLE DATA public smear_analysis_summaries capstone_v2_migrator
+6059; 0 17135 TABLE DATA public smear_slides capstone_v2_migrator
+6060; 0 17144 TABLE DATA public stage2_model_publication_events capstone_v2_migrator
+6061; 0 17152 TABLE DATA public stage2_model_publications capstone_v2_migrator
+6062; 0 17165 TABLE DATA public synthetic_data_runs capstone_v2_migrator
+6063; 0 17175 TABLE DATA public train_execution_records capstone_v2_migrator
+6064; 0 17181 TABLE DATA public train_execution_revisions capstone_v2_migrator
+6065; 0 17185 TABLE DATA public train_execution_sessions capstone_v2_migrator
+6066; 0 17193 TABLE DATA public training_history capstone_v2_migrator
+6067; 0 17202 TABLE DATA public user_roles capstone_v2_migrator
+6068; 0 17206 TABLE DATA public users capstone_v2_migrator
+6069; 0 17214 TABLE DATA public xai_artifacts capstone_v2_migrator
+6077; 0 17270 TABLE DATA public xai_evaluation_members capstone_v2_migrator
+6076; 0 17263 TABLE DATA public xai_evaluation_protocols capstone_v2_migrator
+6070; 0 17222 TABLE DATA public xai_evidence capstone_v2_migrator
+6071; 0 17229 TABLE DATA public xai_interpretations capstone_v2_migrator
+6074; 0 17250 TABLE DATA public xai_method_configurations capstone_v2_migrator
+6072; 0 17236 TABLE DATA public xai_quantitative_evaluations capstone_v2_migrator
+6075; 0 17257 TABLE DATA public xai_region_attributions capstone_v2_migrator
+6073; 0 17243 TABLE DATA public xai_specialist_reviews capstone_v2_migrator
+6310; 0 0 SEQUENCE SET public experiment_execution_events_id_seq capstone_v2_migrator
+4830; 2606 16391 CONSTRAINT public alembic_version alembic_version_pkc capstone_v2_migrator
+4832; 2606 17357 CONSTRAINT public artifacts artifacts_pkey capstone_v2_migrator
+4842; 2606 17541 CONSTRAINT public assessment_artifacts assessment_artifacts_artifact_id_key capstone_v2_migrator
+4844; 2606 17359 CONSTRAINT public assessment_artifacts assessment_artifacts_pkey capstone_v2_migrator
+4846; 2606 17543 CONSTRAINT public assessment_attempts assessment_attempts_artifact_root_key capstone_v2_migrator
+4848; 2606 17545 CONSTRAINT public assessment_attempts assessment_attempts_identity_id_ordinal_key capstone_v2_migrator
+4850; 2606 17361 CONSTRAINT public assessment_attempts assessment_attempts_pkey capstone_v2_migrator
+4854; 2606 17363 CONSTRAINT public assessment_campaign_consumers assessment_campaign_consumers_pkey capstone_v2_migrator
+4856; 2606 17547 CONSTRAINT public assessment_final_locks assessment_final_locks_identity_hash_key capstone_v2_migrator
+4858; 2606 17365 CONSTRAINT public assessment_final_locks assessment_final_locks_pkey capstone_v2_migrator
+4860; 2606 17549 CONSTRAINT public assessment_identities assessment_identities_identity_hash_key capstone_v2_migrator
+4862; 2606 17367 CONSTRAINT public assessment_identities assessment_identities_pkey capstone_v2_migrator
+4864; 2606 17551 CONSTRAINT public assessment_identities assessment_identities_structural_hash_key capstone_v2_migrator
+4866; 2606 17369 CONSTRAINT public assessment_results assessment_results_pkey capstone_v2_migrator
+4868; 2606 17371 CONSTRAINT public audit_events audit_events_pkey capstone_v2_migrator
+4873; 2606 17373 CONSTRAINT public blood_samples blood_samples_pkey capstone_v2_migrator
+4880; 2606 17555 CONSTRAINT public campaign_attempts campaign_attempts_member_id_id_key capstone_v2_migrator
+4882; 2606 17557 CONSTRAINT public campaign_attempts campaign_attempts_member_id_ordinal_key capstone_v2_migrator
+4884; 2606 17375 CONSTRAINT public campaign_attempts campaign_attempts_pkey capstone_v2_migrator
+4886; 2606 17559 CONSTRAINT public campaign_attempts campaign_attempts_training_run_id_key capstone_v2_migrator
+4890; 2606 17377 CONSTRAINT public campaign_configurations campaign_configurations_pkey capstone_v2_migrator
+4892; 2606 17561 CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_attempt_id_key capstone_v2_migrator
+4894; 2606 17379 CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_pkey capstone_v2_migrator
+4896; 2606 17563 CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_previous_attempt_id_key capstone_v2_migrator
+4898; 2606 17565 CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_run_id_key capstone_v2_migrator
+4900; 2606 17381 CONSTRAINT public campaign_execution_events campaign_execution_events_pkey capstone_v2_migrator
+4902; 2606 17567 CONSTRAINT public campaign_members campaign_members_campaign_id_configuration_hash_seed_key capstone_v2_migrator
+4904; 2606 17569 CONSTRAINT public campaign_members campaign_members_campaign_id_position_key capstone_v2_migrator
+4906; 2606 17383 CONSTRAINT public campaign_members campaign_members_pkey capstone_v2_migrator
+4909; 2606 17571 CONSTRAINT public campaign_technical_revisions campaign_technical_revisions_campaign_id_id_key capstone_v2_migrator
+4911; 2606 17385 CONSTRAINT public campaign_technical_revisions campaign_technical_revisions_pkey capstone_v2_migrator
+4913; 2606 17387 CONSTRAINT public cell_classification_events cell_classification_events_pkey capstone_v2_migrator
+4918; 2606 17389 CONSTRAINT public cell_classification_inputs cell_classification_inputs_pkey capstone_v2_migrator
+4932; 2606 17391 CONSTRAINT public cell_classification_reviews cell_classification_reviews_pkey capstone_v2_migrator
+4936; 2606 17581 CONSTRAINT public cell_classification_runs cell_classification_runs_classification_run_code_key capstone_v2_migrator
+4938; 2606 17393 CONSTRAINT public cell_classification_runs cell_classification_runs_pkey capstone_v2_migrator
+4949; 2606 17395 CONSTRAINT public cell_crops cell_crops_pkey capstone_v2_migrator
+4956; 2606 17397 CONSTRAINT public cell_detection_events cell_detection_events_pkey capstone_v2_migrator
+4960; 2606 17591 CONSTRAINT public cell_detection_runs cell_detection_runs_detection_run_code_key capstone_v2_migrator
+4962; 2606 17399 CONSTRAINT public cell_detection_runs cell_detection_runs_pkey capstone_v2_migrator
+4969; 2606 17401 CONSTRAINT public cell_detections cell_detections_pkey capstone_v2_migrator
+4980; 2606 17603 CONSTRAINT public cell_explanations cell_explanations_cell_prediction_id_key capstone_v2_migrator
+4982; 2606 17403 CONSTRAINT public cell_explanations cell_explanations_pkey capstone_v2_migrator
+4985; 2606 17605 CONSTRAINT public cell_predictions cell_predictions_classification_input_id_key capstone_v2_migrator
+4987; 2606 17405 CONSTRAINT public cell_predictions cell_predictions_pkey capstone_v2_migrator
+4996; 2606 17407 CONSTRAINT public clinical_identities clinical_identities_pkey capstone_v2_migrator
+5000; 2606 17409 CONSTRAINT public dataset_materialization_activations dataset_materialization_activations_pkey capstone_v2_migrator
+5005; 2606 17411 CONSTRAINT public dataset_materializations dataset_materializations_pkey capstone_v2_migrator
+5010; 2606 17413 CONSTRAINT public dataset_source_records dataset_source_records_pkey capstone_v2_migrator
+5018; 2606 17415 CONSTRAINT public dataset_split_assignments dataset_split_assignments_pkey capstone_v2_migrator
+5024; 2606 17417 CONSTRAINT public dataset_split_images dataset_split_images_pkey capstone_v2_migrator
+5035; 2606 17419 CONSTRAINT public dataset_split_statistics dataset_split_statistics_pkey capstone_v2_migrator
+5038; 2606 17421 CONSTRAINT public dataset_split_validation_checks dataset_split_validation_checks_pkey capstone_v2_migrator
+5041; 2606 17423 CONSTRAINT public dataset_splits dataset_splits_pkey capstone_v2_migrator
+5043; 2606 17425 CONSTRAINT public dataset_version_sources dataset_version_sources_pkey capstone_v2_migrator
+5046; 2606 17427 CONSTRAINT public dataset_versions dataset_versions_pkey capstone_v2_migrator
+5051; 2606 17429 CONSTRAINT public datasets datasets_pkey capstone_v2_migrator
+5054; 2606 17431 CONSTRAINT public deployed_model_versions deployed_model_versions_pkey capstone_v2_migrator
+5065; 2606 17433 CONSTRAINT public environment_packages environment_packages_pkey capstone_v2_migrator
+5068; 2606 17435 CONSTRAINT public errors errors_pkey capstone_v2_migrator
+5085; 2606 17437 CONSTRAINT public execution_logs execution_logs_pkey capstone_v2_migrator
+5432; 2606 167812 CONSTRAINT public executor_heartbeats executor_heartbeats_pkey capstone_v2_migrator
+5088; 2606 17439 CONSTRAINT public experiment_execution_events experiment_execution_events_pkey capstone_v2_migrator
+5090; 2606 17441 CONSTRAINT public experiment_execution_gate experiment_execution_gate_pkey capstone_v2_migrator
+5092; 2606 17443 CONSTRAINT public experimental_campaigns experimental_campaigns_pkey capstone_v2_migrator
+5095; 2606 17445 CONSTRAINT public experiments experiments_pkey capstone_v2_migrator
+5429; 2606 167800 CONSTRAINT public explain_requests explain_requests_pkey capstone_v2_migrator
+5097; 2606 17447 CONSTRAINT public explainability_results explainability_results_pkey capstone_v2_migrator
+5104; 2606 17449 CONSTRAINT public identity_evidence identity_evidence_pkey capstone_v2_migrator
+5114; 2606 17451 CONSTRAINT public image_analysis_jobs image_analysis_jobs_pkey capstone_v2_migrator
+5118; 2606 17453 CONSTRAINT public image_connected_components image_connected_components_pkey capstone_v2_migrator
+5126; 2606 17455 CONSTRAINT public image_ingestion_batches image_ingestion_batches_pkey capstone_v2_migrator
+5130; 2606 17625 CONSTRAINT public image_quality_assessments image_quality_assessments_analysis_run_id_microscopy_image__key capstone_v2_migrator
+5132; 2606 17457 CONSTRAINT public image_quality_assessments image_quality_assessments_pkey capstone_v2_migrator
+5134; 2606 17627 CONSTRAINT public local_execution_jobs local_execution_jobs_owner_key capstone_v2_migrator
+5136; 2606 17459 CONSTRAINT public local_execution_jobs local_execution_jobs_pkey capstone_v2_migrator
+5138; 2606 17629 CONSTRAINT public local_execution_jobs local_execution_jobs_run_id_key capstone_v2_migrator
+5142; 2606 17461 CONSTRAINT public microscopy_analysis_events microscopy_analysis_events_pkey capstone_v2_migrator
+5144; 2606 17631 CONSTRAINT public microscopy_analysis_run_images microscopy_analysis_run_image_analysis_run_id_microscopy_im_key capstone_v2_migrator
+5146; 2606 17633 CONSTRAINT public microscopy_analysis_run_images microscopy_analysis_run_image_analysis_run_id_sequence_numb_key capstone_v2_migrator
+5148; 2606 17635 CONSTRAINT public microscopy_analysis_run_images microscopy_analysis_run_image_id_analysis_run_id_microscopy_key capstone_v2_migrator
+5150; 2606 17463 CONSTRAINT public microscopy_analysis_run_images microscopy_analysis_run_images_pkey capstone_v2_migrator
+5154; 2606 17465 CONSTRAINT public microscopy_analysis_runs microscopy_analysis_runs_pkey capstone_v2_migrator
+5156; 2606 17637 CONSTRAINT public microscopy_analysis_runs microscopy_analysis_runs_run_code_key capstone_v2_migrator
+5163; 2606 17467 CONSTRAINT public microscopy_images microscopy_images_pkey capstone_v2_migrator
+5175; 2606 17469 CONSTRAINT public model_versions model_versions_pkey capstone_v2_migrator
+5183; 2606 17471 CONSTRAINT public models models_pkey capstone_v2_migrator
+5200; 2606 17473 CONSTRAINT public predictions predictions_pkey capstone_v2_migrator
+5207; 2606 17475 CONSTRAINT public quality_assessment_queue_items quality_assessment_queue_items_pkey capstone_v2_migrator
+5211; 2606 17477 CONSTRAINT public quality_gate_decisions quality_gate_decisions_pkey capstone_v2_migrator
+5214; 2606 17479 CONSTRAINT public research_subjects research_subjects_pkey capstone_v2_migrator
+5216; 2606 17643 CONSTRAINT public research_subjects research_subjects_subject_code_key capstone_v2_migrator
+5219; 2606 17645 CONSTRAINT public roles roles_name_key capstone_v2_migrator
+5221; 2606 17481 CONSTRAINT public roles roles_pkey capstone_v2_migrator
+5226; 2606 17483 CONSTRAINT public run_checkpoint_policy run_checkpoint_policy_pkey capstone_v2_migrator
+5231; 2606 17485 CONSTRAINT public run_clinical_metrics run_clinical_metrics_pkey capstone_v2_migrator
+5241; 2606 17487 CONSTRAINT public run_dataset_images run_dataset_images_pkey capstone_v2_migrator
+5248; 2606 17489 CONSTRAINT public run_image_predictions run_image_predictions_pkey capstone_v2_migrator
+5259; 2606 17491 CONSTRAINT public run_io_records run_io_records_pkey capstone_v2_migrator
+5267; 2606 17493 CONSTRAINT public run_lineage run_lineage_pkey capstone_v2_migrator
+5274; 2606 17495 CONSTRAINT public run_metrics run_metrics_pkey capstone_v2_migrator
+5278; 2606 17497 CONSTRAINT public run_model_deployments run_model_deployments_pkey capstone_v2_migrator
+5286; 2606 17499 CONSTRAINT public run_threshold_calibration run_threshold_calibration_pkey capstone_v2_migrator
+5301; 2606 17501 CONSTRAINT public runs runs_pkey capstone_v2_migrator
+5306; 2606 17651 CONSTRAINT public scientific_cases scientific_cases_case_code_key capstone_v2_migrator
+5308; 2606 17503 CONSTRAINT public scientific_cases scientific_cases_pkey capstone_v2_migrator
+5312; 2606 17505 CONSTRAINT public scientific_reviews scientific_reviews_pkey capstone_v2_migrator
+5316; 2606 17653 CONSTRAINT public scientific_validation_annotation_events scientific_validation_annotat_annotation_id_annotation_vers_key capstone_v2_migrator
+5318; 2606 17507 CONSTRAINT public scientific_validation_annotation_events scientific_validation_annotation_events_pkey capstone_v2_migrator
+5326; 2606 17509 CONSTRAINT public scientific_validation_annotations scientific_validation_annotations_pkey capstone_v2_migrator
+5328; 2606 17511 CONSTRAINT public scientific_validation_classification_runs scientific_validation_classification_runs_pkey capstone_v2_migrator
+5330; 2606 17513 CONSTRAINT public scientific_validation_detection_runs scientific_validation_detection_runs_pkey capstone_v2_migrator
+5332; 2606 17515 CONSTRAINT public scientific_validation_images scientific_validation_images_pkey capstone_v2_migrator
+5334; 2606 17655 CONSTRAINT public scientific_validation_images scientific_validation_images_session_id_sequence_number_key capstone_v2_migrator
+5338; 2606 17517 CONSTRAINT public scientific_validation_sessions scientific_validation_sessions_pkey capstone_v2_migrator
+5343; 2606 17657 CONSTRAINT public smear_analysis_summaries smear_analysis_summaries_classification_run_id_key capstone_v2_migrator
+5345; 2606 17519 CONSTRAINT public smear_analysis_summaries smear_analysis_summaries_pkey capstone_v2_migrator
+5349; 2606 17521 CONSTRAINT public smear_slides smear_slides_pkey capstone_v2_migrator
+5354; 2606 17523 CONSTRAINT public stage2_model_publication_events stage2_model_publication_events_pkey capstone_v2_migrator
+5357; 2606 17525 CONSTRAINT public stage2_model_publications stage2_model_publications_pkey capstone_v2_migrator
+5362; 2606 17527 CONSTRAINT public synthetic_data_runs synthetic_data_runs_pkey capstone_v2_migrator
+5366; 2606 17529 CONSTRAINT public train_execution_records train_execution_records_pkey capstone_v2_migrator
+5368; 2606 17531 CONSTRAINT public train_execution_revisions train_execution_revisions_pkey capstone_v2_migrator
+5370; 2606 17661 CONSTRAINT public train_execution_sessions train_execution_sessions_artifact_root_key capstone_v2_migrator
+5372; 2606 17663 CONSTRAINT public train_execution_sessions train_execution_sessions_attempt_id_key capstone_v2_migrator
+5374; 2606 17533 CONSTRAINT public train_execution_sessions train_execution_sessions_pkey capstone_v2_migrator
+5378; 2606 17535 CONSTRAINT public training_history training_history_pkey capstone_v2_migrator
+4877; 2606 17553 CONSTRAINT public blood_samples uq_blood_samples_case_code capstone_v2_migrator
+4924; 2606 17573 CONSTRAINT public cell_classification_inputs uq_cell_classification_inputs_crop capstone_v2_migrator
+4926; 2606 17575 CONSTRAINT public cell_classification_inputs uq_cell_classification_inputs_detection capstone_v2_migrator
+4928; 2606 17577 CONSTRAINT public cell_classification_inputs uq_cell_classification_inputs_order capstone_v2_migrator
+4930; 2606 17579 CONSTRAINT public cell_classification_inputs uq_cell_classification_inputs_prediction_owner capstone_v2_migrator
+4944; 2606 17583 CONSTRAINT public cell_classification_runs uq_cell_classification_runs_detection_identity capstone_v2_migrator
+4947; 2606 17585 CONSTRAINT public cell_classification_runs uq_cell_classification_runs_identity capstone_v2_migrator
+4951; 2606 17587 CONSTRAINT public cell_crops uq_cell_crops_detection capstone_v2_migrator
+4954; 2606 17589 CONSTRAINT public cell_crops uq_cell_crops_storage_key capstone_v2_migrator
+4967; 2606 17593 CONSTRAINT public cell_detection_runs uq_cell_detection_runs_identity capstone_v2_migrator
+4972; 2606 17595 CONSTRAINT public cell_detections uq_cell_detections_cell_code capstone_v2_migrator
+4974; 2606 17597 CONSTRAINT public cell_detections uq_cell_detections_component capstone_v2_migrator
+4976; 2606 17599 CONSTRAINT public cell_detections uq_cell_detections_identity capstone_v2_migrator
+4978; 2606 17601 CONSTRAINT public cell_detections uq_cell_detections_run_index capstone_v2_migrator
+4994; 2606 17607 CONSTRAINT public cell_predictions uq_cell_predictions_run_identity capstone_v2_migrator
+4998; 2606 17609 CONSTRAINT public clinical_identities uq_clinical_identities_source capstone_v2_migrator
+5008; 2606 17611 CONSTRAINT public dataset_materializations uq_dataset_materializations_attempt capstone_v2_migrator
+5016; 2606 17613 CONSTRAINT public dataset_source_records uq_dataset_source_records_key capstone_v2_migrator
+5022; 2606 17615 CONSTRAINT public dataset_split_assignments uq_dataset_split_assignments_record capstone_v2_migrator
+5033; 2606 17617 CONSTRAINT public dataset_split_images uq_dataset_split_images_path capstone_v2_migrator
+5049; 2606 17619 CONSTRAINT public dataset_versions uq_dataset_versions_name_semver capstone_v2_migrator
+5122; 2606 17621 CONSTRAINT public image_connected_components uq_image_connected_components_identity capstone_v2_migrator
+5124; 2606 17623 CONSTRAINT public image_connected_components uq_image_connected_components_run_image_index capstone_v2_migrator
+5166; 2606 17639 CONSTRAINT public microscopy_images uq_microscopy_images_slide_code capstone_v2_migrator
+5168; 2606 17641 CONSTRAINT public microscopy_images uq_microscopy_images_slide_sha256 capstone_v2_migrator
+5243; 2606 17647 CONSTRAINT public run_dataset_images uq_run_dataset_images_usage capstone_v2_migrator
+5269; 2606 17649 CONSTRAINT public run_lineage uq_run_lineage_parent_child_type capstone_v2_migrator
+5351; 2606 17659 CONSTRAINT public smear_slides uq_smear_slides_sample_code capstone_v2_migrator
+5380; 2606 17669 CONSTRAINT public training_history uq_v2_epoch capstone_v2_migrator
+5203; 2606 17671 CONSTRAINT public predictions uq_v2_evaluation_sample capstone_v2_migrator
+5413; 2606 17713 CONSTRAINT public xai_method_configurations uq_xai_method_configuration_hash capstone_v2_migrator
+5419; 2606 17715 CONSTRAINT public xai_evaluation_protocols uq_xai_protocol_hash capstone_v2_migrator
+5421; 2606 17717 CONSTRAINT public xai_evaluation_protocols uq_xai_protocol_metric capstone_v2_migrator
+5382; 2606 17537 CONSTRAINT public user_roles user_roles_pkey capstone_v2_migrator
+5384; 2606 17665 CONSTRAINT public users users_email_key capstone_v2_migrator
+5386; 2606 17539 CONSTRAINT public users users_pkey capstone_v2_migrator
+5388; 2606 17667 CONSTRAINT public users users_username_key capstone_v2_migrator
+5071; 2606 17683 CONSTRAINT public evaluation_ensemble_members v2_evaluation_ensemble_members_primary_0f6c3f155b09 capstone_v2_migrator
+5073; 2606 17685 CONSTRAINT public evaluation_ensemble_members v2_evaluation_ensemble_members_unique_3a2092158e31 capstone_v2_migrator
+5079; 2606 17677 CONSTRAINT public evaluations v2_evaluations_primary_8c8464f42472 capstone_v2_migrator
+5081; 2606 17679 CONSTRAINT public evaluations v2_evaluations_unique_2b29f071653b capstone_v2_migrator
+5083; 2606 17681 CONSTRAINT public evaluations v2_evaluations_unique_927a8d4fe69d capstone_v2_migrator
+5233; 2606 17673 CONSTRAINT public run_clinical_metrics v2_run_clinical_metrics_unique_f9437c271ff6 capstone_v2_migrator
+5235; 2606 17675 CONSTRAINT public run_configurations v2_run_configurations_primary_360aa242ca7c capstone_v2_migrator
+5390; 2606 17695 CONSTRAINT public xai_artifacts v2_xai_artifacts_primary_8c8464f42472 capstone_v2_migrator
+5392; 2606 17697 CONSTRAINT public xai_artifacts v2_xai_artifacts_unique_ee15a9513a9e capstone_v2_migrator
+5397; 2606 17687 CONSTRAINT public xai_evidence v2_xai_evidence_primary_8c8464f42472 capstone_v2_migrator
+5399; 2606 17693 CONSTRAINT public xai_evidence v2_xai_evidence_unique_0be310eeb2b7 capstone_v2_migrator
+5401; 2606 17691 CONSTRAINT public xai_evidence v2_xai_evidence_unique_d4bf0f195fcf capstone_v2_migrator
+5403; 2606 17689 CONSTRAINT public xai_evidence v2_xai_evidence_unique_d9477cb1fece capstone_v2_migrator
+5405; 2606 17701 CONSTRAINT public xai_interpretations v2_xai_interpretations_primary_8c8464f42472 capstone_v2_migrator
+5409; 2606 17699 CONSTRAINT public xai_quantitative_evaluations v2_xai_quantitative_evaluations_primary_8c8464f42472 capstone_v2_migrator
+5411; 2606 17703 CONSTRAINT public xai_specialist_reviews v2_xai_specialist_reviews_primary_8c8464f42472 capstone_v2_migrator
+5426; 2606 17711 CONSTRAINT public xai_evaluation_members xai_evaluation_members_pkey capstone_v2_migrator
+5423; 2606 17709 CONSTRAINT public xai_evaluation_protocols xai_evaluation_protocols_pkey capstone_v2_migrator
+5415; 2606 17705 CONSTRAINT public xai_method_configurations xai_method_configurations_pkey capstone_v2_migrator
+5417; 2606 17707 CONSTRAINT public xai_region_attributions xai_region_attributions_pkey capstone_v2_migrator
+5427; 1259 167801 INDEX public explain_requests_one_pending capstone_v2_migrator
+5430; 1259 167802 INDEX public explain_requests_queue capstone_v2_migrator
+4833; 1259 19502 INDEX public idx_artifacts_artifact_type capstone_v2_migrator
+4834; 1259 19503 INDEX public idx_artifacts_checksum capstone_v2_migrator
+4835; 1259 19504 INDEX public idx_artifacts_governance_status capstone_v2_migrator
+4836; 1259 19505 INDEX public idx_artifacts_metadata_source capstone_v2_migrator
+4837; 1259 19506 INDEX public idx_artifacts_run_id capstone_v2_migrator
+4838; 1259 19507 INDEX public idx_artifacts_type_path capstone_v2_migrator
+4839; 1259 19508 INDEX public idx_artifacts_uri capstone_v2_migrator
+5025; 1259 19556 INDEX public idx_dataset_split_images_class capstone_v2_migrator
+5026; 1259 19557 INDEX public idx_dataset_split_images_dataset_dir capstone_v2_migrator
+5027; 1259 19558 INDEX public idx_dataset_split_images_dataset_id capstone_v2_migrator
+5028; 1259 19559 INDEX public idx_dataset_split_images_relative_path capstone_v2_migrator
+5029; 1259 19560 INDEX public idx_dataset_split_images_split capstone_v2_migrator
+5052; 1259 19567 INDEX public idx_datasets_metadata_gin capstone_v2_migrator
+5055; 1259 19568 INDEX public idx_deployed_model_versions_checkpoint_artifact capstone_v2_migrator
+5056; 1259 19569 INDEX public idx_deployed_model_versions_model_version capstone_v2_migrator
+5057; 1259 19570 INDEX public idx_deployed_model_versions_slot_history capstone_v2_migrator
+5058; 1259 19571 INDEX public idx_deployed_model_versions_status capstone_v2_migrator
+5059; 1259 19572 INDEX public idx_deployed_model_versions_threshold_calibration capstone_v2_migrator
+5066; 1259 19575 INDEX public idx_environment_packages_run_id capstone_v2_migrator
+5069; 1259 19576 INDEX public idx_errors_run_id capstone_v2_migrator
+5086; 1259 19577 INDEX public idx_execution_logs_run_id capstone_v2_migrator
+5098; 1259 19579 INDEX public idx_explainability_case_method capstone_v2_migrator
+5099; 1259 19580 INDEX public idx_explainability_method capstone_v2_migrator
+5100; 1259 19581 INDEX public idx_explainability_output_path capstone_v2_migrator
+5101; 1259 19582 INDEX public idx_explainability_run_id capstone_v2_migrator
+5102; 1259 19583 INDEX public idx_explainability_success capstone_v2_migrator
+5107; 1259 19586 INDEX public idx_image_analysis_jobs_deployment capstone_v2_migrator
+5108; 1259 19587 INDEX public idx_image_analysis_jobs_input_artifact capstone_v2_migrator
+5109; 1259 19588 INDEX public idx_image_analysis_jobs_model_version capstone_v2_migrator
+5110; 1259 19589 INDEX public idx_image_analysis_jobs_run capstone_v2_migrator
+5111; 1259 19590 INDEX public idx_image_analysis_jobs_source_image capstone_v2_migrator
+5112; 1259 19591 INDEX public idx_image_analysis_jobs_status_created capstone_v2_migrator
+5169; 1259 19606 INDEX public idx_model_versions_checkpoint_artifact capstone_v2_migrator
+5170; 1259 19607 INDEX public idx_model_versions_model capstone_v2_migrator
+5171; 1259 19608 INDEX public idx_model_versions_sha256 capstone_v2_migrator
+5172; 1259 19609 INDEX public idx_model_versions_status_lineage capstone_v2_migrator
+5173; 1259 19610 INDEX public idx_model_versions_training_run capstone_v2_migrator
+5184; 1259 19615 INDEX public idx_predictions_analysis_job capstone_v2_migrator
+5185; 1259 19616 INDEX public idx_predictions_case_type capstone_v2_migrator
+5186; 1259 19617 INDEX public idx_predictions_case_type_run capstone_v2_migrator
+5187; 1259 19618 INDEX public idx_predictions_classifier_model_version capstone_v2_migrator
+5188; 1259 19619 INDEX public idx_predictions_created_at capstone_v2_migrator
+5189; 1259 19620 INDEX public idx_predictions_deployed_model_version capstone_v2_migrator
+5190; 1259 19621 INDEX public idx_predictions_detector_model_version capstone_v2_migrator
+5191; 1259 19622 INDEX public idx_predictions_inference_run capstone_v2_migrator
+5192; 1259 19623 INDEX public idx_predictions_metadata_source capstone_v2_migrator
+5193; 1259 19624 INDEX public idx_predictions_metadata_workflow capstone_v2_migrator
+5194; 1259 19625 INDEX public idx_predictions_model_version capstone_v2_migrator
+5195; 1259 19626 INDEX public idx_predictions_predicted_label capstone_v2_migrator
+5196; 1259 19627 INDEX public idx_predictions_review_status capstone_v2_migrator
+5197; 1259 19628 INDEX public idx_predictions_run_id capstone_v2_migrator
+5198; 1259 19629 INDEX public idx_predictions_true_pred capstone_v2_migrator
+5222; 1259 19637 INDEX public idx_run_checkpoint_policy_artifact capstone_v2_migrator
+5223; 1259 19638 INDEX public idx_run_checkpoint_policy_model_version capstone_v2_migrator
+5224; 1259 19639 INDEX public idx_run_checkpoint_policy_run_id capstone_v2_migrator
+5227; 1259 19640 INDEX public idx_run_clinical_metrics_model_name capstone_v2_migrator
+5228; 1259 19641 INDEX public idx_run_clinical_metrics_run_id capstone_v2_migrator
+5229; 1259 19642 INDEX public idx_run_clinical_metrics_split_name capstone_v2_migrator
+5236; 1259 19643 INDEX public idx_run_dataset_images_image_id capstone_v2_migrator
+5237; 1259 19644 INDEX public idx_run_dataset_images_run_id capstone_v2_migrator
+5238; 1259 19645 INDEX public idx_run_dataset_images_split capstone_v2_migrator
+5239; 1259 19646 INDEX public idx_run_dataset_images_usage_context capstone_v2_migrator
+5244; 1259 19647 INDEX public idx_run_image_predictions_case_type capstone_v2_migrator
+5245; 1259 19648 INDEX public idx_run_image_predictions_run_id capstone_v2_migrator
+5246; 1259 19649 INDEX public idx_run_image_predictions_split capstone_v2_migrator
+5249; 1259 19650 INDEX public idx_run_io_records_clinical_metadata_gin capstone_v2_migrator
+5250; 1259 19651 INDEX public idx_run_io_records_created_at capstone_v2_migrator
+5251; 1259 19652 INDEX public idx_run_io_records_model_metadata_gin capstone_v2_migrator
+5252; 1259 19653 INDEX public idx_run_io_records_model_name capstone_v2_migrator
+5253; 1259 19654 INDEX public idx_run_io_records_run_id capstone_v2_migrator
+5254; 1259 19655 INDEX public idx_run_io_records_run_type capstone_v2_migrator
+5255; 1259 19656 INDEX public idx_run_io_records_script_name capstone_v2_migrator
+5260; 1259 19659 INDEX public idx_run_lineage_checkpoint_artifact capstone_v2_migrator
+5261; 1259 19660 INDEX public idx_run_lineage_checkpoint_path capstone_v2_migrator
+5262; 1259 19661 INDEX public idx_run_lineage_child_run_id capstone_v2_migrator
+5263; 1259 19662 INDEX public idx_run_lineage_model_version capstone_v2_migrator
+5264; 1259 19663 INDEX public idx_run_lineage_parent_run_id capstone_v2_migrator
+5265; 1259 19664 INDEX public idx_run_lineage_relationship_type capstone_v2_migrator
+5271; 1259 19666 INDEX public idx_run_metrics_name capstone_v2_migrator
+5272; 1259 19667 INDEX public idx_run_metrics_run_id capstone_v2_migrator
+5275; 1259 19668 INDEX public idx_run_model_deployments_deployment capstone_v2_migrator
+5276; 1259 19669 INDEX public idx_run_model_deployments_model_version capstone_v2_migrator
+5282; 1259 19671 INDEX public idx_run_threshold_calibration_artifact capstone_v2_migrator
+5283; 1259 19672 INDEX public idx_run_threshold_calibration_model_version capstone_v2_migrator
+5284; 1259 19673 INDEX public idx_run_threshold_calibration_run_id capstone_v2_migrator
+5288; 1259 19674 INDEX public idx_runs_dataset_id capstone_v2_migrator
+5289; 1259 19675 INDEX public idx_runs_execution_parameters_gin capstone_v2_migrator
+5290; 1259 19676 INDEX public idx_runs_execution_type capstone_v2_migrator
+5291; 1259 19677 INDEX public idx_runs_inference_script capstone_v2_migrator
+5292; 1259 19678 INDEX public idx_runs_metadata_gin capstone_v2_migrator
+5293; 1259 19679 INDEX public idx_runs_model_id capstone_v2_migrator
+5294; 1259 19680 INDEX public idx_runs_parameters_gin capstone_v2_migrator
+5295; 1259 19681 INDEX public idx_runs_run_type capstone_v2_migrator
+5296; 1259 19682 INDEX public idx_runs_started_at capstone_v2_migrator
+5297; 1259 19683 INDEX public idx_runs_status capstone_v2_migrator
+5298; 1259 19684 INDEX public idx_runs_training_release_status capstone_v2_migrator
+5355; 1259 19707 INDEX public idx_stage2_publication_candidates capstone_v2_migrator
+5352; 1259 19706 INDEX public idx_stage2_publication_events_publication capstone_v2_migrator
+5376; 1259 19712 INDEX public idx_training_history_run_id capstone_v2_migrator
+4869; 1259 19511 INDEX public ix_audit_events_actor capstone_v2_migrator
+4870; 1259 19512 INDEX public ix_audit_events_created_at capstone_v2_migrator
+4871; 1259 19513 INDEX public ix_audit_events_resource capstone_v2_migrator
+4874; 1259 19514 INDEX public ix_blood_samples_case capstone_v2_migrator
+4875; 1259 19515 INDEX public ix_blood_samples_status_created capstone_v2_migrator
+4887; 1259 19517 INDEX public ix_campaign_attempt_state capstone_v2_migrator
+5093; 1259 19578 INDEX public ix_campaign_dataset_state capstone_v2_migrator
+4907; 1259 19519 INDEX public ix_campaign_member_state capstone_v2_migrator
+4914; 1259 19520 INDEX public ix_cell_classification_events_run_created capstone_v2_migrator
+4915; 1259 19521 INDEX public ix_cell_classification_events_run_detection capstone_v2_migrator
+4916; 1259 19522 INDEX public ix_cell_classification_events_run_prediction capstone_v2_migrator
+4919; 1259 19523 INDEX public ix_cell_classification_inputs_crop capstone_v2_migrator
+4920; 1259 19524 INDEX public ix_cell_classification_inputs_detection capstone_v2_migrator
+4921; 1259 19525 INDEX public ix_cell_classification_inputs_run_eligible_order capstone_v2_migrator
+4922; 1259 19526 INDEX public ix_cell_classification_inputs_run_image_cell capstone_v2_migrator
+4933; 1259 19527 INDEX public ix_cell_classification_reviews_actor_created capstone_v2_migrator
+4934; 1259 19528 INDEX public ix_cell_classification_reviews_prediction_created capstone_v2_migrator
+4939; 1259 19529 INDEX public ix_cell_classification_runs_analysis_created capstone_v2_migrator
+4940; 1259 19530 INDEX public ix_cell_classification_runs_detection_created capstone_v2_migrator
+4941; 1259 19531 INDEX public ix_cell_classification_runs_model_created capstone_v2_migrator
+4942; 1259 19532 INDEX public ix_cell_classification_runs_status_created capstone_v2_migrator
+4957; 1259 19534 INDEX public ix_cell_detection_events_run_created capstone_v2_migrator
+4958; 1259 19535 INDEX public ix_cell_detection_events_run_image capstone_v2_migrator
+4963; 1259 19536 INDEX public ix_cell_detection_runs_analysis_created capstone_v2_migrator
+4964; 1259 19537 INDEX public ix_cell_detection_runs_status_created capstone_v2_migrator
+4970; 1259 19539 INDEX public ix_cell_detections_run_image capstone_v2_migrator
+4983; 1259 19540 INDEX public ix_cell_explanations_status_created capstone_v2_migrator
+4988; 1259 19541 INDEX public ix_cell_predictions_crop capstone_v2_migrator
+4989; 1259 19542 INDEX public ix_cell_predictions_detection capstone_v2_migrator
+4990; 1259 19543 INDEX public ix_cell_predictions_run_label capstone_v2_migrator
+4991; 1259 19544 INDEX public ix_cell_predictions_run_near_threshold capstone_v2_migrator
+4992; 1259 19545 INDEX public ix_cell_predictions_run_status capstone_v2_migrator
+5001; 1259 19546 INDEX public ix_dataset_materialization_activations_dataset_version_id capstone_v2_migrator
+5002; 1259 19547 INDEX public ix_dataset_materialization_activations_materialization_id capstone_v2_migrator
+5006; 1259 19549 INDEX public ix_dataset_materializations_dataset_version_id capstone_v2_migrator
+5011; 1259 19550 INDEX public ix_dataset_source_records_clinical_identity_id capstone_v2_migrator
+5012; 1259 19551 INDEX public ix_dataset_source_records_dataset_id capstone_v2_migrator
+5013; 1259 19552 INDEX public ix_dataset_source_records_decoded_pixel_sha256 capstone_v2_migrator
+5014; 1259 19553 INDEX public ix_dataset_source_records_source_file_sha256 capstone_v2_migrator
+5019; 1259 19554 INDEX public ix_dataset_split_assignments_clinical_identity_id capstone_v2_migrator
+5020; 1259 19555 INDEX public ix_dataset_split_assignments_dataset_version_id capstone_v2_migrator
+5030; 1259 19561 INDEX public ix_dataset_split_images_dataset_materialization_id capstone_v2_migrator
+5031; 1259 19562 INDEX public ix_dataset_split_images_dataset_version_id capstone_v2_migrator
+5036; 1259 19563 INDEX public ix_dataset_split_statistics_version_metric capstone_v2_migrator
+5039; 1259 19564 INDEX public ix_dataset_split_validation_checks_version_name capstone_v2_migrator
+5044; 1259 19565 INDEX public ix_dataset_version_sources_dataset_id capstone_v2_migrator
+5047; 1259 19566 INDEX public ix_dataset_versions_status capstone_v2_migrator
+5074; 1259 19714 INDEX public ix_evaluation_comparison capstone_v2_migrator
+5105; 1259 19584 INDEX public ix_identity_evidence_clinical_identity_id capstone_v2_migrator
+5106; 1259 19585 INDEX public ix_identity_evidence_source_record_id capstone_v2_migrator
+5119; 1259 19593 INDEX public ix_image_connected_components_run_image capstone_v2_migrator
+5120; 1259 19594 INDEX public ix_image_connected_components_status capstone_v2_migrator
+5127; 1259 19595 INDEX public ix_ingestion_batches_sample capstone_v2_migrator
+5140; 1259 19598 INDEX public ix_microscopy_analysis_events_run capstone_v2_migrator
+5151; 1259 19599 INDEX public ix_microscopy_analysis_runs_status capstone_v2_migrator
+5152; 1259 19600 INDEX public ix_microscopy_analysis_runs_subject capstone_v2_migrator
+5158; 1259 19601 INDEX public ix_microscopy_images_ingestion_batch capstone_v2_migrator
+5159; 1259 19602 INDEX public ix_microscopy_images_sha256 capstone_v2_migrator
+5160; 1259 19603 INDEX public ix_microscopy_images_slide capstone_v2_migrator
+5161; 1259 19604 INDEX public ix_microscopy_images_status_created capstone_v2_migrator
+5209; 1259 19634 INDEX public ix_quality_gate_decisions_run capstone_v2_migrator
+5204; 1259 19631 INDEX public ix_quality_queue_order capstone_v2_migrator
+5205; 1259 19632 INDEX public ix_quality_queue_priority_requested capstone_v2_migrator
+5212; 1259 19635 INDEX public ix_research_subjects_status_created capstone_v2_migrator
+5256; 1259 19657 INDEX public ix_run_io_records_dataset_materialization_id capstone_v2_migrator
+5257; 1259 19658 INDEX public ix_run_io_records_dataset_version_id capstone_v2_migrator
+5299; 1259 19685 INDEX public ix_runs_dataset_version_id capstone_v2_migrator
+5303; 1259 19687 INDEX public ix_scientific_cases_status_created capstone_v2_migrator
+5304; 1259 19688 INDEX public ix_scientific_cases_subject capstone_v2_migrator
+5309; 1259 19689 INDEX public ix_scientific_reviews_actor_created capstone_v2_migrator
+5310; 1259 19690 INDEX public ix_scientific_reviews_entity_created capstone_v2_migrator
+5339; 1259 19701 INDEX public ix_smear_analysis_summaries_analysis_created capstone_v2_migrator
+5340; 1259 19702 INDEX public ix_smear_analysis_summaries_detection_created capstone_v2_migrator
+5341; 1259 19703 INDEX public ix_smear_analysis_summaries_outcome_created capstone_v2_migrator
+5346; 1259 19704 INDEX public ix_smear_slides_sample capstone_v2_migrator
+5347; 1259 19705 INDEX public ix_smear_slides_status_created capstone_v2_migrator
+5313; 1259 19691 INDEX public ix_validation_annotation_events_actor_created capstone_v2_migrator
+5314; 1259 19692 INDEX public ix_validation_annotation_events_annotation_created capstone_v2_migrator
+5319; 1259 19693 INDEX public ix_validation_annotations_general_target capstone_v2_migrator
+5320; 1259 19694 INDEX public ix_validation_annotations_session_analysis capstone_v2_migrator
+5321; 1259 19695 INDEX public ix_validation_annotations_session_category capstone_v2_migrator
+5322; 1259 19696 INDEX public ix_validation_annotations_session_cell capstone_v2_migrator
+5323; 1259 19697 INDEX public ix_validation_annotations_session_created capstone_v2_migrator
+5324; 1259 19698 INDEX public ix_validation_annotations_session_sample capstone_v2_migrator
+5335; 1259 19699 INDEX public ix_validation_sessions_creator_created capstone_v2_migrator
+5336; 1259 19700 INDEX public ix_validation_sessions_status_created capstone_v2_migrator
+5393; 1259 19716 INDEX public ix_xai_evaluation capstone_v2_migrator
+5424; 1259 19719 INDEX public ix_xai_member_evidence capstone_v2_migrator
+5394; 1259 19720 INDEX public ix_xai_method_configuration capstone_v2_migrator
+5406; 1259 19721 INDEX public ix_xai_metric_protocol capstone_v2_migrator
+5407; 1259 19722 INDEX public ix_xai_reference_annotation capstone_v2_migrator
+5395; 1259 19715 INDEX public ix_xai_same_image capstone_v2_migrator
+5139; 1259 19597 INDEX public local_one_active capstone_v2_migrator
+5363; 1259 19709 INDEX public train_event_id_unique capstone_v2_migrator
+5364; 1259 19710 INDEX public train_event_sequence_unique capstone_v2_migrator
+4840; 1259 17718 INDEX public uq_artifacts_id_run_id capstone_v2_migrator
+4851; 1259 19509 INDEX public uq_assessment_live capstone_v2_migrator
+4878; 1259 19516 INDEX public uq_blood_samples_external_identity capstone_v2_migrator
+4888; 1259 19518 INDEX public uq_campaign_one_active_attempt capstone_v2_migrator
+5060; 1259 147045 INDEX public uq_cell_active_deployment capstone_v2_migrator
+5358; 1259 147044 INDEX public uq_cell_active_publication capstone_v2_migrator
+4945; 1259 19533 INDEX public uq_cell_classification_runs_equivalent_active capstone_v2_migrator
+4952; 1259 17719 INDEX public uq_cell_crops_id_detection capstone_v2_migrator
+4965; 1259 19538 INDEX public uq_cell_detection_runs_equivalent_active capstone_v2_migrator
+5003; 1259 19548 INDEX public uq_dataset_materialization_activations_current_family capstone_v2_migrator
+5061; 1259 19573 INDEX public uq_deployed_model_versions_active_slot capstone_v2_migrator
+5062; 1259 17720 INDEX public uq_deployed_model_versions_id_version capstone_v2_migrator
+5063; 1259 19574 INDEX public uq_deployed_model_versions_one_production_champion capstone_v2_migrator
+5075; 1259 19718 INDEX public uq_e04_contract_role capstone_v2_migrator
+5076; 1259 19717 INDEX public uq_e04_event_role capstone_v2_migrator
+5077; 1259 19713 INDEX public uq_evaluation_final_training capstone_v2_migrator
+4852; 1259 19510 INDEX public uq_global_assessment_active capstone_v2_migrator
+5375; 1259 19711 INDEX public uq_global_train_active capstone_v2_migrator
+5115; 1259 19592 INDEX public uq_image_analysis_jobs_idempotency capstone_v2_migrator
+5116; 1259 17721 INDEX public uq_image_analysis_jobs_identity capstone_v2_migrator
+5128; 1259 19596 INDEX public uq_ingestion_batches_source_group capstone_v2_migrator
+5157; 1259 17722 INDEX public uq_microscopy_analysis_equivalent capstone_v2_migrator
+5164; 1259 19605 INDEX public uq_microscopy_images_external_path capstone_v2_migrator
+5176; 1259 19611 INDEX public uq_model_versions_checkpoint_artifact capstone_v2_migrator
+5177; 1259 17723 INDEX public uq_model_versions_id_checkpoint_artifact capstone_v2_migrator
+5178; 1259 17724 INDEX public uq_model_versions_id_training_run capstone_v2_migrator
+5179; 1259 19612 INDEX public uq_model_versions_name_number capstone_v2_migrator
+5180; 1259 19613 INDEX public uq_model_versions_training_version_name capstone_v2_migrator
+5181; 1259 19614 INDEX public uq_model_versions_unjustified_sha256 capstone_v2_migrator
+5201; 1259 19630 INDEX public uq_predictions_job_cell_index capstone_v2_migrator
+5208; 1259 19633 INDEX public uq_quality_queue_active_run capstone_v2_migrator
+5217; 1259 19636 INDEX public uq_research_subjects_external_identity capstone_v2_migrator
+5270; 1259 19665 INDEX public uq_run_lineage_single_evaluation_training_parent capstone_v2_migrator
+5279; 1259 17725 INDEX public uq_run_model_deployments_binding capstone_v2_migrator
+5280; 1259 19670 INDEX public uq_run_model_deployments_primary capstone_v2_migrator
+5281; 1259 17726 INDEX public uq_run_model_deployments_run_deployment_version capstone_v2_migrator
+5287; 1259 17727 INDEX public uq_run_threshold_calibration_id_version capstone_v2_migrator
+5302; 1259 19686 INDEX public uq_runs_single_productive_stage2 capstone_v2_migrator
+5359; 1259 17728 INDEX public uq_stage2_model_publications_id_version capstone_v2_migrator
+5360; 1259 19708 INDEX public uq_stage2_publication_active_version capstone_v2_migrator
+5952; 2618 19787 RULE public vw_run_dashboard _RETURN capstone_v2_migrator
+5773; 2620 19952 TRIGGER public train_execution_records a_train_event_guard capstone_v2_migrator
+5688; 2620 19882 TRIGGER public assessment_artifacts assessment_artifact_guard capstone_v2_migrator
+5689; 2620 19883 TRIGGER public assessment_attempts assessment_attempt_guard capstone_v2_migrator
+5691; 2620 19885 TRIGGER public assessment_campaign_consumers assessment_consumer_guard capstone_v2_migrator
+5692; 2620 19886 TRIGGER public assessment_campaign_consumers assessment_consumer_immutable capstone_v2_migrator
+5694; 2620 19888 TRIGGER public assessment_identities assessment_identity_guard capstone_v2_migrator
+5695; 2620 19889 TRIGGER public assessment_identities assessment_identity_immutable capstone_v2_migrator
+5693; 2620 19887 TRIGGER public assessment_final_locks assessment_lock_immutable capstone_v2_migrator
+5696; 2620 19890 TRIGGER public assessment_results assessment_result_guard capstone_v2_migrator
+5697; 2620 19891 TRIGGER public audit_events audit_events_append_only capstone_v2_migrator
+5698; 2620 19892 TRIGGER public campaign_attempts campaign_attempt_audit capstone_v2_migrator
+5699; 2620 19893 TRIGGER public campaign_attempts campaign_attempt_guard capstone_v2_migrator
+5700; 2620 19894 TRIGGER public campaign_attempts campaign_attempt_state capstone_v2_migrator
+5742; 2620 19930 TRIGGER public experimental_campaigns campaign_audit capstone_v2_migrator
+5748; 2620 19936 TRIGGER public models campaign_catalog_identity_guard capstone_v2_migrator
+5702; 2620 19896 TRIGGER public campaign_configurations campaign_configuration_audit capstone_v2_migrator
+5703; 2620 19897 TRIGGER public campaign_configurations campaign_configuration_guard capstone_v2_migrator
+5743; 2620 19931 TRIGGER public experimental_campaigns campaign_guard capstone_v2_migrator
+5706; 2620 19901 TRIGGER public campaign_members campaign_member_audit capstone_v2_migrator
+5707; 2620 19902 TRIGGER public campaign_members campaign_member_guard capstone_v2_migrator
+5758; 2620 19939 TRIGGER public runs campaign_run_identity_guard capstone_v2_migrator
+5772; 2620 147047 TRIGGER public stage2_model_publications cell_publication_reference capstone_v2_migrator
+5732; 2620 147048 TRIGGER public deployed_model_versions cell_threshold_reference capstone_v2_migrator
+5704; 2620 19898 TRIGGER public campaign_controlled_requests controlled_binding_guard capstone_v2_migrator
+5744; 2620 19932 TRIGGER public experimental_campaigns controlled_pause_guard capstone_v2_migrator
+5705; 2620 19900 TRIGGER public campaign_controlled_requests controlled_request_guard capstone_v2_migrator
+5759; 2620 19940 TRIGGER public runs controlled_run_guard capstone_v2_migrator
+5790; 2620 19991 TRIGGER public xai_evaluation_protocols dbv21_configuration_guard capstone_v2_migrator
+5787; 2620 19990 TRIGGER public xai_method_configurations dbv21_configuration_guard capstone_v2_migrator
+5792; 2620 19989 TRIGGER public xai_evaluation_members dbv21_immutable capstone_v2_migrator
+5791; 2620 19988 TRIGGER public xai_evaluation_protocols dbv21_immutable capstone_v2_migrator
+5788; 2620 19986 TRIGGER public xai_method_configurations dbv21_immutable capstone_v2_migrator
+5789; 2620 19987 TRIGGER public xai_region_attributions dbv21_immutable capstone_v2_migrator
+5793; 2620 19994 TRIGGER public xai_evaluation_members dbv21_xai_evaluation_complete capstone_v2_migrator
+5784; 2620 19992 TRIGGER public xai_quantitative_evaluations dbv21_xai_evaluation_complete capstone_v2_migrator
+5755; 2620 19983 TRIGGER public run_threshold_calibration e04_calibration_complete capstone_v2_migrator
+5756; 2620 19985 TRIGGER public run_threshold_calibration e04_calibration_immutable capstone_v2_migrator
+5737; 2620 19981 TRIGGER public evaluations e04_evaluation_complete capstone_v2_migrator
+5738; 2620 19980 TRIGGER public evaluations e04_legacy_admission capstone_v2_migrator
+5690; 2620 19884 TRIGGER public assessment_attempts global_assessment_reservation capstone_v2_migrator
+5701; 2620 19895 TRIGGER public campaign_attempts global_attempt_reservation capstone_v2_migrator
+5741; 2620 19929 TRIGGER public experiment_execution_events global_execution_event_immutable capstone_v2_migrator
+5777; 2620 19957 TRIGGER public train_execution_sessions global_train_reservation capstone_v2_migrator
+5708; 2620 19903 TRIGGER public campaign_technical_revisions technical_revision_guard capstone_v2_migrator
+5775; 2620 19954 TRIGGER public train_execution_revisions train_execution_revision_immutable capstone_v2_migrator
+5774; 2620 19953 TRIGGER public train_execution_records train_record_guard capstone_v2_migrator
+5776; 2620 19955 TRIGGER public train_execution_revisions train_revision_binding_guard capstone_v2_migrator
+5778; 2620 19958 TRIGGER public train_execution_sessions train_session_guard capstone_v2_migrator
+5726; 2620 19921 TRIGGER public dataset_materialization_activations trg_activation_materialization_consistency capstone_v2_migrator
+5687; 2620 19881 TRIGGER public artifacts trg_artifacts_protect_governed_identity capstone_v2_migrator
+5709; 2620 19904 TRIGGER public cell_classification_events trg_cell_classification_events_append_only capstone_v2_migrator
+5710; 2620 19905 TRIGGER public cell_classification_inputs trg_cell_classification_inputs_append_only capstone_v2_migrator
+5711; 2620 19906 TRIGGER public cell_classification_inputs trg_cell_classification_inputs_insert_state capstone_v2_migrator
+5712; 2620 19907 TRIGGER public cell_classification_inputs trg_cell_classification_inputs_snapshot capstone_v2_migrator
+5713; 2620 19908 TRIGGER public cell_classification_reviews trg_cell_classification_reviews_append_only capstone_v2_migrator
+5714; 2620 19909 TRIGGER public cell_classification_reviews trg_cell_classification_reviews_validate capstone_v2_migrator
+5715; 2620 19910 TRIGGER public cell_classification_runs trg_cell_classification_runs_protected capstone_v2_migrator
+5716; 2620 19911 TRIGGER public cell_classification_runs trg_cell_classification_runs_snapshot capstone_v2_migrator
+5717; 2620 19912 TRIGGER public cell_crops trg_cell_crops_append_only capstone_v2_migrator
+5718; 2620 19913 TRIGGER public cell_detection_events trg_cell_detection_events_append_only capstone_v2_migrator
+5719; 2620 19914 TRIGGER public cell_detection_runs trg_cell_detection_runs_immutable_identity capstone_v2_migrator
+5720; 2620 19915 TRIGGER public cell_detections trg_cell_detections_append_only capstone_v2_migrator
+5721; 2620 19916 TRIGGER public cell_explanations trg_cell_explanations_contract capstone_v2_migrator
+5722; 2620 19917 TRIGGER public cell_explanations trg_cell_explanations_protected capstone_v2_migrator
+5723; 2620 19918 TRIGGER public cell_predictions trg_cell_predictions_append_only capstone_v2_migrator
+5724; 2620 19919 TRIGGER public cell_predictions trg_cell_predictions_insert_state capstone_v2_migrator
+5725; 2620 19920 TRIGGER public cell_predictions trg_cell_predictions_validate_input capstone_v2_migrator
+5727; 2620 19922 TRIGGER public dataset_split_assignments trg_dataset_assignment_consistency capstone_v2_migrator
+5731; 2620 19926 TRIGGER public dataset_versions trg_dataset_version_lifecycle capstone_v2_migrator
+5733; 2620 19927 TRIGGER public deployed_model_versions trg_deployed_model_versions_10_immutable capstone_v2_migrator
+5734; 2620 19928 TRIGGER public deployed_model_versions trg_deployed_model_versions_20_validate capstone_v2_migrator
+5745; 2620 19933 TRIGGER public image_analysis_jobs trg_image_analysis_jobs_validate capstone_v2_migrator
+5746; 2620 19934 TRIGGER public image_connected_components trg_image_connected_components_append_only capstone_v2_migrator
+5747; 2620 19935 TRIGGER public model_versions trg_model_versions_governance capstone_v2_migrator
+5728; 2620 19923 TRIGGER public dataset_split_assignments trg_protect_frozen_dataset_assignment_updates capstone_v2_migrator
+5729; 2620 19924 TRIGGER public dataset_split_assignments trg_protect_frozen_dataset_assignments_delete capstone_v2_migrator
+5730; 2620 19925 TRIGGER public dataset_version_sources trg_protect_frozen_dataset_version_sources capstone_v2_migrator
+5753; 2620 19937 TRIGGER public run_lineage trg_run_lineage_governance capstone_v2_migrator
+5754; 2620 19938 TRIGGER public run_model_deployments trg_run_model_deployments_validate capstone_v2_migrator
+5761; 2620 19941 TRIGGER public scientific_reviews trg_scientific_reviews_append_only capstone_v2_migrator
+5768; 2620 19948 TRIGGER public smear_analysis_summaries trg_smear_analysis_summaries_append_only capstone_v2_migrator
+5769; 2620 19949 TRIGGER public smear_analysis_summaries trg_smear_analysis_summaries_insert_state capstone_v2_migrator
+5770; 2620 19950 TRIGGER public smear_analysis_summaries trg_smear_analysis_summaries_validate capstone_v2_migrator
+5771; 2620 19951 TRIGGER public stage2_model_publication_events trg_stage2_publication_events_append_only capstone_v2_migrator
+5762; 2620 19942 TRIGGER public scientific_validation_annotation_events trg_validation_annotation_events_append_only capstone_v2_migrator
+5763; 2620 19943 TRIGGER public scientific_validation_annotations trg_validation_annotation_protected capstone_v2_migrator
+5764; 2620 19944 TRIGGER public scientific_validation_classification_runs trg_validation_classification_runs_immutable capstone_v2_migrator
+5765; 2620 19945 TRIGGER public scientific_validation_detection_runs trg_validation_detection_runs_immutable capstone_v2_migrator
+5766; 2620 19946 TRIGGER public scientific_validation_images trg_validation_images_immutable capstone_v2_migrator
+5767; 2620 19947 TRIGGER public scientific_validation_sessions trg_validation_snapshot_protected capstone_v2_migrator
+5749; 2620 19959 TRIGGER public run_clinical_metrics v2_binary_metric_guard capstone_v2_migrator
+5757; 2620 19975 TRIGGER public run_threshold_calibration v2_calibration_pair_guard capstone_v2_migrator
+5751; 2620 19960 TRIGGER public run_configurations v2_config_immutable capstone_v2_migrator
+5752; 2620 19974 TRIGGER public run_configurations v2_configuration_guard capstone_v2_migrator
+5735; 2620 19966 TRIGGER public evaluation_ensemble_members v2_ensemble_complete capstone_v2_migrator
+5736; 2620 19963 TRIGGER public evaluation_ensemble_members v2_ensemble_immutable capstone_v2_migrator
+5739; 2620 19964 TRIGGER public evaluations v2_evaluation_complete capstone_v2_migrator
+5740; 2620 19961 TRIGGER public evaluations v2_evaluation_immutable capstone_v2_migrator
+5750; 2620 19962 TRIGGER public run_clinical_metrics v2_metric_immutable capstone_v2_migrator
+5760; 2620 19977 TRIGGER public runs v2_run_configuration_required capstone_v2_migrator
+5779; 2620 19972 TRIGGER public xai_artifacts v2_xai_artifact_guard capstone_v2_migrator
+5780; 2620 19979 TRIGGER public xai_artifacts v2_xai_artifact_source_guard capstone_v2_migrator
+5781; 2620 19968 TRIGGER public xai_evidence v2_xai_immutable capstone_v2_migrator
+5783; 2620 19970 TRIGGER public xai_interpretations v2_xai_interpretation_immutable capstone_v2_migrator
+5782; 2620 19973 TRIGGER public xai_evidence v2_xai_lineage_guard capstone_v2_migrator
+5785; 2620 19969 TRIGGER public xai_quantitative_evaluations v2_xai_quantitative_immutable capstone_v2_migrator
+5786; 2620 19971 TRIGGER public xai_specialist_reviews v2_xai_review_immutable capstone_v2_migrator
+5433; 2606 18138 FK CONSTRAINT public artifacts artifacts_run_id_fkey capstone_v2_migrator
+5434; 2606 18143 FK CONSTRAINT public assessment_artifacts assessment_artifacts_attempt_id_fkey capstone_v2_migrator
+5435; 2606 18148 FK CONSTRAINT public assessment_attempts assessment_attempts_identity_id_fkey capstone_v2_migrator
+5436; 2606 18153 FK CONSTRAINT public assessment_campaign_consumers assessment_campaign_consumers_campaign_id_fkey capstone_v2_migrator
+5437; 2606 18158 FK CONSTRAINT public assessment_campaign_consumers assessment_campaign_consumers_identity_id_fkey capstone_v2_migrator
+5438; 2606 18163 FK CONSTRAINT public assessment_campaign_consumers assessment_campaign_consumers_member_id_fkey capstone_v2_migrator
+5439; 2606 18168 FK CONSTRAINT public assessment_identities assessment_identities_training_run_id_fkey capstone_v2_migrator
+5440; 2606 18173 FK CONSTRAINT public assessment_results assessment_results_attempt_id_fkey capstone_v2_migrator
+5441; 2606 18178 FK CONSTRAINT public audit_events audit_events_actor_user_id_fkey capstone_v2_migrator
+5442; 2606 18183 FK CONSTRAINT public blood_samples blood_samples_archived_by_fkey capstone_v2_migrator
+5443; 2606 18188 FK CONSTRAINT public blood_samples blood_samples_case_id_fkey capstone_v2_migrator
+5444; 2606 18193 FK CONSTRAINT public blood_samples blood_samples_created_by_fkey capstone_v2_migrator
+5445; 2606 18198 FK CONSTRAINT public blood_samples blood_samples_updated_by_fkey capstone_v2_migrator
+5446; 2606 18203 FK CONSTRAINT public campaign_attempts campaign_attempts_member_id_fkey capstone_v2_migrator
+5447; 2606 18208 FK CONSTRAINT public campaign_attempts campaign_attempts_training_run_id_fkey capstone_v2_migrator
+5448; 2606 18213 FK CONSTRAINT public campaign_configurations campaign_configurations_campaign_id_fkey capstone_v2_migrator
+5449; 2606 18218 FK CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_attempt_id_fkey capstone_v2_migrator
+5450; 2606 18223 FK CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_campaign_id_fkey capstone_v2_migrator
+5451; 2606 18228 FK CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_campaign_id_revision_id_fkey capstone_v2_migrator
+5452; 2606 18233 FK CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_member_id_fkey capstone_v2_migrator
+5453; 2606 18238 FK CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_previous_attempt_id_fkey capstone_v2_migrator
+5454; 2606 18243 FK CONSTRAINT public campaign_controlled_requests campaign_controlled_requests_run_id_fkey capstone_v2_migrator
+5455; 2606 18248 FK CONSTRAINT public campaign_execution_events campaign_execution_events_campaign_id_fkey capstone_v2_migrator
+5456; 2606 18253 FK CONSTRAINT public campaign_members campaign_members_campaign_id_configuration_hash_fkey capstone_v2_migrator
+5457; 2606 18258 FK CONSTRAINT public campaign_members campaign_members_campaign_id_fkey capstone_v2_migrator
+5459; 2606 18268 FK CONSTRAINT public campaign_technical_revisions campaign_technical_revisions_campaign_id_fkey capstone_v2_migrator
+5460; 2606 18273 FK CONSTRAINT public cell_classification_events cell_classification_events_cell_detection_id_fkey capstone_v2_migrator
+5461; 2606 18278 FK CONSTRAINT public cell_classification_events cell_classification_events_classification_run_id_fkey capstone_v2_migrator
+5466; 2606 18303 FK CONSTRAINT public cell_classification_reviews cell_classification_reviews_actor_user_id_fkey capstone_v2_migrator
+5467; 2606 18308 FK CONSTRAINT public cell_classification_reviews cell_classification_reviews_cell_prediction_id_fkey capstone_v2_migrator
+5468; 2606 18313 FK CONSTRAINT public cell_classification_runs cell_classification_runs_requested_by_fkey capstone_v2_migrator
+5469; 2606 18318 FK CONSTRAINT public cell_classification_runs cell_classification_runs_retry_of_run_id_fkey capstone_v2_migrator
+5474; 2606 18343 FK CONSTRAINT public cell_detection_events cell_detection_events_detection_run_id_fkey capstone_v2_migrator
+5475; 2606 18348 FK CONSTRAINT public cell_detection_events cell_detection_events_microscopy_image_id_fkey capstone_v2_migrator
+5476; 2606 18353 FK CONSTRAINT public cell_detection_runs cell_detection_runs_analysis_run_id_fkey capstone_v2_migrator
+5477; 2606 18358 FK CONSTRAINT public cell_detection_runs cell_detection_runs_requested_by_fkey capstone_v2_migrator
+5480; 2606 18373 FK CONSTRAINT public cell_explanations cell_explanations_cell_prediction_id_fkey capstone_v2_migrator
+5482; 2606 18383 FK CONSTRAINT public clinical_identities clinical_identities_dataset_id_fkey capstone_v2_migrator
+5483; 2606 18388 FK CONSTRAINT public dataset_materialization_activations dataset_materialization_activations_dataset_version_id_fkey capstone_v2_migrator
+5484; 2606 18393 FK CONSTRAINT public dataset_materialization_activations dataset_materialization_activations_materialization_id_fkey capstone_v2_migrator
+5485; 2606 18398 FK CONSTRAINT public dataset_materializations dataset_materializations_dataset_version_id_fkey capstone_v2_migrator
+5486; 2606 18403 FK CONSTRAINT public dataset_source_records dataset_source_records_clinical_identity_id_fkey capstone_v2_migrator
+5487; 2606 18408 FK CONSTRAINT public dataset_source_records dataset_source_records_dataset_id_fkey capstone_v2_migrator
+5488; 2606 18413 FK CONSTRAINT public dataset_split_assignments dataset_split_assignments_clinical_identity_id_fkey capstone_v2_migrator
+5489; 2606 18418 FK CONSTRAINT public dataset_split_assignments dataset_split_assignments_dataset_version_id_fkey capstone_v2_migrator
+5490; 2606 18423 FK CONSTRAINT public dataset_split_assignments dataset_split_assignments_source_record_id_fkey capstone_v2_migrator
+5491; 2606 18428 FK CONSTRAINT public dataset_split_images dataset_split_images_dataset_id_fkey capstone_v2_migrator
+5492; 2606 18433 FK CONSTRAINT public dataset_split_images dataset_split_images_dataset_materialization_id_fkey capstone_v2_migrator
+5493; 2606 18438 FK CONSTRAINT public dataset_split_images dataset_split_images_dataset_version_id_fkey capstone_v2_migrator
+5494; 2606 18443 FK CONSTRAINT public dataset_split_statistics dataset_split_statistics_dataset_version_id_fkey capstone_v2_migrator
+5495; 2606 18448 FK CONSTRAINT public dataset_split_validation_checks dataset_split_validation_checks_dataset_version_id_fkey capstone_v2_migrator
+5496; 2606 18453 FK CONSTRAINT public dataset_splits dataset_splits_dataset_id_fkey capstone_v2_migrator
+5497; 2606 18458 FK CONSTRAINT public dataset_version_sources dataset_version_sources_dataset_id_fkey capstone_v2_migrator
+5498; 2606 18463 FK CONSTRAINT public dataset_version_sources dataset_version_sources_dataset_version_id_fkey capstone_v2_migrator
+5499; 2606 147038 FK CONSTRAINT public deployed_model_versions deployed_model_versions_threshold_assessment_attempt_id_fkey capstone_v2_migrator
+5504; 2606 18488 FK CONSTRAINT public environment_packages environment_packages_run_id_fkey capstone_v2_migrator
+5505; 2606 18493 FK CONSTRAINT public errors errors_run_id_fkey capstone_v2_migrator
+5518; 2606 18498 FK CONSTRAINT public execution_logs execution_logs_run_id_fkey capstone_v2_migrator
+5519; 2606 18503 FK CONSTRAINT public experimental_campaigns experimental_campaigns_dataset_evidence_id_fkey capstone_v2_migrator
+5520; 2606 18508 FK CONSTRAINT public experimental_campaigns experimental_campaigns_dataset_version_id_fkey capstone_v2_migrator
+5521; 2606 18513 FK CONSTRAINT public experimental_campaigns experimental_campaigns_experiment_id_fkey capstone_v2_migrator
+5522; 2606 18518 FK CONSTRAINT public explainability_results explainability_results_prediction_id_fkey capstone_v2_migrator
+5523; 2606 18523 FK CONSTRAINT public explainability_results explainability_results_run_id_fkey capstone_v2_migrator
+5462; 2606 18283 FK CONSTRAINT public cell_classification_events fk_cell_classification_event_prediction capstone_v2_migrator
+5463; 2606 18288 FK CONSTRAINT public cell_classification_inputs fk_cell_classification_input_crop capstone_v2_migrator
+5464; 2606 18293 FK CONSTRAINT public cell_classification_inputs fk_cell_classification_input_detection capstone_v2_migrator
+5465; 2606 18298 FK CONSTRAINT public cell_classification_inputs fk_cell_classification_input_run_detection capstone_v2_migrator
+5470; 2606 18323 FK CONSTRAINT public cell_classification_runs fk_cell_classification_run_deployment_version capstone_v2_migrator
+5471; 2606 18328 FK CONSTRAINT public cell_classification_runs fk_cell_classification_run_detection_analysis capstone_v2_migrator
+5472; 2606 18333 FK CONSTRAINT public cell_classification_runs fk_cell_classification_run_publication_version capstone_v2_migrator
+5473; 2606 18338 FK CONSTRAINT public cell_crops fk_cell_crops_detection capstone_v2_migrator
+5478; 2606 18363 FK CONSTRAINT public cell_detections fk_cell_detections_component capstone_v2_migrator
+5479; 2606 18368 FK CONSTRAINT public cell_detections fk_cell_detections_run_analysis capstone_v2_migrator
+5481; 2606 18378 FK CONSTRAINT public cell_predictions fk_cell_prediction_input_owner capstone_v2_migrator
+5529; 2606 18553 FK CONSTRAINT public image_connected_components fk_components_detection_analysis capstone_v2_migrator
+5530; 2606 18558 FK CONSTRAINT public image_connected_components fk_components_frozen_image capstone_v2_migrator
+5500; 2606 18468 FK CONSTRAINT public deployed_model_versions fk_deployed_model_versions_rollback capstone_v2_migrator
+5501; 2606 18473 FK CONSTRAINT public deployed_model_versions fk_deployed_model_versions_supersedes capstone_v2_migrator
+5502; 2606 18478 FK CONSTRAINT public deployed_model_versions fk_deployed_model_versions_threshold_version capstone_v2_migrator
+5503; 2606 18483 FK CONSTRAINT public deployed_model_versions fk_deployed_model_versions_version_artifact capstone_v2_migrator
+5509; 2606 19163 FK CONSTRAINT public evaluations fk_evaluation_e10_record capstone_v2_migrator
+5526; 2606 18538 FK CONSTRAINT public image_analysis_jobs fk_image_analysis_jobs_input_artifact capstone_v2_migrator
+5527; 2606 18543 FK CONSTRAINT public image_analysis_jobs fk_image_analysis_jobs_run_deployment_version capstone_v2_migrator
+5528; 2606 18548 FK CONSTRAINT public image_analysis_jobs fk_image_analysis_jobs_source_image capstone_v2_migrator
+5458; 2606 18263 FK CONSTRAINT public campaign_members fk_member_accepted_attempt capstone_v2_migrator
+5585; 2606 19168 FK CONSTRAINT public run_clinical_metrics fk_metric_evaluation_run capstone_v2_migrator
+5556; 2606 18688 FK CONSTRAINT public model_versions fk_model_versions_checkpoint_artifact_owner capstone_v2_migrator
+5559; 2606 18703 FK CONSTRAINT public predictions fk_predictions_analysis_job capstone_v2_migrator
+5560; 2606 18708 FK CONSTRAINT public predictions fk_predictions_classifier_model_version capstone_v2_migrator
+5561; 2606 18713 FK CONSTRAINT public predictions fk_predictions_crop_artifact capstone_v2_migrator
+5562; 2606 18718 FK CONSTRAINT public predictions fk_predictions_deployed_model_version capstone_v2_migrator
+5563; 2606 18723 FK CONSTRAINT public predictions fk_predictions_detector_model_version capstone_v2_migrator
+5564; 2606 18728 FK CONSTRAINT public predictions fk_predictions_explanation_artifact capstone_v2_migrator
+5565; 2606 18733 FK CONSTRAINT public predictions fk_predictions_inference_run capstone_v2_migrator
+5566; 2606 18738 FK CONSTRAINT public predictions fk_predictions_job_provenance capstone_v2_migrator
+5567; 2606 18743 FK CONSTRAINT public predictions fk_predictions_model_version capstone_v2_migrator
+5568; 2606 18748 FK CONSTRAINT public predictions fk_predictions_source_image capstone_v2_migrator
+5581; 2606 18798 FK CONSTRAINT public run_checkpoint_policy fk_run_checkpoint_policy_artifact_owner capstone_v2_migrator
+5582; 2606 18803 FK CONSTRAINT public run_checkpoint_policy fk_run_checkpoint_policy_model_version_owner capstone_v2_migrator
+5583; 2606 18808 FK CONSTRAINT public run_checkpoint_policy fk_run_checkpoint_policy_version_artifact capstone_v2_migrator
+5596; 2606 18863 FK CONSTRAINT public run_lineage fk_run_lineage_checkpoint_artifact_owner capstone_v2_migrator
+5597; 2606 18868 FK CONSTRAINT public run_lineage fk_run_lineage_model_version_owner capstone_v2_migrator
+5598; 2606 18873 FK CONSTRAINT public run_lineage fk_run_lineage_version_artifact capstone_v2_migrator
+5602; 2606 18893 FK CONSTRAINT public run_model_deployments fk_run_model_deployments_deployment_version capstone_v2_migrator
+5603; 2606 18898 FK CONSTRAINT public run_model_deployments fk_run_model_deployments_run capstone_v2_migrator
+5604; 2606 18903 FK CONSTRAINT public run_threshold_calibration fk_run_threshold_calibration_artifact_owner capstone_v2_migrator
+5605; 2606 18908 FK CONSTRAINT public run_threshold_calibration fk_run_threshold_calibration_model_version capstone_v2_migrator
+5638; 2606 19063 FK CONSTRAINT public smear_analysis_summaries fk_smear_summary_classification_lineage capstone_v2_migrator
+5645; 2606 19093 FK CONSTRAINT public stage2_model_publications fk_stage2_publication_evaluation capstone_v2_migrator
+5646; 2606 19179 FK CONSTRAINT public stage2_model_publications fk_stage2_publication_model_training capstone_v2_migrator
+5647; 2606 19098 FK CONSTRAINT public stage2_model_publications fk_stage2_publication_training capstone_v2_migrator
+5648; 2606 19103 FK CONSTRAINT public stage2_model_publications fk_stage2_publication_version_artifact capstone_v2_migrator
+5510; 2606 19303 FK CONSTRAINT public evaluations fk_v2_evaluation_dataset_origin capstone_v2_migrator
+5569; 2606 19186 FK CONSTRAINT public predictions fk_v2_prediction_evaluation_run capstone_v2_migrator
+5685; 2606 19477 FK CONSTRAINT public xai_evaluation_members fk_xai_member_evaluation capstone_v2_migrator
+5686; 2606 19482 FK CONSTRAINT public xai_evaluation_members fk_xai_member_evidence capstone_v2_migrator
+5664; 2606 19457 FK CONSTRAINT public xai_evidence fk_xai_method_configuration capstone_v2_migrator
+5680; 2606 19467 FK CONSTRAINT public xai_quantitative_evaluations fk_xai_metric_protocol capstone_v2_migrator
+5681; 2606 19472 FK CONSTRAINT public xai_quantitative_evaluations fk_xai_reference_annotation capstone_v2_migrator
+5684; 2606 19462 FK CONSTRAINT public xai_region_attributions fk_xai_region_evidence capstone_v2_migrator
+5524; 2606 18528 FK CONSTRAINT public identity_evidence identity_evidence_clinical_identity_id_fkey capstone_v2_migrator
+5525; 2606 18533 FK CONSTRAINT public identity_evidence identity_evidence_source_record_id_fkey capstone_v2_migrator
+5531; 2606 18563 FK CONSTRAINT public image_ingestion_batches image_ingestion_batches_case_id_fkey capstone_v2_migrator
+5532; 2606 18568 FK CONSTRAINT public image_ingestion_batches image_ingestion_batches_created_by_fkey capstone_v2_migrator
+5533; 2606 18573 FK CONSTRAINT public image_ingestion_batches image_ingestion_batches_sample_id_fkey capstone_v2_migrator
+5534; 2606 18578 FK CONSTRAINT public image_ingestion_batches image_ingestion_batches_slide_id_fkey capstone_v2_migrator
+5535; 2606 18583 FK CONSTRAINT public image_ingestion_batches image_ingestion_batches_subject_id_fkey capstone_v2_migrator
+5536; 2606 18588 FK CONSTRAINT public image_quality_assessments image_quality_assessments_analysis_run_id_fkey capstone_v2_migrator
+5537; 2606 18593 FK CONSTRAINT public image_quality_assessments image_quality_assessments_analysis_run_image_id_analysis_r_fkey capstone_v2_migrator
+5538; 2606 18598 FK CONSTRAINT public image_quality_assessments image_quality_assessments_microscopy_image_id_fkey capstone_v2_migrator
+5539; 2606 18603 FK CONSTRAINT public local_execution_jobs local_execution_jobs_campaign_id_fkey capstone_v2_migrator
+5540; 2606 18608 FK CONSTRAINT public local_execution_jobs local_execution_jobs_run_id_fkey capstone_v2_migrator
+5541; 2606 18613 FK CONSTRAINT public microscopy_analysis_events microscopy_analysis_events_analysis_run_id_fkey capstone_v2_migrator
+5542; 2606 18618 FK CONSTRAINT public microscopy_analysis_events microscopy_analysis_events_microscopy_image_id_fkey capstone_v2_migrator
+5543; 2606 18623 FK CONSTRAINT public microscopy_analysis_run_images microscopy_analysis_run_images_analysis_run_id_fkey capstone_v2_migrator
+5544; 2606 18628 FK CONSTRAINT public microscopy_analysis_run_images microscopy_analysis_run_images_microscopy_image_id_fkey capstone_v2_migrator
+5545; 2606 18633 FK CONSTRAINT public microscopy_analysis_runs microscopy_analysis_runs_case_id_fkey capstone_v2_migrator
+5546; 2606 18638 FK CONSTRAINT public microscopy_analysis_runs microscopy_analysis_runs_ingestion_batch_id_fkey capstone_v2_migrator
+5547; 2606 18643 FK CONSTRAINT public microscopy_analysis_runs microscopy_analysis_runs_requested_by_fkey capstone_v2_migrator
+5548; 2606 18648 FK CONSTRAINT public microscopy_analysis_runs microscopy_analysis_runs_sample_id_fkey capstone_v2_migrator
+5549; 2606 18653 FK CONSTRAINT public microscopy_analysis_runs microscopy_analysis_runs_slide_id_fkey capstone_v2_migrator
+5550; 2606 18658 FK CONSTRAINT public microscopy_analysis_runs microscopy_analysis_runs_subject_id_fkey capstone_v2_migrator
+5551; 2606 18663 FK CONSTRAINT public microscopy_images microscopy_images_archived_by_fkey capstone_v2_migrator
+5552; 2606 18668 FK CONSTRAINT public microscopy_images microscopy_images_created_by_fkey capstone_v2_migrator
+5553; 2606 18673 FK CONSTRAINT public microscopy_images microscopy_images_ingestion_batch_id_fkey capstone_v2_migrator
+5554; 2606 18678 FK CONSTRAINT public microscopy_images microscopy_images_slide_id_fkey capstone_v2_migrator
+5555; 2606 18683 FK CONSTRAINT public microscopy_images microscopy_images_updated_by_fkey capstone_v2_migrator
+5557; 2606 18693 FK CONSTRAINT public model_versions model_versions_model_id_fkey capstone_v2_migrator
+5558; 2606 18698 FK CONSTRAINT public model_versions model_versions_training_run_id_fkey capstone_v2_migrator
+5570; 2606 18753 FK CONSTRAINT public predictions predictions_dataset_id_fkey capstone_v2_migrator
+5571; 2606 18758 FK CONSTRAINT public predictions predictions_run_id_fkey capstone_v2_migrator
+5574; 2606 18763 FK CONSTRAINT public quality_assessment_queue_items quality_assessment_queue_items_analysis_run_id_fkey capstone_v2_migrator
+5575; 2606 18768 FK CONSTRAINT public quality_assessment_queue_items quality_assessment_queue_items_requested_by_fkey capstone_v2_migrator
+5576; 2606 18773 FK CONSTRAINT public quality_gate_decisions quality_gate_decisions_actor_user_id_fkey capstone_v2_migrator
+5577; 2606 18778 FK CONSTRAINT public quality_gate_decisions quality_gate_decisions_analysis_run_id_fkey capstone_v2_migrator
+5578; 2606 18783 FK CONSTRAINT public research_subjects research_subjects_archived_by_fkey capstone_v2_migrator
+5579; 2606 18788 FK CONSTRAINT public research_subjects research_subjects_created_by_fkey capstone_v2_migrator
+5580; 2606 18793 FK CONSTRAINT public research_subjects research_subjects_updated_by_fkey capstone_v2_migrator
+5584; 2606 18813 FK CONSTRAINT public run_checkpoint_policy run_checkpoint_policy_run_id_fkey capstone_v2_migrator
+5586; 2606 18818 FK CONSTRAINT public run_clinical_metrics run_clinical_metrics_model_id_fkey capstone_v2_migrator
+5587; 2606 18823 FK CONSTRAINT public run_clinical_metrics run_clinical_metrics_run_id_fkey capstone_v2_migrator
+5589; 2606 18828 FK CONSTRAINT public run_dataset_images run_dataset_images_image_id_fkey capstone_v2_migrator
+5590; 2606 18833 FK CONSTRAINT public run_dataset_images run_dataset_images_run_id_fkey capstone_v2_migrator
+5591; 2606 18838 FK CONSTRAINT public run_image_predictions run_image_predictions_image_id_fkey capstone_v2_migrator
+5592; 2606 18843 FK CONSTRAINT public run_image_predictions run_image_predictions_run_id_fkey capstone_v2_migrator
+5593; 2606 18848 FK CONSTRAINT public run_io_records run_io_records_dataset_materialization_id_fkey capstone_v2_migrator
+5594; 2606 18853 FK CONSTRAINT public run_io_records run_io_records_dataset_version_id_fkey capstone_v2_migrator
+5595; 2606 18858 FK CONSTRAINT public run_io_records run_io_records_run_id_fkey capstone_v2_migrator
+5599; 2606 18878 FK CONSTRAINT public run_lineage run_lineage_child_run_id_fkey capstone_v2_migrator
+5600; 2606 18883 FK CONSTRAINT public run_lineage run_lineage_parent_run_id_fkey capstone_v2_migrator
+5601; 2606 18888 FK CONSTRAINT public run_metrics run_metrics_run_id_fkey capstone_v2_migrator
+5606; 2606 18913 FK CONSTRAINT public run_threshold_calibration run_threshold_calibration_run_id_fkey capstone_v2_migrator
+5609; 2606 18918 FK CONSTRAINT public runs runs_campaign_id_fkey capstone_v2_migrator
+5610; 2606 18923 FK CONSTRAINT public runs runs_dataset_id_fkey capstone_v2_migrator
+5611; 2606 18928 FK CONSTRAINT public runs runs_dataset_version_id_fkey capstone_v2_migrator
+5612; 2606 18933 FK CONSTRAINT public runs runs_experiment_id_fkey capstone_v2_migrator
+5613; 2606 18938 FK CONSTRAINT public runs runs_model_id_fkey capstone_v2_migrator
+5614; 2606 18943 FK CONSTRAINT public scientific_cases scientific_cases_archived_by_fkey capstone_v2_migrator
+5615; 2606 18948 FK CONSTRAINT public scientific_cases scientific_cases_created_by_fkey capstone_v2_migrator
+5616; 2606 18953 FK CONSTRAINT public scientific_cases scientific_cases_subject_id_fkey capstone_v2_migrator
+5617; 2606 18958 FK CONSTRAINT public scientific_cases scientific_cases_updated_by_fkey capstone_v2_migrator
+5618; 2606 18963 FK CONSTRAINT public scientific_reviews scientific_reviews_actor_user_id_fkey capstone_v2_migrator
+5619; 2606 18968 FK CONSTRAINT public scientific_reviews scientific_reviews_entity_id_fkey capstone_v2_migrator
+5620; 2606 18973 FK CONSTRAINT public scientific_validation_annotation_events scientific_validation_annotation_eve_validation_session_id_fkey capstone_v2_migrator
+5621; 2606 18978 FK CONSTRAINT public scientific_validation_annotation_events scientific_validation_annotation_events_actor_user_id_fkey capstone_v2_migrator
+5622; 2606 18983 FK CONSTRAINT public scientific_validation_annotation_events scientific_validation_annotation_events_annotation_id_fkey capstone_v2_migrator
+5623; 2606 18988 FK CONSTRAINT public scientific_validation_annotations scientific_validation_annotations_analysis_run_id_fkey capstone_v2_migrator
+5624; 2606 18993 FK CONSTRAINT public scientific_validation_annotations scientific_validation_annotations_cell_detection_id_fkey capstone_v2_migrator
+5625; 2606 18998 FK CONSTRAINT public scientific_validation_annotations scientific_validation_annotations_created_by_fkey capstone_v2_migrator
+5626; 2606 19003 FK CONSTRAINT public scientific_validation_annotations scientific_validation_annotations_sample_id_fkey capstone_v2_migrator
+5627; 2606 19008 FK CONSTRAINT public scientific_validation_annotations scientific_validation_annotations_updated_by_fkey capstone_v2_migrator
+5628; 2606 19013 FK CONSTRAINT public scientific_validation_annotations scientific_validation_annotations_validation_session_id_fkey capstone_v2_migrator
+5629; 2606 19018 FK CONSTRAINT public scientific_validation_classification_runs scientific_validation_classification_classification_run_id_fkey capstone_v2_migrator
+5630; 2606 19023 FK CONSTRAINT public scientific_validation_classification_runs scientific_validation_classification_runs_session_id_fkey capstone_v2_migrator
+5631; 2606 19028 FK CONSTRAINT public scientific_validation_detection_runs scientific_validation_detection_runs_detection_run_id_fkey capstone_v2_migrator
+5632; 2606 19033 FK CONSTRAINT public scientific_validation_detection_runs scientific_validation_detection_runs_session_id_fkey capstone_v2_migrator
+5633; 2606 19038 FK CONSTRAINT public scientific_validation_images scientific_validation_images_microscopy_image_id_fkey capstone_v2_migrator
+5634; 2606 19043 FK CONSTRAINT public scientific_validation_images scientific_validation_images_session_id_fkey capstone_v2_migrator
+5635; 2606 19048 FK CONSTRAINT public scientific_validation_sessions scientific_validation_sessions_archived_by_fkey capstone_v2_migrator
+5636; 2606 19053 FK CONSTRAINT public scientific_validation_sessions scientific_validation_sessions_created_by_fkey capstone_v2_migrator
+5637; 2606 19058 FK CONSTRAINT public scientific_validation_sessions scientific_validation_sessions_updated_by_fkey capstone_v2_migrator
+5639; 2606 19068 FK CONSTRAINT public smear_slides smear_slides_archived_by_fkey capstone_v2_migrator
+5640; 2606 19073 FK CONSTRAINT public smear_slides smear_slides_created_by_fkey capstone_v2_migrator
+5641; 2606 19078 FK CONSTRAINT public smear_slides smear_slides_sample_id_fkey capstone_v2_migrator
+5642; 2606 19083 FK CONSTRAINT public smear_slides smear_slides_updated_by_fkey capstone_v2_migrator
+5643; 2606 147032 FK CONSTRAINT public stage2_model_publication_events stage2_model_publication_events_evaluation_attempt_id_fkey capstone_v2_migrator
+5644; 2606 19088 FK CONSTRAINT public stage2_model_publication_events stage2_model_publication_events_publication_id_fkey capstone_v2_migrator
+5649; 2606 147026 FK CONSTRAINT public stage2_model_publications stage2_model_publications_evaluation_attempt_id_fkey capstone_v2_migrator
+5650; 2606 19108 FK CONSTRAINT public synthetic_data_runs synthetic_data_runs_run_id_fkey capstone_v2_migrator
+5651; 2606 19113 FK CONSTRAINT public synthetic_data_runs synthetic_data_runs_source_dataset_id_fkey capstone_v2_migrator
+5652; 2606 19118 FK CONSTRAINT public train_execution_records train_execution_records_run_id_fkey capstone_v2_migrator
+5653; 2606 19123 FK CONSTRAINT public train_execution_revisions train_execution_revisions_attempt_id_fkey capstone_v2_migrator
+5654; 2606 19128 FK CONSTRAINT public train_execution_revisions train_execution_revisions_campaign_id_fkey capstone_v2_migrator
+5655; 2606 19133 FK CONSTRAINT public train_execution_revisions train_execution_revisions_campaign_id_revision_id_fkey capstone_v2_migrator
+5656; 2606 19138 FK CONSTRAINT public train_execution_sessions train_execution_sessions_attempt_id_fkey capstone_v2_migrator
+5657; 2606 19143 FK CONSTRAINT public train_execution_sessions train_execution_sessions_run_id_fkey capstone_v2_migrator
+5658; 2606 19148 FK CONSTRAINT public training_history training_history_run_id_fkey capstone_v2_migrator
+5659; 2606 19153 FK CONSTRAINT public user_roles user_roles_role_id_fkey capstone_v2_migrator
+5660; 2606 19158 FK CONSTRAINT public user_roles user_roles_user_id_fkey capstone_v2_migrator
+5506; 2606 19329 FK CONSTRAINT public evaluation_ensemble_members v2_evaluation_ensemble_members_foreign_6aec504c7a2f capstone_v2_migrator
+5507; 2606 19318 FK CONSTRAINT public evaluation_ensemble_members v2_evaluation_ensemble_members_foreign_a402d28a70f6 capstone_v2_migrator
+5508; 2606 19324 FK CONSTRAINT public evaluation_ensemble_members v2_evaluation_ensemble_members_foreign_b946b2b207f3 capstone_v2_migrator
+5511; 2606 19291 FK CONSTRAINT public evaluations v2_evaluations_foreign_0baa7d166e2f capstone_v2_migrator
+5512; 2606 19269 FK CONSTRAINT public evaluations v2_evaluations_foreign_14b20ff24e12 capstone_v2_migrator
+5513; 2606 19259 FK CONSTRAINT public evaluations v2_evaluations_foreign_4e6a43d876af capstone_v2_migrator
+5514; 2606 19264 FK CONSTRAINT public evaluations v2_evaluations_foreign_6aec504c7a2f capstone_v2_migrator
+5515; 2606 19297 FK CONSTRAINT public evaluations v2_evaluations_foreign_6cfcdf2998f5 capstone_v2_migrator
+5516; 2606 19284 FK CONSTRAINT public evaluations v2_evaluations_foreign_c764adede219 capstone_v2_migrator
+5517; 2606 19254 FK CONSTRAINT public evaluations v2_evaluations_foreign_db5338c19de4 capstone_v2_migrator
+5572; 2606 19194 FK CONSTRAINT public predictions v2_predictions_foreign_a402d28a70f6 capstone_v2_migrator
+5573; 2606 19199 FK CONSTRAINT public predictions v2_predictions_foreign_e8d9af78807c capstone_v2_migrator
+5588; 2606 19223 FK CONSTRAINT public run_configurations v2_run_configurations_foreign_db5338c19de4 capstone_v2_migrator
+5607; 2606 19205 FK CONSTRAINT public run_threshold_calibration v2_run_threshold_calibration_foreign_014acc59cdbd capstone_v2_migrator
+5608; 2606 19210 FK CONSTRAINT public run_threshold_calibration v2_run_threshold_calibration_foreign_0ba3287c0955 capstone_v2_migrator
+5661; 2606 19406 FK CONSTRAINT public xai_artifacts v2_xai_artifacts_foreign_4b080b42e888 capstone_v2_migrator
+5662; 2606 19411 FK CONSTRAINT public xai_artifacts v2_xai_artifacts_foreign_e3d2eb574718 capstone_v2_migrator
+5663; 2606 19416 FK CONSTRAINT public xai_artifacts v2_xai_artifacts_foreign_f9c5548be835 capstone_v2_migrator
+5665; 2606 19350 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_029e07f1d6db capstone_v2_migrator
+5666; 2606 19340 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_3fe88bd35854 capstone_v2_migrator
+5667; 2606 19345 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_4b04405ab069 capstone_v2_migrator
+5668; 2606 19399 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_52bd313b1c15 capstone_v2_migrator
+5669; 2606 19385 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_6aec504c7a2f capstone_v2_migrator
+5670; 2606 19335 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_9851edbb8079 capstone_v2_migrator
+5671; 2606 19365 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_a1c9b824423e capstone_v2_migrator
+5672; 2606 19355 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_a402d28a70f6 capstone_v2_migrator
+5673; 2606 19370 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_ad1ea3f78d92 capstone_v2_migrator
+5674; 2606 19380 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_b946b2b207f3 capstone_v2_migrator
+5675; 2606 19375 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_db5338c19de4 capstone_v2_migrator
+5676; 2606 19360 FK CONSTRAINT public xai_evidence v2_xai_evidence_foreign_e8d9af78807c capstone_v2_migrator
+5677; 2606 19428 FK CONSTRAINT public xai_interpretations v2_xai_interpretations_foreign_4b080b42e888 capstone_v2_migrator
+5678; 2606 19433 FK CONSTRAINT public xai_interpretations v2_xai_interpretations_foreign_6b09f9926d4f capstone_v2_migrator
+5679; 2606 19439 FK CONSTRAINT public xai_interpretations v2_xai_interpretations_foreign_af451d74af77 capstone_v2_migrator
+5682; 2606 19444 FK CONSTRAINT public xai_specialist_reviews v2_xai_specialist_reviews_foreign_4735bf604cb2 capstone_v2_migrator
+5683; 2606 19449 FK CONSTRAINT public xai_specialist_reviews v2_xai_specialist_reviews_foreign_7ca01df9e490 capstone_v2_migrator

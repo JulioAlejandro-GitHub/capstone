@@ -1,0 +1,69 @@
+{
+    "role": "biomedclip_test_runtime",
+    "origins": [
+        {
+            "model": "biomedclip_zero_shot",
+            "run_id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+            "status": "completed",
+            "history": 0,
+            "records": 0,
+            "run_type": "training",
+            "artifacts": 5,
+            "trainable": false,
+            "completion": {
+                "owner": "cc890f0c-02dd-425d-9c63-5ed33d1e5004",
+                "run_id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+                "schema": "pretrained_completion_v1",
+                "model_id": "2616e878-8d4b-47b1-8404-c8828bff01a0",
+                "artifact_id": "9170d6e0-832a-46e6-894e-aa3c8936cb0d",
+                "components_hash": "1d1ca160d9b7783ae033a05587f850949dc6a36307536c52fd3c51fe080c18c6",
+                "model_version_id": "4e273552-47c7-4b94-b3fa-4a709618f028",
+                "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e",
+                "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2"
+            },
+            "assessments": 0,
+            "verification": {
+                "status": "verified",
+                "completion": {
+                    "owner": "cc890f0c-02dd-425d-9c63-5ed33d1e5004",
+                    "run_id": "310bfe08-0a27-4cf7-a00c-4404f7284d75",
+                    "schema": "pretrained_completion_v1",
+                    "model_id": "2616e878-8d4b-47b1-8404-c8828bff01a0",
+                    "artifact_id": "9170d6e0-832a-46e6-894e-aa3c8936cb0d",
+                    "components_hash": "1d1ca160d9b7783ae033a05587f850949dc6a36307536c52fd3c51fe080c18c6",
+                    "model_version_id": "4e273552-47c7-4b94-b3fa-4a709618f028",
+                    "configuration_hash": "1055b68169a00f8af07f750ac32a2179945169be8323592faa5ba44019ac850e",
+                    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2"
+                },
+                "components": {
+                    "text/vocab.txt": {
+                        "bytes": 225062,
+                        "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+                    },
+                    "text/config.json": {
+                        "bytes": 385,
+                        "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+                    },
+                    "open_clip_config.json": {
+                        "bytes": 707,
+                        "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+                    },
+                    "text/tokenizer_config.json": {
+                        "bytes": 28,
+                        "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+                    },
+                    "open_clip_pytorch_model.bin": {
+                        "bytes": 783705670,
+                        "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+                    }
+                }
+            },
+            "session_state": "verified",
+            "completion_valid": true,
+            "configuration_valid": true,
+            "optimizer_configurations": 0
+        }
+    ],
+    "database": "biomedclip_01c1_runtime",
+    "superuser": false
+}

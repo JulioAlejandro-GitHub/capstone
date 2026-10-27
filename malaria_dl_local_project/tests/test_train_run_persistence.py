@@ -36,6 +36,11 @@ def training(isolated, tmp_path):
                      '20260915_01_local_execution'):
         apply(x.c, revision)
     install_e10(x.c)
+    for table in ("run_configurations", "evaluations", "run_clinical_metrics"):
+        x.c.execute(text(
+            f"CREATE TABLE {table} (LIKE public.{table} "
+            "INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)"
+        ))
     from test_campaigns_e4 import request, protocol
     requested = request()
     requested['models'] = ['vgg16']
@@ -91,8 +96,8 @@ def test_creation_preserves_scientific_configuration_and_worker_environment(trai
     assert row['execution_parameters']['runtime_environment'] == RUNTIME
     assert row['python_version'] == RUNTIME['python'] != t.session['environment']['python']
     assert row['host_name'] == RUNTIME['host']
-    assert row['tensorflow_version'] == RUNTIME['tensorflow']
-    assert row['keras_version'] == RUNTIME['packages']['keras']
+    assert row['execution_parameters']['runtime_environment']['tensorflow'] == RUNTIME['tensorflow']
+    assert row['execution_parameters']['runtime_environment']['packages']['keras'] == RUNTIME['packages']['keras']
     assert row['execution_type'] == 'local_python'
     assert row['git_commit'] == RUNTIME['git_commit']
     assert row['platform'] == 'Darwin' and row['machine'] == 'arm64'
@@ -100,6 +105,7 @@ def test_creation_preserves_scientific_configuration_and_worker_environment(trai
 
 def test_completion_and_two_verifications_preserve_results(training, monkeypatch):
     t = training
+    monkeypatch.setattr("src.malaria_dl.execution.accelerator.gpu_required", lambda: False)
     descriptor, trace = install_science(monkeypatch, first_epoch_best=True)
     monkeypatch.setattr('src.malaria_dl.execution.campaign.runtime_environment', lambda: RUNTIME)
     # The actual TRAIN orchestration emits two completed epochs per phase, with
@@ -218,6 +224,7 @@ def test_selected_artifact_retains_run_attempt_and_selection(training, monkeypat
     from src.malaria_dl.execution.artifacts import file_identity
     t = training
     t.x.c.execute(text('CREATE TABLE artifacts (LIKE public.artifacts INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)'))
+    monkeypatch.setattr("src.malaria_dl.execution.accelerator.gpu_required", lambda: False)
     descriptor, _ = install_science(monkeypatch, first_epoch_best=True)
     original_finish = t.repo.finish
 

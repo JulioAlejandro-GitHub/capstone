@@ -249,7 +249,7 @@ def expand_matrix(request, protocol=None, *, frozen=False, dataset=None):
         raise CampaignError("INVALID_TRAINING_SEEDS")
     seeds = sorted(set(seeds))
     names = (
-        request["models"] if request["models"] is not None else list(enabled_models())
+        request["models"] if request["models"] is not None else [n for n in enabled_models() if resolve_descriptor(n, executable=False).trainable]
     )
     if not isinstance(names, list) or not names:
         raise CampaignError("NO_MODELS")

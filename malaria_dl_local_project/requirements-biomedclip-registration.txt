@@ -1,0 +1,10 @@
+# Validated on Python 3.12 / Apple Silicon in BIOMEDCLIP-01B.
+# Install in an isolated venv; registration reads package versions without performing inference.
+# Existing application dependencies (SQLAlchemy, psycopg, python-dotenv) remain required.
+torch==2.14.1
+torchvision==0.29.1
+open_clip_torch==3.3.0
+transformers==4.57.6
+timm==1.0.30
+tokenizers==0.22.2
+numpy==1.26.4

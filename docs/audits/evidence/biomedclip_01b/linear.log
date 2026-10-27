@@ -1,0 +1,40 @@
+2026-10-26 20:08:22.004763: I metal_plugin/src/device/metal_device.cc:1154] Metal device set to: Apple M4 Max
+2026-10-26 20:08:22.004836: I metal_plugin/src/device/metal_device.cc:296] systemMemory: 48.00 GB
+2026-10-26 20:08:22.004844: I metal_plugin/src/device/metal_device.cc:313] maxCacheSize: 18.72 GB
+2026-10-26 20:08:22.004856: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
+2026-10-26 20:08:22.004866: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
+  0%|          | 0/32 [00:00<?, ?it/s] 38%|███▊      | 12/32 [00:00<00:00, 111.32it/s] 88%|████████▊ | 28/32 [00:00<00:00, 137.50it/s]100%|██████████| 32/32 [00:00<00:00, 136.52it/s]
+{
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 0.6898806095123291,
+      "val_loss": 0.6860694885253906,
+      "val_accuracy": 0.75,
+      "learning_rate": 0.1
+    },
+    {
+      "epoch": 2,
+      "loss": 0.6885621547698975,
+      "val_loss": 0.6851440668106079,
+      "val_accuracy": 0.75,
+      "learning_rate": 0.1
+    },
+    {
+      "epoch": 3,
+      "loss": 0.6872483491897583,
+      "val_loss": 0.6842219829559326,
+      "val_accuracy": 0.875,
+      "learning_rate": 0.1
+    }
+  ],
+  "parity": {
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "allclose": true,
+    "atol": 0.0001,
+    "rtol": 0.001
+  },
+  "head_variable_device": "/job:localhost/replica:0/task:0/device:GPU:0",
+  "encoder_unchanged": true
+}

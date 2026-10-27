@@ -24,6 +24,8 @@ class ModelDescriptor:
     default_preprocessing: str = "rescale_0_1"
 
     def create_adapter(self):
+        if not self.trainable:
+            raise ValueError("MODEL_NOT_TRAINABLE:" + self.id)
         module, symbol = self.adapter.split(":")
         return getattr(import_module(module), symbol)()
 
@@ -42,14 +44,14 @@ def register(descriptor):
         raise ValueError("INVALID_MODEL_CAPABILITY")
     if (
         not descriptor.version
-        or not re.fullmatch(
+        or (descriptor.trainable and not re.fullmatch(
             r"[a-zA-Z_][a-zA-Z0-9_.]*:[a-zA-Z_][a-zA-Z0-9_]*", descriptor.adapter
-        )
+        ))
         or not Path(descriptor.config_path).is_file()
         or not descriptor.input_contract
         or not descriptor.output_contract
-        or not descriptor.strategies
-        or not descriptor.optimizers
+        or (descriptor.trainable and not descriptor.strategies)
+        or (descriptor.trainable and not descriptor.optimizers)
         or not set(descriptor.optimizers).issubset(OPTIMIZER_DEFAULTS)
     ):
         raise ValueError("INCOMPLETE_MODEL_DESCRIPTOR")
@@ -110,7 +112,10 @@ def model_arg(name):
     import argparse
 
     try:
-        return resolve_descriptor(name).id
+        descriptor = resolve_descriptor(name, executable=False)
+        if not descriptor.enabled:
+            raise ValueError("MODEL_NOT_EXECUTABLE:" + str(name))
+        return descriptor.id
     except ValueError as exc:
         raise argparse.ArgumentTypeError(str(exc)) from None
 
@@ -154,3 +159,11 @@ for _id, _aliases, _adapter, _strategies, _internal in (
             "vgg16_imagenet" if _id == "vgg16" else "rescale_0_1",
         )
     )
+
+register(ModelDescriptor(
+    "biomedclip_zero_shot", (), True, False, "1.0", "",
+    str(_CONFIG / "biomedclip_zero_shot.json"),
+    "RGB NCHW float32; OpenCLIP original transform 224",
+    "relative softmax score_parasitized; not clinically calibrated", (), (),
+    preprocessing_modes=("biomedclip_original",), default_preprocessing="biomedclip_original",
+))

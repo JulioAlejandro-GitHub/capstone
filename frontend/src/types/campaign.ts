@@ -26,6 +26,8 @@ export interface CampaignModel {
   id: string;
   label: string;
   adapter_version: string;
+  trainable?: boolean;
+  disabled_reason?: string | null;
   strategies: string[];
   optimizers: string[];
   input_contract: string;

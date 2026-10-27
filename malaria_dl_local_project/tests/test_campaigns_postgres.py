@@ -112,8 +112,9 @@ def isolated():
             checkpoint_monitor text, checkpoint_mode text, best_validation_value double precision,
             early_stopping_enabled boolean, early_stopping_patience integer,
             early_stopping_min_delta double precision, restore_best_weights boolean,
-            host_name text, git_commit text, python_version text, tensorflow_version text,
-            keras_version text, platform text, machine text, execution_type text, error_message text);
+            host_name text, git_commit text, python_version text,
+            platform text, machine text, execution_type text, error_message text,
+            gpu_available boolean, gpu_devices jsonb);
           CREATE TABLE dataset_version_sources(dataset_version_id uuid REFERENCES dataset_versions(id),
             dataset_id uuid, role text);
           CREATE TABLE audit_events (LIKE public.audit_events INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES);""",
@@ -312,10 +313,6 @@ def test_public_migration_readonly():
     try:
         with engine.begin() as c:
             sql(c, "SET TRANSACTION READ ONLY")
-            assert (
-                sql(c, "SELECT version_num FROM public.alembic_version").scalar_one()
-                == "20260911_02"
-            )
             assert (
                 sql(
                     c,

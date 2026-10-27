@@ -21,16 +21,21 @@ from .selection import select_trainings
 def training_plan(repository: ExecutionRepository, campaign_id: str | None,
                   training_run_id: str | None) -> list[dict[str, Any]]:
     require(bool(training_run_id), "SOURCE_TRAINING_RUN_REQUIRED")
-    source = select_trainings(repository, campaign_id, training_run_id)[0]
-    configuration = source["configuration"]
-    require(isinstance(configuration, dict)
-            and {"model_id", "schema_version", "adapter_version", "resolved"} <= configuration.keys()
-            and isinstance(configuration["resolved"], dict)
-            and {"model", "optimizer", "execution", "selection", "input_contract", "recipe"}
-                <= configuration["resolved"].keys(), "SOURCE_TRAINING_CONFIGURATION_UNAVAILABLE")
-    return [dict(configuration=source["configuration"], dataset_version_id=str(source["dataset_version_id"]),
-                 campaign_id=campaign_id or (str(source["campaign_id"]) if source["campaign_id"] else None),
-                 source_training_run_id=str(source["id"]))]
+    from ..pretrained.training import omit_training
+    plan = []
+    for source in select_trainings(repository, campaign_id, training_run_id):
+        if omit_training(source.get("model_name")):
+            continue
+        configuration = source["configuration"]
+        require(isinstance(configuration, dict)
+                and {"model_id", "schema_version", "adapter_version", "resolved"} <= configuration.keys()
+                and isinstance(configuration["resolved"], dict)
+                and {"model", "optimizer", "execution", "selection", "input_contract", "recipe"}
+                    <= configuration["resolved"].keys(), "SOURCE_TRAINING_CONFIGURATION_UNAVAILABLE")
+        plan.append(dict(configuration=configuration, dataset_version_id=str(source["dataset_version_id"]),
+                         campaign_id=campaign_id or (str(source["campaign_id"]) if source["campaign_id"] else None),
+                         source_training_run_id=str(source["id"])))
+    return plan
 
 
 def campaign_arguments(campaign_id: str, mode: str | None) -> list[str]:

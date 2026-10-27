@@ -925,6 +925,9 @@ def evaluate_selected_checkpoint_if_enabled(enabled, **evaluation_kwargs):
 
 def main(args=None):
     args = args if args is not None else parse_args()
+    from ..pretrained.training import omit_training
+    if omit_training(args.model):
+        return
     if args.dry_run:
         print(json.dumps(args.model_configuration, sort_keys=True))
         print("PLAN ONLY: integridad operativa NO VERIFICADA")

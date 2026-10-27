@@ -70,7 +70,7 @@ def _registry():
     """(Python descriptor, public.models row) for every model in the catalog."""
     from ..models.registry import model_catalog, resolve_descriptor
 
-    return [(resolve_descriptor(m["name"]), m) for m in model_catalog()]
+    return [(resolve_descriptor(m["name"], executable=False), m) for m in model_catalog()]
 
 
 def _get(tree, path):
@@ -143,12 +143,13 @@ def protocol_template():
 def _catalog_models():
     models = []
     for d, row in _registry():
-        raw, resolved = _defaults(d)
+        raw, resolved = _defaults(d) if d.trainable else (None, None)
         models.append(dict(
             # Label is public.models.architecture; a row without one is shown by its name.
             id=d.id, label=row["architecture"] or d.id, adapter_version=d.version, strategies=list(d.strategies),
             optimizers=list(d.optimizers), input_contract=d.input_contract, output_contract=d.output_contract,
-            parameters=[_parameter(d, raw, resolved, *p) for p in PARAMETERS],
+            parameters=[_parameter(d, raw, resolved, *p) for p in PARAMETERS] if d.trainable else [],
+            trainable=d.trainable, disabled_reason=None if d.trainable else "No requiere entrenamiento local",
         ))
     return models
 
@@ -194,15 +195,16 @@ def catalog():
     models = _catalog_models()
     request, protocol = protocol_template()
     template_values = _protocol_values(protocol)
-    ids = [m["id"] for m in models]
+    trainable = [m for m in models if m["trainable"]]
+    ids = [m["id"] for m in trainable]
     optimizers = _optimizers()
-    common = [o["id"] for o in optimizers if all(o["id"] in m["optimizers"] for m in models)]
+    common = [o["id"] for o in optimizers if all(o["id"] in m["optimizers"] for m in trainable)]
     e7_models = [m for m in models if m["id"] in request["models"]]
     presets = [
         dict(id="system_batch_defaults", label="Valores por defecto del sistema (perfil batch versionado)",
              configuration=dict(version=CONFIGURATION_VERSION, models=ids, optimizers=common,
                                 seeds=list(request["seeds"]),
-                                variants=[dict(name="configuracion_1", parameters=_variant_parameters(models))],
+                                variants=[dict(name="configuracion_1", parameters=_variant_parameters(trainable))],
                                 protocol=deepcopy(template_values))),
         dict(id=request["variants"][0]["name"], label="Plan científico aprobado " + request["variants"][0]["name"],
              configuration=dict(version=CONFIGURATION_VERSION, models=[m["id"] for m in e7_models],
@@ -300,7 +302,9 @@ def normalize(configuration):
     for name in selected:
         if name not in models:
             _error(errors, "models", "UNKNOWN_OR_NOT_EXECUTABLE_MODEL:" + name)
-    selected = [m for m in selected if m in models]
+        elif not models[name]["trainable"]:
+            _error(errors, "models", "MODEL_NOT_TRAINABLE:" + name)
+    selected = [m for m in selected if m in models and models[m]["trainable"]]
     known_optimizers = {o["id"] for o in _optimizers()}
     optimizers = _unique_list(errors, "optimizers", configuration.get("optimizers"), lambda v: isinstance(v, str))
     for o in optimizers:

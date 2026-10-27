@@ -592,10 +592,10 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
             <small>Cambiar los valores iniciales reemplaza modelos, optimizadores, semillas, variantes y EarlyStopping.</small>
           </div>
           <div className="campaign-checklist" role="group" aria-label="Modelos">
-            {catalog.models.map((model) => <label key={model.id} className="campaign-check">
-              <input type="checkbox" checked={configuration.models.includes(model.id)}
+            {catalog.models.map((model) => <label key={model.id} className={`campaign-check ${model.trainable === false ? 'is-disabled' : ''}`}>
+              <input type="checkbox" disabled={model.trainable === false} checked={model.trainable !== false && configuration.models.includes(model.id)}
                 onChange={(e) => toggleModel(model.id, e.target.checked)} />
-              <span><strong>{model.label}</strong><small>{model.id} · adapter {model.adapter_version}</small></span>
+              <span><strong>{model.label}</strong><small>{model.disabled_reason ?? `${model.id} · adapter ${model.adapter_version}`}</small></span>
             </label>)}
           </div>
           {fieldErrors.models ? <small className="campaign-error">{message(fieldErrors.models)}</small> : null}

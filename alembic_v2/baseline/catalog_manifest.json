@@ -70,7 +70,7 @@
   "files": {
     "01_prerequisites.sql": "949f60dbe2e9159bdc496b8eadf207cd8bfdae4efedbb52e74989e8a535f445e",
     "02_generated_functions.sql": "46b9e028c015a011ed6a83184fda4d4163277195ee7cdac69d08f00b5050f162",
-    "03_tables.sql": "89094bf97acfc7767450c6ab77ce05e4f5fa19afdc6ee296cc7365906c33e399",
+    "03_tables.sql": "a2ef8cbce45a0a4471afd2ae9b97f3658f528f2c8101435313f4eb693a1c45a0",
     "04_functions.sql": "2e8d8c563ca624c250ec704c829df75c268698a9cf100ea68a818735fed3ad9a",
     "05_keys.sql": "a8bb824d1ad9210758299271dc27b62faf7047dedf3fd674cd3dad084867e49d",
     "06_constraints.sql": "ab477e9648519b0210a81bb936ab5db2c5a038803e15662d79c9ccb6efd77806",
@@ -10180,22 +10180,6 @@
           "generated": null,
           "identity": ""
         },
-        "tensorflow_version": {
-          "declaration": "tensorflow_version text",
-          "type": "text",
-          "nullable": true,
-          "default": null,
-          "generated": null,
-          "identity": ""
-        },
-        "keras_version": {
-          "declaration": "keras_version text",
-          "type": "text",
-          "nullable": true,
-          "default": null,
-          "generated": null,
-          "identity": ""
-        },
         "platform": {
           "declaration": "platform text",
           "type": "text",
@@ -10504,8 +10488,8 @@
       "phase": "03_tables",
       "file": "03_tables.sql",
       "start": 42681,
-      "end": 44279,
-      "sha256": "a2d16b3bf0f7e2eb14400be31e60dfc4f19c7c5f77db3d4ec95ad7da6adeb168"
+      "end": 44234,
+      "sha256": "94ec97bc5577444597eaa126b8aa04eed24c539018284ada530f085c0d928c67"
     },
     {
       "kind": "table",
@@ -10634,8 +10618,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 44281,
-      "end": 44863,
+      "start": 44236,
+      "end": 44818,
       "sha256": "66802d6f93a1a6d027f4c6d09d9a02df99d5e82cc7af820d9ef69c35e05c3390"
     },
     {
@@ -10701,8 +10685,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 44865,
-      "end": 45116,
+      "start": 44820,
+      "end": 45071,
       "sha256": "a4701ceea1de5847a47252cf1e405f763643af4f5aec697706a8c8eb5aed5244"
     },
     {
@@ -10784,8 +10768,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 45118,
-      "end": 45461,
+      "start": 45073,
+      "end": 45416,
       "sha256": "b69b0d78e6ffbe6f3ab2c487e42ed08606e4789fce840175bf6b72f8b9e3d896"
     },
     {
@@ -10899,8 +10883,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 45463,
-      "end": 45923,
+      "start": 45418,
+      "end": 45878,
       "sha256": "3b30c17d824ef6db3ac184068fbbf69a4208a4102272fa15d6cd1c42a92ffbdc"
     },
     {
@@ -10934,8 +10918,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 45925,
-      "end": 46111,
+      "start": 45880,
+      "end": 46066,
       "sha256": "b13ff5b3aa6f68e01e2233b254cccaee45a9128d995418f65770eae115182837"
     },
     {
@@ -10969,8 +10953,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 46113,
-      "end": 46289,
+      "start": 46068,
+      "end": 46244,
       "sha256": "a811a34447021c1d4e979639effaa8954b66b5f1a701f0a459b07805e2a6047c"
     },
     {
@@ -11020,8 +11004,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 46291,
-      "end": 46528,
+      "start": 46246,
+      "end": 46483,
       "sha256": "df3a0425d918a0ea296bcdece0cf4da4a5a66c72c53220a41beab8608c163c0b"
     },
     {
@@ -11159,8 +11143,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 46530,
-      "end": 47162,
+      "start": 46485,
+      "end": 47117,
       "sha256": "36e6655e934ef4e7bc01ff6f80ad8cdf4c7e754a43079de299001f3d9598ca93"
     },
     {
@@ -11314,8 +11298,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 47164,
-      "end": 47941,
+      "start": 47119,
+      "end": 47896,
       "sha256": "d37477d65d8c5483e0552c4c1141a8b6b8ae937f9d13159dc47d87198f25d0b8"
     },
     {
@@ -11453,8 +11437,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 47943,
-      "end": 48539,
+      "start": 47898,
+      "end": 48494,
       "sha256": "ecff1bed233072d63864ba47447789337b5e236b3330480ebbf03d8ca09f956c"
     },
     {
@@ -11576,8 +11560,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 48541,
-      "end": 49032,
+      "start": 48496,
+      "end": 48987,
       "sha256": "a1da7c21a906c38da3be9ee258f71bdc656071df77c40c6a9542f5f5e0f52f32"
     },
     {
@@ -11715,8 +11699,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 49034,
-      "end": 49758,
+      "start": 48989,
+      "end": 49713,
       "sha256": "746e436f15b6a4678fd4e59ee012448cbd55e2c0ee0911882cc36f594b91944a"
     },
     {
@@ -11806,8 +11790,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 49760,
-      "end": 50156,
+      "start": 49715,
+      "end": 50111,
       "sha256": "ee0937b3fdb7469fd924f7d8f2d5e391bb371f067520afbb9e4211ee535cf095"
     },
     {
@@ -11881,8 +11865,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 50158,
-      "end": 50427,
+      "start": 50113,
+      "end": 50382,
       "sha256": "32a4705dbd7a3a62bf17511f1ab2cafc08c0c5536492df0b365f474bb7564ad1"
     },
     {
@@ -11924,8 +11908,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 50429,
-      "end": 50628,
+      "start": 50384,
+      "end": 50583,
       "sha256": "c5b85f4b0c7fc874cabdc6f6c92037ca3a5351ebda6cc5f86d648770ce24b2c1"
     },
     {
@@ -12063,8 +12047,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 50630,
-      "end": 51161,
+      "start": 50585,
+      "end": 51116,
       "sha256": "d3854130ebdf55e1b427f571d78d587dfbdf6b77fadfb7f72c5256f751b367fc"
     },
     {
@@ -12274,8 +12258,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 51163,
-      "end": 51860,
+      "start": 51118,
+      "end": 51815,
       "sha256": "2e3a980e0efb7a21acb2aa6ada72e3df7f7c338da68906fd369fed59ca6c3964"
     },
     {
@@ -12309,8 +12293,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 51862,
-      "end": 52000,
+      "start": 51817,
+      "end": 51955,
       "sha256": "50e65f43ce58585da23cff4fe5827b875e35d5a56a539bf6812cc7aa3d949843"
     },
     {
@@ -12392,8 +12376,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 52002,
-      "end": 52363,
+      "start": 51957,
+      "end": 52318,
       "sha256": "cadb02676fff263c68fcefff5deb6e20146d780c9fed83d52c23ccddffa4c22d"
     },
     {
@@ -12531,8 +12515,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 52365,
-      "end": 52825,
+      "start": 52320,
+      "end": 52780,
       "sha256": "bc14751c1818fd80c019dbe212ec4d93cafec7f058bf4cc0d82b3b6f08b542c1"
     },
     {
@@ -12798,8 +12782,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 52827,
-      "end": 53785,
+      "start": 52782,
+      "end": 53740,
       "sha256": "689354abfe6ef862eb1c2d20d412c1b4d838ca9f074a5ed5a7a580076c993c00"
     },
     {
@@ -12865,8 +12849,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 53787,
-      "end": 54044,
+      "start": 53742,
+      "end": 53999,
       "sha256": "e8c57ec4de8502527014eb71825ae9164c2c2bc211af0cba8a27dd730fb6ebdc"
     },
     {
@@ -13004,8 +12988,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 54046,
-      "end": 54563,
+      "start": 54001,
+      "end": 54518,
       "sha256": "b91dcf1dbc32d171f799b6fd4228b19243ccb4365bc191b5ced719423b07f45d"
     },
     {
@@ -13071,8 +13055,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 54565,
-      "end": 54842,
+      "start": 54520,
+      "end": 54797,
       "sha256": "319a79b745382a3dd15b404310b4062dbba588b70cc77a37f6c644b74af515a8"
     },
     {
@@ -13146,8 +13130,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 54844,
-      "end": 55163,
+      "start": 54799,
+      "end": 55118,
       "sha256": "871d58a2d3b975db5d0c514cdd0ecabb4b9a807e8c1a26ddb52a7be00899e4e3"
     },
     {
@@ -13213,8 +13197,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 55165,
-      "end": 55430,
+      "start": 55120,
+      "end": 55385,
       "sha256": "ad65798328cf3b7520249159cce71941a48503fffa887db17e7342df9187410e"
     },
     {
@@ -13320,8 +13304,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 55432,
-      "end": 55861,
+      "start": 55387,
+      "end": 55816,
       "sha256": "002a0739063d532c7312063602484f1b9d1df38015abc7576e159be2d6573da5"
     },
     {
@@ -13363,8 +13347,8 @@
       },
       "phase": "03_tables",
       "file": "03_tables.sql",
-      "start": 55863,
-      "end": 56041,
+      "start": 55818,
+      "end": 55996,
       "sha256": "e4bfb0fc41d595fba311a8800fcb9dfe9d1e20dbc041c3fa926057a4d86b8adc"
     },
     {

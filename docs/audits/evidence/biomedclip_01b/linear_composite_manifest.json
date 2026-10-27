@@ -1,0 +1,25 @@
+{
+  "original_assets": "original_assets.json",
+  "original_manifest_sha256": "9c150cf515497774ffb7337588d132e829e356d349e4dfbfb5d8296d74d0c92f",
+  "head": {
+    "path": "/Users/julio/.cache/capstone-biomedclip-01b/linear_epoch_3.keras",
+    "sha256": "3168f4b07220711fd56396291f12bb879ec9058be705bc897adcec0167891633",
+    "bytes": 16872
+  },
+  "embedding": {
+    "dimension": 512,
+    "normalization": "L2",
+    "source": "OpenCLIP encode_image projection"
+  },
+  "transform": "Compose(\n    Resize(size=224, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    MaybeConvertMode()\n    MaybeToTensor()\n    Normalize(mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711])\n)",
+  "positive_class": 1,
+  "class_mapping": {
+    "0": "uninfected",
+    "1": "parasitized"
+  },
+  "decision": {
+    "threshold": 0.5,
+    "comparison": ">="
+  },
+  "experimental_only": true
+}

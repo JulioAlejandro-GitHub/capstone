@@ -45,12 +45,19 @@ def codes(result):
 def test_models_are_discovered_from_the_registry(catalog):
     assert [m["id"] for m in catalog["models"]] == list(registry.enabled_models())
     for m in catalog["models"]:
-        d = registry.resolve_descriptor(m["id"])
+        d = registry.resolve_descriptor(m["id"], executable=False)
+        assert m["trainable"] == d.trainable
+        if not d.trainable:
+            assert m["disabled_reason"] == "No requiere entrenamiento local"
+            assert m["parameters"] == [] and m["optimizers"] == []
         assert m["adapter_version"] == d.version and m["optimizers"] == list(d.optimizers)
 
 
 def test_defaults_come_from_the_versioned_batch_profile(catalog):
     for m in catalog["models"]:
+        if not m["trainable"]:
+            assert m["parameters"] == []
+            continue
         resolved = resolve_config(m["id"], None, {"optimizer": {"name": m["optimizers"][0]}}, batch=True)["resolved"]
         for p in m["parameters"]:
             section, key = p["path"].split(".")
@@ -59,7 +66,8 @@ def test_defaults_come_from_the_versioned_batch_profile(catalog):
 
 
 def test_architecture_specific_editability_follows_the_resolver(catalog):
-    by = {m["id"]: {p["key"]: p for p in m["parameters"]} for m in catalog["models"]}
+    by = {m["id"]: {p["key"]: p for p in m["parameters"]} for m in catalog["models"] if m["trainable"]}
+    assert set(by) == {"custom_cnn", "vgg16", "densenet121"}
     assert by["custom_cnn"]["l2"]["editable"] and not by["vgg16"]["l2"]["editable"]
     assert not by["custom_cnn"]["fine_tune_epochs"]["editable"] and by["densenet121"]["fine_tune_epochs"]["editable"]
     assert by["custom_cnn"]["weights"]["choices"] == ["none"] and by["vgg16"]["weights"]["choices"] == ["none", "imagenet"]

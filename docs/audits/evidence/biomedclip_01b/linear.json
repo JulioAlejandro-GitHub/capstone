@@ -1,0 +1,220 @@
+{
+  "seed": 20261026,
+  "head": "Dense(1,sigmoid), no hidden layers",
+  "input_shape": [
+    null,
+    512
+  ],
+  "train_count": 16,
+  "val_count": 8,
+  "optimizer": "Keras SGD",
+  "learning_rate": 0.1,
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 0.6898806095123291,
+      "val_loss": 0.6860694885253906,
+      "val_accuracy": 0.75,
+      "learning_rate": 0.1
+    },
+    {
+      "epoch": 2,
+      "loss": 0.6885621547698975,
+      "val_loss": 0.6851440668106079,
+      "val_accuracy": 0.75,
+      "learning_rate": 0.1
+    },
+    {
+      "epoch": 3,
+      "loss": 0.6872483491897583,
+      "val_loss": 0.6842219829559326,
+      "val_accuracy": 0.875,
+      "learning_rate": 0.1
+    }
+  ],
+  "training_and_epoch_saves_seconds": 0.9467815830139443,
+  "selected_checkpoint": "/Users/julio/.cache/capstone-biomedclip-01b/linear_epoch_3.keras",
+  "checkpoint_sha256": "3168f4b07220711fd56396291f12bb879ec9058be705bc897adcec0167891633",
+  "checkpoint_bytes": 16872,
+  "load_seconds": 3.3805180420167744,
+  "encoder_reload_seconds": 1.9528786669834517,
+  "head_reload_seconds": 0.007285209023393691,
+  "parity": {
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "allclose": true,
+    "atol": 0.0001,
+    "rtol": 0.001
+  },
+  "scores_before": [
+    [
+      0.5080525279045105
+    ],
+    [
+      0.5040435791015625
+    ],
+    [
+      0.5000340938568115
+    ],
+    [
+      0.49407145380973816
+    ],
+    [
+      0.4972805082798004
+    ],
+    [
+      0.4885956048965454
+    ],
+    [
+      0.4945063591003418
+    ],
+    [
+      0.48973315954208374
+    ]
+  ],
+  "scores_after": [
+    [
+      0.5080525279045105
+    ],
+    [
+      0.5040435791015625
+    ],
+    [
+      0.5000340938568115
+    ],
+    [
+      0.49407145380973816
+    ],
+    [
+      0.4972805082798004
+    ],
+    [
+      0.4885956048965454
+    ],
+    [
+      0.4945063591003418
+    ],
+    [
+      0.48973315954208374
+    ]
+  ],
+  "embeddings_reload_parity": {
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "allclose": true,
+    "atol": 0.0001,
+    "rtol": 0.001
+  },
+  "encoder_unchanged": true,
+  "gpu_devices": [
+    "/physical_device:GPU:0"
+  ],
+  "head_variable_device": "/job:localhost/replica:0/task:0/device:GPU:0",
+  "lime": {
+    "perturbations": 32,
+    "seconds": 0.2883076250436716,
+    "calls": [
+      {
+        "batch": 4,
+        "torch_device": "mps:0",
+        "numpy_detached": true,
+        "finite": true
+      },
+      {
+        "batch": 4,
+        "torch_device": "mps:0",
+        "numpy_detached": true,
+        "finite": true
+      },
+      {
+        "batch": 4,
+        "torch_device": "mps:0",
+        "numpy_detached": true,
+        "finite": true
+      },
+      {
+        "batch": 4,
+        "torch_device": "mps:0",
+        "numpy_detached": true,
+        "finite": true
+      },
+      {
+        "batch": 4,
+        "torch_device": "mps:0",
+        "numpy_detached": true,
+        "finite": true
+      },
+      {
+        "batch": 4,
+        "torch_device": "mps:0",
+        "numpy_detached": true,
+        "finite": true
+      },
+      {
+        "batch": 4,
+        "torch_device": "mps:0",
+        "numpy_detached": true,
+        "finite": true
+      },
+      {
+        "batch": 4,
+        "torch_device": "mps:0",
+        "numpy_detached": true,
+        "finite": true
+      }
+    ],
+    "weights": [
+      [
+        4,
+        0.004730446461232235
+      ],
+      [
+        1,
+        0.0014055440027148805
+      ],
+      [
+        3,
+        -0.001198626937602899
+      ],
+      [
+        0,
+        0.0005831029124745169
+      ],
+      [
+        8,
+        -0.0005511960522935567
+      ],
+      [
+        5,
+        -0.0005107518755345475
+      ],
+      [
+        2,
+        -0.0004163185603935708
+      ],
+      [
+        7,
+        0.000362874947257995
+      ],
+      [
+        6,
+        -0.0001782635725009522
+      ],
+      [
+        9,
+        0.00016164076459499366
+      ]
+    ],
+    "sample_id": "0071ea61-5af6-5309-9fe6-085ae804789d"
+  },
+  "autograd_boundary": {
+    "torch_input_grad_is_none": true,
+    "description": "detach().cpu().numpy() loses autograd; LIME does not require it"
+  },
+  "memory": {
+    "allocated": 1575928320,
+    "driver": 1659650048,
+    "recommended": 40200896512,
+    "rss": 1647869952
+  }
+}

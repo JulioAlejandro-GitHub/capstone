@@ -1,0 +1,241 @@
+{
+  "schema": "biomedclip_01b_experimental_manifest_v1",
+  "experimental_only": true,
+  "production_database_written": false,
+  "original_files_intact": true,
+  "production_package_freeze_equal": true,
+  "database_count_xmin_equal": false,
+  "concurrent_activity_evidence": "concurrent_assessments.txt",
+  "files": [
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/production_environment_before.txt",
+      "bytes": 2318,
+      "sha256": "123b838a8bc7ea556960d51db9962766281f20fb21cbb06ceb8adc64444ec701"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/database_before.json",
+      "bytes": 852,
+      "sha256": "06e3c2628d1bb7dd8136e92d1e17174343addb7ae291ef98bbab7c3294015f91"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/pip_check.txt",
+      "bytes": 30,
+      "sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/linear.log",
+      "bytes": 1772,
+      "sha256": "5e01b1ad0eae6f888b218005a0908205878746f0c4d92ce075cc3e77ca3242b6"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/optimizer_effective_defaults.json",
+      "bytes": 507,
+      "sha256": "8782bee940afd5642be3d1a81e74a8b011ea48e0ef72bd38d990a124b194305d"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/original_assets.json",
+      "bytes": 2377,
+      "sha256": "9c150cf515497774ffb7337588d132e829e356d349e4dfbfb5d8296d74d0c92f"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/dependency_plan.log",
+      "bytes": 5415,
+      "sha256": "0966408f770fb302f2d39757ba2ac85530742728ac03309864a23804635e87cf"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/samples.json",
+      "bytes": 15705,
+      "sha256": "2f8793cd668e4f1f521d97a51401b6045ec8e6326f0309da056e055ee86b0e19"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/zero_shot.log",
+      "bytes": 1655,
+      "sha256": "fdd452d442c3d31a55c3600dfd77ddec078ecff77155bf00741e406508b1ca63"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/zero_shot.json",
+      "bytes": 12569,
+      "sha256": "d09fddb8f41f2adcb47f9324ae6f8ae94ec23e0e1025cf94582dc1dcc5e7f9b8"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/database_changes.json",
+      "bytes": 693,
+      "sha256": "943a0b5ad1ef1fb1e299fe6f3ce1b733aadc3347bc456db22612dcfa3f8a98fb"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/concurrent_assessments.txt",
+      "bytes": 978,
+      "sha256": "2f097a50ab1b4141f628e29504e92c5e407b991d25b5a626e2ec7d043ed651f7"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/supplement.json",
+      "bytes": 4182,
+      "sha256": "7dd82de5fca7586b29afbb8b2c0fcd287308ccf17211eb21482563d20f6e149c"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/dependency_plan.json",
+      "bytes": 227001,
+      "sha256": "0682a0c3b0c82f78a5659dc86f4192d506c6206eee01a539807c121a3c19803e"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/fine_tuning.log",
+      "bytes": 1221,
+      "sha256": "e857e1b3f3d452861037712a593ec1d12b931757ce8e95cbd3aff706f92f6b72"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/schema_evidence.txt",
+      "bytes": 17383,
+      "sha256": "798048a6bcae67c4db562c506eb361671f024f5865a94b8e0b0f58bace0b2cea"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/requirements.lock.txt",
+      "bytes": 2495,
+      "sha256": "1a5da07627387d0a2af890657dd5ec82f928c8f7762e679203d3f57191f8fefd"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/prepare.log",
+      "bytes": 102,
+      "sha256": "836ac9becc9a45738d192ae868a36731d95b7679a40ae8621aee3c7472d709a8"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/production_environment_after.txt",
+      "bytes": 2318,
+      "sha256": "123b838a8bc7ea556960d51db9962766281f20fb21cbb06ceb8adc64444ec701"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/linear.json",
+      "bytes": 4218,
+      "sha256": "6bfd452a5f61386e25f3e3e6e34fb08f3b5c8da47440fa079515019ea97d3e00"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/database_after.json",
+      "bytes": 852,
+      "sha256": "c43ac67a6cb706e08b01984ec54f8b4932b2cf58c1eba6cafb9da5beb6b24f97"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/fine_tuning.json",
+      "bytes": 3392,
+      "sha256": "7b8131e4bb4b96188fc8d228ecdb112b2e295a209b811ac5244a651df1587aaf"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/linear_composite_manifest.json",
+      "bytes": 937,
+      "sha256": "6d344757e26bc502c837044654666f265bcac35f6f59694d1121430b645248b1"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/dependency_install.log",
+      "bytes": 6387,
+      "sha256": "7f583e45ad4faa144eb2927d89c4063b04284a8797f7ab087720e65aa9c5ba91"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/supplement.log",
+      "bytes": 5001,
+      "sha256": "67839f7bc4e0166ffc13897d894e198e0b92ec24f0f01b84254f7402f5e15e80"
+    },
+    {
+      "path": "docs/audits/evidence/biomedclip_01b/dependency_install.json",
+      "bytes": 226999,
+      "sha256": "567cacd35118d44abad31d9d56db46e1c0c415c58bf9a0f12c2cfff55d766031"
+    },
+    {
+      "path": "scripts/experiments/biomedclip_01b/fine_tuning.py",
+      "bytes": 4652,
+      "sha256": "a4cdf947f42aa2882ccd745579f074b5ed79e7ac42a883f9690855e6e5c17b1f"
+    },
+    {
+      "path": "scripts/experiments/biomedclip_01b/linear.py",
+      "bytes": 5133,
+      "sha256": "d41a9ca918599696b209826154a8ce167847e773593115afb49bcf869ae9c9cd"
+    },
+    {
+      "path": "scripts/experiments/biomedclip_01b/finalize.py",
+      "bytes": 2258,
+      "sha256": "0b83501c196d5102c582cea1e8574081b216e1ac73b3ab47154cc2ea9f6f6bd7"
+    },
+    {
+      "path": "scripts/experiments/biomedclip_01b/README.md",
+      "bytes": 3389,
+      "sha256": "a74ce08cb6cc0e7fea53f80fcc833b13c2545583dff3a7adf171e97c55f94f0d"
+    },
+    {
+      "path": "scripts/experiments/biomedclip_01b/common.py",
+      "bytes": 3270,
+      "sha256": "13b75159b7f4eeac9b80e7364273585f2fad451677937483e0bf59e9d76556af"
+    },
+    {
+      "path": "scripts/experiments/biomedclip_01b/zero_shot.py",
+      "bytes": 4285,
+      "sha256": "35260dcd870fe87b3dfdbd30cf217281eb47c2d9f0628f6d4b262ec7435c3297"
+    },
+    {
+      "path": "scripts/experiments/biomedclip_01b/supplement.py",
+      "bytes": 3792,
+      "sha256": "f45d6edbc6432de5f59615835e0884ab8e9c9c2dd74cbf3bcb8777d6c3ba1c74"
+    },
+    {
+      "path": "scripts/experiments/biomedclip_01b/prepare.py",
+      "bytes": 4599,
+      "sha256": "798b9cc0870ecc3a02845ee3af699bf43f9a461a91aaeea71609a7650bbce375"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_config.json",
+      "bytes": 707,
+      "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/biomedclip/9f341de24bfb00180f1b847274256e9b65a3a32e/open_clip_pytorch_model.bin",
+      "bytes": 783705670,
+      "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/config.json",
+      "bytes": 385,
+      "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/tokenizer_config.json",
+      "bytes": 28,
+      "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original/text/d673b8835373c6fa116d6d8006b33d48734e305d/vocab.txt",
+      "bytes": 225062,
+      "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/original_embeddings.npy",
+      "bytes": 49280,
+      "sha256": "13038703453b68ec9170ab8f5e35a9b3ddd0b4e35c3dc0ccf76eb98ac13a41b3"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/linear_epoch_1.keras",
+      "bytes": 16872,
+      "sha256": "e2f0fd04d04e519c18c0c8fe5aef2ad5551dcfb03def668401401c7f7cacac7c"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/linear_epoch_2.keras",
+      "bytes": 16872,
+      "sha256": "2960b1da5d90f64905206252ce3365ddc4c2700201d6a85335fed8d59073a2ed"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/linear_epoch_3.keras",
+      "bytes": 16872,
+      "sha256": "3168f4b07220711fd56396291f12bb879ec9058be705bc897adcec0167891633"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/fine_tuning.pt",
+      "bytes": 344817737,
+      "sha256": "7c137f3b23f378e2a811e648182f6cef6736bdaecf74cb110e90690201e4c954"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/parity_and_representations.npz",
+      "bytes": 60604,
+      "sha256": "46c93f22b830d65c9c49034c086b2b5f09e56f6afb3b1d0ef3a689c5eb273b07"
+    },
+    {
+      "path": "/Users/julio/.cache/capstone-biomedclip-01b/linear_timing_probe.keras",
+      "bytes": 16873,
+      "sha256": "47c9f5c9965abeb8061d47db88e0740f4ffb6527a1fb4733814a97e60dc65484"
+    }
+  ]
+}

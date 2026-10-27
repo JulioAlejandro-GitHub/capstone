@@ -1,0 +1,55 @@
+{
+  "utc": "2026-10-27T00:24:06.217165+00:00",
+  "container": "capstone_biomedclip_01c1_db",
+  "database": "biomedclip_01c1_runtime",
+  "tables": {
+    "model_versions": {
+      "count": 1,
+      "row_fingerprint_md5": "a1ebd4bdddac2747ea441ccd0036bef4"
+    },
+    "models": {
+      "count": 3,
+      "row_fingerprint_md5": "4cf35e3ea95f838ab6c1d9cb599bde08"
+    },
+    "runs": {
+      "count": 23,
+      "row_fingerprint_md5": "fe7aa45eb09d8e414eb77be026c1424a"
+    },
+    "artifacts": {
+      "count": 22,
+      "row_fingerprint_md5": "a6812f2f5899fc49a70e2d99a9eab50c"
+    },
+    "run_configurations": {
+      "count": 23,
+      "row_fingerprint_md5": "bd4e2eb5a3bb2c93952ac698dd3a104c"
+    },
+    "assessment_identities": {
+      "count": 75,
+      "row_fingerprint_md5": "168d209b2c72f765fe1c198c043af95b"
+    },
+    "train_execution_sessions": {
+      "count": 23,
+      "row_fingerprint_md5": "a5a28cc829600179b00f426fc15e0e0a"
+    },
+    "assessment_attempts": {
+      "count": 75,
+      "row_fingerprint_md5": "9a06c1287a9c319769021c71d1accf62"
+    },
+    "training_history": {
+      "count": 0,
+      "row_fingerprint_md5": "empty"
+    },
+    "assessment_artifacts": {
+      "count": 35204,
+      "row_fingerprint_md5": "76612862c0ee993d7008011257ddb972"
+    },
+    "train_execution_records": {
+      "count": 5059,
+      "row_fingerprint_md5": "16ddf683dcfc5319876eb494f35dab9f"
+    },
+    "assessment_results": {
+      "count": 68661,
+      "row_fingerprint_md5": "7532a901a6085e516baa9ce31d8c267e"
+    }
+  }
+}

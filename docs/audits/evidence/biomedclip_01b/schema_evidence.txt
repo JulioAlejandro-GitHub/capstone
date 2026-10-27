@@ -1,0 +1,254 @@
+on
+model_versions|model_versions_pkey|PRIMARY KEY (id)
+runs|runs_pkey|PRIMARY KEY (id)
+train_execution_sessions|train_execution_sessions_pkey|PRIMARY KEY (run_id)
+train_execution_sessions|train_execution_sessions_artifact_root_key|UNIQUE (artifact_root)
+train_execution_sessions|train_execution_sessions_attempt_id_key|UNIQUE (attempt_id)
+run_configurations|v2_run_configurations_primary_360aa242ca7c|PRIMARY KEY (run_id)
+model_versions|chk_model_versions_artifact_requires_training|CHECK (((checkpoint_artifact_id IS NULL) OR (training_run_id IS NOT NULL)))
+model_versions|chk_model_versions_artifact_size|CHECK (((artifact_size_bytes IS NULL) OR (artifact_size_bytes >= 0)))
+model_versions|chk_model_versions_governed_hash|CHECK (((status <> ALL (ARRAY['candidate'::text, 'validated'::text, 'approved'::text, 'deployed'::text, 'rejected'::text, 'retired'::text])) OR ((checkpoint_artifact_id IS NOT NULL) AND (artifact_sha256 IS NOT NULL))))
+model_versions|chk_model_versions_lineage_status|CHECK ((lineage_status = ANY (ARRAY['unresolved'::text, 'resolved'::text, 'ambiguous'::text, 'artifact_missing'::text, 'checksum_mismatch'::text, 'legacy_unresolved'::text])))
+model_versions|chk_model_versions_profile_objects|CHECK (((jsonb_typeof(preprocessing_profile_snapshot) = 'object'::text) AND (jsonb_typeof(class_mapping) = 'object'::text) AND (jsonb_typeof(input_signature) = 'object'::text) AND (jsonb_typeof(output_signature) = 'object'::text)))
+model_versions|chk_model_versions_resolved_training|CHECK (((lineage_status <> 'resolved'::text) OR (training_run_id IS NOT NULL)))
+model_versions|chk_model_versions_sha256|CHECK (((artifact_sha256 IS NULL) OR (artifact_sha256 ~ '^[0-9a-f]{64}$'::text)))
+model_versions|chk_model_versions_status|CHECK ((status = ANY (ARRAY['discovered'::text, 'candidate'::text, 'validated'::text, 'approved'::text, 'deployed'::text, 'rejected'::text, 'retired'::text])))
+model_versions|chk_model_versions_version_number|CHECK (((version_number IS NULL) OR (version_number > 0)))
+runs|chk_runs_configuration_object|CHECK (((configuration IS NULL) OR (jsonb_typeof(configuration) = 'object'::text)))
+runs|ck_runs_release_status_requires_timestamp|CHECK (((release_status IS NULL) OR (release_updated_at IS NOT NULL)))
+runs|ck_runs_release_status_training_vocabulary|CHECK (((release_status IS NULL) OR ((run_type = 'training'::text) AND (release_status = ANY (ARRAY['not_available'::text, 'available_to_publish'::text, 'productive_stage2'::text])))))
+train_execution_sessions|train_execution_sessions_check|CHECK (((state <> ALL (ARRAY['completed'::text, 'verified'::text])) OR (completion IS NOT NULL)))
+train_execution_sessions|train_execution_sessions_check1|CHECK (((state <> 'verified'::text) OR (verification IS NOT NULL)))
+train_execution_sessions|train_execution_sessions_parent_pid_check|CHECK ((parent_pid > 0))
+train_execution_sessions|train_execution_sessions_state_check|CHECK ((state = ANY (ARRAY['active'::text, 'completed'::text, 'verified'::text, 'failed'::text, 'interrupted'::text])))
+model_versions|fk_model_versions_checkpoint_artifact_owner|FOREIGN KEY (checkpoint_artifact_id, training_run_id) REFERENCES artifacts(id, run_id) ON DELETE RESTRICT
+model_versions|model_versions_model_id_fkey|FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE RESTRICT
+model_versions|model_versions_training_run_id_fkey|FOREIGN KEY (training_run_id) REFERENCES runs(id) ON DELETE RESTRICT
+runs|runs_campaign_id_fkey|FOREIGN KEY (campaign_id) REFERENCES experimental_campaigns(id)
+runs|runs_dataset_id_fkey|FOREIGN KEY (dataset_id) REFERENCES datasets(id) ON DELETE RESTRICT
+runs|runs_dataset_version_id_fkey|FOREIGN KEY (dataset_version_id) REFERENCES dataset_versions(id) ON DELETE RESTRICT
+runs|runs_experiment_id_fkey|FOREIGN KEY (experiment_id) REFERENCES experiments(id) ON DELETE RESTRICT
+runs|runs_model_id_fkey|FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE RESTRICT
+train_execution_sessions|train_execution_sessions_attempt_id_fkey|FOREIGN KEY (attempt_id) REFERENCES campaign_attempts(id)
+train_execution_sessions|train_execution_sessions_run_id_fkey|FOREIGN KEY (run_id) REFERENCES runs(id)
+runs|ck_v2_no_result_json|CHECK ((NOT (parameters ? 'training_results'::text)))
+run_configurations|ck_v2_config_hash|CHECK ((configuration_hash = encode(digest(canonical_configuration, 'sha256'::text), 'hex'::text)))
+run_configurations|v2_run_configurations_check_3321a4aaab96|CHECK ((configuration_hash ~ '^[0-9a-f]{64}$'::text))
+runs|v2_runs_check_275ea92559ec|CHECK ((peak_cpu_memory_bytes >= 0))
+runs|v2_runs_check_080968ed1984|CHECK ((peak_gpu_memory_bytes >= 0))
+run_configurations|v2_run_configurations_check_580e3e6c54f3|CHECK ((optimizer = ANY (ARRAY['adam'::text, 'adamw'::text, 'sgd'::text, 'adadelta'::text])))
+run_configurations|v2_run_configurations_foreign_db5338c19de4|FOREIGN KEY (run_id) REFERENCES runs(id) ON DELETE RESTRICT
+run_configurations|v2_run_configurations_check_cf7585e198d6|CHECK ((architecture = ANY (ARRAY['custom_cnn'::text, 'vgg16'::text, 'densenet121'::text])))
+run_configurations|v2_run_configurations_check_ced6e7c6097c|CHECK (((learning_rate > (0)::double precision) AND (learning_rate < 'Infinity'::double precision)))
+run_configurations|v2_run_configurations_check_ddd84a2faca3|CHECK (((fine_tune_learning_rate > (0)::double precision) AND (fine_tune_learning_rate < 'Infinity'::double precision)))
+run_configurations|v2_run_configurations_check_a447b286c925|CHECK ((batch_size > 0))
+run_configurations|v2_run_configurations_check_b4ca1fd48d76|CHECK ((random_seed >= 0))
+run_configurations|v2_run_configurations_check_2df57f7a8f77|CHECK ((max_epochs > 0))
+run_configurations|v2_run_configurations_check_7bcf16f32f16|CHECK ((fine_tune_epochs >= 0))
+run_configurations|v2_run_configurations_check_998aa974aff8|CHECK ((early_stopping_patience >= 0))
+run_configurations|v2_run_configurations_check_ab6239fe6a31|CHECK (((early_stopping_min_delta >= (0)::double precision) AND (early_stopping_min_delta < 'Infinity'::double precision)))
+run_configurations|v2_run_configurations_check_f121e8cce088|CHECK ((early_stopping_mode = ANY (ARRAY['min'::text, 'max'::text])))
+run_configurations|v2_run_configurations_check_2131e4191e29|CHECK ((checkpoint_mode = ANY (ARRAY['min'::text, 'max'::text])))
+run_configurations|v2_run_configurations_check_eee102ab78dd|CHECK (((dropout >= (0)::double precision) AND (dropout < (1)::double precision)))
+run_configurations|v2_run_configurations_check_ea943e1f4322|CHECK (((l2 >= (0)::double precision) AND (l2 < (1)::double precision)))
+run_configurations|v2_run_configurations_check_46e293269ce9|CHECK ((input_height >= 32))
+run_configurations|v2_run_configurations_check_f91cdd45746e|CHECK ((input_width = input_height))
+run_configurations|v2_run_configurations_check_25a4140a88de|CHECK ((input_channels = 3))
+run_configurations|v2_run_configurations_check_4face7ed3946|CHECK ((weights = ANY (ARRAY['none'::text, 'imagenet'::text])))
+run_configurations|v2_run_configurations_check_80bf078e8ac1|CHECK ((fine_tune_layers >= 0))
+run_configurations|v2_run_configurations_check_278a5e3294ac|CHECK ((default_threshold = 0.5))
+run_configurations|v2_run_configurations_check_d6094850fee4|CHECK (((clinical_target_recall > (0)::numeric) AND (clinical_target_recall <= (1)::numeric)))
+run_configurations|v2_run_configurations_check_3f8c4617855a|CHECK ((jsonb_typeof(optimizer_extensions) = 'object'::text))
+run_configurations|v2_run_configurations_check_f31c0727c3ef|CHECK ((jsonb_typeof(extension_configuration) = 'object'::text))
+run_configurations|v2_run_configurations_check_eb0d0af834a3|CHECK ((jsonb_typeof(provenance_snapshot) = 'object'::text))
+run_configurations|v2_run_configurations_check_63e4a55e1de0|CHECK ((((architecture = 'vgg16'::text) AND (normalization = 'vgg16_imagenet'::text) AND (internal_preprocessing IS NULL)) OR ((architecture = 'custom_cnn'::text) AND (normalization = 'rescale_0_1'::text) AND (internal_preprocessing IS NULL)) OR ((architecture = 'densenet121'::text) AND (normalization = 'rescale_0_1'::text) AND (internal_preprocessing = 'densenet_imagenet_channel_mean_std'::text))))
+runs|v2_run_configuration_required|TRIGGER DEFERRABLE INITIALLY DEFERRED
+CREATE OR REPLACE FUNCTION public.assessment_identity_guard()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_catalog'
+AS $function$
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM runs WHERE id=NEW.training_run_id AND run_type='training')
+ THEN RAISE EXCEPTION 'ASSESSMENT_TRAIN_REQUIRED'; END IF;
+ IF jsonb_typeof(NEW.identity->'protocol') IS DISTINCT FROM 'object'
+  OR NEW.identity->'protocol'->>'version' IS NULL
+  OR NOT coalesce((NEW.identity->'protocol'->'splits') ? (NEW.identity->>'split'),false)
+  OR NOT coalesce((NEW.identity->'protocol'->'purposes') ? (NEW.identity->>'purpose'),false)
+  OR (SELECT count(*) FROM jsonb_array_elements(NEW.identity->'samples')) IS DISTINCT FROM
+     (SELECT count(DISTINCT s->>'sample_id') FROM jsonb_array_elements(NEW.identity->'samples') s)
+ THEN RAISE EXCEPTION 'ASSESSMENT_PROTOCOL_OR_SAMPLES_INVALID'; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(NEW.identity->'samples') s
+   WHERE s->>'split' IS DISTINCT FROM NEW.identity->>'split'
+      OR s->>'patient_id' IS NULL OR s->>'label' IS NULL OR s->>'label' NOT IN ('0','1')
+      OR s->>'sha256' IS NULL OR s->>'sha256' !~ '^[a-f0-9]{64}$')
+ THEN RAISE EXCEPTION 'ASSESSMENT_SAMPLE_INVALID'; END IF;
+ RETURN NEW;
+END $function$
+
+CREATE OR REPLACE FUNCTION public.campaign_run_identity_guard()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_catalog'
+AS $function$
+BEGIN
+ IF EXISTS(SELECT 1 FROM campaign_attempts WHERE training_run_id=OLD.id) AND
+   (NEW.model_id IS DISTINCT FROM OLD.model_id
+    OR NEW.run_type IS DISTINCT FROM OLD.run_type OR NEW.dataset_version_id IS DISTINCT FROM OLD.dataset_version_id
+    OR NEW.random_seed IS DISTINCT FROM OLD.random_seed OR NEW.experiment_id IS DISTINCT FROM OLD.experiment_id
+    OR NEW.execution_parameters->'model_configuration_e2'->'configuration' IS DISTINCT FROM OLD.execution_parameters->'model_configuration_e2'->'configuration'
+    OR NEW.execution_parameters->'model_configuration_e2'->'dataset' IS DISTINCT FROM OLD.execution_parameters->'model_configuration_e2'->'dataset'
+    OR campaign_environment_identity(NEW.execution_parameters->'model_configuration_e2'->'environment') IS DISTINCT FROM
+       campaign_environment_identity(OLD.execution_parameters->'model_configuration_e2'->'environment'))
+ THEN RAISE EXCEPTION 'LINKED_TRAIN_IDENTITY_IMMUTABLE'; END IF;
+ RETURN NEW;
+END $function$
+
+CREATE OR REPLACE FUNCTION public.enforce_model_version_governance()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    owner_run_type TEXT;
+BEGIN
+    IF NEW.training_run_id IS NOT NULL THEN
+        SELECT run_type
+        INTO owner_run_type
+        FROM runs
+        WHERE id = NEW.training_run_id;
+
+        IF owner_run_type IS DISTINCT FROM 'training' THEN
+            RAISE EXCEPTION
+                'model_versions.training_run_id debe referenciar un run training; recibió % (%)',
+                NEW.training_run_id,
+                owner_run_type
+                USING ERRCODE = '23514';
+        END IF;
+    END IF;
+
+    IF TG_OP = 'UPDATE'
+       AND (
+           OLD.status IN (
+               'candidate', 'validated', 'approved', 'deployed', 'rejected', 'retired'
+           )
+           OR NEW.status IN (
+               'candidate', 'validated', 'approved', 'deployed', 'rejected', 'retired'
+           )
+       )
+       AND ROW(
+           NEW.model_id,
+           NEW.model_name,
+           NEW.version_number,
+           NEW.checkpoint_path,
+           NEW.final_model_path,
+           NEW.best_model_path,
+           NEW.training_run_id,
+           NEW.checkpoint_artifact_id,
+           NEW.artifact_uri,
+           NEW.artifact_sha256,
+           NEW.artifact_size_bytes,
+           NEW.artifact_hash_reuse_justification,
+           NEW.framework,
+           NEW.framework_version,
+           NEW.preprocessing_profile_snapshot,
+           NEW.class_mapping,
+           NEW.input_signature,
+           NEW.output_signature
+       ) IS DISTINCT FROM ROW(
+           OLD.model_id,
+           OLD.model_name,
+           OLD.version_number,
+           OLD.checkpoint_path,
+           OLD.final_model_path,
+           OLD.best_model_path,
+           OLD.training_run_id,
+           OLD.checkpoint_artifact_id,
+           OLD.artifact_uri,
+           OLD.artifact_sha256,
+           OLD.artifact_size_bytes,
+           OLD.artifact_hash_reuse_justification,
+           OLD.framework,
+           OLD.framework_version,
+           OLD.preprocessing_profile_snapshot,
+           OLD.class_mapping,
+           OLD.input_signature,
+           OLD.output_signature
+       ) THEN
+        RAISE EXCEPTION
+            'El payload de una model_version gobernada es inmutable (%)',
+            OLD.id
+            USING ERRCODE = '55000';
+    END IF;
+
+    RETURN NEW;
+END;
+$function$
+
+CREATE OR REPLACE FUNCTION public.train_event_guard()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_catalog'
+AS $function$
+DECLARE s record; previous numeric;
+BEGIN
+ IF NEW.event_id IS NULL THEN RETURN NEW; END IF;
+ -- Same global ownership guard as reservations. Acquired before the session lock.
+ PERFORM experiment_require_owner();
+ SELECT * INTO s FROM train_execution_sessions WHERE run_id=NEW.run_id FOR UPDATE NOWAIT;
+ IF s.run_id IS NULL OR s.state IS DISTINCT FROM 'active'
+ OR s.owner::text IS DISTINCT FROM current_setting('capstone.train_owner',true)
+ THEN RAISE EXCEPTION 'TRAIN_OWNER_FENCED'; END IF;
+ SELECT coalesce(max(event_sequence),0) INTO previous FROM train_execution_records WHERE run_id=NEW.run_id;
+ IF NEW.event_sequence IS DISTINCT FROM previous+1
+ THEN RAISE EXCEPTION 'RESULT_EVENT_SEQUENCE_INVALID'; END IF;
+ RETURN NEW;
+END $function$
+
+CREATE OR REPLACE FUNCTION public.train_session_guard()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_catalog'
+AS $function$
+BEGIN
+ IF TG_OP='DELETE' THEN RAISE EXCEPTION 'TRAIN_HISTORY_IMMUTABLE'; END IF;
+ IF NEW.run_id<>OLD.run_id OR NEW.owner<>OLD.owner OR NEW.attempt_id IS DISTINCT FROM OLD.attempt_id
+ OR NEW.configuration IS DISTINCT FROM OLD.configuration OR NEW.dataset IS DISTINCT FROM OLD.dataset
+ OR NEW.environment IS DISTINCT FROM OLD.environment OR NEW.artifact_root<>OLD.artifact_root
+ THEN RAISE EXCEPTION 'TRAIN_IDENTITY_IMMUTABLE'; END IF;
+ IF OLD.state IN ('verified','failed','interrupted') OR OLD.owner::text IS DISTINCT FROM current_setting('capstone.train_owner',true)
+ THEN RAISE EXCEPTION 'TRAIN_OWNER_FENCED'; END IF;
+ IF NOT ((OLD.state='active' AND NEW.state IN ('active','completed','failed','interrupted')) OR (OLD.state='completed' AND NEW.state='verified'))
+ THEN RAISE EXCEPTION 'TRAIN_TRANSITION_INVALID'; END IF;
+ IF NEW.state='verified' AND (
+   NEW.verification->>'status' IS DISTINCT FROM 'verified'
+   OR coalesce(NEW.completion->>'records_hash','') !~ '^[a-f0-9]{64}$'
+   OR (NEW.completion->>'epochs')::integer IS DISTINCT FROM (SELECT count(*)::integer FROM train_execution_records WHERE run_id=NEW.run_id AND kind='epoch')
+   OR NEW.completion->>'records_hash' IS DISTINCT FROM NEW.verification->>'records_hash'
+   OR NOT EXISTS(SELECT 1 FROM train_execution_records WHERE run_id=NEW.run_id AND kind='epoch')
+   OR NOT EXISTS(SELECT 1 FROM train_execution_records WHERE run_id=NEW.run_id AND kind='artifact')
+ ) THEN RAISE EXCEPTION 'TRAIN_VERIFICATION_INCOMPLETE'; END IF;
+ RETURN NEW;
+END $function$
+
+CREATE TRIGGER campaign_run_identity_guard BEFORE UPDATE ON public.runs FOR EACH ROW EXECUTE FUNCTION campaign_run_identity_guard()
+CREATE TRIGGER controlled_run_guard BEFORE INSERT OR UPDATE ON public.runs FOR EACH ROW EXECUTE FUNCTION controlled_run_guard()
+CREATE CONSTRAINT TRIGGER v2_run_configuration_required AFTER INSERT ON public.runs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_run_configuration_required()
+CREATE OR REPLACE FUNCTION public.v2_run_configuration_required()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_catalog'
+AS $function$ BEGIN
+ IF NEW.run_type='training' AND NOT EXISTS(SELECT 1 FROM public.run_configurations WHERE run_id=NEW.id) THEN RAISE EXCEPTION 'TRAIN_CONFIGURATION_REQUIRED'; END IF;
+ RETURN NULL;
+END $function$
+
+train_event_metadata|CHECK ((((event_id IS NULL) AND (event_sequence IS NULL) AND (kind <> 'e10_event'::text)) OR ((event_id IS NOT NULL) AND (event_sequence IS NOT NULL) AND (event_sequence >= (1)::numeric) AND (event_sequence = trunc(event_sequence)) AND (event_sequence <> ALL (ARRAY['NaN'::numeric, 'Infinity'::numeric, '-Infinity'::numeric])) AND (kind = 'e10_event'::text) AND (phase = 'run_event_v1'::text) AND (record_key = (event_id)::text) AND (NOT (jsonb_typeof((payload -> 'canonical_event'::text)) IS DISTINCT FROM 'string'::text)) AND ((payload - 'canonical_event'::text) = '{}'::jsonb))))
+train_execution_records_payload_check|CHECK ((jsonb_typeof(payload) = 'object'::text))
+train_execution_records_pkey|PRIMARY KEY (run_id, kind, phase, record_key)
+train_execution_records_run_id_fkey|FOREIGN KEY (run_id) REFERENCES train_execution_sessions(run_id)
+started_at|timestamp with time zone|YES
+finished_at|timestamp with time zone|YES
+random_seed|integer|YES
+execution_parameters|jsonb|NO
+configuration|jsonb|YES
+status|text|NO

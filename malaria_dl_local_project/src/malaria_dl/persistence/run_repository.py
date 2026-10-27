@@ -126,6 +126,13 @@ def _tensorflow_environment():
 
 def collect_runtime_environment():
     tf_env = _tensorflow_environment()
+    packages = {
+        dist.metadata["Name"].lower().replace("_", "-"): dist.version
+        for dist in importlib_metadata.distributions()
+        if dist.metadata.get("Name")
+    }
+    if tf_env["keras_version"]:
+        packages["keras"] = tf_env["keras_version"]
     return {
         "user_name": getpass.getuser(),
         "host_name": socket.gethostname(),
@@ -133,8 +140,8 @@ def collect_runtime_environment():
         "git_commit": _run_git_command(["rev-parse", "HEAD"]),
         "git_branch": _run_git_command(["rev-parse", "--abbrev-ref", "HEAD"]),
         "python_version": sys.version,
-        "tensorflow_version": tf_env["tensorflow_version"],
-        "keras_version": tf_env["keras_version"],
+        "tensorflow": tf_env["tensorflow_version"],
+        "packages": packages,
         "platform": platform_module.platform(),
         "machine": platform_module.machine(),
         "processor": platform_module.processor(),
@@ -367,16 +374,19 @@ def start_run(
     dataset_version_id=None,
 ):
     env = collect_runtime_environment()
-    effective_execution_parameters = (
-        parameters if execution_parameters is None else execution_parameters
+    effective_execution_parameters = dict(
+        (parameters if execution_parameters is None else execution_parameters) or {}
     )
+    # An explicit executor snapshot takes precedence over this process.
+    if not effective_execution_parameters.get("runtime_environment"):
+        effective_execution_parameters["runtime_environment"] = dict(env)
     return _execute_returning_id(
         """
         INSERT INTO runs (
             experiment_id, model_id, dataset_id, run_name, run_type, status,
             command, script_name, started_at, user_name, host_name,
             working_directory, git_commit, git_branch, python_version,
-            tensorflow_version, keras_version, platform, machine, processor,
+            platform, machine, processor,
             gpu_available, gpu_devices, random_seed, parameters, notes, metadata,
             execution_type, execution_parameters, fine_tuning_start_epoch,
             total_epochs, completed_epochs, max_epochs, stopped_epoch,
@@ -389,7 +399,7 @@ def start_run(
             :experiment_id, :model_id, :dataset_id, :run_name, :run_type, 'started',
             :command, :script_name, NOW(), :user_name, :host_name,
             :working_directory, :git_commit, :git_branch, :python_version,
-            :tensorflow_version, :keras_version, :platform, :machine, :processor,
+            :platform, :machine, :processor,
             :gpu_available, CAST(:gpu_devices AS jsonb), :random_seed,
             CAST(:parameters AS jsonb), :notes, CAST(:metadata AS jsonb),
             :execution_type, CAST(:execution_parameters AS jsonb),
@@ -430,7 +440,10 @@ def start_run(
             "metadata": _json(metadata),
             "dataset_version_id": dataset_version_id,
             "gpu_devices": _json(env["gpu_devices"], default=[]),
-            **{key: value for key, value in env.items() if key != "gpu_devices"},
+            **{
+                key: value for key, value in env.items()
+                if key not in {"gpu_devices", "tensorflow", "packages"}
+            },
         },
     )
 

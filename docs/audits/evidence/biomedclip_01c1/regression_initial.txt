@@ -1,0 +1,57 @@
+.F...........................FFF........................................ [ 23%]
+........................................................................ [ 47%]
+........................................................................ [ 71%]
+........................................................................ [ 95%]
+...............                                                          [100%]
+=================================== FAILURES ===================================
+_____________________ test_discovery_and_descriptor_errors _____________________
+tests/test_model_registry_e2.py:71: in test_discovery_and_descriptor_errors
+    assert set(reg.enabled_models()) == {"custom_cnn", "vgg16", "densenet121", "synthetic"}
+E   AssertionError: assert {'biomedclip_...tic', 'vgg16'} == {'custom_cnn'...tic', 'vgg16'}
+E     
+E     Extra items in the left set:
+E     'biomedclip_zero_shot'
+E     Use -v to get more diff
+_________________ test_models_are_discovered_from_the_registry _________________
+tests/test_campaign_configuration_swv22.py:48: in test_models_are_discovered_from_the_registry
+    d = registry.resolve_descriptor(m["id"])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/malaria_dl/models/registry.py:102: in resolve_descriptor
+    raise ValueError("MODEL_NOT_EXECUTABLE:" + str(name))
+E   ValueError: MODEL_NOT_EXECUTABLE:biomedclip_zero_shot
+_____________ test_defaults_come_from_the_versioned_batch_profile ______________
+tests/test_campaign_configuration_swv22.py:54: in test_defaults_come_from_the_versioned_batch_profile
+    resolved = resolve_config(m["id"], None, {"optimizer": {"name": m["optimizers"][0]}}, batch=True)["resolved"]
+                                                                    ^^^^^^^^^^^^^^^^^^
+E   IndexError: list index out of range
+_________ test_architecture_specific_editability_follows_the_resolver __________
+tests/test_campaign_configuration_swv22.py:68: in test_architecture_specific_editability_follows_the_resolver
+    assert not m["head_units"]["editable"] and not m["batch_normalization"]["editable"]
+               ^^^^^^^^^^^^^^^
+E   KeyError: 'head_units'
+=============================== warnings summary ===============================
+malaria_dl_local_project/tests/test_model_registry_e2.py::test_beta_rejected_in_cli_and_policy
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_model_registry_e2.py::test_beta_rejected_in_cli_and_policy
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+  /Users/julio/.cache/capstone-biomedclip-01b/venv/lib/python3.12/site-packages/shap/plots/colors/_colors.py:47: PendingDeprecationWarning: The set_bad function will be deprecated in a future version. Use cmap.with_extremes(bad=...) or Colormap(bad=...) instead.
+    red_blue.set_bad(gray_rgb.tolist(), 1.0)
+
+malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+  /Users/julio/.cache/capstone-biomedclip-01b/venv/lib/python3.12/site-packages/shap/plots/colors/_colors.py:48: PendingDeprecationWarning: The set_over function will be deprecated in a future version. Use cmap.with_extremes(over=...) or Colormap(over=...) instead.
+    red_blue.set_over(gray_rgb.tolist(), 1.0)
+
+malaria_dl_local_project/tests/test_assessment_e6.py::test_minimal_attribution_methods_preserve_raw_domain[shap]
+  /Users/julio/.cache/capstone-biomedclip-01b/venv/lib/python3.12/site-packages/shap/plots/colors/_colors.py:49: PendingDeprecationWarning: The set_under function will be deprecated in a future version. Use cmap.with_extremes(under=...) or Colormap(under=...) instead.
+    red_blue.set_under(gray_rgb.tolist(), 1.0)  # "under" is incorrectly used instead of "bad" in the scatter plot
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_model_registry_e2.py::test_discovery_and_descriptor_errors
+FAILED tests/test_campaign_configuration_swv22.py::test_models_are_discovered_from_the_registry
+FAILED tests/test_campaign_configuration_swv22.py::test_defaults_come_from_the_versioned_batch_profile
+FAILED tests/test_campaign_configuration_swv22.py::test_architecture_specific_editability_follows_the_resolver
+4 failed, 299 passed, 5 warnings in 113.54s (0:01:53)

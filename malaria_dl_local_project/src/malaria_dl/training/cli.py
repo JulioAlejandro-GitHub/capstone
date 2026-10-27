@@ -250,6 +250,9 @@ def parse_args(argv=None):
         for action in parser._actions
         if any(token.split("=")[0] in action.option_strings for token in tokens)
     }
+    if not resolve_descriptor(args.model, executable=False).trainable:
+        args.model_configuration = None
+        return args
     try:
         if args.configuration_json and args.model_config:
             raise ValueError("CONFIGURATION_SOURCE_CONFLICT")
@@ -378,6 +381,9 @@ def main():
     from ..execution.local_launch import bootstrap
     bootstrap()
     args = parse_args()
+    from ..pretrained.training import omit_training
+    if omit_training(args.model):
+        return
     if args.dry_run:
         print(json.dumps(args.model_configuration, sort_keys=True))
         print("PLAN ONLY: integridad operativa NO VERIFICADA")

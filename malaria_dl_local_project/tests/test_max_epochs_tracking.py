@@ -26,8 +26,8 @@ RUNTIME_ENVIRONMENT = {
     "git_commit": None,
     "git_branch": None,
     "python_version": "3.test",
-    "tensorflow_version": None,
-    "keras_version": None,
+    "tensorflow": "2.17.1",
+    "packages": {"keras": "3.15.1"},
     "platform": "test",
     "machine": "test",
     "processor": "test",
@@ -235,6 +235,7 @@ class MaxEpochsTrackingTests(unittest.TestCase):
 
         self.assertEqual(result, "run-id")
         sql, params = execute.call_args.args
+        self.assertEqual(json.loads(params["execution_parameters"])["runtime_environment"], RUNTIME_ENVIRONMENT)
         self.assertIn("best_validation_value", sql)
         self.assertEqual(params["max_epochs"], 100)
         self.assertEqual(params["stopped_epoch"], 37)

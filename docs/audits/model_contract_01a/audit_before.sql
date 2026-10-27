@@ -1,0 +1,11 @@
+SELECT current_database(),current_user,count(*) AS runs, count(*) FILTER (WHERE execution_parameters #>> '{runtime_environment,tensorflow}'='2.17.1' AND execution_parameters #>> '{runtime_environment,packages,keras}'='3.15.1') AS preserved, count(*) FILTER (WHERE (tensorflow_version IS NOT NULL AND tensorflow_version IS DISTINCT FROM execution_parameters #>> '{runtime_environment,tensorflow}') OR (keras_version IS NOT NULL AND keras_version IS DISTINCT FROM execution_parameters #>> '{runtime_environment,packages,keras}')) AS mismatches FROM public.runs;
+SELECT a.attname, d.deptype, pg_describe_object(d.classid,d.objid,d.objsubid) AS dependent FROM pg_attribute a JOIN pg_depend d ON d.refclassid='pg_class'::regclass AND d.refobjid=a.attrelid AND d.refobjsubid=a.attnum WHERE a.attrelid='public.runs'::regclass AND a.attname IN ('tensorflow_version','keras_version');
+SELECT n.nspname,p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND p.prosrc ~ '(tensorflow_version|keras_version)';
+SELECT schemaname,viewname FROM pg_views WHERE definition ~ '(tensorflow_version|keras_version)';
+SELECT schemaname,matviewname FROM pg_matviews WHERE definition ~ '(tensorflow_version|keras_version)';
+SELECT schemaname,tablename,indexname FROM pg_indexes WHERE indexdef ~ '(tensorflow_version|keras_version)';
+SELECT conname FROM pg_constraint WHERE pg_get_constraintdef(oid) ~ '(tensorflow_version|keras_version)';
+SELECT tgname FROM pg_trigger WHERE pg_get_triggerdef(oid) ~ '(tensorflow_version|keras_version)';
+SELECT rulename FROM pg_rewrite WHERE pg_get_ruledef(oid) ~ '(tensorflow_version|keras_version)';
+SELECT md5(string_agg((to_jsonb(r)-'tensorflow_version'-'keras_version')::text,'' ORDER BY id)) AS runs_hash FROM public.runs r;
+SELECT 'artifacts' AS object, count(*),md5(string_agg(to_jsonb(t)::text,'' ORDER BY id)) FROM public.artifacts t UNION ALL SELECT 'model_versions',count(*),md5(string_agg(to_jsonb(t)::text,'' ORDER BY id)) FROM public.model_versions t;

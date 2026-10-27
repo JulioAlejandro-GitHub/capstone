@@ -1,0 +1,122 @@
+{
+  "seed": 20261026,
+  "load_seconds": 5.921944250003435,
+  "preprocess_seconds": 0.020098582957871258,
+  "loss": "BCEWithLogits",
+  "optimizer": "torch.optim.AdamW",
+  "weight_decay": 0.0,
+  "head_lr": 0.001,
+  "visual_block_lr": 1e-05,
+  "training_mode": "eval tower (dropout disabled), gradients enabled for selected block; technical update only",
+  "head_update": {
+    "loss": 0.6854238510131836,
+    "forward_seconds": 0.3563518750015646,
+    "backward_seconds": 0.0035806670202873647,
+    "step_seconds": 0.12864512501982972,
+    "device": "mps:0",
+    "dtype": "torch.float32",
+    "memory": {
+      "allocated": 790266880,
+      "driver": 1464565760,
+      "recommended": 40200896512,
+      "rss": 1543208960
+    }
+  },
+  "block_update": {
+    "loss": 0.6822214126586914,
+    "forward_seconds": 0.25428125000325963,
+    "backward_seconds": 0.9885460829827935,
+    "step_seconds": 0.09628670802339911,
+    "device": "mps:0",
+    "dtype": "torch.float32",
+    "memory": {
+      "allocated": 875321344,
+      "driver": 1464713216,
+      "recommended": 40200896512,
+      "rss": 1577025536
+    }
+  },
+  "encoder_unchanged_after_head": true,
+  "trainable_names": [
+    "visual.trunk.blocks.11.norm1.weight",
+    "visual.trunk.blocks.11.norm1.bias",
+    "visual.trunk.blocks.11.attn.qkv.weight",
+    "visual.trunk.blocks.11.attn.qkv.bias",
+    "visual.trunk.blocks.11.attn.proj.weight",
+    "visual.trunk.blocks.11.attn.proj.bias",
+    "visual.trunk.blocks.11.norm2.weight",
+    "visual.trunk.blocks.11.norm2.bias",
+    "visual.trunk.blocks.11.mlp.fc1.weight",
+    "visual.trunk.blocks.11.mlp.fc1.bias",
+    "visual.trunk.blocks.11.mlp.fc2.weight",
+    "visual.trunk.blocks.11.mlp.fc2.bias"
+  ],
+  "changed_names": [
+    "visual.trunk.blocks.11.norm1.weight",
+    "visual.trunk.blocks.11.norm1.bias",
+    "visual.trunk.blocks.11.attn.qkv.weight",
+    "visual.trunk.blocks.11.attn.qkv.bias",
+    "visual.trunk.blocks.11.attn.proj.weight",
+    "visual.trunk.blocks.11.attn.proj.bias",
+    "visual.trunk.blocks.11.norm2.weight",
+    "visual.trunk.blocks.11.norm2.bias",
+    "visual.trunk.blocks.11.mlp.fc1.weight",
+    "visual.trunk.blocks.11.mlp.fc1.bias",
+    "visual.trunk.blocks.11.mlp.fc2.weight",
+    "visual.trunk.blocks.11.mlp.fc2.bias"
+  ],
+  "frozen_unchanged": true,
+  "head_changed": true,
+  "checkpoint": {
+    "path": "/Users/julio/.cache/capstone-biomedclip-01b/fine_tuning.pt",
+    "sha256": "7c137f3b23f378e2a811e648182f6cef6736bdaecf74cb110e90690201e4c954",
+    "bytes": 344817737,
+    "save_seconds": 0.3606425000471063,
+    "model_reload_seconds": 1.9483206250006333,
+    "checkpoint_load_seconds": 0.03317075001541525
+  },
+  "parity": {
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "allclose": true,
+    "atol": 0.0001,
+    "rtol": 0.001
+  },
+  "scores_before": [
+    [
+      0.5016529560089111
+    ],
+    [
+      0.5170266628265381
+    ]
+  ],
+  "scores_after": [
+    [
+      0.5016529560089111
+    ],
+    [
+      0.5170266628265381
+    ]
+  ],
+  "xai": {
+    "layer": "visual.trunk.blocks.11.norm1",
+    "activation_shape": [
+      1,
+      197,
+      768
+    ],
+    "activation_finite": true,
+    "token_grad_abs_sum": 0.553220272064209,
+    "image_grad_abs_sum": 7.197850227355957,
+    "gradient_device": "mps:0",
+    "seconds": 0.209140041959472
+  },
+  "represent": {
+    "shape": [
+      2,
+      512
+    ],
+    "finite": true
+  },
+  "original_files_intact": true
+}

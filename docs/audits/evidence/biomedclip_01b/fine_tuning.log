@@ -1,0 +1,51 @@
+{
+  "head_update": {
+    "loss": 0.6854238510131836,
+    "forward_seconds": 0.3563518750015646,
+    "backward_seconds": 0.0035806670202873647,
+    "step_seconds": 0.12864512501982972,
+    "device": "mps:0",
+    "dtype": "torch.float32",
+    "memory": {
+      "allocated": 790266880,
+      "driver": 1464565760,
+      "recommended": 40200896512,
+      "rss": 1543208960
+    }
+  },
+  "block_update": {
+    "loss": 0.6822214126586914,
+    "forward_seconds": 0.25428125000325963,
+    "backward_seconds": 0.9885460829827935,
+    "step_seconds": 0.09628670802339911,
+    "device": "mps:0",
+    "dtype": "torch.float32",
+    "memory": {
+      "allocated": 875321344,
+      "driver": 1464713216,
+      "recommended": 40200896512,
+      "rss": 1577025536
+    }
+  },
+  "parity": {
+    "max_abs": 0.0,
+    "mean_abs": 0.0,
+    "allclose": true,
+    "atol": 0.0001,
+    "rtol": 0.001
+  },
+  "xai": {
+    "layer": "visual.trunk.blocks.11.norm1",
+    "activation_shape": [
+      1,
+      197,
+      768
+    ],
+    "activation_finite": true,
+    "token_grad_abs_sum": 0.553220272064209,
+    "image_grad_abs_sum": 7.197850227355957,
+    "gradient_device": "mps:0",
+    "seconds": 0.209140041959472
+  },
+  "original_files_intact": true
+}

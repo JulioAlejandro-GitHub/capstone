@@ -1,0 +1,157 @@
+{
+  "git_reference": "41b6f572a132b0499c6883298f8f5a2483cb2232",
+  "files": {
+    "docs/audits/BIOMEDCLIP-01C-1_registro_zero_shot.md": {
+      "bytes": 30640,
+      "sha256": "2e843467defd28101d8b42fe4f4f57cc3485582c03b9288338fbd06e7cb0c4f9"
+    },
+    "docs/audits/evidence/biomedclip_01c1/database_backup_snapshot.json": {
+      "bytes": 1523,
+      "sha256": "4daa64d5060eeb11db39d2ede8e081f7f9d073bbef19385a6157b7a5d8c4d254"
+    },
+    "docs/audits/evidence/biomedclip_01c1/database_source_after.json": {
+      "bytes": 1501,
+      "sha256": "f30090bca52b42687d2a5a3423321edc506150443dfbfc9b8649dccd8d244378"
+    },
+    "docs/audits/evidence/biomedclip_01c1/frontend_build.txt": {
+      "bytes": 948,
+      "sha256": "01df5779c9be25b0d9d9929524340ade270c71389d0605e303274a6217022113"
+    },
+    "docs/audits/evidence/biomedclip_01c1/frontend_tests.txt": {
+      "bytes": 39398,
+      "sha256": "0b2c95a0c5df65d47142efe756900b1a1a3198d0ed036c25b87ce52205f7d0e8"
+    },
+    "docs/audits/evidence/biomedclip_01c1/registered_origin.json": {
+      "bytes": 4541,
+      "sha256": "95d5447b6ebc220e0bcb86c7962df636382983fd221b0348106cf6b7bf5eee7e"
+    },
+    "docs/audits/evidence/biomedclip_01c1/registration_sql_evidence.json": {
+      "bytes": 3321,
+      "sha256": "a40851b0aded365dd03a7f49eeaf20c63452803b24126464d4e48e4bfa027212"
+    },
+    "docs/audits/evidence/biomedclip_01c1/registration_tests.txt": {
+      "bytes": 99,
+      "sha256": "c0f749bc423cc4e567cb6887002a45aedc625610567b5c4bb64243c3661d8898"
+    },
+    "docs/audits/evidence/biomedclip_01c1/regression_initial.txt": {
+      "bytes": 4791,
+      "sha256": "d0e6f3db473b915a0a82ccf5a2aecab59fdab127348c162a0de0e9df4a5e342d"
+    },
+    "docs/audits/evidence/biomedclip_01c1/regression_tests.txt": {
+      "bytes": 2585,
+      "sha256": "6c1e7578625c61f0053bb439ac4887fa6c1b2c8196df2a8fa524c90ffcfc1ffd"
+    },
+    "docs/audits/evidence/biomedclip_01c1/schema_comparison.json": {
+      "bytes": 280,
+      "sha256": "ffa33bcacf1208d7957495b09c9110f95ce85060575ee63465d105d667ff02d8"
+    },
+    "docs/audits/evidence/biomedclip_01c1/train_mixed_entry_test.txt": {
+      "bytes": 113,
+      "sha256": "e62d5ce719a990e72a02f9cacbcd7c986abc1cf5b506cc4cb916a9900a82f841"
+    },
+    "frontend/src/pages/CampaignConfiguration.tsx": {
+      "bytes": 36991,
+      "sha256": "6be7917f901798ad31ffc0aa1254bfcb65daf46253f1851f0b900c42aaba0957"
+    },
+    "frontend/src/types/campaign.ts": {
+      "bytes": 4989,
+      "sha256": "4dc3882f9ae3b9838dd9908839150f322569083d0383a69bad9a8ef6313c956a"
+    },
+    "malaria_dl_local_project/configs/models/biomedclip_zero_shot.json": {
+      "bytes": 90,
+      "sha256": "923e5dd56d8541cfc1d8e25a932ca4af936381d3520da08556e2763072207628"
+    },
+    "malaria_dl_local_project/requirements-biomedclip-registration.txt": {
+      "bytes": 373,
+      "sha256": "ed387e113cde0cc5f8086dd281ae584a3533508c9ec2ed70957e3b24ed52a441"
+    },
+    "malaria_dl_local_project/src/malaria_dl/campaigns/configuration.py": {
+      "bytes": 26283,
+      "sha256": "a8f5e9f5f1707ed0a8aa5055bf2c6b4bb682295f654b1bf2e23dbfd43503db4b"
+    },
+    "malaria_dl_local_project/src/malaria_dl/campaigns/contracts.py": {
+      "bytes": 20333,
+      "sha256": "860ca461d24c2d6dab7676c9d1560ae08d85409bfafbcb1210af860932a968f4"
+    },
+    "malaria_dl_local_project/src/malaria_dl/execution/artifacts.py": {
+      "bytes": 5419,
+      "sha256": "63715a8ba40302c6fcc97ee70cf00720d60b7e2a59147e9d8579a2d03e1779fc"
+    },
+    "malaria_dl_local_project/src/malaria_dl/execution/operations.py": {
+      "bytes": 4528,
+      "sha256": "d682233d3ea9d5baa4a7f74916b7a27950c16ae979a25008f6ad89bd6852823f"
+    },
+    "malaria_dl_local_project/src/malaria_dl/execution/selection.py": {
+      "bytes": 2007,
+      "sha256": "c51f34401473ca742d07a04085e2436880efbd4ffcaaec88980e11faa4923924"
+    },
+    "malaria_dl_local_project/src/malaria_dl/execution/train.py": {
+      "bytes": 15492,
+      "sha256": "1716c4f0c179c6d04d795fa658bc08d8d6183b606b0139d3a91a38f825d36a4e"
+    },
+    "malaria_dl_local_project/src/malaria_dl/models/registry.py": {
+      "bytes": 5876,
+      "sha256": "548e02dae6503c10c1cb665f4cfb9738946cd7a490638ddbcd1e2b1fcb360ef6"
+    },
+    "malaria_dl_local_project/src/malaria_dl/pretrained/__init__.py": {
+      "bytes": 78,
+      "sha256": "7b30e2c1a021a142d50826014aebf8c0a48a2dde0f03993f8a38289b6c0ee704"
+    },
+    "malaria_dl_local_project/src/malaria_dl/pretrained/contracts.py": {
+      "bytes": 7738,
+      "sha256": "ab76ab2cb0e26a7133c66519dbb5b52aa48441ef791e9b98866bd6b022db8120"
+    },
+    "malaria_dl_local_project/src/malaria_dl/pretrained/repository.py": {
+      "bytes": 10131,
+      "sha256": "268d3cc332264f2c7fba826654d597e66d88ccc215e5b3af6ff035c8f72eedea"
+    },
+    "malaria_dl_local_project/src/malaria_dl/pretrained/service.py": {
+      "bytes": 2539,
+      "sha256": "767fb434887ba480a19d1f797a6753a038dbad047a5e05136237e0e56d740294"
+    },
+    "malaria_dl_local_project/src/malaria_dl/pretrained/training.py": {
+      "bytes": 443,
+      "sha256": "3f12ff4912d9be80db2df4bf058f7ec353709eae9d2731f751a48feadb879e14"
+    },
+    "malaria_dl_local_project/src/malaria_dl/training/cli.py": {
+      "bytes": 15233,
+      "sha256": "08d615242d932a7ee2204947756ac17afcec9c225c52a46e778d366210178a5b"
+    },
+    "malaria_dl_local_project/src/malaria_dl/training/trainer.py": {
+      "bytes": 99946,
+      "sha256": "e7378003eab25340b5f2545cbe30462123831ef5833fcfe3aa4fa38bf0794a66"
+    },
+    "malaria_dl_local_project/src/register_pretrained.py": {
+      "bytes": 2246,
+      "sha256": "1461cc0aabeaf3b01729870a8edffff094796071f44f13501ea9669d195b404a"
+    },
+    "malaria_dl_local_project/tests/test_biomedclip_pretrained.py": {
+      "bytes": 25841,
+      "sha256": "401f3857f1136003e2ca3243e6f4037cb11817e55e2bce7a6965418d65e0957e"
+    },
+    "malaria_dl_local_project/tests/test_campaign_configuration_swv22.py": {
+      "bytes": 19586,
+      "sha256": "29b07d0dbc06c98b59aa8c2b12a7b3172e13377f94a8d6054b58203dfcbe558a"
+    },
+    "malaria_dl_local_project/tests/test_model_registry_e2.py": {
+      "bytes": 15922,
+      "sha256": "c1d0391d8f95759f5217c7694e47106811d31a25470efdc99103f33e48edde76"
+    },
+    "scripts/sql/biomedclip_01c1.sql": {
+      "bytes": 21791,
+      "sha256": "9df1e22a79fc27f18092873d20cea5c63138a41041902c208e6fd4a105aa7c61"
+    },
+    "scripts/sql/biomedclip_01c1_original_guards.sql": {
+      "bytes": 2116,
+      "sha256": "8424f4f0cbb590f7b58d68a18e43067869755760558799739acc5049c5a35a42"
+    },
+    "scripts/validation/biomedclip_01c1_snapshot.py": {
+      "bytes": 1735,
+      "sha256": "3c59411abb03af2ce2623af6b8eff27e555dfdbb5ce0724bd357e6405b43a669"
+    },
+    "scripts/validation/biomedclip_01c1_test_environment/sitecustomize.py": {
+      "bytes": 726,
+      "sha256": "bdb7afa607e293f336359cee80ec9a2f2b94c1ed1a38ddfc6888f5e63f4fdecf"
+    }
+  }
+}

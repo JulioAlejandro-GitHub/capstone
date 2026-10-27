@@ -25,6 +25,23 @@ EXPECTED_CLASS_MAPPING = {
 from src.malaria_dl.common.paths import PROJECT_ROOT
 
 
+def observed_framework_version(framework: str | None, runtime: dict) -> str | None:
+    """Resolve only evidence belonging to the effective model framework."""
+    name = (framework or "").lower()
+    packages = runtime.get("packages") or {}
+    if "openclip" in name or "open_clip" in name or "open-clip" in name:
+        return (
+            packages.get("open-clip-torch")
+            or packages.get("open_clip_torch")
+            or runtime.get("open_clip")
+        )
+    if "torch" in name:
+        return packages.get("torch") or runtime.get("torch")
+    if "keras" in name or "tensorflow" in name:
+        return packages.get("keras") or runtime.get("tensorflow")
+    return None
+
+
 def _project_path(value: Any) -> Path:
     path = Path(str(value or "")).expanduser()
     return path if path.is_absolute() else PROJECT_ROOT / path
@@ -133,7 +150,8 @@ class PrepareModelReleaseService:
                              NULLIF(r.parameters->>'model', ''),
                              NULLIF(r.metadata->>'model_name', '')
                            ) AS model_name,
-                           r.tensorflow_version, r.keras_version, r.metadata
+                           m.framework AS catalog_framework,
+                           r.execution_parameters, r.metadata
                     FROM runs r
                     LEFT JOIN models m ON m.id = r.model_id
                     WHERE r.id = :id
@@ -148,9 +166,6 @@ class PrepareModelReleaseService:
             context.training_status = training["status"]
             context.run_type = training["run_type"]
             context.model_name = training["model_name"]
-            context.framework_version = (
-                training.get("keras_version") or training.get("tensorflow_version")
-            )
 
             versions = connection.execute(
                 text(
@@ -239,7 +254,10 @@ class PrepareModelReleaseService:
                 context.output_signature = self._json(
                     context.model_version.get("output_signature")
                 )
-                context.framework = context.model_version.get("framework")
+                context.framework = (
+                    context.model_version.get("framework")
+                    or training.get("catalog_framework")
+                )
             else:
                 raw_preprocessing = (
                     model_metadata.get("preprocessing")
@@ -268,9 +286,21 @@ class PrepareModelReleaseService:
                     model_metadata.get("output_signature")
                 )
                 context.framework = (
-                    model_metadata.get("framework")
-                    or ("keras" if context.checkpoint else None)
+                    training.get("catalog_framework")
+                    or model_metadata.get("framework")
+                    or (
+                        "keras"
+                        if context.checkpoint
+                        and str(context.checkpoint.get("path", "")).lower().endswith(".keras")
+                        else None
+                    )
                 )
+
+            runtime = (
+                self._json(training.get("execution_parameters")).get("runtime_environment")
+                or {}
+            )
+            context.framework_version = observed_framework_version(context.framework, runtime)
 
             version_id = (
                 str(context.model_version["id"]) if context.model_version else None
@@ -733,7 +763,7 @@ class PrepareModelReleaseService:
                 artifact_uri=checkpoint.get("artifact_uri"),
                 artifact_sha256=str(checkpoint["artifact_sha256"]),
                 artifact_size_bytes=int(checkpoint["artifact_size_bytes"]),
-                framework=str(context.framework or "keras"),
+                framework=context.framework,
                 framework_version=context.framework_version,
                 preprocessing_profile_snapshot=context.preprocessing,
                 class_mapping=class_mapping,

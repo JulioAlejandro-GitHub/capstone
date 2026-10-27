@@ -75,8 +75,6 @@ CREATE TABLE IF NOT EXISTS runs (
     git_commit TEXT,
     git_branch TEXT,
     python_version TEXT,
-    tensorflow_version TEXT,
-    keras_version TEXT,
     platform TEXT,
     machine TEXT,
     processor TEXT,

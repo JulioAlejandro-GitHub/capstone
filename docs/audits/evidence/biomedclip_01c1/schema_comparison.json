@@ -1,0 +1,6 @@
+{
+  "source_schema_equal": true,
+  "before_sha256": "0af8d7d653f3f68b3233620d6a30b1965bfae561b3a78b2da6fecf5417418456",
+  "after_sha256": "0af8d7d653f3f68b3233620d6a30b1965bfae561b3a78b2da6fecf5417418456",
+  "normalization": "omit pg_dump random restrict/unrestrict token only"
+}

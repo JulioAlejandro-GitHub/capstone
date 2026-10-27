@@ -1,0 +1,13 @@
+alembic_v2/baseline/03_tables.sql
+alembic_v2/baseline/catalog_manifest.json
+malaria_dl_local_project/db/init/001_schema.sql
+malaria_dl_local_project/db/init/027_model_governance_backfill_constraints.sql
+malaria_dl_local_project/src/malaria_dl/execution/repository.py
+malaria_dl_local_project/src/malaria_dl/governance/services/prepare_release_service.py
+malaria_dl_local_project/src/malaria_dl/persistence/run_repository.py
+malaria_dl_local_project/tests/test_campaigns_postgres.py
+malaria_dl_local_project/tests/test_max_epochs_tracking.py
+malaria_dl_local_project/tests/test_model_execution_tracking.py
+malaria_dl_local_project/tests/test_train_run_persistence.py
+malaria_dl_local_project/tests/test_runtime_environment_contract.py
+docs/audits/model_contract_01a/ (informe, scripts y evidencia)

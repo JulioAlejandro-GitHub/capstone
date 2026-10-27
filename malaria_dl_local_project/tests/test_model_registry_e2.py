@@ -68,7 +68,8 @@ def test_discovery_and_descriptor_errors(monkeypatch, tmp_path):
     # A new model exists only with a public.models row; simulate that row here.
     rows = reg.model_catalog()
     monkeypatch.setattr(reg, "model_catalog", lambda: rows + ({"name": "synthetic", "architecture": None, "model_type": "classification", "framework": "tensorflow/keras"},))
-    assert set(reg.enabled_models()) == {"custom_cnn", "vgg16", "densenet121", "synthetic"}
+    assert {"custom_cnn", "vgg16", "densenet121"} <= {row["name"] for row in rows}
+    assert set(reg.enabled_models()) == {row["name"] for row in rows} | {"synthetic"}
     assert (
         parse_args(["--model", "synthetic", "--dataset-version-id", UUID]).model
         == "synthetic"

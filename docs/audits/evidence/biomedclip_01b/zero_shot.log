@@ -1,0 +1,74 @@
+{
+  "parity": {
+    "image_embeddings": {
+      "max_abs": 5.513429641723633e-07,
+      "mean_abs": 8.448918720205256e-08,
+      "allclose": true,
+      "atol": 0.0001,
+      "rtol": 0.001
+    },
+    "text_embeddings": {
+      "max_abs": 2.384185791015625e-07,
+      "mean_abs": 3.7987568646258296e-08,
+      "allclose": true,
+      "atol": 0.0001,
+      "rtol": 0.001
+    },
+    "cosine": {
+      "max_abs": 6.258487701416016e-07,
+      "mean_abs": 2.514570951461792e-07,
+      "allclose": true,
+      "atol": 0.0001,
+      "rtol": 0.001
+    },
+    "logits": {
+      "max_abs": 5.340576171875e-05,
+      "mean_abs": 2.1457672119140625e-05,
+      "allclose": true,
+      "atol": 0.0001,
+      "rtol": 0.001
+    },
+    "scores": {
+      "max_abs": 1.1354684829711914e-05,
+      "mean_abs": 4.122965037822723e-06,
+      "allclose": true,
+      "atol": 0.0001,
+      "rtol": 0.001
+    },
+    "logit_scale": {
+      "max_abs": 0.0,
+      "mean_abs": 0.0,
+      "allclose": true,
+      "atol": 0.0001,
+      "rtol": 0.001
+    }
+  },
+  "xai": {
+    "objective": "positive prompt cosine similarity",
+    "layer": "visual.trunk.blocks.11.norm1",
+    "input_grad_finite": true,
+    "input_grad_abs_sum": 14.471956253051758,
+    "embedding_grad_abs_sum": 13.581560134887695,
+    "tokens_shape": [
+      1,
+      197,
+      768
+    ],
+    "token_grad_abs_sum": 0.9843696355819702,
+    "backward_seconds": 0.8370286249555647,
+    "device": "mps:0"
+  },
+  "represent": {
+    "shape": [
+      24,
+      512
+    ],
+    "finite": true,
+    "norm_range": [
+      0.9999999403953552,
+      1.0
+    ],
+    "seconds": 0.10763204202521592,
+    "encoder_unchanged": true
+  }
+}

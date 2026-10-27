@@ -16,6 +16,8 @@ def select_trainings(repository: CampaignRepository, campaign_id: str | None,
                             id=campaign).scalar_one(), "CAMPAIGN_NOT_FOUND")
         rows = list(execute(c, """
             SELECT r.id, r.campaign_id, r.dataset_version_id, r.status,
+                   r.execution_parameters->'scientific_origin' AS scientific_origin,
+                   (SELECT name FROM models WHERE id=r.model_id) AS model_name,
                    r.execution_parameters->'model_configuration_e2'->'configuration' AS configuration
             FROM runs r WHERE r.run_type='training'
               AND (CAST(:train AS uuid) IS NULL OR r.id=CAST(:train AS uuid))

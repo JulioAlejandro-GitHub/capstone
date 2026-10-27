@@ -1,0 +1,42 @@
+{
+  "assessment_identities": {
+    "before": {
+      "count": 72,
+      "xmin_sum": 3270821
+    },
+    "after": {
+      "count": 75,
+      "xmin_sum": 3472783
+    }
+  },
+  "assessment_attempts": {
+    "before": {
+      "count": 72,
+      "xmin_sum": 3307209
+    },
+    "after": {
+      "count": 75,
+      "xmin_sum": 3509190
+    }
+  },
+  "assessment_results": {
+    "before": {
+      "count": 68658,
+      "xmin_sum": 2840546098
+    },
+    "after": {
+      "count": 68661,
+      "xmin_sum": 2840748076
+    }
+  },
+  "assessment_artifacts": {
+    "before": {
+      "count": 35198,
+      "xmin_sum": 1221322719
+    },
+    "after": {
+      "count": 35204,
+      "xmin_sum": 1221726666
+    }
+  }
+}

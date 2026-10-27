@@ -1,0 +1,50 @@
+{
+  "models": {
+    "count": 3,
+    "xmin_sum": 6447
+  },
+  "model_versions": {
+    "count": 1,
+    "xmin_sum": 36136
+  },
+  "runs": {
+    "count": 23,
+    "xmin_sum": 432517
+  },
+  "train_execution_sessions": {
+    "count": 23,
+    "xmin_sum": 398864
+  },
+  "train_execution_records": {
+    "count": 5059,
+    "xmin_sum": 48205388
+  },
+  "assessment_identities": {
+    "count": 72,
+    "xmin_sum": 3270821
+  },
+  "assessment_attempts": {
+    "count": 72,
+    "xmin_sum": 3307209
+  },
+  "assessment_results": {
+    "count": 68658,
+    "xmin_sum": 2840546098
+  },
+  "assessment_artifacts": {
+    "count": 35198,
+    "xmin_sum": 1221322719
+  },
+  "artifacts": {
+    "count": 22,
+    "xmin_sum": 362568
+  },
+  "experimental_campaigns": {
+    "count": 10,
+    "xmin_sum": 268863
+  },
+  "run_configurations": {
+    "count": 23,
+    "xmin_sum": 392339
+  }
+}

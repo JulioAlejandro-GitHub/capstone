@@ -17,9 +17,17 @@ BEGIN
             m.name AS catalog_model_name,
             m.framework AS catalog_framework,
             CASE
-                WHEN LOWER(COALESCE(m.framework, '')) LIKE '%keras%'
-                    THEN COALESCE(r.keras_version, r.tensorflow_version)
-                ELSE COALESCE(r.tensorflow_version, r.keras_version)
+                WHEN LOWER(COALESCE(NULLIF(mv.framework, ''), m.framework, '')) SIMILAR TO '%(openclip|open_clip|open-clip)%'
+                    THEN COALESCE(r.execution_parameters #>> '{runtime_environment,packages,open-clip-torch}',
+                                  r.execution_parameters #>> '{runtime_environment,packages,open_clip_torch}',
+                                  r.execution_parameters #>> '{runtime_environment,open_clip}')
+                WHEN LOWER(COALESCE(NULLIF(mv.framework, ''), m.framework, '')) LIKE '%torch%'
+                    THEN COALESCE(r.execution_parameters #>> '{runtime_environment,packages,torch}',
+                                  r.execution_parameters #>> '{runtime_environment,torch}')
+                WHEN LOWER(COALESCE(NULLIF(mv.framework, ''), m.framework, '')) SIMILAR TO '%(keras|tensorflow)%'
+                    THEN COALESCE(r.execution_parameters #>> '{runtime_environment,packages,keras}',
+                                  r.execution_parameters #>> '{runtime_environment,tensorflow}')
+                ELSE NULL
             END AS observed_framework_version,
             COUNT(*) OVER (PARTITION BY mv.id) AS candidate_count,
             COUNT(*) OVER (PARTITION BY a.id) AS version_candidate_count

@@ -1,0 +1,9 @@
+{
+  "mismatches_in_HEAD": [
+    "03_tables.sql",
+    "05_keys.sql",
+    "06_constraints.sql",
+    "07_indexes.sql",
+    "10_privileges.sql"
+  ]
+}
