@@ -19,8 +19,6 @@ def file_identity(path):
 
 
 def verify_session(repository, session, loader):
-    if session.get("configuration", {}).get("schema") == "pretrained_configuration_v1":
-        raise CampaignError("PRETRAINED_ASSESSMENT_NOT_IMPLEMENTED")
     check = getattr(repository, 'scientific_completion', None)
     scientific = check(session['run_id']) if check is not None else None
     if scientific is not None:

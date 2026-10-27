@@ -1,1 +1,1 @@
-"""Governed registration of external pretrained origins (no optimization)."""
+"""Computational TRAIN omission for non-trainable model descriptors."""
