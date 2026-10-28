@@ -22,7 +22,7 @@ class LocalBackend:
     def load_checkpoint(path,contract):
         import subprocess,sys
         result=subprocess.run([sys.executable,'-B','-c',
-            'import sys,json; from src.malaria_dl.execution.artifacts import keras_loader; keras_loader(sys.argv[1],json.loads(sys.argv[2]))',str(path),json.dumps(contract)],capture_output=True,timeout=120)
+            'import sys,json; from src.malaria_dl.execution.artifacts import checkpoint_loader; checkpoint_loader(sys.argv[1],json.loads(sys.argv[2]))',str(path),json.dumps(contract)],capture_output=True,timeout=120)
         if result.returncode:raise CampaignError('LOCAL_CHECKPOINT_LOAD_FAILED')
 
     def preflight(self,row,payload):

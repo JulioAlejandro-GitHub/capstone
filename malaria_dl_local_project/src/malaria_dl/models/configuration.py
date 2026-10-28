@@ -74,7 +74,9 @@ def resolve_config(model_name, selected=None, overrides=None, *, batch=False):
             raise ValueError("INVALID_MODEL_PARAMETER:" + key)
     if (
         type(m["fine_tune_layers"]) is not int
-        or not 0 <= m["fine_tune_layers"] <= defaults["model"]["fine_tune_layers"]
+        or not 0 <= m["fine_tune_layers"] <= (
+            defaults["model"]["fine_tune_layers"] if descriptor.max_fine_tune_layers is None
+            else descriptor.max_fine_tune_layers)
     ):
         raise ValueError("INVALID_FINE_TUNE_LAYERS")
     # Architecture-specific supported knobs are declared by its versioned defaults.
@@ -83,9 +85,7 @@ def resolve_config(model_name, selected=None, overrides=None, *, batch=False):
             defaults["model"][key]
         ):
             raise ValueError("UNSUPPORTED_MODEL_PARAMETER:" + key)
-    if m["weights"] not in ("none", "imagenet") or (
-        "fine_tuning" not in descriptor.strategies and m["weights"] != "none"
-    ):
+    if m["weights"] not in descriptor.weights:
         raise ValueError("INCOMPATIBLE_WEIGHTS")
     allowed_preprocessing = descriptor.preprocessing_modes
     if m["preprocessing"] == "auto":
@@ -161,8 +161,13 @@ def resolve_config(model_name, selected=None, overrides=None, *, batch=False):
         or o["fine_tune_learning_rate"] <= 0
     ):
         raise ValueError("INVALID_FINE_TUNE_LEARNING_RATE")
-    from ..data.input_contract import make_input_contract
-    input_contract = make_input_contract(descriptor.id, descriptor.version, m['input_shape'], m['preprocessing'], descriptor.internal_preprocessing)
+    if descriptor.framework == "pytorch_openclip":
+        from ..assessment.openclip import supervised_input_contract
+        input_contract = supervised_input_contract(descriptor.id, descriptor.version, m["input_shape"],
+                                                   config["recipe"])
+    else:
+        from ..data.input_contract import make_input_contract
+        input_contract = make_input_contract(descriptor.id, descriptor.version, m['input_shape'], m['preprocessing'], descriptor.internal_preprocessing)
     return dict(
         schema_version=config["schema_version"],
         model_id=descriptor.id,

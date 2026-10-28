@@ -187,6 +187,7 @@ def test_shap_chunks_average_to_the_requested_sample_count(monkeypatch):
     runtime_.value = {"seed": 10, "batch_size": 2,
                       "explanation": {"method": "shap", "class": 1, "num_samples": 250, "background": []}}
     runtime_.classifier = None
+    runtime_.device = "cpu"
     runtime_.mean, runtime_.std = np.zeros((3, 1, 1), "float32"), np.ones((3, 1, 1), "float32")
     runtime_.images = lambda batch: np.full((max(len(batch), 1), 3, 4, 4), 0.5, "float32")
     runtime_.torch = pytest.importorskip("torch")

@@ -20,7 +20,7 @@ from .contracts import (
 )
 from .lineage import dataset_samples, resolve
 from .representation import ROLES
-from .openclip import calibration as zero_shot_calibration, decision as zero_shot_decision, is_openclip
+from .openclip import calibration as zero_shot_calibration, decision as zero_shot_decision, is_openclip, is_supervised
 from .runtime import runtime_for, save_artifacts, save_arrays
 
 
@@ -166,6 +166,9 @@ def prepare(
                                              "explain" if explanation else "represent" if representation
                                              else "test" if split == "test" else "evaluate")
         decision = threshold(requested_threshold, protocol, calibration)
+        # A ViT has no convolutional layer for Grad-CAM; LIME and SHAP are model-agnostic.
+        require(not is_supervised(binding) or explanation is None or explanation["method"] in ("lime", "shap"),
+                "EXPLANATION_METHOD_UNSUPPORTED_FOR_FRAMEWORK")
     samples = dataset_samples(
         repository, dataset, split, dataset_version_id, inspection=inspection,
         # The dataset of a logical TRAIN is the explicit selection, not TRAIN evidence.
@@ -218,7 +221,7 @@ def prepare(
         purpose=purpose,
         protocol=protocol,
         decision=decision,
-        code=inference_environment(explanation, representation, zero_shot),
+        code=inference_environment(explanation, representation, zero_shot or is_supervised(binding)),
         seed=seed,
         batch_size=batch_size,
         explanation=explanation,

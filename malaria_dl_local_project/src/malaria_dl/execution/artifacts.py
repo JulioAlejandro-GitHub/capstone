@@ -118,3 +118,18 @@ def keras_loader(path, contract):
         or getattr(model.layers[-1].activation, "__name__", None) != "sigmoid"
     ):
         raise CampaignError("CHECKPOINT_OUTPUT_CONTRACT_CONFLICT")
+
+
+def checkpoint_framework(contract):
+    from ..data.input_contract import OPENCLIP_SCHEMAS
+
+    return "pytorch_openclip" if (contract or {}).get("schema_version") in OPENCLIP_SCHEMAS else "keras"
+
+
+def checkpoint_loader(path, contract):
+    """verify_session loader chosen by the frozen input contract of the TRAIN."""
+    if checkpoint_framework(contract) == "pytorch_openclip":
+        from ..models.biomedclip_training import torch_loader
+
+        return torch_loader(path, contract)
+    return keras_loader(path, contract)

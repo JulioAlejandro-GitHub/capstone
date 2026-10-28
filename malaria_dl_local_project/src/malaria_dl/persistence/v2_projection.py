@@ -50,7 +50,8 @@ def project_configuration(connection, run_id, config):
                    checkpoint_monitor=selection['monitor'], checkpoint_mode=selection['mode'],
                    early_stopping_monitor=selection['early_stopping_monitor'],
                    early_stopping_mode=selection['early_stopping_mode'], normalization=model['preprocessing'],
-                   internal_preprocessing=r['input_contract']['internal']['mode'],
+                   # Only Keras contracts declare in-model preprocessing; OpenCLIP heads have none.
+                   internal_preprocessing=(r['input_contract'].get('internal') or {}).get('mode'),
                    input_height=model['input_shape'][0], input_width=model['input_shape'][1],
                    input_channels=model['input_shape'][2], loss_function=r['recipe']['loss'],
                    calibration_enabled=ex['calibrate_threshold'], default_threshold=selection['threshold'],

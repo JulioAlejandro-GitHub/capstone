@@ -44,41 +44,46 @@ def transform_bytes(payload, profile):
         return image_transform(profile)(image.convert('RGB')).numpy()
 
 
+def create_model(checkpoint, profile, expected_sha256):
+    """Original OpenCLIP model, transform and tokenizer from verified local files, CPU/fp32."""
+    import open_clip
+    files = _dependencies(profile)
+    config = json.loads(Path(files['model_config']['path']).read_text())
+    cfg = copy.deepcopy(config['model_cfg'])
+    if cfg['vision_cfg'].get('timm_model_pretrained', False):
+        raise ValueError('External image weight download is forbidden during checkpoint load')
+    text_dir = str(Path(files['text_config']['path']).parent)
+    cfg['text_cfg'].update(hf_model_name=text_dir, hf_tokenizer_name=text_dir, hf_model_pretrained=False)
+    name = 'capstone_' + hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()[:16]
+    with Path(checkpoint).open('rb') as stream:
+        if hashlib.file_digest(stream, 'sha256').hexdigest() != expected_sha256:
+            raise ValueError('Checkpoint SHA mismatch before load')
+    with _LOCK, tempfile.TemporaryDirectory() as temporary:
+        path = Path(temporary) / (name + '.json')
+        path.write_text(json.dumps(cfg))
+        open_clip.add_model_config(path)
+        model, _, transform = open_clip.create_model_and_transforms(
+            name, pretrained=str(checkpoint), pretrained_text=False, device='cpu', precision='fp32',
+            **{('force_image_size' if key == 'size' else 'image_' + key): value
+               for key, value in config['preprocess_cfg'].items()})
+        tokenizer = open_clip.get_tokenizer(name)
+    with Path(checkpoint).open('rb') as stream:
+        if hashlib.file_digest(stream, 'sha256').hexdigest() != expected_sha256:
+            raise ValueError('Checkpoint changed during load')
+    size = config['preprocess_cfg'].get('size', cfg['vision_cfg']['image_size'])
+    return model, transform, tokenizer, (size, size) if isinstance(size, int) else tuple(size)
+
+
 class OpenCLIPClassifier:
     """Capstone predict interface over the original image/text encoders."""
     def __init__(self, checkpoint, profile, expected_sha256):
-        import open_clip
         import torch
-        files = _dependencies(profile)
-        config = json.loads(Path(files['model_config']['path']).read_text())
-        cfg = copy.deepcopy(config['model_cfg'])
-        if cfg['vision_cfg'].get('timm_model_pretrained', False):
-            raise ValueError('External image weight download is forbidden during checkpoint load')
-        text_dir = str(Path(files['text_config']['path']).parent)
-        cfg['text_cfg'].update(hf_model_name=text_dir, hf_tokenizer_name=text_dir, hf_model_pretrained=False)
         if profile['class_order'] != ['uninfected', 'parasitized'] or len(profile['prompts']) != 2:
             raise ValueError('OpenCLIP requires the canonical two-class prompt order')
-        name = 'capstone_' + hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()[:16]
-        with Path(checkpoint).open('rb') as stream:
-            if hashlib.file_digest(stream, 'sha256').hexdigest() != expected_sha256:
-                raise ValueError('Checkpoint SHA mismatch before load')
-        with _LOCK, tempfile.TemporaryDirectory() as temporary:
-            path = Path(temporary) / (name + '.json')
-            path.write_text(json.dumps(cfg))
-            open_clip.add_model_config(path)
-            self.model, _, self.transform = open_clip.create_model_and_transforms(
-                name, pretrained=str(checkpoint), pretrained_text=False, device='cpu', precision='fp32',
-                **{('force_image_size' if key == 'size' else 'image_' + key): value
-                   for key, value in config['preprocess_cfg'].items()})
-            tokenizer = open_clip.get_tokenizer(name)
-        with Path(checkpoint).open('rb') as stream:
-            if hashlib.file_digest(stream, 'sha256').hexdigest() != expected_sha256:
-                raise ValueError('Checkpoint changed during load')
+        self.model, self.transform, tokenizer, (height, width) = create_model(checkpoint, profile, expected_sha256)
         self.model.eval()
         with torch.inference_mode():
             self.text_features = self.model.encode_text(tokenizer(profile['prompts']), normalize=True)
-        size = config['preprocess_cfg'].get('size', cfg['vision_cfg']['image_size'])
-        height, width = (size, size) if isinstance(size, int) else size
         self.input_shape = (None, height, width, 3)
         self.device = 'cpu'
 

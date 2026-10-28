@@ -597,7 +597,15 @@ class ProductiveModelResolver:
         if (framework == "pytorch_openclip") != (mode == "openclip_original"):
             raise ProductiveModelError("PRODUCTIVE_PREPROCESSING_INVALID", reason="preprocessing incompatible con el adaptador")
         runtime_preprocessing = None
-        if framework == "pytorch_openclip":
+        if framework == "pytorch_openclip" and "base_model" in preprocessing:
+            # A trained head: its transform and encoder are the registered zero-shot base's.
+            from src.malaria_dl.models.biomedclip_training import base_files
+            try:
+                base = base_files(preprocessing["base_model"])
+            except Exception as exc:  # noqa: BLE001 -- sanitized dependency boundary
+                raise ProductiveModelError("MODEL_DEPENDENCY_INVALID", reason=str(exc)) from exc
+            runtime_preprocessing = {**preprocessing, "dependencies": base["dependencies"]}
+        elif framework == "pytorch_openclip":
             from src.malaria_dl.pretrained.registration import resolve_dependencies
             try:
                 runtime_preprocessing = resolve_dependencies(
@@ -1226,6 +1234,10 @@ class ProductiveModelResolver:
                 temporary_path.unlink(missing_ok=True)
 
     def load(self, resolved: ResolvedProductiveModel) -> Any:
+        if resolved.framework == "pytorch_openclip" and "base_model" in resolved.preprocessing:
+            from src.malaria_dl.models.biomedclip_training import BiomedCLIPClassifier
+            return self.cache.get_or_load(resolved, lambda item: BiomedCLIPClassifier(
+                item.checkpoint_path, item.preprocessing, item.model_name))
         if resolved.framework == "pytorch_openclip":
             from src.malaria_dl.models.openclip_inference import OpenCLIPClassifier
             return self.cache.get_or_load(resolved, lambda item: OpenCLIPClassifier(

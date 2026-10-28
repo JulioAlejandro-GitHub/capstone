@@ -1,0 +1,17 @@
+# Apple Silicon PyTorch/MPS environment (.venv-torch), separate from .venv-metal (Keras).
+# OpenCLIP stack from BIOMEDCLIP-01B; shared scientific/DB packages pinned as in .venv-metal.
+-r requirements-biomedclip-registration.txt
+SQLAlchemy==2.0.53
+psycopg==3.3.5
+psycopg-binary==3.3.5
+psutil==6.1.1
+python-dotenv==1.2.3
+pandas==3.0.5
+scipy==1.17.1
+scikit-learn==1.9.1
+scikit-image==0.26.0
+pillow==12.3.0
+matplotlib==3.11.2
+lime==0.2.0.1
+shap==0.49.1
+umap-learn==0.5.12

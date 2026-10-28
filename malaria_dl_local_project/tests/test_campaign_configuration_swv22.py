@@ -29,7 +29,8 @@ def small(catalog):
     c["optimizers"] = ["adam", "sgd"]
     c["seeds"] = [11, 29]
     for v in c["variants"]:
-        v["parameters"].pop("densenet121")
+        for model in set(v["parameters"]) - set(c["models"]):
+            v["parameters"].pop(model)
     c["variants"][0]["parameters"]["custom_cnn"]["max_epochs"] = 50
     c["variants"][0]["parameters"]["vgg16"]["max_epochs"] = 30
     c["variants"][0]["parameters"]["vgg16"]["fine_tune_epochs"] = 5
@@ -67,11 +68,19 @@ def test_defaults_come_from_the_versioned_batch_profile(catalog):
 
 def test_architecture_specific_editability_follows_the_resolver(catalog):
     by = {m["id"]: {p["key"]: p for p in m["parameters"]} for m in catalog["models"] if m["trainable"]}
-    assert set(by) == {"custom_cnn", "vgg16", "densenet121"}
+    assert set(by) == {"custom_cnn", "vgg16", "densenet121", "biomedclip_linear", "biomedclip_fine_tuning"}
     assert by["custom_cnn"]["l2"]["editable"] and not by["vgg16"]["l2"]["editable"]
     assert not by["custom_cnn"]["fine_tune_epochs"]["editable"] and by["densenet121"]["fine_tune_epochs"]["editable"]
     assert by["custom_cnn"]["weights"]["choices"] == ["none"] and by["vgg16"]["weights"]["choices"] == ["none", "imagenet"]
     assert by["vgg16"]["fine_tune_layers"]["maximum"] == 4
+    # BiomedCLIP: pretrained base only, transform-fixed input, 0..12 ViT blocks (12 = total).
+    for model in ("biomedclip_linear", "biomedclip_fine_tuning"):
+        assert by[model]["weights"]["choices"] == ["biomedclip"] and not by[model]["input_size"]["editable"]
+        assert by[model]["preprocessing"]["choices"] == ["openclip_original"]
+    assert not by["biomedclip_linear"]["fine_tune_epochs"]["editable"]
+    assert not by["biomedclip_linear"]["fine_tune_layers"]["editable"]
+    assert by["biomedclip_fine_tuning"]["fine_tune_layers"]["maximum"] == 12
+    assert by["biomedclip_fine_tuning"]["fine_tune_layers"]["default"] == 4
     for m in by.values():
         assert not m["head_units"]["editable"] and not m["batch_normalization"]["editable"]
 
@@ -103,7 +112,8 @@ def test_new_registered_descriptor_needs_no_campaign_change(catalog, monkeypatch
         assert [m["id"] for m in extended["models"]][-1] == "swv22_probe"
         result = cc.resolve(preset(extended), COUNTS)
         assert result["valid"]
-        assert result["summary"]["total_experiments"] == 4 * 4 * 1 * 3
+        trainable = sum(m["trainable"] for m in extended["models"])
+        assert result["summary"]["total_experiments"] == trainable * 4 * 1 * 3
     finally:
         registry.MODEL_REGISTRY.pop("swv22_probe")
 
@@ -121,7 +131,8 @@ def test_approved_plan_preset_reproduces_frozen_e7_configurations(catalog):
 
 def test_system_defaults_preset_is_valid_and_explicit(catalog):
     result = cc.resolve(preset(catalog), COUNTS)
-    assert result["valid"] and result["summary"]["configurations"] == 12
+    trainable = sum(m["trainable"] for m in catalog["models"])
+    assert result["valid"] and result["summary"]["configurations"] == trainable * len(OPTIMIZER_DEFAULTS)
     for variant in result["request"]["variants"]:
         assert variant["selected"] == {} and set(variant["by_model"]) == set(result["request"]["models"])
 

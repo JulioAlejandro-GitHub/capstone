@@ -48,6 +48,10 @@ def client(monkeypatch):
         app.dependency_overrides.pop(current_principal, None)
 
 
+def trainable(catalog):
+    return [m["id"] for m in catalog["models"] if m["trainable"]]
+
+
 def default_configuration(client):
     catalog = client.get("/api/campaigns/catalog").json()
     return catalog, deepcopy(next(p for p in catalog["presets"] if p["id"] == catalog["default_preset"])["configuration"])
@@ -87,16 +91,20 @@ def test_create_requires_the_configure_permission_with_central_audit():
 
 def test_catalog_discovers_models_and_closed_optimizer_domain(client):
     catalog, configuration = default_configuration(client)
-    assert {m["id"] for m in catalog["models"]} == {"custom_cnn", "vgg16", "densenet121"}
+    from src.malaria_dl.models.registry import enabled_models
+    # public.models is the catalog: every row is listed, only trainable ones enter the preset.
+    assert [m["id"] for m in catalog["models"]] == list(enabled_models())
+    assert {"custom_cnn", "vgg16", "densenet121", "biomedclip_linear", "biomedclip_fine_tuning"} <= set(trainable(catalog))
     assert [o["id"] for o in catalog["optimizers"]] == ["adam", "adamw", "sgd", "adadelta"]
-    assert configuration["models"] == [m["id"] for m in catalog["models"]]
+    assert configuration["models"] == trainable(catalog)
 
 
 def test_preview_returns_backend_total_and_checks(client):
-    _, configuration = default_configuration(client)
+    catalog, configuration = default_configuration(client)
     body = preview(client, configuration).json()
     assert body["valid"] is True
-    assert body["summary"]["total_experiments"] == 36 and body["summary"]["configurations"] == 12
+    models = len(trainable(catalog))
+    assert body["summary"]["total_experiments"] == models * 4 * 3 and body["summary"]["configurations"] == models * 4
     assert [c["check"] for c in body["checks"]] == ["dataset", "models", "configurations", "parameters",
                                                     "total_experiments"]
     assert all(c["status"] == "PASS" for c in body["checks"])
@@ -105,12 +113,12 @@ def test_preview_returns_backend_total_and_checks(client):
 
 def test_preview_matches_the_canonical_resolution(client):
     from src.malaria_dl.campaigns.configuration import resolve
-    _, configuration = default_configuration(client)
+    catalog, configuration = default_configuration(client)
     configuration["seeds"] = [1, 2]
     configuration["optimizers"] = ["adam"]
     body = preview(client, configuration).json()
     canonical = resolve(configuration, {"train": 22180, "val": 2693, "test": 2685})
-    assert body["summary"]["total_experiments"] == canonical["matrix"]["expected_count"] == 3 * 1 * 1 * 2
+    assert body["summary"]["total_experiments"] == canonical["matrix"]["expected_count"] == len(trainable(catalog)) * 1 * 1 * 2
 
 
 def test_invalid_parameters_and_optimizers_are_rejected(client):
@@ -232,7 +240,7 @@ def test_detail_includes_the_operator_document_for_editing(client, monkeypatch):
     from src.malaria_dl.campaigns.repository import CampaignRepository
 
     campaign_id = "22222222-2222-4222-8222-222222222222"
-    _, configuration = default_configuration(client)
+    catalog, configuration = default_configuration(client)
     configuration["seeds"] = [11, 29]
     configuration["optimizers"] = ["adam"]
     result = resolve(configuration, {"train": 22180, "val": 2693, "test": 2685})
@@ -274,11 +282,11 @@ def test_detail_includes_the_operator_document_for_editing(client, monkeypatch):
     monkeypatch.setattr(CampaignRepository, "get", fake_get)
     body = client.get(f"/api/campaigns/{campaign_id}").json()
     assert body["campaign_id"] == campaign_id
-    assert body["total_experiments"] == 3 * 1 * 1 * 2 == len(body["experiments"])
+    assert body["total_experiments"] == len(trainable(catalog)) * 1 * 1 * 2 == len(body["experiments"])
     assert body["state"] == "frozen" and body["frozen_at"].startswith("2026-09-30T22:41")
     assert body["configuration"] == document_from_request(result["request"], result["protocol"])
     # build_request persists the models sorted; the operator document reflects that order.
-    assert body["configuration"]["models"] == ["custom_cnn", "densenet121", "vgg16"]
+    assert body["configuration"]["models"] == sorted(trainable(catalog))
     assert body["configuration"]["seeds"] == [11, 29]
     assert client.get("/api/campaigns/00000000-0000-4000-8000-000000000001").status_code == 404
 

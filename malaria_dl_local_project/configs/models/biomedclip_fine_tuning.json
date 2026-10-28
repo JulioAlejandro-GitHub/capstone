@@ -1,0 +1,119 @@
+{
+  "schema_version": "model_config_v1",
+  "model": {
+    "input_shape": [
+      224,
+      224,
+      3
+    ],
+    "preprocessing": "openclip_original",
+    "weights": "biomedclip",
+    "dropout": 0.0,
+    "l2": 0.0,
+    "head_units": 0,
+    "batch_normalization": "none",
+    "fine_tune_layers": 4
+  },
+  "optimizer": {
+    "name": "adamw",
+    "parameters": {
+      "learning_rate": 0.001
+    },
+    "fine_tune_learning_rate": 1e-05
+  },
+  "execution": {
+    "max_epochs": 5,
+    "fine_tune_epochs": 15,
+    "batch_size": 32,
+    "seed": 42,
+    "deterministic_ops": false,
+    "no_augment": false,
+    "checkpoint_policy": "auc_with_min_recall",
+    "checkpoint_monitor": null,
+    "checkpoint_mode": "auto",
+    "min_recall": 0.98,
+    "beta": 2.0,
+    "reject_prediction_collapse": true,
+    "min_class_fraction": 0.05,
+    "calibrate_threshold": false,
+    "target_recall": 0.98,
+    "min_specificity": null,
+    "early_stopping": true,
+    "early_stopping_monitor": null,
+    "early_stopping_mode": "auto",
+    "early_stopping_patience": 5,
+    "early_stopping_min_delta": 0.0001,
+    "restore_best_weights": true,
+    "evaluate_best_on_test": true
+  },
+  "batch": {
+    "max_epochs": 10,
+    "fine_tune_epochs": 30,
+    "early_stopping_patience": 12,
+    "checkpoint_monitor": "val_f2_parasitized",
+    "checkpoint_mode": "max",
+    "early_stopping_monitor": "val_f2_parasitized",
+    "early_stopping_mode": "max",
+    "calibrate_threshold": true
+  },
+  "recipe": {
+    "loss": "binary_crossentropy",
+    "metrics": "binary_clinical_v1",
+    "reduce_lr": {
+      "monitor": "val_loss",
+      "factor": 0.5,
+      "patience": 4,
+      "min_lr": 1e-06
+    },
+    "selection_threshold": 0.5,
+    "fallback": "existing_clinical_policy_v1",
+    "clinical_success_independent_of_technical_completion": true,
+    "base_model": {
+      "name": "biomedclip_zero_shot",
+      "model_version_id": "3fd16a84-b5c7-442b-916b-e0438bb0f3e5",
+      "training_run_id": "31d27b2d-6e90-4530-a589-ae92c91281df",
+      "repository": "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+      "revision": "9f341de24bfb00180f1b847274256e9b65a3a32e",
+      "checkpoint": {
+        "role": "checkpoint",
+        "sha256": "52cc993c5c5ff962bd0c60931874bc001e7e9b41666a385530f4a036294576be",
+        "bytes": 783705670
+      },
+      "dependencies": [
+        {
+          "role": "model_config",
+          "sha256": "9a41f334a8c444678772c0ebb9ab854c97ab350bced3a17b803e258d39c23dc0",
+          "bytes": 707
+        },
+        {
+          "role": "text_config",
+          "sha256": "56bab767c02bc792897638feb8addc06d483d9c73769a5f554bbabea1f5507a1",
+          "bytes": 385
+        },
+        {
+          "role": "tokenizer_config",
+          "sha256": "53b6f42b8b8daddbdc6d3532c324187a92b46c1602bd6e8d4ad5a413b4fc90e1",
+          "bytes": 28
+        },
+        {
+          "role": "vocabulary",
+          "sha256": "7b36651908a88bc38bda41b728b2a598191e0d3b553cbacf7b1e5f026d5b5b9f",
+          "bytes": 225062
+        }
+      ]
+    },
+    "embedding": "openclip_encode_image_l2_v1",
+    "head": {
+      "type": "linear",
+      "in_features": 512,
+      "out_features": 1,
+      "activation": "sigmoid",
+      "loss": "bce_with_logits"
+    },
+    "augmentation": {
+      "flip": "horizontal_and_vertical"
+    },
+    "encoder": "last_blocks",
+    "embedding_cache": "none"
+  }
+}

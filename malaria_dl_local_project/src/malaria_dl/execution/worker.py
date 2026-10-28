@@ -116,7 +116,12 @@ def main():
         signal.signal(signal.SIGTERM, stop)
         run_scientific_train(repo, session, resolve_descriptor(session["configuration"]["model_id"]), event_emitter)
         return 0
-    except (CampaignError, OSError):
+    except (CampaignError, OSError) as exc:
+        # Systemic stop: the coordinator pauses the campaign. CampaignError messages are
+        # closed codes; an OSError keeps only its class and errno.
+        code = str(exc) if isinstance(exc, CampaignError) else f"errno={getattr(exc, 'errno', None)}"
+        print(f"TRAIN_CHILD_SYSTEMIC {type(exc).__name__}[{code}] " + failure_signature(exc),
+              file=sys.stderr, flush=True)
         return 3
     except (Exception, KeyboardInterrupt) as exc:  # noqa: BLE001 -- sanitized child category
         print("TRAIN_CHILD_FAILED " + failure_signature(exc), file=sys.stderr, flush=True)

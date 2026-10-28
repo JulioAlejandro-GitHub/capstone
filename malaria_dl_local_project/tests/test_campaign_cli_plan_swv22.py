@@ -22,7 +22,8 @@ def frozen_row(campaign_id=None):
     catalog = cc.catalog()
     configuration = next(p for p in catalog["presets"] if p["id"] == "system_batch_defaults")["configuration"]
     configuration["models"], configuration["optimizers"], configuration["seeds"] = ["custom_cnn", "vgg16"], ["adam"], [11, 29]
-    configuration["variants"][0]["parameters"].pop("densenet121")
+    for model in set(configuration["variants"][0]["parameters"]) - set(configuration["models"]):
+        configuration["variants"][0]["parameters"].pop(model)
     result = cc.resolve(configuration, COUNTS)
     assert result["valid"], result["errors"]
     dataset = {"dataset_version_id": DATASET, "counts": COUNTS, "dataset_materialization_id": str(uuid4())}

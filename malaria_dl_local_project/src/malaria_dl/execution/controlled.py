@@ -112,7 +112,7 @@ class ControlledRepository(ExecutionRepository):
     def recover(self, campaign, request_id):
         """Reconcile the same consumed reservation; never launch or reserve again."""
         from .campaign import dead_local
-        from .artifacts import verify_session, keras_loader
+        from .artifacts import verify_session, checkpoint_loader
         q=self.existing_request(request_id)
         if q is None or str(q['campaign_id'])!=identifier(campaign):
             raise CampaignError('CONTROLLED_REQUEST_NOT_FOUND')
@@ -125,7 +125,7 @@ class ControlledRepository(ExecutionRepository):
             else:
                 from .campaign import preflight
                 preflight(self,effective_row(self,self.get(campaign),s),Path(s['artifact_root']).parent)
-                self.finish(s['run_id'],s['owner'],'verified',verify_session(self,s,keras_loader))
+                self.finish(s['run_id'],s['owner'],'verified',verify_session(self,s,checkpoint_loader))
         return {'run_id':str(s['run_id']),'state':self.session(s['run_id'])['state'],'launched':False}
 
 
@@ -186,13 +186,13 @@ def queue_dry_run(repository, campaign, dataset, revision_id=None, proposal=None
 
 def execute_one(repo, *, campaign,member,previous,dataset,revision_id,request_id,reason,root,check=None,launch=None,loader=None):
     from .campaign import preflight,run_child
-    from .artifacts import keras_loader,verify_session
-    check=check or preflight;launch=launch or run_child;loader=loader or keras_loader
+    from .artifacts import checkpoint_loader,keras_loader,verify_session
+    check=check or preflight;launch=launch or run_child;loader=loader or checkpoint_loader
     from .global_gate import CURRENT
     gate = CURRENT.get()
-    if gate is not None and loader is keras_loader:
-        from .process_verification import isolated_keras_loader
-        loader = isolated_keras_loader
+    if gate is not None and loader in (keras_loader, checkpoint_loader):
+        from .process_verification import isolated_checkpoint_loader
+        loader = isolated_checkpoint_loader
     old=repo.existing_request(request_id)
     if old:
         if any(str(old[k])!=identifier(v) for k,v in [('campaign_id',campaign),('member_id',member),('previous_attempt_id',previous),('revision_id',revision_id)]) or old['reason']!=reason:

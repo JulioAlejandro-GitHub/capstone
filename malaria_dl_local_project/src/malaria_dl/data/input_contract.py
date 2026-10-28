@@ -48,9 +48,18 @@ def make_input_contract(architecture, adapter_version, shape, mode, internal=Non
     )
 
 
+OPENCLIP_SCHEMAS = ("openclip_input_v1", "openclip_supervised_input_v1")
+
+
 def validate_input_contract(value):
     if not isinstance(value, dict):
         raise InputContractError("INPUT_CONTRACT_MISSING")
+    if value.get("schema_version") in OPENCLIP_SCHEMAS:
+        # Same entry point for every consumer; OpenCLIP families own their validation.
+        from ..assessment import openclip
+
+        return (openclip.validate_supervised_contract if value["schema_version"] == openclip.SUPERVISED_SCHEMA
+                else openclip.validate_input_contract)(value)
     c = deepcopy(value)
     expected = {
         "schema_version",

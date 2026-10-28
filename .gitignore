@@ -81,6 +81,7 @@ docs/dump-malaria_experiments-202607290730.sql
 /malaria_dl_local_project/graphify-out
 /graphify-analysis
 /malaria_dl_local_project/.venv-metal
+/malaria_dl_local_project/.venv-torch
 
 # Local ML framework artifacts
 /data/keras/

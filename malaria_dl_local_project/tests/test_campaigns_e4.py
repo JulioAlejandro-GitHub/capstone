@@ -20,6 +20,12 @@ from src.malaria_dl.models import registry
 from src.malaria_dl.models.configuration import resolve_config
 
 
+def configurations():
+    """All trainable catalog models x the four optimizers: the default (models=None) matrix."""
+    trainable = [n for n in registry.enabled_models() if registry.resolve_descriptor(n, executable=False).trainable]
+    return len(trainable) * 4
+
+
 def request(seeds=None):
     return {
         "models": None,
@@ -109,13 +115,12 @@ def protocol():
     }
 
 
-@pytest.mark.parametrize(
-    "seeds,count", [([11], 12), ([11, 12, 13], 36), ([11, 11], 12)]
-)
-def test_matrix_cardinality_and_input(seeds, count):
+@pytest.mark.parametrize("seeds,repetitions", [([11], 1), ([11, 12, 13], 3), ([11, 11], 1)])
+def test_matrix_cardinality_and_input(seeds, repetitions):
+    count = configurations() * repetitions
     plan = expand_matrix(request(seeds), protocol(), frozen=True, dataset=dataset())
     assert len(plan["members"]) == plan["expected_count"] == count
-    assert len(plan["configurations"]) == 12
+    assert len(plan["configurations"]) == configurations()
     assert len({(m["configuration_hash"], m["seed"]) for m in plan["members"]}) == count
     for item in plan["configurations"].values():
         c = item["configuration"]
@@ -123,7 +128,8 @@ def test_matrix_cardinality_and_input(seeds, count):
         assert "seed" not in e and e["evaluate_best_on_test"] is False
         assert e["min_recall"] == 0.8 and e["min_specificity"] == 0.7
         assert c["resolved"]["input_contract"]["external"]["mode"] == (
-            "vgg16_imagenet" if c["model_id"] == "vgg16" else "rescale_0_1"
+            "vgg16_imagenet" if c["model_id"] == "vgg16"
+            else "openclip_original" if c["model_id"].startswith("biomedclip_") else "rescale_0_1"
         )
         assert item["requests"][0]["requested"]["batch"] is True
 
@@ -151,6 +157,7 @@ def test_new_registry_only_affects_new_plans(monkeypatch):
     original = expand_matrix(request())
     saved = canonical(original)
     monkeypatch.setattr(registry, "MODEL_REGISTRY", dict(registry.MODEL_REGISTRY))
+    before = configurations()
     registry.register(
         replace(
             registry.resolve_descriptor("custom_cnn"), id="synthetic_cnn", aliases=()
@@ -159,7 +166,7 @@ def test_new_registry_only_affects_new_plans(monkeypatch):
     # A new model exists only with a public.models row; simulate that row here.
     rows = registry.model_catalog()
     monkeypatch.setattr(registry, "model_catalog", lambda: rows + ({"name": "synthetic_cnn", "architecture": None, "model_type": "classification", "framework": "tensorflow/keras"},))
-    assert expand_matrix(request())["expected_count"] == 16
+    assert expand_matrix(request())["expected_count"] == before + 4 == configurations()
     assert canonical(original) == saved
 
 
@@ -175,7 +182,7 @@ def test_exclusions_visible_and_unknown_not_silent():
     ]
     plan = expand_matrix(r)
     assert (
-        plan["expected_count"] == 12
+        plan["expected_count"] == configurations()
         and sum(m["exclusion_reason"] is not None for m in plan["members"]) == 1
     )
     r["exclusions"][0]["model"] = "unknown"
@@ -260,7 +267,7 @@ def test_service_requires_uuid_and_no_implicit_db_or_training():
     repo = Mock()
     verify = Mock()
     s = CampaignService(repo, verify, dict)
-    assert s.inspect(request())["expected_count"] == 12
+    assert s.inspect(request())["expected_count"] == configurations()
     verify.assert_not_called()
     repo.create.assert_not_called()
     with pytest.raises(CampaignError):
@@ -315,7 +322,7 @@ def test_cli_inspect_without_db_or_tensorflow(tmp_path, monkeypatch, capsys):
     p = tmp_path / "request.json"
     p.write_text(json.dumps(request()))
     assert main(["inspect", "--request", str(p)]) == 0
-    assert json.loads(capsys.readouterr().out)["expected_count"] == 12
+    assert json.loads(capsys.readouterr().out)["expected_count"] == configurations()
     assert not list(tmp_path.rglob("*.csv"))
 
 

@@ -33,7 +33,8 @@ def register_evidence(connection: Connection, training: dict, binding: dict, con
               'preprocessing': json.dumps(contract['external']), 'mapping': json.dumps(contract['label_mapping']),
               # A zero-shot contract keeps its registered input signature instead of a Keras shape.
               'input': json.dumps(contract['input'] if 'input' in contract else {'shape': contract['shape']}),
-              'output': json.dumps(contract['output']), 'metadata': json.dumps({'architecture': contract['architecture'],
+              'output': json.dumps(contract['output']), 'framework': contract.get('framework', 'keras'),
+              'metadata': json.dumps({'architecture': contract['architecture'],
                 'assessment_checkpoint_identity_id': binding['checkpoint_artifact_id']})}
     # The assessment checkpoint identity may precede the physical artifact registry.
     # Reuse the existing TRAIN-owned bytes instead of inserting another checkpoint.
@@ -58,7 +59,7 @@ def register_evidence(connection: Connection, training: dict, binding: dict, con
       INSERT INTO model_versions(id,training_run_id,checkpoint_artifact_id,model_name,
         artifact_sha256,artifact_size_bytes,framework,preprocessing_profile_snapshot,class_mapping,
         input_signature,output_signature,status,lineage_status,metadata)
-      VALUES(:version,:train,:artifact,:model,:sha,:size,'keras',CAST(:preprocessing AS jsonb),
+      VALUES(:version,:train,:artifact,:model,:sha,:size,:framework,CAST(:preprocessing AS jsonb),
         CAST(:mapping AS jsonb),CAST(:input AS jsonb),CAST(:output AS jsonb),'candidate','resolved',CAST(:metadata AS jsonb))
       ON CONFLICT(id) DO NOTHING
     """), params)

@@ -176,8 +176,16 @@ def attribution_overlay(rgb, heat):
 
 def runtime_for(value):
     """Dispatch on the frozen input contract of the identity, never on the model name."""
-    from .openclip import OpenCLIPRuntime, is_openclip
+    import importlib.util
 
+    from .openclip import OpenCLIPRuntime, SupervisedOpenCLIPRuntime, is_openclip, is_supervised
+
+    torch_model = is_openclip(value["model"]) or is_supervised(value["model"])
+    # Locally each framework has its own environment (.venv-torch / .venv-metal).
+    require(importlib.util.find_spec("torch" if torch_model else "tensorflow") is not None,
+            "FRAMEWORK_ENVIRONMENT_REQUIRED:" + (".venv-torch" if torch_model else ".venv-metal"))
+    if is_supervised(value["model"]):
+        return SupervisedOpenCLIPRuntime(value)
     return (OpenCLIPRuntime if is_openclip(value["model"]) else KerasRuntime)(value)
 
 

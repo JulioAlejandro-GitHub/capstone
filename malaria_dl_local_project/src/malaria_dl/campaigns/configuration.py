@@ -104,12 +104,14 @@ def _parameter(descriptor, raw, resolved, key, path, kind, section, label):
     if key == "input_size":
         value = value[0]
         spec.update(minimum=32, note="Se aplica como [n, n, 3].")
+        if descriptor.framework != "keras":
+            spec.update(editable=False, note="Fijado por el transform original del modelo base.")
     elif key in ("dropout", "l2"):
         spec.update(minimum=0, maximum=1, exclusive_maximum=True)
         if key == "l2" and raw["model"]["l2"] == 0:
             spec.update(editable=False, note="La arquitectura no admite L2 distinto de 0.")
     elif key == "weights":
-        spec["choices"] = ["none", "imagenet"] if fine else ["none"]
+        spec["choices"] = list(descriptor.weights)
         spec["editable"] = len(spec["choices"]) > 1
     elif key == "preprocessing":
         spec["choices"] = list(descriptor.preprocessing_modes)
@@ -117,8 +119,10 @@ def _parameter(descriptor, raw, resolved, key, path, kind, section, label):
     elif key in ("head_units", "batch_normalization"):
         spec.update(editable=False, note="Parámetro fijo validado de la arquitectura versionada.")
     elif key == "fine_tune_layers":
-        spec.update(minimum=0, maximum=raw["model"]["fine_tune_layers"])
-        spec["editable"] = fine and raw["model"]["fine_tune_layers"] > 0
+        maximum = (raw["model"]["fine_tune_layers"] if descriptor.max_fine_tune_layers is None
+                   else descriptor.max_fine_tune_layers)
+        spec.update(minimum=0, maximum=maximum)
+        spec["editable"] = fine and maximum > 0
     elif key in ("max_epochs", "batch_size"):
         spec["minimum"] = 1
     elif key == "fine_tune_epochs":

@@ -44,15 +44,23 @@ def planning_environment():
             json.dumps(files, sort_keys=True).encode()
         ).hexdigest(),
         "python": platform.python_version(),
-        "tensorflow": importlib.metadata.version("tensorflow"),
+        "tensorflow": _version("tensorflow"),
         "determinism_environment": {
             k: os.environ.get(k) for k in ("TF_DETERMINISTIC_OPS", "PYTHONHASHSEED")
         },
         "packages": {
-            name: importlib.metadata.version(name)
+            name: _version(name)
             for name in ("keras", "numpy", "SQLAlchemy", "psycopg")
         },
     }
+
+
+def _version(name):
+    """Installed version, or None in an environment without that framework (.venv-torch has no Keras)."""
+    try:
+        return importlib.metadata.version(name)
+    except importlib.metadata.PackageNotFoundError:
+        return None
 
 
 def frozen_contract(*, name, purpose, experiment_id, dataset, evidence_id, requested, protocol,

@@ -17,7 +17,7 @@ from ..data.governed_dataset import (
     assert_run_dataset_snapshot_unchanged,
 )
 from ..persistence.dataset_evidence import verify_dataset_for_execution
-from .artifacts import keras_loader, verify_session
+from .artifacts import checkpoint_loader, keras_loader, verify_session
 from .repository import ExecutionRepository
 
 # Keys of the campaign's reference environment. Compared only to REPORT runtime
@@ -107,7 +107,7 @@ def dead_local(session):
     return True
 
 
-def reconcile(repository, row, loader=keras_loader):
+def reconcile(repository, row, loader=checkpoint_loader):
     for attempt in row["attempts"]:
         if not attempt["training_run_id"]:
             if attempt["state"] == "active":
@@ -150,9 +150,14 @@ def run_child(session, repository):
         s: signal.signal(s, interrupted) for s in (signal.SIGINT, signal.SIGTERM)
     }
     try:
+        from ..models.registry import resolve_descriptor
+        from .local_launch import framework_python
+
+        # Each TRAIN runs in its framework's environment; Keras and PyTorch never share one.
+        interpreter = framework_python(resolve_descriptor(session["configuration"]["model_id"]).framework)
         process = subprocess.Popen(
             [
-                sys.executable,
+                interpreter,
                 "-B",
                 "-m",
                 "src.malaria_dl.execution.worker",
@@ -195,7 +200,7 @@ def execute_campaign(
     dataset=None,
     check=preflight,
     launch=run_child,
-    loader=keras_loader,
+    loader=checkpoint_loader,
     revision_id=None,
     log=lambda *_: None,
 ):
@@ -207,9 +212,9 @@ def execute_campaign(
     def runtime_row():
         original = repository.get(campaign_id, dataset)
         return technical_row(repository, original, revision_id) if revision_id else original
-    if gate is not None and loader is keras_loader:
-        from .process_verification import isolated_keras_loader
-        loader = isolated_keras_loader
+    if gate is not None and loader in (keras_loader, checkpoint_loader):
+        from .process_verification import isolated_checkpoint_loader
+        loader = isolated_checkpoint_loader
     owner = str(uuid4())
     runtime = runtime_environment()
     # First preflight is outside the systemic handler: a wrong dataset/config stops

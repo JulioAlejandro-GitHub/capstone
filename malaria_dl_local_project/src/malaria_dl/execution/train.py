@@ -33,6 +33,45 @@ def clean(value):
     return value
 
 
+def recorder(repository, run: str, owner: str, e: dict, event_emitter: RunEventEmitter | None):
+    """Scientific records plus their E10 events; shared by the Keras and PyTorch engines."""
+
+    def put(kind: str, phase: str, key: str | int, payload: dict) -> None:
+        payload = clean(payload)
+        repository.put(run, owner, kind, phase, key, payload)
+        if event_emitter is None:
+            return
+        # The E10.6 mapping follows committed legacy evidence, never recomputes it.
+        types = {
+            "runtime": RunEventType.PHASE_STARTED,
+            "epoch": RunEventType.EPOCH_COMPLETED,
+            "artifact_prepared": RunEventType.ARTIFACT_PREPARED,
+            "artifact": RunEventType.ARTIFACT_CREATED,
+            "selection": RunEventType.SELECTION_COMPLETED,
+            "predictions": RunEventType.PREDICTIONS_COMPLETED,
+            "phase": RunEventType.PHASE_COMPLETED,
+            "calibration": RunEventType.CALIBRATION_COMPLETED,
+        }
+        if kind == "calibration" and not e["calibrate_threshold"]:
+            return  # The legacy disabled marker does not assert calibration ran.
+        reference = {"kind": kind, "phase": phase, "record_key": str(key)}
+        if kind == "predictions":
+            result = {"role": payload["role"], "epoch": payload["epoch"]}
+        elif kind == "calibration":
+            result = {"split": "val", "checkpoint_epoch": payload["checkpoint_epoch"],
+                      "result": payload["result"]}
+        elif kind == "runtime":
+            result = {"phase": phase, "callbacks": payload["callbacks"]}
+            if "runtime_environment" in payload:
+                result.update(runtime_environment=payload["runtime_environment"],
+                              started_at=payload["started_at"])
+        else:
+            result = payload
+        event_emitter.emit(types[kind], {"legacy_record": reference, "result": result})
+
+    return put
+
+
 def train(repository: ExecutionRepository | Reports, session: dict, descriptor: ModelDescriptor,
           *, event_emitter: RunEventEmitter | None = None) -> None:
     """Transitional E10.7 dual reporting; remove the legacy dependency in E10.11.
@@ -40,6 +79,10 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
     No emitter preserves the Local/standalone legacy path. Delivery errors are
     fatal: completion must never succeed with an unconfirmed scientific stream.
     """
+    if getattr(descriptor, "framework", "keras") != "keras":
+        from .train_torch import train as train_torch
+
+        return train_torch(repository, session, descriptor, event_emitter=event_emitter)
     import tensorflow as tf
 
     from .accelerator import configure
@@ -54,7 +97,6 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
         preprocess_physical_dataset,
     )
     from ..data.governed_dataset import local_dataset_root
-    from ..evaluation.calibration_controller import CalibrationController
     from ..models.adapters import compile_phase
     from ..training.checkpoint_policy import (
         CheckpointPolicyConfig,
@@ -114,38 +156,7 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
     selection = None
     epoch_offset = 0
 
-    def put(kind: str, phase: str, key: str | int, payload: dict) -> None:
-        payload = clean(payload)
-        repository.put(run, owner, kind, phase, key, payload)
-        if event_emitter is None:
-            return
-        # The E10.6 mapping follows committed legacy evidence, never recomputes it.
-        types = {
-            "runtime": RunEventType.PHASE_STARTED,
-            "epoch": RunEventType.EPOCH_COMPLETED,
-            "artifact_prepared": RunEventType.ARTIFACT_PREPARED,
-            "artifact": RunEventType.ARTIFACT_CREATED,
-            "selection": RunEventType.SELECTION_COMPLETED,
-            "predictions": RunEventType.PREDICTIONS_COMPLETED,
-            "phase": RunEventType.PHASE_COMPLETED,
-            "calibration": RunEventType.CALIBRATION_COMPLETED,
-        }
-        if kind == "calibration" and not e["calibrate_threshold"]:
-            return  # The legacy disabled marker does not assert calibration ran.
-        reference = {"kind": kind, "phase": phase, "record_key": str(key)}
-        if kind == "predictions":
-            result = {"role": payload["role"], "epoch": payload["epoch"]}
-        elif kind == "calibration":
-            result = {"split": "val", "checkpoint_epoch": payload["checkpoint_epoch"],
-                      "result": payload["result"]}
-        elif kind == "runtime":
-            result = {"phase": phase, "callbacks": payload["callbacks"]}
-            if "runtime_environment" in payload:
-                result.update(runtime_environment=payload["runtime_environment"],
-                              started_at=payload["started_at"])
-        else:
-            result = payload
-        event_emitter.emit(types[kind], {"legacy_record": reference, "result": result})
+    put = recorder(repository, run, owner, e, event_emitter)
 
     class PersistEpoch(tf.keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs=None):
@@ -275,14 +286,29 @@ def train(repository: ExecutionRepository | Reports, session: dict, descriptor: 
         epoch_offset += count
     if selection is None:
         raise CampaignError("NO_CHECKPOINT_SELECTED")
+    selected_path = root / f"epoch_{selection['selected_epoch']}.keras"
+
+    def selected_scores():
+        selected = tf.keras.models.load_model(selected_path, compile=False)
+        labels, _, scores = collect_predictions(selected, datasets["val"], threshold=0.5)
+        return labels, scores
+
+    finish_training(repository, run, owner, config, history, selection, sample_paths,
+                    selected_scores, put, event_emitter)
+
+
+def finish_training(repository, run: str, owner: str, config: dict, history: list, selection: dict,
+                    sample_paths: list, selected_scores, put, event_emitter: RunEventEmitter | None) -> None:
+    """VAL calibration of the selected checkpoint, evaluation event and completion; engine-independent."""
+    from ..evaluation.calibration_controller import CalibrationController
+
+    e = config["resolved"]["execution"]
     # V2 result projections (calibration/evaluation) need the selected checkpoint
     # artifact and evaluation provenance first. The HTTP-agent reporter has no DB.
     bind = getattr(repository, "bind_evaluation_context", None)
     if event_emitter is not None and bind is not None:
         bind(run, owner, selection["selected_epoch"])
-    selected_path = root / f"epoch_{selection['selected_epoch']}.keras"
-    selected = tf.keras.models.load_model(selected_path, compile=False)
-    labels, _, scores = collect_predictions(selected, datasets["val"], threshold=0.5)
+    labels, scores = selected_scores()
     controller = CalibrationController(config)
     calibration = controller.calibrate(labels, scores)
     put(
@@ -341,7 +367,7 @@ def _standalone(args):
     from ..campaigns.service import planning_environment
     from ..models.registry import resolve_descriptor
     from ..persistence.dataset_evidence import verify_dataset_for_execution
-    from .artifacts import keras_loader, verify_session
+    from .artifacts import checkpoint_loader, verify_session
     from .repository import ExecutionRepository
 
     if args.evaluate_best_on_test or args.threshold_output_json:
@@ -378,7 +404,7 @@ def _standalone(args):
         if verified_snapshot.metadata() != snapshot.metadata():
             raise CampaignError("DATASET_CHANGED_DURING_TRAIN")
         current = repo.session(session["run_id"])
-        verification = verify_session(repo, current, keras_loader)
+        verification = verify_session(repo, current, checkpoint_loader)
         repo.finish(session["run_id"], session["owner"], "verified", verification)
     except BaseException:
         current = repo.session(session["run_id"])

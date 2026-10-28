@@ -22,6 +22,11 @@ class ModelDescriptor:
     internal_preprocessing: str | None = None
     preprocessing_modes: tuple[str, ...] = ("rescale_0_1",)
     default_preprocessing: str = "rescale_0_1"
+    # Engine family: "keras" (execution.train) or "pytorch_openclip" (execution.train_torch).
+    framework: str = "keras"
+    weights: tuple[str, ...] = ("none",)
+    # Upper bound of model.fine_tune_layers; None keeps the versioned default as the bound.
+    max_fine_tune_layers: int | None = None
 
     def create_adapter(self):
         if not self.trainable:
@@ -157,6 +162,7 @@ for _id, _aliases, _adapter, _strategies, _internal in (
             _internal,
             ("vgg16_imagenet",) if _id == "vgg16" else ("rescale_0_1",),
             "vgg16_imagenet" if _id == "vgg16" else "rescale_0_1",
+            weights=("none", "imagenet") if "fine_tuning" in _strategies else ("none",),
         )
     )
 
@@ -166,4 +172,19 @@ register(ModelDescriptor(
     "RGB NCHW float32; OpenCLIP original transform 224",
     "relative softmax score_parasitized; not clinically calibrated", (), (),
     preprocessing_modes=("biomedclip_original",), default_preprocessing="biomedclip_original",
+    framework="pytorch_openclip",
 ))
+
+# Trained on the registered BiomedCLIP origin (recipe.base_model); PyTorch engine, local MPS.
+for _id, _strategies, _blocks in (
+    ("biomedclip_linear", ("base",), None),
+    ("biomedclip_fine_tuning", ("base", "fine_tuning"), 12),
+):
+    register(ModelDescriptor(
+        _id, (), True, True, "1.0", "src.malaria_dl.models.biomedclip_training:BiomedCLIPAdapter",
+        str(_CONFIG / (_id + ".json")),
+        "RGB NCHW float32; OpenCLIP original transform 224 of the registered base",
+        "sigmoid probability_parasitized; uninfected=0, parasitized=1", _strategies, tuple(OPTIMIZER_DEFAULTS),
+        preprocessing_modes=("openclip_original",), default_preprocessing="openclip_original",
+        framework="pytorch_openclip", weights=("biomedclip",), max_fine_tune_layers=_blocks,
+    ))

@@ -12,16 +12,30 @@ import sys
 from pathlib import Path
 from urllib.parse import quote
 
-# Local executions run on the GPU (tensorflow-metal); CPU runs belong to Docker.
-# execution.accelerator re-checks the device and graph semantics inside TensorFlow.
+# Local executions run on the Apple GPU; CPU runs belong to Docker. Keras models use
+# tensorflow-metal (.venv-metal, re-checked by execution.accelerator) and PyTorch models use
+# MPS (.venv-torch, re-checked by models.biomedclip_training.device). Separate environments:
+# neither installs the other framework.
+COMMON = ("numpy", "sqlalchemy", "psycopg", "psutil", "dotenv")
 ALLOWED_VENVS = {
-    ".venv-metal",
+    ".venv-metal": ("tensorflow", "keras", *COMMON),
+    ".venv-torch": ("torch", "open_clip", *COMMON),
 }
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 VENV = ".venv-metal"
-REQUIRED = ("tensorflow", "keras", "numpy", "sqlalchemy", "psycopg", "psutil", "dotenv")
+REQUIRED = ALLOWED_VENVS[VENV]
+FRAMEWORK_VENVS = {"keras": ".venv-metal", "pytorch_openclip": ".venv-torch"}
+
+
+def framework_python(framework, current=None):
+    """Interpreter of the environment that executes a framework; Docker keeps its own."""
+    current = sys.executable if current is None else current
+    if in_docker():
+        return current
+    venv = FRAMEWORK_VENVS[framework]
+    return current if Path(sys.prefix).name == venv else str(PROJECT_ROOT / venv / "bin" / "python")
 # Same role as docker-compose.yml backend.DATABASE_URL (certified non-superuser).
 RUNTIME_ROLE = "capstone_v2_runtime"
 
@@ -42,7 +56,7 @@ def environment_problem(prefix=None, base=None, version=None, find=importlib.uti
         return f"intérprete activo: {prefix}"
     if tuple(version[:2]) != (3, 12):
         return f"Python {version[0]}.{version[1]} (se requiere 3.12)"
-    missing = [m for m in REQUIRED if find(m) is None]
+    missing = [m for m in ALLOWED_VENVS[Path(prefix).name] if find(m) is None]
     if missing:
         return "faltan paquetes: " + ", ".join(missing)
     return None

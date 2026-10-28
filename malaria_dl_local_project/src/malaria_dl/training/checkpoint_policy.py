@@ -3,8 +3,9 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Literal, Optional
 
+import importlib.util
+
 import numpy as np
-import tensorflow as tf
 
 from src.config import CLASS_NAMES
 from src.metrics import (
@@ -525,205 +526,89 @@ def write_checkpoint_policy_summary(output_dir, summary: dict) -> Path:
     return summary_path
 
 
-class ClinicalValidationMetricsCallback(tf.keras.callbacks.Callback):
-    def __init__(
-        self,
-        validation_data,
-        threshold: float = 0.5,
-        min_class_fraction: float = 0.05,
-        class_names=None,
-        checkpoint_policy_config: CheckpointPolicyConfig | None = None,
-        early_stopping_monitor: str | None = None,
-        early_stopping_mode: str = "max",
-        verbose: int = 0,
+def clinical_validation_logs(
+    logs,
+    y_true,
+    y_score,
+    threshold: float = 0.5,
+    min_class_fraction: float = 0.05,
+    class_names=None,
+    checkpoint_policy_config: CheckpointPolicyConfig | None = None,
+    early_stopping_monitor: str | None = None,
+    early_stopping_mode: str = "max",
+) -> dict:
+    """Clinical VAL metrics added to an epoch's logs; framework-independent."""
+    class_names = list(class_names or CLASS_NAMES)
+    clinical_metrics = compute_clinical_metrics(
+        y_true,
+        y_score,
+        threshold=threshold,
+    )
+    y_pred = clinical_predictions_from_probabilities(
+        y_score,
+        class_names=class_names,
+        threshold=threshold,
+    )
+    collapse_summary = detect_prediction_collapse(
+        y_pred,
+        class_names=class_names,
+        min_class_fraction=min_class_fraction,
+    )
+    clinical_metrics["prediction_collapse"] = collapse_summary
+    clinical_metrics["prediction_collapse_detected"] = bool(
+        collapse_summary["collapsed"]
+    )
+
+    metric_updates = {
+        "val_f2_parasitized": clinical_metrics.get("f2_parasitized"),
+        "val_pr_auc_parasitized": clinical_metrics.get("pr_auc_parasitized"),
+        "val_roc_auc_parasitized": clinical_metrics.get("roc_auc_parasitized"),
+        "val_recall_parasitized": clinical_metrics.get("recall_parasitized"),
+        "val_sensitivity_parasitized": clinical_metrics.get(
+            "sensitivity_parasitized"
+        ),
+        "val_specificity": clinical_metrics.get("specificity"),
+        "val_balanced_accuracy": clinical_metrics.get("balanced_accuracy"),
+        "val_prediction_collapse_detected": float(
+            bool(collapse_summary["collapsed"])
+        ),
+        "val_prediction_collapse": float(bool(collapse_summary["collapsed"])),
+        "val_n_pred_uninfected": collapse_summary.get("n_pred_uninfected"),
+        "val_n_pred_parasitized": collapse_summary.get("n_pred_parasitized"),
+        "val_percent_pred_uninfected": collapse_summary.get(
+            "percent_pred_uninfected"
+        ),
+        "val_percent_pred_parasitized": collapse_summary.get(
+            "percent_pred_parasitized"
+        ),
+    }
+    for key, value in metric_updates.items():
+        if value is not None:
+            logs[key] = float(value)
+    if checkpoint_policy_config is not None:
+        policy_score = checkpoint_policy_score(
+            logs,
+            checkpoint_policy_config,
+        )
+        if policy_score is not None:
+            logs["val_checkpoint_policy_score"] = float(policy_score)
+    if (
+        checkpoint_policy_config is not None
+        and early_stopping_monitor is not None
     ):
-        super().__init__()
-        self.validation_data = validation_data
-        self.threshold = float(threshold)
-        self.min_class_fraction = float(min_class_fraction)
-        self.class_names = list(class_names or CLASS_NAMES)
-        self.checkpoint_policy_config = checkpoint_policy_config
-        self.early_stopping_monitor = early_stopping_monitor
-        self.early_stopping_mode = str(early_stopping_mode)
-        self.verbose = int(verbose)
-
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs if logs is not None else {}
-        y_true, _, y_score = collect_predictions(
-            self.model,
-            self.validation_data,
-            class_names=self.class_names,
-            threshold=self.threshold,
+        normalized_score = early_stopping_score(
+            logs,
+            monitor=early_stopping_monitor,
+            mode=early_stopping_mode,
+            config=checkpoint_policy_config,
         )
-        clinical_metrics = compute_clinical_metrics(
-            y_true,
-            y_score,
-            threshold=self.threshold,
-        )
-        y_pred = clinical_predictions_from_probabilities(
-            y_score,
-            class_names=self.class_names,
-            threshold=self.threshold,
-        )
-        collapse_summary = detect_prediction_collapse(
-            y_pred,
-            class_names=self.class_names,
-            min_class_fraction=self.min_class_fraction,
-        )
-        clinical_metrics["prediction_collapse"] = collapse_summary
-        clinical_metrics["prediction_collapse_detected"] = bool(
-            collapse_summary["collapsed"]
-        )
+        if normalized_score is not None:
+            logs["val_early_stopping_score"] = float(normalized_score)
 
-        metric_updates = {
-            "val_f2_parasitized": clinical_metrics.get("f2_parasitized"),
-            "val_pr_auc_parasitized": clinical_metrics.get("pr_auc_parasitized"),
-            "val_roc_auc_parasitized": clinical_metrics.get("roc_auc_parasitized"),
-            "val_recall_parasitized": clinical_metrics.get("recall_parasitized"),
-            "val_sensitivity_parasitized": clinical_metrics.get(
-                "sensitivity_parasitized"
-            ),
-            "val_specificity": clinical_metrics.get("specificity"),
-            "val_balanced_accuracy": clinical_metrics.get("balanced_accuracy"),
-            "val_prediction_collapse_detected": float(
-                bool(collapse_summary["collapsed"])
-            ),
-            "val_prediction_collapse": float(bool(collapse_summary["collapsed"])),
-            "val_n_pred_uninfected": collapse_summary.get("n_pred_uninfected"),
-            "val_n_pred_parasitized": collapse_summary.get("n_pred_parasitized"),
-            "val_percent_pred_uninfected": collapse_summary.get(
-                "percent_pred_uninfected"
-            ),
-            "val_percent_pred_parasitized": collapse_summary.get(
-                "percent_pred_parasitized"
-            ),
-        }
-        for key, value in metric_updates.items():
-            if value is not None:
-                logs[key] = float(value)
-        if self.checkpoint_policy_config is not None:
-            policy_score = checkpoint_policy_score(
-                logs,
-                self.checkpoint_policy_config,
-            )
-            if policy_score is not None:
-                logs["val_checkpoint_policy_score"] = float(policy_score)
-        if (
-            self.checkpoint_policy_config is not None
-            and self.early_stopping_monitor is not None
-        ):
-            normalized_score = early_stopping_score(
-                logs,
-                monitor=self.early_stopping_monitor,
-                mode=self.early_stopping_mode,
-                config=self.checkpoint_policy_config,
-            )
-            if normalized_score is not None:
-                logs["val_early_stopping_score"] = float(normalized_score)
-
-        if self.verbose:
-            print(
-                "val_f2_parasitized="
-                f"{logs.get('val_f2_parasitized'):.4f} "
-                "val_recall_parasitized="
-                f"{logs.get('val_recall_parasitized'):.4f} "
-                "val_specificity="
-                f"{logs.get('val_specificity'):.4f}"
-            )
+    return logs
 
 
-class ClinicalCheckpointCallback(tf.keras.callbacks.Callback):
-    def __init__(
-        self,
-        output_dir,
-        config: CheckpointPolicyConfig,
-        checkpoint_filename: str = "best_model.keras",
-        monitor: str | None = None,
-        mode: str = "max",
-        verbose: int = 1,
-    ):
-        super().__init__()
-        self.output_dir = Path(output_dir)
-        self.config = config
-        self.checkpoint_path = self.output_dir / checkpoint_filename
-        self.monitor = monitor
-        self.mode = str(mode)
-        if self.mode not in {"min", "max"}:
-            raise ValueError("mode debe ser 'min' o 'max'.")
-        self.records: list[dict] = []
-        self.phase = "training_base"
-        self.epoch_offset = 0
-        self.best_selection: Optional[dict] = None
-        self.verbose = int(verbose)
 
-    def set_phase(self, phase: str, epoch_offset: int = 0):
-        self.phase = str(phase)
-        self.epoch_offset = int(epoch_offset)
-
-    def _record_from_logs(self, epoch: int, logs: dict) -> dict:
-        phase_epoch = int(epoch) + 1
-        global_epoch = self.epoch_offset + phase_epoch
-        record = {
-            "epoch": global_epoch,
-            "phase": self.phase,
-            "phase_epoch": phase_epoch,
-            "checkpoint_path": str(self.checkpoint_path),
-        }
-        for key, value in (logs or {}).items():
-            if isinstance(value, (int, float, np.integer, np.floating, np.bool_)):
-                record[key] = _json_safe(value)
-        return record
-
-    def _write_summary(self, selection: dict):
-        summary = checkpoint_policy_summary(
-            self.config,
-            selection,
-            checkpoint_path=self.checkpoint_path,
-        )
-        write_checkpoint_policy_summary(self.output_dir, summary)
-        return summary
-
-    def _select_best(self) -> dict:
-        if self.monitor:
-            return select_best_epoch_by_monitor(
-                self.records,
-                self.config,
-                monitor=self.monitor,
-                mode=self.mode,
-            )
-        return select_best_epoch_from_history(self.records, self.config)
-
-    def on_epoch_end(self, epoch, logs=None):
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        record = self._record_from_logs(epoch, logs or {})
-        self.records.append(record)
-        selection = self._select_best()
-        self.best_selection = selection
-        selected_is_current = selection.get("selected_epoch") == record["epoch"]
-        if selected_is_current:
-            self.model.save(self.checkpoint_path, overwrite=True)
-            if self.verbose:
-                print(
-                    "Clinical checkpoint saved: "
-                    f"epoch={record['epoch']} "
-                    f"policy={self.config.policy} "
-                    f"{selection.get('selected_metric')}="
-                    f"{selection.get('selected_metric_value')}"
-                )
-        self._write_summary(selection)
-
-    def on_train_end(self, logs=None):
-        if self.records:
-            self.best_selection = self._select_best()
-            self._write_summary(self.best_selection)
-
-    def selection_summary(self):
-        if not self.records:
-            return None
-        selection = self._select_best()
-        self.best_selection = selection
-        return checkpoint_policy_summary(
-            self.config,
-            selection,
-            checkpoint_path=self.checkpoint_path,
-        )
+# Keras-only callbacks: absent from a PyTorch environment without TensorFlow.
+if importlib.util.find_spec("tensorflow") is not None:
+    from .keras_callbacks import ClinicalCheckpointCallback, ClinicalValidationMetricsCallback  # noqa: E402,F401

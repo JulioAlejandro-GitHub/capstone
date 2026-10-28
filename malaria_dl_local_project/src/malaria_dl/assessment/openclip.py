@@ -24,8 +24,59 @@ CALIBRATION_POLICY = {"version": "zero_shot_val_calibration_v1", "split": "val",
                       "min_specificity": 0.0, "beta": 2.0}
 
 
+SUPERVISED_SCHEMA = "openclip_supervised_input_v1"
+
+
 def is_openclip(binding):
     return (binding.get("input_contract") or {}).get("schema_version") == SCHEMA
+
+
+def is_supervised(binding):
+    """A head trained by an OpenCLIP TRAIN (linear probing or fine-tuning) over the registered base."""
+    return (binding.get("input_contract") or {}).get("schema_version") == SUPERVISED_SCHEMA
+
+
+def supervised_input_contract(architecture, adapter_version, input_shape, recipe):
+    """Frozen input/output identity of a trained BiomedCLIP head; the base is identified by bytes."""
+    return validate_supervised_contract({
+        "schema_version": SUPERVISED_SCHEMA,
+        "architecture": architecture,
+        "adapter_version": adapter_version,
+        "framework": FRAMEWORK,
+        "external": {"mode": "openclip_original", "embedding": recipe["embedding"],
+                     "base_model": deepcopy(recipe["base_model"])},
+        "head": deepcopy(recipe["head"]),
+        "label_mapping": deepcopy(MAPPING),
+        "input": {"shape": [None, *input_shape]},
+        "output": {"shape": [None, 1], "activation": "sigmoid", "meaning": "probability_parasitized"},
+    })
+
+
+def validate_supervised_contract(c):
+    require(isinstance(c, dict) and set(c) == {
+        "schema_version", "architecture", "adapter_version", "framework", "external", "head",
+        "label_mapping", "input", "output"} and c["schema_version"] == SUPERVISED_SCHEMA
+        and c["framework"] == FRAMEWORK and isinstance(c["architecture"], str) and c["architecture"],
+        "OPENCLIP_CONTRACT_INVALID")
+    external = c["external"]
+    base = external.get("base_model") or {}
+    require(external.get("mode") == "openclip_original" and external.get("embedding") == "openclip_encode_image_l2_v1",
+            "OPENCLIP_CONTRACT_INVALID")
+    require(set(base.get("checkpoint") or {}) == {"role", "sha256", "bytes"}
+            and base["checkpoint"]["role"] == "checkpoint"
+            and {d.get("role") for d in base.get("dependencies") or []} == DEPENDENCY_ROLES
+            and len(base["dependencies"]) == len(DEPENDENCY_ROLES)
+            and all(set(d) == {"role", "sha256", "bytes"} for d in base["dependencies"])
+            and base.get("model_version_id") and base.get("training_run_id"),
+            "OPENCLIP_DEPENDENCIES_INVALID")
+    # The original transform fixes the resolution; any other input size is another model.
+    require(c["input"] == {"shape": [None, 224, 224, 3]}, "INPUT_SHAPE_FIXED_BY_BASE")
+    require(c["head"].get("out_features") == 1 and c["head"].get("activation") == "sigmoid",
+            "OPENCLIP_OUTPUT_INVALID")
+    require(all(c["label_mapping"].get(k) == v for k, v in MAPPING.items()), "LABEL_MAPPING_INVALID")
+    require(c["output"] == {"shape": [None, 1], "activation": "sigmoid", "meaning": "probability_parasitized"},
+            "OPENCLIP_OUTPUT_INVALID")
+    return c
 
 
 def input_contract(model_name, preprocessing, class_mapping, input_signature, output_signature):
@@ -183,6 +234,7 @@ class OpenCLIPRuntime:
         self.std = np.asarray(normalize.std, dtype="float32")[:, None, None]
         self.layer = _Layer()
         self.torch = torch
+        self.device = "cpu"
 
     def images(self, samples):
         """Normalized NCHW float32, from verified bytes through the registered transform."""
@@ -262,8 +314,8 @@ class OpenCLIPRuntime:
 
             torch = self.torch
             # A ViT backward over shap's default batch of 50 exceeds the backend memory.
-            explainer = shap.GradientExplainer(_PositiveScore(self.classifier),
-                                               torch.from_numpy(self.images(spec["background"])),
+            explainer = shap.GradientExplainer(self._positive_module(),
+                                               torch.from_numpy(self.images(spec["background"])).to(self.device),
                                                batch_size=self.value["batch_size"])
             # Expected gradients is a mean over samples: shap materializes all of them at once
             # (float64 deltas plus gradients), so draw fixed-size chunks with derived seeds and
@@ -271,7 +323,7 @@ class OpenCLIPRuntime:
             total, chunks = np.zeros(tensor.shape, dtype="float64"), 0
             for index, start in enumerate(range(0, spec["num_samples"], SHAP_CHUNK)):
                 size = min(SHAP_CHUNK, spec["num_samples"] - start)
-                values = explainer.shap_values(torch.from_numpy(tensor[None]), nsamples=size,
+                values = explainer.shap_values(torch.from_numpy(tensor[None]).to(self.device), nsamples=size,
                                                rseed=self.value["seed"] + index)
                 if isinstance(values, list):
                     require(len(values) == 1, "SHAP_OUTPUT_CONFLICT")
@@ -286,6 +338,85 @@ class OpenCLIPRuntime:
                                                           "shap_chunk_size": SHAP_CHUNK, "shap_chunks": chunks}
         require(np.isfinite(heat).all(), "ATTRIBUTION_NONFINITE")
         return heat, attribution_overlay(rgb, heat), {"score_explained": "raw", "class": spec["class"]}
+
+
+    def _positive_module(self):
+        return _PositiveScore(self.classifier)
+
+
+def assessment_device():
+    """Local host: the Apple GPU (no silent CPU fallback); the Docker backend keeps CPU."""
+    from pathlib import Path
+
+    if Path("/.dockerenv").exists():
+        return "cpu"
+    from ..models.biomedclip_training import device
+
+    return device()
+
+
+class SupervisedOpenCLIPRuntime(OpenCLIPRuntime):
+    """Trained BiomedCLIP head (linear probing or fine-tuning): sigmoid parasitized score."""
+
+    def __init__(self, value):
+        import numpy as np
+        import torch
+
+        from ..data.governed_dataset import local_dataset_root
+        from ..execution.storage_paths import local_scientific_path
+        from ..models.biomedclip_training import load_classifier
+
+        model = value["model"]
+        contract = validate_supervised_contract(model["input_contract"])
+        torch.manual_seed(value["seed"])
+        np.random.seed(value["seed"])
+        self.value = value
+        self.dataset_root = local_dataset_root(value["dataset"]["dataset_root"])
+        self.device = assessment_device()
+        net, self.transform = load_classifier(local_scientific_path(model["path"]), contract)
+        self.net = net.to(self.device)
+        normalize = self.transform.transforms[-1]
+        self.mean = np.asarray(normalize.mean, dtype="float32")[:, None, None]
+        self.std = np.asarray(normalize.std, dtype="float32")[:, None, None]
+        self.layer = _Layer()
+        self.torch = torch
+
+    def _scores(self, batch):
+        import numpy as np
+
+        torch = self.torch
+        with torch.inference_mode():
+            p = torch.sigmoid(self.net(torch.from_numpy(np.asarray(batch, dtype="float32")).to(self.device)))
+        p = p.reshape(-1).float().cpu().numpy()
+        require(p.shape == (len(batch),) and np.isfinite(p).all(), "MODEL_OUTPUT_SHAPE_CONFLICT")
+        return np.stack([1 - p, p], axis=1)
+
+    def represent(self, samples):
+        """L2-normalized embeddings that feed the head, and its raw scores, from one pass."""
+        import numpy as np
+
+        torch = self.torch
+        with torch.inference_mode():
+            features = self.net.embed(torch.from_numpy(self.images(samples)).to(self.device))
+            scores = torch.sigmoid(self.net.head(features)).reshape(-1)
+        features, scores = features.float().cpu().numpy(), scores.float().cpu().numpy()
+        require(features.ndim == 2 and features.shape[0] == len(samples), "MODEL_OUTPUT_SHAPE_CONFLICT")
+        require(np.isfinite(features).all(), "REPRESENTATION_NONFINITE")
+        return features.astype("float32"), scores.tolist()
+
+    def _positive_module(self):
+        torch = self.torch
+        net = self.net
+
+        class PositiveScore(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.net = net
+
+            def forward(self, images):
+                return torch.sigmoid(self.net(images))
+
+        return PositiveScore().eval()
 
 
 def _PositiveScore(classifier):

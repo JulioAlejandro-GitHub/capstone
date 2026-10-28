@@ -25,15 +25,20 @@ install_env() {
   "$target/bin/python" -m pip install --upgrade pip
   "$target/bin/python" -m pip install -r "$requirements"
   "$target/bin/python" -m pip check
-  "$target/bin/python" -c 'import tensorflow as tf; print("TensorFlow:", tf.__version__); print("GPU:", tf.config.list_physical_devices("GPU"))'
+  if [[ "$target" == .venv-torch ]]; then
+    "$target/bin/python" -c 'import torch, open_clip; print("PyTorch:", torch.__version__, "OpenCLIP:", open_clip.__version__); print("MPS:", torch.backends.mps.is_available())'
+  else
+    "$target/bin/python" -c 'import tensorflow as tf; print("TensorFlow:", tf.__version__); print("GPU:", tf.config.list_physical_devices("GPU"))'
+  fi
 }
 
 case "${1:-}" in
   cpu) install_env .venv-local-train requirements-cpu.txt ;;
   gpu) install_env .venv-metal requirements-gpu.txt ;;
+  torch) install_env .venv-torch requirements-torch.txt ;;
   all)
     install_env .venv-local-train requirements-cpu.txt
     install_env .venv-metal requirements-gpu.txt
     ;;
-  *) echo "Uso: $0 {cpu|gpu|all}" >&2; exit 2 ;;
+  *) echo "Uso: $0 {cpu|gpu|torch|all}" >&2; exit 2 ;;
 esac
