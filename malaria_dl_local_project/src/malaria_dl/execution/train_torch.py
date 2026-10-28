@@ -155,6 +155,14 @@ def restore(model, state):
             parameters[name].copy_(value)
 
 
+def accelerator(device) -> dict:
+    """Runtime accelerator identity, as canonical JSON (TorchVersion is a str subclass)."""
+    import torch
+
+    return {"framework": "pytorch", "torch": str(torch.__version__), "device": str(device),
+            "mps_fallback": os.environ.get("PYTORCH_ENABLE_MPS_FALLBACK")}
+
+
 def train(repository, session: dict, descriptor, *, event_emitter=None) -> None:
     from ..models import biomedclip_training as biomedclip
 
@@ -331,9 +339,8 @@ def _run(repository, session, config, model, device, files, samples, sample_path
         if phase == "base":
             from .campaign import runtime_environment
 
-            runtime.update(runtime_environment={**runtime_environment(), "accelerator": {
-                "framework": "pytorch", "torch": torch.__version__, "device": str(device),
-                "mps_fallback": os.environ.get("PYTORCH_ENABLE_MPS_FALLBACK")}}, started_at=started_at)
+            runtime.update(runtime_environment={**runtime_environment(), "accelerator": accelerator(device)},
+                           started_at=started_at)
         put("runtime", phase, "configuration", runtime)
         count = 0
         for epoch in range(epochs):

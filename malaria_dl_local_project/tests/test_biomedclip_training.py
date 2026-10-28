@@ -180,3 +180,11 @@ def test_versioned_configurations_resolve_without_a_keras_input_contract(monkeyp
                          ({"recipe": {"encoder": "frozen"}}, "UNSUPPORTED_RECIPE_CHANGE")):
         with pytest.raises((ValueError, CampaignError), match=code):
             resolve_config("biomedclip_fine_tuning", None, change)
+
+
+def test_runtime_accelerator_record_is_canonical_json():
+    from src.malaria_dl.campaigns.contracts import canonical
+
+    with pytest.raises(CampaignError, match="NON_CANONICAL_JSON"):
+        canonical({"torch": torch.__version__})  # a str subclass is not canonical JSON
+    assert '"torch":"' in canonical(train_torch.accelerator(torch.device("cpu")))
