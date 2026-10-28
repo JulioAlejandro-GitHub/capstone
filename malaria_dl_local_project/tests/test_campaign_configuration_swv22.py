@@ -49,7 +49,9 @@ def test_models_are_discovered_from_the_registry(catalog):
         d = registry.resolve_descriptor(m["id"], executable=False)
         assert m["trainable"] == d.trainable
         if not d.trainable:
-            assert m["disabled_reason"] == "No requiere entrenamiento local"
+            # A model without TRAIN joins campaigns only when its config declares evaluation_only.
+            assert m["evaluation_only"] == (registry.evaluation_only(d) is not None)
+            assert m["disabled_reason"] == (None if m["evaluation_only"] else "No requiere entrenamiento local")
             assert m["parameters"] == [] and m["optimizers"] == []
         assert m["adapter_version"] == d.version and m["optimizers"] == list(d.optimizers)
 
@@ -383,3 +385,42 @@ def test_document_from_request_falls_back_to_current_catalog_defaults(catalog):
     assert document["variants"][0]["parameters"]["custom_cnn"]["max_epochs"] == 40
     normalized, errors = cc.normalize(document)
     assert errors == []
+
+
+# --- evaluation-only models (zero-shot) ------------------------------------------------------
+
+def test_zero_shot_joins_the_campaign_outside_the_train_matrix(catalog):
+    zero = next(m for m in catalog["models"] if m["id"] == "biomedclip_zero_shot")
+    assert zero["evaluation_only"] and not zero["trainable"] and zero["disabled_reason"] is None
+    base = cc.resolve(small(catalog), COUNTS)
+    c = small(catalog)
+    c["models"].append("biomedclip_zero_shot")
+    c["variants"][0]["parameters"]["biomedclip_zero_shot"] = {}  # the form sends an empty object
+    result = cc.resolve(c, COUNTS)
+    assert result["valid"], result["errors"]
+    assert result["request"]["evaluation_models"] == ["biomedclip_zero_shot"]
+    # TRAIN matrix, members and total are those of the trained models only.
+    assert result["matrix"] == base["matrix"] and result["summary"]["total_experiments"] == base["summary"]["total_experiments"]
+    assert result["summary"]["evaluation_models"] == ["biomedclip_zero_shot"]
+    assert "biomedclip_zero_shot" not in result["summary"]["experiments_per_model"]
+    document = cc.document_from_request(result["request"], result["protocol"])
+    assert "biomedclip_zero_shot" in document["models"]
+    assert cc.resolve(document, COUNTS)["request"] == result["request"]
+
+
+def test_campaign_without_evaluation_models_keeps_its_request_shape(catalog):
+    assert "evaluation_models" not in cc.resolve(small(catalog), COUNTS)["request"]
+
+
+def test_zero_shot_alone_is_not_a_campaign(catalog):
+    c = small(catalog)
+    c["models"] = ["biomedclip_zero_shot"]
+    c["variants"][0]["parameters"] = {}
+    assert ("models", "CAMPAIGN_REQUIRES_TRAINABLE_MODEL") in codes(cc.resolve(c, COUNTS))
+
+
+def test_evaluation_models_are_validated_by_the_matrix(catalog):
+    request = cc.resolve(small(catalog), COUNTS)["request"]
+    for wrong in (["vgg16"], [], ["biomedclip_zero_shot", "biomedclip_zero_shot"]):
+        with pytest.raises(Exception, match="INVALID_EVALUATION_MODELS"):
+            expand_matrix({**request, "evaluation_models": wrong})

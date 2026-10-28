@@ -158,6 +158,23 @@ similitudes relativas, no probabilidades calibradas.
 al PostgreSQL Docker y exige GPU TensorFlow fuera de Docker. No elige framework ni
 rutas. No utilizarla como selección de PyTorch/MPS. El backend sigue en Docker.
 
+## En campañas (modelo sin TRAIN)
+
+`configs/models/biomedclip_zero_shot.json` declara `campaign.role = evaluation_only`
+(`registry.evaluation_only`). En la configuración de campañas el modelo es seleccionable
+junto a al menos un modelo entrenable (`CAMPAIGN_REQUIRES_TRAINABLE_MODEL`). Queda en
+`requested.evaluation_models`, fuera de la matriz: no tiene configuración, miembro ni
+experimento, y `python -m src.train --campaign-id` no lo ve.
+
+`src.evaluate`, `src.test` y `src.explain --campaign-id` agregan su TRAIN lógico registrado
+(`selection.evaluation_only_trainings`) con lo que la campaña fija: su dataset version, su
+semilla menor y `assessment_batch_size` (32). Los argumentos explícitos prevalecen. Los
+assessments quedan asociados por `identity.campaign_id`. En una campaña, `--method gradcam`
+omite los ViT (zero-shot y cabezas BiomedCLIP) con `GRADCAM_NOT_APPLICABLE_VIT`, sin fallar.
+Localmente, cada ítem cuyo framework no corresponde al entorno actual se evalúa en un
+proceso propio de la compuerta con el intérprete de su entorno (`.venv-metal` o
+`.venv-torch`); en Docker corre en el mismo proceso.
+
 ## PostgreSQL vigente
 
 Alembic no es requisito de ejecución, instalación ni CI. Se retiraron sus comandos

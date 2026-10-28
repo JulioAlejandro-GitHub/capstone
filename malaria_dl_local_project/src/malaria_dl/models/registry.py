@@ -108,6 +108,25 @@ def resolve_descriptor(name, *, executable=True):
     return descriptor
 
 
+def evaluation_only(descriptor):
+    """Campaign role of a model without TRAIN: its versioned config, or None for trained models.
+
+    Such a model joins a campaign outside the TRAIN matrix: ``src.train`` never runs it and the
+    campaign EVALUATE/TEST/EXPLAIN assess its registered logical TRAIN.
+    """
+    import json
+
+    if descriptor.trainable or not descriptor.enabled:
+        return None
+    campaign = json.loads(Path(descriptor.config_path).read_text()).get("campaign") or {}
+    if campaign.get("role") != "evaluation_only":
+        return None
+    size = campaign.get("assessment_batch_size")
+    if type(size) is not int or size <= 0:
+        raise ValueError("INVALID_EVALUATION_ONLY_CONFIGURATION:" + descriptor.id)
+    return {"assessment_batch_size": size}
+
+
 def enabled_models():
     # No implementation filter: a registered model without one fails in resolve_descriptor.
     return registered_models()

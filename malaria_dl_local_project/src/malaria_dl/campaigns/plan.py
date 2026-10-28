@@ -60,6 +60,8 @@ def resolve_plan(row):
                      dataset_materialization_id=row["dataset_snapshot"].get("dataset_materialization_id"),
                      dataset_evidence_id=str(row["dataset_evidence_id"])),
         models=models,
+        # Assessed with the campaign but never trained (zero-shot): no experiments.
+        evaluation_models=list(contract["requested"].get("evaluation_models", [])),
         optimizers=sorted({c["optimizer"] for c in configurations.values()}),
         seeds=matrix["seeds"],
         protocol=dict(version=contract["protocol"]["version"],

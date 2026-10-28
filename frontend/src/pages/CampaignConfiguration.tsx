@@ -45,6 +45,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   EQUIVALENT_VARIANTS_DUPLICATE_MEMBER: 'Dos variantes producen la misma configuración para un modelo.',
   INCOMPATIBLE_FINE_TUNING: 'El fine-tuning requiere capas descongeladas mayores que 0.',
   TOTAL_UNAVAILABLE: 'El total se calcula cuando la configuración es válida.',
+  CAMPAIGN_REQUIRES_TRAINABLE_MODEL: 'Selecciona además al menos un modelo entrenable: los modelos sin TRAIN se evalúan junto a ellos.',
 };
 
 function message(code: string) {
@@ -387,7 +388,8 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
     });
     return Array.from(map.values()).map((p) => {
       const labels = editableIn.get(p.key) ?? [];
-      return p.editable && labels.length < configuration.models.length
+      const trained = configuration.models.filter((id) => !models.get(id)?.evaluation_only).length;
+      return p.editable && labels.length < trained
         ? { ...p, note: `Se aplica sólo a: ${labels.join(', ')}.` } : p;
     });
   }, [catalog, configuration?.models, models]);
@@ -511,7 +513,7 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
   }
 
   const supportedOptimizers = catalog.optimizers.filter((o) =>
-    configuration.models.every((id) => models.get(id)?.optimizers.includes(o.id)));
+    configuration.models.every((id) => models.get(id)?.evaluation_only || models.get(id)?.optimizers.includes(o.id)));
   const summary = currentPreview?.summary ?? null;
   const fixed = catalog.protocol.fixed;
 
@@ -592,11 +594,14 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
             <small>Cambiar los valores iniciales reemplaza modelos, optimizadores, semillas, variantes y EarlyStopping.</small>
           </div>
           <div className="campaign-checklist" role="group" aria-label="Modelos">
-            {catalog.models.map((model) => <label key={model.id} className={`campaign-check ${model.trainable === false ? 'is-disabled' : ''}`}>
-              <input type="checkbox" disabled={model.trainable === false} checked={model.trainable !== false && configuration.models.includes(model.id)}
+            {catalog.models.map((model) => {
+              const selectable = model.trainable !== false || model.evaluation_only === true;
+              return <label key={model.id} className={`campaign-check ${selectable ? '' : 'is-disabled'}`}>
+              <input type="checkbox" disabled={!selectable} checked={selectable && configuration.models.includes(model.id)}
                 onChange={(e) => toggleModel(model.id, e.target.checked)} />
-              <span><strong>{model.label}</strong><small>{model.disabled_reason ?? `${model.id} · adapter ${model.adapter_version}`}</small></span>
-            </label>)}
+              <span><strong>{model.label}</strong><small>{model.disabled_reason ?? model.note ?? `${model.id} · adapter ${model.adapter_version}`}</small></span>
+            </label>;
+            })}
           </div>
           {fieldErrors.models ? <small className="campaign-error">{message(fieldErrors.models)}</small> : null}
 
@@ -697,6 +702,8 @@ export function CampaignConfiguration({ datasource, go }: CampaignConfigurationP
           {summary ? <ul className="campaign-per-model">
             {Object.entries(summary.experiments_per_model).map(([id, count]) =>
               <li key={id}>{models.get(id)?.label ?? id}: {number.format(count)}</li>)}
+            {(summary.evaluation_models ?? []).map((id) =>
+              <li key={id}>{models.get(id)?.label ?? id}: sin TRAIN (EVALUATE, TEST y EXPLAIN)</li>)}
           </ul> : null}
           <small>{catalog.experiment_formula}. Calculado por el backend con la misma lógica que construye la campaña.</small>
         </section>

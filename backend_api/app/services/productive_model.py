@@ -404,7 +404,8 @@ class ProductiveModelResolver:
                )
              )
             JOIN model_versions mv ON mv.id=publication.model_version_id
-            JOIN models model ON model.id=mv.model_id
+            -- Versions registered before model_id was recorded keep resolving.
+            LEFT JOIN models model ON model.id=mv.model_id
             JOIN artifacts artifact
               ON artifact.id=publication.checkpoint_artifact_id
             JOIN runs training ON training.id=mv.training_run_id

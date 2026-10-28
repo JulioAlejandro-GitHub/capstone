@@ -1,1 +1,1 @@
-{"architecture":"biomedclip_zero_shot","trainable":false}
+{"architecture":"biomedclip_zero_shot","trainable":false,"campaign":{"role":"evaluation_only","assessment_batch_size":32}}

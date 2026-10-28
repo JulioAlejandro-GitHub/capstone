@@ -27,6 +27,39 @@ def select_trainings(repository: CampaignRepository, campaign_id: str | None,
                              WHERE a.training_run_id=r.id AND m.campaign_id=CAST(:campaign AS uuid)))
             ORDER BY r.started_at,r.id
         """, train=training, campaign=campaign).mappings())
+        rows = [dict(row) for row in rows]
+        if campaign:
+            rows += evaluation_only_trainings(c, campaign, training)
         require(bool(rows), "SOURCE_TRAINING_RUN_CAMPAIGN_SELECTION_EMPTY" if campaign and training
                 else "SOURCE_TRAINING_RUN_NOT_FOUND" if training else "CAMPAIGN_HAS_NO_TRAININGS")
-    return [dict(row) for row in rows]
+    return rows
+
+
+def evaluation_only_trainings(c, campaign: str, training: str | None) -> list[dict[str, Any]]:
+    """Registered logical TRAIN of each campaign evaluation-only model (zero-shot).
+
+    They have no campaign member: TRAIN skips them, and the campaign supplies what an
+    explicit run would require (its dataset, its smallest seed, the model's versioned batch).
+    """
+    from ..models.registry import evaluation_only, resolve_descriptor
+
+    rows = [dict(row) for row in execute(c, """
+        SELECT r.id, CAST(:campaign AS uuid) AS campaign_id, r.dataset_version_id, r.status,
+               r.execution_parameters->'scientific_origin' AS scientific_origin,
+               m.name AS model_name, m.metadata AS model_metadata, NULL::jsonb AS configuration,
+               e.dataset_version_id AS campaign_dataset_version_id,
+               (SELECT min(CAST(s AS integer)) FROM jsonb_array_elements_text(e.requested->'seeds') s) AS campaign_seed
+        FROM experimental_campaigns e
+        CROSS JOIN LATERAL jsonb_array_elements_text(COALESCE(e.requested->'evaluation_models','[]'::jsonb)) wanted(name)
+        JOIN models m ON m.name=wanted.name AND m.metadata->>'training_mode'='logical'
+        JOIN runs r ON r.model_id=m.id AND r.run_type='training'
+        WHERE e.id=CAST(:campaign AS uuid) AND (CAST(:train AS uuid) IS NULL OR r.id=CAST(:train AS uuid))
+        ORDER BY m.name,r.started_at,r.id
+    """, campaign=campaign, train=training).mappings()]
+    names = [row["model_name"] for row in rows]
+    require(len(names) == len(set(names)), "LOGICAL_TRAIN_NOT_UNIQUE")
+    for row in rows:
+        row["evaluation_only"] = True
+        row["campaign_batch_size"] = evaluation_only(
+            resolve_descriptor(row["model_name"], executable=False))["assessment_batch_size"]
+    return rows

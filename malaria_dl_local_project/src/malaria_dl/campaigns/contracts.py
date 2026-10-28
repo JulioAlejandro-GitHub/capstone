@@ -234,12 +234,24 @@ def validate_protocol(protocol, *, frozen=False, dataset=None):
 
 def expand_matrix(request, protocol=None, *, frozen=False, dataset=None):
     from ..models.configuration import resolve_config
-    from ..models.registry import enabled_models, resolve_descriptor
+    from ..models.registry import enabled_models, evaluation_only, resolve_descriptor
 
+    keys = ("models", "optimizers", "seeds", "variants", "exclusions")
+    # Optional: models assessed with the campaign but outside the TRAIN matrix (zero-shot).
     required_object(
-        request, ("models", "optimizers", "seeds", "variants", "exclusions"), "matrix"
+        request, keys + (("evaluation_models",) if "evaluation_models" in request else ()), "matrix"
     )
     canonical(request)
+    if "evaluation_models" in request:
+        evaluated = request["evaluation_models"]
+        if (
+            not isinstance(evaluated, list)
+            or not evaluated
+            or any(not isinstance(n, str) for n in evaluated)
+            or evaluated != sorted(set(evaluated))
+            or any(evaluation_only(resolve_descriptor(n, executable=False)) is None for n in evaluated)
+        ):
+            raise CampaignError("INVALID_EVALUATION_MODELS")
     seeds = request["seeds"]
     if (
         not isinstance(seeds, list)

@@ -56,11 +56,12 @@ def register_evidence(connection: Connection, training: dict, binding: dict, con
     if (existing['run_id'], existing['checksum'], existing['file_size_bytes']) != (params['train'], params['sha'], params['size']):
         raise ValueError('La identidad del checkpoint ya existe con otra evidencia.')
     connection.execute(text("""
-      INSERT INTO model_versions(id,training_run_id,checkpoint_artifact_id,model_name,
+      INSERT INTO model_versions(id,model_id,training_run_id,checkpoint_artifact_id,model_name,
         artifact_sha256,artifact_size_bytes,framework,preprocessing_profile_snapshot,class_mapping,
         input_signature,output_signature,status,lineage_status,metadata)
-      VALUES(:version,:train,:artifact,:model,:sha,:size,:framework,CAST(:preprocessing AS jsonb),
-        CAST(:mapping AS jsonb),CAST(:input AS jsonb),CAST(:output AS jsonb),'candidate','resolved',CAST(:metadata AS jsonb))
+      SELECT :version,r.model_id,:train,:artifact,:model,:sha,:size,:framework,CAST(:preprocessing AS jsonb),
+        CAST(:mapping AS jsonb),CAST(:input AS jsonb),CAST(:output AS jsonb),'candidate','resolved',CAST(:metadata AS jsonb)
+      FROM runs r WHERE r.id=:train
       ON CONFLICT(id) DO NOTHING
     """), params)
     existing = connection.execute(text("""

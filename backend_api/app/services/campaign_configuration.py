@@ -108,7 +108,7 @@ def _saved(plan: dict, row: dict) -> dict:
     from src.malaria_dl.campaigns.configuration import document_from_request
 
     keys = ("campaign_id", "name", "purpose", "state", "contract_hash", "frozen_at", "dataset_version_id",
-            "dataset", "models", "optimizers", "seeds", "protocol", "configurations", "experiments",
+            "dataset", "models", "evaluation_models", "optimizers", "seeds", "protocol", "configurations", "experiments",
             "total_experiments", "experiments_per_model", "command", "execution_boundary")
     result = {k: plan[k] for k in keys}
     # Operator document rebuilt from the stored request/protocol: the report's edit prefills

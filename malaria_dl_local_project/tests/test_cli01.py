@@ -218,6 +218,8 @@ def test_common_identifier_sql_contract(case, monkeypatch):
     def execute(connection, sql, **params):
         if 'SELECT EXISTS' in sql:
             return SimpleNamespace(scalar_one=lambda: case != 'missing_campaign')
+        if 'evaluation_models' in sql:  # the campaign declares no evaluation-only model
+            return SimpleNamespace(mappings=lambda: [])
         assert "r.run_type='training'" in sql and 'ORDER BY r.started_at,r.id' in sql
         assert '(CAST(:train AS uuid) IS NULL OR r.id=CAST(:train AS uuid))' in sql
         assert '(CAST(:campaign AS uuid) IS NULL OR r.campaign_id=CAST(:campaign AS uuid)' in sql

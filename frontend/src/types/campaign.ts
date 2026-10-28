@@ -27,7 +27,10 @@ export interface CampaignModel {
   label: string;
   adapter_version: string;
   trainable?: boolean;
+  /** Joins the campaign without TRAIN: assessed by its EVALUATE/TEST/EXPLAIN (zero-shot). */
+  evaluation_only?: boolean;
   disabled_reason?: string | null;
+  note?: string | null;
   strategies: string[];
   optimizers: string[];
   input_contract: string;
@@ -91,6 +94,7 @@ export interface CampaignSummary {
   configurations: number;
   total_experiments: number;
   experiments_per_model: Record<string, number>;
+  evaluation_models?: string[];
   configuration_list: Array<{ configuration_hash: string; model_id: string; optimizer: string; variants: string[] }>;
 }
 

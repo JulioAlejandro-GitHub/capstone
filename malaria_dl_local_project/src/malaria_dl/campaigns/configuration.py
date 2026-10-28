@@ -145,15 +145,20 @@ def protocol_template():
 
 
 def _catalog_models():
+    from ..models.registry import evaluation_only
+
     models = []
     for d, row in _registry():
         raw, resolved = _defaults(d) if d.trainable else (None, None)
+        evaluated = evaluation_only(d) is not None
         models.append(dict(
             # Label is public.models.architecture; a row without one is shown by its name.
             id=d.id, label=row["architecture"] or d.id, adapter_version=d.version, strategies=list(d.strategies),
             optimizers=list(d.optimizers), input_contract=d.input_contract, output_contract=d.output_contract,
             parameters=[_parameter(d, raw, resolved, *p) for p in PARAMETERS] if d.trainable else [],
-            trainable=d.trainable, disabled_reason=None if d.trainable else "No requiere entrenamiento local",
+            trainable=d.trainable, evaluation_only=evaluated,
+            disabled_reason=None if d.trainable or evaluated else "No requiere entrenamiento local",
+            note="Sin TRAIN: la campaña lo evalúa en EVALUATE, TEST y EXPLAIN" if evaluated else None,
         ))
     return models
 
@@ -306,9 +311,13 @@ def normalize(configuration):
     for name in selected:
         if name not in models:
             _error(errors, "models", "UNKNOWN_OR_NOT_EXECUTABLE_MODEL:" + name)
-        elif not models[name]["trainable"]:
+        elif not models[name]["trainable"] and not models[name]["evaluation_only"]:
             _error(errors, "models", "MODEL_NOT_TRAINABLE:" + name)
+    # Evaluation-only models join the campaign outside the TRAIN matrix.
+    evaluated = sorted(m for m in selected if m in models and models[m]["evaluation_only"])
     selected = [m for m in selected if m in models and models[m]["trainable"]]
+    if evaluated and not selected:
+        _error(errors, "models", "CAMPAIGN_REQUIRES_TRAINABLE_MODEL")
     known_optimizers = {o["id"] for o in _optimizers()}
     optimizers = _unique_list(errors, "optimizers", configuration.get("optimizers"), lambda v: isinstance(v, str))
     for o in optimizers:
@@ -340,6 +349,8 @@ def normalize(configuration):
             _error(errors, field + ".parameters", "PARAMETERS_OBJECT_REQUIRED")
             continue
         for model_id in sorted(set(supplied) - set(selected)):
+            if model_id in evaluated and supplied[model_id] == {}:
+                continue  # no parameters to set: the form may still send an empty object
             _error(errors, f"{field}.parameters.{model_id}", "PARAMETERS_FOR_UNSELECTED_MODEL")
         values = {}
         for model_id in selected:
@@ -385,6 +396,8 @@ def normalize(configuration):
                 out_protocol[section][leaf] = value
     normalized = dict(version=CONFIGURATION_VERSION, models=selected, optimizers=optimizers, seeds=seeds,
                       variants=normalized_variants, protocol=out_protocol)
+    if evaluated:
+        normalized["evaluation_models"] = evaluated
     return normalized, errors
 
 
@@ -404,8 +417,11 @@ def build_request(normalized):
                     _set(overrides, tuple(spec["path"].split(".")), value)
             by_model[model_id] = overrides
         variants.append(dict(name=variant["name"], selected={}, by_model=by_model))
-    return dict(models=sorted(normalized["models"]), optimizers=sorted(normalized["optimizers"]),
-                seeds=sorted(normalized["seeds"]), variants=variants, exclusions=[])
+    request = dict(models=sorted(normalized["models"]), optimizers=sorted(normalized["optimizers"]),
+                   seeds=sorted(normalized["seeds"]), variants=variants, exclusions=[])
+    if normalized.get("evaluation_models"):
+        request["evaluation_models"] = sorted(normalized["evaluation_models"])
+    return request
 
 
 def document_from_request(request, protocol):
@@ -421,6 +437,7 @@ def document_from_request(request, protocol):
     """
     models = {m["id"]: m for m in _catalog_models()}
     requested = [m for m in request.get("models", []) if m in models]
+    evaluated = [m for m in request.get("evaluation_models", []) if m in models]
     variants = []
     for variant in request.get("variants", []):
         by_model = variant.get("by_model") or {}
@@ -443,7 +460,7 @@ def document_from_request(request, protocol):
         variants.append(dict(name=str(variant["name"]), parameters=parameters))
     return dict(
         version=CONFIGURATION_VERSION,
-        models=requested,
+        models=requested + evaluated,
         optimizers=list(request.get("optimizers", [])),
         seeds=list(request.get("seeds", [])),
         variants=variants,
@@ -511,7 +528,8 @@ def summarize(matrix, request):
     per_model = {}
     for c in configurations:
         per_model[c["model_id"]] = per_model.get(c["model_id"], 0) + len(matrix["seeds"])
-    return dict(models=len(request["models"]), optimizers=len(request["optimizers"]),
+    return dict(models=len(request["models"]) + len(request.get("evaluation_models", [])),
+                evaluation_models=list(request.get("evaluation_models", [])), optimizers=len(request["optimizers"]),
                 variants=len(request["variants"]), seeds=len(matrix["seeds"]),
                 configurations=len(matrix["configurations"]), total_experiments=matrix["expected_count"],
                 experiments_per_model=per_model, configuration_list=configurations)
