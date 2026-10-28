@@ -205,7 +205,7 @@ class _Layer:
 
 
 class OpenCLIPRuntime:
-    """Same interface as KerasRuntime; CPU/fp32 with the original OpenCLIP transform."""
+    """Same interface as KerasRuntime; fp32 with the original OpenCLIP transform, on assessment_device()."""
 
     def __init__(self, value):
         import numpy as np
@@ -227,14 +227,15 @@ class OpenCLIPRuntime:
         self.profile = {**contract["external"], "dependencies": dependencies}
         self.value = value
         self.dataset_root = local_dataset_root(value["dataset"]["dataset_root"])
-        self.classifier = OpenCLIPClassifier(local_scientific_path(model["path"]), self.profile, model["sha256"])
+        self.device = assessment_device()
+        self.classifier = OpenCLIPClassifier(local_scientific_path(model["path"]), self.profile, model["sha256"],
+                                             self.device)
         self.transform = image_transform(self.profile)
         normalize = self.transform.transforms[-1]
         self.mean = np.asarray(normalize.mean, dtype="float32")[:, None, None]
         self.std = np.asarray(normalize.std, dtype="float32")[:, None, None]
         self.layer = _Layer()
         self.torch = torch
-        self.device = "cpu"
 
     def images(self, samples):
         """Normalized NCHW float32, from verified bytes through the registered transform."""
@@ -266,7 +267,7 @@ class OpenCLIPRuntime:
         torch = self.torch
         model = self.classifier.model
         with torch.inference_mode():
-            features = model.encode_image(torch.from_numpy(self.images(samples)), normalize=True)
+            features = model.encode_image(torch.from_numpy(self.images(samples)).to(self.device), normalize=True)
             scores = (model.logit_scale.exp() * features @ self.classifier.text_features.T).softmax(dim=-1)
         features, scores = features.cpu().numpy(), scores.cpu().numpy()
         require(features.ndim == 2 and features.shape[0] == len(samples)

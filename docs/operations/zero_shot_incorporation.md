@@ -97,8 +97,11 @@ No se aplicó ninguna corrección a PostgreSQL real.
 BiomedCLIP observado: imagen 224×224; media `[0.48145466,0.4578275,0.40821073]`,
 desviación `[0.26862954,0.26130258,0.27577711]`; texto con contexto 256,
 PubMedBERT y dos prompts congelados. Score = softmax de similitudes coseno
-escaladas; no probabilidad clínicamente calibrada. El adaptador usa CPU/fp32,
-`eval()` e `inference_mode()`. Detectar MPS no significa utilizarlo.
+escaladas; no probabilidad clínicamente calibrada. El adaptador usa fp32, `eval()` e
+`inference_mode()`, en CPU en el backend Docker (clasificación celular) y en la GPU MPS en
+los assessments locales (`assessment_device()`, igual que las cabezas BiomedCLIP; sin
+fallback a CPU). CPU y MPS dan los mismos scores (diferencia máxima 7e-6 en 64 imágenes VAL)
+y las mismas decisiones con el umbral calibrado.
 
 El adaptador OpenCLIP actual admite configuración visual y encoder HF local con
 roles `model_config`, `text_config`, `tokenizer_config`, `vocabulary`. Un futuro
@@ -151,7 +154,8 @@ un `float8` se redondea a 15 dígitos y el trigger de referencia lo rechaza.
 El contrato `openclip_input_v1` identifica transformación, prompts, mapping, firmas y bytes
 de dependencias sin rutas; las rutas verificadas viajan en `model.dependencies` como el
 checkpoint. Tiempos en CPU del backend: ~0,1 s por imagen al predecir, ~100 s por imagen
-con LIME (1000 muestras) y ~190 s con SHAP (1000 muestras). Los scores siguen siendo
+con LIME (1000 muestras) y ~190 s con SHAP (1000 muestras). En MPS local la predicción es
+~4 veces más rápida (64 imágenes: 0,25 s frente a 0,95 s). Los scores siguen siendo
 similitudes relativas, no probabilidades calibradas.
 
 `CAPSTONE_LOCAL_TRAIN` es una señal del lanzador local ya existente: permite loopback

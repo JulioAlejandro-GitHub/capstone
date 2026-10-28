@@ -76,16 +76,17 @@ def create_model(checkpoint, profile, expected_sha256):
 
 class OpenCLIPClassifier:
     """Capstone predict interface over the original image/text encoders."""
-    def __init__(self, checkpoint, profile, expected_sha256):
+    def __init__(self, checkpoint, profile, expected_sha256, device='cpu'):
         import torch
         if profile['class_order'] != ['uninfected', 'parasitized'] or len(profile['prompts']) != 2:
             raise ValueError('OpenCLIP requires the canonical two-class prompt order')
         self.model, self.transform, tokenizer, (height, width) = create_model(checkpoint, profile, expected_sha256)
-        self.model.eval()
+        # The backend keeps CPU; local assessments pass the Apple GPU (assessment.openclip).
+        self.model.eval().to(device)
         with torch.inference_mode():
-            self.text_features = self.model.encode_text(tokenizer(profile['prompts']), normalize=True)
+            self.text_features = self.model.encode_text(tokenizer(profile['prompts']).to(device), normalize=True)
         self.input_shape = (None, height, width, 3)
-        self.device = 'cpu'
+        self.device = device
 
     def predict(self, batch, verbose=0):
         import numpy as np
@@ -101,7 +102,7 @@ class OpenCLIPClassifier:
         else:
             tensors = torch.from_numpy(values)
         with torch.inference_mode():
-            features = self.model.encode_image(tensors, normalize=True)
+            features = self.model.encode_image(tensors.to(self.device), normalize=True)
             scores = (self.model.logit_scale.exp() * features @ self.text_features.T).softmax(dim=-1)
         result = scores.cpu().numpy()
         if result.shape != (len(values), 2) or not np.isfinite(result).all():
