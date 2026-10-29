@@ -179,7 +179,7 @@ for (const stage of ['train', 'evaluate', 'explain', 'query', 'complete']) {
     assert.match(html, /TRAIN/);
     assert.match(html, /EVALUATE/);
     assert.match(html, /EXPLAIN/);
-    const checkbox = html.match(/<input type="checkbox"[^>]*>/)[0];
+    const checkbox = html.match(/<input[^>]*type="checkbox"[^>]*>/)[0];
     assert.equal(checkbox.includes('disabled'), stage !== 'complete');
     if (stage === 'query') {
       assert.match(html, /role="alert"/);

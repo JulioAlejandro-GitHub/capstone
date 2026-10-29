@@ -159,6 +159,7 @@ test('E6 count enables expansion; an empty TRAIN does not invoke the loader', ()
   const { TrainingRunGroupCard } = groupLoader('components/reports/TrainingRunGroupCard.tsx');
   function findToggle(node) {
     if (!node || !node.props) return null;
+    if (typeof node.type === 'function') return findToggle(node.type(node.props));
     if (node.props.className === 'lineage-children-toggle') return node;
     return React.Children.toArray(node.props.children).map(findToggle).find(Boolean);
   }
@@ -229,6 +230,7 @@ test('pagination requests the second hundred while keeping total counts', () => 
     onChildrenPage: value => {offset = value;}});
   function find(node) {
     if (!node?.props) return null;
+    if (typeof node.type === 'function') return find(node.type(node.props));
     if (node.type === 'button' && node.props.children === 'Siguiente') return node;
     return React.Children.toArray(node.props.children).map(find).find(Boolean);
   }

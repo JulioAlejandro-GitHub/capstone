@@ -3,18 +3,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { Loading } from '../components/Loading';
-import { ReportFilters } from '../components/reports/ReportFilters';
+import { RunAnalysisCell } from '../components/reports/RunSummaryRow';
 import {
-  ReportSelectFilter,
-  type ReportFilterOption,
-} from '../components/reports/ReportSelectFilter';
-import {
-  TrainingRunGroupCard,
+  TrainingRunDetailPanel,
+  isStage2Active,
   type TrainingChildrenLoadState,
 } from '../components/reports/TrainingRunGroupCard';
+import { TrainingRunsTable } from '../components/reports/TrainingRunsTable';
 import { ApiError, api } from '../services/api';
 import type {
   Stage2Availability,
+  TrainingSummary,
   TrainingSummaryCollection,
 } from '../types/api';
 import '../styles/report-components.css';
@@ -24,8 +23,6 @@ interface RunsProps {
   onRunSelect: (runId: string) => void;
 }
 
-const MISSING_MODEL_FILTER = 'missing:';
-const MODEL_FILTER_PREFIX = 'model:';
 const EMPTY_CHILDREN_STATE: TrainingChildrenLoadState = {
   status: 'idle',
   data: null,
@@ -33,24 +30,8 @@ const EMPTY_CHILDREN_STATE: TrainingChildrenLoadState = {
   loaded: false,
 };
 
-function normalizedLabel(value: string | null | undefined): string | null {
-  return value?.trim() || null;
-}
-
-function modelFilterValue(modelName: string | null | undefined): string {
-  const normalizedModel = normalizedLabel(modelName);
-  return normalizedModel ? `${MODEL_FILTER_PREFIX}${normalizedModel}` : MISSING_MODEL_FILTER;
-}
-
 function visibleRunId(runId: string): string {
   return runId.length > 12 ? `${runId.slice(0, 8)}…` : runId;
-}
-
-function processLabel(runType: string): string {
-  if (runType === 'training') return 'TRAIN';
-  if (runType === 'evaluation') return 'EVALUATE';
-  if (runType === 'explainability') return 'EXPLAIN';
-  return runType.toUpperCase();
 }
 
 function childrenCacheKey(datasource: string, trainingRunId: string): string {
@@ -78,6 +59,8 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
   const [selectedRunId, setSelectedRunId] = useState(() => searchParams.get('run') ?? '');
   const [selectedModel, setSelectedModel] = useState(() => searchParams.get('modelo') ?? '');
   const [childrenByKey, setChildrenByKey] = useState<Record<string, TrainingChildrenLoadState>>({});
+  const [childrenOpen, setChildrenOpen] = useState<Record<string, boolean>>({});
+  const [stage2Open, setStage2Open] = useState<Record<string, boolean>>({});
   const childrenByKeyRef = useRef<Record<string, TrainingChildrenLoadState>>({});
   const childrenControllers = useRef(new Map<string, AbortController>());
   const activeDatasource = useRef(datasource);
@@ -292,6 +275,8 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
     childrenByKeyRef.current = {};
     stage2LoadState.current = {};
     setChildrenByKey({});
+    setChildrenOpen({});
+    setStage2Open({});
     setStage2Status({});
     setStage2Loading({});
     setStage2Errors({});
@@ -337,53 +322,12 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
     return result;
   }, [loadedChildren]);
 
-  const runOptions = useMemo<ReportFilterOption[]>(() => {
-    if (!summaries) return [];
-    const options = new Map<string, ReportFilterOption>();
-    const addOption = (runId: string, runName: string | null, runType: string) => {
-      options.set(runId, {
-        value: runId,
-        label: `${processLabel(runType)} · ${normalizedLabel(runName) || 'No registrado'} · ${visibleRunId(runId)}`,
-      });
-    };
-    summaries.items.forEach((training) => addOption(training.run_id, training.run_name, training.run_type));
-    loadedChildren.forEach((children) => {
-      children.evaluations.forEach((run) => {
-        if (run.source_kind === 'assessment_e6') {
-          const key = `assessment:${run.attempt_id}`;
-          options.set(key, { value: key, label: `${run.split === 'test' ? 'TEST' : 'EVALUATE'} · E6 · ${run.split.toUpperCase()} · ${visibleRunId(run.attempt_id)}` });
-        } else addOption(run.run_id, run.run_name, run.run_type);
-      });
-      children.explainabilities.forEach((run) => run.source_kind === 'assessment_explain_e6'
-        ? addOption(`assessment:${run.attempt_id}`, `EXPLAIN E6 ${run.method ?? ''}`, 'explainability')
-        : addOption(run.run_id, run.run_name, run.run_type));
-    });
-    return Array.from(options.values());
-  }, [loadedChildren, summaries]);
-
-  const modelOptions = useMemo<ReportFilterOption[]>(() => {
-    if (!summaries) return [];
-    const options = new Map<string, ReportFilterOption>();
-    summaries.items.forEach((training) => {
-      const modelName = normalizedLabel(training.model_name);
-      options.set(modelFilterValue(modelName), {
-        value: modelFilterValue(modelName),
-        label: modelName || 'No registrado',
-      });
-    });
-    return Array.from(options.values()).sort((left, right) => (
-      left.label.localeCompare(right.label, 'es', { sensitivity: 'base' })
-    ));
-  }, [summaries]);
-
   const filteredTrainings = useMemo(() => summaries?.items.filter((training) => (
     (!selectedRunId
       || training.run_id === selectedRunId
       || childParentByRunId.get(selectedRunId) === training.run_id)
-    && (!selectedModel || modelFilterValue(training.model_name) === selectedModel)
-  )) ?? [], [childParentByRunId, selectedModel, selectedRunId, summaries]);
+  )) ?? [], [childParentByRunId, selectedRunId, summaries]);
 
-  const hasActiveFilters = Boolean(selectedRunId || selectedModel);
   const hasRuns = Boolean(summaries && summaries.items.length > 0);
   const visibleEvaluationCount = filteredTrainings.reduce(
     (total, training) => total + training.evaluation_count,
@@ -393,6 +337,57 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
     (total, training) => total + training.explainability_count,
     0,
   );
+  const runFilterTraining = selectedRunId
+    ? summaries?.items.find((training) => training.run_id === (childParentByRunId.get(selectedRunId) ?? selectedRunId))
+    : undefined;
+
+  const trainingActive = useCallback((training: TrainingSummary) => (
+    isStage2Active(training, stage2Status[training.run_id], stage2Errors[training.run_id])
+  ), [stage2Errors, stage2Status]);
+
+  const toggleChildren = useCallback((training: TrainingSummary) => {
+    const next = !childrenOpen[training.run_id];
+    if (next && training.evaluation_count + training.explainability_count === 0) return;
+    setChildrenOpen((current) => ({ ...current, [training.run_id]: next }));
+    if (next) void loadChildren(training.run_id);
+  }, [childrenOpen, loadChildren]);
+
+  const toggleStage2 = useCallback((runId: string) => {
+    const next = !stage2Open[runId];
+    setStage2Open((current) => ({ ...current, [runId]: next }));
+    if (next) void loadStage2(runId);
+  }, [loadStage2, stage2Open]);
+
+  const renderAnalysis = useCallback((training: TrainingSummary) => (
+    <RunAnalysisCell
+      onRunSelect={onRunSelect}
+      onStage2Toggle={() => toggleStage2(training.run_id)}
+      processKind="training"
+      run={training}
+      stage2Active={trainingActive(training)}
+      stage2ControlsId={`stage2-publication-${training.run_id}`}
+      stage2Expanded={stage2Open[training.run_id] ?? false}
+    />
+  ), [onRunSelect, stage2Open, toggleStage2, trainingActive]);
+
+  const renderDetailPanel = (training: TrainingSummary) => {
+    const key = childrenCacheKey(datasource, training.run_id);
+    return <TrainingRunDetailPanel datasource={datasource}
+      childrenExpanded={childrenOpen[training.run_id] ?? false}
+      childrenState={childrenByKey[key] ?? EMPTY_CHILDREN_STATE}
+      onChildrenPage={(offset) => { void loadChildren(training.run_id, true, offset); }}
+      onChildrenRetry={() => { void loadChildren(training.run_id, true); }}
+      onChildrenToggle={() => toggleChildren(training)}
+      onRunSelect={onRunSelect}
+      onStage2Publish={(replaceExisting) => publishStage2(training.run_id, replaceExisting)}
+      onStage2Retry={() => { void loadStage2(training.run_id, true); }}
+      stage2Error={stage2Errors[training.run_id]}
+      stage2Expanded={stage2Open[training.run_id] ?? false}
+      stage2Loading={stage2Loading[training.run_id] ?? false}
+      stage2Status={stage2Status[training.run_id]}
+      training={training}
+    />;
+  };
 
   if (error) return <section className="panel error">
     <p>{error}</p>
@@ -412,36 +407,13 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
       </div>
       <Link className="report-detail-button" to={withAllowedQuery(routes.comparison, { datasource })}>Análisis de Modelos</Link>
       <section className="panel report-panel">
-        <ReportFilters
-          hasActiveFilters={hasActiveFilters}
-          onClear={() => {
-            setSelectedRunId('');
-            setSelectedModel('');
-            const next = new URLSearchParams(searchParams);
-            next.delete('run');
-            next.delete('modelo');
-            setSearchParams(next);
-          }}
-        >
-          <ReportSelectFilter
-            allLabel="Todos los RUN"
-            disabled={runOptions.length === 0}
-            id="runs-filter-run"
-            label="RUN"
-            onChange={(value) => updateFilter('run', value)}
-            options={runOptions}
-            value={selectedRunId}
-          />
-          <ReportSelectFilter
-            allLabel="Todos los modelos"
-            disabled={modelOptions.length === 0}
-            id="runs-filter-model"
-            label="Modelo"
-            onChange={(value) => updateFilter('modelo', value)}
-            options={modelOptions}
-            value={selectedModel}
-          />
-        </ReportFilters>
+        {selectedRunId ? (
+          <div className="trn-url-filter" role="status">
+            <span>Filtrado por RUN <code title={selectedRunId}>{visibleRunId(selectedRunId.replace(/^assessment:/, ''))}</code>
+              {runFilterTraining ? ` · TRAIN ${runFilterTraining.run_name?.trim() || visibleRunId(runFilterTraining.run_id)}` : ''}</span>
+            <button className="report-detail-button" onClick={() => updateFilter('run', '')} type="button">Quitar filtro</button>
+          </div>
+        ) : null}
         {!hasRuns ? (
           <div className="report-empty-state" role="status">Sin ejecuciones registradas</div>
         ) : filteredTrainings.length === 0 ? (
@@ -455,31 +427,15 @@ export function Runs({ datasource, onRunSelect }: RunsProps) {
               <span><strong>{visibleEvaluationCount}</strong> evaluate vinculados</span>
               <span><strong>{visibleExplainabilityCount}</strong> explain vinculados</span>
             </div>
-            <div aria-label="Entrenamientos agrupados por linaje" className="report-table">
-              <div aria-hidden="true" className="report-table__header">
-                <span className="report-section-title">RUN</span>
-                <span className="report-section-title">Modelo</span>
-                <span className="report-section-title">Resultados</span>
-                <span className="report-section-title">Análisis automático</span>
-              </div>
-              {filteredTrainings.map((training) => {
-                const key = childrenCacheKey(datasource, training.run_id);
-                return <TrainingRunGroupCard datasource={datasource}
-                  childrenState={childrenByKey[key] ?? EMPTY_CHILDREN_STATE}
-                  key={key}
-                  onChildrenExpand={() => { void loadChildren(training.run_id); }}
-                  onChildrenPage={(offset) => { void loadChildren(training.run_id, true, offset); }}
-                  onChildrenRetry={() => { void loadChildren(training.run_id, true); }}
-                  onRunSelect={onRunSelect}
-                  onStage2Open={() => { void loadStage2(training.run_id); }}
-                  onStage2Publish={(replaceExisting) => publishStage2(training.run_id, replaceExisting)}
-                  stage2Error={stage2Errors[training.run_id]}
-                  stage2Loading={stage2Loading[training.run_id] ?? false}
-                  stage2Status={stage2Status[training.run_id]}
-                  training={training}
-                />;
-              })}
-            </div>
+            <TrainingRunsTable
+              isActive={trainingActive}
+              modelFilter={selectedModel}
+              onModelFilterChange={(value) => updateFilter('modelo', value)}
+              onRunSelect={onRunSelect}
+              renderAnalysis={renderAnalysis}
+              renderDetailPanel={renderDetailPanel}
+              trainings={filteredTrainings}
+            />
           </>
         )}
       </section>

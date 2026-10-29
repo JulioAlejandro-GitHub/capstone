@@ -1714,6 +1714,45 @@
   background: var(--ds-bg-subtle);
 }
 
+/* TRAIN report on material-react-table (Ejecuciones and the Análisis selector). */
+.trn-mrt { border: 1px solid #dfe5f0; border-radius: 14px; overflow: hidden; background: #fff; }
+.trn-mrt .MuiTableCell-head { color: #62708f; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; vertical-align: top; }
+.trn-mrt .MuiTableCell-body { padding: 0; vertical-align: top; border-bottom: 0; }
+.trn-mrt .MuiTableCell-body + .MuiTableCell-body { border-left: 1px solid #edf0f6; }
+.trn-mrt .trn-row > .MuiTableCell-body { border-top: 3px solid #0096ff; }
+.trn-mrt .trn-row > .MuiTableCell-body[colspan="4"] {
+    border-top: none;
+}
+.trn-mrt .trn-row:not(.trn-row--with-detail) > .MuiTableCell-body { border-bottom: 1px solid #e1e7f1; }
+.trn-mrt .trn-row--active > .MuiTableCell-body { background: linear-gradient(90deg, #f1faf5, #fff 58%); border-top-color: #1f9d55; }
+.trn-mrt .trn-detail { padding: 0 !important; border-bottom: 10px solid #f6f7fb; }
+.trn-mrt .trn-detail .run-lineage-group__children { border-top: 1px solid #e1e7f1; }
+.trn-mrt .MuiTableCell-body .report-cell { height: 100%; box-sizing: border-box; }
+/* Fixed column widths with wrapping text so the report fits without horizontal scroll. */
+.trn-mrt .report-run-cell { width: 200px; }
+.trn-mrt .report-model-cell { width: 250px; }
+.trn-mrt .report-results-cell { width: 320px; }
+.trn-mrt .report-analysis-cell { width: 280px; }
+.trn-mrt .report-cell p { margin: 0; white-space: normal; overflow-wrap: anywhere; }
+.report-copy-id { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.report-copy-id code { font-size: 12px; }
+.report-copy-id__button { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 1px solid #dfe5f0; border-radius: 6px; background: #fff; color: #315caa; cursor: pointer; }
+.report-copy-id__button:hover { background: #eef3ff; }
+.report-copy-id__button .navigation-icon, .report-copy-id__button svg { width: 14px; height: 14px; }
+.trn-mrt .MuiTableCell-body:has(> .MuiCheckbox-root) { padding: 12px 4px; text-align: center; }
+.trn-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 4px 8px; }
+.trn-toolbar .report-detail-button[aria-pressed="true"] { background: #315caa; color: #fff; }
+.trn-toolbar .report-detail-button:disabled { cursor: not-allowed; opacity: 0.55; }
+.trn-url-filter { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; padding: 10px 14px; border: 1px solid #c9d7f2; border-radius: 10px; background: #f3f7ff; }
+
+.scc-selector-summary { position: sticky; top: 0; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 12px; padding: 12px 14px; border: 1px solid var(--ds-border-default, #e3e7f0); border-radius: var(--ds-radius-lg, 8px); background: var(--ds-bg-subtle, #f6f7fb); }
+.scc-selector-summary > p { flex: 1 1 320px; margin: 0; }
+.scc-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; flex: 1 1 100%; order: 2; }
+.scc-selected-chips li { display: inline-flex; align-items: center; gap: 4px; max-width: 320px; padding: 3px 4px 3px 10px; border: 1px solid var(--ds-action-fg, #315caa); border-radius: 999px; background: var(--ds-bg-selected, #eef3ff); font-size: 12px; }
+.scc-selected-chips li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scc-selected-chips button { border: 0; border-radius: 999px; background: transparent; cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 6px; }
+.scc-selected-chips button:hover { background: rgba(49, 92, 170, 0.15); }
+
 /* SCC-UI-PREFLIGHT.2: reusable structured values within scientific reports. */
 .ds-report .scc-composite-value { list-style: none; padding: 0; margin-block: var(--ds-space-2); }
 .ds-report .scc-composite-value .scc-key { color: var(--ds-action-fg); font-weight: var(--ds-weight-medium); }
@@ -1731,3 +1770,4 @@
 
 .ds-report.scc-page .scc-compact-id > code { display: inline; margin: 0; }
 .ds-report .scc-composite-value li > .scc-val { display: inline; }
+

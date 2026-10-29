@@ -28,7 +28,7 @@ test('2 carga inicial excluye grouped, Stage 2, productivo e hijos', () => {
 test('3 colección controlada representa 24 TRAIN y la página itera sus items', () => {
   const fixture = Array.from({ length: 24 }, (_, index) => ({ run_id: `train-${index}`, run_type: 'training' }));
   assert.equal(fixture.length, 24);
-  assert.match(runs, /filteredTrainings\.map\(\(training\)/);
+  assert.match(runs, /trainings=\{filteredTrainings\}/);
 });
 
 test('4 filtros, URL y navegación de detalle se conservan', () => {
@@ -192,7 +192,7 @@ test('35 aria-controls referencia el id estable del panel', () => {
 });
 
 test('36 expansión usa button nativo operable con Enter y Espacio', () => {
-  assert.match(group, /<button[^]*onClick=\{toggleChildren\}[^]*type="button"/);
+  assert.match(group, /<button[^]*onClick=\{onChildrenToggle\}[^]*type="button"/);
 });
 
 test('37 modelo activo comunica su estado mediante texto', () => {

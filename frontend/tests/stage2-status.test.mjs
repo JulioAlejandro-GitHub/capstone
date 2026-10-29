@@ -283,7 +283,7 @@ test('the page consumes one canonical release response and clears stale status o
   assert.doesNotMatch(load, /getStage2Availability|Promise\.all/);
   assert.match(load, /delete next\[runId\]/);
   assert.doesNotMatch(load, /eligible:\s*false/);
-  assert.match(read('components/reports/TrainingRunGroupCard.tsx'), /onRetry=\{onStage2Open\}/);
+  assert.match(read('components/reports/TrainingRunGroupCard.tsx'), /onRetry=\{onStage2Retry\}[^]*onStage2Retry=\{onStage2Open\}/);
 });
 
 test('logical TRAIN explicitly reports incorporation without computational training', () => {

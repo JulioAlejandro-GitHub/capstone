@@ -18,6 +18,13 @@ export type TrainingChildrenLoadState = {
   loaded: boolean;
 };
 
+/** Canonical availability wins over the persisted summary; a status error never shows a stale productive summary. */
+export function isStage2Active(training: TrainingSummary, stage2Status?: Stage2Availability, stage2Error?: string): boolean {
+  return stage2Status
+    ? stage2Status.is_stage2_available === true && stage2Status.available_for_inference === true
+    : !stage2Error && training.release_status === 'productive_stage2';
+}
+
 interface TrainingRunGroupCardProps {
   datasource: string;
   training: TrainingSummary;
@@ -33,62 +40,38 @@ interface TrainingRunGroupCardProps {
   onStage2Publish: (replaceExisting: boolean) => Promise<'published' | 'replacement-required' | 'failed'>;
 }
 
-export function TrainingRunGroupCard({
+type TrainingRunDetailPanelProps = Omit<TrainingRunGroupCardProps, 'onChildrenExpand' | 'onStage2Open'> & {
+  childrenExpanded: boolean;
+  onChildrenToggle: () => void;
+  stage2Expanded: boolean;
+  onStage2Retry: () => void;
+};
+
+/** Derived pipeline (EVALUATE / EXPLAIN) and the release panel of one TRAIN; expansion state is owned by the caller. */
+export function TrainingRunDetailPanel({
   datasource,
   training,
   childrenState,
-  onChildrenExpand,
+  childrenExpanded,
+  onChildrenToggle,
   onChildrenRetry,
   onChildrenPage,
   onRunSelect,
   stage2Status,
   stage2Loading,
   stage2Error,
-  onStage2Open,
+  stage2Expanded,
+  onStage2Retry,
   onStage2Publish,
-}: TrainingRunGroupCardProps) {
-  const [childrenExpanded, setChildrenExpanded] = useState(false);
-  const [stage2Expanded, setStage2Expanded] = useState(false);
+}: TrainingRunDetailPanelProps) {
   const childrenPanelId = `lineage-children-${training.run_id}`;
-  const stage2PanelId = `stage2-publication-${training.run_id}`;
   const linkedCount = training.evaluation_count + training.explainability_count;
-
-  const toggleChildren = () => {
-    if (linkedCount === 0 && !childrenExpanded) return;
-    const next = !childrenExpanded;
-    setChildrenExpanded(next);
-    if (next) onChildrenExpand();
-  };
-
-  const toggleStage2 = () => {
-    const next = !stage2Expanded;
-    setStage2Expanded(next);
-    if (next) onStage2Open();
-  };
-
-  const stage2Active = stage2Status
-    ? stage2Status.is_stage2_available === true && stage2Status.available_for_inference === true
-    : !stage2Error && training.release_status === 'productive_stage2';
-
   const loadedChildren = childrenState.data;
   const visibleChildren = (loadedChildren?.evaluations.length ?? 0)
     + (loadedChildren?.explainabilities.length ?? 0);
 
   return (
-    <article
-      aria-label={`Entrenamiento ${training.run_name?.trim() || training.run_id}`}
-      className={`run-lineage-group training-card ${stage2Active ? 'training-card--stage2-production' : ''}`}
-    >
-      <RunSummaryRow
-        onRunSelect={onRunSelect}
-        processKind="training"
-        run={training}
-        stage2Active={stage2Active}
-        stage2Expanded={stage2Expanded}
-        stage2ControlsId={stage2PanelId}
-        onStage2Toggle={toggleStage2}
-      />
-
+    <>
       <section className="run-lineage-group__children" aria-label="Procesos derivados del entrenamiento">
         <header className="run-lineage-group__children-heading">
           <div>
@@ -103,7 +86,7 @@ export function TrainingRunGroupCard({
             aria-expanded={childrenExpanded}
             className="lineage-children-toggle"
             disabled={linkedCount === 0 && !childrenExpanded}
-            onClick={toggleChildren}
+            onClick={onChildrenToggle}
             type="button"
           >
             {childrenExpanded
@@ -111,7 +94,6 @@ export function TrainingRunGroupCard({
               : linkedCount === 0 ? 'Sin ejecuciones asociadas' : 'Mostrar ejecuciones'}
           </button>
         </header>
-
         {childrenExpanded ? (
           <div className="run-lineage-group__children-panel" id={childrenPanelId}>
             {childrenState.status === 'loading' ? (
@@ -174,15 +156,57 @@ export function TrainingRunGroupCard({
 
       {stage2Expanded ? (
         <Stage2PublicationPanel
-          onRetry={onStage2Open}
+          onRetry={onStage2Retry}
           error={stage2Error}
           explainCount={training.explainability_count}
-          id={stage2PanelId}
+          id={`stage2-publication-${training.run_id}`}
           loading={stage2Loading}
           onPublish={onStage2Publish}
           status={stage2Status}
         />
       ) : null}
+    </>
+  );
+}
+
+export function TrainingRunGroupCard(props: TrainingRunGroupCardProps) {
+  const { training, onChildrenExpand, onStage2Open, onRunSelect, stage2Status, stage2Error } = props;
+  const linkedCount = training.evaluation_count + training.explainability_count;
+  const [childrenExpanded, setChildrenExpanded] = useState(false);
+  const [stage2Expanded, setStage2Expanded] = useState(false);
+  const stage2PanelId = `stage2-publication-${training.run_id}`;
+
+  const toggleChildren = () => {
+    if (linkedCount === 0 && !childrenExpanded) return;
+    const next = !childrenExpanded;
+    setChildrenExpanded(next);
+    if (next) onChildrenExpand();
+  };
+
+  const toggleStage2 = () => {
+    const next = !stage2Expanded;
+    setStage2Expanded(next);
+    if (next) onStage2Open();
+  };
+
+  const stage2Active = isStage2Active(training, stage2Status, stage2Error);
+
+  return (
+    <article
+      aria-label={`Entrenamiento ${training.run_name?.trim() || training.run_id}`}
+      className={`run-lineage-group training-card ${stage2Active ? 'training-card--stage2-production' : ''}`}
+    >
+      <RunSummaryRow
+        onRunSelect={onRunSelect}
+        processKind="training"
+        run={training}
+        stage2Active={stage2Active}
+        stage2Expanded={stage2Expanded}
+        stage2ControlsId={stage2PanelId}
+        onStage2Toggle={toggleStage2}
+      />
+      <TrainingRunDetailPanel {...props} childrenExpanded={childrenExpanded} onChildrenToggle={toggleChildren}
+        stage2Expanded={stage2Expanded} onStage2Retry={onStage2Open} />
     </article>
   );
 }

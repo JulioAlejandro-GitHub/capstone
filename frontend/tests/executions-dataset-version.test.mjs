@@ -14,5 +14,6 @@ const types = readFileSync(
 test('TRAIN muestra el dataset-version-id persistido', () => {
   assert.match(types, /dataset_version_id\?: string \| null/);
   assert.match(row, /processKind === 'training'/);
-  assert.match(row, /dataset-version-id: \{run\.dataset_version_id \|\| 'No registrado'\}/);
+  assert.match(row, /<CopyableId caption="dataset-version-id" value=\{run\.dataset_version_id\} \/>/);
+  assert.match(row, /\{caption\}: No registrado/);
 });

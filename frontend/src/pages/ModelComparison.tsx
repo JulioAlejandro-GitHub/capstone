@@ -3,7 +3,8 @@ import { EvaluationNavigation } from '../components/reports/ScientificReport';
 import type { RequestedSelection } from '../types/scientificPreflight';
 import { useAuth } from '../auth';
 import { ScientificPreflight } from '../components/reports/ScientificPreflight';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import type { MRT_ColumnDef } from 'material-react-table';
 import { useSearchParams } from 'react-router-dom';
 import { defaultEvaluationSlot, evaluationSlots, type EvaluationSlot } from '../utils/lineageSlots';
 const isEvaluationSlot = (value: string | null): value is EvaluationSlot => evaluationSlots.some(slot => slot.id === value);
@@ -11,7 +12,9 @@ import { TraceabilityProvider, defaultAnalysisSection, isAnalysisSection, type A
 import { useComparisonCatalog } from '../hooks/useComparisonCatalog';
 import { useComparisonSelection } from '../hooks/useComparisonSelection';
 import { ComparisonRunCard } from '../components/reports/ComparisonRunCard';
-import { RunSummaryRow } from '../components/reports/RunSummaryRow';
+import { TrainingRunsTable } from '../components/reports/TrainingRunsTable';
+import { isStage2Active } from '../components/reports/TrainingRunGroupCard';
+import type { TrainingSummary } from '../types/api';
 import { useComparisonTrainingSummaries } from '../hooks/useComparisonTrainingSummaries';
 import '../styles/ds-primitives.css';
 import '../styles/report-components.css';
@@ -26,7 +29,6 @@ function ComparisonPage({ datasource }: { datasource: string }) {
   const selections = ids.map(id => evaluations[id] ?? { training_run_id: id });
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
-  const [query, setQuery] = useState('');
   const [selectorLoaded, setSelectorLoaded] = useState(false);
   const [trayOpen, setTrayOpen] = useState(true);
   const [lineageRevision, setLineageRevision] = useState(0);
@@ -61,13 +63,28 @@ function ComparisonPage({ datasource }: { datasource: string }) {
   const maximum = catalog?.comparison.scc_max_comparison_runs;
   const available = maximum === undefined ? 0 : Math.max(0, maximum - ids.length);
   const choices = catalog?.items.flatMap(model => model.training_runs.map(run => ({ model, run }))) ?? [];
-  const filtered = summaries?.items.filter(run => {
-    const model = choices.find(choice => choice.run.training_run_id === run.run_id)?.model;
-    return `${run.model_name ?? ''} ${model?.architecture ?? ''} ${run.run_id} ${run.run_name ?? ''}`.toLowerCase().includes(query.toLowerCase());
-  }) ?? [];
+  const eligibilityOf = useCallback((runId: string) => catalog?.items
+    .flatMap(model => model.training_runs).find(run => run.training_run_id === runId)?.eligibility, [catalog]);
+  const eligibilityColumn = useMemo<MRT_ColumnDef<TrainingSummary>[]>(() => [{
+    id: 'eligibility', header: 'Elegibilidad', size: 210, enableColumnFilter: false, enableGlobalFilter: false,
+    accessorFn: row => eligibilityOf(row.run_id)?.eligible ? 'Seleccionable' : 'No seleccionable',
+    Cell: ({ row }) => {
+      const eligibility = eligibilityOf(row.original.run_id);
+      return <div className="report-cell">
+        <ComparisonEligibilityStatus eligibility={eligibility} />
+        {eligibility?.reasons.some(reason => reason.code === 'ERROR_DE_CONSULTA') &&
+          <button className="ds-button" onClick={retry}>Reintentar elegibilidad</button>}
+      </div>;
+    },
+  }], [eligibilityOf, retry]);
+  const runLabel = (id: string) => {
+    const run = summaries?.items.find(item => item.run_id === id);
+    const model = choices.find(choice => choice.run.training_run_id === id)?.model;
+    return run?.model_name || model?.model_name || run?.run_name || id;
+  };
+  const activeTraining = useCallback((training: TrainingSummary) => isStage2Active(training), []);
   const openSelector = (button: HTMLButtonElement) => {
     trigger.current = button;
-    setQuery('');
     setSelectorLoaded(true);
     dialog.current?.showModal();
   };
@@ -107,23 +124,21 @@ function ComparisonPage({ datasource }: { datasource: string }) {
       <form method="dialog" className="xai-modal-close"><button type="submit" className="ds-button" aria-label="Cerrar vista ampliada" title="Cerrar" autoFocus>
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
       </button></form></div>
-      <p>Seleccionadas: {ids.length} / {maximum ?? '—'}. Cada identificador corresponde a un TRAIN concreto.</p>
-      <label>Buscar modelo, arquitectura o identificador<input autoFocus className="ds-control" value={query} onChange={event => setQuery(event.target.value)} /></label>
+      <div className="scc-selector-summary" aria-live="polite">
+        <p><strong>Seleccionadas: {ids.length} / {maximum ?? '—'}</strong>. La selección se conserva al cambiar de página, buscar o filtrar; cada identificador corresponde a un TRAIN concreto.</p>
+        {ids.length > 0 ? <ul className="scc-selected-chips" aria-label="Ejecuciones seleccionadas">{ids.map((id, index) =>
+          <li key={id} title={id}><span>RUN {String.fromCharCode(65 + index)} · {runLabel(id)}</span>
+            <button type="button" aria-label={`Quitar ${runLabel(id)} de la selección`} onClick={() => remove(id)}>×</button></li>)}
+        </ul> : <p className="scc-meta">Marca la casilla de cada TRAIN que quieras analizar.</p>}
+        <form method="dialog"><button type="submit" className="ds-button" data-variant="primary" disabled={!ids.length}>
+          {ids.length > 1 ? `Comparar ${ids.length} RUN` : 'Analizar RUN seleccionado'}</button></form>
+      </div>
       {summariesError && <div role="alert"><p>{summariesError}</p><button className="ds-button" onClick={retrySummaries}>Reintentar carga</button></div>}
       {!summaries && !summariesError && <p role="status">Cargando resúmenes de Ejecuciones…</p>}
-      <ul className="scc-choices">{filtered.map(run => {
-        const eligibility = choices.find(choice => choice.run.training_run_id === run.run_id)?.run.eligibility;
-        return <li key={run.run_id} data-selected={ids.includes(run.run_id)}>
-        <label><input type="checkbox" checked={ids.includes(run.run_id)} disabled={!ids.includes(run.run_id) && (!available || !eligibility?.eligible)}
-          onChange={event => event.target.checked && eligibility?.eligible && maximum !== undefined ? add(run.run_id, maximum) : remove(run.run_id)} />
-          {ids.includes(run.run_id) ? 'Seleccionado' : 'Seleccionar'}: {run.model_name || run.run_name || run.run_id}
-        </label>
-        <ComparisonEligibilityStatus eligibility={eligibility} />
-        {eligibility?.reasons.some(reason => reason.code === 'ERROR_DE_CONSULTA') &&
-          <button className="ds-button" onClick={retry}>Reintentar elegibilidad</button>}
-        <RunSummaryRow run={run} processKind="training" variant="compact" onRunSelect={() => {}} />
-      </li>; })}</ul>
-      {summaries && !filtered.length && <p>Sin ejecuciones TRAIN disponibles para esta búsqueda.</p>}
+      {summaries && <TrainingRunsTable inDialog variant="compact" trainings={summaries.items} isActive={activeTraining}
+        onRunSelect={() => {}} extraColumns={eligibilityColumn}
+        selection={{ ids, maximum, canSelect: run => Boolean(eligibilityOf(run.run_id)?.eligible),
+          onChange: (id, selected) => selected ? maximum !== undefined && add(id, maximum) : remove(id) }} />}
       {summaries && summaries.count >= summaries.limit && <p role="status">Se muestran hasta {summaries.limit} entrenamientos recientes.</p>}
     </dialog>
   </section></TraceabilityProvider>;
