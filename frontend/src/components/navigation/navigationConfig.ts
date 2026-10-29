@@ -2,7 +2,8 @@ import { routes } from '../../router';
 
 export type NavigationIconName =
   | 'dashboard' | 'activity' | 'evaluation' | 'compare' | 'package' | 'rocket'
-  | 'trace' | 'explain' | 'prediction' | 'database' | 'datasets' | 'logs';
+  | 'trace' | 'explain' | 'prediction' | 'database' | 'datasets' | 'logs'
+  | 'stethoscope' | 'microscope' | 'percent' | 'boxes';
 
 export type NavigationGroup = {
   id: string;
@@ -34,7 +35,7 @@ const modelAiGroups: NavigationGroup[] = [
     id: 'experimentation', label: 'Experimentación', items: [
       { id: 'runs', label: 'Ejecuciones', path: routes.runs, icon: 'activity' },
       { id: 'campaign', label: 'Campaña', path: routes.campaigns, icon: 'compare' },
-      { id: 'comparison', label: 'Análisis de Modelos', path: routes.comparison, icon: 'compare' },
+      { id: 'comparison', label: 'Análisis de Modelos', path: routes.comparison, icon: 'percent' },
     ]
   },
   {
@@ -50,12 +51,12 @@ export const navigationModules: NavigationModule[] = [
     id: 'smear-analysis',
     label: 'Análisis de frotis',
     pathPrefix: '/frotis',
-    icon: 'prediction',
+    icon: 'stethoscope',
     groups: [{
       id: 'smear-operation',
       label: 'Operación',
       items: [
-        { id: 'smear-workflow', label: 'Analizar imagen', path: routes.smearWorkflow, icon: 'prediction' },
+        { id: 'smear-workflow', label: 'Analizar imagen', path: routes.smearWorkflow, icon: 'microscope' },
         { id: 'smear-history', label: 'Historial de análisis', path: routes.smearHistory, icon: 'activity' },
       ],
     }],

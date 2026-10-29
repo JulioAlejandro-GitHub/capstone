@@ -6,7 +6,7 @@ import { StatusBadge } from '../StatusBadge';
 export function AssessmentExplanationCard({assessment, datasource}: {
   assessment: AssessmentExplanationChild; datasource: string;
 }) {
-  return <article className="lineage-child-card" aria-label={`EXPLAIN E6 ${assessment.attempt_id}`}>
+  return <article className="lineage-child-card lineage-child-card--explainability" aria-label={`EXPLAIN ${assessment.attempt_id}`}>
     <strong>EXPLAIN E6 · {assessment.method ?? 'Método no registrado'}</strong>
     <StatusBadge status={assessment.state} />
     <p>Intento: {assessment.attempt_id} · #{assessment.ordinal}</p>
