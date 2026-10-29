@@ -124,7 +124,7 @@ test('selector reuses the report row, preserving full report secondary sections'
   const compact = renderToStaticMarkup(React.createElement(Row, {run, processKind: 'training', variant: 'compact', onRunSelect() {}}));
   const full = renderToStaticMarkup(React.createElement(Row, {run, processKind: 'training', onRunSelect() {}}));
   assert.match(compact, /report-row--compact/);
-  assert.match(compact, /Consultar UUID completo/);
+  assert.doesNotMatch(compact, /Consultar UUID completo|Inicio:|Dataset:/);
   assert.match(compact, /12345678-full-uuid/);
   assert.match(compact, /0.02/);
   assert.match(compact, /run-scientific-parameters/);

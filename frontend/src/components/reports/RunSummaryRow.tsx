@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StatusBadge } from '../StatusBadge';
 import { NavigationIcon } from '../navigation/NavigationIcon';
 import type { RunDashboard, TrainingSummary } from '../../types/api';
-import { formatDate, getRunDuration } from '../../utils/format';
+import { getRunDuration } from '../../utils/format';
 import {
   generateRunAutoAnalysis,
   resolveRunConfusion,
@@ -40,18 +40,13 @@ function CopyableId({ caption, value }: { caption: string; value: string | null 
 
 type RunCellProps = Pick<RunSummaryRowProps, 'run' | 'variant' | 'processKind'>;
 
-export function RunIdentityCell({ run, variant = 'full', processKind }: RunCellProps) {
+export function RunIdentityCell({ run, processKind }: RunCellProps) {
   return <>
     {processKind ? <RunProcessBadge kind={processKind} /> : null}
     <strong className="report-run-name">
       {run.run_name?.trim() || 'No registrado 1'}
     </strong>
     <CopyableId caption="Run ID" value={run.run_id} />
-    {variant === 'compact' ? <>
-      <details><summary>Consultar UUID completo</summary><code className="report-identifier">{run.run_id}</code></details>
-      <span className="report-muted">Inicio: {formatDate(run.started_at)}</span>
-      <span className="report-muted">Dataset: {run.dataset_name || 'No registrado'}</span>
-    </> : null}
     {processKind === 'training' ? <CopyableId caption="dataset-version-id" value={run.dataset_version_id} /> : null}
     <div className="report-inline-facts">
       <StatusBadge status={run.status} />

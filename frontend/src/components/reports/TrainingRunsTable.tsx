@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import {
   MaterialReactTable,
+  MRT_SelectCheckbox,
   useMaterialReactTable,
   type MRT_ColumnDef,
   type MRT_ColumnFiltersState,
@@ -55,6 +56,8 @@ export interface TrainingRunsSelection {
   /** Whether a not-yet-selected TRAIN may be added; selected rows can always be removed. */
   canSelect: (training: TrainingSummary) => boolean;
   onChange: (id: string, selected: boolean) => void;
+  /** Shown under the checkbox, e.g. why a TRAIN cannot be selected. */
+  renderStatus?: (training: TrainingSummary) => ReactNode;
 }
 
 interface TrainingRunsTableProps {
@@ -203,6 +206,16 @@ export function TrainingRunsTable({
       ? row => selection.ids.includes(row.original.run_id) || (available > 0 && selection.canSelect(row.original))
       : false,
     enableMultiRowSelection: true, enableSelectAll: false,
+    displayColumnDefOptions: {
+      'mrt-row-select': {
+        header: '', size: 52, grow: false,
+        muiTableHeadCellProps: { 'aria-label': 'Seleccionar' },
+        Cell: ({ row, staticRowIndex, table: instance }) => <div className="trn-select-cell">
+          <MRT_SelectCheckbox row={row} staticRowIndex={staticRowIndex} table={instance} />
+          {selection?.renderStatus?.(row.original)}
+        </div>,
+      },
+    },
     onRowSelectionChange: updater => {
       if (!selection) return;
       const next = typeof updater === 'function' ? updater(rowSelection) : updater;

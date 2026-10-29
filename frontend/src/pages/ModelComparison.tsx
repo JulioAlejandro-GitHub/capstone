@@ -3,8 +3,7 @@ import { EvaluationNavigation } from '../components/reports/ScientificReport';
 import type { RequestedSelection } from '../types/scientificPreflight';
 import { useAuth } from '../auth';
 import { ScientificPreflight } from '../components/reports/ScientificPreflight';
-import { useCallback, useMemo, useRef, useState } from 'react';
-import type { MRT_ColumnDef } from 'material-react-table';
+import { useCallback, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { defaultEvaluationSlot, evaluationSlots, type EvaluationSlot } from '../utils/lineageSlots';
 const isEvaluationSlot = (value: string | null): value is EvaluationSlot => evaluationSlots.some(slot => slot.id === value);
@@ -65,18 +64,6 @@ function ComparisonPage({ datasource }: { datasource: string }) {
   const choices = catalog?.items.flatMap(model => model.training_runs.map(run => ({ model, run }))) ?? [];
   const eligibilityOf = useCallback((runId: string) => catalog?.items
     .flatMap(model => model.training_runs).find(run => run.training_run_id === runId)?.eligibility, [catalog]);
-  const eligibilityColumn = useMemo<MRT_ColumnDef<TrainingSummary>[]>(() => [{
-    id: 'eligibility', header: 'Elegibilidad', size: 210, enableColumnFilter: false, enableGlobalFilter: false,
-    accessorFn: row => eligibilityOf(row.run_id)?.eligible ? 'Seleccionable' : 'No seleccionable',
-    Cell: ({ row }) => {
-      const eligibility = eligibilityOf(row.original.run_id);
-      return <div className="report-cell">
-        <ComparisonEligibilityStatus eligibility={eligibility} />
-        {eligibility?.reasons.some(reason => reason.code === 'ERROR_DE_CONSULTA') &&
-          <button className="ds-button" onClick={retry}>Reintentar elegibilidad</button>}
-      </div>;
-    },
-  }], [eligibilityOf, retry]);
   const runLabel = (id: string) => {
     const run = summaries?.items.find(item => item.run_id === id);
     const model = choices.find(choice => choice.run.training_run_id === id)?.model;
@@ -136,9 +123,10 @@ function ComparisonPage({ datasource }: { datasource: string }) {
       {summariesError && <div role="alert"><p>{summariesError}</p><button className="ds-button" onClick={retrySummaries}>Reintentar carga</button></div>}
       {!summaries && !summariesError && <p role="status">Cargando resúmenes de Ejecuciones…</p>}
       {summaries && <TrainingRunsTable inDialog variant="compact" trainings={summaries.items} isActive={activeTraining}
-        onRunSelect={() => {}} extraColumns={eligibilityColumn}
+        onRunSelect={() => {}}
         selection={{ ids, maximum, canSelect: run => Boolean(eligibilityOf(run.run_id)?.eligible),
-          onChange: (id, selected) => selected ? maximum !== undefined && add(id, maximum) : remove(id) }} />}
+          onChange: (id, selected) => selected ? maximum !== undefined && add(id, maximum) : remove(id),
+          renderStatus: run => <ComparisonEligibilityStatus eligibility={eligibilityOf(run.run_id)} onRetry={retry} /> }} />}
       {summaries && summaries.count >= summaries.limit && <p role="status">Se muestran hasta {summaries.limit} entrenamientos recientes.</p>}
     </dialog>
   </section></TraceabilityProvider>;

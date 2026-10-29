@@ -1734,12 +1734,21 @@
 .trn-mrt .report-results-cell { width: 320px; }
 .trn-mrt .report-analysis-cell { width: 280px; }
 .trn-mrt .report-cell p { margin: 0; white-space: normal; overflow-wrap: anywhere; }
+/* Matrix and metrics side by side when they fit, stacked otherwise; the split note spans the whole cell. */
+.trn-mrt .report-results-cell { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); align-items: start; }
+.trn-mrt .report-results-cell > .report-muted { grid-column: 1 / -1; }
+.trn-select-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 6px; }
+.scc-eligibility { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1px solid currentColor; border-radius: 999px; background: #fff; font-size: 13px; font-weight: 700; line-height: 1; cursor: help; }
+.scc-eligibility[data-state="eligible"] { color: #1f7a45; }
+.scc-eligibility[data-state="blocked"], .scc-eligibility[data-state="unknown"] { color: #8a94a8; }
+.scc-eligibility[data-state="error"] { color: #b42318; }
+button.scc-eligibility { cursor: pointer; padding: 0; }
 .report-copy-id { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .report-copy-id code { font-size: 12px; }
 .report-copy-id__button { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 1px solid #dfe5f0; border-radius: 6px; background: #fff; color: #315caa; cursor: pointer; }
 .report-copy-id__button:hover { background: #eef3ff; }
 .report-copy-id__button .navigation-icon, .report-copy-id__button svg { width: 14px; height: 14px; }
-.trn-mrt .MuiTableCell-body:has(> .MuiCheckbox-root) { padding: 12px 4px; text-align: center; }
+.trn-mrt .MuiTableCell-root:first-child:has(.trn-select-cell), .trn-mrt .MuiTableCell-head:first-child { padding-inline: 4px; }
 .trn-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 4px 8px; }
 .trn-toolbar .report-detail-button[aria-pressed="true"] { background: #315caa; color: #fff; }
 .trn-toolbar .report-detail-button:disabled { cursor: not-allowed; opacity: 0.55; }
