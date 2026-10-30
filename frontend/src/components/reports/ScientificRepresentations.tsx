@@ -75,6 +75,7 @@ type Point = {x: number; y: number; sample: string; label: number; predicted: nu
 // Copy and «Vista ampliada» only make sense once pinned: the hover tooltip ignores the pointer.
 function PointDetails({point, pinned, onOpen}: {point: Point; pinned?: boolean; onOpen?: (sample: string) => void}) {
   return <dl className="xai-outcome xai-tooltip">
+    {point.sample}
     <div data-correct={0 == point.label}>
       <dt>Clase real</dt>
       <dd>{point.label === 1 ? 'Parasitada' : point.label === 0 ? 'No parasitada' : 'No registrada'}</dd>
@@ -93,6 +94,16 @@ function PointDetails({point, pinned, onOpen}: {point: Point; pinned?: boolean; 
       <code title={point.sample}>{shortSample(point.sample)}</code>
       {pinned && <CopyText text={point.sample} label="Copiar muestra" iconOnly />}
     </span>
+
+    {/* 
+    <div class="xai-image-frame scc-sample-thumb">
+      <button type="button" class="xai-image-button" aria-label="Ver célula 004cc347-5232-5b5a-ac2b-ee6629dbad37 y su explicabilidad" title="Vista ampliada: célula original y explicabilidad por RUN">
+        <img class="report-scientific-image" alt="Célula original 004cc347-5232-5b5a-ac2b-ee6629dbad37" src="blob:http://localhost/30977208-fc9a-426c-9d6f-4edce86e2cb3">
+      </button>
+    </div> 
+    */}
+
+
     {pinned && onOpen && <button type="button" className="ds-button scc-tooltip-link" data-size="compact" onClick={() => onOpen(point.sample)}>Vista ampliada</button>}
   </dl>;
 }
