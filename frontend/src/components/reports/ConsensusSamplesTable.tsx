@@ -44,15 +44,15 @@ data, labels, pagination, onPagination, sorting, onSorting, columnFilters, onCol
   const runs = data.coverage?.length ?? 0;
   const source = data.sources?.find(Boolean) ?? null;
   const columns = useMemo<MRT_ColumnDef<Sample>[]>(() => [
-    { id: 'sample', header: 'Muestra', accessorKey: 'sample', size: 230,
+    { id: 'sample', header: 'Muestra', accessorKey: 'sample', size: 150,
       Cell: ({ row }) => <span className="scc-sample-id"><code title={row.original.sample}>{shortSample(row.original.sample)}</code><CopyText text={row.original.sample} label="Copiar muestra" iconOnly /></span> },
     // Filter values are what the backend expects: label 0/1 and the category key ('all' is the empty filter).
     { id: 'label', header: 'Clase real', accessorFn: row => row.label === 1 ? 'Parasitada' : 'No parasitada', size: 150,
       filterVariant: 'select', filterSelectOptions: [{ text: 'Parasitada', value: '1' }, { text: 'No parasitada', value: '0' }] },
-    { id: 'category', header: 'Categoría', accessorFn: row => labels[row.category] ?? row.category, size: 210,
+    { id: 'category', header: 'Categoría', accessorFn: row => labels[row.category] ?? row.category, size: 230,
       filterVariant: 'select', filterSelectOptions: Object.entries(labels).filter(([key]) => key !== 'all').map(([value, text]) => ({ text, value })) },
     ...Array.from({ length: runs }, (_, index): MRT_ColumnDef<Sample> => ({
-      id: `run-${index}`, header: runLabel(index), size: 190, accessorFn: row => row.runs[index]?.score ?? null,
+      id: `run-${index}`, header: runLabel(index), size: 175, accessorFn: row => row.runs[index]?.score ?? null,
       Cell: ({ row }) => {
         const result = row.original.runs[index];
         return result ? <span className="scc-run-result" data-correct={result.correct}>{result.correct ? 'Acierto' : 'Error'} · clase {result.prediction}<small>score {score(result.score)}</small></span> : '—';
