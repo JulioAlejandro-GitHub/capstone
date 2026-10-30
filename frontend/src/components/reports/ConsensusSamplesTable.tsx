@@ -21,7 +21,7 @@ function SampleThumbnail({ sample, source, datasource, onOpen }: { sample: strin
   const resource = useScientificArtifact(source ? { source: 'dataset_sample', trainingRunId: source.training_run_id, datasetVersionId: source.dataset_version_id,
     sampleId: sample, attemptId: source.attempt_id } : undefined, datasource, Boolean(source));
   const image = resource.url ? <img className="report-scientific-image" src={resource.url} alt={`Célula original ${sample}`} />
-    : <small className="scc-meta">{resource.loading ? 'Cargando…' : source ? 'Sin imagen' : 'Sin linaje'}</small>;
+    : <small className="scc-meta" title={resource.failure?.message}>{resource.loading ? 'Cargando…' : source ? 'Sin imagen' : 'Sin linaje'}</small>;
   return <div className="xai-image-frame scc-sample-thumb">
     {onOpen ? <button type="button" className="xai-image-button" onClick={() => onOpen(sample)} aria-label={`Ver célula ${sample} y su explicabilidad`}
       title="Vista ampliada: célula original y explicabilidad por RUN">{image}</button> : image}

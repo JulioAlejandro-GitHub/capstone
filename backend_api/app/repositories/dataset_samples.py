@@ -1,11 +1,11 @@
 """Read-only bridge to the same governed sample identities consumed by EXPLAIN."""
 from collections import Counter
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import text
 from app.db import read_only_transaction, resolve_datasource
-from src.malaria_dl.data.governed_dataset import GovernedDatasetSnapshot, resolve_training_run_dataset
-from src.malaria_dl.data.sample_repository import select_dataset_sample_ids, select_dataset_sample_records
+from src.malaria_dl.data.governed_dataset import GovernedDatasetSnapshot, local_dataset_root, training_dataset_metadata
 
 
 class DatasetSampleReadRepository:
@@ -24,17 +24,33 @@ class DatasetSampleReadRepository:
 
     def training_dataset(self, datasource: str | None, training_run_id: str) -> GovernedDatasetSnapshot:
         resolve_datasource(datasource)
-        # Inspection only: execution verification persists audit evidence and is not a read API.
-        # Verify governed DB metadata here and only the requested binary in the service.
-        return resolve_training_run_dataset(training_run_id, required_splits=())
+        # Serving one image: the TRAIN's persisted snapshot (frozen version, its root) is enough. The full population
+        # was verified when TRAIN/EVALUATE/EXPLAIN ran; the service checks the requested file's SHA-256.
+        persisted = training_dataset_metadata(training_run_id)
+        return GovernedDatasetSnapshot(
+            UUID(persisted['dataset_version_id']), UUID(persisted['dataset_materialization_id']),
+            local_dataset_root(persisted['dataset_root']), persisted['patient_assignment_fingerprint'],
+            persisted['record_assignment_fingerprint'], persisted['source_population_fingerprint'],
+            persisted['clinical_identity_fingerprint'], persisted['counts'])
 
     def sample_reference(self, datasource: str | None, dataset_version_id: str,
                          split: str, sample_id: str) -> tuple[dict[str, Any], Counter] | None:
+        # The record plus how many records of the version share its split/class/filename: the only input the
+        # materialized path needs to disambiguate collisions.
         with read_only_transaction(datasource) as connection:
-            ids = select_dataset_sample_ids(connection, dataset_version_id, split, sample_id, 1)
-            if not ids:
-                return None
-            rows = select_dataset_sample_records(connection, dataset_version_id)
-        collisions = Counter((row['split_name'], row['class_name'], row['source_filename']) for row in rows)
-        row = next((row for row in rows if str(row['source_record_id']) == str(ids[0]) and row['split_name'] == split), None)
-        return (row, collisions) if row else None
+            row = connection.execute(text("""
+                SELECT a.source_record_id,a.clinical_identity_id,a.split_name,r.class_name,
+                       r.source_filename,r.source_file_sha256,
+                       (SELECT count(*) FROM dataset_split_assignments a2
+                        JOIN dataset_source_records r2 ON r2.id=a2.source_record_id
+                        WHERE a2.dataset_version_id=a.dataset_version_id AND a2.split_name=a.split_name
+                          AND r2.class_name=r.class_name AND r2.source_filename=r.source_filename) AS collisions
+                FROM dataset_split_assignments a JOIN dataset_source_records r ON r.id=a.source_record_id
+                WHERE a.dataset_version_id=CAST(:dataset AS uuid) AND a.split_name=:split
+                  AND a.source_record_id=CAST(:sample AS uuid)
+            """), {"dataset": dataset_version_id, "split": split, "sample": sample_id}).mappings().one_or_none()
+        if row is None:
+            return None
+        record = dict(row)
+        count = record.pop('collisions')
+        return record, Counter({(record['split_name'], record['class_name'], record['source_filename']): count})

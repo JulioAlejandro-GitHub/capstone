@@ -156,10 +156,15 @@ async def test_requested_dataset_must_match_attempt_and_train(scenario):
     scenario[1].training_dataset.assert_not_called()
 
 
-def test_inspection_reuses_read_only_governed_resolution(monkeypatch):
+def test_inspection_uses_the_persisted_train_snapshot_without_reverifying_the_population(monkeypatch, tmp_path):
     from app.repositories import dataset_samples
-    resolve = Mock()
-    monkeypatch.setattr(dataset_samples, 'resolve_training_run_dataset', resolve)
+    persisted = {'dataset_version_id': DATASET, 'dataset_materialization_id': str(uuid4()), 'dataset_root': str(tmp_path),
+                 'patient_assignment_fingerprint': 'p', 'record_assignment_fingerprint': 'r',
+                 'source_population_fingerprint': 's', 'clinical_identity_fingerprint': 'c', 'counts': {'val': 1}}
+    metadata = Mock(return_value=persisted)
+    monkeypatch.setattr(dataset_samples, 'training_dataset_metadata', metadata)
     monkeypatch.setattr(dataset_samples, 'resolve_datasource', lambda source: source)
-    DatasetSampleReadRepository().training_dataset('malaria', TRAIN)
-    resolve.assert_called_once_with(TRAIN, required_splits=())
+    snapshot = DatasetSampleReadRepository().training_dataset('malaria', TRAIN)
+    metadata.assert_called_once_with(TRAIN)
+    assert not hasattr(dataset_samples, 'resolve_training_run_dataset')
+    assert snapshot.metadata()['patient_assignment_fingerprint'] == 'p' and str(snapshot.dataset_version_id) == DATASET
