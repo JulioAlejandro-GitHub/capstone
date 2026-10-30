@@ -45,7 +45,9 @@ def test_no_independent_assessment_including_training_validation_final(stage):
     train, checkpoint, attempts = fixture()
     # training_validation_final belongs to evaluations, never an assessment substitute.
     result = decision(RUN, train, checkpoint, [a for a in attempts if a['kind'] != stage])
-    assert not result['eligible']
+    # EXPLAIN is reported but optional: it can be generated from the analysis report.
+    assert result['eligible'] == (stage == 'explain')
+    assert result[stage] is False
     assert result['reasons'][0]['code'] == f'{stage.upper()}_NOT_EXECUTED'
 
 
@@ -55,21 +57,25 @@ def test_no_independent_assessment_including_training_validation_final(stage):
 def test_invalid_attempts(stage, field, value):
     train, checkpoint, attempts = fixture()
     attempts[stage][field] = value
-    assert not decision(RUN, train, checkpoint, attempts)['eligible']
+    result = decision(RUN, train, checkpoint, attempts)
+    assert result[attempts[stage]['kind']] is False
+    assert result['eligible'] == (attempts[stage]['kind'] == 'explain')
 
 
 @pytest.mark.parametrize('count', [0, 1, 3])
 def test_explain_artifacts_required(count):
     train, checkpoint, attempts = fixture()
     attempts[1]['artifact_count'] = count
-    assert not decision(RUN, train, checkpoint, attempts)['eligible']
+    result = decision(RUN, train, checkpoint, attempts)
+    assert result['explain'] is False
+    assert result['eligible']
 
 
 @pytest.mark.parametrize('field,value', [('sha256', 'x'*64), ('bytes', 999), ('training_run_id', str(UUID(int=999))),
                                        ('checkpoint_artifact_id', str(UUID(int=999)))])
 def test_checkpoint_conflicts(field, value):
     train, checkpoint, attempts = fixture()
-    attempts[1]['identity']['model'][field] = value
+    attempts[0]['identity']['model'][field] = value
     result = decision(RUN, train, checkpoint, attempts)
     assert not result['eligible']
     assert result['reasons'][0]['code'] == 'INCOMPATIBLE_LINEAGE'
@@ -84,11 +90,11 @@ def test_failed_training_and_unregistered_checkpoint():
 
 def test_attempts_never_combine_and_valid_alternative_wins():
     train, checkpoint, attempts = fixture()
-    other = deepcopy(attempts[1])
-    attempts[1]['artifact_count'] = 0
+    other = deepcopy(attempts[0])
+    attempts[0]['result_count'] = 0
     other['result_count'] = 0
     assert not decision(RUN, train, checkpoint, attempts + [other])['eligible']
-    assert decision(RUN, train, checkpoint, attempts + [other, fixture()[2][1]])['eligible']
+    assert decision(RUN, train, checkpoint, attempts + [other, fixture()[2][0]])['eligible']
 
 
 def test_test_optional_threshold_and_software_do_not_gate():

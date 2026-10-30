@@ -1,4 +1,7 @@
-"""SCC admission from persisted evidence; independent of A1–A6 comparability."""
+"""SCC admission from persisted evidence; independent of A1–A6 comparability.
+
+Admission requires TRAIN and EVALUATE. EXPLAIN is still reported but does not gate: it can be generated
+from the analysis report itself."""
 from uuid import UUID, uuid5
 
 from fastapi import HTTPException
@@ -74,14 +77,15 @@ def decision(run_id, training, checkpoint, attempts):
             result['evidence'][kind] = [dict(identity_id=str(a['identity_id']), attempt_id=str(a['attempt_id']))
                                         for a in matching]
         elif not candidates:
-            reason(kind, f'{kind.upper()}_NOT_EXECUTED', f'{kind.upper()} no ejecutado.')
+            reason(kind, f'{kind.upper()}_NOT_EXECUTED', f'{kind.upper()} no ejecutado.'
+                   + (' Opcional: se puede generar desde Análisis.' if kind == 'explain' else ''))
         elif valid_results:
             reason(kind, 'INCOMPATIBLE_LINEAGE', f'{kind.upper()}: linaje incompatible con el checkpoint seleccionado.')
         else:
             reason(kind, f'{kind.upper()}_INVALID_EVIDENCE',
                    f'{kind.upper()} sin intento finalizado y verificado con resultados'
                    + (' y artefactos válidos.' if kind == 'explain' else ' válidos.'))
-    result['eligible'] = all(result[k] for k in ('train', 'evaluate', 'explain'))
+    result['eligible'] = bool(result['train'] and result['evaluate'])
     return result
 
 

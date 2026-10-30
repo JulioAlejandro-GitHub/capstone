@@ -9,7 +9,7 @@ export function ComparisonEligibilityStatus({ eligibility, onRetry }: { eligibil
   const error = eligibility.reasons.some(reason => reason.code === 'ERROR_DE_CONSULTA');
   const text = [
     (['train', 'evaluate', 'explain'] as const).map(stage =>
-      `${stage.toUpperCase()} ${eligibility[stage] === true ? '✓' : eligibility[stage] === null ? 'Error' : '—'}`).join(' · '),
+      `${stage.toUpperCase()}${stage === 'explain' ? ' (opcional)' : ''} ${eligibility[stage] === true ? '✓' : eligibility[stage] === null ? 'Error' : '—'}`).join(' · '),
     eligibility.eligible ? 'Seleccionable' : 'No seleccionable',
     ...eligibility.reasons.map(reason => reason.message),
   ].join(' · ');
