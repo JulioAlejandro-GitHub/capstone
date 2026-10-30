@@ -16,8 +16,8 @@ from app.config import get_settings, validate_yolo_runtime_url
 from app.models.cell_detection import BoundingBox, ComponentStatus, ConnectedComponent, DetectionResult
 
 DETECTOR_KEY = "yolo26_seg_v1"
-DETECTOR_VERSION = "1.0.0"
-ALGORITHM_VERSION = "yolo26-seg-tiling-global-nms-1.0.0"
+DETECTOR_VERSION = "1.1.0"
+ALGORITHM_VERSION = "yolo26-seg-scale-normalized-containment-1.1.0"
 # Independent identity validated in 76.3A; new runs need a trusted expected hash.
 CHECKPOINT_SHA256 = "1a64bc34d188a48b7ed4fcd3276a41aa61d4ab7c037e360ac4beab3e24c31c26"
 
@@ -45,13 +45,15 @@ class _Options(_StrictModel):
     confidence: float = Field(default=0.25, gt=0, le=1)
     nms_iou: float = Field(default=0.7, gt=0, le=1)
     max_detections_per_tile: int = Field(default=1000, ge=1, le=2000)
+    target_cell_px: float = Field(default=129.0, gt=0)
+    containment_threshold: float = Field(default=0.6, gt=0, le=1)
 
 
 class _Profile(_Options):
     detector_key: Literal["yolo26_seg_v1"] = DETECTOR_KEY
-    detector_version: Literal["1.0.0"] = DETECTOR_VERSION
-    algorithm_version: Literal["yolo26-seg-tiling-global-nms-1.0.0"] = ALGORITHM_VERSION
-    runtime_version: Literal["1.0.0"] = "1.0.0"
+    detector_version: Literal["1.1.0"] = DETECTOR_VERSION
+    algorithm_version: Literal["yolo26-seg-scale-normalized-containment-1.1.0"] = ALGORITHM_VERSION
+    runtime_version: Literal["1.1.0"] = "1.1.0"
     model_checkpoint: str = Field(default_factory=model_checkpoint)
     checkpoint_sha256: Literal[CHECKPOINT_SHA256] = CHECKPOINT_SHA256
     device: Literal["mps"] = "mps"
@@ -132,13 +134,15 @@ class _ResponseOptions(_Options):
     confidence: float = Field(gt=0, le=1)
     nms_iou: float = Field(gt=0, le=1)
     max_detections_per_tile: int = Field(ge=1, le=2000)
+    target_cell_px: float = Field(gt=0)
+    containment_threshold: float = Field(gt=0, le=1)
 
 
 class _Response(_StrictModel):
     detector_key: Literal["yolo26_seg_v1"]
-    detector_version: Literal["1.0.0"]
-    algorithm_version: Literal["yolo26-seg-tiling-global-nms-1.0.0"]
-    runtime_version: Literal["1.0.0"]
+    detector_version: Literal["1.1.0"]
+    algorithm_version: Literal["yolo26-seg-scale-normalized-containment-1.1.0"]
+    runtime_version: Literal["1.1.0"]
     model_checkpoint: str = Field(min_length=1)
     checkpoint_sha256: Literal[CHECKPOINT_SHA256]
     device: Literal["mps"]
@@ -155,8 +159,11 @@ class _Response(_StrictModel):
     invalid_detection_count: int = Field(ge=0)
     consolidated_detection_count: int = Field(ge=0)
     final_detection_count: int = Field(ge=0)
+    input_scale: float = Field(ge=1)
+    estimated_cell_px: float | None = Field(gt=0)
     warnings: list[Literal["TILE_DETECTION_LIMIT_REACHED", "MASK_UNAVAILABLE_BBOX_GEOMETRY",
-                           "INVALID_GEOMETRY_DISCARDED", "NO_DETECTIONS"]]
+                           "INVALID_GEOMETRY_DISCARDED", "NO_DETECTIONS",
+                           "CELL_SCALE_UNRESOLVED", "CELL_SCALE_LIMIT_REACHED"]]
 
     @model_validator(mode="after")
     def validate_result(self) -> Self:
@@ -255,4 +262,5 @@ def detect_image(image: Image.Image, profile: dict | None = None) -> DetectionRe
         warnings.add("MAXIMUM_COMPONENTS_REACHED")
     return DetectionResult(raw_width_px=raw_width, raw_height_px=raw_height,
                            oriented_width_px=oriented.width, oriented_height_px=oriented.height,
-                           threshold_value=None, components=components, warnings=tuple(sorted(warnings)))
+                           threshold_value=None, components=components, warnings=tuple(sorted(warnings)),
+                           input_scale=result.input_scale, estimated_cell_px=result.estimated_cell_px)

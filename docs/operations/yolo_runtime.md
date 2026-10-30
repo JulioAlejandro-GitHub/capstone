@@ -104,6 +104,22 @@ para entradas iguales, pero puede suprimir células distintas superpuestas o
 conservar duplicados parciales con bajo IoU. No garantiza cobertura completa ni
 valida precisión clínica. El límite por tile emite advertencia cuando se alcanza.
 
+## Normalización de escala y fragmentos (1.1.0)
+
+El modelo se entrenó con células de 129 px de mediana. En frotis VAL reducidos el
+recall cae a 92,9% con células de 43 px y a 35,3% con 32 px; reescalar lo recupera
+a 99,3%. Por eso, si la primera pasada no estima al menos 64 px, se prueban los
+factores 2, 3 y 4, se toma la pasada con más detecciones y se repite con el factor
+que lleva la mediana a `target_cell_px` (máximo 8× y 64 MP). Las geometrías vuelven
+siempre a píxeles de la imagen orientada. `tile_id` queda en el raster reescalado.
+La respuesta informa `input_scale` y `estimated_cell_px`; `CELL_SCALE_UNRESOLVED` y
+`CELL_SCALE_LIMIT_REACHED` avisan cuando no se pudo estimar o se alcanzó el límite.
+
+Tras el NMS global se eliminan cajas cuya intersección supere
+`containment_threshold` (0,6) de su propia área, que son fragmentos en cortes de tile.
+En VAL bajó de 316 a 216 detecciones por imagen, con recall de 99,6% a 99,4%.
+`consolidated_detection_count` incluye ambas supresiones.
+
 Referencia de API: [Ultralytics predict](https://docs.ultralytics.com/modes/predict/)
 (`masks.xy`, `retina_masks`, selección de dispositivo).
 

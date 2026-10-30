@@ -59,8 +59,10 @@ La identidad queda congelada al checkpoint de 76.3A:
 
 - Ruta relativa: `smear_segmentation_project/runs/yolo26_seg/yolo26n_rbc_1024_v1/weights/best.pt`.
 - SHA-256: `1a64bc34d188a48b7ed4fcd3276a41aa61d4ab7c037e360ac4beab3e24c31c26`.
-- Detector: `yolo26_seg_v1`, versión `1.0.0`.
-- Algoritmo: `yolo26-seg-tiling-global-nms-1.0.0`.
+- Detector: `yolo26_seg_v1`, versión `1.1.0`.
+- Algoritmo: `yolo26-seg-scale-normalized-containment-1.1.0`.
+- Las corridas `1.0.0` conservan su perfil histórico; `input_scale` y `estimated_cell_px`
+  quedan en el evento `cell_detection.image.completed` de cada imagen.
 
 El Runtime debe devolver una ruta absoluta terminada en esa ruta relativa y el mismo
 hash. El perfil existente guarda identidad, hash y políticas de conversión sin nuevas

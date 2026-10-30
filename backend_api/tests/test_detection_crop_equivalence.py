@@ -45,6 +45,8 @@ def source_case(name: str) -> tuple[Image.Image, dict]:
 
 def snapshot(result: ImageDetectionResult) -> dict:
     value = asdict(result)
+    # Scale fields belong to YOLO; the deterministic baseline must leave them unset.
+    assert value.pop("input_scale") is None and value.pop("estimated_cell_px") is None
     for crop in value["crops"]:
         payload = crop.pop("png_bytes")
         crop["sha256"] = hashlib.sha256(payload).hexdigest()

@@ -35,6 +35,8 @@ def detect_image(
         components=detected.components,
         warnings=detected.warnings,
         crops=crops,
+        input_scale=detected.input_scale,
+        estimated_cell_px=detected.estimated_cell_px,
     )
 
 

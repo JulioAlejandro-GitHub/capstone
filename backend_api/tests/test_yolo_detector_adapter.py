@@ -22,19 +22,21 @@ TOKEN = "test-yolo-token-" * 3
 
 def payload() -> dict:
     return {
-        "detector_key": "yolo26_seg_v1", "detector_version": "1.0.0",
-        "algorithm_version": "yolo26-seg-tiling-global-nms-1.0.0", "runtime_version": "1.0.0",
+        "detector_key": "yolo26_seg_v1", "detector_version": "1.1.0",
+        "algorithm_version": "yolo26-seg-scale-normalized-containment-1.1.0", "runtime_version": "1.1.0",
         "model_checkpoint": "/host/" + "smear_segmentation_project/runs/yolo26_seg/yolo26n_rbc_1024_v1/weights/best.pt",
         "checkpoint_sha256": yolo.CHECKPOINT_SHA256, "device": "mps",
         "image_width": 80, "image_height": 100, "tile_size": 1024, "tile_overlap": 256,
         "coordinate_space": "original_image_pixels", "orientation_policy": "exif_transpose",
-        "bbox_format": "xywh", "options": {"confidence": .25, "nms_iou": .7, "max_detections_per_tile": 1000},
+        "bbox_format": "xywh", "options": {"confidence": .25, "nms_iou": .7, "max_detections_per_tile": 1000,
+                                            "target_cell_px": 129., "containment_threshold": .6},
         "detections": [{"bbox": {"x": 10, "y": 20, "width": 15, "height": 20},
                         "confidence": .9, "centroid_x": 17.5, "centroid_y": 30.0, "area_px": 299.4,
                         "geometry_source": "mask_polygon", "mask_polygon": [[10.015, 20.], [24.985, 20.], [24.985, 40.], [10.015, 40.]],
                         "tile_id": "image__x0000_y0000"}],
         "raw_detection_count": 2, "invalid_detection_count": 0,
-        "consolidated_detection_count": 1, "final_detection_count": 1, "warnings": [],
+        "consolidated_detection_count": 1, "final_detection_count": 1,
+        "input_scale": 3.2, "estimated_cell_px": 40., "warnings": [],
     }
 
 
@@ -81,7 +83,8 @@ def test_auth_exif_conversion_and_original_crop_pixels(transport: Callable) -> N
     assert request.method == "POST"
     assert request.url.path == "/v1/detect"
     assert request.url.host == "host.docker.internal"
-    assert dict(request.url.params) == {"confidence": "0.25", "nms_iou": "0.7", "max_detections_per_tile": "1000"}
+    assert dict(request.url.params) == {"confidence": "0.25", "nms_iou": "0.7", "max_detections_per_tile": "1000",
+                                        "target_cell_px": "129.0", "containment_threshold": "0.6"}
     assert request.headers["authorization"] == "Bearer " + TOKEN
     assert request.headers["content-type"] == "application/octet-stream"
     with Image.open(io.BytesIO(request.content)) as sent:
@@ -98,6 +101,7 @@ def test_auth_exif_conversion_and_original_crop_pixels(transport: Callable) -> N
     assert (component.perimeter_px, component.circularity, component.solidity) == (None, None, None)
     assert component.rejection_codes == ()
     assert result.threshold_value is None
+    assert (result.input_scale, result.estimated_cell_px) == (3.2, 40.)
     assert (result.raw_width_px, result.raw_height_px) == (100, 80)
     assert (result.oriented_width_px, result.oriented_height_px) == (80, 100)
     assert len(result.crops) == 1
@@ -180,7 +184,9 @@ def test_transport_errors_are_sanitized(transport: Callable, exception: type[Exc
     ("tile_overlap", 128), ("coordinate_space", "tile_pixels"), ("orientation_policy", "none"),
     ("bbox_format", "xyxy"), ("final_detection_count", 3), ("raw_detection_count", 9),
     ("invalid_detection_count", -1), ("warnings", ["untrusted warning"]),
-    ("options", {"confidence": .5, "nms_iou": .7, "max_detections_per_tile": 1000}),
+    ("options", {"confidence": .5, "nms_iou": .7, "max_detections_per_tile": 1000,
+                 "target_cell_px": 129., "containment_threshold": .6}),
+    ("input_scale", .5), ("estimated_cell_px", 0.),
 ])
 def test_rejects_invalid_identity_and_envelope(transport: Callable, field: str, value: object) -> None:
     data = payload()

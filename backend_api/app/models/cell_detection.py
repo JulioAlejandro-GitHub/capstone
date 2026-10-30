@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 
 
@@ -90,6 +90,8 @@ class DetectionResult:
     threshold_value: int | None
     components: tuple[ConnectedComponent, ...]
     warnings: tuple[str, ...]
+    input_scale: float | None = field(default=None, kw_only=True)
+    estimated_cell_px: float | None = field(default=None, kw_only=True)
 
 
 @dataclass(frozen=True)

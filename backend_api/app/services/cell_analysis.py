@@ -476,6 +476,9 @@ class CellAnalysisService:
                             "component_count": len(result.components),
                             "detection_count": len(result.crops),
                             "warning_codes": list(result.warnings),
+                            **({"input_scale": result.input_scale,
+                                "estimated_cell_px": result.estimated_cell_px}
+                               if result.input_scale is not None else {}),
                         },
                     )
                 repository.complete_run(

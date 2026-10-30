@@ -107,20 +107,45 @@ def test_runtime_refuses_cpu_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
         YoloRuntime()
 
 
-def test_tiled_inference_translates_and_consolidates() -> None:
+class Tensor:
+    def __init__(self, values: list) -> None:
+        self.values = values
+
+    def cpu(self) -> Tensor:
+        return self
+
+    def tolist(self) -> list:
+        return self.values
+
+
+class CellGridModel:
+    """Finds a cell only when its size in the tile reaches the training range."""
+
+    def __init__(self, source_cell_px: float, image_width: int) -> None:
+        self.source_cell_px, self.image_width = source_cell_px, image_width
+        self.sizes: list[tuple[int, int]] = []
+
+    def predict(self, **kwargs: object) -> list:
+        from types import SimpleNamespace
+        source = kwargs["source"]
+        self.sizes.append(source.size)
+        side = self.source_cell_px * self.scale
+        boxes = [] if side < 50 else [[x, 20, x + side, 20 + side] for x in range(10, 700, int(side * 2))]
+        return [SimpleNamespace(boxes=SimpleNamespace(xyxy=Tensor(boxes), conf=Tensor([.9] * len(boxes))), masks=None)]
+
+
+def fake_runtime(model: object) -> object:
     from threading import Lock
-    from types import SimpleNamespace
     from smear_segmentation.inference import YoloRuntime
 
-    class Tensor:
-        def __init__(self, values: list) -> None:
-            self.values = values
+    runtime = object.__new__(YoloRuntime)
+    runtime.model, runtime.lock = model, Lock()
+    runtime.checkpoint, runtime.checkpoint_sha256 = "fixture.pt", "a" * 64
+    return runtime
 
-        def cpu(self) -> Tensor:
-            return self
 
-        def tolist(self) -> list:
-            return self.values
+def test_tiled_inference_translates_and_consolidates() -> None:
+    from types import SimpleNamespace
 
     class Model:
         calls = 0
@@ -130,21 +155,73 @@ def test_tiled_inference_translates_and_consolidates() -> None:
             assert kwargs["save"] is False
             x = 800 if self.calls == 0 else 32
             self.calls += 1
-            return [SimpleNamespace(boxes=SimpleNamespace(xyxy=Tensor([[x, 20, x+20, 40]]),
-                                                          conf=Tensor([.9])), masks=None)]
+            boxes = [[x, 20, x + 130, 150], [x, 400, x + 130, 530], [x, 700, x + 130, 830]]
+            return [SimpleNamespace(boxes=SimpleNamespace(xyxy=Tensor(boxes), conf=Tensor([.9] * 3)), masks=None)]
 
-    runtime = object.__new__(YoloRuntime)
-    runtime.model = Model()
-    runtime.lock = Lock()
-    runtime.checkpoint = "fixture.pt"
-    runtime.checkpoint_sha256 = "a" * 64
+    runtime = fake_runtime(Model())
     result = runtime.detect(Image.new("RGB", (1792, 1024)), InferenceOptions())
     assert runtime.model.calls == 2
-    assert result.raw_detection_count == 2
-    assert result.final_detection_count == 1
-    assert result.consolidated_detection_count == 1
-    assert result.detections[0].bbox.x == 800
+    assert result.raw_detection_count == 6
+    assert result.final_detection_count == 3
+    assert result.consolidated_detection_count == 3
+    assert result.input_scale == 1
+    assert result.estimated_cell_px == 130
+    assert {d.bbox.x for d in result.detections} == {800}
     assert "MASK_UNAVAILABLE_BBOX_GEOMETRY" in result.warnings
+
+
+def test_small_cells_are_upscaled_and_reported_in_source_pixels() -> None:
+    class Model(CellGridModel):
+        def predict(self, **kwargs: object) -> list:
+            self.scale = 1 if kwargs["source"].width <= 514 else kwargs["source"].width / 514 if len(self.sizes) < 2 else 4
+            return super().predict(**kwargs)
+
+    runtime = fake_runtime(Model(32, 514))
+    result = runtime.detect(Image.new("RGB", (514, 514)), InferenceOptions())
+    assert result.input_scale > 1
+    assert result.estimated_cell_px is not None and result.estimated_cell_px >= 32
+    assert all(d.bbox.x + d.bbox.width <= 514 and d.bbox.y + d.bbox.height <= 514 for d in result.detections)
+    assert all(d.bbox.width < 100 for d in result.detections)
+
+
+def test_no_cells_at_any_scale_is_explicit() -> None:
+    class Model(CellGridModel):
+        scale = 0
+
+    runtime = fake_runtime(Model(0, 514))
+    result = runtime.detect(Image.new("RGB", (514, 514)), InferenceOptions())
+    assert result.input_scale == 1
+    assert result.estimated_cell_px is None
+    assert set(result.warnings) == {"CELL_SCALE_UNRESOLVED", "NO_DETECTIONS"}
+
+
+def test_large_images_never_probe_past_the_pixel_budget() -> None:
+    from smear_segmentation.inference import MAX_SCALED_PIXELS, scale_limit
+    assert scale_limit(514, 514) == 8
+    assert (5312 * scale_limit(5312, 2988)) * (2988 * scale_limit(5312, 2988)) == pytest.approx(MAX_SCALED_PIXELS)
+
+
+def test_fragments_inside_a_cell_are_removed_but_overlapping_cells_survive() -> None:
+    from smear_segmentation.inference import suppress_contained
+
+    def cell(x: int, width: int, score: float) -> Detection:
+        return Detection(bbox=Box(x=x, y=0, width=width, height=100), confidence=score, centroid_x=x + width / 2,
+                         centroid_y=50, area_px=width * 100, geometry_source="bbox", tile_id="t")
+    whole, fragment, neighbor = cell(0, 100, .8), cell(70, 30, .95), cell(60, 100, .9)
+    assert suppress_contained([fragment, whole], .6) == [whole]
+    assert suppress_contained([whole, neighbor], .6) == [neighbor, whole]
+
+
+def test_rescale_maps_mask_and_box_to_source_pixels() -> None:
+    from smear_segmentation.inference import rescale_detection
+    polygon = [(40.0, 80.0), (80.0, 80.0), (80.0, 120.0), (40.0, 120.0)]
+    detection = Detection(bbox=Box(x=40, y=80, width=40, height=40), confidence=.9, centroid_x=60, centroid_y=100,
+                          area_px=1600, geometry_source="mask_polygon", mask_polygon=polygon, tile_id="t")
+    mapped = rescale_detection(detection, 4, 4, 514, 514)
+    assert mapped.bbox == Box(x=10, y=20, width=10, height=10)
+    assert (mapped.centroid_x, mapped.centroid_y, mapped.area_px) == (15, 25, 100)
+    assert mapped.mask_polygon == [(10, 20), (20, 20), (20, 30), (10, 30)]
+    assert rescale_detection(detection, 1, 1, 514, 514) is detection
 
 
 @pytest.mark.parametrize("run", ["yolo26n_rbc_1024_v1", "123e4567-e89b-42d3-a456-426614174000"])
