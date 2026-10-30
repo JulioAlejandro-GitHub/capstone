@@ -81,7 +81,7 @@ function PointDetails({point, pinned, onOpen}: {point: Point; pinned?: boolean; 
     </div>
     <br />
     <div data-correct={0 === point.predicted}>
-      <dt>Predicha</dt>
+      <dt>Predicción</dt>
       <dd>{point.predicted ? 'Parasitada' : 'No parasitada'}</dd>
     </div>
     <br />

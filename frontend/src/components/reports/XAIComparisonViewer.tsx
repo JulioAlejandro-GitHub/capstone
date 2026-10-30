@@ -136,7 +136,8 @@ export function CellOutcome({ comparison }: { comparison: XAIComparison }) {
   if (label == null && !outcome) return null;
   return <dl className="xai-outcome" aria-label="Resultado del modelo en esta célula">
     <div data-correct={0 == label}><dt>Clase real</dt><dd>{label === 1 ? 'Parasitada' : label === 0 ? 'No parasitada' : 'No registrada'}</dd></div>
-    {outcome && <div data-correct={0 === outcome.predicted}><dt>Categoría</dt><dd>{outcomeCategory(outcome.label, outcome.predicted)}</dd></div>}
+    {outcome && <div data-correct={0 === outcome.predicted}><dt>Predicción</dt><dd>{outcome.predicted === 1 ? 'Parasitada' : outcome.predicted === 0 ? 'No parasitada' : 'No registrada'}</dd></div>}
+    {outcome && <div><dt>Categoría</dt><dd>{outcomeCategory(outcome.label, outcome.predicted)}</dd></div>}
     {outcome && <div><dt>Score</dt><dd title={`EVALUATE ${outcome.split.toUpperCase()} · intento ${outcome.attemptId}`}>{decimal(outcome.score)} <small>umbral {decimal(outcome.threshold)}</small></dd></div>}
   </dl>;
 }
