@@ -1,7 +1,7 @@
 /* Explorador de Modelos: every colour comes from the design tokens, so both themes follow. */
-.ds-report.mx-page { --mx-trained: var(--ds-blue-500); --mx-frozen: var(--ds-fg-muted); }
-.ds-report.mx-page .mx-chart { max-width: 100%; overflow-x: auto; padding: var(--ds-space-3); background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-radius: 8px; }
-.ds-report.mx-page .mx-chart svg { display: block; width: 100%; height: auto; }
+.mx-page { --mx-trained: var(--ds-blue-500); --mx-frozen: var(--ds-fg-muted); }
+.mx-page .mx-chart { max-width: 100%; overflow-x: auto; padding: var(--ds-space-3); background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-radius: 8px; }
+.mx-page .mx-chart svg { display: block; width: 100%; height: auto; }
 .mx-page .mx-block rect, .mx-page .mx-block polygon, .mx-page .mx-node circle { fill: var(--mx-frozen); fill-opacity: 0.1; stroke: var(--mx-frozen); stroke-width: 1.25; }
 .mx-page .mx-block[data-trained="true"] rect, .mx-page .mx-block[data-trained="true"] polygon, .mx-page .mx-node[data-trained="true"] circle { fill: var(--mx-trained); fill-opacity: 0.2; stroke: var(--mx-trained); }
 .mx-page .mx-block polygon[data-face="side"] { fill-opacity: 0.32; }

@@ -1,6 +1,7 @@
 import { DatasetIntegrity } from './DatasetIntegrity';
 import { CurvesModule, MetricsModule, ConsensusModule, ScientificQuestions, PersistedXAI } from './ScientificReport';
 import { ScientificRepresentations } from './ScientificRepresentations';
+import { ArchitecturePanel } from '../model-architecture/ArchitecturePanel';
 import { AnalysisPanel, AnalysisSectionNav, Kpi, SectionAnswer, analysisSections, defaultAnalysisSection, useVisitedSections, type AnalysisSection } from './AnalysisWorkspace';
 import { ComparisonPython, configurationLabels, CopyText } from './ComparisonPython';
 import { Fragment, useMemo, useState, type KeyboardEvent } from 'react';
@@ -541,8 +542,9 @@ function SectionMap({ states, onSelect }: { states: ReturnType<typeof sectionSta
 }
 
 type SectionProps = { section?: AnalysisSection; onSectionChange?: (section: AnalysisSection) => void; explains?: Record<string, string[]>; canGenerate?: boolean; onGenerated?: () => void;
-  focusSample?: string | null; onFocusSample?: (sample: string | null, section?: AnalysisSection) => void };
-function ComparisonEvidenceSession({ ids, datasource, maximum, selections, section: requested, onSectionChange, explains, canGenerate, onGenerated, focusSample: requestedFocus, onFocusSample }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
+  focusSample?: string | null; onFocusSample?: (sample: string | null, section?: AnalysisSection) => void;
+  architectureRun?: string | null; onArchitectureRun?: (run: string) => void };
+function ComparisonEvidenceSession({ ids, datasource, maximum, selections, section: requested, onSectionChange, explains, canGenerate, onGenerated, focusSample: requestedFocus, onFocusSample, architectureRun, onArchitectureRun }: { ids: string[]; datasource: string; maximum?: number; selections: RequestedSelection[] } & SectionProps) {
   const cache = useMemo(createComparisonCache, []);
   const [revision, setRevision] = useState(0);
   const [xaiRevision, setXaiRevision] = useState(0);
@@ -550,6 +552,7 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
   const section = requested ?? localSection;
   const select = (next: AnalysisSection) => { setLocalSection(next); onSectionChange?.(next); };
   const [localFocus, setLocalFocus] = useState<string | null>(null);
+  const [localArchitecture, setLocalArchitecture] = useState<string | null>(null);
   const focusSample = requestedFocus !== undefined ? requestedFocus : localFocus;
   // Choosing a cell (Errores «Explicar» or the search) opens Explicabilidad on it in one step.
   const focus = (sample: string | null, next?: AnalysisSection) => {
@@ -591,6 +594,8 @@ function ComparisonEvidenceSession({ ids, datasource, maximum, selections, secti
     <AnalysisPanel id="desempeno" section={section} visited={visited}><MetricsModule {...moduleProps} active={section === 'desempeno'} /></AnalysisPanel>
     <AnalysisPanel id="errores" section={section} visited={visited}><ConsensusModule {...moduleProps} active={section === 'errores'} explains={explains} canGenerate={canGenerate} onGenerated={onGenerated} onExplain={sample => focus(sample, 'explicabilidad')} /></AnalysisPanel>
     <AnalysisPanel id="explicabilidad" section={section} visited={visited}><ComparisonModules selections={selections} explains={explains} canGenerate={canGenerate} onGenerated={onGenerated} revision={xaiRevision} ids={ids} datasource={datasource} active={section === 'explicabilidad'} focusSample={focusSample} onFocus={sample => focus(sample)} /></AnalysisPanel>
+    <AnalysisPanel id="arquitectura" section={section} visited={visited}><ArchitecturePanel ids={ids} labels={ids.map((_, index) => data?.selections[index] ? architecture(data, data.selections[index]) : null)} datasource={datasource} cache={cache}
+      active={section === 'arquitectura'} selected={architectureRun !== undefined ? architectureRun : localArchitecture} onSelect={run => { setLocalArchitecture(run); onArchitectureRun?.(run); }} /></AnalysisPanel>
     <AnalysisPanel id="representaciones" section={section} visited={visited}><ScientificRepresentations {...moduleProps} canGenerate={canGenerate} active={section === 'representaciones'} explains={explains} onGenerated={onGenerated} onExplain={sample => focus(sample, 'explicabilidad')} /></AnalysisPanel>
     <AnalysisPanel id="trazabilidad" section={section} visited={visited}>{data ? <PreflightEvidence data={data} /> : error ? <ErrorMessage error={error} retry={refresh} /> : loading ? <p role="status">Consultando trazabilidad…</p> : <p>Selecciona al menos un TRAIN para consultar su procedencia.</p>}</AnalysisPanel>
   </>;

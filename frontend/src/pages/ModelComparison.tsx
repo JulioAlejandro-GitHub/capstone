@@ -16,6 +16,7 @@ import { useComparisonTrainingSummaries } from '../hooks/useComparisonTrainingSu
 import '../styles/ds-primitives.css';
 import '../styles/report-components.css';
 import '../styles/scc-comparison.css';
+import '../styles/model-explorer.css';
 
 function ComparisonPage({ datasource }: { datasource: string }) {
   const { catalog, error, retry } = useComparisonCatalog(datasource);
@@ -41,6 +42,12 @@ function ComparisonPage({ datasource }: { datasource: string }) {
     const params = new URLSearchParams(previous);
     if (sample) params.set('muestra', sample); else params.delete('muestra');
     if (next) { if (next === defaultAnalysisSection) params.delete('seccion'); else params.set('seccion', next); }
+    return params;
+  }, { replace: true }), [setSearch]);
+  const architectureRun = search.get('modelo');
+  const onArchitectureRun = useCallback((run: string) => setSearch(previous => {
+    const params = new URLSearchParams(previous);
+    params.set('modelo', run);
     return params;
   }, { replace: true }), [setSearch]);
   const requestedProtocol = search.get('evaluacion');
@@ -102,7 +109,7 @@ function ComparisonPage({ datasource }: { datasource: string }) {
       {Array.from({ length: available }, (_, index) => <button key={index} className="ds-button scc-empty-slot"
         onClick={event => openSelector(event.currentTarget)}><strong>＋ Añadir RUN</strong><span>Espacio {ids.length + index + 1} disponible</span></button>)}
     </div>
-    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} explains={explains} onGenerated={onGenerated} focusSample={focusSample} onFocusSample={onFocusSample} />
+    <ScientificPreflight selections={selections} ids={ids} datasource={datasource} maximum={maximum} section={section} onSectionChange={selectSection} explains={explains} onGenerated={onGenerated} focusSample={focusSample} onFocusSample={onFocusSample} architectureRun={architectureRun} onArchitectureRun={onArchitectureRun} />
     <RunSelectorDialog dialog={dialog} ids={ids} summaries={summaries} error={summariesError} retry={retrySummaries} maximum={maximum}
       counter={`Seleccionadas: ${ids.length} / ${maximum ?? '—'}`} hint=". La selección se conserva al cambiar de página, buscar o filtrar; cada identificador corresponde a un TRAIN concreto."
       submitLabel={ids.length > 1 ? `Comparar ${ids.length} RUN` : 'Analizar RUN seleccionado'} runLabel={runLabel} onRemove={remove}

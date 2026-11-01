@@ -90,3 +90,16 @@ test('el selector sin máximo permite elegir y los menús de filtro viven en el 
   assert.doesNotMatch(table, /disablePortal/);
   assert.match(table, /=> \(\{ value, label \}\)/);
 });
+
+test('Análisis de Modelos reutiliza el detalle con un modelo activo a la vez', () => {
+  const panel = read('components/model-architecture/ArchitecturePanel.tsx');
+  assert.match(read('components/reports/AnalysisWorkspace.tsx'), /id: 'arquitectura', label: 'Arquitectura'/);
+  assert.match(panel, /ArchitectureDetail/);
+  assert.match(panel, /aria-pressed=\{id === run\}/);
+  assert.match(panel, /ids\.length > 1/);
+  assert.match(panel, /ids\.find\(id => id === selected\) \?\? ids\[0\]/);
+  assert.match(panel, /cache, key, .*active\)/);
+  assert.match(read('components/reports/ScientificPreflight.tsx'), /id="arquitectura"/);
+  assert.match(read('pages/ModelComparison.tsx'), /search\.get\('modelo'\)/);
+  assert.match(read('pages/ModelExplorer.tsx'), /ArchitectureDetail/);
+});

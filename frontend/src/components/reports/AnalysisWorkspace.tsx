@@ -7,6 +7,7 @@ export const analysisSections = [
   { id: 'desempeno', label: 'Desempeño clínico', question: '¿Cómo clasifica cada modelo la población evaluada?' },
   { id: 'errores', label: 'Errores y consenso', question: '¿Dónde falla cada modelo y dónde se complementan?' },
   { id: 'explicabilidad', label: 'Explicabilidad', question: '¿Qué evidencia visual explica las predicciones?' },
+  { id: 'arquitectura', label: 'Arquitectura', question: '¿Cómo está construido el modelo de cada TRAIN?' },
   { id: 'representaciones', label: 'Representaciones', question: '¿Qué representaciones internas aprendió el modelo?' },
   { id: 'trazabilidad', label: 'Trazabilidad', question: '¿De dónde proviene cada dato y qué es comparable?' },
 ] as const;
