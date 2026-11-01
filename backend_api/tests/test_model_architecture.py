@@ -29,7 +29,8 @@ def sequential():
 
 def test_sequential_shapes_and_parameters_are_derived_from_the_record():
     result = normalize_keras([{'phase': 'base', 'payload': {
-        'architecture': sequential(), 'input_contract': {'shape': [None, 8, 8, 3]}, 'output_contract': {'shape': [None, 1]}}}], 'custom_cnn')
+        'architecture': sequential(), 'input_contract': {'shape': [None, 8, 8, 3]}, 'output_contract': {'shape': [None, 1], 'activation': 'sigmoid', 'meaning': 'probability_parasitized'},
+        'loss': {'name': 'binary_crossentropy', 'from_logits': False}}}], 'custom_cnn')
     layers = {item['name']: item for item in result['layers']}
     assert layers['pool']['output_shape'] == [None, 4, 4, 4]
     assert layers['gap']['output_shape'] == [None, 4]
@@ -39,6 +40,8 @@ def test_sequential_shapes_and_parameters_are_derived_from_the_record():
     assert result['total_parameters'] == 129
     assert result['phases'] == [{'phase': 'base', 'trainable_parameters': 121}]
     assert [block['id'] for block in result['blocks']] == ['input', 'block1', 'head', 'output']
+    assert result['blocks'][-1]['label'] == 'Capa de salida'
+    assert result['output'] == {'neurons': 1, 'activation': 'sigmoid', 'loss': 'binary_crossentropy', 'from_logits': False, 'meaning': 'probability_parasitized'}
 
 
 def functional(trainable):
@@ -75,13 +78,16 @@ def test_biomedclip_declares_reference_structure_and_recorded_counts():
     records = [{'phase': 'base', 'payload': {'framework': 'pytorch', 'encoder': 'frozen', 'trainable_parameters': {'count': 2, 'elements': 513}}},
                {'phase': 'fine_tuning', 'payload': {'framework': 'pytorch', 'encoder': 'last_4_blocks', 'trainable_parameters': {'count': 53, 'elements': 28746753}}}]
     configuration = dict(input_height=224, input_width=224, input_channels=3, extension_configuration={
-        'recipe': {'head': {'in_features': 512, 'out_features': 1, 'activation': 'sigmoid'}}})
+        'recipe': {'head': {'in_features': 512, 'out_features': 1, 'activation': 'sigmoid', 'loss': 'bce_with_logits'}},
+        'input_contract': {'output': {'meaning': 'probability_parasitized'}}})
     result = normalize_biomedclip(records, configuration)
     vit = [block for block in result['blocks'] if block['kind'] == 'encoder']
     assert len(vit) == 12 and {block['origin'] for block in vit} == {'reference'}
     assert [block['id'] for block in vit if block['trainable_phases']] == ['vit8', 'vit9', 'vit10', 'vit11']
     assert result['phases'][1] == {'phase': 'fine_tuning', 'encoder': 'last_4_blocks', 'trainable_parameters': 28746753, 'trainable_tensors': 53}
-    assert result['blocks'][-1]['parameters'] == 513
+    assert result['blocks'][-1]['parameters'] == 513 and result['blocks'][-1]['kind'] == 'output'
+    assert result['output'] == {'neurons': 1, 'activation': 'sigmoid', 'loss': 'bce_with_logits', 'from_logits': True,
+                                'meaning': 'probability_parasitized', 'embedding_features': 512}
     assert result['layers'] == [] and result['total_parameters'] is None
 
 

@@ -134,7 +134,7 @@ def _keras_block(family: str, layer: dict[str, Any], state: dict[str, int]) -> t
         state['convolutions'] += kind == 'Conv2D'
         return f"block{state['convolutions']}", f"Bloque {state['convolutions']}", 'convolution'
     if kind == 'Dense' and layer['settings'].get('activation') == 'sigmoid':
-        return 'output', 'Salida', 'output'
+        return 'output', 'Capa de salida', 'output'
     return 'head', 'Cabeza de clasificación', 'head'
 
 
@@ -166,12 +166,15 @@ def normalize_keras(records: list[dict[str, Any]], family: str) -> dict[str, Any
         trained = sum(layer['weights'] for layer in layers.values() if record['phase'] in layer['trainable_phases'])
         phases.append(dict(phase=record['phase'], trainable_parameters=trained))
     ordered = list(layers.values())
-    output = records[-1]['payload'].get('output_contract')
-    _last_shape(ordered, output)
+    contract_output = records[-1]['payload'].get('output_contract') or {}
+    _last_shape(ordered, contract_output)
     blocks = _summarize(ordered, family, 'recorded')
     for layer in ordered:
         layer.pop('weights')
     contract = records[-1]['payload'].get('input_contract') or {}
+    loss = records[-1]['payload'].get('loss') or {}
+    output = dict(neurons=(contract_output.get('shape') or [None])[-1], activation=contract_output.get('activation'),
+                  loss=loss.get('name'), from_logits=loss.get('from_logits'), meaning=contract_output.get('meaning'))
     return dict(framework='keras', input_shape=contract.get('shape'), output=output, phases=phases, blocks=blocks,
                 layers=ordered, total_parameters=sum(layer['parameters'] for layer in ordered))
 
@@ -200,14 +203,16 @@ def normalize_biomedclip(records: list[dict[str, Any]], configuration: dict[str,
     blocks += [block(f'vit{index}', f'Bloque ViT {index + 1}', 'encoder', None,
                      [phase for phase, encoder in encoded if index in _vit_trained(encoder)], 'reference')
                for index in range(VIT_BLOCKS)]
-    blocks.append(block('head', 'Cabeza lineal', 'head', [None, head.get('out_features', 1)],
+    blocks.append(block('output', 'Capa de salida', 'output', [None, head.get('out_features')],
                         [phase for phase, _ in encoded], 'recorded', (embedding + 1) if embedding else None))
     phases = [dict(phase=record['phase'], encoder=record['payload'].get('encoder'),
                    trainable_parameters=(record['payload'].get('trainable_parameters') or {}).get('elements'),
                    trainable_tensors=(record['payload'].get('trainable_parameters') or {}).get('count'))
               for record in records]
+    contract = (extension.get('input_contract') or {}).get('output') or {}
     return dict(framework=records[-1]['payload'].get('framework'), input_shape=shape,
-                output=dict(activation=head.get('activation'), shape=[None, head.get('out_features', 1)],
+                output=dict(neurons=head.get('out_features'), activation=head.get('activation'), loss=head.get('loss'),
+                            from_logits=head.get('loss') == 'bce_with_logits', meaning=contract.get('meaning'),
                             embedding_features=embedding),
                 phases=phases, blocks=blocks, layers=[], total_parameters=None)
 

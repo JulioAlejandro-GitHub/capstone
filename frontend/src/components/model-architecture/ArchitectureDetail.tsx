@@ -5,9 +5,9 @@ import type { ModelArchitecture } from '../../types/modelArchitecture';
 import { EvidenceButton, Kpi, SectionAnswer } from '../reports/AnalysisWorkspace';
 import { CopyText } from '../reports/ComparisonPython';
 import { ArchitectureChart } from './ArchitectureChart';
-import { architectureViews, countText, phaseLabels, shapeText, viewsFor, type ArchitectureView } from './architectureViews';
+import { architectureViews, countText, lossText, outputText, phaseLabels, shapeText, viewsFor, type ArchitectureView } from './architectureViews';
 
-/** One model's architecture; the Explorador and Análisis de Modelos differ only in who owns the view and the phase. */
+/** One model's architecture; Arquitectura del modelo and Análisis de Modelos differ only in who owns the view and the phase. */
 export function ArchitectureDetail({ data, view, onView, phase, onPhase, datasource, explorerLink = false }: { data: ModelArchitecture; view: ArchitectureView; onView: (view: ArchitectureView) => void;
   phase: string; onPhase: (phase: string) => void; datasource: string; explorerLink?: boolean }) {
   const current = data.phases.find(item => item.phase === phase);
@@ -17,6 +17,7 @@ export function ArchitectureDetail({ data, view, onView, phase, onPhase, datasou
       <Kpi label="Entrada" value={shapeText(data.input_shape)} detail={data.framework ?? undefined} />
       <Kpi label="Parámetros totales" value={countText(data.total_parameters)} detail={data.total_parameters == null ? 'El TRAIN no los registró' : 'Calculados desde la configuración'} />
       <Kpi label={`Entrenables · ${phaseLabels[phase] ?? phase}`} value={countText(current?.trainable_parameters)} detail={current?.encoder ? `Encoder: ${current.encoder}` : undefined} />
+      <Kpi label="Capa de salida" value={outputText(data.output)} detail={lossText(data.output)} />
       <Kpi label="Checkpoint" value={data.checkpoint.selected_epoch == null ? 'Sin evidencia' : `Época ${data.checkpoint.selected_epoch}`} detail={data.checkpoint.phase ? phaseLabels[data.checkpoint.phase] ?? data.checkpoint.phase : undefined} />
     </>}>
       {data.model_name ?? 'Modelo sin nombre'} · arquitectura {data.architecture ?? 'sin evidencia'}. {reference
@@ -30,7 +31,7 @@ export function ArchitectureDetail({ data, view, onView, phase, onPhase, datasou
         aria-pressed={item.phase === phase} onClick={() => onPhase(item.phase)}>{phaseLabels[item.phase] ?? item.phase}</button>)}</div>}
     </div>
     <ArchitectureChart data={data} view={view} phase={phase} />
-    {explorerLink && <Link className="ds-button" data-size="compact" to={withAllowedQuery(routes.modelExplorer, { datasource, run: data.training_run_id, grafico: view, fase: phase })}>Abrir en Explorador</Link>}
+    {explorerLink && <Link className="ds-button" data-size="compact" to={withAllowedQuery(routes.modelExplorer, { datasource, run: data.training_run_id, grafico: view, fase: phase })}>Abrir vista completa</Link>}
     <p className="mx-legend"><span data-trained="true" />Se entrena en esta fase<span data-trained="false" />Congelado o sin pesos</p>
     <EvidenceButton title="Identidad del modelo" label="Identidad del modelo">
       <p className="report-identifier">TRAIN: {data.training_run_id}<br />Checkpoint: {data.checkpoint.artifact_id ?? 'Sin evidencia'}</p>

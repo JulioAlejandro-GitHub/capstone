@@ -1,10 +1,10 @@
 import { Fragment, useMemo, useState, type ReactNode } from 'react';
 
 import type { ArchitectureBlock, ModelArchitecture } from '../../types/modelArchitecture';
-import { countText, depthSize, isSpatial, isTrained, shapeText, spatialSize, type ArchitectureView } from './architectureViews';
+import { countText, depthSize, isSpatial, isTrained, outputText, shapeText, spatialSize, type ArchitectureView } from './architectureViews';
 
 type ChartProps = { data: ModelArchitecture; phase: string };
-const HEIGHT = 300, MIDDLE = 140, GAP = 44;
+const HEIGHT = 312, MIDDLE = 140, GAP = 44;
 
 const blockTitle = (block: ArchitectureBlock) => `${block.label} · ${shapeText(block.output_shape)} · ${countText(block.parameters)} parámetros · ${block.layers} capas`;
 
@@ -17,10 +17,14 @@ function Frame({ label, width, height = HEIGHT, children }: { label: string; wid
 
 const Arrow = ({ x1, x2, y = MIDDLE }: { x1: number; x2: number; y?: number }) => <line className="mx-link" x1={x1} x2={x2} y1={y} y2={y} markerEnd="url(#mx-arrow)" />;
 
-function Labels({ x, block, top, bottom }: { x: number; block: ArchitectureBlock; top: number; bottom: number }) {
+const OUTPUT_WIDTH = 150;
+const blockWidth = (block: ArchitectureBlock, width: number) => Math.max(block.kind === 'output' ? OUTPUT_WIDTH : 92, width);
+
+function Labels({ x, block, top, bottom, output }: { x: number; block: ArchitectureBlock; top: number; bottom: number; output: ModelArchitecture['output'] }) {
   return <>
     <text className="mx-dimension" x={x} y={top} textAnchor="middle">{shapeText(block.output_shape)}</text>
     <text className="mx-name" x={x} y={bottom} textAnchor="middle">{block.label}</text>
+    {block.kind === 'output' && <text className="mx-dimension" x={x} y={bottom + 18} textAnchor="middle">{outputText(output)}</text>}
   </>;
 }
 
@@ -35,16 +39,16 @@ function StackedMaps({ data, phase }: ChartProps) {
   const { placed, width } = layout(data.blocks.map(block => {
     const sheets = isSpatial(block.output_shape) ? Math.round(depthSize(block.output_shape) / 6) : 0;
     const side = isSpatial(block.output_shape) ? spatialSize(block.output_shape) : 26;
-    return { block, sheets, side, width: Math.max(92, side + sheets * 7) };
+    return { block, sheets, side, width: blockWidth(block, side + sheets * 7) };
   }));
   return <Frame label={`Mapas de características de ${data.architecture}`} width={width}>
     {placed.map((item, index) => {
       const { block, sheets, side, x } = item, center = x + item.width / 2, next = placed[index + 1];
       const height = isSpatial(block.output_shape) ? side : 36 + 7 * Math.log2(Math.max(2, block.output_shape?.at(-1) ?? 2));
       const span = side + sheets * 7, left = center - span / 2;
-      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} className="mx-block"><title>{blockTitle(block)}</title>
+      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} data-kind={block.kind} className="mx-block"><title>{blockTitle(block)}</title>
         {Array.from({ length: Math.max(1, sheets) }, (_, sheet) => <rect key={sheet} x={left + sheet * 7} y={MIDDLE - height / 2 - sheet * 5 + sheets * 2.5} width={side} height={height} rx="3" />)}
-        <Labels x={center} block={block} top={MIDDLE - 90 - 18} bottom={HEIGHT - 24} />
+        <Labels x={center} block={block} output={data.output} top={MIDDLE - 90 - 18} bottom={HEIGHT - 36} />
         {next && <Arrow x1={x + item.width + 6} x2={next.x - 6} />}
       </g>;
     })}
@@ -54,16 +58,16 @@ function StackedMaps({ data, phase }: ChartProps) {
 function Blocks3D({ data, phase }: ChartProps) {
   const { placed, width } = layout(data.blocks.map(block => {
     const spatial = isSpatial(block.output_shape), side = spatial ? spatialSize(block.output_shape) : 48;
-    return { block, side, depth: spatial ? side * 0.34 : 10, thick: depthSize(block.output_shape), width: Math.max(92, depthSize(block.output_shape) + (spatial ? side * 0.34 : 10)) };
+    return { block, side, depth: spatial ? side * 0.34 : 10, thick: depthSize(block.output_shape), width: blockWidth(block, depthSize(block.output_shape) + (spatial ? side * 0.34 : 10)) };
   }));
   return <Frame label={`Bloques de ${data.architecture}`} width={width}>
     {placed.map((item, index) => {
       const { block, side, depth, thick, x } = item, left = x + (item.width - thick - depth) / 2, y0 = MIDDLE - side / 2 + depth / 3, next = placed[index + 1];
-      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} className="mx-block"><title>{blockTitle(block)}</title>
+      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} data-kind={block.kind} className="mx-block"><title>{blockTitle(block)}</title>
         <polygon points={`${left},${y0} ${left + depth},${y0 - depth * .66} ${left + depth + thick},${y0 - depth * .66} ${left + thick},${y0}`} data-face="top" />
         <polygon points={`${left + thick},${y0} ${left + thick + depth},${y0 - depth * .66} ${left + thick + depth},${y0 + side - depth * .66} ${left + thick},${y0 + side}`} data-face="side" />
         <rect x={left} y={y0} width={thick} height={side} />
-        <Labels x={x + item.width / 2} block={block} top={MIDDLE - 90 - 18} bottom={HEIGHT - 24} />
+        <Labels x={x + item.width / 2} block={block} output={data.output} top={MIDDLE - 90 - 18} bottom={HEIGHT - 36} />
         {next && <Arrow x1={x + item.width + 6} x2={next.x - 6} />}
       </g>;
     })}
@@ -76,9 +80,9 @@ function BlockBars({ data, phase }: ChartProps) {
   return <Frame label={`Parámetros por bloque de ${data.architecture}`} width={900} height={data.blocks.length * row + 16}>
     {data.blocks.map((block, index) => {
       const y = 8 + index * row, parameters = block.parameters ?? 0;
-      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} className="mx-block"><title>{blockTitle(block)}</title>
+      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} data-kind={block.kind} className="mx-block"><title>{blockTitle(block)}</title>
         <text className="mx-name" x="8" y={y + 22}>{block.label}</text>
-        <text className="mx-dimension" x="230" y={y + 22}>{shapeText(block.output_shape)}</text>
+        <text className="mx-dimension" x="230" y={y + 22}>{block.kind === 'output' ? outputText(data.output) : shapeText(block.output_shape)}</text>
         <rect x="370" y={y + 6} width={parameters ? Math.max(4, 390 * Math.log10(parameters + 1) / largest) : 2} height="24" rx="3" />
         <text className="mx-dimension" x="892" y={y + 22} textAnchor="end">{countText(block.parameters)}</text>
       </g>;
@@ -89,17 +93,17 @@ function BlockBars({ data, phase }: ChartProps) {
 function DenseGraph({ data, phase }: ChartProps) {
   const { placed, width } = layout(data.blocks.map(block => {
     const units = block.units ?? 0, columns = Math.ceil(units / 4);
-    return { block, units, width: block.kind === 'dense' ? Math.max(92, columns * 18 + 26) : 92 };
+    return { block, units, width: blockWidth(block, block.kind === 'dense' ? columns * 18 + 26 : 92) };
   }));
   return <Frame label="Bloques densos de DenseNet121" width={width}>
     {placed.map((item, index) => {
       const { block, units, x } = item, next = placed[index + 1], dense = block.kind === 'dense';
-      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} className="mx-block"><title>{blockTitle(block)}</title>
+      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} data-kind={block.kind} className="mx-block"><title>{blockTitle(block)}</title>
         <rect x={x} y={MIDDLE - (dense ? 56 : 34)} width={item.width} height={dense ? 112 : 68} rx="8" />
         {Array.from({ length: units }, (_, unit) => <circle key={unit} className="mx-unit" r="6" cx={x + 22 + Math.floor(unit / 4) * 18} cy={MIDDLE - 27 + (unit % 4) * 18} />)}
         {dense ? null : <text className="mx-dimension" x={x + item.width / 2} y={MIDDLE + 4} textAnchor="middle">{block.layers} {block.layers === 1 ? 'capa' : 'capas'}</text>}
-        <Labels x={x + item.width / 2} block={block} top={MIDDLE - 90} bottom={HEIGHT - 72} />
-        {dense && <text className="mx-dimension" x={x + item.width / 2} y={HEIGHT - 52} textAnchor="middle">{units} capas densas</text>}
+        <Labels x={x + item.width / 2} block={block} output={data.output} top={MIDDLE - 90} bottom={HEIGHT - 84} />
+        {dense && <text className="mx-dimension" x={x + item.width / 2} y={HEIGHT - 64} textAnchor="middle">{units} capas densas</text>}
         {next && <Arrow x1={x + item.width + 6} x2={next.x - 6} />}
       </g>;
     })}
@@ -143,19 +147,19 @@ function DenseConnections({ data, phase }: ChartProps) {
 }
 
 function VitFlow({ data, phase }: ChartProps) {
-  const input = data.blocks.find(block => block.kind === 'input'), head = data.blocks.find(block => block.kind === 'head');
+  const input = data.blocks.find(block => block.kind === 'input'), output = data.blocks.find(block => block.kind === 'output');
   const encoder = data.blocks.filter(block => block.kind === 'encoder');
   const trained = encoder.filter(block => isTrained(block, phase)).length;
-  const embedding = data.output?.embedding_features as number | undefined;
+  const embedding = data.output?.embedding_features;
   const boxes = [
     { id: 'input', name: 'Entrada', lines: [shapeText(input?.output_shape ?? null)], active: false },
     { id: 'encoder', name: `Encoder ViT · ${encoder.length} bloques`, lines: [trained ? `${trained} entrenados, ${encoder.length - trained} congelados` : 'Todos congelados', 'Estructura de referencia'], active: trained > 0 },
     { id: 'embedding', name: 'Embedding L2', lines: [embedding ? `${embedding} dimensiones` : 'Sin evidencia'], active: false },
-    { id: 'head', name: 'Cabeza lineal', lines: [`${countText(head?.parameters)} parámetros`, 'Salida sigmoide'], active: Boolean(head && isTrained(head, phase)) },
+    { id: 'output', name: 'Capa de salida', lines: [outputText(data.output), `${countText(output?.parameters)} parámetros`], active: Boolean(output && isTrained(output, phase)), kind: 'output' },
   ];
   const boxWidth = 216, step = boxWidth + 40;
   return <Frame label={`Flujo de ${data.architecture}`} width={step * boxes.length - 24} height={200}>
-    {boxes.map((box, index) => <g key={box.id} className="mx-block" data-trained={box.active}>
+    {boxes.map((box, index) => <g key={box.id} className="mx-block" data-trained={box.active} data-kind={box.kind}>
       <rect x={12 + index * step} y="44" width={boxWidth} height="104" rx="8" />
       <text className="mx-name" x={12 + index * step + boxWidth / 2} y="82" textAnchor="middle">{box.name}</text>
       {box.lines.map((line, row) => <text key={line} className="mx-dimension" x={12 + index * step + boxWidth / 2} y={106 + row * 20} textAnchor="middle">{line}</text>)}
@@ -165,15 +169,15 @@ function VitFlow({ data, phase }: ChartProps) {
 }
 
 function VitBlocks({ data, phase }: ChartProps) {
-  const encoder = data.blocks.filter(block => block.kind === 'encoder');
+  const encoder = data.blocks.filter(block => block.kind === 'encoder' || block.kind === 'output');
   const columns = 6, size = 138;
   return <Frame label={`Bloques ViT de ${data.architecture}`} width={columns * size + 16} height={Math.ceil(encoder.length / columns) * 92 + 16}>
     {encoder.map((block, index) => {
       const x = 8 + (index % columns) * size, y = 8 + Math.floor(index / columns) * 92;
-      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} className="mx-block"><title>{block.label}</title>
+      return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} data-kind={block.kind} className="mx-block"><title>{block.label}</title>
         <rect x={x} y={y} width={size - 12} height="76" rx="8" />
         <text className="mx-name" x={x + (size - 12) / 2} y={y + 34} textAnchor="middle">{block.label}</text>
-        <text className="mx-dimension" x={x + (size - 12) / 2} y={y + 56} textAnchor="middle">{isTrained(block, phase) ? 'Entrenado' : 'Congelado'}</text>
+        <text className="mx-dimension" x={x + (size - 12) / 2} y={y + 56} textAnchor="middle">{block.kind === 'output' ? outputText(data.output) : isTrained(block, phase) ? 'Entrenado' : 'Congelado'}</text>
       </g>;
     })}
   </Frame>;
@@ -183,8 +187,8 @@ function LayerTable({ data, phase }: ChartProps) {
   const [blockId, setBlockId] = useState('');
   const layers = data.layers.filter(layer => !blockId || layer.block === blockId);
   if (!data.layers.length) return <div className="report-table-scroll"><table className="report-data-table"><caption>Bloques del modelo</caption>
-    <thead><tr><th>Bloque</th><th>Dimensión de salida</th><th>Parámetros</th><th>Estado en la fase</th><th>Origen</th></tr></thead>
-    <tbody>{data.blocks.map(block => <tr key={block.id}><th scope="row">{block.label}</th><td>{shapeText(block.output_shape)}</td><td>{countText(block.parameters)}</td>
+    <thead><tr><th>Bloque</th><th>Dimensión de salida</th><th>Activación</th><th>Parámetros</th><th>Estado en la fase</th><th>Origen</th></tr></thead>
+    <tbody>{data.blocks.map(block => <tr key={block.id}><th scope="row">{block.label}</th><td>{shapeText(block.output_shape)}</td><td>{block.kind === 'output' ? data.output?.activation ?? '—' : '—'}</td><td>{countText(block.parameters)}</td>
       <td>{block.kind === 'input' ? 'No aplica' : isTrained(block, phase) ? 'Entrenado' : 'Congelado'}</td><td>{block.origin === 'recorded' ? 'Registrado' : 'Referencia del encoder'}</td></tr>)}</tbody></table></div>;
   return <>
     <label className="mx-filter">Bloque<select className="ds-control" value={blockId} onChange={event => setBlockId(event.target.value)}>
@@ -192,8 +196,8 @@ function LayerTable({ data, phase }: ChartProps) {
       {data.blocks.map(block => <option key={block.id} value={block.id}>{block.label} ({block.layers})</option>)}
     </select></label>
     <div className="report-table-scroll" tabIndex={0} role="region" aria-label="Capas del modelo"><table className="report-data-table"><caption>Capas registradas y parámetros calculados</caption>
-      <thead><tr><th>Capa</th><th>Tipo</th><th>Salida</th><th>Parámetros</th><th>Entrada</th><th>Estado en la fase</th></tr></thead>
-      <tbody>{layers.map(layer => <Fragment key={layer.name}><tr><th scope="row"><code>{layer.name}</code></th><td>{layer.type}</td><td>{shapeText(layer.output_shape)}</td><td>{countText(layer.parameters)}</td>
+      <thead><tr><th>Capa</th><th>Tipo</th><th>Salida</th><th>Activación</th><th>Parámetros</th><th>Entrada</th><th>Estado en la fase</th></tr></thead>
+      <tbody>{layers.map(layer => <Fragment key={layer.name}><tr><th scope="row"><code>{layer.name}</code></th><td>{layer.type}</td><td>{shapeText(layer.output_shape)}</td><td>{typeof layer.settings.activation === 'string' ? layer.settings.activation : '—'}</td><td>{countText(layer.parameters)}</td>
         <td>{layer.inputs.join(', ') || '—'}</td><td>{layer.parameters ? layer.trainable_phases.includes(phase) ? 'Entrenada' : 'Congelada' : 'Sin pesos'}</td></tr></Fragment>)}</tbody></table></div>
   </>;
 }

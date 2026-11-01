@@ -1,4 +1,4 @@
-/* Explorador de Modelos: every colour comes from the design tokens, so both themes follow. */
+/* Arquitectura del modelo: every colour comes from the design tokens, so both themes follow. */
 .mx-page { --mx-trained: var(--ds-blue-500); --mx-frozen: var(--ds-fg-muted); }
 .mx-page .mx-chart { max-width: 100%; overflow-x: auto; padding: var(--ds-space-3); background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-radius: 8px; }
 .mx-page .mx-chart svg { display: block; width: 100%; height: auto; }
@@ -21,3 +21,4 @@
 .mx-page .mx-legend span { width: 14px; height: 14px; border: 1px solid var(--mx-frozen); border-radius: 3px; }
 .mx-page .mx-legend span[data-trained="true"] { background: var(--ds-bg-selected); border-color: var(--mx-trained); }
 .mx-page .mx-legend span:not(:first-child) { margin-left: var(--ds-space-3); }
+.mx-page .mx-block[data-kind="output"] rect, .mx-page .mx-block[data-kind="output"] polygon { stroke: var(--ds-green-700); stroke-width: 2; }

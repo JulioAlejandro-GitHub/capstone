@@ -3,7 +3,7 @@ import { routes } from '../../router';
 export type NavigationIconName =
   | 'dashboard' | 'activity' | 'evaluation' | 'compare' | 'package' | 'rocket'
   | 'trace' | 'explain' | 'prediction' | 'database' | 'datasets' | 'logs'
-  | 'stethoscope' | 'microscope' | 'percent' | 'boxes';
+  | 'stethoscope' | 'microscope' | 'percent' | 'boxes' | 'architecture' | 'cpuAI';
 
 export type NavigationGroup = {
   id: string;
@@ -36,7 +36,7 @@ const modelAiGroups: NavigationGroup[] = [
       { id: 'runs', label: 'Ejecuciones', path: routes.runs, icon: 'activity' },
       { id: 'campaign', label: 'Campaña', path: routes.campaigns, icon: 'compare' },
       { id: 'comparison', label: 'Análisis de Modelos', path: routes.comparison, icon: 'percent' },
-      { id: 'model-explorer', label: 'Explorador de Modelos', path: routes.modelExplorer, icon: 'boxes' },
+      { id: 'model-explorer', label: 'Arquitectura del modelo', path: routes.modelExplorer, icon: 'architecture' },
     ]
   },
   {
@@ -66,6 +66,7 @@ export const navigationModules: NavigationModule[] = [
     id: 'model-ai',
     label: 'Modelo IA',
     pathPrefix: '/modelo-ia',
+    icon: 'cpuAI',
     mark: 'AI',
     groups: modelAiGroups,
   },

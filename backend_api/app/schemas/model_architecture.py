@@ -29,6 +29,15 @@ class ArchitectureBlock(BaseModel):
     origin: Origin
 
 
+class ArchitectureOutput(BaseModel):
+    neurons: int | None
+    activation: str | None
+    loss: str | None
+    from_logits: bool | None
+    meaning: str | None
+    embedding_features: int | None = None
+
+
 class ArchitecturePhase(BaseModel):
     phase: str
     trainable_parameters: int | None
@@ -51,7 +60,7 @@ class ModelArchitecture(BaseModel):
     family: Literal['custom_cnn', 'vgg16', 'densenet121', 'biomedclip', 'generic']
     framework: str | None
     input_shape: list[int | None] | None
-    output: dict[str, Any] | None
+    output: ArchitectureOutput | None
     total_parameters: int | None
     checkpoint: ArchitectureCheckpoint
     phases: list[ArchitecturePhase]

@@ -36,7 +36,7 @@ export function ModelExplorer({ datasource }: { datasource: string }) {
   const runLabel = (id: string) => summaries?.items.find(item => item.run_id === id)?.model_name || id;
   return <TraceabilityProvider><section className="ds-page ds-report scc-page mx-page">
     <header className="ds-page-header">
-      <div className="scc-heading-copy"><h1 className="report-heading">Explorador de Modelos</h1>
+      <div className="scc-heading-copy"><h1 className="report-heading">Arquitectura del modelo</h1>
         <p className="report-copy">Selecciona un RUN para ver la arquitectura del modelo que entrenó.</p></div>
       <button type="button" className="ds-button" data-variant="primary" onClick={event => open(event.currentTarget)}>{run ? 'Cambiar RUN' : '＋ Seleccionar RUN'}</button>
     </header>

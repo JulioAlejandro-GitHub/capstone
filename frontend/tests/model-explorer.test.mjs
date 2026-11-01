@@ -26,7 +26,7 @@ const views = load('components/model-architecture/architectureViews.ts');
 const { ArchitectureChart, denseUnits } = load('components/model-architecture/ArchitectureChart.tsx');
 
 const block = (id, kind, shape, phases = ['base'], extra = {}) => ({ id, label: id, kind, layers: 2, units: null, output_shape: shape, parameters: 100, trainable_phases: phases, origin: 'recorded', ...extra });
-const data = (family, blocks, layers = []) => ({ training_run_id: 'a', family, architecture: family, model_name: family, blocks, layers, phases: [{ phase: 'base' }], output: { embedding_features: 512 }, checkpoint: {} });
+const data = (family, blocks, layers = []) => ({ training_run_id: 'a', family, architecture: family, model_name: family, blocks, layers, phases: [{ phase: 'base' }], output: { neurons: 1, activation: 'sigmoid', loss: 'bce_with_logits', from_logits: true, embedding_features: 512 }, checkpoint: {} });
 const cnn = data('custom_cnn', [block('input', 'input', [null, 200, 200, 3], []), block('block1', 'convolution', [null, 100, 100, 32]), block('output', 'output', [null, 1])],
   [{ name: 'conv2d', type: 'Conv2D', block: 'block1', output_shape: [null, 100, 100, 32], inputs: ['input_layer'], parameters: 864, trainable_phases: ['base'], settings: {} }]);
 
@@ -78,7 +78,7 @@ test('la página reutiliza el selector, conserva la selección en la URL y no to
   assert.match(page, /isValidPublicId/);
   assert.doesNotMatch(page, /useComparisonSelection/);
   assert.match(read('pages/ModelComparison.tsx'), /RunSelectorDialog/);
-  assert.match(read('components/navigation/navigationConfig.ts'), /Explorador de Modelos/);
+  assert.match(read('components/navigation/navigationConfig.ts'), /Arquitectura del modelo/);
   assert.match(read('App.tsx'), /routes\.modelExplorer/);
   assert.match(read('services/api.ts'), /\/architecture`/);
 });
@@ -102,4 +102,18 @@ test('Análisis de Modelos reutiliza el detalle con un modelo activo a la vez', 
   assert.match(read('components/reports/ScientificPreflight.tsx'), /id="arquitectura"/);
   assert.match(read('pages/ModelComparison.tsx'), /search\.get\('modelo'\)/);
   assert.match(read('pages/ModelExplorer.tsx'), /ArchitectureDetail/);
+});
+
+test('todas las vistas gráficas identifican la capa de salida', () => {
+  const blocks = [block('input', 'input', [null, 200, 200, 3], []), block('output', 'output', [null, 1], ['base'], { label: 'Capa de salida' })];
+  const vit = [block('vit0', 'encoder', null, [], { origin: 'reference' }), ...blocks];
+  for (const [family, items] of [['custom_cnn', blocks], ['vgg16', blocks], ['densenet121', blocks], ['biomedclip', vit]]) {
+    for (const view of Array.from(views.viewsFor(family)).filter(item => item !== 'tabla' && item !== 'conexiones')) {
+      const html = renderToStaticMarkup(React.createElement(ArchitectureChart, { data: data(family, items), view, phase: 'base' }));
+      assert.match(html, /1 neurona · Sigmoide/, `${family} ${view}`);
+    }
+  }
+  assert.equal(views.outputText({ neurons: 2, activation: 'softmax' }), '2 neuronas · Softmax');
+  assert.equal(views.lossText({ loss: 'binary_crossentropy', from_logits: false }), 'Pérdida: Binary Cross-Entropy');
+  assert.match(views.lossText({ loss: 'bce_with_logits', from_logits: true }), /with Logits; la capa entrega logits/);
 });
