@@ -152,14 +152,14 @@ function VitFlow({ data, phase }: ChartProps) {
   const trained = encoder.filter(block => isTrained(block, phase)).length;
   const embedding = data.output?.embedding_features;
   const boxes = [
-    { id: 'input', name: 'Entrada', lines: [shapeText(input?.output_shape ?? null)], active: false },
-    { id: 'encoder', name: `Encoder ViT · ${encoder.length} bloques`, lines: [trained ? `${trained} entrenados, ${encoder.length - trained} congelados` : 'Todos congelados', 'Estructura de referencia'], active: trained > 0 },
-    { id: 'embedding', name: 'Embedding L2', lines: [embedding ? `${embedding} dimensiones` : 'Sin evidencia'], active: false },
-    { id: 'output', name: 'Capa de salida', lines: [outputText(data.output), `${countText(output?.parameters)} parámetros`], active: Boolean(output && isTrained(output, phase)), kind: 'output' },
+    { id: 'input', block: 'input', name: 'Entrada', lines: [shapeText(input?.output_shape ?? null)], active: false },
+    { id: 'encoder', block: encoder[0]?.id, name: `Encoder ViT · ${encoder.length} bloques`, lines: [trained ? `${trained} entrenados, ${encoder.length - trained} congelados` : 'Todos congelados', 'Estructura de referencia'], active: trained > 0 },
+    { id: 'embedding', block: 'output', name: 'Embedding L2', lines: [embedding ? `${embedding} dimensiones` : 'Sin evidencia'], active: false },
+    { id: 'output', block: 'output', name: 'Capa de salida', lines: [outputText(data.output), `${countText(output?.parameters)} parámetros`], active: Boolean(output && isTrained(output, phase)), kind: 'output' },
   ];
   const boxWidth = 216, step = boxWidth + 40;
   return <Frame label={`Flujo de ${data.architecture}`} width={step * boxes.length - 24} height={200}>
-    {boxes.map((box, index) => <g key={box.id} className="mx-block" data-trained={box.active} data-kind={box.kind}>
+    {boxes.map((box, index) => <g key={box.id} className="mx-block" data-block={box.block} data-trained={box.active} data-kind={box.kind}>
       <rect x={12 + index * step} y="44" width={boxWidth} height="104" rx="8" />
       <text className="mx-name" x={12 + index * step + boxWidth / 2} y="82" textAnchor="middle">{box.name}</text>
       {box.lines.map((line, row) => <text key={line} className="mx-dimension" x={12 + index * step + boxWidth / 2} y={106 + row * 20} textAnchor="middle">{line}</text>)}

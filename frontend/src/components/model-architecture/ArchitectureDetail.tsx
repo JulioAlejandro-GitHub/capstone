@@ -1,3 +1,4 @@
+import { useState, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 
 import { buildShareableUrl, routes, withAllowedQuery } from '../../router';
@@ -5,11 +6,19 @@ import type { ModelArchitecture } from '../../types/modelArchitecture';
 import { EvidenceButton, Kpi, SectionAnswer } from '../reports/AnalysisWorkspace';
 import { CopyText } from '../reports/ComparisonPython';
 import { ArchitectureChart } from './ArchitectureChart';
+import { MathFunctionPanel } from './MathFunctionPanel';
 import { architectureViews, countText, lossText, outputText, phaseLabels, shapeText, viewsFor, type ArchitectureView } from './architectureViews';
 
 /** One model's architecture; Arquitectura del modelo and Análisis de Modelos differ only in who owns the view and the phase. */
 export function ArchitectureDetail({ data, view, onView, phase, onPhase, datasource, explorerLink = false }: { data: ModelArchitecture; view: ArchitectureView; onView: (view: ArchitectureView) => void;
   phase: string; onPhase: (phase: string) => void; datasource: string; explorerLink?: boolean }) {
+  const [requestedBlock, setRequestedBlock] = useState<string | null>(null);
+  const block = data.blocks.find(item => item.id === requestedBlock) ?? data.blocks.find(item => item.kind !== 'input') ?? data.blocks[0];
+  // Every drawn block carries data-block, so one listener serves all the chart types.
+  const pickBlock = (event: MouseEvent<HTMLDivElement>) => {
+    const id = (event.target as Element).closest('[data-block]')?.getAttribute('data-block');
+    if (id) setRequestedBlock(id);
+  };
   const current = data.phases.find(item => item.phase === phase);
   const reference = data.blocks.some(block => block.origin === 'reference');
   return <>
@@ -30,9 +39,13 @@ export function ArchitectureDetail({ data, view, onView, phase, onPhase, datasou
       {data.phases.length > 1 && <div className="scc-segmented" role="group" aria-label="Fase de entrenamiento">{data.phases.map(item => <button key={item.phase} type="button" className="ds-button" data-size="compact"
         aria-pressed={item.phase === phase} onClick={() => onPhase(item.phase)}>{phaseLabels[item.phase] ?? item.phase}</button>)}</div>}
     </div>
-    <ArchitectureChart data={data} view={view} phase={phase} />
+    <div className="mx-selectable" onClick={pickBlock}>
+      {block && <style>{`.mx-selectable [data-block="${block.id}"] rect, .mx-selectable [data-block="${block.id}"] polygon { stroke-width: 3; }`}</style>}
+      <ArchitectureChart data={data} view={view} phase={phase} />
+    </div>
     {explorerLink && <Link className="ds-button" data-size="compact" to={withAllowedQuery(routes.modelExplorer, { datasource, run: data.training_run_id, grafico: view, fase: phase })}>Abrir vista completa</Link>}
     <p className="mx-legend"><span data-trained="true" />Se entrena en esta fase<span data-trained="false" />Congelado o sin pesos</p>
+    {block && <MathFunctionPanel data={data} block={block} onBlock={setRequestedBlock} />}
     <EvidenceButton title="Identidad del modelo" label="Identidad del modelo">
       <p className="report-identifier">TRAIN: {data.training_run_id}<br />Checkpoint: {data.checkpoint.artifact_id ?? 'Sin evidencia'}</p>
       <CopyText text={buildShareableUrl(routes.modelExplorer, { datasource, run: data.training_run_id, grafico: view })} label="Copiar enlace" />

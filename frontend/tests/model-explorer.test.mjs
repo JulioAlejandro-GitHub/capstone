@@ -18,7 +18,7 @@ function load(filename, cache = new Map()) {
   const module = { exports: {} };
   cache.set(path, module.exports);
   const code = ts.transpileModule(readFileSync(path, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText;
-  runInNewContext(code, { exports: module.exports, module, Math, Array, require: (name) => name.startsWith('.')
+  runInNewContext(code, { exports: module.exports, module, Math, Array, JSON, Map, require: (name) => name.startsWith('.')
     ? load(`${dirname(path).slice(root.length)}/${name}.ts${name.endsWith('Chart') ? 'x' : ''}`, cache) : require(name) });
   return module.exports;
 }
@@ -116,4 +116,34 @@ test('todas las vistas gráficas identifican la capa de salida', () => {
   assert.equal(views.outputText({ neurons: 2, activation: 'softmax' }), '2 neuronas · Softmax');
   assert.equal(views.lossText({ loss: 'binary_crossentropy', from_logits: false }), 'Pérdida: Binary Cross-Entropy');
   assert.match(views.lossText({ loss: 'bce_with_logits', from_logits: true }), /with Logits; la capa entrega logits/);
+});
+
+test('la función matemática respeta la configuración registrada de cada capa', () => {
+  const math = load('components/model-architecture/mathOperations.tsx');
+  const conv = (name, settings) => ({ name, type: 'Conv2D', block: 'block1', output_shape: [null, 200, 200, 32], inputs: [], parameters: 1, trainable_phases: [], settings: { filters: 32, kernel_size: [3, 3], strides: [1, 1], padding: 'same', ...settings } });
+  const block = { id: 'block1', label: 'Bloque 1', kind: 'convolution', origin: 'recorded' };
+  const model = { family: 'custom_cnn', blocks: [block], output: null, layers: [conv('a', { use_bias: false, activation: 'linear' })] };
+  const noBias = renderToStaticMarkup(math.blockOperations(model, block)[0].formula);
+  assert.doesNotMatch(noBias, /<mi>b<\/mi>/);
+  assert.doesNotMatch(noBias, /max/);
+  assert.match(math.blockOperations(model, block)[0].detail, /sin sesgo/);
+  const vgg = { ...model, layers: [conv('a', { use_bias: true, activation: 'relu' }), conv('b', { use_bias: true, activation: 'relu' })] };
+  const [operation] = math.blockOperations(vgg, block);
+  assert.equal(operation.count, 2);
+  const withBias = renderToStaticMarkup(operation.formula);
+  assert.match(withBias, /<mi>b<\/mi>/);
+  assert.match(withBias, /max/);
+});
+
+test('BiomedCLIP entrenado no usa similitud y el recorrido no inventa una predicción', () => {
+  const math = load('components/model-architecture/mathOperations.tsx');
+  const output = { neurons: 1, activation: 'sigmoid', loss: 'bce_with_logits', from_logits: true, embedding_features: 512 };
+  const encoder = { id: 'vit0', kind: 'encoder', origin: 'reference' }, head = { id: 'output', kind: 'output', origin: 'recorded' };
+  const model = { family: 'biomedclip', input_shape: [null, 224, 224, 3], blocks: [encoder, head], layers: [], output };
+  assert.ok(math.blockOperations(model, encoder).every(item => item.origin === 'reference'));
+  assert.match(renderToStaticMarkup(math.blockOperations(model, encoder)[1].formula), /softmax/);
+  const titles = math.blockOperations(model, head).map(item => item.title);
+  assert.deepEqual(Array.from(titles), ['Embedding L2', 'Capa de salida', 'Pérdida de entrenamiento']);
+  assert.match(math.blockOperations(model, head)[1].detail, /no usa similitud/);
+  assert.deepEqual(Array.from(math.tensorPath(model)), ['224 × 224 × 3', 'Parches y tokens', 'Encoder ViT · 1 bloques', 'Embedding 512', '1 logit', 'Sigmoide']);
 });

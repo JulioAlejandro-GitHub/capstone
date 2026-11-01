@@ -7,7 +7,8 @@ from app.repositories.model_architecture import ModelArchitectureRepository
 from app.services.scientific_report import checkpoint_evidence
 from src.malaria_dl.models.biomedclip_training import VIT_BLOCKS
 
-SETTINGS = ('filters', 'kernel_size', 'strides', 'pool_size', 'padding', 'activation', 'units', 'rate')
+SETTINGS = ('filters', 'kernel_size', 'strides', 'pool_size', 'padding', 'activation', 'units', 'rate', 'use_bias',
+            'center', 'scale', 'epsilon', 'mean', 'variance')
 NESTED = ('Functional', 'Sequential')
 
 

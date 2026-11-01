@@ -22,3 +22,12 @@
 .mx-page .mx-legend span[data-trained="true"] { background: var(--ds-bg-selected); border-color: var(--mx-trained); }
 .mx-page .mx-legend span:not(:first-child) { margin-left: var(--ds-space-3); }
 .mx-page .mx-block[data-kind="output"] rect, .mx-page .mx-block[data-kind="output"] polygon { stroke: var(--ds-green-700); stroke-width: 2; }
+.mx-page .mx-selectable [data-block] { cursor: pointer; }
+.mx-page .mx-math h3 { margin: 0; }
+.mx-page .mx-path { display: flex; flex-wrap: wrap; gap: var(--ds-space-1, 2px); margin: var(--ds-space-3) 0; font-size: var(--ds-text-sm); }
+.mx-page .mx-path span:not(:last-child)::after { content: " →"; color: var(--ds-fg-muted); }
+.mx-page .mx-operations { display: grid; gap: var(--ds-space-3); margin: 0; padding: 0; list-style: none; }
+.mx-page .mx-operations li { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 2fr); gap: var(--ds-space-3); align-items: center; padding-top: var(--ds-space-3); border-top: 1px solid var(--ds-border-subtle); }
+.mx-page .mx-operations small { display: block; margin-top: 2px; color: var(--ds-fg-muted); }
+.mx-page .mx-operations math { overflow-x: auto; font-size: 1.4em; }
+@media (max-width: 720px) { .mx-page .mx-operations li { grid-template-columns: 1fr; } }
