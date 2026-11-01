@@ -1,3 +1,4 @@
+import type { ModelArchitecture } from '../types/modelArchitecture';
 import type { ReportRequest, ReportResponse } from '../types/scientificReport';
 import type { PreflightRequest, PreflightResponse } from '../types/scientificPreflight';
 import type { ExplainExecutor, ExplainRequest, ExplainState, ExplainSubmission, RepresentState, RepresentSubmission } from '../types/explainGeneration';
@@ -648,6 +649,9 @@ export const api = {
     return request<PreflightResponse>('/models/comparison/preflight', { datasource }, {
       init: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
     });
+  },
+  getModelArchitecture(datasource: string, runId: string, signal?: AbortSignal) {
+    return request<ModelArchitecture>(`/runs/${encodeURIComponent(runId)}/architecture`, withDatasource(datasource), {signal});
   },
   getTrainingAssessments(trainingRunId: string, offset = 0, signal?: AbortSignal) {
     return request<{items: AssessmentChoice[]}>('/assessments', {training_run_id: trainingRunId, limit: 100, offset, view: 'traceability'}, {signal});

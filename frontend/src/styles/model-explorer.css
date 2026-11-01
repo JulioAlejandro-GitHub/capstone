@@ -1,0 +1,23 @@
+/* Explorador de Modelos: every colour comes from the design tokens, so both themes follow. */
+.ds-report.mx-page { --mx-trained: var(--ds-blue-500); --mx-frozen: var(--ds-fg-muted); }
+.ds-report.mx-page .mx-chart { max-width: 100%; overflow-x: auto; padding: var(--ds-space-3); background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-radius: 8px; }
+.ds-report.mx-page .mx-chart svg { display: block; width: 100%; height: auto; }
+.mx-page .mx-block rect, .mx-page .mx-block polygon, .mx-page .mx-node circle { fill: var(--mx-frozen); fill-opacity: 0.1; stroke: var(--mx-frozen); stroke-width: 1.25; }
+.mx-page .mx-block[data-trained="true"] rect, .mx-page .mx-block[data-trained="true"] polygon, .mx-page .mx-node[data-trained="true"] circle { fill: var(--mx-trained); fill-opacity: 0.2; stroke: var(--mx-trained); }
+.mx-page .mx-block polygon[data-face="side"] { fill-opacity: 0.32; }
+.mx-page .mx-block .mx-unit { fill: var(--mx-frozen); fill-opacity: 0.5; stroke: none; }
+.mx-page .mx-block[data-trained="true"] .mx-unit { fill: var(--mx-trained); fill-opacity: 0.8; }
+.mx-page .mx-node { cursor: pointer; }
+.mx-page .mx-node[data-selected="true"] circle { stroke-width: 3; fill-opacity: 0.6; }
+.mx-page .mx-node:focus-visible circle { stroke-width: 3; }
+.mx-page .mx-link, .mx-page .mx-arc { fill: none; stroke: var(--ds-fg-muted); stroke-width: 1.25; }
+.mx-page .mx-arrowhead { fill: var(--ds-fg-muted); }
+.mx-page .mx-entry { fill: none; stroke: var(--ds-fg-muted); }
+.mx-page .mx-name { fill: var(--ds-fg-default); font-size: 14px; font-weight: 600; }
+.mx-page .mx-dimension { fill: var(--ds-fg-muted); font-size: 13px; }
+.mx-page .scc-segmented [aria-pressed="true"] { background: var(--ds-bg-selected); border-color: var(--ds-blue-500); }
+.mx-page .mx-filter { display: inline-flex; align-items: center; gap: var(--ds-space-2); margin-bottom: var(--ds-space-2); }
+.mx-page .mx-legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2); margin: 0; color: var(--ds-fg-muted); font-size: var(--ds-text-sm); }
+.mx-page .mx-legend span { width: 14px; height: 14px; border: 1px solid var(--mx-frozen); border-radius: 3px; }
+.mx-page .mx-legend span[data-trained="true"] { background: var(--ds-bg-selected); border-color: var(--mx-trained); }
+.mx-page .mx-legend span:not(:first-child) { margin-left: var(--ds-space-3); }

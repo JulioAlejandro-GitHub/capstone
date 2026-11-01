@@ -30,8 +30,8 @@ export function modelFilterValue(modelName: string | null | undefined): string {
   return model ? `${MODEL_FILTER_PREFIX}${model}` : MISSING_MODEL_FILTER;
 }
 
-const sortedOptions = (options: Map<string, string>) => Array.from(options, ([value, text]) => ({ value, text }))
-  .sort((left, right) => left.text.localeCompare(right.text, 'es', { sensitivity: 'base' }));
+const sortedOptions = (options: Map<string, string>) => Array.from(options, ([value, label]) => ({ value, label }))
+  .sort((left, right) => left.label.localeCompare(right.label, 'es', { sensitivity: 'base' }));
 
 const metricColumns = [
   { id: 'recall', header: 'Recall' },
@@ -40,18 +40,21 @@ const metricColumns = [
   { id: 'auc', header: 'AUC' },
 ] as const;
 
-// MUI overlays (filter menus, pagination) must render inside a modal <dialog>: a body portal sits below its top layer.
+// MUI overlays (filter menus, pagination) must render inside a modal <dialog>: a body portal sits below its top layer,
+// and rendering them in place leaves them clipped by the table. The open dialog itself hosts them.
+const openDialog = () => document.querySelector<HTMLElement>('dialog[open]') ?? document.body;
 const pageTheme = createTheme({ typography: { fontFamily: 'inherit' } });
 const dialogTheme = createTheme({
   typography: { fontFamily: 'inherit' },
   components: {
-    MuiPopover: { defaultProps: { disablePortal: true } },
-    MuiPopper: { defaultProps: { disablePortal: true } },
+    MuiPopover: { defaultProps: { container: openDialog } },
+    MuiPopper: { defaultProps: { container: openDialog } },
   },
 });
 
 export interface TrainingRunsSelection {
   ids: string[];
+  /** Omitted when the caller has no capacity limit to apply. */
   maximum?: number;
   /** Whether a not-yet-selected TRAIN may be added; selected rows can always be removed. */
   canSelect: (training: TrainingSummary) => boolean;
@@ -118,7 +121,7 @@ export function TrainingRunsTable({
       analyses.add(generateRunAutoAnalysis(training).title);
     });
     return {
-      runOptions: [{ value: ACTIVE_MODEL_FILTER, text: 'Modelo en Estado Activo' }, ...sortedOptions(statuses)],
+      runOptions: [{ value: ACTIVE_MODEL_FILTER, label: 'Modelo en Estado Activo' }, ...sortedOptions(statuses)],
       modelOptions: [...sortedOptions(models), ...sortedOptions(optimizers)],
       analysisOptions: Array.from(analyses).sort((left, right) => left.localeCompare(right, 'es')),
     };
@@ -178,7 +181,8 @@ export function TrainingRunsTable({
     [onlySelected, selectedIds, trainings]);
   const rowSelection = useMemo<MRT_RowSelectionState>(
     () => Object.fromEntries((selectedIds ?? []).map(id => [id, true])), [selectedIds]);
-  const available = selection?.maximum === undefined ? 0 : selection.maximum - selection.ids.length;
+  // No maximum means the caller governs the selection (one RUN replacing the previous, for instance).
+  const available = selection?.maximum === undefined ? Number.POSITIVE_INFINITY : selection.maximum - selection.ids.length;
 
   const table = useMaterialReactTable({
     columns, data, localization: MRT_Localization_ES,
