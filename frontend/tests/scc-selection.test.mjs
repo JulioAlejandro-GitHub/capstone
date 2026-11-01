@@ -9,6 +9,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import ts from 'typescript';
 const require = createRequire(import.meta.url);
+const { MemoryRouter } = require('react-router-dom');
 const root = fileURLToPath(new URL('../src/', import.meta.url));
 function loader(mocks = {}) {
   const cache = new Map();
@@ -122,8 +123,10 @@ test('selector reuses the report row, preserving full report secondary sections'
   const run = {run_id: '12345678-full-uuid', run_name: 'Ensayo', model_name: 'CNN', status: 'completed', command: '--learning-rate 0.02 --max-epochs 20', evaluation_count: 0, explainability_count: 0};
   const Row = load('components/reports/RunSummaryRow.tsx').RunSummaryRow;
   const compact = renderToStaticMarkup(React.createElement(Row, {run, processKind: 'training', variant: 'compact', onRunSelect() {}}));
-  const full = renderToStaticMarkup(React.createElement(Row, {run, processKind: 'training', onRunSelect() {}}));
+  const full = renderToStaticMarkup(React.createElement(MemoryRouter, {initialEntries: ['/?datasource=malaria']}, React.createElement(Row, {run, processKind: 'training', onRunSelect() {}})));
   assert.match(compact, /report-row--compact/);
+  assert.doesNotMatch(compact, /Ver arquitectura del modelo/);
+  assert.match(full, /href="\/modelo-ia\/explorador\?datasource=malaria&amp;run=12345678-full-uuid"/);
   assert.doesNotMatch(compact, /Consultar UUID completo|Inicio:|Dataset:/);
   assert.match(compact, /12345678-full-uuid/);
   assert.match(compact, /0.02/);
@@ -132,7 +135,7 @@ test('selector reuses the report row, preserving full report secondary sections'
   assert.match(full, /stage2-release-summary/);
   assert.match(full, /Lectura automática exploratoria/);
   const Group = load('components/reports/TrainingRunGroupCard.tsx').TrainingRunGroupCard;
-  const group = renderToStaticMarkup(React.createElement(Group, {training: run, childrenState: {data: null, status: 'idle'}, datasource: 'malaria'}));
+  const group = renderToStaticMarkup(React.createElement(MemoryRouter, null, React.createElement(Group, {training: run, childrenState: {data: null, status: 'idle'}, datasource: 'malaria'})));
   assert.match(group, /run-lineage-group__children/);
 });
 

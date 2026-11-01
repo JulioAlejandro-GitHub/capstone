@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { StatusBadge } from '../StatusBadge';
 import { NavigationIcon } from '../navigation/NavigationIcon';
+import { routes, withAllowedQuery } from '../../router';
 import type { RunDashboard, TrainingSummary } from '../../types/api';
 import { getRunDuration } from '../../utils/format';
 import {
@@ -40,7 +42,17 @@ function CopyableId({ caption, value }: { caption: string; value: string | null 
 
 type RunCellProps = Pick<RunSummaryRowProps, 'run' | 'variant' | 'processKind'>;
 
-export function RunIdentityCell({ run, processKind }: RunCellProps) {
+function ModelExplorerLink({ runId }: { runId: string }) {
+  const [search] = useSearchParams();
+  return <div className="stage2-release-summary">
+    <Link className="report-detail-button stage2-detail-link"
+      to={withAllowedQuery(routes.modelExplorer, { datasource: search.get('datasource'), run: runId })}>
+      Ver arquitectura del modelo
+    </Link>
+  </div>;
+}
+
+export function RunIdentityCell({ run, variant = 'full', processKind }: RunCellProps) {
   return <>
     {processKind ? <RunProcessBadge kind={processKind} /> : null}
     <strong className="report-run-name">
@@ -59,6 +71,7 @@ export function RunIdentityCell({ run, processKind }: RunCellProps) {
         )}
       </span>
     </div>
+    {processKind === 'training' && variant !== 'compact' ? <ModelExplorerLink runId={run.run_id} /> : null}
   </>;
 }
 
