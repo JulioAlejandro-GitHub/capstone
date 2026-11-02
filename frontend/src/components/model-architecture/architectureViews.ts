@@ -1,4 +1,4 @@
-import type { ArchitectureBlock, ArchitectureFamily, ArchitectureOutput, ArchitectureShape } from '../../types/modelArchitecture';
+import type { ArchitectureBlock, ArchitectureFamily, ArchitectureLayer, ArchitectureOutput, ArchitectureShape, ModelArchitecture } from '../../types/modelArchitecture';
 
 export const architectureViews = {
   mapas: 'Mapas apilados', 'bloques-3d': 'Bloques 3D', bloques: 'Bloques', grafo: 'Grafo denso', conexiones: 'Conexiones',
@@ -44,3 +44,31 @@ export const isSpatial = (shape: ArchitectureShape) => (shape?.length ?? 0) === 
 // 200 to 6 px cannot share a linear scale: size is logarithmic and the label always carries the real value.
 export const spatialSize = (shape: ArchitectureShape) => 44 + 15 * Math.log2(Math.max(2, shape?.[1] ?? 2));
 export const depthSize = (shape: ArchitectureShape) => 10 + 3.2 * Math.log2(Math.max(2, shape?.at(-1) ?? 2));
+
+const headLabels: Record<string, (layer: ArchitectureLayer) => string> = {
+  GlobalAveragePooling2D: () => 'Promedio global', GlobalMaxPooling2D: () => 'Máximo global', Flatten: () => 'Aplanado',
+  Dense: layer => `Densa ${layer.settings.units ?? ''}`.trim(),
+};
+
+/**
+ * The head drawn as the layers that transform the tensor (pooling or flatten, each Dense), one block each, so the drawing
+ * has one element per step of a cell's trace. Dropout is the identity in inference and joins the layer before it.
+ */
+export function splitHead(data: ModelArchitecture): ModelArchitecture {
+  const head = data.layers.filter(layer => layer.block === 'head');
+  const parts = head.filter(layer => headLabels[layer.type]);
+  if (parts.length < 2) return data;
+  const owner = new Map<string, string>();
+  let current = parts[0].name;
+  head.forEach(layer => { if (headLabels[layer.type]) current = layer.name; owner.set(layer.name, current); });
+  const blocks: ArchitectureBlock[] = parts.map(part => {
+    const members = head.filter(layer => owner.get(layer.name) === part.name);
+    const counted = members.filter(layer => layer.parameters != null);
+    return { id: part.name, label: headLabels[part.type](part), kind: 'head', layers: members.length, units: null, output_shape: part.output_shape,
+      parameters: counted.length ? counted.reduce((sum, layer) => sum + (layer.parameters ?? 0), 0) : null, trainable_phases: part.trainable_phases, origin: 'recorded' };
+  });
+  const index = data.blocks.findIndex(block => block.id === 'head');
+  if (index < 0) return data;
+  return { ...data, blocks: [...data.blocks.slice(0, index), ...blocks, ...data.blocks.slice(index + 1)],
+    layers: data.layers.map(layer => owner.has(layer.name) ? { ...layer, block: owner.get(layer.name)! } : layer) };
+}

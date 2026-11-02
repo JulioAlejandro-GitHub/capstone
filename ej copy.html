@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CNN - Ejes y Dimensiones 3D</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #0b0f19;
+      font-family: system-ui, sans-serif;
+      overflow-x: auto;
+    }
+
+    .scene {
+      display: flex;
+      align-items: center;
+      gap: 90px; /* Espacio generoso para que las etiquetas de los ejes no se solapen */
+      padding: 0 120px;
+      perspective: 1500px;
+    }
+
+    .layer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .meta {
+      text-align: center;
+      margin-top: 50px;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    .meta strong {
+      color: #f1f5f9;
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    /* Estructura Base 3D */
+    .cube {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-16deg) rotateY(-28deg); /* Ángulo optimizado para ver las aristas claramente */
+    }
+    .face {
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Estilos base de las etiquetas de aristas */
+    .axis-label {
+      position: absolute;
+      color: #38bdf8;
+      font-weight: 800;
+      font-size: 11px;
+      white-space: nowrap;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    }
+
+    /* Reglas de orientación por Eje */
+    .axis-width {  /* Sobre la línea frontal inferior/horizontal */
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .axis-height { /* Al lado de la línea frontal vertical izquierda */
+      top: 50%;
+      left: -28px;
+      transform: translateY(-50%);
+    }
+    .axis-depth {  /* Siguiendo la línea diagonal superior derecha */
+      top: -12px;
+      right: -30px;
+    }
+
+    /* ========================================================
+       DIMENSIONADO DE BLOQUES (Alto x Ancho x Profundidad)
+       ======================================================== */
+
+    /* Entrada: 200 x 200 x 3 */
+    .entrada { width: 130px; height: 130px; }
+    .entrada .front  { width: 130px; height: 130px; background: rgba(239, 68, 68, 0.5); transform: translateZ(5px); }
+    .entrada .back   { width: 130px; height: 130px; background: rgba(239, 68, 68, 0.2); transform: rotateY(180deg) translateZ(5px); }
+    .entrada .right  { width: 10px;  height: 130px; background: rgba(185, 28, 28, 0.6);  transform: rotateY(90deg) translateZ(125px); }
+    .entrada .top    { width: 130px; height: 10px;  background: rgba(220, 38, 38, 0.6);  transform: rotateX(90deg) translateZ(5px); }
+
+    /* Bloque 1: 100 x 100 x 64 */
+    .b1 { width: 90px; height: 90px; }
+    .b1 .front  { width: 90px; height: 90px; background: rgba(245, 158, 11, 0.5); transform: translateZ(20px); }
+    .b1 .back   { width: 90px; height: 90px; background: rgba(245, 158, 11, 0.2); transform: rotateY(180deg) translateZ(20px); }
+    .b1 .right  { width: 40px; height: 90px; background: rgba(217, 119, 6, 0.6);  transform: rotateY(90deg) translateZ(70px); }
+    .b1 .top    { width: 90px; height: 40px; background: rgba(251, 191, 36, 0.6);  transform: rotateX(90deg) translateZ(20px); }
+
+    /* Bloque 2: 50 x 50 x 128 */
+    .b2 { width: 65px; height: 65px; }
+    .b2 .front  { width: 65px; height: 65px; background: rgba(16, 185, 129, 0.5); transform: translateZ(30px); }
+    .b2 .back   { width: 65px; height: 65px; background: rgba(16, 185, 129, 0.2); transform: rotateY(180deg) translateZ(30px); }
+    .b2 .right  { width: 60px; height: 65px; background: rgba(4, 120, 87, 0.6);   transform: rotateY(90deg) translateZ(35px); }
+    .b2 .top    { width: 65px; height: 60px; background: rgba(52, 211, 153, 0.6);  transform: rotateX(90deg) translateZ(30px); }
+
+    /* Bloque 3: 25 x 25 x 256 */
+    .b3 { width: 48px; height: 48px; }
+    .b3 .front  { width: 48px; height: 48px; background: rgba(6, 182, 212, 0.5); transform: translateZ(45px); }
+    .b3 .back   { width: 48px; height: 48px; background: rgba(6, 182, 212, 0.2); transform: rotateY(180deg) translateZ(45px); }
+    .b3 .right  { width: 90px; height: 48px; background: rgba(9, 133, 161, 0.6);  transform: rotateY(90deg) translateZ(3px); }
+    .b3 .top    { width: 48px; height: 90px; background: rgba(34, 211, 238, 0.6);  transform: rotateX(90deg) translateZ(45px); }
+
+    /* Bloque 4: 12 x 12 x 512 */
+    .b4 { width: 36px; height: 36px; }
+    .b4 .front  { width: 36px; height: 36px; background: rgba(59, 130, 246, 0.5); transform: translateZ(60px); }
+    .b4 .back   { width: 36px; height: 36px; background: rgba(59, 130, 246, 0.2); transform: rotateY(180deg) translateZ(60px); }
+    .b4 .right  { width: 120px; height: 36px; background: rgba(29, 78, 216, 0.6);  transform: rotateY(90deg) translateZ(-24px); }
+    .b4 .top    { width: 36px;  height: 120px; background: rgba(96, 165, 250, 0.6);  transform: rotateX(90deg) translateZ(60px); }
+
+    /* Bloque 5: 6 x 6 x 512 */
+    .b5 { width: 26px; height: 26px; }
+    .b5 .front  { width: 26px; height: 26px; background: rgba(139, 92, 246, 0.5); transform: translateZ(60px); }
+    .b5 .back   { width: 26px; height: 26px; background: rgba(139, 92, 246, 0.2); transform: rotateY(180deg) translateZ(60px); }
+    .b5 .right  { width: 120px; height: 26px; background: rgba(109, 40, 217, 0.6);  transform: rotateY(90deg) translateZ(-34px); }
+    .b5 .top    { width: 26px;  height: 120px; background: rgba(167, 139, 250, 0.6); transform: rotateX(90deg) translateZ(60px); }
+
+    /* ========================================================
+       VECTORES Y CLASIFICACIÓN (Eje único)
+       ======================================================== */
+
+    .vector-bar {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-16deg) rotateY(-28deg);
+    }
+    .vector-bar .face { background: rgba(236, 72, 153, 0.5); }
+    .vector-bar .right { background: rgba(190, 24, 74, 0.6); }
+    .vector-bar .top { background: rgba(244, 114, 182, 0.6); transform: rotateX(90deg); }
+
+    /* Promedio Global: 512 */
+    .gap { width: 20px; height: 110px; }
+    .gap .front, .gap .back { width: 20px; height: 110px; }
+    .gap .right { width: 20px; height: 110px; transform: rotateY(90deg) translateZ(-10px); }
+    .gap .top { width: 20px; height: 20px; translateZ(110px); }
+
+    /* Densa: 1024 */
+    .dense { width: 20px; height: 160px; }
+    .dense .face { background: rgba(20, 184, 166, 0.5); }
+    .dense .front, .dense .back { width: 20px; height: 160px; }
+    .dense .right { width: 20px; height: 160px; background: rgba(13, 148, 136, 0.6); transform: rotateY(90deg) translateZ(-10px); }
+    .dense .top { width: 20px; height: 20px; translateZ(160px); background: rgba(45, 212, 191, 0.6); }
+
+    /* Neurona de Salida */
+    .output-node {
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f43f5e 60%, #9f1239 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.6);
+      margin-top: 50px;
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      position: relative;
+    }
+    .output-node .axis-height { left: -22px; color: #f43f5e; }
+  </style>
+</head>
+<body>
+
+  <div class="scene">
+    
+    <!-- Entrada -->
+    <div class="layer-container">
+      <div class="cube entrada">
+        <div class="face front">
+          <span class="axis-label axis-width">200</span>
+          <span class="axis-label axis-height">200</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"></div>
+        <div class="face top">
+          <span class="axis-label axis-depth">3</span>
+        </div>
+      </div>
+      <div class="meta"><strong>Entrada</strong></div>
+    </div>
+
+    <!-- Bloque 1 -->
+    <div class="layer-container">
+      <div class="cube b1">
+        <div class="face front">
+          <span class="axis-label axis-width">100</span>
+          <span class="axis-label axis-height">100</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"></div>
+        <div class="face top">
+          <span class="axis-label axis-depth">64</span>
+        </div>
+      </div>
+      <div class="meta"><strong>Bloque 1</strong></div>
+    </div>
+
+    <!-- Bloque 2 -->
+    <div class="layer-container">
+      <div class="cube b2">
+        <div class="face front">
+          <span class="axis-label axis-width">50</span>
+          <span class="axis-label axis-height">50</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"></div>
+        <div class="face top">
+          <span class="axis-label axis-depth">128</span>
+        </div>
+      </div>
+      <div class="meta"><strong>Bloque 2</strong></div>
+    </div>
+
+    <!-- Bloque 3 -->
+    <div class="layer-container">
+      <div class="cube b3">
+        <div class="face front">
+          <span class="axis-label axis-width">25</span>
+          <span class="axis-label axis-height">25</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"></div>
+        <div class="face top">
+          <span class="axis-label axis-depth">256</span>
+        </div>
+      </div>
+      <div class="meta"><strong>Bloque 3</strong></div>
+    </div>
+
+    <!-- Bloque 4 -->
+    <div class="layer-container">
+      <div class="cube b4">
+        <div class="face front">
+          <span class="axis-label axis-width">12</span>
+          <span class="axis-label axis-height">12</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"></div>
+        <div class="face top">
+          <span class="axis-label axis-depth">512</span>
+        </div>
+      </div>
+      <div class="meta"><strong>Bloque 4</strong></div>
+    </div>
+

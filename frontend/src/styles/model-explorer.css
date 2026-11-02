@@ -45,7 +45,7 @@
 .mx-page .mx-trace h3, .mx-page .mx-trace h4, .mx-page .mx-trace h5 { margin: 0; }
 .mx-page .mx-trace h5 { color: var(--ds-fg-muted); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 .mx-page .mx-trace code, .mx-page .mx-trace .mx-shape, .mx-page .mx-trace .mx-stats dd, .mx-page .mx-trace .mx-row-id,
-.mx-page .mx-trace .mx-strip-shape, .mx-page .mx-trace .mx-map-caption { font-family: var(--mx-mono); font-variant-numeric: tabular-nums; }
+.mx-page .mx-trace .mx-map-caption { font-family: var(--mx-mono); font-variant-numeric: tabular-nums; }
 
 .mx-page .mx-trace-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--ds-space-3); }
 .mx-page .mx-trace-head p { max-width: 72ch; margin: 4px 0 0; color: var(--ds-fg-muted); }
@@ -63,24 +63,10 @@
 .mx-page [data-tone="amber"] { --mx-tone: var(--mx-amber); }
 .mx-page [data-tone="slate"] { --mx-tone: var(--mx-slate); }
 
-/* Tira de pasos: el diagrama se vuelve navegación; cada barra es el % de valores activos de la célula. */
-.mx-page .mx-strip { display: grid; gap: var(--ds-space-2); }
-.mx-page .mx-strip ol { display: grid; grid-auto-columns: minmax(86px, 1fr); grid-auto-flow: column; gap: 6px; margin: 0; padding: 0; overflow-x: auto; list-style: none; }
-.mx-page .mx-strip li { position: relative; }
-.mx-page .mx-strip li:not(:last-child)::after { content: ""; position: absolute; top: 34px; right: -6px; width: 6px; border-top: 1px solid var(--ds-border-default); }
-.mx-page .mx-strip button { display: grid; justify-items: center; gap: 4px; width: 100%; padding: 8px 6px; background: var(--ds-bg-surface); border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-md); color: inherit; font: inherit; cursor: pointer;
-  transition: border-color 160ms var(--mx-ease), background-color 160ms var(--mx-ease), transform 120ms var(--mx-ease); }
-.mx-page .mx-strip button:hover { border-color: var(--mx-ink); }
-.mx-page .mx-strip button:active { transform: scale(.97); }
-.mx-page .mx-strip button:focus-visible { outline: 2px solid var(--ds-focus-color); outline-offset: 2px; }
-.mx-page .mx-strip li[aria-current="step"] button { background: var(--ds-bg-selected); border-color: var(--mx-ink); box-shadow: inset 0 -3px 0 var(--mx-ink); }
-.mx-page .mx-strip-bar { display: flex; align-items: flex-end; width: 22px; height: 36px; background: var(--ds-bg-subtle); border-radius: 3px; overflow: hidden; }
-.mx-page .mx-strip-bar i { width: 100%; background: var(--mx-ink); opacity: .75; transition: height 260ms var(--mx-ease); }
-.mx-page .mx-strip-bar i[data-output] { background: var(--mx-green); }
-.mx-page .mx-strip-label { font-size: var(--ds-text-sm); font-weight: 600; white-space: nowrap; }
-.mx-page .mx-strip-shape { color: var(--ds-fg-muted); font-size: 11px; white-space: nowrap; }
-.mx-page .mx-player { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2); }
-.mx-page .mx-player-progress { position: absolute; left: 0; bottom: -6px; width: 100%; height: 2px; background: var(--mx-ink); transform-origin: left; animation: mx-progress linear forwards; }
+.mx-page .mx-player { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2); padding: var(--ds-space-2) var(--ds-space-3); background: var(--ds-bg-subtle); border: 1px solid var(--ds-border-subtle); border-radius: var(--ds-radius-lg); }
+.mx-page .mx-player-step { font-variant-numeric: tabular-nums; }
+.mx-page .mx-player .scc-meta { margin-left: auto; }
+.mx-page .mx-player-progress { position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; background: var(--mx-ink); transform-origin: left; animation: mx-progress linear forwards; }
 @keyframes mx-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 /* Mesa de trabajo: muestra · activaciones · qué ocurre. */

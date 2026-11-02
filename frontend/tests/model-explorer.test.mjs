@@ -200,3 +200,23 @@ test('el panel ofrece modales, escala común y enlaces a Aprendizaje y Explicabi
   assert.match(panel, /seccion: 'aprendizaje'/);
   assert.match(panel, /seccion: 'explicabilidad', muestra: trace\.sample_id/);
 });
+
+test('el diagrama de arquitectura es el único navegador del recorrido', () => {
+  const panel = read('components/model-architecture/ActivationTracePanel.tsx');
+  assert.doesNotMatch(panel, /mx-strip/);
+  assert.match(panel, /blockClick\.n === handled\.current/);
+  assert.match(read('components/model-architecture/ArchitectureDetail.tsx'), /blockClick=\{blockClick\}/);
+});
+
+test('VGG16 dibuja la cabeza capa por capa: un elemento por paso del recorrido', () => {
+  const layer = (name, type, block, settings = {}, parameters = 0) => ({ name, type, block, settings, output_shape: [null, 1024], inputs: [], parameters, trainable_phases: ['base'] });
+  const model = { family: 'vgg16', blocks: [{ id: 'input' }, { id: 'block5' }, { id: 'head', label: 'Cabeza de clasificación' }, { id: 'output' }], layers: [
+    layer('block5_pool', 'MaxPooling2D', 'block5'), layer('global_avg_pool', 'GlobalAveragePooling2D', 'head'),
+    layer('feature_dense_1024', 'Dense', 'head', { units: 1024 }, 525312), layer('dropout_50', 'Dropout', 'head'), layer('binary_output', 'Dense', 'output', { units: 1 }, 1025) ] };
+  const split = views.splitHead(model);
+  assert.deepEqual(Array.from(split.blocks, block => block.id), ['input', 'block5', 'global_avg_pool', 'feature_dense_1024', 'output']);
+  assert.deepEqual(Array.from(split.blocks.slice(2, 4), block => [block.label, block.layers, block.parameters]), [['Promedio global', 1, 0], ['Densa 1024', 2, 525312]]);
+  assert.equal(split.layers.find(item => item.name === 'dropout_50').block, 'feature_dense_1024');
+  const code = load('components/model-architecture/traceCode.ts');
+  assert.equal(code.stepTitle(split, { layer: 'feature_dense_1024', block: 'head', kind: 'vector', shape: [1024] }), 'Densa 1024');
+});

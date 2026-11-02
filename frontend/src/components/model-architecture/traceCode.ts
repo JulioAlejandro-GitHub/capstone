@@ -49,6 +49,8 @@ export function stepCode(data: ModelArchitecture | null | undefined, step: Activ
 /** Readable title of a step: the architecture names blocks; head layers are named by what they do. */
 export function stepTitle(data: ModelArchitecture | null | undefined, step: ActivationTraceStep | null): string {
   if (!step) return 'Entrada';
+  const own = data?.blocks.find(item => item.id === step.layer);
+  if (own) return own.label;
   const block = data?.blocks.find(item => item.id === step.block);
   if (/^block\d+$/.test(step.block) && block) return block.label;
   if (step.kind === 'output') return 'Salida';

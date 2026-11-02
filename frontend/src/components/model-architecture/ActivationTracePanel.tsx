@@ -22,6 +22,9 @@ const shortId = (id: string) => `${id.slice(0, 8)}…`;
 /** Two decimals for readable magnitudes; small values keep two significant digits instead of rounding to zero. */
 const stat = (value: number) => Math.abs(value) > 0 && Math.abs(value) < 0.01 ? value.toLocaleString('es-CL', { maximumSignificantDigits: 2 }) : number(value, 2);
 const shapeOf = (shape: number[]) => shape.join(' × ');
+/** Drawn block of a step: the head is drawn layer by layer, so its steps answer to their own layer. */
+const drawnBlock = (architecture: ModelArchitecture, step: ActivationTraceStep | null) =>
+  !step ? 'input' : architecture.blocks.some(block => block.id === step.layer) ? step.layer : step.block;
 
 type Outcome = TraceCategory | 'unknown';
 const outcomeKey = ({ label, predicted }: { label: number | null; predicted: number | null }): Outcome =>
@@ -98,7 +101,8 @@ function StepBody({ trace, index, inputShape, scale, onScale, picked, onPick }: 
 }
 
 /** Saved forward passes of one TRAIN. Opening it reads files only; the model runs when «Calcular» is pressed. */
-export function ActivationTracePanel({ runId, datasource, onBlock, architecture }: { runId: string; datasource: string; onBlock: (id: string) => void; architecture: ModelArchitecture }) {
+export function ActivationTracePanel({ runId, datasource, onBlock, architecture, blockClick }: { runId: string; datasource: string; onBlock: (id: string) => void;
+  architecture: ModelArchitecture; blockClick?: { id: string; n: number } | null }) {
   const { user } = useAuth();
   const selection = useComparisonSelection();
   const canCalculate = Boolean(user?.permissions?.includes('scientific.cell_classification.explain'));
@@ -151,13 +155,23 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture 
 
   const total = trace ? trace.steps.length + 1 : 0;
   const step = trace && index > 0 ? trace.steps[index - 1] : null;
-  useEffect(() => { if (trace) onBlock(step ? step.block : 'input'); }, [trace, step, onBlock]);
+  useEffect(() => { if (trace) onBlock(drawnBlock(architecture, step)); }, [trace, step, onBlock, architecture]);
   useEffect(() => {
     if (!playing) return;
     if (index >= total - 1) { setPlaying(false); return; }
     const timer = window.setTimeout(() => setIndex(value => value + 1), PLAY_MS);
     return () => window.clearTimeout(timer);
   }, [playing, index, total]);
+  // The architecture drawing is the navigator: a block opens its first step; clicking it again walks the steps it holds.
+  const handled = useRef(blockClick?.n ?? 0);
+  useEffect(() => {
+    if (!blockClick || blockClick.n === handled.current || !trace) return;
+    handled.current = blockClick.n;
+    const positions = [0, ...trace.steps.map((_, position) => position + 1)].filter(position => drawnBlock(architecture, position ? trace.steps[position - 1] : null) === blockClick.id);
+    if (!positions.length) return;
+    setPlaying(false);
+    setIndex(current => positions.includes(current) ? positions[(positions.indexOf(current) + 1) % positions.length] : positions[0]);
+  }, [blockClick, trace, architecture]);
   useEffect(() => { if (step?.kind !== 'spatial' || !step.maps.some(map => map.channel === picked)) setPicked(null); }, [step, picked]);
 
   const go = (next: number) => { setPlaying(false); setIndex(Math.min(total - 1, Math.max(0, next))); };
@@ -210,6 +224,9 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture 
   const operations = step ? layerOperations(architecture, stepLayers(architecture, step)) : [];
   const compareStep = compare && index > 0 ? compare.steps[index - 1] : null;
   const pickedMap = step?.maps.find(map => map.channel === picked);
+  const blockId = drawnBlock(architecture, step);
+  const blockLabel = architecture.blocks.find(item => item.id === blockId)?.label ?? stepTitle(architecture, step);
+  const siblings = trace ? [0, ...trace.steps.map((_, position) => position + 1)].filter(position => drawnBlock(architecture, position ? trace.steps[position - 1] : null) === blockId) : [];
 
   return <section className="report-section mx-trace" aria-label="Recorrido de una célula" onKeyDown={onKeys}>
     <header className="mx-trace-head">
@@ -232,25 +249,14 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture 
       {canCalculate && <button type="button" className="ds-button" data-variant="primary" onClick={() => setDialog('pick')}>Elegir célula</button>}</div>}
 
     {trace && <>
-      <nav className="mx-strip" aria-label="Pasos del recorrido">
-        <ol>{labels.map((label, position) => {
-          const item = position ? trace.steps[position - 1] : null, value = item && item.kind !== 'output' ? item.stats.active : null;
-          return <li key={label + position} aria-current={position === index ? 'step' : undefined}>
-            <button type="button" onClick={() => go(position)} data-kind={item?.kind ?? 'input'}>
-              <span className="mx-strip-bar" aria-hidden="true">{value != null && <i style={{ height: `${Math.max(4, value * 100)}%` }} />}
-                {item?.kind === 'output' && <i data-output style={{ height: `${Math.max(4, trace.score * 100)}%` }} />}</span>
-              <span className="mx-strip-label">{stepTitle(architecture, item)}</span>
-              <span className="mx-strip-shape">{item ? shapeOf(item.shape) : shapeOf(inputShape)}</span>
-            </button></li>;
-        })}</ol>
-        <div className="mx-player" role="group" aria-label="Reproducción del recorrido">
-          <button type="button" className="ds-button" data-size="compact" aria-label="Paso anterior" disabled={index === 0} onClick={() => go(index - 1)}>←</button>
-          <button type="button" className="ds-button" data-size="compact" onClick={() => { if (index >= total - 1) setIndex(0); setPlaying(!playing); }}>{playing ? 'Pausar' : 'Reproducir'}</button>
-          <button type="button" className="ds-button" data-size="compact" aria-label="Paso siguiente" disabled={index >= total - 1} onClick={() => go(index + 1)}>→</button>
-          <span className="scc-meta" aria-live="polite">Paso {index + 1} de {total}</span>
-          {playing && <span key={index} className="mx-player-progress" style={{ animationDuration: `${PLAY_MS}ms` }} aria-hidden="true" />}
-        </div>
-      </nav>
+      <div className="mx-player" role="group" aria-label="Reproducción del recorrido">
+        <button type="button" className="ds-button" data-size="compact" aria-label="Paso anterior" disabled={index === 0} onClick={() => go(index - 1)}>←</button>
+        <button type="button" className="ds-button" data-size="compact" onClick={() => { if (index >= total - 1) setIndex(0); setPlaying(!playing); }}>{playing ? 'Pausar' : 'Reproducir'}</button>
+        <button type="button" className="ds-button" data-size="compact" aria-label="Paso siguiente" disabled={index >= total - 1} onClick={() => go(index + 1)}>→</button>
+        <span className="mx-player-step" aria-live="polite">Paso {index + 1} de {total} · <b>{blockLabel}</b>{siblings.length > 1 && <> · {siblings.indexOf(index) + 1} de {siblings.length}: {stepTitle(architecture, step)}</>}</span>
+        <span className="scc-meta">Selecciona un bloque del diagrama para ir a su paso.</span>
+        {playing && <span key={index} className="mx-player-progress" style={{ animationDuration: `${PLAY_MS}ms` }} aria-hidden="true" />}
+      </div>
 
       <div className="mx-stage">
         <aside className="mx-specimen" aria-label="Célula">
