@@ -1,4 +1,5 @@
 import type { ModelArchitecture } from '../types/modelArchitecture';
+import type { ActivationTrace, ActivationTraceCandidate, ActivationTraceCatalog, TraceCategory } from '../types/activationTrace';
 import type { ReportRequest, ReportResponse } from '../types/scientificReport';
 import type { PreflightRequest, PreflightResponse } from '../types/scientificPreflight';
 import type { ExplainExecutor, ExplainRequest, ExplainState, ExplainSubmission, RepresentState, RepresentSubmission } from '../types/explainGeneration';
@@ -652,6 +653,22 @@ export const api = {
   },
   getModelArchitecture(datasource: string, runId: string, signal?: AbortSignal) {
     return request<ModelArchitecture>(`/runs/${encodeURIComponent(runId)}/architecture`, withDatasource(datasource), {signal});
+  },
+  getActivationTraces(datasource: string, runId: string, signal?: AbortSignal) {
+    return request<ActivationTraceCatalog>(`/runs/${encodeURIComponent(runId)}/activation-traces`, withDatasource(datasource), {signal});
+  },
+  getActivationTraceCandidates(datasource: string, runId: string, category: TraceCategory, signal?: AbortSignal) {
+    return request<ActivationTraceCandidate[]>(`/runs/${encodeURIComponent(runId)}/activation-traces/candidates`, {datasource, category}, {signal});
+  },
+  getActivationTrace(runId: string, sampleId: string, signal?: AbortSignal) {
+    return request<ActivationTrace>(`/runs/${encodeURIComponent(runId)}/activation-traces/${encodeURIComponent(sampleId)}`, {}, {signal});
+  },
+  createActivationTrace(datasource: string, runId: string, sampleId: string) {
+    return request<ActivationTrace>(`/runs/${encodeURIComponent(runId)}/activation-traces`, withDatasource(datasource), {timeoutMs: 130000,
+      init: {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({sample_id: sampleId})}});
+  },
+  deleteActivationTrace(runId: string, sampleId: string) {
+    return request<{deleted: boolean}>(`/runs/${encodeURIComponent(runId)}/activation-traces/${encodeURIComponent(sampleId)}`, {}, {init: {method: 'DELETE'}});
   },
   getTrainingAssessments(trainingRunId: string, offset = 0, signal?: AbortSignal) {
     return request<{items: AssessmentChoice[]}>('/assessments', {training_run_id: trainingRunId, limit: 100, offset, view: 'traceability'}, {signal});

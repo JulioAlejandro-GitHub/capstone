@@ -147,3 +147,24 @@ test('BiomedCLIP entrenado no usa similitud y el recorrido no inventa una predic
   assert.match(math.blockOperations(model, head)[1].detail, /no usa similitud/);
   assert.deepEqual(Array.from(math.tensorPath(model)), ['224 × 224 × 3', 'Parches y tokens', 'Encoder ViT · 1 bloques', 'Embedding 512', '1 logit', 'Sigmoide']);
 });
+
+test('el recorrido describe cada paso y compara solo tensores del mismo tipo', () => {
+  const steps = load('components/model-architecture/traceSteps.ts');
+  assert.equal(steps.outcomeOf({ label: 1, predicted: 0 }), 'Falso negativo');
+  assert.equal(steps.outcomeOf({ label: null, predicted: 0 }), 'Sin evidencia');
+  const trace = [{ kind: 'spatial', stats: { active: 0.8, mean: 2 } }, { kind: 'spatial', stats: { active: 0.5, mean: 1 } }, { kind: 'vector', stats: { active: 0.6, mean: 1 } }];
+  assert.ok(Math.abs(steps.stepChange(trace, 1).active + 0.3) < 1e-9);
+  assert.equal(steps.stepChange(trace, 2), null);
+  assert.equal(steps.stepChange(trace, 0), null);
+});
+
+test('abrir el panel solo lee lo guardado y el cálculo exige una acción y permiso', () => {
+  const panel = read('components/model-architecture/ActivationTracePanel.tsx');
+  assert.match(panel, /next\.items\[0\]/);
+  assert.match(panel, /scientific\.cell_classification\.explain/);
+  assert.equal((panel.match(/createActivationTrace/g) ?? []).length, 1);
+  assert.match(panel, /const calculate = async/);
+  assert.match(panel, /no coincide con el guardado/);
+  assert.match(panel, /window\.confirm/);
+  assert.match(read('components/model-architecture/ArchitectureDetail.tsx'), /data\.family === 'vgg16' && <ActivationTracePanel/);
+});

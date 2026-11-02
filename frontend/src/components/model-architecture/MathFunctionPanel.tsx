@@ -14,6 +14,6 @@ export function MathFunctionPanel({ data, block, onBlock }: { data: ModelArchite
         {operation.origin === 'reference' && <span className="scc-meta"> · Referencia</span>}<small>{operation.detail}</small></div>
       {operation.formula}
     </li>)}</ol> : <p>Este bloque no aplica una operación con pesos o función propia.</p>}
-    <p className="scc-meta">Las fórmulas describen la operación registrada del modelo, no el cálculo de una imagen. Los valores por muestra requieren guardar activaciones.</p>
+    <p className="scc-meta">Las fórmulas describen la operación registrada del modelo, no el cálculo de una imagen. Los valores de una célula se ven en su recorrido, disponible para VGG16.</p>
   </section>;
 }

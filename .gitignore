@@ -47,6 +47,7 @@ backend_api/.venv/
 /var/storage/cell-explanations/
 /var/storage/model-explanations/
 /var/storage/.staging/
+/var/storage/activation-traces/
 /backend_api/var/storage/microscopy-images/
 /backend_api/var/storage/cell-crops/
 /backend_api/var/storage/cell-explanations/

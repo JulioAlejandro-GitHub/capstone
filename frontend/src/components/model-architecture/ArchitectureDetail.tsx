@@ -5,6 +5,7 @@ import { buildShareableUrl, routes, withAllowedQuery } from '../../router';
 import type { ModelArchitecture } from '../../types/modelArchitecture';
 import { EvidenceButton, Kpi, SectionAnswer } from '../reports/AnalysisWorkspace';
 import { CopyText } from '../reports/ComparisonPython';
+import { ActivationTracePanel } from './ActivationTracePanel';
 import { ArchitectureChart } from './ArchitectureChart';
 import { MathFunctionPanel } from './MathFunctionPanel';
 import { architectureViews, countText, lossText, outputText, phaseLabels, shapeText, viewsFor, type ArchitectureView } from './architectureViews';
@@ -45,6 +46,7 @@ export function ArchitectureDetail({ data, view, onView, phase, onPhase, datasou
     </div>
     {explorerLink && <Link className="ds-button" data-size="compact" to={withAllowedQuery(routes.modelExplorer, { datasource, run: data.training_run_id, grafico: view, fase: phase })}>Abrir vista completa</Link>}
     <p className="mx-legend"><span data-trained="true" />Se entrena en esta fase<span data-trained="false" />Congelado o sin pesos</p>
+    {data.family === 'vgg16' && <ActivationTracePanel runId={data.training_run_id} datasource={datasource} onBlock={setRequestedBlock} />}
     {block && <MathFunctionPanel data={data} block={block} onBlock={setRequestedBlock} />}
     <EvidenceButton title="Identidad del modelo" label="Identidad del modelo">
       <p className="report-identifier">TRAIN: {data.training_run_id}<br />Checkpoint: {data.checkpoint.artifact_id ?? 'Sin evidencia'}</p>

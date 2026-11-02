@@ -31,3 +31,23 @@
 .mx-page .mx-operations small { display: block; margin-top: 2px; color: var(--ds-fg-muted); }
 .mx-page .mx-operations math { overflow-x: visible; font-size: 1.4em; }
 @media (max-width: 720px) { .mx-page .mx-operations li { grid-template-columns: 1fr; } }
+.mx-page .mx-trace h3, .mx-page .mx-trace h4 { margin: 0; }
+.mx-page .mx-trace-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--ds-space-4); margin-top: var(--ds-space-3); }
+.mx-page .mx-trace-list { display: grid; gap: var(--ds-space-1, 2px); margin: var(--ds-space-2) 0 0; padding: 0; list-style: none; }
+.mx-page .mx-trace-list li { display: flex; gap: var(--ds-space-1, 2px); }
+.mx-page .mx-trace-list li > button:first-child { flex: 1; text-align: left; }
+.mx-page .mx-trace-list li[data-active="true"] > button:first-child { background: var(--ds-bg-selected); border-color: var(--ds-blue-500); }
+.mx-page .mx-trace-player { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2); margin-top: var(--ds-space-4); padding-top: var(--ds-space-3); border-top: 1px solid var(--ds-border-subtle); }
+.mx-page .mx-trace-step { display: grid; gap: var(--ds-space-3); margin: var(--ds-space-3) 0; }
+.mx-page .mx-trace-input { width: 160px; max-width: 100%; image-rendering: pixelated; border: 1px solid var(--ds-border-default); border-radius: 6px; }
+.mx-page .mx-trace-stats { display: flex; flex-wrap: wrap; gap: var(--ds-space-4); margin: 0; }
+.mx-page .mx-trace-stats dt { color: var(--ds-fg-muted); font-size: var(--ds-text-sm); }
+.mx-page .mx-trace-stats dd { margin: 0; font-weight: 600; }
+.mx-page .mx-trace-maps { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: var(--ds-space-2); max-width: 760px; }
+.mx-page .mx-trace-maps figure { margin: 0; }
+.mx-page .mx-trace-maps img { display: block; width: 100%; aspect-ratio: 1; image-rendering: pixelated; border-radius: 3px; }
+.mx-page .mx-trace-maps figcaption { color: var(--ds-fg-muted); font-size: 11px; text-align: center; }
+.mx-page .mx-trace-top { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--ds-space-2); max-width: 520px; margin: 0; padding: 0; list-style: none; }
+.mx-page .mx-trace-top li { display: flex; justify-content: space-between; gap: var(--ds-space-2); padding: 2px 6px; background: var(--ds-bg-subtle); border-radius: 3px; font-size: var(--ds-text-sm); }
+@media (max-width: 720px) { .mx-page .mx-trace-maps { grid-template-columns: repeat(4, minmax(0, 1fr)); } .mx-page .mx-trace-top { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mx-page .mx-trace-step h4 code { display: inline; padding: 0; background: none; }
