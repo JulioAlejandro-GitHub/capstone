@@ -168,3 +168,35 @@ test('abrir el panel solo lee lo guardado y el cálculo exige una acción y perm
   assert.match(panel, /window\.confirm/);
   assert.match(read('components/model-architecture/ArchitectureDetail.tsx'), /data\.family === 'vgg16' && <ActivationTracePanel/);
 });
+
+test('el código de cada paso sale de la configuración registrada del TRAIN', () => {
+  const code = load('components/model-architecture/traceCode.ts');
+  const layer = (name, type, block, settings, shape = null) => ({ name, type, block, settings, output_shape: shape, inputs: [], parameters: 1, trainable_phases: [] });
+  const model = { input_shape: [null, 200, 200, 3], blocks: [{ id: 'block4', label: 'Bloque 4' }], layers: [
+    layer('block4_conv1', 'Conv2D', 'block4', { filters: 512, kernel_size: [3, 3], strides: [1, 1], padding: 'same', activation: 'relu' }),
+    layer('block4_pool', 'MaxPooling2D', 'block4', { pool_size: [2, 2], strides: [2, 2] }),
+    layer('flatten', 'Flatten', 'head', {}), layer('dense', 'Dense', 'head', { units: 256, activation: 'relu' }) ] };
+  const block = code.stepCode(model, { layer: 'block4_pool', block: 'block4', kind: 'spatial', shape: [12, 12, 512] });
+  assert.match(block, /Conv2D\(512, \(3, 3\), padding='same', activation='relu', name='block4_conv1'\)/);
+  assert.match(block, /MaxPooling2D\(\(2, 2\), name='block4_pool'\)/);
+  assert.equal(code.stepCode(model, { layer: 'flatten', block: 'head', kind: 'vector', shape: [18432] }), "x = layers.Flatten(name='flatten')(x)");
+  assert.equal(code.stepCode(model, null), 'inputs = layers.Input(shape=(200, 200, 3))');
+  assert.equal(code.stepTitle(model, { layer: 'dense', block: 'head', kind: 'vector', shape: [256] }), 'Densa 256');
+  assert.equal(code.stepTitle(model, { layer: 'block4_pool', block: 'block4', kind: 'spatial', shape: [12, 12, 512] }), 'Bloque 4');
+});
+
+test('la escala de color va de azul oscuro a amarillo y recorta fuera de rango', () => {
+  const color = load('components/model-architecture/traceColor.ts');
+  assert.deepEqual(Array.from(color.cividis(0)), [0, 34, 78]);
+  assert.deepEqual(Array.from(color.cividis(1)), [254, 232, 56]);
+  assert.deepEqual(Array.from(color.cividis(2)), Array.from(color.cividis(1)));
+  assert.deepEqual(Array.from(color.cividis(Number.NaN)), Array.from(color.cividis(0)));
+});
+
+test('el panel ofrece modales, escala común y enlaces a Aprendizaje y Explicabilidad', () => {
+  const panel = read('components/model-architecture/ActivationTracePanel.tsx');
+  assert.match(panel, /showModal\(\)/);
+  assert.match(panel, /Escala común/);
+  assert.match(panel, /seccion: 'aprendizaje'/);
+  assert.match(panel, /seccion: 'explicabilidad', muestra: trace\.sample_id/);
+});

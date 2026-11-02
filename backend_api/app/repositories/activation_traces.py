@@ -19,16 +19,30 @@ class ActivationTraceRepository:
             """), {'run': run_id}).mappings().one_or_none()
             return dict(row) if row else None
 
-    def candidates(self, attempt_id: UUID, category: str, limit: int, datasource: str | None) -> list[dict[str, Any]]:
+    def candidates(self, attempt_id: UUID, category: str, limit: int, datasource: str | None,
+                   explained_only: bool = False) -> list[dict[str, Any]]:
+        """Cells of one outcome, most confident first; «explained» marks cells with a verified EXPLAIN of the same TRAIN."""
         label, predicted = CATEGORIES[category]
         with read_only_transaction(datasource) as connection:
             return [dict(row) for row in connection.execute(text("""
-                SELECT sample_id,(payload->>'label')::int AS label,(payload->>'predicted')::int AS predicted,
-                       (payload->>'raw_score')::float AS score,(payload->>'threshold')::float AS threshold
-                FROM assessment_results WHERE attempt_id=:attempt
-                  AND (payload->>'label')::int=:label AND (payload->>'predicted')::int=:predicted
-                ORDER BY abs((payload->>'raw_score')::float-(payload->>'threshold')::float) DESC,sample_id LIMIT :limit
-            """), {'attempt': attempt_id, 'label': label, 'predicted': predicted, 'limit': limit}).mappings()]
+                WITH train AS (
+                    SELECT i.training_run_id FROM assessment_attempts a
+                    JOIN assessment_identities i ON i.id=a.identity_id WHERE a.id=:attempt
+                ), cells AS (
+                    SELECT r.sample_id,(r.payload->>'label')::int AS label,(r.payload->>'predicted')::int AS predicted,
+                           (r.payload->>'raw_score')::float AS score,(r.payload->>'threshold')::float AS threshold,
+                           EXISTS (SELECT 1 FROM assessment_identities e JOIN assessment_attempts x ON x.identity_id=e.id
+                                   WHERE e.training_run_id=(SELECT training_run_id FROM train) AND e.kind='explain'
+                                     AND x.state='verified'
+                                     AND e.identity->'samples' @> jsonb_build_array(jsonb_build_object('sample_id', r.sample_id::text))
+                           ) AS explained
+                    FROM assessment_results r WHERE r.attempt_id=:attempt
+                      AND (r.payload->>'label')::int=:label AND (r.payload->>'predicted')::int=:predicted
+                )
+                SELECT * FROM cells WHERE explained OR NOT :explained_only
+                ORDER BY explained DESC,abs(score-threshold) DESC,sample_id LIMIT :limit
+            """), {'attempt': attempt_id, 'label': label, 'predicted': predicted, 'limit': limit,
+                     'explained_only': explained_only}).mappings()]
 
     def result(self, attempt_id: UUID, sample_id: UUID, datasource: str | None) -> dict[str, Any] | None:
         with read_only_transaction(datasource) as connection:

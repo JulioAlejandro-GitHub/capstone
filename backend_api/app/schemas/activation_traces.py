@@ -35,6 +35,7 @@ class ActivationTraceCandidate(BaseModel):
     predicted: int
     score: float
     threshold: float
+    explained: bool = False
 
 
 class ActivationTraceStep(BaseModel):
@@ -45,6 +46,7 @@ class ActivationTraceStep(BaseModel):
     stats: dict[str, float]
     maps: list[dict[str, Any]] = []
     top: list[dict[str, Any]] = []
+    histogram: dict[str, list[float]] | None = None
 
 
 class ActivationTrace(ActivationTraceSummary):

@@ -8,7 +8,7 @@ from fastapi import HTTPException
 
 from app.schemas.activation_traces import ActivationTraceCatalog
 from app.services import activation_traces
-from app.services.activation_trace_compute import VERSION, block_of, statistics, write_atomic
+from app.services.activation_trace_compute import VERSION, block_of, histogram, statistics, trace_steps, traced_layers, write_atomic
 from app.services.activation_traces import ActivationTraceService
 
 
@@ -101,3 +101,34 @@ def test_routes_are_registered_in_the_application():
     from app.main import app
     assert {'/runs/{run_id}/activation-traces', '/runs/{run_id}/activation-traces/candidates',
             '/runs/{run_id}/activation-traces/{sample_id}'} <= set(app.openapi()['paths'])
+
+
+class Layer:
+    def __init__(self, name, kind):
+        self.name = name
+        # The Keras type is read from the class name, as traced_layers does with real layers.
+        self.__class__ = type(kind, (Layer,), {})
+
+
+def layers(*items):
+    return [Layer(name, kind) for name, kind in items]
+
+
+def test_head_follows_each_train_configuration():
+    gap = layers(('input_1', 'InputLayer'), ('block1_conv1', 'Conv2D'), ('block1_pool', 'MaxPooling2D'), ('block2_pool', 'MaxPooling2D'),
+                 ('global_avg_pool', 'GlobalAveragePooling2D'), ('feature_dense_1024', 'Dense'), ('dropout_50', 'Dropout'), ('binary_output', 'Dense'))
+    flatten = layers(('block5_pool', 'MaxPooling2D'), ('flatten', 'Flatten'), ('dense', 'Dense'), ('dense_1', 'Dense'))
+    assert traced_layers(gap) == ['block1_pool', 'block2_pool', 'global_avg_pool', 'feature_dense_1024', 'binary_output']
+    assert traced_layers(flatten) == ['block5_pool', 'flatten', 'dense', 'dense_1']
+    assert block_of('dense_1', output=True) == 'output' and block_of('dense') == 'head'
+
+
+def test_steps_carry_scale_and_distribution_and_name_the_last_layer_output(monkeypatch):
+    from app.services import activation_trace_compute
+    monkeypatch.setattr(activation_trace_compute, 'channel_png', lambda tf, channel: 'png')
+    spatial = np.zeros((1, 4, 4, 2)); spatial[0, ..., 1] = 3.0
+    steps = trace_steps(None, np, ['block1_pool', 'flatten', 'dense_1'], [spatial, np.array([[0.0, 2.0, 1.0]]), np.array([[0.2]])])
+    assert steps[0]['maps'][0] == {'channel': 1, 'mean': 3.0, 'min': 3.0, 'max': 3.0, 'png': 'png'}
+    assert steps[1]['kind'] == 'vector' and sum(steps[1]['histogram']['counts']) == 3
+    assert steps[2]['kind'] == 'output' and steps[2]['block'] == 'output' and 'histogram' not in steps[2]
+    assert len(histogram(np, np.arange(10.0))['edges']) == 25

@@ -102,17 +102,22 @@ const referenceOperations = (block: ArchitectureBlock, output: ArchitectureOutpu
 /** The operations of one block, built only from what its layers recorded; repeated layers collapse into one line. */
 export function blockOperations(data: ModelArchitecture, block: ArchitectureBlock): MathOperation[] {
   if (block.origin === 'reference' || !data.layers.length) return referenceOperations(block, data.output);
+  const loss = block.kind === 'output' && data.output ? lossOperation(data.output) : null;
+  const operations = layerOperations(data, data.layers.filter(layer => layer.block === block.id));
+  return loss ? [...operations, loss] : operations;
+}
+
+/** Operations of an explicit set of layers (one step of a cell's trace); repeated layers collapse into one line. */
+export function layerOperations(data: ModelArchitecture, layers: ArchitectureLayer[]): MathOperation[] {
   const groups = new Map<string, MathOperation>();
-  data.layers.filter(layer => layer.block === block.id).forEach(layer => {
+  layers.forEach(layer => {
     const operation = describe(layer, data.layers);
     if (!operation) return;
     const id = `${layer.type}:${JSON.stringify(layer.settings)}`;
     const current = groups.get(id);
     if (current) current.count += 1; else groups.set(id, { ...operation, id, count: 1, origin: 'recorded' });
   });
-  const loss = block.kind === 'output' && data.output ? lossOperation(data.output) : null;
-  const operations = Array.from(groups.values());
-  return loss ? [...operations, loss] : operations;
+  return Array.from(groups.values());
 }
 
 /** Real tensor path. Per-sample values are absent on purpose: this view describes the model, not one prediction. */

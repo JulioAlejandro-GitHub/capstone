@@ -657,8 +657,8 @@ export const api = {
   getActivationTraces(datasource: string, runId: string, signal?: AbortSignal) {
     return request<ActivationTraceCatalog>(`/runs/${encodeURIComponent(runId)}/activation-traces`, withDatasource(datasource), {signal});
   },
-  getActivationTraceCandidates(datasource: string, runId: string, category: TraceCategory, signal?: AbortSignal) {
-    return request<ActivationTraceCandidate[]>(`/runs/${encodeURIComponent(runId)}/activation-traces/candidates`, {datasource, category}, {signal});
+  getActivationTraceCandidates(datasource: string, runId: string, category: TraceCategory, signal?: AbortSignal, options: {limit?: number; explained?: boolean} = {}) {
+    return request<ActivationTraceCandidate[]>(`/runs/${encodeURIComponent(runId)}/activation-traces/candidates`, {datasource, category, limit: options.limit, explained: options.explained || undefined}, {signal});
   },
   getActivationTrace(runId: string, sampleId: string, signal?: AbortSignal) {
     return request<ActivationTrace>(`/runs/${encodeURIComponent(runId)}/activation-traces/${encodeURIComponent(sampleId)}`, {}, {signal});

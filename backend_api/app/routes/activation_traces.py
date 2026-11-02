@@ -19,8 +19,8 @@ def catalog(run_id: UUID, service: Service, datasource: str | None = Query(None)
 
 @router.get('/candidates', response_model=list[ActivationTraceCandidate])
 def candidates(run_id: UUID, service: Service, category: str = Query('false_negative'), limit: int = Query(8, ge=1, le=50),
-               datasource: str | None = Query(None)) -> list[dict[str, Any]]:
-    return service.candidates(run_id, category, limit, datasource)
+               datasource: str | None = Query(None), explained: bool = Query(False)) -> list[dict[str, Any]]:
+    return service.candidates(run_id, category, limit, datasource, explained)
 
 
 @router.get('/{sample_id}', response_model=ActivationTrace)

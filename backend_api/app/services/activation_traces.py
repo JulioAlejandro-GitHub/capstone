@@ -53,13 +53,14 @@ class ActivationTraceService:
         return dict(available=evaluation is not None, reason=reason, split=evaluation['split'] if evaluation else None,
                     items=items, used_bytes=self.used_bytes(), max_bytes=MAX_BYTES)
 
-    def candidates(self, run_id: UUID, category: str, limit: int, datasource: str | None) -> list[dict[str, Any]]:
+    def candidates(self, run_id: UUID, category: str, limit: int, datasource: str | None,
+                   explained_only: bool = False) -> list[dict[str, Any]]:
         if category not in CATEGORIES:
             raise HTTPException(422, 'Categoría no válida')
         evaluation, reason = self._supported(run_id, datasource)
         if evaluation is None:
             raise HTTPException(409, reason)
-        return self.repository.candidates(evaluation['id'], category, limit, datasource)
+        return self.repository.candidates(evaluation['id'], category, limit, datasource, explained_only)
 
     def read(self, run_id: UUID, sample_id: UUID) -> dict[str, Any]:
         path = self._directory(run_id) / f'{sample_id}.json'

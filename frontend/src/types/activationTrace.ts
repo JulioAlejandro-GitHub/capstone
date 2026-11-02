@@ -9,12 +9,14 @@ export interface ActivationTraceCatalog {
   available: boolean; reason: string | null; split: string | null; items: ActivationTraceSummary[]; used_bytes: number; max_bytes: number;
 }
 
-export interface ActivationTraceCandidate { sample_id: string; label: number; predicted: number; score: number; threshold: number }
+export interface ActivationTraceCandidate { sample_id: string; label: number; predicted: number; score: number; threshold: number; explained?: boolean }
 
 export interface ActivationTraceStep {
   layer: string; block: string; kind: 'spatial' | 'vector' | 'output'; shape: number[];
   stats: { min: number; max: number; mean: number; std: number; active: number };
-  maps: { channel: number; mean: number; png: string }[]; top: { index: number; value: number }[];
+  /** min/max per channel exist from activation_trace_v2: older traces can only be drawn on their own scale. */
+  maps: { channel: number; mean: number; png: string; min?: number; max?: number }[]; top: { index: number; value: number }[];
+  histogram?: { counts: number[]; edges: number[] } | null;
 }
 
 export interface ActivationTrace extends ActivationTraceSummary {

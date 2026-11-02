@@ -46,7 +46,7 @@ export function ArchitectureDetail({ data, view, onView, phase, onPhase, datasou
     </div>
     {explorerLink && <Link className="ds-button" data-size="compact" to={withAllowedQuery(routes.modelExplorer, { datasource, run: data.training_run_id, grafico: view, fase: phase })}>Abrir vista completa</Link>}
     <p className="mx-legend"><span data-trained="true" />Se entrena en esta fase<span data-trained="false" />Congelado o sin pesos</p>
-    {data.family === 'vgg16' && <ActivationTracePanel runId={data.training_run_id} datasource={datasource} onBlock={setRequestedBlock} />}
+    {data.family === 'vgg16' && <ActivationTracePanel runId={data.training_run_id} datasource={datasource} onBlock={setRequestedBlock} architecture={data} />}
     {block && <MathFunctionPanel data={data} block={block} onBlock={setRequestedBlock} />}
     <EvidenceButton title="Identidad del modelo" label="Identidad del modelo">
       <p className="report-identifier">TRAIN: {data.training_run_id}<br />Checkpoint: {data.checkpoint.artifact_id ?? 'Sin evidencia'}</p>

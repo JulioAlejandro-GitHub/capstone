@@ -10,16 +10,33 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-VERSION = 'activation_trace_v1'
+VERSION = 'activation_trace_v2'
 CHANNELS = 16
 MAP_SIZE = 64
+BINS = 24
 TOLERANCE = 1e-3
 SELECTION = f'{CHANNELS} canales de mayor activación media'
+# Head layers worth a step; Dropout is the identity in inference and is skipped.
+HEAD_TYPES = ('GlobalAveragePooling2D', 'GlobalMaxPooling2D', 'Flatten', 'Dense')
 
 
-def block_of(layer: str) -> str:
+def block_of(layer: str, output: bool = False) -> str:
     match = re.match(r'(block\d+)_', layer)
-    return match[1] if match else 'output' if layer == 'binary_output' else 'head'
+    return match[1] if match else 'output' if output or layer == 'binary_output' else 'head'
+
+
+def traced_layers(layers: list[Any]) -> list[str]:
+    """Block poolings, then the head as this TRAIN built it: each run may use GAP, Flatten or other Dense sizes."""
+    names = [layer.name for layer in layers if re.fullmatch(r'block\d+_pool', layer.name)]
+    last = max((index for index, layer in enumerate(layers) if layer.name in names), default=-1)
+    head = [layer.name for layer in layers[last + 1:] if type(layer).__name__ in HEAD_TYPES]
+    output = layers[-1].name
+    return names + [name for name in head if name != output] + [output]
+
+
+def histogram(np: Any, values: Any) -> dict[str, list[float]]:
+    counts, edges = np.histogram(values, bins=BINS)
+    return {'counts': [int(count) for count in counts], 'edges': [float(edge) for edge in edges]}
 
 
 def statistics(values: Any) -> dict[str, float]:
@@ -39,17 +56,20 @@ def channel_png(tf: Any, channel: Any) -> str:
 
 def trace_steps(tf: Any, np: Any, names: list[str], outputs: list[Any]) -> list[dict[str, Any]]:
     steps = []
-    for name, output in zip(names, outputs):
-        values = np.asarray(output)[0]
-        step = dict(layer=name, block=block_of(name), shape=list(values.shape), stats=statistics(values), maps=[], top=[])
+    for position, (name, output) in enumerate(zip(names, outputs)):
+        values, last = np.asarray(output)[0], position == len(names) - 1
+        step = dict(layer=name, block=block_of(name, last), shape=list(values.shape), stats=statistics(values), maps=[], top=[])
         if values.ndim == 3:
             order = np.argsort(values.mean(axis=(0, 1)))[::-1][:CHANNELS]
+            # min and max let the client rebuild raw values from the PNG and redraw them on one layer-wide scale.
             step.update(kind='spatial', maps=[dict(channel=int(index), mean=float(values[..., index].mean()),
+                                                   min=float(values[..., index].min()), max=float(values[..., index].max()),
                                                    png=channel_png(tf, values[..., index])) for index in order])
         else:
             order = np.argsort(np.abs(values))[::-1][:CHANNELS]
-            step.update(kind='output' if name == 'binary_output' else 'vector',
-                        top=[dict(index=int(index), value=float(values[index])) for index in order])
+            step.update(kind='output' if last else 'vector', top=[dict(index=int(index), value=float(values[index])) for index in order])
+            if not last:
+                step['histogram'] = histogram(np, values)
         steps.append(step)
     return steps
 
@@ -59,8 +79,7 @@ def compute(value: dict[str, Any], sample: dict[str, Any], persisted: dict[str, 
 
     runtime = KerasRuntime(value)
     tf, np = runtime.tf, __import__('numpy')
-    names = [layer.name for layer in runtime.model.layers if re.fullmatch(r'block\d+_pool', layer.name)]
-    names += ['global_avg_pool', 'feature_dense_1024', 'binary_output']
+    names = traced_layers(runtime.model.layers)
     model = tf.keras.Model(inputs=runtime.model.inputs, outputs=[runtime.model.get_layer(name).output for name in names])
     outputs = model(runtime.images([sample]), training=False)
     steps = trace_steps(tf, np, names, outputs)
