@@ -102,8 +102,10 @@ function StepBody({ trace, index, inputShape, scale, onScale, picked, onPick }: 
 }
 
 /** Saved forward passes of one TRAIN. Opening it reads files only; the model runs when «Calcular» is pressed. */
-export function ActivationTracePanel({ runId, datasource, onBlock, architecture, blockClick, onActivity }: { runId: string; datasource: string; onBlock: (id: string) => void;
-  architecture: ModelArchitecture; blockClick?: { id: string; n: number } | null; onActivity?: (activity: BlockActivity | null) => void }) {
+export function ActivationTracePanel({ runId, datasource, onBlock, architecture, blockClick, onActivity, onSample }: { runId: string; datasource: string; onBlock: (id: string) => void;
+  architecture: ModelArchitecture; blockClick?: { id: string; n: number } | null; onActivity?: (activity: BlockActivity | null) => void;
+  /** Informa la célula abierta, para que otras vistas (Entrenamiento) muestren la misma. */
+  onSample?: (sampleId: string | null) => void }) {
   const { user } = useAuth();
   const selection = useComparisonSelection();
   const canCalculate = Boolean(user?.permissions?.includes('scientific.cell_classification.explain'));
@@ -143,6 +145,8 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture,
       .catch(cause => { if (active) setError(message(cause, 'No fue posible consultar los recorridos.')); });
     return () => { active = false; };
   }, [refresh, open]);
+
+  useEffect(() => { onSample?.(trace?.sample_id ?? null); }, [trace?.sample_id, onSample]);
 
   const available = catalog?.available;
   useEffect(() => {

@@ -185,10 +185,11 @@ function XAIExpandedView({ comparison, resources, datasource, generation, action
   </>;
 }
 
-/** variant="expanded" renders only the expanded view, for a host that already is a modal (Errores y consenso). */
+/** variant="expanded" renders only the expanded view, for a host that already is a modal (Errores y consenso).
+ *  variant="toolbar" renders only «Ampliar comparación» and the cell's outcome; the images load when the modal opens. */
 export function XAIComparisonViewer({ comparison, datasource, generation, actions, variant = 'inline' }: {
   comparison: XAIComparison; datasource: string; generation?: Partial<Record<XAIMethod, XAIGenerationAction>>; actions?: ReactNode;
-  variant?: 'inline' | 'expanded';
+  variant?: 'inline' | 'expanded' | 'toolbar';
 }) {
   const host = useRef<HTMLElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -207,7 +208,7 @@ export function XAIComparisonViewer({ comparison, datasource, generation, action
     return () => observer.disconnect();
   }, []);
   // Opening the expanded view also loads the images, even if the row never scrolled into view.
-  const load = visible || expanded !== null || variant === 'expanded';
+  const load = (visible && variant !== 'toolbar') || expanded !== null || variant === 'expanded';
   const resources: Resources = {
     original: useScientificArtifact(comparison.original?.originalSource ?? comparison.original?.artifact, datasource, load),
     gradcam: useScientificArtifact(comparison.methods.gradcam?.artifact, datasource, load),
@@ -220,11 +221,14 @@ export function XAIComparisonViewer({ comparison, datasource, generation, action
   if (variant === 'expanded') return <section ref={host} className="ds-report xai-viewer" data-surface="workbench">
     <XAIExpandedView comparison={comparison} resources={resources} datasource={datasource} generation={generation} actions={actions} />
   </section>;
-  return <section ref={host} className="ds-report xai-viewer" data-surface="workbench">
-    <div className="report-section"><XAIComparisonContent comparison={comparison} resources={resources} generation={generation} actions={actions} onExpand={method => {
-      trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      setExpanded(method);
-    }} /></div>
+  const expand = (method: XAIMethod | 'original') => {
+    trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setExpanded(method);
+  };
+  return <section ref={host} className="ds-report xai-viewer" data-surface="workbench" data-variant={variant}>
+    {variant === 'toolbar'
+      ? <div className="xai-toolbar"><button className="ds-button xai-expand" type="button" onClick={() => expand('original')}>Ampliar comparación</button><CellOutcome comparison={comparison} /></div>
+      : <div className="report-section"><XAIComparisonContent comparison={comparison} resources={resources} generation={generation} actions={actions} onExpand={expand} /></div>}
     <dialog ref={dialog} className="report-viewer xai-modal" aria-labelledby={titleId} onClose={() => { setExpanded(null); trigger.current?.focus(); }}>
       <form method="dialog" className="xai-modal-close"><button type="submit" className="ds-button" aria-label="Cerrar vista ampliada" title="Cerrar" autoFocus>
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>

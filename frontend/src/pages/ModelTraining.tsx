@@ -7,9 +7,15 @@ import {
   PARAMETER_GROUP_LABELS, buildTrainingLayers, formatCount, kindLabel, parametersFor, pendingItems,
   resolveTrainingParameters, trainingChecks, tuningGuide, type ParameterGroup, type TrainingCheck, type TrainingLayer,
 } from '../components/model-training/trainingModel';
+import { CELL_CATEGORY_LABELS, cellCategory, classText, useTrainingCell } from '../components/model-training/useTrainingCell';
+import { GeneratedXAIComparison } from '../components/reports/GeneratedXAIComparison';
+import { CellOutcome } from '../components/reports/XAIComparisonViewer';
 import { useComparisonRun } from '../hooks/useComparisonRun';
 import { useModelArchitecture } from '../hooks/useModelArchitecture';
 import { isValidPublicId, routes, withAllowedQuery } from '../router';
+import '../styles/ds-primitives.css';
+import '../styles/report-components.css';
+import '../styles/scc-comparison.css';
 import '../styles/model-training.css';
 
 /** Texto con `código` entre acentos graves. */
@@ -19,6 +25,11 @@ const factor = (value: number | null, up: string, down: string) => value == null
 
 /** Estado del bloque en la fase: una capa sin pesos no «se congela», simplemente no tiene nada que entrenar. */
 const stateText = (layer: TrainingLayer) => layer.trainable ? 'Se entrena' : layer.parameters === 0 ? 'Sin pesos' : 'Congelado';
+
+const categoryText = (item: { label: number | null; predicted: number | null }) => {
+  const category = cellCategory(item);
+  return category ? CELL_CATEGORY_LABELS[category] : 'Sin evidencia';
+};
 
 const CHECK_ICON: Record<TrainingCheck['level'], string> = { warn: '!', ok: '✓', info: 'i', pending: '…' };
 
@@ -44,6 +55,8 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
   const [search, setSearch] = useSearchParams();
   const { data, error, loading, retry } = useModelArchitecture(datasource, run);
   const { run: record, error: runError } = useComparisonRun(datasource, run);
+  const cellState = useTrainingCell(datasource, run, search.get('muestra'));
+  const { cell } = cellState;
   const phases = data?.phases ?? [];
   const phase = phases.find(item => item.phase === search.get('fase'))?.phase ?? phases.at(-1)?.phase ?? '';
   const layers = useMemo(() => data?.state === 'available' ? buildTrainingLayers(data, phase) : [], [data, phase]);
@@ -101,8 +114,37 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
           <div className="mt-kpi"><div className="mt-k">Tensor más grande</div><div className="mt-v">{formatCount(biggest?.volume)}</div><div className="mt-h">{biggest ? `${biggest.label} · ${biggest.outputText}` : 'Pendiente'}</div></div>
         </section>
 
+        <section className="mt-card mt-cell-card" aria-label="Célula seleccionada">
+          <div className="mt-card-h"><h2>Célula seleccionada</h2>
+            <span className="mt-hint">{cell ? 'su imagen aparece en la entrada y, con el resultado, en la salida del diagrama' : 'recorridos de activación guardados del TRAIN'}</span></div>
+          <div className="mt-cell-body">
+            {cell ? <img className="mt-cell-thumb" src={cell.image} alt={`Célula ${cell.sampleId}`} data-category={cell.category ?? 'unknown'} />
+              : <div className="mt-cell-thumb mt-cell-empty" aria-hidden="true">?</div>}
+            <div className="mt-cell-info">
+              {cellState.catalog && cellState.catalog.items.length > 0 && <label className="mt-cell-select">Célula
+                <select value={cellState.sampleId ?? ''} onChange={event => update({ muestra: event.target.value })}>
+                  {cellState.catalog.items.map(item => <option key={item.sample_id} value={item.sample_id}>
+                    {`${categoryText(item)} · ${item.score.toFixed(3)} · ${item.sample_id.slice(0, 8)}`}
+                  </option>)}
+                </select></label>}
+              {cellState.loading && <p className="mt-muted" role="status">Consultando células…</p>}
+              {cellState.error && <p className="mt-muted" role="alert">{cellState.error}</p>}
+              {cellState.catalog && !cellState.catalog.items.length && <p className="mt-pending-note">Pendiente: este TRAIN no tiene recorridos de células guardados{cellState.catalog.reason ? ` (${cellState.catalog.reason})` : ''}. Calcúlalos en «Recorrido de una célula» de Arquitectura del modelo.</p>}
+              {cell && (cellState.comparison
+                ? <GeneratedXAIComparison key={cellState.comparison.id} comparison={cellState.comparison} datasource={datasource} variant="toolbar" lazy authorized={false} />
+                : <div className="ds-report xai-viewer" data-surface="workbench" data-variant="toolbar"><div className="xai-toolbar">
+                    <button className="ds-button xai-expand" type="button" disabled title={cellState.contextError ?? 'Consultando el contexto de la célula…'}>Ampliar comparación</button>
+                    <CellOutcome comparison={{ id: cell.sampleId, trainingRunId: run, sampleId: cell.sampleId, methods: {},
+                      sampleRecord: cell.label != null ? { label: cell.label } : undefined,
+                      outcome: cell.label != null && cell.predicted != null && cell.threshold != null ? { label: cell.label, predicted: cell.predicted, score: cell.score, threshold: cell.threshold, split: cell.split, attemptId: cell.attemptId } : undefined }} />
+                  </div></div>)}
+              {cell && <p className="mt-cell-meta">Clase real {classText(cell.label)} · {cell.split.toUpperCase()} · <code title={cell.sampleId}>{cell.sampleId.slice(0, 8)}</code>{cellState.contextError && <> · «Ampliar comparación» pendiente: {cellState.contextError}</>}</p>}
+            </div>
+          </div>
+        </section>
+
         <section className="mt-main">
-          <TrainingScene layers={layers} selected={selected} onSelect={select} phaseLabel={phaseLabel} />
+          <TrainingScene layers={layers} selected={selected} onSelect={select} phaseLabel={phaseLabel} cell={cell} />
 
           <aside className="mt-card mt-detail" aria-live="polite">
             <div className="mt-card-h"><h2>Bloque seleccionado</h2><span className="mt-hint">{selected + 1} / {layers.length}</span></div>

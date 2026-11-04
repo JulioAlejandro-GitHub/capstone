@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 
 import { formatCount, type TrainingLayer } from './trainingModel';
+import { CELL_CATEGORY_LABELS, classText, type TrainingCell } from './cellModel';
 
 /**
  * Escena isométrica del flujo de tensores (proyección oblicua calculada aquí, no CSS 3D):
@@ -33,7 +34,8 @@ function size(layer: TrainingLayer, scale: Scale) {
 const P = (x: number, y: number, z: number): [number, number] => [x + z * OX, -y - z * OY];
 const pts = (list: [number, number][]) => list.map(point => point.join(',')).join(' ');
 
-function layout(layers: TrainingLayer[], scale: Scale) {
+const THUMB = 40;
+function layout(layers: TrainingLayer[], scale: Scale, withCell: boolean) {
   let cursor = 0;
   const placed: Placed[] = layers.map(layer => {
     const { H, W, D } = size(layer, scale);
@@ -46,7 +48,7 @@ function layout(layers: TrainingLayer[], scale: Scale) {
   });
   const bottom = Math.max(0, ...placed.map(p => p.H / 2 + (p.W / 2) * OY));
   const top = Math.min(0, ...placed.map(p => -p.H / 2 - (p.W / 2) * OY));
-  const bounds = { x: -40, y: top - 40, w: cursor + 80, h: bottom + LABEL_GAP + 50 - (top - 40) };
+  const bounds = { x: -40, y: top - 40, w: cursor + 80, h: bottom + LABEL_GAP + 50 + (withCell ? THUMB + 34 : 0) - (top - 40) };
   return { placed, bottom, width: cursor, bounds };
 }
 
@@ -55,8 +57,10 @@ const ICON_FULL = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const ICON_MIN = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
   <path d="M8 3v3a2 2 0 0 1-2 2H3" /><path d="M21 8h-3a2 2 0 0 1-2-2V3" /><path d="M3 16h3a2 2 0 0 1 2 2v3" /><path d="M16 21v-3a2 2 0 0 1 2-2h3" /></svg>;
 
-export function TrainingScene({ layers, selected, onSelect, phaseLabel }: {
+export function TrainingScene({ layers, selected, onSelect, phaseLabel, cell = null }: {
   layers: TrainingLayer[]; selected: number; onSelect: (index: number) => void; phaseLabel: string;
+  /** Célula seleccionada: su imagen se muestra en la entrada y, con el resultado, en la salida. */
+  cell?: TrainingCell | null;
 }) {
   const card = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -69,7 +73,7 @@ export function TrainingScene({ layers, selected, onSelect, phaseLabel }: {
   const [fitW, setFitW] = useState<number | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number; index: number } | null>(null);
   const drag = useRef<{ x: number; y: number; vb: ViewBox } | null>(null);
-  const geometry = useMemo(() => layout(layers, scale), [layers, scale]);
+  const geometry = useMemo(() => layout(layers, scale, Boolean(cell)), [layers, scale, cell]);
 
   const fit = useCallback(() => {
     const element = svg.current;
@@ -241,17 +245,32 @@ export function TrainingScene({ layers, selected, onSelect, phaseLabel }: {
             <text className="mt-lbl-name" x={item.cx} y={labelY} textAnchor="middle">{item.layer.label}</text>
             <text className="mt-lbl-desc" x={item.cx} y={labelY + 16} textAnchor="middle">{item.layer.description}</text>
             <text className="mt-lbl-shape" x={item.cx} y={labelY + 32} textAnchor="middle">{item.layer.shapeKnown ? (item.layer.vector ? `${item.layer.d}` : `${item.layer.h}×${item.layer.w}×${item.layer.d}`) : 'forma pendiente'}</text>
+            {cell && (item.layer.kind === 'input' || item.layer.kind === 'output') && <g className="mt-cell" data-category={item.layer.kind === 'output' ? cell.category ?? 'unknown' : undefined}>
+              <rect className="mt-cell-frame" x={item.cx - THUMB / 2 - 2} y={labelY + 42} width={THUMB + 4} height={THUMB + 4} rx={5} />
+              <image href={cell.image} x={item.cx - THUMB / 2} y={labelY + 44} width={THUMB} height={THUMB} preserveAspectRatio="xMidYMid slice">
+                <title>{item.layer.kind === 'input' ? `Célula ${cell.sampleId}` : `${classText(cell.predicted)} · score ${cell.score.toFixed(4)}`}</title></image>
+              <text className="mt-cell-text" x={item.cx} y={labelY + THUMB + 60} textAnchor="middle">{item.layer.kind === 'input'
+                ? `célula ${cell.sampleId.slice(0, 8)}`
+                : `${cell.category ? CELL_CATEGORY_LABELS[cell.category] : classText(cell.predicted)} · ${cell.score.toFixed(3)}`}</text>
+            </g>}
           </g>)}
         </g>
       </svg>
       <div className="mt-legend-mini"><b>Escala:</b> {scale === 'lineal' ? 'proporcional a los valores' : 'compensada (√ espacio · log canales)'}<br />
         <span className="mt-sw-hw">■</span> alto/ancho &nbsp; <span className="mt-sw-d">■</span> canales &nbsp; <span className="mt-sw-frozen">▭</span> congelado en la fase</div>
-      {tip && tipLayer && <div className="mt-tip" role="tooltip" style={{ left: Math.min(tip.x + 14, window.innerWidth - 260), top: Math.min(tip.y + 14, window.innerHeight - 150) }}>
+      {tip && tipLayer && <div className="mt-tip" role="tooltip" style={{ left: Math.min(tip.x + 14, window.innerWidth - 260), top: Math.min(tip.y + 14, window.innerHeight - (cell ? 290 : 150)) }}>
         <div className="mt-tip-t">{tipLayer.label} <span>· {tipLayer.description}</span></div>
         <div className="mt-io"><span className="mt-in">ENTRADA</span><span>{tipLayer.inputText}</span></div>
         <div className="mt-io"><span className="mt-out">SALIDA</span><span>{tipLayer.outputText}</span></div>
         <div className="mt-io mt-muted"><span>parámetros</span><span>{formatCount(tipLayer.parameters)}</span></div>
         <div className="mt-io mt-muted"><span>{tipLayer.trainable ? 'se entrena' : 'congelado'}</span><span>{formatCount(tipLayer.volume)} act.</span></div>
+        {cell && (tipLayer.kind === 'input' || tipLayer.kind === 'output') && <div className="mt-tip-cell" data-category={tipLayer.kind === 'output' ? cell.category ?? 'unknown' : undefined}>
+          <img src={cell.image} alt={`Célula ${cell.sampleId}`} />
+          <dl>{tipLayer.kind === 'input'
+            ? <><dt>Célula</dt><dd>{cell.sampleId.slice(0, 8)}…</dd><dt>Clase real</dt><dd>{classText(cell.label)}</dd><dt>Partición</dt><dd>{cell.split.toUpperCase()}</dd></>
+            : <><dt>Predicción</dt><dd>{classText(cell.predicted)}</dd><dt>Categoría</dt><dd>{cell.category ? CELL_CATEGORY_LABELS[cell.category] : 'Pendiente'}</dd>
+              <dt>Score</dt><dd>{cell.score.toFixed(4)}{cell.threshold != null && <small> umbral {cell.threshold.toFixed(4)}</small>}</dd></>}</dl>
+        </div>}
       </div>}
     </div>
   </div>;

@@ -103,3 +103,15 @@ test('la escena dibuja cada bloque, marca los congelados y los pendientes', () =
   assert.match(html, /aria-label="Pantalla completa"/);
   assert.match(html, /forma pendiente/);
 });
+
+test('la célula seleccionada aparece en la entrada y, con su resultado, en la salida', () => {
+  const layers = model.buildTrainingLayers({ ...vgg, blocks: vgg.blocks.map(item => item.id === 'output' ? { ...item, output_shape: [null, 1] } : item) }, 'base');
+  const cell = { sampleId: '004cc347-5232-5b5a-ac2b-ee6629dbad37', image: 'data:image/png;base64,AAAA', label: 0, predicted: 1, score: 0.3084, threshold: 0.2512, split: 'test', attemptId: '00b8d407', category: 'false_positive' };
+  const html = renderToStaticMarkup(React.createElement(TrainingScene, { layers, selected: 0, onSelect: () => undefined, phaseLabel: 'Fase base', cell }));
+  assert.equal((html.match(/<image /g) || []).length, 2);
+  assert.match(html, /data-category="false_positive"/);
+  assert.match(html, /Falso positivo · 0\.308/);
+  assert.match(html, /célula 004cc347/);
+  const without = renderToStaticMarkup(React.createElement(TrainingScene, { layers, selected: 0, onSelect: () => undefined, phaseLabel: 'Fase base' }));
+  assert.doesNotMatch(without, /<image /);
+});

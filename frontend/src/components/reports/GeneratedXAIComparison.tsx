@@ -4,7 +4,7 @@ import { XAIComparisonViewer } from './XAIComparisonViewer';
 
 const listText = (items: string[]) => items.length > 1 ? `${items.slice(0, -1).join(', ')} y ${items.at(-1)}` : items[0] ?? '';
 
-export function GeneratedXAIComparison({comparison, datasource, active, onEvidenceChange, lazy, authorized, blocked, variant}: {comparison: XAIComparison; datasource: string; active?: boolean; onEvidenceChange?: () => void; lazy?: boolean; authorized?: boolean; blocked?: string | null; variant?: 'inline' | 'expanded'}) {
+export function GeneratedXAIComparison({comparison, datasource, active, onEvidenceChange, lazy, authorized, blocked, variant}: {comparison: XAIComparison; datasource: string; active?: boolean; onEvidenceChange?: () => void; lazy?: boolean; authorized?: boolean; blocked?: string | null; variant?: 'inline' | 'expanded' | 'toolbar'}) {
   const generation = useExplainGeneration(comparison, active, onEvidenceChange, {lazy, authorized, blocked});
   // Methods still to produce, including those already running, keep the button visible but locked.
   const pending = [...generation.missing, ...generation.inFlight];

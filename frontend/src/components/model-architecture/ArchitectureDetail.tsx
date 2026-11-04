@@ -19,6 +19,7 @@ export function ArchitectureDetail({ data: source, view, onView, phase, onPhase,
   // A click on the drawing is also a request to the cell trace; the counter tells a new click from the trace's own echo.
   const [blockClick, setBlockClick] = useState<{ id: string; n: number } | null>(null);
   const [activity, setActivity] = useState<BlockActivity | null>(null);
+  const [traceSample, setTraceSample] = useState<string | null>(null);
   const block = data.blocks.find(item => item.id === requestedBlock) ?? data.blocks.find(item => item.kind !== 'input') ?? data.blocks[0];
   // Every drawn block carries data-block, so one listener serves all the chart types.
   const pickBlock = (event: MouseEvent<HTMLDivElement>) => {
@@ -43,7 +44,7 @@ export function ArchitectureDetail({ data: source, view, onView, phase, onPhase,
       <div className="mx-view-actions">
         <div className="scc-segmented" role="group" aria-label="Tipo de gráfico">{viewsFor(data.family).map(item => <button key={item} type="button" className="ds-button" data-size="compact"
           aria-pressed={item === view} onClick={() => onView(item)}>{architectureViews[item]}</button>)}</div>
-        {trainingLink && <a className="ds-button" data-size="compact" href={withAllowedQuery(routes.modelTraining, { datasource, run: data.training_run_id, fase: phase })}
+        {trainingLink && <a className="ds-button" data-size="compact" href={withAllowedQuery(routes.modelTraining, { datasource, run: data.training_run_id, fase: phase, muestra: traceSample })}
           target="_blank" rel="noopener noreferrer" title="Abre la vista Entrenamiento en una pestaña nueva">Entrenamiento ↗</a>}
       </div>
       {data.phases.length > 1 && <div className="scc-segmented" role="group" aria-label="Fase de entrenamiento">{data.phases.map(item => <button key={item.phase} type="button" className="ds-button" data-size="compact"
@@ -55,7 +56,7 @@ export function ArchitectureDetail({ data: source, view, onView, phase, onPhase,
     </div>
     {explorerLink && <Link className="ds-button" data-size="compact" to={withAllowedQuery(routes.modelExplorer, { datasource, run: data.training_run_id, grafico: view, fase: phase })}>Abrir vista completa</Link>}
     <p className="mx-legend"><span data-trained="true" />Se entrena en esta fase<span data-trained="false" />Congelado o sin pesos</p>
-    {data.family === 'vgg16' && <ActivationTracePanel runId={data.training_run_id} datasource={datasource} onBlock={setRequestedBlock} architecture={data} blockClick={blockClick} onActivity={setActivity} />}
+    {data.family === 'vgg16' && <ActivationTracePanel runId={data.training_run_id} datasource={datasource} onBlock={setRequestedBlock} architecture={data} blockClick={blockClick} onActivity={setActivity} onSample={setTraceSample} />}
     {block && <MathFunctionPanel data={data} block={block} onBlock={setRequestedBlock} />}
     <EvidenceButton title="Identidad del modelo" label="Identidad del modelo">
       <p className="report-identifier">TRAIN: {data.training_run_id}<br />Checkpoint: {data.checkpoint.artifact_id ?? 'Sin evidencia'}</p>
