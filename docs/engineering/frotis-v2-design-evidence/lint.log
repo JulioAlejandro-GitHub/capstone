@@ -1,0 +1,6 @@
+
+> capstone-experiments-frontend@0.1.0 lint:frotis
+> node scripts/lint-frotis.mjs
+
+
+ESLint: 24 files, 0 errors.

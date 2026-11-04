@@ -27,15 +27,15 @@ export const FullFieldView: React.FC<FullFieldViewProps> = ({
   return (
     <div className="flex-1 flex flex-col h-full relative select-none">
       {/* Subheader banner */}
-      <div className="h-9 px-4 bg-slate-900 text-white flex items-center justify-between text-xs z-10 border-b border-slate-700">
+      <div className="h-frotis-toolbar-height px-4 bg-frotis-surface-inverse text-frotis-text-inverse flex items-center justify-between text-xs frotis-layer-overlay border-b border-frotis-border-inverse">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-indigo-300">
+          <span className="font-semibold text-frotis-accent-soft">
             {isAnalysisArea
               ? "ÁREA DE ANÁLISIS AUTOMÁTICO"
               : "REVISIÓN DE CAMPO COMPLETO (FULL FIELD)"}
           </span>
-          <span className="text-slate-400">|</span>
-          <span className="text-slate-300">
+          <span className="text-frotis-text-muted">|</span>
+          <span className="text-frotis-border-strong">
             Escaneado continuo de resolución óptica total (2.27 cm²)
           </span>
         </div>
@@ -43,13 +43,13 @@ export const FullFieldView: React.FC<FullFieldViewProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowHeatmap(!showHeatmap)}
-            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-xs transition-colors ${
+            className={`flex items-center gap-frotis-control-gap px-2 py-0.5 rounded-xs transition-colors ${
               showHeatmap
-                ? "bg-amber-600 text-white"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                ? "bg-frotis-warning text-frotis-text-inverse"
+                : "bg-frotis-surface-inverse-raised text-frotis-border-strong hover:bg-frotis-surface-inverse-elevated"
             }`}
           >
-            <Flame className="w-3.5 h-3.5" />
+            <Flame className="w-frotis-icon-size-sm h-frotis-icon-size-sm" />
             <span>Mapa de Densidad Celular</span>
           </button>
         </div>
@@ -77,9 +77,9 @@ export const FullFieldView: React.FC<FullFieldViewProps> = ({
 
         {/* Heatmap overlay if enabled */}
         {showHeatmap && (
-          <div className="absolute inset-0 pointer-events-none bg-gradient-radial from-amber-500/25 via-indigo-600/15 to-transparent mix-blend-multiply flex items-center justify-center">
-            <div className="bg-slate-900/80 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-lg flex items-center gap-2">
-              <Flame className="w-4 h-4 text-amber-400" />
+          <div className="absolute inset-0 pointer-events-none bg-gradient-radial from-frotis-warning-accent/25 via-frotis-secondary/15 to-transparent mix-blend-multiply flex items-center justify-center">
+            <div className="bg-frotis-surface-inverse/80 text-frotis-text-inverse px-3 py-1.5 rounded-full text-xs font-mono shadow-lg flex items-center gap-2">
+              <Flame className="w-frotis-icon-size h-frotis-icon-size text-frotis-warning-marker" />
               <span>
                 Zona Óptima de Recuento Monocapa: Concentración 48 células / HPF
               </span>

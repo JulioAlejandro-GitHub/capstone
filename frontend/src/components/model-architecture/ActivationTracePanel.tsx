@@ -7,6 +7,7 @@ import { withAllowedQuery, routes } from '../../router';
 import { api } from '../../services/api';
 import type { ActivationTrace, ActivationTraceCandidate, ActivationTraceCatalog, ActivationTraceStep, TraceCategory } from '../../types/activationTrace';
 import type { ModelArchitecture } from '../../types/modelArchitecture';
+import type { BlockActivity } from './ArchitectureChart';
 import type { CurveEvidence } from '../../types/scientificReport';
 import { CopyText } from '../reports/ComparisonPython';
 import { layerOperations } from './mathOperations';
@@ -101,8 +102,8 @@ function StepBody({ trace, index, inputShape, scale, onScale, picked, onPick }: 
 }
 
 /** Saved forward passes of one TRAIN. Opening it reads files only; the model runs when «Calcular» is pressed. */
-export function ActivationTracePanel({ runId, datasource, onBlock, architecture, blockClick }: { runId: string; datasource: string; onBlock: (id: string) => void;
-  architecture: ModelArchitecture; blockClick?: { id: string; n: number } | null }) {
+export function ActivationTracePanel({ runId, datasource, onBlock, architecture, blockClick, onActivity }: { runId: string; datasource: string; onBlock: (id: string) => void;
+  architecture: ModelArchitecture; blockClick?: { id: string; n: number } | null; onActivity?: (activity: BlockActivity | null) => void }) {
   const { user } = useAuth();
   const selection = useComparisonSelection();
   const canCalculate = Boolean(user?.permissions?.includes('scientific.cell_classification.explain'));
@@ -162,6 +163,14 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture,
     const timer = window.setTimeout(() => setIndex(value => value + 1), PLAY_MS);
     return () => window.clearTimeout(timer);
   }, [playing, index, total]);
+  // The open cell annotates the drawing: share of active values under each block, p under the output.
+  useEffect(() => {
+    if (!onActivity) return;
+    onActivity(trace ? Object.fromEntries(trace.steps.map((item, position) => [drawnBlock(architecture, item), item.kind === 'output'
+      ? { value: trace.score, label: `p ${number(trace.score, 3)}`, current: position + 1 === index }
+      : { value: item.stats.active, label: `${percent(item.stats.active)} activos`, current: position + 1 === index }])) : null);
+  }, [trace, index, architecture, onActivity]);
+  useEffect(() => () => onActivity?.(null), [onActivity]);
   // The architecture drawing is the navigator: a block opens its first step; clicking it again walks the steps it holds.
   const handled = useRef(blockClick?.n ?? 0);
   useEffect(() => {

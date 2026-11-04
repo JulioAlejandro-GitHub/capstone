@@ -1,0 +1,17 @@
+Command: npm --prefix frontend test
+Date: 2026-11-04
+Final output:
+ok 467 - logical TRAIN explicitly reports incorporation without computational training
+  ---
+  duration_ms: 0.605125
+  type: 'test'
+  ...
+1..467
+# tests 467
+# suites 0
+# pass 467
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9217.445417

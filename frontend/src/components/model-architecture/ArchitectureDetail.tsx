@@ -6,7 +6,7 @@ import type { ModelArchitecture } from '../../types/modelArchitecture';
 import { EvidenceButton, Kpi, SectionAnswer } from '../reports/AnalysisWorkspace';
 import { CopyText } from '../reports/ComparisonPython';
 import { ActivationTracePanel } from './ActivationTracePanel';
-import { ArchitectureChart } from './ArchitectureChart';
+import { ArchitectureChart, type BlockActivity } from './ArchitectureChart';
 import { MathFunctionPanel } from './MathFunctionPanel';
 import { architectureViews, countText, lossText, outputText, phaseLabels, shapeText, splitHead, viewsFor, type ArchitectureView } from './architectureViews';
 
@@ -18,6 +18,7 @@ export function ArchitectureDetail({ data: source, view, onView, phase, onPhase,
   const [requestedBlock, setRequestedBlock] = useState<string | null>(null);
   // A click on the drawing is also a request to the cell trace; the counter tells a new click from the trace's own echo.
   const [blockClick, setBlockClick] = useState<{ id: string; n: number } | null>(null);
+  const [activity, setActivity] = useState<BlockActivity | null>(null);
   const block = data.blocks.find(item => item.id === requestedBlock) ?? data.blocks.find(item => item.kind !== 'input') ?? data.blocks[0];
   // Every drawn block carries data-block, so one listener serves all the chart types.
   const pickBlock = (event: MouseEvent<HTMLDivElement>) => {
@@ -46,11 +47,11 @@ export function ArchitectureDetail({ data: source, view, onView, phase, onPhase,
     </div>
     <div className="mx-selectable" onClick={pickBlock}>
       {block && <style>{`.mx-selectable [data-block="${block.id}"] rect, .mx-selectable [data-block="${block.id}"] polygon { stroke-width: 3; }`}</style>}
-      <ArchitectureChart data={data} view={view} phase={phase} />
+      <ArchitectureChart data={data} view={view} phase={phase} activity={data.family === 'vgg16' ? activity : null} />
     </div>
     {explorerLink && <Link className="ds-button" data-size="compact" to={withAllowedQuery(routes.modelExplorer, { datasource, run: data.training_run_id, grafico: view, fase: phase })}>Abrir vista completa</Link>}
     <p className="mx-legend"><span data-trained="true" />Se entrena en esta fase<span data-trained="false" />Congelado o sin pesos</p>
-    {data.family === 'vgg16' && <ActivationTracePanel runId={data.training_run_id} datasource={datasource} onBlock={setRequestedBlock} architecture={data} blockClick={blockClick} />}
+    {data.family === 'vgg16' && <ActivationTracePanel runId={data.training_run_id} datasource={datasource} onBlock={setRequestedBlock} architecture={data} blockClick={blockClick} onActivity={setActivity} />}
     {block && <MathFunctionPanel data={data} block={block} onBlock={setRequestedBlock} />}
     <EvidenceButton title="Identidad del modelo" label="Identidad del modelo">
       <p className="report-identifier">TRAIN: {data.training_run_id}<br />Checkpoint: {data.checkpoint.artifact_id ?? 'Sin evidencia'}</p>

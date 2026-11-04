@@ -220,3 +220,14 @@ test('VGG16 dibuja la cabeza capa por capa: un elemento por paso del recorrido',
   const code = load('components/model-architecture/traceCode.ts');
   assert.equal(code.stepTitle(split, { layer: 'feature_dense_1024', block: 'head', kind: 'vector', shape: [1024] }), 'Densa 1024');
 });
+
+test('el diagrama anota bajo cada bloque los valores activos de la célula abierta', () => {
+  const blocks = [block('input', 'input', [null, 200, 200, 3], []), block('block1', 'convolution', [null, 100, 100, 64]), block('output', 'output', [null, 1])];
+  const vgg = data('vgg16', blocks);
+  const activity = { block1: { value: 0.171, label: '17,1 % activos', current: true }, output: { value: 0.035, label: 'p 0,035', current: false } };
+  const html = renderToStaticMarkup(React.createElement(ArchitectureChart, { data: vgg, view: 'bloques-3d', phase: 'base', activity }));
+  assert.match(html, /17,1 % activos/);
+  assert.match(html, /p 0,035/);
+  assert.match(html, /data-current="true"/);
+  assert.doesNotMatch(renderToStaticMarkup(React.createElement(ArchitectureChart, { data: vgg, view: 'bloques-3d', phase: 'base' })), /mx-activity/);
+});

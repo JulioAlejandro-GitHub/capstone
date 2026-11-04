@@ -171,8 +171,8 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onWheel={handleWheel}
-      className={`relative flex-1 h-full bg-[#e8d5df] overflow-hidden select-none cursor-${
-        activeTool === "ruler" ? "crosshair" : isDragging ? "grabbing" : "grab"
+      className={`relative flex-1 h-full bg-frotis-viewer-background overflow-hidden select-none ${
+        activeTool === "ruler" ? "cursor-crosshair" : isDragging ? "cursor-grabbing" : "cursor-grab"
       }`}
     >
       <svg width="0" height="0" aria-hidden="true">
@@ -206,7 +206,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         className="absolute left-0 top-0 w-[1400px] h-[900px] pointer-events-auto"
       >
         {/* Slide background smear image with cells */}
-        <div className="relative w-full h-full bg-[#efd7e3] overflow-hidden shadow-2xl">
+        <div className="relative w-full h-full bg-frotis-viewer-slide overflow-hidden shadow-2xl">
           {/* Base histological texture with thousands of red blood cells (erythrocytes) */}
           <svg className="w-full h-full absolute inset-0 opacity-90 pointer-events-none">
             <defs>
@@ -285,9 +285,9 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                 className="absolute cursor-pointer group"
               >
                 {/* Visual cell body on the slide */}
-                <div className="relative w-12 h-12 flex items-center justify-center">
+                <div className="relative w-frotis-viewer-marker-size h-frotis-viewer-marker-size flex items-center justify-center">
                   {/* Surrounding cytoplasm */}
-                  <div className="w-11 h-11 rounded-full bg-[#707ea6]/90 border border-[#526087] shadow-sm flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-full bg-[#707ea6]/90 border-frotis border-[#526087] shadow-sm flex items-center justify-center">
                     {/* Dark purple nucleus */}
                     <div className="w-7 h-7 rounded-full bg-[#2c1448] shadow-inner" />
                   </div>
@@ -297,14 +297,14 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                     <div
                       className={`absolute -inset-1 rounded-full pointer-events-none transition-all duration-200 ${
                         isSelected
-                          ? "border-2 border-indigo-600 ring-4 ring-indigo-400/50 scale-125 animate-pulse"
-                          : "border border-dashed border-indigo-500/70 opacity-60 group-hover:opacity-100 group-hover:scale-110"
+                          ? "frotis-viewer-marker-selected ring-4 ring-frotis-viewer-hover/50 scale-125 animate-pulse"
+                          : "frotis-viewer-marker border-dashed group-hover:scale-110"
                       }`}
                     />
                   )}
 
                   {/* Tooltip on hover */}
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-slate-900/90 text-white text-[10px] px-1.5 py-0.5 rounded-xs whitespace-nowrap pointer-events-none shadow-md z-30 font-mono">
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-frotis-surface-inverse/90 text-frotis-text-inverse text-frotis-caption px-1.5 py-0.5 rounded-xs whitespace-nowrap pointer-events-none shadow-md frotis-tooltip font-mono">
                     {cell.name} #{cell.id}
                   </div>
                 </div>
@@ -314,10 +314,10 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
           {/* High Power Field (HPF) Grid Overlay */}
           {showHpfGrid && (
-            <div className="absolute inset-0 pointer-events-none grid grid-cols-12 grid-rows-8 divide-x divide-y divide-indigo-500/30">
+            <div className="absolute inset-0 pointer-events-none grid grid-cols-12 grid-rows-8 divide-x divide-y frotis-viewer-grid">
               {Array.from({ length: 96 }).map((_, idx) => (
                 <div key={idx} className="relative">
-                  <span className="absolute bottom-1 right-1 text-[9px] font-mono text-indigo-700/50">
+                  <span className="absolute bottom-1 right-1 text-frotis-badge font-mono text-frotis-secondary-hover/50">
                     HPF-{idx + 1}
                   </span>
                 </div>
@@ -338,7 +338,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                 setIsDraggingRuler(true);
                 setRulerDragStart({ x: e.clientX, y: e.clientY });
               }}
-              className="absolute cursor-move z-30 select-none group"
+              className="absolute cursor-move frotis-layer-header select-none group"
               title="Arrastra para medir cualquier célula en el frotis"
             >
               {rulerMode === "CIRCLE" && (
@@ -348,13 +348,13 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                       width: `${rulerSizeUm * 2.8}px`,
                       height: `${rulerSizeUm * 2.8}px`,
                     }}
-                    className="rounded-full border-2 border-indigo-600 bg-indigo-500/15 shadow-sm flex items-center justify-center relative hover:ring-2 hover:ring-indigo-400"
+                    className="rounded-full border-2 border-frotis-secondary bg-frotis-accent/15 shadow-sm flex items-center justify-center relative hover:ring-2 hover:ring-frotis-viewer-hover"
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-700" />
-                    <div className="absolute inset-x-0 top-1/2 h-px bg-indigo-600/40" />
-                    <div className="absolute inset-y-0 left-1/2 w-px bg-indigo-600/40" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-frotis-secondary-hover" />
+                    <div className="absolute inset-x-0 top-1/2 h-px bg-frotis-secondary/40" />
+                    <div className="absolute inset-y-0 left-1/2 w-px bg-frotis-secondary/40" />
                   </div>
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-[10px] font-mono font-semibold px-2 py-0.5 rounded-sm shadow-md whitespace-nowrap pointer-events-none">
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-frotis-surface-inverse/90 text-frotis-text-inverse text-frotis-caption font-mono font-semibold px-2 py-0.5 rounded-sm shadow-md whitespace-nowrap pointer-events-none">
                     ⌀ {rulerSizeUm} µm
                   </div>
                 </div>
@@ -369,11 +369,11 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                     }}
                     className="relative flex items-center justify-center"
                   >
-                    <div className="absolute inset-x-0 top-1/2 h-0.5 bg-indigo-600 shadow-sm" />
-                    <div className="absolute inset-y-0 left-1/2 w-0.5 bg-indigo-600 shadow-sm" />
-                    <div className="w-2.5 h-2.5 rounded-full border border-indigo-600 bg-white/40" />
+                    <div className="absolute inset-x-0 top-1/2 h-0.5 bg-frotis-secondary shadow-sm" />
+                    <div className="absolute inset-y-0 left-1/2 w-0.5 bg-frotis-secondary shadow-sm" />
+                    <div className="w-2.5 h-2.5 rounded-full border-frotis border-frotis-secondary bg-frotis-surface/40" />
                   </div>
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-[10px] font-mono font-semibold px-2 py-0.5 rounded-sm shadow-md whitespace-nowrap pointer-events-none">
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-frotis-surface-inverse/90 text-frotis-text-inverse text-frotis-caption font-mono font-semibold px-2 py-0.5 rounded-sm shadow-md whitespace-nowrap pointer-events-none">
                     CROSS: {rulerSizeUm} µm
                   </div>
                 </div>
@@ -383,9 +383,9 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                 <div className="relative flex items-center justify-center">
                   <div
                     style={{ width: `${rulerSizeUm * 3.2}px` }}
-                    className="h-1 bg-indigo-600 border-x-4 border-indigo-800 relative shadow-sm"
+                    className="h-1 bg-frotis-secondary border-x-4 border-frotis-secondary-strong relative shadow-sm"
                   />
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-[10px] font-mono font-semibold px-2 py-0.5 rounded-sm shadow-md whitespace-nowrap pointer-events-none">
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-frotis-surface-inverse/90 text-frotis-text-inverse text-frotis-caption font-mono font-semibold px-2 py-0.5 rounded-sm shadow-md whitespace-nowrap pointer-events-none">
                     {rulerSizeUm} µm
                   </div>
                 </div>
@@ -396,7 +396,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
       </div>
 
       {/* Top Floating Visor Toolbar (Iconic white pill overlay from Visor) */}
-      <div className="absolute top-3 left-4 z-30 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-slate-200/90 shadow-md rounded-sm px-1.5 py-1">
+      <div className="absolute top-3 left-4 frotis-layer-header flex items-center gap-frotis-control-gap bg-frotis-surface/95 backdrop-blur-sm border-frotis border-frotis-border/90 shadow-md rounded-sm px-1.5 py-1">
         {/* Ruler tool with exact Visor Dropdown menu */}
         <span title="Ruler" className="relative">
           <div className="MuiBox-root-9 jss1036 sc-iwyWTf kqlMG">
@@ -404,21 +404,21 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
               onClick={() => setShowRulerMenu(!showRulerMenu)}
               className={`p-1.5 rounded-xs flex items-center gap-1 text-xs transition-colors cursor-pointer ${
                 rulerMode !== "NONE"
-                  ? "bg-[#4D58A4] text-white"
-                  : "text-slate-700 hover:bg-slate-100"
+                  ? "bg-frotis-primary text-frotis-text-inverse"
+                  : "text-frotis-text-body hover:bg-frotis-hover"
               }`}
               tabIndex={0}
               type="button"
               data-sl-test="sv-toolbar-rulerButton"
             >
               <div className="flex items-center gap-1">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <svg className="w-frotis-icon-size h-frotis-icon-size fill-current" viewBox="0 0 24 24">
                   <path d="M1.39,18.36L3.16,16.6L4.58,18L5.64,16.95L4.22,15.54L5.64,14.12L8.11,16.6L9.17,15.54L6.7,13.06L8.11,11.65L9.53,13.06L10.59,12L9.17,10.59L10.59,9.17L13.06,11.65L14.12,10.59L11.65,8.11L13.06,6.7L14.47,8.11L15.54,7.05L14.12,5.64L15.54,4.22L18,6.7L19.07,5.64L16.6,3.16L18.36,1.39L22.61,5.64L5.64,22.61L1.39,18.36Z" />
                 </svg>
-                <span className="text-[11px] font-medium hidden sm:inline">
+                <span className="text-frotis-label font-medium hidden sm:inline">
                   {rulerMode !== "NONE" ? rulerMode : "Regla"}
                 </span>
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <svg className="w-frotis-icon-size-sm h-frotis-icon-size-sm fill-current" viewBox="0 0 24 24">
                   <path d="M7,10L12,15L17,10H7Z" />
                 </svg>
               </div>
@@ -428,12 +428,12 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           {/* Exact Visor Popover Menu */}
           {showRulerMenu && (
             <div
-              className="MuiPaper-root-73 MuiMenu-paper-61 MuiPopover-paper-64 MuiPaper-elevation8-84 MuiPaper-rounded-74 absolute top-full left-0 mt-1 z-50 bg-white rounded-sm shadow-xl border border-slate-200 py-1 w-32 animate-in fade-in"
+              className="MuiPaper-root-73 MuiMenu-paper-61 MuiPopover-paper-64 MuiPaper-elevation8-84 MuiPaper-rounded-74 absolute top-full left-0 mt-1 frotis-layer-popover bg-frotis-surface rounded-sm shadow-xl border-frotis border-frotis-border py-1 w-32 animate-in fade-in"
               tabIndex={-1}
               onClick={(e) => e.stopPropagation()}
             >
               <ul
-                className="MuiList-root-460 MuiMenu-list-62 MuiList-padding-461 text-xs text-slate-800 font-medium"
+                className="MuiList-root-460 MuiMenu-list-62 MuiList-padding-461 text-xs text-frotis-text-heading font-medium"
                 role="menu"
               >
                 {(["NONE", "LINE", "CROSS", "CIRCLE"] as RulerMode[]).map(
@@ -444,9 +444,9 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                         setRulerMode(mode);
                         setShowRulerMenu(false);
                       }}
-                      className={`px-3 py-1.5 hover:bg-slate-100 cursor-pointer flex items-center justify-between transition-colors ${
+                      className={`px-3 py-1.5 hover:bg-frotis-hover cursor-pointer flex items-center justify-between transition-colors ${
                         rulerMode === mode
-                          ? "bg-indigo-50 text-[#4D58A4] font-bold"
+                          ? "bg-frotis-selected text-frotis-primary font-bold"
                           : ""
                       }`}
                       data-sl-test={`option:${mode.toLowerCase()}`}
@@ -454,7 +454,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                     >
                       <div className="MuiBox-root-9">{mode}</div>
                       {rulerMode === mode && (
-                        <span className="text-[#4D58A4] text-[10px]">●</span>
+                        <span className="text-frotis-primary text-frotis-caption">●</span>
                       )}
                     </li>
                   ),
@@ -469,27 +469,27 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           onClick={() => setShowHpfGrid(!showHpfGrid)}
           className={`p-1.5 rounded-xs flex items-center gap-1 text-xs transition-colors ${
             showHpfGrid
-              ? "bg-indigo-600 text-white"
-              : "text-slate-700 hover:bg-slate-100"
+              ? "bg-frotis-secondary text-frotis-text-inverse"
+              : "text-frotis-text-body hover:bg-frotis-hover"
           }`}
           title="Rejilla HPF (Campo de Gran Aumento)"
         >
-          <Grid className="w-4 h-4" />
-          <span className="text-[11px] font-medium hidden sm:inline">
+          <Grid className="w-frotis-icon-size h-frotis-icon-size" />
+          <span className="text-frotis-label font-medium hidden sm:inline">
             HPF Grid
           </span>
         </button>
 
         {/* Magnification Preset Selector (10x, 20x, 40x, 100x) */}
-        <div className="flex items-center border-l border-r border-slate-200 px-1 mx-0.5 gap-0.5">
+        <div className="flex items-center border-l border-r border-frotis-border px-1 mx-0.5 gap-0.5">
           {[10, 20, 40, 100].map((mag) => (
             <button
               key={mag}
               onClick={() => setZoom(mag)}
               className={`px-1.5 py-0.5 text-xs font-mono font-medium rounded-xs transition-colors ${
                 Math.round(zoom) === mag
-                  ? "bg-indigo-600 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-frotis-secondary text-frotis-text-inverse"
+                  : "text-frotis-text-control hover:bg-frotis-hover"
               }`}
             >
               {mag}x
@@ -500,8 +500,8 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         {/* Cell Markers Toggle */}
         <button
           onClick={() => setShowCellMarkers(!showCellMarkers)}
-          className={`p-1.5 rounded-xs text-slate-700 hover:bg-slate-100 transition-colors ${
-            showCellMarkers ? "text-indigo-600" : "text-slate-400"
+          className={`p-1.5 rounded-xs text-frotis-text-body hover:bg-frotis-hover transition-colors ${
+            showCellMarkers ? "text-frotis-secondary" : "text-frotis-text-muted"
           }`}
           title={
             showCellMarkers
@@ -510,9 +510,9 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           }
         >
           {showCellMarkers ? (
-            <Eye className="w-4 h-4" />
+            <Eye className="w-frotis-icon-size h-frotis-icon-size" />
           ) : (
-            <EyeOff className="w-4 h-4" />
+            <EyeOff className="w-frotis-icon-size h-frotis-icon-size" />
           )}
         </button>
 
@@ -521,12 +521,12 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowImageProfiles(!showImageProfiles)}
-              className={`p-1.5 rounded-xs text-slate-700 hover:bg-slate-100 transition-colors ${
-                showImageProfiles ? "bg-[#4D58A4] text-white" : "text-slate-700"
+              className={`p-1.5 rounded-xs text-frotis-text-body hover:bg-frotis-hover transition-colors ${
+                showImageProfiles ? "bg-frotis-primary text-frotis-text-inverse" : "text-frotis-text-body"
               }`}
               title="Ajustes de imagen (Brillo, Contraste, Saturación, Gamma)"
             >
-              <Sliders className="w-4 h-4" />
+              <Sliders className="w-frotis-icon-size h-frotis-icon-size" />
             </button>
 
             {showImageProfiles && (
@@ -549,41 +549,41 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         )}
 
         {/* Zoom controls */}
-        <div className="flex items-center gap-0.5 pl-1 border-l border-slate-200">
+        <div className="flex items-center gap-0.5 pl-1 border-l border-frotis-border">
           <button
             onClick={zoomOut}
-            className="p-1.5 text-slate-700 hover:bg-slate-100 rounded-xs"
+            className="p-1.5 text-frotis-text-body hover:bg-frotis-hover rounded-xs"
             title="Alejar (-)"
           >
-            <ZoomOut className="w-4 h-4" />
+            <ZoomOut className="w-frotis-icon-size h-frotis-icon-size" />
           </button>
           <button
             onClick={zoomIn}
-            className="p-1.5 text-slate-700 hover:bg-slate-100 rounded-xs"
+            className="p-1.5 text-frotis-text-body hover:bg-frotis-hover rounded-xs"
             title="Acercar (+)"
           >
-            <ZoomIn className="w-4 h-4" />
+            <ZoomIn className="w-frotis-icon-size h-frotis-icon-size" />
           </button>
           <button
             onClick={resetView}
-            className="p-1.5 text-slate-700 hover:bg-slate-100 rounded-xs"
+            className="p-1.5 text-frotis-text-body hover:bg-frotis-hover rounded-xs"
             title="Restablecer posición inicial"
           >
-            <Home className="w-4 h-4" />
+            <Home className="w-frotis-icon-size h-frotis-icon-size" />
           </button>
         </div>
       </div>
 
       {/* Visor Ruler Overlay Bar (sc-bqyKOL kbpeIU) with Size Slider & Recenter Button */}
       {rulerMode !== "NONE" && (
-        <div className="sc-bqyKOL kbpeIU absolute top-14 left-4 z-30 flex items-center gap-3 bg-white/95 backdrop-blur-sm border border-slate-200/90 shadow-md rounded-sm px-3 py-2 select-none w-72 sm:w-80 animate-in fade-in slide-in-from-top-1">
+        <div className="sc-bqyKOL kbpeIU absolute top-14 left-4 frotis-layer-header flex items-center gap-3 bg-frotis-surface/95 backdrop-blur-sm border-frotis border-frotis-border/90 shadow-md rounded-sm px-3 py-2 select-none w-72 sm:w-80 animate-in fade-in slide-in-from-top-1">
           {/* Ruler Icon with right margin */}
           <svg
-            className="MuiSvgIcon-root-397 w-5 h-5 fill-slate-700 flex-shrink-0"
+            className="MuiSvgIcon-root-397 w-5 h-5 fill-frotis-text-body flex-shrink-0"
             focusable="false"
             viewBox="0 0 24 24"
             aria-hidden="true"
-            style={{ marginRight: "1rem" }}
+            style={{ marginRight: "var(--frotis-v2-component-padding)" }}
           >
             <path d="M1.39,18.36L3.16,16.6L4.58,18L5.64,16.95L4.22,15.54L5.64,14.12L8.11,16.6L9.17,15.54L6.7,13.06L8.11,11.65L9.53,13.06L10.59,12L9.17,10.59L10.59,9.17L13.06,11.65L14.12,10.59L11.65,8.11L13.06,6.7L14.47,8.11L15.54,7.05L14.12,5.64L15.54,4.22L18,6.7L19.07,5.64L16.6,3.16L18.36,1.39L22.61,5.64L5.64,22.61L1.39,18.36Z" />
           </svg>
@@ -598,21 +598,21 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                 step="1"
                 value={rulerSizeUm}
                 onChange={(e) => setRulerSizeUm(Number(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]"
+                className="w-full h-1 bg-frotis-border rounded-lg appearance-none cursor-pointer accent-frotis-primary"
                 data-sl-test="sv-rulerOverlay-sizeSlider"
               />
             </div>
             {/* Marks 5µm, 10µm, 15µm, 20µm */}
-            <div className="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+            <div className="flex justify-between text-frotis-caption font-mono text-frotis-text-secondary mt-1">
               <span
-                className={rulerSizeUm <= 7 ? "text-[#4D58A4] font-bold" : ""}
+                className={rulerSizeUm <= 7 ? "text-frotis-primary font-bold" : ""}
               >
                 5μm
               </span>
               <span
                 className={
                   rulerSizeUm >= 8 && rulerSizeUm <= 12
-                    ? "text-[#4D58A4] font-bold"
+                    ? "text-frotis-primary font-bold"
                     : ""
                 }
               >
@@ -621,14 +621,14 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
               <span
                 className={
                   rulerSizeUm >= 13 && rulerSizeUm <= 17
-                    ? "text-[#4D58A4] font-bold"
+                    ? "text-frotis-primary font-bold"
                     : ""
                 }
               >
                 15μm
               </span>
               <span
-                className={rulerSizeUm >= 18 ? "text-[#4D58A4] font-bold" : ""}
+                className={rulerSizeUm >= 18 ? "text-frotis-primary font-bold" : ""}
               >
                 20μm
               </span>
@@ -639,7 +639,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           <span title="Recenter ruler">
             <button
               onClick={recenterRuler}
-              className="MuiButtonBase-root-448 MuiIconButton-root-440 p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
+              className="MuiButtonBase-root-448 MuiIconButton-root-440 p-1.5 text-frotis-text-control hover:text-frotis-text-primary hover:bg-frotis-hover rounded-full transition-colors cursor-pointer"
               tabIndex={0}
               type="button"
               data-sl-test="sv-rulerOverlay-recenterRulerButton"
@@ -659,14 +659,14 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
       {/* Measurement readout badge if ruler used */}
       {rulerMeasurement && (
-        <div className="absolute top-16 left-4 bg-slate-900/90 text-white px-3 py-1.5 rounded-md shadow-lg text-xs font-mono flex items-center gap-2 z-20">
-          <Ruler className="w-3.5 h-3.5 text-indigo-400" />
+        <div className="absolute top-16 left-4 bg-frotis-surface-inverse/90 text-frotis-text-inverse px-3 py-1.5 rounded-md shadow-lg text-xs font-mono flex items-center gap-2 frotis-layer-toolbar">
+          <Ruler className="w-frotis-icon-size-sm h-frotis-icon-size-sm text-frotis-accent-muted" />
           <span>
             Distancia medida: <strong>{rulerMeasurement}</strong>
           </span>
           <button
             onClick={() => setRulerMeasurement(null)}
-            className="text-slate-400 hover:text-white text-xs ml-1"
+            className="text-frotis-text-muted hover:text-frotis-text-inverse text-xs ml-1"
           >
             ✕
           </button>
@@ -674,14 +674,14 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
       )}
 
       {/* Top Right Minimap (Navigator) with Live Glass Slide Overview */}
-      <div className="absolute top-3 right-4 z-10 bg-white/95 backdrop-blur-sm border border-slate-300 rounded-sm shadow-md p-1.5 select-none hidden md:block">
-        <div className="text-[10px] font-semibold text-slate-500 mb-1 flex items-center justify-between">
+      <div className="absolute top-3 right-4 frotis-layer-overlay bg-frotis-surface/95 backdrop-blur-sm border-frotis border-frotis-border-strong rounded-sm shadow-md p-1.5 select-none hidden md:block">
+        <div className="text-frotis-caption font-semibold text-frotis-text-secondary mb-1 flex items-center justify-between">
           <span>PORTAOBJETOS (SLIDE)</span>
-          <span className="font-mono text-indigo-600">{Math.round(zoom)}x</span>
+          <span className="font-mono text-frotis-secondary">{Math.round(zoom)}x</span>
         </div>
         <div
           style={{ width: `${minimapWidth}px`, height: `${minimapHeight}px` }}
-          className="relative bg-[#d8b8ca] border border-slate-300 rounded-xs overflow-hidden cursor-pointer"
+          className="relative bg-frotis-viewer-minimap border-frotis border-frotis-border-strong rounded-xs overflow-hidden cursor-pointer"
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
@@ -693,11 +693,11 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           }}
         >
           {/* Slide label boundary */}
-          <div className="absolute top-0 left-0 right-0 h-4 bg-white/70 border-b border-slate-300 flex items-center px-1 text-[8px] font-mono text-slate-600">
+          <div className="absolute top-0 left-0 right-0 h-frotis-icon-size bg-frotis-surface/70 border-b border-frotis-border-strong flex items-center px-1 text-frotis-micro font-mono text-frotis-text-control">
             SCP-16532
           </div>
           {/* Smear area representation */}
-          <div className="absolute inset-x-2 top-6 bottom-4 rounded-full bg-[#af5d85]/40 blur-[1px]" />
+          <div className="absolute inset-x-2 top-6 bottom-4 rounded-full bg-frotis-viewer-density/40 blur-[1px]" />
 
           {/* Draggable Viewport Indicator (Matching Visor indigo rectangle) */}
           <div
@@ -707,54 +707,54 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
               width: `${viewportWidth}px`,
               height: `${viewportHeight}px`,
             }}
-            className="absolute border-2 border-indigo-600 rounded-xs bg-indigo-500/20 shadow-xs pointer-events-none"
+            className="absolute border-2 border-frotis-viewer-selection rounded-xs bg-frotis-viewer-overlay/20 shadow-xs pointer-events-none"
           />
         </div>
       </div>
 
       {/* Bottom Left Scale Bar (Realistic µm display) */}
-      <div className="absolute bottom-3 left-4 z-20 bg-white/90 backdrop-blur-sm border border-slate-200 px-3 py-1.5 rounded-sm shadow-sm flex flex-col items-center select-none">
+      <div className="absolute bottom-3 left-4 frotis-layer-toolbar bg-frotis-surface/90 backdrop-blur-sm border-frotis border-frotis-border px-3 py-1.5 rounded-sm shadow-sm flex flex-col items-center select-none">
         <div
           style={{ width: `${scaleBar.widthPx}px` }}
-          className="h-1 bg-slate-900 border-x-2 border-slate-900 relative mb-1"
+          className="h-1 bg-frotis-surface-inverse border-x-2 border-frotis-text-primary relative mb-1"
         />
-        <span className="text-[11px] font-mono font-semibold text-slate-800">
+        <span className="text-frotis-label font-mono font-semibold text-frotis-text-heading">
           {scaleBar.label}
         </span>
       </div>
 
       {/* Bottom Right Scan Info Toggle Button & Drawer */}
-      <div className="absolute bottom-3 right-4 z-20 flex flex-col items-end gap-2">
+      <div className="absolute bottom-3 right-4 frotis-layer-toolbar flex flex-col items-end gap-2">
         {showScanInfo && (
-          <div className="w-64 bg-slate-900/95 text-white border border-slate-700 rounded-md p-3 shadow-xl text-xs space-y-2 animate-in fade-in slide-in-from-bottom-2">
-            <div className="flex items-center justify-between border-b border-slate-700 pb-1.5">
-              <span className="font-semibold text-indigo-300">
+          <div className="w-64 bg-frotis-surface-inverse/95 text-frotis-text-inverse border-frotis border-frotis-border-inverse rounded-md p-3 shadow-xl text-xs space-y-2 animate-in fade-in slide-in-from-bottom-2">
+            <div className="flex items-center justify-between border-b border-frotis-border-inverse pb-1.5">
+              <span className="font-semibold text-frotis-accent-soft">
                 Scan Metadata
               </span>
               <button
                 onClick={() => setShowScanInfo(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-frotis-text-muted hover:text-frotis-text-inverse"
               >
                 ✕
               </button>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Created:</span>
+              <span className="text-frotis-text-muted">Created:</span>
               <span className="font-mono">{createdDate}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Scan Size:</span>
+              <span className="text-frotis-text-muted">Scan Size:</span>
               <span className="font-mono">{scanSizeCm2} cm²</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Resolution:</span>
+              <span className="text-frotis-text-muted">Resolution:</span>
               <span className="font-mono">100x Oil Immersion</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Stain Profile:</span>
+              <span className="text-frotis-text-muted">Stain Profile:</span>
               <span className="font-mono">Wright-Giemsa</span>
             </div>
-            <div className="pt-1 border-t border-slate-800 text-[10px] text-slate-400">
+            <div className="pt-1 border-t border-frotis-border-inverse-deep text-frotis-caption text-frotis-text-muted">
               Visor Full-Field 100x Digital Morphology Scanner
             </div>
           </div>
@@ -762,14 +762,14 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
         <button
           onClick={() => setShowScanInfo(!showScanInfo)}
-          className={`p-2 rounded-full shadow-md border transition-colors ${
+          className={`p-2 rounded-full shadow-md border-frotis transition-colors ${
             showScanInfo
-              ? "bg-indigo-600 text-white border-indigo-700"
-              : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+              ? "bg-frotis-secondary text-frotis-text-inverse border-frotis-secondary-hover"
+              : "bg-frotis-surface text-frotis-text-body border-frotis-border hover:bg-frotis-hover"
           }`}
           title="Ver metadatos del escaneo (Scan Info)"
         >
-          <Info className="w-4 h-4" />
+          <Info className="w-frotis-icon-size h-frotis-icon-size" />
         </button>
       </div>
     </div>

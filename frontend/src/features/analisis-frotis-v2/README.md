@@ -1,5 +1,7 @@
 # Análisis de frotis v2
 
+**Sistema visual actualizado el 4 de noviembre de 2026:** consultar [DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md) para el diagnóstico de Tailwind 4.3.3, tokens aislados, reglas, catálogo de valores y evidencia antes/después. La auditoría y validación del 2 de noviembre que siguen describen la integración inicial.
+
 Integración estática del ZIP `ejemplo---digital-hematology-analysis-platform.zip`, realizada el 2 de noviembre de 2026. No se ejecutaron las instrucciones del README de AI Studio: no se incorporaron Gemini, claves, Express, dotenv, motion ni una segunda aplicación.
 
 ## Auditoría previa
@@ -8,7 +10,7 @@ Capstone tiene React 19, Router 7, TypeScript 5.8 y Vite 7, CSS propio y compone
 
 El ZIP tiene React 19, Vite 8, TypeScript 7, Tailwind 4 y Lucide, además de dependencias sin uso en los componentes. Se inspeccionaron sus componentes, datos, utilidades, HTML, configuración y recursos. Las cinco pestañas originalmente comparten estado en App; FULL FIELD y ANALYSIS AREA reutilizan FullFieldView. Las células y el visor se dibujan principalmente en SVG. El PNG y ambos HTML se conservaron en recursos locales. Se corrigió `/public/assets/`, que no es una URL pública válida en Vite.
 
-Única dependencia de aplicación añadida: `lucide-react`, para preservar los iconos originales. No se cambiaron versiones de React, TypeScript ni Vite. El CSS de Tailwind se entrega generado, con selectores bajo `.af2`, variables internas `--af2-tw-*`, sin reset global ni plugin para el frontend. `layout.css` adapta altura, header, popovers y desbordamientos al layout existente. No hay fuentes remotas esenciales. El HTML demostrativo incluye CSS local; el HTML de referencia se saneó retirando scripts y enlaces a recursos ausentes/remotos.
+Única dependencia de aplicación añadida en la integración inicial: `lucide-react`, para preservar los iconos originales. No se cambiaron versiones de React, TypeScript ni Vite. Desde CAPSTONE-FRONTEND-DS-01, Tailwind CLI 4.3.3 y PostCSS se declaran como herramientas de desarrollo y el CSS generado se aísla bajo `.frotis-v2`, con propiedades internas `--frotis-v2-tw-*`. No hay reset global ni plugin Tailwind en Vite. `layout.css` adapta altura, header, popovers y desbordamientos al layout existente; `tokens_frotis_v2.css` centraliza los valores compartidos y `viewer.css` separa los overlays de la geometría. No hay fuentes remotas esenciales. El HTML demostrativo incluye CSS local; el HTML de referencia se saneó retirando scripts y enlaces a recursos ausentes/remotos.
 
 ## Arquitectura y árbol
 
@@ -102,7 +104,7 @@ node tests/browser/frotis-v2.cjs
 
 Playwright se instaló en un directorio temporal para la validación, sin añadirlo al proyecto. Se puede omitir CHROME_PATH si Playwright tiene su navegador instalado. La captura se escribe en `/tmp/frotis-v2.png` (configurable con SCREENSHOT_PATH).
 
-El script `scripts/generate-frotis-css.cjs` documenta cómo regenerar CSS con Tailwind 4.3.3 y PostCSS instalados temporalmente. No es necesario para iniciar o compilar el frontend. Al introducir nuevas clases, regenerar el CSS y ejecutar las pruebas.
+El script `scripts/generate-frotis-css.cjs` usa las dependencias locales fijadas en el lockfile y se ejecuta en `predev` y `prebuild`. Durante una sesión Vite, ejecutar `npm run styles:frotis` al introducir nuevas clases; los cambios de valores en `tokens_frotis_v2.css` reciben HMR directamente. El generador ya no reescribe el HTML independiente. Consultar [el sistema visual](./DESIGN-SYSTEM.md) para la validación actual de 467 pruebas, lint y comparación de 14 estados.
 
 ## Etapa dinámica futura
 

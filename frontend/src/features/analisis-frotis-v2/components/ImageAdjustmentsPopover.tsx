@@ -24,17 +24,16 @@ export const ImageAdjustmentsPopover: React.FC<
 
   return (
     <div
-      className="af2-image-popover absolute top-full right-0 mt-1.5 z-50 animate-in fade-in slide-in-from-top-1"
+      className="af2-image-popover absolute top-full right-0 mt-1.5 frotis-layer-popover animate-in fade-in slide-in-from-top-1"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Container matching Visor MuiPaper-root-215 */}
       <div
-        className="bg-white rounded-md shadow-xl border border-slate-200/90 p-4 flex flex-col gap-3.5 select-none text-slate-800"
-        style={{ width: "300px", pointerEvents: "all" }}
+        className="frotis-adjustments-panel bg-frotis-surface-elevated rounded-md shadow-xl border-frotis border-frotis-border/90 p-frotis-component-padding flex flex-col gap-3.5 select-none text-frotis-text-heading"
       >
         {/* Slider 1: brightness */}
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-normal text-slate-700 lowercase w-20 flex-shrink-0">
+          <p className="text-xs font-normal text-frotis-text-body lowercase w-20 flex-shrink-0">
             brightness
           </p>
           <div className="relative flex-1 flex items-center">
@@ -51,17 +50,17 @@ export const ImageAdjustmentsPopover: React.FC<
                   preset: "custom",
                 })
               }
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]"
+              className="w-full h-1 bg-frotis-border rounded-lg appearance-none cursor-pointer accent-frotis-primary"
             />
           </div>
-          <p className="text-xs font-mono text-center text-slate-600 w-10 flex-shrink-0">
+          <p className="text-xs font-mono text-center text-frotis-text-control w-10 flex-shrink-0">
             {getPercentage(adjustments.brightness)}
           </p>
         </div>
 
         {/* Slider 2: contrast */}
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-normal text-slate-700 lowercase w-20 flex-shrink-0">
+          <p className="text-xs font-normal text-frotis-text-body lowercase w-20 flex-shrink-0">
             contrast
           </p>
           <div className="relative flex-1 flex items-center">
@@ -78,17 +77,17 @@ export const ImageAdjustmentsPopover: React.FC<
                   preset: "custom",
                 })
               }
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]"
+              className="w-full h-1 bg-frotis-border rounded-lg appearance-none cursor-pointer accent-frotis-primary"
             />
           </div>
-          <p className="text-xs font-mono text-center text-slate-600 w-10 flex-shrink-0">
+          <p className="text-xs font-mono text-center text-frotis-text-control w-10 flex-shrink-0">
             {getPercentage(adjustments.contrast)}
           </p>
         </div>
 
         {/* Slider 3: saturation */}
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-normal text-slate-700 lowercase w-20 flex-shrink-0">
+          <p className="text-xs font-normal text-frotis-text-body lowercase w-20 flex-shrink-0">
             saturation
           </p>
           <div className="relative flex-1 flex items-center">
@@ -105,17 +104,17 @@ export const ImageAdjustmentsPopover: React.FC<
                   preset: "custom",
                 })
               }
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]"
+              className="w-full h-1 bg-frotis-border rounded-lg appearance-none cursor-pointer accent-frotis-primary"
             />
           </div>
-          <p className="text-xs font-mono text-center text-slate-600 w-10 flex-shrink-0">
+          <p className="text-xs font-mono text-center text-frotis-text-control w-10 flex-shrink-0">
             {getPercentage(adjustments.saturation)}
           </p>
         </div>
 
         {/* Slider 4: gamma */}
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-normal text-slate-700 lowercase w-20 flex-shrink-0">
+          <p className="text-xs font-normal text-frotis-text-body lowercase w-20 flex-shrink-0">
             gamma
           </p>
           <div className="relative flex-1 flex items-center">
@@ -132,20 +131,20 @@ export const ImageAdjustmentsPopover: React.FC<
                   preset: "custom",
                 })
               }
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]"
+              className="w-full h-1 bg-frotis-border rounded-lg appearance-none cursor-pointer accent-frotis-primary"
             />
           </div>
-          <p className="text-xs font-mono text-center text-slate-600 w-10 flex-shrink-0">
+          <p className="text-xs font-mono text-center text-frotis-text-control w-10 flex-shrink-0">
             {getGammaPercentage(adjustments.gamma)}
           </p>
         </div>
 
-        {/* RESET Button (Matching Visor MuiButton-containedPrimary in #4D58A4) */}
-        <div className="pt-1 border-t border-slate-100 flex justify-end">
+        {/* RESET Button (Matching the original Visor primary button) */}
+        <div className="pt-1 border-t border-frotis-surface-subtle flex justify-end">
           <button
             type="button"
             onClick={onReset}
-            className="w-full py-1.5 px-4 bg-[#4D58A4] hover:bg-[#3d4787] text-white text-xs font-medium uppercase tracking-wider rounded-xs shadow-xs transition-colors flex items-center justify-center cursor-pointer"
+            className="w-full py-1.5 px-4 bg-frotis-primary hover:bg-frotis-primary-reset-hover text-frotis-text-inverse text-xs font-medium uppercase tracking-wider rounded-xs shadow-xs transition-colors flex items-center justify-center cursor-pointer"
           >
             <span>RESET</span>
           </button>

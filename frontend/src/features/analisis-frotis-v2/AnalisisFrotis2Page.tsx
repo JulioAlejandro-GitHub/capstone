@@ -6,8 +6,10 @@ import { FullFieldReviewPage } from "./pages/FullFieldReviewPage";
 import { ReviewCellsPage } from "./pages/ReviewCellsPage";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { workflowRoutes, frotis2Base } from "./routes";
+import "./styles/tokens_frotis_v2.css";
 import "./styles/module.css";
 import "./styles/layout.css";
+import "./styles/viewer.css";
 import type { WorkflowTab, CaseStatus } from "./types/visor";
 import { mockCases, initialCellsData } from "./data/mockData";
 import { Header } from "./components/Header";
@@ -54,7 +56,7 @@ export function AnalisisFrotis2Page() {
   } = useFrotisDemo();
 
   return (
-    <div className="af2 flex flex-col overflow-hidden bg-slate-100 font-sans">
+    <div className="af2 frotis-v2 flex flex-col overflow-hidden bg-frotis-surface-subtle font-sans">
       <Outlet />
       {/* Top Header Bar */}
       <Header

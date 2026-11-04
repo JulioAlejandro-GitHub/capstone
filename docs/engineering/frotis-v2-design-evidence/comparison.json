@@ -1,0 +1,204 @@
+{
+  "date": "2026-11-04",
+  "browser": "156.0.8078.80",
+  "viewport": "1600x1000",
+  "session": "mocked; no real backend",
+  "pixelmatch": {
+    "threshold": 0.1,
+    "includeAA": false
+  },
+  "results": [
+    {
+      "name": "full-field-review",
+      "pixels": 0,
+      "rawPixels": 0,
+      "maxChannelDelta": 0,
+      "total": 1600000
+    },
+    {
+      "name": "specimen-quality",
+      "pixels": 0,
+      "rawPixels": 0,
+      "maxChannelDelta": 0,
+      "total": 1600000
+    },
+    {
+      "name": "analysis-area",
+      "pixels": 0,
+      "rawPixels": 4,
+      "maxChannelDelta": 16,
+      "total": 1600000
+    },
+    {
+      "name": "review-cells",
+      "pixels": 0,
+      "rawPixels": 62,
+      "maxChannelDelta": 54,
+      "total": 1600000
+    },
+    {
+      "name": "report",
+      "pixels": 0,
+      "rawPixels": 0,
+      "maxChannelDelta": 0,
+      "total": 1600000
+    },
+    {
+      "name": "case-menu",
+      "pixels": 0,
+      "rawPixels": 66,
+      "maxChannelDelta": 54,
+      "total": 1600000
+    },
+    {
+      "name": "image-popover",
+      "pixels": 0,
+      "rawPixels": 1261,
+      "maxChannelDelta": 54,
+      "total": 1600000
+    },
+    {
+      "name": "cell-detail",
+      "pixels": 0,
+      "rawPixels": 217,
+      "maxChannelDelta": 1,
+      "total": 1600000
+    },
+    {
+      "name": "notes",
+      "pixels": 0,
+      "rawPixels": 384,
+      "maxChannelDelta": 1,
+      "total": 1600000
+    },
+    {
+      "name": "export",
+      "pixels": 0,
+      "rawPixels": 3,
+      "maxChannelDelta": 1,
+      "total": 1600000
+    },
+    {
+      "name": "html-modal",
+      "pixels": 0,
+      "rawPixels": 4,
+      "maxChannelDelta": 1,
+      "total": 1600000
+    },
+    {
+      "name": "history",
+      "pixels": 0,
+      "rawPixels": 0,
+      "maxChannelDelta": 0,
+      "total": 1600000
+    },
+    {
+      "name": "workflow",
+      "pixels": 0,
+      "rawPixels": 0,
+      "maxChannelDelta": 0,
+      "total": 1600000
+    },
+    {
+      "name": "model-summary",
+      "pixels": 0,
+      "rawPixels": 0,
+      "maxChannelDelta": 0,
+      "total": 1600000
+    }
+  ],
+  "responsive": [
+    {
+      "width": 390,
+      "tab": "full-field-review",
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "width": 390,
+      "tab": "specimen-quality",
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "width": 390,
+      "tab": "analysis-area",
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "width": 390,
+      "tab": "review-cells",
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "width": 390,
+      "tab": "report",
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "width": 768,
+      "tab": "full-field-review",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "width": 768,
+      "tab": "specimen-quality",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "width": 768,
+      "tab": "analysis-area",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "width": 768,
+      "tab": "review-cells",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "width": 768,
+      "tab": "report",
+      "viewport": 768,
+      "document": 768
+    },
+    {
+      "width": 1280,
+      "tab": "full-field-review",
+      "viewport": 1280,
+      "document": 1280
+    },
+    {
+      "width": 1280,
+      "tab": "specimen-quality",
+      "viewport": 1280,
+      "document": 1280
+    },
+    {
+      "width": 1280,
+      "tab": "analysis-area",
+      "viewport": 1280,
+      "document": 1280
+    },
+    {
+      "width": 1280,
+      "tab": "review-cells",
+      "viewport": 1280,
+      "document": 1280
+    },
+    {
+      "width": 1280,
+      "tab": "report",
+      "viewport": 1280,
+      "document": 1280
+    }
+  ],
+  "tokenChecks": "passed",
+  "errors": []
+}

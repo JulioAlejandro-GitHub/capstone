@@ -11,7 +11,11 @@
     "dev": "vite",
     "build": "tsc --noEmit --incremental false -p tsconfig.json && tsc --noEmit --incremental false -p tsconfig.node.json && vite build",
     "test": "node --test tests/*.test.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "styles:frotis": "node scripts/generate-frotis-css.cjs",
+    "predev": "npm run styles:frotis",
+    "prebuild": "npm run styles:frotis",
+    "lint:frotis": "node scripts/lint-frotis.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -27,10 +31,13 @@
     "recharts": "^3.10.1"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "4.3.3",
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "postcss": "8.5.15",
+    "tailwindcss": "4.3.3",
     "typescript": "^5.8.0",
     "vite": "^7.0.0"
   }

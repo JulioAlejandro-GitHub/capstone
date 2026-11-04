@@ -44,19 +44,19 @@ export const StandaloneHtmlModal: React.FC<StandaloneHtmlModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 select-none animate-in fade-in">
-      <div className="bg-white text-slate-800 rounded-lg shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 frotis-layer-modal flex items-center justify-center bg-frotis-overlay-base/60 backdrop-blur-xs p-frotis-component-padding select-none animate-in fade-in">
+      <div className="bg-frotis-surface text-frotis-text-heading rounded-lg shadow-2xl border-frotis border-frotis-border w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div className="p-frotis-component-padding bg-frotis-surface-muted border-b border-frotis-border flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-indigo-100 text-indigo-700 rounded-sm">
+            <div className="p-1.5 bg-frotis-selected-hover text-frotis-secondary-hover rounded-sm">
               <Code className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-slate-900">
+              <h3 className="font-bold text-sm text-frotis-text-primary">
                 Archivo HTML Autocontenido (Requerimiento de Maqueta)
               </h3>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-frotis-label text-frotis-text-secondary">
                 Demostración original local; no incluye los cambios temporales
                 de esta sesión.
               </p>
@@ -65,7 +65,7 @@ export const StandaloneHtmlModal: React.FC<StandaloneHtmlModalProps> = ({
           <button
             aria-label="Cerrar"
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-800 rounded-md transition-colors"
+            className="p-1 text-frotis-text-muted hover:text-frotis-text-heading rounded-md transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -73,15 +73,15 @@ export const StandaloneHtmlModal: React.FC<StandaloneHtmlModalProps> = ({
 
         {/* Modal Content */}
         <div className="p-6 space-y-4 overflow-y-auto">
-          <div className="p-4 bg-indigo-50/60 border border-indigo-200/80 rounded-md text-xs space-y-2">
-            <div className="font-bold text-indigo-950 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <div className="p-frotis-component-padding bg-frotis-selected/60 border-frotis border-frotis-selected-border/80 rounded-md text-xs space-y-2">
+            <div className="font-bold text-frotis-secondary-deep flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-frotis-success-accent"></span>
               Archivo Generado en el Workspace:
             </div>
-            <p className="text-slate-700 leading-relaxed font-mono text-[11px]">
+            <p className="text-frotis-text-body leading-relaxed font-mono text-frotis-label">
               /public/analisis-frotis-v2/visor-standalone.html
             </p>
-            <p className="text-slate-600">
+            <p className="text-frotis-text-control">
               Cumple con la especificación exacta de{" "}
               <strong>un único archivo HTML autocontenido</strong>, con la
               botonera morfológica interactiva, menús desplegables funcionales,
@@ -92,21 +92,21 @@ export const StandaloneHtmlModal: React.FC<StandaloneHtmlModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               onClick={handleCopy}
-              className="p-3 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 rounded-md flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-800 transition-colors"
+              className="p-3 border-frotis border-frotis-border hover:border-frotis-accent-soft hover:bg-frotis-selected/40 rounded-md flex flex-col items-center justify-center gap-2 text-xs font-semibold text-frotis-text-heading transition-colors"
             >
               {copied ? (
-                <Check className="w-5 h-5 text-emerald-600" />
+                <Check className="w-5 h-5 text-frotis-success" />
               ) : (
-                <Copy className="w-5 h-5 text-indigo-600" />
+                <Copy className="w-5 h-5 text-frotis-secondary" />
               )}
               <span>{copied ? "¡Copiado!" : "Copiar Código HTML"}</span>
             </button>
 
             <button
               onClick={handleDownload}
-              className="p-3 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 rounded-md flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-800 transition-colors"
+              className="p-3 border-frotis border-frotis-border hover:border-frotis-accent-soft hover:bg-frotis-selected/40 rounded-md flex flex-col items-center justify-center gap-2 text-xs font-semibold text-frotis-text-heading transition-colors"
             >
-              <Download className="w-5 h-5 text-indigo-600" />
+              <Download className="w-5 h-5 text-frotis-secondary" />
               <span>Descargar .html</span>
             </button>
 
@@ -114,15 +114,15 @@ export const StandaloneHtmlModal: React.FC<StandaloneHtmlModalProps> = ({
               href="/analisis-frotis-v2/visor-standalone.html"
               target="_blank"
               rel="noreferrer"
-              className="p-3 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 rounded-md flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-800 transition-colors"
+              className="p-3 border-frotis border-frotis-border hover:border-frotis-accent-soft hover:bg-frotis-selected/40 rounded-md flex flex-col items-center justify-center gap-2 text-xs font-semibold text-frotis-text-heading transition-colors"
             >
-              <ExternalLink className="w-5 h-5 text-indigo-600" />
+              <ExternalLink className="w-5 h-5 text-frotis-secondary" />
               <span>Abrir en Nueva Pestaña</span>
             </a>
           </div>
 
-          <div className="border border-slate-200 rounded-md p-3 bg-slate-900 text-slate-300 text-[11px] font-mono max-h-48 overflow-y-auto">
-            <div className="text-emerald-400 mb-1">
+          <div className="border-frotis border-frotis-border rounded-md p-3 bg-frotis-surface-inverse text-frotis-border-strong text-frotis-label font-mono max-h-48 overflow-y-auto">
+            <div className="text-frotis-success-marker mb-1">
               &lt;!-- Vista previa de estructura --&gt;
             </div>
             <div>&lt;!DOCTYPE html&gt;</div>
@@ -152,11 +152,11 @@ export const StandaloneHtmlModal: React.FC<StandaloneHtmlModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <div className="p-3 bg-frotis-surface-muted border-t border-frotis-border flex justify-end">
           <button
             aria-label="Cerrar"
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium rounded-sm transition-colors"
+            className="px-4 py-1.5 bg-frotis-surface-inverse-raised hover:bg-frotis-surface-inverse-elevated text-frotis-text-inverse text-xs font-medium rounded-sm transition-colors"
           >
             Entendido
           </button>

@@ -1,0 +1,30 @@
+
+> capstone-experiments-frontend@0.1.0 prebuild
+> npm run styles:frotis
+
+
+> capstone-experiments-frontend@0.1.0 styles:frotis
+> node scripts/generate-frotis-css.cjs
+
+≈ tailwindcss v4.3.3
+
+Done in 29ms
+
+> capstone-experiments-frontend@0.1.0 build
+> tsc --noEmit --incremental false -p tsconfig.json && tsc --noEmit --incremental false -p tsconfig.node.json && vite build
+
+vite v7.3.5 building client environment for production...
+transforming...
+✓ 3356 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                0.41 kB │ gzip:   0.28 kB
+dist/assets/smear-microscope-DZGdsHj_.jpg    105.47 kB
+dist/assets/index-B5FaPExf.css               354.64 kB │ gzip:  58.14 kB
+dist/assets/index-WYZXXTJd.js              2,228.20 kB │ gzip: 644.15 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.65s

@@ -3,7 +3,10 @@ import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import type { ArchitectureBlock, ModelArchitecture } from '../../types/modelArchitecture';
 import { countText, depthSize, isSpatial, isTrained, outputText, shapeText, spatialSize, type ArchitectureView } from './architectureViews';
 
-type ChartProps = { data: ModelArchitecture; phase: string };
+/** One cell's value under a block: share of active values (or p at the output) and whether it is the open step. */
+export type BlockActivity = Record<string, { value: number; label: string; current: boolean }>;
+type ChartProps = { data: ModelArchitecture; phase: string; activity?: BlockActivity | null };
+const ACTIVITY_SPACE = 34;
 const HEIGHT = 312, MIDDLE = 140, GAP = 44;
 
 const blockTitle = (block: ArchitectureBlock) => `${block.label} · ${shapeText(block.output_shape)} · ${countText(block.parameters)} parámetros · ${block.layers} capas`;
@@ -20,11 +23,17 @@ const Arrow = ({ x1, x2, y = MIDDLE }: { x1: number; x2: number; y?: number }) =
 const OUTPUT_WIDTH = 150;
 const blockWidth = (block: ArchitectureBlock, width: number) => Math.max(block.kind === 'output' ? OUTPUT_WIDTH : 92, width);
 
-function Labels({ x, block, top, bottom, output }: { x: number; block: ArchitectureBlock; top: number; bottom: number; output: ModelArchitecture['output'] }) {
+function Labels({ x, block, top, bottom, output, activity }: { x: number; block: ArchitectureBlock; top: number; bottom: number; output: ModelArchitecture['output']; activity?: BlockActivity | null }) {
+  const cell = activity?.[block.id], below = bottom + (block.kind === 'output' ? 38 : 22), bar = 56;
   return <>
     <text className="mx-dimension" x={x} y={top} textAnchor="middle">{shapeText(block.output_shape)}</text>
     <text className="mx-name" x={x} y={bottom} textAnchor="middle">{block.label}</text>
     {block.kind === 'output' && <text className="mx-dimension" x={x} y={bottom + 18} textAnchor="middle">{outputText(output)}</text>}
+    {cell && <g className="mx-activity" data-current={cell.current} data-output={block.kind === 'output'}>
+      <rect className="mx-activity-track" x={x - bar / 2} y={below - 10} width={bar} height="4" rx="2" />
+      <rect className="mx-activity-fill" x={x - bar / 2} y={below - 10} width={Math.max(2, bar * Math.min(1, Math.max(0, cell.value)))} height="4" rx="2" />
+      <text x={x} y={below + 8} textAnchor="middle">{cell.label}</text>
+    </g>}
   </>;
 }
 
@@ -35,39 +44,39 @@ function layout<T extends { width: number }>(items: T[], start = 16) {
   return { placed, width: cursor - GAP + start };
 }
 
-function StackedMaps({ data, phase }: ChartProps) {
+function StackedMaps({ data, phase, activity }: ChartProps) {
   const { placed, width } = layout(data.blocks.map(block => {
     const sheets = isSpatial(block.output_shape) ? Math.round(depthSize(block.output_shape) / 6) : 0;
     const side = isSpatial(block.output_shape) ? spatialSize(block.output_shape) : 26;
     return { block, sheets, side, width: blockWidth(block, side + sheets * 7) };
   }));
-  return <Frame label={`Mapas de características de ${data.architecture}`} width={width}>
+  return <Frame label={`Mapas de características de ${data.architecture}`} width={width} height={activity ? HEIGHT + ACTIVITY_SPACE : HEIGHT}>
     {placed.map((item, index) => {
       const { block, sheets, side, x } = item, center = x + item.width / 2, next = placed[index + 1];
       const height = isSpatial(block.output_shape) ? side : 36 + 7 * Math.log2(Math.max(2, block.output_shape?.at(-1) ?? 2));
       const span = side + sheets * 7, left = center - span / 2;
       return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} data-kind={block.kind} className="mx-block"><title>{blockTitle(block)}</title>
         {Array.from({ length: Math.max(1, sheets) }, (_, sheet) => <rect key={sheet} x={left + sheet * 7} y={MIDDLE - height / 2 - sheet * 5 + sheets * 2.5} width={side} height={height} rx="3" />)}
-        <Labels x={center} block={block} output={data.output} top={MIDDLE - 90 - 18} bottom={HEIGHT - 36} />
+        <Labels x={center} block={block} output={data.output} top={MIDDLE - 90 - 18} bottom={HEIGHT - 36} activity={activity} />
         {next && <Arrow x1={x + item.width + 6} x2={next.x - 6} />}
       </g>;
     })}
   </Frame>;
 }
 
-function Blocks3D({ data, phase }: ChartProps) {
+function Blocks3D({ data, phase, activity }: ChartProps) {
   const { placed, width } = layout(data.blocks.map(block => {
     const spatial = isSpatial(block.output_shape), side = spatial ? spatialSize(block.output_shape) : 48;
     return { block, side, depth: spatial ? side * 0.34 : 10, thick: depthSize(block.output_shape), width: blockWidth(block, depthSize(block.output_shape) + (spatial ? side * 0.34 : 10)) };
   }));
-  return <Frame label={`Bloques de ${data.architecture}`} width={width}>
+  return <Frame label={`Bloques de ${data.architecture}`} width={width} height={activity ? HEIGHT + ACTIVITY_SPACE : HEIGHT}>
     {placed.map((item, index) => {
       const { block, side, depth, thick, x } = item, left = x + (item.width - thick - depth) / 2, y0 = MIDDLE - side / 2 + depth / 3, next = placed[index + 1];
       return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} data-kind={block.kind} className="mx-block"><title>{blockTitle(block)}</title>
         <polygon points={`${left},${y0} ${left + depth},${y0 - depth * .66} ${left + depth + thick},${y0 - depth * .66} ${left + thick},${y0}`} data-face="top" />
         <polygon points={`${left + thick},${y0} ${left + thick + depth},${y0 - depth * .66} ${left + thick + depth},${y0 + side - depth * .66} ${left + thick},${y0 + side}`} data-face="side" />
         <rect x={left} y={y0} width={thick} height={side} />
-        <Labels x={x + item.width / 2} block={block} output={data.output} top={MIDDLE - 90 - 18} bottom={HEIGHT - 36} />
+        <Labels x={x + item.width / 2} block={block} output={data.output} top={MIDDLE - 90 - 18} bottom={HEIGHT - 36} activity={activity} />
         {next && <Arrow x1={x + item.width + 6} x2={next.x - 6} />}
       </g>;
     })}

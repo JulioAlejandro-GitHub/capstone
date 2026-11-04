@@ -1,0 +1,10 @@
+capstone-experiments-frontend@0.1.0 /Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/frontend
+├─┬ @tailwindcss/cli@4.3.3
+│ ├─┬ @tailwindcss/node@4.3.3
+│ │ └── tailwindcss@4.3.3 deduped
+│ └── tailwindcss@4.3.3 deduped
+├── postcss@8.5.15
+├── tailwindcss@4.3.3
+└─┬ vite@7.3.5
+  └── postcss@8.5.15 deduped
+

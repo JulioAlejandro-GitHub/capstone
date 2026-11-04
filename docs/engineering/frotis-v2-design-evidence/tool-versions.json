@@ -1,0 +1,13 @@
+{
+  "node": "v22.23.1",
+  "npm": "10.9.8",
+  "baselineCommit": "1a9a29b5c457c5a5c80800bf1d4ef1a23dd726a6",
+  "tools": {
+    "eslint": "10.14.0",
+    "@eslint/js": "10.0.1",
+    "typescript-eslint": "8.72.1",
+    "@playwright/test": "1.64.1",
+    "pngjs": "7.0.0",
+    "pixelmatch": "8.0.0"
+  }
+}

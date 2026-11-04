@@ -1,0 +1,5 @@
+redirect and Visor naming checked
+presets and layout checked
+notes and detail checked
+PASS: five routes and reload, case/status/presets/layout, detail/reclassification/flag, notes, CSV/HTML modals, assets, no runtime errors.
+Existing shell requests observed: 1; route reloads repeat existing auth/catalog requests.

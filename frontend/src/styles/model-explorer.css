@@ -23,6 +23,12 @@
 .mx-page .mx-legend span:not(:first-child) { margin-left: var(--ds-space-3); }
 .mx-page .mx-block[data-kind="output"] rect, .mx-page .mx-block[data-kind="output"] polygon { stroke: var(--ds-green-700); stroke-width: 2; }
 .mx-page .mx-selectable [data-block] { cursor: pointer; }
+.mx-page .mx-activity text { fill: var(--ds-fg-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.mx-page .mx-block .mx-activity rect.mx-activity-track { fill: var(--ds-border-default); fill-opacity: 1; stroke: none; }
+.mx-page .mx-block .mx-activity rect.mx-activity-fill { fill: var(--ds-blue-500); fill-opacity: 1; stroke: none; transition: width 260ms cubic-bezier(0.23, 1, 0.32, 1); }
+.mx-page .mx-block .mx-activity[data-output="true"] rect.mx-activity-fill { fill: var(--ds-green-700); }
+.mx-page .mx-activity[data-current="true"] text { fill: var(--ds-fg-default); font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { .mx-page .mx-block .mx-activity rect.mx-activity-fill { transition: none; } }
 .mx-page .mx-math h3 { margin: 0; }
 .mx-page .mx-path { display: flex; flex-wrap: wrap; gap: var(--ds-space-1, 2px); margin: var(--ds-space-3) 0; font-size: var(--ds-text-sm); }
 .mx-page .mx-path span:not(:last-child)::after { content: " →"; color: var(--ds-fg-muted); }

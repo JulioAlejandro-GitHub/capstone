@@ -47,15 +47,15 @@ export const CellMicrograph: React.FC<CellMicrographProps> = ({
       title={`${cell.name} #${cell.id} (${(cell.confidence * 100).toFixed(1)}% conf) - Doble click para ampliar`}
       className={`relative cursor-pointer overflow-hidden rounded-xs transition-all duration-150 group select-none aspect-square ${
         isSelected
-          ? "ring-3 ring-indigo-500 ring-offset-1 ring-offset-slate-900 shadow-md scale-[1.02] z-10"
-          : "hover:brightness-110 hover:ring-1 hover:ring-white/40"
+          ? "ring-3 ring-frotis-accent ring-offset-1 ring-offset-frotis-text-primary shadow-md scale-[1.02] frotis-layer-overlay"
+          : "hover:brightness-110 hover:ring-1 hover:ring-frotis-surface/40"
       }`}
       style={{ width: "100%", height: "100%" }}
     >
       {/* Background slide canvas stained field */}
       <svg
         viewBox="0 0 72 72"
-        className="w-full h-full block bg-[#d9b6c9]"
+        className="w-full h-full block bg-frotis-micrograph-background"
         style={{
           filter: cell.abnormal ? "contrast(1.08)" : "none",
         }}
@@ -287,17 +287,17 @@ export const CellMicrograph: React.FC<CellMicrographProps> = ({
 
       {/* Visor Cell ID Badge (Crisp white numeral overlay on top left) */}
       {showIdBadge && (
-        <div className="absolute top-0.5 left-0.5 px-1 py-0.2 text-[9px] font-mono font-medium text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] tracking-tighter pointer-events-none">
+        <div className="absolute top-0.5 left-0.5 px-1 py-0.2 text-frotis-badge font-mono font-medium text-frotis-text-inverse/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] tracking-tighter pointer-events-none">
           {cell.id}
         </div>
       )}
 
       {/* Flag or Abnormal marker */}
       {cell.abnormal && (
-        <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 ring-1 ring-black/40 shadow-xs" />
+        <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-frotis-warning-marker ring-1 ring-frotis-overlay-base/40 shadow-xs" />
       )}
       {cell.flagged && (
-        <div className="absolute bottom-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-rose-500 ring-1 ring-black/40 shadow-xs" />
+        <div className="absolute bottom-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-frotis-error-accent ring-1 ring-frotis-overlay-base/40 shadow-xs" />
       )}
     </div>
   );
