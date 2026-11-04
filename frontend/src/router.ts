@@ -15,6 +15,7 @@ export const routes = {
   assessmentDetail: (id: string) => `/modelo-ia/evaluaciones/e6/${encoded(id)}`,
   comparison: '/modelo-ia/analisis',
   modelExplorer: '/modelo-ia/explorador',
+  modelTraining: '/modelo-ia/explorador/entrenamiento',
   legacyComparison: '/modelo-ia/comparacion',
   modelVersions: '/modelo-ia/modelos-liberados',
   modelVersionDetail: (id: string) => `/modelo-ia/modelos-liberados/${encoded(id)}`,

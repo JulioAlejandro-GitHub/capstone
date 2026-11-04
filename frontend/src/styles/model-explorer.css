@@ -196,3 +196,6 @@
 @media (prefers-reduced-motion: reduce) {
   .mx-page .mx-trace *, .mx-page .mx-dialog, .mx-page .mx-dialog::backdrop { animation: none !important; transition: none !important; }
 }
+
+.mx-page .mx-view-actions { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-3); }
+.mx-page .mx-view-actions a.ds-button { text-decoration: none; }

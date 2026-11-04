@@ -1,0 +1,187 @@
+import { Fragment, useCallback, useMemo, type ReactNode } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+
+import { phaseLabels } from '../components/model-architecture/architectureViews';
+import { TrainingScene } from '../components/model-training/TrainingScene';
+import {
+  PARAMETER_GROUP_LABELS, buildTrainingLayers, formatCount, kindLabel, parametersFor, pendingItems,
+  resolveTrainingParameters, trainingChecks, tuningGuide, type ParameterGroup, type TrainingCheck, type TrainingLayer,
+} from '../components/model-training/trainingModel';
+import { useComparisonRun } from '../hooks/useComparisonRun';
+import { useModelArchitecture } from '../hooks/useModelArchitecture';
+import { isValidPublicId, routes, withAllowedQuery } from '../router';
+import '../styles/model-training.css';
+
+/** Texto con `código` entre acentos graves. */
+const rich = (text: string): ReactNode => text.split('`').map((part, i) => i % 2 ? <code key={i}>{part}</code> : <Fragment key={i}>{part}</Fragment>);
+const factor = (value: number | null, up: string, down: string) => value == null || value === 1 ? '—'
+  : value > 1 ? `${up} ${Number(value.toFixed(2))}×` : `${down} ${Number((1 / value).toFixed(2))}×`;
+
+/** Estado del bloque en la fase: una capa sin pesos no «se congela», simplemente no tiene nada que entrenar. */
+const stateText = (layer: TrainingLayer) => layer.trainable ? 'Se entrena' : layer.parameters === 0 ? 'Sin pesos' : 'Congelado';
+
+const CHECK_ICON: Record<TrainingCheck['level'], string> = { warn: '!', ok: '✓', info: 'i', pending: '…' };
+
+function Bar({ pct, tone, label }: { pct: number | null; tone: string; label: string }) {
+  return <div className="mt-bar"><div className="mt-track">{pct != null && <div className={`mt-fill mt-${tone}`} style={{ width: `${Math.max(pct, 1.5)}%` }} />}</div><span className="mt-num">{label}</span></div>;
+}
+
+/**
+ * «Entrenamiento»: vista inmersiva de un TRAIN, abierta en pestaña nueva desde Arquitectura del modelo.
+ * Usa sólo GET /runs/{id}/architecture y GET /runs/{id}; lo que falta se muestra como pendiente.
+ */
+export function ModelTraining({ datasource }: { datasource: string }) {
+  const [search] = useSearchParams();
+  const requested = search.get('run');
+  if (isValidPublicId(requested)) return <ModelTrainingView datasource={datasource} run={requested} />;
+  return <main className="mt-page" data-surface="lab"><div className="mt-wrap">
+    <p className="mt-callout" role="alert">{requested ? 'El identificador de RUN de la URL no es válido.' : 'Falta el parámetro run en la URL.'}</p>
+    <Link className="mt-link" to={withAllowedQuery(routes.modelExplorer, { datasource })}>Ir a Arquitectura del modelo</Link>
+  </div></main>;
+}
+
+function ModelTrainingView({ datasource, run }: { datasource: string; run: string }) {
+  const [search, setSearch] = useSearchParams();
+  const { data, error, loading, retry } = useModelArchitecture(datasource, run);
+  const { run: record, error: runError } = useComparisonRun(datasource, run);
+  const phases = data?.phases ?? [];
+  const phase = phases.find(item => item.phase === search.get('fase'))?.phase ?? phases.at(-1)?.phase ?? '';
+  const layers = useMemo(() => data?.state === 'available' ? buildTrainingLayers(data, phase) : [], [data, phase]);
+  const parameters = useMemo(() => resolveTrainingParameters(record), [record]);
+  const checks = useMemo(() => data?.state === 'available' ? trainingChecks(data, layers, parameters, phase) : [], [data, layers, parameters, phase]);
+  const pending = useMemo(() => pendingItems(data, layers, parameters, Boolean(record)), [data, layers, parameters, record]);
+  const requestedBlock = search.get('bloque');
+  const selected = Math.max(0, layers.findIndex(layer => layer.id === requestedBlock));
+  const update = useCallback((values: Record<string, string | null>) => setSearch(previous => {
+    const params = new URLSearchParams(previous);
+    Object.entries(values).forEach(([key, value]) => { if (value) params.set(key, value); else params.delete(key); });
+    return params;
+  }, { replace: true }), [setSearch]);
+  const select = useCallback((index: number) => { const layer = layers[index]; if (layer) update({ bloque: layer.id }); }, [layers, update]);
+  const layer: TrainingLayer | undefined = layers[selected];
+
+  const maxH = Math.max(1, ...layers.map(item => item.h ?? 0));
+  const maxD = Math.max(1, ...layers.map(item => item.d ?? 0));
+  const maxVol = Math.max(1, ...layers.map(item => item.volume ?? 0));
+  const maxParams = Math.max(1, ...layers.map(item => item.parameters ?? 0));
+  const convs = layers.filter(item => item.kind === 'convolution');
+  const input = layers.find(item => item.kind === 'input');
+  const lastConv = convs.at(-1);
+  const biggest = layers.reduce<TrainingLayer | null>((best, item) => item.volume != null && (!best || item.volume > (best.volume ?? 0)) ? item : best, null);
+  const current = phases.find(item => item.phase === phase);
+  const phaseLabel = phaseLabels[phase] ?? (phase || 'sin fase');
+  const groups = Object.keys(PARAMETER_GROUP_LABELS) as ParameterGroup[];
+
+  return <main className="mt-page" data-surface="lab">
+    <div className="mt-wrap">
+      <header className="mt-header">
+        <div>
+          <div className="mt-eyebrow"><span>XAI · Entrenamiento</span>{data?.architecture && <span className="mt-tag">{data.architecture}</span>}</div>
+          <h1>{data?.model_name ?? 'Modelo'} <span>· anatomía del modelo entrenado</span></h1>
+          <p className="mt-sub">Cómo se transforma una imagen de frotis a lo largo de los bloques del modelo y qué parámetros del entrenamiento gobiernan cada uno. Selecciona un bloque para ver su entrada, salida y qué ajustar en un nuevo entrenamiento.</p>
+        </div>
+        <div className="mt-actions">
+          {phases.length > 1 && <div className="mt-tb-group" role="group" aria-label="Fase de entrenamiento">{phases.map(item => <button key={item.phase} type="button" className="mt-tb"
+            aria-pressed={item.phase === phase} onClick={() => update({ fase: item.phase })}>{phaseLabels[item.phase] ?? item.phase}</button>)}</div>}
+          <Link className="mt-link" to={withAllowedQuery(routes.modelExplorer, { datasource, run })}>Arquitectura del modelo</Link>
+          <Link className="mt-link" to={withAllowedQuery(routes.runDetail(run), { datasource })}>Ficha del TRAIN</Link>
+        </div>
+      </header>
+
+      {loading && <p className="mt-callout" role="status">Consultando la arquitectura registrada…</p>}
+      {error && <div className="mt-callout" role="alert"><p>{error}</p><button type="button" className="mt-tb" onClick={retry}>Reintentar</button></div>}
+      {data?.state === 'missing' && <p className="mt-callout" role="status">Pendiente: {data.issues.join(' ') || 'el TRAIN no registró su arquitectura.'}</p>}
+
+      {layers.length > 0 && layer && <>
+        <section className="mt-kpis" aria-label="Resumen del modelo">
+          <div className="mt-kpi"><div className="mt-k">Bloques</div><div className="mt-v">{layers.length}</div><div className="mt-h">{convs.length ? `${convs.reduce((s, item) => s + item.convolutions, 0)} conv. en ${convs.length} bloques` : `${data?.layers.length ?? 0} capas registradas`}</div></div>
+          <div className="mt-kpi"><div className="mt-k">Resolución espacial</div><div className="mt-v">{input?.h ?? '—'}<small> → </small>{lastConv?.h ?? '—'}</div><div className="mt-h">{input?.h && lastConv?.h ? `${(input.h / lastConv.h).toFixed(1)}× menos por lado al final del backbone` : 'Pendiente'}</div></div>
+          <div className="mt-kpi"><div className="mt-k">Canales</div><div className="mt-v">{input?.d ?? '—'}<small> → </small>{lastConv?.d ?? '—'}</div><div className="mt-h">{input?.d && lastConv?.d ? `${Math.round(lastConv.d / input.d)}× más profundidad` : 'Pendiente'}</div></div>
+          <div className="mt-kpi"><div className="mt-k">Parámetros totales</div><div className="mt-v">{formatCount(data?.total_parameters)}</div><div className="mt-h">{current?.trainable_parameters != null ? `${formatCount(current.trainable_parameters)} entrenables · ${phaseLabel}` : 'Entrenables: pendiente'}</div></div>
+          <div className="mt-kpi"><div className="mt-k">Tensor más grande</div><div className="mt-v">{formatCount(biggest?.volume)}</div><div className="mt-h">{biggest ? `${biggest.label} · ${biggest.outputText}` : 'Pendiente'}</div></div>
+        </section>
+
+        <section className="mt-main">
+          <TrainingScene layers={layers} selected={selected} onSelect={select} phaseLabel={phaseLabel} />
+
+          <aside className="mt-card mt-detail" aria-live="polite">
+            <div className="mt-card-h"><h2>Bloque seleccionado</h2><span className="mt-hint">{selected + 1} / {layers.length}</span></div>
+            <div className="mt-d-body">
+              <div className="mt-d-title"><i style={{ background: `rgb(${layer.color})` }} /><h3>{layer.label}</h3><span className="mt-kind">{kindLabel(layer.kind)}</span></div>
+              <div className="mt-d-desc">{layer.description}{layer.origin !== 'recorded' && <> · <em>{layer.origin === 'reference' ? 'estructura de referencia' : 'derivado'}</em></>}</div>
+              <div className="mt-flow">
+                <div className="mt-flow-in"><div className="mt-lab">ENTRADA</div><div className="mt-val">{layer.inputText}</div></div>
+                <div className="mt-arrow">→</div>
+                <div className="mt-flow-out"><div className="mt-lab">SALIDA</div><div className="mt-val">{layer.outputText}</div></div>
+              </div>
+              <div className="mt-facts">
+                <div className="mt-fact"><div className="mt-k">Activaciones (h·w·d)</div><div className="mt-v">{formatCount(layer.volume)}<small>{layer.volume != null ? `${(100 * layer.volume / maxVol).toFixed(1)} % del máx.` : ''}</small></div></div>
+                <div className="mt-fact"><div className="mt-k">Parámetros</div><div className="mt-v">{formatCount(layer.parameters)}<small>{layer.parameters != null && data?.total_parameters ? `${(100 * layer.parameters / data.total_parameters).toFixed(1)} % del total` : ''}</small></div></div>
+                <div className="mt-fact"><div className="mt-k">Factor espacial · canales</div><div className="mt-v">{factor(layer.spatialFactor, '↓', '↑')}<small>{factor(layer.channelFactor, '↑', '↓')} canales</small></div></div>
+                <div className="mt-fact"><div className="mt-k">En {phaseLabel}</div><div className="mt-v">{stateText(layer)}<small>{layer.innerLayers} capas internas</small></div></div>
+              </div>
+              {checks.some(check => check.layer === selected) && <div><div className="mt-sec-t">Observaciones</div>
+                <div className="mt-flags">{checks.filter(check => check.layer === selected).map((check, i) => <div key={i} className="mt-flag" data-level={check.level}><span className="mt-ic">{CHECK_ICON[check.level]}</span><div>{rich(check.text)}</div></div>)}</div></div>}
+              <div>
+                <div className="mt-sec-t">Parámetros del TRAIN que gobiernan este bloque</div>
+                <dl className="mt-params">{parametersFor(layer, layers, parameters).map(item => <Fragment key={item.key}><dt><code>{item.key}</code> {item.label}</dt>
+                  <dd data-pending={item.value == null}>{item.value ?? 'Pendiente'}</dd></Fragment>)}</dl>
+              </div>
+              <div>
+                <div className="mt-sec-t">Qué ajustar en un nuevo entrenamiento</div>
+                <ul className="mt-tune">{tuningGuide(layer, layers).map((line, i) => <li key={i}>{rich(line)}</li>)}</ul>
+                <div className="mt-note">Guía orientativa por tipo de bloque; los valores vienen del TRAIN.</div>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section className="mt-lower">
+          <div className="mt-card">
+            <div className="mt-card-h"><h2>Tabla de bloques</h2><span className="mt-hint">Vista tabular equivalente al diagrama</span></div>
+            <div className="mt-table-wrap"><table className="mt-table">
+              <thead><tr><th>#</th><th>Bloque</th><th>Operación</th><th>Entrada</th><th>Salida</th><th>Resolución (h)</th><th>Canales (d)</th><th>Activaciones (log)</th><th>Parámetros</th><th>{phaseLabel}</th></tr></thead>
+              <tbody>{layers.map(item => <tr key={item.id} className={item.index === selected ? 'sel' : undefined} onClick={() => select(item.index)}>
+                <td className="mt-mono mt-muted">{String(item.index).padStart(2, '0')}</td>
+                <td><span className="mt-sw" style={{ background: `rgb(${item.color})` }} />{item.label}</td>
+                <td className="mt-muted">{item.description}</td>
+                <td className="mt-mono mt-muted">{item.index ? item.inputText : '—'}</td>
+                <td className="mt-mono">{item.outputText}</td>
+                <td><Bar pct={item.h != null ? 100 * item.h / maxH : null} tone="hw" label={item.h != null ? String(item.h) : 'Pend.'} /></td>
+                <td><Bar pct={item.d != null ? 100 * item.d / maxD : null} tone="d" label={item.d != null ? formatCount(item.d) : 'Pend.'} /></td>
+                <td><Bar pct={item.volume != null ? 100 * Math.log10(Math.max(item.volume, 1)) / Math.log10(Math.max(maxVol, 10)) : null} tone="vol" label={item.volume != null ? formatCount(item.volume) : 'Pend.'} /></td>
+                <td><Bar pct={item.parameters != null ? 100 * item.parameters / maxParams : null} tone="par" label={item.parameters != null ? formatCount(item.parameters) : 'Pend.'} /></td>
+                <td><span className="mt-chip" data-trained={item.trainable}>{stateText(item)}</span></td>
+              </tr>)}</tbody>
+            </table></div>
+          </div>
+          <div className="mt-side">
+            <div className="mt-card">
+              <div className="mt-card-h"><h2>Chequeos de coherencia</h2><span className="mt-hint">calculados desde el TRAIN</span></div>
+              <div className="mt-checks">
+                {checks.length === 0 && <p className="mt-muted">Sin chequeos aplicables con los datos registrados.</p>}
+                {checks.map((check, i) => <button key={i} type="button" className="mt-flag" data-level={check.level} disabled={check.layer == null}
+                  onClick={() => check.layer != null && select(check.layer)}><span className="mt-ic">{CHECK_ICON[check.level]}</span><div>{rich(check.text)}</div></button>)}
+              </div>
+            </div>
+            <div className="mt-card">
+              <div className="mt-card-h"><h2>Configuración del entrenamiento</h2><span className="mt-hint">{runError ? 'no disponible' : record ? 'registrada en el TRAIN' : 'cargando…'}</span></div>
+              <div className="mt-config">{groups.map(group => <div key={group}><div className="mt-sec-t">{PARAMETER_GROUP_LABELS[group]}</div>
+                <dl className="mt-params">{parameters.filter(item => item.group === group).map(item => <Fragment key={item.key}><dt><code>{item.key}</code> {item.label}</dt>
+                  <dd data-pending={item.value == null}>{item.value ?? 'Pendiente'}</dd></Fragment>)}</dl></div>)}</div>
+            </div>
+            {pending.length > 0 && <div className="mt-card">
+              <div className="mt-card-h"><h2>Datos pendientes</h2><span className="mt-hint">se mostrarán cuando el TRAIN los registre</span></div>
+              <ul className="mt-pending">{pending.map(item => <li key={item}>{item}</li>)}</ul>
+            </div>}
+          </div>
+        </section>
+      </>}
+
+      <footer className="mt-footer">
+        <span>Fuente: <code>GET /runs/{'{id}'}/architecture</code> y <code>GET /runs/{'{id}'}</code>. Entrada = salida del bloque previo; activaciones = h·w·d.</span>
+        <span>TRAIN {run}{data?.checkpoint.selected_epoch != null ? ` · checkpoint época ${data.checkpoint.selected_epoch}` : ''}</span>
+      </footer>
+    </div>
+  </main>;
+}

@@ -45,7 +45,7 @@ export function ModelExplorer({ datasource }: { datasource: string }) {
     {loading && <p role="status">Consultando la arquitectura registrada…</p>}
     {error && <div className="ds-callout" role="alert"><p>{error}</p><button type="button" className="ds-button" onClick={retry}>Reintentar</button></div>}
     {data?.state === 'missing' && <p className="ds-callout" data-tone="warning" role="status">{data.issues.join(' ')}</p>}
-    {data?.state === 'available' && view && <ArchitectureDetail data={data} view={view} phase={phase} datasource={datasource}
+    {data?.state === 'available' && view && <ArchitectureDetail data={data} view={view} phase={phase} datasource={datasource} trainingLink
       onView={next => update({ grafico: next })} onPhase={next => update({ fase: next })} />}
     <RunSelectorDialog dialog={dialog} ids={draft ? [draft] : []} summaries={summaries} error={summariesError} retry={retrySummaries}
       counter={draft ? 'RUN seleccionado' : 'Ningún RUN seleccionado'} emptyHint="Marca el TRAIN cuyo modelo quieres ver." submitLabel="Ver modelo" runLabel={runLabel}

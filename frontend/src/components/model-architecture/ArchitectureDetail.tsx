@@ -11,8 +11,8 @@ import { MathFunctionPanel } from './MathFunctionPanel';
 import { architectureViews, countText, lossText, outputText, phaseLabels, shapeText, splitHead, viewsFor, type ArchitectureView } from './architectureViews';
 
 /** One model's architecture; Arquitectura del modelo and Análisis de Modelos differ only in who owns the view and the phase. */
-export function ArchitectureDetail({ data: source, view, onView, phase, onPhase, datasource, explorerLink = false }: { data: ModelArchitecture; view: ArchitectureView; onView: (view: ArchitectureView) => void;
-  phase: string; onPhase: (phase: string) => void; datasource: string; explorerLink?: boolean }) {
+export function ArchitectureDetail({ data: source, view, onView, phase, onPhase, datasource, explorerLink = false, trainingLink = false }: { data: ModelArchitecture; view: ArchitectureView; onView: (view: ArchitectureView) => void;
+  phase: string; onPhase: (phase: string) => void; datasource: string; explorerLink?: boolean; trainingLink?: boolean }) {
   // VGG16 draws its head layer by layer: the drawing then has one element per step of a cell's trace.
   const data = useMemo(() => source.family === 'vgg16' ? splitHead(source) : source, [source]);
   const [requestedBlock, setRequestedBlock] = useState<string | null>(null);
@@ -40,8 +40,12 @@ export function ArchitectureDetail({ data: source, view, onView, phase, onPhase,
         : 'Capas y conexiones registradas por este TRAIN; dimensiones y parámetros calculados desde esa configuración.'}
     </SectionAnswer>
     <div className="scc-chart-toolbar">
-      <div className="scc-segmented" role="group" aria-label="Tipo de gráfico">{viewsFor(data.family).map(item => <button key={item} type="button" className="ds-button" data-size="compact"
-        aria-pressed={item === view} onClick={() => onView(item)}>{architectureViews[item]}</button>)}</div>
+      <div className="mx-view-actions">
+        <div className="scc-segmented" role="group" aria-label="Tipo de gráfico">{viewsFor(data.family).map(item => <button key={item} type="button" className="ds-button" data-size="compact"
+          aria-pressed={item === view} onClick={() => onView(item)}>{architectureViews[item]}</button>)}</div>
+        {trainingLink && <a className="ds-button" data-size="compact" href={withAllowedQuery(routes.modelTraining, { datasource, run: data.training_run_id, fase: phase })}
+          target="_blank" rel="noopener noreferrer" title="Abre la vista Entrenamiento en una pestaña nueva">Entrenamiento ↗</a>}
+      </div>
       {data.phases.length > 1 && <div className="scc-segmented" role="group" aria-label="Fase de entrenamiento">{data.phases.map(item => <button key={item.phase} type="button" className="ds-button" data-size="compact"
         aria-pressed={item.phase === phase} onClick={() => onPhase(item.phase)}>{phaseLabels[item.phase] ?? item.phase}</button>)}</div>}
     </div>

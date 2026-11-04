@@ -18,6 +18,7 @@ import { ErrorsLogs } from './pages/ErrorsLogs';
 import { Explainability } from './pages/Explainability';
 import { ModelComparison } from './pages/ModelComparison';
 import { ModelExplorer } from './pages/ModelExplorer';
+import { ModelTraining } from './pages/ModelTraining';
 import { ModelVersions } from './pages/ModelVersions';
 import { AssessmentDetail } from './pages/AssessmentDetail';
 import { RunDetail } from './pages/RunDetail';
@@ -93,6 +94,8 @@ function App() {
     <RouteEffects />
     <ComparisonSelectionProvider key={datasource}><Routes>
       <Route path="/login" element={<Login />} />
+      {/* Vista inmersiva sin menú lateral: se abre en pestaña nueva desde Arquitectura del modelo. */}
+      <Route path={routes.modelTraining} element={<ProtectedRoute><ModelTraining {...common} /></ProtectedRoute>} />
       <Route element={<ProtectedRoute><Layout datasource={datasource} datasources={datasources} onDatasourceChange={selectDatasource} /></ProtectedRoute>}>
         <Route path="/" element={<Navigate replace to={withAllowedQuery(routes.summary, { datasource })} />} />
         <Route path={routes.summary} element={<Dashboard {...common} onRunSelect={(id) => go(routes.runDetail(id))} />} />
