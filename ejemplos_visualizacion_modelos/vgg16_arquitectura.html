@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VGG16 · Anatomía del modelo (maqueta)</title>
+<!--
+  MAQUETA AISLADA — no conectada a la vista operativa ni a la API.
+  Fuente única de datos: la constante `capasVGG16` (copiada sin cambios desde "ej copy 4.html").
+  Todo lo demás (entradas, factores, volúmenes, chequeos) se DERIVA de esos datos en JS.
+  Sin dependencias externas: SVG + CSS + JS vanilla, funciona offline.
+-->
+<style>
+  :root{
+    --bg:#0a0e17; --surface:#111827; --surface-2:#0f1522; --line:#1f2937; --line-2:#2a3546;
+    --ink:#f1f5f9; --ink-2:#cbd5e1; --muted:#8b98ab; --faint:#5b6778;
+    --accent:#8b5cf6; --in:#38bdf8; --out:#22c55e; --warn:#f59e0b; --info:#60a5fa;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --r: 10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45}
+  body{
+    background-image:
+      linear-gradient(rgba(148,163,184,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(148,163,184,.035) 1px,transparent 1px);
+    background-size:24px 24px;
+  }
+  button{font:inherit;color:inherit}
+  .wrap{max-width:1480px;margin:0 auto;padding:20px 24px 40px}
+
+  /* ---------- Header ---------- */
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:16px}
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;align-items:center}
+  .tag{border:1px dashed var(--warn);color:var(--warn);padding:3px 7px;border-radius:4px}
+  h1{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:8px 0 4px}
+  h1 span{color:var(--muted);font-weight:500}
+  .sub{color:var(--muted);margin:0;max-width:720px}
+
+  /* ---------- KPI strip ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0 16px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+  .kpi .k{font:600 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .kpi .v{font:700 22px/1.15 var(--mono);margin-top:8px;letter-spacing:-.02em}
+  .kpi .v small{font-size:13px;color:var(--muted);font-weight:500}
+  .kpi .h{color:var(--faint);font-size:12px;margin-top:4px}
+
+  /* ---------- Main grid ---------- */
+  .main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .card-h h2{font-size:13px;font-weight:600;margin:0;letter-spacing:.01em}
+  .card-h .hint{color:var(--faint);font-size:12px}
+
+  /* stepper */
+  .stepper{display:flex;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);overflow-x:auto}
+  .step{flex:1 0 auto;display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:7px;border:1px solid transparent;background:transparent;cursor:pointer;color:var(--ink-2);font-size:12px;white-space:nowrap}
+  .step i{width:9px;height:9px;border-radius:2px;flex:none}
+  .step:hover{background:var(--surface-2);border-color:var(--line-2)}
+  .step[aria-pressed="true"]{background:var(--surface-2);border-color:var(--accent);color:var(--ink)}
+  .step .n{font-family:var(--mono);color:var(--faint);font-size:11px}
+
+  /* stage */
+  .stage{position:relative;height:520px;overflow:hidden;background:
+      radial-gradient(1200px 400px at 30% 40%,rgba(139,92,246,.07),transparent 60%),var(--surface-2);
+      border-bottom-left-radius:var(--r);border-bottom-right-radius:var(--r)}
+  #scene{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  #scene.dragging{cursor:grabbing}
+  .layer{cursor:pointer;transition:opacity .25s}
+  .layer:focus{outline:none}
+  .layer:focus-visible .face-front{stroke-width:2.5}
+  .dim .layer:not(.on), .dim .lbl:not(.on){opacity:.42}
+  .dim .beam:not(.on){opacity:.3}
+  .beam{transition:opacity .25s;pointer-events:none}
+  .lbl{transition:opacity .25s;cursor:pointer}
+  .lbl text{font-family:var(--sans)}
+
+  .toolbar{position:absolute;top:12px;left:12px;display:flex;gap:6px;flex-wrap:wrap;z-index:2}
+  .tb-group{display:flex;background:rgba(15,21,34,.85);backdrop-filter:blur(6px);border:1px solid var(--line-2);border-radius:8px;padding:3px}
+  .tb{border:0;background:transparent;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--ink-2)}
+  .tb:hover{background:var(--line)}
+  .tb[aria-pressed="true"]{background:var(--accent);color:#fff}
+  .tb:disabled{opacity:.35;cursor:not-allowed;background:transparent}
+  .tb svg{width:15px;height:15px;display:block}
+  .tb.icon{padding:6px 8px}
+  .zoom-lvl{font:600 11px/1 var(--mono);color:var(--muted);padding:0 6px;display:flex;align-items:center;min-width:46px;justify-content:center}
+
+  /* Pantalla completa del card del diagrama (API nativa + respaldo CSS) */
+  .card.viz:fullscreen, .card.viz:-webkit-full-screen, .card.viz.is-max{
+    display:flex;flex-direction:column;width:100vw;height:100vh;max-width:none;border-radius:0;border:0;background:var(--surface)}
+  .card.viz.is-max{position:fixed;inset:0;z-index:100}
+  .card.viz:fullscreen .stage, .card.viz:-webkit-full-screen .stage, .card.viz.is-max .stage{flex:1;height:auto;border-radius:0}
+  .card.viz::backdrop{background:var(--bg)}
+  .legend-mini{position:absolute;right:12px;bottom:12px;font:11px/1.5 var(--mono);color:var(--muted);background:rgba(15,21,34,.85);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;z-index:2}
+  .legend-mini b{color:var(--ink-2);font-weight:600}
+
+  .tip{position:fixed;pointer-events:none;z-index:50;background:#0b1220;border:1px solid var(--line-2);border-radius:8px;padding:9px 11px;font-size:12px;box-shadow:0 12px 30px -8px rgba(0,0,0,.6);opacity:0;transition:opacity .12s;min-width:190px}
+  .tip .t{font-weight:600;margin-bottom:5px}
+  .io{display:flex;justify-content:space-between;gap:16px;font-family:var(--mono);font-size:12px}
+  .io .a{font-weight:700;letter-spacing:.04em}
+  .io .a.in{color:var(--in)} .io .a.out{color:var(--out)}
+
+  /* ---------- Detail panel ---------- */
+  .detail{display:flex;flex-direction:column}
+  .d-body{padding:14px;display:flex;flex-direction:column;gap:14px}
+  .d-title{display:flex;align-items:center;gap:10px}
+  .d-title i{width:12px;height:12px;border-radius:3px}
+  .d-title h3{margin:0;font-size:18px;letter-spacing:-.01em}
+  .d-title .kind{margin-left:auto;font:600 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border:1px solid var(--line-2);padding:4px 6px;border-radius:4px}
+  .d-desc{color:var(--muted);margin-top:-8px}
+  .flow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px}
+  .flow .lab{font:600 10px/1 var(--mono);letter-spacing:.1em}
+  .flow .val{font:600 14px/1.3 var(--mono);margin-top:5px}
+  .flow .arrow{color:var(--faint);font-size:18px}
+  .flow .in .lab{color:var(--in)} .flow .out .lab{color:var(--out)} .flow .out{text-align:right}
+  .facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .fact{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  .fact .k{font-size:11px;color:var(--muted)}
+  .fact .v{font:600 15px/1.3 var(--mono);margin-top:2px}
+  .fact .v small{display:block;color:var(--faint);font-weight:500;font-size:11px}
+  .sec-t{font:600 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px;display:flex;gap:6px;align-items:center}
+  .tune{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+  .tune li{font-size:12.5px;color:var(--ink-2);padding-left:14px;position:relative}
+  .tune li::before{content:"";position:absolute;left:2px;top:7px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  .tune code{font-family:var(--mono);font-size:11.5px;color:var(--ink);background:var(--line);padding:1px 5px;border-radius:4px}
+  .note-guide{font-size:11px;color:var(--faint)}
+  .d-flags{display:flex;flex-direction:column;gap:6px}
+
+  .flag{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:6px;padding:8px 10px;font-size:12.5px;color:var(--ink-2);background:rgba(245,158,11,.05)}
+  .flag.info{border-left-color:var(--info);background:rgba(96,165,250,.05)}
+  .flag.ok{border-left-color:var(--out);background:rgba(34,197,94,.05)}
+  .flag .ic{font:700 11px/1 var(--mono);padding:3px 5px;border-radius:4px;flex:none;margin-top:1px}
+  .flag .ic.w{background:rgba(245,158,11,.18);color:var(--warn)}
+  .flag .ic.i{background:rgba(96,165,250,.18);color:var(--info)}
+  .flag .ic.o{background:rgba(34,197,94,.18);color:var(--out)}
+  .flag b{color:var(--ink)}
+  .flag code{font-family:var(--mono);font-size:11.5px}
+
+  /* ---------- Lower grid ---------- */
+  .lower{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;margin-top:14px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{font:600 10.5px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th.r, td.r{text-align:right}
+  td{padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+  td.mono{font-family:var(--mono);font-size:12px}
+  tbody tr{cursor:pointer;transition:background .12s}
+  tbody tr:hover{background:var(--surface-2)}
+  tbody tr.sel{background:rgba(139,92,246,.09);box-shadow:inset 3px 0 0 var(--accent)}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;vertical-align:-1px}
+  .bar{display:flex;align-items:center;gap:8px;min-width:96px}
+  .bar .track{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:0 4px 4px 0}
+  .bar .num{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);min-width:54px;text-align:right}
+  .muted{color:var(--muted)}
+  .delta-down{color:var(--in)} .delta-up{color:#c4b5fd}
+  .table-wrap{overflow-x:auto}
+  .checks{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+  .repo-ref{font-size:12px;color:var(--muted);border-top:1px dashed var(--line-2);padding-top:10px;margin-top:4px}
+  .repo-ref code{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+  footer{margin-top:18px;color:var(--faint);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line-2);border-bottom-width:2px;border-radius:4px;padding:1px 5px;color:var(--ink-2)}
+
+  @media (max-width:1100px){
+    .main,.lower{grid-template-columns:1fr}
+    .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>VGG16 <span>· anatomía del modelo entrenado</span></h1>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis" aria-label="Resumen derivado de capasVGG16"></section>
+
+  <section class="main">
+    <div class="card viz" id="viz-card">
+      <div class="card-h">
+        <h2>Flujo de tensores</h2>
+        <span class="hint">Arrastra para mover · rueda para zoom · <kbd>←</kbd> <kbd>→</kbd> para recorrer</span>
+      </div>
+      <nav class="stepper" id="stepper" aria-label="Capas"></nav>
+      <div class="stage">
+        <div class="toolbar">
+          <div class="tb-group" role="group" aria-label="Escala">
+            <button class="tb" data-scale="lineal" aria-pressed="true" title="Tamaños proporcionales a los valores reales">Proporcional</button>
+            <button class="tb" data-scale="comp" aria-pressed="false" title="Comprime los extremos (√ en espacio, log en canales) para leer capas pequeñas">Compensada</button>
+          </div>
+          <div class="tb-group">
+            <button class="tb" id="btn-play" aria-pressed="false">▶ Recorrer flujo</button>
+            <button class="tb" id="btn-beams" aria-pressed="true">Haces</button>
+          </div>
+          <div class="tb-group">
+            <button class="tb" id="zin" aria-label="Acercar">＋</button>
+            <span class="zoom-lvl" id="zlvl" aria-live="polite">100%</span>
+            <button class="tb" id="zout" aria-label="Alejar">－</button>
+            <button class="tb" id="zfit">Encajar</button>
+          </div>
+          <div class="tb-group">
+            <button class="tb icon" id="btn-fs" aria-label="Pantalla completa" title="Pantalla completa">
+              <svg class="ic-fs" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect width="10" height="8" x="7" y="8" rx="1"/></svg>
+              <svg class="ic-min" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+            </button>
+          </div>
+        </div>
+        <svg id="scene" role="img" aria-label="Diagrama isométrico de las capas de VGG16"></svg>
+        <div class="legend-mini" id="legend-mini"></div>
+        <div class="tip" id="tip" role="tooltip"></div>
+      </div>
+    </div>
+
+    <aside class="card detail" aria-live="polite">
+      <div class="card-h"><h2>Capa seleccionada</h2><span class="hint" id="d-idx"></span></div>
+      <div class="d-body" id="detail"></div>
+    </aside>
+  </section>
+
+  <section class="lower">
+    <div class="card">
+      <div class="card-h"><h2>Tabla de capas</h2><span class="hint">Vista tabular equivalente al diagrama</span></div>
+      <div class="table-wrap"><table id="tbl"></table></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Chequeos de coherencia</h2><span class="hint">calculados desde los datos</span></div>
+      <div class="checks" id="checks"></div>
+    </div>
+  </section>
+
+</div>
+
+
+<script>
+/* =====================================================================
+   DATOS — copiados sin modificar desde "ej copy 4.html".
+   Es la ÚNICA fuente de verdad de esta maqueta.
+   ===================================================================== */
+const capasVGG16 = [
+  { nombre: "Entrada",     h: 224, w: 224, d: 3,    desc: "RGB Image",       color: "239, 68, 68" },
+  { nombre: "Bloque 1",    h: 100, w: 100, d: 64,   desc: "Conv x2 + Pool",  color: "245, 158, 11" },
+  { nombre: "Bloque 2",    h: 50,  w: 50,  d: 128,  desc: "Conv x2 + Pool",  color: "16, 185, 129" },
+  { nombre: "Bloque 3",    h: 25,  w: 25,  d: 256,  desc: "Conv x3 + Pool",  color: "6, 182, 212" },
+  { nombre: "Bloque 4",    h: 12,  w: 12,  d: 512,  desc: "Conv x3 + Pool",  color: "99, 102, 241" },
+  { nombre: "Bloque 5",    h: 6,   w: 6,   d: 512,  desc: "Conv x3 + Pool",  color: "139, 92, 246" },
+  { nombre: "Dense 1",     h: 1,   w: 1,   d: 512,  desc: "Dense (Flatten)", color: "236, 72, 153" },
+  { nombre: "Dense 2",     h: 1,   w: 1,   d: 1024, desc: "Dense",           color: "20, 184, 166" },
+  { nombre: "Sigmoide",    h: 1,   w: 1,   d: 1,    desc: "Sigmoide",        color: "20, 184, 166" }
+];
+
+/* =====================================================================
+   MODELO DERIVADO — todo se calcula desde capasVGG16
+   ===================================================================== */
+const fmt = n => n.toLocaleString("es-CL");
+const dims = c => `${c.h} × ${c.w} × ${c.d}`;
+const vol = c => c.h * c.w * c.d;
+
+function tipoDe(c, i){
+  if (i === 0) return "entrada";
+  if (/conv/i.test(c.desc)) return "conv";
+  if (/sigmo/i.test(c.desc + c.nombre)) return "salida";
+  if (/dense/i.test(c.desc)) return "dense";
+  return "otro";
+}
+const TIPO_LABEL = { entrada:"Entrada", conv:"Bloque conv.", dense:"Densa", salida:"Salida", otro:"Capa" };
+
+const capas = capasVGG16.map((c, i) => {
+  const prev = i > 0 ? capasVGG16[i-1] : null;
+  const m = c.desc.match(/conv\s*x\s*(\d+)/i);
+  return {
+    ...c, i,
+    tipo: tipoDe(c, i),
+    rgb: c.color.replace(/\s/g,""),
+    prev,
+    entrada: prev ? dims(prev) : dims(c),
+    salida: dims(c),
+    volumen: vol(c),
+    nConv: m ? +m[1] : 0,
+    pool: /pool/i.test(c.desc),
+    fEsp: prev ? prev.h / c.h : 1,
+    fCan: prev ? c.d / prev.d : 1,
+    vector: c.h === 1 && c.w === 1
+  };
+});
+const maxVol = Math.max(...capas.map(c => c.volumen));
+const maxH = Math.max(...capas.map(c => c.h));
+const maxD = Math.max(...capas.map(c => c.d));
+const totalConv = capas.reduce((s,c) => s + c.nConv, 0);
+
+/* ---------- Chequeos automáticos de coherencia ---------- */
+function chequeos(){
+  const out = [];
+  capas.forEach(c => {
+    if (!c.prev) return;
+    // Pool 2×2 stride 2 ⇒ h_out = floor(h_in / 2)
+    if (c.tipo === "conv" && c.pool) {
+      const esperado = Math.floor(c.prev.h / 2);
+      if (c.h !== esperado) out.push({ nivel:"w", i:c.i,
+        html:`<b>${c.nombre}</b>: con un Pool 2×2 la salida esperada desde ${c.prev.h}×${c.prev.w} es <code>${esperado}×${esperado}</code>, pero los datos dicen <code>${c.h}×${c.w}</code> (factor ${c.fEsp.toFixed(2)}). Revisar el tamaño de entrada.` });
+    }
+    // Flatten ⇒ d_out = h·w·d de la capa previa
+    if (/flatten/i.test(c.desc)) {
+      const flat = vol(c.prev);
+      if (c.d !== flat) {
+        const gap = c.d === c.prev.d;
+        out.push({ nivel:"w", i:c.i,
+          html:`<b>${c.nombre}</b> se etiqueta «Flatten», que produciría <code>${fmt(flat)}</code> valores (${dims(c.prev)}), no <code>${fmt(c.d)}</code>.` +
+               (gap ? ` Un vector de ${c.d} = canales de ${c.prev.nombre} es la firma de un <b>GlobalAveragePooling</b>.` : "") });
+      }
+    }
+    if (c.tipo === "salida" && c.d === 1) out.push({ nivel:"o", i:c.i,
+      html:`<b>${c.nombre}</b>: 1 unidad ⇒ clasificación binaria (probabilidad de infección).` });
+  });
+  // Canales por bloque: VGG duplica hasta 512
+  const convs = capas.filter(c => c.tipo === "conv");
+  const dupOk = convs.every((c,k) => k === 0 || c.d === Math.min(convs[k-1].d * 2, 512));
+  out.push({ nivel: dupOk ? "o" : "w", i: convs[0].i,
+    html: dupOk ? `Canales por bloque se duplican y saturan en 512 (${convs.map(c=>c.d).join(" → ")}): patrón VGG coherente.`
+                : `La progresión de canales no sigue el patrón ×2 con tope 512.` });
+  return out;
+}
+const CHECKS = chequeos();
+
+/* ---------- Guía de ajuste por tipo de capa (orientativa, no son datos) ---------- */
+function guia(c){
+  const ultimoConv = capas.filter(x => x.tipo==="conv").slice(-1)[0];
+  switch (c.tipo) {
+    case "entrada": return [
+      `<code>img_size</code> fija todas las dimensiones posteriores: ${c.h}→${c.h/2|0} en el primer pool. Cambiarla reescala cada tensor de esta vista.`,
+      `Preprocesamiento debe coincidir con los pesos ImageNet (<code>vgg16_imagenet</code>).`,
+      `Augmentación (flips, color) actúa aquí: es la palanca principal contra sobreajuste sin tocar la arquitectura.`];
+    case "conv": return c.i <= 3 ? [
+      `Bloque temprano (${c.nConv} conv.): filtros genéricos de bordes y texturas. Normalmente se mantiene <b>congelado</b>.`,
+      `Resolución ${c.h}×${c.w}: aún conserva detalle fino del parásito; útil como capa objetivo de Grad-CAM de alta resolución.`] : [
+      `Bloque profundo (${c.nConv} conv., ${c.d} canales): rasgos semánticos. Candidato a <code>fine_tune_layers</code> con <code>fine_tune_learning_rate</code> bajo.`,
+      c.i === ultimoConv.i ? `Última capa convolucional (${c.h}×${c.w}): capa estándar para Grad-CAM; su baja resolución explica mapas de calor «gruesos».` : `Descongelar desde aquí aumenta capacidad y riesgo de sobreajuste: vigilar <code>val_auc</code> y recall.`];
+    case "dense": return [
+      `Cabeza entrenable: <code>head_units</code> controla este ancho (${c.d}).`,
+      `<code>dropout</code> y <code>l2</code> regularizan aquí; es donde se concentra el aprendizaje en la fase base (backbone congelado).`];
+    case "salida": return [
+      `Probabilidad única: el <b>umbral de decisión</b> (no la arquitectura) define el balance recall/especificidad.`,
+      `Ajustar <code>target_recall</code> / <code>calibrate_threshold</code> antes que la red cuando el objetivo es clínico.`];
+    default: return [];
+  }
+}
+
+/* =====================================================================
+   ESCENA ISOMÉTRICA (SVG, proyección oblicua calculada en JS)
+   eje X = flujo (canales como "grosor") · eje Y = alto · eje Z = ancho (fuga diagonal)
+   ===================================================================== */
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("scene");
+const OX = 0.60, OY = 0.40;           // fuga oblicua del eje Z
+const LABEL_ROW_GAP = 34;
+let modo = "lineal";
+let beamsOn = true;
+let sel = 0;
+
+function tam(c){
+  // Devuelve dimensiones en px: H (alto), W (ancho, eje Z), D (grosor, eje X)
+  if (c.vector) {
+    const H = modo === "lineal" ? Math.max(c.d * 0.2, 10) : 10 + 17 * Math.log2(Math.max(c.d,1));
+    return { H, W: 12, D: 12 };
+  }
+  const S = modo === "lineal" ? Math.max(c.h * 1.12, 8) : 17 * Math.sqrt(c.h);
+  const D = modo === "lineal" ? Math.max(c.d * 0.11, 3) : 4 + 9 * Math.log2(c.d);
+  return { H: S, W: S, D };
+}
+
+function el(tag, attrs = {}, parent){
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+let layout = [];
+let bounds = { x:0, y:0, w:1000, h:500 };
+
+function construir(){
+  svg.innerHTML = "";
+  const defs = el("defs", {}, svg);
+  const glow = el("filter", { id:"glow", x:"-50%", y:"-50%", width:"200%", height:"200%" }, defs);
+  el("feGaussianBlur", { stdDeviation:"6", result:"b" }, glow);
+  const fm = el("feMerge", {}, glow); el("feMergeNode",{in:"b"},fm); el("feMergeNode",{in:"SourceGraphic"},fm);
+
+  const root = el("g", { id:"root" }, svg);
+  const cy = 0;
+  const P = (x,y,z) => [x + z*OX, cy - y - z*OY];
+  const pts = arr => arr.map(p => p.join(",")).join(" ");
+
+  // 1) layout por "slots" que evitan choques de etiquetas
+  let cursor = 0;
+  layout = capas.map(c => {
+    const t = tam(c);
+    const bw = t.D + t.W * OX;
+    const slot = Math.max(bw + 44, 116);
+    const X0 = cursor + (slot - bw)/2 + (t.W/2) * OX;
+    const r = { c, ...t, X0, X1: X0 + t.D, cx: cursor + slot/2 };
+    cursor += slot;
+    return r;
+  });
+  const bottomMax = Math.max(...layout.map(l => cy + l.H/2 + (l.W/2)*OY));
+  const topMax = Math.min(...layout.map(l => cy - l.H/2 - (l.W/2)*OY));
+
+  // guía de línea base
+  el("line", { x1: -20, x2: cursor + 20, y1: bottomMax + 12, y2: bottomMax + 12, stroke:"#1f2937", "stroke-dasharray":"2 6" }, root);
+
+  const beamLayer = el("g", {}, root);
+  const layerG = el("g", {}, root);
+
+  layout.forEach((L, k) => {
+    const { c, H, W, X0, X1 } = L;
+    const h = H/2, w = W/2;
+    const g = el("g", { class:"layer", "data-i":k, tabindex:0, role:"button", "aria-label":`${c.nombre}: ${c.salida}` }, layerG);
+    const col = c.rgb;
+    // halo de selección
+    el("polygon", { class:"halo", points: pts([P(X0,h,-w),P(X1,h,-w),P(X1,h,w),P(X1,-h,w),P(X1,-h,-w),P(X0,-h,-w)]),
+      fill:`rgba(${col},0.0)`, stroke:"none", filter:"url(#glow)" }, g);
+    el("polygon", { class:"face-top",   points: pts([P(X0,h,-w),P(X1,h,-w),P(X1,h,w),P(X0,h,w)]), fill:`rgba(${col},0.55)`, stroke:`rgb(${col})`, "stroke-width":1, "stroke-linejoin":"round" }, g);
+    el("polygon", { class:"face-side",  points: pts([P(X1,h,-w),P(X1,h,w),P(X1,-h,w),P(X1,-h,-w)]), fill:`rgba(${col},0.38)`, stroke:`rgb(${col})`, "stroke-width":1, "stroke-linejoin":"round" }, g);
+    el("polygon", { class:"face-front", points: pts([P(X0,h,-w),P(X1,h,-w),P(X1,-h,-w),P(X0,-h,-w)]), fill:`rgba(${col},0.28)`, stroke:`rgb(${col})`, "stroke-width":1.25, "stroke-linejoin":"round" }, g);
+
+    // cotas sobre la caja (sólo si hay espacio)
+    if (!c.vector && H > 26) {
+      const [fx, fy] = P(X0, 0, -w);
+      const t1 = el("text", { x: fx - 6, y: fy + 4, "text-anchor":"end", "font-size":10.5, fill:"#7dd3fc", "font-family":"var(--mono)" }, g);
+      t1.textContent = c.h;
+      const [bx, by] = P((X0+X1)/2, -h, -w);
+      const t2 = el("text", { x: bx, y: by + 14, "text-anchor":"middle", "font-size":10.5, fill:"#7dd3fc", "font-family":"var(--mono)" }, g);
+      t2.textContent = c.w;
+    }
+    // profundidad (canales) encima de la cara superior
+    {
+      const [tx, ty] = P((X0+X1)/2, h, w);
+      const t3 = el("text", { x: tx, y: ty - 7, "text-anchor":"middle", "font-size":10.5, fill:"#fda4af", "font-family":"var(--mono)" }, g);
+      t3.textContent = c.d;
+    }
+
+    // haz hacia la siguiente capa
+    const N = layout[k+1];
+    if (N) {
+      const nh = N.H/2, nw = N.W/2, nx = N.X0;
+      const b = el("g", { class:"beam", "data-i":k }, beamLayer);
+      const fill = `rgba(${col},0.07)`, stroke = `rgba(${col},0.35)`;
+      [
+        [P(X1,-h,-w),P(X1,-h,w),P(nx,-nh,nw),P(nx,-nh,-nw)],   // inferior
+        [P(X1,h,w),P(X1,-h,w),P(nx,-nh,nw),P(nx,nh,nw)],       // lateral lejano
+        [P(X1,h,-w),P(X1,h,w),P(nx,nh,nw),P(nx,nh,-nw)],       // superior
+        [P(X1,h,-w),P(X1,-h,-w),P(nx,-nh,-nw),P(nx,nh,-nw)],   // lateral cercano
+      ].forEach(q => el("polygon", { points: pts(q), fill, stroke:"none" }, b));
+      [[P(X1,h,-w),P(nx,nh,-nw)],[P(X1,-h,-w),P(nx,-nh,-nw)],[P(X1,h,w),P(nx,nh,nw)],[P(X1,-h,w),P(nx,-nh,nw)]]
+        .forEach(([a,z]) => el("line", { x1:a[0], y1:a[1], x2:z[0], y2:z[1], stroke, "stroke-width":1 }, b));
+    }
+
+    // etiquetas alineadas en una sola fila
+    const lg = el("g", { class:"lbl", "data-i":k }, root);
+    const ly = bottomMax + LABEL_ROW_GAP;
+    el("rect", { x: L.cx - 6, y: ly - 22, width: 12, height: 3, rx: 1.5, fill:`rgb(${col})` }, lg);
+    const n1 = el("text", { x:L.cx, y:ly, "text-anchor":"middle", "font-size":12.5, "font-weight":600, fill:"#f1f5f9" }, lg);
+    n1.textContent = c.nombre;
+    const n2 = el("text", { x:L.cx, y:ly + 16, "text-anchor":"middle", "font-size":11, fill:"#8b98ab" }, lg);
+    n2.textContent = c.desc;
+    const n3 = el("text", { x:L.cx, y:ly + 32, "text-anchor":"middle", "font-size":10.5, fill:"#5b6778", "font-family":"var(--mono)" }, lg);
+    n3.textContent = c.vector ? `${c.d}` : `${c.h}×${c.w}×${c.d}`;
+  });
+
+  bounds = { x: -40, y: topMax - 40, w: cursor + 80, h: (bottomMax + LABEL_ROW_GAP + 50) - (topMax - 40) };
+
+  // eventos
+  svg.querySelectorAll(".layer, .lbl").forEach(g => {
+    const i = +g.dataset.i;
+    g.addEventListener("click", e => { e.stopPropagation(); seleccionar(i); });
+    g.addEventListener("mousemove", e => mostrarTip(e, i));
+    g.addEventListener("mouseleave", ocultarTip);
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); seleccionar(i); } });
+  });
+  aplicarSeleccion();
+  pintarLeyenda();
+}
+
+/* ---------- Zoom & pan sobre viewBox ---------- */
+let vb = null;
+/* Límites de zoom (ancho del viewBox, en unidades del diagrama).
+   Tomados de los viewBox medidos en pantalla:
+   - Alejar como máximo hasta: -1202.98 -945.47 3324.00 × 1946.49
+   - Acercar como máximo hasta:  347.06   -4.31   58.82 ×   34.44
+   Se limita el ANCHO; el alto sigue la proporción del contenedor. */
+const ZOOM_W_MAX = 3324.002989724566;   // vista más alejada
+const ZOOM_W_MIN = 58.81532261437357;   // vista más cercana
+let fitW = null;                        // ancho de "Encajar" = 100 %
+function setVB(v){
+  vb = v;
+  svg.setAttribute("viewBox", `${v.x} ${v.y} ${v.w} ${v.h}`);
+  actualizarZoomUI();
+}
+function actualizarZoomUI(){
+  const eps = 1e-6;
+  document.getElementById("zin").disabled  = vb.w <= ZOOM_W_MIN * (1 + eps);
+  document.getElementById("zout").disabled = vb.w >= ZOOM_W_MAX * (1 - eps);
+  if (fitW) document.getElementById("zlvl").textContent = Math.round(100 * fitW / vb.w) + "%";
+}
+function encajar(){
+  const r = svg.getBoundingClientRect();
+  const ar = r.width / r.height;
+  let { x, y, w, h } = bounds;
+  if (w / h > ar) { const nh = w / ar; y -= (nh - h)/2; h = nh; } else { const nw = h * ar; x -= (nw - w)/2; w = nw; }
+  // "Encajar" también respeta los límites
+  const cw = Math.min(ZOOM_W_MAX, Math.max(ZOOM_W_MIN, w));
+  if (cw !== w) { const ch = cw / ar; x += (w - cw)/2; y += (h - ch)/2; w = cw; h = ch; }
+  fitW = w;
+  setVB({ x, y, w, h });
+}
+function zoom(f, cx, cy){
+  const r = svg.getBoundingClientRect();
+  const px = cx == null ? .5 : (cx - r.left) / r.width;
+  const py = cy == null ? .5 : (cy - r.top) / r.height;
+  // Ajusta el factor para no pasar los límites
+  const nwRaw = vb.w * f;
+  const nwC = Math.min(ZOOM_W_MAX, Math.max(ZOOM_W_MIN, nwRaw));
+  if (Math.abs(nwC - vb.w) < 1e-9) return;   // ya en el límite
+  f = nwC / vb.w;
+  const nw = vb.w * f, nh = vb.h * f;
+  setVB({ x: vb.x + (vb.w - nw) * px, y: vb.y + (vb.h - nh) * py, w: nw, h: nh });
+}
+svg.addEventListener("wheel", e => { e.preventDefault(); zoom(e.deltaY > 0 ? 1.1 : 0.9, e.clientX, e.clientY); }, { passive:false });
+let drag = null;
+svg.addEventListener("pointerdown", e => {
+  if (e.target.closest(".layer, .lbl")) return;
+  drag = { x:e.clientX, y:e.clientY, vb:{...vb} }; svg.classList.add("dragging"); svg.setPointerCapture(e.pointerId);
+});
+svg.addEventListener("pointermove", e => {
+  if (!drag) return;
+  const r = svg.getBoundingClientRect();
+  const k = vb.w / r.width;
+  setVB({ ...drag.vb, x: drag.vb.x - (e.clientX - drag.x) * k, y: drag.vb.y - (e.clientY - drag.y) * k });
+});
+svg.addEventListener("pointerup", () => { drag = null; svg.classList.remove("dragging"); });
+document.getElementById("zin").onclick = () => zoom(0.8);
+document.getElementById("zout").onclick = () => zoom(1.25);
+document.getElementById("zfit").onclick = encajar;
+window.addEventListener("resize", encajar);
+
+/* Pantalla completa del card: API nativa (con prefijo Safari) y, si el navegador
+   o el marco la rechazan, respaldo CSS (.is-max) que ocupa toda la ventana. */
+const vizCard = document.getElementById("viz-card");
+const btnFs = document.getElementById("btn-fs");
+const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+const enPantallaCompleta = () => fsElement() === vizCard || vizCard.classList.contains("is-max");
+function pintarBotonFs(){
+  const on = enPantallaCompleta();
+  btnFs.querySelector(".ic-fs").style.display  = on ? "none" : "";
+  btnFs.querySelector(".ic-min").style.display = on ? "" : "none";
+  btnFs.setAttribute("aria-label", on ? "Salir de pantalla completa" : "Pantalla completa");
+  btnFs.title = btnFs.getAttribute("aria-label");
+  btnFs.setAttribute("aria-pressed", on);
+  requestAnimationFrame(encajar);
+}
+async function alternarPantallaCompleta(){
+  if (vizCard.classList.contains("is-max")) { vizCard.classList.remove("is-max"); pintarBotonFs(); return; }
+  if (fsElement()) {
+    try { await (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch(e) {}
+    return;
+  }
+  const req = vizCard.requestFullscreen || vizCard.webkitRequestFullscreen;
+  try {
+    if (!req) throw new Error("sin API");
+    await req.call(vizCard);
+  } catch(e) {
+    vizCard.classList.add("is-max");   // respaldo
+    pintarBotonFs();
+  }
+}
+btnFs.onclick = alternarPantallaCompleta;
+document.addEventListener("fullscreenchange", pintarBotonFs);
+document.addEventListener("webkitfullscreenchange", pintarBotonFs);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && vizCard.classList.contains("is-max")) { vizCard.classList.remove("is-max"); pintarBotonFs(); }
+});
+
+/* ---------- Tooltip ---------- */
+const tip = document.getElementById("tip");
+function mostrarTip(e, i){
+  const c = capas[i];
+  tip.innerHTML = `<div class="t">${c.nombre} <span class="muted">· ${c.desc}</span></div>
+    <div class="io"><span class="a in">ENTRADA</span><span>${c.entrada}</span></div>
+    <div class="io"><span class="a out">SALIDA</span><span>${c.salida}</span></div>
+    <div class="io muted" style="margin-top:4px"><span>activaciones</span><span>${fmt(c.volumen)}</span></div>`;
+  const pad = 14, tw = tip.offsetWidth, th = tip.offsetHeight;
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + tw > innerWidth - 8) x = e.clientX - tw - pad;
+  if (y + th > innerHeight - 8) y = e.clientY - th - pad;
+  tip.style.left = x + "px"; tip.style.top = y + "px"; tip.style.opacity = 1;
+}
+function ocultarTip(){ tip.style.opacity = 0; }
+
+/* ---------- Selección / recorrido ---------- */
+let playing = null;
+function seleccionar(i){ sel = Math.max(0, Math.min(capas.length - 1, i)); aplicarSeleccion(); }
+
+function aplicarSeleccion(progresivo = false){
+  const root = document.getElementById("root");
+  root.classList.add("dim");
+  svg.querySelectorAll(".layer, .lbl").forEach(g => {
+    const i = +g.dataset.i;
+    const on = progresivo ? i <= sel : i === sel;
+    g.classList.toggle("on", on);
+    const halo = g.querySelector(".halo");
+    if (halo) halo.setAttribute("fill", i === sel ? `rgba(${capas[i].rgb},0.25)` : "rgba(0,0,0,0)");
+  });
+  svg.querySelectorAll(".beam").forEach(b => {
+    const i = +b.dataset.i;
+    b.classList.toggle("on", progresivo ? i < sel : (i === sel || i === sel - 1));
+    b.style.display = beamsOn ? "" : "none";
+  });
+  document.querySelectorAll(".step").forEach((s,i) => s.setAttribute("aria-pressed", i === sel));
+  document.querySelectorAll("#tbl tbody tr").forEach((r,i) => r.classList.toggle("sel", i === sel));
+  pintarDetalle();
+}
+
+document.getElementById("btn-play").onclick = function(){
+  if (playing) { clearInterval(playing); playing = null; this.setAttribute("aria-pressed","false"); this.textContent = "▶ Recorrer flujo"; aplicarSeleccion(); return; }
+  this.setAttribute("aria-pressed","true"); this.textContent = "❚❚ Pausa";
+  sel = 0; aplicarSeleccion(true);
+  playing = setInterval(() => {
+    if (sel >= capas.length - 1) { document.getElementById("btn-play").click(); return; }
+    sel++; aplicarSeleccion(true);
+  }, 1100);
+};
+document.getElementById("btn-beams").onclick = function(){
+  beamsOn = !beamsOn; this.setAttribute("aria-pressed", beamsOn); aplicarSeleccion();
+};
+document.querySelectorAll("[data-scale]").forEach(b => b.onclick = () => {
+  modo = b.dataset.scale;
+  document.querySelectorAll("[data-scale]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  construir(); encajar();
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input,textarea")) return;
+  if (e.key === "ArrowRight") { seleccionar(sel + 1); e.preventDefault(); }
+  if (e.key === "ArrowLeft")  { seleccionar(sel - 1); e.preventDefault(); }
+});
+
+/* =====================================================================
+   PANELES HTML
+   ===================================================================== */
+function pintarKPIs(){
+  const ent = capas[0], ultConv = capas.filter(c => c.tipo==="conv").slice(-1)[0], sal = capas[capas.length-1];
+  const top = capas.reduce((a,b) => b.volumen > a.volumen ? b : a);
+  const k = [
+    { k:"Capas / bloques", v:`${capas.length}`, s:`${totalConv} conv. en ${capas.filter(c=>c.tipo==="conv").length} bloques`},
+    { k:"Resolución espacial", v:`${ent.h}<small> → </small>${ultConv.h}`, s:`${(ent.h/ultConv.h).toFixed(1)}× menos por lado al final del backbone`},
+    { k:"Canales", v:`${ent.d}<small> → </small>${ultConv.d}`, s:`${(ultConv.d/ent.d).toFixed(0)}× más profundidad`},
+    { k:"Tensor más grande", v:`${fmt(top.volumen)}`, s:`${top.nombre} · ${top.salida}`},
+    { k:"Compresión total", v:`${fmt(ent.volumen)}<small> → </small>${sal.volumen}`, s:`valores de entrada → probabilidad`},
+  ];
+  document.getElementById("kpis").innerHTML = k.map(x =>
+    `<div class="kpi"><div class="k">${x.k}</div><div class="v">${x.v}</div><div class="h">${x.s}</div></div>`).join("");
+}
+
+function pintarStepper(){
+  document.getElementById("stepper").innerHTML = capas.map((c,i) =>
+    `<button class="step" data-i="${i}" aria-pressed="${i===sel}"><span class="n">${String(i).padStart(2,"0")}</span><i style="background:rgb(${c.rgb})"></i>${c.nombre}</button>`).join("");
+  document.querySelectorAll(".step").forEach(b => b.onclick = () => seleccionar(+b.dataset.i));
+}
+
+function pintarLeyenda(){
+  document.getElementById("legend-mini").innerHTML =
+    `<b>Escala:</b> ${modo === "lineal" ? "proporcional a los valores" : "compensada (√ espacio · log canales)"}<br>
+     <span style="color:#7dd3fc">■</span> alto/ancho &nbsp; <span style="color:#fda4af">■</span> canales`;
+}
+
+function pintarDetalle(){
+  const c = capas[sel];
+  document.getElementById("d-idx").textContent = `${sel + 1} / ${capas.length}`;
+  const flags = CHECKS.filter(f => f.i === sel);
+  const facts = [
+    { k:"Activaciones (h·w·d)", v:fmt(c.volumen), s:`${(100*c.volumen/maxVol).toFixed(1)}% del máx.` },
+    { k:"Factor espacial", v: c.prev ? (c.fEsp===1?"sin cambio":`↓ ${c.fEsp.toFixed(2).replace(/\.00$/,"")}×`) : "—", s: c.prev ? `${c.prev.h}→${c.h}` : "" },
+    { k:"Factor de canales", v: c.prev ? (c.fCan===1?"sin cambio":c.fCan>1?`↑ ${c.fCan.toFixed(2).replace(/\.00$/,"")}×`:`↓ ${(1/c.fCan).toFixed(0)}×`) : "—", s: c.prev ? `${c.prev.d}→${c.d}` : "" },
+    { k:"Convoluciones", v: c.nConv || "—", s: c.pool ? "+ MaxPool" : "" },
+  ];
+  document.getElementById("detail").innerHTML = `
+    <div class="d-title"><i style="background:rgb(${c.rgb})"></i><h3>${c.nombre}</h3><span class="kind">${TIPO_LABEL[c.tipo]}</span></div>
+    <div class="d-desc">${c.desc}</div>
+    <div class="flow">
+      <div class="in"><div class="lab">ENTRADA</div><div class="val">${c.entrada}</div></div>
+      <div class="arrow">→</div>
+      <div class="out"><div class="lab">SALIDA</div><div class="val">${c.salida}</div></div>
+    </div>
+    <div class="facts">${facts.map(f => `<div class="fact"><div class="k">${f.k}</div><div class="v">${f.v} <small>${f.s}</small></div></div>`).join("")}</div>
+    ${flags.length ? `<div><div class="sec-t">Observaciones</div><div class="d-flags">${flags.map(flagHTML).join("")}</div></div>` : ""}
+    <div>
+      <div class="sec-t">Qué ajustar en un nuevo entrenamiento</div>
+      <ul class="tune">${guia(c).map(g => `<li>${g}</li>`).join("")}</ul>
+      <div class="note-guide" style="margin-top:8px">Guía orientativa por tipo de capa; los nombres de parámetros siguen la configuración del pipeline.</div>
+    </div>`;
+}
+
+const flagHTML = f => `<div class="flag ${f.nivel==="o"?"ok":f.nivel==="i"?"info":""}"><span class="ic ${f.nivel}">${f.nivel==="w"?"!":f.nivel==="o"?"✓":"i"}</span><div>${f.html}</div></div>`;
+
+function pintarTabla(){
+  const logMax = Math.log10(maxVol);
+  const bar = (pct, color, num) => `<div class="bar"><div class="track"><div class="fill" style="width:${Math.max(pct,1.5)}%;background:${color}"></div></div><span class="num">${num}</span></div>`;
+  document.getElementById("tbl").innerHTML = `
+    <thead><tr><th>#</th><th>Capa</th><th>Operación</th><th>Entrada</th><th>Salida</th><th>Resolución (h)</th><th>Canales (d)</th><th>Activaciones (log)</th><th class="r">Δ espacial</th><th class="r">Δ canales</th></tr></thead>
+    <tbody>${capas.map(c => `
+      <tr data-i="${c.i}">
+        <td class="mono muted">${String(c.i).padStart(2,"0")}</td>
+        <td><span class="sw" style="background:rgb(${c.rgb})"></span>${c.nombre}</td>
+        <td class="muted">${c.desc}</td>
+        <td class="mono muted">${c.i ? c.entrada : "—"}</td>
+        <td class="mono">${c.salida}</td>
+        <td>${bar(100*c.h/maxH, "#38bdf8", c.h)}</td>
+        <td>${bar(100*c.d/maxD, "#a78bfa", fmt(c.d))}</td>
+        <td>${bar(100*Math.log10(Math.max(c.volumen,1))/logMax, "#f59e0b", fmt(c.volumen))}</td>
+        <td class="r mono ${c.fEsp>1?"delta-down":"muted"}">${c.prev && c.fEsp !== 1 ? "↓"+c.fEsp.toFixed(2).replace(/\.00$/,"")+"×" : "—"}</td>
+        <td class="r mono ${c.fCan>1?"delta-up":"muted"}">${c.prev && c.fCan !== 1 ? (c.fCan>1?"↑"+c.fCan.toFixed(0)+"×":"↓"+(1/c.fCan).toFixed(0)+"×") : "—"}</td>
+      </tr>`).join("")}</tbody>`;
+  document.querySelectorAll("#tbl tbody tr").forEach(r => r.onclick = () => seleccionar(+r.dataset.i));
+}
+
+function pintarChecks(){
+  const w = CHECKS.filter(c => c.nivel === "w").length;
+  document.getElementById("checks").innerHTML =
+    `<div class="muted" style="font-size:12px">${w} advertencia${w===1?"":"s"} · reglas: Pool 2×2 ⇒ h/2 · Flatten ⇒ h·w·d · canales ×2 hasta 512</div>` +
+    CHECKS.map(f => `<div role="button" tabindex="0" data-i="${f.i}" style="cursor:pointer">${flagHTML(f)}</div>`).join("") +
+    `<div class="repo-ref">Referencia cruzada: <code>docs/model_summaries/vgg16_summary.txt</code> registra entrada <code>200×200×3</code> y cabeza <code>GlobalAveragePooling2D → Dense(1024) → Dropout(0.5) → Dense(1)</code>. Antes de conectar esta vista a datos reales, conviene alinear <code>capasVGG16</code> con ese resumen.</div>`;
+  document.querySelectorAll("#checks [data-i]").forEach(d => {
+    d.onclick = () => seleccionar(+d.dataset.i);
+    d.onkeydown = e => { if (e.key==="Enter") seleccionar(+d.dataset.i); };
+  });
+}
+
+/* ---------- Init ---------- */
+pintarKPIs(); pintarStepper(); pintarTabla(); pintarChecks();
+construir(); encajar();
+</script>
+</body>
+</html>
