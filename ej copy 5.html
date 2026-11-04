@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Flujo CSS 3D</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --text-color: #f8fafc;
+            --layer-color: rgba(167, 139, 250, 0.4);
+            --layer-border: #8b5cf6;
+            --layer-hover: rgba(167, 139, 250, 0.75);
+            --accent-in: #38bdf8;  /* Celeste para entradas */
+            --accent-out: #22c55e; /* Verde para salidas */
+        }
+
+        body {
+            margin: 0;
+            padding: 3rem;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h3 {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        p {
+            color: #94a3b8;
+            margin-bottom: 5rem;
+            font-size: 0.95rem;
+        }
+
+        /* Escena 3D */
+        .scene {
+            display: flex;
+            gap: 5rem;
+            align-items: center;
+            perspective: 1000px;
+            transform: rotateX(50deg) rotateZ(-20deg);
+            transform-style: preserve-3d;
+        }
+
+        /* Contenedor interactivo de la capa */
+        .layer-interactive {
+            position: relative;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        /* Estructura del objeto 3D */
+        .cube {
+            position: relative;
+            transform-style: preserve-3d;
+            width: 80px;
+            height: 80px;
+            --depth: 50px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--layer-color);
+            border: 2px solid var(--layer-border);
+            box-sizing: border-box;
+            transition: background 0.3s;
+        }
+
+        /* Posicionamiento de las caras del cubo */
+        .front  { transform: translateZ(calc(var(--depth) / 2)); }
+        .back   { transform: rotateY(180deg) translateZ(calc(var(--depth) / 2)); }
+        .right  { width: var(--depth); transform: rotateY(90deg) translateZ(40px); left: calc(50% - var(--depth)/2); }
+        .left   { width: var(--depth); transform: rotateY(-90deg) translateZ(40px); left: calc(50% - var(--depth)/2); }
+        .top    { height: var(--depth); transform: rotateX(90deg) translateZ(40px); top: calc(50% - var(--depth)/2); }
+        .bottom { height: var(--depth); transform: rotateX(-90deg) translateZ(40px); top: calc(50% - var(--depth)/2); }
+
+        /* --- EL TRUCO: El panel tooltip con las dimensiones E/S --- */
+        .io-tooltip {
+            position: absolute;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%) rotateZ(20deg) rotateX(-50deg) scale(0.8);
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transform-origin: bottom center;
+        }
+
+        /* Formateo interno de las etiquetas Entrada/Salida */
+        .io-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            margin: 0.25rem 0;
+        }
+
+        .io-label-in { color: var(--accent-in); font-weight: bold; }
+        .io-label-out { color: var(--accent-out); font-weight: bold; }
+        .io-value { font-family: monospace; color: #f1f5f9; }
+
+        /* --- ESTADOS HOVER (Activación de la visualización) --- */
+        .layer-interactive:hover .cube {
+            transform: translateZ(20px); /* El bloque se eleva ligeramente */
+        }
+        
+        .layer-interactive:hover .face {
+            background: var(--layer-hover); /* El bloque se ilumina */
+            box-shadow: 0 0 15px var(--layer-border);
+        }
+
+        .layer-interactive:hover .io-tooltip {
+            opacity: 1;
+            /* Escalamos a 1 y neutralizamos la rotación de la escena para que sea legible */
+            transform: translateX(-50%) rotateZ(20deg) rotateX(-50deg) scale(1) translateY(-10px); 
+        }
+
+        /* Flecha indicadora entre bloques */
+        .arrow {
+            width: 40px;
+            height: 2px;
+            background: #475569;
+            position: relative;
+        }
+        .arrow::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: -3px;
+            border-left: 6px solid #475569;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <h3>Visualización de Flujo mediante Hover en CSS</h3>
+    <p>Pasa el cursor sobre cualquiera de las capas de la red para revelar su Entrada (Input) y Salida (Output)</p>
+
+    <div class="scene">
+        
+        <!-- Bloque Capa 1 -->
+        <div class="layer-interactive">
+            <div class="cube">
+                <div class="face front"></div><div class="face back"></div>
+                <div class="face right"></div><div class="face left"></div>
+                <div class="face top"></div><div class="face bottom"></div>
+            </div>
+            <!-- Tooltip que guarda los datos de Entrada y Salida -->
+            <div class="io-tooltip">
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; color: #a78bfa;">Bloque Conv 1</div>
+                <div class="io-row">
+                    <span class="io-label-in">ENTRADA:</span>
+                    <span class="io-value">200 × 200 × 3</span>
+                </div>
+                <div class="io-row">
+                    <span class="io-label-out">SALIDA:</span>
+                    <span class="io-value">100 × 100 × 64</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow"></div>
+
+        <!-- Bloque Capa 2 -->
+        <div class="layer-interactive">
+            <div class="cube" style="width: 50px; height: 50px; --depth: 75px;">
+                <div class="face front"></div><div class="face back"></div>
+                <div class="face right"></div><div class="face left"></div>
+                <div class="face top"></div><div class="face bottom"></div>
+            </div>
+            <div class="io-tooltip">
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; color: #a78bfa;">Bloque Conv 2</div>
+                <div class="io-row">
+                    <span class="io-label-in">ENTRADA:</span>
+                    <span class="io-value">100 × 100 × 64</span>
+                </div>
+                <div class="io-row">
+                    <span class="io-label-out">SALIDA:</span>
+                    <span class="io-value">50 × 50 × 128</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

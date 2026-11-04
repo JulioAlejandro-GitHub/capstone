@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Arquitectura VGG16 - Conexiones entre Esquinas</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      background-color: #0b0f19;
+      font-family: system-ui, sans-serif;
+      overflow-x: auto;
+      padding: 0 50px;
+      position: relative;
+    }
+
+    :root {
+        --bg-color: #0b0f19;
+        --text-color: #f8fafc;
+        --layer-color: rgba(167, 139, 250, 0.4);
+        --layer-border: #8b5cf6;
+        --layer-hover: rgba(167, 139, 250, 0.75);
+        --accent-in: #38bdf8;  /* Celeste para entradas */
+        --accent-out: #22c55e; /* Verde para salidas */
+    }
+
+    /* Lienzo SVG absoluto para las líneas conectoras */
+    #svg-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* Permite scroll del body e interacciones */
+      z-index: 10;
+    }
+
+    /* .scene {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 100px;
+      perspective: 1500px;
+      position: relative;
+      z-index: 2;
+    } */
+    /* Escena 3D */
+    .scene {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        perspective: 1000px;
+        transform-style: preserve-3d;
+    }
+    /* Contenedor interactivo de la capa */
+    .layer-interactive {
+        position: relative;
+        cursor: pointer;
+    }
+
+
+    .layer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .meta {
+      text-align: center;
+      margin-top: 50px;
+      color: #94a3b8;
+      font-size: 13px;
+      min-width: 140px;
+    }
+
+    .meta strong {
+      color: #f1f5f9;
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    /* Estructura Base del Cubo 3D Dinámico */
+    /* .cube {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(359deg) rotateY(62deg) rotateZ(352deg);
+      width: var(--w);
+      height: var(--h);
+    }  */
+   
+
+
+    .cube {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(359deg) rotateY(62deg) rotateZ(352deg);
+      width: var(--w);
+      height: var(--h);
+      --depth: 50px;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .face {
+      position: absolute;
+      /* border: 1px solid rgba(255, 255, 255, 0.18); */
+      box-sizing: border-box;
+      background: var(--layer-color);
+      border: 2px solid var(--layer-border);
+      transition: background 0.3s;
+    }
+
+    /* Caras del Cubo */
+    .face.front {
+      width: var(--w);
+      height: var(--h);
+      background: var(--bg-front);
+      transform: translateZ(calc(var(--d) / 2));
+    }
+    .face.back {
+      width: var(--w);
+      height: var(--h);
+      background: var(--bg-back);
+      transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
+    }
+    .face.right {
+      width: var(--d);
+      height: var(--h);
+      background: var(--bg-side);
+      transform: rotateY(90deg) translateZ(calc(var(--w) - (var(--d) / 2)));
+    }
+    .face.left {
+      width: var(--d);
+      height: var(--h);
+      background: var(--bg-side);
+      transform: rotateY(-90deg) translateZ(calc(var(--d) / 2));
+    }
+    .face.top {
+      width: var(--w);
+      height: var(--d);
+      background: var(--bg-top-down);
+      transform: rotateX(90deg) translateZ(calc(var(--d) / 2));
+    }
+    .face.down {
+      width: var(--w);
+      height: var(--d);
+      background: var(--bg-top-down);
+      transform: rotateX(-90deg) translateZ(calc(var(--h) - (var(--d) / 2)));
+    }
+
+
+    /* Posicionamiento de las caras del cubo */
+    /* 
+    .front  { transform: translateZ(calc(var(--depth) / 2)); }
+    .back   { transform: rotateY(180deg) translateZ(calc(var(--depth) / 2)); }
+    .right  { width: var(--depth); transform: rotateY(90deg) translateZ(40px); left: calc(50% - var(--depth)/2); }
+    .left   { width: var(--depth); transform: rotateY(-90deg) translateZ(40px); left: calc(50% - var(--depth)/2); }
+    .top    { height: var(--depth); transform: rotateX(90deg) translateZ(40px); top: calc(50% - var(--depth)/2); }
+    .bottom { height: var(--depth); transform: rotateX(-90deg) translateZ(40px); top: calc(50% - var(--depth)/2); } */
+
+    /* --- EL TRUCO: El panel tooltip con las dimensiones E/S --- */
+    .io-tooltip {
+        all: unset;
+        all: initial;
+        position: absolute;
+        bottom: 110px;
+        left: 50%;
+        /* transform: translateX(-50%) rotateZ(20deg) rotateX(-50deg) scale(0.8); */
+        background: #1e293b;
+        border: 1px solid #334155;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        /* transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); */
+        /* transform-origin: bottom center; */
+    }
+    /* Formateo interno de las etiquetas Entrada/Salida */
+    .io-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1.5rem;
+        font-size: 0.85rem;
+        margin: 0.25rem 0;
+    }
+    .io-label-in { color: var(--accent-in); font-weight: bold; }
+    .io-label-out { color: var(--accent-out); font-weight: bold; }
+    .io-value { font-family: monospace; color: #f1f5f9; }
+
+    /* --- ESTADOS HOVER (Activación de la visualización) --- */
+    /* El bloque se eleva ligeramente */
+    /* .layer-interactive:hover .cube {
+        transform: translateZ(20px);
+    } */
+    .layer-interactive:hover .face {
+        background: var(--layer-hover); /* El bloque se ilumina */
+        box-shadow: 0 0 15px var(--layer-border);
+    }
+    .layer-interactive:hover .io-tooltip {
+        opacity: 1;
+        /* Escalamos a 1 y neutralizamos la rotación de la escena para que sea legible */
+        /* transform: translateX(-50%) rotateZ(20deg) rotateX(-50deg) scale(1) translateY(-10px);  */
+    }
+
+
+
+    /* Nodos Invisibles de Anclaje de Esquinas de la Cara Derecha e Izquierda */
+    .anchor {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+    .top-left  { top: 0; left: 0; }
+    .top-right { top: 0; right: 0; }
+    .bot-left  { bottom: 0; left: 0; }
+    .bot-right { bottom: 0; right: 0; }
+
+    /* Etiquetas de los ejes */
+    .axis-label {
+      position: absolute;
+      font-weight: 800;
+      font-size: 11px;
+      white-space: nowrap;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    }
+    .axis-width { bottom: -18px; left: 50%; transform: translateX(-50%); color: #38bdf8; }
+    .axis-height { top: 50%; left: -32px; transform: translateY(-50%); color: #38bdf8; }
+    .axis-depth { top: -18px; left: 50%; transform: rotateY(137deg); color: #fb7185; }
+  </style>
+</head>
+<body>
+
+  <!-- Lienzo para proyectar los polígonos de conexión -->
+  <svg id="svg-canvas"></svg>
+
+  <div class="scene" id="vgg-scene"></div>
+
+  <script>
+    const capasVGG16 = [
+      { nombre: "Entrada",     h: 224, w: 224, d: 3,    desc: "RGB Image",       color: "239, 68, 68" },
+      { nombre: "Bloque 1",    h: 100, w: 100, d: 64,   desc: "Conv x2 + Pool",  color: "245, 158, 11" },
+      { nombre: "Bloque 2",    h: 50,  w: 50,  d: 128,  desc: "Conv x2 + Pool",  color: "16, 185, 129" },
+      { nombre: "Bloque 3",    h: 25,  w: 25,  d: 256,  desc: "Conv x3 + Pool",  color: "6, 182, 212" },
+      { nombre: "Bloque 4",    h: 12,  w: 12,  d: 512,  desc: "Conv x3 + Pool",  color: "99, 102, 241" },
+      { nombre: "Bloque 5",    h: 6,   w: 6,   d: 512,  desc: "Conv x3 + Pool",  color: "139, 92, 246" },
+      { nombre: "Dense 1",     h: 1,   w: 1,   d: 512,  desc: "Dense (Flatten)", color: "236, 72, 153" },
+      { nombre: "Dense 2",     h: 1,   w: 1,   d: 1024, desc: "Dense",           color: "20, 184, 166" },
+      { nombre: "Sigmoide",    h: 1,   w: 1,   d: 1,    desc: "Sigmoide",        color: "20, 184, 166" }
+    ];
+
+    const ESCALA_CUBO = 0.7;       
+    const ESCALA_PROFUNDIDAD = 0.15; 
+    const MIN_ALTO_ANCHO = 15;
+    const MIN_PROFUNDIDAD = 4;
+
+    const scene = document.getElementById("vgg-scene");
+
+    // 1. Renderizar los cubos en la pantalla
+    capasVGG16.forEach((capa, index) => {
+      let pixW = Math.max(capa.w * ESCALA_CUBO, MIN_ALTO_ANCHO);
+      let pixH = Math.max(capa.h * ESCALA_CUBO, MIN_ALTO_ANCHO);
+      let pixD = Math.max(capa.d * ESCALA_PROFUNDIDAD, MIN_PROFUNDIDAD);
+
+      if (capa.h === 1 && capa.w === 1) {
+        pixW = 15;
+        pixH = 150; 
+      }
+
+      if (capa.h === 1 && capa.w === 1 && capa.d === 1) {
+        pixW = 15;
+        pixH = 15; 
+      }
+
+      const container = document.createElement("div");
+      container.className = "layer-interactive";
+
+      const cube = document.createElement("div");
+      cube.className = "cube";
+      cube.id = `cube-${index}`;
+      cube.style.setProperty("--w", `${pixW}px`);
+      cube.style.setProperty("--h", `${pixH}px`);
+      cube.style.setProperty("--d", `${pixD}px`);
+      
+      cube.style.setProperty("--bg-front",    `rgba(${capa.color}, 0.35)`);
+      cube.style.setProperty("--bg-back",     `rgba(${capa.color}, 0.08)`);
+      cube.style.setProperty("--bg-side",     `rgba(${capa.color}, 0.5)`);
+      cube.style.setProperty("--bg-top-down", `rgba(${capa.color}, 0.4)`);
+
+      // Dentro de las caras visibles de salida (derecha) y entrada (izquierda) incrustamos anclajes invisibles
+      cube.innerHTML = `
+        <div class="face front">
+          <span class="axis-label axis-width">${capa.w}</span>
+          <span class="axis-label axis-height">${capa.h}</span>
+          <div class="anchor top-left" data-id="tl"></div>
+          <div class="anchor top-right" data-id="tr"></div>
+          <div class="anchor bot-left" data-id="bl"></div>
+          <div class="anchor bot-right" data-id="br"></div>
+        </div>
+        <!-- Tooltip que guarda los datos de Entrada y Salida -->
+        <div class="io-tooltip">
+            <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; color: #a78bfa;">Bloque Conv 1</div>
+            <div class="io-row">
+                <span class="io-label-in">ENTRADA:</span>
+                <span class="io-value">200 × 200 × 3</span>
+            </div>
+            <div class="io-row">
+                <span class="io-label-out">SALIDA:</span>
+                <span class="io-value">100 × 100 × 64</span>
+            </div>
+        </div>
+
+        <div class="face back">
+          <div class="anchor top-left" data-id="tl"></div>
+          <div class="anchor top-right" data-id="tr"></div>
+          <div class="anchor bot-left" data-id="bl"></div>
+          <div class="anchor bot-right" data-id="br"></div>
+        </div>
+
+        <div class="face right">
+          <span class="axis-label axis-depth">${capa.d}</span>
+          <div class="anchor top-left" data-id="tl"></div>
+          <div class="anchor top-right" data-id="tr"></div>
+          <div class="anchor bot-left" data-id="bl"></div>
+          <div class="anchor bot-right" data-id="br"></div>
+        </div>
+        <div class="face left">
+          <div class="anchor top-left" data-id="tl"></div>
+          <div class="anchor top-right" data-id="tr"></div>
+          <div class="anchor bot-left" data-id="bl"></div>
+          <div class="anchor bot-right" data-id="br"></div>
+        </div>
+        <div class="face top"></div>
+        <div class="face down"></div>
+      `;
+
+      container.appendChild(cube);
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = `<strong>${capa.nombre}</strong>(${capa.desc})`;
+      container.appendChild(meta);
+      scene.appendChild(container);
+    });
+
+    // 2. Función matemática para trazar los polígonos del SVG entre esquinas
+    function dibujarConexiones() {
+      const svg = document.getElementById("svg-canvas");
+      svg.innerHTML = ""; // Limpiar trazos previos al hacer scroll/resize
+      
+      // Ajustar dimensiones internas del SVG al tamaño real del documento con scroll
+      svg.style.width = `${document.documentElement.scrollWidth}px`;
+      svg.style.height = `${document.documentElement.scrollHeight}px`;
+
+      for (let i = 0; i < capasVGG16.length - 1; i++) {
+        const cuboOrigen = document.getElementById(`cube-${i}`);
+        const cuboDestino = document.getElementById(`cube-${i+1}`);
+
+        if (!cuboOrigen || !cuboDestino) continue;
+
+        // Obtener coordenadas en pantalla 2D reales de la cara derecha del origen (Salida)
+        const o_tl = cuboOrigen.querySelector('.face.front [data-id="tl"]').getBoundingClientRect();
+        const o_tr = cuboOrigen.querySelector('.face.front [data-id="tr"]').getBoundingClientRect();
+        const o_bl = cuboOrigen.querySelector('.face.front [data-id="bl"]').getBoundingClientRect();
+        const o_br = cuboOrigen.querySelector('.face.front [data-id="br"]').getBoundingClientRect();
+
+        // Obtener coordenadas en pantalla de la cara izquierda del destino (Entrada)
+        const d_tl = cuboDestino.querySelector('.face.back [data-id="tl"]').getBoundingClientRect();
+        const d_tr = cuboDestino.querySelector('.face.back [data-id="tr"]').getBoundingClientRect();
+        const d_bl = cuboDestino.querySelector('.face.back [data-id="bl"]').getBoundingClientRect();
+        const d_br = cuboDestino.querySelector('.face.back [data-id="br"]').getBoundingClientRect();
+
+        // Compensar el scroll de la ventana para pintar correctamente en el lienzo absoluto
+        const scrollX = window.scrollX;
+        const scrollY = window.scrollY;
+
+        const puntos = {
+          origen: {
+            sup_izq: { x: o_tl.left + scrollX, y: o_tl.top + scrollY },
+            sup_der: { x: o_tr.left + scrollX, y: o_tr.top + scrollY },
+            inf_izq: { x: o_bl.left + scrollX, y: o_bl.top + scrollY },
+            inf_der: { x: o_br.left + scrollX, y: o_br.top + scrollY }
+          },
+          destino: {
+            sup_izq: { x: d_tl.left + scrollX, y: d_tl.top + scrollY },
+            sup_der: { x: d_tr.left + scrollX, y: d_tr.top + scrollY },
+            inf_izq: { x: d_bl.left + scrollX, y: d_bl.top + scrollY },
+            inf_der: { x: d_br.left + scrollX, y: d_br.top + scrollY }
+          }
+        };
+
+        const colorCapa = capasVGG16[i].color;
+        
+        const planosConexion = [
+          // Plano Superior (Une aristas de arriba)
+          [puntos.origen.sup_der, puntos.origen.sup_izq, puntos.destino.sup_der, puntos.destino.sup_izq],
+          [puntos.origen.inf_der, puntos.origen.inf_izq, puntos.destino.inf_der, puntos.destino.inf_izq],
+
+          [puntos.origen.sup_der, puntos.origen.inf_der, puntos.destino.inf_izq, puntos.destino.sup_izq],
+          [puntos.origen.sup_izq, puntos.origen.inf_izq, puntos.destino.inf_der, puntos.destino.sup_der],
+        ];
+        
+        planosConexion.forEach(plano => {
+          const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+          const stringPuntos = plano.map(p => `${p.x},${p.y}`).join(" ");
+          polygon.setAttribute("points", stringPuntos);
+          // Estilo semitransparente tipo haz de luz/proyección de red neuronal
+          polygon.setAttribute("fill", `rgba(${colorCapa}, 0.06)`);
+          polygon.setAttribute("stroke", `rgba(${colorCapa}, 0.25)`);
+          polygon.setAttribute("stroke-width", "1");
+          svg.appendChild(polygon);
+        });
+      }
+    }
+
+    // Calcular las posiciones al cargar, al cambiar tamaño de pantalla y al hacer scroll
+    window.addEventListener("load", dibujarConexiones);
+    window.addEventListener("resize", dibujarConexiones);
+    window.addEventListener("scroll", dibujarConexiones);
+
+  </script>
+</body>
+</html>

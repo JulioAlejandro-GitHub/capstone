@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Arquitectura VGG16 - Ejes y Dimensiones 3D</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      background-color: #0b0f19;
+      font-family: system-ui, sans-serif;
+      overflow-x: auto;
+      padding: 0 50px;
+    }
+
+    .scene {
+      display: flex;
+      align-items: center;
+      gap: 100px; 
+      padding: 0 120px;
+      perspective: 1500px;
+    }
+
+    .layer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .meta {
+      text-align: center;
+      margin-top: 60px;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    .meta strong {
+      color: #f1f5f9;
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    /* Estructura Base 3D */
+    .cube {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-16deg) rotateY(-28deg); 
+    }
+    .face {
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    /* Etiquetas de texto */
+    .axis-label {
+      position: absolute;
+      color: #38bdf8;
+      font-weight: 800;
+      font-size: 11px;
+      white-space: nowrap;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    }
+
+    .axis-width {  
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .axis-height { 
+      top: 50%;
+      left: -25px;
+      transform: translateY(-50%);
+    }
+    /* .axis-depth {  
+      top: -12px;
+      right: -30px;
+    } */
+    .axis-depth {  
+      top: -18px;               /* Sube el texto para que descanse sobre la arista */
+      right: -24px;            /* Lo desplaza ligeramente hacia la derecha */
+      /* transform: rotateZ(30deg);  */
+      /* Rota el texto para que siga la inclinación diagonal de la perspectiva */
+      transform-origin: left bottom;
+      /* transform: rotateY(197deg);
+      left: 50%; */
+
+      transform: rotateY(3deg);
+      left: 50%;
+      top: 50%;
+
+    }
+
+    /* ========================================================
+       DIMENSIONADO CORREGIDO VGG16 (Alto x Ancho x Profundidad)
+       ======================================================== */
+
+    /* Entrada Estándar VGG: 224 x 224 x 3 */
+    .entrada { width: 140px; height: 140px; }
+    .entrada .front  { width: 140px; height: 140px; background: rgba(239, 68, 68, 0.4); transform: translateZ(5px); text-align: center; }
+    .entrada .back   { width: 140px; height: 140px; background: rgba(239, 68, 68, 0.1); transform: rotateY(180deg) translateZ(5px); }
+    .entrada .right  { width: 10px;  height: 140px; background: rgba(185, 28, 28, 0.5);  transform: rotateY(90deg) translateZ(135px); }
+    .entrada .top    { width: 140px; height: 10px;  background: rgba(220, 38, 38, 0.5);  transform: rotateX(90deg) translateZ(5px); }
+
+    /* Bloque 1: 112 x 112 x 64 (Post MaxPool 1) */
+    .b1 { width: 100px; height: 100px; }
+    .b1 .front  { width: 100px; height: 100px; background: rgba(245, 158, 11, 0.4); transform: translateZ(20px); }
+    .b1 .back   { width: 100px; height: 100px; background: rgba(245, 158, 11, 0.1); transform: rotateY(180deg) translateZ(20px); }
+    .b1 .right  { width: 40px;  height: 100px; background: rgba(217, 119, 6, 0.5);  transform: rotateY(90deg) translateZ(80px); }
+    /* .b1 .left  { width: 40px;  height: 100px; background: rgba(217, 6, 6, 0.5);  transform: rotateY(90deg) translateZ(80px); } */
+    .b1 .left {
+      width: 40px;
+      height: 100px;
+      background: rgba(217, 119, 6, 0.5);
+      transform: rotateY(270deg) translateZ(20px);
+    }
+    .b1 .top    { width: 100px; height: 40px;  background: rgba(251, 191, 36, 0.5);  transform: rotateX(90deg) translateZ(20px); }
+    .b1 .down    { width: 100px; height: 40px;  background: rgba(251, 191, 36, 0.5);  transform: rotateX(90deg) translateZ(-81px); }
+
+    /* Bloque 2: 56 x 56 x 128 (Post MaxPool 2) */
+    .b2 { width: 75px; height: 75px; }
+    .b2 .front  { width: 75px; height: 75px; background: rgba(16, 185, 129, 0.4); transform: translateZ(35px); }
+    .b2 .back   { width: 75px; height: 75px; background: rgba(16, 185, 129, 0.1); transform: rotateY(180deg) translateZ(35px); }
+    .b2 .right  { width: 70px; height: 75px; background: rgba(4, 120, 87, 0.5);   transform: rotateY(90deg) translateZ(40px); }
+    .b2 .top    { width: 75px; height: 70px; background: rgba(52, 211, 153, 0.5);  transform: rotateX(90deg) translateZ(35px); }
+
+    /* Bloque 3: 28 x 28 x 256 (Post MaxPool 3) */
+    .b3 { width: 55px; height: 55px; }
+    .b3 .front  { width: 55px; height: 55px; background: rgba(6, 182, 212, 0.4); transform: translateZ(55px); }
+    .b3 .back   { width: 55px; height: 55px; background: rgba(6, 182, 212, 0.1); transform: rotateY(180deg) translateZ(55px); }
+    .b3 .right  { width: 110px; height: 55px; background: rgba(9, 133, 161, 0.5);  transform: rotateY(90deg) translateZ(0px); }
+    .b3 .top    { width: 55px;  height: 110px; background: rgba(34, 211, 238, 0.5);  transform: rotateX(90deg) translateZ(55px); }
+
+    /* Bloque 4: 14 x 14 x 512 (Post MaxPool 4) */
+    .b4 { width: 40px; height: 40px; }
+    .b4 .front  { width: 40px; height: 40px; background: rgba(59, 130, 246, 0.4); transform: translateZ(80px); }
+    .b4 .back   { width: 40px; height: 40px; background: rgba(59, 130, 246, 0.1); transform: rotateY(180deg) translateZ(80px); }
+    .b4 .right  { width: 160px; height: 40px; background: rgba(29, 78, 216, 0.5);  transform: rotateY(90deg) translateZ(-40px); }
+    .b4 .top    { width: 40px;  height: 160px; background: rgba(96, 165, 250, 0.5);  transform: rotateX(90deg) translateZ(80px); }
+
+    /* Bloque 5: 7 x 7 x 512 (Post MaxPool 5) */
+    .b5 { width: 28px; height: 28px; }
+    .b5 .front  { width: 28px; height: 28px; background: rgba(139, 92, 246, 0.4); transform: translateZ(80px); }
+    .b5 .back   { width: 28px; height: 28px; background: rgba(139, 92, 246, 0.1); transform: rotateY(180deg) translateZ(80px); }
+    .b5 .right  { width: 160px; height: 28px; background: rgba(109, 40, 217, 0.5);  transform: rotateY(90deg) translateZ(-52px); }
+    .b5 .top    { width: 28px;  height: 160px; background: rgba(167, 139, 250, 0.5); transform: rotateX(90deg) translateZ(80px); }
+
+    /* ========================================================
+       CAPAS TOTALMENTE CONECTADAS (Vectores planos 1D)
+       ======================================================== */
+
+    .vector-bar {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-16deg) rotateY(-28deg);
+    }
+    
+    /* FC1 y FC2: 4096 neuronas cada una */
+    .fc { width: 14px; height: 180px; }
+    .fc .front, .fc .back { width: 14px; height: 180px; background: rgba(236, 72, 153, 0.5); }
+    .fc .right { width: 14px; height: 180px; background: rgba(190, 24, 74, 0.6); transform: rotateY(90deg) translateZ(-7px); }
+    .fc .top { width: 14px; height: 14px; background: rgba(244, 114, 182, 0.6); transform: rotateX(90deg) translateZ(0px); }
+    .fc .axis-height { left: -32px; color: #ec4899; }
+
+    /* FC3 / Clasificación final: 1000 clases (Softmax) */
+    .fc-output { width: 14px; height: 75px; }
+    .fc-output .front, .fc-output .back { width: 14px; height: 75px; background: rgba(20, 184, 166, 0.5); }
+    .fc-output .right { width: 14px; height: 75px; background: rgba(13, 148, 136, 0.6); transform: rotateY(90deg) translateZ(-7px); }
+    .fc-output .top { width: 14px; height: 14px; background: rgba(45, 212, 191, 0.6); transform: rotateX(90deg) translateZ(0px); }
+    .fc-output .axis-height { left: -32px; color: #14b8a6; }
+  </style>
+</head>
+<body>
+
+  <div class="scene">
+    
+    <!-- Entrada -->
+    <div class="layer-container">
+      <div class="cube entrada">
+        <div class="face front">
+          <span class="axis-label axis-width">224</span>
+          <span class="axis-label axis-height">224</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"><span class="axis-label axis-depth">3</span></div>
+        <div class="face top"></div>
+      </div>
+      <div class="meta"><strong>Entrada</strong>(RGB Image)</div>
+    </div>
+
+    <!-- Bloque 1 -->
+    <div class="layer-container">
+      <div class="cube b1">
+        <div class="face front">
+          <span class="axis-label axis-width">112</span>
+          <span class="axis-label axis-height">112</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"><span class="axis-label axis-depth">64</span></div>
+        <div class="face top"></div>
+        <div class="face left"></div>
+        <div class="face down"></div>
+      </div>
+      <div class="meta"><strong>Bloque 1</strong>(Conv x2 + Pool)</div>
+    </div>
+
+    <!-- Bloque 2 -->
+    <div class="layer-container">
+      <div class="cube b2">
+        <div class="face front">
+          <span class="axis-label axis-width">56</span>
+          <span class="axis-label axis-height">56</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"><span class="axis-label axis-depth">128</span></div>
+        <div class="face top"></div>
+      </div>
+      <div class="meta"><strong>Bloque 2</strong>(Conv x2 + Pool)</div>
+    </div>
+
+    <!-- Bloque 3 -->
+    <div class="layer-container">
+      <div class="cube b3">
+        <div class="face front">
+          <span class="axis-label axis-width">28</span>
+          <span class="axis-label axis-height">28</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"><span class="axis-label axis-depth">256</span></div>
+        <div class="face top"></div>
+      </div>
+      <div class="meta"><strong>Bloque 3</strong>(Conv x3 + Pool)</div>
+    </div>
+
+    <!-- Bloque 4 -->
+    <div class="layer-container">
+      <div class="cube b4">
+        <div class="face front">
+          <span class="axis-label axis-width">14</span>
+          <span class="axis-label axis-height">14</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"><span class="axis-label axis-depth">512</span></div>
+        <div class="face top"></div>
+      </div>
+      <div class="meta"><strong>Bloque 4</strong>(Conv x3 + Pool)</div>
+    </div>
+
+    <!-- Bloque 5 -->
+    <div class="layer-container">
+      <div class="cube b5">
+        <div class="face front">
+          <span class="axis-label axis-width">7</span>
+          <span class="axis-label axis-height">7</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right"><span class="axis-label axis-depth">512</span></div>
+        <div class="face top"></div>
+      </div>
+      <div class="meta"><strong>Bloque 5</strong>(Conv x3 + Pool)</div>
+    </div>
+

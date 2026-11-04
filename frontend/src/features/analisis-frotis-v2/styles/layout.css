@@ -1,0 +1,15 @@
+
+.af2 { height: calc(100dvh - 64px); min-height: 640px; width: 100%; min-width: 0; position: relative; isolation: isolate; color: #0f172a; font-family: Arial, sans-serif; }
+.af2 .demo-banner { padding: 5px 12px; background: #eef2ff; color: #3730a3; font-size: 11px; }
+.af2 > header { flex-shrink: 0; overflow: visible; }
+.af2 > header > div.h-14 { height: auto; min-height: 56px; flex-wrap: wrap; padding-block: 8px; }
+.af2 > header nav { flex-wrap: wrap; }
+.af2 main { min-height: 0; }
+.af2 .fixed { position: absolute; }
+.af2 .custom-scrollbar { scrollbar-width: thin; }
+@media (max-width: 900px) { .af2 > main > div { overflow: auto; } .af2 { min-height: 760px; } }
+
+.af2 { display: flex; flex-direction: column; overflow: hidden; background: #f1f5f9; }
+.af2 > main > div > .flex-1 { min-width: 0; }
+
+.af2 > header .af2-image-popover { left: 0; right: auto; }

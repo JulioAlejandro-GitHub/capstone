@@ -26,6 +26,7 @@ export const routes = {
   dataset: '/modelo-ia/dataset',
   datasetsModels: '/modelo-ia/datasets-modelos',
   errorsLogs: '/modelo-ia/errores-logs',
+  smearAnalysis2: '/frotis/analisis-2',
   smearWorkflow: '/frotis/analizar',
   smearHistory: '/frotis/historial',
   smearHistoryDetail: (id: string) => `/frotis/historial/${encoded(id)}`,

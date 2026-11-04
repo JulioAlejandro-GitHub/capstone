@@ -1,3 +1,5 @@
+import { AnalisisFrotis2Page } from './features/analisis-frotis-v2/AnalisisFrotis2Page';
+import { workflowRoutes } from './features/analisis-frotis-v2/routes';
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -116,6 +118,10 @@ function App() {
         <Route path={routes.dataset} element={<DatasetBrowser {...common} />} />
         <Route path={routes.datasetsModels} element={<DatasetsModels {...common} />} />
         <Route path={routes.errorsLogs} element={<ErrorsLogs {...common} />} />
+        <Route path={routes.smearAnalysis2} element={<AnalisisFrotis2Page />}>
+          <Route index element={<Navigate replace to={`review-cells${location.search}`} />} />
+          {workflowRoutes.map(({ path }) => <Route key={path} path={path} element={null} />)}
+        </Route>
         <Route path={routes.smearWorkflow} element={<SmearWorkflow />} />
         <Route path={routes.smearHistory} element={<SmearAnalysisHistory />} />
         <Route path={`${routes.smearHistory}/:analysisRunId`} element={<SmearHistoryDetailRoute />} />

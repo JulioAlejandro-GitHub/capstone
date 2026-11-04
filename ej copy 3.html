@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Arquitectura VGG16 Dinámica - 6 Caras</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      background-color: #0b0f19;
+      font-family: system-ui, sans-serif;
+      overflow-x: auto;
+      padding: 0 50px;
+    }
+
+    .scene {
+      display: flex;
+      align-items: center;
+      gap: 120px;
+      padding: 0 100px;
+      perspective: 1500px;
+    }
+
+    .layer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .meta {
+      text-align: center;
+      margin-top: 50px;
+      color: #94a3b8;
+      font-size: 13px;
+      min-width: 140px;
+    }
+
+    .meta strong {
+      color: #f1f5f9;
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    /* Estructura Base del Cubo 3D Dinámico */
+    .cube {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-16deg) rotateY(-28deg);
+      width: var(--w);
+      height: var(--h);
+    }
+
+    .face {
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-sizing: border-box;
+    }
+
+    /* ========================================================
+       LÓGICA TRIDIMENSIONAL DE LAS 6 CARAS CON VARIABLES CSS
+       ======================================================== */
+    
+    /* Cara Frontal */
+    .face.front {
+      width: var(--w);
+      height: var(--h);
+      background: var(--bg-front);
+      transform: translateZ(calc(var(--d) / 2));
+    }
+
+    /* Cara Trasera */
+    .face.back {
+      width: var(--w);
+      height: var(--h);
+      background: var(--bg-back);
+      transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
+    }
+
+    /* Cara Derecha */
+    .face.right {
+      width: var(--d);
+      height: var(--h);
+      background: var(--bg-side);
+      transform: rotateY(90deg) translateZ(calc(var(--w) - (var(--d) / 2)));
+    }
+
+    /* Cara Izquierda (Nueva) */
+    .face.left {
+      width: var(--d);
+      height: var(--h);
+      background: var(--bg-side);
+      /* Rota en sentido opuesto a la derecha y se alinea al inicio de la profundidad */
+      transform: rotateY(-90deg) translateZ(calc(var(--d) / 2));
+    }
+
+    /* Cara Superior */
+    .face.top {
+      width: var(--w);
+      height: var(--d);
+      background: var(--bg-top-down);
+      transform: rotateX(90deg) translateZ(calc(var(--d) / 2));
+    }
+
+    /* Cara Inferior (Nueva) */
+    .face.down {
+      width: var(--w);
+      height: var(--d);
+      background: var(--bg-top-down);
+      /* Rota hacia el suelo y se traslada en función de la altura del bloque */
+      transform: rotateX(-90deg) translateZ(calc(var(--h) - (var(--d) / 2)));
+    }
+
+    /* Etiquetas de los ejes */
+    .axis-label {
+      position: absolute;
+      font-weight: 800;
+      font-size: 11px;
+      white-space: nowrap;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    }
+
+    .axis-width {
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #38bdf8;
+    }
+
+    .axis-height {
+      top: 50%;
+      left: -32px;
+      transform: translateY(-50%);
+      color: #38bdf8;
+    }
+
+    .axis-depth {
+      top: 50%;
+      left: 50%;
+      transform: rotateY(3deg);
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scene" id="vgg-scene"></div>
+
+  <script>
+    const capasVGG16 = [
+      { nombre: "Entrada",     h: 200, w: 200, d: 3,    desc: "Entrada - RGB Image",       color: "239, 68, 68" },
+      { nombre: "Bloque 1",    h: 100, w: 100, d: 64,   desc: "Conv x2 + Pool",  color: "245, 158, 11" },
+      { nombre: "Bloque 2",    h: 50,  w: 50,  d: 128,  desc: "Conv x2 + Pool",  color: "16, 185, 129" },
+      { nombre: "Bloque 3",    h: 25,  w: 25,  d: 256,  desc: "Conv x3 + Pool",  color: "6, 182, 212" },
+      { nombre: "Bloque 4",    h: 12,  w: 12,  d: 512,  desc: "Conv x3 + Pool",  color: "99, 102, 241" },
+      { nombre: "Bloque 5",    h: 6,   w: 6,   d: 512,  desc: "Conv x3 + Pool",  color: "139, 92, 246" },
+      { nombre: "Promedio global",   h: 1,   w: 1,   d: 512,  desc: "Average Pooling", color: "236, 72, 153" },
+      { nombre: "Densa 1024",        h: 1,   w: 1,   d: 1024, desc: "Dense (Flatten)", color: "236, 72, 153" },
+      { nombre: "Capa de salida",    h: 1,   w: 1,   d: 1,    desc: "Sigmoide Class",  color: "20, 184, 166" }
+    ];
+
+
+    const ESCALA_CUBO = 0.3;       
+    const ESCALA_PROFUNDIDAD = 0.15; 
+    
+    const MIN_ALTO_ANCHO = 15;
+    const MIN_PROFUNDIDAD = 4;
+
+    const scene = document.getElementById("vgg-scene");
+
+    capasVGG16.forEach(capa => {
+      let pixW = Math.max(capa.w * ESCALA_CUBO, MIN_ALTO_ANCHO);
+      let pixH = Math.max(capa.h * ESCALA_CUBO, MIN_ALTO_ANCHO);
+      let pixD = Math.max(capa.d * ESCALA_PROFUNDIDAD, MIN_PROFUNDIDAD);
+
+      if (capa.h === 1 && capa.w === 1) {
+        pixW = 15;
+        pixH = 150; 
+      }
+
+      const container = document.createElement("div");
+      container.className = "layer-container";
+
+      const cube = document.createElement("div");
+      cube.className = "cube";
+      cube.style.setProperty("--w", `${pixW}px`);
+      cube.style.setProperty("--h", `${pixH}px`);
+      cube.style.setProperty("--d", `${pixD}px`);
+      
+      // Control de opacidad para dar realismo a la iluminación según la cara
+      cube.style.setProperty("--bg-front", `rgba(${capa.color}, 0.4)`);
+      cube.style.setProperty("--bg-back", `rgba(${capa.color}, 0.08)`);
+      cube.style.setProperty("--bg-side", `rgba(${capa.color}, 0.55)`);
+      cube.style.setProperty("--bg-top-down", `rgba(${capa.color}, 0.45)`);
+
+      // Inyectamos las 6 caras completas en el HTML dinámico
+      cube.innerHTML = `
+        <div class="face front">
+          <span class="axis-label axis-width">${capa.w}</span>
+          <span class="axis-label axis-height">${capa.h}</span>
+        </div>
+        <div class="face back"></div>
+        <div class="face right">
+          <span class="axis-label axis-depth">${capa.d}</span>
+        </div>
+        <div class="face left"></div>
+        <div class="face top"></div>
+        <div class="face down"></div>
+      `;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = `<strong>${capa.nombre}</strong>(${capa.desc})`;
+
+      container.appendChild(cube);
+      container.appendChild(meta);
+      scene.appendChild(container);
+    });
+  </script>
+</body>
+</html>
