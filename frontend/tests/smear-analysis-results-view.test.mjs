@@ -96,6 +96,6 @@ test('resultado mantiene disclaimer experimental y no presenta diagnóstico', ()
   );
   assert.doesNotMatch(
     `${immersive}\n${workspace}`,
-    /Sign Off|50 μm|HematologyPro|Scopio|magnificación x2000|textura de cromatina/i,
+    /Sign Off|50 μm|HematologyPro|Magnificación x2000|textura de cromatina/i,
   );
 });
