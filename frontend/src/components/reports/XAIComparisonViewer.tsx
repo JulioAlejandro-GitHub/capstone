@@ -186,10 +186,11 @@ function XAIExpandedView({ comparison, resources, datasource, generation, action
 }
 
 /** variant="expanded" renders only the expanded view, for a host that already is a modal (Errores y consenso).
- *  variant="toolbar" renders only «Ampliar comparación» and the cell's outcome; the images load when the modal opens. */
-export function XAIComparisonViewer({ comparison, datasource, generation, actions, variant = 'inline' }: {
+ *  variant="toolbar" renders the cell's image as the link to «Vista ampliada» and its outcome; the XAI images load when the modal opens.
+ *  expandSignal: each new value opens «Vista ampliada · Célula original» (for hosts that show the cell elsewhere, e.g. in a diagram). */
+export function XAIComparisonViewer({ comparison, datasource, generation, actions, variant = 'inline', image, expandSignal }: {
   comparison: XAIComparison; datasource: string; generation?: Partial<Record<XAIMethod, XAIGenerationAction>>; actions?: ReactNode;
-  variant?: 'inline' | 'expanded' | 'toolbar';
+  variant?: 'inline' | 'expanded' | 'toolbar'; image?: string; expandSignal?: number;
 }) {
   const host = useRef<HTMLElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -218,6 +219,11 @@ export function XAIComparisonViewer({ comparison, datasource, generation, action
   useEffect(() => {
     if (expanded !== null) dialog.current?.showModal();
   }, [expanded]);
+  useEffect(() => {
+    if (!expandSignal) return;
+    trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setExpanded('original');
+  }, [expandSignal]);
   if (variant === 'expanded') return <section ref={host} className="ds-report xai-viewer" data-surface="workbench">
     <XAIExpandedView comparison={comparison} resources={resources} datasource={datasource} generation={generation} actions={actions} />
   </section>;
@@ -227,14 +233,16 @@ export function XAIComparisonViewer({ comparison, datasource, generation, action
   };
   return <section ref={host} className="ds-report xai-viewer" data-surface="workbench" data-variant={variant}>
     {variant === 'toolbar'
-      ? <div className="xai-toolbar"><button className="ds-button xai-expand" type="button" onClick={() => expand('original')}>Ampliar comparación</button><CellOutcome comparison={comparison} /></div>
+      ? <div className="xai-toolbar">{image && <button className="xai-image-button" type="button" aria-label="Ampliar Célula original" title="Vista ampliada: célula original y explicabilidad"
+          onClick={() => expand('original')}><img className="report-scientific-image" src={image} alt={`Célula original · muestra ${comparison.sampleId ?? 'no identificada'}`} /></button>}<CellOutcome comparison={comparison} /></div>
       : <div className="report-section"><XAIComparisonContent comparison={comparison} resources={resources} generation={generation} actions={actions} onExpand={expand} /></div>}
     <dialog ref={dialog} className="report-viewer xai-modal" aria-labelledby={titleId} onClose={() => { setExpanded(null); trigger.current?.focus(); }}>
       <form method="dialog" className="xai-modal-close"><button type="submit" className="ds-button" aria-label="Cerrar vista ampliada" title="Cerrar" autoFocus>
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
       </button></form>
       <h2 id={titleId}>{overlay ? 'Vista ampliada · Superposición' : expanded ? `Vista ampliada · ${XAI_LABELS[expanded]}` : 'Comparación XAI'}</h2>
-      {expanded !== null && <XAIExpandedView comparison={comparison} resources={resources} datasource={datasource} generation={generation} onView={view => setOverlay(view === 'overlay')} />}
+      {/* Las acciones (p. ej. «Generar faltantes») acompañan siempre a la «Vista ampliada», como en variant="expanded". */}
+      {expanded !== null && <XAIExpandedView comparison={comparison} resources={resources} datasource={datasource} generation={generation} actions={actions} onView={view => setOverlay(view === 'overlay')} />}
     </dialog>
   </section>;
 }

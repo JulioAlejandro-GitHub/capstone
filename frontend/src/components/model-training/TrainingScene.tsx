@@ -57,10 +57,12 @@ const ICON_FULL = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const ICON_MIN = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
   <path d="M8 3v3a2 2 0 0 1-2 2H3" /><path d="M21 8h-3a2 2 0 0 1-2-2V3" /><path d="M3 16h3a2 2 0 0 1 2 2v3" /><path d="M16 21v-3a2 2 0 0 1 2-2h3" /></svg>;
 
-export function TrainingScene({ layers, selected, onSelect, phaseLabel, cell = null }: {
+export function TrainingScene({ layers, selected, onSelect, phaseLabel, cell = null, onCellOpen }: {
   layers: TrainingLayer[]; selected: number; onSelect: (index: number) => void; phaseLabel: string;
   /** Célula seleccionada: su imagen se muestra en la entrada y, con el resultado, en la salida. */
   cell?: TrainingCell | null;
+  /** Abre «Vista ampliada · Célula original»; sin él la imagen es sólo ilustrativa. */
+  onCellOpen?: () => void;
 }) {
   const card = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -158,7 +160,8 @@ export function TrainingScene({ layers, selected, onSelect, phaseLabel, cell = n
     if (event.key === 'Escape' && maximized) setMaximized(false);
   };
   const pointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if ((event.target as Element).closest('[data-layer]') || !vb) return;
+    // Bloques, etiquetas y la imagen de la célula son controles: no inician el arrastre (la captura les robaría el clic).
+    if ((event.target as Element).closest('[data-layer], .mt-lbl') || !vb) return;
     drag.current = { x: event.clientX, y: event.clientY, vb };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
@@ -245,7 +248,10 @@ export function TrainingScene({ layers, selected, onSelect, phaseLabel, cell = n
             <text className="mt-lbl-name" x={item.cx} y={labelY} textAnchor="middle">{item.layer.label}</text>
             <text className="mt-lbl-desc" x={item.cx} y={labelY + 16} textAnchor="middle">{item.layer.description}</text>
             <text className="mt-lbl-shape" x={item.cx} y={labelY + 32} textAnchor="middle">{item.layer.shapeKnown ? (item.layer.vector ? `${item.layer.d}` : `${item.layer.h}×${item.layer.w}×${item.layer.d}`) : 'forma pendiente'}</text>
-            {cell && (item.layer.kind === 'input' || item.layer.kind === 'output') && <g className="mt-cell" data-category={item.layer.kind === 'output' ? cell.category ?? 'unknown' : undefined}>
+            {cell && (item.layer.kind === 'input' || item.layer.kind === 'output') && <g className="mt-cell" data-category={item.layer.kind === 'output' ? cell.category ?? 'unknown' : undefined}
+              data-open={Boolean(onCellOpen)} {...(onCellOpen ? { role: 'button', tabIndex: 0, 'aria-label': 'Ampliar Célula original',
+                onClick: (event: { stopPropagation: () => void }) => { event.stopPropagation(); onCellOpen(); },
+                onKeyDown: (event: { key: string; preventDefault: () => void; stopPropagation: () => void }) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onCellOpen(); } } } : {})}>
               <rect className="mt-cell-frame" x={item.cx - THUMB / 2 - 2} y={labelY + 42} width={THUMB + 4} height={THUMB + 4} rx={5} />
               <image href={cell.image} x={item.cx - THUMB / 2} y={labelY + 44} width={THUMB} height={THUMB} preserveAspectRatio="xMidYMid slice">
                 <title>{item.layer.kind === 'input' ? `Célula ${cell.sampleId}` : `${classText(cell.predicted)} · score ${cell.score.toFixed(4)}`}</title></image>

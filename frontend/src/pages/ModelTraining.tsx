@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo, type ReactNode } from 'react';
+import { Fragment, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { phaseLabels } from '../components/model-architecture/architectureViews';
@@ -57,6 +57,9 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
   const { run: record, error: runError } = useComparisonRun(datasource, run);
   const cellState = useTrainingCell(datasource, run, search.get('muestra'));
   const { cell } = cellState;
+  // La imagen de la célula (en la tarjeta o en el diagrama) es el acceso a «Vista ampliada»; sin contexto no hay modal que abrir.
+  const [expandSignal, setExpandSignal] = useState(0);
+  const openCell = cellState.comparison ? () => setExpandSignal(value => value + 1) : undefined;
   const phases = data?.phases ?? [];
   const phase = phases.find(item => item.phase === search.get('fase'))?.phase ?? phases.at(-1)?.phase ?? '';
   const layers = useMemo(() => data?.state === 'available' ? buildTrainingLayers(data, phase) : [], [data, phase]);
@@ -118,9 +121,9 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
           <div className="mt-card-h"><h2>Célula seleccionada</h2>
             <span className="mt-hint">{cell ? 'su imagen aparece en la entrada y, con el resultado, en la salida del diagrama' : 'recorridos de activación guardados del TRAIN'}</span></div>
           <div className="mt-cell-body">
-            {cell ? <img className="mt-cell-thumb" src={cell.image} alt={`Célula ${cell.sampleId}`} data-category={cell.category ?? 'unknown'} />
-              : <div className="mt-cell-thumb mt-cell-empty" aria-hidden="true">?</div>}
-            <div className="mt-cell-info">
+            {!cell && <div className="mt-cell-thumb mt-cell-empty" aria-hidden="true">?</div>}
+            {cell && !cellState.comparison && <img className="mt-cell-thumb" src={cell.image} alt={`Célula ${cell.sampleId}`} data-category={cell.category ?? 'unknown'} />}
+            <div className="mt-cell-info" data-category={cell?.category ?? 'unknown'}>
               {cellState.catalog && cellState.catalog.items.length > 0 && <label className="mt-cell-select">Célula
                 <select value={cellState.sampleId ?? ''} onChange={event => update({ muestra: event.target.value })}>
                   {cellState.catalog.items.map(item => <option key={item.sample_id} value={item.sample_id}>
@@ -131,20 +134,19 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
               {cellState.error && <p className="mt-muted" role="alert">{cellState.error}</p>}
               {cellState.catalog && !cellState.catalog.items.length && <p className="mt-pending-note">Pendiente: este TRAIN no tiene recorridos de células guardados{cellState.catalog.reason ? ` (${cellState.catalog.reason})` : ''}. Calcúlalos en «Recorrido de una célula» de Arquitectura del modelo.</p>}
               {cell && (cellState.comparison
-                ? <GeneratedXAIComparison key={cellState.comparison.id} comparison={cellState.comparison} datasource={datasource} variant="toolbar" lazy authorized={false} />
+                ? <GeneratedXAIComparison key={cellState.comparison.id} comparison={cellState.comparison} datasource={datasource} variant="toolbar" lazy image={cell.image} expandSignal={expandSignal} />
                 : <div className="ds-report xai-viewer" data-surface="workbench" data-variant="toolbar"><div className="xai-toolbar">
-                    <button className="ds-button xai-expand" type="button" disabled title={cellState.contextError ?? 'Consultando el contexto de la célula…'}>Ampliar comparación</button>
                     <CellOutcome comparison={{ id: cell.sampleId, trainingRunId: run, sampleId: cell.sampleId, methods: {},
                       sampleRecord: cell.label != null ? { label: cell.label } : undefined,
                       outcome: cell.label != null && cell.predicted != null && cell.threshold != null ? { label: cell.label, predicted: cell.predicted, score: cell.score, threshold: cell.threshold, split: cell.split, attemptId: cell.attemptId } : undefined }} />
                   </div></div>)}
-              {cell && <p className="mt-cell-meta">Clase real {classText(cell.label)} · {cell.split.toUpperCase()} · <code title={cell.sampleId}>{cell.sampleId.slice(0, 8)}</code>{cellState.contextError && <> · «Ampliar comparación» pendiente: {cellState.contextError}</>}</p>}
+              {cell && <p className="mt-cell-meta">Clase real {classText(cell.label)} · {cell.split.toUpperCase()} · <code title={cell.sampleId}>{cell.sampleId.slice(0, 8)}</code>{cellState.contextError ? <> · «Vista ampliada» no disponible: {cellState.contextError}</> : cellState.comparison ? ' · haz clic en la imagen para la vista ampliada' : ''}</p>}
             </div>
           </div>
         </section>
 
         <section className="mt-main">
-          <TrainingScene layers={layers} selected={selected} onSelect={select} phaseLabel={phaseLabel} cell={cell} />
+          <TrainingScene layers={layers} selected={selected} onSelect={select} phaseLabel={phaseLabel} cell={cell} onCellOpen={openCell} />
 
           <aside className="mt-card mt-detail" aria-live="polite">
             <div className="mt-card-h"><h2>Bloque seleccionado</h2><span className="mt-hint">{selected + 1} / {layers.length}</span></div>

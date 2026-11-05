@@ -115,3 +115,14 @@ test('la célula seleccionada aparece en la entrada y, con su resultado, en la s
   const without = renderToStaticMarkup(React.createElement(TrainingScene, { layers, selected: 0, onSelect: () => undefined, phaseLabel: 'Fase base' }));
   assert.doesNotMatch(without, /<image /);
 });
+
+test('la imagen de la célula abre la vista ampliada cuando hay contexto, y sólo entonces', () => {
+  const layers = model.buildTrainingLayers({ ...vgg, blocks: vgg.blocks.map(item => item.id === 'output' ? { ...item, output_shape: [null, 1] } : item) }, 'base');
+  const cell = { sampleId: '004cc347-5232-5b5a-ac2b-ee6629dbad37', image: 'data:image/png;base64,AAAA', label: 0, predicted: 1, score: 0.3084, threshold: 0.2512, split: 'test', attemptId: '00b8d407', category: 'false_positive' };
+  const props = { layers, selected: 0, onSelect: () => undefined, phaseLabel: 'Fase base', cell };
+  const open = renderToStaticMarkup(React.createElement(TrainingScene, { ...props, onCellOpen: () => undefined }));
+  assert.equal((open.match(/aria-label="Ampliar Célula original"/g) || []).length, 2);
+  const closed = renderToStaticMarkup(React.createElement(TrainingScene, props));
+  assert.doesNotMatch(closed, /Ampliar Célula original/);
+  assert.doesNotMatch(open, /Ampliar comparación/);
+});

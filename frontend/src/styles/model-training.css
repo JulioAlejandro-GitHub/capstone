@@ -222,5 +222,12 @@ button.mt-flag:disabled { cursor: default; }
 .mt-tip-cell dl { display: grid; grid-template-columns: auto auto; gap: 2px 8px; margin: 0; font-size: 11.5px; }
 .mt-tip-cell dt { color: var(--ds-fg-muted); } .mt-tip-cell dd { margin: 0; font-family: var(--mt-mono); }
 .mt-tip-cell dd small { color: var(--ds-fg-muted); display: block; }
-.mt-cell-info .xai-toolbar .xai-expand { color: var(--ds-cyan-300); background: var(--ds-night-100); border-color: var(--ds-night-500); }
-.mt-cell-info .xai-toolbar .xai-expand:hover:not(:disabled) { background: var(--ds-night-300); }
+/* La imagen de la célula es el acceso a «Vista ampliada» (como en Explicabilidad). */
+.mt-cell-info .xai-toolbar .xai-image-button { width: 72px; height: 72px; flex: none; border-radius: 8px; overflow: hidden; border: 2px solid var(--mt-line-2); }
+.mt-cell-info .xai-toolbar .xai-image-button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mt-cell-info .xai-toolbar .xai-image-button:hover { border-color: var(--mt-accent); }
+.mt-cell-info[data-category="true_positive"] .xai-image-button { border-color: var(--mt-tp); } .mt-cell-info[data-category="true_negative"] .xai-image-button { border-color: var(--mt-tn); }
+.mt-cell-info[data-category="false_positive"] .xai-image-button { border-color: var(--mt-fp); } .mt-cell-info[data-category="false_negative"] .xai-image-button { border-color: var(--mt-fn); }
+.mt-cell[data-open="true"] { cursor: zoom-in; }
+.mt-cell[data-open="true"]:hover .mt-cell-frame, .mt-cell[data-open="true"]:focus-visible .mt-cell-frame { stroke: var(--mt-accent); stroke-width: 3; }
+.mt-cell:focus { outline: none; }

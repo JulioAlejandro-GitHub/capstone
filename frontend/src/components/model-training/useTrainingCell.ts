@@ -12,7 +12,7 @@ export { CELL_CATEGORY_LABELS, cellCategory, classText, type TrainingCell } from
 /**
  * Célula seleccionada: uno de los recorridos de activación guardados del TRAIN (GET /runs/{id}/activation-traces).
  * Abre la de la URL (`muestra`) o, si no está, la más reciente, igual que Arquitectura del modelo.
- * Para «Ampliar comparación» lee el contexto EVALUATE del recorrido (GET /assessments/{attempt_id}).
+ * Para «Vista ampliada» lee el contexto EVALUATE del recorrido (GET /assessments/{attempt_id}).
  */
 export function useTrainingCell(datasource: string, runId: string, requested: string | null) {
   const [catalog, setCatalog] = useState<ActivationTraceCatalog | null>(null);
