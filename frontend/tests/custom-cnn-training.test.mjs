@@ -80,3 +80,18 @@ test('VGG16 conserva la guía de transferencia', () => {
   assert.match(model.tuningGuide(layers.find(item => item.id === 'block4'), layers, regime).join(' '), /Candidato a descongelar/);
   assert.match(model.tuningGuide(layers.find(item => item.id === 'block4'), layers).join(' '), /Candidato a descongelar/, 'sin régimen se mantiene el comportamiento previo');
 });
+
+test('«Recorrido de una célula» se habilita para custom_cnn y sus pasos caen en sus bloques', () => {
+  const views = load(resolve(root, 'components/model-architecture/architectureViews.ts'));
+  const code = load(resolve(root, 'components/model-architecture/traceCode.ts'));
+  assert.equal(views.isTraceable('custom_cnn'), true);
+  assert.equal(views.isTraceable('vgg16'), true);
+  assert.equal(views.isTraceable('densenet121'), false);
+  assert.equal(views.isTraceable('biomedclip'), false);
+  const step = (layer, block, kind = 'spatial', shape = [25, 25, 256]) => ({ layer, block, kind, shape, stats: {}, maps: [], top: [] });
+  assert.equal(code.stepTitle(cnn, step('activation_3', 'block4')), 'Bloque 4');
+  assert.equal(code.stepTitle(cnn, step('dense_1', 'output', 'output', [1])), 'Salida');
+  const block1 = code.stepCode(cnn, step('max_pooling2d', 'block1'));
+  assert.doesNotMatch(block1, /VGG16/, 'una CNN propia no está dentro de VGG16');
+  assert.match(block1, /Conv2D/);
+});

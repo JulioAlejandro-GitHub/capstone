@@ -24,8 +24,9 @@ export function layerCode(layer: ArchitectureLayer): string {
 }
 
 /**
- * Layers that produce one step. A VGG16 block step is the whole block (its convolutions end in the pooling the trace
- * read); a head step is the single layer whose output was recorded.
+ * Layers that produce one step. A convolutional block step (VGG16 or custom_cnn) is the whole block: its convolutions
+ * end in the layer the trace read (pooling, or the activation of a block without pooling); a head step is the single
+ * layer whose output was recorded.
  */
 export function stepLayers(data: ModelArchitecture | null | undefined, step: ActivationTraceStep | null): ArchitectureLayer[] {
   if (!data || !step) return [];
@@ -41,7 +42,7 @@ export function stepCode(data: ModelArchitecture | null | undefined, step: Activ
   }
   const layers = stepLayers(data, step);
   if (!layers.length) return `# ${step.layer}: capa sin configuración registrada`;
-  const backbone = /^block\d+$/.test(step.block)
+  const backbone = /^block\d+$/.test(step.block) && data?.family === 'vgg16'
     ? '# Dentro de VGG16(include_top=False, weights=\'imagenet\'):\n' : '';
   return backbone + layers.map(layer => `x = ${layerCode(layer)}(x)`).join('\n');
 }

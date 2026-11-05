@@ -15,6 +15,9 @@ const familyViews: Record<ArchitectureFamily, ArchitectureView[]> = {
   generic: ['tabla'],
 };
 export const viewsFor = (family: ArchitectureFamily) => familyViews[family];
+/** Familias con «Recorrido de una célula»: CNN Keras cuyas capas el backend agrupa en los bloques de la arquitectura. */
+export const traceableFamilies: ArchitectureFamily[] = ['vgg16', 'custom_cnn'];
+export const isTraceable = (family: ArchitectureFamily) => traceableFamilies.includes(family);
 export const resolveView = (family: ArchitectureFamily, requested: string | null): ArchitectureView => {
   const views = viewsFor(family);
   return views.find(view => view === requested) ?? views[0];

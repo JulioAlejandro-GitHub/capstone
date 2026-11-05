@@ -14,6 +14,8 @@ from app.repositories.representation_generation import RepresentRepository
 from app.services.activation_trace_compute import VERSION
 
 MAX_BYTES = 500 * 1024 * 1024
+# Keras CNNs whose layers the trace knows how to group into the architecture's blocks.
+TRACEABLE = {'vgg16': 'VGG16', 'custom_cnn': 'CNN propia'}
 TIMEOUT_SECONDS = 120
 SUMMARY = ('sample_id', 'created_at', 'label', 'predicted', 'score', 'persisted_score', 'consistent', 'split', 'bytes')
 # One model load at a time keeps the machine usable; the use is occasional.
@@ -32,8 +34,10 @@ class ActivationTraceService:
             raise HTTPException(404, 'Run no encontrado')
         if source['run']['run_type'] != 'training':
             raise HTTPException(422, 'run_id debe identificar un TRAIN')
-        if (source['configuration'] or {}).get('architecture') != 'vgg16':
-            return None, 'El recorrido por capas está disponible para VGG16.'
+        family = (source['configuration'] or {}).get('architecture')
+        if family not in TRACEABLE:
+            return None, f"El recorrido por capas está disponible para {' y '.join(TRACEABLE.values())}."
+        self.family = family
         evaluation = self.repository.evaluation(run_id, datasource)
         return (evaluation, None) if evaluation else (None, 'Este TRAIN no tiene una EVALUATE verificada.')
 
@@ -94,7 +98,7 @@ class ActivationTraceService:
         if not computing.acquire(blocking=False):
             raise HTTPException(409, 'Ya hay un recorrido en cálculo; inténtalo al terminar.')
         try:
-            job = dict(value=value, sample=sample, persisted=persisted, path=str(path), identity=dict(
+            job = dict(value=value, sample=sample, persisted=persisted, path=str(path), family=self.family, identity=dict(
                 training_run_id=str(run_id), attempt_id=str(evaluation['id']), split=evaluation['split'], checkpoint_sha256=sha256))
             try:
                 subprocess.run([sys.executable, '-m', 'app.services.activation_trace_compute'], input=json.dumps(job, default=str), text=True,

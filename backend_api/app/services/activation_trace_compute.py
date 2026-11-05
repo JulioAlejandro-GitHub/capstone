@@ -34,6 +34,47 @@ def traced_layers(layers: list[Any]) -> list[str]:
     return names + [name for name in head if name != output] + [output]
 
 
+CONV_BLOCK_TYPES = ('Conv2D', 'BatchNormalization', 'Activation', 'MaxPooling2D')
+
+
+def custom_cnn_blocks(layers: list[Any]) -> dict[str, str]:
+    """Block of each layer with the rule of the architecture service: every Conv2D opens a block that also holds
+    its BatchNormalization, Activation and pooling; the rest is the head, and the sigmoid Dense is the output."""
+    blocks, count = {}, 0
+    for layer in layers:
+        kind = type(layer).__name__
+        if kind in CONV_BLOCK_TYPES and (kind == 'Conv2D' or count):
+            count += kind == 'Conv2D'
+            blocks[layer.name] = f'block{count}'
+        else:
+            blocks[layer.name] = 'head'
+    if layers:
+        blocks[layers[-1].name] = 'output'
+    return blocks
+
+
+def traced_custom_cnn(layers: list[Any]) -> list[str]:
+    """Output of each convolutional block (its last layer: pooling, or the activation of a block without pooling),
+    then the head layers that change the tensor and the output."""
+    blocks = custom_cnn_blocks(layers)
+    ends = {}
+    for layer in layers:
+        if blocks[layer.name].startswith('block'):
+            ends[blocks[layer.name]] = layer.name
+    head = [layer.name for layer in layers if blocks[layer.name] == 'head' and type(layer).__name__ in HEAD_TYPES]
+    return list(ends.values()) + head + [layers[-1].name]
+
+
+def traced(layers: list[Any], family: str) -> tuple[list[str], dict[str, str]]:
+    """(layers to read, block of each read layer). VGG16 keeps its own naming; custom_cnn uses the block rule."""
+    if family == 'custom_cnn':
+        blocks = custom_cnn_blocks(layers)
+        names = traced_custom_cnn(layers)
+        return names, {name: blocks[name] for name in names}
+    names = traced_layers(layers)
+    return names, {name: block_of(name, index == len(names) - 1) for index, name in enumerate(names)}
+
+
 def histogram(np: Any, values: Any) -> dict[str, list[float]]:
     counts, edges = np.histogram(values, bins=BINS)
     return {'counts': [int(count) for count in counts], 'edges': [float(edge) for edge in edges]}
@@ -54,11 +95,12 @@ def channel_png(tf: Any, channel: Any) -> str:
     return base64.b64encode(tf.io.encode_png(pixels).numpy()).decode()
 
 
-def trace_steps(tf: Any, np: Any, names: list[str], outputs: list[Any]) -> list[dict[str, Any]]:
+def trace_steps(tf: Any, np: Any, names: list[str], outputs: list[Any], blocks: dict[str, str] | None = None) -> list[dict[str, Any]]:
     steps = []
     for position, (name, output) in enumerate(zip(names, outputs)):
         values, last = np.asarray(output)[0], position == len(names) - 1
-        step = dict(layer=name, block=block_of(name, last), shape=list(values.shape), stats=statistics(values), maps=[], top=[])
+        block = blocks[name] if blocks else block_of(name, last)
+        step = dict(layer=name, block=block, shape=list(values.shape), stats=statistics(values), maps=[], top=[])
         if values.ndim == 3:
             order = np.argsort(values.mean(axis=(0, 1)))[::-1][:CHANNELS]
             # min and max let the client rebuild raw values from the PNG and redraw them on one layer-wide scale.
@@ -74,15 +116,15 @@ def trace_steps(tf: Any, np: Any, names: list[str], outputs: list[Any]) -> list[
     return steps
 
 
-def compute(value: dict[str, Any], sample: dict[str, Any], persisted: dict[str, Any]) -> dict[str, Any]:
+def compute(value: dict[str, Any], sample: dict[str, Any], persisted: dict[str, Any], family: str = 'vgg16') -> dict[str, Any]:
     from src.malaria_dl.assessment.runtime import KerasRuntime, verified_sample_bytes
 
     runtime = KerasRuntime(value)
     tf, np = runtime.tf, __import__('numpy')
-    names = traced_layers(runtime.model.layers)
+    names, blocks = traced(runtime.model.layers, family)
     model = tf.keras.Model(inputs=runtime.model.inputs, outputs=[runtime.model.get_layer(name).output for name in names])
     outputs = model(runtime.images([sample]), training=False)
-    steps = trace_steps(tf, np, names, outputs)
+    steps = trace_steps(tf, np, names, outputs, blocks)
     score = steps[-1]['top'][0]['value']
     clipped = min(max(score, 1e-12), 1 - 1e-12)
     rgb = tf.io.decode_image(verified_sample_bytes(value, runtime.dataset_root, sample), channels=3, expand_animations=False)
@@ -102,7 +144,7 @@ def write_atomic(path: Path, payload: dict[str, Any]) -> None:
 
 def main() -> None:
     job = json.loads(sys.stdin.readline())
-    result = compute(job['value'], job['sample'], job['persisted'])
+    result = compute(job['value'], job['sample'], job['persisted'], job.get('family', 'vgg16'))
     write_atomic(Path(job['path']), {**job['identity'], **result, 'version': VERSION,
                                      'created_at': datetime.now(timezone.utc).isoformat()})
 

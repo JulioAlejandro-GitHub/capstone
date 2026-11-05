@@ -8,7 +8,7 @@ import { CopyText } from '../reports/ComparisonPython';
 import { ActivationTracePanel } from './ActivationTracePanel';
 import { ArchitectureChart, type BlockActivity } from './ArchitectureChart';
 import { MathFunctionPanel } from './MathFunctionPanel';
-import { architectureViews, countText, lossText, outputText, phaseLabels, shapeText, splitHead, viewsFor, type ArchitectureView } from './architectureViews';
+import { architectureViews, countText, isTraceable, lossText, outputText, phaseLabels, shapeText, splitHead, viewsFor, type ArchitectureView } from './architectureViews';
 
 /** One model's architecture; Arquitectura del modelo and Análisis de Modelos differ only in who owns the view and the phase. */
 export function ArchitectureDetail({ data: source, view, onView, phase, onPhase, datasource, explorerLink = false, trainingLink = false }: { data: ModelArchitecture; view: ArchitectureView; onView: (view: ArchitectureView) => void;
@@ -54,11 +54,11 @@ export function ArchitectureDetail({ data: source, view, onView, phase, onPhase,
     </div>
     <div className="mx-selectable" onClick={pickBlock}>
       {block && <style>{`.mx-selectable [data-block="${block.id}"] rect, .mx-selectable [data-block="${block.id}"] polygon { stroke-width: 3; }`}</style>}
-      <ArchitectureChart data={data} view={view} phase={phase} activity={data.family === 'vgg16' ? activity : null} />
+      <ArchitectureChart data={data} view={view} phase={phase} activity={isTraceable(data.family) ? activity : null} />
     </div>
     {explorerLink && <Link className="ds-button" data-size="compact" to={withAllowedQuery(routes.modelExplorer, { datasource, run: data.training_run_id, grafico: view, fase: phase })}>Abrir vista completa</Link>}
     <p className="mx-legend"><span data-trained="true" />Se entrena en esta fase<span data-trained="false" />Congelado o sin pesos</p>
-    {data.family === 'vgg16' && <ActivationTracePanel runId={data.training_run_id} datasource={datasource} onBlock={setRequestedBlock} architecture={data} blockClick={blockClick} onActivity={setActivity} onSample={setTraceSample} />}
+    {isTraceable(data.family) && <ActivationTracePanel runId={data.training_run_id} datasource={datasource} onBlock={setRequestedBlock} architecture={data} blockClick={blockClick} onActivity={setActivity} onSample={setTraceSample} />}
     {block && <MathFunctionPanel data={data} block={block} onBlock={setRequestedBlock} />}
     <EvidenceButton title="Identidad del modelo" label="Identidad del modelo">
       <p className="report-identifier">TRAIN: {data.training_run_id}<br />Checkpoint: {data.checkpoint.artifact_id ?? 'Sin evidencia'}</p>

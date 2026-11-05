@@ -8,7 +8,7 @@ from fastapi import HTTPException
 
 from app.schemas.activation_traces import ActivationTraceCatalog
 from app.services import activation_traces
-from app.services.activation_trace_compute import VERSION, block_of, histogram, statistics, trace_steps, traced_layers, write_atomic
+from app.services.activation_trace_compute import VERSION, block_of, histogram, statistics, trace_steps, traced, traced_layers, write_atomic
 from app.services.activation_traces import ActivationTraceService
 
 
@@ -41,11 +41,12 @@ def test_saved_traces_are_listed_when_the_run_is_reopened(tmp_path):
     assert result.used_bytes == result.items[0].bytes > 0
 
 
-def test_only_vgg16_is_supported_and_other_models_say_why(tmp_path):
-    result = ActivationTraceService(Evaluations(), Architecture('custom_cnn'), tmp_path).catalog(uuid4(), 'malaria')
-    assert not result['available'] and 'VGG16' in result['reason']
+def test_only_traceable_cnns_are_supported_and_other_models_say_why(tmp_path):
+    assert ActivationTraceService(Evaluations(), Architecture('custom_cnn'), tmp_path).catalog(uuid4(), 'malaria')['available']
+    result = ActivationTraceService(Evaluations(), Architecture('densenet121'), tmp_path).catalog(uuid4(), 'malaria')
+    assert not result['available'] and 'VGG16 y CNN propia' in result['reason']
     with pytest.raises(HTTPException) as error:
-        ActivationTraceService(Evaluations(), Architecture('custom_cnn'), tmp_path).create(uuid4(), uuid4(), 'malaria')
+        ActivationTraceService(Evaluations(), Architecture('biomedclip_fine_tuning'), tmp_path).create(uuid4(), uuid4(), 'malaria')
     assert error.value.status_code == 409
 
 
@@ -132,3 +133,51 @@ def test_steps_carry_scale_and_distribution_and_name_the_last_layer_output(monke
     assert steps[1]['kind'] == 'vector' and sum(steps[1]['histogram']['counts']) == 3
     assert steps[2]['kind'] == 'output' and steps[2]['block'] == 'output' and 'histogram' not in steps[2]
     assert len(histogram(np, np.arange(10.0))['edges']) == 25
+
+
+# Layers of the custom_cnn TRAIN 33348978 and of the VGG16 TRAIN 0bbdd732, as their epoch checkpoints record them.
+CUSTOM_CNN = [('input_layer_1', 'InputLayer')] + [item for i, suffix in enumerate(('', '_1', '_2', '_3')) for item in (
+    (f'conv2d{suffix}', 'Conv2D'), (f'batch_normalization{suffix}', 'BatchNormalization'), (f'activation{suffix}', 'Activation'),
+    *([(f'max_pooling2d{suffix}', 'MaxPooling2D')] if i < 3 else []))] + [
+    ('global_average_pooling2d', 'GlobalAveragePooling2D'), ('dense', 'Dense'), ('dropout', 'Dropout'), ('dense_1', 'Dense')]
+VGG16 = [('input_layer_1', 'InputLayer')] + [(f'block{b}_conv{c}', 'Conv2D') for b, n in ((1, 2), (2, 2)) for c in range(1, n + 1)] + [
+    ('block1_pool', 'MaxPooling2D'), ('block2_pool', 'MaxPooling2D'), ('global_avg_pool', 'GlobalAveragePooling2D'),
+    ('feature_dense_1024', 'Dense'), ('dropout_50', 'Dropout'), ('binary_output', 'Dense')]
+
+
+def test_custom_cnn_reads_the_output_of_each_architecture_block_then_the_head():
+    names, blocks = traced(layers(*CUSTOM_CNN), 'custom_cnn')
+    assert names == ['max_pooling2d', 'max_pooling2d_1', 'max_pooling2d_2', 'activation_3', 'global_average_pooling2d', 'dense', 'dense_1']
+    # Same block ids as GET /runs/{id}/architecture builds for custom_cnn, so each step lands on its drawn block.
+    assert [blocks[name] for name in names] == ['block1', 'block2', 'block3', 'block4', 'head', 'head', 'output']
+
+
+def test_vgg16_keeps_exactly_the_steps_it_had():
+    vgg = layers(*VGG16)
+    names, blocks = traced(vgg, 'vgg16')
+    assert names == traced_layers(vgg)
+    assert [blocks[name] for name in names] == [block_of(name, index == len(names) - 1) for index, name in enumerate(names)]
+
+
+def test_custom_cnn_trace_is_computed_with_its_family(tmp_path, monkeypatch):
+    run, sample = uuid4(), uuid4()
+    representing(monkeypatch)
+    jobs = []
+
+    def fake_run(command, input, **kwargs):
+        job = json.loads(input)
+        jobs.append(job)
+        write_atomic(Path(job['path']), dict(job['identity'], created_at='2026-11-05T10:00:00', label=1, predicted=1, score=0.9,
+                                             persisted_score=0.9, consistent=True, version=VERSION))
+    monkeypatch.setattr(activation_traces.subprocess, 'run', fake_run)
+
+    class Repository(Evaluations):
+        def result(self, attempt, sample_id, datasource):
+            return {'raw_score': 0.9}
+    service = ActivationTraceService(Repository(), Architecture('custom_cnn'), tmp_path)
+    monkeypatch.setattr(activation_traces, 'RepresentRepository', lambda: type('R', (), {'source': lambda self, a: {
+        'identity': {'model': {'sha256': 'abc'}, 'samples': [{'sample_id': str(sample)}]}}})())
+    service.create(run, sample, 'malaria')
+    assert jobs[0]['family'] == 'custom_cnn'
+    service.delete(run, sample)
+    assert service.catalog(run, 'malaria')['used_bytes'] == 0
