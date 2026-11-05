@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 
 import { formatCount, type TrainingLayer } from './trainingModel';
 import { CELL_CATEGORY_LABELS, classText, type TrainingCell } from './cellModel';
@@ -57,12 +57,14 @@ const ICON_FULL = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const ICON_MIN = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
   <path d="M8 3v3a2 2 0 0 1-2 2H3" /><path d="M21 8h-3a2 2 0 0 1-2-2V3" /><path d="M3 16h3a2 2 0 0 1 2 2v3" /><path d="M16 21v-3a2 2 0 0 1 2-2h3" /></svg>;
 
-export function TrainingScene({ layers, selected, onSelect, phaseLabel, cell = null, onCellOpen }: {
+export function TrainingScene({ layers, selected, onSelect, phaseLabel, cell = null, onCellOpen, tabs }: {
   layers: TrainingLayer[]; selected: number; onSelect: (index: number) => void; phaseLabel: string;
   /** Célula seleccionada: su imagen se muestra en la entrada y, con el resultado, en la salida. */
   cell?: TrainingCell | null;
   /** Abre «Vista ampliada · Célula original»; sin él la imagen es sólo ilustrativa. */
   onCellOpen?: () => void;
+  /** Pestañas de la vista: reemplazan el título «Flujo de tensores» en la cabecera de la tarjeta. */
+  tabs?: ReactNode;
 }) {
   const card = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -178,7 +180,7 @@ export function TrainingScene({ layers, selected, onSelect, phaseLabel, cell = n
   const labelY = geometry.bottom + LABEL_GAP;
 
   return <div ref={card} className={`mt-card mt-viz${maximized ? ' is-max' : ''}`} onKeyDown={onKey}>
-    <div className="mt-card-h"><h2>Flujo de tensores</h2><span className="mt-hint">Arrastra para mover · rueda para zoom · <kbd>←</kbd> <kbd>→</kbd> para recorrer · {phaseLabel}</span></div>
+    <div className="mt-card-h">{tabs ?? <h2>Flujo de tensores</h2>}<span className="mt-hint">Arrastra para mover · rueda para zoom · <kbd>←</kbd> <kbd>→</kbd> para recorrer · {phaseLabel}</span></div>
     <nav className="mt-stepper" aria-label="Bloques">{layers.map(layer => <button key={layer.id} type="button" className="mt-step" aria-pressed={layer.index === selected}
       onClick={() => onSelect(layer.index)}><span className="mt-n">{String(layer.index).padStart(2, '0')}</span><i style={{ background: `rgb(${layer.color})` }} />{layer.label}</button>)}</nav>
     <div className="mt-stage">

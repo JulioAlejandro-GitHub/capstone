@@ -1,6 +1,7 @@
 import type { ModelArchitecture } from '../types/modelArchitecture';
 import type { ActivationTrace, ActivationTraceCandidate, ActivationTraceCatalog, TraceCategory } from '../types/activationTrace';
 import type { ReportRequest, ReportResponse } from '../types/scientificReport';
+import type { TrainingTrajectories } from '../types/trainingTrajectories';
 import type { PreflightRequest, PreflightResponse } from '../types/scientificPreflight';
 import type { ExplainExecutor, ExplainRequest, ExplainState, ExplainSubmission, RepresentState, RepresentSubmission } from '../types/explainGeneration';
 import type { ScientificTraceability, ModelCatalog, ScientificModelCatalog } from "../types/scientificRead";
@@ -659,6 +660,9 @@ export const api = {
   },
   getActivationTraceCandidates(datasource: string, runId: string, category: TraceCategory, signal?: AbortSignal, options: {limit?: number; explained?: boolean} = {}) {
     return request<ActivationTraceCandidate[]>(`/runs/${encodeURIComponent(runId)}/activation-traces/candidates`, {datasource, category, limit: options.limit, explained: options.explained || undefined}, {signal});
+  },
+  getTrainingTrajectories(datasource: string, runId: string, signal?: AbortSignal) {
+    return request<TrainingTrajectories>(`/runs/${encodeURIComponent(runId)}/training-trajectories`, withDatasource(datasource), {signal});
   },
   getActivationTrace(runId: string, sampleId: string, signal?: AbortSignal) {
     return request<ActivationTrace>(`/runs/${encodeURIComponent(runId)}/activation-traces/${encodeURIComponent(sampleId)}`, {}, {signal});

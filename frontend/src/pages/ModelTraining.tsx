@@ -3,6 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 
 import { phaseLabels } from '../components/model-architecture/architectureViews';
 import { TrainingScene } from '../components/model-training/TrainingScene';
+import { TrainingHistoryCard, TrainingTabs } from '../components/model-training/TrainingHistory';
+import { viewFrom } from '../components/model-training/trainingHistoryModel';
+import { useTrainingHistory } from '../components/model-training/useTrainingHistory';
 import {
   PARAMETER_GROUP_LABELS, buildTrainingLayers, formatCount, kindLabel, parametersFor, pendingItems,
   resolveTrainingParameters, trainingChecks, tuningGuide, type ParameterGroup, type TrainingCheck, type TrainingLayer,
@@ -39,7 +42,8 @@ function Bar({ pct, tone, label }: { pct: number | null; tone: string; label: st
 
 /**
  * «Entrenamiento»: vista inmersiva de un TRAIN, abierta en pestaña nueva desde Arquitectura del modelo.
- * Usa sólo GET /runs/{id}/architecture y GET /runs/{id}; lo que falta se muestra como pendiente.
+ * Pestañas: «Flujo de tensores» (GET /runs/{id}/architecture y GET /runs/{id}) y la historia del TRAIN
+ * (curvas, learning rate y trayectorias VAL registradas); lo que falta se muestra como pendiente.
  */
 export function ModelTraining({ datasource }: { datasource: string }) {
   const [search] = useSearchParams();
@@ -56,6 +60,8 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
   const { data, error, loading, retry } = useModelArchitecture(datasource, run);
   const { run: record, error: runError } = useComparisonRun(datasource, run);
   const cellState = useTrainingCell(datasource, run, search.get('muestra'));
+  const view = viewFrom(search.get('vista'));
+  const history = useTrainingHistory(datasource, run, view);
   const { cell } = cellState;
   // La imagen de la célula (en la tarjeta o en el diagrama) es el acceso a «Vista ampliada»; sin contexto no hay modal que abrir.
   const [expandSignal, setExpandSignal] = useState(0);
@@ -87,6 +93,7 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
   const current = phases.find(item => item.phase === phase);
   const phaseLabel = phaseLabels[phase] ?? (phase || 'sin fase');
   const groups = Object.keys(PARAMETER_GROUP_LABELS) as ParameterGroup[];
+  const tabs = <TrainingTabs view={view} onChange={next => update({ vista: next === 'flujo' ? null : next })} />;
 
   return <main className="mt-page" data-surface="lab">
     <div className="mt-wrap">
@@ -145,8 +152,12 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
           </div>
         </section>
 
-        <section className="mt-main">
-          <TrainingScene layers={layers} selected={selected} onSelect={select} phaseLabel={phaseLabel} cell={cell} onCellOpen={openCell} />
+        {view !== 'flujo' && <section className="mt-wide">
+          <TrainingHistoryCard view={view} tabs={tabs} curve={history.curve} trajectories={history.trajectories}
+            selectedEpoch={data?.checkpoint.selected_epoch ?? null} requestedSample={search.get('muestra')} />
+        </section>}
+        {view === 'flujo' && <section className="mt-main">
+          <TrainingScene layers={layers} selected={selected} onSelect={select} phaseLabel={phaseLabel} cell={cell} onCellOpen={openCell} tabs={tabs} />
 
           <aside className="mt-card mt-detail" aria-live="polite">
             <div className="mt-card-h"><h2>Bloque seleccionado</h2><span className="mt-hint">{selected + 1} / {layers.length}</span></div>
@@ -178,7 +189,7 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
               </div>
             </div>
           </aside>
-        </section>
+        </section>}
 
         <section className="mt-lower">
           <div className="mt-card">
@@ -223,7 +234,7 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
       </>}
 
       <footer className="mt-footer">
-        <span>Fuente: <code>GET /runs/{'{id}'}/architecture</code> y <code>GET /runs/{'{id}'}</code>. Entrada = salida del bloque previo; activaciones = h·w·d.</span>
+        <span>Fuente: <code>GET /runs/{'{id}'}/architecture</code>, <code>GET /runs/{'{id}'}</code>, curvas del reporte científico y <code>GET /runs/{'{id}'}/training-trajectories</code>. Entrada = salida del bloque previo; activaciones = h·w·d.</span>
         <span>TRAIN {run}{data?.checkpoint.selected_epoch != null ? ` · checkpoint época ${data.checkpoint.selected_epoch}` : ''}</span>
       </footer>
     </div>

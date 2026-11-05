@@ -231,3 +231,44 @@ button.mt-flag:disabled { cursor: default; }
 .mt-cell[data-open="true"] { cursor: zoom-in; }
 .mt-cell[data-open="true"]:hover .mt-cell-frame, .mt-cell[data-open="true"]:focus-visible .mt-cell-frame { stroke: var(--mt-accent); stroke-width: 3; }
 .mt-cell:focus { outline: none; }
+
+/* Pestañas de la vista y la historia del TRAIN */
+.mt-tabs { display: flex; gap: 2px; flex-wrap: wrap; min-width: 0; }
+.mt-tab { border: 1px solid transparent; background: transparent; color: var(--ds-fg-muted); font: 600 12.5px/1 inherit; padding: 7px 11px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+.mt-tab:hover { background: var(--ds-bg-subtle); border-color: var(--mt-line-2); }
+.mt-tab[aria-selected="true"] { background: var(--ds-bg-subtle); border-color: var(--mt-accent); color: var(--ds-fg-default); }
+.mt-tab[data-origin="derivable"] { border-style: dashed; }
+.mt-card-h:has(.mt-tabs) { flex-wrap: wrap; }
+.mt-wide { display: block; }
+.mt-history { min-width: 0; }
+.mt-history-body { padding: 14px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.mt-history-lead { margin: 0; color: var(--ds-fg-muted); font-size: 13px; max-width: 80ch; }
+.mt-history-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.mt-fact-button { text-align: left; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+.mt-fact-button:hover { border-color: var(--mt-line-2); }
+.mt-fact-button[aria-pressed="true"] { border-color: var(--mt-accent); background: var(--ds-bg-subtle); }
+.mt-history-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; align-items: start; }
+.mt-origin { align-self: flex-start; font: 600 10.5px/1 var(--mt-mono); letter-spacing: .06em; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--mt-out); color: var(--mt-out); }
+.mt-origin[data-origin="derivable"] { border-color: var(--mt-info); color: var(--mt-info); border-style: dashed; }
+.mt-origin[data-origin="sin_evidencia"] { border-color: var(--mt-line-2); color: var(--ds-fg-muted); }
+.mt-heat { margin: 0; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 0 8px; }
+.mt-heat-axis { display: flex; flex-direction: column; justify-content: space-around; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 11px; color: var(--ds-fg-muted); text-align: center; }
+.mt-heat-canvas { width: 100%; height: 360px; border-radius: 6px; border: 1px solid var(--mt-line); cursor: crosshair; display: block; image-rendering: pixelated; }
+.mt-heat-caption { grid-column: 2; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; margin-top: 6px; font-size: 12px; color: var(--mt-faint); }
+.mt-heat-legend { display: inline-flex; align-items: center; gap: 6px; }
+.mt-heat-legend i { width: 14px; height: 10px; border-radius: 2px; display: inline-block; margin-left: 4px; }
+.mt-heat-legend i[data-tone="wrong"] { background: rgb(216, 90, 48); }
+.mt-heat-legend i[data-tone="mid"] { background: rgb(128, 128, 128); }
+.mt-heat-legend i[data-tone="right"] { background: rgb(20, 158, 117); }
+.mt-cell-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px; }
+.mt-cell-list button { width: 100%; display: flex; align-items: center; gap: 8px; border: 1px solid var(--mt-line); background: transparent; color: inherit; border-radius: 6px; padding: 5px 8px; font: 12px var(--mt-mono); cursor: pointer; text-align: left; overflow: hidden; }
+.mt-cell-list button[aria-pressed="true"] { border-color: var(--mt-accent); background: var(--ds-bg-subtle); }
+.mt-cell-list button small { margin-left: auto; color: var(--mt-faint); white-space: nowrap; }
+.mt-cell-list span[data-label] { font-weight: 700; width: 14px; flex: none; color: var(--mt-d); }
+.mt-cell-list span[data-label="0"] { color: var(--mt-info); }
+.mt-analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.mt-analysis { border: 1px dashed var(--mt-line-2); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.mt-analysis h3 { margin: 4px 0 0; font-size: 14px; }
+.mt-analysis p { margin: 0; font-size: 12.5px; }
+.mt-analysis-state { margin-top: auto; font: 600 11px var(--mt-mono); color: var(--mt-warn); }
+.mt-analysis[data-origin="sin_evidencia"] .mt-analysis-state { color: var(--ds-fg-muted); }
