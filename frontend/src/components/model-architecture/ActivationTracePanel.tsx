@@ -10,6 +10,8 @@ import type { ModelArchitecture } from '../../types/modelArchitecture';
 import type { BlockActivity } from './ArchitectureChart';
 import type { CurveEvidence } from '../../types/scientificReport';
 import { CopyText } from '../reports/ComparisonPython';
+import { GeneratedXAIComparison } from '../reports/GeneratedXAIComparison';
+import { useCellComparison, useExpandRequest } from '../reports/useCellComparison';
 import { layerOperations } from './mathOperations';
 import { MiniCurves, ScoreBar, StepProfile, VectorHistogram } from './TraceCharts';
 import { CIVIDIS_GRADIENT, paintMap, type MapScale } from './traceColor';
@@ -83,8 +85,15 @@ function SpatialMaps({ step, scale, onScale, picked, onPick }: { step: Activatio
   </>;
 }
 
-function StepBody({ trace, index, inputShape, scale, onScale, picked, onPick }: { trace: ActivationTrace; index: number; inputShape: number[]; scale: MapScale; onScale: (scale: MapScale) => void; picked: number | null; onPick: (channel: number | null) => void }) {
-  if (index === 0) return <div className="mx-input-body"><img src={png(trace.input_image)} alt="Célula original a tamaño de entrada" />
+/** The cell image as the access to «Vista ampliada» (rule: every cell image opens it, unless its EVALUATE context is missing). */
+function CellImage({ trace, alt, onOpen, pending }: { trace: ActivationTrace; alt: string; onOpen?: () => void; pending?: boolean }) {
+  const image = <img src={png(trace.input_image)} alt={alt} />;
+  return onOpen ? <button type="button" className="mx-cell-open" onClick={onOpen} aria-busy={pending} aria-label="Ampliar Célula original"
+    title={pending ? 'Abriendo «Vista ampliada»…' : 'Vista ampliada: célula original y explicabilidad'}>{image}</button> : image;
+}
+
+function StepBody({ trace, index, inputShape, scale, onScale, picked, onPick, onOpen, pending }: { trace: ActivationTrace; index: number; inputShape: number[]; scale: MapScale; onScale: (scale: MapScale) => void; picked: number | null; onPick: (channel: number | null) => void; onOpen?: () => void; pending?: boolean }) {
+  if (index === 0) return <div className="mx-input-body"><CellImage trace={trace} alt="Célula original a tamaño de entrada" onOpen={onOpen} pending={pending} />
     <p>La imagen entra como un tensor de {shapeOf(inputShape)}, uno por canal de color. Cada bloque siguiente reduce el tamaño a la mitad y multiplica los canales: el modelo cambia resolución espacial por cantidad de patrones.</p></div>;
   const step = trace.steps[index - 1];
   if (step.kind === 'spatial') return <SpatialMaps step={step} scale={scale} onScale={onScale} picked={picked} onPick={onPick} />;
@@ -114,6 +123,10 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture,
   const [explainedOnly, setExplainedOnly] = useState(false);
   const [candidates, setCandidates] = useState<ActivationTraceCandidate[] | null>(null);
   const [trace, setTrace] = useState<ActivationTrace | null>(null);
+  // «Vista ampliada» of the open cell: its EVALUATE context, read once per cell.
+  const { comparison, contextError } = useCellComparison(runId, trace);
+  const { signal: expandSignal, request: openExpanded, pending: expandPending } = useExpandRequest(Boolean(comparison));
+  const openCell = trace && !contextError ? openExpanded : undefined;
   const [compare, setCompare] = useState<ActivationTrace | null>(null);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -275,12 +288,15 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture,
         <aside className="mx-specimen" aria-label="Célula">
           <figure>
             <div className="mx-specimen-frame">
-              <img src={png(trace.input_image)} alt={`Célula ${trace.sample_id}`} />
+              <CellImage trace={trace} alt={`Célula ${trace.sample_id}`} onOpen={openCell} pending={expandPending} />
               {pickedMap && step && <MapCanvas key={`${index}-${picked}`} map={pickedMap} scale={scale}
                 layer={{ min: Math.min(...step.maps.map(map => map.min ?? 0)), max: Math.max(...step.maps.map(map => map.max ?? 1)) }} label={`Canal ${picked} sobre la célula`} />}
             </div>
-            <figcaption>{pickedMap ? <>Canal #{picked} proyectado (aprox.: el pooling recorta bordes)</> : <>{trace.split.toUpperCase()} · {shortId(trace.sample_id)}</>}</figcaption>
+            <figcaption>{pickedMap ? <>Canal #{picked} proyectado (aprox.: el pooling recorta bordes)</> : <>{trace.split.toUpperCase()} · {shortId(trace.sample_id)}</>}
+              {contextError ? <> · «Vista ampliada» no disponible: {contextError}</> : <> · clic en la imagen para la vista ampliada</>}</figcaption>
           </figure>
+          {comparison && <GeneratedXAIComparison key={comparison.id} comparison={comparison} datasource={datasource} variant="modal" lazy
+            image={png(trace.input_image)} expandSignal={expandSignal} />}
           <dl className="mx-stats mx-stats--stack">
             <div><dt>Etiqueta real</dt><dd>{trace.label == null ? 'Sin evidencia' : trace.label ? 'Parasitada' : 'No parasitada'}</dd></div>
             <div><dt>Predicción</dt><dd><Outcome value={trace} /></dd></div>
@@ -300,7 +316,7 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture,
             {change && <div><dt>Δ activos vs. paso anterior</dt><dd data-trend={change.active >= 0 ? 'up' : 'down'}>{change.active >= 0 ? '+' : ''}{points(change.active)}</dd></div>}
             {compareStep && compareStep.kind !== 'output' && <div data-compare><dt>Activos · {outcomeLabel(outcomeKey(compare!))}</dt><dd>{percent(compareStep.stats.active)}</dd></div>}
           </dl>}
-          <StepBody trace={trace} index={index} inputShape={inputShape} scale={scale} onScale={setScale} picked={picked} onPick={setPicked} />
+          <StepBody trace={trace} index={index} inputShape={inputShape} scale={scale} onScale={setScale} picked={picked} onPick={setPicked} onOpen={openCell} pending={expandPending} />
           <p className="scc-meta">{step?.kind === 'spatial' ? `${trace.selection} de ${step.shape[2]}.` : ''} Valores calculados con este checkpoint para una sola célula: lo observado es una hipótesis, no una conclusión sobre el modelo.</p>
         </div>
 

@@ -28,10 +28,18 @@ export function layerCode(layer: ArchitectureLayer): string {
  * end in the layer the trace read (pooling, or the activation of a block without pooling); a head step is the single
  * layer whose output was recorded.
  */
+/** A step that reads the end of a backbone block (VGG16/custom_cnn convolutions, DenseNet121 dense blocks and transitions). */
+const BACKBONE_KINDS = ['convolution', 'dense', 'transition'];
+function isBackboneBlock(data: ModelArchitecture | null | undefined, step: ActivationTraceStep): boolean {
+  const block = data?.blocks.find(item => item.id === step.block);
+  return block?.kind ? BACKBONE_KINDS.includes(block.kind) : /^block\d+$/.test(step.block);
+}
+const CODE_LINES = 24;
+
 export function stepLayers(data: ModelArchitecture | null | undefined, step: ActivationTraceStep | null): ArchitectureLayer[] {
   if (!data || !step) return [];
   const own = data.layers.find(layer => layer.name === step.layer);
-  if (/^block\d+$/.test(step.block)) return data.layers.filter(layer => layer.block === step.block);
+  if (isBackboneBlock(data, step)) return data.layers.filter(layer => layer.block === step.block);
   return own ? [own] : [];
 }
 
@@ -42,9 +50,13 @@ export function stepCode(data: ModelArchitecture | null | undefined, step: Activ
   }
   const layers = stepLayers(data, step);
   if (!layers.length) return `# ${step.layer}: capa sin configuración registrada`;
-  const backbone = /^block\d+$/.test(step.block) && data?.family === 'vgg16'
-    ? '# Dentro de VGG16(include_top=False, weights=\'imagenet\'):\n' : '';
-  return backbone + layers.map(layer => `x = ${layerCode(layer)}(x)`).join('\n');
+  const backbone = isBackboneBlock(data, step) && data?.family === 'vgg16' ? '# Dentro de VGG16(include_top=False, weights=\'imagenet\'):\n'
+    : isBackboneBlock(data, step) && data?.family === 'densenet121' ? '# Dentro de DenseNet121(include_top=False, weights=\'imagenet\'):\n' : '';
+  const lines = layers.map(layer => `x = ${layerCode(layer)}(x)`);
+  // Un bloque denso tiene decenas de capas: se muestran el comienzo y el final, sin inventar las del medio.
+  const shown = lines.length > CODE_LINES
+    ? [...lines.slice(0, CODE_LINES / 2), `# … ${lines.length - CODE_LINES} capas más del bloque …`, ...lines.slice(-CODE_LINES / 2)] : lines;
+  return backbone + shown.join('\n');
 }
 
 /** Readable title of a step: the architecture names blocks; head layers are named by what they do. */
@@ -53,9 +65,10 @@ export function stepTitle(data: ModelArchitecture | null | undefined, step: Acti
   const own = data?.blocks.find(item => item.id === step.layer);
   if (own) return own.label;
   const block = data?.blocks.find(item => item.id === step.block);
-  if (/^block\d+$/.test(step.block) && block) return block.label;
+  if (block && isBackboneBlock(data, step)) return block.label;
   if (step.kind === 'output') return 'Salida';
   const type = data?.layers.find(layer => layer.name === step.layer)?.type;
+  if (type === 'Activation' || type === 'ReLU') return 'Activación final';
   if (type === 'GlobalAveragePooling2D') return 'Promedio global';
   if (type === 'Flatten') return 'Aplanado';
   if (type === 'Dense') return `Densa ${step.shape.at(-1) ?? ''}`.trim();

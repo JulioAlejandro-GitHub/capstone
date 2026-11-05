@@ -43,8 +43,9 @@ def test_saved_traces_are_listed_when_the_run_is_reopened(tmp_path):
 
 def test_only_traceable_cnns_are_supported_and_other_models_say_why(tmp_path):
     assert ActivationTraceService(Evaluations(), Architecture('custom_cnn'), tmp_path).catalog(uuid4(), 'malaria')['available']
-    result = ActivationTraceService(Evaluations(), Architecture('densenet121'), tmp_path).catalog(uuid4(), 'malaria')
-    assert not result['available'] and 'VGG16 y CNN propia' in result['reason']
+    assert ActivationTraceService(Evaluations(), Architecture('densenet121'), tmp_path).catalog(uuid4(), 'malaria')['available']
+    result = ActivationTraceService(Evaluations(), Architecture('biomedclip_linear'), tmp_path).catalog(uuid4(), 'malaria')
+    assert not result['available'] and result['reason'] == 'El recorrido por capas está disponible para VGG16, CNN propia y DenseNet121.'
     with pytest.raises(HTTPException) as error:
         ActivationTraceService(Evaluations(), Architecture('biomedclip_fine_tuning'), tmp_path).create(uuid4(), uuid4(), 'malaria')
     assert error.value.status_code == 409
@@ -181,3 +182,33 @@ def test_custom_cnn_trace_is_computed_with_its_family(tmp_path, monkeypatch):
     assert jobs[0]['family'] == 'custom_cnn'
     service.delete(run, sample)
     assert service.catalog(run, 'malaria')['used_bytes'] == 0
+
+
+class Dense(Layer):
+    def __init__(self, name, activation):
+        super().__init__(name, 'Dense')
+        self.activation = type('Activation', (), {'__name__': activation})() if activation else None
+
+
+def densenet_layers():
+    """The flattened layers of DenseNet121 TRAIN 03c7b1a1 (431, nested backbone expanded), from its epoch checkpoint."""
+    items = json.loads((Path(__file__).parent / 'fixtures' / 'densenet121_layers.json').read_text())
+    return [Dense(name, activation) if kind == 'Dense' else Layer(name, kind) for name, kind, activation in items], items
+
+
+def test_densenet121_reads_each_block_output_the_final_features_the_head_and_the_output():
+    from app.services.activation_trace_compute import traced_densenet
+    names, blocks = traced_densenet(densenet_layers()[0])
+    assert names == ['pool1', 'conv2_block6_concat', 'pool2_pool', 'conv3_block12_concat', 'pool3_pool', 'conv4_block24_concat',
+                     'pool4_pool', 'conv5_block16_concat', 'relu', 'global_avg_pool', 'binary_output']
+    assert [blocks[name] for name in names] == ['stem', 'dense2', 'transition2', 'dense3', 'transition3', 'dense4', 'transition4',
+                                                'dense5', 'head', 'head', 'output']
+
+
+def test_densenet121_trace_blocks_are_the_blocks_the_architecture_draws():
+    from app.services.activation_trace_compute import densenet_block
+    from app.services.model_architecture import _keras_block
+    layers, items = densenet_layers()
+    state = {'convolutions': 0}
+    for layer, (name, kind, activation) in zip(layers, items):
+        assert densenet_block(layer) == _keras_block('densenet121', {'name': name, 'type': kind, 'settings': {'activation': activation}}, state)[0], name

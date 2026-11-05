@@ -199,3 +199,10 @@
 
 .mx-page .mx-view-actions { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-3); }
 .mx-page .mx-view-actions a.ds-button { text-decoration: none; }
+/* Imagen de la célula como acceso a «Vista ampliada» */
+.mx-page .mx-cell-open { display: block; padding: 0; border: 0; background: none; cursor: zoom-in; width: 100%; border-radius: var(--ds-radius-md); }
+.mx-page .mx-cell-open[aria-busy="true"] { cursor: progress; opacity: .8; }
+.mx-page .mx-cell-open:focus-visible { outline: 2px solid var(--ds-blue-500); outline-offset: 2px; }
+.mx-page .mx-specimen-frame .mx-cell-open { position: absolute; inset: 0; height: 100%; border-radius: 0; }
+.mx-page .mx-specimen-frame canvas { pointer-events: none; }
+.mx-page .mx-input-body .mx-cell-open img { display: block; }

@@ -23,12 +23,30 @@ const Arrow = ({ x1, x2, y = MIDDLE }: { x1: number; x2: number; y?: number }) =
 const OUTPUT_WIDTH = 150;
 const blockWidth = (block: ArchitectureBlock, width: number) => Math.max(block.kind === 'output' ? OUTPUT_WIDTH : 92, width);
 
-function Labels({ x, block, top, bottom, output, activity }: { x: number; block: ArchitectureBlock; top: number; bottom: number; output: ModelArchitecture['output']; activity?: BlockActivity | null }) {
-  const cell = activity?.[block.id], below = bottom + (block.kind === 'output' ? 38 : 22), bar = 56;
+/** Width of one character of `.mx-name` (14 px, semibold) used to wrap a block name within its column. */
+const NAME_CHAR = 8.2, NAME_LINE = 16;
+/** Words of a block name in lines of at most `max` characters; a single long word keeps its own line. */
+export function wrapLabel(text: string, max: number): string[] {
+  const lines: string[] = [];
+  for (const word of text.split(' ')) {
+    const last = lines.at(-1);
+    if (last != null && `${last} ${word}`.length <= max) lines[lines.length - 1] = `${last} ${word}`;
+    else lines.push(word);
+  }
+  return lines;
+}
+
+function Labels({ x, block, top, bottom, output, activity, column, detail }: { x: number; block: ArchitectureBlock; top: number; bottom: number; output: ModelArchitecture['output']; activity?: BlockActivity | null;
+  /** Width available to the name: when given, the name wraps to it and what follows moves below its last line. */
+  column?: number; detail?: string }) {
+  const lines = column ? wrapLabel(block.label, Math.max(6, Math.floor(column / NAME_CHAR))) : [block.label];
+  const shift = (lines.length - 1) * NAME_LINE;
+  const subtitle = block.kind === 'output' ? outputText(output) : detail;
+  const cell = activity?.[block.id], below = bottom + shift + (subtitle ? 38 : 22), bar = 56;
   return <>
     <text className="mx-dimension" x={x} y={top} textAnchor="middle">{shapeText(block.output_shape)}</text>
-    <text className="mx-name" x={x} y={bottom} textAnchor="middle">{block.label}</text>
-    {block.kind === 'output' && <text className="mx-dimension" x={x} y={bottom + 18} textAnchor="middle">{outputText(output)}</text>}
+    <text className="mx-name" x={x} y={bottom} textAnchor="middle">{lines.map((line, i) => <tspan key={i} x={x} dy={i ? NAME_LINE : 0}>{line}</tspan>)}</text>
+    {subtitle && <text className="mx-dimension" x={x} y={bottom + shift + 18} textAnchor="middle">{subtitle}</text>}
     {cell && <g className="mx-activity" data-current={cell.current} data-output={block.kind === 'output'}>
       <rect className="mx-activity-track" x={x - bar / 2} y={below - 10} width={bar} height="4" rx="2" />
       <rect className="mx-activity-fill" x={x - bar / 2} y={below - 10} width={Math.max(2, bar * Math.min(1, Math.max(0, cell.value)))} height="4" rx="2" />
@@ -99,20 +117,23 @@ function BlockBars({ data, phase }: ChartProps) {
   </Frame>;
 }
 
-function DenseGraph({ data, phase }: ChartProps) {
+function DenseGraph({ data, phase, activity }: ChartProps) {
   const { placed, width } = layout(data.blocks.map(block => {
     const units = block.units ?? 0, columns = Math.ceil(units / 4);
     return { block, units, width: blockWidth(block, block.kind === 'dense' ? columns * 18 + 26 : 92) };
   }));
-  return <Frame label="Bloques densos de DenseNet121" width={width}>
+  // Names wrap within their column; the tallest one (plus the activity bar, when shown) sets the frame height.
+  const wraps = placed.map(item => wrapLabel(item.block.label, Math.max(6, Math.floor((item.width + GAP - 12) / NAME_CHAR))).length);
+  const height = HEIGHT + (Math.max(1, ...wraps) - 1) * NAME_LINE + (activity ? ACTIVITY_SPACE : 0);
+  return <Frame label="Bloques densos de DenseNet121" width={width} height={height}>
     {placed.map((item, index) => {
       const { block, units, x } = item, next = placed[index + 1], dense = block.kind === 'dense';
       return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} data-kind={block.kind} className="mx-block"><title>{blockTitle(block)}</title>
         <rect x={x} y={MIDDLE - (dense ? 56 : 34)} width={item.width} height={dense ? 112 : 68} rx="8" />
         {Array.from({ length: units }, (_, unit) => <circle key={unit} className="mx-unit" r="6" cx={x + 22 + Math.floor(unit / 4) * 18} cy={MIDDLE - 27 + (unit % 4) * 18} />)}
         {dense ? null : <text className="mx-dimension" x={x + item.width / 2} y={MIDDLE + 4} textAnchor="middle">{block.layers} {block.layers === 1 ? 'capa' : 'capas'}</text>}
-        <Labels x={x + item.width / 2} block={block} output={data.output} top={MIDDLE - 90} bottom={HEIGHT - 84} />
-        {dense && <text className="mx-dimension" x={x + item.width / 2} y={HEIGHT - 64} textAnchor="middle">{units} capas densas</text>}
+        <Labels x={x + item.width / 2} block={block} output={data.output} top={MIDDLE - 90} bottom={HEIGHT - 84} activity={activity}
+          column={item.width + GAP - 12} detail={dense ? `${units} capas densas` : undefined} />
         {next && <Arrow x1={x + item.width + 6} x2={next.x - 6} />}
       </g>;
     })}

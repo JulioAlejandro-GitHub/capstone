@@ -187,10 +187,11 @@ function XAIExpandedView({ comparison, resources, datasource, generation, action
 
 /** variant="expanded" renders only the expanded view, for a host that already is a modal (Errores y consenso).
  *  variant="toolbar" renders the cell's image as the link to «Vista ampliada» and its outcome; the XAI images load when the modal opens.
+ *  variant="modal" renders only «Vista ampliada», for hosts that draw the cell image themselves and open it with expandSignal.
  *  expandSignal: each new value opens «Vista ampliada · Célula original» (for hosts that show the cell elsewhere, e.g. in a diagram). */
 export function XAIComparisonViewer({ comparison, datasource, generation, actions, variant = 'inline', image, expandSignal }: {
   comparison: XAIComparison; datasource: string; generation?: Partial<Record<XAIMethod, XAIGenerationAction>>; actions?: ReactNode;
-  variant?: 'inline' | 'expanded' | 'toolbar'; image?: string; expandSignal?: number;
+  variant?: 'inline' | 'expanded' | 'toolbar' | 'modal'; image?: string; expandSignal?: number;
 }) {
   const host = useRef<HTMLElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -209,7 +210,7 @@ export function XAIComparisonViewer({ comparison, datasource, generation, action
     return () => observer.disconnect();
   }, []);
   // Opening the expanded view also loads the images, even if the row never scrolled into view.
-  const load = (visible && variant !== 'toolbar') || expanded !== null || variant === 'expanded';
+  const load = (visible && variant !== 'toolbar' && variant !== 'modal') || expanded !== null || variant === 'expanded';
   const resources: Resources = {
     original: useScientificArtifact(comparison.original?.originalSource ?? comparison.original?.artifact, datasource, load),
     gradcam: useScientificArtifact(comparison.methods.gradcam?.artifact, datasource, load),
@@ -232,7 +233,7 @@ export function XAIComparisonViewer({ comparison, datasource, generation, action
     setExpanded(method);
   };
   return <section ref={host} className="ds-report xai-viewer" data-surface="workbench" data-variant={variant}>
-    {variant === 'toolbar'
+    {variant === 'modal' ? null : variant === 'toolbar'
       ? <div className="xai-toolbar">{image && <button className="xai-image-button" type="button" aria-label="Ampliar Célula original" title="Vista ampliada: célula original y explicabilidad"
           onClick={() => expand('original')}><img className="report-scientific-image" src={image} alt={`Célula original · muestra ${comparison.sampleId ?? 'no identificada'}`} /></button>}<CellOutcome comparison={comparison} /></div>
       : <div className="report-section"><XAIComparisonContent comparison={comparison} resources={resources} generation={generation} actions={actions} onExpand={expand} /></div>}

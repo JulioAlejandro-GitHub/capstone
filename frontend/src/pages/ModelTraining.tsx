@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useCallback, useMemo, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import { phaseLabels } from '../components/model-architecture/architectureViews';
@@ -12,6 +12,7 @@ import {
 } from '../components/model-training/trainingModel';
 import { CELL_CATEGORY_LABELS, cellCategory, classText, useTrainingCell } from '../components/model-training/useTrainingCell';
 import { GeneratedXAIComparison } from '../components/reports/GeneratedXAIComparison';
+import { useExpandRequest } from '../components/reports/useCellComparison';
 import { CellOutcome } from '../components/reports/XAIComparisonViewer';
 import { useComparisonRun } from '../hooks/useComparisonRun';
 import { useModelArchitecture } from '../hooks/useModelArchitecture';
@@ -64,8 +65,9 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
   const history = useTrainingHistory(datasource, run, view);
   const { cell } = cellState;
   // La imagen de la célula (en la tarjeta o en el diagrama) es el acceso a «Vista ampliada»; sin contexto no hay modal que abrir.
-  const [expandSignal, setExpandSignal] = useState(0);
-  const openCell = cellState.comparison ? () => setExpandSignal(value => value + 1) : undefined;
+  // Regla: toda imagen de célula abre «Vista ampliada». Un clic antes de que llegue el contexto EVALUATE se conserva.
+  const { signal: expandSignal, request: openExpanded, pending: expandPending } = useExpandRequest(Boolean(cellState.comparison));
+  const openCell = cell && !cellState.contextError ? openExpanded : undefined;
   const phases = data?.phases ?? [];
   const phase = phases.find(item => item.phase === search.get('fase'))?.phase ?? phases.at(-1)?.phase ?? '';
   const layers = useMemo(() => data?.state === 'available' ? buildTrainingLayers(data, phase) : [], [data, phase]);
@@ -135,7 +137,11 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
             <span className="mt-hint">{cell ? 'su imagen aparece en la entrada y, con el resultado, en la salida del diagrama' : 'recorridos de activación guardados del TRAIN'}</span></div>
           <div className="mt-cell-body">
             {!cell && <div className="mt-cell-thumb mt-cell-empty" aria-hidden="true">?</div>}
-            {cell && !cellState.comparison && <img className="mt-cell-thumb" src={cell.image} alt={`Célula ${cell.sampleId}`} data-category={cell.category ?? 'unknown'} />}
+            {cell && !cellState.comparison && (openCell
+              ? <button type="button" className="mt-cell-thumb-button" onClick={openCell} aria-busy={expandPending}
+                  title={expandPending ? 'Abriendo «Vista ampliada»…' : 'Vista ampliada: célula original y explicabilidad'} aria-label="Ampliar Célula original">
+                  <img className="mt-cell-thumb" src={cell.image} alt={`Célula ${cell.sampleId}`} data-category={cell.category ?? 'unknown'} /></button>
+              : <img className="mt-cell-thumb" src={cell.image} alt={`Célula ${cell.sampleId}`} data-category={cell.category ?? 'unknown'} />)}
             <div className="mt-cell-info" data-category={cell?.category ?? 'unknown'}>
               {cellState.catalog && cellState.catalog.items.length > 0 && <label className="mt-cell-select">Célula
                 <select value={cellState.sampleId ?? ''} onChange={event => update({ muestra: event.target.value })}>

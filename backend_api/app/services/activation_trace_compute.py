@@ -65,8 +65,83 @@ def traced_custom_cnn(layers: list[Any]) -> list[str]:
     return list(ends.values()) + head + [layers[-1].name]
 
 
+def densenet_block(layer: Any) -> str:
+    """Block of a DenseNet121 layer, with the rule of the architecture service (``_keras_block``)."""
+    name, kind = layer.name, type(layer).__name__
+    if kind in ('InputLayer', 'Normalization'):
+        return 'input'
+    if match := re.match(r'conv(\d)_block', name):
+        return f'dense{match[1]}'
+    if match := re.match(r'pool([234])_', name):
+        return f'transition{match[1]}'
+    if name.startswith(('conv1', 'zero_padding2d', 'pool1')):
+        return 'stem'
+    if kind == 'Dense' and getattr(getattr(layer, 'activation', None), '__name__', None) == 'sigmoid':
+        return 'output'
+    return 'head'
+
+
+def flattened(tf: Any, model: Any) -> list[Any]:
+    """Layers in flow order, with the nested backbone expanded in place (as the architecture service flattens it)."""
+    result = []
+    for layer in model.layers:
+        if isinstance(layer, tf.keras.Model):
+            result += [inner for inner in layer.layers if type(inner).__name__ != 'InputLayer']
+        else:
+            result.append(layer)
+    return result
+
+
+def traced_densenet(layers: list[Any]) -> tuple[list[str], dict[str, str]]:
+    """Output of each architecture block (its last layer), then the final activated features, the head and the output."""
+    blocks = {layer.name: densenet_block(layer) for layer in layers}
+    ends: dict[str, str] = {}
+    for layer in layers:
+        if blocks[layer.name] not in ('input', 'head', 'output'):
+            ends[blocks[layer.name]] = layer.name
+    last = max((i for i, layer in enumerate(layers) if layer.name in ends.values()), default=-1)
+    head = [layer for layer in layers[last + 1:] if blocks[layer.name] == 'head']
+    # The backbone ends in BatchNormalization + ReLU: its ReLU is the activated map the head pools.
+    final = [layer.name for layer in head if type(layer).__name__ in ('Activation', 'ReLU')][-1:]
+    names = list(ends.values()) + final + [layer.name for layer in head if type(layer).__name__ in HEAD_TYPES]
+    names = [name for name in names if blocks[name] != 'output'] + [layers[-1].name]
+    return names, {name: blocks[name] for name in names}
+
+
+def nested_outputs(tf: Any, model: Any, images: Any, names: list[str]) -> list[Any]:
+    """Outputs of ``names`` for a linear chain whose backbone is a nested model: Keras cannot expose the backbone's
+    inner layers as outputs of the outer graph, so the backbone runs once as its own sub-model and the outer layers
+    are applied around it. The result must reproduce the model's own output."""
+    import numpy as np
+
+    from src.malaria_dl.assessment.contracts import require
+
+    nested = [layer for layer in model.layers if isinstance(layer, tf.keras.Model)]
+    require(len(nested) == 1, 'TRACE_BACKBONE_AMBIGUOUS')
+    inner = nested[0]
+    own = {layer.name for layer in inner.layers}
+    inner_names = [name for name in names if name in own]
+    backbone = tf.keras.Model(inputs=inner.inputs, outputs=[inner.get_layer(name).output for name in inner_names] + [inner.outputs[0]])
+    values: dict[str, Any] = {}
+    x = images
+    for layer in model.layers:
+        if type(layer).__name__ == 'InputLayer':
+            continue
+        if layer is inner:
+            *read, x = backbone(x, training=False)
+            values.update(zip(inner_names, read))
+        else:
+            x = layer(x, training=False)
+            values[layer.name] = x
+    expected = np.asarray(model(images, training=False))
+    require(np.allclose(np.asarray(x), expected, rtol=1e-4, atol=1e-6), 'TRACE_CHAIN_MISMATCH')
+    return [values[name] for name in names]
+
+
 def traced(layers: list[Any], family: str) -> tuple[list[str], dict[str, str]]:
     """(layers to read, block of each read layer). VGG16 keeps its own naming; custom_cnn uses the block rule."""
+    if family == 'densenet121':
+        return traced_densenet(layers)
     if family == 'custom_cnn':
         blocks = custom_cnn_blocks(layers)
         names = traced_custom_cnn(layers)
@@ -121,9 +196,14 @@ def compute(value: dict[str, Any], sample: dict[str, Any], persisted: dict[str, 
 
     runtime = KerasRuntime(value)
     tf, np = runtime.tf, __import__('numpy')
-    names, blocks = traced(runtime.model.layers, family)
-    model = tf.keras.Model(inputs=runtime.model.inputs, outputs=[runtime.model.get_layer(name).output for name in names])
-    outputs = model(runtime.images([sample]), training=False)
+    images = runtime.images([sample])
+    if family == 'densenet121':
+        names, blocks = traced(flattened(tf, runtime.model), family)
+        outputs = nested_outputs(tf, runtime.model, images, names)
+    else:
+        names, blocks = traced(runtime.model.layers, family)
+        model = tf.keras.Model(inputs=runtime.model.inputs, outputs=[runtime.model.get_layer(name).output for name in names])
+        outputs = model(images, training=False)
     steps = trace_steps(tf, np, names, outputs, blocks)
     score = steps[-1]['top'][0]['value']
     clipped = min(max(score, 1e-12), 1 - 1e-12)

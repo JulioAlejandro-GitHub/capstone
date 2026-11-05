@@ -15,7 +15,7 @@ from app.services.activation_trace_compute import VERSION
 
 MAX_BYTES = 500 * 1024 * 1024
 # Keras CNNs whose layers the trace knows how to group into the architecture's blocks.
-TRACEABLE = {'vgg16': 'VGG16', 'custom_cnn': 'CNN propia'}
+TRACEABLE = {'vgg16': 'VGG16', 'custom_cnn': 'CNN propia', 'densenet121': 'DenseNet121'}
 TIMEOUT_SECONDS = 120
 SUMMARY = ('sample_id', 'created_at', 'label', 'predicted', 'score', 'persisted_score', 'consistent', 'split', 'bytes')
 # One model load at a time keeps the machine usable; the use is occasional.
@@ -36,7 +36,7 @@ class ActivationTraceService:
             raise HTTPException(422, 'run_id debe identificar un TRAIN')
         family = (source['configuration'] or {}).get('architecture')
         if family not in TRACEABLE:
-            return None, f"El recorrido por capas está disponible para {' y '.join(TRACEABLE.values())}."
+            return None, f"El recorrido por capas está disponible para {', '.join(list(TRACEABLE.values())[:-1])} y {list(TRACEABLE.values())[-1]}."
         self.family = family
         evaluation = self.repository.evaluation(run_id, datasource)
         return (evaluation, None) if evaluation else (None, 'Este TRAIN no tiene una EVALUATE verificada.')

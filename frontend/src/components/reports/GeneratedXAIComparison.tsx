@@ -6,7 +6,7 @@ import { XAIComparisonViewer } from './XAIComparisonViewer';
 
 const listText = (items: string[]) => items.length > 1 ? `${items.slice(0, -1).join(', ')} y ${items.at(-1)}` : items[0] ?? '';
 
-export function GeneratedXAIComparison({comparison, datasource, active, onEvidenceChange, lazy, authorized, blocked, variant, image, expandSignal}: {comparison: XAIComparison; datasource: string; active?: boolean; onEvidenceChange?: () => void; lazy?: boolean; authorized?: boolean; blocked?: string | null; variant?: 'inline' | 'expanded' | 'toolbar'; image?: string; expandSignal?: number}) {
+export function GeneratedXAIComparison({comparison, datasource, active, onEvidenceChange, lazy, authorized, blocked, variant, image, expandSignal}: {comparison: XAIComparison; datasource: string; active?: boolean; onEvidenceChange?: () => void; lazy?: boolean; authorized?: boolean; blocked?: string | null; variant?: 'inline' | 'expanded' | 'toolbar' | 'modal'; image?: string; expandSignal?: number}) {
   // Regla de usabilidad: las acciones de la «Vista ampliada» están habilitadas salvo que el host diga lo contrario
   // (authorized/blocked explícitos) o los datos lo impidan. Sin indicación, valen el permiso del usuario y el ejecutor EXPLAIN.
   const { user } = useAuth();

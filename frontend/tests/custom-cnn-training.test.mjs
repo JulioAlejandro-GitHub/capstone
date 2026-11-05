@@ -86,7 +86,6 @@ test('«Recorrido de una célula» se habilita para custom_cnn y sus pasos caen 
   const code = load(resolve(root, 'components/model-architecture/traceCode.ts'));
   assert.equal(views.isTraceable('custom_cnn'), true);
   assert.equal(views.isTraceable('vgg16'), true);
-  assert.equal(views.isTraceable('densenet121'), false);
   assert.equal(views.isTraceable('biomedclip'), false);
   const step = (layer, block, kind = 'spatial', shape = [25, 25, 256]) => ({ layer, block, kind, shape, stats: {}, maps: [], top: [] });
   assert.equal(code.stepTitle(cnn, step('activation_3', 'block4')), 'Bloque 4');
@@ -94,4 +93,21 @@ test('«Recorrido de una célula» se habilita para custom_cnn y sus pasos caen 
   const block1 = code.stepCode(cnn, step('max_pooling2d', 'block1'));
   assert.doesNotMatch(block1, /VGG16/, 'una CNN propia no está dentro de VGG16');
   assert.match(block1, /Conv2D/);
+});
+
+test('DenseNet121: sus pasos se titulan por bloque y el código de un bloque denso se resume', () => {
+  const views = load(resolve(root, 'components/model-architecture/architectureViews.ts'));
+  const code = load(resolve(root, 'components/model-architecture/traceCode.ts'));
+  assert.equal(views.isTraceable('densenet121'), true);
+  const conv = (i) => ({ name: `conv4_block${i}_2_conv`, type: 'Conv2D', block: 'dense4', output_shape: null, inputs: [], parameters: 1, trainable_phases: [], settings: { filters: 32, kernel_size: [3, 3] } });
+  const dense = { family: 'densenet121', input_shape: [null, 200, 200, 3], layers: [...Array.from({ length: 40 }, (_, i) => conv(i + 1)),
+    { name: 'relu', type: 'Activation', block: 'head', output_shape: null, inputs: [], parameters: 0, trainable_phases: [], settings: { activation: 'relu' } }],
+    blocks: [{ id: 'dense4', label: 'Bloque denso 3', kind: 'dense' }, { id: 'transition4', label: 'Transición 3', kind: 'transition' }, { id: 'head', label: 'Cabeza de clasificación', kind: 'head' }] };
+  const step = (layer, block, kind = 'spatial') => ({ layer, block, kind, shape: [12, 12, 1024], stats: {}, maps: [], top: [] });
+  assert.equal(code.stepTitle(dense, step('conv4_block24_concat', 'dense4')), 'Bloque denso 3');
+  assert.equal(code.stepTitle(dense, step('relu', 'head')), 'Activación final');
+  const text = code.stepCode(dense, step('conv4_block24_concat', 'dense4'));
+  assert.match(text, /^# Dentro de DenseNet121/);
+  assert.match(text, /# … 16 capas más del bloque …/);
+  assert.equal(text.split('\n').length, 1 + 12 + 1 + 12);
 });
