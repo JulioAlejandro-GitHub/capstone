@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { TrainingCurves } from '../reports/ScientificReport';
+import type { ArchitecturePhase } from '../../types/modelArchitecture';
 import type { CurveEvidence } from '../../types/scientificReport';
 import type { TrainingTrajectories } from '../../types/trainingTrajectories';
 import {
@@ -33,13 +34,15 @@ function Status<T>({ load, empty }: { load: Load<T>; empty?: string | null }) {
   return empty ? <p className="mt-pending-note">{empty}</p> : null;
 }
 
-export function TrainingHistoryCard({ view, tabs, curve, trajectories, selectedEpoch, requestedSample }: {
+export function TrainingHistoryCard({ view, tabs, curve, trajectories, selectedEpoch, requestedSample, phases = [] }: {
   view: Exclude<TrainingView, 'flujo'>;
   tabs: ReactNode;
   curve: Load<CurveEvidence>;
   trajectories: Load<TrainingTrajectories>;
   selectedEpoch: number | null;
   requestedSample: string | null;
+  /** Fases de la arquitectura: learning rate inicial de cada grupo del optimizador. */
+  phases?: ArchitecturePhase[];
 }) {
   const hint = { curvas: 'loss y métricas TRAIN/VAL de cada época', lr: 'tasa de aprendizaje efectiva al cerrar cada época',
     trayectorias: 'score VAL de cada célula en cada época', checkpoints: 'lo que se puede calcular desde los checkpoints por época' }[view];
@@ -48,7 +51,7 @@ export function TrainingHistoryCard({ view, tabs, curve, trajectories, selectedE
     <div className="mt-history-body ds-report" data-surface="workbench">
       {view === 'curvas' && <><OriginTag origin="registrado" />
         {curve.state === 'ready' && curve.data ? <TrainingCurves data={[curve.data]} /> : <Status load={curve} empty={curve.state === 'ready' ? 'El TRAIN no registró épocas.' : null} />}</>}
-      {view === 'lr' && <LearningRatePanel curve={curve} selectedEpoch={selectedEpoch} />}
+      {view === 'lr' && <LearningRatePanel curve={curve} selectedEpoch={selectedEpoch} phases={phases} />}
       {view === 'trayectorias' && <TrajectoryPanel load={trajectories} selectedEpoch={selectedEpoch} requestedSample={requestedSample} />}
       {view === 'checkpoints' && <CheckpointAnalyses />}
     </div>
@@ -57,7 +60,24 @@ export function TrainingHistoryCard({ view, tabs, curve, trajectories, selectedE
 
 /* ── Learning rate ─────────────────────────────────────────────────────────── */
 
-function LearningRatePanel({ curve, selectedEpoch }: { curve: Load<CurveEvidence>; selectedEpoch: number | null }) {
+function LearningRateGroups({ phases }: { phases: ArchitecturePhase[] }) {
+  const rows = phases.flatMap(phase => (phase.learning_rates ?? []).map(group => ({ phase: phase.phase, ...group })));
+  if (!rows.length) return null;
+  const grouped = phases.some(phase => (phase.learning_rates ?? []).length > 1);
+  return <>
+    <div className="report-table-scroll"><table className="report-data-table"><caption>Learning rate inicial de cada fase, por grupo del optimizador</caption>
+      <thead><tr><th>Fase</th><th>Grupo</th><th>Learning rate inicial</th><th>Parámetros del grupo</th></tr></thead>
+      <tbody>{rows.map(row => <tr key={`${row.phase}-${row.group}`}><td>{PHASES[row.phase] ?? row.phase}</td><td>{row.group === 'model' ? 'Todo el modelo' : row.group ?? '—'}</td>
+        <td>{row.learning_rate != null ? lrText(row.learning_rate) : '—'}</td><td>{row.parameters != null ? row.parameters.toLocaleString('es-CL') : '—'}</td></tr>)}</tbody></table></div>
+    <p className="scc-meta">{grouped
+      ? 'El optimizador tiene un grupo por parte del modelo. La curva por época registra el learning rate del primer grupo (la cabeza); el del encoder sólo se registra al iniciar cada fase.'
+      : phases.some(phase => phase.phase === 'fine_tuning')
+        ? 'Un único learning rate para todo el modelo: en ajuste fino se recompila con el learning rate de ajuste fino, por eso la curva cae al cambiar de fase.'
+        : 'Un único learning rate para todo el modelo y una sola fase: cada cambio de la curva ocurre dentro de esa fase.'}</p>
+  </>;
+}
+
+function LearningRatePanel({ curve, selectedEpoch, phases }: { curve: Load<CurveEvidence>; selectedEpoch: number | null; phases: ArchitecturePhase[] }) {
   const points = useMemo(() => learningRateSeries(curve.data), [curve.data]);
   const changes = useMemo(() => learningRateChanges(points), [points]);
   if (curve.state !== 'ready') return <><OriginTag origin="registrado" /><Status load={curve} /></>;
@@ -79,7 +99,7 @@ function LearningRatePanel({ curve, selectedEpoch }: { curve: Load<CurveEvidence
         <YAxis scale="log" domain={['auto', 'auto']} tickFormatter={(value: number) => value.toExponential(0)} width={56} />
         <Tooltip formatter={(value) => lrText(Number(value))} labelFormatter={(label) => `Época ${label}`} />
         <Legend />
-        <Line dataKey="lr" name="Learning rate (escala log)" type="stepAfter" stroke="var(--ds-violet-500, #8b5cf6)" dot={{ r: 2 }} isAnimationActive={false} />
+        <Line dataKey="lr" name={phases.some(phase => (phase.learning_rates ?? []).length > 1) ? 'Learning rate de la cabeza (escala log)' : 'Learning rate (escala log)'} type="stepAfter" stroke="var(--ds-violet-500, #8b5cf6)" dot={{ r: 2 }} isAnimationActive={false} />
         {fine != null && <ReferenceLine x={fine - 0.5} strokeDasharray="2 4" stroke="var(--ds-border-strong, #94a3b8)" label="Inicio ajuste fino" />}
         {selectedEpoch != null && <ReferenceLine x={selectedEpoch} stroke="var(--ds-green-500, #22c55e)" label="Checkpoint" />}
       </LineChart>
@@ -89,6 +109,7 @@ function LearningRatePanel({ curve, selectedEpoch }: { curve: Load<CurveEvidence
       <tbody>{changes.map(change => <tr key={change.epoch}><td>{change.epoch}</td><td>{PHASES[change.phase] ?? change.phase}{change.phaseStart ? ' (inicio)' : ''}</td>
         <td>{lrText(change.from)}</td><td>{lrText(change.to)}</td><td>×{Number(change.factor.toPrecision(3))}</td></tr>)}</tbody></table></div>}
     <p className="scc-meta">Valor leído del optimizador al cerrar cada época. La causa de cada cambio (ReduceLROnPlateau o nueva fase) no se registra por separado.</p>
+    <LearningRateGroups phases={phases} />
   </>;
 }
 

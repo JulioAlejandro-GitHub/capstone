@@ -8,7 +8,7 @@ import { viewFrom } from '../components/model-training/trainingHistoryModel';
 import { useTrainingHistory } from '../components/model-training/useTrainingHistory';
 import {
   PARAMETER_GROUP_LABELS, buildTrainingLayers, formatCount, kindLabel, parametersFor, pendingItems,
-  resolveTrainingParameters, trainingChecks, tuningGuide, type ParameterGroup, type TrainingCheck, type TrainingLayer,
+  resolveTrainingParameters, trainingChecks, trainingRegime, tuningGuide, type ParameterGroup, type TrainingCheck, type TrainingLayer,
 } from '../components/model-training/trainingModel';
 import { CELL_CATEGORY_LABELS, cellCategory, classText, useTrainingCell } from '../components/model-training/useTrainingCell';
 import { GeneratedXAIComparison } from '../components/reports/GeneratedXAIComparison';
@@ -69,7 +69,8 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
   const phases = data?.phases ?? [];
   const phase = phases.find(item => item.phase === search.get('fase'))?.phase ?? phases.at(-1)?.phase ?? '';
   const layers = useMemo(() => data?.state === 'available' ? buildTrainingLayers(data, phase) : [], [data, phase]);
-  const parameters = useMemo(() => resolveTrainingParameters(record), [record]);
+  const parameters = useMemo(() => resolveTrainingParameters(record, data?.phases ?? []), [record, data]);
+  const regime = useMemo(() => trainingRegime(data, parameters), [data, parameters]);
   const checks = useMemo(() => data?.state === 'available' ? trainingChecks(data, layers, parameters, phase) : [], [data, layers, parameters, phase]);
   const pending = useMemo(() => pendingItems(data, layers, parameters, Boolean(record)), [data, layers, parameters, record]);
   const requestedBlock = search.get('bloque');
@@ -117,9 +118,14 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
 
       {layers.length > 0 && layer && <>
         <section className="mt-kpis" aria-label="Resumen del modelo">
-          <div className="mt-kpi"><div className="mt-k">Bloques</div><div className="mt-v">{layers.length}</div><div className="mt-h">{convs.length ? `${convs.reduce((s, item) => s + item.convolutions, 0)} conv. en ${convs.length} bloques` : `${data?.layers.length ?? 0} capas registradas`}</div></div>
-          <div className="mt-kpi"><div className="mt-k">Resolución espacial</div><div className="mt-v">{input?.h ?? '—'}<small> → </small>{lastConv?.h ?? '—'}</div><div className="mt-h">{input?.h && lastConv?.h ? `${(input.h / lastConv.h).toFixed(1)}× menos por lado al final del backbone` : 'Pendiente'}</div></div>
-          <div className="mt-kpi"><div className="mt-k">Canales</div><div className="mt-v">{input?.d ?? '—'}<small> → </small>{lastConv?.d ?? '—'}</div><div className="mt-h">{input?.d && lastConv?.d ? `${Math.round(lastConv.d / input.d)}× más profundidad` : 'Pendiente'}</div></div>
+          <div className="mt-kpi"><div className="mt-k">Bloques</div><div className="mt-v">{layers.length}</div><div className="mt-h">{convs.length ? `${convs.reduce((s, item) => s + item.convolutions, 0)} conv. en ${convs.length} bloques` : data?.structure ? `${data.structure.vit_blocks ?? '—'} bloques Transformer` : `${data?.layers.length ?? 0} capas registradas`}</div></div>
+          {data?.structure ? <>
+            <div className="mt-kpi"><div className="mt-k">Imagen → parches</div><div className="mt-v">{input?.h ?? '—'}<small> → </small>{data.structure.patches != null ? `${Math.round(Math.sqrt(data.structure.patches))}×${Math.round(Math.sqrt(data.structure.patches))}` : '—'}</div><div className="mt-h">{data.structure.patch_size ? `parches de ${data.structure.patch_size[0]} px; la forma no cambia entre bloques` : 'Pendiente'}</div></div>
+            <div className="mt-kpi"><div className="mt-k">Tokens</div><div className="mt-v">{data.structure.tokens ?? '—'}<small> × </small>{data.structure.width ?? '—'}</div><div className="mt-h">{data.structure.patches != null ? `${data.structure.patches} parches + token de clase` : 'Pendiente'}</div></div>
+          </> : <>
+            <div className="mt-kpi"><div className="mt-k">Resolución espacial</div><div className="mt-v">{input?.h ?? '—'}<small> → </small>{lastConv?.h ?? '—'}</div><div className="mt-h">{input?.h && lastConv?.h ? `${(input.h / lastConv.h).toFixed(1)}× menos por lado al final del backbone` : 'Pendiente'}</div></div>
+            <div className="mt-kpi"><div className="mt-k">Canales</div><div className="mt-v">{input?.d ?? '—'}<small> → </small>{lastConv?.d ?? '—'}</div><div className="mt-h">{input?.d && lastConv?.d ? `${Math.round(lastConv.d / input.d)}× más profundidad` : 'Pendiente'}</div></div>
+          </>}
           <div className="mt-kpi"><div className="mt-k">Parámetros totales</div><div className="mt-v">{formatCount(data?.total_parameters)}</div><div className="mt-h">{current?.trainable_parameters != null ? `${formatCount(current.trainable_parameters)} entrenables · ${phaseLabel}` : 'Entrenables: pendiente'}</div></div>
           <div className="mt-kpi"><div className="mt-k">Tensor más grande</div><div className="mt-v">{formatCount(biggest?.volume)}</div><div className="mt-h">{biggest ? `${biggest.label} · ${biggest.outputText}` : 'Pendiente'}</div></div>
         </section>
@@ -139,7 +145,9 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
                 </select></label>}
               {cellState.loading && <p className="mt-muted" role="status">Consultando células…</p>}
               {cellState.error && <p className="mt-muted" role="alert">{cellState.error}</p>}
-              {cellState.catalog && !cellState.catalog.items.length && <p className="mt-pending-note">Pendiente: este TRAIN no tiene recorridos de células guardados{cellState.catalog.reason ? ` (${cellState.catalog.reason})` : ''}. Calcúlalos en «Recorrido de una célula» de Arquitectura del modelo.</p>}
+              {cellState.catalog && !cellState.catalog.items.length && <p className="mt-pending-note">{cellState.catalog.available
+                ? 'Pendiente: este TRAIN no tiene recorridos de células guardados. Calcúlalos en «Recorrido de una célula» de Arquitectura del modelo.'
+                : `Sin evidencia: ${cellState.catalog.reason ?? 'el recorrido por capas no está disponible para este modelo.'}`}</p>}
               {cell && (cellState.comparison
                 ? <GeneratedXAIComparison key={cellState.comparison.id} comparison={cellState.comparison} datasource={datasource} variant="toolbar" lazy image={cell.image} expandSignal={expandSignal} />
                 : <div className="ds-report xai-viewer" data-surface="workbench" data-variant="toolbar"><div className="xai-toolbar">
@@ -154,7 +162,7 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
 
         {view !== 'flujo' && <section className="mt-wide">
           <TrainingHistoryCard view={view} tabs={tabs} curve={history.curve} trajectories={history.trajectories}
-            selectedEpoch={data?.checkpoint.selected_epoch ?? null} requestedSample={search.get('muestra')} />
+            selectedEpoch={data?.checkpoint.selected_epoch ?? null} requestedSample={search.get('muestra')} phases={data?.phases ?? []} />
         </section>}
         {view === 'flujo' && <section className="mt-main">
           <TrainingScene layers={layers} selected={selected} onSelect={select} phaseLabel={phaseLabel} cell={cell} onCellOpen={openCell} tabs={tabs} />
@@ -179,12 +187,12 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
                 <div className="mt-flags">{checks.filter(check => check.layer === selected).map((check, i) => <div key={i} className="mt-flag" data-level={check.level}><span className="mt-ic">{CHECK_ICON[check.level]}</span><div>{rich(check.text)}</div></div>)}</div></div>}
               <div>
                 <div className="mt-sec-t">Parámetros del TRAIN que gobiernan este bloque</div>
-                <dl className="mt-params">{parametersFor(layer, layers, parameters).map(item => <Fragment key={item.key}><dt><code>{item.key}</code> {item.label}</dt>
+                <dl className="mt-params">{parametersFor(layer, layers, parameters, regime).map(item => <Fragment key={item.key}><dt><code>{item.key}</code> {item.label}</dt>
                   <dd data-pending={item.value == null}>{item.value ?? 'Pendiente'}</dd></Fragment>)}</dl>
               </div>
               <div>
                 <div className="mt-sec-t">Qué ajustar en un nuevo entrenamiento</div>
-                <ul className="mt-tune">{tuningGuide(layer, layers).map((line, i) => <li key={i}>{rich(line)}</li>)}</ul>
+                <ul className="mt-tune">{tuningGuide(layer, layers, regime).map((line, i) => <li key={i}>{rich(line)}</li>)}</ul>
                 <div className="mt-note">Guía orientativa por tipo de bloque; los valores vienen del TRAIN.</div>
               </div>
             </div>
@@ -222,8 +230,9 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
             <div className="mt-card">
               <div className="mt-card-h"><h2>Configuración del entrenamiento</h2><span className="mt-hint">{runError ? 'no disponible' : record ? 'registrada en el TRAIN' : 'cargando…'}</span></div>
               <div className="mt-config">{groups.map(group => <div key={group}><div className="mt-sec-t">{PARAMETER_GROUP_LABELS[group]}</div>
+                {group === 'ajuste' && !regime.fineTuning ? <p className="mt-muted mt-na">No aplica: este TRAIN no tuvo fase de ajuste fino{regime.pretrained ? '' : '; es un solo entrenamiento desde cero'}.</p> :
                 <dl className="mt-params">{parameters.filter(item => item.group === group).map(item => <Fragment key={item.key}><dt><code>{item.key}</code> {item.label}</dt>
-                  <dd data-pending={item.value == null}>{item.value ?? 'Pendiente'}</dd></Fragment>)}</dl></div>)}</div>
+                  <dd data-pending={item.value == null}>{item.value ?? 'Pendiente'}</dd></Fragment>)}</dl>}</div>)}</div>
             </div>
             {pending.length > 0 && <div className="mt-card">
               <div className="mt-card-h"><h2>Datos pendientes</h2><span className="mt-hint">se mostrarán cuando el TRAIN los registre</span></div>

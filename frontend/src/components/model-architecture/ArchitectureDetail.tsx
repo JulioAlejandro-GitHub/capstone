@@ -31,12 +31,14 @@ export function ArchitectureDetail({ data: source, view, onView, phase, onPhase,
   return <>
     <SectionAnswer indicators={<>
       <Kpi label="Entrada" value={shapeText(data.input_shape)} detail={data.framework ?? undefined} />
-      <Kpi label="Parámetros totales" value={countText(data.total_parameters)} detail={data.total_parameters == null ? 'El TRAIN no los registró' : 'Calculados desde la configuración'} />
+      <Kpi label="Parámetros totales" value={countText(data.total_parameters)} detail={data.total_parameters == null ? 'El TRAIN no los registró' : data.structure ? 'Derivados de la base registrada' : 'Calculados desde la configuración'} />
       <Kpi label={`Entrenables · ${phaseLabels[phase] ?? phase}`} value={countText(current?.trainable_parameters)} detail={current?.encoder ? `Encoder: ${current.encoder}` : undefined} />
       <Kpi label="Capa de salida" value={outputText(data.output)} detail={lossText(data.output)} />
       <Kpi label="Checkpoint" value={data.checkpoint.selected_epoch == null ? 'Sin evidencia' : `Época ${data.checkpoint.selected_epoch}`} detail={data.checkpoint.phase ? phaseLabels[data.checkpoint.phase] ?? data.checkpoint.phase : undefined} />
     </>}>
-      {data.model_name ?? 'Modelo sin nombre'} · arquitectura {data.architecture ?? 'sin evidencia'}. {reference
+      {data.model_name ?? 'Modelo sin nombre'} · arquitectura {data.architecture ?? 'sin evidencia'}. {data.structure
+        ? `El TRAIN registra la entrada, la cabeza y el conjunto entrenable de cada fase; formas y parámetros de los bloques ViT se derivan de la base registrada (${data.structure.patches ?? '—'} parches + CLS = ${data.structure.tokens ?? '—'} tokens de ${data.structure.width ?? '—'} dimensiones).`
+        : reference
         ? 'El TRAIN registra la entrada, la cabeza y la cantidad de parámetros entrenados; los bloques ViT son la estructura de referencia del encoder.'
         : 'Capas y conexiones registradas por este TRAIN; dimensiones y parámetros calculados desde esa configuración.'}
     </SectionAnswer>

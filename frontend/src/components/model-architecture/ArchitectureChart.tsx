@@ -158,15 +158,19 @@ function DenseConnections({ data, phase }: ChartProps) {
 function VitFlow({ data, phase }: ChartProps) {
   const input = data.blocks.find(block => block.kind === 'input'), output = data.blocks.find(block => block.kind === 'output');
   const encoder = data.blocks.filter(block => block.kind === 'encoder');
+  const patches = data.blocks.find(block => block.id === 'embedding'), projection = data.blocks.find(block => block.id === 'projection');
   const trained = encoder.filter(block => isTrained(block, phase)).length;
   const embedding = data.output?.embedding_features;
+  const structure = data.structure;
+  const encoderParameters = encoder.every(block => block.parameters != null) ? encoder.reduce((sum, block) => sum + (block.parameters ?? 0), 0) : null;
   const boxes = [
     { id: 'input', block: 'input', name: 'Entrada', lines: [shapeText(input?.output_shape ?? null)], active: false },
-    { id: 'encoder', block: encoder[0]?.id, name: `Encoder ViT · ${encoder.length} bloques`, lines: [trained ? `${trained} entrenados, ${encoder.length - trained} congelados` : 'Todos congelados', 'Estructura de referencia'], active: trained > 0 },
-    { id: 'embedding', block: 'output', name: 'Embedding L2', lines: [embedding ? `${embedding} dimensiones` : 'Sin evidencia'], active: false },
+    ...(patches ? [{ id: 'patches', block: 'embedding', name: 'Parches y posición', lines: [structure?.patch_size ? `${structure.patches} parches de ${structure.patch_size[0]} px + CLS` : 'Sin evidencia', `${structure?.tokens ?? '—'} × ${structure?.width ?? '—'} · ${countText(patches.parameters)} parámetros`], active: isTrained(patches, phase) }] : []),
+    { id: 'encoder', block: encoder[0]?.id, name: `Encoder ViT · ${encoder.length} bloques`, lines: [trained ? `${trained} entrenados, ${encoder.length - trained} congelados` : 'Todos congelados', structure ? `${countText(encoderParameters)} parámetros · derivado de la base` : 'Estructura de referencia'], active: trained > 0 },
+    { id: 'embedding', block: projection ? 'projection' : 'output', name: 'Proyección y L2', lines: [embedding ? `${embedding} dimensiones` : 'Sin evidencia', ...(projection ? [`${countText(projection.parameters)} parámetros`] : [])], active: Boolean(projection && isTrained(projection, phase)) },
     { id: 'output', block: 'output', name: 'Capa de salida', lines: [outputText(data.output), `${countText(output?.parameters)} parámetros`], active: Boolean(output && isTrained(output, phase)), kind: 'output' },
   ];
-  const boxWidth = 216, step = boxWidth + 40;
+  const boxWidth = boxes.length > 4 ? 196 : 216, step = boxWidth + 36;
   return <Frame label={`Flujo de ${data.architecture}`} width={step * boxes.length - 24} height={200}>
     {boxes.map((box, index) => <g key={box.id} className="mx-block" data-block={box.block} data-trained={box.active} data-kind={box.kind}>
       <rect x={12 + index * step} y="44" width={boxWidth} height="104" rx="8" />
@@ -185,8 +189,9 @@ function VitBlocks({ data, phase }: ChartProps) {
       const x = 8 + (index % columns) * size, y = 8 + Math.floor(index / columns) * 92;
       return <g key={block.id} data-block={block.id} data-trained={isTrained(block, phase)} data-kind={block.kind} className="mx-block"><title>{block.label}</title>
         <rect x={x} y={y} width={size - 12} height="76" rx="8" />
-        <text className="mx-name" x={x + (size - 12) / 2} y={y + 34} textAnchor="middle">{block.label}</text>
-        <text className="mx-dimension" x={x + (size - 12) / 2} y={y + 56} textAnchor="middle">{block.kind === 'output' ? outputText(data.output) : isTrained(block, phase) ? 'Entrenado' : 'Congelado'}</text>
+        <text className="mx-name" x={x + (size - 12) / 2} y={y + 28} textAnchor="middle">{block.label}</text>
+        <text className="mx-dimension" x={x + (size - 12) / 2} y={y + 48} textAnchor="middle">{block.kind === 'output' ? outputText(data.output) : isTrained(block, phase) ? 'Entrenado' : 'Congelado'}</text>
+        {block.parameters != null && block.kind !== 'output' && <text className="mx-dimension" x={x + (size - 12) / 2} y={y + 66} textAnchor="middle">{countText(block.parameters)} parám.</text>}
       </g>;
     })}
   </Frame>;
@@ -198,7 +203,7 @@ function LayerTable({ data, phase }: ChartProps) {
   if (!data.layers.length) return <div className="report-table-scroll"><table className="report-data-table"><caption>Bloques del modelo</caption>
     <thead><tr><th>Bloque</th><th>Dimensión de salida</th><th>Activación</th><th>Parámetros</th><th>Estado en la fase</th><th>Origen</th></tr></thead>
     <tbody>{data.blocks.map(block => <tr key={block.id}><th scope="row">{block.label}</th><td>{shapeText(block.output_shape)}</td><td>{block.kind === 'output' ? data.output?.activation ?? '—' : '—'}</td><td>{countText(block.parameters)}</td>
-      <td>{block.kind === 'input' ? 'No aplica' : isTrained(block, phase) ? 'Entrenado' : 'Congelado'}</td><td>{block.origin === 'recorded' ? 'Registrado' : 'Referencia del encoder'}</td></tr>)}</tbody></table></div>;
+      <td>{block.kind === 'input' ? 'No aplica' : isTrained(block, phase) ? 'Entrenado' : 'Congelado'}</td><td>{block.origin === 'recorded' ? 'Registrado' : block.origin === 'derived' ? 'Derivado de la base' : 'Referencia del encoder'}</td></tr>)}</tbody></table></div>;
   return <>
     <label className="mx-filter">Bloque<select className="ds-control" value={blockId} onChange={event => setBlockId(event.target.value)}>
       <option value="">Todos ({data.layers.length} capas)</option>

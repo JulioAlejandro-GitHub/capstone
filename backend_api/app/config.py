@@ -115,6 +115,7 @@ class Settings:
     storage_root: Path
     artifacts_root: Path
     activation_trace_root: Path
+    model_structure_root: Path
     max_upload_size_bytes: int
     max_image_pixels: int
     upload_chunk_size_bytes: int
@@ -200,6 +201,7 @@ class Settings:
             storage_root=storage_root,
             artifacts_root=artifacts_root,
             activation_trace_root=Path(os.getenv("ACTIVATION_TRACE_ROOT", "./var/storage/activation-traces")).expanduser(),
+            model_structure_root=Path(os.getenv("MODEL_STRUCTURE_ROOT", "./var/storage/model-structures")).expanduser(),
             max_upload_size_bytes=_int("MAX_UPLOAD_SIZE_BYTES", 20_971_520, 1),
             max_image_pixels=_int("MAX_IMAGE_PIXELS", 100_000_000, 1),
             upload_chunk_size_bytes=_int("UPLOAD_CHUNK_SIZE_BYTES", 1_048_576, 1),

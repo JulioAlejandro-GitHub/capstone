@@ -18,8 +18,20 @@ export interface ArchitectureOutput {
   meaning: string | null; embedding_features?: number | null;
 }
 
+export interface LearningRateGroup { group: string | null; learning_rate: number | null; parameters?: number | null }
+
 export interface ArchitecturePhase {
   phase: string; trainable_parameters: number | null; trainable_tensors: number | null; encoder: string | null;
+  /** ViT: el conjunto entrenable registrado frente al que declara la base registrada. */
+  structure_check?: 'match' | 'mismatch' | null;
+  /** Learning rate inicial de cada grupo del optimizador en la fase (Keras: un grupo «model»). */
+  learning_rates?: LearningRateGroup[];
+}
+
+/** Estructura de un ViT derivada una vez desde la base registrada (SHA-256), no desde pesos entrenados. */
+export interface ArchitectureStructure {
+  origin: 'derived'; base_sha256: string; vit_blocks: number | null; patch_size: number[] | null; width: number | null;
+  patches: number | null; tokens: number | null;
 }
 
 export interface ModelArchitecture {
@@ -27,4 +39,5 @@ export interface ModelArchitecture {
   family: ArchitectureFamily; framework: string | null; input_shape: ArchitectureShape; output: ArchitectureOutput | null;
   total_parameters: number | null; checkpoint: { artifact_id: string | null; selected_epoch: number | null; phase: string | null };
   phases: ArchitecturePhase[]; blocks: ArchitectureBlock[]; layers: ArchitectureLayer[];
+  structure?: ArchitectureStructure | null;
 }

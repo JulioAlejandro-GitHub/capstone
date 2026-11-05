@@ -653,7 +653,8 @@ export const api = {
     });
   },
   getModelArchitecture(datasource: string, runId: string, signal?: AbortSignal) {
-    return request<ModelArchitecture>(`/runs/${encodeURIComponent(runId)}/architecture`, withDatasource(datasource), {signal});
+    // Un ViT deriva su estructura de la base registrada la primera vez (carga del modelo en el backend); luego se lee guardada.
+    return request<ModelArchitecture>(`/runs/${encodeURIComponent(runId)}/architecture`, withDatasource(datasource), {signal, timeoutMs: 250000});
   },
   getActivationTraces(datasource: string, runId: string, signal?: AbortSignal) {
     return request<ActivationTraceCatalog>(`/runs/${encodeURIComponent(runId)}/activation-traces`, withDatasource(datasource), {signal});

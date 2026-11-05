@@ -38,11 +38,30 @@ class ArchitectureOutput(BaseModel):
     embedding_features: int | None = None
 
 
+class LearningRateGroup(BaseModel):
+    group: str | None
+    learning_rate: float | None
+    parameters: int | None = None
+
+
 class ArchitecturePhase(BaseModel):
     phase: str
     trainable_parameters: int | None
     trainable_tensors: int | None = None
     encoder: str | None = None
+    # ViT: recorded trainable set against the one the registered base declares for that encoder setting.
+    structure_check: Literal['match', 'mismatch'] | None = None
+    learning_rates: list[LearningRateGroup] = []
+
+
+class ArchitectureStructure(BaseModel):
+    origin: Literal['derived']
+    base_sha256: str
+    vit_blocks: int | None = None
+    patch_size: list[int] | None = None
+    width: int | None = None
+    patches: int | None = None
+    tokens: int | None = None
 
 
 class ArchitectureCheckpoint(BaseModel):
@@ -66,3 +85,4 @@ class ModelArchitecture(BaseModel):
     phases: list[ArchitecturePhase]
     blocks: list[ArchitectureBlock]
     layers: list[ArchitectureLayer]
+    structure: ArchitectureStructure | None = None

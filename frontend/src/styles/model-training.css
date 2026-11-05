@@ -272,3 +272,4 @@ button.mt-flag:disabled { cursor: default; }
 .mt-analysis p { margin: 0; font-size: 12.5px; }
 .mt-analysis-state { margin-top: auto; font: 600 11px var(--mt-mono); color: var(--mt-warn); }
 .mt-analysis[data-origin="sin_evidencia"] .mt-analysis-state { color: var(--ds-fg-muted); }
+.mt-na { margin: 0; font-size: 12.5px; }

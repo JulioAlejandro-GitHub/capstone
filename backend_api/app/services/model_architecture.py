@@ -1,10 +1,12 @@
-"""Normalize the architecture recorded by TRAIN. Reads persisted evidence only; no model is loaded."""
+"""Normalize the architecture recorded by TRAIN from persisted evidence. Keras records its layers; for a ViT the
+block structure is derived once from the registered base (``vit_structure``), never from trained weights."""
 import re
 from typing import Annotated, Any
 from uuid import UUID
 from fastapi import Depends, HTTPException
 from app.repositories.model_architecture import ModelArchitectureRepository
 from app.services.scientific_report import checkpoint_evidence
+from app.services.vit_structure import StructureUnavailable, VitStructureService
 from src.malaria_dl.models.biomedclip_training import VIT_BLOCKS
 
 SETTINGS = ('filters', 'kernel_size', 'strides', 'pool_size', 'padding', 'activation', 'units', 'rate', 'use_bias',
@@ -165,7 +167,7 @@ def normalize_keras(records: list[dict[str, Any]], family: str) -> dict[str, Any
         architecture = record['payload']['architecture']
         _flatten(architecture.get('config', architecture), record['phase'], layers)
         trained = sum(layer['weights'] for layer in layers.values() if record['phase'] in layer['trainable_phases'])
-        phases.append(dict(phase=record['phase'], trainable_parameters=trained))
+        phases.append(dict(phase=record['phase'], trainable_parameters=trained, learning_rates=learning_rates(record['payload'])))
     ordered = list(layers.values())
     contract_output = records[-1]['payload'].get('output_contract') or {}
     _last_shape(ordered, contract_output)
@@ -187,8 +189,29 @@ def _vit_trained(encoder: str | None) -> set[int]:
     return set(range(VIT_BLOCKS - int(match[1]), VIT_BLOCKS)) if match else set()
 
 
-def normalize_biomedclip(records: list[dict[str, Any]], configuration: dict[str, Any] | None) -> dict[str, Any]:
-    """The TRAIN records tensor counts, not layers: the ViT structure is the registered encoder's."""
+def _fine_tune_layers(encoder: str | None) -> int | None:
+    if encoder == 'frozen':
+        return 0
+    if encoder == 'full':
+        return VIT_BLOCKS
+    match = re.fullmatch(r'last_(\d+)_blocks', encoder or '')
+    return int(match[1]) if match else None
+
+
+def learning_rates(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Initial learning rate of each optimizer group in a phase, as recorded at the phase start."""
+    optimizer = payload.get('optimizer') or {}
+    groups = optimizer.get('groups')
+    if isinstance(groups, list):
+        return [dict(group=g.get('name'), learning_rate=g.get('lr'), parameters=g.get('parameters')) for g in groups if isinstance(g, dict)]
+    rate = optimizer.get('learning_rate')
+    return [dict(group='model', learning_rate=rate, parameters=None)] if isinstance(rate, (int, float)) else []
+
+
+def normalize_biomedclip(records: list[dict[str, Any]], configuration: dict[str, Any] | None,
+                         structure: dict[str, Any] | None = None) -> dict[str, Any]:
+    """The TRAIN records tensor counts, not layers. Block shapes and parameters come from the registered base
+    (``structure``, derived once per base SHA-256); without it the ViT blocks stay a reference structure."""
     extension = (configuration or {}).get('extension_configuration') or {}
     head = (extension.get('recipe') or {}).get('head') or {}
     side = (configuration or {}).get('input_height')
@@ -196,31 +219,86 @@ def normalize_biomedclip(records: list[dict[str, Any]], configuration: dict[str,
     width = (configuration or {}).get('input_width')
     shape = [None, side, width, channels] if side else None
     encoded = [(record['phase'], record['payload'].get('encoder')) for record in records]
-    block = lambda id_, label, kind, output, phases, origin, parameters=None: dict(
-        id=id_, label=label, kind=kind, layers=1, units=None, output_shape=output, parameters=parameters,
-        trainable_phases=phases, origin=origin)
+    derived = (structure or {}).get('blocks') or {}
+    trained_in = lambda test: [phase for phase, encoder in encoded if (layers := _fine_tune_layers(encoder)) is not None and test(layers)]
+
+    def block(id_, label, kind, output, phases, origin, parameters=None):
+        part = derived.get(id_) if structure else None
+        if part:
+            output, parameters, origin = [None, *part['output_shape'][1:]], part['parameters'], 'derived' if origin == 'reference' else origin
+        return dict(id=id_, label=label, kind=kind, layers=1, units=None, output_shape=output, parameters=parameters,
+                    trainable_phases=phases, origin=origin)
+
     embedding = head.get('in_features')
-    blocks = [block('input', 'Entrada', 'input', shape, [], 'recorded')]
+    # With the base structure every block has a known count; the input carries no weights.
+    blocks = [block('input', 'Entrada', 'input', shape, [], 'recorded', 0 if structure else None)]
+    if structure:
+        blocks.append(block('embedding', 'Parches y posición', 'transition', None, trained_in(lambda n: n == VIT_BLOCKS), 'reference'))
     blocks += [block(f'vit{index}', f'Bloque ViT {index + 1}', 'encoder', None,
                      [phase for phase, encoder in encoded if index in _vit_trained(encoder)], 'reference')
                for index in range(VIT_BLOCKS)]
+    if structure:
+        blocks.append(block('projection', 'Norma y proyección', 'head', None, trained_in(lambda n: n > 0), 'reference'))
     blocks.append(block('output', 'Capa de salida', 'output', [None, head.get('out_features')],
                         [phase for phase, _ in encoded], 'recorded', (embedding + 1) if embedding else None))
-    phases = [dict(phase=record['phase'], encoder=record['payload'].get('encoder'),
-                   trainable_parameters=(record['payload'].get('trainable_parameters') or {}).get('elements'),
-                   trainable_tensors=(record['payload'].get('trainable_parameters') or {}).get('count'))
-              for record in records]
+    issues, phases = [], []
+    for record in records:
+        payload = record['payload']
+        recorded = payload.get('trainable_parameters') or {}
+        layers = _fine_tune_layers(payload.get('encoder'))
+        expected = ((structure or {}).get('trainable') or {}).get(str(layers)) if layers is not None else None
+        check = None
+        if expected:
+            check = 'match' if all(recorded.get(key) == expected[key] for key in ('names_sha256', 'count', 'elements')) else 'mismatch'
+            if check == 'mismatch':
+                issues.append(f"Fase {record['phase']}: el conjunto entrenable registrado no coincide con el que declara la base para "
+                              f"{payload.get('encoder')} ({recorded.get('elements')} vs {expected['elements']} parámetros).")
+        phases.append(dict(phase=record['phase'], encoder=payload.get('encoder'),
+                           trainable_parameters=recorded.get('elements'), trainable_tensors=recorded.get('count'),
+                           structure_check=check, learning_rates=learning_rates(payload)))
     contract = (extension.get('input_contract') or {}).get('output') or {}
-    return dict(framework=records[-1]['payload'].get('framework'), input_shape=shape,
-                output=dict(neurons=head.get('out_features'), activation=head.get('activation'), loss=head.get('loss'),
-                            from_logits=head.get('loss') == 'bce_with_logits', meaning=contract.get('meaning'),
-                            embedding_features=embedding),
-                phases=phases, blocks=blocks, layers=[], total_parameters=None)
+    result = dict(framework=records[-1]['payload'].get('framework'), input_shape=shape,
+                  output=dict(neurons=head.get('out_features'), activation=head.get('activation'), loss=head.get('loss'),
+                              from_logits=head.get('loss') == 'bce_with_logits', meaning=contract.get('meaning'),
+                              embedding_features=embedding),
+                  phases=phases, blocks=blocks, layers=[], total_parameters=(structure or {}).get('total_parameters'),
+                  structure=None)
+    if structure:
+        patches = derived.get('embedding', {}).get('patches')
+        result['structure'] = dict(origin='derived', base_sha256=structure['base']['sha256'], vit_blocks=structure.get('vit_blocks'),
+                                   patch_size=structure.get('patch_size'), width=structure.get('width'),
+                                   patches=patches[1] if patches and len(patches) == 3 else None,
+                                   tokens=(derived.get('vit0', {}).get('output_shape') or [None, None])[1])
+        if derived.get('other', {}).get('parameters'):
+            issues.append('La base tiene parámetros fuera de los bloques conocidos; se cuentan en el total, no en un bloque.')
+    return dict(result, issues=issues)
+
+
+def recorded_base(records: list[dict[str, Any]], configuration: dict[str, Any] | None) -> tuple[dict[str, Any] | None, str | None]:
+    """The registered base of the recipe, only if every phase of the TRAIN recorded that same checkpoint."""
+    base = (((configuration or {}).get('extension_configuration') or {}).get('recipe') or {}).get('base_model')
+    sha256 = ((base or {}).get('checkpoint') or {}).get('sha256')
+    if not sha256:
+        return None, 'La receta no identifica la base registrada: los bloques ViT quedan como estructura de referencia.'
+    used = {((record['payload'].get('base_model') or {}).get('checkpoint') or {}).get('sha256') for record in records}
+    if used != {sha256}:
+        return None, 'La base registrada por TRAIN no coincide con la de la receta: los bloques ViT quedan como estructura de referencia.'
+    return base, None
 
 
 class ModelArchitectureService:
-    def __init__(self, repository: ModelArchitectureRepository) -> None:
+    def __init__(self, repository: ModelArchitectureRepository, structures: VitStructureService | None = None) -> None:
         self.repository = repository
+        self.structures = structures or VitStructureService()
+
+    def vit_structure(self, records, configuration) -> tuple[dict[str, Any] | None, list[str]]:
+        base, issue = recorded_base(records, configuration)
+        if base is None:
+            return None, [issue]
+        try:
+            return self.structures.read(base, int((configuration or {}).get('input_height') or 224)), []
+        except StructureUnavailable as error:
+            return None, [f'{error} Los bloques ViT quedan como estructura de referencia.']
 
     def read(self, run_id: UUID, datasource: str | None) -> dict[str, Any]:
         source = self.repository.read(run_id, datasource)
@@ -241,7 +319,9 @@ class ModelArchitectureService:
         if not records:
             return dict(result, state='missing', issues=['Este TRAIN no registró su configuración de ejecución.'])
         if family == 'biomedclip':
-            return dict(result, **normalize_biomedclip(records, configuration))
+            structure, issues = self.vit_structure(records, configuration)
+            normalized = normalize_biomedclip(records, configuration, structure)
+            return {**result, **normalized, 'issues': issues + normalized['issues']}
         if any('architecture' not in record['payload'] for record in records):
             return dict(result, state='missing', issues=['El registro de ejecución no incluye la arquitectura.'])
         return dict(result, **normalize_keras(records, family))
