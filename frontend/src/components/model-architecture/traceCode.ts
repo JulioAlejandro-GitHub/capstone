@@ -43,7 +43,22 @@ export function stepLayers(data: ModelArchitecture | null | undefined, step: Act
   return own ? [own] : [];
 }
 
+/** ViT step (timm VisionTransformer inside OpenCLIP): what the block computes, with the registered base's sizes. */
+function vitCode(data: ModelArchitecture, step: ActivationTraceStep): string {
+  const s = data.structure, patch = s?.patch_size?.[0] ?? 16, width = s?.width ?? 768, tokens = s?.tokens ?? 197;
+  if (step.block === 'embedding') return [`x = patch_embed(image)        # Conv2d(3, ${width}, kernel=${patch}, stride=${patch}) → ${s?.patches ?? tokens - 1} parches × ${width}`,
+    `x = concat([cls_token, x]) + pos_embed  # ${tokens} tokens × ${width}`].join('\n');
+  const block = /^vit(\d+)$/.exec(step.block);
+  if (block) return [`# Bloque ${Number(block[1]) + 1} de ${s?.vit_blocks ?? 12} · la forma no cambia: ${tokens} × ${width}`,
+    'x = x + attn(norm1(x))   # autoatención multicabeza entre todos los tokens', 'x = x + mlp(norm2(x))    # MLP por token'].join('\n');
+  if (step.block === 'projection') return `z = normalize(proj(norm(x)[:, 0]))   # token de clase → ${data.output?.embedding_features ?? 512}, norma L2`;
+  return data.zero_shot
+    ? `p = softmax(logit_scale.exp() * z @ text_features.T)   # ${data.zero_shot.prompts.length} prompts: ${data.zero_shot.class_order.join(', ')}`
+    : 'p = sigmoid(head(z))   # Linear(512 → 1)';
+}
+
 export function stepCode(data: ModelArchitecture | null | undefined, step: ActivationTraceStep | null, inputShape?: number[]): string {
+  if (data?.family === 'biomedclip' && step) return vitCode(data, step);
   if (!step) {
     const shape = inputShape ?? (data?.input_shape ?? []).slice(1).filter((value): value is number => value != null);
     return `inputs = layers.Input(shape=(${shape.join(', ')}))`;

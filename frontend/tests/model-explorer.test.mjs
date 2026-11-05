@@ -167,7 +167,7 @@ test('abrir el panel solo lee lo guardado y el cálculo exige una acción y perm
   assert.match(panel, /no coincide con el guardado/);
   assert.match(panel, /window\.confirm/);
   assert.match(read('components/model-architecture/ArchitectureDetail.tsx'), /isTraceable\(data\.family\) && <ActivationTracePanel/);
-  assert.match(read('components/model-architecture/architectureViews.ts'), /traceableFamilies: ArchitectureFamily\[\] = \['vgg16', 'custom_cnn', 'densenet121'\]/);
+  assert.match(read('components/model-architecture/architectureViews.ts'), /traceableFamilies: ArchitectureFamily\[\] = \['vgg16', 'custom_cnn', 'densenet121', 'biomedclip'\]/);
 });
 
 test('el código de cada paso sale de la configuración registrada del TRAIN', () => {

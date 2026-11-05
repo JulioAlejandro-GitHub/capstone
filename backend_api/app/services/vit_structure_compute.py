@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-VERSION = 'vit_structure_v1'
+VERSION = 'vit_structure_v2'
 EMBEDDING = ('visual.trunk.patch_embed.', 'visual.trunk.cls_token', 'visual.trunk.pos_embed', 'visual.trunk.reg_token')
 PROJECTION = ('visual.trunk.norm.', 'visual.trunk.fc_norm.', 'visual.head.')
 
@@ -31,6 +31,42 @@ def group_of(name: str) -> str:
     return 'other'
 
 
+def registered_size(files: dict[str, Any]) -> int | None:
+    """Image side of the base's own registered configuration (preprocess_cfg.size or vision_cfg.image_size)."""
+    path = next((d.get('path') for d in files.get('dependencies') or [] if d.get('role') == 'model_config'), None)
+    try:
+        config = json.loads(Path(path).read_text()) if path else None
+    except (OSError, ValueError):
+        return None
+    if not isinstance(config, dict):
+        return None
+    size = (config.get('preprocess_cfg') or {}).get('size') or ((config.get('model_cfg') or {}).get('vision_cfg') or {}).get('image_size')
+    size = size[0] if isinstance(size, (list, tuple)) else size
+    return int(size) if isinstance(size, (int, float)) and size > 0 else None
+
+
+def text_tower(path: str) -> dict[str, Any] | None:
+    """Parameters of the text tower and the logit scale, read from the base checkpoint's tensors (no model built).
+    A zero-shot classifier compares the image embedding with the prompts' embeddings through them."""
+    import torch
+
+    if not path:
+        return None
+    try:
+        try:
+            state = torch.load(path, map_location='cpu', mmap=True, weights_only=True)
+        except RuntimeError:  # not a zip checkpoint: mmap is unavailable
+            state = torch.load(path, map_location='cpu', weights_only=True)
+    except Exception:  # noqa: BLE001 -- the structure stays valid without the text tower
+        return None
+    state = state.get('state_dict', state) if isinstance(state, dict) else {}
+    # Integer buffers (e.g. BERT position_ids) are stored with the weights but are not parameters.
+    text = [value for key, value in state.items() if key.startswith('text.') and value.is_floating_point()]
+    scale = state.get('logit_scale')
+    return {'parameters': sum(value.numel() for value in text), 'tensors': len(text),
+            'logit_scale': scale.numel() if scale is not None else 0} if text else None
+
+
 def compute(base: dict[str, Any], input_size: int) -> dict[str, Any]:
     import torch
 
@@ -38,6 +74,7 @@ def compute(base: dict[str, Any], input_size: int) -> dict[str, Any]:
     from src.malaria_dl.models.biomedclip_training import VIT_BLOCKS, base_files, build, trainable_names
 
     files = base_files(base)
+    input_size = registered_size(files) or input_size
     model, _ = build(files)
     model.eval()
     blocks: dict[str, dict[str, Any]] = {}
@@ -72,7 +109,8 @@ def compute(base: dict[str, Any], input_size: int) -> dict[str, Any]:
     return dict(version=VERSION, base={'sha256': files['checkpoint']['sha256'], 'bytes': files['checkpoint']['bytes']},
                 input_size=input_size, vit_blocks=len(trunk.blocks), patch_size=list(patch) if patch else None,
                 width=int(trunk.embed_dim), total_parameters=sum(p.numel() for p in model.parameters()),
-                blocks=blocks, trainable=trainable, created_at=datetime.now(timezone.utc).isoformat())
+                blocks=blocks, trainable=trainable, text=text_tower(files['checkpoint'].get('path')),
+                created_at=datetime.now(timezone.utc).isoformat())
 
 
 def write_atomic(path: Path, payload: dict[str, Any]) -> None:

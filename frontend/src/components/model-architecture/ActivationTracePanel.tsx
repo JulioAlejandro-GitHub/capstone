@@ -62,27 +62,45 @@ function MapCanvas({ map, layer, scale, label }: { map: ActivationTraceStep['map
 }
 
 function SpatialMaps({ step, scale, onScale, picked, onPick }: { step: ActivationTraceStep; scale: MapScale; onScale: (scale: MapScale) => void; picked: number | null; onPick: (channel: number | null) => void }) {
+  // ViT: each map is one token dimension over the patch grid; a CNN map is one channel.
+  const unit = step.tokens != null ? 'Dimensión' : 'Canal', units = step.tokens != null ? 'dimensiones' : 'canales';
+  const attention = step.attention ? { channel: -1, mean: 0, png: step.attention.png, min: step.attention.min, max: step.attention.max } : null;
   const ranged = step.maps.every(map => map.min != null && map.max != null);
   const effective: MapScale = ranged ? scale : 'channel';
   const layer = useMemo(() => ranged ? { min: Math.min(...step.maps.map(map => map.min!)), max: Math.max(...step.maps.map(map => map.max!)) } : { min: 0, max: 1 }, [ranged, step.maps]);
   return <>
+    {step.tokens != null && <div className="mx-vit-summary">
+      {attention && <figure className="mx-attention"><MapCanvas map={attention} layer={{ min: attention.min, max: attention.max }} scale="channel" label="Atención del token de clase sobre los parches" />
+        <figcaption>Atención del token de clase sobre los {step.shape[0]}×{step.shape[1]} parches (promedio de las cabezas): dónde mira, no qué causa la predicción.</figcaption></figure>}
+      <dl className="mx-stats mx-stats--stack">
+        <div><dt>Tokens</dt><dd>{step.tokens} × {step.shape[2]}</dd></div>
+        {step.cls_similarity != null && <div><dt>CLS vs. último bloque</dt><dd>{number(step.cls_similarity, 3)}</dd></div>}
+      </dl>
+    </div>}
     <div className="mx-maps-toolbar">
       <div className="scc-segmented" role="group" aria-label="Escala de color">
         <button type="button" className="ds-button" data-size="compact" aria-pressed={effective === 'layer'} disabled={!ranged} onClick={() => onScale('layer')}>Escala común</button>
-        <button type="button" className="ds-button" data-size="compact" aria-pressed={effective === 'channel'} onClick={() => onScale('channel')}>Por canal</button>
+        <button type="button" className="ds-button" data-size="compact" aria-pressed={effective === 'channel'} onClick={() => onScale('channel')}>Por {unit.toLowerCase()}</button>
       </div>
       <div className="mx-colorbar" aria-label="Leyenda de color"><span>{effective === 'layer' ? stat(layer.min) : 'mín.'}</span>
         <i style={{ background: CIVIDIS_GRADIENT }} /><span>{effective === 'layer' ? stat(layer.max) : 'máx.'}</span></div>
     </div>
     <ol className="mx-maps">{step.maps.map((map, rank) => <li key={map.channel}>
-      <button type="button" aria-pressed={picked === map.channel} title={`Canal ${map.channel} · media ${stat(map.mean)}${map.max != null ? ` · máx. ${stat(map.max)}` : ''}`}
+      <button type="button" aria-pressed={picked === map.channel} title={`${unit} ${map.channel} · media ${stat(map.mean)}${map.max != null ? ` · máx. ${stat(map.max)}` : ''}`}
         onClick={() => onPick(picked === map.channel ? null : map.channel)}>
-        <MapCanvas map={map} layer={layer} scale={effective} label={`Canal ${map.channel}`} />
+        <MapCanvas map={map} layer={layer} scale={effective} label={`${unit} ${map.channel}`} />
         <span className="mx-map-caption"><b>#{map.channel}</b><small>{rank + 1}º · μ {stat(map.mean)}</small></span>
       </button></li>)}</ol>
-    <p className="scc-meta">{effective === 'layer' ? 'Todos los canales comparten la escala de la capa: un mapa más claro es una activación mayor.' : 'Cada mapa usa su propia escala: muestra dónde se activa un canal, no cuánto respecto de otros.'}
-      {!ranged && ' Este recorrido es anterior a la escala común; vuelve a calcularlo para habilitarla.'} Selecciona un canal para proyectarlo sobre la célula.</p>
+    <p className="scc-meta">{effective === 'layer' ? `Todas las ${units} comparten la escala de la capa: un mapa más claro es un valor mayor.` : `Cada mapa usa su propia escala: muestra dónde es alta una ${unit.toLowerCase()}, no cuánto respecto de otras.`}
+      {!ranged && ' Este recorrido es anterior a la escala común; vuelve a calcularlo para habilitarla.'} Selecciona {step.tokens != null ? 'una dimensión' : 'un canal'} para proyectarla sobre la célula.</p>
   </>;
+}
+
+/** Where to compare this trace with the explanations: Grad-CAM weighs the last convolutional block; a ViT has none. */
+function explainHint(architecture: ModelArchitecture): string {
+  if (architecture.family === 'biomedclip') return 'En un ViT no aplica Grad-CAM: compara la atención del token de clase de los últimos bloques con LIME y SHAP de esta célula.';
+  const last = [...architecture.blocks].reverse().find(block => ['convolution', 'dense', 'transition'].includes(block.kind));
+  return `Grad-CAM pondera los mapas del último bloque convolucional. Compáralos con los canales de ${last?.label ?? 'ese bloque'} de esta célula.`;
 }
 
 /** The cell image as the access to «Vista ampliada» (rule: every cell image opens it, unless its EVALUATE context is missing). */
@@ -92,9 +110,11 @@ function CellImage({ trace, alt, onOpen, pending }: { trace: ActivationTrace; al
     title={pending ? 'Abriendo «Vista ampliada»…' : 'Vista ampliada: célula original y explicabilidad'}>{image}</button> : image;
 }
 
-function StepBody({ trace, index, inputShape, scale, onScale, picked, onPick, onOpen, pending }: { trace: ActivationTrace; index: number; inputShape: number[]; scale: MapScale; onScale: (scale: MapScale) => void; picked: number | null; onPick: (channel: number | null) => void; onOpen?: () => void; pending?: boolean }) {
+function StepBody({ trace, index, inputShape, scale, onScale, picked, onPick, onOpen, pending, vit }: { trace: ActivationTrace; index: number; inputShape: number[]; scale: MapScale; onScale: (scale: MapScale) => void; picked: number | null; onPick: (channel: number | null) => void; onOpen?: () => void; pending?: boolean; vit?: boolean }) {
   if (index === 0) return <div className="mx-input-body"><CellImage trace={trace} alt="Célula original a tamaño de entrada" onOpen={onOpen} pending={pending} />
-    <p>La imagen entra como un tensor de {shapeOf(inputShape)}, uno por canal de color. Cada bloque siguiente reduce el tamaño a la mitad y multiplica los canales: el modelo cambia resolución espacial por cantidad de patrones.</p></div>;
+    {vit
+      ? <p>La imagen entra como un tensor de {shapeOf(inputShape)} y se corta en parches cuadrados: cada parche, más un token de clase, es un vector de la misma dimensión. Los bloques no cambian esa forma; cambian lo que representa cada token.</p>
+      :     <p>La imagen entra como un tensor de {shapeOf(inputShape)}, uno por canal de color. Cada bloque siguiente reduce el tamaño a la mitad y multiplica los canales: el modelo cambia resolución espacial por cantidad de patrones.</p>}</div>;
   const step = trace.steps[index - 1];
   if (step.kind === 'spatial') return <SpatialMaps step={step} scale={scale} onScale={onScale} picked={picked} onPick={onPick} />;
   if (step.kind === 'output') return <div className="mx-output-body">
@@ -292,7 +312,7 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture,
               {pickedMap && step && <MapCanvas key={`${index}-${picked}`} map={pickedMap} scale={scale}
                 layer={{ min: Math.min(...step.maps.map(map => map.min ?? 0)), max: Math.max(...step.maps.map(map => map.max ?? 1)) }} label={`Canal ${picked} sobre la célula`} />}
             </div>
-            <figcaption>{pickedMap ? <>Canal #{picked} proyectado (aprox.: el pooling recorta bordes)</> : <>{trace.split.toUpperCase()} · {shortId(trace.sample_id)}</>}
+            <figcaption>{pickedMap ? step?.tokens != null ? <>Dimensión #{picked} proyectada (aprox.: el preprocesamiento recorta y reescala)</> : <>Canal #{picked} proyectado (aprox.: el pooling recorta bordes)</> : <>{trace.split.toUpperCase()} · {shortId(trace.sample_id)}</>}
               {contextError ? <> · «Vista ampliada» no disponible: {contextError}</> : <> · clic en la imagen para la vista ampliada</>}</figcaption>
           </figure>
           {comparison && <GeneratedXAIComparison key={comparison.id} comparison={comparison} datasource={datasource} variant="modal" lazy
@@ -316,7 +336,7 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture,
             {change && <div><dt>Δ activos vs. paso anterior</dt><dd data-trend={change.active >= 0 ? 'up' : 'down'}>{change.active >= 0 ? '+' : ''}{points(change.active)}</dd></div>}
             {compareStep && compareStep.kind !== 'output' && <div data-compare><dt>Activos · {outcomeLabel(outcomeKey(compare!))}</dt><dd>{percent(compareStep.stats.active)}</dd></div>}
           </dl>}
-          <StepBody trace={trace} index={index} inputShape={inputShape} scale={scale} onScale={setScale} picked={picked} onPick={setPicked} onOpen={openCell} pending={expandPending} />
+          <StepBody trace={trace} index={index} inputShape={inputShape} scale={scale} onScale={setScale} picked={picked} onPick={setPicked} onOpen={openCell} pending={expandPending} vit={architecture.family === 'biomedclip'} />
           <p className="scc-meta">{step?.kind === 'spatial' ? `${trace.selection} de ${step.shape[2]}.` : ''} Valores calculados con este checkpoint para una sola célula: lo observado es una hipótesis, no una conclusión sobre el modelo.</p>
         </div>
 
@@ -345,11 +365,12 @@ export function ActivationTracePanel({ runId, datasource, onBlock, architecture,
             <p className="scc-meta">Un falso negativo junto a un verdadero positivo muestra en qué bloque se separan sus señales.</p>
           </section>
           <section aria-label="Aprendizaje"><h5>¿De qué época es este checkpoint?</h5>
-            {curve === 'loading' ? <p role="status">Consultando curvas…</p> : curve ? <MiniCurves curve={curve} /> : <p className="scc-meta">Sin curvas registradas para este TRAIN.</p>}
+            {architecture.zero_shot ? <p className="scc-meta">Modelo zero-shot: no hubo entrenamiento ni épocas; el checkpoint es la versión registrada.</p>
+              : curve === 'loading' ? <p role="status">Consultando curvas…</p> : curve ? <MiniCurves curve={curve} /> : <p className="scc-meta">Sin curvas registradas para este TRAIN.</p>}
             <Link className="ds-button" data-size="compact" onClick={selectRun} to={withAllowedQuery(routes.comparison, { datasource, seccion: 'aprendizaje' })}>Abrir Curvas TRAIN / VAL</Link>
           </section>
           <section aria-label="Explicabilidad"><h5>¿Qué miró el modelo?</h5>
-            <p className="mx-explain-text">Grad-CAM pondera los mapas del último bloque convolucional. Compáralos con los canales de Bloque 5 de esta célula.</p>
+            <p className="mx-explain-text">{explainHint(architecture)}</p>
             <Link className="ds-button" data-size="compact" onClick={selectRun} to={withAllowedQuery(routes.comparison, { datasource, seccion: 'explicabilidad', muestra: trace.sample_id })}>Ver explicabilidad de esta célula</Link>
           </section>
         </div>

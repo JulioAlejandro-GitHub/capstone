@@ -206,3 +206,11 @@
 .mx-page .mx-specimen-frame .mx-cell-open { position: absolute; inset: 0; height: 100%; border-radius: 0; }
 .mx-page .mx-specimen-frame canvas { pointer-events: none; }
 .mx-page .mx-input-body .mx-cell-open img { display: block; }
+.mx-page .mx-prompts { display: block; margin-top: 6px; font-size: 13px; }
+.mx-page .mx-prompts > span { display: block; }
+.mx-page .mx-prompts b { font-weight: 600; margin-right: 6px; }
+/* ViT: atención del token de clase junto a los mapas por dimensión */
+.mx-page .mx-vit-summary { display: grid; grid-template-columns: minmax(0, 180px) 1fr; gap: var(--ds-space-4); align-items: start; margin-bottom: var(--ds-space-3); }
+.mx-page .mx-attention { margin: 0; }
+.mx-page .mx-attention canvas { width: 100%; aspect-ratio: 1; image-rendering: pixelated; border-radius: var(--ds-radius-md); border: 1px solid var(--ds-border-default); display: block; }
+.mx-page .mx-attention figcaption { font-size: 12px; color: var(--ds-fg-muted); margin-top: 4px; }

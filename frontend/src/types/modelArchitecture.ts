@@ -40,4 +40,6 @@ export interface ModelArchitecture {
   total_parameters: number | null; checkpoint: { artifact_id: string | null; selected_epoch: number | null; phase: string | null };
   phases: ArchitecturePhase[]; blocks: ArchitectureBlock[]; layers: ArchitectureLayer[];
   structure?: ArchitectureStructure | null;
+  /** TRAIN lógico (zero-shot): protocolo congelado de la versión registrada; no hubo entrenamiento. */
+  zero_shot?: { model_version_id: string; prompts: string[]; class_order: string[]; training_performed: boolean } | null;
 }

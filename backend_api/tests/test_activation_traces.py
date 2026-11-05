@@ -45,7 +45,7 @@ def test_only_traceable_cnns_are_supported_and_other_models_say_why(tmp_path):
     assert ActivationTraceService(Evaluations(), Architecture('custom_cnn'), tmp_path).catalog(uuid4(), 'malaria')['available']
     assert ActivationTraceService(Evaluations(), Architecture('densenet121'), tmp_path).catalog(uuid4(), 'malaria')['available']
     result = ActivationTraceService(Evaluations(), Architecture('biomedclip_linear'), tmp_path).catalog(uuid4(), 'malaria')
-    assert not result['available'] and result['reason'] == 'El recorrido por capas está disponible para VGG16, CNN propia y DenseNet121.'
+    assert not result['available'] and result['reason'] == 'El recorrido por capas está disponible para VGG16, CNN propia, DenseNet121 y BiomedCLIP zero-shot.'
     with pytest.raises(HTTPException) as error:
         ActivationTraceService(Evaluations(), Architecture('biomedclip_fine_tuning'), tmp_path).create(uuid4(), uuid4(), 'malaria')
     assert error.value.status_code == 409
@@ -212,3 +212,40 @@ def test_densenet121_trace_blocks_are_the_blocks_the_architecture_draws():
     state = {'convolutions': 0}
     for layer, (name, kind, activation) in zip(layers, items):
         assert densenet_block(layer) == _keras_block('densenet121', {'name': name, 'type': kind, 'settings': {'activation': activation}}, state)[0], name
+
+
+
+def test_a_zero_shot_train_is_traced_with_the_vit_engine_and_its_own_version(tmp_path, monkeypatch):
+    from app.services.vit_trace_compute import VERSION as VIT_VERSION
+    run, sample = uuid4(), uuid4()
+    commands = []
+
+    def fake_run(command, input, **kwargs):
+        commands.append(command)
+        job = json.loads(input)
+        write_atomic(Path(job['path']), dict(job['identity'], created_at='2026-11-05T18:00:00', label=1, predicted=1, score=0.7,
+                                             persisted_score=0.7, consistent=True, version=VIT_VERSION))
+    monkeypatch.setattr(activation_traces.subprocess, 'run', fake_run)
+    monkeypatch.setattr(activation_traces, 'RepresentRepository', lambda: type('R', (), {'source': lambda self, a: {
+        'identity': {'model': {'sha256': 'zs'}, 'samples': [{'sample_id': str(sample)}]}}})())
+
+    class ZeroShot:
+        # A logical TRAIN has no run configuration: the model name is its architecture.
+        def read(self, run_id, datasource):
+            return dict(run={'run_type': 'training', 'model_name': 'biomedclip_zero_shot'}, configuration=None)
+    service = ActivationTraceService(Evaluations(), ZeroShot(), tmp_path)
+    assert service.catalog(run, 'malaria')['available']
+    first = service.create(run, sample, 'malaria')
+    assert commands[0][-1] == 'app.services.vit_trace_compute' and first['version'] == VIT_VERSION
+    service.create(run, sample, 'malaria')
+    assert len(commands) == 1, 'a saved ViT trace of the same checkpoint and version is reused'
+
+
+def test_vit_token_step_draws_the_patch_grid_and_the_class_token_attention():
+    from app.services.vit_trace_compute import CHANNELS, token_step
+    tokens = np.random.default_rng(0).standard_normal((197, 768)).astype('float32')
+    step = token_step(np, 'blocks.3', 'vit3', tokens, 1, np.full(196, 1 / 196), tokens[0])
+    assert step['shape'] == [14, 14, 768] and step['tokens'] == 197 and len(step['maps']) == CHANNELS
+    assert step['attention']['png'] and abs(step['cls_similarity'] - 1) < 1e-6
+    means = [abs(np.abs(tokens[1:].reshape(14, 14, 768))[..., m['channel']].mean()) for m in step['maps']]
+    assert means == sorted(means, reverse=True), 'dimensions ranked by mean magnitude over the patches'

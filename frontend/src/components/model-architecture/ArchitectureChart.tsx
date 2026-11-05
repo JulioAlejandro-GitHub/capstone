@@ -189,7 +189,9 @@ function VitFlow({ data, phase }: ChartProps) {
     ...(patches ? [{ id: 'patches', block: 'embedding', name: 'Parches y posición', lines: [structure?.patch_size ? `${structure.patches} parches de ${structure.patch_size[0]} px + CLS` : 'Sin evidencia', `${structure?.tokens ?? '—'} × ${structure?.width ?? '—'} · ${countText(patches.parameters)} parámetros`], active: isTrained(patches, phase) }] : []),
     { id: 'encoder', block: encoder[0]?.id, name: `Encoder ViT · ${encoder.length} bloques`, lines: [trained ? `${trained} entrenados, ${encoder.length - trained} congelados` : 'Todos congelados', structure ? `${countText(encoderParameters)} parámetros · derivado de la base` : 'Estructura de referencia'], active: trained > 0 },
     { id: 'embedding', block: projection ? 'projection' : 'output', name: 'Proyección y L2', lines: [embedding ? `${embedding} dimensiones` : 'Sin evidencia', ...(projection ? [`${countText(projection.parameters)} parámetros`] : [])], active: Boolean(projection && isTrained(projection, phase)) },
-    { id: 'output', block: 'output', name: 'Capa de salida', lines: [outputText(data.output), `${countText(output?.parameters)} parámetros`], active: Boolean(output && isTrained(output, phase)), kind: 'output' },
+    data.zero_shot
+      ? { id: 'output', block: 'output', name: `Similitud con ${data.zero_shot.prompts.length} prompts`, lines: ['Coseno × escala → softmax', `${countText(output?.parameters)} parám. del texto`], active: false, kind: 'output' }
+      : { id: 'output', block: 'output', name: 'Capa de salida', lines: [outputText(data.output), `${countText(output?.parameters)} parámetros`], active: Boolean(output && isTrained(output, phase)), kind: 'output' },
   ];
   const boxWidth = boxes.length > 4 ? 196 : 216, step = boxWidth + 36;
   return <Frame label={`Flujo de ${data.architecture}`} width={step * boxes.length - 24} height={200}>

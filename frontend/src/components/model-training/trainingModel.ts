@@ -211,16 +211,16 @@ export function resolveTrainingParameters(run: RunRecord | null, phases: Archite
    parámetros aplican a cada bloque; un modelo entrenado desde cero no tiene nada que congelar.
    ---------------------------------------------------------------------------------------------- */
 
-export interface TrainingRegime { pretrained: boolean; fineTuning: boolean }
+export interface TrainingRegime { pretrained: boolean; fineTuning: boolean; /** false: TRAIN lógico (zero-shot), nada se entrenó. */ trained: boolean }
 
 export function trainingRegime(data: ModelArchitecture | null, parameters: TrainingParameter[]): TrainingRegime {
   const weights = parameterValue(parameters, 'weights');
   const fineTuning = Boolean(data?.phases.some(item => item.phase === 'fine_tuning'));
   // Sin registro de pesos, una fase de ajuste fino implica pesos iniciales; si no, se asume desde cero sólo si lo dice el TRAIN.
   const pretrained = weights == null ? fineTuning || data?.family === 'vgg16' || data?.family === 'densenet121' || data?.family === 'biomedclip' : !/^(none|null|random|scratch)$/i.test(weights);
-  return { pretrained, fineTuning };
+  return { pretrained, fineTuning, trained: !data?.zero_shot };
 }
-const FULL_REGIME: TrainingRegime = { pretrained: true, fineTuning: true };
+const FULL_REGIME: TrainingRegime = { pretrained: true, fineTuning: true, trained: true };
 export const parameterValue = (parameters: TrainingParameter[], key: string) => parameters.find(item => item.key === key)?.value ?? null;
 
 /** Qué parámetros del entrenamiento gobiernan cada tipo de bloque. */
@@ -274,19 +274,26 @@ export function tuningGuide(layer: TrainingLayer, layers: TrainingLayer[], regim
     case 'transition': return layer.tokens != null ? [
       `Corta la imagen en parches y suma posición: ${layer.tokens} tokens (rejilla ${layer.h}×${layer.w} más el token de clase) de ${layer.d} dimensiones.`,
       `Sólo se entrena con \`fine_tune_layers\` = 12 (ajuste total). ${frozen}`] : [frozen];
-    case 'encoder': return [
+    case 'encoder': if (!regime.trained) return [
+      'Bloque Transformer de la base registrada: autoatención entre todos los tokens y MLP. En el zero-shot se usa tal cual, sin entrenar.',
+      'Para adaptarlo a malaria está `biomedclip_fine_tuning`, que descongela los últimos bloques con `fine_tune_layers`.',
+      'Grad-CAM no aplica: la evidencia espacial de un ViT se lee en la atención del token de clase o con LIME y SHAP.'];
+      return [
       'Bloque Transformer: autoatención entre todos los tokens y MLP. La forma no cambia entre bloques; cambia lo que representa cada token.',
       `\`fine_tune_layers\` descongela los últimos bloques primero; usan \`fine_tune_learning_rate\`, distinto del de la cabeza. ${frozen}`,
       'Grad-CAM no aplica: la evidencia espacial de un ViT se lee en la atención del token de clase o con LIME y SHAP.'];
     case 'head': if (layer.id === 'projection') return [
       'Norma final y proyección del token de clase al embedding; la salida se normaliza L2 antes de la cabeza.',
-      `Se entrena cuando \`fine_tune_layers\` > 0. ${frozen}`];
+      regime.trained ? `Se entrena cuando \`fine_tune_layers\` > 0. ${frozen}` : 'En el zero-shot no se entrena: el embedding es el de la base registrada.'];
       return [
       'Cabeza entrenable: `head_units` controla el ancho de la capa densa.',
       regime.pretrained
         ? '`dropout` y `l2` regularizan aquí; con el backbone congelado, aquí se concentra el aprendizaje de la fase base.'
         : '`dropout` y `l2` regularizan aquí; sin backbone preentrenado, la cabeza aprende a la vez que los bloques convolucionales.'];
-    case 'output': return [
+    case 'output': if (!regime.trained) return [
+      'Compara el embedding de la imagen con los embeddings de los prompts de cada clase y aplica softmax: es un score relativo entre prompts.',
+      'No está calibrado clínicamente: el umbral `clinical` se calibra en VAL con su EVALUATE.'];
+      return [
       'Probabilidad única: el umbral de decisión (no la arquitectura) define el balance recall/especificidad.',
       'Ajustar `target_recall` o `calibrate_threshold` antes que la red cuando el objetivo es clínico.'];
     default: return [frozen];
@@ -376,7 +383,9 @@ export function pendingItems(data: ModelArchitecture | null, layers: TrainingLay
   if (!runLoaded) items.push('Configuración del entrenamiento (GET /runs/{id})');
   else {
     const fineTuning = Boolean(data?.phases.some(item => item.phase === 'fine_tuning'));
-    const missing = parameters.filter(item => item.value == null && (fineTuning || item.group !== 'ajuste')).map(item => item.label);
+    // Un TRAIN lógico (zero-shot) no tiene optimización, cabeza ni ajuste: sólo entrada y decisión pueden faltar.
+    const applies = (item: TrainingParameter) => data?.zero_shot ? item.group === 'entrada' || item.group === 'decision' : fineTuning || item.group !== 'ajuste';
+    const missing = parameters.filter(item => item.value == null && applies(item)).map(item => item.label);
     if (missing.length) items.push(`Parámetros de entrenamiento: ${missing.join(', ')}`);
   }
   if (layers.some(layer => layer.origin === 'reference')) items.push('Bloques registrados por el TRAIN (algunos son estructura de referencia)');

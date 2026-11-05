@@ -228,3 +228,55 @@ def test_identity_errors_keep_scientific_read_semantics():
 
 def test_family_keeps_unknown_architectures_generic():
     assert [family_of(name) for name in ('vgg16', 'biomedclip_linear', 'svm', None)] == ['vgg16', 'biomedclip', 'generic', 'generic']
+
+
+ZERO_SHOT_SHA = '5' * 64
+
+
+def zero_shot_source():
+    version = dict(model_version_id=uuid4(), training_run_id=uuid4(), sha256=ZERO_SHOT_SHA, bytes=783705670,
+                   profile={'prompts': ['a photo of an uninfected red blood cell', 'a photo of a parasitized red blood cell'],
+                            'class_order': ['uninfected', 'parasitized'],
+                            'dependencies': [{'role': 'model_config', 'sha256': 'b' * 64, 'bytes': 707, 'path': '/x'}]},
+                   output_signature={'meaning': 'relative softmax score_parasitized; not clinically calibrated'})
+    return dict(run={'run_type': 'training', 'model_name': 'biomedclip_zero_shot'}, configuration=None, records=[],
+                logical_version=version, checkpoint=None)
+
+
+def zero_shot_structure():
+    structure = vit_structure(ZERO_SHOT_SHA)
+    structure.update(input_size=224, text={'parameters': 109479168, 'tensors': 200, 'logit_scale': 1})
+    return structure
+
+
+def test_zero_shot_is_read_from_its_registered_version_and_nothing_is_trained():
+    structures = Structures(zero_shot_structure())
+    result = ModelArchitecture.model_validate(ModelArchitectureService(Repository(zero_shot_source()), structures).read(uuid4(), 'malaria'))
+    assert result.state == 'available' and result.family == 'biomedclip' and not result.issues
+    assert structures.calls == [(ZERO_SHOT_SHA, 224)]
+    assert result.phases == [] and all(block.trainable_phases == [] for block in result.blocks)
+    vit = [block for block in result.blocks if block.kind == 'encoder']
+    assert len(vit) == 12 and {block.origin for block in vit} == {'derived'}
+    output = result.blocks[-1]
+    assert output.label == 'Similitud con 2 prompts' and output.output_shape == [None, 2] and output.parameters == 109479169
+    assert result.output.activation == 'softmax' and result.output.neurons == 2 and result.output.embedding_features == 512
+    assert result.zero_shot.prompts[1] == 'a photo of a parasitized red blood cell' and result.zero_shot.training_performed is False
+    assert result.total_parameters == 742656 + 12 * VIT_BLOCK + 394752 + 109479169
+    assert result.input_shape == [None, 224, 224, 3]
+
+
+def test_zero_shot_base_is_its_own_version_with_dependency_identities_only():
+    from app.services.model_architecture import logical_base
+    version = zero_shot_source()['logical_version']
+    base = logical_base(version)
+    assert base['checkpoint'] == {'sha256': ZERO_SHOT_SHA, 'bytes': 783705670}
+    assert base['dependencies'] == [{'role': 'model_config', 'sha256': 'b' * 64, 'bytes': 707}]
+    assert base['model_version_id'] == str(version['model_version_id'])
+
+
+def test_zero_shot_without_its_structure_keeps_reference_blocks():
+    from app.services.vit_structure import StructureUnavailable
+    service = ModelArchitectureService(Repository(zero_shot_source()), Structures(error=StructureUnavailable('Sin base.')))
+    result = ModelArchitecture.model_validate(service.read(uuid4(), 'malaria'))
+    assert {b.origin for b in result.blocks if b.kind == 'encoder'} == {'reference'} and result.total_parameters is None
+    assert result.issues == ['Sin base. Los bloques ViT quedan como estructura de referencia.']

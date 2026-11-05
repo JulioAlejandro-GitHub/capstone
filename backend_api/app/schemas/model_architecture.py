@@ -70,6 +70,14 @@ class ArchitectureCheckpoint(BaseModel):
     phase: str | None
 
 
+class ZeroShot(BaseModel):
+    """Logical TRAIN: the registered version's frozen protocol; nothing was trained."""
+    model_version_id: str
+    prompts: list[str]
+    class_order: list[str]
+    training_performed: bool
+
+
 class ModelArchitecture(BaseModel):
     training_run_id: UUID
     state: Literal['available', 'missing']
@@ -86,3 +94,4 @@ class ModelArchitecture(BaseModel):
     blocks: list[ArchitectureBlock]
     layers: list[ArchitectureLayer]
     structure: ArchitectureStructure | None = None
+    zero_shot: ZeroShot | None = None

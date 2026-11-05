@@ -274,6 +274,57 @@ def normalize_biomedclip(records: list[dict[str, Any]], configuration: dict[str,
     return dict(result, issues=issues)
 
 
+def logical_base(version: dict[str, Any]) -> dict[str, Any]:
+    """A zero-shot TRAIN is its own base: its registered version, checkpoint and dependency bytes."""
+    profile = version.get('profile') or {}
+    return dict(model_version_id=str(version['model_version_id']), training_run_id=str(version['training_run_id']),
+                checkpoint={'sha256': version['sha256'], 'bytes': version['bytes']},
+                dependencies=[{key: item[key] for key in ('role', 'sha256', 'bytes')} for item in profile.get('dependencies') or []])
+
+
+def normalize_zero_shot(version: dict[str, Any], structure: dict[str, Any] | None) -> dict[str, Any]:
+    """Logical TRAIN: nothing was trained. The image path is the base's ViT (derived once per base); the output compares
+    the L2 image embedding with the embeddings of the registered prompts and applies softmax over the classes."""
+    profile = version.get('profile') or {}
+    derived = (structure or {}).get('blocks') or {}
+    prompts, order = list(profile.get('prompts') or []), list(profile.get('class_order') or [])
+    side = (structure or {}).get('input_size')
+
+    def block(id_, label, kind, output=None, parameters=None, origin='reference'):
+        part = derived.get(id_) if structure and id_ != 'output' else None
+        if part:
+            output, parameters, origin = [None, *part['output_shape'][1:]], part['parameters'], 'derived'
+        return dict(id=id_, label=label, kind=kind, layers=1, units=None, output_shape=output, parameters=parameters,
+                    trainable_phases=[], origin=origin)
+
+    text = (structure or {}).get('text') or {}
+    blocks = [block('input', 'Entrada', 'input', [None, side, side, 3] if side else None, 0 if structure else None, 'recorded')]
+    if structure:
+        blocks.append(block('embedding', 'Parches y posición', 'transition'))
+    blocks += [block(f'vit{index}', f'Bloque ViT {index + 1}', 'encoder') for index in range(VIT_BLOCKS)]
+    if structure:
+        blocks.append(block('projection', 'Norma y proyección', 'head'))
+    # Text tower and logit scale: what turns the prompts into the reference the image is compared with.
+    blocks.append(block('output', f'Similitud con {len(prompts) or "los"} prompts', 'output', [None, len(order) or None],
+                        (text['parameters'] + text.get('logit_scale', 0)) if text else None, 'derived' if text else 'reference'))
+    known = all(item['parameters'] is not None for item in blocks)
+    signature = version.get('output_signature') or {}
+    result = dict(framework='pytorch_openclip', input_shape=blocks[0]['output_shape'],
+                  output=dict(neurons=len(order) or None, activation='softmax', loss=None, from_logits=None,
+                              meaning=signature.get('meaning') if isinstance(signature, dict) else None,
+                              embedding_features=(derived.get('projection', {}).get('output_shape') or [None, None])[-1]),
+                  phases=[], blocks=blocks, layers=[], total_parameters=sum(item['parameters'] for item in blocks) if known else None,
+                  structure=None, zero_shot=dict(model_version_id=str(version['model_version_id']), prompts=prompts,
+                                                 class_order=order, training_performed=False))
+    if structure:
+        patches = derived.get('embedding', {}).get('patches')
+        result['structure'] = dict(origin='derived', base_sha256=structure['base']['sha256'], vit_blocks=structure.get('vit_blocks'),
+                                   patch_size=structure.get('patch_size'), width=structure.get('width'),
+                                   patches=patches[1] if patches and len(patches) == 3 else None,
+                                   tokens=(derived.get('vit0', {}).get('output_shape') or [None, None])[1])
+    return dict(result, issues=[] if text or not structure else ['El checkpoint no permitió contar los parámetros de la torre de texto.'])
+
+
 def recorded_base(records: list[dict[str, Any]], configuration: dict[str, Any] | None) -> tuple[dict[str, Any] | None, str | None]:
     """The registered base of the recipe, only if every phase of the TRAIN recorded that same checkpoint."""
     base = (((configuration or {}).get('extension_configuration') or {}).get('recipe') or {}).get('base_model')
@@ -307,7 +358,8 @@ class ModelArchitectureService:
         if source['run']['run_type'] != 'training':
             raise HTTPException(422, 'run_id debe identificar un TRAIN')
         configuration = source['configuration']
-        name = (configuration or {}).get('architecture')
+        # A logical TRAIN has no run configuration; its model name identifies the architecture.
+        name = (configuration or {}).get('architecture') or source['run'].get('model_name')
         family = family_of(name)
         checkpoint = checkpoint_evidence(source['checkpoint'], run_id) if source['checkpoint'] else {}
         result = dict(training_run_id=run_id, state='available', issues=[], model_name=source['run']['model_name'],
@@ -316,6 +368,14 @@ class ModelArchitectureService:
                           artifact_id=str(checkpoint['artifact_id']) if checkpoint.get('artifact_id') else None, selected_epoch=checkpoint.get('selected_epoch'),
                           phase=checkpoint.get('phase')))
         records = source['records']
+        version = source.get('logical_version')
+        if family == 'biomedclip' and not records and version:
+            try:
+                structure, issues = self.structures.read(logical_base(version), 224), []
+            except StructureUnavailable as error:
+                structure, issues = None, [f'{error} Los bloques ViT quedan como estructura de referencia.']
+            normalized = normalize_zero_shot(version, structure)
+            return {**result, **normalized, 'issues': issues + normalized['issues']}
         if not records:
             return dict(result, state='missing', issues=['Este TRAIN no registró su configuración de ejecución.'])
         if family == 'biomedclip':

@@ -117,6 +117,7 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
       {loading && <p className="mt-callout" role="status">Consultando la arquitectura registrada…</p>}
       {error && <div className="mt-callout" role="alert"><p>{error}</p><button type="button" className="mt-tb" onClick={retry}>Reintentar</button></div>}
       {data?.state === 'missing' && <p className="mt-callout" role="status">Pendiente: {data.issues.join(' ') || 'el TRAIN no registró su arquitectura.'}</p>}
+      {data?.zero_shot && <p className="mt-callout mt-callout-info" role="note">Modelo zero-shot: TRAIN lógico, sin entrenamiento ni épocas. La arquitectura es la de la base registrada; las curvas, el learning rate y las trayectorias no tienen evidencia porque no hubo optimización. Su desempeño está en EVALUATE, TEST y EXPLAIN.</p>}
 
       {layers.length > 0 && layer && <>
         <section className="mt-kpis" aria-label="Resumen del modelo">
@@ -128,7 +129,7 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
             <div className="mt-kpi"><div className="mt-k">Resolución espacial</div><div className="mt-v">{input?.h ?? '—'}<small> → </small>{lastConv?.h ?? '—'}</div><div className="mt-h">{input?.h && lastConv?.h ? `${(input.h / lastConv.h).toFixed(1)}× menos por lado al final del backbone` : 'Pendiente'}</div></div>
             <div className="mt-kpi"><div className="mt-k">Canales</div><div className="mt-v">{input?.d ?? '—'}<small> → </small>{lastConv?.d ?? '—'}</div><div className="mt-h">{input?.d && lastConv?.d ? `${Math.round(lastConv.d / input.d)}× más profundidad` : 'Pendiente'}</div></div>
           </>}
-          <div className="mt-kpi"><div className="mt-k">Parámetros totales</div><div className="mt-v">{formatCount(data?.total_parameters)}</div><div className="mt-h">{current?.trainable_parameters != null ? `${formatCount(current.trainable_parameters)} entrenables · ${phaseLabel}` : 'Entrenables: pendiente'}</div></div>
+          <div className="mt-kpi"><div className="mt-k">Parámetros totales</div><div className="mt-v">{formatCount(data?.total_parameters)}</div><div className="mt-h">{current?.trainable_parameters != null ? `${formatCount(current.trainable_parameters)} entrenables · ${phaseLabel}` : data?.zero_shot ? 'Ninguno entrenado: modelo zero-shot' : 'Entrenables: pendiente'}</div></div>
           <div className="mt-kpi"><div className="mt-k">Tensor más grande</div><div className="mt-v">{formatCount(biggest?.volume)}</div><div className="mt-h">{biggest ? `${biggest.label} · ${biggest.outputText}` : 'Pendiente'}</div></div>
         </section>
 
@@ -236,7 +237,8 @@ function ModelTrainingView({ datasource, run }: { datasource: string; run: strin
             <div className="mt-card">
               <div className="mt-card-h"><h2>Configuración del entrenamiento</h2><span className="mt-hint">{runError ? 'no disponible' : record ? 'registrada en el TRAIN' : 'cargando…'}</span></div>
               <div className="mt-config">{groups.map(group => <div key={group}><div className="mt-sec-t">{PARAMETER_GROUP_LABELS[group]}</div>
-                {group === 'ajuste' && !regime.fineTuning ? <p className="mt-muted mt-na">No aplica: este TRAIN no tuvo fase de ajuste fino{regime.pretrained ? '' : '; es un solo entrenamiento desde cero'}.</p> :
+                {!regime.trained && group !== 'entrada' && group !== 'decision' ? <p className="mt-muted mt-na">No aplica: modelo zero-shot, sin entrenamiento.</p>
+                  : group === 'ajuste' && !regime.fineTuning ? <p className="mt-muted mt-na">No aplica: este TRAIN no tuvo fase de ajuste fino{regime.pretrained ? '' : '; es un solo entrenamiento desde cero'}.</p> :
                 <dl className="mt-params">{parameters.filter(item => item.group === group).map(item => <Fragment key={item.key}><dt><code>{item.key}</code> {item.label}</dt>
                   <dd data-pending={item.value == null}>{item.value ?? 'Pendiente'}</dd></Fragment>)}</dl>}</div>)}</div>
             </div>

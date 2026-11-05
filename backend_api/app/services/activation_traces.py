@@ -12,10 +12,14 @@ from app.repositories.activation_traces import CATEGORIES, ActivationTraceReposi
 from app.repositories.model_architecture import ModelArchitectureRepository
 from app.repositories.representation_generation import RepresentRepository
 from app.services.activation_trace_compute import VERSION
+from app.services.vit_trace_compute import VERSION as VIT_VERSION
 
 MAX_BYTES = 500 * 1024 * 1024
 # Keras CNNs whose layers the trace knows how to group into the architecture's blocks.
-TRACEABLE = {'vgg16': 'VGG16', 'custom_cnn': 'CNN propia', 'densenet121': 'DenseNet121'}
+TRACEABLE = {'vgg16': 'VGG16', 'custom_cnn': 'CNN propia', 'densenet121': 'DenseNet121', 'biomedclip_zero_shot': 'BiomedCLIP zero-shot'}
+# Engine of each family's trace: Keras models share one module; a ViT is traced with PyTorch in its own module.
+ENGINES = {'biomedclip_zero_shot': ('app.services.vit_trace_compute', VIT_VERSION)}
+KERAS_ENGINE = ('app.services.activation_trace_compute', VERSION)
 TIMEOUT_SECONDS = 120
 SUMMARY = ('sample_id', 'created_at', 'label', 'predicted', 'score', 'persisted_score', 'consistent', 'split', 'bytes')
 # One model load at a time keeps the machine usable; the use is occasional.
@@ -34,7 +38,8 @@ class ActivationTraceService:
             raise HTTPException(404, 'Run no encontrado')
         if source['run']['run_type'] != 'training':
             raise HTTPException(422, 'run_id debe identificar un TRAIN')
-        family = (source['configuration'] or {}).get('architecture')
+        # A logical TRAIN (zero-shot) has no run configuration; its model name identifies the architecture.
+        family = (source['configuration'] or {}).get('architecture') or source['run'].get('model_name')
         if family not in TRACEABLE:
             return None, f"El recorrido por capas está disponible para {', '.join(list(TRACEABLE.values())[:-1])} y {list(TRACEABLE.values())[-1]}."
         self.family = family
@@ -87,7 +92,7 @@ class ActivationTraceService:
         sha256 = value['model'].get('sha256') or value['model'].get('checkpoint_sha256')
         if path.is_file():
             saved = self._read(path)
-            if saved.get('checkpoint_sha256') == sha256 and saved.get('version') == VERSION:
+            if saved.get('checkpoint_sha256') == sha256 and saved.get('version') == ENGINES.get(self.family, KERAS_ENGINE)[1]:
                 return saved
         if self.used_bytes() >= MAX_BYTES:
             raise HTTPException(409, 'Se alcanzó el límite de 500 MB: elimina un recorrido antes de calcular otro.')
@@ -101,7 +106,7 @@ class ActivationTraceService:
             job = dict(value=value, sample=sample, persisted=persisted, path=str(path), family=self.family, identity=dict(
                 training_run_id=str(run_id), attempt_id=str(evaluation['id']), split=evaluation['split'], checkpoint_sha256=sha256))
             try:
-                subprocess.run([sys.executable, '-m', 'app.services.activation_trace_compute'], input=json.dumps(job, default=str), text=True,
+                subprocess.run([sys.executable, '-m', ENGINES.get(self.family, KERAS_ENGINE)[0]], input=json.dumps(job, default=str), text=True,
                                check=True, timeout=TIMEOUT_SECONDS, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
                 raise HTTPException(502, 'No fue posible calcular el recorrido de esta célula.') from None

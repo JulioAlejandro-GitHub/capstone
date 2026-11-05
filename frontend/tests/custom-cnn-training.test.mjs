@@ -49,7 +49,7 @@ const setup = () => {
 
 test('un TRAIN desde cero no recibe textos de congelar, descongelar ni pesos iniciales', () => {
   const { layers, regime } = setup();
-  assert.deepEqual({ ...regime }, { pretrained: false, fineTuning: false });
+  assert.deepEqual({ ...regime }, { pretrained: false, fineTuning: false, trained: true });
   const text = layers.flatMap(item => model.tuningGuide(item, layers, regime)).join(' ');
   for (const wrong of ['congelado', 'descongelar', 'backbone congelado', 'pesos iniciales (p. ej.']) assert.ok(!text.includes(wrong), wrong);
   assert.match(text, /aprende desde cero/);
@@ -75,7 +75,7 @@ test('VGG16 conserva la guía de transferencia', () => {
   const vgg = { ...cnn, family: 'vgg16', phases: [...cnn.phases, { phase: 'fine_tuning', trainable_parameters: 1, learning_rates: [] }] };
   const parameters = model.resolveTrainingParameters({ execution_parameters: { model_configuration_e2: { configuration: { resolved: { model: { weights: 'imagenet' } } } } } }, vgg.phases);
   const regime = model.trainingRegime(vgg, parameters);
-  assert.deepEqual({ ...regime }, { pretrained: true, fineTuning: true });
+  assert.deepEqual({ ...regime }, { pretrained: true, fineTuning: true, trained: true });
   const layers = model.buildTrainingLayers({ ...cnn, family: 'custom_cnn' }, 'base');
   assert.match(model.tuningGuide(layers.find(item => item.id === 'block4'), layers, regime).join(' '), /Candidato a descongelar/);
   assert.match(model.tuningGuide(layers.find(item => item.id === 'block4'), layers).join(' '), /Candidato a descongelar/, 'sin régimen se mantiene el comportamiento previo');
@@ -86,7 +86,7 @@ test('«Recorrido de una célula» se habilita para custom_cnn y sus pasos caen 
   const code = load(resolve(root, 'components/model-architecture/traceCode.ts'));
   assert.equal(views.isTraceable('custom_cnn'), true);
   assert.equal(views.isTraceable('vgg16'), true);
-  assert.equal(views.isTraceable('biomedclip'), false);
+  assert.equal(views.isTraceable('biomedclip'), true, 'el backend decide por modelo (hoy zero-shot)');
   const step = (layer, block, kind = 'spatial', shape = [25, 25, 256]) => ({ layer, block, kind, shape, stats: {}, maps: [], top: [] });
   assert.equal(code.stepTitle(cnn, step('activation_3', 'block4')), 'Bloque 4');
   assert.equal(code.stepTitle(cnn, step('dense_1', 'output', 'output', [1])), 'Salida');

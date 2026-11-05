@@ -99,3 +99,35 @@ test('VGG16 conserva su lectura: forma espacial y sin tokens', () => {
   assert.equal(layers[1].outputText, '100 × 100 × 64');
   assert.equal(layers[1].tokens, null);
 });
+
+const zeroShot = { ...vit, model_name: 'biomedclip_zero_shot', architecture: 'biomedclip_zero_shot', phases: [], checkpoint: { artifact_id: null, selected_epoch: null, phase: null },
+  output: { neurons: 2, activation: 'softmax', loss: null, from_logits: null, meaning: 'relative softmax score_parasitized; not clinically calibrated', embedding_features: 512 },
+  zero_shot: { model_version_id: '3fd16a84-b5c7-442b-916b-e0438bb0f3e5', prompts: ['a photo of an uninfected cell', 'a photo of a parasitized cell'], class_order: ['uninfected', 'parasitized'], training_performed: false },
+  blocks: vit.blocks.map(item => ({ ...item, trainable_phases: [] })).map(item => item.id === 'output' ? { ...item, label: 'Similitud con 2 prompts', output_shape: [null, 2], parameters: 109479169 } : item) };
+
+test('zero-shot: el flujo termina en la similitud con los prompts y nada se entrena', () => {
+  const flow = renderToStaticMarkup(React.createElement(ArchitectureChart, { data: zeroShot, view: 'flujo', phase: '' }));
+  assert.match(flow, /Similitud con 2 prompts/);
+  assert.match(flow, /Coseno × escala → softmax/);
+  assert.match(flow, /Todos congelados/);
+  const layers = model.buildTrainingLayers(zeroShot, '');
+  const parameters = model.resolveTrainingParameters(null, []);
+  const regime = model.trainingRegime(zeroShot, parameters);
+  assert.equal(regime.trained, false);
+  const guide = layers.flatMap(item => model.tuningGuide(item, layers, regime)).join(' ');
+  assert.match(guide, /En el zero-shot se usa tal cual, sin entrenar/);
+  assert.match(guide, /score relativo entre prompts/);
+  assert.doesNotMatch(guide, /descongela los últimos bloques primero/);
+  const pending = model.pendingItems(zeroShot, layers, parameters, true).join(' ');
+  assert.doesNotMatch(pending, /Optimizador|Learning rate|Batch size|Épocas/, 'un TRAIN lógico no tiene optimización pendiente');
+});
+
+test('zero-shot: el código de cada paso ViT describe el bloque con los tamaños de la base', () => {
+  const code = load(resolve(root, 'components/model-architecture/traceCode.ts'));
+  const step = (layer, block, kind = 'spatial') => ({ layer, block, kind, shape: [14, 14, 768], tokens: 197, stats: {}, maps: [], top: [] });
+  assert.match(code.stepCode(zeroShot, step('patch_embed', 'embedding')), /Conv2d\(3, 768, kernel=16, stride=16\) → 196 parches × 768/);
+  assert.match(code.stepCode(zeroShot, step('blocks.3', 'vit3')), /# Bloque 4 de 12 · la forma no cambia: 197 × 768/);
+  assert.match(code.stepCode(zeroShot, step('output', 'output', 'output')), /softmax\(logit_scale\.exp\(\) \* z @ text_features\.T\)\s+# 2 prompts: uninfected, parasitized/);
+  assert.match(code.stepCode(vit, step('output', 'output', 'output')), /sigmoid\(head\(z\)\)/);
+  assert.equal(code.stepTitle(zeroShot, step('blocks.3', 'vit3')), 'Bloque ViT 4');
+});

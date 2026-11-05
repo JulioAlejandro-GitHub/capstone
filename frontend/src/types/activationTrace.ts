@@ -17,6 +17,12 @@ export interface ActivationTraceStep {
   /** min/max per channel exist from activation_trace_v2: older traces can only be drawn on their own scale. */
   maps: { channel: number; mean: number; png: string; min?: number; max?: number }[]; top: { index: number; value: number }[];
   histogram?: { counts: number[]; edges: number[] } | null;
+  /** ViT: tokens del tensor (parches + clase); los mapas son la rejilla de parches, uno por dimensión del token. */
+  tokens?: number;
+  /** ViT: atención del token de clase sobre los parches (promedio de las cabezas), en la misma rejilla. */
+  attention?: { png: string; min: number; max: number } | null;
+  /** ViT: similitud coseno del token de clase con el del último bloque. */
+  cls_similarity?: number;
 }
 
 export interface ActivationTrace extends ActivationTraceSummary {
