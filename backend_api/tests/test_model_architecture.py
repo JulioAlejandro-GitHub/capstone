@@ -85,7 +85,7 @@ def test_biomedclip_declares_reference_structure_and_recorded_counts():
     assert len(vit) == 12 and {block['origin'] for block in vit} == {'reference'}
     assert [block['id'] for block in vit if block['trainable_phases']] == ['vit8', 'vit9', 'vit10', 'vit11']
     assert result['phases'][1] == {'phase': 'fine_tuning', 'encoder': 'last_4_blocks', 'trainable_parameters': 28746753, 'trainable_tensors': 53,
-                                   'structure_check': None, 'learning_rates': []}
+                                   'structure_check': None, 'learning_rates': [], 'embedding_cache': None, 'augmentation': None}
     assert result['blocks'][-1]['parameters'] == 513 and result['blocks'][-1]['kind'] == 'output'
     assert result['output'] == {'neurons': 1, 'activation': 'sigmoid', 'loss': 'bce_with_logits', 'from_logits': True,
                                 'meaning': 'probability_parasitized', 'embedding_features': 512}
@@ -280,3 +280,11 @@ def test_zero_shot_without_its_structure_keeps_reference_blocks():
     result = ModelArchitecture.model_validate(service.read(uuid4(), 'malaria'))
     assert {b.origin for b in result.blocks if b.kind == 'encoder'} == {'reference'} and result.total_parameters is None
     assert result.issues == ['Sin base. Los bloques ViT quedan como estructura de referencia.']
+
+
+def test_linear_probing_records_its_embedding_cache_and_no_augmentation():
+    records = vit_records()
+    for record in records:
+        record['payload'].update(embedding_cache='per_run_memory', augmentation=False)
+    phase = normalize_biomedclip(records[:1], vit_configuration(), vit_structure())['phases'][0]
+    assert phase['embedding_cache'] == 'per_run_memory' and phase['augmentation'] is False and phase['structure_check'] == 'match'

@@ -49,7 +49,7 @@ const setup = () => {
 
 test('un TRAIN desde cero no recibe textos de congelar, descongelar ni pesos iniciales', () => {
   const { layers, regime } = setup();
-  assert.deepEqual({ ...regime }, { pretrained: false, fineTuning: false, trained: true });
+  assert.deepEqual({ ...regime }, { pretrained: false, fineTuning: false, trained: true, cachedEmbeddings: false });
   const text = layers.flatMap(item => model.tuningGuide(item, layers, regime)).join(' ');
   for (const wrong of ['congelado', 'descongelar', 'backbone congelado', 'pesos iniciales (p. ej.']) assert.ok(!text.includes(wrong), wrong);
   assert.match(text, /aprende desde cero/);
@@ -75,7 +75,7 @@ test('VGG16 conserva la guía de transferencia', () => {
   const vgg = { ...cnn, family: 'vgg16', phases: [...cnn.phases, { phase: 'fine_tuning', trainable_parameters: 1, learning_rates: [] }] };
   const parameters = model.resolveTrainingParameters({ execution_parameters: { model_configuration_e2: { configuration: { resolved: { model: { weights: 'imagenet' } } } } } }, vgg.phases);
   const regime = model.trainingRegime(vgg, parameters);
-  assert.deepEqual({ ...regime }, { pretrained: true, fineTuning: true, trained: true });
+  assert.deepEqual({ ...regime }, { pretrained: true, fineTuning: true, trained: true, cachedEmbeddings: false });
   const layers = model.buildTrainingLayers({ ...cnn, family: 'custom_cnn' }, 'base');
   assert.match(model.tuningGuide(layers.find(item => item.id === 'block4'), layers, regime).join(' '), /Candidato a descongelar/);
   assert.match(model.tuningGuide(layers.find(item => item.id === 'block4'), layers).join(' '), /Candidato a descongelar/, 'sin régimen se mantiene el comportamiento previo');

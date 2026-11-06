@@ -16,9 +16,11 @@ from app.services.vit_trace_compute import VERSION as VIT_VERSION
 
 MAX_BYTES = 500 * 1024 * 1024
 # Keras CNNs whose layers the trace knows how to group into the architecture's blocks.
-TRACEABLE = {'vgg16': 'VGG16', 'custom_cnn': 'CNN propia', 'densenet121': 'DenseNet121', 'biomedclip_zero_shot': 'BiomedCLIP zero-shot'}
+TRACEABLE = {'vgg16': 'VGG16', 'custom_cnn': 'CNN propia', 'densenet121': 'DenseNet121', 'biomedclip_zero_shot': 'BiomedCLIP zero-shot',
+             'biomedclip_linear': 'BiomedCLIP linear', 'biomedclip_fine_tuning': 'BiomedCLIP fine-tuning'}
 # Engine of each family's trace: Keras models share one module; a ViT is traced with PyTorch in its own module.
-ENGINES = {'biomedclip_zero_shot': ('app.services.vit_trace_compute', VIT_VERSION)}
+VIT_ENGINE = ('app.services.vit_trace_compute', VIT_VERSION)
+ENGINES = {'biomedclip_zero_shot': VIT_ENGINE, 'biomedclip_linear': VIT_ENGINE, 'biomedclip_fine_tuning': VIT_ENGINE}
 KERAS_ENGINE = ('app.services.activation_trace_compute', VERSION)
 TIMEOUT_SECONDS = 120
 SUMMARY = ('sample_id', 'created_at', 'label', 'predicted', 'score', 'persisted_score', 'consistent', 'split', 'bytes')

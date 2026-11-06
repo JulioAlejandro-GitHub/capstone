@@ -255,7 +255,8 @@ def normalize_biomedclip(records: list[dict[str, Any]], configuration: dict[str,
                               f"{payload.get('encoder')} ({recorded.get('elements')} vs {expected['elements']} parámetros).")
         phases.append(dict(phase=record['phase'], encoder=payload.get('encoder'),
                            trainable_parameters=recorded.get('elements'), trainable_tensors=recorded.get('count'),
-                           structure_check=check, learning_rates=learning_rates(payload)))
+                           structure_check=check, learning_rates=learning_rates(payload),
+                           embedding_cache=payload.get('embedding_cache'), augmentation=payload.get('augmentation')))
     contract = (extension.get('input_contract') or {}).get('output') or {}
     result = dict(framework=records[-1]['payload'].get('framework'), input_shape=shape,
                   output=dict(neurons=head.get('out_features'), activation=head.get('activation'), loss=head.get('loss'),

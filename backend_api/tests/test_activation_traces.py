@@ -44,10 +44,12 @@ def test_saved_traces_are_listed_when_the_run_is_reopened(tmp_path):
 def test_only_traceable_cnns_are_supported_and_other_models_say_why(tmp_path):
     assert ActivationTraceService(Evaluations(), Architecture('custom_cnn'), tmp_path).catalog(uuid4(), 'malaria')['available']
     assert ActivationTraceService(Evaluations(), Architecture('densenet121'), tmp_path).catalog(uuid4(), 'malaria')['available']
-    result = ActivationTraceService(Evaluations(), Architecture('biomedclip_linear'), tmp_path).catalog(uuid4(), 'malaria')
-    assert not result['available'] and result['reason'] == 'El recorrido por capas está disponible para VGG16, CNN propia, DenseNet121 y BiomedCLIP zero-shot.'
+    for name in ('biomedclip_linear', 'biomedclip_fine_tuning', 'biomedclip_zero_shot'):
+        assert ActivationTraceService(Evaluations(), Architecture(name), tmp_path).catalog(uuid4(), 'malaria')['available'], name
+    result = ActivationTraceService(Evaluations(), Architecture('svm'), tmp_path).catalog(uuid4(), 'malaria')
+    assert not result['available'] and result['reason'].startswith('El recorrido por capas está disponible para VGG16, CNN propia, DenseNet121')
     with pytest.raises(HTTPException) as error:
-        ActivationTraceService(Evaluations(), Architecture('biomedclip_fine_tuning'), tmp_path).create(uuid4(), uuid4(), 'malaria')
+        ActivationTraceService(Evaluations(), Architecture('svm'), tmp_path).create(uuid4(), uuid4(), 'malaria')
     assert error.value.status_code == 409
 
 
@@ -249,3 +251,9 @@ def test_vit_token_step_draws_the_patch_grid_and_the_class_token_attention():
     assert step['attention']['png'] and abs(step['cls_similarity'] - 1) < 1e-6
     means = [abs(np.abs(tokens[1:].reshape(14, 14, 768))[..., m['channel']].mean()) for m in step['maps']]
     assert means == sorted(means, reverse=True), 'dimensions ranked by mean magnitude over the patches'
+
+
+
+def test_trained_biomedclip_models_are_traced_with_the_vit_engine(tmp_path, monkeypatch):
+    from app.services.activation_traces import ENGINES
+    assert {ENGINES[name][0] for name in ('biomedclip_linear', 'biomedclip_fine_tuning', 'biomedclip_zero_shot')} == {'app.services.vit_trace_compute'}

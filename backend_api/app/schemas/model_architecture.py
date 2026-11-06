@@ -52,6 +52,9 @@ class ArchitecturePhase(BaseModel):
     # ViT: recorded trainable set against the one the registered base declares for that encoder setting.
     structure_check: Literal['match', 'mismatch'] | None = None
     learning_rates: list[LearningRateGroup] = []
+    # PyTorch TRAIN: linear probing trains the head on embeddings extracted once per RUN (no augmentation per epoch).
+    embedding_cache: str | None = None
+    augmentation: bool | None = None
 
 
 class ArchitectureStructure(BaseModel):

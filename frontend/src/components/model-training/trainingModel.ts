@@ -202,6 +202,8 @@ export function resolveTrainingParameters(run: RunRecord | null, phases: Archite
     }
     if (value == null && key === 'learning_rate') value = recordedRate(phases, 'base', ['model', 'head']);
     if (value == null && key === 'fine_tune_learning_rate') value = recordedRate(phases, 'fine_tuning', ['model', 'encoder']);
+    const augmentation = phases.find(item => item.augmentation != null)?.augmentation;
+    if (value == null && key === 'augment' && augmentation != null) value = `${augmentation ? 'Sí' : 'No'} (registrado por TRAIN)`;
     return { key, label, group, value };
   });
 }
@@ -211,14 +213,15 @@ export function resolveTrainingParameters(run: RunRecord | null, phases: Archite
    parámetros aplican a cada bloque; un modelo entrenado desde cero no tiene nada que congelar.
    ---------------------------------------------------------------------------------------------- */
 
-export interface TrainingRegime { pretrained: boolean; fineTuning: boolean; /** false: TRAIN lógico (zero-shot), nada se entrenó. */ trained: boolean }
+export interface TrainingRegime { pretrained: boolean; fineTuning: boolean; /** false: TRAIN lógico (zero-shot), nada se entrenó. */ trained: boolean;
+  /** Linear probing: la cabeza aprende sobre embeddings extraídos una vez por RUN. */ cachedEmbeddings?: boolean }
 
 export function trainingRegime(data: ModelArchitecture | null, parameters: TrainingParameter[]): TrainingRegime {
   const weights = parameterValue(parameters, 'weights');
   const fineTuning = Boolean(data?.phases.some(item => item.phase === 'fine_tuning'));
   // Sin registro de pesos, una fase de ajuste fino implica pesos iniciales; si no, se asume desde cero sólo si lo dice el TRAIN.
   const pretrained = weights == null ? fineTuning || data?.family === 'vgg16' || data?.family === 'densenet121' || data?.family === 'biomedclip' : !/^(none|null|random|scratch)$/i.test(weights);
-  return { pretrained, fineTuning, trained: !data?.zero_shot };
+  return { pretrained, fineTuning, trained: !data?.zero_shot, cachedEmbeddings: Boolean(data?.phases.some(item => item.embedding_cache === 'per_run_memory')) };
 }
 const FULL_REGIME: TrainingRegime = { pretrained: true, fineTuning: true, trained: true };
 export const parameterValue = (parameters: TrainingParameter[], key: string) => parameters.find(item => item.key === key)?.value ?? null;
@@ -256,7 +259,10 @@ export function tuningGuide(layer: TrainingLayer, layers: TrainingLayer[], regim
       regime.pretrained
         ? 'El preprocesamiento debe coincidir con los pesos iniciales (p. ej. `vgg16_imagenet` con ImageNet, `openclip_original` con BiomedCLIP).'
         : 'Sin pesos iniciales (`weights` = none): el preprocesamiento sólo tiene que ser el mismo en TRAIN, EVALUATE y TEST.',
-      'La augmentación actúa aquí: es la palanca principal contra sobreajuste sin tocar la arquitectura.'];
+      regime.cachedEmbeddings
+        ? 'Linear probing: los embeddings de TRAIN se extraen una vez por RUN y la cabeza aprende sobre ellos; la augmentación no aplica (TRAIN la rechaza con embeddings en caché).'
+        : regime.trained ? 'La augmentación actúa aquí: es la palanca principal contra sobreajuste sin tocar la arquitectura.'
+        : 'Zero-shot: no hay entrenamiento, así que la augmentación no aplica.'];
     case 'convolution': {
       const early = firstConv != null && layer.index <= firstConv.index + 1;
       const convolutions = layer.convolutions || layer.innerLayers;

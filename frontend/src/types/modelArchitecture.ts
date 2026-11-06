@@ -26,6 +26,9 @@ export interface ArchitecturePhase {
   structure_check?: 'match' | 'mismatch' | null;
   /** Learning rate inicial de cada grupo del optimizador en la fase (Keras: un grupo «model»). */
   learning_rates?: LearningRateGroup[];
+  /** PyTorch: «per_run_memory» = linear probing sobre embeddings extraídos una vez por RUN. */
+  embedding_cache?: string | null;
+  augmentation?: boolean | null;
 }
 
 /** Estructura de un ViT derivada una vez desde la base registrada (SHA-256), no desde pesos entrenados. */

@@ -131,3 +131,18 @@ test('zero-shot: el código de cada paso ViT describe el bloque con los tamaños
   assert.match(code.stepCode(vit, step('output', 'output', 'output')), /sigmoid\(head\(z\)\)/);
   assert.equal(code.stepTitle(zeroShot, step('blocks.3', 'vit3')), 'Bloque ViT 4');
 });
+
+test('linear probing: la guía explica los embeddings en caché y la augmentación registrada', () => {
+  const linear = { ...vit, model_name: 'biomedclip_linear', architecture: 'biomedclip_linear',
+    phases: [{ ...vit.phases[0], embedding_cache: 'per_run_memory', augmentation: false }],
+    blocks: vit.blocks.map(item => ({ ...item, trainable_phases: item.kind === 'output' ? ['base'] : [] })) };
+  const layers = model.buildTrainingLayers(linear, 'base');
+  const parameters = model.resolveTrainingParameters(null, linear.phases);
+  const regime = model.trainingRegime(linear, parameters);
+  assert.equal(regime.cachedEmbeddings, true);
+  assert.equal(model.parameterValue(parameters, 'augment'), 'No (registrado por TRAIN)');
+  const guide = model.tuningGuide(layers.find(item => item.kind === 'input'), layers, regime).join(' ');
+  assert.match(guide, /embeddings de TRAIN se extraen una vez por RUN/);
+  assert.doesNotMatch(guide, /La augmentación actúa aquí/);
+  assert.equal(model.trainingRegime(vit, parameters).cachedEmbeddings, false, 'el ajuste fino no usa caché');
+});
