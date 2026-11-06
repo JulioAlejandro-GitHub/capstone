@@ -58,7 +58,7 @@ export const navigationModules: NavigationModule[] = [
       label: 'Operación',
       items: [
         { id: 'smear-workflow', label: 'Analizar imagen', path: routes.smearWorkflow, icon: 'microscope' },
-        { id: 'smear-analysis-2', label: 'Análisis de frotis 2', path: routes.smearAnalysis2, icon: 'microscope' },
+        { id: 'smear-analysis-2', label: 'Análisis de frotis v2', path: routes.smearAnalysis2, icon: 'microscope' },
         { id: 'smear-history', label: 'Historial de análisis', path: routes.smearHistory, icon: 'activity' },
       ],
     }],
