@@ -1,247 +1,70 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>CNN Complete Architecture 3D</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #0b0f19;
-      font-family: system-ui, sans-serif;
-      overflow-x: auto;
-    }
+# Tarea: Migrar `frontend` → `frontend2` usando exclusivamente Tailwind CSS
 
-    /* Escenario e iluminación global */
-    .scene {
-      display: flex;
-      align-items: center;
-      gap: 75px; /* Separación horizontal uniforme */
-      padding: 0 100px;
-      perspective: 1200px;
-    }
+# Rol
 
-    /* Estructura envolvente de cada capa */
-    .layer-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-    }
+Eres el responsable técnico de la migración de estilos.
+Tu único objetivo es replicar `frontend/` en `frontend2/` 
+con la misma lógica y Tailwind CSS como único sistema de estilos.
+No refactors, no optimizas, no inventas funcionalidad.   
 
-    /* Etiquetas de texto */
-    .meta {
-      text-align: center;
-      margin-top: 40px;
-      color: #94a3b8;
-      font-size: 13px;
-      line-height: 1.4;
-    }
-    .meta strong {
-      color: #f1f5f9;
-      display: block;
-      font-size: 14px;
-      margin-bottom: 2px;
-    }
+## Restricciones
 
-    /* Cubo Base 3D */
-    .cube {
-      position: relative;
-      transform-style: preserve-3d;
-      transform: rotateX(-15deg) rotateY(-25deg);
-    }
-    .face {
-      position: absolute;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-    }
+- NO refactors. Si el código original es feo, replicalo feo.
+- NO inventes componentes, rutas ni servicios que no existan en `frontend/`.
+- NO optimices performance, no agregues memoización, no cambies patterns.
+- Si algo no está claro, preguntá antes de asumir.   
 
-    /* ========================================================
-       PROPORCIONES DE CAPAS CONVOLUCIONALES (Alto x Ancho x Profundidad)
-       ======================================================== */
+## Contexto
 
-    /* Entrada: 200 x 200 x 3 (Grande y muy delgada) */
-    .entrada { width: 140px; height: 140px; }
-    .entrada .front  { width: 140px; height: 140px; background: rgba(239, 68, 68, 0.6); transform: translateZ(3px); }
-    .entrada .back   { width: 140px; height: 140px; background: rgba(239, 68, 68, 0.3); transform: rotateY(180deg) translateZ(3px); }
-    .entrada .right  { width: 6px;   height: 140px; background: rgba(185, 28, 28, 0.7);  transform: rotateY(90deg) translateZ(137px); }
-    .entrada .top    { width: 140px; height: 6px;   background: rgba(220, 38, 38, 0.7);  transform: rotateX(90deg) translateZ(3px); }
+- En este repo existe un subsistema `frontend/` que funciona correctamente.
+- Debes crear un nuevo subsistema `frontend2/` que replique **exactamente** las mismas funcionalidades, pero usando **únicamente Tailwind CSS** para toda la presentación.
 
-    /* Bloque 1: 100 x 100 x 64 */
-    .b1 { width: 90px; height: 90px; }
-    .b1 .front  { width: 90px; height: 90px; background: rgba(245, 158, 11, 0.6); transform: translateZ(15px); }
-    .b1 .back   { width: 90px; height: 90px; background: rgba(245, 158, 11, 0.3); transform: rotateY(180deg) translateZ(15px); }
-    .b1 .right  { width: 30px; height: 90px; background: rgba(217, 119, 6, 0.7);  transform: rotateY(90deg) translateZ(75px); }
-    .b1 .top    { width: 90px; height: 30px; background: rgba(251, 191, 36, 0.7);  transform: rotateX(90deg) translateZ(15px); }
+## Reglas estrictas
 
-    /* Bloque 2: 50 x 50 x 128 */
-    .b2 { width: 60px; height: 60px; }
-    .b2 .front  { width: 60px; height: 60px; background: rgba(16, 185, 129, 0.6); transform: translateZ(25px); }
-    .b2 .back   { width: 60px; height: 60px; background: rgba(16, 185, 129, 0.3); transform: rotateY(180deg) translateZ(25px); }
-    .b2 .right  { width: 50px; height: 60px; background: rgba(4, 120, 87, 0.7);   transform: rotateY(90deg) translateZ(35px); }
-    .b2 .top    { width: 60px; height: 50px; background: rgba(52, 211, 153, 0.7);  transform: rotateX(90deg) translateZ(25px); }
+1. **`frontend/` es SOLO LECTURA.** No modifiques ningún archivo dentro de `frontend/`.
+2. **`frontend2/` replica la estructura COMPLETA de `frontend/`:**
+   - Routing (rutas, guards, lazy loading, redirects)
+   - Componentes (todos: primitivas, feature, layouts, páginas)
+   - Hooks (custom hooks, context providers)
+   - Services / API calls (fetch, interceptors, mutaciones)
+   - Utilidades y helpers
+   - Tipos / interfaces / schemas
+   - Estado global (store, reducers, slices)
+   - Configuración (env vars, feature flags, constants)
+   - Test files (si existen)
+3. **La ÚNICA diferencia permitida entre `frontend/` y `frontend2/` es la capa de estilos:**
+   - En `frontend/`: styled-components / CSS Modules / MUI / lo que use.
+   - En `frontend2/`: exclusivamente Tailwind CSS utilities.
+4. **Prohibido en `frontend2/`:** CSS-in-JS, CSS Modules, SASS, LESS, MUI, Chakra, o cualquier librería que inyecte estilos.
+5. **La lógica es idéntica.** No refactorices, no optimices, no cambies nombres de funciones. Si el componente original tiene un bug, replicalo igual (no lo arregles).
 
-    /* Bloque 3: 25 x 25 x 256 */
-    .b3 { width: 44px; height: 44px; }
-    .b3 .front  { width: 44px; height: 44px; background: rgba(6, 182, 212, 0.6); transform: translateZ(40px); }
-    .b3 .back   { width: 44px; height: 44px; background: rgba(6, 182, 212, 0.3); transform: rotateY(180deg) translateZ(40px); }
-    .b3 .right  { width: 80px; height: 44px; background: rgba(9, 133, 161, 0.7);  transform: rotateY(90deg) translateZ(4px); }
-    .b3 .top    { width: 44px; height: 80px; background: rgba(34, 211, 238, 0.7);  transform: rotateX(90deg) translateZ(40px); }
+## Proceso
 
-    /* Bloque 4: 12 x 12 x 512 */
-    .b4 { width: 30px; height: 30px; }
-    .b4 .front  { width: 30px; height: 30px; background: rgba(59, 130, 246, 0.6); transform: translateZ(60px); }
-    .b4 .back   { width: 30px; height: 30px; background: rgba(59, 130, 246, 0.3); transform: rotateY(180deg) translateZ(60px); }
-    .b4 .right  { width: 120px; height: 30px; background: rgba(29, 78, 216, 0.7);  transform: rotateY(90deg) translateZ(-30px); }
-    .b4 .top    { width: 30px;  height: 120px; background: rgba(96, 165, 250, 0.7);  transform: rotateX(90deg) translateZ(60px); }
+1. **Explora** `frontend/` completo (no solo componentes con estilos).
+2. **Crea la estructura espejo** en `frontend2/`:
+   - Mismas carpetas, mismos nombres de archivo.
+   - Config de Tailwind + punto de entrada con `@import "tailwindcss"`.
+3. **Migra por capas, de dependencia a dependiente:**
+   - Onda 0: config, tipos, utils, services, hooks (sin estilos → se copian tal cual)
+   - Onda 1: primitivas de UI (Button, Input, Badge, ...)
+   - Onda 2: componentes de feature
+   - Onda 3: layouts, páginas, routing
+4. **Para cada archivo:**
+   - Si NO tiene estilos → cópialo tal cual a `frontend2/` (cambiando solo paths de import si la estructura lo requiere).
+   - Si SÍ tiene estilos → replica la lógica y reemplaza los estilos por Tailwind.
+5. **Actualizá `MIGRATION_MAP.md`** después de cada archivo migrado.
+6. **DETENE** al terminar la onda. Reportá y esperá.   
 
-    /* Bloque 5: 6 x 6 x 512 (Muy pequeño de frente, muy largo de fondo) */
-    .b5 { width: 18px; height: 18px; }
-    .b5 .front  { width: 18px; height: 18px; background: rgba(139, 92, 246, 0.6); transform: translateZ(60px); }
-    .b5 .back   { width: 18px; height: 18px; background: rgba(139, 92, 246, 0.3); transform: rotateY(180deg) translateZ(60px); }
-    .b5 .right  { width: 120px; height: 18px; background: rgba(109, 40, 217, 0.7);  transform: rotateY(90deg) translateZ(-42px); }
-    .b5 .top    { width: 18px;  height: 120px; background: rgba(167, 139, 250, 0.7); transform: rotateX(90deg) translateZ(60px); }
+## Definición de terminado
 
-    /* ========================================================
-       REPRESENTACIÓN VECTORIAL / COLA (1D y Clasificación)
-       ======================================================== */
+- `frontend2/` compila y sirve sin errores.
+- Todas las rutas y funcionalidades de `frontend/` existen en `frontend2/`.
+- No hay ningún archivo `.css` con reglas propias (solo el import de Tailwind).
+- No hay imports de librerías de estilos (styled-components, emotion, MUI, etc.).
+- `frontend/` no ha sido modificado en ningún momento.
 
-    /* Regla para barras unidimensionales vectoriales (GAP y Densa) */
-    .vector-bar {
-      width: 14px;
-      transform-style: preserve-3d;
-      transform: rotateX(-15deg) rotateY(-25deg);
-    }
-    .vector-bar .face { background: rgba(236, 72, 153, 0.6); }
-    .vector-bar .right { background: rgba(190, 24, 74, 0.7); transform: rotateY(90deg) translateZ(-7px); }
-    .vector-bar .top { background: rgba(244, 114, 182, 0.7); transform: rotateX(90deg) translateZ(7px); }
+## Formato de respuesta
 
-    /* Global Average Pooling (512 de alto) */
-    .gap { height: 100px; }
-    .gap .front, .gap .back { width: 14px; height: 100px; }
-    .gap .right { width: 14px; height: 100px; }
-    .gap .top { width: 14px; height: 14px; }
-
-    /* Densa 1024 (El doble de alta que la anterior para notar los 1024) */
-    .dense { height: 160px; }
-    .dense .face { background: rgba(20, 184, 166, 0.6); }
-    .dense .front, .dense .back { width: 14px; height: 160px; }
-    .dense .right { width: 14px; height: 160px; background: rgba(13, 148, 136, 0.7); transform: rotateY(90deg) translateZ(-7px); }
-    .dense .top { width: 14px; height: 14px; background: rgba(45, 212, 191, 0.7); transform: rotateX(90deg) translateZ(7px); }
-
-    /* Nodo de Neurona de Salida (1 Sigmoide) */
-    .output-node {
-      width: 32px;
-      height: 32px;
-      background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f43f5e 60%, #9f1239 100%);
-      border-radius: 50%;
-      box-shadow: 0 0 20px rgba(244, 63, 94, 0.6);
-      margin-top: 60px; /* Alineación visual con los centros */
-      margin-bottom: 25px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="scene">
-    
-    <!-- Entrada -->
-    <div class="layer-container">
-      <div class="cube entrada">
-        <div class="face front"></div>
-        <div class="face back"></div>
-        <div class="face right"></div>
-        <div class="face top"></div>
-      </div>
-      <div class="meta"><strong>Entrada</strong>200 × 200 × 3</div>
-    </div>
-
-    <!-- Bloque 1 -->
-    <div class="layer-container">
-      <div class="cube b1">
-        <div class="face front"></div>
-        <div class="face back"></div>
-        <div class="face right"></div>
-        <div class="face top"></div>
-      </div>
-      <div class="meta"><strong>Bloque 1</strong>100 × 100 × 64</div>
-    </div>
-
-    <!-- Bloque 2 -->
-    <div class="layer-container">
-      <div class="cube b2">
-        <div class="face front"></div>
-        <div class="face back"></div>
-        <div class="face right"></div>
-        <div class="face top"></div>
-      </div>
-      <div class="meta"><strong>Bloque 2</strong>50 × 50 × 128</div>
-    </div>
-
-    <!-- Bloque 3 -->
-    <div class="layer-container">
-      <div class="cube b3">
-        <div class="face front"></div>
-        <div class="face back"></div>
-        <div class="face right"></div>
-        <div class="face top"></div>
-      </div>
-      <div class="meta"><strong>Bloque 3</strong>25 × 25 × 256</div>
-    </div>
-
-    <!-- Bloque 4 -->
-    <div class="layer-container">
-      <div class="cube b4">
-        <div class="face front"></div>
-        <div class="face back"></div>
-        <div class="face right"></div>
-        <div class="face top"></div>
-      </div>
-      <div class="meta"><strong>Bloque 4</strong>12 × 12 × 512</div>
-    </div>
-
-    <!-- Bloque 5 -->
-    <div class="layer-container">
-      <div class="cube b5">
-        <div class="face front"></div>
-        <div class="face back"></div>
-        <div class="face right"></div>
-        <div class="face top"></div>
-      </div>
-      <div class="meta"><strong>Bloque 5</strong>6 × 6 × 512</div>
-    </div>
-
-    <!-- Global Average Pooling -->
-    <div class="layer-container">
-      <div class="vector-bar gap">
-        <div class="face front"></div>
-        <div class="face back"></div>
-        <div class="face right"></div>
-        <div class="face top"></div>
-      </div>
-      <div class="meta" style="margin-top: 50px;"><strong>GAP</strong>512 (Vector)</div>
-    </div>
-
-    <!-- Capa Densa -->
-    <div class="layer-container">
-      <div class="vector-bar dense">
-        <div class="face front"></div>
-        <div class="face back"></div>
-        <div class="face right"></div>
-        <div class="face top"></div>
-      </div>
-      <div class="meta" style="margin-top: 20px;"><strong>Densa</strong>1024 (FC)</div>
-    </div>
-
-    <!-- Capa de Salida -->
-    <div class="layer-container">
-      <div class="output-node"></div>
-      <div class="meta"><strong>Salida</strong>1 Neurona<br>Sigmoide</div>
-    </div>
-
-  </div>
-
-</body>
-</html>
+Trabaja en pasos. Para cada componente migrado, indica:
+- Ruta original → ruta nueva
+- Notas sobre decisiones de mapeo (solo si no es obvio)   
