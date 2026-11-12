@@ -1,0 +1,3 @@
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SELECT coalesce(json_agg(t),'[]') FROM (SELECT r.id,r.run_type,r.status,r.run_name,m.name model_name,m.framework,r.random_seed,r.dataset_version_id,r.started_at,r.finished_at,r.total_epochs,r.completed_epochs,r.best_epoch,r.stopped_epoch,r.checkpoint_monitor,r.checkpoint_mode,r.early_stopping_enabled,r.early_stopping_patience,r.parameters,r.metadata,r.configuration,r.execution_parameters,to_jsonb(c) run_configuration FROM runs r LEFT JOIN models m ON m.id=r.model_id LEFT JOIN run_configurations c ON c.run_id=r.id WHERE r.run_type='training' ORDER BY m.name,r.started_at)t;
+COMMIT;

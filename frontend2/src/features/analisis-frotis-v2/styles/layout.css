@@ -1,0 +1,61 @@
+
+/* Host-shell sizing belongs here; slide/image geometry stays in the viewer. */
+.frotis-v2 {
+  height: calc(100dvh - var(--frotis-v2-shell-header-height));
+  min-height: var(--frotis-v2-workspace-min-height);
+  width: 100%;
+  min-width: 0;
+  position: relative;
+  isolation: isolate;
+  color: var(--frotis-v2-text-primary);
+  font-family: var(--frotis-v2-font-family);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--frotis-v2-background);
+}
+.frotis-v2 > header { flex-shrink: 0; overflow: visible; }
+.frotis-v2 > header > .frotis-header-row {
+  height: auto;
+  min-height: var(--frotis-v2-header-height);
+  flex-wrap: wrap;
+  padding-block: var(--frotis-v2-header-padding-y);
+}
+.frotis-v2 > header nav { flex-wrap: wrap; }
+.frotis-v2 main { min-height: 0; }
+.frotis-v2 .fixed { position: absolute; }
+.frotis-v2 .custom-scrollbar { scrollbar-width: thin; }
+.frotis-v2 .border-b { border-bottom-width: var(--frotis-v2-divider-width); }
+.frotis-v2 .border-t { border-top-width: var(--frotis-v2-divider-width); }
+.frotis-v2 .border-l { border-left-width: var(--frotis-v2-divider-width); }
+.frotis-v2 .border-r { border-right-width: var(--frotis-v2-divider-width); }
+.frotis-v2 > main > div > .flex-1 { min-width: 0; }
+.frotis-v2 > header .af2-image-popover { left: 0; right: auto; }
+.frotis-v2 .frotis-adjustments-panel {
+  width: var(--frotis-v2-popover-width);
+  max-width: calc(100vw - 2 * var(--frotis-v2-component-padding));
+  pointer-events: all;
+}
+
+.frotis-v2 :is(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: var(--frotis-v2-focus-width) solid var(--frotis-v2-focus);
+  outline-offset: var(--frotis-v2-focus-offset);
+}
+.frotis-v2 :is(button, input, select, textarea):disabled {
+  opacity: var(--frotis-v2-disabled-opacity);
+  cursor: not-allowed;
+}
+.frotis-v2 button:active:not(:disabled) { filter: brightness(0.95); }
+
+.frotis-v2 .frotis-layer-base { z-index: var(--frotis-v2-z-base); }
+.frotis-v2 .frotis-layer-overlay { z-index: var(--frotis-v2-z-overlay); }
+.frotis-v2 .frotis-layer-toolbar { z-index: var(--frotis-v2-z-toolbar); }
+.frotis-v2 .frotis-layer-header { z-index: var(--frotis-v2-z-header); }
+.frotis-v2 .frotis-tooltip { z-index: var(--frotis-v2-z-tooltip); }
+.frotis-v2 .frotis-layer-popover { z-index: var(--frotis-v2-z-popover); }
+.frotis-v2 .frotis-layer-modal { z-index: var(--frotis-v2-z-modal); }
+
+@media (max-width: 900px) {
+  .frotis-v2 > main > div { overflow: auto; }
+  .frotis-v2 { min-height: var(--frotis-v2-workspace-min-height-compact); }
+}

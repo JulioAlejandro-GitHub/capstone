@@ -1,0 +1,89 @@
+import { routes } from '../../router';
+
+export type NavigationIconName =
+  | 'dashboard' | 'activity' | 'evaluation' | 'compare' | 'package' | 'rocket'
+  | 'trace' | 'explain' | 'prediction' | 'database' | 'datasets' | 'logs'
+  | 'stethoscope' | 'microscope' | 'percent' | 'boxes' | 'architecture' | 'cpuAI';
+
+export type NavigationGroup = {
+  id: string;
+  label: string;
+  items: Array<{
+    id: string;
+    label: string;
+    path: string;
+    icon: NavigationIconName;
+  }>;
+};
+
+export type NavigationModule = {
+  id: string;
+  label: string;
+  pathPrefix: string;
+  mark?: string;
+  icon?: NavigationIconName;
+  groups: NavigationGroup[];
+};
+
+const modelAiGroups: NavigationGroup[] = [
+  {
+    id: 'general', label: 'General', items: [
+      { id: 'summary', label: 'Resumen', path: routes.summary, icon: 'dashboard' },
+    ]
+  },
+  {
+    id: 'experimentation', label: 'Experimentación', items: [
+      { id: 'runs', label: 'Ejecuciones', path: routes.runs, icon: 'activity' },
+      { id: 'campaign', label: 'Campaña', path: routes.campaigns, icon: 'compare' },
+      { id: 'comparison', label: 'Análisis de Modelos', path: routes.comparison, icon: 'percent' },
+      { id: 'model-explorer', label: 'Arquitectura del modelo', path: routes.modelExplorer, icon: 'architecture' },
+    ]
+  },
+  {
+    id: 'data', label: 'Datos', items: [
+      { id: 'dataset', label: 'Dataset', path: routes.dataset, icon: 'database' },
+      { id: 'datasets-models', label: 'Datasets y modelos', path: routes.datasetsModels, icon: 'datasets' },
+    ]
+  },
+];
+
+export const navigationModules: NavigationModule[] = [
+  {
+    id: 'smear-analysis',
+    label: 'Análisis de frotis',
+    pathPrefix: '/frotis',
+    icon: 'stethoscope',
+    groups: [{
+      id: 'smear-operation',
+      label: 'Operación',
+      items: [
+        { id: 'smear-workflow', label: 'Analizar imagen', path: routes.smearWorkflow, icon: 'microscope' },
+        { id: 'smear-analysis-2', label: 'Análisis de frotis v2', path: routes.smearAnalysis2, icon: 'microscope' },
+        { id: 'smear-history', label: 'Historial de análisis', path: routes.smearHistory, icon: 'activity' },
+      ],
+    }],
+  },
+  {
+    id: 'model-ai',
+    label: 'Modelo IA',
+    pathPrefix: '/modelo-ia',
+    icon: 'cpuAI',
+    mark: 'AI',
+    groups: modelAiGroups,
+  },
+];
+
+export const navigationItems = navigationModules.flatMap((module) =>
+  module.groups.flatMap((group) => group.items));
+
+export const pathMatches = (pathname: string, path: string) =>
+  pathname === path || pathname.startsWith(`${path}/`);
+
+export const moduleForPath = (pathname: string) =>
+  navigationModules.find((module) => pathMatches(pathname, module.pathPrefix));
+
+export const sectionForPath = (pathname: string) =>
+  navigationItems.find((item) => pathMatches(pathname, item.path))
+  ?? (pathMatches(pathname, routes.evaluations) ? navigationItems.find((item) => item.id === 'runs') : undefined)
+  // The configuration page belongs to the same section as the campaigns report.
+  ?? (pathname === routes.campaign ? navigationItems.find((item) => item.id === 'campaign') : undefined);

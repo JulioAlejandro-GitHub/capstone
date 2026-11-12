@@ -79,9 +79,9 @@ select {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 76px;
+  min-height: 56px;
   border-bottom: 1px solid var(--sidebar-border);
-  padding: 14px 16px;
+  padding: 1px 1px 1px 7px;
 }
 
 .sidebar-mark {
@@ -2776,7 +2776,7 @@ a.uploaded-image-cell:hover small {
 
   .app-sidebar.is-collapsed .sidebar-header {
     justify-content: flex-start;
-    padding: 14px 16px;
+    /* padding: 14px 16px; */
   }
 
   .sidebar-mobile-close {

@@ -1,0 +1,10 @@
+{
+  "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/campaign_runs/db31b6af-c2a2-44f0-9316-8f8c3492c0f1/epoch_20.pt",
+  "exists": true,
+  "size_bytes": 115004676,
+  "recorded_bytes": 115004676,
+  "sha256": "43e60366873f2316657abdea31642131260fc6d1191895bace7180fab5eb9a07",
+  "recorded_sha256": "43e60366873f2316657abdea31642131260fc6d1191895bace7180fab5eb9a07",
+  "matches": true,
+  "method": "read bytes and hash only; no deserialization or model execution"
+}

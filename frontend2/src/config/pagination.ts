@@ -1,0 +1,1 @@
+export const DEFAULT_DATASET_IMAGE_PAGE_SIZE = 12;

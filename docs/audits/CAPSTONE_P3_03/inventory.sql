@@ -1,0 +1,3 @@
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SELECT json_build_object('captured_at',clock_timestamp(),'database',current_database(),'read_only',current_setting('default_transaction_read_only'),'runs',(SELECT json_agg(t) FROM (SELECT run_type,status,count(*) FROM runs GROUP BY 1,2 ORDER BY 1,2)t),'records',(SELECT json_agg(t) FROM (SELECT kind,count(*),count(DISTINCT run_id) runs FROM train_execution_records GROUP BY 1 ORDER BY 1)t),'history_rows',(SELECT count(*) FROM training_history),'assessments',(SELECT json_agg(t) FROM (SELECT kind,state,count(*) FROM assessment_attempts a JOIN assessment_identities i ON i.id=a.identity_id GROUP BY 1,2 ORDER BY 1,2)t));
+COMMIT;

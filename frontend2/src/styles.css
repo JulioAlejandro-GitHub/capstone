@@ -1,0 +1,175 @@
+/* frontend2 — único archivo de estilos. Tailwind CSS 4, sin CSS propio de componentes. */
+@import "tailwindcss";
+
+@theme {
+  /* ── Primitivos de color (desde --ds-* en frontend/src/styles/tokens.css) ── */
+  --color-surface: #ffffff;          /* --ds-slate-0   */
+  --color-subtle: #f8faff;           /* --ds-slate-25  */
+  --color-canvas: #f6f7fb;           /* --ds-slate-50  */
+  --color-hover: #eef1f7;            /* --ds-slate-100 */
+  --color-border: #e3e7f0;           /* --ds-slate-200 */
+  --color-border-strong: #cfd7e8;    /* --ds-slate-300 */
+  --color-muted-2: #8a95ad;          /* --ds-slate-400 */
+  --color-muted: #62708f;            /* --ds-slate-500 */
+  --color-ink-2: #465574;            /* --ds-slate-600 */
+  --color-ink: #27324a;              /* --ds-slate-700 */
+  --color-ink-strong: #172033;       /* --ds-slate-900 */
+
+  --color-night-0: #060e20;
+  --color-night-50: #0b1326;
+  --color-night-100: #131b2e;
+  --color-night-200: #171f33;
+  --color-night-300: #222a3d;
+  --color-night-400: #2d3449;
+  --color-night-500: #3c494e;
+  --color-night-600: #859399;
+  --color-night-700: #bbc9cf;
+  --color-night-800: #dae2fd;
+  --color-viewer: #121212;           /* --ds-neutral-950 */
+
+  --color-accent: #284a9c;           /* --ds-blue-600 */
+  --color-accent-2: #315caa;         /* --ds-blue-500 */
+  --color-accent-soft: #eaf0ff;      /* --ds-blue-100 */
+  --color-primary: #a4e6ff;          /* --ds-cyan-300 */
+  --color-primary-strong: #4cd6ff;   /* --ds-cyan-400 */
+
+  --color-ok: #17653b;               /* --ds-green-700 */
+  --color-ok-soft: #e7f8ef;          /* --ds-green-100 */
+  --color-ok-strong: #4edea3;        /* --ds-green-300 */
+  --color-warn: #8a5a00;             /* --ds-amber-700 */
+  --color-warn-soft: #fff6df;        /* --ds-amber-100 */
+  --color-warn-strong: #ffd5a5;      /* --ds-amber-300 */
+  --color-danger: #9a2323;           /* --ds-red-700 */
+  --color-danger-soft: #fdecec;      /* --ds-red-100 */
+  --color-danger-strong: #ffb4ab;    /* --ds-red-300 */
+  --color-blocked: #4b3a8f;          /* --ds-violet-700 */
+  --color-blocked-soft: #efecfb;     /* --ds-violet-100 */
+  --color-blocked-strong: #c9bfff;   /* --ds-violet-300 */
+
+  /* ── Tipografía ── */
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-lg: 16px;
+  --text-title: 30px;
+  --text-metric: 26px;
+
+  /* ── Escala ── */
+  --spacing: 4px;                    /* p-1=4, p-2=8, p-3=12, p-4=16, p-6=24 → --ds-space-* */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-card: 14px;
+  --radius-modal: 16px;
+  --radius-pill: 999px;
+  --radius-panel: 18px;   /* .panel, .metric-card, .artifact-card, .empty-state */
+  --radius-step: 10px;
+  --shadow-card: 0 7px 20px rgba(18, 26, 47, 0.045);
+  --shadow-panel: 0 12px 30px rgba(18, 26, 47, 0.04);
+  --shadow-modal: 0 28px 80px rgba(0, 0, 0, 0.28);
+
+  /* ── Tokens de chips/badges (report-components.css) ── */
+  --color-chip: #f9faff;
+  --color-chip-border: #e2e7f0;
+  --color-chip-muted: #72809a;
+  --color-warn-2: #fff0c7;      /* badge warning */
+  --color-warn-2-fg: #7a4f00;
+  --color-info-soft: #eaf2ff;
+  --color-info-fg: #28579b;
+  --color-neutral-soft: #edf1f8;
+  --color-neutral-fg: #465574;
+
+  /* ── Animaciones (keyframes originales, renombradas) ── */
+  --animate-smear-spin: smear-workflow-spin 1.2s linear infinite;
+  --animate-smear-scan: smear-scan 2.4s ease-in-out infinite;
+  --animate-smear-pulse: smear-quality-pulse 1.6s ease-in-out infinite;
+  --animate-panel-in: smear-workflow-panel-in 240ms ease-out;
+  --animate-run-spin: run-promotion-spin 1s linear infinite;
+  --animate-stage2-in: stage2-panel-in 220ms ease-out;
+  --animate-progress: mx-progress 900ms ease-out infinite;
+  --animate-step-in: mx-step-in 180ms ease-out;
+  --animate-fade: mx-fade 200ms ease-out;
+  --animate-dialog-in: mx-dialog-in 200ms ease-out;
+  --animate-xai-pulse: xai-pulse 2s ease-in-out infinite;
+}
+
+/* Semánticos por superficie: workbench (claro) / lab (oscuro) */
+@theme inline {
+  --color-canvas: var(--surface-canvas);
+  --color-surface: var(--surface-panel);
+  --color-subtle: var(--surface-subtle);
+  --color-hover: var(--surface-hover);
+  --color-fg: var(--fg-default);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-strong: var(--fg-strong);
+  --color-border: var(--border-default);
+  --color-border-subtle: var(--border-subtle);
+  /* Valores de métricas y pasos: color según la superficie (claro/oscuro) */
+  --color-value: var(--surface-value);
+  --color-step-complete: var(--step-complete-fg);
+  --color-step-current: var(--step-current-fg);
+  --color-step-pending: var(--step-pending-fg);
+}
+
+/* Valores por defecto: cuando un bloque no declara superficie se usa la paleta workbench */
+:root {
+  --surface-canvas: #f6f7fb;
+  --surface-panel: #ffffff;
+  --surface-subtle: #f8faff;
+  --surface-hover: #eef1f7;
+  --fg-default: #172033;
+  --fg-muted: #62708f;
+  --fg-strong: #172033;
+  --border-default: #e3e7f0;
+  --border-subtle: #eef1f7;
+  --surface-value: #1f7a45;
+  --step-complete-fg: #23613a;
+  --step-current-fg: #172033;
+  --step-pending-fg: #27324a;
+}
+
+[data-surface="workbench"] {
+  --surface-canvas: #f6f7fb;
+  --surface-panel: #ffffff;
+  --surface-subtle: #f8faff;
+  --surface-hover: #eef1f7;
+  --fg-default: #172033;
+  --fg-muted: #62708f;
+  --fg-strong: #172033;
+  --border-default: #e3e7f0;
+  --border-subtle: #eef1f7;
+  --surface-value: #1f7a45;        /* 5.3:1 sobre blanco */
+  --step-complete-fg: #23613a;
+  --step-current-fg: #172033;
+  --step-pending-fg: #27324a;
+}
+
+[data-surface="lab"] {
+  --surface-canvas: #0b1326;
+  --surface-panel: #171f33;
+  --surface-subtle: #131b2e;
+  --surface-hover: #222a3d;
+  --fg-default: #dae2fd;
+  --fg-muted: #bbc9cf;
+  --fg-strong: #f4f8ff;
+  --border-default: #3c494e;
+  --border-subtle: #222a3d;
+  --surface-viewer: #121212;
+  --surface-value: #7bd6a4;        /* 9.4:1 sobre #171f33 (#1f7a45 solo daría 3.1:1) */
+  --step-complete-fg: #8ad6a4;
+  --step-current-fg: #f4f8ff;
+  --step-pending-fg: #dae2fd;
+}
+
+/* Keyframes equivalentos a los del sistema de diseño original */
+@keyframes smear-workflow-spin { to { transform: rotate(1turn); } }
+@keyframes smear-scan { 0% { opacity: 0; transform: translateY(0); } 10%, 90% { opacity: 1; transform: translateY(18px); } 100% { opacity: 0; transform: translateY(36px); } }
+@keyframes smear-quality-pulse { 50% { opacity: 0.42; } }
+@keyframes smear-workflow-panel-in { from { opacity: 0.01; transform: translateY(4px); } }
+@keyframes run-promotion-spin { to { transform: rotate(360deg); } }
+@keyframes stage2-panel-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+@keyframes mx-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes mx-step-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes mx-fade { from { opacity: 0; } }
+@keyframes mx-dialog-in { from { opacity: 0; transform: translateY(6px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes xai-pulse { 50% { opacity: 0.5; } }

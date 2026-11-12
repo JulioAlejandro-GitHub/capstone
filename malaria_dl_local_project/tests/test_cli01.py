@@ -361,6 +361,44 @@ def test_gate_accepts_reused_pid_with_proven_different_identity(monkeypatch):
                                    'sessions': [], 'release_confirmed': False})
 
 
+@pytest.mark.parametrize('released', [False, True])
+def test_gate_accepts_same_host_previous_boot_despite_reused_pid_and_session(monkeypatch, released):
+    from src.malaria_dl.execution import global_gate as gate
+    here = {'host': 'fixture-mac', 'boot_id': 'boot-2'}
+    old = {**here, 'boot_id': 'boot-1', 'pid': 123, 'start_ticks': '1'}
+    monkeypatch.setattr(gate, 'host_identity', lambda: here)
+    monkeypatch.setattr(gate, 'process_table', lambda: {123: {'session': 123, 'start_ticks': '1'}})
+    assert gate.process_absent(old)
+    gate.verify_retained_processes({'identities': [old], 'sessions': [123],
+                                   'release_confirmed': released})
+
+
+@pytest.mark.parametrize('host,boot', [('other-host', 'boot-1'), ('fixture-mac', None)])
+def test_gate_requires_same_host_and_known_boot_for_reboot_evidence(monkeypatch, host, boot):
+    from src.malaria_dl.execution import global_gate as gate
+    from src.malaria_dl.campaigns.contracts import CampaignError
+    monkeypatch.setattr(gate, 'host_identity', lambda: {'host': 'fixture-mac', 'boot_id': 'boot-2'})
+    identity = {'host': host, 'boot_id': boot, 'pid': 123, 'start_ticks': '1'}
+    with pytest.raises(CampaignError, match='REMOTE_PROCESS_ABSENCE_UNPROVEN'):
+        gate.process_absent(identity, {})
+    with pytest.raises(CampaignError, match='REMOTE_PROCESS_ABSENCE_UNPROVEN'):
+        gate.verify_retained_processes({'identities': [identity], 'sessions': [],
+                                       'release_confirmed': False})
+
+
+def test_gate_previous_boot_does_not_hide_current_live_process(monkeypatch):
+    from src.malaria_dl.execution import global_gate as gate
+    from src.malaria_dl.campaigns.contracts import CampaignError
+    here = {'host': 'fixture-mac', 'boot_id': 'boot-2'}
+    old = {**here, 'boot_id': 'boot-1', 'pid': 123, 'start_ticks': '1'}
+    live = {**here, 'pid': 456, 'start_ticks': '2'}
+    monkeypatch.setattr(gate, 'host_identity', lambda: here)
+    monkeypatch.setattr(gate, 'process_table', lambda: {456: {'session': 456, 'start_ticks': '2'}})
+    with pytest.raises(CampaignError, match='PREVIOUS_EXPERIMENT_PROCESS_STILL_ALIVE'):
+        gate.verify_retained_processes({'identities': [old, live], 'sessions': [],
+                                       'release_confirmed': False})
+
+
 def test_assessment_gate_error_has_no_traceback_or_execution(monkeypatch, capsys):
     from src.malaria_dl.execution import global_gate, local_launch
     from src.malaria_dl.campaigns.contracts import CampaignError

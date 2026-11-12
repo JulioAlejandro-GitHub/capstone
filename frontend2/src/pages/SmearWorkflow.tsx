@@ -1,0 +1,1263 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+
+import { useAuth } from '../auth';
+import { SmearAnalysisImmersiveView } from '../components/cell-review/SmearAnalysisImmersiveView';
+import {
+  SmearCaseHeader,
+  type SmearCaseHeaderFact,
+} from '../components/cell-review/SmearCaseHeader';
+import { routes } from '../router';
+import {
+  flowPhaseFromStage,
+  useSmearAnalysisWorkflow,
+  type SmearWorkflowController,
+  type SmearWorkflowFailureStep,
+  type SmearWorkflowStage,
+} from '../hooks/useSmearAnalysisWorkflow';
+import {
+  ApiError,
+  api,
+  type AnalysisEvent,
+  type QualityImage,
+  type SmearWorkflowResponse,
+} from '../services/api';
+import { SmearUpload } from './SmearUpload';
+
+type ContextStep = 'upload' | 'quality' | 'detection' | 'classification' | 'review';
+type StepState = 'pending' | 'active' | 'complete' | 'warning' | 'failed' | 'locked';
+type MobilePane = 'progress' | 'image' | 'cells' | 'detail';
+type WorkflowCapabilities = {
+  canCreateAnalysis: boolean;
+  canCreateQueue: boolean;
+  canExecuteQueue: boolean;
+  canRetryQueue: boolean;
+  canReviewQuality: boolean;
+  canExecuteDetection: boolean;
+  canExecuteClassification: boolean;
+};
+
+const contextSteps: Array<{ id: ContextStep; label: string }> = [
+  { id: 'upload', label: 'Preparar' },
+  { id: 'quality', label: 'Validar' },
+  { id: 'detection', label: 'Detectar' },
+  { id: 'classification', label: 'Clasificar' },
+  { id: 'review', label: 'Revisar' },
+];
+
+/**
+ * Sub-milestones nested under each contextStep in the left processing panel.
+ * timeIndex indexes into milestoneTimes, which keeps the original 7-entry
+ * order and timestamp-sourcing logic from the retired milestones array.
+ */
+const contextSubSteps: Record<ContextStep, Array<{ title: string; detail: string; timeIndex: number }>> = {
+  upload: [
+    { title: 'Imagen recibida', detail: 'Original persistido sin modificaciones', timeIndex: 0 },
+  ],
+  quality: [
+    { title: 'Integridad verificada', detail: 'Checksum y decodificación técnica', timeIndex: 1 },
+    { title: 'Control de calidad', detail: 'Nitidez, exposición y campo útil', timeIndex: 2 },
+    { title: 'Lista para análisis', detail: 'Quality gate autorizado', timeIndex: 3 },
+  ],
+  detection: [
+    { title: 'Detección celular', detail: 'Regiones candidatas y crops', timeIndex: 4 },
+  ],
+  classification: [
+    { title: 'Clasificación IA', detail: 'Predicción reproducible con el modelo productivo', timeIndex: 5 },
+  ],
+  review: [
+    { title: 'Revisión y resultado', detail: 'Resumen experimental y workspace interactivo', timeIndex: 6 },
+  ],
+};
+
+/**
+ * Sub-step states for one contextStep, computed together (not one at a time)
+ * because 'warning'/'failed' and 'active' both depend on comparing every
+ * sub-step's timestamp, not just the current one's. A sub-step is never more
+ * advanced than its parent step.
+ */
+function subStepStates(stepState: StepState, hasTimestamp: boolean[]): StepState[] {
+  if (stepState === 'complete') {
+    return hasTimestamp.map(() => 'complete');
+  }
+  if (stepState === 'warning' || stepState === 'failed') {
+    const lastTimedIndex = hasTimestamp.lastIndexOf(true);
+    return hasTimestamp.map((_, index) => {
+      if (index === lastTimedIndex) return stepState;
+      if (index < lastTimedIndex) return 'complete';
+      return 'pending';
+    });
+  }
+  if (stepState === 'active') {
+    const firstUntimedIndex = hasTimestamp.indexOf(false);
+    return hasTimestamp.map((timed, index) => {
+      if (timed) return 'complete';
+      return index === firstUntimedIndex ? 'active' : 'pending';
+    });
+  }
+  // 'pending' / 'locked': nothing has started yet, so every sub-step mirrors
+  // the parent rather than reading ahead on a timestamp that may be stale.
+  return hasTimestamp.map(() => stepState);
+}
+
+const stageLabel: Record<SmearWorkflowStage, string> = {
+  setup: 'Configuración pendiente',
+  validating: 'Validando datos',
+  uploading: 'Recibiendo imagen',
+  ingested: 'Imagen recibida',
+  creating_analysis: 'Creando ejecución',
+  quality_queued: 'Control en cola',
+  quality_processing: 'Control técnico en curso',
+  quality_warning: 'Advertencia pendiente',
+  quality_failed: 'Bloqueo técnico',
+  ready_for_detection: 'Lista para detección',
+  detection_processing: 'Detección en curso',
+  awaiting_productive_model: 'Modelo productivo requerido',
+  classification_pending: 'Clasificación pendiente',
+  classification_processing: 'Clasificación IA en curso',
+  classification_completed: 'Clasificación completada',
+  classification_warning: 'Clasificación con advertencias',
+  classification_failed: 'Clasificación fallida',
+  review_ready: 'Revisión disponible',
+  error: 'Interrupción técnica',
+};
+
+const activityLabel: Record<SmearWorkflowStage, string> = {
+  setup: 'Carga aún no iniciada',
+  validating: 'Validando archivo e identificación antes del envío',
+  uploading: 'Verificando integridad del archivo recibido',
+  ingested: 'Imagen persistida y lista para crear la ejecución',
+  creating_analysis: 'Preparando imagen para el control técnico',
+  quality_queued: 'Solicitud de calidad registrada con prioridad normal',
+  quality_processing: 'Evaluando nitidez y exposición',
+  quality_warning: 'La advertencia requiere una decisión autorizada',
+  quality_failed: 'El quality gate bloqueó el análisis',
+  ready_for_detection: 'Preparando imagen para detección',
+  detection_processing: 'Detectando regiones celulares y generando crops',
+  awaiting_productive_model: 'No hay un modelo productivo válido disponible para Etapa 2',
+  classification_pending: 'Validando modelo productivo y preparando crops elegibles',
+  classification_processing: 'Clasificando células con el modelo productivo registrado',
+  classification_completed: 'Resultado experimental disponible para revisión',
+  classification_warning: 'Resultados disponibles con advertencias técnicas',
+  classification_failed: 'La clasificación se detuvo y requiere un reintento manual',
+  review_ready: 'Detecciones disponibles para revisión',
+  error: 'El workflow se detuvo en la etapa fallida',
+};
+
+const processingStages: SmearWorkflowStage[] = [
+  'validating',
+  'uploading',
+  'creating_analysis',
+  'quality_processing',
+  'detection_processing',
+  'classification_pending',
+  'classification_processing',
+];
+const knownWorkflowStages = new Set<SmearWorkflowStage>(Object.keys(stageLabel) as SmearWorkflowStage[]);
+
+const historyFailure = (
+  workflow: SmearWorkflowResponse,
+): { step: SmearWorkflowFailureStep; message: string } | null => {
+  if (workflow.classification_run?.status === 'failed') {
+    return {
+      step: 'classification',
+      message: workflow.classification_run.error_message
+        || 'La clasificación terminó con error.',
+    };
+  }
+  if (workflow.detection_run?.status === 'failed') {
+    return {
+      step: 'detection',
+      message: workflow.detection_run.error_message || 'La detección terminó con error.',
+    };
+  }
+  if (workflow.queue_item?.status === 'failed') {
+    return {
+      step: 'quality',
+      message: workflow.queue_item.last_error_message || 'El control de calidad terminó con error.',
+    };
+  }
+  return workflow.stage === 'error'
+    ? { step: 'recovery', message: 'El análisis terminó con error.' }
+    : null;
+};
+
+const safeDate = (value: string | null | undefined) => {
+  if (!value) return '—';
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
+};
+
+const safeTime = (value: string | null | undefined) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime())
+    ? null
+    : parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const optionalMetric = (value: number | null | undefined, digits = 3) =>
+  value == null ? '—' : value.toFixed(digits);
+
+const ratio = (value: number | null | undefined) =>
+  value == null ? '—' : `${(value * 100).toFixed(1)} %`;
+
+/** Detections vs. reviewed count for the 'review' step. Omit when unavailable. */
+type ReviewProgress = { total: number; reviewed: number };
+
+const reviewProgressOf = (
+  detectionRun: { detection_count: number; reviewed_count: number } | null | undefined,
+): ReviewProgress | null => (
+  detectionRun
+    ? { total: detectionRun.detection_count, reviewed: detectionRun.reviewed_count }
+    : null
+);
+
+/**
+ * The "Lote/Dimensiones/Formato/Estado" fact strip absorbed into
+ * SmearCaseHeader from the former .workflow-image-facts. Missing values are
+ * omitted rather than shown as '—': during upload there is no image size or
+ * format yet, and that is expected, not an error state.
+ */
+const workflowFacts = (
+  controller: SmearWorkflowController,
+  stage: SmearWorkflowStage,
+): SmearCaseHeaderFact[] => {
+  const { identifiers, snapshot } = controller;
+  const run = snapshot.analysisRun;
+  const uploadedImage = snapshot.upload?.images[0] ?? null;
+  const persistedImage = snapshot.persisted?.images[0] ?? null;
+  const qualityImage = run?.images[0] ?? null;
+  const width = uploadedImage?.width_px ?? persistedImage?.width_px ?? qualityImage?.input_width_px;
+  const height = uploadedImage?.height_px ?? persistedImage?.height_px ?? qualityImage?.input_height_px;
+  const format = (
+    persistedImage?.detected_format
+    ?? persistedImage?.mime_type
+    ?? controller.selectedFiles[0]?.type
+  );
+  const facts: SmearCaseHeaderFact[] = [];
+  if (identifiers.ingestionBatchId) facts.push({ label: 'Lote', value: identifiers.ingestionBatchId });
+  if (width && height) facts.push({ label: 'Dimensiones', value: `${width} × ${height} px` });
+  if (format) facts.push({ label: 'Formato', value: format });
+  facts.push({ label: 'Estado', value: stageLabel[stage] });
+  return facts;
+};
+
+function contextStepState(
+  step: ContextStep,
+  stage: SmearWorkflowStage,
+  failureStep: SmearWorkflowFailureStep | undefined,
+  reviewProgress?: ReviewProgress | null,
+): StepState {
+  if (
+    stage === 'review_ready'
+    || stage === 'classification_completed'
+    || stage === 'classification_warning'
+  ) {
+    if (step === 'review') {
+      if (!reviewProgress) return 'active';
+      if (reviewProgress.reviewed <= 0) return 'pending';
+      if (reviewProgress.reviewed >= reviewProgress.total) return 'complete';
+      return 'active';
+    }
+    if (step === 'classification' && stage === 'classification_warning') return 'warning';
+    return 'complete';
+  }
+  if (
+    stage === 'awaiting_productive_model'
+    || stage === 'classification_pending'
+    || stage === 'classification_processing'
+    || stage === 'classification_failed'
+  ) {
+    if (step === 'upload' || step === 'quality' || step === 'detection') return 'complete';
+    if (step === 'classification') {
+      if (stage === 'classification_failed') return 'failed';
+      if (stage === 'awaiting_productive_model') return 'warning';
+      return 'active';
+    }
+    return 'locked';
+  }
+  if (stage === 'detection_processing' || stage === 'ready_for_detection') {
+    if (step === 'upload' || step === 'quality') return 'complete';
+    return step === 'detection' ? 'active' : 'locked';
+  }
+  if (stage === 'quality_warning') {
+    if (step === 'upload') return 'complete';
+    return step === 'quality' ? 'warning' : 'locked';
+  }
+  if (stage === 'quality_failed') {
+    if (step === 'upload') return 'complete';
+    return step === 'quality' ? 'failed' : 'locked';
+  }
+  if (stage === 'error') {
+    const failedContext: Record<SmearWorkflowFailureStep, ContextStep> = {
+      upload: 'upload',
+      analysis: 'quality',
+      queue: 'quality',
+      quality: 'quality',
+      detection: 'detection',
+      classification: 'classification',
+      recovery: 'upload',
+    };
+    const failed = failedContext[failureStep ?? 'recovery'];
+    if (step === failed) return 'failed';
+    if (failed === 'quality' && step === 'upload') return 'complete';
+    if (failed === 'detection' && (step === 'upload' || step === 'quality')) return 'complete';
+    if (
+      failed === 'classification'
+      && (step === 'upload' || step === 'quality' || step === 'detection')
+    ) return 'complete';
+    return 'locked';
+  }
+  if (stage === 'ingested') {
+    if (step === 'upload') return 'complete';
+    return 'locked';
+  }
+  if (['creating_analysis', 'quality_queued', 'quality_processing'].includes(stage)) {
+    if (step === 'upload') return 'complete';
+    return step === 'quality' ? 'active' : 'locked';
+  }
+  if (step === 'upload') return 'active';
+  return 'locked';
+}
+
+function AuthenticatedWorkflowImage({
+  localUrl,
+  imageId,
+  name,
+}: {
+  localUrl: string | null;
+  imageId: string | null;
+  name: string;
+}) {
+  const [persistedUrl, setPersistedUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (localUrl || !imageId) {
+      setPersistedUrl(null);
+      setFailed(false);
+      return undefined;
+    }
+    let active = true;
+    let objectUrl: string | null = null;
+    setFailed(false);
+    api.getMicroscopyImageBlob(imageId)
+      .then((url) => {
+        if (!active) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+        objectUrl = url;
+        setPersistedUrl(url);
+      })
+      .catch((error) => {
+        if (active) setFailed(error instanceof ApiError || error instanceof Error);
+      });
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [imageId, localUrl]);
+
+  const source = localUrl ?? persistedUrl;
+  if (source) return <img src={source} alt={`Imagen de frotis ${name}`} />;
+  return (
+    <div className="workflow-persisted-image-empty">
+      <span aria-hidden="true">{failed ? '!' : '…'}</span>
+      <strong>{failed ? 'Imagen no disponible' : 'Cargando imagen autenticada'}</strong>
+    </div>
+  );
+}
+
+function QualityMetrics({ image }: { image: QualityImage | null }) {
+  if (!image) return <p className="workflow-panel-empty">Las métricas aún no están disponibles.</p>;
+  return (
+    <dl className="workflow-quality-metrics">
+      <div><dt>Integridad</dt><dd>{image.integrity_verified ? 'Verificada' : 'No verificada'}</dd></div>
+      <div><dt>Nitidez</dt><dd>{optionalMetric(image.laplacian_variance)}</dd></div>
+      <div><dt>Brillo</dt><dd>{optionalMetric(image.brightness_mean)}</dd></div>
+      <div><dt>Contraste</dt><dd>{optionalMetric(image.contrast_p95_p05)}</dd></div>
+      <div><dt>Entropía</dt><dd>{optionalMetric(image.entropy_bits, 2)} bits</dd></div>
+      <div><dt>Área útil</dt><dd>{ratio(image.usable_field_ratio)}</dd></div>
+    </dl>
+  );
+}
+
+type QualityCriterionState = 'pending' | 'evaluating' | 'approved' | 'warning' | 'rejected' | 'error';
+
+const qualityCriteria = [
+  {
+    label: 'Enfoque',
+    codes: ['LOW_LAPLACIAN_FOCUS', 'LOW_TENENGRAD_FOCUS'],
+    detail: (image: QualityImage) => `Laplaciano ${optionalMetric(image.laplacian_variance)}`,
+  },
+  {
+    label: 'Iluminación',
+    codes: ['EXPOSURE_DARK', 'EXPOSURE_BRIGHT', 'LOW_CONTRAST'],
+    detail: (image: QualityImage) => `Brillo ${optionalMetric(image.brightness_mean)} · contraste ${optionalMetric(image.contrast_p95_p05)}`,
+  },
+  {
+    label: 'Resolución',
+    codes: ['DIMENSIONS_BELOW_MINIMUM', 'PIXEL_COUNT_BELOW_MINIMUM', 'DIMENSIONS_MISMATCH'],
+    detail: (image: QualityImage) => `${image.input_width_px} × ${image.input_height_px} px`,
+  },
+  {
+    label: 'Artefactos',
+    codes: ['BLACK_BORDER', 'LOW_ENTROPY', 'LOW_USABLE_FIELD'],
+    detail: (image: QualityImage) => `Campo útil ${ratio(image.usable_field_ratio)}`,
+  },
+] as const;
+
+const qualityStateLabel: Record<QualityCriterionState, string> = {
+  pending: 'Pendiente',
+  evaluating: 'Evaluando',
+  approved: 'Aprobado',
+  warning: 'Advertencia',
+  rejected: 'Rechazado',
+  error: 'Error',
+};
+
+function criterionState(
+  image: QualityImage | null,
+  stage: SmearWorkflowStage,
+  codes: readonly string[],
+): QualityCriterionState {
+  if (!image?.quality_verdict) {
+    if (stage === 'quality_processing' || stage === 'quality_queued' || stage === 'creating_analysis') {
+      return 'evaluating';
+    }
+    if (stage === 'error') return 'error';
+    return 'pending';
+  }
+  const failures = image.failure_codes ?? [];
+  const warnings = image.warning_codes ?? [];
+  if (!image.integrity_verified && codes.includes('DIMENSIONS_MISMATCH')) return 'rejected';
+  if (failures.some((code) => codes.includes(code))) return 'rejected';
+  if (warnings.some((code) => codes.includes(code))) return 'warning';
+  return image.quality_verdict === 'error' ? 'error' : 'approved';
+}
+
+function QualityControlStatus({
+  image,
+  stage,
+}: {
+  image: QualityImage | null;
+  stage: SmearWorkflowStage;
+}) {
+  return (
+    <section className="workflow-quality-status" aria-labelledby="workflow-quality-title" aria-live="polite">
+      <header><p className="workflow-panel-eyebrow">Visión clásica</p><h3 id="workflow-quality-title">Control de calidad</h3></header>
+      <ul>
+        {qualityCriteria.map((criterion) => {
+          const state = criterionState(image, stage, criterion.codes);
+          const relatedCodes = [
+            ...(image?.failure_codes ?? []),
+            ...(image?.warning_codes ?? []),
+          ].filter((code) => (criterion.codes as readonly string[]).includes(code));
+          return (
+            <li key={criterion.label} data-state={state}>
+              <span aria-hidden="true">{state === 'approved' ? '✓' : state === 'warning' ? '!' : state === 'rejected' || state === 'error' ? '×' : '•'}</span>
+              <div><strong>{criterion.label}</strong><small>{image ? criterion.detail(image) : 'Sin medición confirmada'}</small></div>
+              <em>{qualityStateLabel[state]}</em>
+              {relatedCodes.length ? <code>{relatedCodes.join(', ')}</code> : null}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+function EventList({ events }: { events: AnalysisEvent[] }) {
+  if (!events.length) {
+    return <p className="workflow-panel-empty">Aún no hay eventos técnicos persistidos.</p>;
+  }
+  return (
+    <ol className="workflow-event-list">
+      {events.slice(-8).reverse().map((event) => (
+        <li key={event.id}>
+          <span className={`workflow-event-dot status-${event.status}`} aria-hidden="true" />
+          <div>
+            <strong>{event.stage.replaceAll('_', ' ')}</strong>
+            <span>{event.message || event.status}</span>
+          </div>
+          <time dateTime={event.created_at}>{safeDate(event.created_at)}</time>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function WorkflowProcessing({
+  controller,
+  capabilities,
+  readOnly = false,
+}: {
+  controller: SmearWorkflowController;
+  capabilities: WorkflowCapabilities;
+  readOnly?: boolean;
+}) {
+  const [comment, setComment] = useState('');
+  const [mobilePane, setMobilePane] = useState<MobilePane>('progress');
+  const { stage, identifiers, snapshot, previewUrl, failure } = controller;
+  const contextStates = useMemo(
+    () => new Map(contextSteps.map(({ id }) => [
+      id,
+      contextStepState(id, stage, failure?.step, reviewProgressOf(snapshot.detectionRun)),
+    ])),
+    [failure?.step, snapshot.detectionRun, stage],
+  );
+  const run = snapshot.analysisRun;
+  const qualityImage = run?.images[0] ?? null;
+  const uploadedImage = snapshot.upload?.images[0] ?? null;
+  const persistedImage = snapshot.persisted?.images[0] ?? null;
+  const imageId = identifiers.microscopyImageId;
+  const imageName = (
+    uploadedImage?.original_filename
+    ?? persistedImage?.original_filename
+    ?? qualityImage?.original_filename
+    ?? 'Imagen persistida'
+  );
+  const batch = snapshot.upload?.ingestion_batch ?? snapshot.persisted?.batch;
+  const queue = snapshot.queueItem;
+  const queueStatus = queue?.status;
+  const classificationEvents: AnalysisEvent[] = (
+    snapshot.classificationRun?.events ?? []
+  ).map((event) => ({
+    id: event.id,
+    analysis_run_id: snapshot.classificationRun?.analysis_run_id ?? run?.id ?? '',
+    microscopy_image_id: null,
+    event_type: event.event_type,
+    stage: 'cell_classification',
+    status: event.status,
+    message_code: event.message_code,
+    message: event.message,
+    progress_current: event.progress_current,
+    progress_total: event.progress_total,
+    created_at: event.created_at,
+  }));
+  const events = [...(run?.events ?? []), ...classificationEvents];
+  const latestClassificationProgress = [...classificationEvents]
+    .reverse()
+    .find((event) => (
+      event.progress_current != null
+      && event.progress_total != null
+    ));
+  const showScan = processingStages.includes(stage);
+  const canRetryFailure = failure?.step === 'analysis'
+    ? capabilities.canCreateAnalysis
+    : failure?.step === 'queue'
+      ? capabilities.canCreateQueue
+      : failure?.step === 'detection'
+        ? capabilities.canExecuteDetection
+        : failure?.step === 'classification'
+          ? capabilities.canExecuteClassification
+          : failure?.step === 'recovery';
+  const canContinueRecovered = stage === 'ready_for_detection'
+    ? capabilities.canExecuteDetection
+    : stage === 'classification_pending' || stage === 'awaiting_productive_model'
+      ? capabilities.canExecuteClassification
+      : run ? capabilities.canCreateQueue : capabilities.canCreateAnalysis;
+  // Union of every condition that renders a card below: the solid right
+  // panel only exists when there is something for it to show. This mirrors
+  // the panel's own render conditions instead of a second, separate list.
+  const hasActivityContent = (
+    Boolean(run?.ready_for_analysis)
+    || stage === 'awaiting_productive_model'
+    || stage === 'quality_warning'
+    || stage === 'quality_failed'
+    || ((stage === 'error' || stage === 'classification_failed') && Boolean(failure))
+    || (stage === 'quality_queued' && queueStatus === 'queued')
+    || (!readOnly && (
+      (stage === 'ingested' && !queue)
+      || (stage === 'creating_analysis' && Boolean(run) && !queue)
+      || (stage === 'ready_for_detection' && Boolean(run?.ready_for_analysis))
+      || (stage === 'classification_pending' && Boolean(snapshot.detectionRun))
+    ))
+  );
+  const eventAt = (eventType: string) =>
+    events.find((event) => event.event_type === eventType)?.created_at;
+  const milestoneTimes = [
+    batch?.completed_at ?? batch?.created_at,
+    eventAt('quality.image.completed'),
+    eventAt('quality.run.completed') ?? queue?.completed_at,
+    run?.completed_at ?? eventAt('quality.run.completed'),
+    snapshot.detectionRun?.started_at,
+    snapshot.classificationRun?.started_at,
+    snapshot.classificationRun?.completed_at,
+  ];
+  async function decide(decision: 'approve_with_warnings' | 'reject') {
+    if (!comment.trim()) return;
+    if (decision === 'reject' && !window.confirm('¿Confirmas el bloqueo técnico de este análisis?')) return;
+    await controller.decideWarning(decision, comment);
+    setComment('');
+  }
+
+  return (
+    <>
+      <nav className="workflow-mobile-tabs" aria-label="Paneles del workflow">
+        {([
+          ['progress', 'Progreso'],
+          ['image', 'Imagen'],
+          ['cells', 'Células'],
+          ['detail', 'Detalle'],
+        ] as const).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            disabled={id === 'cells'}
+            aria-pressed={mobilePane === id}
+            onClick={() => setMobilePane(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="workflow-processing-grid" data-mobile-pane={mobilePane}>
+        <aside className="workflow-console-panel workflow-progress-panel">
+          <header className="cell-panel-heading">
+            <div><h2>Etapas del análisis</h2><p>Progreso persistido</p></div>
+          </header>
+          <div className="workflow-panel-scroll">
+            <ol className="workflow-milestones">
+              {contextSteps.map((step) => {
+                const stepState = contextStates.get(step.id) ?? 'locked';
+                const subs = contextSubSteps[step.id];
+                const subTimes = subs.map((sub) => safeTime(milestoneTimes[sub.timeIndex]));
+                const subStates = subStepStates(stepState, subTimes.map(Boolean));
+                return (
+                  <li key={step.id} data-state={stepState}>
+                    <span className="workflow-milestone-mark" aria-hidden="true">
+                      {stepState === 'complete' ? '✓' : stepState === 'warning' ? '!' : stepState === 'failed' ? '×' : '•'}
+                    </span>
+                    <div><strong>{step.label}</strong></div>
+                    <small><span>{stepState === 'active' ? 'En curso' : stepState}</span></small>
+                    <ol className="workflow-milestones">
+                      {subs.map((sub, index) => {
+                        const subTime = subTimes[index];
+                        const subState = subStates[index];
+                        return (
+                          <li key={sub.title} data-state={subState}>
+                            <span className="workflow-milestone-mark" aria-hidden="true">
+                              {subState === 'complete' ? '✓' : subState === 'warning' ? '!' : subState === 'failed' ? '×' : '•'}
+                            </span>
+                            <div><strong>{sub.title}</strong><span>{sub.detail}</span></div>
+                            <small>
+                              <span>{subState === 'active' ? 'En curso' : subState}</span>
+                              {subTime ? <time>{subTime}</time> : null}
+                            </small>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        </aside>
+
+        <section className="workflow-console-panel workflow-image-panel">
+          <div className="workflow-processing-image">
+            <AuthenticatedWorkflowImage localUrl={previewUrl} imageId={imageId} name={imageName} />
+            {showScan ? <div className="workflow-image-grid" aria-hidden="true" /> : null}
+            {showScan ? <div className="workflow-scan-line" aria-hidden="true" /> : null}
+            {!readOnly && processingStages.includes(stage) ? (
+              <div className="workflow-image-activity" role="status" aria-live="polite">
+                <span className="workflow-indeterminate" aria-hidden="true" />
+                <span>{activityLabel[stage]}</span>
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        {hasActivityContent ? (
+        <aside className="workflow-console-panel workflow-activity-panel">
+          <header className="cell-panel-heading">
+            <div><h2>Actividad</h2><p>{activityLabel[stage]}</p></div>
+          </header>
+          <div className="workflow-panel-scroll workflow-activity-scroll">
+            <QualityControlStatus image={qualityImage} stage={stage} />
+            <dl className="workflow-run-facts">
+              <div><dt>Run</dt><dd>{run?.run_code ?? 'Pendiente'}</dd></div>
+              <div><dt>Prioridad</dt><dd>{queue?.priority ?? 50} · Normal</dd></div>
+              <div><dt>Cola</dt><dd>{queueStatus ?? 'Pendiente'}</dd></div>
+              <div><dt>Intentos</dt><dd>{queue?.attempt_count ?? 0}</dd></div>
+              <div><dt>Modelo</dt><dd>{snapshot.classificationRun?.model_name ?? snapshot.classificationEligibility?.productive_model?.model_name ?? 'Pendiente'}</dd></div>
+              <div><dt>Versión</dt><dd>{snapshot.classificationRun?.model_version ?? snapshot.classificationEligibility?.productive_model?.model_version ?? '—'}</dd></div>
+              <div><dt>Crops elegibles</dt><dd>{snapshot.classificationRun?.eligible_count ?? snapshot.classificationEligibility?.eligible_count ?? '—'}</dd></div>
+              <div>
+                <dt>Avance real</dt>
+                <dd>
+                  {latestClassificationProgress
+                    ? `${latestClassificationProgress.progress_current} / ${latestClassificationProgress.progress_total}`
+                    : snapshot.classificationRun
+                      ? `${snapshot.classificationRun.processed_count} / ${snapshot.classificationRun.eligible_count}`
+                      : '—'}
+                </dd>
+              </div>
+            </dl>
+
+            {run?.ready_for_analysis ? (
+              <section className="workflow-decision-card status-pass">
+                <span>Aprobación técnica</span>
+                <h3>
+                  {run.quality_gate_status === 'warning'
+                    ? 'Quality gate aprobado con advertencias'
+                    : 'Quality gate aprobado'}
+                </h3>
+                <QualityMetrics image={qualityImage} />
+                <p>
+                  {stage === 'detection_processing'
+                    ? 'La detección se inició como continuación de la acción Cargar y analizar.'
+                    : stage.startsWith('classification') || stage === 'awaiting_productive_model'
+                      ? 'La detección terminó y sus crops permanecen congelados para clasificación.'
+                      : 'La ejecución está habilitada para iniciar la detección celular.'}
+                </p>
+              </section>
+            ) : null}
+
+            {stage === 'awaiting_productive_model' ? (
+              <section className="workflow-decision-card status-warning" role="alert">
+                <span>Modelo productivo requerido</span>
+                <h3>
+                  {failure?.message
+                    ?? 'No existe un modelo productivo válido para Etapa 2. Publique un modelo desde Modelo IA antes de continuar.'}
+                </h3>
+                <p>No se seleccionó un modelo alternativo ni se aplicó un threshold por defecto.</p>
+                {!readOnly && capabilities.canExecuteClassification ? (
+                  <button
+                    type="button"
+                    disabled={controller.busy}
+                    onClick={() => void controller.continueWorkflow()}
+                  >
+                    Verificar nuevamente
+                  </button>
+                ) : null}
+              </section>
+            ) : null}
+
+            {stage === 'quality_warning' ? (
+              <section className="workflow-decision-card status-warning">
+                <span>Advertencia técnica</span>
+                <h3>Se requiere una decisión autorizada</h3>
+                <QualityMetrics image={qualityImage} />
+                {qualityImage?.warning_codes?.length
+                  ? <p>Indicadores: {qualityImage.warning_codes.join(', ')}</p>
+                  : null}
+                {!readOnly && capabilities.canReviewQuality ? (
+                  <div className="workflow-warning-actions">
+                    <label>
+                      Comentario técnico obligatorio
+                      <textarea value={comment} onChange={(event) => setComment(event.target.value)} />
+                    </label>
+                    <button type="button" disabled={controller.busy || !comment.trim()} onClick={() => void decide('approve_with_warnings')}>
+                      Aprobar con advertencias
+                    </button>
+                    <button className="danger" type="button" disabled={controller.busy || !comment.trim()} onClick={() => void decide('reject')}>
+                      Bloquear análisis
+                    </button>
+                  </div>
+                ) : (
+                  <p role="status">
+                    Tu rol puede visualizar el resultado, pero no resolver esta advertencia.
+                  </p>
+                )}
+              </section>
+            ) : null}
+
+            {stage === 'quality_failed' ? (
+              <section className="workflow-decision-card status-failed">
+                <span>Bloqueo técnico</span>
+                <h3>La detección celular no fue iniciada</h3>
+                <QualityMetrics image={qualityImage} />
+                {qualityImage?.failure_codes?.length
+                  ? <p>Causas: {qualityImage.failure_codes.join(', ')}</p>
+                  : <p>Revisa la preparación o vuelve a cargar un original adecuado.</p>}
+                {!readOnly ? (
+                  <button type="button" onClick={controller.newAnalysis}>Cargar otra imagen</button>
+                ) : null}
+              </section>
+            ) : null}
+
+            {(stage === 'error' || stage === 'classification_failed') && failure ? (
+              <section className="workflow-decision-card status-failed" role="alert">
+                <span>Etapa interrumpida: {failure.step}</span>
+                <h3>{failure.message}</h3>
+                <p>Los recursos creados correctamente permanecen disponibles:</p>
+                <ul>
+                  {identifiers.ingestionBatchId ? <li>Lote {identifiers.ingestionBatchId}</li> : null}
+                  {identifiers.analysisRunId ? <li>Analysis run {identifiers.analysisRunId}</li> : null}
+                  {identifiers.queueItemId ? <li>Queue item {identifiers.queueItemId}</li> : null}
+                  {identifiers.detectionRunId ? <li>Detection run {identifiers.detectionRunId}</li> : null}
+                  {identifiers.classificationRunId ? <li>Classification run {identifiers.classificationRunId}</li> : null}
+                </ul>
+                {!readOnly && failure.step === 'quality' && queueStatus === 'failed' ? (
+                  capabilities.canRetryQueue ? (
+                    <button type="button" disabled={controller.busy} onClick={() => void controller.requeueQuality()}>
+                      Reingresar a cola
+                    </button>
+                  ) : <p>Tu rol no permite reingresar solicitudes fallidas a la cola.</p>
+                ) : !readOnly && failure.step !== 'upload' && canRetryFailure ? (
+                  <button type="button" disabled={controller.busy} onClick={() => void controller.retryFailedStep()}>
+                    Reintentar desde esta etapa
+                  </button>
+                ) : !readOnly && failure.step !== 'upload'
+                  ? <p>Tu rol no permite reintentar esta etapa.</p>
+                  : null}
+              </section>
+            ) : null}
+
+            {stage === 'quality_queued' && queueStatus === 'queued' ? (
+              <section className="workflow-decision-card">
+                <span>Solicitud reingresada</span>
+                <h3>El reintento aún no se ha ejecutado</h3>
+                <p>La política requiere una segunda acción manual.</p>
+                {capabilities.canExecuteQueue ? (
+                  <button type="button" disabled={controller.busy} onClick={() => void controller.executeRequeuedQuality()}>
+                    Ejecutar control
+                  </button>
+                ) : <p>Tu rol no permite ejecutar solicitudes de calidad.</p>}
+              </section>
+            ) : null}
+
+            {!readOnly && (
+              (stage === 'ingested' && !queue)
+              || (stage === 'creating_analysis' && run && !queue)
+              || (stage === 'ready_for_detection' && run?.ready_for_analysis)
+              || (stage === 'classification_pending' && snapshot.detectionRun)
+            ) ? (
+              <section className="workflow-decision-card">
+                <span>Estado recuperado</span>
+                <h3>
+                  {stage === 'ready_for_detection'
+                    ? 'La calidad está aprobada y la detección aún no existe'
+                    : stage === 'classification_pending'
+                      ? 'La detección está lista y la clasificación aún no existe'
+                      : run
+                        ? 'La ejecución existe y espera su solicitud de calidad'
+                        : 'Imagen cargada, esperando control técnico'}
+                </h3>
+                <p>Continuar es una acción manual y reutilizará los identificadores persistidos.</p>
+                {canContinueRecovered ? (
+                  <button type="button" disabled={controller.busy} onClick={() => void controller.continueWorkflow()}>
+                    {stage === 'ready_for_detection'
+                      ? 'Iniciar detección'
+                      : stage === 'classification_pending'
+                        ? 'Iniciar clasificación'
+                        : 'Continuar análisis'}
+                  </button>
+                ) : <p>Tu rol no permite continuar esta etapa.</p>}
+              </section>
+            ) : null}
+
+            {!['quality_warning', 'quality_failed', 'error'].includes(stage) ? (
+              <EventList events={events} />
+            ) : null}
+          </div>
+        </aside>
+        ) : null}
+      </div>
+    </>
+  );
+}
+
+const readOnlyCapabilities: WorkflowCapabilities = {
+  canCreateAnalysis: false,
+  canCreateQueue: false,
+  canExecuteQueue: false,
+  canRetryQueue: false,
+  canReviewQuality: false,
+  canExecuteDetection: false,
+  canExecuteClassification: false,
+};
+
+export function SmearAnalysisReadOnlyView({
+  workflow,
+  onBack,
+}: {
+  workflow: SmearWorkflowResponse;
+  onBack: () => void;
+}) {
+  const { user } = useAuth();
+  const historyPermissions = new Set(user?.permissions ?? []);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectionQueryRef = useRef(searchParams);
+  useEffect(() => {
+    selectionQueryRef.current = searchParams;
+  }, [searchParams]);
+  const stage = (
+    knownWorkflowStages.has(workflow.stage as SmearWorkflowStage)
+      ? workflow.stage
+      : 'error'
+  ) as SmearWorkflowStage;
+  const firstImage = workflow.images[0] ?? null;
+  const failure = historyFailure(workflow);
+  const controller = {
+    stage,
+    identifiers: {
+      ingestionBatchId: workflow.batch.id,
+      microscopyImageId: firstImage?.id ?? null,
+      analysisRunId: workflow.analysis_run?.id ?? null,
+      queueItemId: workflow.queue_item?.queue_item_id ?? null,
+      detectionRunId: workflow.detection_run?.id ?? null,
+      classificationRunId: workflow.classification_run?.id ?? null,
+      selectedDetectionId: null,
+      selectedPredictionId: null,
+    },
+    snapshot: {
+      upload: null,
+      persisted: workflow,
+      analysisRun: workflow.analysis_run,
+      queueItem: workflow.queue_item,
+      detectionRun: workflow.detection_run,
+      classificationRun: workflow.classification_run ?? null,
+      classificationSummary: workflow.classification_summary ?? null,
+      classificationEligibility: null,
+    },
+    selectedFiles: [],
+    previewUrl: null,
+    failure,
+    recovering: false,
+    busy: false,
+  } as unknown as SmearWorkflowController;
+  const contextStates = new Map(contextSteps.map(({ id }) => [
+    id,
+    contextStepState(id, stage, failure?.step, reviewProgressOf(workflow.detection_run)),
+  ]));
+  const run = workflow.analysis_run;
+  const hasResults = (
+    stage === 'review_ready'
+    || stage === 'classification_completed'
+    || stage === 'classification_warning'
+    || stage === 'classification_failed'
+    || stage === 'awaiting_productive_model'
+  ) && Boolean(workflow.detection_run);
+  const updateSelectionQuery = useCallback((
+    key: 'image' | 'selected_detection' | 'selected_prediction',
+    value: string | null,
+  ) => {
+    const next = new URLSearchParams(selectionQueryRef.current);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    // Keep a synchronous snapshot so image, detection and prediction updates
+    // emitted in the same React commit merge instead of overwriting each other.
+    selectionQueryRef.current = next;
+    setSearchParams(next, { replace: true });
+  }, [setSearchParams]);
+  const selectHistoryImage = useCallback(
+    (id: string | null) => updateSelectionQuery('image', id),
+    [updateSelectionQuery],
+  );
+  const selectHistoryDetection = useCallback(
+    (id: string | null) => updateSelectionQuery('selected_detection', id),
+    [updateSelectionQuery],
+  );
+  const selectHistoryPrediction = useCallback(
+    (id: string | null) => updateSelectionQuery('selected_prediction', id),
+    [updateSelectionQuery],
+  );
+
+  /**
+   * One instance, two possible hosts: while the immersive results are on
+   * screen it becomes the "Muestra" group of the unified control bar; without
+   * them it keeps floating over the canvas as before.
+   */
+  const caseHeader = (
+      <SmearCaseHeader
+        subjectCode={workflow.subject.subject_code}
+        sampleCode={workflow.sample.sample_code}
+        analysisRunCode={run?.run_code ?? null}
+        status={stageLabel[stage]}
+        modeLabel="Histórico"
+        createdAt={run?.created_at ? safeDate(run.created_at) : null}
+        facts={workflowFacts(controller, stage)}
+        steps={contextSteps.map((step) => ({
+          id: step.id,
+          label: step.label,
+          state: contextStates.get(step.id) ?? 'locked',
+        }))}
+        compact
+        showStageBand={!hasResults}
+        actions={<button type="button" onClick={onBack}>Volver al historial</button>}
+      />
+  );
+  const immersiveResults = hasResults && workflow.detection_run;
+
+  return (
+    <section
+      className="page smear-workflow smear-workflow-history smear-workflow--immersive"
+      data-mode="history"
+      data-flow-state={flowPhaseFromStage(stage)}
+    >
+      {immersiveResults ? null : caseHeader}
+      {!hasResults ? <section className="workflow-history-banner" aria-label="Modo de consulta">
+        <strong>Vista histórica · Solo lectura</strong>
+        <span>{run?.run_code ?? 'Análisis persistido'}</span>
+        <span>{safeDate(run?.created_at)}</span>
+        <span>{workflow.batch.source_system ?? workflow.batch.acquisition_origin}</span>
+      </section> : null}
+
+      {hasResults && workflow.detection_run ? (
+        <section className="workflow-review-frame">
+          <SmearAnalysisImmersiveView
+            mode="history"
+            workflow={{
+              subjectCode: workflow.subject.subject_code,
+              sampleCode: workflow.sample.sample_code,
+              analysisRunCode: run?.run_code ?? 'Análisis persistido',
+              analysisRunId: run?.id ?? null,
+              sampleId: workflow.sample.id,
+              status: stageLabel[stage],
+              modelName: workflow.classification_run?.model_name,
+              modelVersion: workflow.classification_run?.model_version,
+              createdAt: run?.created_at ?? workflow.batch.created_at,
+              detectionRunId: workflow.detection_run.id,
+              classificationRunId: workflow.classification_run?.id,
+              classificationSummary: workflow.classification_summary,
+              detectionRun: workflow.detection_run,
+              images: workflow.detection_run.images ?? null,
+              classificationRun: workflow.classification_run,
+              microscopyImageId: searchParams.get('image') ?? firstImage?.id,
+              selectedDetectionId: searchParams.get('selected_detection'),
+              selectedPredictionId: searchParams.get('selected_prediction'),
+            }}
+            permissions={{
+              canReviewDetection: historyPermissions.has('scientific.cell_detection.review'),
+              canExplain: historyPermissions.has('scientific.cell_classification.explain'),
+              canReviewClassification: historyPermissions.has('scientific.cell_classification.review'),
+              canReadValidation: historyPermissions.has('scientific.validation.read'),
+              canAnnotateValidation: historyPermissions.has('scientific.validation.annotate'),
+            }}
+            actions={{
+              onBack,
+              backLabel: 'Volver al historial',
+              onImageChange: selectHistoryImage,
+              onDetectionChange: selectHistoryDetection,
+              onPredictionChange: selectHistoryPrediction,
+            }}
+            caseHeaderSlot={caseHeader}
+          />
+        </section>
+      ) : (
+        <WorkflowProcessing
+          controller={controller}
+          capabilities={readOnlyCapabilities}
+          readOnly
+        />
+      )}
+    </section>
+  );
+}
+
+export function SmearWorkflow() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [routeSearchParams] = useSearchParams();
+  const controller = useSmearAnalysisWorkflow();
+  const {
+    stage,
+    identifiers,
+    snapshot,
+    selectedFiles,
+    previewUrl,
+    failure,
+    recovering,
+  } = controller;
+  const permissions = new Set(user?.permissions ?? []);
+  const canAnalyze = [
+    'scientific.images.register',
+    'scientific.analysis.create',
+    'scientific.analysis.queue.create',
+    'scientific.analysis.queue.execute',
+    'scientific.cell_detection.execute',
+    'scientific.cell_classification.execute',
+  ].every((permission) => permissions.has(permission));
+  const canReviewQuality = permissions.has('scientific.analysis.quality.review');
+  const capabilities: WorkflowCapabilities = {
+    canCreateAnalysis: permissions.has('scientific.analysis.create'),
+    canCreateQueue: permissions.has('scientific.analysis.queue.create'),
+    canExecuteQueue: permissions.has('scientific.analysis.queue.execute'),
+    canRetryQueue: permissions.has('scientific.analysis.queue.retry'),
+    canReviewQuality,
+    canExecuteDetection: permissions.has('scientific.cell_detection.execute'),
+    canExecuteClassification: permissions.has('scientific.cell_classification.execute'),
+  };
+  const canReadCells = permissions.has('scientific.cell_detection.read');
+  const canReviewCells = permissions.has('scientific.cell_detection.review');
+  const canReadClassification = permissions.has('scientific.cell_classification.read');
+  const canExplainClassification = permissions.has('scientific.cell_classification.explain');
+  const canReviewClassification = permissions.has('scientific.cell_classification.review');
+  const canReadValidation = permissions.has('scientific.validation.read');
+  const canAnnotateValidation = permissions.has('scientific.validation.annotate');
+  const isUploadFailure = stage === 'error' && failure?.step === 'upload' && !identifiers.ingestionBatchId;
+  const reviewStage = (
+    stage === 'review_ready'
+    || stage === 'classification_completed'
+    || stage === 'classification_warning'
+  );
+  const goToHistory = useCallback(() => {
+    if (!identifiers.analysisRunId) return;
+    const next = new URLSearchParams();
+    const datasourceParam = routeSearchParams.get('datasource');
+    if (datasourceParam) next.set('datasource', datasourceParam);
+    if (identifiers.microscopyImageId) next.set('image', identifiers.microscopyImageId);
+    if (identifiers.selectedDetectionId) {
+      next.set('selected_detection', identifiers.selectedDetectionId);
+    }
+    if (identifiers.selectedPredictionId) {
+      next.set('selected_prediction', identifiers.selectedPredictionId);
+    }
+    navigate(`${routes.smearHistoryDetail(identifiers.analysisRunId)}?${next.toString()}`);
+  }, [
+    identifiers.analysisRunId,
+    identifiers.microscopyImageId,
+    identifiers.selectedDetectionId,
+    identifiers.selectedPredictionId,
+    navigate,
+    routeSearchParams,
+  ]);
+  const mode = stage === 'setup' || isUploadFailure
+    ? 'setup'
+    : reviewStage ? 'review' : 'processing';
+  const patientCode = (
+    snapshot.analysisRun?.subject_code
+    ?? snapshot.persisted?.subject.subject_code
+    ?? snapshot.upload?.subject.subject_code
+    ?? 'Paciente pendiente'
+  );
+  const sampleCode = (
+    snapshot.analysisRun?.sample_code
+    ?? snapshot.persisted?.sample.sample_code
+    ?? snapshot.upload?.sample.sample_code
+    ?? 'Muestra pendiente'
+  );
+  const headerState = stageLabel[stage];
+
+  const contextStates = useMemo(
+    () => new Map(contextSteps.map(({ id }) => [
+      id,
+      contextStepState(id, stage, failure?.step, reviewProgressOf(snapshot.detectionRun)),
+    ])),
+    [failure?.step, snapshot.detectionRun, stage],
+  );
+
+  const immersiveReview = mode === 'review' && !recovering
+    && Boolean(identifiers.detectionRunId) && canReadCells
+    && (!identifiers.classificationRunId || canReadClassification);
+  /** Same single instance; in review mode it becomes the bar's "Muestra" group. */
+  const caseHeader = (
+      <SmearCaseHeader
+        subjectCode={patientCode}
+        sampleCode={sampleCode}
+        analysisRunCode={snapshot.analysisRun?.run_code ?? null}
+        status={headerState}
+        modeLabel="En vivo"
+        createdAt={snapshot.analysisRun?.created_at ? safeDate(snapshot.analysisRun.created_at) : null}
+        facts={mode === 'setup' ? [] : workflowFacts(controller, stage)}
+        steps={contextSteps.map((step) => ({
+          id: step.id,
+          label: step.label,
+          state: contextStates.get(step.id) ?? 'locked',
+        }))}
+        compact={mode !== 'setup'}
+        showStageBand={mode === 'processing'}
+        actions={mode === 'setup' ? <span className="workflow-context-status">{headerState}</span> : undefined}
+      />
+  );
+
+  return (
+    <section
+      className={`page smear-workflow${mode !== 'setup' ? ' smear-workflow--immersive' : ''}`}
+      data-mode={mode}
+      data-flow-state={controller.phase}
+    >
+      {immersiveReview ? null : caseHeader}
+
+      {recovering ? (
+        <section className="workflow-recovering" aria-live="polite">
+          <span className="workflow-indeterminate" aria-hidden="true" />
+          <div><strong>Recuperando análisis</strong><p>Consultando el estado persistido sin repetir operaciones.</p></div>
+        </section>
+      ) : null}
+
+      {mode === 'setup' && !recovering ? (
+        <>
+          {isUploadFailure ? <p className="workflow-setup-error" role="alert">{failure?.message}</p> : null}
+          <SmearUpload
+            files={selectedFiles}
+            previewUrl={previewUrl}
+            busy={controller.busy}
+            canAnalyze={canAnalyze}
+            onFilesChange={controller.setSelectedFiles}
+            onAnalyze={controller.start}
+          />
+        </>
+      ) : null}
+
+      {mode === 'processing' && !recovering ? (
+        <WorkflowProcessing controller={controller} capabilities={capabilities} />
+      ) : null}
+
+      {mode === 'review' && !recovering ? (
+        <section className="workflow-review-frame">
+          {identifiers.detectionRunId && canReadCells && (
+            !identifiers.classificationRunId || canReadClassification
+          ) ? (
+            <SmearAnalysisImmersiveView
+              mode="live"
+              workflow={{
+                subjectCode: patientCode,
+                sampleCode,
+                analysisRunCode: snapshot.analysisRun?.run_code ?? 'Análisis activo',
+                analysisRunId: snapshot.analysisRun?.id ?? null,
+                sampleId: snapshot.persisted?.sample.id ?? snapshot.upload?.sample.id ?? null,
+                status: headerState,
+                modelName: snapshot.classificationRun?.model_name,
+                modelVersion: snapshot.classificationRun?.model_version,
+                createdAt: snapshot.analysisRun?.created_at,
+                detectionRunId: identifiers.detectionRunId,
+                classificationRunId: identifiers.classificationRunId,
+                classificationSummary: snapshot.classificationSummary,
+                detectionRun: snapshot.detectionRun,
+                images: snapshot.detectionRun?.images ?? null,
+                classificationRun: snapshot.classificationRun,
+                microscopyImageId: identifiers.microscopyImageId,
+                selectedDetectionId: identifiers.selectedDetectionId,
+                selectedPredictionId: identifiers.selectedPredictionId,
+              }}
+              permissions={{
+                canReviewDetection: canReviewCells,
+                canExplain: canExplainClassification,
+                canReviewClassification,
+                canReadValidation,
+                canAnnotateValidation,
+              }}
+              actions={{
+                onBack: goToHistory,
+                backLabel: 'Ver en historial',
+                onRefresh: () => void controller.refresh(),
+                onImageChange: controller.selectImage,
+                onDetectionChange: controller.selectDetection,
+                onPredictionChange: controller.selectPrediction,
+              }}
+              caseHeaderSlot={caseHeader}
+            />
+          ) : (
+            <section className="workflow-review-unavailable" role="alert">
+              <h2>Revisión disponible con acceso restringido</h2>
+              <p>
+                La detección terminó, pero tu rol no incluye{' '}
+                {!canReadCells
+                  ? 'scientific.cell_detection.read.'
+                  : 'scientific.cell_classification.read.'}
+              </p>
+            </section>
+          )}
+        </section>
+      ) : null}
+    </section>
+  );
+}

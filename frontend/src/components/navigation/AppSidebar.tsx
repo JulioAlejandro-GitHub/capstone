@@ -62,7 +62,7 @@ export function AppSidebar({ datasource, mobileOpen, onMobileClose, mobileTrigge
       aria-label="Navegación principal" onKeyDown={onKeyDown}>
       <div className="sidebar-header">
         <div className="sidebar-mark" aria-hidden="true">ML</div>
-        <div className="sidebar-identity"><span>Capstone</span><strong>ML Dashboard</strong></div>
+        <div className="sidebar-identity"><span>Capstone</span></div>
         <button className="sidebar-mobile-close" type="button" aria-label="Cerrar navegación" onClick={closeMobile}>×</button>
       </div>
       <nav className="sidebar-nav" aria-label="Módulos">

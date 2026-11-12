@@ -1,0 +1,3443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visor - Digital Hematology Analysis Platform</title>
+  
+  
+  
+  
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .font-mono {
+      font-family: 'Roboto Mono', monospace;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.35);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.55);
+    }
+  </style>
+<style>/*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
+@layer properties;
+@layer theme, base, components, utilities;
+@layer theme {
+  :root, :host {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+      "Segoe UI Symbol", "Noto Color Emoji";
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
+    --color-amber-50: oklch(98.7% 0.022 95.277);
+    --color-amber-100: oklch(96.2% 0.059 95.617);
+    --color-amber-400: oklch(82.8% 0.189 84.429);
+    --color-amber-500: oklch(76.9% 0.188 70.08);
+    --color-amber-600: oklch(66.6% 0.179 58.318);
+    --color-amber-700: oklch(55.5% 0.163 48.998);
+    --color-emerald-50: oklch(97.9% 0.021 166.113);
+    --color-emerald-100: oklch(95% 0.052 163.051);
+    --color-emerald-200: oklch(90.5% 0.093 164.15);
+    --color-emerald-400: oklch(76.5% 0.177 163.223);
+    --color-emerald-500: oklch(69.6% 0.17 162.48);
+    --color-emerald-600: oklch(59.6% 0.145 163.225);
+    --color-emerald-700: oklch(50.8% 0.118 165.612);
+    --color-indigo-50: oklch(96.2% 0.018 272.314);
+    --color-indigo-100: oklch(93% 0.034 272.788);
+    --color-indigo-200: oklch(87% 0.065 274.039);
+    --color-indigo-300: oklch(78.5% 0.115 274.713);
+    --color-indigo-400: oklch(67.3% 0.182 276.935);
+    --color-indigo-500: oklch(58.5% 0.233 277.117);
+    --color-indigo-600: oklch(51.1% 0.262 276.966);
+    --color-indigo-700: oklch(45.7% 0.24 277.023);
+    --color-indigo-800: oklch(39.8% 0.195 277.366);
+    --color-indigo-900: oklch(35.9% 0.144 278.697);
+    --color-indigo-950: oklch(25.7% 0.09 281.288);
+    --color-rose-100: oklch(94.1% 0.03 12.58);
+    --color-rose-500: oklch(64.5% 0.246 16.439);
+    --color-rose-600: oklch(58.6% 0.253 17.585);
+    --color-rose-700: oklch(51.4% 0.222 16.935);
+    --color-slate-50: oklch(98.4% 0.003 247.858);
+    --color-slate-100: oklch(96.8% 0.007 247.896);
+    --color-slate-200: oklch(92.9% 0.013 255.508);
+    --color-slate-300: oklch(86.9% 0.022 252.894);
+    --color-slate-400: oklch(70.4% 0.04 256.788);
+    --color-slate-500: oklch(55.4% 0.046 257.417);
+    --color-slate-600: oklch(44.6% 0.043 257.281);
+    --color-slate-700: oklch(37.2% 0.044 257.287);
+    --color-slate-800: oklch(27.9% 0.041 260.031);
+    --color-slate-900: oklch(20.8% 0.042 265.755);
+    --color-black: #000;
+    --color-white: #fff;
+    --spacing: 0.25rem;
+    --container-md: 28rem;
+    --container-lg: 32rem;
+    --container-xl: 36rem;
+    --container-2xl: 42rem;
+    --container-4xl: 56rem;
+    --text-xs: 0.75rem;
+    --text-xs--line-height: calc(1 / 0.75);
+    --text-sm: 0.875rem;
+    --text-sm--line-height: calc(1.25 / 0.875);
+    --text-base: 1rem;
+    --text-base--line-height: calc(1.5 / 1);
+    --text-lg: 1.125rem;
+    --text-lg--line-height: calc(1.75 / 1.125);
+    --text-xl: 1.25rem;
+    --text-xl--line-height: calc(1.75 / 1.25);
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --tracking-tighter: -0.05em;
+    --tracking-tight: -0.025em;
+    --tracking-wide: 0.025em;
+    --tracking-wider: 0.05em;
+    --leading-relaxed: 1.625;
+    --radius-xs: 0.125rem;
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    --blur-xs: 4px;
+    --blur-sm: 8px;
+    --default-transition-duration: 150ms;
+    --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    --default-font-family: var(--font-sans);
+    --default-mono-font-family: var(--font-mono);
+  }
+}
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+  html, :host {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: var(--default-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");
+    font-feature-settings: var(--default-font-feature-settings, normal);
+    font-variation-settings: var(--default-font-variation-settings, normal);
+    -webkit-tap-highlight-color: transparent;
+  }
+  hr {
+    height: 0;
+    color: inherit;
+    border-top-width: 1px;
+  }
+  abbr:where([title]) {
+    -webkit-text-decoration: underline dotted;
+    text-decoration: underline dotted;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  a {
+    color: inherit;
+    -webkit-text-decoration: inherit;
+    text-decoration: inherit;
+  }
+  b, strong {
+    font-weight: bolder;
+  }
+  code, kbd, samp, pre {
+    font-family: var(--default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+    font-feature-settings: var(--default-mono-font-feature-settings, normal);
+    font-variation-settings: var(--default-mono-font-variation-settings, normal);
+    font-size: 1em;
+  }
+  small {
+    font-size: 80%;
+  }
+  sub, sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+  sub {
+    bottom: -0.25em;
+  }
+  sup {
+    top: -0.5em;
+  }
+  table {
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
+  }
+  :-moz-focusring:where(:not(iframe)) {
+    outline: auto;
+  }
+  progress {
+    vertical-align: baseline;
+  }
+  summary {
+    display: list-item;
+  }
+  ol, ul, menu {
+    list-style: none;
+  }
+  img, svg, video, canvas, audio, iframe, embed, object {
+    display: block;
+    vertical-align: middle;
+  }
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+  button, input, select, optgroup, textarea, ::file-selector-button {
+    font: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    border-radius: 0;
+    background-color: transparent;
+    opacity: 1;
+  }
+  :where(select:is([multiple], [size])) optgroup {
+    font-weight: bolder;
+  }
+  :where(select:is([multiple], [size])) optgroup option {
+    padding-inline-start: 20px;
+  }
+  ::file-selector-button {
+    margin-inline-end: 4px;
+  }
+  ::placeholder {
+    opacity: 1;
+  }
+  @supports (not (-webkit-appearance: -apple-pay-button))  or (contain-intrinsic-size: 1px) {
+    ::placeholder {
+      color: currentcolor;
+      @supports (color: color-mix(in lab, red, red)) {
+        color: color-mix(in oklab, currentcolor 50%, transparent);
+      }
+    }
+  }
+  textarea {
+    resize: vertical;
+  }
+  ::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+  ::-webkit-date-and-time-value {
+    min-height: 1lh;
+    text-align: inherit;
+  }
+  ::-webkit-datetime-edit {
+    display: inline-flex;
+  }
+  ::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+  }
+  ::-webkit-datetime-edit, ::-webkit-datetime-edit-year-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-minute-field, ::-webkit-datetime-edit-second-field, ::-webkit-datetime-edit-millisecond-field, ::-webkit-datetime-edit-meridiem-field {
+    padding-block: 0;
+  }
+  ::-webkit-calendar-picker-indicator {
+    line-height: 1;
+  }
+  :-moz-ui-invalid {
+    box-shadow: none;
+  }
+  button, input:where([type="button"], [type="reset"], [type="submit"]), ::file-selector-button {
+    appearance: button;
+  }
+  ::-webkit-inner-spin-button, ::-webkit-outer-spin-button {
+    height: auto;
+  }
+  [hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
+  }
+}
+@layer utilities {
+  .pointer-events-auto {
+    pointer-events: auto;
+  }
+  .pointer-events-none {
+    pointer-events: none;
+  }
+  .collapse {
+    visibility: collapse;
+  }
+  .visible {
+    visibility: visible;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  .absolute {
+    position: absolute;
+  }
+  .fixed {
+    position: fixed;
+  }
+  .relative {
+    position: relative;
+  }
+  .static {
+    position: static;
+  }
+  .sticky {
+    position: sticky;
+  }
+  .-inset-1 {
+    inset: calc(var(--spacing) * -1);
+  }
+  .inset-0 {
+    inset: 0px;
+  }
+  .inset-x-0 {
+    inset-inline: 0px;
+  }
+  .inset-x-2 {
+    inset-inline: calc(var(--spacing) * 2);
+  }
+  .inset-y-0 {
+    inset-block: 0px;
+  }
+  .-top-7 {
+    top: calc(var(--spacing) * -7);
+  }
+  .top-0 {
+    top: 0px;
+  }
+  .top-0\.5 {
+    top: calc(var(--spacing) * 0.5);
+  }
+  .top-1 {
+    top: var(--spacing);
+  }
+  .top-1\/2 {
+    top: calc(1 / 2 * 100%);
+  }
+  .top-2 {
+    top: calc(var(--spacing) * 2);
+  }
+  .top-3 {
+    top: calc(var(--spacing) * 3);
+  }
+  .top-6 {
+    top: calc(var(--spacing) * 6);
+  }
+  .top-14 {
+    top: calc(var(--spacing) * 14);
+  }
+  .top-16 {
+    top: calc(var(--spacing) * 16);
+  }
+  .top-full {
+    top: 100%;
+  }
+  .right-0 {
+    right: 0px;
+  }
+  .right-0\.5 {
+    right: calc(var(--spacing) * 0.5);
+  }
+  .right-1 {
+    right: var(--spacing);
+  }
+  .right-4 {
+    right: calc(var(--spacing) * 4);
+  }
+  .bottom-0 {
+    bottom: 0px;
+  }
+  .bottom-0\.5 {
+    bottom: calc(var(--spacing) * 0.5);
+  }
+  .bottom-1 {
+    bottom: var(--spacing);
+  }
+  .bottom-2 {
+    bottom: calc(var(--spacing) * 2);
+  }
+  .bottom-3 {
+    bottom: calc(var(--spacing) * 3);
+  }
+  .bottom-4 {
+    bottom: calc(var(--spacing) * 4);
+  }
+  .left-0 {
+    left: 0px;
+  }
+  .left-0\.5 {
+    left: calc(var(--spacing) * 0.5);
+  }
+  .left-1 {
+    left: var(--spacing);
+  }
+  .left-1\/2 {
+    left: calc(1 / 2 * 100%);
+  }
+  .left-2 {
+    left: calc(var(--spacing) * 2);
+  }
+  .left-4 {
+    left: calc(var(--spacing) * 4);
+  }
+  .isolate {
+    isolation: isolate;
+  }
+  .z-10 {
+    z-index: 10;
+  }
+  .z-20 {
+    z-index: 20;
+  }
+  .z-30 {
+    z-index: 30;
+  }
+  .z-50 {
+    z-index: 50;
+  }
+  .col-span-1 {
+    grid-column: span 1 / span 1;
+  }
+  .col-span-2 {
+    grid-column: span 2 / span 2;
+  }
+  .col-span-3 {
+    grid-column: span 3 / span 3;
+  }
+  .col-span-6 {
+    grid-column: span 6 / span 6;
+  }
+  .col-span-8 {
+    grid-column: span 8 / span 8;
+  }
+  .container {
+    width: 100%;
+    @media (width >= 40rem) {
+      max-width: 40rem;
+    }
+    @media (width >= 48rem) {
+      max-width: 48rem;
+    }
+    @media (width >= 64rem) {
+      max-width: 64rem;
+    }
+    @media (width >= 80rem) {
+      max-width: 80rem;
+    }
+    @media (width >= 96rem) {
+      max-width: 96rem;
+    }
+  }
+  .m-3 {
+    margin: calc(var(--spacing) * 3);
+  }
+  .mx-0 {
+    margin-inline: 0px;
+  }
+  .mx-0\.5 {
+    margin-inline: calc(var(--spacing) * 0.5);
+  }
+  .mx-auto {
+    margin-inline: auto;
+  }
+  .mt-1 {
+    margin-top: var(--spacing);
+  }
+  .mt-1\.5 {
+    margin-top: calc(var(--spacing) * 1.5);
+  }
+  .mt-3 {
+    margin-top: calc(var(--spacing) * 3);
+  }
+  .mr-2 {
+    margin-right: calc(var(--spacing) * 2);
+  }
+  .mb-1 {
+    margin-bottom: var(--spacing);
+  }
+  .mb-2 {
+    margin-bottom: calc(var(--spacing) * 2);
+  }
+  .ml-1 {
+    margin-left: var(--spacing);
+  }
+  .ml-2 {
+    margin-left: calc(var(--spacing) * 2);
+  }
+  .block {
+    display: block;
+  }
+  .contents {
+    display: contents;
+  }
+  .flex {
+    display: flex;
+  }
+  .grid {
+    display: grid;
+  }
+  .hidden {
+    display: none;
+  }
+  .inline {
+    display: inline;
+  }
+  .table {
+    display: table;
+  }
+  .aspect-square {
+    aspect-ratio: 1 / 1;
+  }
+  .h-0 {
+    height: 0px;
+  }
+  .h-0\.5 {
+    height: calc(var(--spacing) * 0.5);
+  }
+  .h-1 {
+    height: var(--spacing);
+  }
+  .h-1\.5 {
+    height: calc(var(--spacing) * 1.5);
+  }
+  .h-2 {
+    height: calc(var(--spacing) * 2);
+  }
+  .h-2\.5 {
+    height: calc(var(--spacing) * 2.5);
+  }
+  .h-3 {
+    height: calc(var(--spacing) * 3);
+  }
+  .h-3\.5 {
+    height: calc(var(--spacing) * 3.5);
+  }
+  .h-4 {
+    height: calc(var(--spacing) * 4);
+  }
+  .h-5 {
+    height: calc(var(--spacing) * 5);
+  }
+  .h-6 {
+    height: calc(var(--spacing) * 6);
+  }
+  .h-7 {
+    height: calc(var(--spacing) * 7);
+  }
+  .h-8 {
+    height: calc(var(--spacing) * 8);
+  }
+  .h-9 {
+    height: calc(var(--spacing) * 9);
+  }
+  .h-10 {
+    height: calc(var(--spacing) * 10);
+  }
+  .h-11 {
+    height: calc(var(--spacing) * 11);
+  }
+  .h-12 {
+    height: calc(var(--spacing) * 12);
+  }
+  .h-14 {
+    height: calc(var(--spacing) * 14);
+  }
+  .h-48 {
+    height: calc(var(--spacing) * 48);
+  }
+  .h-64 {
+    height: calc(var(--spacing) * 64);
+  }
+  .h-\[160px\] {
+    height: 160px;
+  }
+  .h-\[900px\] {
+    height: 900px;
+  }
+  .h-full {
+    height: 100%;
+  }
+  .h-px {
+    height: 1px;
+  }
+  .h-screen {
+    height: 100vh;
+  }
+  .max-h-40 {
+    max-height: calc(var(--spacing) * 40);
+  }
+  .max-h-48 {
+    max-height: calc(var(--spacing) * 48);
+  }
+  .max-h-\[90vh\] {
+    max-height: 90vh;
+  }
+  .w-0 {
+    width: 0px;
+  }
+  .w-0\.5 {
+    width: calc(var(--spacing) * 0.5);
+  }
+  .w-1 {
+    width: var(--spacing);
+  }
+  .w-1\.5 {
+    width: calc(var(--spacing) * 1.5);
+  }
+  .w-2 {
+    width: calc(var(--spacing) * 2);
+  }
+  .w-2\.5 {
+    width: calc(var(--spacing) * 2.5);
+  }
+  .w-3 {
+    width: calc(var(--spacing) * 3);
+  }
+  .w-3\.5 {
+    width: calc(var(--spacing) * 3.5);
+  }
+  .w-4 {
+    width: calc(var(--spacing) * 4);
+  }
+  .w-5 {
+    width: calc(var(--spacing) * 5);
+  }
+  .w-6 {
+    width: calc(var(--spacing) * 6);
+  }
+  .w-7 {
+    width: calc(var(--spacing) * 7);
+  }
+  .w-8 {
+    width: calc(var(--spacing) * 8);
+  }
+  .w-10 {
+    width: calc(var(--spacing) * 10);
+  }
+  .w-11 {
+    width: calc(var(--spacing) * 11);
+  }
+  .w-12 {
+    width: calc(var(--spacing) * 12);
+  }
+  .w-20 {
+    width: calc(var(--spacing) * 20);
+  }
+  .w-32 {
+    width: calc(var(--spacing) * 32);
+  }
+  .w-36 {
+    width: calc(var(--spacing) * 36);
+  }
+  .w-44 {
+    width: calc(var(--spacing) * 44);
+  }
+  .w-48 {
+    width: calc(var(--spacing) * 48);
+  }
+  .w-60 {
+    width: calc(var(--spacing) * 60);
+  }
+  .w-64 {
+    width: calc(var(--spacing) * 64);
+  }
+  .w-72 {
+    width: calc(var(--spacing) * 72);
+  }
+  .w-80 {
+    width: calc(var(--spacing) * 80);
+  }
+  .w-\[110px\] {
+    width: 110px;
+  }
+  .w-\[120px\] {
+    width: 120px;
+  }
+  .w-\[1400px\] {
+    width: 1400px;
+  }
+  .w-full {
+    width: 100%;
+  }
+  .w-px {
+    width: 1px;
+  }
+  .w-screen {
+    width: 100vw;
+  }
+  .max-w-2xl {
+    max-width: var(--container-2xl);
+  }
+  .max-w-4xl {
+    max-width: var(--container-4xl);
+  }
+  .max-w-lg {
+    max-width: var(--container-lg);
+  }
+  .max-w-md {
+    max-width: var(--container-md);
+  }
+  .max-w-xl {
+    max-width: var(--container-xl);
+  }
+  .flex-1 {
+    flex: 1;
+  }
+  .flex-shrink {
+    flex-shrink: 1;
+  }
+  .flex-shrink-0 {
+    flex-shrink: 0;
+  }
+  .flex-grow {
+    flex-grow: 1;
+  }
+  .grow {
+    flex-grow: 1;
+  }
+  .border-collapse {
+    border-collapse: collapse;
+  }
+  .origin-top-left {
+    transform-origin: 0 0;
+  }
+  .-translate-x-1 {
+    --tw-translate-x: calc(var(--spacing) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .-translate-x-1\/2 {
+    --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .-translate-y-1 {
+    --tw-translate-y: calc(var(--spacing) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .-translate-y-1\/2 {
+    --tw-translate-y: calc(calc(1 / 2 * 100%) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .scale-125 {
+    --tw-scale-x: 125%;
+    --tw-scale-y: 125%;
+    --tw-scale-z: 125%;
+    scale: var(--tw-scale-x) var(--tw-scale-y);
+  }
+  .scale-\[1\.02\] {
+    scale: 1.02;
+  }
+  .scale-\[1\.03\] {
+    scale: 1.03;
+  }
+  .transform {
+    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
+  }
+  .animate-pulse {
+    animation: var(--animate-pulse);
+  }
+  .cursor-grab {
+    cursor: grab;
+  }
+  .cursor-move {
+    cursor: move;
+  }
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .resize {
+    resize: both;
+  }
+  .appearance-none {
+    appearance: none;
+  }
+  .grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .grid-cols-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .grid-cols-8 {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  .grid-cols-12 {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .grid-rows-8 {
+    grid-template-rows: repeat(8, minmax(0, 1fr));
+  }
+  .flex-col {
+    flex-direction: column;
+  }
+  .flex-row {
+    flex-direction: row;
+  }
+  .items-center {
+    align-items: center;
+  }
+  .items-end {
+    align-items: flex-end;
+  }
+  .justify-between {
+    justify-content: space-between;
+  }
+  .justify-center {
+    justify-content: center;
+  }
+  .justify-end {
+    justify-content: flex-end;
+  }
+  .gap-0 {
+    gap: 0px;
+  }
+  .gap-0\.5 {
+    gap: calc(var(--spacing) * 0.5);
+  }
+  .gap-1 {
+    gap: var(--spacing);
+  }
+  .gap-1\.5 {
+    gap: calc(var(--spacing) * 1.5);
+  }
+  .gap-2 {
+    gap: calc(var(--spacing) * 2);
+  }
+  .gap-2\.5 {
+    gap: calc(var(--spacing) * 2.5);
+  }
+  .gap-3 {
+    gap: calc(var(--spacing) * 3);
+  }
+  .gap-3\.5 {
+    gap: calc(var(--spacing) * 3.5);
+  }
+  .gap-4 {
+    gap: calc(var(--spacing) * 4);
+  }
+  .gap-6 {
+    gap: calc(var(--spacing) * 6);
+  }
+  :where(.space-y-1 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(var(--spacing) * var(--tw-space-y-reverse));
+    margin-block-end: calc(var(--spacing) * calc(1 - var(--tw-space-y-reverse)));
+  }
+  :where(.space-y-1\.5 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * 1.5) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * 1.5) * calc(1 - var(--tw-space-y-reverse)));
+  }
+  :where(.space-y-2 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * 2) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * 2) * calc(1 - var(--tw-space-y-reverse)));
+  }
+  :where(.space-y-3 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * 3) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * 3) * calc(1 - var(--tw-space-y-reverse)));
+  }
+  :where(.space-y-4 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * 4) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * 4) * calc(1 - var(--tw-space-y-reverse)));
+  }
+  :where(.space-y-6 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * 6) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * 6) * calc(1 - var(--tw-space-y-reverse)));
+  }
+  :where(.divide-x > :not(:last-child)) {
+    --tw-divide-x-reverse: 0;
+    border-inline-style: var(--tw-border-style);
+    border-inline-start-width: calc(1px * var(--tw-divide-x-reverse));
+    border-inline-end-width: calc(1px * calc(1 - var(--tw-divide-x-reverse)));
+  }
+  :where(.divide-y > :not(:last-child)) {
+    --tw-divide-y-reverse: 0;
+    border-bottom-style: var(--tw-border-style);
+    border-top-style: var(--tw-border-style);
+    border-top-width: calc(1px * var(--tw-divide-y-reverse));
+    border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+  }
+  :where(.divide-indigo-500 > :not(:last-child)) {
+    border-color: var(--color-indigo-500);
+  }
+  :where(.divide-indigo-500\/30 > :not(:last-child)) {
+    border-color: color-mix(in srgb, oklch(58.5% 0.233 277.117) 30%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-indigo-500) 30%, transparent);
+    }
+  }
+  :where(.divide-slate-50 > :not(:last-child)) {
+    border-color: var(--color-slate-50);
+  }
+  :where(.divide-slate-100 > :not(:last-child)) {
+    border-color: var(--color-slate-100);
+  }
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .overflow-hidden {
+    overflow: hidden;
+  }
+  .overflow-y-auto {
+    overflow-y: auto;
+  }
+  .rounded {
+    border-radius: 0.25rem;
+  }
+  .rounded-full {
+    border-radius: calc(infinity * 1px);
+  }
+  .rounded-lg {
+    border-radius: var(--radius-lg);
+  }
+  .rounded-md {
+    border-radius: var(--radius-md);
+  }
+  .rounded-sm {
+    border-radius: var(--radius-sm);
+  }
+  .rounded-xs {
+    border-radius: var(--radius-xs);
+  }
+  .border {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
+  }
+  .border-2 {
+    border-style: var(--tw-border-style);
+    border-width: 2px;
+  }
+  .border-x-2 {
+    border-inline-style: var(--tw-border-style);
+    border-inline-width: 2px;
+  }
+  .border-x-4 {
+    border-inline-style: var(--tw-border-style);
+    border-inline-width: 4px;
+  }
+  .border-y {
+    border-block-style: var(--tw-border-style);
+    border-block-width: 1px;
+  }
+  .border-t {
+    border-top-style: var(--tw-border-style);
+    border-top-width: 1px;
+  }
+  .border-r {
+    border-right-style: var(--tw-border-style);
+    border-right-width: 1px;
+  }
+  .border-b {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 1px;
+  }
+  .border-b-2 {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 2px;
+  }
+  .border-l {
+    border-left-style: var(--tw-border-style);
+    border-left-width: 1px;
+  }
+  .border-dashed {
+    --tw-border-style: dashed;
+    border-style: dashed;
+  }
+  .border-\[\#4D58A4\] {
+    border-color: #4D58A4;
+  }
+  .border-\[\#526087\] {
+    border-color: #526087;
+  }
+  .border-emerald-200 {
+    border-color: var(--color-emerald-200);
+  }
+  .border-indigo-200 {
+    border-color: var(--color-indigo-200);
+  }
+  .border-indigo-200\/80 {
+    border-color: color-mix(in srgb, oklch(87% 0.065 274.039) 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-indigo-200) 80%, transparent);
+    }
+  }
+  .border-indigo-200\/90 {
+    border-color: color-mix(in srgb, oklch(87% 0.065 274.039) 90%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-indigo-200) 90%, transparent);
+    }
+  }
+  .border-indigo-400 {
+    border-color: var(--color-indigo-400);
+  }
+  .border-indigo-500 {
+    border-color: var(--color-indigo-500);
+  }
+  .border-indigo-500\/50 {
+    border-color: color-mix(in srgb, oklch(58.5% 0.233 277.117) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-indigo-500) 50%, transparent);
+    }
+  }
+  .border-indigo-500\/70 {
+    border-color: color-mix(in srgb, oklch(58.5% 0.233 277.117) 70%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-indigo-500) 70%, transparent);
+    }
+  }
+  .border-indigo-600 {
+    border-color: var(--color-indigo-600);
+  }
+  .border-indigo-700 {
+    border-color: var(--color-indigo-700);
+  }
+  .border-indigo-800 {
+    border-color: var(--color-indigo-800);
+  }
+  .border-slate-100 {
+    border-color: var(--color-slate-100);
+  }
+  .border-slate-200 {
+    border-color: var(--color-slate-200);
+  }
+  .border-slate-200\/60 {
+    border-color: color-mix(in srgb, oklch(92.9% 0.013 255.508) 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-slate-200) 60%, transparent);
+    }
+  }
+  .border-slate-200\/90 {
+    border-color: color-mix(in srgb, oklch(92.9% 0.013 255.508) 90%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-slate-200) 90%, transparent);
+    }
+  }
+  .border-slate-300 {
+    border-color: var(--color-slate-300);
+  }
+  .border-slate-600 {
+    border-color: var(--color-slate-600);
+  }
+  .border-slate-700 {
+    border-color: var(--color-slate-700);
+  }
+  .border-slate-700\/60 {
+    border-color: color-mix(in srgb, oklch(37.2% 0.044 257.287) 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      border-color: color-mix(in oklab, var(--color-slate-700) 60%, transparent);
+    }
+  }
+  .border-slate-800 {
+    border-color: var(--color-slate-800);
+  }
+  .border-slate-900 {
+    border-color: var(--color-slate-900);
+  }
+  .bg-\[\#1e2024\] {
+    background-color: #1e2024;
+  }
+  .bg-\[\#2c1448\] {
+    background-color: #2c1448;
+  }
+  .bg-\[\#2d3035\] {
+    background-color: #2d3035;
+  }
+  .bg-\[\#4D58A4\] {
+    background-color: #4D58A4;
+  }
+  .bg-\[\#282b30\] {
+    background-color: #282b30;
+  }
+  .bg-\[\#707ea6\]\/90 {
+    background-color: color-mix(in oklab, #707ea6 90%, transparent);
+  }
+  .bg-\[\#23262a\] {
+    background-color: #23262a;
+  }
+  .bg-\[\#24272c\] {
+    background-color: #24272c;
+  }
+  .bg-\[\#303338\] {
+    background-color: #303338;
+  }
+  .bg-\[\#af5d85\]\/40 {
+    background-color: color-mix(in oklab, #af5d85 40%, transparent);
+  }
+  .bg-\[\#d8b8ca\] {
+    background-color: #d8b8ca;
+  }
+  .bg-\[\#d9b6c9\] {
+    background-color: #d9b6c9;
+  }
+  .bg-\[\#e8d5df\] {
+    background-color: #e8d5df;
+  }
+  .bg-\[\#efd7e3\] {
+    background-color: #efd7e3;
+  }
+  .bg-amber-50 {
+    background-color: var(--color-amber-50);
+  }
+  .bg-amber-50\/70 {
+    background-color: color-mix(in srgb, oklch(98.7% 0.022 95.277) 70%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-amber-50) 70%, transparent);
+    }
+  }
+  .bg-amber-100 {
+    background-color: var(--color-amber-100);
+  }
+  .bg-amber-400 {
+    background-color: var(--color-amber-400);
+  }
+  .bg-amber-600 {
+    background-color: var(--color-amber-600);
+  }
+  .bg-black {
+    background-color: var(--color-black);
+  }
+  .bg-black\/40 {
+    background-color: color-mix(in srgb, #000 40%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-black) 40%, transparent);
+    }
+  }
+  .bg-black\/60 {
+    background-color: color-mix(in srgb, #000 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-black) 60%, transparent);
+    }
+  }
+  .bg-black\/70 {
+    background-color: color-mix(in srgb, #000 70%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-black) 70%, transparent);
+    }
+  }
+  .bg-emerald-50 {
+    background-color: var(--color-emerald-50);
+  }
+  .bg-emerald-100 {
+    background-color: var(--color-emerald-100);
+  }
+  .bg-emerald-500 {
+    background-color: var(--color-emerald-500);
+  }
+  .bg-emerald-600 {
+    background-color: var(--color-emerald-600);
+  }
+  .bg-indigo-50 {
+    background-color: var(--color-indigo-50);
+  }
+  .bg-indigo-50\/50 {
+    background-color: color-mix(in srgb, oklch(96.2% 0.018 272.314) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-indigo-50) 50%, transparent);
+    }
+  }
+  .bg-indigo-50\/60 {
+    background-color: color-mix(in srgb, oklch(96.2% 0.018 272.314) 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-indigo-50) 60%, transparent);
+    }
+  }
+  .bg-indigo-50\/80 {
+    background-color: color-mix(in srgb, oklch(96.2% 0.018 272.314) 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-indigo-50) 80%, transparent);
+    }
+  }
+  .bg-indigo-100 {
+    background-color: var(--color-indigo-100);
+  }
+  .bg-indigo-500 {
+    background-color: var(--color-indigo-500);
+  }
+  .bg-indigo-500\/15 {
+    background-color: color-mix(in srgb, oklch(58.5% 0.233 277.117) 15%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-indigo-500) 15%, transparent);
+    }
+  }
+  .bg-indigo-500\/20 {
+    background-color: color-mix(in srgb, oklch(58.5% 0.233 277.117) 20%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-indigo-500) 20%, transparent);
+    }
+  }
+  .bg-indigo-600 {
+    background-color: var(--color-indigo-600);
+  }
+  .bg-indigo-600\/40 {
+    background-color: color-mix(in srgb, oklch(51.1% 0.262 276.966) 40%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-indigo-600) 40%, transparent);
+    }
+  }
+  .bg-indigo-700 {
+    background-color: var(--color-indigo-700);
+  }
+  .bg-indigo-900 {
+    background-color: var(--color-indigo-900);
+  }
+  .bg-indigo-900\/60 {
+    background-color: color-mix(in srgb, oklch(35.9% 0.144 278.697) 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-indigo-900) 60%, transparent);
+    }
+  }
+  .bg-rose-100 {
+    background-color: var(--color-rose-100);
+  }
+  .bg-rose-500 {
+    background-color: var(--color-rose-500);
+  }
+  .bg-rose-600 {
+    background-color: var(--color-rose-600);
+  }
+  .bg-slate-50 {
+    background-color: var(--color-slate-50);
+  }
+  .bg-slate-50\/50 {
+    background-color: color-mix(in srgb, oklch(98.4% 0.003 247.858) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-slate-50) 50%, transparent);
+    }
+  }
+  .bg-slate-50\/70 {
+    background-color: color-mix(in srgb, oklch(98.4% 0.003 247.858) 70%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-slate-50) 70%, transparent);
+    }
+  }
+  .bg-slate-50\/90 {
+    background-color: color-mix(in srgb, oklch(98.4% 0.003 247.858) 90%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-slate-50) 90%, transparent);
+    }
+  }
+  .bg-slate-100 {
+    background-color: var(--color-slate-100);
+  }
+  .bg-slate-200 {
+    background-color: var(--color-slate-200);
+  }
+  .bg-slate-700 {
+    background-color: var(--color-slate-700);
+  }
+  .bg-slate-800 {
+    background-color: var(--color-slate-800);
+  }
+  .bg-slate-800\/60 {
+    background-color: color-mix(in srgb, oklch(27.9% 0.041 260.031) 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-slate-800) 60%, transparent);
+    }
+  }
+  .bg-slate-900 {
+    background-color: var(--color-slate-900);
+  }
+  .bg-slate-900\/80 {
+    background-color: color-mix(in srgb, oklch(20.8% 0.042 265.755) 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-slate-900) 80%, transparent);
+    }
+  }
+  .bg-slate-900\/90 {
+    background-color: color-mix(in srgb, oklch(20.8% 0.042 265.755) 90%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-slate-900) 90%, transparent);
+    }
+  }
+  .bg-slate-900\/95 {
+    background-color: color-mix(in srgb, oklch(20.8% 0.042 265.755) 95%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-slate-900) 95%, transparent);
+    }
+  }
+  .bg-white {
+    background-color: var(--color-white);
+  }
+  .bg-white\/40 {
+    background-color: color-mix(in srgb, #fff 40%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-white) 40%, transparent);
+    }
+  }
+  .bg-white\/70 {
+    background-color: color-mix(in srgb, #fff 70%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-white) 70%, transparent);
+    }
+  }
+  .bg-white\/80 {
+    background-color: color-mix(in srgb, #fff 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-white) 80%, transparent);
+    }
+  }
+  .bg-white\/90 {
+    background-color: color-mix(in srgb, #fff 90%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-white) 90%, transparent);
+    }
+  }
+  .bg-white\/95 {
+    background-color: color-mix(in srgb, #fff 95%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-white) 95%, transparent);
+    }
+  }
+  .from-amber-500 {
+    --tw-gradient-from: var(--color-amber-500);
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+  .from-amber-500\/25 {
+    --tw-gradient-from: color-mix(in srgb, oklch(76.9% 0.188 70.08) 25%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-gradient-from: color-mix(in oklab, var(--color-amber-500) 25%, transparent);
+    }
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+  .via-indigo-600 {
+    --tw-gradient-via: var(--color-indigo-600);
+    --tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-via-stops);
+  }
+  .via-indigo-600\/15 {
+    --tw-gradient-via: color-mix(in srgb, oklch(51.1% 0.262 276.966) 15%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-gradient-via: color-mix(in oklab, var(--color-indigo-600) 15%, transparent);
+    }
+    --tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-via-stops);
+  }
+  .to-transparent {
+    --tw-gradient-to: transparent;
+    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+  }
+  .fill-current {
+    fill: currentcolor;
+  }
+  .fill-slate-700 {
+    fill: var(--color-slate-700);
+  }
+  .stroke-\[1\.5\] {
+    stroke-width: 1.5;
+  }
+  .stroke-\[2\.5\] {
+    stroke-width: 2.5;
+  }
+  .p-0 {
+    padding: 0px;
+  }
+  .p-0\.5 {
+    padding: calc(var(--spacing) * 0.5);
+  }
+  .p-1 {
+    padding: var(--spacing);
+  }
+  .p-1\.5 {
+    padding: calc(var(--spacing) * 1.5);
+  }
+  .p-2 {
+    padding: calc(var(--spacing) * 2);
+  }
+  .p-2\.5 {
+    padding: calc(var(--spacing) * 2.5);
+  }
+  .p-3 {
+    padding: calc(var(--spacing) * 3);
+  }
+  .p-3\.5 {
+    padding: calc(var(--spacing) * 3.5);
+  }
+  .p-4 {
+    padding: calc(var(--spacing) * 4);
+  }
+  .p-6 {
+    padding: calc(var(--spacing) * 6);
+  }
+  .p-8 {
+    padding: calc(var(--spacing) * 8);
+  }
+  .px-1 {
+    padding-inline: var(--spacing);
+  }
+  .px-1\.5 {
+    padding-inline: calc(var(--spacing) * 1.5);
+  }
+  .px-2 {
+    padding-inline: calc(var(--spacing) * 2);
+  }
+  .px-2\.5 {
+    padding-inline: calc(var(--spacing) * 2.5);
+  }
+  .px-3 {
+    padding-inline: calc(var(--spacing) * 3);
+  }
+  .px-3\.5 {
+    padding-inline: calc(var(--spacing) * 3.5);
+  }
+  .px-4 {
+    padding-inline: calc(var(--spacing) * 4);
+  }
+  .px-5 {
+    padding-inline: calc(var(--spacing) * 5);
+  }
+  .py-0 {
+    padding-block: 0px;
+  }
+  .py-0\.5 {
+    padding-block: calc(var(--spacing) * 0.5);
+  }
+  .py-1 {
+    padding-block: var(--spacing);
+  }
+  .py-1\.5 {
+    padding-block: calc(var(--spacing) * 1.5);
+  }
+  .py-2 {
+    padding-block: calc(var(--spacing) * 2);
+  }
+  .py-2\.5 {
+    padding-block: calc(var(--spacing) * 2.5);
+  }
+  .py-3 {
+    padding-block: calc(var(--spacing) * 3);
+  }
+  .py-3\.5 {
+    padding-block: calc(var(--spacing) * 3.5);
+  }
+  .pt-1 {
+    padding-top: var(--spacing);
+  }
+  .pt-2 {
+    padding-top: calc(var(--spacing) * 2);
+  }
+  .pt-4 {
+    padding-top: calc(var(--spacing) * 4);
+  }
+  .pr-2 {
+    padding-right: calc(var(--spacing) * 2);
+  }
+  .pb-1 {
+    padding-bottom: var(--spacing);
+  }
+  .pb-1\.5 {
+    padding-bottom: calc(var(--spacing) * 1.5);
+  }
+  .pb-2 {
+    padding-bottom: calc(var(--spacing) * 2);
+  }
+  .pb-4 {
+    padding-bottom: calc(var(--spacing) * 4);
+  }
+  .pl-1 {
+    padding-left: var(--spacing);
+  }
+  .pl-2 {
+    padding-left: calc(var(--spacing) * 2);
+  }
+  .pl-4 {
+    padding-left: calc(var(--spacing) * 4);
+  }
+  .pl-7 {
+    padding-left: calc(var(--spacing) * 7);
+  }
+  .text-center {
+    text-align: center;
+  }
+  .text-left {
+    text-align: left;
+  }
+  .text-right {
+    text-align: right;
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+  .text-base {
+    font-size: var(--text-base);
+    line-height: var(--tw-leading, var(--text-base--line-height));
+  }
+  .text-lg {
+    font-size: var(--text-lg);
+    line-height: var(--tw-leading, var(--text-lg--line-height));
+  }
+  .text-sm {
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+  }
+  .text-xl {
+    font-size: var(--text-xl);
+    line-height: var(--tw-leading, var(--text-xl--line-height));
+  }
+  .text-xs {
+    font-size: var(--text-xs);
+    line-height: var(--tw-leading, var(--text-xs--line-height));
+  }
+  .text-\[8px\] {
+    font-size: 8px;
+  }
+  .text-\[9px\] {
+    font-size: 9px;
+  }
+  .text-\[10px\] {
+    font-size: 10px;
+  }
+  .text-\[11px\] {
+    font-size: 11px;
+  }
+  .leading-relaxed {
+    --tw-leading: var(--leading-relaxed);
+    line-height: var(--leading-relaxed);
+  }
+  .font-bold {
+    --tw-font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
+  }
+  .font-medium {
+    --tw-font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-medium);
+  }
+  .font-normal {
+    --tw-font-weight: var(--font-weight-normal);
+    font-weight: var(--font-weight-normal);
+  }
+  .font-semibold {
+    --tw-font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-semibold);
+  }
+  .tracking-tight {
+    --tw-tracking: var(--tracking-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+  .tracking-tighter {
+    --tw-tracking: var(--tracking-tighter);
+    letter-spacing: var(--tracking-tighter);
+  }
+  .tracking-wide {
+    --tw-tracking: var(--tracking-wide);
+    letter-spacing: var(--tracking-wide);
+  }
+  .tracking-wider {
+    --tw-tracking: var(--tracking-wider);
+    letter-spacing: var(--tracking-wider);
+  }
+  .whitespace-nowrap {
+    white-space: nowrap;
+  }
+  .text-\[\#4D58A4\] {
+    color: #4D58A4;
+  }
+  .text-amber-400 {
+    color: var(--color-amber-400);
+  }
+  .text-amber-700 {
+    color: var(--color-amber-700);
+  }
+  .text-emerald-400 {
+    color: var(--color-emerald-400);
+  }
+  .text-emerald-600 {
+    color: var(--color-emerald-600);
+  }
+  .text-emerald-700 {
+    color: var(--color-emerald-700);
+  }
+  .text-indigo-300 {
+    color: var(--color-indigo-300);
+  }
+  .text-indigo-400 {
+    color: var(--color-indigo-400);
+  }
+  .text-indigo-600 {
+    color: var(--color-indigo-600);
+  }
+  .text-indigo-700 {
+    color: var(--color-indigo-700);
+  }
+  .text-indigo-700\/50 {
+    color: color-mix(in srgb, oklch(45.7% 0.24 277.023) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-indigo-700) 50%, transparent);
+    }
+  }
+  .text-indigo-800 {
+    color: var(--color-indigo-800);
+  }
+  .text-indigo-900 {
+    color: var(--color-indigo-900);
+  }
+  .text-indigo-950 {
+    color: var(--color-indigo-950);
+  }
+  .text-rose-700 {
+    color: var(--color-rose-700);
+  }
+  .text-slate-200 {
+    color: var(--color-slate-200);
+  }
+  .text-slate-300 {
+    color: var(--color-slate-300);
+  }
+  .text-slate-400 {
+    color: var(--color-slate-400);
+  }
+  .text-slate-500 {
+    color: var(--color-slate-500);
+  }
+  .text-slate-600 {
+    color: var(--color-slate-600);
+  }
+  .text-slate-700 {
+    color: var(--color-slate-700);
+  }
+  .text-slate-800 {
+    color: var(--color-slate-800);
+  }
+  .text-slate-900 {
+    color: var(--color-slate-900);
+  }
+  .text-white {
+    color: var(--color-white);
+  }
+  .text-white\/90 {
+    color: color-mix(in srgb, #fff 90%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-white) 90%, transparent);
+    }
+  }
+  .lowercase {
+    text-transform: lowercase;
+  }
+  .uppercase {
+    text-transform: uppercase;
+  }
+  .ordinal {
+    --tw-ordinal: ordinal;
+    font-variant-numeric: var(--tw-ordinal,) var(--tw-slashed-zero,) var(--tw-numeric-figure,) var(--tw-numeric-spacing,) var(--tw-numeric-fraction,);
+  }
+  .tabular-nums {
+    --tw-numeric-spacing: tabular-nums;
+    font-variant-numeric: var(--tw-ordinal,) var(--tw-slashed-zero,) var(--tw-numeric-figure,) var(--tw-numeric-spacing,) var(--tw-numeric-fraction,);
+  }
+  .underline {
+    text-decoration-line: underline;
+  }
+  .accent-\[\#4D58A4\] {
+    accent-color: #4D58A4;
+  }
+  .opacity-0 {
+    opacity: 0%;
+  }
+  .opacity-60 {
+    opacity: 60%;
+  }
+  .opacity-85 {
+    opacity: 85%;
+  }
+  .opacity-90 {
+    opacity: 90%;
+  }
+  .mix-blend-multiply {
+    mix-blend-mode: multiply;
+  }
+  .shadow {
+    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-2xl {
+    --tw-shadow: 0 25px 50px -12px var(--tw-shadow-color, rgb(0 0 0 / 0.25));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-2xs {
+    --tw-shadow: 0 1px var(--tw-shadow-color, rgb(0 0 0 / 0.05));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-inner {
+    --tw-shadow: inset 0 2px 4px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.05));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-lg {
+    --tw-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 4px 6px -4px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-md {
+    --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 2px 4px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-sm {
+    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-xl {
+    --tw-shadow: 0 20px 25px -5px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 8px 10px -6px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .shadow-xs {
+    --tw-shadow: 0 1px 2px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.05));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .ring {
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .ring-1 {
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .ring-3 {
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .ring-4 {
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .ring-black {
+    --tw-ring-color: var(--color-black);
+  }
+  .ring-black\/40 {
+    --tw-ring-color: color-mix(in srgb, #000 40%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-black) 40%, transparent);
+    }
+  }
+  .ring-indigo-400 {
+    --tw-ring-color: var(--color-indigo-400);
+  }
+  .ring-indigo-400\/50 {
+    --tw-ring-color: color-mix(in srgb, oklch(67.3% 0.182 276.935) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-indigo-400) 50%, transparent);
+    }
+  }
+  .ring-indigo-500 {
+    --tw-ring-color: var(--color-indigo-500);
+  }
+  .ring-offset-1 {
+    --tw-ring-offset-width: 1px;
+    --tw-ring-offset-shadow: var(--tw-ring-inset,) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  }
+  .ring-offset-slate-900 {
+    --tw-ring-offset-color: var(--color-slate-900);
+  }
+  .outline {
+    outline-style: var(--tw-outline-style);
+    outline-width: 1px;
+  }
+  .blur {
+    --tw-blur: blur(8px);
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+  }
+  .blur-\[1px\] {
+    --tw-blur: blur(1px);
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+  }
+  .drop-shadow-\[0_1px_2px_rgba\(0\,0\,0\,0\.9\)\] {
+    --tw-drop-shadow-size: drop-shadow(0 1px 2px var(--tw-drop-shadow-color, rgba(0,0,0,0.9)));
+    --tw-drop-shadow: var(--tw-drop-shadow-size);
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+  }
+  .drop-shadow-\[0_1px_2px_rgba\(0\,0\,0\,0\.85\)\] {
+    --tw-drop-shadow-size: drop-shadow(0 1px 2px var(--tw-drop-shadow-color, rgba(0,0,0,0.85)));
+    --tw-drop-shadow: var(--tw-drop-shadow-size);
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+  }
+  .grayscale {
+    --tw-grayscale: grayscale(100%);
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+  }
+  .filter {
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+  }
+  .backdrop-blur-sm {
+    --tw-backdrop-blur: blur(var(--blur-sm));
+    -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+    backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+  }
+  .backdrop-blur-xs {
+    --tw-backdrop-blur: blur(var(--blur-xs));
+    -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+    backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+  }
+  .backdrop-filter {
+    -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+    backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+  }
+  .transition {
+    transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, content-visibility, overlay, pointer-events;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-all {
+    transition-property: all;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-colors {
+    transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-opacity {
+    transition-property: opacity;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-transform {
+    transition-property: transform, translate, scale, rotate;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .duration-75 {
+    --tw-duration: 75ms;
+    transition-duration: 75ms;
+  }
+  .duration-150 {
+    --tw-duration: 150ms;
+    transition-duration: 150ms;
+  }
+  .duration-200 {
+    --tw-duration: 200ms;
+    transition-duration: 200ms;
+  }
+  .ease-out {
+    --tw-ease: var(--ease-out);
+    transition-timing-function: var(--ease-out);
+  }
+  .select-none {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  @media (hover: hover) {
+    .group-hover\:scale-110:is(:where(.group):hover *) {
+      --tw-scale-x: 110%;
+      --tw-scale-y: 110%;
+      --tw-scale-z: 110%;
+      scale: var(--tw-scale-x) var(--tw-scale-y);
+    }
+    .group-hover\:opacity-100:is(:where(.group):hover *) {
+      opacity: 100%;
+    }
+    .hover\:border-indigo-300:hover {
+      border-color: var(--color-indigo-300);
+    }
+    .hover\:border-slate-300:hover {
+      border-color: var(--color-slate-300);
+    }
+    .hover\:bg-\[\#3d4787\]:hover {
+      background-color: #3d4787;
+    }
+    .hover\:bg-\[\#3f498c\]:hover {
+      background-color: #3f498c;
+    }
+    .hover\:bg-emerald-700:hover {
+      background-color: var(--color-emerald-700);
+    }
+    .hover\:bg-indigo-50:hover {
+      background-color: var(--color-indigo-50);
+    }
+    .hover\:bg-indigo-50\/40:hover {
+      background-color: color-mix(in srgb, oklch(96.2% 0.018 272.314) 40%, transparent);
+    }
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:bg-indigo-50\/40:hover {
+        background-color: color-mix(in oklab, var(--color-indigo-50) 40%, transparent);
+      }
+    }
+    .hover\:bg-indigo-100:hover {
+      background-color: var(--color-indigo-100);
+    }
+    .hover\:bg-indigo-500:hover {
+      background-color: var(--color-indigo-500);
+    }
+    .hover\:bg-indigo-600:hover {
+      background-color: var(--color-indigo-600);
+    }
+    .hover\:bg-indigo-700:hover {
+      background-color: var(--color-indigo-700);
+    }
+    .hover\:bg-slate-50:hover {
+      background-color: var(--color-slate-50);
+    }
+    .hover\:bg-slate-100:hover {
+      background-color: var(--color-slate-100);
+    }
+    .hover\:bg-slate-200:hover {
+      background-color: var(--color-slate-200);
+    }
+    .hover\:bg-slate-300:hover {
+      background-color: var(--color-slate-300);
+    }
+    .hover\:bg-slate-700:hover {
+      background-color: var(--color-slate-700);
+    }
+    .hover\:bg-slate-800:hover {
+      background-color: var(--color-slate-800);
+    }
+    .hover\:text-indigo-700:hover {
+      color: var(--color-indigo-700);
+    }
+    .hover\:text-slate-800:hover {
+      color: var(--color-slate-800);
+    }
+    .hover\:text-slate-900:hover {
+      color: var(--color-slate-900);
+    }
+    .hover\:text-white:hover {
+      color: var(--color-white);
+    }
+    .hover\:ring-1:hover {
+      --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+      box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    }
+    .hover\:ring-2:hover {
+      --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+      box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    }
+    .hover\:ring-indigo-400:hover {
+      --tw-ring-color: var(--color-indigo-400);
+    }
+    .hover\:ring-white\/40:hover {
+      --tw-ring-color: color-mix(in srgb, #fff 40%, transparent);
+    }
+    @supports (color: color-mix(in lab, red, red)) {
+      .hover\:ring-white\/40:hover {
+        --tw-ring-color: color-mix(in oklab, var(--color-white) 40%, transparent);
+      }
+    }
+    .hover\:brightness-110:hover {
+      --tw-brightness: brightness(110%);
+      filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+    }
+  }
+  .focus\:border-indigo-500:focus {
+    border-color: var(--color-indigo-500);
+  }
+  .focus\:ring-1:focus {
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .focus\:ring-indigo-500:focus {
+    --tw-ring-color: var(--color-indigo-500);
+  }
+  .focus\:ring-indigo-500\/20:focus {
+    --tw-ring-color: color-mix(in srgb, oklch(58.5% 0.233 277.117) 20%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-indigo-500) 20%, transparent);
+    }
+  }
+  .focus\:ring-indigo-500\/30:focus {
+    --tw-ring-color: color-mix(in srgb, oklch(58.5% 0.233 277.117) 30%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      --tw-ring-color: color-mix(in oklab, var(--color-indigo-500) 30%, transparent);
+    }
+  }
+  .focus\:outline-none:focus {
+    --tw-outline-style: none;
+    outline-style: none;
+  }
+  .active\:cursor-grabbing:active {
+    cursor: grabbing;
+  }
+  .disabled\:bg-slate-50:disabled {
+    background-color: var(--color-slate-50);
+  }
+  @media (width >= 40rem) {
+    .sm\:inline {
+      display: inline;
+    }
+    .sm\:w-72 {
+      width: calc(var(--spacing) * 72);
+    }
+    .sm\:w-80 {
+      width: calc(var(--spacing) * 80);
+    }
+    .sm\:w-96 {
+      width: calc(var(--spacing) * 96);
+    }
+    .sm\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .sm\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .sm\:grid-cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .sm\:flex-row {
+      flex-direction: row;
+    }
+  }
+  @media (width >= 48rem) {
+    .md\:block {
+      display: block;
+    }
+  }
+  @media (width >= 80rem) {
+    .xl\:inline {
+      display: inline;
+    }
+  }
+}
+@property --tw-translate-x {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-translate-y {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-translate-z {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-scale-x {
+  syntax: "*";
+  inherits: false;
+  initial-value: 1;
+}
+@property --tw-scale-y {
+  syntax: "*";
+  inherits: false;
+  initial-value: 1;
+}
+@property --tw-scale-z {
+  syntax: "*";
+  inherits: false;
+  initial-value: 1;
+}
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-space-y-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-divide-x-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-border-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
+@property --tw-divide-y-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-gradient-position {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-gradient-from {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #0000;
+}
+@property --tw-gradient-via {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #0000;
+}
+@property --tw-gradient-to {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #0000;
+}
+@property --tw-gradient-stops {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-gradient-via-stops {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-gradient-from-position {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --tw-gradient-via-position {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 50%;
+}
+@property --tw-gradient-to-position {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-leading {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-font-weight {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-tracking {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ordinal {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-slashed-zero {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-figure {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-spacing {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-numeric-fraction {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-shadow-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-inset-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-inset-shadow-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-inset-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-ring-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ring-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-inset-ring-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-inset-ring-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-ring-inset {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ring-offset-width {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --tw-ring-offset-color {
+  syntax: "*";
+  inherits: false;
+  initial-value: #fff;
+}
+@property --tw-ring-offset-shadow {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0 0 #0000;
+}
+@property --tw-outline-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
+@property --tw-blur {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-brightness {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-contrast {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-grayscale {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-hue-rotate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-invert {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-opacity {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-saturate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-sepia {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-drop-shadow {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-drop-shadow-color {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-drop-shadow-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+@property --tw-drop-shadow-size {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-blur {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-brightness {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-contrast {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-grayscale {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-hue-rotate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-invert {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-opacity {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-saturate {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-backdrop-sepia {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-duration {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-ease {
+  syntax: "*";
+  inherits: false;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+@layer properties {
+  @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
+    *, ::before, ::after, ::backdrop {
+      --tw-translate-x: 0;
+      --tw-translate-y: 0;
+      --tw-translate-z: 0;
+      --tw-scale-x: 1;
+      --tw-scale-y: 1;
+      --tw-scale-z: 1;
+      --tw-rotate-x: initial;
+      --tw-rotate-y: initial;
+      --tw-rotate-z: initial;
+      --tw-skew-x: initial;
+      --tw-skew-y: initial;
+      --tw-space-y-reverse: 0;
+      --tw-divide-x-reverse: 0;
+      --tw-border-style: solid;
+      --tw-divide-y-reverse: 0;
+      --tw-gradient-position: initial;
+      --tw-gradient-from: #0000;
+      --tw-gradient-via: #0000;
+      --tw-gradient-to: #0000;
+      --tw-gradient-stops: initial;
+      --tw-gradient-via-stops: initial;
+      --tw-gradient-from-position: 0%;
+      --tw-gradient-via-position: 50%;
+      --tw-gradient-to-position: 100%;
+      --tw-leading: initial;
+      --tw-font-weight: initial;
+      --tw-tracking: initial;
+      --tw-ordinal: initial;
+      --tw-slashed-zero: initial;
+      --tw-numeric-figure: initial;
+      --tw-numeric-spacing: initial;
+      --tw-numeric-fraction: initial;
+      --tw-shadow: 0 0 #0000;
+      --tw-shadow-color: initial;
+      --tw-shadow-alpha: 100%;
+      --tw-inset-shadow: 0 0 #0000;
+      --tw-inset-shadow-color: initial;
+      --tw-inset-shadow-alpha: 100%;
+      --tw-ring-color: initial;
+      --tw-ring-shadow: 0 0 #0000;
+      --tw-inset-ring-color: initial;
+      --tw-inset-ring-shadow: 0 0 #0000;
+      --tw-ring-inset: initial;
+      --tw-ring-offset-width: 0px;
+      --tw-ring-offset-color: #fff;
+      --tw-ring-offset-shadow: 0 0 #0000;
+      --tw-outline-style: solid;
+      --tw-blur: initial;
+      --tw-brightness: initial;
+      --tw-contrast: initial;
+      --tw-grayscale: initial;
+      --tw-hue-rotate: initial;
+      --tw-invert: initial;
+      --tw-opacity: initial;
+      --tw-saturate: initial;
+      --tw-sepia: initial;
+      --tw-drop-shadow: initial;
+      --tw-drop-shadow-color: initial;
+      --tw-drop-shadow-alpha: 100%;
+      --tw-drop-shadow-size: initial;
+      --tw-backdrop-blur: initial;
+      --tw-backdrop-brightness: initial;
+      --tw-backdrop-contrast: initial;
+      --tw-backdrop-grayscale: initial;
+      --tw-backdrop-hue-rotate: initial;
+      --tw-backdrop-invert: initial;
+      --tw-backdrop-opacity: initial;
+      --tw-backdrop-saturate: initial;
+      --tw-backdrop-sepia: initial;
+      --tw-duration: initial;
+      --tw-ease: initial;
+    }
+  }
+}
+</style></head>
+<body class="bg-slate-100 text-slate-900 h-screen w-screen flex flex-col overflow-hidden select-none">
+
+  <!-- ==================== TOP NAVIGATION HEADER ==================== -->
+  <header class="h-14 bg-white border-b border-slate-200 shadow-xs px-4 flex items-center justify-between gap-3 z-30 flex-shrink-0">
+    <!-- Left: Logo, Tool Icons, and Active Case Tab -->
+    <div class="flex items-center gap-3">
+      <!-- Visor Brand Logo -->
+      <div class="flex items-center gap-2 pr-2 border-r border-slate-200">
+        <div class="w-8 h-8 rounded-md bg-[#4D58A4] flex items-center justify-center text-white shadow-xs">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current">
+            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 4.5c1.93 0 3.5 1.57 3.5 3.5 0 1.27-.68 2.37-1.7 2.98L15 16h-2v-2h-2v2H9l1.2-3.02C9.18 12.37 8.5 11.27 8.5 10c0-1.93 1.57-3.5 3.5-3.5z" />
+          </svg>
+        </div>
+        <span class="text-xl font-bold tracking-tight text-slate-800">Visor</span>
+      </div>
+
+      <!-- Action Icons -->
+      <div class="flex items-center gap-1 text-slate-500">
+        <button id="btn-share" class="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" title="Compartir caso">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+        </button>
+        <div class="relative">
+          <button id="btn-cases" class="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" title="Seleccionar caso clínico">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+          </button>
+          <!-- Case dropdown menu -->
+          <div id="cases-dropdown" class="hidden absolute top-full left-0 mt-1 w-64 bg-white rounded-md shadow-xl border border-slate-200 py-1 z-50">
+            <div class="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">Casos Clínicos</div>
+            <button onclick="selectCase('165321454', 'Male, 54y', 'Promyelocyte')" class="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 flex flex-col text-slate-700 bg-indigo-50/60 font-semibold text-indigo-700">
+              <div class="flex justify-between"><span>CASE 165321454</span><span class="text-[10px] bg-slate-100 px-1 rounded">54a • Varón</span></div>
+              <span class="text-[11px] text-slate-500 font-normal">Sospecha de LPA / Leucemia M3</span>
+            </button>
+            <button onclick="selectCase('165321455', 'Female, 38y', 'Segmented Neutrophil')" class="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 flex flex-col text-slate-700">
+              <div class="flex justify-between"><span>CASE 165321455</span><span class="text-[10px] bg-slate-100 px-1 rounded">38a • Mujer</span></div>
+              <span class="text-[11px] text-slate-500 font-normal">Frotis control preoperatorio</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Case Tab Pill -->
+      <div class="ml-1 flex items-center bg-indigo-50/80 border border-indigo-200/90 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-sm gap-2">
+        <span id="active-case-label">CASE 165321454</span>
+        <button class="text-indigo-400 hover:text-indigo-700" onclick="document.getElementById('cases-dropdown').classList.toggle('hidden')">✕</button>
+      </div>
+    </div>
+
+    <!-- Center: Workflow Navigation Tabs -->
+    <nav class="flex items-center gap-1">
+      <button onclick="switchTab('fullfield')" id="tab-fullfield" class="nav-tab px-3.5 py-1.5 text-xs font-semibold tracking-wider rounded-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 uppercase">FULL FIELD REVIEW</button>
+      <button onclick="switchTab('quality')" id="tab-quality" class="nav-tab px-3.5 py-1.5 text-xs font-semibold tracking-wider rounded-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 uppercase">SPECIMEN QUALITY</button>
+      <button onclick="switchTab('analysis')" id="tab-analysis" class="nav-tab px-3.5 py-1.5 text-xs font-semibold tracking-wider rounded-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 uppercase">ANALYSIS AREA</button>
+      <button onclick="switchTab('review')" id="tab-review" class="nav-tab px-3.5 py-1.5 text-xs font-semibold tracking-wider rounded-xs bg-indigo-600 text-white shadow-xs uppercase">REVIEW CELLS</button>
+      <button onclick="switchTab('report')" id="tab-report" class="nav-tab px-3.5 py-1.5 text-xs font-semibold tracking-wider rounded-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 uppercase">REPORT</button>
+    </nav>
+
+    <!-- Right Controls: Staining presets, Split toggle, Patient Info -->
+    <div class="flex items-center gap-2.5">
+      <!-- Image Profiles Button & Presets with Popover (Visor Exact UI) -->
+      <div class="relative">
+        <div class="flex items-center border border-slate-300 rounded-sm bg-white p-0.5 text-xs shadow-2xs">
+          <span class="p-1 text-slate-500" title="Image Profiles">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+              <path d="M12,18V6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,15.31L23.31,12L20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31Z"/>
+            </svg>
+          </span>
+          <button onclick="setStainPreset(1)" id="preset-1" class="stain-preset w-5 h-5 flex items-center justify-center font-mono font-medium rounded-xs bg-[#4D58A4] text-white">1</button>
+          <button onclick="setStainPreset(2)" id="preset-2" class="stain-preset w-5 h-5 flex items-center justify-center font-mono font-medium rounded-xs text-slate-600 hover:bg-slate-100">2</button>
+          <button onclick="setStainPreset(3)" id="preset-3" class="stain-preset w-5 h-5 flex items-center justify-center font-mono font-medium rounded-xs text-slate-600 hover:bg-slate-100">3</button>
+          <button onclick="toggleImageProfilesPopover()" id="btn-image-profiles" class="p-1 text-slate-600 hover:bg-slate-100 rounded-xs transition-colors" title="Opciones de visualización de la imagen">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z"/></svg>
+          </button>
+        </div>
+
+        <!-- Visor Image Profiles Popover (Exact Structure from Visor) -->
+        <div id="image-profiles-popover" class="hidden absolute top-full right-0 mt-1.5 z-50 animate-in fade-in">
+          <div class="sc-dQoVA kJHJIu" style="margin-top: 0.4rem; gap: 0.4rem;">
+            <div class="MuiPaper-root-215 MuiPaper-elevation1-219 MuiPaper-rounded-216 bg-white rounded-md shadow-xl border border-slate-200/90 p-4 flex flex-col gap-3.5 select-none text-slate-800" style="opacity: 1; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; pointer-events: all; width: 300px; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1);">
+              <!-- brightness -->
+              <div class="sc-gInthZ kpCyKd flex items-center justify-between gap-3">
+                <p class="MuiTypography-root-243 sc-euMpEg bwaTNN MuiTypography-body1-245 text-xs font-normal text-slate-700 lowercase w-20 flex-shrink-0">brightness</p>
+                <div class="relative flex-1 flex items-center">
+                  <input type="range" id="slider-brightness" min="50" max="150" step="1" value="100" oninput="updateFilterSlider('brightness', this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]">
+                </div>
+                <p id="label-brightness" class="MuiTypography-root-243 MuiTypography-body1-245 MuiTypography-alignCenter-259 text-xs font-mono text-center text-slate-600 w-10 flex-shrink-0" style="width: 40px; flex-shrink: 0;">0%</p>
+              </div>
+
+              <!-- contrast -->
+              <div class="sc-gInthZ kpCyKd flex items-center justify-between gap-3">
+                <p class="MuiTypography-root-243 sc-euMpEg bwaTNN MuiTypography-body1-245 text-xs font-normal text-slate-700 lowercase w-20 flex-shrink-0">contrast</p>
+                <div class="relative flex-1 flex items-center">
+                  <input type="range" id="slider-contrast" min="50" max="150" step="1" value="100" oninput="updateFilterSlider('contrast', this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]">
+                </div>
+                <p id="label-contrast" class="MuiTypography-root-243 MuiTypography-body1-245 MuiTypography-alignCenter-259 text-xs font-mono text-center text-slate-600 w-10 flex-shrink-0" style="width: 40px; flex-shrink: 0;">0%</p>
+              </div>
+
+              <!-- saturation -->
+              <div class="sc-gInthZ kpCyKd flex items-center justify-between gap-3">
+                <p class="MuiTypography-root-243 sc-euMpEg bwaTNN MuiTypography-body1-245 text-xs font-normal text-slate-700 lowercase w-20 flex-shrink-0">saturation</p>
+                <div class="relative flex-1 flex items-center">
+                  <input type="range" id="slider-saturation" min="50" max="150" step="1" value="100" oninput="updateFilterSlider('saturation', this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]">
+                </div>
+                <p id="label-saturation" class="MuiTypography-root-243 MuiTypography-body1-245 MuiTypography-alignCenter-259 text-xs font-mono text-center text-slate-600 w-10 flex-shrink-0" style="width: 40px; flex-shrink: 0;">0%</p>
+              </div>
+
+              <!-- gamma -->
+              <div class="sc-gInthZ kpCyKd flex items-center justify-between gap-3">
+                <p class="MuiTypography-root-243 sc-euMpEg bwaTNN MuiTypography-body1-245 text-xs font-normal text-slate-700 lowercase w-20 flex-shrink-0">gamma</p>
+                <div class="relative flex-1 flex items-center">
+                  <input type="range" id="slider-gamma" min="50" max="150" step="1" value="100" oninput="updateFilterSlider('gamma', this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]">
+                </div>
+                <p id="label-gamma" class="MuiTypography-root-243 MuiTypography-body1-245 MuiTypography-alignCenter-259 text-xs font-mono text-center text-slate-600 w-10 flex-shrink-0" style="width: 40px; flex-shrink: 0;">0%</p>
+              </div>
+
+              <!-- RESET button -->
+              <div class="MuiBox-root-296 jss297 pt-1 border-t border-slate-100 flex justify-end">
+                <button onclick="resetFilterSliders()" class="MuiButtonBase-root-325 MuiButton-root-298 MuiButton-contained-306 MuiButton-containedPrimary-307 MuiButton-disableElevation-309 w-full py-1.5 px-4 bg-[#4D58A4] hover:bg-[#3d4787] text-white text-xs font-medium uppercase tracking-wider rounded-xs shadow-xs transition-colors flex items-center justify-center cursor-pointer" tabindex="0" type="button">
+                  <span class="MuiButton-label-299">RESET</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View layout split toggles -->
+      <div class="flex items-center border border-slate-200 rounded-sm bg-slate-50 p-0.5 text-xs">
+        <button onclick="setLayout('split')" id="layout-split" class="layout-btn p-1 rounded-xs bg-indigo-600 text-white" title="Vista Dividida (Galería + Frotis)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+        </button>
+        <button onclick="setLayout('grid')" id="layout-grid" class="layout-btn p-1 rounded-xs text-slate-500 hover:bg-slate-200" title="Solo Galería de Células">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        </button>
+        <button onclick="setLayout('slide')" id="layout-slide" class="layout-btn p-1 rounded-xs text-slate-500 hover:bg-slate-200" title="Solo Frotis Microscópico">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+        </button>
+      </div>
+
+      <!-- Patient Banner -->
+      <div class="flex items-center gap-2 pl-2 border-l border-slate-200 text-xs">
+        <span class="text-slate-400">✏️</span>
+        <span class="text-slate-600"><strong class="text-slate-800">INFO:</strong> <span id="patient-info">Male, 54y</span></span>
+        <!-- Status Dropdown -->
+        <div class="relative">
+          <button id="btn-status" onclick="document.getElementById('status-dropdown').classList.toggle('hidden')" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">
+            <span class="text-slate-500 font-normal">STATUS:</span>
+            <span id="status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span id="status-text">Reviewing</span>
+            <span class="text-[10px] text-slate-400">▼</span>
+          </button>
+          <div id="status-dropdown" class="hidden absolute right-0 top-full mt-1 w-32 bg-white rounded-md shadow-lg border border-slate-200 py-1 z-50">
+            <button onclick="setStatus('Reviewing', 'bg-amber-400')" class="w-full text-left px-3 py-1.5 text-xs hover:bg-slate-50 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Reviewing</button>
+            <button onclick="setStatus('Flagged', 'bg-rose-500')" class="w-full text-left px-3 py-1.5 text-xs hover:bg-slate-50 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Flagged</button>
+            <button onclick="setStatus('Approved', 'bg-emerald-500')" class="w-full text-left px-3 py-1.5 text-xs hover:bg-slate-50 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Approved</button>
+            <button onclick="setStatus('Signed-off', 'bg-indigo-600')" class="w-full text-left px-3 py-1.5 text-xs hover:bg-slate-50 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-600"></span>Signed-off</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN WORKFLOW CONTAINER ==================== -->
+  <main class="flex-1 flex overflow-hidden relative">
+
+    <!-- VIEW 1: REVIEW CELLS (Active by default, 3-panel layout) -->
+    <section id="view-review" class="flex-1 flex h-full w-full overflow-hidden">
+      
+      <!-- LEFT PANEL: DIFFERENTIAL SIDEBAR -->
+      <aside class="w-64 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-full text-slate-800 text-xs overflow-hidden select-none">
+        <!-- Quick search -->
+        <div class="p-2 border-b border-slate-100 bg-slate-50/70">
+          <input type="text" id="diff-search" placeholder="Buscar célula o tipo..." onkeyup="filterDifferential()" class="w-full px-2 py-1 text-xs bg-white border border-slate-200 rounded-sm focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <!-- Differential Tables -->
+        <div class="flex-1 overflow-y-auto divide-y divide-slate-100">
+          <div>
+            <div class="px-3 py-2 font-semibold text-slate-700 bg-slate-50/90 border-b border-slate-200/60 sticky top-0 z-10 flex justify-between">
+              <span>Nucleated - differential - 500</span>
+            </div>
+            <div class="grid grid-cols-12 px-3 py-1 text-[11px] font-medium text-slate-400 border-b border-slate-100 uppercase">
+              <div class="col-span-6">Name</div>
+              <div class="col-span-3 text-right">Count</div>
+              <div class="col-span-2 text-right">%</div>
+              <div class="col-span-1 text-center">Seen</div>
+            </div>
+            <!-- Rows -->
+            <div id="diff-rows" class="divide-y divide-slate-50">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <div class="pb-4">
+            <div class="px-3 py-1.5 font-semibold text-slate-700 bg-slate-50/90 border-y border-slate-200/60 sticky top-0 z-10">
+              <span>Additional cells - 26</span>
+            </div>
+            <div class="grid grid-cols-12 px-3 py-1 text-[11px] font-medium text-slate-400 border-b border-slate-100 uppercase">
+              <div class="col-span-8">Name</div>
+              <div class="col-span-3 text-right">Count</div>
+              <div class="col-span-1 text-center">Seen</div>
+            </div>
+            <div id="additional-diff-rows" class="divide-y divide-slate-50">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Add comment footer -->
+        <button onclick="openCommentsModal()" class="h-10 px-3 bg-slate-50 border-t border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-between text-xs font-medium cursor-pointer">
+          <div class="flex items-center gap-2">
+            <span>💬</span>
+            <span>Click here to add comment</span>
+          </div>
+          <span class="w-4 h-4 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold flex items-center justify-center">1</span>
+        </button>
+      </aside>
+
+      <!-- CENTER PANEL: CELL GALLERY ("BOTONERA") -->
+      <section id="panel-gallery" class="flex-1 flex flex-col h-full bg-[#303338] text-white overflow-hidden border-r border-slate-700">
+        <!-- Gallery Header -->
+        <div class="px-4 py-2.5 bg-[#282b30] border-b border-slate-700 flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base font-semibold tracking-wide text-white flex items-center gap-2">
+              <span id="selected-category-title">Promyelocyte</span>
+              <span id="selected-category-badge" class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 font-normal">42 visibles</span>
+            </h2>
+          </div>
+          <div class="flex items-center gap-6 text-xs">
+            <div class="text-right">
+              <span class="text-slate-400 mr-2 text-[11px]">Total count / percentage</span>
+              <span id="gallery-total-count" class="font-mono font-semibold text-white">343 / 68.6%</span>
+            </div>
+            <div class="text-right pl-4 border-l border-slate-700">
+              <span class="text-slate-400 mr-2 text-[11px]">Total abnormal count / percentage</span>
+              <span class="font-mono font-semibold text-amber-400">0 / 0%</span>
+            </div>
+            <!-- Column Density Switcher -->
+            <div class="flex items-center bg-slate-800 rounded-sm border border-slate-700 p-0.5 ml-2">
+              <button onclick="setGridColumns(4)" id="col-btn-4" class="px-2 py-0.5 text-xs font-mono rounded-xs text-slate-400 hover:text-white">4</button>
+              <button onclick="setGridColumns(6)" id="col-btn-6" class="px-2 py-0.5 text-xs font-mono rounded-xs bg-indigo-600 text-white">6</button>
+              <button onclick="setGridColumns(8)" id="col-btn-8" class="px-2 py-0.5 text-xs font-mono rounded-xs text-slate-400 hover:text-white">8</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subheader Instructions & Reclassification Dropdown -->
+        <div class="px-4 py-1.5 bg-[#23262a] border-b border-slate-800 flex items-center justify-between text-xs text-slate-300">
+          <span class="text-slate-400 text-[11px]">Botonera morfológica digital: clic para centrar en el frotis o doble clic para ampliar.</span>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-indigo-300">Reclasificar celda seleccionada:</span>
+            <select id="reclassify-select" onchange="reclassifySelectedCell(this.value)" class="bg-slate-800 text-white border border-slate-600 rounded-xs px-2 py-0.5 text-xs focus:outline-none">
+              <option value="Promyelocyte">Promyelocyte</option>
+              <option value="Blast">Blast</option>
+              <option value="Myelocyte">Myelocyte</option>
+              <option value="Metamyelocyte">Metamyelocyte</option>
+              <option value="Band Neutrophil">Band Neutrophil</option>
+              <option value="Segmented Neutrophil">Segmented Neutrophil</option>
+              <option value="Lymphocyte">Lymphocyte</option>
+              <option value="Artifact">Artifact</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- The Micrograph Grid (Botonera) -->
+        <div class="flex-1 overflow-y-auto p-2 bg-[#2d3035]" id="gallery-grid-container">
+          <div id="cells-grid" class="grid grid-cols-6 gap-1.5">
+            <!-- Rendered dynamically via JavaScript -->
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL: INTERACTIVE VIRTUAL MICROSCOPE SLIDE VIEWER -->
+      <section id="panel-slide" class="flex-1 relative h-full bg-[#e8d5df] overflow-hidden cursor-grab active:cursor-grabbing select-none">
+        
+        <!-- Interactive Slide Container (Pan & Zoom) -->
+        <div id="slide-canvas" class="absolute left-0 top-0 w-[1400px] h-[900px] origin-top-left transition-transform duration-75">
+          <div class="relative w-full h-full bg-[#efd7e3] overflow-hidden shadow-2xl">
+            <!-- Stained red blood cells SVG background pattern -->
+            <svg class="w-full h-full absolute inset-0 opacity-85 pointer-events-none">
+              <defs>
+                <pattern id="rbc-pat" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <circle cx="10" cy="10" r="7" fill="#df97ab" stroke="#cc778e" stroke-width="0.8" />
+                  <circle cx="10" cy="10" r="3" fill="#ecd0d8" />
+                  <circle cx="30" cy="12" r="7.2" fill="#e29db0" stroke="#cf7e94" stroke-width="0.8" />
+                  <circle cx="30" cy="12" r="3.2" fill="#eed3db" />
+                  <circle cx="12" cy="30" r="6.8" fill="#dd92a7" stroke="#cb728a" stroke-width="0.8" />
+                  <circle cx="12" cy="30" r="2.9" fill="#eaccd5" />
+                  <circle cx="32" cy="32" r="7" fill="#e09aa9" stroke="#ce7b90" stroke-width="0.8" />
+                  <circle cx="32" cy="32" r="3" fill="#ebd2dc" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#rbc-pat)" />
+            </svg>
+
+            <!-- Interactive cell markers on the slide -->
+            <div id="slide-markers-container" class="absolute inset-0">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Interactive On-Screen Ruler Caliper Reticle -->
+            <div id="standalone-ruler-reticle" class="hidden absolute cursor-move z-30 select-none group" style="left: 50%; top: 50%; transform: translate(-50%, -50%);">
+              <div class="relative flex items-center justify-center">
+                <div id="standalone-ruler-shape" class="rounded-full border-2 border-indigo-600 bg-indigo-500/15 shadow-sm flex items-center justify-center relative w-12 h-12">
+                  <div class="w-1.5 h-1.5 rounded-full bg-indigo-700"></div>
+                  <div class="absolute inset-x-0 top-1/2 h-px bg-indigo-600/40"></div>
+                  <div class="absolute inset-y-0 left-1/2 w-px bg-indigo-600/40"></div>
+                </div>
+                <div id="standalone-ruler-tag" class="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-[10px] font-mono font-semibold px-2 py-0.5 rounded-sm shadow-md whitespace-nowrap pointer-events-none">
+                  ⌀ 18 µm
+                </div>
+              </div>
+            </div>
+
+            <!-- HPF Grid Overlay (Toggleable) -->
+            <div id="hpf-grid-overlay" class="hidden absolute inset-0 pointer-events-none grid grid-cols-12 grid-rows-8 divide-x divide-y divide-indigo-500/30">
+              <!-- 96 squares -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating White Visor Toolbar -->
+        <div class="absolute top-3 left-4 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-slate-200/90 shadow-md rounded-sm px-1.5 py-1">
+          <!-- Ruler tool with exact Visor Dropdown menu -->
+          <span title="Ruler" class="relative">
+            <div class="MuiBox-root-9 jss1036 sc-iwyWTf kqlMG">
+              <button id="btn-ruler" onclick="toggleRulerDropdown()" class="MuiButtonBase-root-50 MuiButton-root-23 MuiButton-text-25 sc-bBXrwG cARHXX p-1.5 rounded-xs flex items-center gap-1 text-xs transition-colors cursor-pointer text-slate-700 hover:bg-slate-100" data-sl-test="sv-toolbar-rulerButton">
+                <div class="flex items-center gap-1">
+                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M1.39,18.36L3.16,16.6L4.58,18L5.64,16.95L4.22,15.54L5.64,14.12L8.11,16.6L9.17,15.54L6.7,13.06L8.11,11.65L9.53,13.06L10.59,12L9.17,10.59L10.59,9.17L13.06,11.65L14.12,10.59L11.65,8.11L13.06,6.7L14.47,8.11L15.54,7.05L14.12,5.64L15.54,4.22L18,6.7L19.07,5.64L16.6,3.16L18.36,1.39L22.61,5.64L5.64,22.61L1.39,18.36Z"/></svg>
+                  <span id="ruler-btn-label" class="text-[11px] font-medium hidden sm:inline">Regla</span>
+                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M7,10L12,15L17,10H7Z"/></svg>
+                </div>
+              </button>
+            </div>
+
+            <!-- Exact Visor Popover Menu -->
+            <div id="ruler-dropdown-menu" class="MuiPaper-root-73 MuiMenu-paper-61 MuiPopover-paper-64 MuiPaper-elevation8-84 MuiPaper-rounded-74 hidden absolute top-full left-0 mt-1 z-50 bg-white rounded-sm shadow-xl border border-slate-200 py-1 w-32 animate-in fade-in" tabindex="-1">
+              <ul class="MuiList-root-460 MuiMenu-list-62 MuiList-padding-461 text-xs text-slate-800 font-medium" role="menu">
+                <li onclick="setRulerMode('NONE')" class="px-3 py-1.5 hover:bg-slate-100 cursor-pointer flex items-center justify-between" data-sl-test="option:none" role="menuitem">
+                  <div class="MuiBox-root-9 jss475">NONE</div>
+                </li>
+                <li onclick="setRulerMode('LINE')" class="px-3 py-1.5 hover:bg-slate-100 cursor-pointer flex items-center justify-between" data-sl-test="option:line" role="menuitem">
+                  <div class="MuiBox-root-9 jss476">LINE</div>
+                </li>
+                <li onclick="setRulerMode('CROSS')" class="px-3 py-1.5 hover:bg-slate-100 cursor-pointer flex items-center justify-between" data-sl-test="option:cross" role="menuitem">
+                  <div class="MuiBox-root-9 jss477">CROSS</div>
+                </li>
+                <li onclick="setRulerMode('CIRCLE')" class="px-3 py-1.5 hover:bg-slate-100 cursor-pointer flex items-center justify-between" data-sl-test="option:circle" role="menuitem">
+                  <div class="MuiBox-root-9 jss478">CIRCLE</div>
+                </li>
+              </ul>
+            </div>
+          </span>
+
+          <button id="btn-hpf" onclick="toggleHpfGrid()" class="p-1.5 rounded-xs flex items-center gap-1 text-xs text-slate-700 hover:bg-slate-100 transition-colors" title="Rejilla de campo HPF">
+            <span>⊞</span> <span class="font-medium hidden sm:inline">HPF Grid</span>
+          </button>
+          <!-- Magnification presets -->
+          <div class="flex items-center border-l border-r border-slate-200 px-1 mx-0.5 gap-0.5">
+            <button onclick="setMagnification(10)" class="mag-btn px-1.5 py-0.5 text-xs font-mono font-medium rounded-xs text-slate-600 hover:bg-slate-100">10x</button>
+            <button onclick="setMagnification(20)" class="mag-btn px-1.5 py-0.5 text-xs font-mono font-medium rounded-xs text-slate-600 hover:bg-slate-100">20x</button>
+            <button onclick="setMagnification(40)" class="mag-btn px-1.5 py-0.5 text-xs font-mono font-medium rounded-xs bg-indigo-600 text-white">40x</button>
+            <button onclick="setMagnification(100)" class="mag-btn px-1.5 py-0.5 text-xs font-mono font-medium rounded-xs text-slate-600 hover:bg-slate-100">100x</button>
+          </div>
+          <!-- Zoom in / out / reset -->
+          <div class="flex items-center gap-0.5 pl-1 border-l border-slate-200">
+            <button onclick="zoomSlide(0.8)" class="p-1.5 text-slate-700 hover:bg-slate-100 rounded-xs" title="Alejar (-)">−</button>
+            <button onclick="zoomSlide(1.25)" class="p-1.5 text-slate-700 hover:bg-slate-100 rounded-xs" title="Acercar (+)">+</button>
+            <button onclick="resetSlidePosition()" class="p-1.5 text-slate-700 hover:bg-slate-100 rounded-xs" title="Restablecer posición">🏠</button>
+          </div>
+        </div>
+
+        <!-- Visor Ruler Overlay Bar (sc-bqyKOL kbpeIU) with Size Slider & Recenter Button -->
+        <div id="ruler-overlay-bar" class="sc-bqyKOL kbpeIU hidden absolute top-14 left-4 z-20 flex items-center gap-4 bg-white/95 backdrop-blur-sm border border-slate-200/90 shadow-md rounded-sm px-4 py-2 select-none w-80 sm:w-96 animate-in fade-in slide-in-from-top-1">
+          <svg class="MuiSvgIcon-root-397 w-5 h-5 fill-slate-700 flex-shrink-0" focusable="false" viewBox="0 0 24 24" aria-hidden="true" style="margin-right: 1rem;">
+            <path d="M1.39,18.36L3.16,16.6L4.58,18L5.64,16.95L4.22,15.54L5.64,14.12L8.11,16.6L9.17,15.54L6.7,13.06L8.11,11.65L9.53,13.06L10.59,12L9.17,10.59L10.59,9.17L13.06,11.65L14.12,10.59L11.65,8.11L13.06,6.7L14.47,8.11L15.54,7.05L14.12,5.64L15.54,4.22L18,6.7L19.07,5.64L16.6,3.16L18.36,1.39L22.61,5.64L5.64,22.61L1.39,18.36Z"></path>
+          </svg>
+          <div class="flex-1 flex flex-col justify-center">
+            <div class="relative flex items-center">
+              <input type="range" id="standalone-ruler-slider" min="5" max="20" step="1" value="18" oninput="updateStandaloneRulerSize(this.value)" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#4D58A4]" data-sl-test="sv-rulerOverlay-sizeSlider">
+            </div>
+            <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+              <span>5μm</span>
+              <span>10μm</span>
+              <span>15μm</span>
+              <span class="text-[#4D58A4] font-bold">20μm</span>
+            </div>
+          </div>
+          <span title="Recenter ruler">
+            <button onclick="recenterStandaloneRuler()" class="MuiButtonBase-root-448 MuiIconButton-root-440 p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors cursor-pointer" type="button" data-sl-test="sv-rulerOverlay-recenterRulerButton">
+              <svg class="MuiSvgIcon-root-397 w-5 h-5 fill-current" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8C8.44 8 6.65 12.31 9.17 14.83C11.69 17.35 16 15.56 16 12C16 9.79 14.21 8 12 8M5 15H3V19C3 20.1 3.9 21 5 21H9V19H5M5 5H9V3H5C3.9 3 3 3.9 3 5V9H5M19 3H15V5H19V9H21V5C21 3.9 20.1 3 19 3M19 19H15V21H19C20.1 21 21 20.1 21 19V15H19"></path></svg>
+            </button>
+          </span>
+        </div>
+
+        <!-- Top Right Slide Navigator (Minimap) -->
+        <div class="absolute top-3 right-4 z-20 bg-white/95 backdrop-blur-sm border border-slate-300 rounded-sm shadow-md p-1.5">
+          <div class="text-[10px] font-semibold text-slate-500 mb-1 flex justify-between">
+            <span>PORTAOBJETOS (SLIDE)</span>
+            <span id="minimap-zoom-label" class="font-mono text-indigo-600">40x</span>
+          </div>
+          <div id="minimap-box" onclick="panToMinimapClick(event)" class="relative w-[120px] h-[160px] bg-[#d8b8ca] border border-slate-300 rounded-xs overflow-hidden cursor-pointer">
+            <div class="absolute top-0 inset-x-0 h-4 bg-white/80 border-b border-slate-300 flex items-center px-1 text-[8px] font-mono text-slate-600">SCP-16532</div>
+            <div class="absolute inset-x-2 top-6 bottom-4 rounded-full bg-[#af5d85]/40 blur-[1px]"></div>
+            <div id="minimap-locator" class="absolute border-2 border-indigo-600 rounded-xs bg-indigo-500/20 shadow-xs pointer-events-none" style="left: 25px; top: 35px; width: 60px; height: 40px;"></div>
+          </div>
+        </div>
+
+        <!-- Dynamic Scale Bar (Bottom Left) -->
+        <div class="absolute bottom-3 left-4 z-20 bg-white/90 backdrop-blur-sm border border-slate-200 px-3 py-1.5 rounded-sm shadow-sm flex flex-col items-center">
+          <div id="scale-line" class="h-1 bg-slate-900 border-x-2 border-slate-900 w-[110px] mb-1"></div>
+          <span id="scale-label" class="text-[11px] font-mono font-semibold text-slate-800">50 µm</span>
+        </div>
+
+        <!-- Scan Info Drawer Toggle (Bottom Right) -->
+        <div class="absolute bottom-3 right-4 z-20 flex flex-col items-end gap-2">
+          <div id="scan-info-drawer" class="hidden w-60 bg-slate-900/95 text-white border border-slate-700 rounded-md p-3 shadow-xl text-xs space-y-1.5">
+            <div class="flex justify-between border-b border-slate-700 pb-1 font-semibold text-indigo-300">
+              <span>Metadatos del Escaneo</span>
+              <button onclick="document.getElementById('scan-info-drawer').classList.add('hidden')" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div class="flex justify-between"><span class="text-slate-400">Fecha:</span><span>04/05/2023 13:47</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Área:</span><span>2.27 cm²</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Escáner:</span><span>Visor X100HT</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Tinción:</span><span>Wright-Giemsa</span></div>
+          </div>
+          <button onclick="document.getElementById('scan-info-drawer').classList.toggle('hidden')" class="p-2 rounded-full bg-white text-slate-700 shadow-md border border-slate-200 hover:bg-slate-100" title="Información del escaneo">ℹ️</button>
+        </div>
+      </section>
+    </section>
+
+    <!-- VIEW 2: REPORT TAB -->
+    <section id="view-report" class="hidden flex-1 bg-slate-100 overflow-y-auto p-6 flex justify-center">
+      <div class="w-full max-w-4xl bg-white shadow-lg border border-slate-200 rounded-sm p-8 text-slate-800 space-y-6">
+        <div class="flex items-center justify-between border-b-2 border-[#4D58A4] pb-4">
+          <div>
+            <h1 class="text-xl font-bold tracking-tight text-slate-900">INFORME DE MORFOLOGÍA HEMATOLÓGICA DIGITAL</h1>
+            <p class="text-xs text-slate-500 font-mono">Sistema Visor Full-Field Digital Morphology Analyzer</p>
+          </div>
+          <button onclick="window.print()" class="px-4 py-2 bg-[#4D58A4] text-white rounded-sm text-xs font-semibold">Imprimir / Guardar PDF</button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-sm text-xs">
+          <div><span class="text-slate-400 block font-medium">Paciente</span><span class="font-semibold text-slate-900 text-sm">John Doe</span></div>
+          <div><span class="text-slate-400 block font-medium">Edad / Sexo</span><span class="font-semibold text-slate-800">54 años / Masculino</span></div>
+          <div><span class="text-slate-400 block font-medium">Caso</span><span class="font-mono font-semibold text-indigo-700">CASE 165321454</span></div>
+          <div><span class="text-slate-400 block font-medium">Fecha</span><span class="font-mono text-slate-700">04/05/2023 13:47</span></div>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">Fórmula Leucocitaria Digital (500 Células Nucleadas)</h2>
+          <table class="w-full text-left text-xs border border-slate-200">
+            <thead class="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+              <tr><th class="p-2">Célula</th><th class="p-2 text-right">Recuento</th><th class="p-2 text-right">%</th><th class="p-2 text-right">Referencia</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-mono">
+              <tr class="bg-amber-50/70 font-semibold"><td class="p-2 font-sans">Promyelocyte</td><td class="p-2 text-right">343</td><td class="p-2 text-right text-indigo-700 font-bold">68.6%</td><td class="p-2 text-right text-slate-500">0 - 4%</td></tr>
+              <tr class="bg-amber-50/70 font-semibold"><td class="p-2 font-sans">Blast</td><td class="p-2 text-right">110</td><td class="p-2 text-right text-indigo-700 font-bold">22.0%</td><td class="p-2 text-right text-slate-500">0 - 2%</td></tr>
+              <tr><td class="p-2 font-sans">Myelocyte</td><td class="p-2 text-right">5</td><td class="p-2 text-right">1.0%</td><td class="p-2 text-right text-slate-500">5 - 20%</td></tr>
+              <tr><td class="p-2 font-sans">Lymphocyte</td><td class="p-2 text-right">12</td><td class="p-2 text-right">2.4%</td><td class="p-2 text-right text-slate-500">5 - 15%</td></tr>
+              <tr><td class="p-2 font-sans">Monocyte</td><td class="p-2 text-right">11</td><td class="p-2 text-right">2.2%</td><td class="p-2 text-right text-slate-500">1 - 3%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3 class="text-xs font-bold text-slate-700 uppercase mb-1">Juicio Clínico y Diagnóstico</h3>
+          <p class="text-xs text-slate-700 bg-slate-50 p-3 rounded-sm border border-slate-200 leading-relaxed">
+            Médula ósea marcadamente hipercelular con predominio de promielocitos anómalos hipergranulares (68.6%) y blastos mieloides (22.0%), compatible con Leucemia Promielocítica Aguda (LPA / FAB M3).
+          </p>
+        </div>
+        <div class="pt-4 border-t border-slate-200 flex justify-between items-center text-xs">
+          <span class="text-emerald-700 font-semibold">✓ Validado por Patología Digital</span>
+          <span class="font-mono text-slate-500">Hash SHA-256: 44acfbaa-341a-4154-b813-d4412f2154b4</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: SPECIMEN QUALITY -->
+    <section id="view-quality" class="hidden flex-1 bg-slate-100 overflow-y-auto p-6 flex justify-center">
+      <div class="w-full max-w-4xl bg-white shadow-lg border border-slate-200 rounded-sm p-6 space-y-4">
+        <h2 class="text-base font-bold text-slate-900">EVALUACIÓN AUTOMATIZADA DE CALIDAD (SPECIMEN QUALITY)</h2>
+        <div class="grid grid-cols-2 gap-4 text-xs">
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-sm"><strong class="block text-indigo-700 text-sm">98.4%</strong> Calidad de Tinción Romanowsky</div>
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-sm"><strong class="block text-indigo-700 text-sm">96.1%</strong> Distribución de Monocapa</div>
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-sm"><strong class="block text-indigo-700 text-sm">99.2%</strong> Enfoque Z-Stack Óptimo</div>
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-sm"><strong class="block text-indigo-700 text-sm">95.8%</strong> Integridad Morfológica de Leucocitos</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== CELL DETAIL MODAL (HIGH MAGNIFICATION) ==================== -->
+  <div id="cell-detail-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-[#24272c] text-white border border-slate-700 w-full max-w-xl rounded-lg shadow-2xl overflow-hidden">
+      <div class="p-4 bg-[#1e2024] border-b border-slate-700 flex justify-between items-center">
+        <h3 class="font-bold text-sm">Inspección Morfológica 100x • Célula #<span id="modal-cell-id">295</span></h3>
+        <button onclick="document.getElementById('cell-detail-modal').classList.add('hidden')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <div class="p-6 grid grid-cols-2 gap-6 text-xs">
+        <div id="modal-cell-render" class="w-48 h-48 rounded-md overflow-hidden border-2 border-indigo-500 bg-slate-900 mx-auto"></div>
+        <div class="space-y-3">
+          <div><span class="text-slate-400 block text-[11px]">Tipo Celular:</span><strong id="modal-cell-type" class="text-base text-indigo-300">Promyelocyte</strong></div>
+          <div class="p-2.5 bg-slate-800 rounded border border-slate-700 space-y-1">
+            <div class="flex justify-between"><span class="text-slate-400">Diámetro:</span><span>18.5 µm</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Cromatina:</span><span>Fina con nucleolo</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Granulaciones:</span><span>Azurófilas primarias</span></div>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">Reclasificar como:</label>
+            <select id="modal-reclassify-select" class="w-full bg-slate-800 text-white border border-slate-600 rounded px-2 py-1">
+              <option value="Promyelocyte">Promyelocyte</option>
+              <option value="Blast">Blast</option>
+              <option value="Myelocyte">Myelocyte</option>
+              <option value="Lymphocyte">Lymphocyte</option>
+            </select>
+          </div>
+          <button onclick="saveModalReclassification()" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded">Guardar Cambio</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VANILLA JAVASCRIPT LOGIC ==================== -->
+  <script>
+    // State
+    const differentialData = [
+      { name: 'Blast', count: 110, percentage: 22.0, seen: true },
+      { name: 'Promyelocyte', count: 343, percentage: 68.6, seen: true },
+      { name: 'Myelocyte', count: 5, percentage: 1.0, seen: true },
+      { name: 'Metamyelocyte', count: 1, percentage: 0.2, seen: true },
+      { name: 'Band Neutrophil', count: 1, percentage: 0.2, seen: true },
+      { name: 'Segmented Neutrophil', count: 1, percentage: 0.2, seen: true },
+      { name: 'Pro Eosinophil', count: 0, percentage: 0.0, seen: false },
+      { name: 'Eosinophil', count: 3, percentage: 0.6, seen: true },
+      { name: 'Basophil', count: 6, percentage: 1.2, seen: true },
+      { name: 'Mast Cell', count: 0, percentage: 0.0, seen: false },
+      { name: 'Monocyte', count: 11, percentage: 2.2, seen: true },
+      { name: 'Lymphocyte', count: 12, percentage: 2.4, seen: true },
+      { name: 'Plasma Cell', count: 1, percentage: 0.2, seen: true },
+      { name: 'Erythroblast', count: 1, percentage: 0.2, seen: true },
+      { name: 'Basophilic Normoblast', count: 1, percentage: 0.2, seen: true },
+      { name: 'Polychromatophilic Normoblast', count: 2, percentage: 0.4, seen: true },
+      { name: 'Normoblast', count: 2, percentage: 0.4, seen: true }
+    ];
+
+    const additionalData = [
+      { name: 'Macrophage', count: 0, seen: false },
+      { name: 'Megakaryocyte', count: 6, seen: true },
+      { name: 'Candidate', count: 20, seen: true },
+      { name: 'Artifact', count: 0, seen: false }
+    ];
+
+    // Generate 42 cells (#295 - #336)
+    let cellsList = [];
+    for (let i = 295; i <= 336; i++) {
+      cellsList.push({
+        id: i,
+        category: 'Promyelocyte',
+        name: 'Promyelocyte',
+        x: 35 + ((i * 13) % 45),
+        y: 25 + ((i * 17) % 50),
+        confidence: 0.96 + ((i % 5) * 0.008)
+      });
+    }
+
+    let selectedCategory = 'Promyelocyte';
+    let selectedCellId = 295;
+    let slideZoom = 40;
+    let slidePan = { x: -160, y: -70 };
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+    let rulerActive = false;
+
+    // Render Differential Sidebar rows
+    function renderDifferential() {
+      const rowsContainer = document.getElementById('diff-rows');
+      rowsContainer.innerHTML = '';
+      differentialData.forEach(item => {
+        const isSel = item.name === selectedCategory;
+        const row = document.createElement('div');
+        row.className = `grid grid-cols-12 px-3 py-1.5 items-center cursor-pointer transition-colors ${isSel ? 'bg-indigo-50 text-indigo-900 font-semibold' : 'hover:bg-slate-50 text-slate-700'}`;
+        row.onclick = () => selectCategory(item.name);
+        row.innerHTML = `
+          <div class="col-span-6 truncate">${item.name}</div>
+          <div class="col-span-3 text-right font-mono">${item.count}</div>
+          <div class="col-span-2 text-right font-mono text-slate-600">${item.percentage}%</div>
+          <div class="col-span-1 flex justify-center text-emerald-600">${item.seen ? '✓' : ''}</div>
+        `;
+        rowsContainer.appendChild(row);
+      });
+
+      const addContainer = document.getElementById('additional-diff-rows');
+      addContainer.innerHTML = '';
+      additionalData.forEach(item => {
+        const isSel = item.name === selectedCategory;
+        const row = document.createElement('div');
+        row.className = `grid grid-cols-12 px-3 py-1.5 items-center cursor-pointer transition-colors ${isSel ? 'bg-indigo-50 text-indigo-900 font-semibold' : 'hover:bg-slate-50 text-slate-700'}`;
+        row.onclick = () => selectCategory(item.name);
+        row.innerHTML = `
+          <div class="col-span-8 truncate">${item.name}</div>
+          <div class="col-span-3 text-right font-mono">${item.count}</div>
+          <div class="col-span-1 flex justify-center text-emerald-600">${item.seen ? '✓' : ''}</div>
+        `;
+        addContainer.appendChild(row);
+      });
+    }
+
+    // Render Cell Micrograph Tiles
+    function renderGallery() {
+      const grid = document.getElementById('cells-grid');
+      grid.innerHTML = '';
+      const visible = cellsList.filter(c => c.category === selectedCategory);
+      document.getElementById('selected-category-badge').textContent = `${visible.length} visibles`;
+
+      visible.forEach(cell => {
+        const isSel = cell.id === selectedCellId;
+        const tile = document.createElement('div');
+        tile.className = `relative cursor-pointer aspect-square rounded-xs overflow-hidden transition-transform ${isSel ? 'ring-3 ring-indigo-500 scale-[1.03] z-10' : 'hover:ring-1 hover:ring-white/40'}`;
+        tile.onclick = () => selectCell(cell.id);
+        tile.ondblclick = () => openCellDetailModal(cell);
+
+        tile.innerHTML = `
+          <svg viewBox="0 0 72 72" class="w-full h-full bg-[#d9b6c9]">
+            <ellipse cx="36" cy="36" rx="28" ry="26" fill="#8590c2" opacity="0.94" />
+            <circle cx="36" cy="36" r="19" fill="#341f54" />
+            <circle cx="32" cy="33" r="3" fill="#674b8c" opacity="0.6" />
+            <circle cx="26" cy="24" r="1.5" fill="#331649" />
+            <circle cx="48" cy="46" r="1.5" fill="#331649" />
+            <circle cx="46" cy="26" r="1.5" fill="#331649" />
+          </svg>
+          <div class="absolute top-0.5 left-0.5 text-[9px] font-mono font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">${cell.id}</div>
+        `;
+        grid.appendChild(tile);
+      });
+    }
+
+    // Render Slide cell markers
+    function renderSlideMarkers() {
+      const container = document.getElementById('slide-markers-container');
+      container.innerHTML = '';
+      cellsList.forEach(cell => {
+        const isSel = cell.id === selectedCellId;
+        const marker = document.createElement('div');
+        marker.style.left = `${cell.x}%`;
+        marker.style.top = `${cell.y}%`;
+        marker.className = `absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer`;
+        marker.onclick = (e) => {
+          e.stopPropagation();
+          selectCell(cell.id);
+        };
+        marker.innerHTML = `
+          <div class="relative w-12 h-12 flex items-center justify-center">
+            <div class="w-10 h-10 rounded-full bg-[#707ea6]/90 border border-[#526087] flex items-center justify-center">
+              <div class="w-6 h-6 rounded-full bg-[#2c1448]"></div>
+            </div>
+            <div class="absolute -inset-1 rounded-full ${isSel ? 'border-2 border-indigo-600 ring-4 ring-indigo-400/50 animate-pulse' : 'border border-dashed border-indigo-400 opacity-60'}"></div>
+          </div>
+        `;
+        container.appendChild(marker);
+      });
+    }
+
+    // Select Cell
+    function selectCell(id) {
+      selectedCellId = id;
+      renderGallery();
+      renderSlideMarkers();
+      const cell = cellsList.find(c => c.id === id);
+      if (cell) {
+        document.getElementById('reclassify-select').value = cell.category;
+        // Center slide on cell
+        slidePan.x = 200 - (cell.x / 100) * 1400 * (slideZoom / 25);
+        slidePan.y = 150 - (cell.y / 100) * 900 * (slideZoom / 25);
+        updateSlideTransform();
+      }
+    }
+
+    // Select Category
+    function selectCategory(catName) {
+      selectedCategory = catName;
+      document.getElementById('selected-category-title').textContent = catName;
+      const cat = differentialData.find(d => d.name === catName);
+      if (cat) {
+        document.getElementById('gallery-total-count').textContent = `${cat.count} / ${cat.percentage}%`;
+      }
+      renderDifferential();
+      renderGallery();
+    }
+
+    // Reclassify
+    function reclassifySelectedCell(newCat) {
+      const cell = cellsList.find(c => c.id === selectedCellId);
+      if (cell) {
+        cell.category = newCat;
+        cell.name = newCat;
+        renderGallery();
+        renderSlideMarkers();
+      }
+    }
+
+    // Pan & Zoom handlers
+    const slideCanvas = document.getElementById('slide-canvas');
+    const slidePanel = document.getElementById('panel-slide');
+
+    slidePanel.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      dragStart.x = e.clientX - slidePan.x;
+      dragStart.y = e.clientY - slidePan.y;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      slidePan.x = e.clientX - dragStart.x;
+      slidePan.y = e.clientY - dragStart.y;
+      updateSlideTransform();
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    slidePanel.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.15 : 0.85;
+      slideZoom = Math.min(100, Math.max(5, slideZoom * factor));
+      updateSlideTransform();
+    });
+
+    function updateSlideTransform() {
+      slideCanvas.style.transform = `translate(${slidePan.x}px, ${slidePan.y}px) scale(${slideZoom / 25})`;
+      document.getElementById('minimap-zoom-label').textContent = `${Math.round(slideZoom)}x`;
+      // Update minimap locator
+      const locator = document.getElementById('minimap-locator');
+      locator.style.left = `${Math.max(0, Math.min(80, -slidePan.x / 25))}px`;
+      locator.style.top = `${Math.max(0, Math.min(110, -slidePan.y / 25))}px`;
+      // Update scale bar
+      document.getElementById('scale-label').textContent = slideZoom >= 40 ? '20 µm' : slideZoom >= 20 ? '50 µm' : '100 µm';
+    }
+
+    function zoomSlide(multiplier) {
+      slideZoom = Math.min(100, Math.max(5, slideZoom * multiplier));
+      updateSlideTransform();
+    }
+
+    function resetSlidePosition() {
+      slideZoom = 40;
+      slidePan = { x: -160, y: -70 };
+      updateSlideTransform();
+    }
+
+    function setMagnification(mag) {
+      slideZoom = mag;
+      document.querySelectorAll('.mag-btn').forEach(btn => {
+        btn.className = btn.textContent === `${mag}x` ? 'mag-btn px-1.5 py-0.5 text-xs font-mono font-medium rounded-xs bg-indigo-600 text-white' : 'mag-btn px-1.5 py-0.5 text-xs font-mono font-medium rounded-xs text-slate-600 hover:bg-slate-100';
+      });
+      updateSlideTransform();
+    }
+
+    function toggleHpfGrid() {
+      const grid = document.getElementById('hpf-grid-overlay');
+      grid.classList.toggle('hidden');
+    }
+
+    // Visor Ruler State & Handlers
+    let currentRulerMode = 'NONE';
+    let currentRulerSize = 18;
+    let rulerPos = { x: 50, y: 50 };
+    let isDraggingRuler = false;
+    let rulerDragOffset = { x: 0, y: 0 };
+
+    function toggleRulerDropdown() {
+      const menu = document.getElementById('ruler-dropdown-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    function setRulerMode(mode) {
+      currentRulerMode = mode;
+      const btn = document.getElementById('btn-ruler');
+      const label = document.getElementById('ruler-btn-label');
+      const overlayBar = document.getElementById('ruler-overlay-bar');
+      const reticle = document.getElementById('standalone-ruler-reticle');
+      const menu = document.getElementById('ruler-dropdown-menu');
+
+      menu.classList.add('hidden');
+
+      if (mode === 'NONE') {
+        btn.classList.remove('bg-[#4D58A4]', 'text-white');
+        btn.classList.add('text-slate-700');
+        label.textContent = 'Regla';
+        overlayBar.classList.add('hidden');
+        reticle.classList.add('hidden');
+      } else {
+        btn.classList.add('bg-[#4D58A4]', 'text-white');
+        btn.classList.remove('text-slate-700');
+        label.textContent = mode;
+        overlayBar.classList.remove('hidden');
+        reticle.classList.remove('hidden');
+        updateRulerShape();
+      }
+    }
+
+    function updateStandaloneRulerSize(val) {
+      currentRulerSize = Number(val);
+      updateRulerShape();
+    }
+
+    function updateRulerShape() {
+      const shape = document.getElementById('standalone-ruler-shape');
+      const tag = document.getElementById('standalone-ruler-tag');
+      if (!shape || !tag) return;
+
+      if (currentRulerMode === 'CIRCLE') {
+        shape.className = 'rounded-full border-2 border-indigo-600 bg-indigo-500/15 shadow-sm flex items-center justify-center relative hover:ring-2 hover:ring-indigo-400';
+        shape.style.width = `${currentRulerSize * 2.8}px`;
+        shape.style.height = `${currentRulerSize * 2.8}px`;
+        shape.innerHTML = `
+          <div class="w-1.5 h-1.5 rounded-full bg-indigo-700"></div>
+          <div class="absolute inset-x-0 top-1/2 h-px bg-indigo-600/40"></div>
+          <div class="absolute inset-y-0 left-1/2 w-px bg-indigo-600/40"></div>
+        `;
+        tag.textContent = `⌀ ${currentRulerSize} µm`;
+      } else if (currentRulerMode === 'CROSS') {
+        shape.className = 'relative flex items-center justify-center';
+        shape.style.width = `${currentRulerSize * 3.4}px`;
+        shape.style.height = `${currentRulerSize * 3.4}px`;
+        shape.innerHTML = `
+          <div class="absolute inset-x-0 top-1/2 h-0.5 bg-indigo-600 shadow-sm"></div>
+          <div class="absolute inset-y-0 left-1/2 w-0.5 bg-indigo-600 shadow-sm"></div>
+          <div class="w-2.5 h-2.5 rounded-full border border-indigo-600 bg-white/40"></div>
+        `;
+        tag.textContent = `CROSS: ${currentRulerSize} µm`;
+      } else if (currentRulerMode === 'LINE') {
+        shape.className = 'h-1 bg-indigo-600 border-x-4 border-indigo-800 relative shadow-sm flex items-center justify-center';
+        shape.style.width = `${currentRulerSize * 3.2}px`;
+        shape.style.height = '4px';
+        shape.innerHTML = '';
+        tag.textContent = `${currentRulerSize} µm`;
+      }
+    }
+
+    function recenterStandaloneRuler() {
+      const cell = cellsList.find(c => c.id === selectedCellId);
+      if (cell) {
+        rulerPos.x = cell.x;
+        rulerPos.y = cell.y;
+      } else {
+        rulerPos.x = 50;
+        rulerPos.y = 50;
+      }
+      const reticle = document.getElementById('standalone-ruler-reticle');
+      if (reticle) {
+        reticle.style.left = `${rulerPos.x}%`;
+        reticle.style.top = `${rulerPos.y}%`;
+      }
+    }
+
+    // Ruler reticle dragging
+    const reticleEl = document.getElementById('standalone-ruler-reticle');
+    if (reticleEl) {
+      reticleEl.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        isDraggingRuler = true;
+        rulerDragOffset.x = e.clientX;
+        rulerDragOffset.y = e.clientY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingRuler) return;
+        const dx = ((e.clientX - rulerDragOffset.x) / (1400 * (slideZoom / 25))) * 100;
+        const dy = ((e.clientY - rulerDragOffset.y) / (900 * (slideZoom / 25))) * 100;
+        rulerPos.x = Math.max(5, Math.min(95, rulerPos.x + dx));
+        rulerPos.y = Math.max(5, Math.min(95, rulerPos.y + dy));
+        reticleEl.style.left = `${rulerPos.x}%`;
+        reticleEl.style.top = `${rulerPos.y}%`;
+        rulerDragOffset.x = e.clientX;
+        rulerDragOffset.y = e.clientY;
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDraggingRuler = false;
+      });
+    }
+
+    // Modal
+    function openCellDetailModal(cell) {
+      document.getElementById('modal-cell-id').textContent = cell.id;
+      document.getElementById('modal-cell-type').textContent = cell.category;
+      document.getElementById('modal-cell-render').innerHTML = `
+        <svg viewBox="0 0 72 72" class="w-full h-full bg-[#d9b6c9]">
+          <ellipse cx="36" cy="36" rx="28" ry="26" fill="#8590c2" />
+          <circle cx="36" cy="36" r="20" fill="#341f54" />
+          <circle cx="31" cy="32" r="3.5" fill="#674b8c" opacity="0.7" />
+        </svg>
+      `;
+      document.getElementById('modal-reclassify-select').value = cell.category;
+      document.getElementById('cell-detail-modal').classList.remove('hidden');
+    }
+
+    function saveModalReclassification() {
+      const newCat = document.getElementById('modal-reclassify-select').value;
+      reclassifySelectedCell(newCat);
+      document.getElementById('cell-detail-modal').classList.add('hidden');
+    }
+
+    // Switch Tabs
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(b => {
+        b.className = 'nav-tab px-3.5 py-1.5 text-xs font-semibold tracking-wider rounded-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 uppercase';
+      });
+      document.getElementById(`tab-${tab}`).className = 'nav-tab px-3.5 py-1.5 text-xs font-semibold tracking-wider rounded-xs bg-indigo-600 text-white shadow-xs uppercase';
+
+      document.getElementById('view-review').classList.add('hidden');
+      document.getElementById('view-report').classList.add('hidden');
+      document.getElementById('view-quality').classList.add('hidden');
+
+      if (tab === 'review' || tab === 'fullfield' || tab === 'analysis') {
+        document.getElementById('view-review').classList.remove('hidden');
+      } else if (tab === 'report') {
+        document.getElementById('view-report').classList.remove('hidden');
+      } else if (tab === 'quality') {
+        document.getElementById('view-quality').classList.remove('hidden');
+      }
+    }
+
+    function setLayout(mode) {
+      const gallery = document.getElementById('panel-gallery');
+      const slide = document.getElementById('panel-slide');
+      gallery.classList.remove('hidden');
+      slide.classList.remove('hidden');
+
+      if (mode === 'grid') slide.classList.add('hidden');
+      if (mode === 'slide') gallery.classList.add('hidden');
+    }
+
+    function setGridColumns(cols) {
+      const grid = document.getElementById('cells-grid');
+      grid.className = `grid grid-cols-${cols} gap-1.5`;
+    }
+
+    function setStatus(status, colorClass) {
+      document.getElementById('status-text').textContent = status;
+      document.getElementById('status-dot').className = `w-2 h-2 rounded-full ${colorClass}`;
+      document.getElementById('status-dropdown').classList.add('hidden');
+    }
+
+    function selectCase(id, info, cat) {
+      document.getElementById('active-case-label').textContent = `CASE ${id}`;
+      document.getElementById('patient-info').textContent = info;
+      selectCategory(cat);
+      document.getElementById('cases-dropdown').classList.add('hidden');
+    }
+
+    // Image Adjustment Filter State
+    let filterValues = {
+      brightness: 100,
+      contrast: 100,
+      saturation: 100,
+      gamma: 100
+    };
+
+    function toggleImageProfilesPopover() {
+      const popover = document.getElementById('image-profiles-popover');
+      popover.classList.toggle('hidden');
+    }
+
+    function updateFilterSlider(type, val) {
+      filterValues[type] = Number(val);
+      const diff = Math.round(val - 100);
+      const label = document.getElementById(`label-${type}`);
+      if (label) {
+        label.textContent = `${diff >= 0 ? (diff === 0 ? '0%' : `+${diff}%`) : `${diff}%`}`;
+      }
+      applyImageFilters();
+    }
+
+    function resetFilterSliders() {
+      filterValues = { brightness: 100, contrast: 100, saturation: 100, gamma: 100 };
+      ['brightness', 'contrast', 'saturation', 'gamma'].forEach(type => {
+        const slider = document.getElementById(`slider-${type}`);
+        const label = document.getElementById(`label-${type}`);
+        if (slider) slider.value = 100;
+        if (label) label.textContent = '0%';
+      });
+      applyImageFilters();
+    }
+
+    function applyImageFilters() {
+      const filterStr = `brightness(${filterValues.brightness}%) contrast(${filterValues.contrast}%) saturate(${filterValues.saturation}%)`;
+      if (slideCanvas) {
+        slideCanvas.style.filter = filterStr;
+      }
+      const gallery = document.getElementById('cells-grid');
+      if (gallery) {
+        gallery.style.filter = filterStr;
+      }
+    }
+
+    function setStainPreset(presetNum) {
+      document.querySelectorAll('.stain-preset').forEach(b => {
+        b.className = 'stain-preset w-5 h-5 flex items-center justify-center font-mono font-medium rounded-xs text-slate-600 hover:bg-slate-100';
+      });
+      const activeBtn = document.getElementById(`preset-1`);
+      if (presetNum === 1) {
+        filterValues = { brightness: 100, contrast: 100, saturation: 100, gamma: 100 };
+        document.getElementById('preset-1').className = 'stain-preset w-5 h-5 flex items-center justify-center font-mono font-medium rounded-xs bg-[#4D58A4] text-white';
+      } else if (presetNum === 2) {
+        filterValues = { brightness: 115, contrast: 120, saturation: 110, gamma: 105 };
+        document.getElementById('preset-2').className = 'stain-preset w-5 h-5 flex items-center justify-center font-mono font-medium rounded-xs bg-[#4D58A4] text-white';
+      } else {
+        filterValues = { brightness: 95, contrast: 110, saturation: 90, gamma: 95 };
+        document.getElementById('preset-3').className = 'stain-preset w-5 h-5 flex items-center justify-center font-mono font-medium rounded-xs bg-[#4D58A4] text-white';
+      }
+      ['brightness', 'contrast', 'saturation', 'gamma'].forEach(type => {
+        const slider = document.getElementById(`slider-${type}`);
+        const label = document.getElementById(`label-${type}`);
+        if (slider) slider.value = filterValues[type];
+        if (label) {
+          const diff = filterValues[type] - 100;
+          label.textContent = `${diff >= 0 ? (diff === 0 ? '0%' : `+${diff}%`) : `${diff}%`}`;
+        }
+      });
+      applyImageFilters();
+    }
+
+    // Initial render
+    renderDifferential();
+    renderGallery();
+    renderSlideMarkers();
+    updateSlideTransform();
+  </script>
+</body>
+</html>

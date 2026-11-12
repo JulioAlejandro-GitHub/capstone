@@ -1,0 +1,4386 @@
+/* Dominio frotis (excepción E3 del MIGRATION_MAP): CSS propio y aislado del resto del sistema.
+   Rutas: /frotis/analizar, /frotis/historial, /frotis/historial/:id, /frotis/cargar, /frotis/revision.
+   Reglas copiadas literalmente de frontend/src/styles.css (familias .smear-workflow*, workflow-*,
+   cell-viewer*, cell-review*, smear-history*, smear-setup*, immersive*) y de
+   frontend/src/styles/smear-analysis-immersive.css íntegro.
+   Las clases genéricas se re-escopan a los roots del dominio para no afectar al resto de la app. */
+.app-content--smear-workflow { min-height: 100dvh;
+  background: var(--color-background); }
+.content-context-row--smear-workflow { min-height: 0;
+  gap: 12px;
+  padding: 3px 16px; }
+.content-context-row--smear-workflow .datasource-selector select { padding: 5px 8px; }
+.smear-workflow .page,.smear-history-page .page,.smear-setup .page,.smear-analysis-immersive .page,.cell-review-workspace .page,.smear-results-view .page,.cell-image-viewer .page,.smear-case-header .page { display: grid;
+  gap: 22px;
+  padding: 28px; }
+.smear-workflow .status-failed,.smear-history-page .status-failed,.smear-setup .status-failed,.smear-analysis-immersive .status-failed,.cell-review-workspace .status-failed,.smear-results-view .status-failed,.cell-image-viewer .status-failed,.smear-case-header .status-failed { background: #fdecec;
+  color: #9a2323; }
+.smear-workflow .page,.smear-history-page .page,.smear-setup .page,.smear-analysis-immersive .page,.cell-review-workspace .page,.smear-results-view .page,.cell-image-viewer .page,.smear-case-header .page { padding: 18px; }
+/* Prompt 7: scientific cell-detection review workspace. */ .cell-review-page { min-width: 0; }
+.cell-review-page--workspace { gap: 0;
+  padding: 16px; }
+.cell-review-title { align-items: center; }
+.cell-review-title>button, .cell-detection-launcher button, .cell-run-list button, .cell-workspace-actions button, .cell-workspace-loading button, .cell-load-more { min-height: 40px;
+  border: 1px solid #315fba;
+  border-radius: 9px;
+  background: #315fba;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px 13px;
+  font-weight: 730; }
+.cell-review-page button:focus-visible, .cell-review-page select:focus-visible, .cell-review-page textarea:focus-visible, .cell-box:focus-visible { outline: 3px solid #91b4fa;
+  outline-offset: 2px; }
+.cell-review-page button:disabled { cursor: not-allowed;
+  opacity: .52; }
+.cell-run-status, .cell-review-status { display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 760; }
+.smear-workflow .cell-run-status.status-failed,.smear-history-page .cell-run-status.status-failed,.smear-setup .cell-run-status.status-failed,.smear-analysis-immersive .cell-run-status.status-failed,.cell-review-workspace .cell-run-status.status-failed,.smear-results-view .cell-run-status.status-failed,.cell-image-viewer .cell-run-status.status-failed,.smear-case-header .cell-run-status.status-failed { border-color: #e4a9a9;
+  background: #fff0f0;
+  color: #922929; }
+.cell-panel-state, .cell-empty-state, .cell-error, .cell-success { border: 1px dashed #657189;
+  border-radius: 10px;
+  margin: 12px;
+  padding: 14px;
+  text-align: center; }
+.smear-workflow .cell-error,.smear-history-page .cell-error,.smear-setup .cell-error,.smear-analysis-immersive .cell-error,.cell-review-workspace .cell-error,.smear-results-view .cell-error,.cell-image-viewer .cell-error,.smear-case-header .cell-error { border-style: solid;
+  border-color: #d67575;
+  background: #fff0f0;
+  color: #8e2525; }
+.cell-workspace-shell { --cell-surface: #172033;
+  --cell-surface-elevated: #1e2a40;
+  --cell-border: #344158;
+  --cell-text: #edf3ff;
+  --cell-muted: #a8b5ca;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--cell-border);
+  border-radius: 16px;
+  background: var(--cell-surface);
+  color: var(--cell-text);
+  box-shadow: 0 18px 46px rgba(12, 19, 33, .18); }
+.cell-workspace-kicker { margin: 0 0 4px !important;
+  color: #79a7ff !important;
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: .1em;
+  text-transform: uppercase; }
+.cell-workspace-actions { display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 66px;
+  border-bottom: 1px solid var(--cell-border);
+  background: #111827;
+  padding: 11px 16px; }
+.cell-workspace-actions>div { display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px; }
+.cell-workspace-actions>div:first-child { display: grid;
+  grid-template-columns: auto 1fr; }
+.cell-workspace-actions .cell-workspace-kicker { grid-column: 1 / -1; }
+.cell-workspace-actions span { color: var(--cell-muted);
+  font-size: 13px; }
+.cell-workspace-actions button { min-height: 36px;
+  border-color: #50627f;
+  background: #26344d; }
+.cell-review-mobile-tabs { display: none; }
+.cell-review-workspace { display: grid;
+  grid-template-columns:
+    minmax(250px, 300px) minmax(330px, 420px) minmax(0, 1fr);
+  width: 100%;
+  height: clamp(620px, 76dvh, 1000px);
+  min-width: 0;
+  min-height: 0; }
+.cell-review-workspace.is-summary-collapsed { grid-template-columns: minmax(330px, 420px) minmax(0, 1fr); }
+.cell-review-workspace.is-summary-collapsed .cell-summary-panel { display: none; }
+.cell-summary-panel, .cell-gallery-panel, .cell-review-right { min-width: 0;
+  min-height: 0;
+  border-right: 1px solid var(--cell-border);
+  background: var(--cell-surface); }
+.smear-workflow .cell-summary-panel,.smear-history-page .cell-summary-panel,.smear-setup .cell-summary-panel,.smear-analysis-immersive .cell-summary-panel,.cell-review-workspace .cell-summary-panel,.smear-results-view .cell-summary-panel,.cell-image-viewer .cell-summary-panel,.smear-case-header .cell-summary-panel { overflow-x: hidden;
+  overflow-y: auto; }
+.smear-workflow .cell-gallery-panel,.smear-history-page .cell-gallery-panel,.smear-setup .cell-gallery-panel,.smear-analysis-immersive .cell-gallery-panel,.cell-review-workspace .cell-gallery-panel,.smear-results-view .cell-gallery-panel,.cell-image-viewer .cell-gallery-panel,.smear-case-header .cell-gallery-panel { display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden; }
+.cell-review-right { display: grid;
+  grid-template-rows: minmax(390px, 1.4fr) minmax(250px, 1fr);
+  overflow: hidden;
+  border-right: 0; }
+.cell-review-right>div { min-width: 0;
+  min-height: 0; }
+.smear-workflow .cell-panel-heading,.smear-history-page .cell-panel-heading,.smear-setup .cell-panel-heading,.smear-analysis-immersive .cell-panel-heading,.cell-review-workspace .cell-panel-heading,.smear-results-view .cell-panel-heading,.cell-image-viewer .cell-panel-heading,.smear-case-header .cell-panel-heading { position: sticky;
+  z-index: 3;
+  top: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--cell-border);
+  background: rgba(23, 32, 51, .97);
+  padding: 14px; }
+.smear-workflow .cell-panel-heading h2,.smear-history-page .cell-panel-heading h2,.smear-setup .cell-panel-heading h2,.smear-analysis-immersive .cell-panel-heading h2,.cell-review-workspace .cell-panel-heading h2,.smear-results-view .cell-panel-heading h2,.cell-image-viewer .cell-panel-heading h2,.smear-case-header .cell-panel-heading h2 { margin: 0;
+  color: var(--cell-text);
+  font-size: 17px; }
+.smear-workflow .cell-panel-heading p,.smear-history-page .cell-panel-heading p,.smear-setup .cell-panel-heading p,.smear-analysis-immersive .cell-panel-heading p,.cell-review-workspace .cell-panel-heading p,.smear-results-view .cell-panel-heading p,.cell-image-viewer .cell-panel-heading p,.smear-case-header .cell-panel-heading p { margin: 5px 0 0;
+  color: var(--cell-muted);
+  font-size: 13px;
+  overflow-wrap: anywhere; }
+.smear-workflow .cell-panel-heading>span,.smear-history-page .cell-panel-heading>span,.smear-setup .cell-panel-heading>span,.smear-analysis-immersive .cell-panel-heading>span,.cell-review-workspace .cell-panel-heading>span,.smear-results-view .cell-panel-heading>span,.cell-image-viewer .cell-panel-heading>span,.smear-case-header .cell-panel-heading>span { color: var(--cell-muted);
+  font-size: 12px;
+  text-align: right; }
+.cell-run-facts dt, .cell-detail-facts dt { color: var(--cell-muted);
+  font-size: 12px; }
+.cell-run-facts dd, .cell-detail-facts dd { margin: 4px 0 0;
+  color: var(--cell-text);
+  font-weight: 720;
+  overflow-wrap: anywhere; }
+.cell-image-list { padding: 13px; }
+.cell-image-list h3, .cell-human-review h3, .cell-review-history h3 { margin: 0 0 10px;
+  font-size: 15px; }
+.cell-image-list>button { display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin-top: 7px;
+  border: 1px solid #3b4860;
+  border-radius: 9px;
+  background: #1b263a;
+  color: var(--cell-text);
+  cursor: pointer;
+  padding: 10px;
+  text-align: left; }
+.cell-image-list>button[aria-pressed="true"] { border-color: #87adf6;
+  background: #273855;
+  box-shadow: inset 3px 0 #78a7ff; }
+.cell-image-list>button>span:first-child { display: grid;
+  min-width: 0;
+  gap: 4px; }
+.cell-image-list strong, .cell-image-list small { overflow-wrap: anywhere; }
+.cell-image-list small, .cell-image-list>button>span:last-child { color: var(--cell-muted);
+  font-size: 12px; }
+.smear-workflow .cell-gallery-scroll,.smear-history-page .cell-gallery-scroll,.smear-setup .cell-gallery-scroll,.smear-analysis-immersive .cell-gallery-scroll,.cell-review-workspace .cell-gallery-scroll,.smear-results-view .cell-gallery-scroll,.cell-image-viewer .cell-gallery-scroll,.smear-case-header .cell-gallery-scroll { min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 12px;
+  scrollbar-color: #53627b transparent;
+  scrollbar-width: thin; }
+.smear-workflow .cell-crop-gallery,.smear-history-page .cell-crop-gallery,.smear-setup .cell-crop-gallery,.smear-analysis-immersive .cell-crop-gallery,.cell-review-workspace .cell-crop-gallery,.smear-results-view .cell-crop-gallery,.cell-image-viewer .cell-crop-gallery,.smear-case-header .cell-crop-gallery { display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px; }
+.smear-workflow .cell-crop-image,.smear-history-page .cell-crop-image,.smear-setup .cell-crop-image,.smear-analysis-immersive .cell-crop-image,.cell-review-workspace .cell-crop-image,.smear-results-view .cell-crop-image,.cell-image-viewer .cell-crop-image,.smear-case-header .cell-crop-image { position: relative;
+  display: grid;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(45deg, #1a2435 25%, transparent 25%),
+    linear-gradient(-45deg, #1a2435 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1a2435 75%),
+    linear-gradient(-45deg, transparent 75%, #1a2435 75%),
+    #222e42;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-size: 16px 16px;
+  color: var(--cell-muted);
+  font-size: 12px;
+  text-align: center; }
+.smear-workflow .cell-crop-image img,.smear-history-page .cell-crop-image img,.smear-setup .cell-crop-image img,.smear-analysis-immersive .cell-crop-image img,.cell-review-workspace .cell-crop-image img,.smear-results-view .cell-crop-image img,.cell-image-viewer .cell-crop-image img,.smear-case-header .cell-crop-image img { width: 100%;
+  height: 100%;
+  object-fit: contain; }
+.cell-card-caption { display: grid;
+  gap: 6px;
+  padding: 9px; }
+.cell-card-caption>strong { overflow-wrap: anywhere; }
+.cell-card-warning { position: absolute;
+  top: 7px;
+  right: 7px;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border: 1px solid #f4cb72;
+  border-radius: 50%;
+  background: #4b3711;
+  color: #ffe39e; }
+.cell-review-status.status-unreviewed { border-color: #738097;
+  background: #2c374a;
+  color: #e4e9f2; }
+.cell-review-status.status-accepted { border-color: #63a27c;
+  background: #183a29;
+  color: #bff0ce; }
+.cell-review-status.status-rejected { border-color: #c16a6a;
+  background: #491f27;
+  color: #ffd0d0; }
+.cell-review-status.status-needs_attention { border-color: #d5a84f;
+  background: #483713;
+  color: #ffe6a8; }
+.smear-workflow .cell-load-more,.smear-history-page .cell-load-more,.smear-setup .cell-load-more,.smear-analysis-immersive .cell-load-more,.cell-review-workspace .cell-load-more,.smear-results-view .cell-load-more,.cell-image-viewer .cell-load-more,.smear-case-header .cell-load-more { display: block;
+  width: calc(100% - 12px);
+  margin: 14px 6px 5px;
+  border-color: #5975a8;
+  background: #263754; }
+.cell-viewer-section { display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #0d1421; }
+.cell-viewer-heading { position: relative; }
+.cell-viewer-toolbar { display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  border-bottom: 1px solid var(--cell-border);
+  background: #172033;
+  padding: 8px; }
+.cell-viewer-toolbar label { display: flex;
+  align-items: center;
+  gap: 6px; }
+.cell-viewer-toolbar label>span { color: var(--cell-muted);
+  font-size: 12px; }
+.cell-viewer-toolbar select, .cell-viewer-toolbar button { min-height: 32px;
+  border: 1px solid #475773;
+  border-radius: 7px;
+  background: #202d43;
+  color: var(--cell-text);
+  cursor: pointer;
+  padding: 5px 8px;
+  font-size: 12px; }
+.cell-viewer-toolbar button[aria-pressed="true"] { border-color: #8ab1ff;
+  background: #345385;
+  box-shadow: inset 0 0 0 1px #8ab1ff; }
+.cell-image-viewport { position: relative;
+  min-height: 250px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at center, #202a39, #080d16 70%);
+  touch-action: none;
+  user-select: none; }
+.cell-image-viewport.can-pan { cursor: grab; }
+.cell-image-viewport.is-dragging { cursor: grabbing; }
+.cell-image-canvas { display: block;
+  width: 100%;
+  height: 100%; }
+.cell-viewer-state { position: absolute;
+  z-index: 2;
+  inset: 50% auto auto 50%;
+  width: min(360px, calc(100% - 30px));
+  margin: 0;
+  transform: translate(-50%, -50%);
+  color: var(--cell-muted);
+  text-align: center; }
+.cell-grid-line { fill: none;
+  stroke: rgba(255, 255, 255, .3);
+  stroke-width: 1; }
+.cell-viewer-footer { display: grid;
+  gap: 7px;
+  border-top: 1px solid var(--cell-border);
+  background: #151e2d;
+  padding: 9px 11px; }
+.cell-viewer-footer p { margin: 0;
+  color: var(--cell-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere; }
+.smear-workflow .cell-box-legend,.smear-history-page .cell-box-legend,.smear-setup .cell-box-legend,.smear-analysis-immersive .cell-box-legend,.cell-review-workspace .cell-box-legend,.smear-results-view .cell-box-legend,.cell-image-viewer .cell-box-legend,.smear-case-header .cell-box-legend { display: flex;
+  flex-wrap: wrap;
+  gap: 7px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--cell-muted);
+  font-size: 12px; }
+.smear-workflow .cell-box-legend li,.smear-history-page .cell-box-legend li,.smear-setup .cell-box-legend li,.smear-analysis-immersive .cell-box-legend li,.cell-review-workspace .cell-box-legend li,.smear-results-view .cell-box-legend li,.cell-image-viewer .cell-box-legend li,.smear-case-header .cell-box-legend li { display: flex;
+  align-items: center;
+  gap: 5px; }
+.smear-workflow .cell-box-legend li>span,.smear-history-page .cell-box-legend li>span,.smear-setup .cell-box-legend li>span,.smear-analysis-immersive .cell-box-legend li>span,.cell-review-workspace .cell-box-legend li>span,.smear-results-view .cell-box-legend li>span,.cell-image-viewer .cell-box-legend li>span,.smear-case-header .cell-box-legend li>span { display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-weight: 850; }
+.smear-workflow .cell-box-legend .status-accepted,.smear-history-page .cell-box-legend .status-accepted,.smear-setup .cell-box-legend .status-accepted,.smear-analysis-immersive .cell-box-legend .status-accepted,.cell-review-workspace .cell-box-legend .status-accepted,.smear-results-view .cell-box-legend .status-accepted,.cell-image-viewer .cell-box-legend .status-accepted,.smear-case-header .cell-box-legend .status-accepted { color: #77f0a0; }
+.smear-workflow .cell-box-legend .status-rejected,.smear-history-page .cell-box-legend .status-rejected,.smear-setup .cell-box-legend .status-rejected,.smear-analysis-immersive .cell-box-legend .status-rejected,.cell-review-workspace .cell-box-legend .status-rejected,.smear-results-view .cell-box-legend .status-rejected,.cell-image-viewer .cell-box-legend .status-rejected,.smear-case-header .cell-box-legend .status-rejected { color: #ff8b8b; }
+.smear-workflow .cell-box-legend .status-needs_attention,.smear-history-page .cell-box-legend .status-needs_attention,.smear-setup .cell-box-legend .status-needs_attention,.smear-analysis-immersive .cell-box-legend .status-needs_attention,.cell-review-workspace .cell-box-legend .status-needs_attention,.smear-results-view .cell-box-legend .status-needs_attention,.cell-image-viewer .cell-box-legend .status-needs_attention,.smear-case-header .cell-box-legend .status-needs_attention { color: #ffda84; }
+.cell-detail-panel { min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-top: 1px solid var(--cell-border);
+  background: #192338; }
+.cell-detail-content { display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px; }
+.cell-detail-crop { min-width: 0;
+  overflow: hidden;
+  border: 1px solid #45536a;
+  border-radius: 10px; }
+.cell-detail-facts { display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 7px;
+  margin: 0; }
+.cell-detail-facts>div { min-width: 0;
+  border: 1px solid #38465d;
+  border-radius: 8px;
+  background: #1e2a40;
+  padding: 8px; }
+.cell-detail-facts dd { font-size: 13px; }
+.cell-detail-content>.cell-panel-state, .cell-detail-content>.cell-error, .cell-human-review, .cell-review-history { grid-column: 1 / -1; }
+.cell-human-review, .cell-review-history { border-top: 1px solid var(--cell-border);
+  padding-top: 13px; }
+.cell-human-review>p, .cell-review-history>p { margin: 7px 0;
+  color: var(--cell-muted); }
+.cell-review-form { display: grid;
+  gap: 10px; }
+.cell-review-form label { display: grid;
+  gap: 6px;
+  color: var(--cell-muted);
+  font-size: 13px;
+  font-weight: 720; }
+.cell-review-form input, .cell-review-form textarea { width: 100%;
+  min-height: 78px;
+  resize: vertical;
+  border: 1px solid #53637d;
+  border-radius: 8px;
+  background: #111a29;
+  color: var(--cell-text);
+  padding: 9px; }
+.cell-review-actions { display: flex;
+  flex-wrap: wrap;
+  gap: 7px; }
+.cell-review-actions button { min-height: 35px;
+  border: 1px solid #5e76a3;
+  border-radius: 8px;
+  background: #2b426b;
+  color: #fff;
+  cursor: pointer;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 710; }
+.cell-review-actions button.danger { border-color: #ba5a63;
+  background: #7f2933; }
+.smear-workflow .cell-readonly-note,.smear-history-page .cell-readonly-note,.smear-setup .cell-readonly-note,.smear-analysis-immersive .cell-readonly-note,.cell-review-workspace .cell-readonly-note,.smear-results-view .cell-readonly-note,.cell-image-viewer .cell-readonly-note,.smear-case-header .cell-readonly-note { border: 1px solid #66758e;
+  border-radius: 8px;
+  background: #222f44;
+  padding: 10px; }
+.cell-review-history ol { display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none; }
+.cell-review-history li { border-left: 3px solid #60789f;
+  background: #1e2a40;
+  padding: 9px 11px; }
+.cell-review-history li>div { display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px; }
+.cell-review-history li span { color: var(--cell-muted);
+  font-size: 12px; }
+.cell-review-history li p { margin: 6px 0 0;
+  color: #dfe8f7;
+  white-space: pre-wrap; }
+.cell-review-live { position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap; }
+.cell-workspace-loading { display: grid;
+  min-height: 420px;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  border: 1px solid #d8dfeb;
+  border-radius: 14px;
+  background: #fff;
+  padding: 30px;
+  text-align: center; }
+.cell-workspace-loading>div { display: flex;
+  flex-wrap: wrap;
+  gap: 9px; }
+.smear-workflow .cell-readonly-badge, .cell-prediction-label,.smear-history-page .cell-readonly-badge, .cell-prediction-label,.smear-setup .cell-readonly-badge, .cell-prediction-label,.smear-analysis-immersive .cell-readonly-badge, .cell-prediction-label,.cell-review-workspace .cell-readonly-badge, .cell-prediction-label,.smear-results-view .cell-readonly-badge, .cell-prediction-label,.cell-image-viewer .cell-readonly-badge, .cell-prediction-label,.smear-case-header .cell-readonly-badge, .cell-prediction-label { display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 780; }
+.smear-workflow .cell-experimental-summary,.smear-history-page .cell-experimental-summary,.smear-setup .cell-experimental-summary,.smear-analysis-immersive .cell-experimental-summary,.cell-review-workspace .cell-experimental-summary,.smear-results-view .cell-experimental-summary,.cell-image-viewer .cell-experimental-summary,.smear-case-header .cell-experimental-summary { display: grid;
+  grid-template-columns: minmax(250px, 1.15fr) minmax(420px, 1.85fr);
+  gap: 12px 18px;
+  border-bottom: 1px solid var(--cell-border);
+  background:
+    linear-gradient(135deg, rgba(49, 95, 186, .2), transparent 55%),
+    #131d2e;
+  padding: 14px 16px; }
+.smear-workflow .cell-experimental-summary h2,.smear-history-page .cell-experimental-summary h2,.smear-setup .cell-experimental-summary h2,.smear-analysis-immersive .cell-experimental-summary h2,.cell-review-workspace .cell-experimental-summary h2,.smear-results-view .cell-experimental-summary h2,.cell-image-viewer .cell-experimental-summary h2,.smear-case-header .cell-experimental-summary h2 { margin: 2px 0 7px;
+  color: var(--cell-text);
+  font-size: 18px; }
+.smear-workflow .cell-experimental-summary p,.smear-history-page .cell-experimental-summary p,.smear-setup .cell-experimental-summary p,.smear-analysis-immersive .cell-experimental-summary p,.cell-review-workspace .cell-experimental-summary p,.smear-results-view .cell-experimental-summary p,.cell-image-viewer .cell-experimental-summary p,.smear-case-header .cell-experimental-summary p { max-width: 78ch;
+  margin: 0;
+  color: #c8d4e7;
+  font-size: 12px;
+  line-height: 1.5; }
+.smear-workflow .cell-experimental-summary dl,.smear-history-page .cell-experimental-summary dl,.smear-setup .cell-experimental-summary dl,.smear-analysis-immersive .cell-experimental-summary dl,.cell-review-workspace .cell-experimental-summary dl,.smear-results-view .cell-experimental-summary dl,.cell-image-viewer .cell-experimental-summary dl,.smear-case-header .cell-experimental-summary dl { display: grid;
+  grid-template-columns: repeat(5, minmax(105px, 1fr));
+  gap: 6px;
+  margin: 0; }
+.smear-workflow .cell-experimental-summary dl>div,.smear-history-page .cell-experimental-summary dl>div,.smear-setup .cell-experimental-summary dl>div,.smear-analysis-immersive .cell-experimental-summary dl>div,.cell-review-workspace .cell-experimental-summary dl>div,.smear-results-view .cell-experimental-summary dl>div,.cell-image-viewer .cell-experimental-summary dl>div,.smear-case-header .cell-experimental-summary dl>div { min-width: 0;
+  border: 1px solid #3b4d6b;
+  border-radius: 8px;
+  background: rgba(21, 32, 51, .82);
+  padding: 7px 8px; }
+.smear-workflow .cell-experimental-summary dt,.smear-history-page .cell-experimental-summary dt,.smear-setup .cell-experimental-summary dt,.smear-analysis-immersive .cell-experimental-summary dt,.cell-review-workspace .cell-experimental-summary dt,.smear-results-view .cell-experimental-summary dt,.cell-image-viewer .cell-experimental-summary dt,.smear-case-header .cell-experimental-summary dt { color: var(--cell-muted);
+  font-size: 10px; }
+.smear-workflow .cell-experimental-summary dd,.smear-history-page .cell-experimental-summary dd,.smear-setup .cell-experimental-summary dd,.smear-analysis-immersive .cell-experimental-summary dd,.cell-review-workspace .cell-experimental-summary dd,.smear-results-view .cell-experimental-summary dd,.cell-image-viewer .cell-experimental-summary dd,.smear-case-header .cell-experimental-summary dd { margin: 3px 0 0;
+  color: var(--cell-text);
+  font-size: 12px;
+  font-weight: 760;
+  overflow-wrap: anywhere; }
+.smear-workflow .cell-summary-comparison,.smear-history-page .cell-summary-comparison,.smear-setup .cell-summary-comparison,.smear-analysis-immersive .cell-summary-comparison,.cell-review-workspace .cell-summary-comparison,.smear-results-view .cell-summary-comparison,.cell-image-viewer .cell-summary-comparison,.smear-case-header .cell-summary-comparison { grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid #35465f;
+  padding-top: 9px;
+  color: #c9d6e9;
+  font-size: 11px; }
+.smear-workflow .cell-summary-comparison strong,.smear-history-page .cell-summary-comparison strong,.smear-setup .cell-summary-comparison strong,.smear-analysis-immersive .cell-summary-comparison strong,.cell-review-workspace .cell-summary-comparison strong,.smear-results-view .cell-summary-comparison strong,.cell-image-viewer .cell-summary-comparison strong,.smear-case-header .cell-summary-comparison strong { color: #ffe19a; }
+.smear-workflow .cell-classification-error,.smear-history-page .cell-classification-error,.smear-setup .cell-classification-error,.smear-analysis-immersive .cell-classification-error,.cell-review-workspace .cell-classification-error,.smear-results-view .cell-classification-error,.cell-image-viewer .cell-classification-error,.smear-case-header .cell-classification-error { margin: 0;
+  border-bottom: 1px solid #9a4545;
+  background: #451e27;
+  color: #ffd2d2;
+  padding: 9px 16px;
+  font-size: 12px; }
+.cell-card-caption small { color: var(--cell-muted);
+  font-size: 11px;
+  line-height: 1.35; }
+.smear-workflow .cell-prediction-label.prediction-parasitized,.smear-history-page .cell-prediction-label.prediction-parasitized,.smear-setup .cell-prediction-label.prediction-parasitized,.smear-analysis-immersive .cell-prediction-label.prediction-parasitized,.cell-review-workspace .cell-prediction-label.prediction-parasitized,.smear-results-view .cell-prediction-label.prediction-parasitized,.cell-image-viewer .cell-prediction-label.prediction-parasitized,.smear-case-header .cell-prediction-label.prediction-parasitized { border-color: #d59e45;
+  background: #4d3513;
+  color: #ffe0a2; }
+.smear-workflow .cell-prediction-label.prediction-uninfected,.smear-history-page .cell-prediction-label.prediction-uninfected,.smear-setup .cell-prediction-label.prediction-uninfected,.smear-analysis-immersive .cell-prediction-label.prediction-uninfected,.cell-review-workspace .cell-prediction-label.prediction-uninfected,.smear-results-view .cell-prediction-label.prediction-uninfected,.cell-image-viewer .cell-prediction-label.prediction-uninfected,.smear-case-header .cell-prediction-label.prediction-uninfected { border-color: #5ea27a;
+  background: #173a29;
+  color: #bff0ce; }
+.cell-prediction-label.prediction-failed { border-color: #c16a6a;
+  background: #491f27;
+  color: #ffd0d0; }
+.smear-workflow .cell-prediction-label.large,.smear-history-page .cell-prediction-label.large,.smear-setup .cell-prediction-label.large,.smear-analysis-immersive .cell-prediction-label.large,.cell-review-workspace .cell-prediction-label.large,.smear-results-view .cell-prediction-label.large,.cell-image-viewer .cell-prediction-label.large,.smear-case-header .cell-prediction-label.large { padding: 7px 12px;
+  font-size: 14px; }
+.cell-box.prediction-failed rect, .cell-box.classification-review-needs_attention rect { fill: rgba(242, 77, 77, .08);
+  stroke: #ff7070;
+  stroke-dasharray: 5 4; }
+.cell-box.prediction-failed circle, .cell-box.prediction-failed text, .cell-box.classification-review-needs_attention circle, .cell-box.classification-review-needs_attention text { fill: #ff9b9b;
+  stroke: #ff7070; }
+.smear-workflow .cell-box-legend .prediction-parasitized,.smear-history-page .cell-box-legend .prediction-parasitized,.smear-setup .cell-box-legend .prediction-parasitized,.smear-analysis-immersive .cell-box-legend .prediction-parasitized,.cell-review-workspace .cell-box-legend .prediction-parasitized,.smear-results-view .cell-box-legend .prediction-parasitized,.cell-image-viewer .cell-box-legend .prediction-parasitized,.smear-case-header .cell-box-legend .prediction-parasitized { color: #ffd17f; }
+.smear-workflow .cell-box-legend .prediction-uninfected,.smear-history-page .cell-box-legend .prediction-uninfected,.smear-setup .cell-box-legend .prediction-uninfected,.smear-analysis-immersive .cell-box-legend .prediction-uninfected,.cell-review-workspace .cell-box-legend .prediction-uninfected,.smear-results-view .cell-box-legend .prediction-uninfected,.cell-image-viewer .cell-box-legend .prediction-uninfected,.smear-case-header .cell-box-legend .prediction-uninfected { color: #82efb1; }
+.cell-box-legend .prediction-failed, .cell-box-legend .classification-review-needs_attention { color: #ff9b9b; }
+.smear-workflow .cell-box-legend .classification-missing, .cell-box-legend .classification-review-unreviewed,.smear-history-page .cell-box-legend .classification-missing, .cell-box-legend .classification-review-unreviewed,.smear-setup .cell-box-legend .classification-missing, .cell-box-legend .classification-review-unreviewed,.smear-analysis-immersive .cell-box-legend .classification-missing, .cell-box-legend .classification-review-unreviewed,.cell-review-workspace .cell-box-legend .classification-missing, .cell-box-legend .classification-review-unreviewed,.smear-results-view .cell-box-legend .classification-missing, .cell-box-legend .classification-review-unreviewed,.cell-image-viewer .cell-box-legend .classification-missing, .cell-box-legend .classification-review-unreviewed,.smear-case-header .cell-box-legend .classification-missing, .cell-box-legend .classification-review-unreviewed { color: #edf2fa; }
+.smear-workflow .cell-box-legend .classification-review-confirmed,.smear-history-page .cell-box-legend .classification-review-confirmed,.smear-setup .cell-box-legend .classification-review-confirmed,.smear-analysis-immersive .cell-box-legend .classification-review-confirmed,.cell-review-workspace .cell-box-legend .classification-review-confirmed,.smear-results-view .cell-box-legend .classification-review-confirmed,.cell-image-viewer .cell-box-legend .classification-review-confirmed,.smear-case-header .cell-box-legend .classification-review-confirmed { color: #77f0a0; }
+.smear-workflow .cell-box-legend .classification-review-corrected,.smear-history-page .cell-box-legend .classification-review-corrected,.smear-setup .cell-box-legend .classification-review-corrected,.smear-analysis-immersive .cell-box-legend .classification-review-corrected,.cell-review-workspace .cell-box-legend .classification-review-corrected,.smear-results-view .cell-box-legend .classification-review-corrected,.cell-image-viewer .cell-box-legend .classification-review-corrected,.smear-case-header .cell-box-legend .classification-review-corrected { color: #c5bdff; }
+.smear-workflow .cell-classification-detail, .classification-review-history,.smear-history-page .cell-classification-detail, .classification-review-history,.smear-setup .cell-classification-detail, .classification-review-history,.smear-analysis-immersive .cell-classification-detail, .classification-review-history,.cell-review-workspace .cell-classification-detail, .classification-review-history,.smear-results-view .cell-classification-detail, .classification-review-history,.cell-image-viewer .cell-classification-detail, .classification-review-history,.smear-case-header .cell-classification-detail, .classification-review-history { grid-column: 1 / -1; }
+.smear-workflow .cell-classification-detail,.smear-history-page .cell-classification-detail,.smear-setup .cell-classification-detail,.smear-analysis-immersive .cell-classification-detail,.cell-review-workspace .cell-classification-detail,.smear-results-view .cell-classification-detail,.cell-image-viewer .cell-classification-detail,.smear-case-header .cell-classification-detail { display: grid;
+  gap: 12px;
+  border: 1px solid #465a79;
+  border-radius: 11px;
+  background: #162137;
+  padding: 12px; }
+.smear-workflow .cell-classification-heading,.smear-history-page .cell-classification-heading,.smear-setup .cell-classification-heading,.smear-analysis-immersive .cell-classification-heading,.cell-review-workspace .cell-classification-heading,.smear-results-view .cell-classification-heading,.cell-image-viewer .cell-classification-heading,.smear-case-header .cell-classification-heading { display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px; }
+.smear-workflow .cell-classification-heading h3, .cell-classification-heading p, .cell-classification-review h4, .cell-explanation-actions h4,.smear-history-page .cell-classification-heading h3, .cell-classification-heading p, .cell-classification-review h4, .cell-explanation-actions h4,.smear-setup .cell-classification-heading h3, .cell-classification-heading p, .cell-classification-review h4, .cell-explanation-actions h4,.smear-analysis-immersive .cell-classification-heading h3, .cell-classification-heading p, .cell-classification-review h4, .cell-explanation-actions h4,.cell-review-workspace .cell-classification-heading h3, .cell-classification-heading p, .cell-classification-review h4, .cell-explanation-actions h4,.smear-results-view .cell-classification-heading h3, .cell-classification-heading p, .cell-classification-review h4, .cell-explanation-actions h4,.cell-image-viewer .cell-classification-heading h3, .cell-classification-heading p, .cell-classification-review h4, .cell-explanation-actions h4,.smear-case-header .cell-classification-heading h3, .cell-classification-heading p, .cell-classification-review h4, .cell-explanation-actions h4 { margin: 0; }
+.smear-workflow .cell-classification-heading p, .cell-classification-review>p, .cell-explanation-actions>p,.smear-history-page .cell-classification-heading p, .cell-classification-review>p, .cell-explanation-actions>p,.smear-setup .cell-classification-heading p, .cell-classification-review>p, .cell-explanation-actions>p,.smear-analysis-immersive .cell-classification-heading p, .cell-classification-review>p, .cell-explanation-actions>p,.cell-review-workspace .cell-classification-heading p, .cell-classification-review>p, .cell-explanation-actions>p,.smear-results-view .cell-classification-heading p, .cell-classification-review>p, .cell-explanation-actions>p,.cell-image-viewer .cell-classification-heading p, .cell-classification-review>p, .cell-explanation-actions>p,.smear-case-header .cell-classification-heading p, .cell-classification-review>p, .cell-explanation-actions>p { margin-top: 5px;
+  color: var(--cell-muted);
+  font-size: 12px; }
+.smear-workflow .classification-facts,.smear-history-page .classification-facts,.smear-setup .classification-facts,.smear-analysis-immersive .classification-facts,.cell-review-workspace .classification-facts,.smear-results-view .classification-facts,.cell-image-viewer .classification-facts,.smear-case-header .classification-facts { grid-template-columns: repeat(4, minmax(120px, 1fr)); }
+.smear-workflow .cell-explanation-actions, .cell-classification-review,.smear-history-page .cell-explanation-actions, .cell-classification-review,.smear-setup .cell-explanation-actions, .cell-classification-review,.smear-analysis-immersive .cell-explanation-actions, .cell-classification-review,.cell-review-workspace .cell-explanation-actions, .cell-classification-review,.smear-results-view .cell-explanation-actions, .cell-classification-review,.cell-image-viewer .cell-explanation-actions, .cell-classification-review,.smear-case-header .cell-explanation-actions, .cell-classification-review { display: grid;
+  gap: 9px;
+  border-top: 1px solid #3c4c65;
+  padding-top: 11px; }
+.smear-workflow .cell-explanation-actions>div,.smear-history-page .cell-explanation-actions>div,.smear-setup .cell-explanation-actions>div,.smear-analysis-immersive .cell-explanation-actions>div,.cell-review-workspace .cell-explanation-actions>div,.smear-results-view .cell-explanation-actions>div,.cell-image-viewer .cell-explanation-actions>div,.smear-case-header .cell-explanation-actions>div { display: flex;
+  flex-wrap: wrap;
+  gap: 7px; }
+.smear-workflow .cell-explanation-actions button, .case-explainability-view button,.smear-history-page .cell-explanation-actions button, .case-explainability-view button,.smear-setup .cell-explanation-actions button, .case-explainability-view button,.smear-analysis-immersive .cell-explanation-actions button, .case-explainability-view button,.cell-review-workspace .cell-explanation-actions button, .case-explainability-view button,.smear-results-view .cell-explanation-actions button, .case-explainability-view button,.cell-image-viewer .cell-explanation-actions button, .case-explainability-view button,.smear-case-header .cell-explanation-actions button, .case-explainability-view button { min-height: 35px;
+  border: 1px solid #6581b5;
+  border-radius: 8px;
+  background: #2d4c7f;
+  color: #fff;
+  cursor: pointer;
+  padding: 7px 11px;
+  font-weight: 720; }
+.cell-review-form select { min-height: 38px;
+  border: 1px solid #53637d;
+  border-radius: 8px;
+  background: #111a29;
+  color: var(--cell-text);
+  padding: 8px; }
+.smear-workflow .case-explainability-view .cell-crop-image,.smear-history-page .case-explainability-view .cell-crop-image,.smear-setup .case-explainability-view .cell-crop-image,.smear-analysis-immersive .case-explainability-view .cell-crop-image,.cell-review-workspace .case-explainability-view .cell-crop-image,.smear-results-view .case-explainability-view .cell-crop-image,.cell-image-viewer .case-explainability-view .cell-crop-image,.smear-case-header .case-explainability-view .cell-crop-image { width: 100%;
+  max-height: 360px; }
+.smear-workflow .cell-experimental-summary,.smear-history-page .cell-experimental-summary,.smear-setup .cell-experimental-summary,.smear-analysis-immersive .cell-experimental-summary,.cell-review-workspace .cell-experimental-summary,.smear-results-view .cell-experimental-summary,.cell-image-viewer .cell-experimental-summary,.smear-case-header .cell-experimental-summary { grid-template-columns: 1fr; }
+.smear-workflow .cell-experimental-summary dl,.smear-history-page .cell-experimental-summary dl,.smear-setup .cell-experimental-summary dl,.smear-analysis-immersive .cell-experimental-summary dl,.cell-review-workspace .cell-experimental-summary dl,.smear-results-view .cell-experimental-summary dl,.cell-image-viewer .cell-experimental-summary dl,.smear-case-header .cell-experimental-summary dl { grid-template-columns: repeat(5, minmax(90px, 1fr)); }
+.cell-review-workspace { grid-template-columns:
+      minmax(220px, 260px) minmax(280px, 330px) minmax(0, 1fr); }
+.cell-review-workspace.is-summary-collapsed { grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); }
+.cell-detail-facts { grid-template-columns: repeat(2, minmax(110px, 1fr)); }
+.smear-workflow .classification-facts,.smear-history-page .classification-facts,.smear-setup .classification-facts,.smear-analysis-immersive .classification-facts,.cell-review-workspace .classification-facts,.smear-results-view .classification-facts,.cell-image-viewer .classification-facts,.smear-case-header .classification-facts { grid-template-columns: repeat(3, minmax(110px, 1fr)); }
+.cell-review-workspace, .cell-review-workspace.is-summary-collapsed { position: relative;
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); }
+.cell-review-workspace .cell-summary-panel { position: absolute;
+    z-index: 8;
+    inset: 0 auto 0 0;
+    display: block;
+    width: min(320px, calc(100% - 48px));
+    border-right: 1px solid var(--cell-border);
+    box-shadow: 18px 0 34px rgba(6, 11, 20, .34); }
+.cell-review-workspace.is-summary-collapsed .cell-summary-panel { display: none; }
+.cell-review-workspace .cell-gallery-panel { display: grid;
+    grid-column: 1; }
+.cell-review-workspace .cell-review-right { display: grid;
+    grid-column: 2; }
+.cell-review-page--workspace { padding: 12px; }
+.cell-workspace-actions { align-items: flex-start;
+    flex-direction: column; }
+.cell-workspace-actions>div:last-child { width: 100%; }
+.cell-workspace-actions>div:last-child button { flex: 1 1 auto; }
+.cell-workspace-actions>div:last-child button:first-child { display: none; }
+.smear-workflow .cell-experimental-summary,.smear-history-page .cell-experimental-summary,.smear-setup .cell-experimental-summary,.smear-analysis-immersive .cell-experimental-summary,.cell-review-workspace .cell-experimental-summary,.smear-results-view .cell-experimental-summary,.cell-image-viewer .cell-experimental-summary,.smear-case-header .cell-experimental-summary { grid-template-columns: 1fr;
+    padding: 12px; }
+.smear-workflow .cell-experimental-summary dl,.smear-history-page .cell-experimental-summary dl,.smear-setup .cell-experimental-summary dl,.smear-analysis-immersive .cell-experimental-summary dl,.cell-review-workspace .cell-experimental-summary dl,.smear-results-view .cell-experimental-summary dl,.cell-image-viewer .cell-experimental-summary dl,.smear-case-header .cell-experimental-summary dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.smear-workflow .cell-summary-comparison,.smear-history-page .cell-summary-comparison,.smear-setup .cell-summary-comparison,.smear-analysis-immersive .cell-summary-comparison,.cell-review-workspace .cell-summary-comparison,.smear-results-view .cell-summary-comparison,.cell-image-viewer .cell-summary-comparison,.smear-case-header .cell-summary-comparison { align-items: flex-start;
+    flex-direction: column; }
+.cell-review-mobile-tabs { display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    border-bottom: 1px solid var(--cell-border);
+    background: #111827;
+    padding: 7px; }
+.cell-review-mobile-tabs button { min-height: 38px;
+    border: 1px solid #3c4b65;
+    border-radius: 8px;
+    background: #1c283d;
+    color: var(--cell-muted);
+    cursor: pointer;
+    padding: 7px; }
+.cell-review-mobile-tabs button[aria-selected="true"] { border-color: #82adff;
+    background: #2f4c79;
+    color: #fff;
+    font-weight: 750; }
+.cell-review-workspace, .cell-review-workspace.is-summary-collapsed { display: block;
+    height: auto;
+    min-height: 610px; }
+.cell-review-workspace .cell-summary-panel, .cell-review-workspace .cell-gallery-panel, .cell-review-workspace .cell-review-right { display: none;
+    width: 100%;
+    border-right: 0; }
+.cell-review-workspace[data-mobile-tab="summary"] .cell-summary-panel { display: block;
+    height: 72dvh; }
+.cell-review-workspace[data-mobile-tab="cells"] .cell-gallery-panel { display: grid;
+    height: 72dvh; }
+.cell-review-workspace[data-mobile-tab="image"] .cell-review-right, .cell-review-workspace[data-mobile-tab="detail"] .cell-review-right { display: block;
+    height: 72dvh;
+    overflow: auto; }
+.cell-review-workspace[data-mobile-tab="image"] .cell-detail-panel { display: none; }
+.cell-review-workspace[data-mobile-tab="detail"] #cell-image-panel { display: none; }
+.cell-review-workspace[data-mobile-tab="detail"] .cell-detail-panel { display: block;
+    min-height: 100%;
+    border-top: 0; }
+.cell-review-workspace[data-mobile-tab="image"] #cell-image-panel, .cell-review-workspace[data-mobile-tab="image"] .cell-viewer-section { height: 100%; }
+.cell-review-page--workspace { padding: 0; }
+.cell-workspace-shell { border-inline: 0;
+    border-radius: 0; }
+.cell-review-mobile-tabs button { font-size: 12px; }
+.smear-workflow .cell-panel-heading,.smear-history-page .cell-panel-heading,.smear-setup .cell-panel-heading,.smear-analysis-immersive .cell-panel-heading,.cell-review-workspace .cell-panel-heading,.smear-results-view .cell-panel-heading,.cell-image-viewer .cell-panel-heading,.smear-case-header .cell-panel-heading { align-items: flex-start;
+    flex-direction: column; }
+.smear-workflow .cell-panel-heading>span,.smear-history-page .cell-panel-heading>span,.smear-setup .cell-panel-heading>span,.smear-analysis-immersive .cell-panel-heading>span,.cell-review-workspace .cell-panel-heading>span,.smear-results-view .cell-panel-heading>span,.cell-image-viewer .cell-panel-heading>span,.smear-case-header .cell-panel-heading>span { text-align: left; }
+.cell-viewer-toolbar { align-content: flex-start;
+    max-height: 140px;
+    overflow-y: auto; }
+.cell-viewer-toolbar label { width: 100%; }
+.cell-viewer-toolbar select { min-width: 0;
+    flex: 1; }
+.cell-detail-content { grid-template-columns: 110px minmax(0, 1fr);
+    padding: 10px; }
+.cell-detail-facts { grid-template-columns: 1fr; }
+.smear-workflow .classification-facts,.smear-history-page .classification-facts,.smear-setup .classification-facts,.smear-analysis-immersive .classification-facts,.cell-review-workspace .classification-facts,.smear-results-view .classification-facts,.cell-image-viewer .classification-facts,.smear-case-header .classification-facts { grid-template-columns: 1fr; }
+.cell-review-history li>div { align-items: flex-start;
+    flex-direction: column;
+    gap: 3px; }
+.smear-workflow .cell-crop-gallery,.smear-history-page .cell-crop-gallery,.smear-setup .cell-crop-gallery,.smear-analysis-immersive .cell-crop-gallery,.cell-review-workspace .cell-crop-gallery,.smear-results-view .cell-crop-gallery,.cell-image-viewer .cell-crop-gallery,.smear-case-header .cell-crop-gallery { grid-template-columns: 1fr; }
+.cell-detection-card, .cell-image-viewport { scroll-behavior: auto; }
+/* Single-page smear workflow. All rules remain scoped to the scientific workflow. */ .smear-workflow.page { --workflow-border: var(--color-outline-variant);
+  --workflow-text: var(--color-on-surface);
+  --workflow-muted: var(--color-on-surface-variant);
+  --workflow-primary: var(--color-primary-container);
+  --workflow-primary-soft: rgba(0, 209, 255, .12);
+  --workflow-success: var(--color-quality-success);
+  --workflow-success-soft: rgba(57, 255, 136, .09);
+  --workflow-warning: var(--color-warning);
+  --workflow-warning-soft: rgba(255, 213, 156, .1);
+  --workflow-danger: var(--color-error);
+  --workflow-danger-soft: rgba(255, 180, 171, .1);
+  --workflow-console: var(--color-surface);
+  --workflow-console-raised: var(--color-surface-high);
+  --workflow-console-deep: var(--color-surface-lowest);
+  --workflow-console-border: var(--color-outline-variant);
+  --workflow-console-text: var(--color-on-surface);
+  --workflow-console-muted: var(--color-on-surface-variant);
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  gap: 14px;
+  padding: 16px;
+  background: var(--color-background); }
+.smear-workflow[data-mode="processing"], .smear-workflow[data-mode="review"] { height: calc(100dvh - 44px);
+  overflow: hidden; }
+.smear-workflow .workflow-context-header { position: relative;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: minmax(180px, .8fr) minmax(480px, 1.7fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  border: 1px solid var(--workflow-border);
+  border-radius: 14px;
+  background: var(--color-surface-low);
+  padding: 12px 14px;
+  box-shadow: none; }
+.smear-workflow[data-mode="setup"] .workflow-context-header { position: sticky;
+  top: 0; }
+.smear-workflow .workflow-case-context { min-width: 0; }
+.smear-workflow .workflow-kicker { margin: 0 0 4px;
+  color: var(--workflow-primary);
+  font-size: 11px;
+  font-weight: 820;
+  letter-spacing: .1em;
+  text-transform: uppercase; }
+.smear-workflow .workflow-case-context strong, .smear-workflow .workflow-case-context>span { display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; }
+.smear-workflow .workflow-case-context strong { color: var(--workflow-text);
+  font-size: 16px; }
+.smear-workflow .workflow-case-context>span { margin-top: 4px;
+  color: var(--workflow-muted);
+  font-size: 12px; }
+.smear-workflow .workflow-stage-nav { display: grid;
+  grid-template-columns: repeat(5, minmax(108px, 1fr));
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 999px;
+  background: var(--color-surface-lowest);
+  padding: 4px; }
+.smear-workflow .workflow-stage-item { display: grid;
+  grid-template-columns: auto minmax(max-content, 1fr);
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--workflow-muted);
+  cursor: default;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 720;
+  white-space: nowrap;
+
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease; }
+.smear-workflow .workflow-stage-item>span:not(.workflow-stage-label) { display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 850; }
+.smear-workflow .workflow-stage-item[data-state="active"] { border-color: var(--workflow-primary);
+  background: var(--workflow-primary);
+  color: #003543;
+  box-shadow: 0 0 0 2px rgba(0, 209, 255, .16); }
+.smear-workflow .workflow-stage-item[data-state="complete"] { border-color: var(--workflow-success);
+  background: var(--workflow-success-soft);
+  color: var(--workflow-success); }
+.smear-workflow .workflow-stage-item[data-state="warning"] { border-color: #f0c36a;
+  background: var(--workflow-warning-soft);
+  color: var(--workflow-warning); }
+.smear-workflow .workflow-stage-item[data-state="failed"] { border-color: #efaaaa;
+  background: var(--workflow-danger-soft);
+  color: var(--workflow-danger); }
+.smear-workflow .workflow-stage-item[data-state="locked"], .smear-workflow .workflow-stage-item[data-state="pending"] { opacity: .52; }
+.smear-workflow .workflow-header-actions { display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px; }
+.smear-workflow .workflow-header-actions button, .smear-workflow .workflow-context-status { min-height: 36px;
+  border: 1px solid #b8c6e3;
+  border-radius: 9px;
+  background: #f4f7ff;
+  color: #284a9c;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 720;
+  white-space: nowrap; }
+.smear-workflow .workflow-header-actions button { cursor: pointer; }
+.smear-workflow .workflow-header-actions button:last-child { border-color: var(--workflow-primary);
+  background: var(--workflow-primary);
+  color: #003543; }
+.smear-workflow .workflow-header-meta { display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  color: var(--workflow-muted);
+  font-size: 11px;
+  white-space: nowrap; }
+.smear-workflow .workflow-header-meta dt { display: inline;
+  font-weight: 720; }
+.smear-workflow .workflow-header-meta dd { display: inline;
+  margin: 0 0 0 4px; }
+.smear-workflow .workflow-header-facts { grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 4px 14px;
+  margin: 8px 0 0;
+  border-top: 1px solid var(--workflow-border);
+  padding-top: 8px; }
+.smear-workflow .workflow-header-facts dt { color: var(--workflow-muted);
+  font-size: 9px;
+  letter-spacing: .06em;
+  text-transform: uppercase; }
+.smear-workflow .workflow-header-facts dd { margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--workflow-text);
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap; }
+.smear-workflow .workflow-history-badge { border: 1px solid var(--workflow-primary);
+  border-radius: 999px;
+  color: var(--workflow-primary);
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 720;
+  white-space: nowrap; }
+.smear-workflow button:focus-visible, .smear-workflow input:focus-visible, .smear-workflow select:focus-visible, .smear-workflow textarea:focus-visible, .smear-workflow .workflow-file-picker:focus-within { outline: 3px solid #91b4fa;
+  outline-offset: 2px; }
+.smear-workflow button:disabled, .smear-workflow input:disabled, .smear-workflow select:disabled, .smear-workflow textarea:disabled { cursor: not-allowed; }
+.smear-workflow .workflow-recovering { display: flex;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  border: 1px solid var(--workflow-border);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--workflow-text);
+  padding: 24px; }
+.smear-workflow .workflow-recovering p { margin: 4px 0 0;
+  color: var(--workflow-muted); }
+.smear-workflow .workflow-indeterminate { display: inline-block;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(120, 167, 255, .28);
+  border-top-color: #78a7ff;
+  border-radius: 50%;
+  animation: smear-workflow-spin .8s linear infinite; }
+.smear-workflow .workflow-setup-error { margin: 0;
+  border: 1px solid #e4a9a9;
+  border-radius: 10px;
+  background: var(--workflow-danger-soft);
+  color: var(--workflow-danger);
+  padding: 11px 13px; }
+/* Setup converts the supplied Liquid Glass mockup into a scoped workflow surface. */ .smear-workflow .smear-setup { display: grid;
+  min-width: 0;
+  color: var(--color-on-surface);
+  --setup-primary: var(--color-primary);
+  --setup-secondary: var(--color-quality-success);
+  --setup-muted: var(--color-on-surface-variant);
+  --setup-glass: var(--color-surface-low);
+  --setup-border: var(--color-outline-variant); }
+.smear-workflow[data-mode="setup"] { background:
+    linear-gradient(rgba(0, 209, 255, .025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 209, 255, .025) 1px, transparent 1px),
+    radial-gradient(circle at 82% 14%, rgba(0, 209, 255, .08), transparent 34%),
+    var(--color-background);
+  background-size: 48px 48px, 48px 48px, auto, auto; }
+.smear-workflow[data-mode="setup"] .workflow-context-header { border-color: rgba(255, 255, 255, .14);
+  background: rgba(17, 19, 23, .72);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+  backdrop-filter: blur(28px); }
+.smear-workflow[data-mode="setup"] .workflow-case-context strong { color: #f0f0f5; }
+.smear-workflow[data-mode="setup"] .workflow-case-context>span { color: rgba(226, 226, 232, .62); }
+.smear-workflow[data-mode="setup"] .workflow-stage-nav { border-color: rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .055); }
+.smear-workflow[data-mode="setup"] .workflow-stage-item { color: rgba(226, 226, 232, .68); }
+.smear-workflow[data-mode="setup"] .workflow-context-status { border-color: rgba(192, 193, 255, .3);
+  background: rgba(192, 193, 255, .1);
+  color: #c0c1ff; }
+.smear-workflow .smear-setup__grid { display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 24px;
+  min-width: 0; }
+.smear-workflow .smear-setup__intro { display: grid;
+  gap: 6px;
+  margin-bottom: 18px; }
+.smear-workflow .smear-setup__intro p, .smear-workflow .smear-setup__intro h2, .smear-workflow .smear-setup__intro span { margin: 0; }
+.smear-workflow .smear-setup__intro p { color: var(--color-primary-container);
+  font: 800 10px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: .13em; }
+.smear-workflow .smear-setup__intro h2 { color: var(--color-on-surface);
+  font-size: clamp(26px, 3vw, 36px);
+  letter-spacing: -.02em; }
+.smear-workflow .smear-setup__intro span { /* max-width: 850px; */
+  color: var(--setup-muted);
+  line-height: 1.5; }
+.smear-workflow .smear-setup__sample-column { display: flex;
+  grid-column: span 4;
+  flex-direction: column;
+  gap: 20px; }
+.smear-workflow .smear-setup__upload-column { display: flex;
+  grid-column: span 8;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px; }
+.smear-workflow .smear-setup__upload-workspace { display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, .8fr);
+  gap: 14px;
+  min-width: 0; }
+.smear-workflow .smear-setup__glass { border: 1px solid var(--setup-border);
+  border-radius: 12px;
+  background: var(--setup-glass);
+  box-shadow: none; }
+.smear-workflow .smear-setup__sample-panel { padding: 24px; }
+.smear-workflow .smear-setup__sample-panel h3 { margin: 0 0 26px;
+  color: var(--setup-primary);
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 650; }
+.smear-workflow .smear-setup__field { display: grid;
+  gap: 8px;
+  margin-top: 20px; }
+.smear-workflow .smear-setup__field>label:first-child, .smear-workflow .smear-setup__origin>label { color: var(--color-on-surface-variant);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em; }
+.smear-workflow .smear-setup__control { position: relative;
+  display: flex;
+  align-items: center; }
+.smear-workflow .smear-setup__icon { width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8; }
+.smear-workflow .smear-setup__control>.smear-setup__icon { position: absolute;
+  z-index: 1;
+  left: 13px;
+  color: var(--color-primary);
+  pointer-events: none; }
+.smear-workflow .smear-setup__control input, .smear-workflow .smear-setup__control select, .smear-workflow .smear-setup__origin input, .smear-workflow .smear-setup__origin select { width: 100%;
+  min-height: 48px;
+  border: 1px solid transparent;
+  border-bottom-color: rgba(255, 255, 255, .22);
+  border-radius: 9px;
+  outline: 0;
+  background: rgba(255, 255, 255, .055);
+  color: #e2e2e8;
+  padding: 10px 12px;
+  transition: border-color .2s ease, background .2s ease, box-shadow .2s ease; }
+.smear-workflow .smear-setup__control input, .smear-workflow .smear-setup__control select { padding-left: 44px; }
+.smear-workflow .smear-setup__control input:focus, .smear-workflow .smear-setup__control select:focus, .smear-workflow .smear-setup__origin input:focus, .smear-workflow .smear-setup__origin select:focus { border-bottom-color: var(--setup-primary);
+  background: rgba(255, 255, 255, .09);
+  box-shadow: 0 5px 18px rgba(192, 193, 255, .1); }
+.smear-workflow .smear-setup__control input:disabled, .smear-workflow .smear-setup__control select:disabled { opacity: .82; }
+.smear-workflow .smear-setup__control button { position: absolute;
+  right: 7px;
+  border: 1px solid rgba(192, 193, 255, .35);
+  border-radius: 7px;
+  background: rgba(192, 193, 255, .12);
+  color: var(--setup-primary);
+  cursor: pointer;
+  padding: 7px 9px; }
+.smear-workflow .smear-setup__mode { display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--setup-muted);
+  font-size: 11px; }
+.smear-workflow .smear-setup__mode input { accent-color: #7e84ff; }
+.smear-workflow .smear-setup__field small, .smear-workflow .smear-setup__origin small { color: var(--setup-muted);
+  font-size: 12px;
+  line-height: 1.45; }
+.smear-workflow .smear-setup__origin { display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  padding-top: 15px; }
+.smear-workflow .smear-setup__origin summary { color: var(--setup-primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700; }
+.smear-workflow .smear-setup__dropzone { position: relative;
+  display: grid;
+  min-height: 430px;
+  align-content: center;
+  justify-items: center;
+  overflow: hidden;
+  border: 2px dashed rgba(255, 255, 255, .24);
+  cursor: pointer;
+  padding: 26px;
+  text-align: center;
+  transition: border-color .2s ease, background .2s ease, box-shadow .2s ease; }
+.smear-workflow .smear-setup__image-data { display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  padding: 18px; }
+.smear-workflow .smear-setup__image-data header { display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--setup-border);
+  padding-bottom: 14px; }
+.smear-workflow .smear-setup__image-data h3 { margin: 0;
+  font-size: 17px; }
+.smear-workflow .smear-setup__image-empty { align-self: start;
+  padding-top: 4px; }
+.smear-workflow .smear-setup__image-empty p { margin: 7px 0 0;
+  color: var(--setup-muted);
+  font-size: 11px;
+  line-height: 1.5; }
+.smear-workflow .smear-setup__file-count { border: 1px solid rgba(164, 230, 255, .26);
+  border-radius: 6px;
+  color: var(--color-primary);
+  padding: 4px 6px;
+  font: 700 9px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: nowrap; }
+.smear-workflow .smear-setup__image-facts { display: grid;
+  align-content: start;
+  gap: 10px;
+  margin: 0;
+  padding: 0; }
+.smear-workflow .smear-setup__image-facts>div { min-width: 0; }
+.smear-workflow .smear-setup__image-facts dt { color: var(--setup-muted);
+  font-size: 9px;
+  text-transform: uppercase; }
+.smear-workflow .smear-setup__image-facts dd { margin: 3px 0 0;
+  overflow: hidden;
+  color: #fff;
+  font: 700 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap; }
+.smear-workflow .smear-setup__image-data-footer { display: grid;
+  gap: 12px;
+  border-top: 1px solid var(--setup-border);
+  padding-top: 14px; }
+.smear-workflow .smear-setup__image-data-footer>small { color: var(--setup-muted);
+  font-size: 10px; }
+.smear-workflow .smear-setup__dropzone:hover, .smear-workflow .smear-setup__dropzone:focus-visible, .smear-workflow .smear-setup__dropzone[data-state="drag-active"] { border-color: var(--setup-primary);
+  outline: 0;
+  background: rgba(192, 193, 255, .095);
+  box-shadow: 0 0 26px rgba(192, 193, 255, .12); }
+.smear-workflow .smear-setup__dropzone[data-state="invalid"] { border-color: #ffb4ab; }
+.smear-workflow .smear-setup__dropzone[data-state="uploading"] { cursor: progress;
+  opacity: .82; }
+.smear-workflow .smear-setup__file-input { position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none; }
+.smear-workflow .smear-setup__glow { position: absolute;
+  z-index: 0;
+  top: 38%;
+  left: 50%;
+  width: 76%;
+  height: 66%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(192, 193, 255, .2), transparent 68%);
+  transform: translate(-50%, -50%);
+  pointer-events: none; }
+.smear-workflow .smear-setup__microscope, .smear-workflow .smear-setup__preview { position: relative;
+  z-index: 1;
+  display: block;
+  width: min(360px, 72%);
+  height: 220px;
+  object-fit: contain;
+  filter: drop-shadow(0 24px 28px rgba(0, 0, 0, .34)); }
+.smear-workflow .smear-setup__microscope { opacity: .28;
+  filter: grayscale(1) contrast(1.15) drop-shadow(0 18px 22px rgba(0, 0, 0, .28));
+  mix-blend-mode: screen; }
+.smear-workflow .smear-setup__preview { width: min(620px, 92%);
+  height: 320px; }
+.smear-workflow .smear-setup__drop-copy { position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-top: 16px; }
+.smear-workflow .smear-setup__upload-icon { display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .1);
+  color: var(--setup-primary);
+  transition: transform .2s ease, background .2s ease; }
+.smear-workflow .smear-setup__dropzone:hover .smear-setup__upload-icon { background: rgba(255, 255, 255, .16);
+  transform: scale(1.04); }
+.smear-workflow .smear-setup__drop-copy h3 { margin: 0;
+  color: #f3f3f7;
+  font-size: clamp(20px, 2vw, 26px); }
+.smear-workflow .smear-setup__drop-copy p { margin: 0;
+  color: var(--setup-muted);
+  line-height: 1.5; }
+.smear-workflow .smear-setup__drop-copy small { color: rgba(192, 193, 255, .76); }
+.smear-workflow .smear-setup__feedback { min-height: 0; }
+.smear-workflow .smear-setup__feedback>p { margin: 0;
+  border: 1px solid rgba(255, 180, 171, .4);
+  border-radius: 9px;
+  background: rgba(147, 0, 10, .22);
+  color: #ffdad6;
+  padding: 10px 12px; }
+.smear-workflow .smear-setup__file-actions { display: flex;
+  gap: 7px; }
+.smear-workflow .smear-setup__file-actions button { border: 1px solid rgba(192, 193, 255, .4);
+  border-radius: 8px;
+  background: rgba(192, 193, 255, .09);
+  color: var(--setup-primary);
+  cursor: pointer;
+  padding: 8px 10px; }
+.smear-workflow .smear-setup__actions { display: grid;
+  gap: 9px; }
+.smear-workflow .smear-setup__actions p { margin: 0;
+  color: var(--setup-muted);
+  font-size: 12px; }
+.smear-workflow .smear-setup__actions>button { display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--color-primary-container);
+  border-radius: 10px;
+  background: var(--color-primary-container);
+  box-shadow: 0 0 18px rgba(0, 209, 255, .14);
+  color: #003543;
+  cursor: pointer;
+  padding: 12px 24px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .03em;
+  transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+  width: 100%; }
+.smear-workflow.page { gap: 10px;
+    padding-block: 10px; }
+.smear-workflow .workflow-context-header { padding-block: 8px; }
+.smear-workflow .smear-setup__intro { gap: 3px;
+    margin-bottom: 10px; }
+.smear-workflow .smear-setup__intro h2 { font-size: 28px; }
+.smear-workflow .smear-setup__sample-panel { padding: 18px; }
+.smear-workflow .smear-setup__sample-panel h3 { margin-bottom: 16px; }
+.smear-workflow .smear-setup__field { margin-top: 13px; }
+.smear-workflow .smear-setup__origin { margin-top: 13px;
+    padding-top: 12px; }
+.smear-workflow .smear-setup__dropzone { min-height: 390px;
+    padding-block: 18px; }
+.smear-workflow .smear-setup__preview { height: clamp(210px, 30dvh, 280px); }
+.smear-workflow .smear-setup__microscope { height: 190px; }
+.smear-workflow .smear-setup__drop-copy { gap: 5px;
+    margin-top: 8px; }
+.smear-workflow .smear-setup__upload-icon { width: 48px;
+    height: 48px; }
+.smear-workflow .smear-setup__actions>button:not(:disabled):hover { background: var(--color-primary);
+  box-shadow: 0 0 22px rgba(0, 209, 255, .24);
+  transform: translateY(-1px); }
+.smear-workflow .smear-setup__actions>button:disabled { cursor: not-allowed;
+  opacity: .42; }
+.smear-workflow .smear-setup__actions .smear-setup__icon { width: 20px;
+  height: 20px; }
+/* Processing console: progress / dominant image / activity. */ .smear-workflow .workflow-mobile-tabs { display: none; }
+.smear-workflow .workflow-processing-grid { display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 280px;
+  min-width: 0;
+  min-height: 0;
+  gap: 12px;
+  animation: smear-workflow-panel-in 180ms ease-out both; }
+.smear-workflow .workflow-console-panel { display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--workflow-console-border);
+  border-radius: 14px;
+  background: var(--workflow-console);
+  color: var(--workflow-console-text);
+  box-shadow: 0 14px 34px rgba(12, 19, 33, .13); }
+.smear-workflow .workflow-panel-heading { min-width: 0;
+  border-bottom: 1px solid var(--workflow-console-border);
+  background: #111827;
+  padding: 12px 13px; }
+.smear-workflow .workflow-panel-heading h2 { margin: 0;
+  color: var(--workflow-console-text);
+  font-size: 16px;
+  overflow-wrap: anywhere; }
+.smear-workflow .workflow-panel-eyebrow { margin: 0 0 4px;
+  color: #8fb3fb;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase; }
+.smear-workflow .workflow-panel-scroll { min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 11px;
+  scrollbar-color: #53627b transparent;
+  scrollbar-width: thin; }
+.smear-workflow .workflow-image-panel { grid-template-rows: auto minmax(280px, 1fr) auto; }
+.smear-workflow .workflow-image-heading { display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px; }
+.smear-workflow .workflow-image-heading>div { min-width: 0; }
+.smear-workflow .workflow-image-heading h2 { overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; }
+.smear-workflow .workflow-stage-badge { display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  max-width: 190px;
+  min-height: 27px;
+  border: 1px solid #6487c7;
+  border-radius: 999px;
+  background: #263b62;
+  color: #d8e6ff;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 750;
+  text-align: center; }
+.smear-workflow .workflow-stage-badge.status-quality_warning { border-color: #d5a84f;
+  background: #483713;
+  color: #ffe6a8; }
+.smear-workflow .workflow-stage-badge.status-quality_failed, .smear-workflow .workflow-stage-badge.status-error { border-color: #c16a6a;
+  background: #491f27;
+  color: #ffd0d0; }
+.smear-workflow .workflow-stage-badge.status-ready_for_detection, .smear-workflow .workflow-stage-badge.status-review_ready { border-color: #63a27c;
+  background: #183a29;
+  color: #bff0ce; }
+.smear-workflow .workflow-processing-image { position: relative;
+  container-type: size;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(circle at center, var(--color-surface-high), var(--color-surface-lowest) 72%); }
+.smear-workflow .workflow-processing-image>img { display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; }
+.smear-workflow .workflow-image-grid { position: absolute;
+  z-index: 2;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 209, 255, .09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 209, 255, .09) 1px, transparent 1px),
+    linear-gradient(rgba(1, 15, 31, .18), rgba(1, 15, 31, .5));
+  background-size: 48px 48px, 48px 48px, auto;
+  pointer-events: none; }
+.smear-workflow .workflow-scan-line { position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: var(--color-primary-container);
+  box-shadow: 0 0 10px var(--color-primary-container), 0 0 20px rgba(0, 209, 255, .42);
+  animation: smear-scan 3s ease-in-out infinite;
+  pointer-events: none;
+  will-change: transform, opacity; }
+.smear-workflow .workflow-processing-image .workflow-persisted-image-empty { align-self: center; }
+.smear-workflow .workflow-image-activity { position: absolute;
+  z-index: 4;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  border: 1px solid rgba(143, 179, 251, .45);
+  border-radius: 10px;
+  background: rgba(11, 18, 31, .88);
+  color: #e8f0ff;
+  padding: 9px 11px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .3);
+  margin-inline: auto; }
+.smear-workflow .workflow-quality-status { display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--workflow-console-border);
+  padding-bottom: 12px; }
+.smear-workflow .workflow-quality-status h3, .smear-workflow .workflow-quality-status p { margin: 0; }
+.smear-workflow .workflow-quality-status h3 { font-size: 14px; }
+.smear-workflow .workflow-quality-status ul { display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none; }
+.smear-workflow .workflow-quality-status li { display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #526078;
+  border-radius: 8px;
+  background: var(--workflow-console-raised);
+  padding: 8px; }
+.smear-workflow .workflow-quality-status li>span { display: grid;
+  width: 21px;
+  height: 21px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: var(--workflow-warning);
+  font-size: 10px; }
+.smear-workflow .workflow-quality-status li>div { display: grid;
+  min-width: 0;
+  gap: 2px; }
+.smear-workflow .workflow-quality-status li strong { font-size: 11px; }
+.smear-workflow .workflow-quality-status li small { color: var(--workflow-console-muted);
+  font-size: 9px; }
+.smear-workflow .workflow-quality-status li em { color: var(--workflow-warning);
+  font: 700 9px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-style: normal;
+  text-transform: uppercase; }
+.smear-workflow .workflow-quality-status li code { grid-column: 2 / -1;
+  color: inherit;
+  font-size: 8px;
+  overflow-wrap: anywhere; }
+.smear-workflow .workflow-quality-status li[data-state="evaluating"]>span { color: var(--color-primary-container);
+  animation: smear-quality-pulse 1.2s ease-in-out infinite; }
+.smear-workflow .workflow-quality-status li[data-state="evaluating"] em { color: var(--color-primary); }
+.smear-workflow .workflow-quality-status li[data-state="approved"] { border-color: rgba(57, 255, 136, .4); }
+.smear-workflow .workflow-quality-status li[data-state="approved"]>span, .smear-workflow .workflow-quality-status li[data-state="approved"] em { color: var(--color-quality-success); }
+.smear-workflow .workflow-quality-status li[data-state="warning"] { border-color: rgba(255, 213, 156, .48); }
+.smear-workflow .workflow-quality-status li[data-state="rejected"], .smear-workflow .workflow-quality-status li[data-state="error"] { border-color: rgba(255, 180, 171, .52); }
+.smear-workflow .workflow-quality-status li[data-state="rejected"]>span, .smear-workflow .workflow-quality-status li[data-state="rejected"] em, .smear-workflow .workflow-quality-status li[data-state="error"]>span, .smear-workflow .workflow-quality-status li[data-state="error"] em { color: var(--color-error); }
+.smear-workflow .workflow-image-activity>span:last-child { font-size: 12px;
+  font-weight: 680; }
+.smear-workflow .workflow-image-facts { display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  border-top: 1px solid var(--workflow-console-border);
+  background: var(--workflow-console-border); }
+.smear-workflow .workflow-image-facts>div { min-width: 0;
+  background: var(--workflow-console);
+  padding: 8px 10px; }
+.smear-workflow .workflow-milestones { display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none; }
+/* A step's sub-milestones nest as another .workflow-milestones inside its li, which otherwise only reserves the 25px mark column for it. */ .smear-workflow .workflow-milestones .workflow-milestones { grid-column: 1 / -1;
+  margin-top: 4px; }
+.smear-workflow .workflow-milestones li { display: grid;
+  grid-template-columns: 25px minmax(0, 1fr);
+  gap: 4px 9px;
+  min-width: 0;
+  border: 1px solid #3b4860;
+  border-radius: 9px;
+  background: #1b263a;
+  padding: 9px; }
+.smear-workflow .workflow-milestones li>small { display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  grid-column: 2;
+  color: var(--workflow-console-muted);
+  font-size: 8px;
+  text-transform: capitalize; }
+.smear-workflow .workflow-milestones li>small time { color: #c6d2e6;
+  font-variant-numeric: tabular-nums;
+  text-transform: none; }
+.smear-workflow .workflow-milestones li>div { display: grid;
+  min-width: 0;
+  gap: 3px; }
+.smear-workflow .workflow-milestones li>div>strong { font-size: 9px; }
+.smear-workflow .workflow-milestones li>div>span { color: var(--workflow-console-muted);
+  font-size: 8px;
+  line-height: 1.35; }
+.smear-workflow .workflow-milestone-mark { display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border: 1px solid #687790;
+  border-radius: 50%;
+  color: var(--workflow-console-muted);
+  font-size: 11px;
+  font-weight: 850; }
+.smear-workflow .workflow-milestones li[data-state="active"] { border-color: #81a9f6;
+  background: #263754; }
+.smear-workflow .workflow-milestones li[data-state="active"] .workflow-milestone-mark { border-color: #82adff;
+  background: #315fba;
+  color: #fff; }
+.smear-workflow .workflow-milestones li[data-state="complete"] { border-color: #4f8966; }
+.smear-workflow .workflow-milestones li[data-state="complete"] .workflow-milestone-mark { border-color: #63a27c;
+  background: #183a29;
+  color: #bff0ce; }
+.smear-workflow .workflow-milestones li[data-state="warning"] { border-color: #d5a84f; }
+.smear-workflow .workflow-milestones li[data-state="warning"] .workflow-milestone-mark { border-color: #d5a84f;
+  background: #483713;
+  color: #ffe6a8; }
+.smear-workflow .workflow-milestones li[data-state="failed"] { border-color: #c16a6a; }
+.smear-workflow .workflow-milestones li[data-state="failed"] .workflow-milestone-mark { border-color: #c16a6a;
+  background: #491f27;
+  color: #ffd0d0; }
+.smear-workflow .workflow-milestones li[data-state="locked"] { opacity: .54; }
+.smear-workflow .workflow-run-facts, .smear-workflow .workflow-quality-metrics { display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0; }
+.smear-workflow .workflow-run-facts>div, .smear-workflow .workflow-quality-metrics>div { min-width: 0;
+  border: 1px solid #3b4860;
+  border-radius: 8px;
+  background: var(--workflow-console-raised);
+  padding: 8px; }
+.smear-workflow .workflow-panel-empty { margin: 10px 0;
+  border: 1px dashed #657189;
+  border-radius: 9px;
+  color: var(--workflow-console-muted);
+  padding: 11px;
+  font-size: 12px;
+  text-align: center; }
+.smear-workflow .workflow-event-list { display: grid;
+  gap: 0;
+  margin: 13px 0 0;
+  padding: 0;
+  list-style: none; }
+.smear-workflow .workflow-event-list li { display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: 5px 8px;
+  border-top: 1px solid #334159;
+  padding: 9px 2px; }
+.smear-workflow .workflow-event-list li:first-child { border-top: 0; }
+.smear-workflow .workflow-event-list li>div { display: grid;
+  min-width: 0;
+  gap: 3px; }
+.smear-workflow .workflow-event-list li strong { font-size: 11px;
+  overflow-wrap: anywhere;
+  text-transform: capitalize; }
+.smear-workflow .workflow-event-list li span:not(.workflow-event-dot), .smear-workflow .workflow-event-list time { color: var(--workflow-console-muted);
+  font-size: 10px;
+  overflow-wrap: anywhere; }
+.smear-workflow .workflow-event-list time { grid-column: 2; }
+.smear-workflow .workflow-event-dot { width: 9px;
+  height: 9px;
+  margin-top: 2px;
+  border: 2px solid #91a9d2;
+  border-radius: 50%;
+  background: #315fba; }
+.smear-workflow .workflow-event-dot.status-completed, .smear-workflow .workflow-event-dot.status-pass, .smear-workflow .workflow-event-dot.status-success { border-color: #8bc9a2;
+  background: #2d8b50; }
+.smear-workflow .workflow-event-dot.status-warning { border-color: #f0c36a;
+  background: #d49a1c; }
+.smear-workflow .workflow-event-dot.status-failed, .smear-workflow .workflow-event-dot.status-error { border-color: #efaaaa;
+  background: #b53b3b; }
+.smear-workflow .workflow-decision-card { display: grid;
+  gap: 9px;
+  margin-top: 13px;
+  border: 1px solid #58709a;
+  border-radius: 10px;
+  background: #1e2d46;
+  padding: 11px; }
+.smear-workflow .workflow-decision-card.status-warning { border-color: #d5a84f;
+  background: #3d3117; }
+.smear-workflow .workflow-decision-card.status-failed { border-color: #c16a6a;
+  background: #3e2028; }
+.smear-workflow .workflow-decision-card.status-pass { border-color: #4f8966;
+  background: #183a29; }
+.smear-workflow .workflow-decision-card>span { color: #a9c5ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase; }
+.smear-workflow .workflow-decision-card.status-warning>span { color: #ffe2a0; }
+.smear-workflow .workflow-decision-card.status-failed>span { color: #ffcaca; }
+.smear-workflow .workflow-decision-card.status-pass>span { color: #bff0ce; }
+.smear-workflow .workflow-decision-card h3, .smear-workflow .workflow-decision-card p, .smear-workflow .workflow-decision-card ul { margin: 0; }
+.smear-workflow .workflow-decision-card h3 { font-size: 14px; }
+.smear-workflow .workflow-decision-card p, .smear-workflow .workflow-decision-card li { color: #d4deee;
+  font-size: 11px;
+  line-height: 1.45;
+  overflow-wrap: anywhere; }
+.smear-workflow .workflow-decision-card ul { padding-left: 18px; }
+.smear-workflow .workflow-decision-card>button, .smear-workflow .workflow-warning-actions button { min-height: 36px;
+  border: 1px solid #6887c0;
+  border-radius: 8px;
+  background: #315fba;
+  color: #fff;
+  cursor: pointer;
+  padding: 7px 9px;
+  font-size: 11px;
+  font-weight: 730; }
+.smear-workflow .workflow-warning-actions { display: grid;
+  gap: 8px; }
+.smear-workflow .workflow-warning-actions label { display: grid;
+  gap: 5px;
+  color: #f2ddb0;
+  font-size: 11px;
+  font-weight: 700; }
+.smear-workflow .workflow-warning-actions textarea { width: 100%;
+  min-height: 76px;
+  resize: vertical;
+  border: 1px solid #76643e;
+  border-radius: 8px;
+  background: #151a24;
+  color: var(--workflow-console-text);
+  padding: 8px; }
+.smear-workflow .workflow-warning-actions button.danger { border-color: #ba5a63;
+  background: #7f2933; }
+/* CellReviewWorkspace remains intact and is only fitted into the workflow frame. */ .smear-workflow .workflow-review-frame { min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  animation: smear-workflow-panel-in 180ms ease-out both; }
+.smear-workflow .workflow-review-frame>.cell-workspace-shell, .smear-workflow .workflow-review-frame>.cell-workspace-loading { width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  box-shadow: none; }
+.smear-workflow .workflow-review-frame .cell-review-workspace { flex: 1 1 auto;
+  height: auto; }
+.smear-workflow .workflow-review-unavailable { display: grid;
+  min-height: 320px;
+  place-content: center;
+  border: 1px solid #e2aaaa;
+  border-radius: 14px;
+  background: #fff7f7;
+  color: var(--workflow-danger);
+  padding: 30px;
+  text-align: center; }
+.smear-workflow .workflow-review-unavailable h2, .smear-workflow .workflow-review-unavailable p { margin: 0; }
+.smear-workflow .workflow-review-unavailable p { margin-top: 8px;
+  color: #74474b; }
+.smear-workflow .workflow-file-summary, .smear-workflow .workflow-preview-facts, .smear-workflow .workflow-image-facts, .smear-workflow .workflow-quality-metrics { grid-template-columns: 1fr; }
+.smear-workflow .workflow-inline-field { grid-template-columns: 1fr; }
+.smear-workflow, .smear-workflow *, .smear-workflow *::before, .smear-workflow *::after { scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important; }
+.smear-workflow .workflow-scan-line { top: 50%;
+    opacity: .72;
+    transform: none; }
+/* Shared Liquid Glass results view, structurally derived from the second prototype. */ .smear-results-view { --smear-glass-primary: #c0c1ff;
+  --smear-glass-text: #e2e2e8;
+  --smear-glass-muted: rgba(226, 226, 232, .66);
+  --smear-glass-border: rgba(255, 255, 255, .15);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  gap: 14px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 93% 110%, rgba(126, 132, 255, .2), transparent 35%),
+    #111317;
+  color: var(--smear-glass-text);
+  padding: 14px; }
+.smear-glass-panel, .smear-results-view .cell-workspace-shell { border: 1px solid var(--smear-glass-border);
+  background: rgba(255, 255, 255, .045);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .28), inset 0 1px rgba(255, 255, 255, .04);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px); }
+.smear-results-header { display: grid;
+  grid-template-columns: minmax(250px, .9fr) minmax(440px, 1.4fr) minmax(280px, .9fr);
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  border-radius: 24px;
+  padding: 13px 18px; }
+.smear-results-identity { display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px; }
+.smear-results-back { display: grid;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 21px; }
+.smear-results-identity div { min-width: 0; }
+.smear-results-identity p { margin: 0 0 2px;
+  color: var(--smear-glass-primary);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase; }
+.smear-results-identity h1 { margin: 0;
+  overflow: hidden;
+  color: #fff;
+  font-size: 19px;
+  text-overflow: ellipsis;
+  white-space: nowrap; }
+.smear-results-identity span { display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--smear-glass-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap; }
+.smear-results-nav { display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .28);
+  padding: 4px; }
+.smear-results-nav button { min-width: 0;
+  min-height: 36px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--smear-glass-muted);
+  cursor: pointer;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap; }
+.smear-results-nav button:hover, .smear-results-nav button[aria-current="step"] { border-color: rgba(192, 193, 255, .35);
+  background: rgba(192, 193, 255, .17);
+  color: var(--smear-glass-primary);
+  box-shadow: 0 0 18px rgba(192, 193, 255, .09); }
+.smear-results-actions { display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px; }
+.smear-results-actions dl { display: grid;
+  grid-template-columns: repeat(3, minmax(0, auto));
+  gap: 8px;
+  margin: 0; }
+.smear-results-actions dl div { min-width: 0; }
+.smear-results-actions dt { color: var(--smear-glass-muted);
+  font-size: 9px;
+  text-transform: uppercase; }
+.smear-results-actions dd { max-width: 120px;
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap; }
+.smear-results-view>.cell-workspace-shell { height: 100%;
+  border-radius: 24px; }
+.smear-results-view .cell-workspace-actions { display: none; }
+.smear-results-view .cell-experimental-summary { max-height: 148px;
+  overflow-y: auto;
+  background: rgba(14, 16, 21, .55); }
+.smear-results-view .cell-review-workspace { grid-template-columns: minmax(220px, 2fr) minmax(420px, 7fr) minmax(340px, 3fr);
+  height: auto;
+  flex: 1 1 auto; }
+.smear-results-view .cell-summary-panel, .smear-results-view .cell-gallery-panel, .smear-results-view .cell-review-right, .smear-results-view .cell-viewer-section, .smear-results-view .cell-detail-panel { background: rgba(14, 16, 21, .48); }
+.smear-results-view .cell-panel-heading { background: rgba(17, 19, 23, .9);
+  backdrop-filter: blur(20px); }
+.smear-results-view .cell-crop-gallery { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); }
+.smear-results-view .cell-detection-card { border-radius: 14px;
+  background: rgba(0, 0, 0, .36); }
+.smear-results-view .cell-detection-card.is-selected { border-color: var(--smear-glass-primary);
+  box-shadow: 0 0 0 2px rgba(192, 193, 255, .25), 0 0 22px rgba(192, 193, 255, .15); }
+.smear-workflow .cell-gallery-search,.smear-history-page .cell-gallery-search,.smear-setup .cell-gallery-search,.smear-analysis-immersive .cell-gallery-search,.cell-review-workspace .cell-gallery-search,.smear-results-view .cell-gallery-search,.cell-image-viewer .cell-gallery-search,.smear-case-header .cell-gallery-search { display: grid;
+  flex: 0 0 155px;
+  gap: 3px; }
+.smear-workflow .cell-gallery-search span,.smear-history-page .cell-gallery-search span,.smear-setup .cell-gallery-search span,.smear-analysis-immersive .cell-gallery-search span,.cell-review-workspace .cell-gallery-search span,.smear-results-view .cell-gallery-search span,.cell-image-viewer .cell-gallery-search span,.smear-case-header .cell-gallery-search span { color: var(--cell-muted);
+  font-size: 10px; }
+.smear-workflow .cell-gallery-search input,.smear-history-page .cell-gallery-search input,.smear-setup .cell-gallery-search input,.smear-analysis-immersive .cell-gallery-search input,.cell-review-workspace .cell-gallery-search input,.smear-results-view .cell-gallery-search input,.cell-image-viewer .cell-gallery-search input,.smear-case-header .cell-gallery-search input { width: 100%;
+  min-width: 0;
+  border: 1px solid #475773;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .26);
+  color: var(--cell-text);
+  padding: 6px 8px; }
+.smear-results-header { grid-template-columns: minmax(240px, 1fr) minmax(420px, 1.5fr); }
+.smear-results-actions { grid-column: 1 / -1; }
+.smear-results-view .cell-review-workspace, .smear-results-view .cell-review-workspace.is-summary-collapsed { grid-template-columns: minmax(300px, 5fr) minmax(380px, 7fr); }
+.smear-results-view { height: auto;
+    min-height: calc(100dvh - 80px);
+    overflow: visible;
+    padding: 8px; }
+.smear-results-header { grid-template-columns: minmax(0, 1fr);
+    border-radius: 18px;
+    padding: 11px; }
+.smear-results-nav { order: 3; }
+.smear-results-actions { justify-content: flex-start;
+    overflow-x: auto; }
+.smear-results-actions dl { display: none; }
+.smear-results-view>.cell-workspace-shell { border-radius: 18px; }
+.smear-results-view .cell-experimental-summary { max-height: none; }
+.smear-workflow .cell-gallery-search,.smear-history-page .cell-gallery-search,.smear-setup .cell-gallery-search,.smear-analysis-immersive .cell-gallery-search,.cell-review-workspace .cell-gallery-search,.smear-results-view .cell-gallery-search,.cell-image-viewer .cell-gallery-search,.smear-case-header .cell-gallery-search { width: 100%;
+    flex-basis: auto; }
+.smear-results-view *, .smear-results-view *::before, .smear-results-view *::after { scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important; }
+/* Analysis history: compact desktop table with card semantics on narrow screens. */ .smear-history-page { display: grid;
+  gap: 1rem; }
+.smear-history-header { display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem; }
+.smear-history-header h1 { margin: .15rem 0; }
+.smear-history-filters { display: grid;
+  grid-template-columns: repeat(4, minmax(9rem, 1fr));
+  gap: .75rem;
+  padding: 1rem;
+  border: 1px solid var(--border, #d9e1e8);
+  border-radius: 12px;
+  background: var(--surface, #fff); }
+.smear-history-filters label { display: grid;
+  gap: .3rem;
+  font-size: .78rem;
+  font-weight: 700; }
+.smear-history-filters input, .smear-history-filters select { min-width: 0;
+  padding: .55rem .65rem;
+  border: 1px solid #c7d2dc;
+  border-radius: 7px;
+  background: #fff; }
+.smear-history-filter-actions { display: flex;
+  align-items: end;
+  gap: .5rem; }
+.smear-history-table-wrap { overflow: hidden;
+  border: 1px solid #d9e1e8;
+  border-radius: 12px;
+  background: #fff; }
+.smear-history-table { width: 100%;
+  border-collapse: collapse;
+  font-size: .84rem; }
+.smear-history-table th, .smear-history-table td { padding: .8rem .65rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e7edf2; }
+.smear-history-table th { color: #536373;
+  background: #f6f8fa;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .04em; }
+.smear-history-table td strong, .smear-history-table td small { display: block; }
+.smear-history-table td small { margin-top: .25rem;
+  color: #657484; }
+.history-detail-link { display: inline-flex;
+  white-space: nowrap;
+  padding: .5rem .7rem;
+  border-radius: 7px;
+  color: #fff;
+  background: #176b62;
+  font-weight: 700;
+  text-decoration: none; }
+.smear-history-pagination { display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .75rem; }
+.smear-history-message, .smear-history-error { padding: 2rem;
+  border: 1px dashed #b8c5cf;
+  border-radius: 12px;
+  text-align: center; }
+.workflow-history-banner { display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .65rem 1rem;
+  background: #e8f4f2;
+  border-bottom: 1px solid #b9d9d4;
+  color: #244d48; }
+.workflow-history-banner span { font-size: .82rem; }
+.smear-workflow-history .workflow-processing-image::after { content: "Datos persistidos";
+  position: absolute;
+  right: .75rem;
+  bottom: .75rem;
+  padding: .25rem .45rem;
+  border-radius: 5px;
+  background: rgba(15, 31, 38, .78);
+  color: white;
+  font-size: .7rem; }
+.smear-history-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.smear-history-table-wrap { overflow: visible;
+    border: 0;
+    background: transparent; }
+.smear-history-table thead { display: none; }
+.smear-history-table, .smear-history-table tbody, .smear-history-table tr, .smear-history-table td { display: block; }
+.smear-history-table tr { margin-bottom: .75rem;
+    padding: .75rem;
+    border: 1px solid #d9e1e8;
+    border-radius: 12px;
+    background: #fff; }
+.smear-history-table td { display: grid;
+    grid-template-columns: 8rem 1fr;
+    padding: .4rem 0;
+    border: 0; }
+.smear-history-table td::before { content: attr(data-label);
+    color: #657484;
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase; }
+.smear-history-header, .workflow-history-banner { align-items: flex-start;
+    flex-direction: column; }
+.smear-history-filters { grid-template-columns: 1fr; }
+.smear-history-table td { grid-template-columns: 6.5rem 1fr; }
+.smear-history-pagination { justify-content: space-between; }
+
+/* ── smear-analysis-immersive.css (íntegro) ──
+/* Approved Dark Laboratory workspace. Every visual rule is scoped to smear results. */
+
+.app-content:has(> .smear-workflow--immersive) {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page.smear-workflow[data-flow-state] {
+  transition: background-color 220ms ease-out, padding 220ms ease-out;
+}
+
+.page.smear-workflow.smear-workflow--immersive {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0;
+  padding: 0;
+  background-color: var(--color-background);
+  /* Shared with .smear-analysis-immersive (nested inside, in review mode)
+     so the floating panels in 'processing' mode - which sit outside that
+     element - can anchor to the exact same coordinates. */
+  --smear-panel-left: 24px;
+  --smear-panel-right: 24px;
+  --smear-detail-width: 320px;
+  --smear-rail-width: 120px;
+  /* Single source for "just below the compact header card" used by every
+     floating panel's top, in both modes - see cell-detail-panel and
+     cell-gallery-panel below. */
+  --smear-header-clearance: 96px;
+  /* The processing-mode decision panel needs more room for its comment
+     textarea and buttons than the review-mode gallery rail. */
+  --smear-decision-width: 340px;
+  /*
+   * The rest of the --smear-* palette .smear-analysis-immersive defines for
+   * itself, hoisted here so every processing-mode panel - siblings of that
+   * element, not descendants of it - can share its exact tokens instead of
+   * a second set of values with the same colors.
+   */
+  --smear-glass: rgba(11, 19, 38, .74);
+  --smear-glass-border: rgba(164, 230, 255, .17);
+  --smear-primary: var(--color-primary);
+  --smear-primary-bright: var(--color-primary-container);
+  --smear-secondary: var(--color-quality-success);
+  --smear-tertiary: var(--color-warning);
+  --smear-error: var(--color-error);
+  --smear-text: var(--color-on-surface);
+  --smear-muted: var(--color-on-surface-variant);
+  --smear-outline: var(--color-outline);
+  --smear-outline-variant: var(--color-outline-variant);
+}
+
+.smear-workflow--immersive .workflow-case-card {
+  position: absolute;
+  z-index: 60;
+  top: 24px;
+  left: var(--smear-panel-left);
+  width: 300px;
+  max-width: calc(100% - var(--smear-panel-left) - var(--smear-panel-right));
+  border-radius: 10px;
+  overflow: hidden;
+  color: var(--color-on-surface);
+}
+
+.smear-workflow--immersive .workflow-case-card-expanded {
+  padding: 10px 12px 12px;
+}
+
+.smear-workflow--immersive .workflow-case-card .workflow-header-actions {
+  border-top: 1px solid var(--smear-glass-border);
+  padding: 10px 12px;
+}
+
+@media (min-width: 701px) {
+  /*
+   * compact=true no longer toggles [data-compact] on this same element - it
+   * renders a different one (.workflow-case-card, below). height:auto here
+   * (instead of a fixed px) lets the facts row grow the banner in
+   * 'processing'/'history' without clipping, while 'setup' (no facts row)
+   * keeps the same natural height it always had.
+   */
+  .smear-workflow .workflow-context-header {
+    height: auto;
+    min-height: 80px;
+    overflow: hidden;
+    transition: height 220ms ease-out, padding 220ms ease-out;
+  }
+}
+
+.smear-workflow--immersive .workflow-review-frame,
+.smear-workflow--immersive .workflow-review-frame > .smear-analysis-immersive {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.smear-workflow--immersive .workflow-review-frame {
+  flex: 1 1 auto;
+  height: auto;
+}
+
+/* Processing mode reuses the exact same immersive frame as review: a
+   full-bleed canvas with the progress and decision panels floating over it
+   at the same coordinates cell-detail-panel/cell-gallery-panel use below,
+   instead of a three-column grid with bordered panels. */
+.smear-workflow--immersive .workflow-processing-grid {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.smear-workflow--immersive .workflow-image-panel {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: var(--color-background);
+  padding: 0;
+}
+
+.smear-workflow--immersive .workflow-processing-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.smear-workflow--immersive .workflow-progress-panel {
+  position: absolute;
+  z-index: 35;
+  top: var(--smear-header-clearance);
+  bottom: 24px;
+  left: var(--smear-panel-left);
+  width: var(--smear-detail-width);
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  color: var(--smear-text);
+}
+
+.smear-workflow--immersive .workflow-activity-panel {
+  position: absolute;
+  z-index: 35;
+  top: var(--smear-header-clearance);
+  bottom: 24px;
+  right: var(--smear-panel-right);
+  width: var(--smear-decision-width);
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  color: var(--smear-text);
+  transition: width 220ms ease-out;
+}
+
+.smear-analysis-immersive {
+  --smear-background: var(--color-background);
+  --smear-surface-lowest: var(--color-surface-lowest);
+  --smear-surface-low: var(--color-surface-low);
+  --smear-surface: var(--color-surface);
+  --smear-surface-high: var(--color-surface-high);
+  --smear-surface-highest: var(--color-surface-highest);
+  --smear-primary: var(--color-primary);
+  --smear-primary-bright: var(--color-primary-container);
+  --smear-secondary: var(--color-quality-success);
+  --smear-tertiary: var(--color-warning);
+  --smear-error: var(--color-error);
+  --smear-text: var(--color-on-surface);
+  --smear-muted: var(--color-on-surface-variant);
+  --smear-outline: var(--color-outline);
+  --smear-outline-variant: var(--color-outline-variant);
+  --smear-glass: rgba(11, 19, 38, .74);
+  --smear-glass-border: rgba(164, 230, 255, .17);
+  --smear-panel-left: 24px;
+  --smear-panel-right: 24px;
+  --smear-detail-width: 320px;
+  --smear-rail-width: 120px;
+  --cell-surface: var(--smear-surface);
+  --cell-surface-elevated: var(--smear-surface-high);
+  --cell-border: var(--smear-outline-variant);
+  --cell-text: var(--smear-text);
+  --cell-muted: var(--smear-muted);
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(49, 57, 77, .22), transparent 48%),
+    var(--smear-background);
+  color: var(--smear-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.smear-analysis-immersive button,
+.smear-analysis-immersive input,
+.smear-analysis-immersive select,
+.smear-analysis-immersive textarea {
+  font: inherit;
+}
+
+.smear-analysis-immersive button:focus-visible,
+.smear-analysis-immersive input:focus-visible,
+.smear-analysis-immersive select:focus-visible,
+.smear-analysis-immersive textarea:focus-visible,
+.smear-analysis-immersive [tabindex="0"]:focus-visible {
+  outline: 2px solid var(--smear-primary);
+  outline-offset: 2px;
+}
+
+.smear-analysis-immersive .smear-glass-panel,
+.smear-analysis-immersive .cell-viewer-controls,
+.smear-analysis-immersive .cell-immersive-controlbar,
+.smear-analysis-immersive .cell-detail-panel,
+.smear-analysis-immersive .cell-gallery-panel,
+.smear-analysis-immersive .cell-review-progress-ring,
+.smear-analysis-immersive .cell-viewer-minimap,
+.smear-analysis-immersive .cell-experimental-summary,
+.smear-analysis-immersive .cell-panel-restore,
+.smear-workflow--immersive .workflow-case-card,
+.smear-workflow--immersive .workflow-progress-panel,
+.smear-workflow--immersive .workflow-activity-panel,
+.smear-workflow--immersive .workflow-stage-band {
+  border: 1px solid var(--smear-glass-border);
+  background: var(--smear-glass);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.smear-analysis-immersive > .smear-results-header {
+  display: contents;
+}
+
+.smear-analysis-immersive .smear-results-case-panel {
+  position: absolute;
+  z-index: 50;
+  top: 24px;
+  left: var(--smear-panel-left);
+  display: block;
+  width: 280px;
+  min-width: 0;
+  min-height: 82px;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.smear-analysis-immersive .smear-results-case-panel > div {
+  width: 100%;
+}
+
+.smear-analysis-immersive .smear-results-case-panel p {
+  margin: 0 0 8px;
+  color: rgba(164, 230, 255, .72);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .smear-results-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .smear-results-case-data {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  margin: 0;
+  border-top: 1px solid rgba(164, 230, 255, .14);
+  padding-top: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.smear-analysis-immersive .smear-results-case-data > div:last-child {
+  grid-column: 1 / -1;
+}
+
+.smear-analysis-immersive .smear-results-case-data dt {
+  color: rgba(164, 230, 255, .66);
+  font-size: 8px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .smear-results-case-data dd {
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: #fff;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .smear-results-actions {
+  position: absolute;
+  z-index: 60;
+  top: 24px;
+  right: var(--smear-panel-right);
+  display: flex;
+  width: auto;
+  min-width: 0;
+  min-height: 42px;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  padding: 5px;
+}
+
+.smear-analysis-immersive .smear-results-run-data {
+  display: none;
+}
+
+.smear-analysis-immersive .smear-glass-button,
+.smear-analysis-immersive .smear-results-context-action {
+  min-height: 32px;
+  border: 1px solid rgba(164, 230, 255, .34);
+  border-radius: 999px;
+  background: rgba(164, 230, 255, .055);
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 6px 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .smear-glass-button:hover {
+  border-color: rgba(164, 230, 255, .68);
+  background: rgba(164, 230, 255, .12);
+  box-shadow: 0 0 16px rgba(76, 214, 255, .12);
+}
+
+.smear-analysis-immersive .smear-status-badge {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  border: 1px solid rgba(78, 222, 163, .38);
+  border-radius: 999px;
+  background: rgba(78, 222, 163, .1);
+  color: var(--smear-secondary);
+  padding: 5px 9px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive > .cell-workspace-shell,
+.smear-analysis-immersive .cell-workspace-shell--immersive {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.smear-analysis-immersive .cell-workspace-actions--sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-classification-error {
+  position: absolute;
+  z-index: 70;
+  top: 78px;
+  left: 50%;
+  width: min(560px, calc(100% - 48px));
+  margin: 0;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 180, 171, .45);
+  border-radius: 6px;
+  background: rgba(91, 22, 28, .9);
+  color: #ffdad6;
+  padding: 7px 10px;
+  font-size: 11px;
+}
+
+.smear-analysis-immersive > .cell-workspace-loading {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  place-content: center;
+  gap: 12px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--smear-surface-lowest);
+  color: var(--smear-muted);
+  text-align: center;
+}
+
+.smear-analysis-immersive > .cell-workspace-loading > div {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.smear-analysis-immersive > .cell-workspace-loading button {
+  min-height: 40px;
+  border: 1px solid rgba(164, 230, 255, .32);
+  border-radius: 999px;
+  background: rgba(164, 230, 255, .08);
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 8px 14px;
+}
+
+.smear-analysis-immersive .cell-review-workspace,
+.smear-analysis-immersive .cell-review-workspace--immersive {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.smear-analysis-immersive .cell-immersive-canvas,
+.smear-analysis-immersive .cell-review-right,
+.smear-analysis-immersive #cell-image-panel,
+.smear-analysis-immersive .cell-viewer-section,
+.smear-analysis-immersive .cell-image-viewport {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-viewer-section::after {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 46%, rgba(11, 19, 38, .34) 76%, rgba(6, 14, 32, .75) 100%),
+    linear-gradient(90deg, rgba(6, 14, 32, .18), transparent 18%, transparent 80%, rgba(6, 14, 32, .24));
+  content: "";
+  pointer-events: none;
+}
+
+.smear-analysis-immersive .cell-image-canvas {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.smear-analysis-immersive .cell-image-backdrop {
+  position: absolute;
+  z-index: 1;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  object-fit: cover;
+  filter: blur(12px) saturate(.78) brightness(.46);
+  opacity: .72;
+  transform: scale(1.035);
+  pointer-events: none;
+  user-select: none;
+}
+
+.smear-analysis-immersive .cell-viewer-state {
+  z-index: 10;
+  color: var(--smear-muted);
+  font-size: 12px;
+}
+
+.smear-analysis-immersive .cell-viewer-overlay-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-viewer-controls {
+  position: absolute;
+  z-index: 55;
+  top: 24px;
+  left: 316px;
+  display: flex;
+  width: auto;
+  min-height: 42px;
+  align-items: center;
+  gap: 5px;
+  overflow: visible;
+  border-radius: 999px;
+  padding: 5px;
+}
+
+.smear-analysis-immersive .cell-viewer-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.smear-analysis-immersive .cell-viewer-icon-button {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(164, 230, 255, .7);
+  cursor: pointer;
+  padding: 7px;
+}
+
+.smear-analysis-immersive .cell-viewer-icon-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.smear-analysis-immersive .cell-viewer-icon-button:hover,
+.smear-analysis-immersive .cell-viewer-icon-button[aria-pressed="true"] {
+  border-color: rgba(164, 230, 255, .32);
+  background: rgba(164, 230, 255, .11);
+  color: var(--smear-primary);
+  box-shadow: 0 0 12px rgba(76, 214, 255, .1);
+}
+
+.smear-analysis-immersive .cell-viewer-tool-separator {
+  width: 1px;
+  height: 22px;
+  margin: 0 2px;
+  background: rgba(164, 230, 255, .18);
+}
+
+.smear-analysis-immersive .cell-viewer-selectors {
+  position: absolute;
+  top: 47px;
+  left: 0;
+  display: flex;
+  gap: 5px;
+}
+
+.smear-analysis-immersive .cell-viewer-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.smear-analysis-immersive .cell-viewer-selector > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.smear-analysis-immersive .cell-viewer-selector select {
+  width: 144px;
+  min-width: 0;
+  height: 27px;
+  border: 1px solid rgba(164, 230, 255, .16);
+  border-radius: 5px;
+  background: rgba(6, 14, 32, .84);
+  color: var(--smear-muted);
+  padding: 3px 21px 3px 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-immersive-top-controls,
+.smear-workflow--immersive .workflow-stage-band {
+  position: absolute;
+  z-index: 58;
+  top: 24px;
+  left: clamp(638px, 37%, 752px);
+  display: flex;
+  width: min(620px, calc(100% - 840px));
+  min-width: 540px;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  transform: none;
+}
+
+/* This row is now the single unified control bar: the case card, the viewer
+   toolbar, the image selector, the detection-status filter, the cell search and
+   the experimental-result readout, in six groups. It is sized by its content
+   (width: max-content) and anchored to the left gutter, so it no longer claims
+   a full-width band and the canvas keeps the rest of the surface. Scoped past
+   the shared rule above so .workflow-stage-band (processing mode) keeps its
+   original coordinates. */
+.smear-analysis-immersive .cell-immersive-top-controls {
+  top: 24px;
+  left: var(--smear-panel-left);
+  width: max-content;
+  max-width: calc(100% - var(--smear-panel-left) - var(--smear-panel-right));
+  min-width: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 4px;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.smear-analysis-immersive .cell-gallery-search {
+  position: relative;
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  border-radius: 999px;
+  padding: 5px 7px 5px 13px;
+}
+
+.smear-analysis-immersive .cell-gallery-search > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.smear-analysis-immersive .cell-gallery-search > span {
+  color: rgba(164, 230, 255, .7);
+  font-size: 17px;
+}
+
+.smear-analysis-immersive .cell-gallery-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  padding: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-gallery-search input::placeholder {
+  color: rgba(218, 226, 253, .36);
+}
+
+.smear-analysis-immersive .cell-gallery-search button {
+  min-height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(164, 230, 255, .11);
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 8px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+/* Gallery filter dropdown: replaces the old .cell-status-filters nav. The
+   trigger lives in the (~120px-wide) rail heading; the listbox itself is
+   portaled to document.body and positioned with `position: fixed` so it can
+   open leftward over the canvas without being clipped by the rail's
+   `overflow: hidden` or contained by an ancestor's backdrop-filter. Because
+   the portal escapes .smear-analysis-immersive, its rules below are
+   intentionally unscoped and repeat the glass/mono tokens as literals. */
+.smear-analysis-immersive .cell-gallery-filter-dropdown {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.smear-analysis-immersive .cell-gallery-filter-trigger {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--smear-secondary);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.smear-analysis-immersive .cell-gallery-filter-trigger > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-gallery-filter-trigger::after {
+  content: "▾";
+  margin-left: auto;
+  color: var(--smear-muted);
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-gallery-filter-trigger:hover,
+.smear-analysis-immersive .cell-gallery-filter-trigger[aria-expanded="true"] {
+  border-color: rgba(164, 230, 255, .3);
+  background: rgba(164, 230, 255, .1);
+}
+
+.cell-gallery-filter-menu {
+  position: fixed;
+  z-index: 200;
+  width: 280px;
+  max-width: calc(100vw - 24px);
+}
+
+.cell-gallery-filter-listbox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  max-height: min(420px, calc(100vh - 48px));
+  overflow-y: auto;
+  border: 1px solid rgba(164, 230, 255, .17);
+  border-radius: 10px;
+  background: rgba(11, 19, 38, .96);
+  padding: 6px;
+  list-style: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  scrollbar-color: rgba(164, 230, 255, .32) transparent;
+  scrollbar-width: thin;
+}
+
+.cell-gallery-filter-listbox li {
+  display: block;
+}
+
+.cell-gallery-filter-listbox button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(187, 201, 207, .78);
+  cursor: pointer;
+  padding: 8px 10px;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: .025em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.cell-gallery-filter-listbox button:focus-visible {
+  outline: 2px solid var(--smear-primary, #4cd6ff);
+  outline-offset: -2px;
+}
+
+.cell-gallery-filter-listbox button > span:last-of-type {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-gallery-filter-listbox button > strong {
+  margin-left: auto;
+  opacity: .7;
+  font-size: 10px;
+}
+
+.cell-gallery-filter-listbox button:hover,
+.cell-gallery-filter-listbox button[aria-selected="true"] {
+  border-color: rgba(78, 222, 163, .4);
+  background: rgba(78, 222, 163, .15);
+  color: #8ff0c4 !important;
+  box-shadow: 0 0 12px rgba(78, 222, 163, .14);
+}
+
+.cell-gallery-filter-listbox .classification-status-parasitized[aria-selected="true"],
+.cell-gallery-filter-listbox .classification-status-near_threshold[aria-selected="true"],
+.cell-gallery-filter-listbox .classification-status-needs_attention[aria-selected="true"] {
+  border-color: rgba(255, 213, 165, .43);
+  background: rgba(255, 176, 68, .13);
+  color: #ffd489 !important;
+}
+
+.cell-gallery-filter-listbox .classification-status-failed[aria-selected="true"],
+.cell-gallery-filter-listbox .classification-status-corrected[aria-selected="true"] {
+  border-color: rgba(255, 180, 171, .4);
+  background: rgba(147, 0, 10, .18);
+  color: #ffadad !important;
+}
+
+.smear-analysis-immersive .cell-detail-panel {
+  position: absolute;
+  z-index: 35;
+  top: var(--smear-header-clearance);
+  bottom: 108px;
+  left: var(--smear-panel-left);
+  display: block;
+  width: var(--smear-detail-width);
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 8px;
+  color: var(--smear-text);
+  scrollbar-color: rgba(164, 230, 255, .32) transparent;
+  scrollbar-width: thin;
+}
+
+.smear-analysis-immersive .cell-detail-panel > .cell-panel-heading,
+.smear-analysis-immersive .cell-detail-content > .cell-panel-heading,
+.smear-analysis-immersive .cell-gallery-panel > .cell-panel-heading,
+.smear-workflow--immersive .workflow-case-card > .cell-panel-heading,
+.smear-workflow--immersive .workflow-progress-panel > .cell-panel-heading,
+.smear-workflow--immersive .workflow-activity-panel > .cell-panel-heading {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid rgba(164, 230, 255, .13);
+  background: rgba(11, 19, 38, .9);
+  padding: 10px 12px;
+  backdrop-filter: blur(12px);
+}
+
+.smear-analysis-immersive .cell-panel-heading h2,
+.smear-workflow--immersive .cell-panel-heading h2 {
+  margin: 0;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.smear-analysis-immersive .cell-panel-heading p,
+.smear-workflow--immersive .cell-panel-heading p {
+  margin: 3px 0 0;
+  color: var(--smear-secondary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-panel-heading > button,
+.smear-analysis-immersive .cell-panel-heading-actions > button,
+.smear-workflow--immersive .cell-panel-heading > button {
+  display: grid;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(164, 230, 255, .2);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--smear-muted);
+  cursor: pointer;
+}
+
+.smear-analysis-immersive .cell-panel-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.smear-analysis-immersive .cell-review-status,
+.smear-analysis-immersive .cell-prediction-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 12px 14px;
+}
+
+.smear-analysis-immersive .cell-detail-crop {
+  width: 100%;
+  height: 170px;
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+  border-bottom: 1px solid rgba(164, 230, 255, .14);
+  border-radius: 0;
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-detail-crop .cell-crop-image {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-detail-crop img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.smear-analysis-immersive .cell-detail-facts,
+.smear-analysis-immersive .classification-facts,
+.smear-workflow--immersive .cell-detail-facts,
+.smear-workflow--immersive .workflow-run-facts,
+.smear-workflow--immersive .workflow-quality-metrics,
+.smear-workflow--immersive .workflow-header-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(164, 230, 255, .1);
+  border-radius: 5px;
+  background: rgba(164, 230, 255, .1);
+}
+
+.smear-analysis-immersive .cell-detail-facts > div,
+.smear-workflow--immersive .cell-detail-facts > div,
+.smear-workflow--immersive .workflow-run-facts > div,
+.smear-workflow--immersive .workflow-quality-metrics > div,
+.smear-workflow--immersive .workflow-header-facts > div {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(6, 14, 32, .72);
+  padding: 7px 8px;
+}
+
+.smear-analysis-immersive .cell-detail-facts dt,
+.smear-workflow--immersive .cell-detail-facts dt,
+.smear-workflow--immersive .workflow-run-facts dt,
+.smear-workflow--immersive .workflow-quality-metrics dt,
+.smear-workflow--immersive .workflow-header-facts dt {
+  color: var(--smear-muted);
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-detail-facts dd,
+.smear-workflow--immersive .cell-detail-facts dd,
+.smear-workflow--immersive .workflow-run-facts dd,
+.smear-workflow--immersive .workflow-quality-metrics dd,
+.smear-workflow--immersive .workflow-header-facts dd {
+  margin: 2px 0 0;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.smear-analysis-immersive .cell-classification-detail,
+.smear-analysis-immersive .cell-human-review,
+.smear-analysis-immersive .cell-review-history {
+  width: 100%;
+  border-color: rgba(164, 230, 255, .12);
+  border-radius: 6px;
+  background: rgba(6, 14, 32, .38);
+  padding: 10px;
+}
+
+.smear-analysis-immersive .cell-classification-heading h3,
+.smear-analysis-immersive .cell-human-review h3,
+.smear-analysis-immersive .cell-review-history h3,
+.smear-analysis-immersive .cell-explanation-actions h4,
+.smear-analysis-immersive .cell-classification-review h4,
+.smear-analysis-immersive .cell-gradcam-preview h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 11px;
+}
+
+.smear-analysis-immersive .cell-review-form input,
+.smear-analysis-immersive .cell-review-form textarea,
+.smear-analysis-immersive .cell-review-form select {
+  min-height: 36px;
+  border: 1px solid rgba(164, 230, 255, .2);
+  border-radius: 5px;
+  background: rgba(6, 14, 32, .72);
+  color: var(--smear-text);
+  padding: 7px;
+  font-size: 10px;
+}
+
+.smear-analysis-immersive .cell-review-form textarea {
+  min-height: 62px;
+}
+
+.smear-analysis-immersive .cell-review-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.smear-analysis-immersive .cell-review-actions button,
+.smear-analysis-immersive .cell-explanation-actions button {
+  min-height: 32px;
+  border: 1px solid rgba(78, 222, 163, .3);
+  border-radius: 4px;
+  background: rgba(78, 222, 163, .07);
+  color: var(--smear-secondary);
+  cursor: pointer;
+  padding: 5px 7px;
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-review-actions button.danger {
+  border-color: rgba(255, 180, 171, .32);
+  background: rgba(147, 0, 10, .14);
+  color: var(--smear-error);
+}
+
+.smear-analysis-immersive .cell-review-actions button:disabled,
+.smear-analysis-immersive .cell-explanation-actions button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.smear-analysis-immersive .cell-readonly-note {
+  border-color: rgba(164, 230, 255, .16);
+  background: rgba(164, 230, 255, .05);
+  color: var(--smear-muted);
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-review-history li {
+  border-left-color: var(--smear-primary-bright);
+  background: rgba(34, 42, 61, .72);
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview {
+  display: grid;
+  gap: 7px;
+  border-top: 1px solid rgba(164, 230, 255, .12);
+  padding-top: 9px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview > header {
+  display: grid;
+  gap: 7px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview [role="tablist"] {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview [role="tab"] {
+  min-height: 28px;
+  border: 1px solid rgba(164, 230, 255, .16);
+  border-radius: 4px;
+  background: rgba(6, 14, 32, .5);
+  color: var(--smear-muted);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-gradcam-preview [role="tab"][aria-selected="true"] {
+  border-color: rgba(78, 222, 163, .42);
+  background: rgba(78, 222, 163, .1);
+  color: var(--smear-secondary);
+}
+
+.smear-analysis-immersive .cell-gradcam-preview [role="tab"]:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.smear-analysis-immersive .cell-gradcam-image {
+  display: grid;
+  min-height: 130px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(164, 230, 255, .12);
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-gradcam-image > img,
+.smear-analysis-immersive .cell-gradcam-image .cell-crop-image {
+  width: 100%;
+  height: 150px;
+  object-fit: contain;
+}
+
+.smear-analysis-immersive .cell-gradcam-state {
+  color: var(--smear-muted);
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-gallery-panel {
+  position: absolute;
+  z-index: 40;
+  top: var(--smear-header-clearance);
+  right: var(--smear-panel-right);
+  bottom: 128px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: var(--smear-rail-width);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  transition: width 220ms ease-out;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading {
+  align-items: center;
+  padding: 8px;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading .cell-gallery-filter-dropdown {
+  min-width: 0;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-gallery-filter-trigger {
+  max-width: none;
+  padding: 3px 4px;
+  font-size: 8px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+/* Only the active symbol and count fit at rail width; the full "Estado de
+   detección: <label>" text stays reachable via the trigger's `title` and via
+   this span for assistive tech (visually hidden, not display:none). */
+.smear-analysis-immersive .cell-gallery-panel .cell-gallery-filter-trigger .cell-controlbar-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading p {
+  display: none;
+}
+
+.smear-analysis-immersive .cell-gallery-panel .cell-panel-heading > button {
+  flex-basis: 22px;
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+}
+
+.smear-analysis-immersive .cell-gallery-scroll {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 7px;
+  scrollbar-color: rgba(78, 222, 163, .28) transparent;
+  scrollbar-width: thin;
+}
+
+.smear-analysis-immersive .cell-crop-gallery {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.smear-analysis-immersive .cell-detection-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(78, 222, 163, .2);
+  border-radius: 5px;
+  background: rgba(6, 14, 32, .72);
+}
+
+.smear-analysis-immersive .cell-detection-card.is-selected {
+  border-color: var(--smear-secondary);
+  box-shadow: 0 0 0 1px rgba(78, 222, 163, .6), 0 0 14px rgba(78, 222, 163, .3);
+}
+
+.smear-analysis-immersive .cell-detection-card > button {
+  display: grid;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--smear-text);
+  cursor: pointer;
+  padding: 0;
+}
+
+.smear-analysis-immersive .cell-detection-card .cell-crop-image {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-detection-card img {
+  transition: transform 180ms ease;
+}
+
+.smear-analysis-immersive .cell-detection-card:hover img,
+.smear-analysis-immersive .cell-detection-card:focus-within img {
+  transform: scale(1.06);
+}
+
+.smear-analysis-immersive .cell-card-caption {
+  display: grid;
+  gap: 3px;
+  border-top: 1px solid rgba(78, 222, 163, .12);
+  padding: 5px 3px;
+  text-align: center;
+}
+
+.smear-analysis-immersive .cell-card-caption > strong {
+  overflow: hidden;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-card-caption small {
+  display: none;
+}
+
+.smear-analysis-immersive .cell-card-caption .cell-prediction-label,
+.smear-analysis-immersive .cell-card-caption .cell-review-status {
+  justify-self: center;
+  max-width: 100%;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-card-warning {
+  top: 4px;
+  right: 4px;
+  width: 19px;
+  height: 19px;
+  font-size: 9px;
+}
+
+.smear-analysis-immersive .cell-load-more {
+  width: 100%;
+  margin: 9px 0 0;
+  border: 1px solid rgba(164, 230, 255, .2);
+  border-radius: 4px;
+  background: rgba(164, 230, 255, .06);
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 6px 3px;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-panel-restore {
+  position: absolute;
+  z-index: 42;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  border-radius: 6px;
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+  writing-mode: vertical-rl;
+}
+
+.smear-analysis-immersive .cell-panel-restore--detail {
+  top: 45%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.smear-analysis-immersive .cell-panel-restore--rail {
+  top: 45%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.smear-analysis-immersive .cell-viewer-navigation {
+  position: absolute;
+  z-index: 12;
+  bottom: 24px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid rgba(164, 230, 255, .16);
+  border-radius: 999px;
+  background: rgba(11, 19, 38, .72);
+  padding: 4px;
+  transform: translateX(-50%);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .35);
+  backdrop-filter: blur(10px);
+}
+
+.smear-analysis-immersive .cell-viewer-navigation-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--smear-primary);
+  cursor: pointer;
+  padding: 7px;
+}
+
+.smear-analysis-immersive .cell-viewer-navigation-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.smear-analysis-immersive .cell-viewer-navigation-button:hover {
+  border-color: rgba(164, 230, 255, .26);
+  background: rgba(164, 230, 255, .1);
+}
+
+.smear-analysis-immersive .cell-viewer-navigation-position {
+  min-width: 42px;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  text-align: center;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap {
+  position: absolute;
+  z-index: 11;
+  bottom: 24px;
+  left: var(--smear-panel-left);
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  grid-template-rows: auto;
+  width: 184px;
+  min-height: 76px;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-heading {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0 4px 8px;
+  color: var(--smear-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-heading output {
+  color: rgba(187, 201, 207, .62);
+  font-size: 7px;
+  text-transform: none;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-canvas {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
+  width: 72px;
+  height: 60px;
+  border: 1px solid rgba(164, 230, 255, .26);
+  background: var(--smear-surface-lowest);
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-box {
+  opacity: .55;
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-viewport {
+  filter: drop-shadow(0 0 3px rgba(164, 230, 255, .65));
+}
+
+.smear-analysis-immersive .cell-viewer-minimap-selection {
+  filter: drop-shadow(0 0 3px rgba(78, 222, 163, .8));
+}
+
+.smear-analysis-immersive .cell-viewer-overlay-footer {
+  position: absolute;
+  z-index: 10;
+  right: calc(var(--smear-panel-right) + var(--smear-rail-width) + 16px);
+  bottom: 10px;
+  left: calc(var(--smear-panel-left) + 200px);
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  pointer-events: none;
+}
+
+.smear-analysis-immersive .cell-viewer-overlay-footer .cell-box-legend {
+  display: none;
+}
+
+.smear-analysis-immersive .cell-viewer-overlay-footer p {
+  max-width: min(720px, 70%);
+  margin: 0;
+  overflow: hidden;
+  color: rgba(218, 226, 253, .64);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-box rect {
+  vector-effect: non-scaling-stroke;
+}
+
+.smear-analysis-immersive .cell-box.is-selected rect,
+.smear-analysis-immersive .cell-image-selection-outline {
+  filter: drop-shadow(0 0 6px rgba(78, 222, 163, .78));
+}
+
+.smear-analysis-immersive .cell-image-selection-outline {
+  stroke: var(--smear-secondary) !important;
+}
+
+.smear-analysis-immersive .cell-image-selection-anchor {
+  fill: var(--smear-secondary);
+  stroke: var(--smear-secondary);
+}
+
+.smear-analysis-immersive .cell-image-selected-label {
+  fill: var(--smear-secondary) !important;
+  filter: drop-shadow(0 0 4px rgba(78, 222, 163, .7));
+}
+
+.smear-analysis-immersive .cell-review-progress {
+  position: absolute;
+  z-index: 45;
+  right: 28px;
+  bottom: 22px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 104px;
+  color: var(--smear-primary);
+}
+
+.smear-analysis-immersive .cell-review-progress-ring {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+}
+
+.smear-analysis-immersive .cell-review-progress-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.smear-analysis-immersive .cell-review-progress-ring circle {
+  fill: none;
+  stroke-width: 6;
+}
+
+.smear-analysis-immersive .cell-review-progress-track {
+  stroke: rgba(218, 226, 253, .12);
+}
+
+.smear-analysis-immersive .cell-review-progress-value {
+  stroke: var(--smear-primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 240ms ease;
+  filter: drop-shadow(0 0 4px rgba(164, 230, 255, .8));
+}
+
+.smear-analysis-immersive .cell-review-progress-ring > span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.smear-analysis-immersive .cell-review-progress-ring strong {
+  font-size: 18px;
+}
+
+.smear-analysis-immersive .cell-review-progress-ring small {
+  color: rgba(164, 230, 255, .65);
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .cell-review-progress > p {
+  margin: 0;
+  color: rgba(164, 230, 255, .78);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(164, 230, 255, .45);
+}
+
+/* Desktop reaches this content through the "Resultado experimental" popover
+   (.cell-controlbar-menu--result) instead: the section stays mounted only for
+   the mobile "Resultado" tab, which shows it via the
+   [data-mobile-tab="result"] rules below (own position/display, independent
+   of this default). */
+.smear-analysis-immersive .cell-experimental-summary {
+  display: none;
+}
+
+.smear-analysis-immersive .cell-result-content {
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.smear-analysis-immersive .cell-result-content h2 {
+  margin: 3px 0 7px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.smear-analysis-immersive .cell-result-content p {
+  margin: 0;
+  color: var(--smear-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.smear-analysis-immersive .cell-result-content dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+}
+
+.smear-analysis-immersive .cell-result-content dl > div {
+  min-width: 0;
+  border: 1px solid rgba(164, 230, 255, .1);
+  border-radius: 4px;
+  background: rgba(6, 14, 32, .52);
+  padding: 6px;
+}
+
+.smear-analysis-immersive .cell-result-content dt {
+  color: var(--smear-muted);
+  font-size: 7px;
+}
+
+.smear-analysis-immersive .cell-result-content dd {
+  margin: 2px 0 0;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.smear-analysis-immersive .cell-result-content .cell-summary-comparison {
+  grid-column: 1 / -1;
+  border-top: 1px solid rgba(164, 230, 255, .12);
+  color: var(--smear-muted);
+  padding-top: 8px;
+  font-size: 8px;
+}
+
+.smear-analysis-immersive .smear-analysis-disclaimer {
+  position: absolute;
+  z-index: 48;
+  right: 150px;
+  bottom: 4px;
+  left: 470px;
+  margin: 0;
+  overflow: hidden;
+  color: rgba(187, 201, 207, .58);
+  font-size: 7px;
+  letter-spacing: .015em;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.smear-analysis-immersive .cell-review-mobile-tabs {
+  display: none;
+}
+
+@media (max-width: 1799px) {
+  .smear-analysis-immersive {
+    --smear-panel-left: 16px;
+    --smear-panel-right: 16px;
+    --smear-detail-width: 296px;
+    --smear-rail-width: 108px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-panel {
+    top: 16px;
+    width: 250px;
+  }
+
+  .smear-analysis-immersive .smear-results-actions {
+    top: 16px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-controls {
+    top: 16px;
+    left: 282px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selectors {
+    top: 47px;
+    left: 0;
+  }
+
+  .smear-analysis-immersive .cell-immersive-top-controls {
+    top: 16px;
+    right: auto;
+  }
+
+  /* The old second row (search) is gone: both panels now start right under the
+     single control bar instead of under two stacked bands. */
+  .smear-analysis-immersive .cell-detail-panel,
+  .smear-analysis-immersive .cell-gallery-panel {
+    top: 86px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .smear-analysis-immersive .smear-results-case-panel {
+    width: 236px;
+    min-height: 70px;
+    padding: 8px 10px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-panel p {
+    margin-bottom: 5px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data {
+    padding-top: 5px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data > div:last-child {
+    display: none;
+  }
+
+  .smear-analysis-immersive .cell-immersive-top-controls {
+    top: 16px;
+    right: auto;
+    left: var(--smear-panel-left);
+    max-width: calc(100% - var(--smear-panel-left) - var(--smear-panel-right));
+    /* Wrap rather than scroll: a scroll container would clip the popovers and
+       the case-card drawer that hang below the bar. */
+    flex-wrap: wrap;
+  }
+
+  .smear-analysis-immersive .cell-viewer-controls {
+    top: 18px;
+    left: 264px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selectors {
+    top: 72px;
+    left: -248px;
+  }
+
+  .smear-analysis-immersive .cell-detail-panel {
+    z-index: 70;
+    top: 86px;
+    bottom: 64px;
+    left: 12px;
+    width: min(340px, calc(100% - 24px));
+  }
+
+  .smear-analysis-immersive .cell-gallery-panel {
+    z-index: 70;
+    top: 86px;
+    right: 12px;
+    bottom: 64px;
+    width: min(300px, calc(100% - 24px));
+  }
+
+  .smear-analysis-immersive .cell-gallery-panel .cell-crop-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .smear-analysis-immersive .cell-panel-restore--detail,
+  .smear-analysis-immersive .cell-panel-restore--rail {
+    top: 52%;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-content:has(> .smear-workflow--immersive) {
+    height: 100dvh;
+  }
+
+  .smear-analysis-immersive .smear-results-actions {
+    right: 10px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selector select {
+    width: 126px;
+  }
+}
+
+@media (max-width: 700px) {
+  .page.smear-workflow.smear-workflow--immersive {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .smear-analysis-immersive {
+    --smear-panel-left: 8px;
+    --smear-panel-right: 8px;
+    min-height: 0;
+  }
+
+  .smear-analysis-immersive .smear-results-case-panel {
+    top: 7px;
+    left: 8px;
+    width: calc(100% - 190px);
+    min-height: 48px;
+    border-radius: 6px;
+    padding: 7px 9px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-panel p {
+    display: none;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data {
+    gap: 4px 8px;
+    border: 0;
+    padding: 0;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data > div:last-child {
+    display: none;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data dt {
+    font-size: 7px;
+  }
+
+  .smear-analysis-immersive .smear-results-case-data dd {
+    font-size: 8px;
+  }
+
+  .smear-analysis-immersive .smear-results-actions {
+    top: 7px;
+    right: 8px;
+    min-height: 48px;
+    border-radius: 6px;
+    padding: 2px;
+  }
+
+  .smear-analysis-immersive .smear-status-badge {
+    display: inline-flex;
+    width: 78px;
+    min-width: 78px;
+    min-height: 44px;
+    justify-content: center;
+    overflow: hidden;
+    padding: 4px;
+    font-size: 0;
+  }
+
+  .smear-analysis-immersive .smear-status-badge::after {
+    content: "Solo lectura";
+    font-size: 7px;
+  }
+
+  .smear-analysis-immersive:has(.smear-status-badge) .smear-results-case-panel {
+    width: calc(100% - 225px);
+  }
+
+  .smear-analysis-immersive .smear-glass-button,
+  .smear-analysis-immersive .smear-results-context-action {
+    min-height: 44px;
+    max-width: 132px;
+    overflow: hidden;
+    border-radius: 5px;
+    padding-inline: 9px;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .smear-analysis-immersive .smear-results-actions .smear-glass-button:not(.smear-results-context-action) {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .smear-analysis-immersive .smear-results-actions .smear-glass-button:not(.smear-results-context-action)::before {
+    content: "↻";
+    font-size: 17px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-controls {
+    z-index: 62;
+    top: 62px;
+    right: 8px;
+    left: 8px;
+    display: block;
+    min-height: 42px;
+    overflow-x: auto;
+    overflow-y: visible;
+    border-radius: 6px;
+    padding: 4px;
+    scrollbar-width: none;
+  }
+
+  .smear-analysis-immersive .cell-viewer-tool-group {
+    width: max-content;
+  }
+
+  .smear-analysis-immersive .cell-viewer-icon-button {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 9px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selectors {
+    position: static;
+    display: flex;
+    margin-bottom: 4px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selector {
+    flex: 1 1 0;
+  }
+
+  .smear-analysis-immersive .cell-viewer-selector select {
+    width: 100%;
+    height: 44px;
+  }
+
+  /* Phone: the six groups wrap inside the same band. Wrapping (not scrolling)
+     keeps the bar from becoming a clipping container for its popovers. */
+  .smear-analysis-immersive .cell-immersive-top-controls {
+    z-index: 61;
+    top: 62px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    flex-wrap: wrap;
+    border-radius: 6px;
+    transform: none;
+  }
+
+  .smear-analysis-immersive .cell-gallery-search {
+    flex-basis: 100%;
+    min-width: 0;
+    min-height: 44px;
+    border-radius: 6px;
+  }
+
+  .smear-analysis-immersive .cell-gallery-search button {
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-gallery-panel .cell-panel-heading,
+  .smear-analysis-immersive .cell-detail-panel > .cell-panel-heading {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .smear-analysis-immersive .cell-review-mobile-tabs {
+    position: absolute;
+    z-index: 100;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3px;
+    border-top: 1px solid rgba(164, 230, 255, .16);
+    background: rgba(6, 14, 32, .94);
+    padding: 6px;
+    backdrop-filter: blur(14px);
+  }
+
+  .smear-analysis-immersive .cell-review-mobile-tabs button {
+    min-height: 44px;
+    border: 1px solid rgba(164, 230, 255, .15);
+    border-radius: 5px;
+    background: rgba(34, 42, 61, .72);
+    color: var(--smear-muted);
+    cursor: pointer;
+    padding: 6px 3px;
+    font-size: 10px;
+  }
+
+  .smear-analysis-immersive .cell-panel-heading > button,
+  .smear-analysis-immersive .cell-panel-heading-actions > button,
+  .smear-analysis-immersive .cell-gallery-panel .cell-panel-heading > button {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-review-actions button,
+  .smear-analysis-immersive .cell-explanation-actions button,
+  .smear-analysis-immersive .cell-review-form select {
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-viewer-navigation-button {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-review-mobile-tabs button[aria-selected="true"] {
+    border-color: rgba(78, 222, 163, .5);
+    background: rgba(78, 222, 163, .13);
+    color: var(--smear-secondary);
+  }
+
+  .smear-analysis-immersive .cell-viewer-minimap,
+  .smear-analysis-immersive .cell-viewer-overlay-footer,
+  .smear-analysis-immersive .cell-panel-restore,
+  .smear-analysis-immersive .cell-review-progress {
+    display: none;
+  }
+
+  .smear-analysis-immersive .cell-viewer-navigation {
+    bottom: 64px;
+  }
+
+  .smear-analysis-immersive .smear-analysis-disclaimer {
+    right: 8px;
+    bottom: 124px;
+    left: 8px;
+    font-size: 6px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-immersive-canvas,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-immersive-canvas,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-immersive-canvas {
+    visibility: hidden;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-immersive-top-controls,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-immersive-top-controls,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="image"] .cell-gallery-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="image"] .cell-detail-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="image"] .cell-experimental-summary,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-detail-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-experimental-summary,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-gallery-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-experimental-summary,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-gallery-panel,
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-detail-panel {
+    display: none;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-gallery-panel {
+    position: absolute;
+    inset: 124px 8px 60px;
+    display: grid;
+    width: auto;
+    height: auto;
+    max-height: none;
+    border-radius: 7px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-immersive-top-controls {
+    top: 62px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-crop-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="detail"] .cell-detail-panel {
+    position: absolute;
+    inset: 62px 8px 60px;
+    display: block;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    border-radius: 7px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-experimental-summary {
+    position: absolute;
+    inset: 62px 8px 60px;
+    display: block;
+    width: auto;
+    min-width: 0;
+    max-height: none;
+    overflow-y: auto;
+    border-radius: 7px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="result"] .cell-result-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .smear-analysis-immersive .cell-result-content dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .smear-analysis-immersive:has(.cell-review-workspace[data-mobile-tab="cells"]) .smear-analysis-disclaimer,
+  .smear-analysis-immersive:has(.cell-review-workspace[data-mobile-tab="detail"]) .smear-analysis-disclaimer,
+  .smear-analysis-immersive:has(.cell-review-workspace[data-mobile-tab="result"]) .smear-analysis-disclaimer {
+    display: none;
+  }
+
+}
+
+@media (max-width: 440px) {
+  .smear-analysis-immersive .cell-gallery-search {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-gallery-panel {
+    top: 124px;
+  }
+
+  .smear-analysis-immersive .cell-review-workspace[data-mobile-tab="cells"] .cell-crop-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .smear-analysis-immersive .cell-detail-facts,
+  .smear-analysis-immersive .classification-facts,
+  .smear-analysis-immersive .cell-review-actions,
+  .smear-analysis-immersive .cell-result-content dl {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smear-analysis-immersive *,
+  .smear-analysis-immersive *::before,
+  .smear-analysis-immersive *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+.smear-analysis-immersive .scientific-annotations {
+  border: 1px solid color-mix(in srgb, var(--color-border, #64748b) 38%, transparent);
+  border-radius: .75rem;
+  padding: .75rem;
+  min-width: 0;
+}
+
+.smear-analysis-immersive > .scientific-annotations {
+  margin: 0 1rem .75rem;
+  background: color-mix(in srgb, var(--color-surface, #fff) 92%, transparent);
+}
+
+.smear-analysis-immersive .scientific-annotations > header,
+.smear-analysis-immersive .scientific-annotation-actions,
+.smear-analysis-immersive .scientific-annotation-form > div,
+.smear-analysis-immersive .human-label-buttons {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.smear-analysis-immersive .scientific-annotations > header { justify-content: space-between; }
+.smear-analysis-immersive .scientific-annotations h3 { margin: 0; font-size: .82rem; letter-spacing: .06em; }
+.smear-analysis-immersive .scientific-annotations ul,
+.smear-analysis-immersive .scientific-annotations ol { margin: .6rem 0 0; padding-left: 1.15rem; }
+.smear-analysis-immersive .scientific-annotations li > div:first-child { display: grid; gap: .2rem; }
+.smear-analysis-immersive .scientific-annotations small { display: block; opacity: .78; margin-top: .2rem; }
+.smear-analysis-immersive .scientific-annotation-form { display: grid; gap: .55rem; margin-top: .6rem; }
+.smear-analysis-immersive .scientific-annotation-form label { display: grid; gap: .2rem; }
+.smear-analysis-immersive .scientific-annotation-form input,
+.smear-analysis-immersive .scientific-annotation-form textarea { width: 100%; box-sizing: border-box; }
+.smear-analysis-immersive .human-label-buttons { border: 0; padding: 0; margin: 0; }
+.smear-analysis-immersive .human-label-buttons legend { width: 100%; }
+.smear-analysis-immersive .human-label-buttons button[aria-pressed='true'] {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  font-weight: 700;
+}
+.smear-analysis-immersive .human-classification-current { display: grid; gap: .35rem; }
+.smear-analysis-immersive .human-classification-current > strong { font-size: 1.05rem; }
+.smear-analysis-immersive .human-ai-disagreement {
+  width: fit-content;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: .2rem .5rem;
+  font-size: .75rem;
+}
+.smear-analysis-immersive .classification-review-history summary h3 { display: inline; }
+
+@media (max-width: 720px) {
+  .smear-analysis-immersive > .scientific-annotations { margin-inline: .5rem; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Unified control bar (six groups)
+
+   Layout only: every control keeps the markup, state, handlers and visual
+   treatment it already had. Two kinds of group:
+
+   - informational (Muestra, Resultado experimental): label + value, never
+     pressable;
+   - functional (Controles de imagen, Imagen, Estado de detección): label +
+     active value on a trigger that folds a popover, plus Buscar célula, whose
+     single input sits inline because a popover would add nothing.
+
+   The bar itself carries the glass treatment (see the shared rule near the top
+   of this file); its groups are transparent so the row reads as one object.
+   ───────────────────────────────────────────────────────────────────────── */
+.smear-analysis-immersive .cell-controlbar-group,
+.smear-analysis-immersive .cell-controlbar-viewer-slot {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.smear-analysis-immersive .cell-controlbar-trigger,
+.smear-analysis-immersive .cell-controlbar-group--readout {
+  display: grid;
+  min-width: 0;
+  max-width: 190px;
+  align-content: center;
+  gap: 1px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  padding: 4px 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-align: left;
+}
+
+.smear-analysis-immersive .cell-controlbar-trigger {
+  cursor: pointer;
+}
+
+/* Before the viewer's portal lands (or with no image at all) the slot adds no
+   group, so it must not contribute a separator either. */
+.smear-analysis-immersive .cell-controlbar-viewer-slot:empty {
+  display: none;
+}
+
+/* Informational: no pointer, no button hover. */
+.smear-analysis-immersive .cell-controlbar-group--readout {
+  cursor: default;
+}
+
+.smear-analysis-immersive .cell-controlbar-label {
+  color: var(--smear-muted);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-controlbar-value {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  color: var(--smear-primary);
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-controlbar-value > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-analysis-immersive .cell-controlbar-group--readout .cell-controlbar-value {
+  color: var(--smear-text);
+}
+
+.smear-analysis-immersive .cell-controlbar-trigger:hover,
+.smear-analysis-immersive .cell-controlbar-trigger[aria-expanded="true"] {
+  border-color: rgba(164, 230, 255, .3);
+  background: rgba(164, 230, 255, .1);
+}
+
+/* Separators between groups, drawn by the bar itself. */
+.smear-analysis-immersive .cell-immersive-controlbar > * + * {
+  border-left: 1px solid var(--smear-glass-border);
+  padding-left: 4px;
+}
+
+/* Cell search: the same form, shrunk to a bar-sized inline field. */
+.smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-search {
+  flex: 0 0 auto;
+  width: 196px;
+  min-height: 34px;
+  border: 1px solid var(--smear-glass-border);
+  border-radius: 999px;
+  background: rgba(164, 230, 255, .05);
+  padding: 3px 5px 3px 11px;
+}
+
+/* Group A: the case card stops floating and becomes the bar's first group; the
+   drawer the "+" reveals hangs under it as a single absolute layer. */
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card {
+  position: relative;
+  z-index: auto;
+  top: auto;
+  left: auto;
+  width: auto;
+  max-width: 220px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card > .cell-panel-heading {
+  display: grid;
+  position: static;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 6px;
+  border: 0;
+  background: transparent;
+  padding: 4px 6px 4px 11px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card h2 {
+  margin: 0;
+  color: var(--smear-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card-code {
+  grid-column: 1;
+  overflow: hidden;
+  color: var(--smear-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar
+  .workflow-case-card > .cell-panel-heading > button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar .workflow-case-card-drawer {
+  display: grid;
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 290px;
+  max-width: calc(100vw - 32px);
+  max-height: min(60vh, 460px);
+  overflow-y: auto;
+  border: 1px solid var(--smear-glass-border);
+  border-radius: 10px;
+  background: var(--smear-glass);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.smear-workflow--immersive .cell-immersive-controlbar
+  .workflow-case-card[data-expanded="false"] .workflow-case-card-drawer {
+  display: none;
+}
+
+/* The gallery rail heading's image label, next to the detection-status filter
+   dropdown and the collapse button. */
+.smear-analysis-immersive .cell-gallery-panel-label {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+/* ── Portaled popovers ────────────────────────────────────────────────────
+   Like .cell-gallery-filter-menu, these mount on document.body so no overflow
+   or backdrop-filter can clip them, which also puts them outside
+   .smear-analysis-immersive: the --smear-* tokens are therefore redeclared here
+   from the same --color-* source of truth, and the viewer toolbar's own rules
+   are repeated for this one context.
+   ───────────────────────────────────────────────────────────────────────── */
+.cell-controlbar-menu {
+  --smear-primary: var(--color-primary);
+  --smear-muted: var(--color-on-surface-variant);
+  --smear-glass-border: rgba(164, 230, 255, .17);
+  position: fixed;
+  z-index: 200;
+  max-width: calc(100vw - 24px);
+}
+
+.cell-controlbar-menu--tools,
+.cell-controlbar-menu--image {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(164, 230, 255, .17);
+  border-radius: 10px;
+  background: rgba(11, 19, 38, .96);
+  padding: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.cell-controlbar-menu--tools { width: 320px; }
+.cell-controlbar-menu--image { width: 280px; }
+
+/* Group "Resultado experimental": the popover holds the same markup that used
+   to live in the standalone `#cell-result-panel` section (metrics grid +
+   automatic/reviewed comparison), so its rules are repeated here for the
+   portaled context exactly like the tools/image popovers above. */
+.cell-controlbar-menu--result {
+  display: grid;
+  width: min(720px, calc(100vw - 24px));
+  max-height: min(560px, calc(100vh - 48px));
+  overflow-y: auto;
+  border: 1px solid rgba(164, 230, 255, .17);
+  border-radius: 10px;
+  background: rgba(11, 19, 38, .96);
+  padding: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.cell-controlbar-menu--result .cell-result-content {
+  display: grid;
+  grid-template-columns: minmax(190px, .9fr) minmax(300px, 1.4fr);
+  gap: 12px;
+}
+
+.cell-controlbar-menu--result .cell-result-content h2 {
+  margin: 3px 0 7px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.cell-controlbar-menu--result .cell-result-content p {
+  margin: 0;
+  color: var(--smear-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.cell-controlbar-menu--result .cell-result-content dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+}
+
+.cell-controlbar-menu--result .cell-result-content dl > div {
+  min-width: 0;
+  border: 1px solid rgba(164, 230, 255, .1);
+  border-radius: 4px;
+  background: rgba(6, 14, 32, .52);
+  padding: 6px;
+}
+
+.cell-controlbar-menu--result .cell-result-content dt {
+  color: var(--smear-muted);
+  font-size: 7px;
+}
+
+.cell-controlbar-menu--result .cell-result-content dd {
+  margin: 2px 0 0;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.cell-controlbar-menu--result .cell-result-content .cell-summary-comparison {
+  grid-column: 1 / -1;
+  border-top: 1px solid rgba(164, 230, 255, .12);
+  color: var(--smear-muted);
+  padding-top: 8px;
+  font-size: 8px;
+}
+
+@media (max-width: 440px) {
+  .cell-controlbar-menu--result .cell-result-content {
+    grid-template-columns: 1fr;
+  }
+
+  .cell-controlbar-menu--result .cell-result-content dl {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.cell-controlbar-menu .cell-viewer-controls {
+  display: grid;
+  position: static;
+  width: auto;
+  min-height: 0;
+  gap: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.cell-controlbar-menu .cell-viewer-tool-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+}
+
+.cell-controlbar-menu .cell-viewer-icon-button {
+  display: grid;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(164, 230, 255, .7);
+  cursor: pointer;
+  padding: 7px;
+}
+
+.cell-controlbar-menu .cell-viewer-icon-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.cell-controlbar-menu .cell-viewer-icon-button:hover,
+.cell-controlbar-menu .cell-viewer-icon-button[aria-pressed="true"] {
+  border-color: rgba(164, 230, 255, .32);
+  background: rgba(164, 230, 255, .11);
+  color: var(--smear-primary);
+  box-shadow: 0 0 12px rgba(76, 214, 255, .1);
+}
+
+.cell-controlbar-menu .cell-viewer-icon-button:focus-visible,
+.cell-controlbar-menu select:focus-visible {
+  outline: 2px solid var(--smear-primary);
+  outline-offset: 2px;
+}
+
+.cell-controlbar-menu .cell-viewer-tool-separator {
+  width: 1px;
+  height: 22px;
+  margin: 0 2px;
+  background: rgba(164, 230, 255, .18);
+}
+
+.cell-controlbar-menu .cell-viewer-selectors {
+  display: grid;
+  position: static;
+  top: auto;
+  left: auto;
+  gap: 5px;
+}
+
+.cell-controlbar-menu .cell-viewer-selector {
+  display: grid;
+  align-items: center;
+  gap: 3px;
+}
+
+.cell-controlbar-menu .cell-viewer-selector > span {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  color: var(--smear-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.cell-controlbar-menu .cell-viewer-selector select {
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  border: 1px solid rgba(164, 230, 255, .16);
+  border-radius: 5px;
+  background: rgba(6, 14, 32, .84);
+  color: var(--smear-muted);
+  padding: 3px 21px 3px 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+}
+
+.cell-controlbar-menu .cell-controlbar-readout {
+  color: var(--smear-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .smear-analysis-immersive .cell-immersive-controlbar .cell-gallery-search {
+    width: 210px;
+    min-height: 44px;
+  }
+
+  .smear-analysis-immersive .cell-controlbar-trigger,
+  .smear-analysis-immersive .cell-controlbar-group--readout,
+  .smear-workflow--immersive .cell-immersive-controlbar
+    .workflow-case-card > .cell-panel-heading {
+    min-height: 44px;
+  }
+
+  .cell-controlbar-menu .cell-viewer-icon-button {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .cell-controlbar-menu .cell-viewer-selector select {
+    height: 44px;
+  }
+}

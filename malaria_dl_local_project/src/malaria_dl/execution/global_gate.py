@@ -108,8 +108,18 @@ def managed_execution(args):
                 or set(words) & {'src.malaria_dl.execution.worker', 'src.malaria_dl.training.cli'})
 
 
+def _previous_boot(identity: dict, here: dict) -> bool:
+    """Processes cannot survive a reboot of the same identified host."""
+    return bool(identity.get('host') == here['host']
+                and identity.get('boot_id') and here.get('boot_id')
+                and identity['boot_id'] != here['boot_id'])
+
+
 def process_absent(identity, table=None):
-    if any(identity.get(k) != v for k, v in host_identity().items()):
+    here = host_identity()
+    if _previous_boot(identity, here):
+        return True
+    if any(identity.get(k) != v for k, v in here.items()):
         raise CampaignError('REMOTE_PROCESS_ABSENCE_UNPROVEN')
     table = process_table() if table is None else table
     actual = table.get(identity['pid'])
@@ -168,14 +178,20 @@ def verify_retained_processes(evidence):
     if not evidence:
         return
     here = host_identity()
-    if any(any(i.get(k) != v for k, v in here.items()) for i in evidence.get('identities', [])):
+    identities = evidence.get('identities', [])
+    current = [i for i in identities if not _previous_boot(i, here)]
+    if identities and not current:
+        # PIDs and session IDs may have been reused since that boot. Neither
+        # refers to a retained process in the current boot's process table.
+        return
+    if any(any(i.get(k) != v for k, v in here.items()) for i in current):
         # Evidence from the other host (Docker <-> macOS): its coordinator's own
         # clean release is the only proof available; anything else stays blocked.
         if evidence.get('release_confirmed') is True:
             return
         raise CampaignError('REMOTE_PROCESS_ABSENCE_UNPROVEN')
     table = process_table()
-    for identity in evidence.get('identities', []):
+    for identity in current:
         if not process_absent(identity, table):
             raise CampaignError('PREVIOUS_EXPERIMENT_PROCESS_STILL_ALIVE')
     for sid in evidence.get('sessions', []):

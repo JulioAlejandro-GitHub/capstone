@@ -1,0 +1,16 @@
+/* Visual overlays only. Do not put image dimensions, coordinates or zoom math here. */
+.frotis-v2 .frotis-viewer-marker {
+  border-width: var(--frotis-v2-viewer-border-width);
+  border-color: color-mix(in oklab, var(--frotis-v2-viewer-detection) 70%, transparent);
+  opacity: var(--frotis-v2-viewer-overlay-opacity);
+}
+.frotis-v2 .group:hover .frotis-viewer-marker {
+  opacity: var(--frotis-v2-viewer-overlay-hover-opacity);
+}
+.frotis-v2 .frotis-viewer-marker-selected {
+  border-width: var(--frotis-v2-viewer-selected-border-width);
+  border-color: var(--frotis-v2-viewer-selection);
+}
+.frotis-v2 .frotis-viewer-grid > :not(:last-child) {
+  border-color: color-mix(in oklab, var(--frotis-v2-viewer-grid) var(--frotis-v2-viewer-grid-opacity), transparent);
+}

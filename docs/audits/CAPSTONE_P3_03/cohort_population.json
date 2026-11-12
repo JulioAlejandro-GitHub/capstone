@@ -1,0 +1,2 @@
+[{"split":"test","attempts":60,"unique_samples":2685,"min_participants":60,"max_participants":60,"label_conflicts":0,"patient_conflicts":0,"ungoverned_samples":0}, 
+ {"split":"val","attempts":60,"unique_samples":2693,"min_participants":60,"max_participants":60,"label_conflicts":0,"patient_conflicts":0,"ungoverned_samples":0}]

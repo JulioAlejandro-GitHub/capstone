@@ -1,0 +1,337 @@
+{
+  "note": "Synthetic audit characterization, except champion matrices supplied as observed values. NaN is represented by string NaN. No new scientific experiment.",
+  "cases": [
+    {
+      "name": "val_champion",
+      "input": {
+        "tn": 1246,
+        "fp": 122,
+        "fn": 26,
+        "tp": 1299
+      },
+      "expected_title": "Ejecución estable",
+      "actual": {
+        "level": "success",
+        "title": "Ejecución estable",
+        "message": "La ejecución presenta un comportamiento estable. No se detectan señales fuertes de colapso en la distribución de predicciones."
+      },
+      "metrics": {
+        "recall": 0.9803773584905661,
+        "specificity": 0.9108187134502924,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "test_champion",
+      "input": {
+        "tn": 1262,
+        "fp": 106,
+        "fn": 40,
+        "tp": 1277
+      },
+      "expected_title": "Riesgo por falsos negativos",
+      "actual": {
+        "level": "danger",
+        "title": "Riesgo por falsos negativos",
+        "message": "Se observan falsos negativos que requieren revisión prioritaria."
+      },
+      "metrics": {
+        "recall": 0.9696279422930904,
+        "specificity": 0.922514619883041,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "empty",
+      "input": {},
+      "expected_title": "Sin datos suficientes",
+      "actual": {
+        "level": "neutral",
+        "title": "Sin datos suficientes",
+        "message": "No hay métricas suficientes para un análisis automático."
+      },
+      "metrics": {
+        "recall": null,
+        "specificity": null,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "both_risks",
+      "input": {
+        "tn": 60,
+        "fp": 40,
+        "fn": 10,
+        "tp": 90
+      },
+      "expected_title": "Riesgo por falsos negativos",
+      "actual": {
+        "level": "danger",
+        "title": "Riesgo por falsos negativos",
+        "message": "Se observan falsos negativos que requieren revisión prioritaria."
+      },
+      "metrics": {
+        "recall": 0.9,
+        "specificity": 0.6,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "boundary_stable",
+      "input": {
+        "tn": 70,
+        "fp": 30,
+        "fn": 2,
+        "tp": 98
+      },
+      "expected_title": "Ejecución estable",
+      "actual": {
+        "level": "success",
+        "title": "Ejecución estable",
+        "message": "La ejecución presenta un comportamiento estable. No se detectan señales fuertes de colapso en la distribución de predicciones."
+      },
+      "metrics": {
+        "recall": 0.98,
+        "specificity": 0.7,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "collapse95",
+      "input": {
+        "tn": 3,
+        "fp": 97,
+        "fn": 2,
+        "tp": 98
+      },
+      "expected_title": "Colapso de predicciones",
+      "actual": {
+        "level": "danger",
+        "title": "Colapso de predicciones",
+        "message": "Se detectó colapso en la distribución de predicciones. La mayoría de las predicciones se concentran en una sola clase."
+      },
+      "metrics": {
+        "recall": 0.98,
+        "specificity": 0.03,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "collapse_no_metrics",
+      "input": {
+        "prediction_collapse_detected": true
+      },
+      "expected_title": "Sin datos suficientes",
+      "actual": {
+        "level": "neutral",
+        "title": "Sin datos suficientes",
+        "message": "No hay métricas suficientes para un análisis automático."
+      },
+      "metrics": {
+        "recall": null,
+        "specificity": null,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "zero_matrix_valid_rates",
+      "input": {
+        "tn": 0,
+        "fp": 0,
+        "fn": 0,
+        "tp": 0,
+        "recall": 1,
+        "specificity": 1,
+        "prediction_collapse_detected": true
+      },
+      "expected_title": "Sin datos suficientes",
+      "actual": {
+        "level": "neutral",
+        "title": "Sin datos suficientes",
+        "message": "No hay métricas suficientes para un análisis automático."
+      },
+      "metrics": {
+        "recall": 1,
+        "specificity": 1,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "recall90_fn_missing",
+      "input": {
+        "recall": 0.9,
+        "specificity": 0.9
+      },
+      "expected_title": "Lectura no concluyente",
+      "actual": {
+        "level": "neutral",
+        "title": "Lectura no concluyente",
+        "message": "Las métricas disponibles no activan una señal automática concluyente; se recomienda revisar el detalle."
+      },
+      "metrics": {
+        "recall": 0.9,
+        "specificity": 0.9,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "recall90_fn_zero",
+      "input": {
+        "fn": 0,
+        "recall": 0.9,
+        "specificity": 0.9
+      },
+      "expected_title": "Lectura no concluyente",
+      "actual": {
+        "level": "neutral",
+        "title": "Lectura no concluyente",
+        "message": "Las métricas disponibles no activan una señal automática concluyente; se recomienda revisar el detalle."
+      },
+      "metrics": {
+        "recall": 0.9,
+        "specificity": 0.9,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "f2_only",
+      "input": {
+        "f2_score": 0.99
+      },
+      "expected_title": "Lectura no concluyente",
+      "actual": {
+        "level": "neutral",
+        "title": "Lectura no concluyente",
+        "message": "Las métricas disponibles no activan una señal automática concluyente; se recomienda revisar el detalle."
+      },
+      "metrics": {
+        "recall": null,
+        "specificity": null,
+        "f2": 0.99,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "out_of_range",
+      "input": {
+        "recall": 2,
+        "specificity": 2
+      },
+      "expected_title": "Ejecución estable",
+      "actual": {
+        "level": "success",
+        "title": "Ejecución estable",
+        "message": "La ejecución presenta un comportamiento estable. No se detectan señales fuertes de colapso en la distribución de predicciones."
+      },
+      "metrics": {
+        "recall": 2,
+        "specificity": 2,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "negative_specificity",
+      "input": {
+        "specificity": -1
+      },
+      "expected_title": "Riesgo por falsos positivos",
+      "actual": {
+        "level": "warning",
+        "title": "Riesgo por falsos positivos",
+        "message": "Se observan falsos positivos elevados, lo que puede aumentar revisiones innecesarias."
+      },
+      "metrics": {
+        "recall": null,
+        "specificity": -1,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "nan_recall_derived",
+      "input": {
+        "tn": 80,
+        "fp": 20,
+        "fn": 2,
+        "tp": 98,
+        "recall_parasitized": "NaN"
+      },
+      "expected_title": "Ejecución estable",
+      "actual": {
+        "level": "success",
+        "title": "Ejecución estable",
+        "message": "La ejecución presenta un comportamiento estable. No se detectan señales fuertes de colapso en la distribución de predicciones."
+      },
+      "metrics": {
+        "recall": 0.98,
+        "specificity": 0.8,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    },
+    {
+      "name": "mismatched_metric_matrix",
+      "input": {
+        "tn": 80,
+        "fp": 20,
+        "fn": 50,
+        "tp": 50,
+        "recall_parasitized": 0.99
+      },
+      "expected_title": "Ejecución estable",
+      "actual": {
+        "level": "success",
+        "title": "Ejecución estable",
+        "message": "La ejecución presenta un comportamiento estable. No se detectan señales fuertes de colapso en la distribución de predicciones."
+      },
+      "metrics": {
+        "recall": 0.99,
+        "specificity": 0.8,
+        "f2": null,
+        "auc": null
+      },
+      "passed": true
+    }
+  ],
+  "coercions": {
+    "input": {
+      "tn": " ",
+      "fp": false,
+      "fn": true,
+      "tp": 0.5
+    },
+    "output": {
+      "tn": 0,
+      "fp": 0,
+      "fn": 1,
+      "tp": 0.5
+    },
+    "passed": true
+  },
+  "passed": 16
+}

@@ -1,0 +1,13 @@
+{"captured_at" : "2026-11-11T01:17:31.224483+00:00", "database" : "malaria_experiments", "read_only" : "on", "runs" : [{"run_type":"training","status":"completed","count":83}, 
+ {"run_type":"training","status":"failed","count":3}], "records" : [{"kind":"artifact","count":2425,"runs":83}, 
+ {"kind":"artifact_prepared","count":2425,"runs":83}, 
+ {"kind":"calibration","count":83,"runs":83}, 
+ {"kind":"e10_event","count":12545,"runs":84}, 
+ {"kind":"epoch","count":2425,"runs":83}, 
+ {"kind":"phase","count":131,"runs":83}, 
+ {"kind":"predictions","count":2425,"runs":83}, 
+ {"kind":"runtime","count":131,"runs":83}, 
+ {"kind":"selection","count":2425,"runs":83}], "history_rows" : 0, "assessments" : [{"kind":"evaluate","state":"verified","count":140}, 
+ {"kind":"explain","state":"failed","count":2}, 
+ {"kind":"explain","state":"verified","count":77}, 
+ {"kind":"represent","state":"verified","count":6}]}

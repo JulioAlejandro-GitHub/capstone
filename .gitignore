@@ -108,3 +108,4 @@ docs/dump-malaria_experiments-202607290730.sql
 
 /docs/audits/capstone_image_trace_1b_2_r2_evidence/*.json
 /docs/audits/capstone_image_trace_1b_2_r2_evidence/*.log
+/frontend2/node_modules

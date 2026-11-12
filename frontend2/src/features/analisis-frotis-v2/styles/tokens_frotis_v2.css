@@ -1,0 +1,166 @@
+/* Frotis v2 only. Values reproduce the integrated mockup. See DESIGN-SYSTEM.md. */
+.frotis-v2 {
+  /* Colores y estados */
+  --frotis-v2-warning-surface: oklch(98.7% 0.022 95.277);
+  --frotis-v2-warning-subtle: oklch(96.2% 0.059 95.617);
+  --frotis-v2-warning-marker: oklch(82.8% 0.189 84.429);
+  --frotis-v2-warning-accent: oklch(76.9% 0.188 70.08);
+  --frotis-v2-warning: oklch(66.6% 0.179 58.318);
+  --frotis-v2-warning-text: oklch(55.5% 0.163 48.998);
+  --frotis-v2-success-surface: oklch(97.9% 0.021 166.113);
+  --frotis-v2-success-subtle: oklch(95% 0.052 163.051);
+  --frotis-v2-success-border: oklch(90.5% 0.093 164.15);
+  --frotis-v2-success-marker: oklch(76.5% 0.177 163.223);
+  --frotis-v2-success-accent: oklch(69.6% 0.17 162.48);
+  --frotis-v2-success: oklch(59.6% 0.145 163.225);
+  --frotis-v2-success-text: oklch(50.8% 0.118 165.612);
+  --frotis-v2-selected: oklch(96.2% 0.018 272.314);
+  --frotis-v2-selected-hover: oklch(93% 0.034 272.788);
+  --frotis-v2-selected-border: oklch(87% 0.065 274.039);
+  --frotis-v2-accent-soft: oklch(78.5% 0.115 274.713);
+  --frotis-v2-accent-muted: oklch(67.3% 0.182 276.935);
+  --frotis-v2-accent: oklch(58.5% 0.233 277.117);
+  --frotis-v2-secondary: oklch(51.1% 0.262 276.966);
+  --frotis-v2-secondary-hover: oklch(45.7% 0.24 277.023);
+  --frotis-v2-secondary-strong: oklch(39.8% 0.195 277.366);
+  --frotis-v2-secondary-dark: oklch(35.9% 0.144 278.697);
+  --frotis-v2-secondary-deep: oklch(25.7% 0.09 281.288);
+  --frotis-v2-error-subtle: oklch(94.1% 0.03 12.58);
+  --frotis-v2-error-accent: oklch(64.5% 0.246 16.439);
+  --frotis-v2-error: oklch(58.6% 0.253 17.585);
+  --frotis-v2-error-text: oklch(51.4% 0.222 16.935);
+  --frotis-v2-surface-muted: oklch(98.4% 0.003 247.858);
+  --frotis-v2-surface-subtle: oklch(96.8% 0.007 247.896);
+  --frotis-v2-border: oklch(92.9% 0.013 255.508);
+  --frotis-v2-border-strong: oklch(86.9% 0.022 252.894);
+  --frotis-v2-text-muted: oklch(70.4% 0.04 256.788);
+  --frotis-v2-text-secondary: oklch(55.4% 0.046 257.417);
+  --frotis-v2-text-control: oklch(44.6% 0.043 257.281);
+  --frotis-v2-text-body: oklch(37.2% 0.044 257.287);
+  --frotis-v2-text-heading: oklch(27.9% 0.041 260.031);
+  --frotis-v2-text-primary: oklch(20.8% 0.042 265.755);
+  --frotis-v2-overlay-base: #000;
+  --frotis-v2-surface: #fff;
+  --frotis-v2-background: #f1f5f9;
+  --frotis-v2-surface-elevated: var(--frotis-v2-surface);
+  --frotis-v2-primary: #4D58A4;
+  --frotis-v2-primary-hover: #3f498c;
+  --frotis-v2-primary-reset-hover: #3d4787;
+  --frotis-v2-hover: var(--frotis-v2-surface-subtle);
+  --frotis-v2-disabled: var(--frotis-v2-surface-muted);
+  --frotis-v2-gallery-surface: #303338;
+  --frotis-v2-gallery-header: #282b30;
+  --frotis-v2-gallery-toolbar: #23262a;
+  --frotis-v2-gallery-canvas: #2d3035;
+  --frotis-v2-detail-surface: #24272c;
+  --frotis-v2-detail-header: #1e2024;
+
+  --frotis-v2-surface-inverse: var(--frotis-v2-text-primary);
+  --frotis-v2-surface-inverse-raised: var(--frotis-v2-text-heading);
+  --frotis-v2-surface-inverse-elevated: var(--frotis-v2-text-body);
+  --frotis-v2-text-inverse: var(--frotis-v2-surface);
+  --frotis-v2-border-inverse: var(--frotis-v2-text-body);
+  --frotis-v2-border-inverse-strong: var(--frotis-v2-text-control);
+  --frotis-v2-border-inverse-deep: var(--frotis-v2-text-heading);
+
+  /* Tipografía */
+  --frotis-v2-font-family: Arial, sans-serif;
+  --frotis-v2-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --frotis-v2-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --frotis-v2-text-xs: 0.75rem;
+  --frotis-v2-text-xs-line-height: calc(1 / 0.75);
+  --frotis-v2-text-sm: 0.875rem;
+  --frotis-v2-text-sm-line-height: calc(1.25 / 0.875);
+  --frotis-v2-text-base: 1rem;
+  --frotis-v2-text-base-line-height: calc(1.5 / 1);
+  --frotis-v2-text-lg: 1.125rem;
+  --frotis-v2-text-lg-line-height: calc(1.75 / 1.125);
+  --frotis-v2-text-xl: 1.25rem;
+  --frotis-v2-text-xl-line-height: calc(1.75 / 1.25);
+  --frotis-v2-font-weight-normal: 400;
+  --frotis-v2-font-weight-medium: 500;
+  --frotis-v2-font-weight-semibold: 600;
+  --frotis-v2-font-weight-bold: 700;
+  --frotis-v2-tracking-tighter: -0.05em;
+  --frotis-v2-tracking-tight: -0.025em;
+  --frotis-v2-tracking-wide: 0.025em;
+  --frotis-v2-tracking-wider: 0.05em;
+  --frotis-v2-leading-relaxed: 1.625;
+  --frotis-v2-text-micro: 8px;
+  --frotis-v2-text-badge: 9px;
+  --frotis-v2-text-caption: 10px;
+  --frotis-v2-text-label: 11px;
+
+  /* Espaciados */
+  --frotis-v2-space: 0.25rem;
+  --frotis-v2-header-padding-y: 8px;
+  --frotis-v2-control-gap: 0.375rem;
+  --frotis-v2-panel-gap: 1.5rem;
+  --frotis-v2-component-padding: 1rem;
+
+  /* Dimensiones */
+  --frotis-v2-panel-md: 28rem;
+  --frotis-v2-panel-lg: 32rem;
+  --frotis-v2-panel-xl: 36rem;
+  --frotis-v2-panel-2xl: 42rem;
+  --frotis-v2-panel-4xl: 56rem;
+  --frotis-v2-header-height: 56px;
+  --frotis-v2-toolbar-height: 2.25rem;
+  --frotis-v2-sidebar-width: 18rem;
+  --frotis-v2-sidebar-width-compact: 16rem;
+  --frotis-v2-popover-width: 300px;
+  --frotis-v2-button-size: 1.25rem;
+  --frotis-v2-icon-size: 1rem;
+  --frotis-v2-icon-size-sm: 0.875rem;
+  --frotis-v2-workspace-min-height: 640px;
+  --frotis-v2-workspace-min-height-compact: 760px;
+  --frotis-v2-shell-header-height: 64px;
+
+  /* Superficies y foco */
+  --frotis-v2-radius-xs: var(--frotis-v2-radius-button);
+  --frotis-v2-radius-sm: 0.25rem;
+  --frotis-v2-radius-md: 0.375rem;
+  --frotis-v2-radius-lg: 0.5rem;
+  --frotis-v2-shadow-2xs: 0 1px rgb(0 0 0 / 0.05);
+  --frotis-v2-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --frotis-v2-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --frotis-v2-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --frotis-v2-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --frotis-v2-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --frotis-v2-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --frotis-v2-shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  --frotis-v2-disabled-opacity: 0.5;
+  --frotis-v2-focus: var(--frotis-v2-accent);
+  --frotis-v2-focus-width: 2px;
+  --frotis-v2-focus-offset: 2px;
+  --frotis-v2-radius-button: 0.125rem;
+  --frotis-v2-border-width: 1px;
+  --frotis-v2-divider-width: 1px;
+
+  /* Visor: presentación de overlays */
+  --frotis-v2-viewer-background: #e8d5df;
+  --frotis-v2-viewer-slide: #efd7e3;
+  --frotis-v2-viewer-minimap: #d8b8ca;
+  --frotis-v2-viewer-density: #af5d85;
+  --frotis-v2-micrograph-background: #d9b6c9;
+  --frotis-v2-viewer-overlay: var(--frotis-v2-accent);
+  --frotis-v2-viewer-detection: var(--frotis-v2-accent);
+  --frotis-v2-viewer-selection: var(--frotis-v2-secondary);
+  --frotis-v2-viewer-hover: var(--frotis-v2-accent-muted);
+  --frotis-v2-viewer-grid: var(--frotis-v2-accent);
+  --frotis-v2-viewer-grid-opacity: 30%;
+  --frotis-v2-viewer-overlay-opacity: 0.6;
+  --frotis-v2-viewer-overlay-hover-opacity: 1;
+  --frotis-v2-viewer-border-width: 1px;
+  --frotis-v2-viewer-selected-border-width: 2px;
+  --frotis-v2-viewer-marker-size: 3rem;
+
+  /* Capas */
+  --frotis-v2-z-base: 0;
+  --frotis-v2-z-overlay: 10;
+  --frotis-v2-z-toolbar: 20;
+  --frotis-v2-z-header: 30;
+  --frotis-v2-z-tooltip: 30;
+  --frotis-v2-z-popover: 50;
+  --frotis-v2-z-modal: 50;
+}
