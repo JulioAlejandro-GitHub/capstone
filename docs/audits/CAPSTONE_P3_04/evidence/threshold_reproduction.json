@@ -1,0 +1,152 @@
+{
+  "candidates": 2683,
+  "selected": {
+    "threshold": 0.25116682052612305,
+    "tn": 1122,
+    "fp": 246,
+    "fn": 26,
+    "tp": 1299,
+    "recall": 0.9803773584905661,
+    "specificity": 0.8201754385964912
+  },
+  "persisted": {
+    "beta": 2,
+    "warning": null,
+    "created_at": "2026-10-29T11:31:07",
+    "score_name": "probability_parasitized",
+    "label_mapping": {
+      "0": "uninfected",
+      "1": "parasitized",
+      "version": "clinical_v1_parasitized_positive",
+      "negative_class_name": "uninfected",
+      "positive_class_name": "parasitized",
+      "negative_class_index": 0,
+      "positive_class_index": 1,
+      "raw_model_score_meaning": "probability_parasitized"
+    },
+    "target_recall": 0.98,
+    "negative_label": "uninfected",
+    "positive_label": "parasitized",
+    "schema_version": 1,
+    "threshold_used": 0.25116682052612305,
+    "candidate_count": 2683,
+    "min_specificity": 0,
+    "selected_metrics": {
+      "fn": 26,
+      "fp": 246,
+      "tn": 1122,
+      "tp": 1299,
+      "threshold": 0.25116682052612305,
+      "specificity": 0.8201754385964912,
+      "true_negative": 1122,
+      "true_positive": 1299,
+      "f1_parasitized": 0.9052264808362369,
+      "f2_parasitized": 0.9488677867056245,
+      "false_negative": 26,
+      "false_positive": 246,
+      "confusion_matrix": [
+        [
+          1122,
+          246
+        ],
+        [
+          26,
+          1299
+        ]
+      ],
+      "balanced_accuracy": 0.9002763985435287,
+      "n_pred_uninfected": 1148,
+      "n_pred_parasitized": 1545,
+      "pr_auc_parasitized": 0.9815557751702232,
+      "recall_parasitized": 0.9803773584905661,
+      "roc_auc_parasitized": 0.9816087388282027,
+      "precision_parasitized": 0.8407766990291262,
+      "percent_pred_uninfected": 0.4262903824730784,
+      "sensitivity_parasitized": 0.9803773584905661,
+      "percent_pred_parasitized": 0.5737096175269216,
+      "prediction_collapse_detected": false
+    },
+    "threshold_policy": "target_recall",
+    "threshold_source": "validation_calibration",
+    "calibration_split": "val",
+    "default_threshold": 0.5,
+    "threshold_selected": 0.25116682052612305,
+    "negative_class_index": 0,
+    "positive_class_index": 1,
+    "label_mapping_version": "clinical_v1_parasitized_positive",
+    "raw_model_score_meaning": "probability_parasitized",
+    "target_recall_satisfied": true,
+    "default_threshold_metrics": {
+      "fn": 63,
+      "fp": 96,
+      "tn": 1272,
+      "tp": 1262,
+      "threshold": 0.5,
+      "specificity": 0.9298245614035088,
+      "true_negative": 1272,
+      "true_positive": 1262,
+      "f1_parasitized": 0.9407379798732762,
+      "f2_parasitized": 0.9477320516671673,
+      "false_negative": 63,
+      "false_positive": 96,
+      "confusion_matrix": [
+        [
+          1272,
+          96
+        ],
+        [
+          63,
+          1262
+        ]
+      ],
+      "balanced_accuracy": 0.941138695796094,
+      "n_pred_uninfected": 1335,
+      "n_pred_parasitized": 1358,
+      "pr_auc_parasitized": 0.9815557751702232,
+      "recall_parasitized": 0.9524528301886792,
+      "roc_auc_parasitized": 0.9816087388282027,
+      "precision_parasitized": 0.9293078055964654,
+      "percent_pred_uninfected": 0.4957296695135537,
+      "sensitivity_parasitized": 0.9524528301886792,
+      "percent_pred_parasitized": 0.5042703304864463,
+      "prediction_collapse_detected": false
+    },
+    "min_specificity_satisfied": true,
+    "validation_metrics_at_threshold": {
+      "fn": 26,
+      "fp": 246,
+      "tn": 1122,
+      "tp": 1299,
+      "threshold": 0.25116682052612305,
+      "specificity": 0.8201754385964912,
+      "true_negative": 1122,
+      "true_positive": 1299,
+      "f1_parasitized": 0.9052264808362369,
+      "f2_parasitized": 0.9488677867056245,
+      "false_negative": 26,
+      "false_positive": 246,
+      "confusion_matrix": [
+        [
+          1122,
+          246
+        ],
+        [
+          26,
+          1299
+        ]
+      ],
+      "balanced_accuracy": 0.9002763985435287,
+      "n_pred_uninfected": 1148,
+      "n_pred_parasitized": 1545,
+      "pr_auc_parasitized": 0.9815557751702232,
+      "recall_parasitized": 0.9803773584905661,
+      "roc_auc_parasitized": 0.9816087388282027,
+      "precision_parasitized": 0.8407766990291262,
+      "percent_pred_uninfected": 0.4262903824730784,
+      "sensitivity_parasitized": 0.9803773584905661,
+      "percent_pred_parasitized": 0.5737096175269216,
+      "prediction_collapse_detected": false
+    },
+    "target_recall_satisfied_on_validation": true
+  }
+}

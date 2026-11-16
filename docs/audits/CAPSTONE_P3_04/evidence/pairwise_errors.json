@@ -1,0 +1,44 @@
+[
+  {
+    "left": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "right": "d1ce1424-c7c3-4ee8-816d-3b91090b42cf",
+    "n": 2685,
+    "agreement": 2569,
+    "left_errors": 270,
+    "right_errors": 290,
+    "shared_errors": 222,
+    "left_only_errors": 48,
+    "right_only_errors": 68,
+    "shared_fn": 35,
+    "shared_fp": 187,
+    "oracle": 0.9173184357541899
+  },
+  {
+    "left": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "right": "521219d9-7865-428f-9bcf-1491dd754a5e",
+    "n": 2685,
+    "agreement": 2210,
+    "left_errors": 270,
+    "right_errors": 639,
+    "shared_errors": 217,
+    "left_only_errors": 53,
+    "right_only_errors": 422,
+    "shared_fn": 20,
+    "shared_fp": 197,
+    "oracle": 0.9191806331471136
+  },
+  {
+    "left": "d1ce1424-c7c3-4ee8-816d-3b91090b42cf",
+    "right": "521219d9-7865-428f-9bcf-1491dd754a5e",
+    "n": 2685,
+    "agreement": 2234,
+    "left_errors": 290,
+    "right_errors": 639,
+    "shared_errors": 239,
+    "left_only_errors": 51,
+    "right_only_errors": 400,
+    "shared_fn": 18,
+    "shared_fp": 221,
+    "oracle": 0.9109869646182496
+  }
+]

@@ -1,0 +1,744 @@
+[
+  {
+    "table_name": "artifacts",
+    "tgname": "trg_artifacts_protect_governed_identity",
+    "definition": "CREATE TRIGGER trg_artifacts_protect_governed_identity BEFORE UPDATE ON public.artifacts FOR EACH ROW EXECUTE FUNCTION protect_governed_artifact_identity()",
+    "proname": "protect_governed_artifact_identity",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "assessment_artifacts",
+    "tgname": "assessment_artifact_guard",
+    "definition": "CREATE TRIGGER assessment_artifact_guard BEFORE INSERT OR DELETE OR UPDATE ON public.assessment_artifacts FOR EACH ROW EXECUTE FUNCTION assessment_result_guard()",
+    "proname": "assessment_result_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "assessment_attempts",
+    "tgname": "assessment_attempt_guard",
+    "definition": "CREATE TRIGGER assessment_attempt_guard BEFORE INSERT OR DELETE OR UPDATE ON public.assessment_attempts FOR EACH ROW EXECUTE FUNCTION assessment_attempt_guard()",
+    "proname": "assessment_attempt_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "assessment_attempts",
+    "tgname": "global_assessment_reservation",
+    "definition": "CREATE TRIGGER global_assessment_reservation BEFORE INSERT OR UPDATE ON public.assessment_attempts FOR EACH ROW EXECUTE FUNCTION experiment_reservation_guard()",
+    "proname": "experiment_reservation_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "assessment_campaign_consumers",
+    "tgname": "assessment_consumer_guard",
+    "definition": "CREATE TRIGGER assessment_consumer_guard BEFORE INSERT ON public.assessment_campaign_consumers FOR EACH ROW EXECUTE FUNCTION assessment_consumer_guard()",
+    "proname": "assessment_consumer_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "assessment_campaign_consumers",
+    "tgname": "assessment_consumer_immutable",
+    "definition": "CREATE TRIGGER assessment_consumer_immutable BEFORE DELETE OR UPDATE ON public.assessment_campaign_consumers FOR EACH ROW EXECUTE FUNCTION assessment_immutable()",
+    "proname": "assessment_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "assessment_final_locks",
+    "tgname": "assessment_lock_immutable",
+    "definition": "CREATE TRIGGER assessment_lock_immutable BEFORE DELETE OR UPDATE ON public.assessment_final_locks FOR EACH ROW EXECUTE FUNCTION assessment_immutable()",
+    "proname": "assessment_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "assessment_identities",
+    "tgname": "assessment_identity_guard",
+    "definition": "CREATE TRIGGER assessment_identity_guard BEFORE INSERT ON public.assessment_identities FOR EACH ROW EXECUTE FUNCTION assessment_identity_guard()",
+    "proname": "assessment_identity_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "assessment_identities",
+    "tgname": "assessment_identity_immutable",
+    "definition": "CREATE TRIGGER assessment_identity_immutable BEFORE DELETE OR UPDATE ON public.assessment_identities FOR EACH ROW EXECUTE FUNCTION assessment_immutable()",
+    "proname": "assessment_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "assessment_results",
+    "tgname": "assessment_result_guard",
+    "definition": "CREATE TRIGGER assessment_result_guard BEFORE INSERT OR DELETE OR UPDATE ON public.assessment_results FOR EACH ROW EXECUTE FUNCTION assessment_result_guard()",
+    "proname": "assessment_result_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "audit_events",
+    "tgname": "audit_events_append_only",
+    "definition": "CREATE TRIGGER audit_events_append_only BEFORE DELETE OR UPDATE ON public.audit_events FOR EACH ROW EXECUTE FUNCTION prevent_audit_event_mutation()",
+    "proname": "prevent_audit_event_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_attempts",
+    "tgname": "campaign_attempt_audit",
+    "definition": "CREATE TRIGGER campaign_attempt_audit AFTER INSERT OR UPDATE ON public.campaign_attempts FOR EACH ROW EXECUTE FUNCTION campaign_audit()",
+    "proname": "campaign_audit",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_attempts",
+    "tgname": "campaign_attempt_guard",
+    "definition": "CREATE TRIGGER campaign_attempt_guard BEFORE INSERT OR DELETE OR UPDATE ON public.campaign_attempts FOR EACH ROW EXECUTE FUNCTION campaign_attempt_guard()",
+    "proname": "campaign_attempt_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_attempts",
+    "tgname": "campaign_attempt_state",
+    "definition": "CREATE TRIGGER campaign_attempt_state AFTER INSERT OR UPDATE ON public.campaign_attempts FOR EACH ROW EXECUTE FUNCTION campaign_attempt_state()",
+    "proname": "campaign_attempt_state",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_attempts",
+    "tgname": "global_attempt_reservation",
+    "definition": "CREATE TRIGGER global_attempt_reservation BEFORE INSERT ON public.campaign_attempts FOR EACH ROW EXECUTE FUNCTION experiment_reservation_guard()",
+    "proname": "experiment_reservation_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_configurations",
+    "tgname": "campaign_configuration_audit",
+    "definition": "CREATE TRIGGER campaign_configuration_audit AFTER INSERT OR DELETE OR UPDATE ON public.campaign_configurations FOR EACH ROW EXECUTE FUNCTION campaign_audit()",
+    "proname": "campaign_audit",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_configurations",
+    "tgname": "campaign_configuration_guard",
+    "definition": "CREATE TRIGGER campaign_configuration_guard BEFORE INSERT OR DELETE OR UPDATE ON public.campaign_configurations FOR EACH ROW EXECUTE FUNCTION campaign_configuration_guard()",
+    "proname": "campaign_configuration_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_controlled_requests",
+    "tgname": "controlled_binding_guard",
+    "definition": "CREATE CONSTRAINT TRIGGER controlled_binding_guard AFTER INSERT ON public.campaign_controlled_requests DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION controlled_binding_guard()",
+    "proname": "controlled_binding_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_controlled_requests",
+    "tgname": "controlled_request_guard",
+    "definition": "CREATE TRIGGER controlled_request_guard BEFORE INSERT OR DELETE OR UPDATE ON public.campaign_controlled_requests FOR EACH ROW EXECUTE FUNCTION campaign_technical_guard()",
+    "proname": "campaign_technical_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_members",
+    "tgname": "campaign_member_audit",
+    "definition": "CREATE TRIGGER campaign_member_audit AFTER INSERT OR DELETE OR UPDATE ON public.campaign_members FOR EACH ROW EXECUTE FUNCTION campaign_audit()",
+    "proname": "campaign_audit",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_members",
+    "tgname": "campaign_member_guard",
+    "definition": "CREATE TRIGGER campaign_member_guard BEFORE INSERT OR DELETE OR UPDATE ON public.campaign_members FOR EACH ROW EXECUTE FUNCTION campaign_member_guard()",
+    "proname": "campaign_member_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "campaign_technical_revisions",
+    "tgname": "technical_revision_guard",
+    "definition": "CREATE TRIGGER technical_revision_guard BEFORE INSERT OR DELETE OR UPDATE ON public.campaign_technical_revisions FOR EACH ROW EXECUTE FUNCTION campaign_technical_guard()",
+    "proname": "campaign_technical_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_classification_events",
+    "tgname": "trg_cell_classification_events_append_only",
+    "definition": "CREATE TRIGGER trg_cell_classification_events_append_only BEFORE DELETE OR UPDATE ON public.cell_classification_events FOR EACH ROW EXECUTE FUNCTION reject_cell_classification_row_mutation()",
+    "proname": "reject_cell_classification_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_classification_inputs",
+    "tgname": "trg_cell_classification_inputs_append_only",
+    "definition": "CREATE TRIGGER trg_cell_classification_inputs_append_only BEFORE DELETE OR UPDATE ON public.cell_classification_inputs FOR EACH ROW EXECUTE FUNCTION reject_cell_classification_row_mutation()",
+    "proname": "reject_cell_classification_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_classification_inputs",
+    "tgname": "trg_cell_classification_inputs_insert_state",
+    "definition": "CREATE TRIGGER trg_cell_classification_inputs_insert_state BEFORE INSERT ON public.cell_classification_inputs FOR EACH ROW EXECUTE FUNCTION validate_cell_classification_insert_state()",
+    "proname": "validate_cell_classification_insert_state",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_classification_inputs",
+    "tgname": "trg_cell_classification_inputs_snapshot",
+    "definition": "CREATE TRIGGER trg_cell_classification_inputs_snapshot BEFORE INSERT ON public.cell_classification_inputs FOR EACH ROW EXECUTE FUNCTION validate_cell_classification_input_snapshot()",
+    "proname": "validate_cell_classification_input_snapshot",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_classification_reviews",
+    "tgname": "trg_cell_classification_reviews_append_only",
+    "definition": "CREATE TRIGGER trg_cell_classification_reviews_append_only BEFORE DELETE OR UPDATE ON public.cell_classification_reviews FOR EACH ROW EXECUTE FUNCTION reject_cell_classification_row_mutation()",
+    "proname": "reject_cell_classification_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_classification_reviews",
+    "tgname": "trg_cell_classification_reviews_validate",
+    "definition": "CREATE TRIGGER trg_cell_classification_reviews_validate BEFORE INSERT ON public.cell_classification_reviews FOR EACH ROW EXECUTE FUNCTION validate_cell_classification_review()",
+    "proname": "validate_cell_classification_review",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_classification_runs",
+    "tgname": "trg_cell_classification_runs_protected",
+    "definition": "CREATE TRIGGER trg_cell_classification_runs_protected BEFORE DELETE OR UPDATE ON public.cell_classification_runs FOR EACH ROW EXECUTE FUNCTION protect_cell_classification_run()",
+    "proname": "protect_cell_classification_run",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_classification_runs",
+    "tgname": "trg_cell_classification_runs_snapshot",
+    "definition": "CREATE TRIGGER trg_cell_classification_runs_snapshot BEFORE INSERT ON public.cell_classification_runs FOR EACH ROW EXECUTE FUNCTION validate_cell_classification_run_snapshot()",
+    "proname": "validate_cell_classification_run_snapshot",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_crops",
+    "tgname": "trg_cell_crops_append_only",
+    "definition": "CREATE TRIGGER trg_cell_crops_append_only BEFORE DELETE OR UPDATE ON public.cell_crops FOR EACH ROW EXECUTE FUNCTION reject_cell_analysis_row_mutation()",
+    "proname": "reject_cell_analysis_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_detection_events",
+    "tgname": "trg_cell_detection_events_append_only",
+    "definition": "CREATE TRIGGER trg_cell_detection_events_append_only BEFORE DELETE OR UPDATE ON public.cell_detection_events FOR EACH ROW EXECUTE FUNCTION reject_cell_analysis_row_mutation()",
+    "proname": "reject_cell_analysis_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_detection_runs",
+    "tgname": "trg_cell_detection_runs_immutable_identity",
+    "definition": "CREATE TRIGGER trg_cell_detection_runs_immutable_identity BEFORE DELETE OR UPDATE ON public.cell_detection_runs FOR EACH ROW EXECUTE FUNCTION protect_cell_detection_run_identity()",
+    "proname": "protect_cell_detection_run_identity",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_detections",
+    "tgname": "trg_cell_detections_append_only",
+    "definition": "CREATE TRIGGER trg_cell_detections_append_only BEFORE DELETE OR UPDATE ON public.cell_detections FOR EACH ROW EXECUTE FUNCTION reject_cell_analysis_row_mutation()",
+    "proname": "reject_cell_analysis_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_explanations",
+    "tgname": "trg_cell_explanations_contract",
+    "definition": "CREATE TRIGGER trg_cell_explanations_contract BEFORE INSERT OR UPDATE ON public.cell_explanations FOR EACH ROW EXECUTE FUNCTION validate_cell_explanation_contract()",
+    "proname": "validate_cell_explanation_contract",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_explanations",
+    "tgname": "trg_cell_explanations_protected",
+    "definition": "CREATE TRIGGER trg_cell_explanations_protected BEFORE DELETE OR UPDATE ON public.cell_explanations FOR EACH ROW EXECUTE FUNCTION protect_cell_explanation()",
+    "proname": "protect_cell_explanation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_predictions",
+    "tgname": "trg_cell_predictions_append_only",
+    "definition": "CREATE TRIGGER trg_cell_predictions_append_only BEFORE DELETE OR UPDATE ON public.cell_predictions FOR EACH ROW EXECUTE FUNCTION reject_cell_classification_row_mutation()",
+    "proname": "reject_cell_classification_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_predictions",
+    "tgname": "trg_cell_predictions_insert_state",
+    "definition": "CREATE TRIGGER trg_cell_predictions_insert_state BEFORE INSERT ON public.cell_predictions FOR EACH ROW EXECUTE FUNCTION validate_cell_classification_insert_state()",
+    "proname": "validate_cell_classification_insert_state",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "cell_predictions",
+    "tgname": "trg_cell_predictions_validate_input",
+    "definition": "CREATE TRIGGER trg_cell_predictions_validate_input BEFORE INSERT ON public.cell_predictions FOR EACH ROW EXECUTE FUNCTION validate_cell_prediction_input()",
+    "proname": "validate_cell_prediction_input",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "dataset_materialization_activations",
+    "tgname": "trg_activation_materialization_consistency",
+    "definition": "CREATE TRIGGER trg_activation_materialization_consistency BEFORE INSERT OR UPDATE ON public.dataset_materialization_activations FOR EACH ROW EXECUTE FUNCTION enforce_activation_materialization_consistency()",
+    "proname": "enforce_activation_materialization_consistency",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "dataset_split_assignments",
+    "tgname": "trg_dataset_assignment_consistency",
+    "definition": "CREATE TRIGGER trg_dataset_assignment_consistency BEFORE INSERT OR UPDATE ON public.dataset_split_assignments FOR EACH ROW EXECUTE FUNCTION enforce_dataset_assignment_consistency()",
+    "proname": "enforce_dataset_assignment_consistency",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "dataset_split_assignments",
+    "tgname": "trg_protect_frozen_dataset_assignment_updates",
+    "definition": "CREATE TRIGGER trg_protect_frozen_dataset_assignment_updates BEFORE UPDATE ON public.dataset_split_assignments FOR EACH ROW EXECUTE FUNCTION protect_frozen_dataset_assignment_updates()",
+    "proname": "protect_frozen_dataset_assignment_updates",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "dataset_split_assignments",
+    "tgname": "trg_protect_frozen_dataset_assignments_delete",
+    "definition": "CREATE TRIGGER trg_protect_frozen_dataset_assignments_delete BEFORE DELETE ON public.dataset_split_assignments FOR EACH ROW EXECUTE FUNCTION protect_frozen_dataset_assignments()",
+    "proname": "protect_frozen_dataset_assignments",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "dataset_version_sources",
+    "tgname": "trg_protect_frozen_dataset_version_sources",
+    "definition": "CREATE TRIGGER trg_protect_frozen_dataset_version_sources BEFORE INSERT OR DELETE OR UPDATE ON public.dataset_version_sources FOR EACH ROW EXECUTE FUNCTION protect_frozen_dataset_version_sources()",
+    "proname": "protect_frozen_dataset_version_sources",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "dataset_versions",
+    "tgname": "trg_dataset_version_lifecycle",
+    "definition": "CREATE TRIGGER trg_dataset_version_lifecycle BEFORE UPDATE ON public.dataset_versions FOR EACH ROW EXECUTE FUNCTION enforce_dataset_version_lifecycle()",
+    "proname": "enforce_dataset_version_lifecycle",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "deployed_model_versions",
+    "tgname": "cell_threshold_reference",
+    "definition": "CREATE TRIGGER cell_threshold_reference BEFORE INSERT OR UPDATE ON public.deployed_model_versions FOR EACH ROW EXECUTE FUNCTION validate_cell_assessment_reference()",
+    "proname": "validate_cell_assessment_reference",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "deployed_model_versions",
+    "tgname": "trg_deployed_model_versions_10_immutable",
+    "definition": "CREATE TRIGGER trg_deployed_model_versions_10_immutable BEFORE UPDATE ON public.deployed_model_versions FOR EACH ROW EXECUTE FUNCTION protect_deployed_model_version_payload()",
+    "proname": "protect_deployed_model_version_payload",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "deployed_model_versions",
+    "tgname": "trg_deployed_model_versions_20_validate",
+    "definition": "CREATE TRIGGER trg_deployed_model_versions_20_validate BEFORE INSERT OR UPDATE ON public.deployed_model_versions FOR EACH ROW EXECUTE FUNCTION validate_deployed_model_version()",
+    "proname": "validate_deployed_model_version",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "evaluation_ensemble_members",
+    "tgname": "v2_ensemble_complete",
+    "definition": "CREATE CONSTRAINT TRIGGER v2_ensemble_complete AFTER INSERT ON public.evaluation_ensemble_members DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_evaluation_complete()",
+    "proname": "v2_evaluation_complete",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "evaluation_ensemble_members",
+    "tgname": "v2_ensemble_immutable",
+    "definition": "CREATE TRIGGER v2_ensemble_immutable BEFORE DELETE OR UPDATE ON public.evaluation_ensemble_members FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "evaluations",
+    "tgname": "e04_evaluation_complete",
+    "definition": "CREATE CONSTRAINT TRIGGER e04_evaluation_complete AFTER INSERT ON public.evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION e04_calibration_complete()",
+    "proname": "e04_calibration_complete",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "evaluations",
+    "tgname": "e04_legacy_admission",
+    "definition": "CREATE TRIGGER e04_legacy_admission BEFORE INSERT ON public.evaluations FOR EACH ROW EXECUTE FUNCTION e04_legacy_admission()",
+    "proname": "e04_legacy_admission",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "evaluations",
+    "tgname": "v2_evaluation_complete",
+    "definition": "CREATE CONSTRAINT TRIGGER v2_evaluation_complete AFTER INSERT ON public.evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_evaluation_complete()",
+    "proname": "v2_evaluation_complete",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "evaluations",
+    "tgname": "v2_evaluation_immutable",
+    "definition": "CREATE TRIGGER v2_evaluation_immutable BEFORE DELETE OR UPDATE ON public.evaluations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "experiment_execution_events",
+    "tgname": "global_execution_event_immutable",
+    "definition": "CREATE TRIGGER global_execution_event_immutable BEFORE DELETE OR UPDATE ON public.experiment_execution_events FOR EACH ROW EXECUTE FUNCTION execution_event_immutable()",
+    "proname": "execution_event_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "experimental_campaigns",
+    "tgname": "campaign_audit",
+    "definition": "CREATE TRIGGER campaign_audit AFTER INSERT OR UPDATE ON public.experimental_campaigns FOR EACH ROW EXECUTE FUNCTION campaign_audit()",
+    "proname": "campaign_audit",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "experimental_campaigns",
+    "tgname": "campaign_guard",
+    "definition": "CREATE TRIGGER campaign_guard BEFORE INSERT OR DELETE OR UPDATE ON public.experimental_campaigns FOR EACH ROW EXECUTE FUNCTION campaign_guard()",
+    "proname": "campaign_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "experimental_campaigns",
+    "tgname": "controlled_pause_guard",
+    "definition": "CREATE TRIGGER controlled_pause_guard BEFORE UPDATE ON public.experimental_campaigns FOR EACH ROW EXECUTE FUNCTION controlled_pause_guard()",
+    "proname": "controlled_pause_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "image_analysis_jobs",
+    "tgname": "trg_image_analysis_jobs_validate",
+    "definition": "CREATE TRIGGER trg_image_analysis_jobs_validate BEFORE INSERT OR UPDATE ON public.image_analysis_jobs FOR EACH ROW EXECUTE FUNCTION validate_image_analysis_job()",
+    "proname": "validate_image_analysis_job",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "image_connected_components",
+    "tgname": "trg_image_connected_components_append_only",
+    "definition": "CREATE TRIGGER trg_image_connected_components_append_only BEFORE DELETE OR UPDATE ON public.image_connected_components FOR EACH ROW EXECUTE FUNCTION reject_cell_analysis_row_mutation()",
+    "proname": "reject_cell_analysis_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "model_versions",
+    "tgname": "trg_model_versions_governance",
+    "definition": "CREATE TRIGGER trg_model_versions_governance BEFORE INSERT OR UPDATE ON public.model_versions FOR EACH ROW EXECUTE FUNCTION enforce_model_version_governance()",
+    "proname": "enforce_model_version_governance",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "models",
+    "tgname": "campaign_catalog_identity_guard",
+    "definition": "CREATE TRIGGER campaign_catalog_identity_guard BEFORE UPDATE ON public.models FOR EACH ROW EXECUTE FUNCTION campaign_catalog_identity_guard()",
+    "proname": "campaign_catalog_identity_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "run_clinical_metrics",
+    "tgname": "v2_binary_metric_guard",
+    "definition": "CREATE TRIGGER v2_binary_metric_guard BEFORE INSERT ON public.run_clinical_metrics FOR EACH ROW EXECUTE FUNCTION v2_binary_metric_guard()",
+    "proname": "v2_binary_metric_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "run_clinical_metrics",
+    "tgname": "v2_metric_immutable",
+    "definition": "CREATE TRIGGER v2_metric_immutable BEFORE DELETE OR UPDATE ON public.run_clinical_metrics FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "run_configurations",
+    "tgname": "v2_config_immutable",
+    "definition": "CREATE TRIGGER v2_config_immutable BEFORE DELETE OR UPDATE ON public.run_configurations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "run_configurations",
+    "tgname": "v2_configuration_guard",
+    "definition": "CREATE TRIGGER v2_configuration_guard BEFORE INSERT ON public.run_configurations FOR EACH ROW EXECUTE FUNCTION v2_configuration_guard()",
+    "proname": "v2_configuration_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "run_lineage",
+    "tgname": "trg_run_lineage_governance",
+    "definition": "CREATE TRIGGER trg_run_lineage_governance BEFORE INSERT OR UPDATE ON public.run_lineage FOR EACH ROW EXECUTE FUNCTION enforce_run_lineage_governance()",
+    "proname": "enforce_run_lineage_governance",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "run_model_deployments",
+    "tgname": "trg_run_model_deployments_validate",
+    "definition": "CREATE TRIGGER trg_run_model_deployments_validate BEFORE INSERT OR UPDATE ON public.run_model_deployments FOR EACH ROW EXECUTE FUNCTION validate_run_model_deployment()",
+    "proname": "validate_run_model_deployment",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "run_threshold_calibration",
+    "tgname": "e04_calibration_complete",
+    "definition": "CREATE CONSTRAINT TRIGGER e04_calibration_complete AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION e04_calibration_complete()",
+    "proname": "e04_calibration_complete",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "run_threshold_calibration",
+    "tgname": "e04_calibration_immutable",
+    "definition": "CREATE TRIGGER e04_calibration_immutable BEFORE DELETE OR UPDATE ON public.run_threshold_calibration FOR EACH ROW EXECUTE FUNCTION e04_calibration_immutable()",
+    "proname": "e04_calibration_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "run_threshold_calibration",
+    "tgname": "v2_calibration_pair_guard",
+    "definition": "CREATE CONSTRAINT TRIGGER v2_calibration_pair_guard AFTER INSERT OR UPDATE ON public.run_threshold_calibration DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION v2_calibration_pair_guard()",
+    "proname": "v2_calibration_pair_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "runs",
+    "tgname": "campaign_run_identity_guard",
+    "definition": "CREATE TRIGGER campaign_run_identity_guard BEFORE UPDATE ON public.runs FOR EACH ROW EXECUTE FUNCTION campaign_run_identity_guard()",
+    "proname": "campaign_run_identity_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "runs",
+    "tgname": "controlled_run_guard",
+    "definition": "CREATE TRIGGER controlled_run_guard BEFORE INSERT OR UPDATE ON public.runs FOR EACH ROW EXECUTE FUNCTION controlled_run_guard()",
+    "proname": "controlled_run_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "scientific_reviews",
+    "tgname": "trg_scientific_reviews_append_only",
+    "definition": "CREATE TRIGGER trg_scientific_reviews_append_only BEFORE DELETE OR UPDATE ON public.scientific_reviews FOR EACH ROW EXECUTE FUNCTION reject_cell_analysis_row_mutation()",
+    "proname": "reject_cell_analysis_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "scientific_validation_annotation_events",
+    "tgname": "trg_validation_annotation_events_append_only",
+    "definition": "CREATE TRIGGER trg_validation_annotation_events_append_only BEFORE DELETE OR UPDATE ON public.scientific_validation_annotation_events FOR EACH ROW EXECUTE FUNCTION prevent_validation_annotation_event_mutation()",
+    "proname": "prevent_validation_annotation_event_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "scientific_validation_annotations",
+    "tgname": "trg_validation_annotation_protected",
+    "definition": "CREATE TRIGGER trg_validation_annotation_protected BEFORE DELETE OR UPDATE ON public.scientific_validation_annotations FOR EACH ROW EXECUTE FUNCTION protect_validation_annotation()",
+    "proname": "protect_validation_annotation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "scientific_validation_classification_runs",
+    "tgname": "trg_validation_classification_runs_immutable",
+    "definition": "CREATE TRIGGER trg_validation_classification_runs_immutable BEFORE DELETE OR UPDATE ON public.scientific_validation_classification_runs FOR EACH ROW EXECUTE FUNCTION prevent_validation_membership_mutation()",
+    "proname": "prevent_validation_membership_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "scientific_validation_detection_runs",
+    "tgname": "trg_validation_detection_runs_immutable",
+    "definition": "CREATE TRIGGER trg_validation_detection_runs_immutable BEFORE DELETE OR UPDATE ON public.scientific_validation_detection_runs FOR EACH ROW EXECUTE FUNCTION prevent_validation_membership_mutation()",
+    "proname": "prevent_validation_membership_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "scientific_validation_images",
+    "tgname": "trg_validation_images_immutable",
+    "definition": "CREATE TRIGGER trg_validation_images_immutable BEFORE DELETE OR UPDATE ON public.scientific_validation_images FOR EACH ROW EXECUTE FUNCTION prevent_validation_membership_mutation()",
+    "proname": "prevent_validation_membership_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "scientific_validation_sessions",
+    "tgname": "trg_validation_snapshot_protected",
+    "definition": "CREATE TRIGGER trg_validation_snapshot_protected BEFORE DELETE OR UPDATE ON public.scientific_validation_sessions FOR EACH ROW EXECUTE FUNCTION protect_validation_snapshot()",
+    "proname": "protect_validation_snapshot",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "smear_analysis_summaries",
+    "tgname": "trg_smear_analysis_summaries_append_only",
+    "definition": "CREATE TRIGGER trg_smear_analysis_summaries_append_only BEFORE DELETE OR UPDATE ON public.smear_analysis_summaries FOR EACH ROW EXECUTE FUNCTION reject_cell_classification_row_mutation()",
+    "proname": "reject_cell_classification_row_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "smear_analysis_summaries",
+    "tgname": "trg_smear_analysis_summaries_insert_state",
+    "definition": "CREATE TRIGGER trg_smear_analysis_summaries_insert_state BEFORE INSERT ON public.smear_analysis_summaries FOR EACH ROW EXECUTE FUNCTION validate_cell_classification_insert_state()",
+    "proname": "validate_cell_classification_insert_state",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "smear_analysis_summaries",
+    "tgname": "trg_smear_analysis_summaries_validate",
+    "definition": "CREATE TRIGGER trg_smear_analysis_summaries_validate BEFORE INSERT ON public.smear_analysis_summaries FOR EACH ROW EXECUTE FUNCTION validate_smear_analysis_summary()",
+    "proname": "validate_smear_analysis_summary",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "stage2_model_publication_events",
+    "tgname": "trg_stage2_publication_events_append_only",
+    "definition": "CREATE TRIGGER trg_stage2_publication_events_append_only BEFORE DELETE OR UPDATE ON public.stage2_model_publication_events FOR EACH ROW EXECUTE FUNCTION prevent_stage2_publication_event_mutation()",
+    "proname": "prevent_stage2_publication_event_mutation",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "stage2_model_publications",
+    "tgname": "cell_publication_reference",
+    "definition": "CREATE TRIGGER cell_publication_reference BEFORE INSERT OR UPDATE ON public.stage2_model_publications FOR EACH ROW EXECUTE FUNCTION validate_cell_assessment_reference()",
+    "proname": "validate_cell_assessment_reference",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "train_execution_records",
+    "tgname": "a_train_event_guard",
+    "definition": "CREATE TRIGGER a_train_event_guard BEFORE INSERT ON public.train_execution_records FOR EACH ROW EXECUTE FUNCTION train_event_guard()",
+    "proname": "train_event_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "train_execution_records",
+    "tgname": "train_record_guard",
+    "definition": "CREATE TRIGGER train_record_guard BEFORE INSERT OR DELETE OR UPDATE ON public.train_execution_records FOR EACH ROW EXECUTE FUNCTION train_record_guard()",
+    "proname": "train_record_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "train_execution_revisions",
+    "tgname": "train_execution_revision_immutable",
+    "definition": "CREATE TRIGGER train_execution_revision_immutable BEFORE DELETE OR UPDATE ON public.train_execution_revisions FOR EACH ROW EXECUTE FUNCTION execution_event_immutable()",
+    "proname": "execution_event_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "train_execution_revisions",
+    "tgname": "train_revision_binding_guard",
+    "definition": "CREATE CONSTRAINT TRIGGER train_revision_binding_guard AFTER INSERT ON public.train_execution_revisions DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION train_revision_binding_guard()",
+    "proname": "train_revision_binding_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "train_execution_sessions",
+    "tgname": "global_train_reservation",
+    "definition": "CREATE TRIGGER global_train_reservation BEFORE INSERT OR UPDATE ON public.train_execution_sessions FOR EACH ROW EXECUTE FUNCTION experiment_reservation_guard()",
+    "proname": "experiment_reservation_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "train_execution_sessions",
+    "tgname": "train_session_guard",
+    "definition": "CREATE TRIGGER train_session_guard BEFORE DELETE OR UPDATE ON public.train_execution_sessions FOR EACH ROW EXECUTE FUNCTION train_session_guard()",
+    "proname": "train_session_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_artifacts",
+    "tgname": "v2_xai_artifact_guard",
+    "definition": "CREATE TRIGGER v2_xai_artifact_guard BEFORE DELETE OR UPDATE ON public.xai_artifacts FOR EACH ROW EXECUTE FUNCTION v2_xai_artifact_guard()",
+    "proname": "v2_xai_artifact_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_artifacts",
+    "tgname": "v2_xai_artifact_source_guard",
+    "definition": "CREATE TRIGGER v2_xai_artifact_source_guard BEFORE INSERT ON public.xai_artifacts FOR EACH ROW EXECUTE FUNCTION v2_xai_artifact_source_guard()",
+    "proname": "v2_xai_artifact_source_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_evaluation_members",
+    "tgname": "dbv21_immutable",
+    "definition": "CREATE TRIGGER dbv21_immutable BEFORE DELETE OR UPDATE ON public.xai_evaluation_members FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_evaluation_members",
+    "tgname": "dbv21_xai_evaluation_complete",
+    "definition": "CREATE CONSTRAINT TRIGGER dbv21_xai_evaluation_complete AFTER INSERT ON public.xai_evaluation_members DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION dbv21_xai_evaluation_complete()",
+    "proname": "dbv21_xai_evaluation_complete",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_evaluation_protocols",
+    "tgname": "dbv21_configuration_guard",
+    "definition": "CREATE TRIGGER dbv21_configuration_guard BEFORE INSERT ON public.xai_evaluation_protocols FOR EACH ROW EXECUTE FUNCTION dbv21_xai_configuration_guard()",
+    "proname": "dbv21_xai_configuration_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_evaluation_protocols",
+    "tgname": "dbv21_immutable",
+    "definition": "CREATE TRIGGER dbv21_immutable BEFORE DELETE OR UPDATE ON public.xai_evaluation_protocols FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_evidence",
+    "tgname": "v2_xai_immutable",
+    "definition": "CREATE TRIGGER v2_xai_immutable BEFORE DELETE OR UPDATE ON public.xai_evidence FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_evidence",
+    "tgname": "v2_xai_lineage_guard",
+    "definition": "CREATE TRIGGER v2_xai_lineage_guard BEFORE INSERT ON public.xai_evidence FOR EACH ROW EXECUTE FUNCTION v2_xai_lineage_guard()",
+    "proname": "v2_xai_lineage_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_interpretations",
+    "tgname": "v2_xai_interpretation_immutable",
+    "definition": "CREATE TRIGGER v2_xai_interpretation_immutable BEFORE DELETE OR UPDATE ON public.xai_interpretations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_method_configurations",
+    "tgname": "dbv21_configuration_guard",
+    "definition": "CREATE TRIGGER dbv21_configuration_guard BEFORE INSERT ON public.xai_method_configurations FOR EACH ROW EXECUTE FUNCTION dbv21_xai_configuration_guard()",
+    "proname": "dbv21_xai_configuration_guard",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_method_configurations",
+    "tgname": "dbv21_immutable",
+    "definition": "CREATE TRIGGER dbv21_immutable BEFORE DELETE OR UPDATE ON public.xai_method_configurations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_quantitative_evaluations",
+    "tgname": "dbv21_xai_evaluation_complete",
+    "definition": "CREATE CONSTRAINT TRIGGER dbv21_xai_evaluation_complete AFTER INSERT ON public.xai_quantitative_evaluations DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION dbv21_xai_evaluation_complete()",
+    "proname": "dbv21_xai_evaluation_complete",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_quantitative_evaluations",
+    "tgname": "v2_xai_quantitative_immutable",
+    "definition": "CREATE TRIGGER v2_xai_quantitative_immutable BEFORE DELETE OR UPDATE ON public.xai_quantitative_evaluations FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_region_attributions",
+    "tgname": "dbv21_immutable",
+    "definition": "CREATE TRIGGER dbv21_immutable BEFORE DELETE OR UPDATE ON public.xai_region_attributions FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  },
+  {
+    "table_name": "xai_specialist_reviews",
+    "tgname": "v2_xai_review_immutable",
+    "definition": "CREATE TRIGGER v2_xai_review_immutable BEFORE DELETE OR UPDATE ON public.xai_specialist_reviews FOR EACH ROW EXECUTE FUNCTION v2_immutable()",
+    "proname": "v2_immutable",
+    "function_schema": "public"
+  }
+]

@@ -1,0 +1,821 @@
+{
+  "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+  "state": "available",
+  "issues": [],
+  "model_name": "vgg16",
+  "architecture": "vgg16",
+  "family": "vgg16",
+  "framework": "keras",
+  "input_shape": [
+    null,
+    200,
+    200,
+    3
+  ],
+  "output": {
+    "neurons": 1,
+    "activation": "sigmoid",
+    "loss": "binary_crossentropy",
+    "from_logits": false,
+    "meaning": "probability_parasitized"
+  },
+  "total_parameters": 15241025,
+  "phases": [
+    {
+      "phase": "base",
+      "trainable_parameters": 526337,
+      "learning_rates": [
+        {
+          "group": "model",
+          "learning_rate": 0.0010000000474974513,
+          "parameters": null
+        }
+      ]
+    },
+    {
+      "phase": "fine_tuning",
+      "trainable_parameters": 7605761,
+      "learning_rates": [
+        {
+          "group": "model",
+          "learning_rate": 9.999999747378752e-05,
+          "parameters": null
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "input",
+      "label": "Entrada",
+      "kind": "input",
+      "layers": 1,
+      "units": null,
+      "output_shape": [
+        null,
+        200,
+        200,
+        3
+      ],
+      "parameters": 0,
+      "trainable_phases": [],
+      "origin": "recorded"
+    },
+    {
+      "id": "block1",
+      "label": "Bloque 1",
+      "kind": "convolution",
+      "layers": 3,
+      "units": null,
+      "output_shape": [
+        null,
+        100,
+        100,
+        64
+      ],
+      "parameters": 38720,
+      "trainable_phases": [],
+      "origin": "recorded"
+    },
+    {
+      "id": "block2",
+      "label": "Bloque 2",
+      "kind": "convolution",
+      "layers": 3,
+      "units": null,
+      "output_shape": [
+        null,
+        50,
+        50,
+        128
+      ],
+      "parameters": 221440,
+      "trainable_phases": [],
+      "origin": "recorded"
+    },
+    {
+      "id": "block3",
+      "label": "Bloque 3",
+      "kind": "convolution",
+      "layers": 4,
+      "units": null,
+      "output_shape": [
+        null,
+        25,
+        25,
+        256
+      ],
+      "parameters": 1475328,
+      "trainable_phases": [],
+      "origin": "recorded"
+    },
+    {
+      "id": "block4",
+      "label": "Bloque 4",
+      "kind": "convolution",
+      "layers": 4,
+      "units": null,
+      "output_shape": [
+        null,
+        12,
+        12,
+        512
+      ],
+      "parameters": 5899776,
+      "trainable_phases": [],
+      "origin": "recorded"
+    },
+    {
+      "id": "block5",
+      "label": "Bloque 5",
+      "kind": "convolution",
+      "layers": 4,
+      "units": null,
+      "output_shape": [
+        null,
+        6,
+        6,
+        512
+      ],
+      "parameters": 7079424,
+      "trainable_phases": [
+        "fine_tuning"
+      ],
+      "origin": "recorded"
+    },
+    {
+      "id": "head",
+      "label": "Cabeza de clasificaci\u00f3n",
+      "kind": "head",
+      "layers": 3,
+      "units": null,
+      "output_shape": [
+        null,
+        1024
+      ],
+      "parameters": 525312,
+      "trainable_phases": [
+        "base",
+        "fine_tuning"
+      ],
+      "origin": "recorded"
+    },
+    {
+      "id": "output",
+      "label": "Capa de salida",
+      "kind": "output",
+      "layers": 1,
+      "units": null,
+      "output_shape": [
+        null,
+        1
+      ],
+      "parameters": 1025,
+      "trainable_phases": [
+        "base",
+        "fine_tuning"
+      ],
+      "origin": "recorded"
+    }
+  ],
+  "layers": [
+    {
+      "name": "input_layer_1",
+      "type": "InputLayer",
+      "block": "input",
+      "output_shape": [
+        null,
+        200,
+        200,
+        3
+      ],
+      "inputs": [],
+      "parameters": 0,
+      "trainable_phases": [
+        "base",
+        "fine_tuning"
+      ],
+      "settings": {}
+    },
+    {
+      "name": "block1_conv1",
+      "type": "Conv2D",
+      "block": "block1",
+      "output_shape": [
+        null,
+        200,
+        200,
+        64
+      ],
+      "inputs": [
+        "input_layer_1"
+      ],
+      "parameters": 1792,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 64,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block1_conv2",
+      "type": "Conv2D",
+      "block": "block1",
+      "output_shape": [
+        null,
+        200,
+        200,
+        64
+      ],
+      "inputs": [
+        "block1_conv1"
+      ],
+      "parameters": 36928,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 64,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block1_pool",
+      "type": "MaxPooling2D",
+      "block": "block1",
+      "output_shape": [
+        null,
+        100,
+        100,
+        64
+      ],
+      "inputs": [
+        "block1_conv2"
+      ],
+      "parameters": 0,
+      "trainable_phases": [],
+      "settings": {
+        "strides": [
+          2,
+          2
+        ],
+        "pool_size": [
+          2,
+          2
+        ],
+        "padding": "valid"
+      }
+    },
+    {
+      "name": "block2_conv1",
+      "type": "Conv2D",
+      "block": "block2",
+      "output_shape": [
+        null,
+        100,
+        100,
+        128
+      ],
+      "inputs": [
+        "block1_pool"
+      ],
+      "parameters": 73856,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 128,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block2_conv2",
+      "type": "Conv2D",
+      "block": "block2",
+      "output_shape": [
+        null,
+        100,
+        100,
+        128
+      ],
+      "inputs": [
+        "block2_conv1"
+      ],
+      "parameters": 147584,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 128,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block2_pool",
+      "type": "MaxPooling2D",
+      "block": "block2",
+      "output_shape": [
+        null,
+        50,
+        50,
+        128
+      ],
+      "inputs": [
+        "block2_conv2"
+      ],
+      "parameters": 0,
+      "trainable_phases": [],
+      "settings": {
+        "strides": [
+          2,
+          2
+        ],
+        "pool_size": [
+          2,
+          2
+        ],
+        "padding": "valid"
+      }
+    },
+    {
+      "name": "block3_conv1",
+      "type": "Conv2D",
+      "block": "block3",
+      "output_shape": [
+        null,
+        50,
+        50,
+        256
+      ],
+      "inputs": [
+        "block2_pool"
+      ],
+      "parameters": 295168,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 256,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block3_conv2",
+      "type": "Conv2D",
+      "block": "block3",
+      "output_shape": [
+        null,
+        50,
+        50,
+        256
+      ],
+      "inputs": [
+        "block3_conv1"
+      ],
+      "parameters": 590080,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 256,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block3_conv3",
+      "type": "Conv2D",
+      "block": "block3",
+      "output_shape": [
+        null,
+        50,
+        50,
+        256
+      ],
+      "inputs": [
+        "block3_conv2"
+      ],
+      "parameters": 590080,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 256,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block3_pool",
+      "type": "MaxPooling2D",
+      "block": "block3",
+      "output_shape": [
+        null,
+        25,
+        25,
+        256
+      ],
+      "inputs": [
+        "block3_conv3"
+      ],
+      "parameters": 0,
+      "trainable_phases": [],
+      "settings": {
+        "strides": [
+          2,
+          2
+        ],
+        "pool_size": [
+          2,
+          2
+        ],
+        "padding": "valid"
+      }
+    },
+    {
+      "name": "block4_conv1",
+      "type": "Conv2D",
+      "block": "block4",
+      "output_shape": [
+        null,
+        25,
+        25,
+        512
+      ],
+      "inputs": [
+        "block3_pool"
+      ],
+      "parameters": 1180160,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 512,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block4_conv2",
+      "type": "Conv2D",
+      "block": "block4",
+      "output_shape": [
+        null,
+        25,
+        25,
+        512
+      ],
+      "inputs": [
+        "block4_conv1"
+      ],
+      "parameters": 2359808,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 512,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block4_conv3",
+      "type": "Conv2D",
+      "block": "block4",
+      "output_shape": [
+        null,
+        25,
+        25,
+        512
+      ],
+      "inputs": [
+        "block4_conv2"
+      ],
+      "parameters": 2359808,
+      "trainable_phases": [],
+      "settings": {
+        "filters": 512,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block4_pool",
+      "type": "MaxPooling2D",
+      "block": "block4",
+      "output_shape": [
+        null,
+        12,
+        12,
+        512
+      ],
+      "inputs": [
+        "block4_conv3"
+      ],
+      "parameters": 0,
+      "trainable_phases": [],
+      "settings": {
+        "strides": [
+          2,
+          2
+        ],
+        "pool_size": [
+          2,
+          2
+        ],
+        "padding": "valid"
+      }
+    },
+    {
+      "name": "block5_conv1",
+      "type": "Conv2D",
+      "block": "block5",
+      "output_shape": [
+        null,
+        12,
+        12,
+        512
+      ],
+      "inputs": [
+        "block4_pool"
+      ],
+      "parameters": 2359808,
+      "trainable_phases": [
+        "fine_tuning"
+      ],
+      "settings": {
+        "filters": 512,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block5_conv2",
+      "type": "Conv2D",
+      "block": "block5",
+      "output_shape": [
+        null,
+        12,
+        12,
+        512
+      ],
+      "inputs": [
+        "block5_conv1"
+      ],
+      "parameters": 2359808,
+      "trainable_phases": [
+        "fine_tuning"
+      ],
+      "settings": {
+        "filters": 512,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block5_conv3",
+      "type": "Conv2D",
+      "block": "block5",
+      "output_shape": [
+        null,
+        12,
+        12,
+        512
+      ],
+      "inputs": [
+        "block5_conv2"
+      ],
+      "parameters": 2359808,
+      "trainable_phases": [
+        "fine_tuning"
+      ],
+      "settings": {
+        "filters": 512,
+        "kernel_size": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "padding": "same",
+        "activation": "relu",
+        "use_bias": true
+      }
+    },
+    {
+      "name": "block5_pool",
+      "type": "MaxPooling2D",
+      "block": "block5",
+      "output_shape": [
+        null,
+        6,
+        6,
+        512
+      ],
+      "inputs": [
+        "block5_conv3"
+      ],
+      "parameters": 0,
+      "trainable_phases": [
+        "fine_tuning"
+      ],
+      "settings": {
+        "strides": [
+          2,
+          2
+        ],
+        "pool_size": [
+          2,
+          2
+        ],
+        "padding": "valid"
+      }
+    },
+    {
+      "name": "global_avg_pool",
+      "type": "GlobalAveragePooling2D",
+      "block": "head",
+      "output_shape": [
+        null,
+        512
+      ],
+      "inputs": [
+        "block5_pool"
+      ],
+      "parameters": 0,
+      "trainable_phases": [
+        "base",
+        "fine_tuning"
+      ],
+      "settings": {}
+    },
+    {
+      "name": "feature_dense_1024",
+      "type": "Dense",
+      "block": "head",
+      "output_shape": [
+        null,
+        1024
+      ],
+      "inputs": [
+        "global_avg_pool"
+      ],
+      "parameters": 525312,
+      "trainable_phases": [
+        "base",
+        "fine_tuning"
+      ],
+      "settings": {
+        "activation": "relu",
+        "units": 1024,
+        "use_bias": true
+      }
+    },
+    {
+      "name": "dropout_50",
+      "type": "Dropout",
+      "block": "head",
+      "output_shape": [
+        null,
+        1024
+      ],
+      "inputs": [
+        "feature_dense_1024"
+      ],
+      "parameters": 0,
+      "trainable_phases": [
+        "base",
+        "fine_tuning"
+      ],
+      "settings": {
+        "rate": 0.5
+      }
+    },
+    {
+      "name": "binary_output",
+      "type": "Dense",
+      "block": "output",
+      "output_shape": [
+        null,
+        1
+      ],
+      "inputs": [
+        "dropout_50"
+      ],
+      "parameters": 1025,
+      "trainable_phases": [
+        "base",
+        "fine_tuning"
+      ],
+      "settings": {
+        "activation": "sigmoid",
+        "units": 1,
+        "use_bias": true
+      }
+    }
+  ],
+  "checkpoint": {
+    "artifact_id": "5406dae8-6a82-568c-a0e9-9ecff89d5f4e",
+    "selected_epoch": 1,
+    "phase": "base"
+  }
+}

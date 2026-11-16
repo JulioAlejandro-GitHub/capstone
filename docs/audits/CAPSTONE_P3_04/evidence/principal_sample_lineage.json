@@ -1,0 +1,3252 @@
+[
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "014d8b8e-3397-5ae8-88fd-8cef2a2d6c64",
+    "payload": {
+      "label": 0,
+      "predicted": 1,
+      "raw_score": 0.6909072995185852,
+      "sample_id": "014d8b8e-3397-5ae8-88fd-8cef2a2d6c64",
+      "threshold": 0.25116682052612305,
+      "patient_id": "d4b8e72c-782e-570d-a4df-5e6c618b9a35",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "014d8b8e-3397-5ae8-88fd-8cef2a2d6c64",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "uninfected",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 16307,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 0,
+      "image_width": 181,
+      "image_height": 202,
+      "project_label": 0,
+      "original_label": 1,
+      "file_size_bytes": 15887,
+      "identity_status": "VERIFIED",
+      "source_filename": "C139P100ThinF_IMG_20151005_182822_cell_142.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:uninfected/C139P100ThinF_IMG_20151005_182822_cell_142.png",
+      "source_file_sha256": "9155ff4224d8b5e413cfaff4e9a70785fd78a2156b9d440c0773e8ca130d3301",
+      "relative_source_key": null,
+      "clinical_identity_id": "d4b8e72c-782e-570d-a4df-5e6c618b9a35",
+      "decoded_pixel_sha256": "750a8e07a3d18a1371a9180da825055a9cce8ed60b58e5247b151a68f92c1680"
+    },
+    "clinical_identity": {
+      "id": "d4b8e72c-782e-570d-a4df-5e6c618b9a35",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C139P100ThinF"
+    },
+    "assignment": {
+      "id": "b076dbbc-325d-52a5-a016-3ab9dfbc2e1d",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "uninfected",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 0,
+      "source_record_id": "014d8b8e-3397-5ae8-88fd-8cef2a2d6c64",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "d4b8e72c-782e-570d-a4df-5e6c618b9a35"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "01a133b1-74db-5f12-bf42-8db74b539b26",
+    "payload": {
+      "label": 0,
+      "predicted": 1,
+      "raw_score": 0.545226514339447,
+      "sample_id": "01a133b1-74db-5f12-bf42-8db74b539b26",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "01a133b1-74db-5f12-bf42-8db74b539b26",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "uninfected",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 7707,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 0,
+      "image_width": 184,
+      "image_height": 148,
+      "project_label": 0,
+      "original_label": 1,
+      "file_size_bytes": 16019,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_111246_cell_49.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:uninfected/C80P41ThinF_IMG_20150817_111246_cell_49.png",
+      "source_file_sha256": "41aa953131e6d0219d35b619c8d681797bec05e20eace07d29f5dd355bc68d4c",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "55dd4ed24297288039fb1c6623b3f12d9779a0608f3672812050ccf89102c72f"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "5a31beb9-eae6-5908-8823-d103a629be18",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "uninfected",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 0,
+      "source_record_id": "01a133b1-74db-5f12-bf42-8db74b539b26",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "028644ea-4c04-5b98-b3fd-45eeef3d76e6",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.08094331622123718,
+      "sample_id": "028644ea-4c04-5b98-b3fd-45eeef3d76e6",
+      "threshold": 0.25116682052612305,
+      "patient_id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "028644ea-4c04-5b98-b3fd-45eeef3d76e6",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 19726,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 139,
+      "image_height": 133,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 15180,
+      "identity_status": "VERIFIED",
+      "source_filename": "C144P105ThinF_IMG_20151015_155004_cell_305.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C144P105ThinF_IMG_20151015_155004_cell_305.png",
+      "source_file_sha256": "01c9f512c077b70c4254c6377b42277e09b4aa04e5e76df2c4e9638af40fad96",
+      "relative_source_key": null,
+      "clinical_identity_id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+      "decoded_pixel_sha256": "53937e41f51c7b54f75821cfc9d1ecfcdfa857898706cf6992533e777d108021"
+    },
+    "clinical_identity": {
+      "id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C144P105ThinF"
+    },
+    "assignment": {
+      "id": "cde6c91d-33ae-568e-a7e8-3c5200b475f1",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "028644ea-4c04-5b98-b3fd-45eeef3d76e6",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "e942ac07-b9b2-5ef9-994b-6320a352b354"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "03e4261c-2ff5-51ba-a8b6-d266805042f3",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.08066434413194656,
+      "sample_id": "03e4261c-2ff5-51ba-a8b6-d266805042f3",
+      "threshold": 0.25116682052612305,
+      "patient_id": "dbe951fc-3e07-5d6b-955e-94cb7c852408",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "03e4261c-2ff5-51ba-a8b6-d266805042f3",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 10505,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 118,
+      "image_height": 133,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 12546,
+      "identity_status": "VERIFIED",
+      "source_filename": "C184P145ThinF_IMG_20151203_104153_cell_166.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C184P145ThinF_IMG_20151203_104153_cell_166.png",
+      "source_file_sha256": "a4f6cb8f3cd33af6771fb8b05a792c34b6ddd3d1a260bf869887814f1ec5c085",
+      "relative_source_key": null,
+      "clinical_identity_id": "dbe951fc-3e07-5d6b-955e-94cb7c852408",
+      "decoded_pixel_sha256": "1a05b4cefe8be5330e10233642da3e3474a8c99a0a04ca7819c40fc0a4714d7d"
+    },
+    "clinical_identity": {
+      "id": "dbe951fc-3e07-5d6b-955e-94cb7c852408",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C184P145ThinF"
+    },
+    "assignment": {
+      "id": "08aca1e3-b9d2-5665-ae18-be901549774a",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "03e4261c-2ff5-51ba-a8b6-d266805042f3",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "dbe951fc-3e07-5d6b-955e-94cb7c852408"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "08b84689-3d82-5e75-ac64-cdcf6541380d",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.21320456266403198,
+      "sample_id": "08b84689-3d82-5e75-ac64-cdcf6541380d",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "08b84689-3d82-5e75-ac64-cdcf6541380d",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 3722,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 124,
+      "image_height": 112,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7136,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102330_cell_226.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102330_cell_226.png",
+      "source_file_sha256": "b08c321c9af22eef252c0cd111fb781d6f3f51274c7fb7abdb4018a69e5a2068",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "dd9159b10e2b6a4f3e17ea170fc67bd0cedf347166d9611131f99678ade2db40"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "abd2349d-369e-54ab-aa4b-40e8f80639cb",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "08b84689-3d82-5e75-ac64-cdcf6541380d",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "0e84f36a-6efa-5b48-bc8c-983d8d9b6059",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.09260399639606476,
+      "sample_id": "0e84f36a-6efa-5b48-bc8c-983d8d9b6059",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "0e84f36a-6efa-5b48-bc8c-983d8d9b6059",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 22025,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 127,
+      "image_height": 139,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 9248,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_110348_cell_123.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C80P41ThinF_IMG_20150817_110348_cell_123.png",
+      "source_file_sha256": "b3e7f27286aaafbfe0efb39fe7278a9ee536cf685707255f8d1d7fa7f8e4d087",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "78ba3eaf43492f9390213289d62b029ce96f416114f9db036e58c661ce0c0234"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "d29670ce-429e-5ca4-955f-168f65b1ba1e",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "0e84f36a-6efa-5b48-bc8c-983d8d9b6059",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "1675dc31-93fa-5ce2-ae61-bc4384dc98fd",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.14168472588062286,
+      "sample_id": "1675dc31-93fa-5ce2-ae61-bc4384dc98fd",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "1675dc31-93fa-5ce2-ae61-bc4384dc98fd",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 3569,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 118,
+      "image_height": 124,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7205,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102330_cell_232.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102330_cell_232.png",
+      "source_file_sha256": "5439335b60dadd3ffc3b3bcb065787544f56ff05c1314a48b51941dce97d6d04",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "56bda2c02566b49998c8320a17d1c438bb9b3446cb2fec4b3c90f535e7cefb7a"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "1cdac8d8-f84c-55bf-89f4-75cb78b1f9ca",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "1675dc31-93fa-5ce2-ae61-bc4384dc98fd",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "198f27bd-12d8-5b49-9657-08d189eb602a",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.19600680470466614,
+      "sample_id": "198f27bd-12d8-5b49-9657-08d189eb602a",
+      "threshold": 0.25116682052612305,
+      "patient_id": "8f3f6760-5414-5eba-ab8d-2e1eecc3a830",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "198f27bd-12d8-5b49-9657-08d189eb602a",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 11805,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 112,
+      "image_height": 118,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 12450,
+      "identity_status": "VERIFIED",
+      "source_filename": "C161P122ThinF_IMG_20151116_101210_cell_126.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C161P122ThinF_IMG_20151116_101210_cell_126.png",
+      "source_file_sha256": "91770e77c880a6fc9c000859578d1cb9d317fdfa91164ec69c8165826fc13aa2",
+      "relative_source_key": null,
+      "clinical_identity_id": "8f3f6760-5414-5eba-ab8d-2e1eecc3a830",
+      "decoded_pixel_sha256": "9e71902c88408a54c75067b7643c53fbe2880836680565e3f3fa289755d72881"
+    },
+    "clinical_identity": {
+      "id": "8f3f6760-5414-5eba-ab8d-2e1eecc3a830",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C161P122ThinF"
+    },
+    "assignment": {
+      "id": "ac48a0c7-c3ec-559e-868b-65bee7763ad9",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "198f27bd-12d8-5b49-9657-08d189eb602a",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "8f3f6760-5414-5eba-ab8d-2e1eecc3a830"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "1edb56d3-ae80-5122-968d-0ebc3b7f00c2",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.1406629979610443,
+      "sample_id": "1edb56d3-ae80-5122-968d-0ebc3b7f00c2",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "1edb56d3-ae80-5122-968d-0ebc3b7f00c2",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 21693,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 118,
+      "image_height": 115,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7334,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_103233_cell_197.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_103233_cell_197.png",
+      "source_file_sha256": "67f529852dbefdd5582df0647ec7c240127bb9450482e77a56497aaf353d8336",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "9537a1ed1a33efe514fd5c04fb4b30b0c379d71ffaec3bd6b6a19cb9c07a206a"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "2ef0ffe1-1f2b-5b55-82d7-fe03a953ee01",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "1edb56d3-ae80-5122-968d-0ebc3b7f00c2",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "3b91403b-195b-5a18-83ac-a6b327774a54",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.13121403753757477,
+      "sample_id": "3b91403b-195b-5a18-83ac-a6b327774a54",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "3b91403b-195b-5a18-83ac-a6b327774a54",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 19479,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 121,
+      "image_height": 142,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 9046,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102330_cell_229.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102330_cell_229.png",
+      "source_file_sha256": "aa28b8f97ea3bdc919a27a631c81986ab422fe749db93da74e64211eb506e109",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "5389a57910a6971e2fe06e27cd0f899042791dd40536cf7a9eb237ef6e3b45db"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "2f3fe61b-d565-5bc6-be37-d463ee18c4ac",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "3b91403b-195b-5a18-83ac-a6b327774a54",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "3f0fbe80-d479-5e96-bfcf-59eb6f87c683",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.20340068638324738,
+      "sample_id": "3f0fbe80-d479-5e96-bfcf-59eb6f87c683",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "3f0fbe80-d479-5e96-bfcf-59eb6f87c683",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 13331,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 118,
+      "image_height": 136,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 10930,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_110608_cell_143.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C80P41ThinF_IMG_20150817_110608_cell_143.png",
+      "source_file_sha256": "250fff17b14e8b355fff6e584aabe461ea03cd5db1975855df5fbc9bf2d55e5e",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "26064e473b9483803918956d9ac6ceb99e6e578d4187d8c229ef23649f1dec7d"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "2e67906a-2616-5ea0-8e3d-01d6271abe82",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "3f0fbe80-d479-5e96-bfcf-59eb6f87c683",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "4582be2e-38e8-57db-8120-4e98d1ba74e1",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.06950454413890839,
+      "sample_id": "4582be2e-38e8-57db-8120-4e98d1ba74e1",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "4582be2e-38e8-57db-8120-4e98d1ba74e1",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 26082,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 109,
+      "image_height": 133,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7528,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102843_cell_183.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102843_cell_183.png",
+      "source_file_sha256": "204125b20cbd2c92d29c910a1439eaa6fd49e5962c8ed7a23e7dad07a6461e61",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "3b9a5b6df6c4d2ca7c70fdc0ffab85418d8263f0ccee59ff9b302bd53e3f7dbf"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "39d7ca80-1391-5223-b67c-b40d2b66ee5c",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "4582be2e-38e8-57db-8120-4e98d1ba74e1",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "45e12aa0-8e49-5e69-b557-7c2b59b8762c",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.1867900937795639,
+      "sample_id": "45e12aa0-8e49-5e69-b557-7c2b59b8762c",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "45e12aa0-8e49-5e69-b557-7c2b59b8762c",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 19754,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 148,
+      "image_height": 139,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 14048,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_111121_cell_152.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C80P41ThinF_IMG_20150817_111121_cell_152.png",
+      "source_file_sha256": "6fa8a074fb03aaf7662b470f61f4d59aa554c183b28ddf449c228b93b6070f3a",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "124685f531db633000c7fc332fb63e51cbc486b3e77722423934621fe2911501"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "4655390b-93e7-51a0-9b4d-273c8c78d149",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "45e12aa0-8e49-5e69-b557-7c2b59b8762c",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "46913a4f-e619-5535-8ee8-8c24a4b321a9",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.15736007690429688,
+      "sample_id": "46913a4f-e619-5535-8ee8-8c24a4b321a9",
+      "threshold": 0.25116682052612305,
+      "patient_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "46913a4f-e619-5535-8ee8-8c24a4b321a9",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 20671,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 103,
+      "image_height": 103,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 6753,
+      "identity_status": "VERIFIED",
+      "source_filename": "C50P11thinF_IMG_20150724_120553_cell_145.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C50P11thinF_IMG_20150724_120553_cell_145.png",
+      "source_file_sha256": "cc2f9e3edad5ab980b0480744aa2fed37c2437081615864191b66b1040fa3da1",
+      "relative_source_key": null,
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "decoded_pixel_sha256": "4b2850351915c9d02f9988f2415a0851a87e79c106da048cffad749bb9e83f28"
+    },
+    "clinical_identity": {
+      "id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C50P11thinF"
+    },
+    "assignment": {
+      "id": "7986e690-8e6b-5334-8fb3-1b71d02624a6",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "46913a4f-e619-5535-8ee8-8c24a4b321a9",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "4d131538-24a5-51e1-998b-b64507d561fc",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.24046802520751953,
+      "sample_id": "4d131538-24a5-51e1-998b-b64507d561fc",
+      "threshold": 0.25116682052612305,
+      "patient_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "4d131538-24a5-51e1-998b-b64507d561fc",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 18810,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 109,
+      "image_height": 118,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 9379,
+      "identity_status": "VERIFIED",
+      "source_filename": "C50P11thinF_IMG_20150724_115749_cell_174.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C50P11thinF_IMG_20150724_115749_cell_174.png",
+      "source_file_sha256": "de55a7e446b69cda36f6ac2d598694b8bcae7bcbba93e47beb31910e935ff1f8",
+      "relative_source_key": null,
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "decoded_pixel_sha256": "aec51fc2030a1e509a4eef07b8b42af4cb1de4b4374644c6b3fdd58ca5489124"
+    },
+    "clinical_identity": {
+      "id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C50P11thinF"
+    },
+    "assignment": {
+      "id": "7ffe6552-3e7a-55d5-9ddc-cf4d33455a3d",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "4d131538-24a5-51e1-998b-b64507d561fc",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "4df3d26f-8cb9-5000-affe-4555bc55b4ef",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.06845876574516296,
+      "sample_id": "4df3d26f-8cb9-5000-affe-4555bc55b4ef",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "4df3d26f-8cb9-5000-affe-4555bc55b4ef",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 20564,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 157,
+      "image_height": 124,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 9039,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102330_cell_225.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102330_cell_225.png",
+      "source_file_sha256": "cbd97b4b78e07e8af2fd63589e0183f086a149b1b6abcc1771e11667b64d619c",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "7ada5deb92023250b9a89d133e40f35aa62e1730eae48deea5283f7a62284e47"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "f9150efe-d5cc-5cfe-b8e8-5cabeff3d2d2",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "4df3d26f-8cb9-5000-affe-4555bc55b4ef",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "5285686f-1952-5fac-b9a9-d8b81424bc8f",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.1437831073999405,
+      "sample_id": "5285686f-1952-5fac-b9a9-d8b81424bc8f",
+      "threshold": 0.25116682052612305,
+      "patient_id": "8f3f6760-5414-5eba-ab8d-2e1eecc3a830",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "5285686f-1952-5fac-b9a9-d8b81424bc8f",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 24980,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 118,
+      "image_height": 121,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 13040,
+      "identity_status": "VERIFIED",
+      "source_filename": "C161P122ThinF_IMG_20151116_100959_cell_117.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C161P122ThinF_IMG_20151116_100959_cell_117.png",
+      "source_file_sha256": "4093265bfed1bae785eae7272523a069a5c74be952109e7d5d9c6a9816ba407e",
+      "relative_source_key": null,
+      "clinical_identity_id": "8f3f6760-5414-5eba-ab8d-2e1eecc3a830",
+      "decoded_pixel_sha256": "756a68322b38f895958378f458b0aaa6359afad992c788f2e92c76312d85e096"
+    },
+    "clinical_identity": {
+      "id": "8f3f6760-5414-5eba-ab8d-2e1eecc3a830",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C161P122ThinF"
+    },
+    "assignment": {
+      "id": "d7b5261a-9d93-5a3c-85d5-1755ef1e2bf2",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "5285686f-1952-5fac-b9a9-d8b81424bc8f",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "8f3f6760-5414-5eba-ab8d-2e1eecc3a830"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "60892aa1-8112-55fb-8f02-a593c08e4ea8",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.24713744223117828,
+      "sample_id": "60892aa1-8112-55fb-8f02-a593c08e4ea8",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3fa59041-8312-5799-98d0-26ded5b1bd9d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "60892aa1-8112-55fb-8f02-a593c08e4ea8",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 774,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 139,
+      "image_height": 106,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 11951,
+      "identity_status": "VERIFIED",
+      "source_filename": "C183P144NThinF_IMG_20151201_222119_cell_143.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C183P144NThinF_IMG_20151201_222119_cell_143.png",
+      "source_file_sha256": "3be8d34bf14cd4fd192655091f42458f19870345eb213aaaeb58ff64c32a8093",
+      "relative_source_key": null,
+      "clinical_identity_id": "3fa59041-8312-5799-98d0-26ded5b1bd9d",
+      "decoded_pixel_sha256": "4ae2758e7daf00e92360253041fd690cf6541b1b041f1438de3874108a66293c"
+    },
+    "clinical_identity": {
+      "id": "3fa59041-8312-5799-98d0-26ded5b1bd9d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C183P144NThinF"
+    },
+    "assignment": {
+      "id": "ca03ef33-0e71-565d-9e22-674d3ab9014b",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "60892aa1-8112-55fb-8f02-a593c08e4ea8",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3fa59041-8312-5799-98d0-26ded5b1bd9d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "66029256-5c8e-5de3-b9f2-b609ffd2a0af",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.04989049583673477,
+      "sample_id": "66029256-5c8e-5de3-b9f2-b609ffd2a0af",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "66029256-5c8e-5de3-b9f2-b609ffd2a0af",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 8546,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 121,
+      "image_height": 127,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 8055,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102330_cell_227.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102330_cell_227.png",
+      "source_file_sha256": "09e7db4553708b9e040dbdf6bc1b8e2daf16d6ef6a2b7227cc1deb3841bc1fc4",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "a5b9548afa2d19817ea9276bf6e3bf3fc2de90e17ad1d91c528a56cc241ec8e7"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "1a52e88b-8ca4-562c-a8d0-60b473f956ca",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "66029256-5c8e-5de3-b9f2-b609ffd2a0af",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "67eb1219-b0b4-55e1-8bd5-50309450a28f",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.14343984425067902,
+      "sample_id": "67eb1219-b0b4-55e1-8bd5-50309450a28f",
+      "threshold": 0.25116682052612305,
+      "patient_id": "dbe951fc-3e07-5d6b-955e-94cb7c852408",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "67eb1219-b0b4-55e1-8bd5-50309450a28f",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 17425,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 142,
+      "image_height": 136,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 15427,
+      "identity_status": "VERIFIED",
+      "source_filename": "C184P145ThinF_IMG_20151203_104153_cell_171.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C184P145ThinF_IMG_20151203_104153_cell_171.png",
+      "source_file_sha256": "95c7e0d74784327f5524c78b1c4ec17cbfa69a92007c3b588b004c21a8668f2b",
+      "relative_source_key": null,
+      "clinical_identity_id": "dbe951fc-3e07-5d6b-955e-94cb7c852408",
+      "decoded_pixel_sha256": "ad38bb8930472e512c8b700309eb9225ce805377a271adee370586b3bc20d072"
+    },
+    "clinical_identity": {
+      "id": "dbe951fc-3e07-5d6b-955e-94cb7c852408",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C184P145ThinF"
+    },
+    "assignment": {
+      "id": "50d1b39a-449c-59d6-992f-ff92c882c9ea",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "67eb1219-b0b4-55e1-8bd5-50309450a28f",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "dbe951fc-3e07-5d6b-955e-94cb7c852408"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "6b0d5ea1-c261-5be2-85b9-4c5810c8a90e",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.053770631551742554,
+      "sample_id": "6b0d5ea1-c261-5be2-85b9-4c5810c8a90e",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "6b0d5ea1-c261-5be2-85b9-4c5810c8a90e",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 1507,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 154,
+      "image_height": 151,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 18197,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_111544_cell_133.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C80P41ThinF_IMG_20150817_111544_cell_133.png",
+      "source_file_sha256": "62bc572a9e292cd37aea36f94fbd6739ce5493a472d882aeb8735e450f27c168",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "711d43b19b5d551a0b1ab9e5dc9c5b12e165684d55adcae107af6359b5867663"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "6540e722-05a0-5b3e-8431-01c898fc46a7",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "6b0d5ea1-c261-5be2-85b9-4c5810c8a90e",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "6b5ea936-9eb8-50e2-a732-7176c47da315",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.00838156696408987,
+      "sample_id": "6b5ea936-9eb8-50e2-a732-7176c47da315",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "6b5ea936-9eb8-50e2-a732-7176c47da315",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 15409,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 154,
+      "image_height": 127,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 10683,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102330_cell_231.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102330_cell_231.png",
+      "source_file_sha256": "b3abac61d7c43667fed69ac7401d9f7c934056171bfff18f2c49316cd7138a16",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "98d1da8d6abe4a5d2ad6307c085c061560463b3e493043c07e735ce40fa6a824"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "e0744790-f8ec-5dda-b7ef-57190d273cf3",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "6b5ea936-9eb8-50e2-a732-7176c47da315",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "7e72c936-9604-5467-b266-d6a7a46d306a",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.16517607867717743,
+      "sample_id": "7e72c936-9604-5467-b266-d6a7a46d306a",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "7e72c936-9604-5467-b266-d6a7a46d306a",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 16783,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 106,
+      "image_height": 121,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 6440,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_103233_cell_200.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_103233_cell_200.png",
+      "source_file_sha256": "4db57d7cde319bd298fa85a1430de7434147214a77f4db1a3c16439667834ad0",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "52183b2d01eb0479a8323b5008a50badcfabc7df1b625aedae30bd61852ef096"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "f763e8da-5cb8-592c-a17f-0fd9c27a1e6d",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "7e72c936-9604-5467-b266-d6a7a46d306a",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "7efc585a-c403-594e-b685-17a8ead4370a",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.10645626485347748,
+      "sample_id": "7efc585a-c403-594e-b685-17a8ead4370a",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "7efc585a-c403-594e-b685-17a8ead4370a",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 7762,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 139,
+      "image_height": 148,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 14022,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_112329_cell_4.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C80P41ThinF_IMG_20150817_112329_cell_4.png",
+      "source_file_sha256": "2e3c0b5fe7b23af36a90806bf10cd38a8797f31d7f7548ebccbcbc6b9651dd6e",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "a6bfc7d738d4c7b33290a71c21787f002737e3bfcd8522f9cd46f630fb32fb66"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "c09135bb-6efc-57e5-beb7-dbe64c3ffb31",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "7efc585a-c403-594e-b685-17a8ead4370a",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "816dee92-a735-5205-a5b1-dd6a04969157",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.21826744079589844,
+      "sample_id": "816dee92-a735-5205-a5b1-dd6a04969157",
+      "threshold": 0.25116682052612305,
+      "patient_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "816dee92-a735-5205-a5b1-dd6a04969157",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 6300,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 115,
+      "image_height": 118,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7057,
+      "identity_status": "VERIFIED",
+      "source_filename": "C50P11thinF_IMG_20150724_115603_cell_156.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C50P11thinF_IMG_20150724_115603_cell_156.png",
+      "source_file_sha256": "dfc2b8d5bc7f853ddcd8288feeb472c6ddef31dbddf6907b3ec444eb0aba8f8a",
+      "relative_source_key": null,
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "decoded_pixel_sha256": "36d35c17739e90b6c065c75b5d09e2188082bf1d542809ba2b715d01df0217ec"
+    },
+    "clinical_identity": {
+      "id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C50P11thinF"
+    },
+    "assignment": {
+      "id": "a8b70253-3af7-5379-bdca-f891acf03ac9",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "816dee92-a735-5205-a5b1-dd6a04969157",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "82364c09-d6b9-5dca-9d9a-dd618a687a04",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.23758016526699066,
+      "sample_id": "82364c09-d6b9-5dca-9d9a-dd618a687a04",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "82364c09-d6b9-5dca-9d9a-dd618a687a04",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 19012,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 118,
+      "image_height": 127,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 8179,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_103233_cell_203.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_103233_cell_203.png",
+      "source_file_sha256": "d70b3e91dc7c1731ffd603bc427b08de38136f70ea1240501a5a516ca2f34b1e",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "21394b027c75991383cad3bbd2d7e223b77c088ec00e3cbd523ad50429df3623"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "429f30da-473f-57b9-8c50-2138d9baac3e",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "82364c09-d6b9-5dca-9d9a-dd618a687a04",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "8c035bc5-285f-5a6a-b09f-db85e8f8c2ff",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.18710201978683472,
+      "sample_id": "8c035bc5-285f-5a6a-b09f-db85e8f8c2ff",
+      "threshold": 0.25116682052612305,
+      "patient_id": "39803bac-9697-51d1-8ef2-aa51b82bdbdc",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "8c035bc5-285f-5a6a-b09f-db85e8f8c2ff",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 12417,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 124,
+      "image_height": 133,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 12553,
+      "identity_status": "VERIFIED",
+      "source_filename": "C56P17thinF_IMG_20150728_151330_cell_120.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C56P17thinF_IMG_20150728_151330_cell_120.png",
+      "source_file_sha256": "477d5822b05b4ef6ad18c146ffbe58de933ce507bccbc13b0480ffbc3b68c8dc",
+      "relative_source_key": null,
+      "clinical_identity_id": "39803bac-9697-51d1-8ef2-aa51b82bdbdc",
+      "decoded_pixel_sha256": "70396bfbfc329f43ce317977d70d32f664045354c5f39edbd88d17dce2f25916"
+    },
+    "clinical_identity": {
+      "id": "39803bac-9697-51d1-8ef2-aa51b82bdbdc",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C56P17thinF"
+    },
+    "assignment": {
+      "id": "150d7e74-82de-5740-b67d-b9dc7b1f0e92",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "8c035bc5-285f-5a6a-b09f-db85e8f8c2ff",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "39803bac-9697-51d1-8ef2-aa51b82bdbdc"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "8e4271f4-4662-561d-aabe-0e39587dc6ff",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.14482535421848297,
+      "sample_id": "8e4271f4-4662-561d-aabe-0e39587dc6ff",
+      "threshold": 0.25116682052612305,
+      "patient_id": "dbe951fc-3e07-5d6b-955e-94cb7c852408",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "8e4271f4-4662-561d-aabe-0e39587dc6ff",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 12568,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 142,
+      "image_height": 121,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 14496,
+      "identity_status": "VERIFIED",
+      "source_filename": "C184P145ThinF_IMG_20151203_104030_cell_12.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C184P145ThinF_IMG_20151203_104030_cell_12.png",
+      "source_file_sha256": "f22aef5345c5ed682612580e77e116008821df4a51a16a1ef99b1251617cd4ab",
+      "relative_source_key": null,
+      "clinical_identity_id": "dbe951fc-3e07-5d6b-955e-94cb7c852408",
+      "decoded_pixel_sha256": "6b2ba8f7f440ac30456221cd01c3f98a9022d208974c841bac63d7ac1836ed69"
+    },
+    "clinical_identity": {
+      "id": "dbe951fc-3e07-5d6b-955e-94cb7c852408",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C184P145ThinF"
+    },
+    "assignment": {
+      "id": "b2c641db-4c9b-5a0a-ab8b-9dbecf4b6bd3",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "8e4271f4-4662-561d-aabe-0e39587dc6ff",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "dbe951fc-3e07-5d6b-955e-94cb7c852408"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "9048d33b-9c2a-5cdf-97f4-520e95feb2a1",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.09424670785665512,
+      "sample_id": "9048d33b-9c2a-5cdf-97f4-520e95feb2a1",
+      "threshold": 0.25116682052612305,
+      "patient_id": "d4b8e72c-782e-570d-a4df-5e6c618b9a35",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "9048d33b-9c2a-5cdf-97f4-520e95feb2a1",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 10412,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 160,
+      "image_height": 166,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 12759,
+      "identity_status": "VERIFIED",
+      "source_filename": "C139P100ThinF_IMG_20151005_182822_cell_163.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C139P100ThinF_IMG_20151005_182822_cell_163.png",
+      "source_file_sha256": "7dd1b5553081cdc775d8d1426c9594a1f8381c57afa9f2b8f0f2f662bc7a3da5",
+      "relative_source_key": null,
+      "clinical_identity_id": "d4b8e72c-782e-570d-a4df-5e6c618b9a35",
+      "decoded_pixel_sha256": "be46eda0166b0d6212bbb171aa701ca94caa140b72e8a0b0cae6b399271b85ad"
+    },
+    "clinical_identity": {
+      "id": "d4b8e72c-782e-570d-a4df-5e6c618b9a35",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C139P100ThinF"
+    },
+    "assignment": {
+      "id": "4ac97e7e-6df2-590f-80f6-61e25ee27dfd",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "9048d33b-9c2a-5cdf-97f4-520e95feb2a1",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "d4b8e72c-782e-570d-a4df-5e6c618b9a35"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "90d787f8-3935-5c21-99f3-7c9d03f0d742",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.04394661635160446,
+      "sample_id": "90d787f8-3935-5c21-99f3-7c9d03f0d742",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "90d787f8-3935-5c21-99f3-7c9d03f0d742",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 24221,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 124,
+      "image_height": 136,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7096,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102843_cell_181.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102843_cell_181.png",
+      "source_file_sha256": "5f18c04b0898131c53909f6b7df4568d7f3ef7c8d2f8f4d0ff12285d133bc692",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "f20fc0e0be4c885973c544cba1acec12f15e32acd414c5b20b1350ac6058998b"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "740e8b7f-0f27-5161-a67f-a228073b61c2",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "90d787f8-3935-5c21-99f3-7c9d03f0d742",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "934086bb-3d41-5f17-a3fc-2dd8bc10121a",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.10750116407871246,
+      "sample_id": "934086bb-3d41-5f17-a3fc-2dd8bc10121a",
+      "threshold": 0.25116682052612305,
+      "patient_id": "8bb7eb39-78bd-5865-85fa-bffd70365e48",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "934086bb-3d41-5f17-a3fc-2dd8bc10121a",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 7244,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 148,
+      "image_height": 172,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 13498,
+      "identity_status": "VERIFIED",
+      "source_filename": "C105P66ThinF_IMG_20150924_095913_cell_117.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C105P66ThinF_IMG_20150924_095913_cell_117.png",
+      "source_file_sha256": "bb4a167d6ee50ab66291001fbe751186833d8f29e2a51f889b7016e76c5e8bfb",
+      "relative_source_key": null,
+      "clinical_identity_id": "8bb7eb39-78bd-5865-85fa-bffd70365e48",
+      "decoded_pixel_sha256": "999624bcd57c633ee467ea1921d7a9c9aff80c7291d1c7b3854ae636bb16dafb"
+    },
+    "clinical_identity": {
+      "id": "8bb7eb39-78bd-5865-85fa-bffd70365e48",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C105P66ThinF"
+    },
+    "assignment": {
+      "id": "046316ba-46af-5500-b513-dbcb7f8ce0c0",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "934086bb-3d41-5f17-a3fc-2dd8bc10121a",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "8bb7eb39-78bd-5865-85fa-bffd70365e48"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "998d05c8-c7fa-5978-9d77-9415d7cfcbee",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.11696302890777588,
+      "sample_id": "998d05c8-c7fa-5978-9d77-9415d7cfcbee",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "998d05c8-c7fa-5978-9d77-9415d7cfcbee",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 25063,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 130,
+      "image_height": 151,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 12275,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_111544_cell_123.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C80P41ThinF_IMG_20150817_111544_cell_123.png",
+      "source_file_sha256": "1e8b8f45e76caa01fef32f9c60d4b41ea163719e4a532c7b43b0765ea99f3960",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "8e9abf6dcfb7fef02931a2036c203910be4db5bc400e5eadcdc71b684fe16102"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "fb911340-5bf3-5049-9c3b-f0e20f998430",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "998d05c8-c7fa-5978-9d77-9415d7cfcbee",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "9e3d0552-0eb7-5e88-8714-ffad03a71688",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.08359676599502563,
+      "sample_id": "9e3d0552-0eb7-5e88-8714-ffad03a71688",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "9e3d0552-0eb7-5e88-8714-ffad03a71688",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 6599,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 124,
+      "image_height": 130,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 8422,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102330_cell_224.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102330_cell_224.png",
+      "source_file_sha256": "63322e3862a977f5046412e9d79d5551b339922b437f1e9f3acc19c8ac87d54f",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "6225650d07913f7d0c71bef2865fe8c33ad2b9becdf0e69ae6bb5964c87f8153"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "0328cf9e-ed7c-5a20-9985-921180cc5500",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "9e3d0552-0eb7-5e88-8714-ffad03a71688",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "a3c4352a-7255-50f5-aba7-3992289b40a9",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.21399986743927002,
+      "sample_id": "a3c4352a-7255-50f5-aba7-3992289b40a9",
+      "threshold": 0.25116682052612305,
+      "patient_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "a3c4352a-7255-50f5-aba7-3992289b40a9",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 2904,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 115,
+      "image_height": 100,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 6474,
+      "identity_status": "VERIFIED",
+      "source_filename": "C50P11thinF_IMG_20150724_120553_cell_148.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C50P11thinF_IMG_20150724_120553_cell_148.png",
+      "source_file_sha256": "896be92d9971d1e9f03fc472c4f7d43f99a26f5c24d10f0d94655de471d806e1",
+      "relative_source_key": null,
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "decoded_pixel_sha256": "70980b7c64edf0d88f4cf5cfa9c576907adaf2d0899fa8dca9001a9ec16e8342"
+    },
+    "clinical_identity": {
+      "id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C50P11thinF"
+    },
+    "assignment": {
+      "id": "d93d173a-9d7a-51e6-83a7-1754f1ab6b70",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "a3c4352a-7255-50f5-aba7-3992289b40a9",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "a7e730d7-eb08-5e4b-8794-83991256a4c9",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.24234697222709656,
+      "sample_id": "a7e730d7-eb08-5e4b-8794-83991256a4c9",
+      "threshold": 0.25116682052612305,
+      "patient_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "a7e730d7-eb08-5e4b-8794-83991256a4c9",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 24207,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 106,
+      "image_height": 103,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 6918,
+      "identity_status": "VERIFIED",
+      "source_filename": "C50P11thinF_IMG_20150724_115141_cell_185.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C50P11thinF_IMG_20150724_115141_cell_185.png",
+      "source_file_sha256": "699f08168e439e394c669aefa00d62dbd1218b1f86ea9a81bc7f306652dc53d4",
+      "relative_source_key": null,
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "decoded_pixel_sha256": "20601547b50c6c478832eab540bfa79add14047894cb1a5db713763e6c1e859f"
+    },
+    "clinical_identity": {
+      "id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C50P11thinF"
+    },
+    "assignment": {
+      "id": "2c499b65-fee5-54c9-a256-d243714c8555",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "a7e730d7-eb08-5e4b-8794-83991256a4c9",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "a87164b3-8eb0-50b8-a485-d4e5dc247ef3",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.22432048618793488,
+      "sample_id": "a87164b3-8eb0-50b8-a485-d4e5dc247ef3",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "a87164b3-8eb0-50b8-a485-d4e5dc247ef3",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 10442,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 121,
+      "image_height": 112,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 6802,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_103054_cell_192.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_103054_cell_192.png",
+      "source_file_sha256": "305fd14c93c5460967c73f80ff3888741fd1fbd81caa5cabf12f2e8f713cd71f",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "c293eb25987383c3187a13144956f957a6467c5de697cdfe8fc71e886ad544d1"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "4d49a026-de42-5320-8248-52261343e46a",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "a87164b3-8eb0-50b8-a485-d4e5dc247ef3",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "c1b8b964-39f9-5ded-b725-73cc08269465",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.18313363194465637,
+      "sample_id": "c1b8b964-39f9-5ded-b725-73cc08269465",
+      "threshold": 0.25116682052612305,
+      "patient_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "c1b8b964-39f9-5ded-b725-73cc08269465",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 10708,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 112,
+      "image_height": 106,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7547,
+      "identity_status": "VERIFIED",
+      "source_filename": "C50P11thinF_IMG_20150724_120716_cell_152.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C50P11thinF_IMG_20150724_120716_cell_152.png",
+      "source_file_sha256": "4d93475d52855ddd2b3d95d02a4c0d76e0f0c80c06b8bdb7f31c19719d278322",
+      "relative_source_key": null,
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "decoded_pixel_sha256": "12a3613fba6d0236a5f8fe0eb6ecaaea20e2711d6e9d012333993d0a0740aa8f"
+    },
+    "clinical_identity": {
+      "id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C50P11thinF"
+    },
+    "assignment": {
+      "id": "8d61a7ba-593e-5342-ba24-8b0188391abe",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "c1b8b964-39f9-5ded-b725-73cc08269465",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "cc853e4b-9375-52d5-b1b0-3f8d143c91bf",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.24710704386234283,
+      "sample_id": "cc853e4b-9375-52d5-b1b0-3f8d143c91bf",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "cc853e4b-9375-52d5-b1b0-3f8d143c91bf",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 14848,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 127,
+      "image_height": 118,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 11037,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_110834_cell_127.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C80P41ThinF_IMG_20150817_110834_cell_127.png",
+      "source_file_sha256": "50666e7c1c549715e9d3e5ac602e278b8308b74eb09725fe48c734eaa9f26c79",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "c8123f9cd35d8d0079073308ce136f5e27b2984462cd9e8a566d10cb2edae439"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "5c5c6782-39b2-5a07-86a4-0c6a98dac2a3",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "cc853e4b-9375-52d5-b1b0-3f8d143c91bf",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "cf006f1c-1639-5ca3-8f37-8934adbe4a5c",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.009205237030982971,
+      "sample_id": "cf006f1c-1639-5ca3-8f37-8934adbe4a5c",
+      "threshold": 0.25116682052612305,
+      "patient_id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "cf006f1c-1639-5ca3-8f37-8934adbe4a5c",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 23030,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 139,
+      "image_height": 148,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 13821,
+      "identity_status": "VERIFIED",
+      "source_filename": "C144P105ThinF_IMG_20151015_155004_cell_307.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C144P105ThinF_IMG_20151015_155004_cell_307.png",
+      "source_file_sha256": "4165acd664075d1114bd2370fcfed3b3072195a001254cee8047d07dc1a46d18",
+      "relative_source_key": null,
+      "clinical_identity_id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+      "decoded_pixel_sha256": "26e5f32f380fde5a2cf80f56d097ca7719a33e5b19540804534a1c2e004426f3"
+    },
+    "clinical_identity": {
+      "id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C144P105ThinF"
+    },
+    "assignment": {
+      "id": "27eb6391-a120-5b3f-b78d-b58de2b62e1d",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "cf006f1c-1639-5ca3-8f37-8934adbe4a5c",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "e942ac07-b9b2-5ef9-994b-6320a352b354"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "cff0ca4e-87ab-5f6f-8c9b-71720fd1a7c6",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.09870371222496033,
+      "sample_id": "cff0ca4e-87ab-5f6f-8c9b-71720fd1a7c6",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "cff0ca4e-87ab-5f6f-8c9b-71720fd1a7c6",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 11342,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 133,
+      "image_height": 145,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 12198,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_111943_cell_21.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C80P41ThinF_IMG_20150817_111943_cell_21.png",
+      "source_file_sha256": "f3e023946fcc95e8e7775bee323f16213eab3fdea31f7eaea265693fa1b3f726",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "c8cff311c21c5b3fa3884cb0169f4c6bce301726f2d7310c58dd563e26090fc9"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "823e0159-69c7-539b-bd3c-8072db096264",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "cff0ca4e-87ab-5f6f-8c9b-71720fd1a7c6",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "d26a083b-436d-5213-a7b8-7ae316147ec1",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.10808848589658737,
+      "sample_id": "d26a083b-436d-5213-a7b8-7ae316147ec1",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "d26a083b-436d-5213-a7b8-7ae316147ec1",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 24158,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 142,
+      "image_height": 136,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 9098,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102951_cell_212.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102951_cell_212.png",
+      "source_file_sha256": "56cc3ea0c290f8c631c8f06e59088fb269c2dd747678c9ff865b4257218448cf",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "cdd12cd507023559ea139fc28adafd9410d4b92a3274d95a31031cb42779bd1f"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "e1df5812-2bbd-58d4-aeb3-3e2fcd40576d",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "d26a083b-436d-5213-a7b8-7ae316147ec1",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "de36e570-d98a-51e0-8d58-829ff3238946",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.24193476140499115,
+      "sample_id": "de36e570-d98a-51e0-8d58-829ff3238946",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3fa59041-8312-5799-98d0-26ded5b1bd9d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "de36e570-d98a-51e0-8d58-829ff3238946",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 9740,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 124,
+      "image_height": 118,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 11457,
+      "identity_status": "VERIFIED",
+      "source_filename": "C183P144NThinF_IMG_20151201_223208_cell_118.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C183P144NThinF_IMG_20151201_223208_cell_118.png",
+      "source_file_sha256": "fed79a3901819c88788873b981ab98fb5fd33038925298e67289dd5cb0931d9b",
+      "relative_source_key": null,
+      "clinical_identity_id": "3fa59041-8312-5799-98d0-26ded5b1bd9d",
+      "decoded_pixel_sha256": "118bc94b4468407bd6cf767fe7d7d5a6493a150c71792dc2c8b2ca7d4c6f5178"
+    },
+    "clinical_identity": {
+      "id": "3fa59041-8312-5799-98d0-26ded5b1bd9d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C183P144NThinF"
+    },
+    "assignment": {
+      "id": "b9080a24-ae0e-5c03-bd72-e4bb0bb0e198",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "de36e570-d98a-51e0-8d58-829ff3238946",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3fa59041-8312-5799-98d0-26ded5b1bd9d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "e07864fb-cc60-5a26-9bb1-b31ef126288b",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.1892658919095993,
+      "sample_id": "e07864fb-cc60-5a26-9bb1-b31ef126288b",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "e07864fb-cc60-5a26-9bb1-b31ef126288b",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 1307,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 118,
+      "image_height": 130,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7771,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_103054_cell_189.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_103054_cell_189.png",
+      "source_file_sha256": "d76d43eeddeed603c77fc4168dfd23642171339423e61cc5ceb3e1b8959fda23",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "21e4c17bdfa4939041109fe187acfff1547af36dd3faeb46ecdd26503a9fb68d"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "b00a3c97-ae2a-554a-b85c-9af2ec7c7a9c",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "e07864fb-cc60-5a26-9bb1-b31ef126288b",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "e83eadf1-5f0e-5b99-ace2-6d36bc994f68",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.16262224316596985,
+      "sample_id": "e83eadf1-5f0e-5b99-ace2-6d36bc994f68",
+      "threshold": 0.25116682052612305,
+      "patient_id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "e83eadf1-5f0e-5b99-ace2-6d36bc994f68",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 26689,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 157,
+      "image_height": 133,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 14540,
+      "identity_status": "VERIFIED",
+      "source_filename": "C144P105ThinF_IMG_20151015_163432_cell_305.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C144P105ThinF_IMG_20151015_163432_cell_305.png",
+      "source_file_sha256": "bd65a00d0db785009aa258a34e306d89465f83ba70e843873d20d4331137f688",
+      "relative_source_key": null,
+      "clinical_identity_id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+      "decoded_pixel_sha256": "2489ad5744e2bd343d27e194ef54e82e476c98d15ddac69dc2a36aff9b1fa7fe"
+    },
+    "clinical_identity": {
+      "id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C144P105ThinF"
+    },
+    "assignment": {
+      "id": "2407ad83-8f7b-5ac8-be57-3bf8054208ee",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "e83eadf1-5f0e-5b99-ace2-6d36bc994f68",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "e942ac07-b9b2-5ef9-994b-6320a352b354"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "ecb54521-3ad7-5d17-b963-bc41d385b420",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.08617483079433441,
+      "sample_id": "ecb54521-3ad7-5d17-b963-bc41d385b420",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "ecb54521-3ad7-5d17-b963-bc41d385b420",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 3653,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 130,
+      "image_height": 127,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7790,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102843_cell_182.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102843_cell_182.png",
+      "source_file_sha256": "1c8e15383b47fdc20db30c0304971f68746482fc1abae6368f1dc723b307943a",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "d106c896c4a5e5d95dafcd779d980faf32ee049cde9841385fb00d41ab17ac68"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "99ea4032-1c13-55ad-b5ac-2899746bdb8b",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "ecb54521-3ad7-5d17-b963-bc41d385b420",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "f18ded4d-50f6-543e-8979-f025690c2579",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.21031957864761353,
+      "sample_id": "f18ded4d-50f6-543e-8979-f025690c2579",
+      "threshold": 0.25116682052612305,
+      "patient_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "f18ded4d-50f6-543e-8979-f025690c2579",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 4458,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 127,
+      "image_height": 112,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 7502,
+      "identity_status": "VERIFIED",
+      "source_filename": "C50P11thinF_IMG_20150724_115603_cell_155.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C50P11thinF_IMG_20150724_115603_cell_155.png",
+      "source_file_sha256": "d4065d8b5dfde6031d545ecfa6217cbe3ae2c665b9fbc0908896d6fd54f8b486",
+      "relative_source_key": null,
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "decoded_pixel_sha256": "be293c40b50f278296096e97fb56cb5b919839bdc77fadb9887099598c618f10"
+    },
+    "clinical_identity": {
+      "id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C50P11thinF"
+    },
+    "assignment": {
+      "id": "d5d58a8d-0320-5d3b-90fe-ea88a228d08d",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "f18ded4d-50f6-543e-8979-f025690c2579",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "f6b23a2c-6fe5-5294-965b-18609f71af99",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.17097140848636627,
+      "sample_id": "f6b23a2c-6fe5-5294-965b-18609f71af99",
+      "threshold": 0.25116682052612305,
+      "patient_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "f6b23a2c-6fe5-5294-965b-18609f71af99",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 24863,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 136,
+      "image_height": 142,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 11307,
+      "identity_status": "VERIFIED",
+      "source_filename": "C50P11thinF_IMG_20150724_120716_cell_156.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C50P11thinF_IMG_20150724_120716_cell_156.png",
+      "source_file_sha256": "a41ff7aa5160bc9743a5e8f567451448db2d43e925c20dcc4a661aaf61398342",
+      "relative_source_key": null,
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "decoded_pixel_sha256": "56109ee7bcabc0152a0ba76e62ab2696970346db5bfa94f2ec3c2df2f9b07653"
+    },
+    "clinical_identity": {
+      "id": "73301029-67c8-5ffc-951a-81f2e35dd6a5",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C50P11thinF"
+    },
+    "assignment": {
+      "id": "4bd01d59-7893-5a63-9d93-b1c28a11793e",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "f6b23a2c-6fe5-5294-965b-18609f71af99",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "73301029-67c8-5ffc-951a-81f2e35dd6a5"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "fb1c9a4b-cf64-5b03-a839-13a8bb677135",
+    "payload": {
+      "label": 0,
+      "predicted": 1,
+      "raw_score": 0.3084355890750885,
+      "sample_id": "fb1c9a4b-cf64-5b03-a839-13a8bb677135",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "fb1c9a4b-cf64-5b03-a839-13a8bb677135",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "uninfected",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 23183,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 0,
+      "image_width": 124,
+      "image_height": 97,
+      "project_label": 0,
+      "original_label": 1,
+      "file_size_bytes": 9614,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_111246_cell_25.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:uninfected/C80P41ThinF_IMG_20150817_111246_cell_25.png",
+      "source_file_sha256": "5de585fc26f531550d1c64430d60577d1a328b89840599d0147d14407c0187b2",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "e1b10e19f1f3e05975b234785befa02eab4b787a0661fa440e133d11b88dfe16"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "bdd0fc1a-d664-5391-bf33-2785e71dac93",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "uninfected",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 0,
+      "source_record_id": "fb1c9a4b-cf64-5b03-a839-13a8bb677135",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "fdfff085-e2c5-5d88-85ca-cc06b5dea630",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.22722387313842773,
+      "sample_id": "fdfff085-e2c5-5d88-85ca-cc06b5dea630",
+      "threshold": 0.25116682052612305,
+      "patient_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "fdfff085-e2c5-5d88-85ca-cc06b5dea630",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 21947,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 91,
+      "image_height": 103,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 5610,
+      "identity_status": "VERIFIED",
+      "source_filename": "C49P10thinF_IMG_20150724_102951_cell_208.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C49P10thinF_IMG_20150724_102951_cell_208.png",
+      "source_file_sha256": "31f334145859231bb3b8463a19dcbf8ba0cce5419f716e06d6cbc68bba922e6b",
+      "relative_source_key": null,
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "decoded_pixel_sha256": "c8679fa055055093a0e24d1ca37d0844409cfeb79b4efe56319c364298816828"
+    },
+    "clinical_identity": {
+      "id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C49P10thinF"
+    },
+    "assignment": {
+      "id": "e0ddf315-f593-56e4-a6b3-fa1c216b6629",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "fdfff085-e2c5-5d88-85ca-cc06b5dea630",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "3b4fecc7-6465-5f59-bdce-7dac4ac53c0d"
+    }
+  },
+  {
+    "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+    "sample_id": "fe4e2e03-8721-5714-9224-5d8b09c97505",
+    "payload": {
+      "label": 1,
+      "predicted": 0,
+      "raw_score": 0.06645181030035019,
+      "sample_id": "fe4e2e03-8721-5714-9224-5d8b09c97505",
+      "threshold": 0.25116682052612305,
+      "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "calibrated_score": null
+    },
+    "source_record": {
+      "id": "fe4e2e03-8721-5714-9224-5d8b09c97505",
+      "metadata": {
+        "tfds_index_lineage": "historical files_manifest.csv order",
+        "technical_distribution": "tensorflow_datasets/malaria:1.0.0"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "tfds_index": 4700,
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "class_index": 1,
+      "image_width": 136,
+      "image_height": 145,
+      "project_label": 1,
+      "original_label": 0,
+      "file_size_bytes": 12307,
+      "identity_status": "VERIFIED",
+      "source_filename": "C80P41ThinF_IMG_20150817_110957_cell_144.png",
+      "source_record_key": "nlm_lhncbc_malaria_cell_images:parasitized/C80P41ThinF_IMG_20150817_110957_cell_144.png",
+      "source_file_sha256": "af71a0efe01b6327b5ee80c8476c5a75aac362cd0ff2283e1bfa3d896ba75185",
+      "relative_source_key": null,
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "decoded_pixel_sha256": "fc0eeda2acaff01a9f1fb4f54677744cc5207ac506cda079ff7b7ca189192df6"
+    },
+    "clinical_identity": {
+      "id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+      "status": "VERIFIED",
+      "metadata": {
+        "identifier_authority": "NLM/LHNCBC"
+      },
+      "created_at": "2026-08-18T18:00:58.517655+00:00",
+      "dataset_id": "3f4058c7-5671-4c2f-a089-d1482d5661f4",
+      "updated_at": "2026-08-18T18:00:58.517655+00:00",
+      "identity_type": "PATIENT",
+      "source_identifier": "C80P41ThinF"
+    },
+    "assignment": {
+      "id": "21735604-f3c8-5df7-8bbe-2b5cd040ed78",
+      "metadata": {
+        "algorithm": "patient_group_stratified_v1",
+        "algorithm_version": "1.0.0",
+        "approved_patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+      },
+      "class_name": "parasitized",
+      "created_at": "2026-08-18T18:05:18.981692+00:00",
+      "split_name": "test",
+      "class_index": 1,
+      "source_record_id": "fe4e2e03-8721-5714-9224-5d8b09c97505",
+      "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+      "clinical_identity_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815"
+    }
+  }
+]

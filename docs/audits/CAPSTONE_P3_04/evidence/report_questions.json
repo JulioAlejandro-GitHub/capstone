@@ -1,0 +1,456 @@
+{
+  "module": "questions",
+  "data": {
+    "consensus": {
+      "common_count": 2685,
+      "union_count": 2685,
+      "label_conflicts": 0,
+      "coverage": [
+        {
+          "population": 2685,
+          "common": 2685,
+          "missing": 0,
+          "exclusive": 0,
+          "ratio": 1.0
+        }
+      ],
+      "state": "available",
+      "distribution": {
+        "CONSENSUS_TP": 1270,
+        "CONSENSUS_TN": 1145,
+        "CONSENSUS_FP": 223,
+        "CONSENSUS_FN": 47,
+        "disagreement": 0
+      },
+      "agreement": [
+        [
+          2685
+        ]
+      ],
+      "error_overlap": [
+        [
+          270
+        ]
+      ],
+      "exclusive_errors": [
+        270
+      ],
+      "exclusive_correct": [
+        2415
+      ],
+      "oracle": {
+        "numerator": 2415,
+        "denominator": 2685,
+        "ratio": 0.8994413407821229
+      },
+      "all_wrong": 270,
+      "high_confidence_errors": 31,
+      "low_confidence": 118,
+      "samples": [
+        {
+          "sample": "0005c2cc-6db7-54bb-b1df-9006d52c9256",
+          "label": 0,
+          "category": "CONSENSUS_TN",
+          "runs": [
+            {
+              "label": 0,
+              "score": 0.11083993315696716,
+              "prediction": 0,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "00113612-8175-571c-bd88-ab713c9e308e",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.99973064661026,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "00127b0b-9a74-545a-9f36-c3e50dff9151",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9991592168807983,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "00230158-446c-542b-bea5-49e8345bc89e",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.6537123322486877,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "00369a36-5739-53eb-8150-57f72fba18b1",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9967527985572815,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "004cc347-5232-5b5a-ac2b-ee6629dbad37",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9385004639625549,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "00640e35-8108-5bb6-8bee-031bdec16851",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9440371990203857,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "006849a5-ac98-5cd6-84fa-71a7ac5e2750",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.975060224533081,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "006cdb01-c3c2-5ef5-b1eb-678e280bc2a9",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9993804693222046,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "00732d09-9b47-5544-b6d3-9e9fe1d1d465",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9913456439971924,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "007a0649-a4b9-5a59-871b-c17a1894330d",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9856297373771667,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "0082dae1-3bf5-5bf3-b673-d0424e59deaa",
+          "label": 0,
+          "category": "CONSENSUS_TN",
+          "runs": [
+            {
+              "label": 0,
+              "score": 0.07439940422773361,
+              "prediction": 0,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "009a759b-a9f7-5da0-b2d4-f33dd2b4c04e",
+          "label": 0,
+          "category": "CONSENSUS_TN",
+          "runs": [
+            {
+              "label": 0,
+              "score": 0.14366574585437775,
+              "prediction": 0,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "009ac9b6-5112-58c6-8486-65526a609654",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.8965598940849304,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "00fc5a19-fc89-508b-a327-5e7fad281b63",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9960142374038696,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "0123dbed-7988-56c3-977c-4ce632a01841",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9634192585945129,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "014d8b8e-3397-5ae8-88fd-8cef2a2d6c64",
+          "label": 0,
+          "category": "CONSENSUS_FP",
+          "runs": [
+            {
+              "label": 0,
+              "score": 0.6909072995185852,
+              "prediction": 1,
+              "correct": false
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "0156a812-63f6-5dd8-8840-cb9c36aa31f0",
+          "label": 0,
+          "category": "CONSENSUS_TN",
+          "runs": [
+            {
+              "label": 0,
+              "score": 0.1386071741580963,
+              "prediction": 0,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "015cda73-e3d6-5ec8-bbde-9c62440564a0",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9940686225891113,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "016ef920-e763-5fac-b4a2-dd8fb20d2de2",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9955042004585266,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "01a133b1-74db-5f12-bf42-8db74b539b26",
+          "label": 0,
+          "category": "CONSENSUS_FP",
+          "runs": [
+            {
+              "label": 0,
+              "score": 0.545226514339447,
+              "prediction": 1,
+              "correct": false
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "01ab7287-58f7-5393-8707-93c5214d08d4",
+          "label": 0,
+          "category": "CONSENSUS_TN",
+          "runs": [
+            {
+              "label": 0,
+              "score": 0.13508762419223785,
+              "prediction": 0,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "01ea43a0-7854-577b-9c00-996b8d80af76",
+          "label": 0,
+          "category": "CONSENSUS_TN",
+          "runs": [
+            {
+              "label": 0,
+              "score": 0.033738069236278534,
+              "prediction": 0,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "01eb5a8f-b67c-53da-acf2-e5935906fef1",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9803826808929443,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        },
+        {
+          "sample": "02264c48-b1ee-5200-8fd8-6fd45c9d9392",
+          "label": 1,
+          "category": "CONSENSUS_TP",
+          "runs": [
+            {
+              "label": 1,
+              "score": 0.9972979426383972,
+              "prediction": 1,
+              "correct": true
+            }
+          ],
+          "high_confidence_error": false,
+          "low_confidence": false
+        }
+      ],
+      "total": 2685,
+      "offset": 0,
+      "limit": 25,
+      "definitions": {
+        "decision": "score >= umbral persistido; clase positiva parasitada (1).",
+        "consensus": "Todos predicen la misma clase; TP/TN/FP/FN seg\u00fan etiqueta real.",
+        "agreement": "Predicciones iguales entre i,j / N com\u00fan; se muestran conteos y N.",
+        "error_overlap": "N\u00famero de muestras comunes donde i y j fallan.",
+        "exclusive": "Error (o acierto) de un \u00fanico RUN; los dem\u00e1s tienen el resultado contrario.",
+        "oracle": "Muestras donde al menos un RUN acierta / N com\u00fan. L\u00edmite descriptivo, no modelo desplegable.",
+        "high_confidence_error": "Error con score >= 0.9 para predicci\u00f3n positiva o <= 0.1 para negativa; no acredita calibraci\u00f3n.",
+        "low_confidence": "|score - umbral| <= 0.05; cercan\u00eda a la decisi\u00f3n, no incertidumbre calibrada.",
+        "coverage": "N com\u00fan / muestras \u00fanicas de cada RUN; faltantes relativos a la uni\u00f3n."
+      },
+      "sources": [
+        {
+          "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+          "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+          "split": "test"
+        }
+      ]
+    },
+    "answers": [
+      "Con un solo RUN no hay complementariedad que medir; los errores del modelo est\u00e1n en Errores.",
+      "Las m\u00e9tricas TEST describen esta poblaci\u00f3n y estos umbrales; sin una prueba pareada acreditada (p. ej. McNemar o bootstrap) no se infiere superioridad cl\u00ednica ni estad\u00edstica.",
+      "Las explicaciones visuales requieren artefactos atribuidos a muestra, m\u00e9todo y checkpoint."
+    ]
+  },
+  "warnings": []
+}

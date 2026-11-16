@@ -1,0 +1,46 @@
+[
+  {
+    "label": 0,
+    "split": "test",
+    "sha256": "9155ff4224d8b5e413cfaff4e9a70785fd78a2156b9d440c0773e8ca130d3301",
+    "sample_id": "014d8b8e-3397-5ae8-88fd-8cef2a2d6c64",
+    "patient_id": "d4b8e72c-782e-570d-a4df-5e6c618b9a35",
+    "relative_path": "test/uninfected/C139P100ThinF_IMG_20151005_182822_cell_142.png",
+    "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2/test/uninfected/C139P100ThinF_IMG_20151005_182822_cell_142.png",
+    "exists": true,
+    "observed_sha256": "9155ff4224d8b5e413cfaff4e9a70785fd78a2156b9d440c0773e8ca130d3301"
+  },
+  {
+    "label": 0,
+    "split": "test",
+    "sha256": "5de585fc26f531550d1c64430d60577d1a328b89840599d0147d14407c0187b2",
+    "sample_id": "fb1c9a4b-cf64-5b03-a839-13a8bb677135",
+    "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+    "relative_path": "test/uninfected/C80P41ThinF_IMG_20150817_111246_cell_25.png",
+    "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2/test/uninfected/C80P41ThinF_IMG_20150817_111246_cell_25.png",
+    "exists": true,
+    "observed_sha256": "5de585fc26f531550d1c64430d60577d1a328b89840599d0147d14407c0187b2"
+  },
+  {
+    "label": 0,
+    "split": "test",
+    "sha256": "41aa953131e6d0219d35b619c8d681797bec05e20eace07d29f5dd355bc68d4c",
+    "sample_id": "01a133b1-74db-5f12-bf42-8db74b539b26",
+    "patient_id": "c38a1c0b-18a7-5b19-953f-eb7a1faed815",
+    "relative_path": "test/uninfected/C80P41ThinF_IMG_20150817_111246_cell_49.png",
+    "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2/test/uninfected/C80P41ThinF_IMG_20150817_111246_cell_49.png",
+    "exists": true,
+    "observed_sha256": "41aa953131e6d0219d35b619c8d681797bec05e20eace07d29f5dd355bc68d4c"
+  },
+  {
+    "label": 1,
+    "split": "test",
+    "sha256": "01c9f512c077b70c4254c6377b42277e09b4aa04e5e76df2c4e9638af40fad96",
+    "sample_id": "028644ea-4c04-5b98-b3fd-45eeef3d76e6",
+    "patient_id": "e942ac07-b9b2-5ef9-994b-6320a352b354",
+    "relative_path": "test/parasitized/C144P105ThinF_IMG_20151015_155004_cell_305.png",
+    "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/data/malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2/test/parasitized/C144P105ThinF_IMG_20151015_155004_cell_305.png",
+    "exists": true,
+    "observed_sha256": "01c9f512c077b70c4254c6377b42277e09b4aa04e5e76df2c4e9638af40fad96"
+  }
+]

@@ -1,0 +1,41 @@
+/*
+ * Acceso al Microscopio Digital desde el Historial (v3).
+ * Clase con namespace propio: se renderiza junto a «Ver detalle» y replica el
+ * tono de las acciones del historial sin tocar sus estilos.
+ */
+.frotis-v3-history-access {
+  display: inline-flex;
+  width: 2.15rem;
+  height: 2.15rem;
+  align-items: center;
+  justify-content: center;
+  margin-left: .4rem;
+  border: 1px solid #176b62;
+  border-radius: 7px;
+  color: #176b62;
+  background: #fff;
+  vertical-align: middle;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.frotis-v3-history-access svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.frotis-v3-history-access:hover {
+  color: #fff;
+  background: #176b62;
+}
+
+.frotis-v3-history-access:focus-visible {
+  outline: 2px solid #176b62;
+  outline-offset: 2px;
+}
+
+.frotis-v3-history-access.is-disabled {
+  border-color: #b8c5cf;
+  color: #8a97a3;
+  background: #f6f8fa;
+  cursor: not-allowed;
+}

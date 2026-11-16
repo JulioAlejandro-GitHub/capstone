@@ -1,0 +1,1328 @@
+{
+  "contract_version": "scc_pre_1",
+  "generated_at": "2026-11-16T12:08:07.032486Z",
+  "correlation_id": "CAPSTONE_P3_04",
+  "consistency": {
+    "mode": "repeatable_read",
+    "started_at": "2026-11-16T12:08:06.860541Z",
+    "completed_at": "2026-11-16T12:08:07.032486Z",
+    "limitations": [
+      "El snapshot SQL no verifica bytes de archivos."
+    ]
+  },
+  "selections": [
+    {
+      "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+      "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+      "dataset_version_id": {
+        "state": "known",
+        "value": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      },
+      "evaluation": {
+        "state": "known",
+        "value": {
+          "source": "assessment",
+          "identity_id": "a981125c-a9b6-4bec-9fb7-2fa52b907147",
+          "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+          "identity_hash": "ecba5dc664c8ab3a1c8660d61e2364ff175ef609f3d27d68ba7cd84180800ef4",
+          "attempt_state": "verified"
+        },
+        "evidence_ids": [
+          "evidence:4"
+        ]
+      },
+      "split": {
+        "state": "known",
+        "value": "test",
+        "evidence_ids": []
+      },
+      "checkpoint": {
+        "state": "known",
+        "value": "3bbb3405-1db1-5811-b4b5-f208f9e64503",
+        "evidence_ids": []
+      },
+      "selection_reason": "Selecci\u00f3n expl\u00edcita del cliente."
+    }
+  ],
+  "dimensions": [
+    {
+      "dimension": "A1",
+      "scope": {
+        "scope_id": "A1:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "COMPARABLE",
+        "error_ids": []
+      },
+      "evidence_ids": [
+        "evidence:0"
+      ],
+      "findings": []
+    },
+    {
+      "dimension": "A2",
+      "scope": {
+        "scope_id": "A2:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "COMPARABLE",
+        "error_ids": []
+      },
+      "evidence_ids": [
+        "evidence:1"
+      ],
+      "findings": []
+    },
+    {
+      "dimension": "A3",
+      "scope": {
+        "scope_id": "A3:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "COMPARABLE",
+        "error_ids": []
+      },
+      "evidence_ids": [
+        "evidence:8"
+      ],
+      "findings": []
+    },
+    {
+      "dimension": "A4",
+      "scope": {
+        "scope_id": "A4:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "COMPARABLE",
+        "error_ids": []
+      },
+      "evidence_ids": [
+        "evidence:2"
+      ],
+      "findings": []
+    },
+    {
+      "dimension": "A5",
+      "scope": {
+        "scope_id": "A5:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "COMPARABLE",
+        "error_ids": []
+      },
+      "evidence_ids": [
+        "evidence:5",
+        "evidence:6",
+        "evidence:7"
+      ],
+      "findings": []
+    },
+    {
+      "dimension": "A6",
+      "scope": {
+        "scope_id": "A6:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "COMPARABLE",
+        "error_ids": []
+      },
+      "evidence_ids": [
+        "evidence:4"
+      ],
+      "findings": []
+    }
+  ],
+  "analyses": [
+    {
+      "analysis_id": "curves:requested",
+      "module_id": "curves",
+      "scope": {
+        "scope_id": "curves:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "curves: requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "EVIDENCIA_INSUFICIENTE",
+        "error_ids": []
+      },
+      "dimension_refs": [
+        "A1:requested",
+        "A4:requested"
+      ],
+      "evidence_ids": [
+        "evidence:0",
+        "evidence:2"
+      ],
+      "findings": [
+        {
+          "reason_id": "curves:participants",
+          "code": "COMPARISON_REQUIRES_PARTICIPANTS",
+          "kind": "missing",
+          "message": "Se necesitan al menos dos TRAIN para comparaci\u00f3n conjunta.",
+          "condition": "participants",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        }
+      ],
+      "individual_data": [
+        {
+          "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "availability": {
+            "state": "known",
+            "value": true,
+            "evidence_ids": []
+          },
+          "references": [
+            "evidence:0",
+            "evidence:2",
+            "evidence:4"
+          ]
+        }
+      ],
+      "interpretation_limits": [
+        "Las m\u00e9tricas originales no se recalculan sobre la intersecci\u00f3n.",
+        "Disponibilidad f\u00edsica e integridad de checkpoints no comprobadas."
+      ]
+    },
+    {
+      "analysis_id": "metrics:requested",
+      "module_id": "metrics",
+      "scope": {
+        "scope_id": "metrics:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "metrics: requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "EVIDENCIA_INSUFICIENTE",
+        "error_ids": []
+      },
+      "dimension_refs": [
+        "A1:requested",
+        "A2:requested",
+        "A3:requested",
+        "A5:requested",
+        "A6:requested"
+      ],
+      "evidence_ids": [
+        "evidence:0",
+        "evidence:1",
+        "evidence:4",
+        "evidence:5",
+        "evidence:6",
+        "evidence:7",
+        "evidence:8"
+      ],
+      "findings": [
+        {
+          "reason_id": "metrics:participants",
+          "code": "COMPARISON_REQUIRES_PARTICIPANTS",
+          "kind": "missing",
+          "message": "Se necesitan al menos dos TRAIN para comparaci\u00f3n conjunta.",
+          "condition": "participants",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        }
+      ],
+      "individual_data": [
+        {
+          "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "availability": {
+            "state": "known",
+            "value": true,
+            "evidence_ids": []
+          },
+          "references": [
+            "evidence:0",
+            "evidence:2",
+            "evidence:4"
+          ]
+        }
+      ],
+      "interpretation_limits": [
+        "Las m\u00e9tricas originales no se recalculan sobre la intersecci\u00f3n.",
+        "Disponibilidad f\u00edsica e integridad de checkpoints no comprobadas."
+      ]
+    },
+    {
+      "analysis_id": "consensus:requested",
+      "module_id": "consensus",
+      "scope": {
+        "scope_id": "consensus:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "intersection",
+        "question": "consensus: requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "EVIDENCIA_INSUFICIENTE",
+        "error_ids": []
+      },
+      "dimension_refs": [
+        "A2:requested",
+        "A3:requested",
+        "A5:requested",
+        "A6:requested"
+      ],
+      "evidence_ids": [
+        "evidence:1",
+        "evidence:4",
+        "evidence:5",
+        "evidence:6",
+        "evidence:7",
+        "evidence:8"
+      ],
+      "findings": [
+        {
+          "reason_id": "consensus:participants",
+          "code": "COMPARISON_REQUIRES_PARTICIPANTS",
+          "kind": "missing",
+          "message": "Se necesitan al menos dos TRAIN para comparaci\u00f3n conjunta.",
+          "condition": "participants",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        }
+      ],
+      "individual_data": [
+        {
+          "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "availability": {
+            "state": "unknown",
+            "reason": "Consultar resultados de la fuente y selecci\u00f3n exactas.",
+            "evidence_ids": []
+          },
+          "references": [
+            "evidence:0",
+            "evidence:2",
+            "evidence:4"
+          ]
+        }
+      ],
+      "interpretation_limits": [
+        "Las m\u00e9tricas originales no se recalculan sobre la intersecci\u00f3n.",
+        "Disponibilidad f\u00edsica e integridad de checkpoints no comprobadas."
+      ]
+    },
+    {
+      "analysis_id": "xai:requested",
+      "module_id": "xai",
+      "scope": {
+        "scope_id": "xai:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "xai: requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "EVIDENCIA_INSUFICIENTE",
+        "error_ids": []
+      },
+      "dimension_refs": [
+        "A3:requested",
+        "A5:requested"
+      ],
+      "evidence_ids": [
+        "evidence:5",
+        "evidence:6",
+        "evidence:7",
+        "evidence:8"
+      ],
+      "findings": [
+        {
+          "reason_id": "xai:methodology",
+          "code": "METHODOLOGY_NOT_VERIFIED",
+          "kind": "missing",
+          "message": "Se requiere selecci\u00f3n y evidencia metodol\u00f3gica espec\u00edfica del m\u00f3dulo.",
+          "condition": "P5",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        },
+        {
+          "reason_id": "xai:participants",
+          "code": "COMPARISON_REQUIRES_PARTICIPANTS",
+          "kind": "missing",
+          "message": "Se necesitan al menos dos TRAIN para comparaci\u00f3n conjunta.",
+          "condition": "participants",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        }
+      ],
+      "individual_data": [
+        {
+          "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "availability": {
+            "state": "unknown",
+            "reason": "Disponibilidad individual pendiente de consulta del m\u00f3dulo.",
+            "evidence_ids": []
+          },
+          "references": [
+            "evidence:0",
+            "evidence:2",
+            "evidence:4"
+          ]
+        }
+      ],
+      "interpretation_limits": [
+        "Las m\u00e9tricas originales no se recalculan sobre la intersecci\u00f3n.",
+        "Disponibilidad f\u00edsica e integridad de checkpoints no comprobadas."
+      ]
+    },
+    {
+      "analysis_id": "embeddings:requested",
+      "module_id": "embeddings",
+      "scope": {
+        "scope_id": "embeddings:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "embeddings: requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "EVIDENCIA_INSUFICIENTE",
+        "error_ids": []
+      },
+      "dimension_refs": [
+        "A3:requested",
+        "A5:requested"
+      ],
+      "evidence_ids": [
+        "evidence:5",
+        "evidence:6",
+        "evidence:7",
+        "evidence:8"
+      ],
+      "findings": [
+        {
+          "reason_id": "embeddings:methodology",
+          "code": "METHODOLOGY_NOT_VERIFIED",
+          "kind": "missing",
+          "message": "Se requiere selecci\u00f3n y evidencia metodol\u00f3gica espec\u00edfica del m\u00f3dulo.",
+          "condition": "P5",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        },
+        {
+          "reason_id": "embeddings:participants",
+          "code": "COMPARISON_REQUIRES_PARTICIPANTS",
+          "kind": "missing",
+          "message": "Se necesitan al menos dos TRAIN para comparaci\u00f3n conjunta.",
+          "condition": "participants",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        }
+      ],
+      "individual_data": [
+        {
+          "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "availability": {
+            "state": "unknown",
+            "reason": "Disponibilidad individual pendiente de consulta del m\u00f3dulo.",
+            "evidence_ids": []
+          },
+          "references": [
+            "evidence:0",
+            "evidence:2",
+            "evidence:4"
+          ]
+        }
+      ],
+      "interpretation_limits": [
+        "Las m\u00e9tricas originales no se recalculan sobre la intersecci\u00f3n.",
+        "Disponibilidad f\u00edsica e integridad de checkpoints no comprobadas."
+      ]
+    },
+    {
+      "analysis_id": "pca:requested",
+      "module_id": "pca",
+      "scope": {
+        "scope_id": "pca:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "pca: requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "EVIDENCIA_INSUFICIENTE",
+        "error_ids": []
+      },
+      "dimension_refs": [
+        "A3:requested",
+        "A5:requested"
+      ],
+      "evidence_ids": [
+        "evidence:5",
+        "evidence:6",
+        "evidence:7",
+        "evidence:8"
+      ],
+      "findings": [
+        {
+          "reason_id": "pca:methodology",
+          "code": "METHODOLOGY_NOT_VERIFIED",
+          "kind": "missing",
+          "message": "Se requiere selecci\u00f3n y evidencia metodol\u00f3gica espec\u00edfica del m\u00f3dulo.",
+          "condition": "P5",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        },
+        {
+          "reason_id": "pca:participants",
+          "code": "COMPARISON_REQUIRES_PARTICIPANTS",
+          "kind": "missing",
+          "message": "Se necesitan al menos dos TRAIN para comparaci\u00f3n conjunta.",
+          "condition": "participants",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        }
+      ],
+      "individual_data": [
+        {
+          "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "availability": {
+            "state": "unknown",
+            "reason": "Disponibilidad individual pendiente de consulta del m\u00f3dulo.",
+            "evidence_ids": []
+          },
+          "references": [
+            "evidence:0",
+            "evidence:2",
+            "evidence:4"
+          ]
+        }
+      ],
+      "interpretation_limits": [
+        "Las m\u00e9tricas originales no se recalculan sobre la intersecci\u00f3n.",
+        "Disponibilidad f\u00edsica e integridad de checkpoints no comprobadas."
+      ]
+    },
+    {
+      "analysis_id": "umap:requested",
+      "module_id": "umap",
+      "scope": {
+        "scope_id": "umap:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "umap: requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "EVIDENCIA_INSUFICIENTE",
+        "error_ids": []
+      },
+      "dimension_refs": [
+        "A3:requested",
+        "A5:requested"
+      ],
+      "evidence_ids": [
+        "evidence:5",
+        "evidence:6",
+        "evidence:7",
+        "evidence:8"
+      ],
+      "findings": [
+        {
+          "reason_id": "umap:methodology",
+          "code": "METHODOLOGY_NOT_VERIFIED",
+          "kind": "missing",
+          "message": "Se requiere selecci\u00f3n y evidencia metodol\u00f3gica espec\u00edfica del m\u00f3dulo.",
+          "condition": "P5",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        },
+        {
+          "reason_id": "umap:participants",
+          "code": "COMPARISON_REQUIRES_PARTICIPANTS",
+          "kind": "missing",
+          "message": "Se necesitan al menos dos TRAIN para comparaci\u00f3n conjunta.",
+          "condition": "participants",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        }
+      ],
+      "individual_data": [
+        {
+          "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "availability": {
+            "state": "unknown",
+            "reason": "Disponibilidad individual pendiente de consulta del m\u00f3dulo.",
+            "evidence_ids": []
+          },
+          "references": [
+            "evidence:0",
+            "evidence:2",
+            "evidence:4"
+          ]
+        }
+      ],
+      "interpretation_limits": [
+        "Las m\u00e9tricas originales no se recalculan sobre la intersecci\u00f3n.",
+        "Disponibilidad f\u00edsica e integridad de checkpoints no comprobadas."
+      ]
+    },
+    {
+      "analysis_id": "cka:requested",
+      "module_id": "cka",
+      "scope": {
+        "scope_id": "cka:requested",
+        "requested_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "participating_training_run_ids": [
+          "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "selection_ids": [
+          "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+        ],
+        "population": "original",
+        "question": "cka: requested"
+      },
+      "verdict": {
+        "evaluation_status": "evaluated",
+        "scientific_state": "EVIDENCIA_INSUFICIENTE",
+        "error_ids": []
+      },
+      "dimension_refs": [
+        "A3:requested",
+        "A5:requested"
+      ],
+      "evidence_ids": [
+        "evidence:5",
+        "evidence:6",
+        "evidence:7",
+        "evidence:8"
+      ],
+      "findings": [
+        {
+          "reason_id": "cka:methodology",
+          "code": "METHODOLOGY_NOT_VERIFIED",
+          "kind": "missing",
+          "message": "Se requiere selecci\u00f3n y evidencia metodol\u00f3gica espec\u00edfica del m\u00f3dulo.",
+          "condition": "P5",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        },
+        {
+          "reason_id": "cka:participants",
+          "code": "COMPARISON_REQUIRES_PARTICIPANTS",
+          "kind": "missing",
+          "message": "Se necesitan al menos dos TRAIN para comparaci\u00f3n conjunta.",
+          "condition": "participants",
+          "affected_selection_ids": [
+            "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+          ],
+          "evidence_ids": []
+        }
+      ],
+      "individual_data": [
+        {
+          "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "availability": {
+            "state": "unknown",
+            "reason": "Disponibilidad individual pendiente de consulta del m\u00f3dulo.",
+            "evidence_ids": []
+          },
+          "references": [
+            "evidence:0",
+            "evidence:2",
+            "evidence:4"
+          ]
+        }
+      ],
+      "interpretation_limits": [
+        "Las m\u00e9tricas originales no se recalculan sobre la intersecci\u00f3n.",
+        "Disponibilidad f\u00edsica e integridad de checkpoints no comprobadas."
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "evidence:0",
+      "source": "A1",
+      "operation": "ScientificReadRepository.preflight_training",
+      "record_keys": {
+        "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      },
+      "field": null,
+      "selection_ids": [
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      ],
+      "observed_at": "2026-11-16T12:08:06.860541Z",
+      "verification": "operational",
+      "value": {
+        "state": "known",
+        "value": {
+          "name": "Malaria Patient Split v1",
+          "status": "FROZEN",
+          "random_seed": 42,
+          "split_algorithm": "patient_group_stratified_v1",
+          "grouping_strategy": "patient_group",
+          "source_record_count": 27558
+        },
+        "evidence_ids": [
+          "evidence:0"
+        ]
+      }
+    },
+    {
+      "evidence_id": "evidence:1",
+      "source": "A2",
+      "operation": "ScientificReadRepository.comparison_governance",
+      "record_keys": {
+        "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      },
+      "field": null,
+      "selection_ids": [
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      ],
+      "observed_at": "2026-11-16T12:08:06.860541Z",
+      "verification": "operational",
+      "value": {
+        "state": "known",
+        "value": {
+          "id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+          "name": "Malaria Patient Split v1",
+          "status": "FROZEN",
+          "grouping_strategy": "patient_group",
+          "split_algorithm": "patient_group_stratified_v1",
+          "random_seed": 42,
+          "source_record_count": 27558,
+          "campaign_id": "eb7ae3da-c954-4f2f-8d19-0398824089c5",
+          "campaign_dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+          "campaign_snapshot": {
+            "counts": {
+              "val": 2693,
+              "test": 2685,
+              "train": 22180
+            },
+            "selection_unit": "dataset_version_id",
+            "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+            "dataset_materialization_id": "e15dc166-1c4b-558e-b77b-727b1783430c",
+            "clinical_identity_fingerprint": "d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59",
+            "record_assignment_fingerprint": "9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2",
+            "source_population_fingerprint": "eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0",
+            "patient_assignment_fingerprint": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+          },
+          "materialization_id": "e15dc166-1c4b-558e-b77b-727b1783430c",
+          "materialization_status": "READY",
+          "reconciliation_status": "PASS",
+          "record_count": 27558,
+          "materialization_dataset_matches": true,
+          "counts": {
+            "train": 22180,
+            "val": 2693,
+            "test": 2685
+          },
+          "checks": [
+            {
+              "check_name": "assignment_count",
+              "status": "PASS",
+              "observed_value": "27558",
+              "expected_value": "27558"
+            },
+            {
+              "check_name": "class_presence_test",
+              "status": "PASS",
+              "observed_value": "both",
+              "expected_value": "both"
+            },
+            {
+              "check_name": "class_presence_train",
+              "status": "PASS",
+              "observed_value": "both",
+              "expected_value": "both"
+            },
+            {
+              "check_name": "class_presence_val",
+              "status": "PASS",
+              "observed_value": "both",
+              "expected_value": "both"
+            },
+            {
+              "check_name": "duplicate_cross_split_overlap",
+              "status": "PASS",
+              "observed_value": "0",
+              "expected_value": "0"
+            },
+            {
+              "check_name": "identity_conflicts",
+              "status": "PASS",
+              "observed_value": "0",
+              "expected_value": "0"
+            },
+            {
+              "check_name": "identity_coverage",
+              "status": "PASS",
+              "observed_value": "27558",
+              "expected_value": "27558"
+            },
+            {
+              "check_name": "patient_train_test_overlap",
+              "status": "PASS",
+              "observed_value": "0",
+              "expected_value": "0"
+            },
+            {
+              "check_name": "patient_train_val_overlap",
+              "status": "PASS",
+              "observed_value": "0",
+              "expected_value": "0"
+            },
+            {
+              "check_name": "patient_val_test_overlap",
+              "status": "PASS",
+              "observed_value": "0",
+              "expected_value": "0"
+            },
+            {
+              "check_name": "source_record_count",
+              "status": "PASS",
+              "observed_value": "27558",
+              "expected_value": "27558"
+            },
+            {
+              "check_name": "split_completeness",
+              "status": "PASS",
+              "observed_value": "complete",
+              "expected_value": "complete"
+            }
+          ],
+          "consumed_images": 0
+        },
+        "evidence_ids": [
+          "evidence:1"
+        ]
+      }
+    },
+    {
+      "evidence_id": "evidence:2",
+      "source": "A4",
+      "operation": "ScientificReadRepository.preflight_configuration",
+      "record_keys": {
+        "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      },
+      "field": null,
+      "selection_ids": [
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      ],
+      "observed_at": "2026-11-16T12:08:06.860541Z",
+      "verification": "operational",
+      "value": {
+        "state": "known",
+        "value": {
+          "architecture": "vgg16",
+          "random_seed": 47,
+          "normalization": "vgg16_imagenet",
+          "internal_preprocessing": "none",
+          "optimizer": "sgd",
+          "learning_rate": 0.001,
+          "batch_size": 32,
+          "loss_function": "binary_crossentropy",
+          "checkpoint_monitor": "val_f2_parasitized",
+          "checkpoint_mode": "max",
+          "early_stopping": true,
+          "max_epochs": 100,
+          "fine_tune_epochs": 20,
+          "fine_tune_learning_rate": 0.0001,
+          "early_stopping_patience": 12,
+          "early_stopping_monitor": "val_f2_parasitized",
+          "early_stopping_mode": "max",
+          "restore_best_weights": true,
+          "dropout": 0.5,
+          "l2": 0.0,
+          "input_height": 200,
+          "input_width": 200,
+          "input_channels": 3,
+          "no_augment": false,
+          "augmentation": {
+            "flip": "horizontal_and_vertical",
+            "zoom": 0.2,
+            "contrast": 0.3,
+            "rotation": 0.07,
+            "translation": 0.2
+          },
+          "checkpoint_policy": "auc_with_min_recall",
+          "clinical_objective": "min_recall; assessed independently of technical completion",
+          "optimizer_parameters": {
+            "use_ema": false,
+            "clipnorm": null,
+            "momentum": 0.9,
+            "nesterov": false,
+            "clipvalue": null,
+            "ema_momentum": 0.99,
+            "weight_decay": null,
+            "learning_rate": 0.001,
+            "global_clipnorm": null,
+            "loss_scale_factor": null,
+            "ema_overwrite_frequency": null,
+            "gradient_accumulation_steps": null
+          },
+          "executed_epochs": 28
+        },
+        "evidence_ids": [
+          "evidence:2"
+        ]
+      }
+    },
+    {
+      "evidence_id": "evidence:3",
+      "source": "history",
+      "operation": "ScientificReadRepository.preflight_history",
+      "record_keys": {
+        "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      },
+      "field": null,
+      "selection_ids": [
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      ],
+      "observed_at": "2026-11-16T12:08:06.860541Z",
+      "verification": "operational",
+      "value": {
+        "state": "known",
+        "value": true,
+        "evidence_ids": []
+      }
+    },
+    {
+      "evidence_id": "evidence:4",
+      "source": "A6",
+      "operation": "AssessmentReadRepository.preflight_detail",
+      "record_keys": {
+        "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+        "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+        "identity_id": "a981125c-a9b6-4bec-9fb7-2fa52b907147"
+      },
+      "field": "identity, state, verification.metrics",
+      "selection_ids": [
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      ],
+      "observed_at": "2026-11-16T12:08:06.860541Z",
+      "verification": "operational",
+      "value": {
+        "state": "known",
+        "value": {
+          "identity_id": "a981125c-a9b6-4bec-9fb7-2fa52b907147",
+          "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+          "identity_hash": "ecba5dc664c8ab3a1c8660d61e2364ff175ef609f3d27d68ba7cd84180800ef4",
+          "attempt_state": "verified",
+          "split": "test",
+          "metrics_definition": "binary_counts_rates_v1",
+          "batch_size": 32,
+          "protocol": {
+            "version": "exec1",
+            "splits": [
+              "test"
+            ],
+            "purposes": [
+              "final"
+            ],
+            "allowed_numeric_thresholds": []
+          },
+          "decision": {
+            "effective": 0.25116682052612305,
+            "score_domain": "raw",
+            "positive_class": 1,
+            "comparison": ">="
+          }
+        },
+        "evidence_ids": [
+          "evidence:4"
+        ]
+      }
+    },
+    {
+      "evidence_id": "evidence:5",
+      "source": "A5",
+      "operation": "ArtifactReadRepository.get",
+      "record_keys": {
+        "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      },
+      "field": null,
+      "selection_ids": [
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      ],
+      "observed_at": "2026-11-16T12:08:06.860541Z",
+      "verification": "operational",
+      "value": {
+        "state": "unknown",
+        "reason": "Registro ausente.",
+        "evidence_ids": []
+      }
+    },
+    {
+      "evidence_id": "evidence:6",
+      "source": "A5",
+      "operation": "checkpoint_binding.e5_selected_record",
+      "record_keys": {
+        "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      },
+      "field": null,
+      "selection_ids": [
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      ],
+      "observed_at": "2026-11-16T12:08:06.860541Z",
+      "verification": "operational",
+      "value": {
+        "state": "known",
+        "value": {
+          "artifact_id": "3bbb3405-1db1-5811-b4b5-f208f9e64503",
+          "checksum_registered": "b26f6e2c66fd5356028ba41eaee603f0c88a2a925b39cb6b21b0fafd79aa24fa"
+        },
+        "evidence_ids": [
+          "evidence:6"
+        ]
+      }
+    },
+    {
+      "evidence_id": "evidence:7",
+      "source": "A5",
+      "operation": "ScientificReadRepository.comparison_checkpoint",
+      "record_keys": {
+        "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      },
+      "field": "selected_checkpoint",
+      "selection_ids": [
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      ],
+      "observed_at": "2026-11-16T12:08:06.860541Z",
+      "verification": "operational",
+      "value": {
+        "state": "known",
+        "value": {
+          "selected_epoch": 1,
+          "phase": "base",
+          "policy": "auc_with_min_recall",
+          "metric": "val_f2_parasitized"
+        },
+        "evidence_ids": [
+          "evidence:7"
+        ]
+      }
+    },
+    {
+      "evidence_id": "evidence:8",
+      "source": "A3",
+      "operation": "AssessmentReadRepository.preflight_population",
+      "record_keys": {
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb": "00b8d407-c672-4b68-9814-53c092d034ba"
+      },
+      "field": null,
+      "selection_ids": [
+        "train:87b3eff7-e09a-41c8-945d-bf31b3541adb"
+      ],
+      "observed_at": "2026-11-16T12:08:06.860541Z",
+      "verification": "operational",
+      "value": {
+        "state": "known",
+        "value": true,
+        "evidence_ids": []
+      }
+    }
+  ],
+  "populations": [
+    {
+      "population_id": "selected-assessments",
+      "scope_id": "A3:requested",
+      "alignment_key": {
+        "state": "known",
+        "value": "dataset_source_records.id",
+        "evidence_ids": [
+          "evidence:8"
+        ]
+      },
+      "complete": {
+        "state": "known",
+        "value": true,
+        "evidence_ids": [
+          "evidence:8"
+        ]
+      },
+      "per_selection": [
+        {
+          "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "expected_unique": {
+            "state": "known",
+            "value": 2685,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "retrieved_rows": {
+            "state": "known",
+            "value": 2685,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "retrieved_unique": {
+            "state": "known",
+            "value": 2685,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "duplicate_count": {
+            "state": "known",
+            "value": 0,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "label_conflict_count": {
+            "state": "known",
+            "value": 0,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "missing_count": {
+            "state": "known",
+            "value": 0,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "exclusive_count": {
+            "state": "known",
+            "value": 0,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "numerator": {
+            "state": "known",
+            "value": 2685,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "denominator": {
+            "state": "known",
+            "value": 2685,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "ratio": {
+            "state": "known",
+            "value": 1.0,
+            "evidence_ids": [
+              "evidence:8"
+            ]
+          },
+          "evidence_ids": [
+            "evidence:8"
+          ]
+        }
+      ],
+      "intersection_unique": {
+        "state": "known",
+        "value": 2685,
+        "evidence_ids": [
+          "evidence:8"
+        ]
+      },
+      "identity_references": [
+        "assessment:00b8d407-c672-4b68-9814-53c092d034ba:results"
+      ],
+      "subset_rule": "Intersecci\u00f3n de todas las poblaciones seleccionadas; sin exclusi\u00f3n de duplicados o conflictos."
+    }
+  ],
+  "checkpoints": [
+    {
+      "selection_id": "train:87b3eff7-e09a-41c8-945d-bf31b3541adb",
+      "artifact_id": "3bbb3405-1db1-5811-b4b5-f208f9e64503",
+      "registered": {
+        "state": "known",
+        "value": true,
+        "evidence_ids": [
+          "evidence:6"
+        ]
+      },
+      "lineage": {
+        "state": "known",
+        "value": true,
+        "evidence_ids": [
+          "evidence:6"
+        ]
+      },
+      "availability": "not_checked",
+      "integrity": "not_checked",
+      "checked_at": null,
+      "evidence_ids": [
+        "evidence:6"
+      ],
+      "error_ids": []
+    }
+  ],
+  "technical_errors": [],
+  "summary": {
+    "by_state": {
+      "COMPARABLE": 0,
+      "COMPARABLE_CON_ADVERTENCIAS": 0,
+      "NO_COMPARABLE": 0,
+      "EVIDENCIA_INSUFICIENTE": 8
+    },
+    "not_evaluated": 0,
+    "analysis_count": 8,
+    "warning_reason_ids": [],
+    "technical_error_ids": []
+  }
+}

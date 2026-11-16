@@ -1,0 +1,3 @@
+exec((__import__('pathlib').Path(__file__).parent/'extract.py').read_text().split('cols=query')[0])
+query('views',"SELECT json_agg(t) FROM (SELECT viewname,definition FROM pg_views WHERE schemaname='public' AND viewname IN ('vw_model_run_summary','vw_clinical_run_summary','vw_clinical_inference_predictions'))t;")
+query('triggers',"SELECT json_agg(t) FROM (SELECT c.relname table_name,t.tgname,pg_get_triggerdef(t.oid) definition,p.proname,function_namespace.nspname function_schema FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_proc p ON p.oid=t.tgfoid JOIN pg_namespace function_namespace ON function_namespace.oid=p.pronamespace WHERE n.nspname='public' AND NOT t.tgisinternal ORDER BY c.relname,t.tgname)t;")

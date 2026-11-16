@@ -1,0 +1,3 @@
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SELECT json_agg(i) FROM assessment_identities i WHERE training_run_id='87b3eff7-e09a-41c8-945d-bf31b3541adb';
+COMMIT;

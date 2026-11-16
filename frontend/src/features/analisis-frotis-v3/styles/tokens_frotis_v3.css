@@ -1,0 +1,58 @@
+/*
+ * Optical Precision — tokens exclusivos de Análisis de frotis v3.
+ * Todo vive bajo `.frotis-v3`: no define variables en :root ni reutiliza las de v1/v2.
+ * `tokens_frotis_v2.css` sirvió solo como referencia de estructura.
+ */
+.frotis-v3 {
+  /* 1. Paleta oficial */
+  --frotis-v3-yellow: #B68006;
+  --frotis-v3-green: #04A141;
+  --frotis-v3-blue: #00028C;
+  --frotis-v3-silver: #8A8E97;
+  --frotis-v3-white: #DBEAF8;
+  --frotis-v3-black: #00011E;
+
+  /* 2. Colores de interfaz (derivados de la paleta) */
+  --frotis-v3-bg: var(--frotis-v3-black);
+  --frotis-v3-surface: color-mix(in srgb, var(--frotis-v3-blue) 14%, var(--frotis-v3-black));
+  --frotis-v3-surface-raised: color-mix(in srgb, var(--frotis-v3-blue) 26%, var(--frotis-v3-black));
+  --frotis-v3-field: color-mix(in srgb, var(--frotis-v3-blue) 20%, var(--frotis-v3-black));
+  --frotis-v3-border: color-mix(in srgb, var(--frotis-v3-silver) 30%, transparent);
+  --frotis-v3-border-strong: color-mix(in srgb, var(--frotis-v3-silver) 62%, transparent);
+  --frotis-v3-text: var(--frotis-v3-white);
+  --frotis-v3-text-muted: var(--frotis-v3-silver);
+  --frotis-v3-accent: var(--frotis-v3-yellow);
+  --frotis-v3-on-accent: var(--frotis-v3-black);
+
+  /* 3. Estados de interfaz: siempre acompañados de icono y texto, nunca solo color */
+  --frotis-v3-state-ok: var(--frotis-v3-green);
+  --frotis-v3-state-warning: var(--frotis-v3-yellow);
+  --frotis-v3-state-blocked: var(--frotis-v3-white);
+  --frotis-v3-state-progress: var(--frotis-v3-white);
+
+  /*
+   * 4. Perfiles de tinción y estilos científicos de anotación se declaran como
+   *    grupos propios cuando se incorporen sus capas (fases 01B.2 y 01B.3),
+   *    separados de los colores de interfaz anteriores.
+   */
+
+  /* 5. Tipografía y métricas */
+  --frotis-v3-font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --frotis-v3-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --frotis-v3-text-xs: 10px;
+  --frotis-v3-text-sm: 12px;
+  --frotis-v3-text-md: 13px;
+  --frotis-v3-text-lg: 17px;
+  --frotis-v3-radius: 10px;
+  --frotis-v3-radius-sm: 6px;
+  --frotis-v3-header-height: 44px;
+
+  /* 6. Neumorfismo moderado para instrumentos */
+  --frotis-v3-raise:
+    inset 0 1px 0 color-mix(in srgb, var(--frotis-v3-white) 9%, transparent),
+    0 8px 20px rgb(0 0 0 / 45%);
+  --frotis-v3-press:
+    inset 0 2px 6px rgb(0 0 0 / 60%),
+    inset 0 -1px 0 color-mix(in srgb, var(--frotis-v3-white) 7%, transparent);
+  --frotis-v3-focus: 0 0 0 2px var(--frotis-v3-black), 0 0 0 4px var(--frotis-v3-yellow);
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "e15dc166-1c4b-558e-b77b-727b1783430c",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "attempt_number": 1,
+    "status": "READY",
+    "reconciliation_status": "PASS",
+    "relative_root": "malaria_dataset_versions/d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "record_count": 27558,
+    "manifest_metadata": {
+      "contract": "byte_exact_assignment_materialization_v1",
+      "reconciliation": {
+        "sha_match": 27558,
+        "files_found": 27558,
+        "class_counts": {
+          "val|uninfected": 1368,
+          "test|uninfected": 1368,
+          "val|parasitized": 1325,
+          "test|parasitized": 1317,
+          "train|uninfected": 11043,
+          "train|parasitized": 11137
+        },
+        "sha_mismatch": 0,
+        "split_counts": {
+          "val": 2693,
+          "test": 2685,
+          "train": 22180
+        },
+        "missing_files": 0,
+        "patient_counts": {
+          "val": 20,
+          "test": 20,
+          "train": 161
+        },
+        "patient_overlaps": {
+          "val_test": 0,
+          "train_val": 0,
+          "train_test": 0
+        },
+        "unexpected_files": 0,
+        "sha_files_checked": 27558
+      },
+      "filename_strategy": "PRESERVE_SOURCE_FILENAME",
+      "filename_collisions": 0,
+      "record_assignment_digest": "9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2",
+      "patient_assignment_digest": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+    },
+    "started_at": "2026-08-18T18:06:10.448254+00:00",
+    "completed_at": "2026-08-18T18:06:18.746383+00:00",
+    "failure_reason": null,
+    "metadata": {
+      "staging_name": ".d8c0cab5-09dd-597f-9de7-7ca01aee2ec2.attempt-1.staging"
+    },
+    "created_at": "2026-08-18T18:06:10.448254+00:00"
+  }
+]

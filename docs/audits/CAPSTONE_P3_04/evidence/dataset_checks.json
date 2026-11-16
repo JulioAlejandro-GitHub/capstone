@@ -1,0 +1,152 @@
+[
+  {
+    "id": "f921500b-5ebf-58ab-9f55-8181057d9f34",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "identity_coverage",
+    "status": "PASS",
+    "observed_value": "27558",
+    "expected_value": "27558",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "abf1ee09-e473-553b-b1b4-fc43f782439b",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "identity_conflicts",
+    "status": "PASS",
+    "observed_value": "0",
+    "expected_value": "0",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "5c74f6c9-7e84-594a-b89a-4196de812c72",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "patient_train_val_overlap",
+    "status": "PASS",
+    "observed_value": "0",
+    "expected_value": "0",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "a06dfd59-a276-5593-b273-e71f280d4703",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "patient_train_test_overlap",
+    "status": "PASS",
+    "observed_value": "0",
+    "expected_value": "0",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "f3f08443-e2c2-5988-a4fd-4384abfaee88",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "patient_val_test_overlap",
+    "status": "PASS",
+    "observed_value": "0",
+    "expected_value": "0",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "6563ae1a-0c09-5b6e-9726-61f6036dea60",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "duplicate_cross_split_overlap",
+    "status": "PASS",
+    "observed_value": "0",
+    "expected_value": "0",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "7f36611d-6c44-5f4a-a61a-a5784e86eed0",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "assignment_count",
+    "status": "PASS",
+    "observed_value": "27558",
+    "expected_value": "27558",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "78aa36ef-b0af-538d-85b1-dddf0e7d9934",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "source_record_count",
+    "status": "PASS",
+    "observed_value": "27558",
+    "expected_value": "27558",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "431d791c-84e0-5afa-9f1b-cab6561d801d",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "split_completeness",
+    "status": "PASS",
+    "observed_value": "complete",
+    "expected_value": "complete",
+    "details_json": {
+      "invalid_splits": 0,
+      "unassigned_patients": 0,
+      "multi_split_patients": 0,
+      "unassigned_source_records": 0,
+      "multiassigned_source_records": 0
+    },
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "ddd282d4-5592-54c1-af5e-371462c6a66c",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "class_presence_train",
+    "status": "PASS",
+    "observed_value": "both",
+    "expected_value": "both",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "415fd557-dc2e-561c-ac68-493036c715d3",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "class_presence_val",
+    "status": "PASS",
+    "observed_value": "both",
+    "expected_value": "both",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  },
+  {
+    "id": "74492a47-979c-59a8-b6e4-6f9e7c502921",
+    "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+    "check_name": "class_presence_test",
+    "status": "PASS",
+    "observed_value": "both",
+    "expected_value": "both",
+    "details_json": {},
+    "blocking_for_validation": true,
+    "blocking_for_freeze": true,
+    "executed_at": "2026-08-18T18:05:37.122662+00:00"
+  }
+]

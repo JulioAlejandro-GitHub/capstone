@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
+import { MicroscopeAccessLink } from '../features/analisis-frotis-v3/components/MicroscopeAccessLink';
 import { useSmearAnalysisHistoryDetail } from '../hooks/useSmearAnalysisHistoryDetail';
 import { routes } from '../router';
 import {
@@ -62,7 +63,7 @@ function HistoryRow({ item }: { item: SmearAnalysisHistoryItem }) {
       <td data-label="Detección"><strong>{label(item.detection_status)}</strong><small>{item.detection_count} detecciones</small></td>
       <td data-label="Revisión"><strong>{item.reviewed_count} / {reviewTotal}</strong><small>células revisadas</small></td>
       <td data-label="Solicitante"><span>{item.requested_by_username}</span></td>
-      <td data-label="Acción"><Link className="history-detail-link" to={`${routes.smearHistoryDetail(item.analysis_run_id)}${location.search}`}>Ver detalle</Link></td>
+      <td data-label="Acción"><Link className="history-detail-link" to={`${routes.smearHistoryDetail(item.analysis_run_id)}${location.search}`}>Ver detalle</Link><MicroscopeAccessLink analysisId={item.analysis_run_id} /></td>
     </tr>
   );
 }

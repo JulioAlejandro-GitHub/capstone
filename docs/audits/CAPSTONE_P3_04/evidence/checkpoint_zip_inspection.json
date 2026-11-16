@@ -1,0 +1,233 @@
+{
+  "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/outputs/campaign_runs/87b3eff7-e09a-41c8-945d-bf31b3541adb/epoch_1.keras",
+  "members": [
+    {
+      "name": "metadata.json",
+      "bytes": 64
+    },
+    {
+      "name": "config.json",
+      "bytes": 24054
+    },
+    {
+      "name": "model.weights.h5",
+      "bytes": 63137172
+    }
+  ],
+  "metadata": {
+    "keras_version": "3.15.1",
+    "date_saved": "2026-10-29@10:56:05"
+  },
+  "checkpoint_layer_signature": [
+    {
+      "name": "input_layer_1",
+      "type": "InputLayer",
+      "trainable": null,
+      "kernel": null,
+      "units": null
+    },
+    {
+      "name": "block1_conv1",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block1_conv2",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block1_pool",
+      "type": "MaxPooling2D",
+      "trainable": false,
+      "kernel": null,
+      "units": null
+    },
+    {
+      "name": "block2_conv1",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block2_conv2",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block2_pool",
+      "type": "MaxPooling2D",
+      "trainable": false,
+      "kernel": null,
+      "units": null
+    },
+    {
+      "name": "block3_conv1",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block3_conv2",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block3_conv3",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block3_pool",
+      "type": "MaxPooling2D",
+      "trainable": false,
+      "kernel": null,
+      "units": null
+    },
+    {
+      "name": "block4_conv1",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block4_conv2",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block4_conv3",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block4_pool",
+      "type": "MaxPooling2D",
+      "trainable": false,
+      "kernel": null,
+      "units": null
+    },
+    {
+      "name": "block5_conv1",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block5_conv2",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block5_conv3",
+      "type": "Conv2D",
+      "trainable": false,
+      "kernel": [
+        3,
+        3
+      ],
+      "units": null
+    },
+    {
+      "name": "block5_pool",
+      "type": "MaxPooling2D",
+      "trainable": false,
+      "kernel": null,
+      "units": null
+    },
+    {
+      "name": "global_avg_pool",
+      "type": "GlobalAveragePooling2D",
+      "trainable": true,
+      "kernel": null,
+      "units": null
+    },
+    {
+      "name": "feature_dense_1024",
+      "type": "Dense",
+      "trainable": true,
+      "kernel": null,
+      "units": 1024
+    },
+    {
+      "name": "dropout_50",
+      "type": "Dropout",
+      "trainable": true,
+      "kernel": null,
+      "units": null
+    },
+    {
+      "name": "binary_output",
+      "type": "Dense",
+      "trainable": true,
+      "kernel": null,
+      "units": 1
+    }
+  ],
+  "runtime_phase_comparison": [
+    {
+      "phase": "fine_tuning",
+      "signature_equal": false
+    },
+    {
+      "phase": "base",
+      "signature_equal": true
+    }
+  ]
+}

@@ -1,0 +1,884 @@
+[
+  {
+    "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/var/storage/activation-traces/87b3eff7-e09a-41c8-945d-bf31b3541adb/29e26d17-5e6d-5fb3-b493-bb9bc4a5a07a.json",
+    "sample_id": "29e26d17-5e6d-5fb3-b493-bb9bc4a5a07a",
+    "sha256": "3756f08f2d8c5d3d9d626a8be93af6557e07024d7aed400e5d3747cae4b0ed89",
+    "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+    "attempt_id": "811dd584-bb41-453d-b7e9-26bd61c9990a",
+    "split": "val",
+    "checkpoint_sha256": "b26f6e2c66fd5356028ba41eaee603f0c88a2a925b39cb6b21b0fafd79aa24fa",
+    "score": 1.0,
+    "logit": 27.63104323789236,
+    "persisted_score": 1,
+    "label": 1,
+    "predicted": 1,
+    "threshold": 0.25116682052612305,
+    "consistent": true,
+    "selection": "16 canales de mayor activaci\u00f3n media",
+    "version": "activation_trace_v1",
+    "created_at": "2026-11-01T22:51:14.379911+00:00",
+    "steps": [
+      {
+        "layer": "block1_pool",
+        "block": "block1",
+        "shape": [
+          100,
+          100,
+          64
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 2443.55615234375,
+          "mean": 117.17694091796875,
+          "std": 193.80540466308594,
+          "active": 0.7672703125
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block2_pool",
+        "block": "block2",
+        "shape": [
+          50,
+          50,
+          128
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 7724.544921875,
+          "mean": 242.99098205566406,
+          "std": 536.279296875,
+          "active": 0.61026875
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block3_pool",
+        "block": "block3",
+        "shape": [
+          25,
+          25,
+          256
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 9468.46875,
+          "mean": 268.3579406738281,
+          "std": 616.4805908203125,
+          "active": 0.395125
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block4_pool",
+        "block": "block4",
+        "shape": [
+          12,
+          12,
+          512
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 1964.115478515625,
+          "mean": 36.190895080566406,
+          "std": 116.56124877929688,
+          "active": 0.1940239800347222
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block5_pool",
+        "block": "block5",
+        "shape": [
+          6,
+          6,
+          512
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 128.46771240234375,
+          "mean": 1.7428741455078125,
+          "std": 6.828189373016357,
+          "active": 0.12239583333333333
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "global_avg_pool",
+        "block": "head",
+        "shape": [
+          512
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 34.662872314453125,
+          "mean": 1.742874264717102,
+          "std": 3.6630547046661377,
+          "active": 0.642578125
+        },
+        "top": [
+          {
+            "index": 431,
+            "value": 34.662872314453125
+          },
+          {
+            "index": 474,
+            "value": 24.94118309020996
+          },
+          {
+            "index": 455,
+            "value": 24.204345703125
+          },
+          {
+            "index": 53,
+            "value": 23.36305046081543
+          },
+          {
+            "index": 71,
+            "value": 22.184391021728516
+          },
+          {
+            "index": 228,
+            "value": 18.86247444152832
+          },
+          {
+            "index": 110,
+            "value": 16.228012084960938
+          },
+          {
+            "index": 124,
+            "value": 16.211713790893555
+          },
+          {
+            "index": 277,
+            "value": 14.6043701171875
+          },
+          {
+            "index": 128,
+            "value": 12.59586238861084
+          },
+          {
+            "index": 506,
+            "value": 12.081649780273438
+          },
+          {
+            "index": 125,
+            "value": 11.916826248168945
+          },
+          {
+            "index": 43,
+            "value": 11.845314979553223
+          },
+          {
+            "index": 327,
+            "value": 11.731813430786133
+          },
+          {
+            "index": 251,
+            "value": 11.192451477050781
+          },
+          {
+            "index": 265,
+            "value": 10.676554679870605
+          }
+        ],
+        "kind": "vector"
+      },
+      {
+        "layer": "feature_dense_1024",
+        "block": "head",
+        "shape": [
+          1024
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 7.966429710388184,
+          "mean": 0.8424915075302124,
+          "std": 1.5495439767837524,
+          "active": 0.3662109375
+        },
+        "top": [
+          {
+            "index": 490,
+            "value": 7.966429710388184
+          },
+          {
+            "index": 388,
+            "value": 7.212205410003662
+          },
+          {
+            "index": 512,
+            "value": 7.116963863372803
+          },
+          {
+            "index": 739,
+            "value": 7.108798980712891
+          },
+          {
+            "index": 535,
+            "value": 7.072314262390137
+          },
+          {
+            "index": 782,
+            "value": 7.057591438293457
+          },
+          {
+            "index": 838,
+            "value": 7.022824287414551
+          },
+          {
+            "index": 607,
+            "value": 6.897083759307861
+          },
+          {
+            "index": 786,
+            "value": 6.4754204750061035
+          },
+          {
+            "index": 794,
+            "value": 6.263282299041748
+          },
+          {
+            "index": 241,
+            "value": 6.262882709503174
+          },
+          {
+            "index": 312,
+            "value": 6.2241644859313965
+          },
+          {
+            "index": 642,
+            "value": 6.112709999084473
+          },
+          {
+            "index": 446,
+            "value": 6.108742713928223
+          },
+          {
+            "index": 27,
+            "value": 6.03872537612915
+          },
+          {
+            "index": 236,
+            "value": 5.95372200012207
+          }
+        ],
+        "kind": "vector"
+      },
+      {
+        "layer": "binary_output",
+        "block": "output",
+        "shape": [
+          1
+        ],
+        "stats": {
+          "min": 1.0,
+          "max": 1.0,
+          "mean": 1.0,
+          "std": 0.0,
+          "active": 1.0
+        },
+        "top": [
+          {
+            "index": 0,
+            "value": 1.0
+          }
+        ],
+        "kind": "output"
+      }
+    ]
+  },
+  {
+    "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/var/storage/activation-traces/87b3eff7-e09a-41c8-945d-bf31b3541adb/a39fc40f-7738-5c90-8dc6-c3b31856b360.json",
+    "sample_id": "a39fc40f-7738-5c90-8dc6-c3b31856b360",
+    "sha256": "c282ee6389d370fdfb3a71968fca4a92535e914d851a987995369f3b9688b820",
+    "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+    "attempt_id": "811dd584-bb41-453d-b7e9-26bd61c9990a",
+    "split": "val",
+    "checkpoint_sha256": "b26f6e2c66fd5356028ba41eaee603f0c88a2a925b39cb6b21b0fafd79aa24fa",
+    "score": 0.036957353353500366,
+    "logit": -3.2603330602079073,
+    "persisted_score": 0.03695731237530708,
+    "label": 1,
+    "predicted": 0,
+    "threshold": 0.25116682052612305,
+    "consistent": true,
+    "selection": "16 canales de mayor activaci\u00f3n media",
+    "version": "activation_trace_v1",
+    "created_at": "2026-11-01T23:03:24.526184+00:00",
+    "steps": [
+      {
+        "layer": "block1_pool",
+        "block": "block1",
+        "shape": [
+          100,
+          100,
+          64
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 2397.184326171875,
+          "mean": 110.89163970947266,
+          "std": 194.23361206054688,
+          "active": 0.7503296875
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block2_pool",
+        "block": "block2",
+        "shape": [
+          50,
+          50,
+          128
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 8037.03173828125,
+          "mean": 200.73876953125,
+          "std": 492.1569519042969,
+          "active": 0.6242875
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block3_pool",
+        "block": "block3",
+        "shape": [
+          25,
+          25,
+          256
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 10469.93359375,
+          "mean": 196.83529663085938,
+          "std": 558.5064697265625,
+          "active": 0.34356875
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block4_pool",
+        "block": "block4",
+        "shape": [
+          12,
+          12,
+          512
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 2116.096923828125,
+          "mean": 27.234432220458984,
+          "std": 104.55986785888672,
+          "active": 0.16087510850694445
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block5_pool",
+        "block": "block5",
+        "shape": [
+          6,
+          6,
+          512
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 166.6191864013672,
+          "mean": 1.4844739437103271,
+          "std": 6.039511203765869,
+          "active": 0.12342664930555555
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "global_avg_pool",
+        "block": "head",
+        "shape": [
+          512
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 46.45073318481445,
+          "mean": 1.4844739437103271,
+          "std": 3.346646547317505,
+          "active": 0.654296875
+        },
+        "top": [
+          {
+            "index": 431,
+            "value": 46.45073318481445
+          },
+          {
+            "index": 119,
+            "value": 21.25380516052246
+          },
+          {
+            "index": 317,
+            "value": 17.358142852783203
+          },
+          {
+            "index": 71,
+            "value": 16.016319274902344
+          },
+          {
+            "index": 415,
+            "value": 15.805728912353516
+          },
+          {
+            "index": 53,
+            "value": 13.134631156921387
+          },
+          {
+            "index": 327,
+            "value": 12.739315032958984
+          },
+          {
+            "index": 128,
+            "value": 11.718181610107422
+          },
+          {
+            "index": 382,
+            "value": 11.44514274597168
+          },
+          {
+            "index": 43,
+            "value": 10.828598976135254
+          },
+          {
+            "index": 15,
+            "value": 10.517476081848145
+          },
+          {
+            "index": 45,
+            "value": 10.328845977783203
+          },
+          {
+            "index": 178,
+            "value": 10.109247207641602
+          },
+          {
+            "index": 110,
+            "value": 9.814318656921387
+          },
+          {
+            "index": 155,
+            "value": 9.707206726074219
+          },
+          {
+            "index": 477,
+            "value": 9.3391695022583
+          }
+        ],
+        "kind": "vector"
+      },
+      {
+        "layer": "feature_dense_1024",
+        "block": "head",
+        "shape": [
+          1024
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 5.654205799102783,
+          "mean": 0.6130127906799316,
+          "std": 1.084036111831665,
+          "active": 0.388671875
+        },
+        "top": [
+          {
+            "index": 164,
+            "value": 5.654205799102783
+          },
+          {
+            "index": 734,
+            "value": 5.38474178314209
+          },
+          {
+            "index": 364,
+            "value": 5.250415325164795
+          },
+          {
+            "index": 543,
+            "value": 5.196600437164307
+          },
+          {
+            "index": 838,
+            "value": 4.877971649169922
+          },
+          {
+            "index": 655,
+            "value": 4.838435173034668
+          },
+          {
+            "index": 1002,
+            "value": 4.685853004455566
+          },
+          {
+            "index": 750,
+            "value": 4.681692123413086
+          },
+          {
+            "index": 536,
+            "value": 4.630311965942383
+          },
+          {
+            "index": 786,
+            "value": 4.5507121086120605
+          },
+          {
+            "index": 256,
+            "value": 4.539707660675049
+          },
+          {
+            "index": 50,
+            "value": 4.390866756439209
+          },
+          {
+            "index": 903,
+            "value": 4.354888439178467
+          },
+          {
+            "index": 145,
+            "value": 4.260284423828125
+          },
+          {
+            "index": 235,
+            "value": 4.210205078125
+          },
+          {
+            "index": 940,
+            "value": 4.176478385925293
+          }
+        ],
+        "kind": "vector"
+      },
+      {
+        "layer": "binary_output",
+        "block": "output",
+        "shape": [
+          1
+        ],
+        "stats": {
+          "min": 0.036957353353500366,
+          "max": 0.036957353353500366,
+          "mean": 0.036957353353500366,
+          "std": 0.0,
+          "active": 1.0
+        },
+        "top": [
+          {
+            "index": 0,
+            "value": 0.036957353353500366
+          }
+        ],
+        "kind": "output"
+      }
+    ]
+  },
+  {
+    "path": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/var/storage/activation-traces/87b3eff7-e09a-41c8-945d-bf31b3541adb/db9fbbd3-e025-524a-ad04-ba5cde0e2f3d.json",
+    "sample_id": "db9fbbd3-e025-524a-ad04-ba5cde0e2f3d",
+    "sha256": "2d83c80ab1fa6e0478aeb9e6447f803e3935176c9d6bbc1acf9de1313dcd5f21",
+    "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+    "attempt_id": "811dd584-bb41-453d-b7e9-26bd61c9990a",
+    "split": "val",
+    "checkpoint_sha256": "b26f6e2c66fd5356028ba41eaee603f0c88a2a925b39cb6b21b0fafd79aa24fa",
+    "score": 0.03477940335869789,
+    "logit": -3.323331318715346,
+    "persisted_score": 0.03477932885289192,
+    "label": 1,
+    "predicted": 0,
+    "threshold": 0.25116682052612305,
+    "consistent": true,
+    "selection": "16 canales de mayor activaci\u00f3n media",
+    "version": "activation_trace_v1",
+    "created_at": "2026-11-01T22:46:23.483245+00:00",
+    "steps": [
+      {
+        "layer": "block1_pool",
+        "block": "block1",
+        "shape": [
+          100,
+          100,
+          64
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 2369.582763671875,
+          "mean": 111.2907485961914,
+          "std": 190.22267150878906,
+          "active": 0.7753015625
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block2_pool",
+        "block": "block2",
+        "shape": [
+          50,
+          50,
+          128
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 7932.0546875,
+          "mean": 216.56590270996094,
+          "std": 537.4639282226562,
+          "active": 0.616284375
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block3_pool",
+        "block": "block3",
+        "shape": [
+          25,
+          25,
+          256
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 11854.26953125,
+          "mean": 226.095947265625,
+          "std": 614.6343994140625,
+          "active": 0.36020625
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block4_pool",
+        "block": "block4",
+        "shape": [
+          12,
+          12,
+          512
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 2206.314697265625,
+          "mean": 30.5028076171875,
+          "std": 115.4142837524414,
+          "active": 0.1706000434027778
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "block5_pool",
+        "block": "block5",
+        "shape": [
+          6,
+          6,
+          512
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 161.23345947265625,
+          "mean": 1.4492361545562744,
+          "std": 6.0695271492004395,
+          "active": 0.1076931423611111
+        },
+        "top": [],
+        "kind": "spatial"
+      },
+      {
+        "layer": "global_avg_pool",
+        "block": "head",
+        "shape": [
+          512
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 38.296363830566406,
+          "mean": 1.4492359161376953,
+          "std": 3.0275309085845947,
+          "active": 0.623046875
+        },
+        "top": [
+          {
+            "index": 431,
+            "value": 38.296363830566406
+          },
+          {
+            "index": 119,
+            "value": 22.920249938964844
+          },
+          {
+            "index": 71,
+            "value": 14.36051082611084
+          },
+          {
+            "index": 327,
+            "value": 14.34468936920166
+          },
+          {
+            "index": 110,
+            "value": 13.015771865844727
+          },
+          {
+            "index": 352,
+            "value": 12.388347625732422
+          },
+          {
+            "index": 43,
+            "value": 11.02414608001709
+          },
+          {
+            "index": 53,
+            "value": 10.817519187927246
+          },
+          {
+            "index": 237,
+            "value": 10.747027397155762
+          },
+          {
+            "index": 128,
+            "value": 9.791299819946289
+          },
+          {
+            "index": 358,
+            "value": 9.735273361206055
+          },
+          {
+            "index": 360,
+            "value": 9.28205394744873
+          },
+          {
+            "index": 45,
+            "value": 8.791971206665039
+          },
+          {
+            "index": 254,
+            "value": 8.539091110229492
+          },
+          {
+            "index": 416,
+            "value": 8.518092155456543
+          },
+          {
+            "index": 308,
+            "value": 8.005051612854004
+          }
+        ],
+        "kind": "vector"
+      },
+      {
+        "layer": "feature_dense_1024",
+        "block": "head",
+        "shape": [
+          1024
+        ],
+        "stats": {
+          "min": 0.0,
+          "max": 5.891533851623535,
+          "mean": 0.5596998929977417,
+          "std": 1.0166157484054565,
+          "active": 0.3681640625
+        },
+        "top": [
+          {
+            "index": 164,
+            "value": 5.891533851623535
+          },
+          {
+            "index": 326,
+            "value": 5.307328224182129
+          },
+          {
+            "index": 1002,
+            "value": 5.165239334106445
+          },
+          {
+            "index": 596,
+            "value": 5.1290178298950195
+          },
+          {
+            "index": 464,
+            "value": 5.032702445983887
+          },
+          {
+            "index": 364,
+            "value": 4.929899215698242
+          },
+          {
+            "index": 903,
+            "value": 4.867376327514648
+          },
+          {
+            "index": 511,
+            "value": 4.500132083892822
+          },
+          {
+            "index": 838,
+            "value": 4.440639972686768
+          },
+          {
+            "index": 655,
+            "value": 4.347239971160889
+          },
+          {
+            "index": 786,
+            "value": 4.343313694000244
+          },
+          {
+            "index": 235,
+            "value": 4.332221031188965
+          },
+          {
+            "index": 800,
+            "value": 4.066927433013916
+          },
+          {
+            "index": 229,
+            "value": 3.9782259464263916
+          },
+          {
+            "index": 110,
+            "value": 3.935938596725464
+          },
+          {
+            "index": 256,
+            "value": 3.881019353866577
+          }
+        ],
+        "kind": "vector"
+      },
+      {
+        "layer": "binary_output",
+        "block": "output",
+        "shape": [
+          1
+        ],
+        "stats": {
+          "min": 0.03477940335869789,
+          "max": 0.03477940335869789,
+          "mean": 0.03477940335869789,
+          "std": 0.0,
+          "active": 1.0
+        },
+        "top": [
+          {
+            "index": 0,
+            "value": 0.03477940335869789
+          }
+        ],
+        "kind": "output"
+      }
+    ]
+  }
+]

@@ -1,0 +1,187 @@
+{
+  "module": "catalog",
+  "data": [
+    {
+      "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+      "evaluations": [
+        {
+          "evaluation_id": null,
+          "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "checkpoint_artifact_id": "3bbb3405-1db1-5811-b4b5-f208f9e64503",
+          "split": "test",
+          "evaluation_role": "independent_evaluate",
+          "purpose": "final",
+          "attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+          "identity_id": "a981125c-a9b6-4bec-9fb7-2fa52b907147",
+          "created_at": "2026-10-29T22:37:35.383443+00:00"
+        },
+        {
+          "evaluation_id": null,
+          "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "checkpoint_artifact_id": "3bbb3405-1db1-5811-b4b5-f208f9e64503",
+          "split": "val",
+          "evaluation_role": "independent_evaluate",
+          "purpose": "development",
+          "attempt_id": "811dd584-bb41-453d-b7e9-26bd61c9990a",
+          "identity_id": "6ecbe9fa-856a-4238-b006-b546d0405169",
+          "created_at": "2026-10-29T17:04:24.467110+00:00"
+        },
+        {
+          "evaluation_id": "664ca3a2-6d9c-5387-900e-e7ba1473a588",
+          "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "checkpoint_artifact_id": "5406dae8-6a82-568c-a0e9-9ecff89d5f4e",
+          "split": "val",
+          "evaluation_role": "training_validation_final",
+          "purpose": "development",
+          "attempt_id": null,
+          "identity_id": null,
+          "created_at": "2026-10-29T14:31:07.987039+00:00"
+        },
+        {
+          "evaluation_id": "1fc84d22-c614-53b3-9bb3-5a1ae532f884",
+          "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "checkpoint_artifact_id": "5406dae8-6a82-568c-a0e9-9ecff89d5f4e",
+          "split": "val",
+          "evaluation_role": "calibration_selected",
+          "purpose": "development",
+          "attempt_id": null,
+          "identity_id": null,
+          "created_at": "2026-10-29T14:31:07.946261+00:00"
+        },
+        {
+          "evaluation_id": "5e528f4f-4269-5e20-8791-b51024c50b30",
+          "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+          "checkpoint_artifact_id": "5406dae8-6a82-568c-a0e9-9ecff89d5f4e",
+          "split": "val",
+          "evaluation_role": "calibration_default",
+          "purpose": "development",
+          "attempt_id": null,
+          "identity_id": null,
+          "created_at": "2026-10-29T14:31:07.946261+00:00"
+        }
+      ],
+      "governance": {
+        "id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "name": "Malaria Patient Split v1",
+        "status": "FROZEN",
+        "grouping_strategy": "patient_group",
+        "split_algorithm": "patient_group_stratified_v1",
+        "random_seed": 42,
+        "source_record_count": 27558,
+        "campaign_id": "eb7ae3da-c954-4f2f-8d19-0398824089c5",
+        "campaign_dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+        "campaign_snapshot": {
+          "counts": {
+            "val": 2693,
+            "test": 2685,
+            "train": 22180
+          },
+          "selection_unit": "dataset_version_id",
+          "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+          "dataset_materialization_id": "e15dc166-1c4b-558e-b77b-727b1783430c",
+          "clinical_identity_fingerprint": "d4bd79cb2327ca7aa1eeff19e14a9104af157984cccd9418c75b0f62ae3e8a59",
+          "record_assignment_fingerprint": "9709ce48b9b41bcacca49ccfb53ec62b48c4822c2fb8e227643bf26aed196ea2",
+          "source_population_fingerprint": "eef647ce1f3040468a84cbad73ffb1b50b86d685313f1291693b16f4f1f635f0",
+          "patient_assignment_fingerprint": "cbe7a7b8c92d3761076f64886765bc73dbea0a99808fb07f054a83494820ea7f"
+        },
+        "materialization_id": "e15dc166-1c4b-558e-b77b-727b1783430c",
+        "materialization_status": "READY",
+        "reconciliation_status": "PASS",
+        "record_count": 27558,
+        "materialization_dataset_matches": true,
+        "counts": {
+          "train": 22180,
+          "val": 2693,
+          "test": 2685
+        },
+        "checks": [
+          {
+            "check_name": "assignment_count",
+            "status": "PASS",
+            "observed_value": "27558",
+            "expected_value": "27558"
+          },
+          {
+            "check_name": "class_presence_test",
+            "status": "PASS",
+            "observed_value": "both",
+            "expected_value": "both"
+          },
+          {
+            "check_name": "class_presence_train",
+            "status": "PASS",
+            "observed_value": "both",
+            "expected_value": "both"
+          },
+          {
+            "check_name": "class_presence_val",
+            "status": "PASS",
+            "observed_value": "both",
+            "expected_value": "both"
+          },
+          {
+            "check_name": "duplicate_cross_split_overlap",
+            "status": "PASS",
+            "observed_value": "0",
+            "expected_value": "0"
+          },
+          {
+            "check_name": "identity_conflicts",
+            "status": "PASS",
+            "observed_value": "0",
+            "expected_value": "0"
+          },
+          {
+            "check_name": "identity_coverage",
+            "status": "PASS",
+            "observed_value": "27558",
+            "expected_value": "27558"
+          },
+          {
+            "check_name": "patient_train_test_overlap",
+            "status": "PASS",
+            "observed_value": "0",
+            "expected_value": "0"
+          },
+          {
+            "check_name": "patient_train_val_overlap",
+            "status": "PASS",
+            "observed_value": "0",
+            "expected_value": "0"
+          },
+          {
+            "check_name": "patient_val_test_overlap",
+            "status": "PASS",
+            "observed_value": "0",
+            "expected_value": "0"
+          },
+          {
+            "check_name": "source_record_count",
+            "status": "PASS",
+            "observed_value": "27558",
+            "expected_value": "27558"
+          },
+          {
+            "check_name": "split_completeness",
+            "status": "PASS",
+            "observed_value": "complete",
+            "expected_value": "complete"
+          }
+        ],
+        "consumed_images": 0
+      },
+      "checkpoint": {
+        "artifact_id": "5406dae8-6a82-568c-a0e9-9ecff89d5f4e",
+        "selected_epoch": 1,
+        "phase": "base",
+        "metric": "val_f2_parasitized",
+        "policy": "auc_with_min_recall",
+        "logical_lineage": true,
+        "checksum_registered": "b26f6e2c66fd5356028ba41eaee603f0c88a2a925b39cb6b21b0fafd79aa24fa",
+        "file_availability": "not_checked",
+        "physical_checksum": "not_checked"
+      }
+    }
+  ],
+  "warnings": []
+}

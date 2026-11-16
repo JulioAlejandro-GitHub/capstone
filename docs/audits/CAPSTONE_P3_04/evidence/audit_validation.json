@@ -1,0 +1,15 @@
+{
+  "date_local": "2026-11-16 America/Santiago",
+  "validated_at": "2026-11-16T12:37:21.948064+00:00",
+  "required_documents": 10,
+  "sql_files": 32,
+  "local_links_checked": 2598,
+  "broken_links": [],
+  "source_pairs_equal": 64,
+  "metric_difference": 0,
+  "original_hash_matches": 4,
+  "tests_python": 15,
+  "tests_frontend": 15,
+  "git_head": "16ba8ce54f9511f0972b227524b66e176189918a",
+  "scope": "documentation-only; no browser/HTTP replay; source matches do not certify rendered UI"
+}

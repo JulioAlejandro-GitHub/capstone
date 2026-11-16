@@ -1,0 +1,992 @@
+[
+  {
+    "file": "backend_api/app/db.py",
+    "lines": 100,
+    "sha256": "a0d9c4a61df4e00d6ce00461c49af3523b8f74a62ca2188c6747c6c9e0157128"
+  },
+  {
+    "file": "backend_api/app/repositories/activation_traces.py",
+    "lines": 52,
+    "sha256": "6b1488610e30f9cde0109c8ad81e1974ccbdc17ad388ec24fb6f9f5451d1c84d"
+  },
+  {
+    "file": "backend_api/app/repositories/artifacts.py",
+    "lines": 25,
+    "sha256": "fb7cda3f6944fc62a5f1bb008b1ce7feaaf9b3c43e37789b324e20790ac95902"
+  },
+  {
+    "file": "backend_api/app/repositories/assessment_lineage.py",
+    "lines": 46,
+    "sha256": "ba3b373d15630a806f11fcad692c611dbbc8be3879422bfc21fd53624ddc7342"
+  },
+  {
+    "file": "backend_api/app/repositories/assessments.py",
+    "lines": 160,
+    "sha256": "efd4652c99a35634e7957fc724382792f807a46ae6120eebcc5882b80e5788f3"
+  },
+  {
+    "file": "backend_api/app/repositories/catalog.py",
+    "lines": 26,
+    "sha256": "2cd76b9c96df5650eb259414a10ab1092be0ed2d64c0e09364009e881b9dede0"
+  },
+  {
+    "file": "backend_api/app/repositories/dataset_samples.py",
+    "lines": 56,
+    "sha256": "7e4c26ad2f9f75d06d1acad7f49a31615c3449a8d0d3bd01c66f74d48fd848e7"
+  },
+  {
+    "file": "backend_api/app/repositories/explain_generation.py",
+    "lines": 20,
+    "sha256": "b75496f55354f6a745b62ebb99bc2330bfd1164470406c78d92e857a8de0ff9d"
+  },
+  {
+    "file": "backend_api/app/repositories/model_architecture.py",
+    "lines": 35,
+    "sha256": "6ac3ee9280c6c5187109591f730d9a327a2a203bbef83680fa8177fa635e6c66"
+  },
+  {
+    "file": "backend_api/app/repositories/representation_generation.py",
+    "lines": 8,
+    "sha256": "84d448ca9ddd6b33e656f12c1a42bf05a797a5e2ccab0f4f049c66971e9aac28"
+  },
+  {
+    "file": "backend_api/app/repositories/representation_queries.py",
+    "lines": 24,
+    "sha256": "9d86d9d25687e7e916b4e8bda53fc7ba098117a0f2344e4077a7e4140616efea"
+  },
+  {
+    "file": "backend_api/app/repositories/scientific.py",
+    "lines": 162,
+    "sha256": "b7c9f951709a66991c7c761d8f84279a74a847c46bc5bbc4fa560df81cc45031"
+  },
+  {
+    "file": "backend_api/app/repositories/scientific_results.py",
+    "lines": 246,
+    "sha256": "0c51dc54a103cd304d178c5295ff10f6ec68ee69b792de8d054249a2dcfe9abd"
+  },
+  {
+    "file": "backend_api/app/repositories/scientific_validation.py",
+    "lines": 418,
+    "sha256": "410a862b8bd70e1a5c2a68c4299bdeb1c82eb5e2257748f1776b943d14268511"
+  },
+  {
+    "file": "backend_api/app/repositories/training_trajectories.py",
+    "lines": 28,
+    "sha256": "ed0a7a0bb76a08ea5418b097bbac2ab14fea1034ddbc3fdd6c9b11b6e7c6ca0f"
+  },
+  {
+    "file": "backend_api/app/routes/activation_traces.py",
+    "lines": 39,
+    "sha256": "c318f9764e02627f842a55a97fce9c2e3b64e526da9fc671457dcc9f44b6c702"
+  },
+  {
+    "file": "backend_api/app/routes/artifacts.py",
+    "lines": 42,
+    "sha256": "95d73bb3f5730e922fbf6185aa36c18b14c7d995bc210425e59fce6be7904ddd"
+  },
+  {
+    "file": "backend_api/app/routes/assessments.py",
+    "lines": 54,
+    "sha256": "252662c3b64f708218a42b351abd4b52ebfe19a76f8ca5391e280f2d0bce1d7b"
+  },
+  {
+    "file": "backend_api/app/routes/catalog.py",
+    "lines": 53,
+    "sha256": "0e72371e2bee03c768595838fd0425c49dedb05672b0e7b40c7329ff3785e5d1"
+  },
+  {
+    "file": "backend_api/app/routes/explain_generation.py",
+    "lines": 72,
+    "sha256": "82cee58d6ba55b8b304b35dc7ab94ab41e61338bdf8eb560ef6c0b10a63cd757"
+  },
+  {
+    "file": "backend_api/app/routes/model_architecture.py",
+    "lines": 18,
+    "sha256": "34209c94796d6474f270a4745df9f0b7c13ae5089e735df4a5e1e1a15855b402"
+  },
+  {
+    "file": "backend_api/app/routes/representation_generation.py",
+    "lines": 51,
+    "sha256": "ae75870d67bf7615d299e3ffde4af8cec26157e902a7e6c5d9d916e66a4e5387"
+  },
+  {
+    "file": "backend_api/app/routes/runs.py",
+    "lines": 967,
+    "sha256": "33132341e4e77d7398b391713c1d70ca233ceb7917884db49f662dbc1770a74e"
+  },
+  {
+    "file": "backend_api/app/routes/training_trajectories.py",
+    "lines": 16,
+    "sha256": "b031b0f4b0dc2a673e9d2cf541727c40e95d1886bf3a13503a59ef7a666644bd"
+  },
+  {
+    "file": "backend_api/app/schemas/activation_traces.py",
+    "lines": 61,
+    "sha256": "30db27ce39f0ddc25af7def210fbd75b6ee25196b8e08a5d2894f2b012074040"
+  },
+  {
+    "file": "backend_api/app/schemas/assessment_lineage.py",
+    "lines": 30,
+    "sha256": "6c9fb72e46f63c749b6c6ce13c90bba87b4a29df3131b8873959a271f5d56966"
+  },
+  {
+    "file": "backend_api/app/schemas/explain_generation.py",
+    "lines": 78,
+    "sha256": "ed9a0c17c1ca9477134399250694d6240f2dbdea861758a4687f8ce56b68a41b"
+  },
+  {
+    "file": "backend_api/app/schemas/model_architecture.py",
+    "lines": 100,
+    "sha256": "9ab648fa5972bf263cd7345fe0aaf2d40549dcc51b9bf24a0ba20d322d1b8341"
+  },
+  {
+    "file": "backend_api/app/schemas/representation_generation.py",
+    "lines": 30,
+    "sha256": "0ef14cccc84ed0bb8839c018e803660e08d9e1b573434ba640e463385a857a44"
+  },
+  {
+    "file": "backend_api/app/schemas/scientific.py",
+    "lines": 254,
+    "sha256": "02d1ee6b5c5ddf7af74c7c86dd7cc2bb8779d4fca2f9a3433845df751a807900"
+  },
+  {
+    "file": "backend_api/app/schemas/scientific_preflight.py",
+    "lines": 237,
+    "sha256": "96638317668535a05d6dac720f854cb0a1cc922db261ac677ab7659ec5e053df"
+  },
+  {
+    "file": "backend_api/app/schemas/scientific_read.py",
+    "lines": 60,
+    "sha256": "796ed534e05365b6f477c849e3914d13c73010bfe20c302ad6cb981edf86e54f"
+  },
+  {
+    "file": "backend_api/app/schemas/scientific_report.py",
+    "lines": 26,
+    "sha256": "b913ce2e3dc19c9804871433cbee1f38f48c2c4316349b63596dccb109e2f946"
+  },
+  {
+    "file": "backend_api/app/schemas/training_trajectories.py",
+    "lines": 26,
+    "sha256": "dec3cad1c1499a70bbc7eb435c143f4f711a9620135c1405df028c994523a0e4"
+  },
+  {
+    "file": "backend_api/app/services/activation_trace_compute.py",
+    "lines": 233,
+    "sha256": "c83209118834c8dd11ac2a61b092631a620bfd835d4c968f4856fb5a474bbad5"
+  },
+  {
+    "file": "backend_api/app/services/activation_traces.py",
+    "lines": 122,
+    "sha256": "b4ed42074cebdc9c62d451f727074f8e590575928277e8723419b6a09b052a1d"
+  },
+  {
+    "file": "backend_api/app/services/artifacts.py",
+    "lines": 229,
+    "sha256": "400265e31800c0cd64b1bb0902e043c7683babd4b1c139b17dc8177752df54de"
+  },
+  {
+    "file": "backend_api/app/services/assessments.py",
+    "lines": 35,
+    "sha256": "70030e6c39952c6cdb2b371c8d561c9eb7425d6b521e9fcfa42b993413c5aa8b"
+  },
+  {
+    "file": "backend_api/app/services/catalog.py",
+    "lines": 39,
+    "sha256": "ebbfe3b89aa69f7644603266f3b33ea73e97b858a6f28d4b328848d839ab9b21"
+  },
+  {
+    "file": "backend_api/app/services/comparison_eligibility.py",
+    "lines": 128,
+    "sha256": "6936795d057265f66e7924941afca0e6d997458e933cb7108031d160ff2fcbc3"
+  },
+  {
+    "file": "backend_api/app/services/dataset_samples.py",
+    "lines": 61,
+    "sha256": "dee4c35ed2743c1f2ec2c051c5011a28443125a5416d0886376c2eea2bb08374"
+  },
+  {
+    "file": "backend_api/app/services/explain_generation.py",
+    "lines": 190,
+    "sha256": "284b07ad75bc6da0ced2520756eaeb6d7755787d9895f027c6af10f4149dd6ca"
+  },
+  {
+    "file": "backend_api/app/services/model_architecture.py",
+    "lines": 394,
+    "sha256": "d466fd99ca8d3b358876cc00b25828fe73fb1f1df5e6d6adce3612b69b19d870"
+  },
+  {
+    "file": "backend_api/app/services/representation_generation.py",
+    "lines": 143,
+    "sha256": "1625d2d2ba32888ae37767a6db18ac2937591e6e6fc6445bcce45de97bb16e07"
+  },
+  {
+    "file": "backend_api/app/services/scientific.py",
+    "lines": 205,
+    "sha256": "fd89074c474c9d40a13fd2b58d8ff554d8007adeb666afda5d88cec2e0370da7"
+  },
+  {
+    "file": "backend_api/app/services/scientific_preflight.py",
+    "lines": 613,
+    "sha256": "9da78d9d121b578206d643a7c37ba6bb95ce32db6fe7290ab3214b0e4695d86b"
+  },
+  {
+    "file": "backend_api/app/services/scientific_public.py",
+    "lines": 36,
+    "sha256": "5c20f946785dc1b907715f93fba53f4bca5301acf5ba0493ba4d837701f069c8"
+  },
+  {
+    "file": "backend_api/app/services/scientific_report.py",
+    "lines": 366,
+    "sha256": "e723168769d2df643b85898a7a155ec861ce5489f6eeeff1824ce739e99d1b94"
+  },
+  {
+    "file": "backend_api/app/services/scientific_representations.py",
+    "lines": 101,
+    "sha256": "0e581106093e89afff990f429477fe44367897e92e1bfb438b7495422304057b"
+  },
+  {
+    "file": "backend_api/app/services/scientific_results.py",
+    "lines": 51,
+    "sha256": "44c32044a430ff5ee9a13c074357e142abf6c4dc9d129f845171a273e88b506f"
+  },
+  {
+    "file": "backend_api/app/services/scientific_validation.py",
+    "lines": 295,
+    "sha256": "75479fe5646883cdf9f384ce37ec636abeb3d44233781ef569d04046b0599a0e"
+  },
+  {
+    "file": "backend_api/app/services/training_summaries.py",
+    "lines": 389,
+    "sha256": "4c177dc5ddb5ef21c2a28690e46eef9aec87de8e2609d95c31be032aa52bc520"
+  },
+  {
+    "file": "backend_api/app/services/training_trajectories.py",
+    "lines": 100,
+    "sha256": "5a9fe9509beef3e0f61b095172941cc07778f297fbf8b49906c0283ba9c102f3"
+  },
+  {
+    "file": "backend_api/app/services/vit_structure.py",
+    "lines": 58,
+    "sha256": "a8b0dbc37d9df4f7880364a8aa26d9d3dcce98d23fafd91d557236d10a215b73"
+  },
+  {
+    "file": "backend_api/app/services/vit_structure_compute.py",
+    "lines": 129,
+    "sha256": "65f148880a597776c012d14bdbbffb05aebc538b84b79f70d462f12ddb0aa570"
+  },
+  {
+    "file": "frontend/src/auth.tsx",
+    "lines": 112,
+    "sha256": "42ebcfa74c73791d3859e97ce88409b0cbcae04ea9b607050be8b8ba93075c0b"
+  },
+  {
+    "file": "frontend/src/components/ScientificResults.tsx",
+    "lines": 52,
+    "sha256": "cbf3af7e173e8c857f1f8af1df82e010a113fe8643a9368d3c7e330673572a57"
+  },
+  {
+    "file": "frontend/src/components/StatusBadge.tsx",
+    "lines": 9,
+    "sha256": "b7831c30f4904a2812fd172881821b72c5d700b7fd8554a8e4e20f01bc12e2b8"
+  },
+  {
+    "file": "frontend/src/components/cell-review/AuthenticatedCellImage.tsx",
+    "lines": 260,
+    "sha256": "a33078cde1920c48794f91ed9e666b28e96bacc4896a3ffa5dfcb195a486f28c"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/ActivationTracePanel.tsx",
+    "lines": 411,
+    "sha256": "49f445b0f7e8d65319a07e619b6efa45bc69d83145ced6fa240327e30495c471"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/ArchitectureChart.tsx",
+    "lines": 253,
+    "sha256": "20a09d7473023c545af3f53c9749c721644f26d4658824f62ed2a2d34e00e16b"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/ArchitectureDetail.tsx",
+    "lines": 76,
+    "sha256": "ec50fcba6f3038e97942b53857e3192d34c6317b8c5dc7220d94e72da984847a"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/ArchitecturePanel.tsx",
+    "lines": 36,
+    "sha256": "ac4777c34eb07a66f452455bebb68045c33a289600d499887a6a9b26728ce99f"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/MathFunctionPanel.tsx",
+    "lines": 19,
+    "sha256": "d091ecfe0433dae1a5597803b3755cdae0ffef11b1708a1554cf8ff9a4aad704"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/TraceCharts.tsx",
+    "lines": 74,
+    "sha256": "12d254989d9f5ed48c2cbb80c7bf8c9f72d49cfe0db146b1045e965a63c665e3"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/architectureViews.ts",
+    "lines": 78,
+    "sha256": "4ae9b85ab3ebdafb72207061f7f61fe6388fbfc251cb357d909e34b9285a7175"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/mathOperations.tsx",
+    "lines": 131,
+    "sha256": "620a6eafef3bca6d4d73591052ae7138c03b6a1e14e3a968f33a494217890118"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/traceCode.ts",
+    "lines": 91,
+    "sha256": "7c9711ae09d1cfd4e75b81f8d4667f46939b7c8f4ebb4d170ae4fcd5df08ad0d"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/traceColor.ts",
+    "lines": 50,
+    "sha256": "fb3b335b72cded830921ad29904dd33e00dc27977cfdee2b823172212565086e"
+  },
+  {
+    "file": "frontend/src/components/model-architecture/traceSteps.ts",
+    "lines": 21,
+    "sha256": "6bb2b2b1b6cd7a0b37705930f90424fe17c55ea490f1e719596a2602a48002df"
+  },
+  {
+    "file": "frontend/src/components/navigation/NavigationIcon.tsx",
+    "lines": 30,
+    "sha256": "f0419efc06b7c722343a5c8f8842c15f876ce7e9095b327a6593e17e9c5d8d20"
+  },
+  {
+    "file": "frontend/src/components/navigation/navigationConfig.ts",
+    "lines": 90,
+    "sha256": "6b09943f828acc7fb7fe085c4a41c400e369f43f1ba8051dccf6f8803aaf5805"
+  },
+  {
+    "file": "frontend/src/components/reports/AnalysisWorkspace.tsx",
+    "lines": 92,
+    "sha256": "568c366a76a0eed60277a4c8a0e16082fec0af28c4487f2e234470996e819b0b"
+  },
+  {
+    "file": "frontend/src/components/reports/AssessmentEvaluationCard.tsx",
+    "lines": 55,
+    "sha256": "d319eb91254bcd255c4416db2a26976c1069ad7c07cec73f34b6f1a20538936f"
+  },
+  {
+    "file": "frontend/src/components/reports/AssessmentExplanationCard.tsx",
+    "lines": 17,
+    "sha256": "385ca490fe2983813422d475d0e719d620416fc22d94c5fc14a4834c3d80e565"
+  },
+  {
+    "file": "frontend/src/components/reports/AssessmentXAI.tsx",
+    "lines": 84,
+    "sha256": "503e3cf224360c2ab8337eebdc27b350e8d7a7c058154d06ffb2fbe40834b5eb"
+  },
+  {
+    "file": "frontend/src/components/reports/AutoAnalysisBadge.tsx",
+    "lines": 17,
+    "sha256": "15b935bbe5b91e817f12e870366d742d955cdd920a14d1a85c05cba9da0b7f2f"
+  },
+  {
+    "file": "frontend/src/components/reports/CommandChips.tsx",
+    "lines": 32,
+    "sha256": "b28b7577b20887c793d36ae46cbffbd4256a564d4abca4087cf0fb7ba0175fe9"
+  },
+  {
+    "file": "frontend/src/components/reports/ComparisonEligibilityStatus.tsx",
+    "lines": 22,
+    "sha256": "ca0490a76ef29364adaa79679496f3f2391c62899db8ef8d584e9d5f152f327a"
+  },
+  {
+    "file": "frontend/src/components/reports/ComparisonPython.tsx",
+    "lines": 62,
+    "sha256": "46e06cf1727869bee1e185c214665dc08397deae8afcbc0c6667057da6eec23b"
+  },
+  {
+    "file": "frontend/src/components/reports/ComparisonRunCard.tsx",
+    "lines": 48,
+    "sha256": "55808864bc8f2088a40e0794ce3500e2760a995820d107d84ff7a120287a5f0f"
+  },
+  {
+    "file": "frontend/src/components/reports/ConsensusSamplesTable.tsx",
+    "lines": 94,
+    "sha256": "23978cac09010c6f7467426b134ca4dc70aeb2ef5bc2505b2dce62a3dca04657"
+  },
+  {
+    "file": "frontend/src/components/reports/DatasetIntegrity.tsx",
+    "lines": 83,
+    "sha256": "3d693e1845f4cd817eeb0555e5ec86f551b905f1ff1b666283a0e5d3e188ac17"
+  },
+  {
+    "file": "frontend/src/components/reports/GeneratedXAIComparison.tsx",
+    "lines": 29,
+    "sha256": "3ddfda9f6b70f8a85529297ae46367fec615cd327a7aec3f492bddae4cde757d"
+  },
+  {
+    "file": "frontend/src/components/reports/LineageBadge.tsx",
+    "lines": 27,
+    "sha256": "b9e15c381990acea9dd633d83ca3008030722293199dc5d254ae32e2d25bf7fe"
+  },
+  {
+    "file": "frontend/src/components/reports/MetricChip.tsx",
+    "lines": 15,
+    "sha256": "554377b2c75cf64b03646b5da5160370e0fc6b497dc1afb9a653675b173e84c0"
+  },
+  {
+    "file": "frontend/src/components/reports/MiniConfusionMatrix.tsx",
+    "lines": 63,
+    "sha256": "f84b0b06872a02047dfbd59acf2563ec1ca88eef23a6e4e65e390ea7b2cd820c"
+  },
+  {
+    "file": "frontend/src/components/reports/ReportBadge.tsx",
+    "lines": 14,
+    "sha256": "ac98e4c308bf5cb5dcbd10b41d07ea19896b8394dcdd50132dda4db10abaf71c"
+  },
+  {
+    "file": "frontend/src/components/reports/RunLineageChildCard.tsx",
+    "lines": 137,
+    "sha256": "b939b57382afb3a48348706c3b31be97eb4a99fa49aa1af0219663838f20d8d4"
+  },
+  {
+    "file": "frontend/src/components/reports/RunProcessBadge.tsx",
+    "lines": 19,
+    "sha256": "840312d5fcf996b0647369171a2b7b77658655c3c68c6744fa9a2451151fea7b"
+  },
+  {
+    "file": "frontend/src/components/reports/RunSelectorDialog.tsx",
+    "lines": 33,
+    "sha256": "d78f2e691c5f672e5bdd59d787e3cd3f60db324adf62ec4d89604b547a1d6cc9"
+  },
+  {
+    "file": "frontend/src/components/reports/RunSummaryRow.tsx",
+    "lines": 156,
+    "sha256": "2c6278404b951d5dcad5590a8dffa415e49c0be77ef345847ba1ab41d1906109"
+  },
+  {
+    "file": "frontend/src/components/reports/ScientificParameters.tsx",
+    "lines": 28,
+    "sha256": "d98e54a9c15d9283dc5e2c6aa932662a01af8a24f8e59a4a60ad44dd62d6d44b"
+  },
+  {
+    "file": "frontend/src/components/reports/ScientificPreflight.tsx",
+    "lines": 609,
+    "sha256": "2abef7c2777d1b0302a52d743fffae9012e4ceec64051c565f734ae13e054fa4"
+  },
+  {
+    "file": "frontend/src/components/reports/ScientificReport.tsx",
+    "lines": 446,
+    "sha256": "9682c14756c3ff4d9366834eca7c07db5db5c022dd607eb545450f82358e67b8"
+  },
+  {
+    "file": "frontend/src/components/reports/ScientificRepresentations.tsx",
+    "lines": 235,
+    "sha256": "f0d646158a18b56cd5b222ef7259fa126bab90dda2d1c98a86dde93b7271d77b"
+  },
+  {
+    "file": "frontend/src/components/reports/Stage2PublicationPanel.tsx",
+    "lines": 123,
+    "sha256": "7cbb41e5b78ef9d35398ae3bad9bc451a89ba0fb7804d322f52bc173cc8bfeef"
+  },
+  {
+    "file": "frontend/src/components/reports/TrainingRunGroupCard.tsx",
+    "lines": 212,
+    "sha256": "62e49991af42534b05e511b371c388651447146e16feb8010b3e01fd6b9e0b5b"
+  },
+  {
+    "file": "frontend/src/components/reports/TrainingRunsTable.tsx",
+    "lines": 257,
+    "sha256": "269cb823582ef10286e9f7c20cd13b5d4deee89ddd279837b5b18c5b61053e8d"
+  },
+  {
+    "file": "frontend/src/components/reports/XAIComparisonViewer.tsx",
+    "lines": 249,
+    "sha256": "b6e69cd63b8a8413152061b1363f3c86d1ff399b01d17261551609ad400451c6"
+  },
+  {
+    "file": "frontend/src/components/reports/XAIOverlayView.tsx",
+    "lines": 145,
+    "sha256": "436086eba6c7ef542ce8e1c1b3ab90f0e0ac3830a7b968343e17c4fbd01df513"
+  },
+  {
+    "file": "frontend/src/components/reports/useCellComparison.ts",
+    "lines": 58,
+    "sha256": "0c8de6cef0d1c76d3f9282f3c44f413d6b17101946a87c3b7e2725077d4fd167"
+  },
+  {
+    "file": "frontend/src/components/reports/xai/comparison.ts",
+    "lines": 138,
+    "sha256": "25099ffc428467c275d5b77af0d80ce5e43ef3437930c67df41726a41d28c199"
+  },
+  {
+    "file": "frontend/src/components/ui/StatusPill.tsx",
+    "lines": 41,
+    "sha256": "90fd6858a8ac435c339692f7b581144c6d22f6f99bb9af568c2a61e88e273b8a"
+  },
+  {
+    "file": "frontend/src/hooks/useComparisonCatalog.ts",
+    "lines": 19,
+    "sha256": "db3cf9721682803b12ec77a130488324e71da9cb33e19692458a4c653c1da343"
+  },
+  {
+    "file": "frontend/src/hooks/useComparisonEvidence.ts",
+    "lines": 18,
+    "sha256": "1f59ec76219688c1d5dbf2235239d7ea034f6379330f244f8ac55cd003085706"
+  },
+  {
+    "file": "frontend/src/hooks/useComparisonRun.ts",
+    "lines": 25,
+    "sha256": "fcafe861ee5430be399a0020160d78579b2dc64e8e58ec4a8bcabda705e7cb47"
+  },
+  {
+    "file": "frontend/src/hooks/useComparisonSelection.tsx",
+    "lines": 27,
+    "sha256": "e10396636d26194cd3ef153a3f0c6aedee1798d95743efb6c1dc76378a04d141"
+  },
+  {
+    "file": "frontend/src/hooks/useComparisonTrainingSummaries.ts",
+    "lines": 25,
+    "sha256": "10a32ff92d67bdc131768de501b6250fffddb0dd2565feb7ff18fae298382c20"
+  },
+  {
+    "file": "frontend/src/hooks/useExplainExecutor.ts",
+    "lines": 33,
+    "sha256": "9eb96a68dcd8547cdb794864c372e7a099e3d22d9c721be52d483f55b6bb9ab8"
+  },
+  {
+    "file": "frontend/src/hooks/useExplainGeneration.ts",
+    "lines": 121,
+    "sha256": "e14c0c5aeb6743f3c4e04d4a5abf86e1b2e22bf5e2611c1501a105383a1dd8cb"
+  },
+  {
+    "file": "frontend/src/hooks/useScientificArtifact.ts",
+    "lines": 46,
+    "sha256": "6ec07e65a2da28eaaed621a654c25f0e0c4178cf9b386026f6220e1b9ef30c9d"
+  },
+  {
+    "file": "frontend/src/pages/ModelComparison.tsx",
+    "lines": 125,
+    "sha256": "4fbf3878142730116df59d5f6d2fb8e17ae6b8c85d0065a1177bad5316020a6d"
+  },
+  {
+    "file": "frontend/src/router.ts",
+    "lines": 64,
+    "sha256": "ba93c269ce60bd38191cb674c6c57ffc21fbb50c84abff1cc0c94f9ff1725dd3"
+  },
+  {
+    "file": "frontend/src/services/api.ts",
+    "lines": 1628,
+    "sha256": "5d548b94874aece78c644b30ba9a34d9f9325065fef64bd770edf3130f1c2ad6"
+  },
+  {
+    "file": "frontend/src/types/activationTrace.ts",
+    "lines": 31,
+    "sha256": "18ba238745eed26a8df8951e6c0ae396c9fa0891036fac3353fd68f4ec2b6311"
+  },
+  {
+    "file": "frontend/src/types/api.ts",
+    "lines": 1054,
+    "sha256": "f75e9b680bc82c6a409c3ba1e940004b83342d583c6cd194760d5fb0c7131f04"
+  },
+  {
+    "file": "frontend/src/types/campaign.ts",
+    "lines": 156,
+    "sha256": "983478d8f38568bb0723f5dfab2842085650c3472484a9689c35682a32c6dd6f"
+  },
+  {
+    "file": "frontend/src/types/cellClassification.ts",
+    "lines": 280,
+    "sha256": "8f50a6b9b1cdf9d0df08a44fe7e21e35040cd28969e08ac47b35b185867686e9"
+  },
+  {
+    "file": "frontend/src/types/cellReview.ts",
+    "lines": 177,
+    "sha256": "955e3fe185723ba2f8f2050cb64e55f80276438a5108cdfa15606b0012c962a4"
+  },
+  {
+    "file": "frontend/src/types/explainGeneration.ts",
+    "lines": 49,
+    "sha256": "d096f056e84f5896e53a2f9c524d680d74cf760a12bb0c25e7017d8f4c366544"
+  },
+  {
+    "file": "frontend/src/types/modelArchitecture.ts",
+    "lines": 48,
+    "sha256": "a990782180ed300194a3e465c7bec2da37a334764a3c1019a5abd26450fa5cc1"
+  },
+  {
+    "file": "frontend/src/types/scientificPreflight.ts",
+    "lines": 66,
+    "sha256": "39fe9113effe6efab916efb25e10cff353c0f9c40542ffcb9f64bd0247acecc7"
+  },
+  {
+    "file": "frontend/src/types/scientificRead.ts",
+    "lines": 49,
+    "sha256": "2af84d83bd53bccdf130ec18cdb0990ded8d718299877a0691bb01913aafb78f"
+  },
+  {
+    "file": "frontend/src/types/scientificReport.ts",
+    "lines": 13,
+    "sha256": "a5b89680e9c75f9ac9d5aa40b91362880e89057351cd6b9c8eb2ac88031d4106"
+  },
+  {
+    "file": "frontend/src/types/scientificValidation.ts",
+    "lines": 49,
+    "sha256": "9cb671ab5a02ef151e931cd3dc4fa1cf8300f459506e4333eeaf1ee28a83715f"
+  },
+  {
+    "file": "frontend/src/types/trainingTrajectories.ts",
+    "lines": 14,
+    "sha256": "e530e3b1eb162896b7aeb8dc5924574db997df59a0d931242ad991541111b924"
+  },
+  {
+    "file": "frontend/src/utils/analysisSummaries.ts",
+    "lines": 51,
+    "sha256": "784fb2be40ecf3191fb41226f7d5df9b659d482de929f94c2fe8d31080a51411"
+  },
+  {
+    "file": "frontend/src/utils/attributionMaps.ts",
+    "lines": 57,
+    "sha256": "13598379354bd5cf8580a0b355f8e2493c3aa50db816fb90dc636a9814c228be"
+  },
+  {
+    "file": "frontend/src/utils/comparisonCache.ts",
+    "lines": 16,
+    "sha256": "90ebaf2bbe0cfec36953b4a78e074b92aaeb9cce81a2ffc2834e3ae517517bb9"
+  },
+  {
+    "file": "frontend/src/utils/datasetChecks.ts",
+    "lines": 18,
+    "sha256": "dcd21bb6ac4791947e325b4041f0ba0c794b64f6c5fe00a58441b5eb79016ce4"
+  },
+  {
+    "file": "frontend/src/utils/format.ts",
+    "lines": 66,
+    "sha256": "8dceab918915b66ce542bceed7545d727f8fecedc8d0536a1852e4772c3d2773"
+  },
+  {
+    "file": "frontend/src/utils/lineageSlots.ts",
+    "lines": 62,
+    "sha256": "7702e437ae257a77e580f69be545c0d9434d899a57db4d4919da6d8a122002a8"
+  },
+  {
+    "file": "frontend/src/utils/preflightPresentation.ts",
+    "lines": 138,
+    "sha256": "790a3e62a084c842aa55e7677fcd19f03a58b7a0ef2fbed5bd7be35a5db74bb0"
+  },
+  {
+    "file": "frontend/src/utils/runDetail.ts",
+    "lines": 462,
+    "sha256": "3b5aeee61308e7a85f3a2d72a7b1fda1ac6b13ff8f12de51d1300e0c7a979954"
+  },
+  {
+    "file": "frontend/src/utils/runReport.ts",
+    "lines": 300,
+    "sha256": "8b4cc90dd29b39558bb81b9ffe1a8e93e81b1a86addc273dfb716e3276021e11"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/assessment/__init__.py",
+    "lines": 1,
+    "sha256": "37dc4a3137b65ac086f67d5a7b291acf7e3ed65cb2a5fb651bb42ce7c40940b9"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/assessment/cli.py",
+    "lines": 184,
+    "sha256": "f678def12acf17c0e7ffb975e5be9460dbbfb5151f8893f942a53345df231196"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/assessment/contracts.py",
+    "lines": 237,
+    "sha256": "991ea97b3d9319e4c2c62c2d8da45fe8424122312595f81e4cea13542d00af86"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/assessment/lineage.py",
+    "lines": 281,
+    "sha256": "8c1aafb97abf9413aa4ef9bea70c8b697a65e699e1d4625da1ad8926b023cf63"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/assessment/openclip.py",
+    "lines": 439,
+    "sha256": "fefb3bd901a854f9fdc5c3b9753d2e409910f830d4ef225d8377f0661c6bc206"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/assessment/repository.py",
+    "lines": 217,
+    "sha256": "29e67a79917408c5ccc1a9cdd1c787149cdaf3b528ac8c65ca66e685e54218b9"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/assessment/representation.py",
+    "lines": 67,
+    "sha256": "b1822ad0e871bffcba5a20dea84a709fd9c1630503a5b9c0b7f7c3f61f9b087c"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/assessment/runtime.py",
+    "lines": 252,
+    "sha256": "7b24465e057920bb85b1f74022ba0dd1718577cd310bf434ee27ef5f73175585"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/assessment/service.py",
+    "lines": 460,
+    "sha256": "759bae1f23d6192bd61cb028f9f4ece133149eda1278b73bcabd9fae5acafcaa"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/data/input_contract.py",
+    "lines": 268,
+    "sha256": "d02036132b424f1a23dc45649531f9c9f4a9cc6f5d4ee22f7dabde131929f3d7"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/data/preprocessing.py",
+    "lines": 111,
+    "sha256": "c1d4d3b1d56ef1ff9ad320defb838831da3d00aa567189a23eb0ea4779b226c3"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/data/sample_repository.py",
+    "lines": 35,
+    "sha256": "b86c616231ece24b7265a323d00966d8fd1b69cbe65bc3ffba855043383942aa"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/__init__.py",
+    "lines": 2,
+    "sha256": "af727c5eb3ce05b521db91dedb3de0373ba4918090d412e7380a15b210bc0469"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/binary_counts.py",
+    "lines": 13,
+    "sha256": "f9a547eccf720cd7177e7a711cf5f7daac9f19daaf25b6c8bbfb4f7de27ab26c"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/calibration_cli.py",
+    "lines": 536,
+    "sha256": "4f8f12423fc85a50647160b97b8b137d79c4259364fd7e918993d4412d117da6"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/calibration_controller.py",
+    "lines": 42,
+    "sha256": "ee2c5568a63a94803f63a09b0c4faa395b99ff6ecf4bcc2d71d5f1825ed0db16"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/cli.py",
+    "lines": 6,
+    "sha256": "678b38e97f58da8a5a5e040b305dd9e5601fd0e5eeb5e09bc27898d16f2b83da"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/clinical_metrics.py",
+    "lines": 689,
+    "sha256": "5a78137a2df00906b36352696f64852fee2bc9863a1c9f6744918789eb8ea5fc"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/evaluation_finalization_service.py",
+    "lines": 393,
+    "sha256": "9dd02851f261b446636030c4d2126463061100b0417839dab1de886966d4f4cf"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/evaluation_terminal_service.py",
+    "lines": 94,
+    "sha256": "2be9ea65a087d838fb817a5e7e74ed6db0f324ba7aeb6ef83991074bf3e2fae5"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/evaluation_training_lineage_service.py",
+    "lines": 470,
+    "sha256": "822b8bf084f90b3515ddd805ece5091b2dda9cf1f3b5d81d6d63a8e7dbb1bbf5"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/evaluator.py",
+    "lines": 204,
+    "sha256": "cfdba2a3a6f7a968bc0df63f83f52d2c62ff8dbf512bab6904e3d2ca1068a9b0"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/probability_calibration.py",
+    "lines": 226,
+    "sha256": "cdf5a770b711944d8eec2ef8a64864f726c76e8e052bdee3589ab90fd72fbb6d"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/threshold_calibration.py",
+    "lines": 286,
+    "sha256": "9cf7c5618b94ef11345d33bee985979199adc3dd1c5e6b105117787f424e5074"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/evaluation/validation.py",
+    "lines": 25,
+    "sha256": "85be9b9d72f739a5795c3ca431fb3f4f43bbfcbf9e038647fa07ba7e2993d26a"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/explainability/__init__.py",
+    "lines": 2,
+    "sha256": "b3a081cc6d899f00afd9a9f50a0b26ad565e5639c0991c1cf0f0f1d401973430"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/explainability/case_selection.py",
+    "lines": 4,
+    "sha256": "6e6f9b96c66389f46c57958a7bb16a26c3ff3a69ae78b60a0425571f81a0f71b"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/explainability/cli.py",
+    "lines": 6,
+    "sha256": "603e9f02e5a5fa7757dd2f6bb07b0934cc87d242256556f1c3ae0565384279b1"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/explainability/gradcam.py",
+    "lines": 14,
+    "sha256": "0234f900faa9b076b8052c3319bdd6404fa69678ffd0b23c313b896f7bcce026"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/explainability/lime_explainer.py",
+    "lines": 4,
+    "sha256": "3328b0f354d0941091af3288f6fa56510ad6dd2ef9a2e8f52481bd927b172d7e"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/explainability/pipeline.py",
+    "lines": 1222,
+    "sha256": "9c11eea16eb469d6648800fceb4ef1d7472bc19a1365b3a027de1ba8f32f4e87"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/explainability/shap_explainer.py",
+    "lines": 3,
+    "sha256": "1d4bc5570550fe77900d3ebfe3d03d9efc0eca9f6c98f28922dce96f09e9381b"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/__init__.py",
+    "lines": 2,
+    "sha256": "05b1fb6bdfc40a5daed350f966a80797bbaaf16fb9ba7a7a6e0bbf0a75e462b5"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/adapters.py",
+    "lines": 142,
+    "sha256": "bdf3c3473f296c6fd50004eaf91015f90f2b1147210448dd74d899d5a8ddc8bf"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/architectures.py",
+    "lines": 350,
+    "sha256": "ef5fb77e023079597fc86c0fc1725a2366ab212f2148fb5c9e8deb7ec9968662"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/biomedclip_training.py",
+    "lines": 201,
+    "sha256": "f17d6004aea3906562e432f066df87ebc204e6480b7ebf6d9214bfad5927af76"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/configuration.py",
+    "lines": 239,
+    "sha256": "75415484aca24ab8479d5f5a56435fdc72fa5d4554d303d4c13fd1485a4900cc"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/custom_metrics.py",
+    "lines": 9,
+    "sha256": "958f29be6ae1529a325df9b07463e2ae53c1ad721cdeb19ae8774613844f8984"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/openclip_inference.py",
+    "lines": 110,
+    "sha256": "f4b081ab2725672f1ed55f0e5671f7cc6b846300514925b20e5634c65d6d2a9b"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/optimizers.py",
+    "lines": 109,
+    "sha256": "eadd320bae759b746bb494f8e0f3408cafc70bf4e20917e76cbc1a06414d4708"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/registry.py",
+    "lines": 209,
+    "sha256": "cd31007dd14ee176e6973c5d0d265caafee113181e50a89fb759a76fb7da4c66"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/models/scientific_parameters.py",
+    "lines": 212,
+    "sha256": "db593331053515a9607aa4aa0378b8b75da5620da4e33735aa1ea2e19363adde"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/__init__.py",
+    "lines": 1,
+    "sha256": "8784ee9d9dbeaff9c7412ad912e11f737e21034e9da47e5480059d04a1aa4ac2"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/cli.py",
+    "lines": 150,
+    "sha256": "7bed284ededa992cceb5ededbba8057f19c236e9889c0d4bb0ee7cd2a16205ae"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/comparison.py",
+    "lines": 461,
+    "sha256": "98ea79ab22ce1b397488fe1598ee8e1607d02dcf55dba52590a930500817d0d3"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/ensemble.py",
+    "lines": 674,
+    "sha256": "75380fa4f923a4851261f809f055a2737c7eedb43b211ad2b9adb1ded68d6f03"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/ensemble_cli.py",
+    "lines": 109,
+    "sha256": "0fd873d58f204c7a032197c40b6ed20f58064063dbda6fc9684d55d681d184d0"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/ensemble_reporting.py",
+    "lines": 224,
+    "sha256": "316b31b53228eaf7acbeb65227d65f3da142cb978052d9061905fa0a3fe4a6e1"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/ensemble_repository.py",
+    "lines": 88,
+    "sha256": "87cd42dd094b488115c5798dbfefd2226fd0ea73b0af87decbb3f85c965036c1"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/protocol.py",
+    "lines": 255,
+    "sha256": "ad339a473acacb44e6ad47da606aad41655c02f487a35a4a21aeef5c3cbdc9b0"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/reporting.py",
+    "lines": 166,
+    "sha256": "b540d6c73226adff77cb0cbab594842e26aed96c10210f63d8ac02e0905cc950"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/repository.py",
+    "lines": 240,
+    "sha256": "7a3e8b142ee1dd64c233f1e1a7504ef293a78ff713fb4aad840b3b67d8aefdc3"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/science/statistics.py",
+    "lines": 288,
+    "sha256": "0df4ad0c1186a3c107f0b4066079b3f0c1b12ddbed0c2a986a4308e63ee51396"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/training/__init__.py",
+    "lines": 2,
+    "sha256": "d0ce1d4708fbe8bf4d173b4195591a58a9e884a646c46c0d090dc6ffddcec8f5"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/training/callbacks.py",
+    "lines": 10,
+    "sha256": "b5b5f0b84f289b632bb361a777b6c4c0b6c3fe027be5d1c9830190367ef7bec1"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/training/checkpoint_policy.py",
+    "lines": 614,
+    "sha256": "25e6a820f7c58ff3d3944d0464f0c933d3d7775b833b1f20036369be36d0d2c4"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/training/cli.py",
+    "lines": 397,
+    "sha256": "08d615242d932a7ee2204947756ac17afcec9c225c52a46e778d366210178a5b"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/training/cli_constants.py",
+    "lines": 15,
+    "sha256": "401c998df8d1f5b5cbc328cc72ace2ebd11445d3a3aab5d8a38b6308f05a5edc"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/training/early_stopping.py",
+    "lines": 5,
+    "sha256": "a00f61e47b75d9113b08582ed22712deeb0894b9362ec72c4cd7c2a0998ee686"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/training/keras_callbacks.py",
+    "lines": 161,
+    "sha256": "23234dbd151e4a6357c933cdba96d7a4ee888caff1484f8933f1933bcadc366b"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/training/plots.py",
+    "lines": 209,
+    "sha256": "5b106473d5d0d980ad9746b07b3410262304aae1d813381692704fa0b434bf70"
+  },
+  {
+    "file": "malaria_dl_local_project/src/malaria_dl/training/trainer.py",
+    "lines": 2295,
+    "sha256": "e7378003eab25340b5f2545cbe30462123831ef5833fcfe3aa4fa38bf0794a66"
+  }
+]

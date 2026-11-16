@@ -1,0 +1,54 @@
+{
+  "database": "malaria_experiments",
+  "user": "julio",
+  "captured_at": "2026-11-16T12:06:01.444296+00:00",
+  "read_only": "on",
+  "runs": null,
+  "identities": null,
+  "attempts": [
+    {
+      "id": "00b8d407-c672-4b68-9814-53c092d034ba",
+      "identity_id": "a981125c-a9b6-4bec-9fb7-2fa52b907147",
+      "owner": "4e1269bf-78ca-402d-af69-357e6aefcebe",
+      "host": "MacBook-Pro-de-Julio.local",
+      "pid": 63535,
+      "ordinal": 1,
+      "state": "verified",
+      "artifact_root": "/Users/julio/Desktop/Archivo/Magister UAI/Capstone MIA 2025 2/Desarrollo/SW/capstone/malaria_dl_local_project/artifacts/assessments/00b8d407-c672-4b68-9814-53c092d034ba",
+      "cause": null,
+      "verification": {
+        "count": 2685,
+        "sha256": "6c4a3c35bc9c840ada618ca5b8bb7144a521284ac91567f5a599be9dfc537964",
+        "metrics": {
+          "f1": 0.9039145907473309,
+          "f2": 0.9392101760094661,
+          "fn": 47,
+          "fp": 223,
+          "tn": 1145,
+          "tp": 1270,
+          "count": 2685,
+          "pr_auc": 0.9808230427256972,
+          "recall": 0.9643128321943811,
+          "roc_auc": 0.9788783208337217,
+          "accuracy": 0.8994413407821229,
+          "precision": 0.8506363027461487,
+          "definition": "binary_counts_rates_v1",
+          "specificity": 0.8369883040935673,
+          "confusion_matrix": [
+            [
+              1145,
+              223
+            ],
+            [
+              47,
+              1270
+            ]
+          ],
+          "balanced_accuracy": 0.9006505681439743
+        }
+      },
+      "started_at": "2026-10-29T22:37:35.383443+00:00",
+      "finished_at": "2026-10-29T22:38:01.478796+00:00"
+    }
+  ]
+}

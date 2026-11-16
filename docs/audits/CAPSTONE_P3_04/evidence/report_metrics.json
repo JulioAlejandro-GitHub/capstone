@@ -1,0 +1,87 @@
+{
+  "module": "metrics",
+  "data": {
+    "runs": [
+      {
+        "training_run_id": "87b3eff7-e09a-41c8-945d-bf31b3541adb",
+        "state": "available",
+        "issues": [],
+        "evaluation": {
+          "id": null,
+          "source": "assessment",
+          "source_assessment_attempt_id": "00b8d407-c672-4b68-9814-53c092d034ba",
+          "identity_id": "a981125c-a9b6-4bec-9fb7-2fa52b907147",
+          "split": "test",
+          "purpose": "final",
+          "evaluation_role": "independent_evaluate",
+          "checkpoint_artifact_id": "3bbb3405-1db1-5811-b4b5-f208f9e64503",
+          "dataset_version_id": "d8c0cab5-09dd-597f-9de7-7ca01aee2ec2",
+          "threshold_used": 0.25116682052612305,
+          "protocol_hash": {
+            "splits": [
+              "test"
+            ],
+            "version": "exec1",
+            "purposes": [
+              "final"
+            ],
+            "allowed_numeric_thresholds": []
+          },
+          "metric_definition": "binary_counts_rates_v1",
+          "population_hash": null
+        },
+        "clinical": {
+          "sample_count": 2685,
+          "threshold_used": 0.25116682052612305,
+          "tn": 1145,
+          "fp": 223,
+          "fn": 47,
+          "tp": 1270,
+          "metrics": {
+            "accuracy": {
+              "value": 0.8994413407821229,
+              "undefined_reason": null
+            },
+            "precision": {
+              "value": 0.8506363027461487,
+              "undefined_reason": null
+            },
+            "recall": {
+              "value": 0.9643128321943811,
+              "undefined_reason": null
+            },
+            "specificity": {
+              "value": 0.8369883040935673,
+              "undefined_reason": null
+            },
+            "f1": {
+              "value": 0.9039145907473309,
+              "undefined_reason": null
+            },
+            "f2": {
+              "value": 0.9392101760094661,
+              "undefined_reason": null
+            },
+            "roc_auc": {
+              "value": 0.9788783208337217,
+              "undefined_reason": null
+            },
+            "pr_auc": {
+              "value": 0.9808230427256972,
+              "undefined_reason": null
+            },
+            "balanced_accuracy": {
+              "value": 0.9006505681439743,
+              "undefined_reason": null
+            }
+          }
+        }
+      }
+    ],
+    "highlights": [],
+    "comparable": false
+  },
+  "warnings": [
+    "Comparaci\u00f3n descriptiva individual: poblaci\u00f3n, protocolo, umbral o atribuci\u00f3n no comunes; no se destacan m\u00e1ximos conjuntos."
+  ]
+}

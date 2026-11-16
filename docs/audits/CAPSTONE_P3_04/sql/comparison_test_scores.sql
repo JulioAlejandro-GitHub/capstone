@@ -1,0 +1,3 @@
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SELECT json_agg(t) FROM (SELECT i.training_run_id,a.id attempt_id,r.sample_id,r.payload FROM assessment_results r JOIN assessment_attempts a ON a.id=r.attempt_id JOIN assessment_identities i ON i.id=a.identity_id WHERE i.training_run_id IN ('910051e5-a00c-44c4-9d23-77598af470f7','b1b39079-658f-4300-b159-52619f981035') AND i.kind='evaluate' AND i.identity->>'split'='test' AND a.state='verified' ORDER BY i.training_run_id,a.id,r.sample_id)t;
+COMMIT;

@@ -1,0 +1,25 @@
+{
+  "attempt_id": "d6f269de-ba63-4a17-9df8-3bd2ce1871b2",
+  "shapes": {
+    "embeddings": [
+      2685,
+      512
+    ],
+    "pca": [
+      2685,
+      2
+    ],
+    "pca_variance": [
+      50
+    ],
+    "umap": [
+      2685,
+      2
+    ]
+  },
+  "all_finite": true,
+  "mean_norm": 91.9413833618164,
+  "variance_2": 0.3975314718664099,
+  "variance_50": 0.8792547598061481,
+  "components_80": 25
+}

@@ -28,6 +28,8 @@ export const routes = {
   datasetsModels: '/modelo-ia/datasets-modelos',
   errorsLogs: '/modelo-ia/errores-logs',
   smearAnalysis2: '/frotis/analisis-2',
+  smearMicroscope: '/frotis/microscopio',
+  smearMicroscopeAnalysis: (id: string) => `/frotis/microscopio/${encoded(id)}`,
   smearWorkflow: '/frotis/analizar',
   smearHistory: '/frotis/historial',
   smearHistoryDetail: (id: string) => `/frotis/historial/${encoded(id)}`,

@@ -1,0 +1,1161 @@
+/*
+ * Análisis de frotis v3 — workspace inmersivo (Optical Precision).
+ * Todas las reglas están bajo `.frotis-v3`; no hay selectores globales.
+ */
+.frotis-v3 {
+  display: flex;
+  min-height: 360px;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--frotis-v3-text);
+  background: var(--frotis-v3-bg);
+  font-family: var(--frotis-v3-font);
+  font-size: var(--frotis-v3-text-md);
+  line-height: 1.4;
+}
+
+.frotis-v3 .frotis-v3-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.frotis-v3 .frotis-v3-spin {
+  animation: frotis-v3-spin 1.1s linear infinite;
+}
+
+@keyframes frotis-v3-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Header compacto ---------- */
+.frotis-v3 .frotis-v3-header {
+  display: flex;
+  min-height: var(--frotis-v3-header-height);
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--frotis-v3-border);
+  background: var(--frotis-v3-surface);
+}
+
+.frotis-v3 .frotis-v3-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.frotis-v3 .frotis-v3-identity-mark {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--frotis-v3-accent);
+}
+
+.frotis-v3 .frotis-v3-identity h1 {
+  margin: 0;
+  font-size: var(--frotis-v3-text-sm);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.frotis-v3 .frotis-v3-identity h1:focus {
+  outline: none;
+}
+
+.frotis-v3 .frotis-v3-case {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 0;
+}
+
+.frotis-v3 .frotis-v3-case div,
+.frotis-v3 .frotis-v3-facts div {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.frotis-v3 .frotis-v3-case dt,
+.frotis-v3 .frotis-v3-facts dt {
+  color: var(--frotis-v3-text-muted);
+  font-size: var(--frotis-v3-text-xs);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.frotis-v3 .frotis-v3-case dd,
+.frotis-v3 .frotis-v3-facts dd {
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--frotis-v3-text-sm);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frotis-v3 .frotis-v3-case dd {
+  font-family: var(--frotis-v3-font-mono);
+}
+
+.frotis-v3 .frotis-v3-views {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--frotis-v3-radius);
+  background: var(--frotis-v3-bg);
+  box-shadow: var(--frotis-v3-press);
+}
+
+.frotis-v3 .frotis-v3-view {
+  padding: 5px 12px;
+  border: 0;
+  border-radius: calc(var(--frotis-v3-radius) - 2px);
+  color: var(--frotis-v3-text-muted);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  cursor: pointer;
+}
+
+.frotis-v3 .frotis-v3-view[aria-current="page"] {
+  color: var(--frotis-v3-text);
+  background: var(--frotis-v3-surface-raised);
+  box-shadow: var(--frotis-v3-raise);
+}
+
+.frotis-v3 .frotis-v3-view[aria-disabled="true"],
+.frotis-v3 .frotis-v3-instrument-toggle[aria-disabled="true"] {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.frotis-v3 .frotis-v3-header-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.frotis-v3 .frotis-v3-instrument-toggle,
+.frotis-v3 .frotis-v3-header-link,
+.frotis-v3 .frotis-v3-icon-button {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: var(--frotis-v3-radius-sm);
+  color: var(--frotis-v3-text);
+  background: var(--frotis-v3-surface-raised);
+  box-shadow: var(--frotis-v3-raise);
+  cursor: pointer;
+}
+
+.frotis-v3 .frotis-v3-instrument-toggle svg,
+.frotis-v3 .frotis-v3-header-link svg,
+.frotis-v3 .frotis-v3-icon-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.frotis-v3 .frotis-v3-header-link:hover,
+.frotis-v3 .frotis-v3-icon-button:hover:not(:disabled) {
+  border-color: var(--frotis-v3-border-strong);
+}
+
+.frotis-v3 .frotis-v3-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: 999px;
+  font-size: var(--frotis-v3-text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.frotis-v3 .frotis-v3-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.frotis-v3 .frotis-v3-status[data-tone="ok"] { border-color: var(--frotis-v3-state-ok); }
+.frotis-v3 .frotis-v3-status[data-tone="ok"] svg { color: var(--frotis-v3-state-ok); }
+.frotis-v3 .frotis-v3-status[data-tone="warning"] { border-color: var(--frotis-v3-state-warning); }
+.frotis-v3 .frotis-v3-status[data-tone="warning"] svg { color: var(--frotis-v3-state-warning); }
+.frotis-v3 .frotis-v3-status[data-tone="blocked"] { border-color: var(--frotis-v3-border-strong); border-style: dashed; }
+
+/* ---------- Foco visible común ---------- */
+.frotis-v3 button:focus-visible,
+.frotis-v3 a:focus-visible,
+.frotis-v3 textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--frotis-v3-focus);
+}
+
+/* ---------- Stage: cada zona tiene su propia pista de la grilla ---------- */
+.frotis-v3 .frotis-v3-stage {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.frotis-v3 .frotis-v3-optical {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  grid-area: 1 / 1;
+  overflow: hidden;
+}
+
+.frotis-v3 .frotis-v3-optical[hidden] {
+  display: none;
+}
+
+.frotis-v3 .frotis-v3-viewport {
+  position: absolute;
+  display: grid;
+  inset: 0;
+  overflow: hidden;
+  place-items: center;
+  outline: none;
+  background:
+    radial-gradient(circle at 50% 46%, var(--frotis-v3-surface-raised) 0%, var(--frotis-v3-bg) 72%);
+  touch-action: none;
+}
+
+.frotis-v3 .frotis-v3-viewport[data-interactive="true"] {
+  cursor: grab;
+}
+
+.frotis-v3 .frotis-v3-viewport[data-interactive="true"]:active {
+  cursor: grabbing;
+}
+
+.frotis-v3 .frotis-v3-viewport:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--frotis-v3-accent);
+}
+
+.frotis-v3 .frotis-v3-filter-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* Mundo en píxeles de la imagen original: se rota, escala y traslada completo. */
+.frotis-v3 .frotis-v3-world {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.frotis-v3 .frotis-v3-smear {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Capa celular: el estilo distingue la clase por trazo, no solo por color. */
+.frotis-v3 .frotis-v3-cells {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.frotis-v3 .frotis-v3-cells rect {
+  fill: transparent;
+  stroke: var(--frotis-v3-white);
+  stroke-width: 1.25px;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+}
+
+.frotis-v3 .frotis-v3-viewport[data-contour="dark"] .frotis-v3-cells rect {
+  stroke: var(--frotis-v3-black);
+}
+
+.frotis-v3 .frotis-v3-cells rect[data-kind="parasitized"] {
+  stroke: var(--frotis-v3-yellow);
+  stroke-width: 3px;
+}
+
+.frotis-v3 .frotis-v3-viewport[data-contour="dark"] .frotis-v3-cells rect[data-kind="parasitized"] {
+  stroke: var(--frotis-v3-blue);
+}
+
+.frotis-v3 .frotis-v3-cells rect[data-kind="unclassified"],
+.frotis-v3 .frotis-v3-cells rect[data-kind="failed"] {
+  stroke-dasharray: 2 4;
+}
+
+.frotis-v3 .frotis-v3-cells rect[data-near="true"] {
+  stroke-dasharray: 8 4;
+}
+
+.frotis-v3 .frotis-v3-cells rect:hover {
+  fill: color-mix(in srgb, var(--frotis-v3-white) 14%, transparent);
+}
+
+.frotis-v3 .frotis-v3-cells rect[data-selected="true"] {
+  fill: color-mix(in srgb, var(--frotis-v3-yellow) 18%, transparent);
+  stroke-width: 4.5px;
+  stroke-dasharray: none;
+}
+
+.frotis-v3 .frotis-v3-viewport-message,
+.frotis-v3 .frotis-v3-message {
+  display: grid;
+  max-width: 440px;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--frotis-v3-text-muted);
+  text-align: center;
+}
+
+.frotis-v3 .frotis-v3-viewport-message {
+  position: relative;
+  grid-area: 1 / 1;
+}
+
+.frotis-v3 .frotis-v3-viewport-message svg,
+.frotis-v3 .frotis-v3-message-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--frotis-v3-text);
+}
+
+.frotis-v3 .frotis-v3-viewport-message strong {
+  color: var(--frotis-v3-text);
+}
+
+/* Línea horizontal de escaneo: acompaña un procesamiento real sin ocultar la imagen. */
+.frotis-v3 .frotis-v3-scan {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.frotis-v3 .frotis-v3-scanline {
+  position: absolute;
+  inset: 0;
+  border-bottom: 2px solid var(--frotis-v3-accent);
+  background: linear-gradient(to top, color-mix(in srgb, var(--frotis-v3-accent) 16%, transparent), transparent 16%);
+  box-shadow: 0 10px 26px -8px color-mix(in srgb, var(--frotis-v3-accent) 70%, transparent);
+  transform: translateY(-100%);
+  animation: frotis-v3-scan 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes frotis-v3-scan {
+  from { transform: translateY(-98%); }
+  to { transform: translateY(0); }
+}
+
+.frotis-v3 .frotis-v3-scan-label {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  padding: 5px 12px;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--frotis-v3-bg) 86%, transparent);
+  font-size: var(--frotis-v3-text-sm);
+  font-weight: 600;
+  transform: translateX(-50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frotis-v3 .frotis-v3-scanline {
+    transform: translateY(-50%);
+    animation: none;
+  }
+
+  .frotis-v3 .frotis-v3-spin {
+    animation: none;
+  }
+}
+
+/* ---------- Instrumentos flotantes (posición asignada por el Layout Manager) ---------- */
+.frotis-v3 .frotis-v3-floating-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.frotis-v3 .frotis-v3-floating {
+  position: absolute;
+  overflow: auto;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: var(--frotis-v3-radius);
+  background: color-mix(in srgb, var(--frotis-v3-surface-raised) 94%, transparent);
+  box-shadow: var(--frotis-v3-raise);
+  pointer-events: auto;
+  transition: left 140ms ease, top 140ms ease;
+}
+
+.frotis-v3 .frotis-v3-floating[data-panel="notices"],
+.frotis-v3 .frotis-v3-floating[data-panel="actions"] {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.frotis-v3 .frotis-v3-floating[data-panel="minimap"] .frotis-v3-floating-content {
+  padding: 4px;
+}
+
+.frotis-v3 .frotis-v3-floating-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 8px 0 12px;
+}
+
+.frotis-v3 .frotis-v3-floating-head h2,
+.frotis-v3 .frotis-v3-inspector-head h2 {
+  margin: 0;
+  font-size: var(--frotis-v3-text-xs);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.frotis-v3 .frotis-v3-floating-head .frotis-v3-icon-button {
+  width: 24px;
+  height: 24px;
+  box-shadow: none;
+}
+
+.frotis-v3 .frotis-v3-instrument {
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px 12px;
+}
+
+.frotis-v3 .frotis-v3-instrument-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.frotis-v3 .frotis-v3-reading {
+  min-width: 58px;
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: var(--frotis-v3-radius-sm);
+  background: var(--frotis-v3-bg);
+  box-shadow: var(--frotis-v3-press);
+  font-family: var(--frotis-v3-font-mono);
+  font-size: var(--frotis-v3-text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.frotis-v3 .frotis-v3-chip {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: var(--frotis-v3-radius-sm);
+  color: var(--frotis-v3-text);
+  background: var(--frotis-v3-surface-raised);
+  font: inherit;
+  font-size: var(--frotis-v3-text-sm);
+  cursor: pointer;
+}
+
+.frotis-v3 .frotis-v3-chip:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.frotis-v3 .frotis-v3-icon-button[aria-pressed="true"],
+.frotis-v3 .frotis-v3-instrument-toggle[aria-pressed="true"] {
+  border-color: var(--frotis-v3-accent);
+  box-shadow: var(--frotis-v3-press);
+}
+
+.frotis-v3 .frotis-v3-hint {
+  margin: 0;
+  color: var(--frotis-v3-text-muted);
+  font-size: 11px;
+}
+
+.frotis-v3 .frotis-v3-slider {
+  display: grid;
+  align-items: center;
+  gap: 2px 8px;
+  grid-template-columns: 1fr auto;
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-slider input {
+  width: 100%;
+  grid-column: 1 / -1;
+  accent-color: var(--frotis-v3-accent);
+}
+
+.frotis-v3 .frotis-v3-slider output,
+.frotis-v3 .frotis-v3-check output {
+  color: var(--frotis-v3-text-muted);
+  font-family: var(--frotis-v3-font-mono);
+  font-size: 11px;
+}
+
+.frotis-v3 .frotis-v3-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-check input {
+  accent-color: var(--frotis-v3-accent);
+}
+
+.frotis-v3 .frotis-v3-check output {
+  margin-left: auto;
+}
+
+.frotis-v3 .frotis-v3-options {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  margin: 0;
+  padding: 8px 0 0;
+  border: 0;
+  border-top: 1px solid var(--frotis-v3-border);
+}
+
+.frotis-v3 .frotis-v3-options:disabled {
+  opacity: .5;
+}
+
+.frotis-v3 .frotis-v3-options legend {
+  padding: 0;
+  color: var(--frotis-v3-text-muted);
+  font-size: var(--frotis-v3-text-xs);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.frotis-v3 .frotis-v3-legend {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--frotis-v3-border);
+  color: var(--frotis-v3-text-muted);
+  font-size: 11px;
+  list-style: none;
+}
+
+.frotis-v3 .frotis-v3-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.frotis-v3 .frotis-v3-legend span {
+  width: 18px;
+  height: 12px;
+  flex: none;
+  border: 1.25px solid var(--frotis-v3-white);
+}
+
+.frotis-v3 .frotis-v3-legend li[data-kind="parasitized"] span {
+  border: 3px solid var(--frotis-v3-yellow);
+}
+
+.frotis-v3 .frotis-v3-legend li[data-kind="unclassified"] span {
+  border-style: dotted;
+}
+
+.frotis-v3 .frotis-v3-minimap {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  border-radius: calc(var(--frotis-v3-radius) - 4px);
+  cursor: crosshair;
+}
+
+.frotis-v3 .frotis-v3-minimap polygon {
+  fill: color-mix(in srgb, var(--frotis-v3-yellow) 20%, transparent);
+  stroke: var(--frotis-v3-yellow);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+}
+
+.frotis-v3 .frotis-v3-notices {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.frotis-v3 .frotis-v3-notices li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--frotis-v3-border);
+  border-left: 3px solid var(--frotis-v3-text-muted);
+  border-radius: var(--frotis-v3-radius-sm);
+  background: color-mix(in srgb, var(--frotis-v3-surface) 94%, transparent);
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-notices li[data-tone="warning"] { border-left-color: var(--frotis-v3-state-warning); }
+.frotis-v3 .frotis-v3-notices li[data-tone="blocked"] { border-left-color: var(--frotis-v3-state-blocked); }
+
+.frotis-v3 .frotis-v3-notices svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin-top: 1px;
+  color: var(--frotis-v3-state-warning);
+}
+
+/* ---------- REVIEW CELLS: inspector fijo en su propia columna ---------- */
+.frotis-v3 .frotis-v3-inspector {
+  display: grid;
+  width: 320px;
+  min-height: 0;
+  grid-area: 1 / 2;
+  align-content: start;
+  gap: 10px;
+  overflow: auto;
+  padding: 12px;
+  border-left: 1px solid var(--frotis-v3-border);
+  background: var(--frotis-v3-surface);
+}
+
+.frotis-v3 .frotis-v3-inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.frotis-v3 .frotis-v3-select select {
+  max-width: 170px;
+  padding: 5px 6px;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: var(--frotis-v3-radius-sm);
+  color: var(--frotis-v3-text);
+  background: var(--frotis-v3-bg);
+  font: inherit;
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-cell {
+  display: grid;
+  gap: 10px;
+}
+
+.frotis-v3 .frotis-v3-cell-crop {
+  display: grid;
+  height: 150px;
+  place-items: center;
+  border-radius: var(--frotis-v3-radius);
+  color: var(--frotis-v3-text-muted);
+  background: var(--frotis-v3-bg);
+  box-shadow: var(--frotis-v3-press);
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-cell-crop img {
+  max-width: 100%;
+  max-height: 138px;
+  image-rendering: pixelated;
+}
+
+.frotis-v3 .frotis-v3-cell-facts {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.frotis-v3 .frotis-v3-cell-facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-cell-facts dt {
+  color: var(--frotis-v3-text-muted);
+}
+
+.frotis-v3 .frotis-v3-cell-facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.frotis-v3 .frotis-v3-cell-facts dd[data-kind="parasitized"] {
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--frotis-v3-yellow);
+  text-decoration-thickness: 2px;
+}
+
+.frotis-v3 .frotis-v3-button svg {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+}
+
+/* ---------- REPORT: superficie documental ---------- */
+.frotis-v3 .frotis-v3-report {
+  display: grid;
+  min-height: 0;
+  grid-area: 1 / 1 / 3 / -1;
+  align-content: start;
+  gap: 18px;
+  overflow: auto;
+  padding: 24px max(24px, calc((100% - 980px) / 2));
+  color: var(--frotis-v3-black);
+  background: var(--frotis-v3-white);
+}
+
+.frotis-v3 .frotis-v3-report h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.frotis-v3 .frotis-v3-report h3 {
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--frotis-v3-black) 25%, transparent);
+  font-size: 14px;
+}
+
+.frotis-v3 .frotis-v3-report p {
+  margin: 0 0 4px;
+}
+
+.frotis-v3 .frotis-v3-report-outcome {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.frotis-v3 .frotis-v3-report-stats {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  margin: 8px 0;
+}
+
+.frotis-v3 .frotis-v3-report-stats div {
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--frotis-v3-black) 18%, transparent);
+  border-radius: var(--frotis-v3-radius-sm);
+}
+
+.frotis-v3 .frotis-v3-report-stats dt {
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.frotis-v3 .frotis-v3-report-stats dd {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.frotis-v3 .frotis-v3-report table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-report th,
+.frotis-v3 .frotis-v3-report td {
+  padding: 6px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--frotis-v3-black) 14%, transparent);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.frotis-v3 .frotis-v3-report th {
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.frotis-v3 .frotis-v3-report .frotis-v3-button {
+  border-color: var(--frotis-v3-blue);
+  color: var(--frotis-v3-white);
+  background: var(--frotis-v3-blue);
+  box-shadow: none;
+}
+
+.frotis-v3 .frotis-v3-report-note {
+  font-size: var(--frotis-v3-text-sm);
+  font-style: italic;
+}
+
+.frotis-v3 .frotis-v3-panel {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: var(--frotis-v3-radius);
+  background: var(--frotis-v3-surface-raised);
+  box-shadow: var(--frotis-v3-raise);
+}
+
+.frotis-v3 .frotis-v3-panel h2,
+.frotis-v3 .frotis-v3-intake h2,
+.frotis-v3 .frotis-v3-message h2 {
+  margin: 0;
+  color: var(--frotis-v3-text);
+  font-size: var(--frotis-v3-text-md);
+  font-weight: 700;
+}
+
+.frotis-v3 .frotis-v3-panel p,
+.frotis-v3 .frotis-v3-message p {
+  margin: 0;
+  color: var(--frotis-v3-text-muted);
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-panel .frotis-v3-panel-failure {
+  color: var(--frotis-v3-text);
+}
+
+.frotis-v3 .frotis-v3-panel-form {
+  display: grid;
+  gap: 6px;
+}
+
+.frotis-v3 .frotis-v3-panel-form label {
+  color: var(--frotis-v3-text-muted);
+  font-size: var(--frotis-v3-text-xs);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.frotis-v3 .frotis-v3-panel-form textarea {
+  min-height: 64px;
+  padding: 8px;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: var(--frotis-v3-radius-sm);
+  color: var(--frotis-v3-text);
+  background: var(--frotis-v3-bg);
+  box-shadow: var(--frotis-v3-press);
+  font: inherit;
+  resize: vertical;
+}
+
+.frotis-v3 .frotis-v3-panel-buttons,
+.frotis-v3 .frotis-v3-message-actions,
+.frotis-v3 .frotis-v3-intake-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Botones ---------- */
+.frotis-v3 .frotis-v3-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border: 1px solid var(--frotis-v3-border-strong);
+  border-radius: var(--frotis-v3-radius-sm);
+  color: var(--frotis-v3-text);
+  background: var(--frotis-v3-surface-raised);
+  box-shadow: var(--frotis-v3-raise);
+  font: inherit;
+  font-size: var(--frotis-v3-text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.frotis-v3 .frotis-v3-button:hover:not(:disabled) {
+  border-color: var(--frotis-v3-text);
+}
+
+.frotis-v3 .frotis-v3-button:active:not(:disabled) {
+  box-shadow: var(--frotis-v3-press);
+}
+
+.frotis-v3 .frotis-v3-button:disabled,
+.frotis-v3 .frotis-v3-icon-button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.frotis-v3 .frotis-v3-button--primary {
+  border-color: var(--frotis-v3-accent);
+  color: var(--frotis-v3-on-accent);
+  background: var(--frotis-v3-accent);
+  font-weight: 700;
+}
+
+.frotis-v3 .frotis-v3-button--danger {
+  border-style: dashed;
+  border-color: var(--frotis-v3-text);
+}
+
+/* ---------- Estado 1: incorporar imágenes ---------- */
+.frotis-v3 .frotis-v3-intake,
+.frotis-v3 .frotis-v3-message {
+  grid-area: 1 / 1 / -1 / -1;
+  place-self: center;
+}
+
+.frotis-v3 .frotis-v3-intake {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 20px;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 46%, var(--frotis-v3-surface-raised) 0%, var(--frotis-v3-bg) 72%);
+}
+
+.frotis-v3 .frotis-v3-intake-target {
+  display: grid;
+  width: min(560px, 100%);
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 24px;
+  border: 1px dashed var(--frotis-v3-border-strong);
+  border-radius: calc(var(--frotis-v3-radius) * 1.6);
+  background: color-mix(in srgb, var(--frotis-v3-surface) 88%, transparent);
+  box-shadow: var(--frotis-v3-raise);
+  text-align: center;
+}
+
+.frotis-v3 .frotis-v3-intake[data-dragging="true"] .frotis-v3-intake-target {
+  border-color: var(--frotis-v3-accent);
+  border-style: solid;
+}
+
+.frotis-v3 .frotis-v3-intake-icon {
+  width: 30px;
+  height: 30px;
+  color: var(--frotis-v3-accent);
+}
+
+.frotis-v3 .frotis-v3-intake h2 {
+  font-size: var(--frotis-v3-text-lg);
+}
+
+.frotis-v3 .frotis-v3-intake p {
+  margin: 0;
+  color: var(--frotis-v3-text-muted);
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-intake .frotis-v3-intake-limits {
+  font-family: var(--frotis-v3-font-mono);
+}
+
+.frotis-v3 .frotis-v3-intake-actions {
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.frotis-v3 .frotis-v3-intake-files {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: var(--frotis-v3-radius-sm);
+  background: var(--frotis-v3-bg);
+  box-shadow: var(--frotis-v3-press);
+  text-align: left;
+}
+
+.frotis-v3 .frotis-v3-intake-files-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-intake-files ul {
+  display: grid;
+  max-height: 132px;
+  gap: 2px;
+  margin: 6px 0 0;
+  overflow: auto;
+  padding: 0;
+  list-style: none;
+}
+
+.frotis-v3 .frotis-v3-intake-files li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--frotis-v3-text-sm);
+}
+
+.frotis-v3 .frotis-v3-intake-files li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frotis-v3 .frotis-v3-intake-files li small {
+  flex: none;
+  color: var(--frotis-v3-text-muted);
+  font-family: var(--frotis-v3-font-mono);
+}
+
+.frotis-v3 .frotis-v3-intake .frotis-v3-intake-error {
+  padding: 6px 10px;
+  border-left: 3px solid var(--frotis-v3-state-warning);
+  color: var(--frotis-v3-text);
+  text-align: left;
+}
+
+.frotis-v3 .frotis-v3-intake .frotis-v3-intake-restriction {
+  padding-top: 8px;
+  border-top: 1px solid var(--frotis-v3-border);
+}
+
+/* ---------- Lectura inferior del instrumento ---------- */
+.frotis-v3 .frotis-v3-readout {
+  display: flex;
+  min-width: 0;
+  grid-area: 2 / 1 / 3 / -1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--frotis-v3-border);
+  background: var(--frotis-v3-surface);
+}
+
+.frotis-v3 .frotis-v3-rail {
+  display: flex;
+  max-width: 100%;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.frotis-v3 .frotis-v3-rail button {
+  min-width: 26px;
+  height: 26px;
+  flex: none;
+  padding: 0 6px;
+  border: 1px solid var(--frotis-v3-border);
+  border-radius: var(--frotis-v3-radius-sm);
+  color: var(--frotis-v3-text-muted);
+  background: var(--frotis-v3-surface-raised);
+  font: inherit;
+  font-size: var(--frotis-v3-text-sm);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.frotis-v3 .frotis-v3-rail button[aria-current="true"] {
+  border-color: var(--frotis-v3-accent);
+  color: var(--frotis-v3-text);
+  box-shadow: var(--frotis-v3-press);
+  font-weight: 700;
+}
+
+.frotis-v3 .frotis-v3-facts {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 2px 20px;
+  margin: 0;
+}
+
+.frotis-v3 .frotis-v3-disclaimer {
+  margin: 0 0 0 auto;
+  color: var(--frotis-v3-text-muted);
+  font-size: 11px;
+}
+
+/* ---------- Responsive: el inspector baja a su propia franja ---------- */
+@media (max-width: 900px) {
+  .frotis-v3 .frotis-v3-header-tools {
+    margin-left: 0;
+  }
+
+  .frotis-v3 .frotis-v3-disclaimer {
+    margin-left: 0;
+  }
+
+  .frotis-v3[data-view="review-cells"] .frotis-v3-stage {
+    grid-template-rows: minmax(0, 1fr) minmax(0, 44%) auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .frotis-v3[data-view="review-cells"] .frotis-v3-inspector {
+    width: auto;
+    grid-area: 2 / 1;
+    border-top: 1px solid var(--frotis-v3-border);
+    border-left: 0;
+  }
+
+  .frotis-v3[data-view="review-cells"] .frotis-v3-readout {
+    grid-area: 3 / 1;
+  }
+}
+
+/* ---------- Header en una sola fila cuando hay ancho ---------- */
+@media (min-width: 1100px) {
+  .frotis-v3 .frotis-v3-header {
+    flex-wrap: nowrap;
+  }
+
+  .frotis-v3 .frotis-v3-identity {
+    flex: 0 1 auto;
+    overflow: hidden;
+  }
+
+  .frotis-v3 .frotis-v3-case {
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .frotis-v3 .frotis-v3-views,
+  .frotis-v3 .frotis-v3-header-tools {
+    flex: none;
+  }
+}

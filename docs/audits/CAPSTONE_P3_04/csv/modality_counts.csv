@@ -1,0 +1,7 @@
+architecture,runs,completed,epochs,evaluate_verified,explain_verified,explain_failed,represent_verified
+biomedclip_fine_tuning,13,12,365,25,0,0,0
+biomedclip_linear,13,12,380,24,0,0,0
+biomedclip_zero_shot,1,1,0,6,2,0,0
+custom_cnn,23,22,392,32,21,2,1
+densenet121,18,18,762,27,6,0,2
+vgg16,18,18,526,27,48,0,3

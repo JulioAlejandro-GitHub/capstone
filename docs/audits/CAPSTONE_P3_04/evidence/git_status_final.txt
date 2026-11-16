@@ -1,0 +1,7 @@
+ M frontend/src/App.tsx
+ M frontend/src/components/navigation/navigationConfig.ts
+ M frontend/src/pages/SmearAnalysisHistory.tsx
+ M frontend/src/router.ts
+?? docs/audits/CAPSTONE_P3_04/
+?? frontend/src/features/analisis-frotis-v3/
+?? frontend/tests/frotis-v3.test.mjs
